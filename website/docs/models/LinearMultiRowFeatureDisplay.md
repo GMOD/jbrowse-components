@@ -4,18 +4,23 @@ title: LinearMultiRowFeatureDisplay
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`canvas` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts).
 
-Multi-row interval painter (chromosome / ancestry painting). Partitions a
-single feature track into stacked rows by a feature attribute and paints each
-feature as a colored block on its row. GPU-rendered (WebGL/Canvas2D
-fallback) via the shared per-region lifecycle. Rows are a `sources` chain
-(discovered → layout-reconciled → subtree-filtered) and the left sidebar
-(labels + dendrogram + reorder) is the shared `TreeSidebarMixin`.
+Multi-row interval painter (chromosome / ancestry painting). Partitions a single
+feature track into stacked rows by a feature attribute and paints each feature
+as a colored block on its row. GPU-rendered (WebGL/Canvas2D fallback) via the
+shared per-region lifecycle. Rows are a `sources` chain (discovered →
+layout-reconciled → subtree-filtered) and the left sidebar (labels +
+dendrogram + reorder) is the shared `TreeSidebarMixin`.
 
-The configuration slots for this model are documented on its [config schema page](../../config/linearmultirowfeaturedisplay).
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearmultirowfeaturedisplay).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

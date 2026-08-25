@@ -4,37 +4,42 @@ title: RowHeightMixin
 sidebar_label: Mixin -> RowHeightMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowHeight/RowHeightMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowHeight/RowHeightMixin.ts).
 
-#crossCuttingMixin The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads
+#crossCuttingMixin The two-valued row height every multi-row display has. A
+`rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an
+`autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight`
+getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer
+reads
 
-The convention itself is
-agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
-**Both ends were already shared**: `rowHeightMenuItem` and
-`SetRowHeightDialog` in this directory are the one menu row and dialog for
-every row display, and `resolveRowHeight` in core is the one place the `0`
-sentinel resolves and a non-positive result is floored. What sat between them
-was three hand-written copies — maf, the multi-row feature painting and the
-multi-sample variant base — of the slot, the getter over it and the setter.
+The convention itself is agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the
+middle link of it. **Both ends were already shared**: `rowHeightMenuItem` and
+`SetRowHeightDialog` in this directory are the one menu row and dialog for every
+row display, and `resolveRowHeight` in core is the one place the `0` sentinel
+resolves and a non-positive result is floored. What sat between them was three
+hand-written copies — maf, the multi-row feature painting and the multi-sample
+variant base — of the slot, the getter over it and the setter.
 
-**This package already depended on members it did not declare.**
-`rowHeightMenu` restates `rowHeight` / `setRowHeight` / `setFitToHeight` as
-`RowHeightModel` and `types.ts`'s `TreeDrawingModel` restates
-`effectiveRowHeight`, so a display wiring in the shared menu and spelling one
-of them differently compiled and then failed at the first click. Slots and
-accessors now move together, matching `treeSidebarConfigSchemaFields` +
-`TreeSidebarMixin`.
+**This package already depended on members it did not declare.** `rowHeightMenu`
+restates `rowHeight` / `setRowHeight` / `setFitToHeight` as `RowHeightModel` and
+`types.ts`'s `TreeDrawingModel` restates `effectiveRowHeight`, so a display
+wiring in the shared menu and spelling one of them differently compiled and then
+failed at the first click. Slots and accessors now move together, matching
+`treeSidebarConfigSchemaFields` + `TreeSidebarMixin`.
 
 **What stays per display is the value, not the declaration**, and the doc says
 which: `autoRowHeight`, because the height available to rows is a different
 quantity in each (canvas's `fitTargetHeight`, maf's `rowsHeight`, variants'
 `availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
-the way in is required exactly where the `height` getter is content-derived
-and wrong where it is the slot itself.
+the way in is required exactly where the `height` getter is content-derived and
+wrong where it is the slot itself.
 
-`effectiveRowHeight` is overridable, and one display overrides it: the
-multi-row feature painting caps the row stack at the canvas limit, since it
-sizes its canvas to its content instead of scrolling a viewport.
+`effectiveRowHeight` is overridable, and one display overrides it: the multi-row
+feature painting caps the row stack at the canvas limit, since it sizes its
+canvas to its content instead of scrolling a viewport.
 
 ## Getters
 

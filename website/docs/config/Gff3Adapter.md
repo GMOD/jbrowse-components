@@ -4,7 +4,9 @@ title: Gff3Adapter
 sidebar_label: Adapter -> Gff3Adapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gff3` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3Adapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `gff3` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3Adapter/configSchema.ts).
 
 ## Example usage
 
@@ -23,8 +25,8 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load plain-text GFF3 files. Loads the whole file into memory, so
-prefer the Gff3TabixAdapter for large files.
+used to load plain-text GFF3 files. Loads the whole file into memory, so prefer
+the Gff3TabixAdapter for large files.
 
 ## Related links
 
@@ -36,7 +38,14 @@ prefer the Gff3TabixAdapter for large files.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "Gff3Adapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "Gff3Adapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri` in place of writing a location slot out. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

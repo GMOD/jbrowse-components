@@ -4,21 +4,25 @@ title: WiggleCommonMixin
 sidebar_label: Mixin -> WiggleCommonMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`wiggle` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts).
 
 Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
 reset — plus the wiggle-specific config that used to sit in that mixin (the
 pos/neg palette, rendering type, summary mode, resolution and the line/gap
-settings). They live here because this is where they are *read*: the other
-composer of WiggleScoreConfigMixin, LinearManhattanDisplay, touches none of
-them and was inheriting a config schema advertising them anyway. Moved onto
-this chain with `.props()`/`.views()` rather than a new mixin composed in, so
-no `types.compose` layer is added (ADR-041).
+settings). They live here because this is where they are _read_: the other
+composer of WiggleScoreConfigMixin, LinearManhattanDisplay, touches none of them
+and was inheriting a config schema advertising them anyway. Moved onto this
+chain with `.props()`/`.views()` rather than a new mixin composed in, so no
+`types.compose` layer is added (ADR-041).
 
 Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that own a
 different rpcDataMap type should compose WiggleScoreConfigMixin directly.
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

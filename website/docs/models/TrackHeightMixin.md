@@ -4,25 +4,29 @@ title: TrackHeightMixin
 sidebar_label: Mixin -> TrackHeightMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/TrackHeightMixin.tsx).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/TrackHeightMixin.tsx).
 
-#crossCuttingMixin Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks
+#crossCuttingMixin Internal vertical scroll. `scrollableHeight` (default
+`Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun
+that re-clamps when content shrinks
 
 The display height is stored directly on the `height` config slot (drag-resize
 writes it via `setSlot`), so it survives a track being unticked and reticked —
 the config node outlives the ephemeral display instance. Displays with an
-auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`)
-and override the `height` getter to fall back to their computed content
-height when unset.
+auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`) and
+override the `height` getter to fall back to their computed content height when
+unset.
 
-It also owns the **internal vertical scroll** every canvas display that
-scrolls its own content shares: the `scrollTop` volatile, a `setScrollTop`
-clamped against the overridable `scrollableHeight` hook, and the autorun that
-re-clamps when the content shrinks. Four displays (alignments, canvas, MAF,
-multi-sample variants) each carried their own copy of the last two, with four
-copies of the same "a virtual-scrolled canvas has no overflow container to
-self-correct" paragraph; a display now opts into all of it by overriding one
-getter.
+It also owns the **internal vertical scroll** every canvas display that scrolls
+its own content shares: the `scrollTop` volatile, a `setScrollTop` clamped
+against the overridable `scrollableHeight` hook, and the autorun that re-clamps
+when the content shrinks. Four displays (alignments, canvas, MAF, multi-sample
+variants) each carried their own copy of the last two, with four copies of the
+same "a virtual-scrolled canvas has no overflow container to self-correct"
+paragraph; a display now opts into all of it by overriding one getter.
 
 ## Volatiles
 

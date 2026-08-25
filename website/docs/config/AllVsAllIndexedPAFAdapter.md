@@ -4,7 +4,10 @@ title: AllVsAllIndexedPAFAdapter
 sidebar_label: Adapter -> AllVsAllIndexedPAFAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/AllVsAllIndexedPAFAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`comparative-adapters` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/AllVsAllIndexedPAFAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -25,8 +28,8 @@ Auto-generated config schema for the current JBrowse release — see the [config
 _See the **Config slots** section below for all available configuration fields._
 
 The tabix-indexed (PIF) form of the `AllVsAllPAFAdapter`. Run
-`jbrowse make-pif all_vs_all.paf` on an all-vs-all PAF whose sequence names
-are PanSN-prefixed (`sample#haplotype#contig`) and point this adapter at the
+`jbrowse make-pif all_vs_all.paf` on an all-vs-all PAF whose sequence names are
+PanSN-prefixed (`sample#haplotype#contig`) and point this adapter at the
 resulting `.pif.gz`. Because PIF double-emits each record keyed on both of its
 PanSN sequence names, a region query resolves to a tabix range lookup on the
 anchor's PanSN seqid(s) instead of scanning the whole file — so it scales to
@@ -34,9 +37,9 @@ whole-genome pangenome alignments that do not fit in memory. Semantics match
 `AllVsAllPAFAdapter`: one-vs-all in a plain LGV, single-pair when the synteny
 view supplies a `targetAssemblyName`.
 
-A reference-anchored alignment read as all-vs-all draws an empty band for
-every pair not involving the reference; see `AllVsAllPAFAdapter` for what to do
-about that.
+A reference-anchored alignment read as all-vs-all draws an empty band for every
+pair not involving the reference; see `AllVsAllPAFAdapter` for what to do about
+that.
 
 ## Related links
 
@@ -48,7 +51,14 @@ about that.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "AllVsAllIndexedPAFAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "AllVsAllIndexedPAFAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri`, `csi` in place of writing a location slot out. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

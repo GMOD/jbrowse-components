@@ -4,10 +4,13 @@ title: LinearSyntenyViewHelper
 sidebar_label: General -> LinearSyntenyViewHelper
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/stateModelFactory.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/stateModelFactory.ts).
 
-Holds one level of a linear synteny comparison: its track list, height and
-level index, composed with the shared rendering-lifecycle state.
+Holds one level of a linear synteny comparison: its track list, height and level
+index, composed with the shared rendering-lifecycle state.
 
 Nested in LinearComparativeView.levels, never in session.views: it is a track
 container, not a view, and satisfies core's `TrackContainer` so the
@@ -15,7 +18,8 @@ track-selector and add-track widgets can write into it via the parent view's
 `trackContainerFor`. The `LinearSyntenyViewHelper` name and `type` literal are
 kept only because saved sessions persist them.
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

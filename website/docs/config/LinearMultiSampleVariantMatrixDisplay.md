@@ -4,14 +4,18 @@ title: LinearMultiSampleVariantMatrixDisplay
 sidebar_label: Display -> LinearMultiSampleVariantMatrixDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `variants`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/configSchema.ts).
 
 ## Example usage
 
-Minimal `VariantTrack` config selecting the matrix display. The `displays`
-array form is required here (rather than the object shorthand) because
-this is a non-default display type — see
+Minimal `VariantTrack` config selecting the matrix display. The `displays` array
+form is required here (rather than the object shorthand) because this is a
+non-default display type — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
+
 ```js
 {
   type: 'VariantTrack',
@@ -32,9 +36,10 @@ this is a non-default display type — see
 
 Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
 whose first column is the sample name and whose other columns are per-sample
-attributes (e.g. `population`), then `colorBy` one of those attributes to
-color the matrix rows on load (same metadata mechanism as the regular
+attributes (e.g. `population`), then `colorBy` one of those attributes to color
+the matrix rows on load (same metadata mechanism as the regular
 `LinearMultiSampleVariantDisplay`):
+
 ```js
 {
   type: 'VariantTrack',
@@ -56,10 +61,11 @@ color the matrix rows on load (same metadata mechanism as the regular
 }
 ```
 
-Taller matrix filtering rare variants (MAF < 5 %). Row order, per-row color
-and group labels come from the adapter's `samplesTsvLocation` above — the
-display's own `layout` holds the arrangement the user then drags into place,
-so it is session state rather than a config slot:
+Taller matrix filtering rare variants (MAF < 5 %). Row order, per-row color and
+group labels come from the adapter's `samplesTsvLocation` above — the display's
+own `layout` holds the arrangement the user then drags into place, so it is
+session state rather than a config slot:
+
 ```js
 {
   type: 'VariantTrack',
@@ -89,12 +95,19 @@ _See the **Config slots** section below for all available configuration fields._
 - **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [VcfAdapter](../vcfadapter)
 - **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
-- **State model:** [runtime API](../../models/linearmultisamplevariantmatrixdisplay)
+- **State model:**
+  [runtime API](../../models/linearmultisamplevariantmatrixdisplay)
 - **Base config:** [SharedVariantDisplay](../sharedvariantdisplay)
 
 ## Config slots
 
-These slots go on a display entry: `"displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go on a display entry:
+`"displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay", ... }]`, or in
+the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays)
+when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are
+explained in the [config slot types reference](/docs/config_guides/slot_types).
+Slots a base configuration contributes are listed here too, so this table is the
+whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

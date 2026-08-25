@@ -4,12 +4,15 @@ title: FormatAbout
 sidebar_label: Root -> FormatAbout
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatAboutConfigSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatAboutConfigSchema.ts).
 
 ## Example usage
 
-On a track. The callback's variable is `config`, not `feature`, since the
-dialog shows the track's own configuration rather than a feature:
+On a track. The callback's variable is `config`, not `feature`, since the dialog
+shows the track's own configuration rather than a feature:
+
 ```js
 {
   type: 'FeatureTrack',
@@ -29,15 +32,18 @@ dialog shows the track's own configuration rather than a feature:
 
 _See the **Config slots** section below for all available configuration fields._
 
-jexl callbacks that add, rewrite or hide fields in a track's About dialog.
-The same schema hangs off every track and off the session as
+jexl callbacks that add, rewrite or hide fields in a track's About dialog. The
+same schema hangs off every track and off the session as
 `configuration.formatAbout`, which applies to every track at once. Where both
-are set the track's object is spread over the session's, so a track can
-override individual keys the global callback added.
+are set the track's object is spread over the session's, so a track can override
+individual keys the global callback added.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

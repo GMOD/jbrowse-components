@@ -10,19 +10,19 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 ### breakendKeepsDirections
 
-Which way the sequence each end of a breakend KEEPS runs from its breakpoint,
-as `+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
+Which way the sequence each end of a breakend KEEPS runs from its breakpoint, as
+`+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
 `tickDirection` states and the one every producer in the tree emits.
 
 The two halves read their strings with OPPOSITE polarity, which is the whole
-reason to state them together. `Join: 'right'` says the mate piece is joined
-to the RIGHT of the ref base, so this end keeps the sequence to its left:
-negated. `MateDirection: 'right'` says the mate's own piece extends to the
-right of the mate position, which is already the direction it keeps: taken as
-read. So `N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that
-is the same pair `StarFusionAdapter` emits for the fusion it describes — the
-donor keeps the sequence below its breakpoint (-1) and the acceptor the
-sequence above its own (+1).
+reason to state them together. `Join: 'right'` says the mate piece is joined to
+the RIGHT of the ref base, so this end keeps the sequence to its left: negated.
+`MateDirection: 'right'` says the mate's own piece extends to the right of the
+mate position, which is already the direction it keeps: taken as read. So
+`N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that is the
+same pair `StarFusionAdapter` emits for the fusion it describes — the donor
+keeps the sequence below its breakpoint (-1) and the acceptor the sequence above
+its own (+1).
 
 Split out of `parseSvAlt` because a consumer holding an already-parsed
 `Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
@@ -42,15 +42,14 @@ equal in.
 
 Case, because that is what the two halves of one record disagree about:
 nanomonsv writes CHROM `chr3` and spells the same contig `CHR3` inside the ALT
-bracket, and all 66 BND records of the COLO829 callset the cancer_sv demo
-serves do it. Case is also the whole of the fallback `getCanonicalRefName`
-makes, through `lowerCaseRefNameAliases`.
+bracket, and all 66 BND records of the COLO829 callset the cancer_sv demo serves
+do it. Case is also the whole of the fallback `getCanonicalRefName` makes,
+through `lowerCaseRefNameAliases`.
 
-For grouping two ends of one junction, not for navigation: `chr10` against
-`10` still needs an assembly, and the callers here — the overlay's alt
-matching and its breakend bucketing — hold features and no assembly. A
-producer that has one resolves properly instead, through
-`toCanonicalRefName`.
+For grouping two ends of one junction, not for navigation: `chr10` against `10`
+still needs an assembly, and the callers here — the overlay's alt matching and
+its breakend bucketing — hold features and no assembly. A producer that has one
+resolves properly instead, through `toCanonicalRefName`.
 
 ```js
 // type signature
@@ -64,10 +63,10 @@ producer that has one resolves properly instead, through
 Screen-x of the far end of a breakend's direction tick at screen-x `x`.
 
 `keepsDir` is genomic (see `breakendKeepsDirections`) and `reversed` is what
-turns it into a screen direction, so both are required: a caller cannot
-compile without answering the question. A reversed displayed region mirrors
-the axis, so a tick that ignores it points at the side the derivative
-discards rather than the side it keeps.
+turns it into a screen direction, so both are required: a caller cannot compile
+without answering the question. A reversed displayed region mirrors the axis, so
+a tick that ignores it points at the side the derivative discards rather than
+the side it keeps.
 
 ```js
 // type signature
@@ -78,8 +77,8 @@ discards rather than the side it keeps.
 
 ### breakpointBpPerPx
 
-bpPerPx that fits `windowSize` bp on each side of a breakpoint across the
-view width. Falls back to a zoomed-in default when no window is requested.
+bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view
+width. Falls back to a zoomed-in default when no window is requested.
 
 ```js
 // type signature
@@ -91,10 +90,10 @@ view width. Falls back to a zoomed-in default when no window is requested.
 ### breakpointSplitViewId
 
 Stable id for the breakpoint split view a given launcher spawns, so repeated
-launches from the same place reuse one view instead of stacking a new one
-each time. `ownerId` is whatever the launcher is: a spreadsheet view (shared
-by the sheet's row menu and the SV inspector's chord clicks, which then land
-in the same view), or a variant feature widget.
+launches from the same place reuse one view instead of stacking a new one each
+time. `ownerId` is whatever the launcher is: a spreadsheet view (shared by the
+sheet's row menu and the SV inspector's chord clicks, which then land in the
+same view), or a variant feature widget.
 
 Spelling it out inline is the same string until it isn't — the dialog appends
 its own shape suffix to whatever it is handed, so a launcher that respells the
@@ -110,8 +109,8 @@ prefix quietly gets a second view rather than a broken one.
 ### getBreakendAssemblyRegions
 
 Loads the assembly for a breakend feature and resolves the two regions its
-endpoints span. Throws if the assembly, its regions, or either endpoint's
-region cannot be found.
+endpoints span. Throws if the assembly, its regions, or either endpoint's region
+cannot be found.
 
 ```js
 // type signature
@@ -133,12 +132,12 @@ Resolves the two canonical-refName endpoints a breakend/SV feature spans.
 
 ### getBreakendMateLocString
 
-The mate locString ("chr2:100") of a parsed breakend, or undefined when it
-names no navigable position. Two ALT forms reach here without one: a single
-breakend (`.A` / `G.`) has no mate at all, and the symbolic-mate forms
-(`G<DEL>`, `<DEL>G`) get a placeholder `<DEL>:1` from parseBreakend, which
-puts a symbolic allele id where a contig name belongs. Callers that navigate
-or split-view a mate must drop both rather than treat `<DEL>` as a refName.
+The mate locString ("chr2:100") of a parsed breakend, or undefined when it names
+no navigable position. Two ALT forms reach here without one: a single breakend
+(`.A` / `G.`) has no mate at all, and the symbolic-mate forms (`G<DEL>`,
+`<DEL>G`) get a placeholder `<DEL>:1` from parseBreakend, which puts a symbolic
+allele id where a contig name belongs. Callers that navigate or split-view a
+mate must drop both rather than treat `<DEL>` as a refName.
 
 ```js
 // type signature
@@ -173,8 +172,8 @@ user data and malformed breakends do occur;
 
 ### splitRegionAtPosition
 
-Splits a region at `pos` into two halves that both include `pos`, so a
-breakend there stays visible in each.
+Splits a region at `pos` into two halves that both include `pos`, so a breakend
+there stays visible in each.
 
 ```js
 // type signature
@@ -188,14 +187,14 @@ breakend there stays visible in each.
 Where a record's other end is, in the feature's own refName namespace and
 0-based like every other coordinate on a feature.
 
-The places that need it were each resolving it themselves — `parseSvAlt`
-first, for a breakend or a symbolic allele carrying CHR2/END, then an
-explicit `mate` field for a BEDPE row — and each had its own off-by-one to
-get wrong, since `parseSvAlt` reports VCF's 1-based position while
-`mate.start` is already 0-based.
+The places that need it were each resolving it themselves — `parseSvAlt` first,
+for a breakend or a symbolic allele carrying CHR2/END, then an explicit `mate`
+field for a BEDPE row — and each had its own off-by-one to get wrong, since
+`parseSvAlt` reports VCF's 1-based position while `mate.start` is already
+0-based.
 
-`undefined` when the record names no other end, which is most of a VCF: a
-plain SNV, or an indel that is only ever its own span.
+`undefined` when the record names no other end, which is most of a VCF: a plain
+SNV, or an indel that is only ever its own span.
 
 ```js
 // type signature

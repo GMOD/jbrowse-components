@@ -4,13 +4,16 @@ title: JBrowseWebRootModel
 sidebar_label: Root -> JBrowseWebRootModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts).
 
-note: many properties of the root model are available through the session,
-and we generally prefer using the session model (via e.g. getSession) over
-the root model (via e.g. getRoot) in plugin code
+note: many properties of the root model are available through the session, and
+we generally prefer using the session model (via e.g. getSession) over the root
+model (via e.g. getRoot) in plugin code
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

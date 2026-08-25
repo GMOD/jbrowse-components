@@ -4,13 +4,17 @@ title: DotplotDisplay
 sidebar_label: Display -> DotplotDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts).
 
 ## Example usage
 
 The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 (rather than the two-row `LinearSyntenyDisplay` or the plain-LGV
 `LGVSyntenyDisplay`) — same track config, different display type:
+
 ```js
 {
   type: 'SyntenyTrack',
@@ -36,7 +40,8 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 
 ### DotplotDisplay - Identifier
 
-Every DotplotDisplay has a unique `displayId`, a required top-level field that identifies it (not one of the config slots below).
+Every DotplotDisplay has a unique `displayId`, a required top-level field that
+identifies it (not one of the config slots below).
 
 ## Related links
 

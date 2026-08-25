@@ -4,11 +4,15 @@ title: IndexedFastaAdapter
 sidebar_label: Adapter -> IndexedFastaAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/IndexedFastaAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/IndexedFastaAdapter/configSchema.ts).
 
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.fai` index:
+
 ```js
 {
   type: 'ReferenceSequenceTrack',
@@ -26,11 +30,19 @@ _See the **Config slots** section below for all available configuration fields._
 
 - **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
 - **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
-- **Display:** [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "IndexedFastaAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "IndexedFastaAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri` in place of writing a location slot out. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

@@ -4,7 +4,10 @@ title: QuantitativeTrack
 sidebar_label: Track -> QuantitativeTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/QuantitativeTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `wiggle`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/QuantitativeTrack/configSchema.ts).
 
 ## Example usage
 
@@ -22,9 +25,10 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ```
 
 The same track with appearance settings in place. Rather than writing out the
-full `displays` array, you can list them in a `displayDefaults` object —
-JBrowse works out which display they belong to and applies them for you (here,
-the `LinearWiggleDisplay`), so you don't have to know display names:
+full `displays` array, you can list them in a `displayDefaults` object — JBrowse
+works out which display they belong to and applies them for you (here, the
+`LinearWiggleDisplay`), so you don't have to know display names:
+
 ```js
 {
   type: 'QuantitativeTrack',
@@ -41,12 +45,13 @@ the `LinearWiggleDisplay`), so you don't have to know display names:
 
 _See the **Config slots** section below for all available configuration fields._
 
-a numerical signal track (coverage, conservation, etc.), typically backed by
-a BigWig file and drawn as an XY plot or density
+a numerical signal track (coverage, conservation, etc.), typically backed by a
+BigWig file and drawn as an XY plot or density
 
 ## Related links
 
-- **Display:** [LinearWiggleDisplay](../linearwiggledisplay) ([state model](../../models/linearwiggledisplay))
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
+  ([state model](../../models/linearwiggledisplay))
 - **Adapter:** [BedGraphAdapter](../bedgraphadapter)
 - **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
 - **Adapter:** [BigWigAdapter](../bigwigadapter)
@@ -55,7 +60,11 @@ a BigWig file and drawn as an XY plot or density
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots are top-level fields of the track config, alongside `trackId` and
+`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

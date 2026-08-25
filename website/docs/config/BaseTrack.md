@@ -4,7 +4,9 @@ title: BaseTrack
 sidebar_label: Track -> BaseTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseTrackConfig.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseTrackConfig.ts).
 
 ## Overview
 
@@ -14,7 +16,8 @@ fields in addition to its own.
 
 ### BaseTrack - Identifier
 
-Every BaseTrack has a unique `trackId`, a required top-level field that identifies it (not one of the config slots below).
+Every BaseTrack has a unique `trackId`, a required top-level field that
+identifies it (not one of the config slots below).
 
 ## Related links
 
@@ -32,7 +35,13 @@ Every BaseTrack has a unique `trackId`, a required top-level field that identifi
 
 ## Config slots
 
-`BaseTrack` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+`BaseTrack` is a shared base schema, not a type you name in a config. Set these
+slots on one of the configs under **Extended by** above, each of which lists
+them as inherited and shows the shape in its own example. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
