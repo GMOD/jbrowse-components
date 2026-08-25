@@ -122,7 +122,9 @@ write into the config — see [](/docs/config_guides/default_session).
 
 ## Where the document comes from
 
-It is a small enough format to write, and to generate — a track is five keys, a
+It is a small enough format to write, and to generate — a track can be two keys,
+`{ "trackId", "uri" }`, with the type and adapter read off the file's extension
+(see [the shortest track](/docs/config_guides/tracks#the-shortest-track)), and a
 view is an `init` block. Several things will also write parts of it for you:
 
 - [`@jbrowse/cli`](/docs/cli) writes it. `jbrowse add-assembly` and

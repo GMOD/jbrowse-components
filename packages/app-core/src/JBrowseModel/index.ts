@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isPluginUrl, maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { migrateConfigSnapshot } from '@jbrowse/product-core'
 import { toJS } from 'mobx'
@@ -35,6 +36,29 @@ interface JBrowseModelParent {
  * config models are MST trees themselves, which is why this state model is
  * allowed to build on one. Generally found on a property named rootModel.jbrowse
  */
+// A config with exactly one assembly is what every loose track is on, so
+// `assemblyNames` may be left off; with several, the track has to say.
+function expandLooseTracks(
+  snapshot: Record<string, unknown>,
+  pluginManager: PluginManager,
+) {
+  const tracks = snapshot.tracks
+  if (!Array.isArray(tracks)) {
+    return snapshot
+  }
+  const assemblies = snapshot.assemblies
+  const only =
+    Array.isArray(assemblies) && assemblies.length === 1
+      ? (assemblies[0] as { name?: string }).name
+      : undefined
+  const expanded = tracks.map(t =>
+    expandLooseTrackConfig(t, pluginManager, only),
+  )
+  return expanded.every((t, i) => t === tracks[i])
+    ? snapshot
+    : { ...snapshot, tracks: expanded }
+}
+
 export function JBrowseModelF({
   pluginManager,
   assemblyConfigSchema,
@@ -99,7 +123,8 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      addTrackConf(trackConf: { trackId: string; type: string }) {
+      addTrackConf(loose: { trackId: string; type?: string }) {
+        const trackConf = expandLooseTrackConfig(loose, pluginManager)
         const { type } = trackConf
         if (!type) {
           throw new Error(`track type not specified for "${trackConf.trackId}"`)
@@ -224,10 +249,12 @@ export function JBrowseModelF({
 
   // Migrate legacy display types (e.g. LinearPileupDisplay →
   // LinearAlignmentsDisplay) when ingesting config snapshots so saved
-  // configs from older JBrowse versions still load.
+  // configs from older JBrowse versions still load. `tracks` stays frozen
+  // (ADR-032), so the loose `{ trackId, uri }` form is expanded here, where
+  // the track selector and the trackId index read it, and never by a schema.
   return types.snapshotProcessor(model, {
     preProcessor(snapshot: Record<string, unknown>) {
-      return migrateConfigSnapshot(snapshot)
+      return migrateConfigSnapshot(expandLooseTracks(snapshot, pluginManager))
     },
   })
 }

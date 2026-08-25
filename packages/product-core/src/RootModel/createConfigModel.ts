@@ -5,6 +5,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
@@ -50,31 +51,48 @@ export function createConfigModel(
   pluginManager: PluginManager,
   assemblyConfigSchemasType: IAnyType,
 ) {
-  return types
-    .model('Configuration', {
-      configuration: rootConfigurationSchema(),
-      assembly: assemblyConfigSchemasType,
-      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-      internetAccounts: types.array(
-        pluginManager.pluggableConfigSchemaType('internet account'),
-      ),
-      connections: types.array(
-        pluginManager.pluggableConfigSchemaType('connection'),
-      ),
-      aggregateTextSearchAdapters: types.array(
-        pluginManager.pluggableConfigSchemaType('text search adapter'),
-      ),
-      plugins: types.frozen(),
-    })
-    .views(self => ({
-      get assemblies() {
-        return [self.assembly]
-      },
-      get assemblyName(): string {
-        return readConfObject(self.assembly, 'name')
-      },
-      get rpcManager() {
-        return getParent<ConfigModelParent>(self).rpcManager
-      },
-    }))
+  return (
+    types
+      .model('Configuration', {
+        configuration: rootConfigurationSchema(),
+        assembly: assemblyConfigSchemasType,
+        tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+        internetAccounts: types.array(
+          pluginManager.pluggableConfigSchemaType('internet account'),
+        ),
+        connections: types.array(
+          pluginManager.pluggableConfigSchemaType('connection'),
+        ),
+        aggregateTextSearchAdapters: types.array(
+          pluginManager.pluggableConfigSchemaType('text search adapter'),
+        ),
+        plugins: types.frozen(),
+      })
+      // The one assembly is what every loose `{ trackId, uri }` track is on, so
+      // a snapshot need not repeat its name per track.
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
+        const tracks = snap?.tracks
+        const assemblyName = (snap?.assembly as { name?: string } | undefined)
+          ?.name
+        return Array.isArray(tracks)
+          ? {
+              ...snap,
+              tracks: tracks.map(t =>
+                expandLooseTrackConfig(t, pluginManager, assemblyName),
+              ),
+            }
+          : snap
+      })
+      .views(self => ({
+        get assemblies() {
+          return [self.assembly]
+        },
+        get assemblyName(): string {
+          return readConfObject(self.assembly, 'name')
+        },
+        get rpcManager() {
+          return getParent<ConfigModelParent>(self).rpcManager
+        },
+      }))
+  )
 }

@@ -635,6 +635,46 @@ export function guessTrackConf(
   }
 }
 
+/**
+ * Whether a track snapshot is the loose `{ uri, ... }` form — a data file with
+ * no `adapter` — that {@link expandLooseTrackConfig} expands.
+ */
+export function isLooseTrackConfig(
+  snap: unknown,
+): snap is LooseTrackInput & { trackId?: string } {
+  return (
+    typeof snap === 'object' &&
+    snap !== null &&
+    !Array.isArray(snap) &&
+    typeof (snap as { uri?: unknown }).uri === 'string' &&
+    !('adapter' in snap)
+  )
+}
+
+/**
+ * Expand a loose track config into a full one and leave any other snapshot
+ * untouched, so it can sit on every path a track snapshot enters the tree by:
+ * the track config union, the root config's frozen `tracks`, `addTrackConf`,
+ * and `showTrackGeneric`'s inline config.
+ *
+ * `{ "trackId": "reads", "uri": "reads.bam", "assemblyNames": ["hg38"] }` is a
+ * whole track: the adapter and track type come from the file's extension
+ * through the format plugins' guessers, the same inference the "Add track"
+ * flow runs, and `name` defaults to the file name. Any key written beside
+ * `uri` — `trackId`, `name`, `category`, `displayDefaults`, an explicit `type`
+ * — overrides what was inferred. `assemblyName` fills `assemblyNames` when the
+ * snapshot has none, for a config or embed that has exactly one assembly.
+ */
+export function expandLooseTrackConfig<T>(
+  snap: T,
+  pluginManager: PluginManager,
+  assemblyName?: string,
+): T {
+  return isLooseTrackConfig(snap)
+    ? (guessTrackConf(snap, pluginManager, assemblyName) as T)
+    : snap
+}
+
 function generateProblemTrackConf(
   trackName: string,
   categories: string[] | undefined,
@@ -900,7 +940,9 @@ export function showTrackGeneric(
   // snackbars. Config is validated before the push so the open set never holds
   // a broken track.
   try {
-    const rawConf = inlineConf ?? session.getTrackById(trackId)
+    const rawConf =
+      (inlineConf && expandLooseTrackConfig(inlineConf, pluginManager)) ??
+      session.getTrackById(trackId)
     if (!rawConf) {
       throw new Error(`Could not resolve identifier "${trackId}"`)
     }

@@ -144,6 +144,37 @@ describe('validateConfig', () => {
     expect(errorsOf(config)).toEqual([])
   })
 
+  it('accepts a loose { trackId, uri } track, assembly implied by the one assembly', () => {
+    const config = baseConfig()
+    // @ts-expect-error the loose form declares neither type nor adapter
+    config.tracks[0] = { trackId: 'sample_bam', uri: 'sample.bam' }
+    expect(errorsOf(config)).toEqual([])
+  })
+
+  it('a loose track still has to name its assembly among several', () => {
+    const config = baseConfig()
+    config.assemblies.push({ ...config.assemblies[0]!, name: 'hg19' })
+    // @ts-expect-error the loose form declares neither type nor adapter
+    config.tracks[0] = { trackId: 'sample_bam', uri: 'sample.bam' }
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'tracks[0].assemblyNames',
+    ])
+  })
+
+  it('checks the keys written beside a loose track uri', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      type: 'AlignmentsTrack',
+      trackId: 'sample_bam',
+      // @ts-expect-error the loose form declares no adapter
+      uri: 'sample.bam',
+      index: 'sample.bam.csi',
+      assemblyNames: ['hg38'],
+      catgory: ['x'],
+    }
+    expect(errorsOf(config).map(e => e.where)).toEqual(['tracks[0].catgory'])
+  })
+
   it('recurses into an adapter sub-schema', () => {
     const config = baseConfig()
     config.tracks[0]!.adapter = {

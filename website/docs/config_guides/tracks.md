@@ -4,9 +4,10 @@ description: Configuration options common to all track types
 guide_category: Core configuration
 ---
 
-**TL;DR:** every track needs a `trackId`, `name`, `assemblyNames`, and an
-`adapter`. Put appearance settings (`color`, `height`, etc.) in a
-`displayDefaults` object and JBrowse routes each one to the right display.
+**TL;DR:** a track is a `trackId` and a `uri`; JBrowse reads the track type and
+adapter off the file's extension. Write `type` and `adapter` out when the
+extension does not say enough, and put appearance settings (`color`, `height`,
+etc.) in a `displayDefaults` object, which JBrowse routes to the right display.
 
 All tracks can contain:
 
@@ -56,6 +57,39 @@ Two shorthands keep it short: the assembly is written as just `{ name, uri }`
 [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), whose
 longhand equivalent here is `"bigBedLocation": { "uri": "..." }`. The track's
 `assemblyNames` is what ties it to the `hg19` assembly above.
+
+## The shortest track
+
+A track can be just its id and its file. The same config, with the track written
+that way:
+
+```json
+{
+  "assemblies": [
+    {
+      "name": "hg19",
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "repeats_hg19",
+      "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+    }
+  ]
+}
+```
+
+The track type and adapter come from the file's extension, the same guess the
+"Add track" dialog makes (see [file types](/docs/config_guides/file_types) for
+which extension gives which adapter), the index location is derived as the
+adapter shorthand derives it, and `name` defaults to the file name. With one
+assembly in the config the track is on it; with several, write `assemblyNames`.
+Any other key sits beside `uri` and wins over the guess — `name`, `category`,
+`displayDefaults`, `index` for an index that is not at the derived location, or
+`type` to pick a track type the extension would not. `jbrowse validate` accepts
+the form, and the same entry works in a session's `sessionTracks` and in
+`createViewState`'s `tracks`.
 
 ## Configuring displays
 

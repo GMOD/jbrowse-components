@@ -8,6 +8,7 @@ import {
   isBareConfigurationSchemaType,
 } from './configuration/index.ts'
 import createJexlInstance from './util/jexl.ts'
+import { expandLooseTrackConfig } from './util/tracks.ts'
 
 import type Plugin from './Plugin.ts'
 import type AdapterType from './pluggableElementTypes/AdapterType.ts'
@@ -50,7 +51,6 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from './util/index.ts'
-import type {} from './util/tracks.ts'
 /* eslint-enable unicorn/require-module-specifiers */
 import type {
   IAnyModelType,
@@ -861,7 +861,16 @@ export default class PluginManager {
     // repo and needed by nothing. Claiming model-ness here is also what makes a
     // schema taking its base from this look concrete while its own slot reads
     // have already degraded to `any` — see configuration/CLAUDE.md.
-    return types.union(...pluggableTypes)
+    const union = types.union(...pluggableTypes)
+    // A track union dispatches on `type`, so the loose `{ trackId, uri }` form
+    // has to become a full config before the union sees it. Here rather than
+    // at each array that holds tracks, so a session track, a connection track
+    // and a direct `create` all take it.
+    return typeGroup === 'track'
+      ? types.snapshotProcessor(union, {
+          preProcessor: (snap: unknown) => expandLooseTrackConfig(snap, this),
+        })
+      : union
   }
 
   jbrequireCache = new Map()

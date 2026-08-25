@@ -4,6 +4,7 @@ import {
   flattenTrackConfigDelta,
   mergeTrackConfig,
 } from '@jbrowse/core/util'
+import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import {
   applySnapshot,
   getSnapshot,
@@ -421,7 +422,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // session and the one that means it only for a non-admin. A plain closure
       // rather than `this.addSessionTrackConf` so neither action's inferred
       // return type depends on the other's.
-      function addToSession(trackConf: AnyConfiguration) {
+      function addToSession(loose: AnyConfiguration) {
+        const trackConf = expandLooseTrackConfig(loose, pluginManager)
         const { trackId, type } = trackConf as {
           type: string
           trackId: string

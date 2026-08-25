@@ -11,7 +11,9 @@ A type not listed here is not necessarily wrong: plugins register their own.
 ## Track types
 
 A track pairs one adapter (where the data is) with one or more displays (how it
-is drawn).
+is drawn). The shortest track is `{ "trackId", "uri" }` plus `assemblyNames`
+when the config has more than one assembly: the type and adapter come from the
+file's extension, and any key written beside `uri` overrides the inference.
 
 - [FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack.md) —
   displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay, LinearArcDisplay

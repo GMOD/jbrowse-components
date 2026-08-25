@@ -92,6 +92,11 @@ Four things carry all the weight:
   location slot, and it derives the index location too (`sample.bam` →
   `sample.bam.bai`). Use it. `references/config-types.md` marks which adapters
   take it.
+- **A whole track can be `{ "trackId", "uri" }`**: the type and adapter come
+  from the extension, `name` from the file name, and `assemblyNames` from the
+  config when it has exactly one assembly. Write a key beside `uri` to override
+  any of them. Reach for the full form when the extension is ambiguous or the
+  file needs a slot the guess cannot set.
 - **`defaultSession.views[].init`** is what makes the config open onto something
   instead of an empty browser. Same fields whether they arrive via config, URL,
   or embedded props — see `references/session-spec.md`.

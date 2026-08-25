@@ -267,6 +267,9 @@ function checkDisplayDefaults(
 
 interface Ctx {
   assemblyNames: Set<string>
+  // assemblies, not names: aliases put one assembly under several names, and
+  // a loose track's implied assembly is only unambiguous when there is one
+  assemblyCount: number
   // trackIds declared in `tracks`, accumulated as they are checked — the set the
   // duplicate-trackId check reads, so nothing may be pre-seeded into it
   seenTrackIds: Set<string>
@@ -284,13 +287,15 @@ function checkTrack(
   ctx: Ctx,
 ) {
   const where = `tracks[${index}]`
-  const entry = resolveType(
-    track,
-    manifest.tracks,
-    'track',
-    `${where}.type`,
-    report,
-  )
+  // The loose form: a data file and no adapter. JBrowse infers the track type
+  // and adapter from the file's extension at load, so neither is required
+  // here, and neither can be checked against the manifest without the format
+  // plugins' guessers — the keys written beside `uri` still are.
+  const loose = typeof track.uri === 'string' && !('adapter' in track)
+  const entry =
+    loose && track.type === undefined
+      ? undefined
+      : resolveType(track, manifest.tracks, 'track', `${where}.type`, report)
 
   const trackId = track.trackId
   if (typeof trackId !== 'string' || !trackId) {
@@ -306,7 +311,9 @@ function checkTrack(
 
   const names = track.assemblyNames
   if (!Array.isArray(names) || names.length === 0) {
-    report.error(`${where}.assemblyNames`, 'missing "assemblyNames"')
+    if (!loose || ctx.assemblyCount !== 1) {
+      report.error(`${where}.assemblyNames`, 'missing "assemblyNames"')
+    }
   } else {
     for (const name of names) {
       if (typeof name === 'string' && !ctx.assemblyNames.has(name)) {
@@ -329,7 +336,11 @@ function checkTrack(
       track,
       {
         ...entry,
-        shorthandKeys: [...(entry.shorthandKeys ?? []), 'displayDefaults'],
+        shorthandKeys: [
+          ...(entry.shorthandKeys ?? []),
+          'displayDefaults',
+          ...(loose ? ['uri', 'index'] : []),
+        ],
       },
       where,
       report,
@@ -344,7 +355,9 @@ function checkTrack(
       )
     }
   }
-  checkAdapter(track.adapter, manifest, `${where}.adapter`, report)
+  if (!loose) {
+    checkAdapter(track.adapter, manifest, `${where}.adapter`, report)
+  }
 
   const textSearching = track.textSearching
   if (
@@ -619,6 +632,7 @@ export function validateConfig(
         .flatMap(a => [a.name, ...(Array.isArray(a.aliases) ? a.aliases : [])])
         .filter((n): n is string => typeof n === 'string'),
     ),
+    assemblyCount: assemblies.length,
     seenTrackIds: new Set(),
     // Each assembly's ReferenceSequenceTrack is a real track a session may show
     // by id (`init.tracks: ['hg38-ReferenceSequenceTrack']`); it just lives on
