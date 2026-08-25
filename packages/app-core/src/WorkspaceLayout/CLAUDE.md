@@ -96,7 +96,7 @@ as public as the name** — add arguments optional, never required.
 
 `session.removeView`, then drop the tab or cell. **`WorkspaceContainer` states
 the removal once** (`closeViews`) and both `closeTab` and `closePanel` build on
-it; spelled per gesture, one of the four leaks its views. `WorkspaceTab`,
+it; spelled per gesture, one of the three leaks its views. `WorkspaceTab`,
 `TabStrip` and `WorkspacePanelActions` take a callback rather than building the
 pair — none of them knows what a view is, and that is the property the tests
 pin.
