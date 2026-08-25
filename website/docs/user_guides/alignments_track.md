@@ -33,6 +33,13 @@ The track menu's **Sort by...** does the same thing against the _center line_ (a
 1bp indicator at the middle of the view), and can also sort by read strand,
 mapping quality, or any BAM tag.
 
+Two entries in the same menu order the whole layout rather than one column.
+**Sort by... → Longest reads first** gives the widest alignments the lowest
+rows, and **Sort by... → Spliced reads first** does the same for every read
+whose CIGAR carries a reference skip (`N`), so on RNA-seq the junction-spanning
+reads sit together at the top of the pileup instead of interleaving with the
+unspliced majority.
+
 ## Color by
 
 The track menu's **Color by...** offers several schemes.
@@ -259,7 +266,10 @@ structural-variant breakpoint.
 The track menu's **Filter by...** hides reads by SAM flag, for example excluding
 duplicates and secondary alignments to clean up a dense pileup, or keeping only
 properly-paired reads. You can also filter to a specific read name or tag value
-(`HP:1` for one haplotype, `HP:*` for any read carrying the tag).
+(`HP:1` for one haplotype, `HP:*` for any read carrying the tag), and the
+dialog's splicing radios keep only spliced reads (a reference skip, `N`, in the
+CIGAR) or only unspliced ones. The coverage histogram follows the filter, so
+"Only spliced reads" leaves a histogram of the junction-spanning evidence alone.
 
 <Figure caption="The Filter by dialog. The two flag columns are an include/exclude bitmask; by default unmapped, QC-fail, and duplicate reads are excluded." src="/img/alignments/filter_dialog.png" />
 
@@ -277,14 +287,24 @@ The arc strand follows whichever strand tag the aligner wrote: `XS` or `TS` give
 the transcript strand directly, while minimap2's `ts` gives the orientation
 relative to the read and is combined with the read's own strand. A read carrying
 none of the three (default STAR output without `--outSAMstrandField`, for one)
-contributes to the junction without a strand, so tagged and untagged reads mix
-freely on the same arc.
+casts no vote, so tagged and untagged reads mix freely on the same arc.
+
+JBrowse also reads the two bases at each end of every intron off the reference
+sequence and classifies the junction's splice motif: GT-AG, GC-AG or AT-AC on
+either strand, or non-canonical. The motif shows in the arc's tooltip and detail
+panel, and a junction none of whose reads carry a strand tag takes the strand
+its motif implies, so untagged STAR output still colors by strand. This needs
+the assembly to have a sequence adapter; without one the motif stays unknown.
 
 The track menu's **Sashimi arcs** submenu controls them:
 
 - **Show labels** prints each junction's supporting-read count on its arc
 - **Arc placement** splits the arcs above/below the coverage row
 - **Filter by score** drops low-support junctions
+- **Hide non-canonical junctions** drops the junctions whose motif is none of
+  the three canonical pairs. On deep RNA-seq the thin arcs are mostly these
+  alignment artefacts, and a read-count floor cannot separate them from a real
+  junction at low depth, so this is the filter to reach for first
 
 Turn the arcs off from the same submenu. See the
 [RNA-seq tutorial](/docs/tutorials/rnaseq) for a worked splice-junction example.
