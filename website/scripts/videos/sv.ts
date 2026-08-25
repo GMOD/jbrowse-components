@@ -4,11 +4,11 @@
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { cancerSvVideoFixtures } from '../specs/cancer_sv.ts'
-import { svVideoFixtures } from '../specs/sv.ts'
+import { cgiabVideoFixtures, svVideoFixtures } from '../specs/sv.ts'
 import { multisvVideoFixtures } from '../specs/ui.ts'
 import { DENDROGRAM, trackMenu } from './shared.ts'
 
-import type { VideoSpec } from '../video-spec-types.ts'
+import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
 const { assembly, callsetUrl, emptySession } = svVideoFixtures
 const { breakpointPanel, chainRouteLabel, chainRouteTestId, readsTrackId } =
@@ -25,6 +25,38 @@ const {
 // radio group, or the bare row a single candidate gets). Waiting on it is
 // waiting on the reconstruction pass rather than on a timeout.
 const ROUTE_LIST = '[data-testid="derivative-path-candidates"]'
+
+// The inert `<g>` in the app bar, where the pointer parks between routes: off
+// the wiggle lane, which draws a score tooltip under whatever the pointer is
+// left on, and off the view's overview strip, which writes the position under
+// the pointer into the view title.
+const WORDMARK = '[aria-label="JBrowse"]'
+
+// A cascade row by its own testid rather than by its text. `CascadingMenu` slugs
+// each label into `cascading-<kind>-<label>`, and the plot-type cascade holds
+// the word Scatter TWICE — once per layout group — so a text match would take
+// whichever of the two the DOM happened to mount first.
+const cascade = (kind: 'submenu' | 'menuitem', label: string) =>
+  `[data-testid="cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}"]`
+
+const cgiabCoverageMenu = trackMenu(cgiabVideoFixtures.coverageTrackId)
+
+// A radio row only writes a setting, so every level of the cascade it sits in is
+// still standing over the lane it just changed. One click on the ROOT menu's
+// backdrop takes all of them (the submenus are React children of its list);
+// Escape reaches one level per press and only from the top of MUI's modal stack.
+// The second click blurs the menu icon, whose "Track settings" tooltip outlives
+// the menu, and parks the cursor clear of the lane.
+const leaveTheMenu: VideoStep[] = [
+  { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
+  {
+    type: 'waitForSelector',
+    selector: cascade('submenu', 'Plot type'),
+    hidden: true,
+  },
+  { type: 'click', selector: WORDMARK, hold: 0 },
+  { type: 'waitForText', text: 'Track settings', hidden: true },
+]
 
 // The import form's assembly select carries no test id, but it is labelled, so
 // the accessible name is the handle — the same word the page uses when it says
@@ -377,6 +409,136 @@ export const svVideos: VideoSpec[] = [
       // The payoff frame, and a state no figure on the page carries: the tree in
       // the gutter beside rows keyed on the whole window rather than on one call.
       { type: 'delay', ms: 3500 },
+    ],
+    tailMs: 4000,
+  },
+
+  // THE TWO MENU ROUTES sv_visualization_cgiab.md's copy-number walkthrough
+  // lists as bullets and pictures nowhere. Every cgiab figure that draws the
+  // matched pair's coverage is taken with both already applied, so the page
+  // shows the destination four times and the way there zero times — and the
+  // second of them is a three-level cascade whose leaf word appears twice in
+  // the one menu.
+  //
+  // The SECOND route is the one that changes the picture, and the first is why
+  // the picture can be compared to the next one: an autoscaled axis is a
+  // different axis in every window, so a plateau at the same height means
+  // nothing across two of them. Filmed on chr5 the cap is a small move — local
+  // autoscale gives this chromosome 0..2 and the cap makes it 0..3 — because
+  // the spikes that run to 497 are elsewhere in the genome. What it buys is
+  // visible in the figures around the clip rather than inside it, so the beat
+  // is short and the chip names the control.
+  //
+  // Then the multi-row default gives each sample an axis of its own, which is
+  // exactly what a reader must not have here: the claim is that the tumor steps
+  // while its own normal holds still, and that is only a claim while both are
+  // drawn against one axis. Overlapping is what puts them there, and the clip
+  // ends on it — the lane the chr5 figure below the embed prints.
+  {
+    name: 'sv_cgiab/copy_number_layout',
+    description:
+      "HG008's tumor and normal coverage brought onto one axis: Score → Set min/max score... to pin the scale, then Plot type → Overlapping → Scatter, which redraws the two stacked rows as one band of points",
+    url: cgiabVideoFixtures.coverageAsLoaded,
+    // 406px of app at every frame the run measured — nothing here grows it,
+    // since both routes rewrite settings on a lane that keeps its height — plus
+    // the strip the caption chip is fixed into, which is off the FRAME's bottom
+    // rather than the app's. The Set min/max dialog is ~206px centred in the
+    // frame, so it lands inside the app at this height. Even, per the encode.
+    viewportHeight: 520,
+    // The rows have to be carrying the whole chromosome before the camera
+    // starts. A tour of an autoscaled axis being capped is a tour of nothing
+    // while the lane is empty.
+    readySelector: displaySettled('multi-wiggle-display'),
+    readyTimeout: 180000,
+    settleMs: 12000,
+    steps: [
+      { type: 'hover', selector: WORDMARK, hold: 0 },
+      // The state the track arrives in: one filled row per sample, each on its
+      // own autoscaled axis, which is the layout the rest of the tour undoes.
+      { type: 'delay', ms: 3000 },
+      {
+        type: 'click',
+        selector: cgiabCoverageMenu,
+        say: 'Track menu',
+        hold: 1400,
+      },
+      { type: 'waitForSelector', selector: cascade('submenu', 'Score') },
+      {
+        type: 'click',
+        selector: cascade('submenu', 'Score'),
+        say: 'Score',
+        hold: 1200,
+      },
+      {
+        type: 'waitForSelector',
+        selector: cascade('menuitem', 'Set min/max score...'),
+      },
+      {
+        type: 'click',
+        selector: cascade('menuitem', 'Set min/max score...'),
+        say: 'Set min/max score...',
+      },
+      { type: 'waitForText', text: 'Set min/max score for track' },
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'type',
+        selector: 'input[placeholder="Enter min score"]',
+        value: '0',
+        say: '0',
+      },
+      {
+        type: 'type',
+        selector: 'input[placeholder="Enter max score"]',
+        value: '3',
+        say: '3',
+      },
+      { type: 'delay', ms: 1200 },
+      // MUI uppercases the button in CSS, so the match is the string the DOM
+      // carries and the chip is the label a reader sees.
+      { type: 'click', text: 'Submit', say: 'SUBMIT' },
+      {
+        type: 'waitForText',
+        text: 'Set min/max score for track',
+        hidden: true,
+      },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      // The axis pinned, and still one of them per row.
+      { type: 'delay', ms: 3500 },
+      {
+        type: 'click',
+        selector: cgiabCoverageMenu,
+        say: 'Track menu',
+        hold: 1200,
+      },
+      { type: 'waitForSelector', selector: cascade('submenu', 'Plot type') },
+      {
+        type: 'click',
+        selector: cascade('submenu', 'Plot type'),
+        say: 'Plot type',
+        hold: 1400,
+      },
+      { type: 'waitForSelector', selector: cascade('submenu', 'Overlapping') },
+      {
+        type: 'click',
+        selector: cascade('submenu', 'Overlapping'),
+        say: 'Overlapping',
+        hold: 1400,
+      },
+      { type: 'waitForSelector', selector: cascade('menuitem', 'Scatter') },
+      // The radio mark moving is the only frame that says which of the four
+      // overlapping plot types is now in force.
+      {
+        type: 'click',
+        selector: cascade('menuitem', 'Scatter'),
+        say: 'Scatter',
+        hold: 1400,
+      },
+      ...leaveTheMenu,
+      { type: 'waitForAppSettled', timeout: 120000 },
+      // The payoff, and the last state change in the clip: two samples as one
+      // band of points, normal flat and tumor stepping under it.
+      { type: 'delay', ms: 5000 },
     ],
     tailMs: 4000,
   },

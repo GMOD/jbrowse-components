@@ -395,6 +395,42 @@ export const svVideoFixtures = {
   assembly: 'hg19',
 }
 
+// What videos/sv.ts films on HG008: the matched pair's coverage as a reader
+// first gets it, which is the state neither cgiab figure holds. Both of them
+// mount HG008_INDEXCOV_TRACK with the walkthrough's settings already applied
+// (`multiscatter` over a fixed 0..3), so the two menu routes that page lists as
+// bullets — Score → Set min/max score..., then Plot type → Overlapping →
+// Scatter — happen before every picture on it.
+//
+// So the lane here carries NO display settings beyond its height: it arrives at
+// the schema's `multirowxy` default, one filled row per sample on an autoscaled
+// axis, where indexcov's centromere and repeat spikes run to 497 and press
+// every plateau into the bottom of both rows.
+//
+// chr5 for the same reason the chr5 figure takes it: the benchmark calls three
+// different allelic states on it, so the tumor row holds three levels against
+// the normal's one and the payoff frame has something to be read out of.
+export const cgiabVideoFixtures = {
+  coverageTrackId: 'hg008_cnv_indexcov',
+  coverageAsLoaded: cgiabUrl({
+    sessionTracks: [HG008_INDEXCOV_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'GRCh38_GIABv3',
+        loc: 'chr5',
+        tracks: [
+          {
+            trackId: 'hg008_cnv_indexcov',
+            type: 'MultiLinearWiggleDisplay',
+            height: 200,
+          },
+        ],
+      },
+    ],
+  }),
+}
+
 export const svSpecs: ScreenshotSpec[] = [
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 

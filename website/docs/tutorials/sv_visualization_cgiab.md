@@ -815,6 +815,8 @@ against the called intervals. Coverage says a level changed; the BAF track in
 the same window says what changed, and chromosome 5 carries three different
 answers, each a different shape in that lane.
 
+<Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Both menu routes on the coverage track, over chr5: Set min/max score pinning the axis, then Plot type to Overlapping Scatter, which redraws the two stacked rows as one band of points with the normal flat under the tumor's steps." />
+
 <Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane says what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 The depth, BAF and copy-number tracks built above read directly as copy number.

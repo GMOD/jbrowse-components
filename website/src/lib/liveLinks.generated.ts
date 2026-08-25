@@ -542,6 +542,7 @@ export const videoLiveRefs: Record<string, string> = {
   "sv/inspector_route": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "sv/derivative_allele_route": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcancer_sv%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A25%2C357%2C600-25%2C361%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22COLO829_tumor_ont%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22forceLoad%22%3Atrue%2C%22showSoftClipping%22%3Atrue%2C%22height%22%3A130%2C%22featureHeight%22%3A1%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv/multisample_sort": "?config=test_data/1000g_cnv/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22kgp_sv_matrix%22%2C%22name%22%3A%221KGP%20ensemble%20SV%20calls%2C%203202%20samples%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2F1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz%22%7D%7D%2C%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22kgp_sv_records%22%2C%22name%22%3A%221KGP%20ensemble%20SV%20calls%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2F1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz%22%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%221%3A25%2C200%2C000-25%2C400%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22kgp_sv_matrix%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22forceLoad%22%3Atrue%2C%22height%22%3A290%7D%2C%7B%22trackId%22%3A%22cnv_1000g_zarr%22%2C%22type%22%3A%22MultiLinearWiggleDisplay%22%2C%22defaultRendering%22%3A%22multirowdensity%22%2C%22bicolorPivot%22%3A2%2C%22minScore%22%3A0%2C%22maxScore%22%3A4%2C%22posColor%22%3A%22%23b2182b%22%2C%22negColor%22%3A%22%232166ac%22%2C%22height%22%3A330%2C%22runClustering%22%3Atrue%2C%22showTree%22%3Afalse%7D%2C%7B%22trackId%22%3A%22kgp_sv_records%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22forceLoad%22%3Atrue%2C%22height%22%3A170%2C%22color%22%3A%22%234a5568%22%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A120%2C%22showLabels%22%3A%22name%22%2C%22showOnlyGenes%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "sv_cgiab/copy_number_layout": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22MultiQuantitativeTrack%22%2C%22trackId%22%3A%22hg008_cnv_indexcov%22%2C%22name%22%3A%22HG008%20normal%20vs%20tumor%20coverage%20(indexcov)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22MultiWiggleAdapter%22%2C%22subadapters%22%3A%5B%7B%22name%22%3A%22HG008-N%20(normal)%22%2C%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-N_indexcov.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22name%22%3A%22HG008-T%20(tumor)%22%2C%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T_indexcov.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%5D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr5%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg008_cnv_indexcov%22%2C%22type%22%3A%22MultiLinearWiggleDisplay%22%2C%22height%22%3A200%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/bookmark_region": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/open_track_url": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/feature_sequence_types": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A17200-23200%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22gff3tabix_genes%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -683,6 +684,10 @@ export const videoFrames: Record<
     "width": 1920,
     "height": 1236
   },
+  "sv_cgiab/copy_number_layout": {
+    "width": 1920,
+    "height": 520
+  },
   "ui/bookmark_region": {
     "width": 1920,
     "height": 360
@@ -769,6 +774,7 @@ export const videoCaptioned: string[] = [
   "sv/derivative_allele_route",
   "sv/inspector_route",
   "sv/multisample_sort",
+  "sv_cgiab/copy_number_layout",
   "synteny/allvsall_launch_from_selection",
   "synteny/dotplot_reorder",
   "synteny/ecoli_roundtrip",
