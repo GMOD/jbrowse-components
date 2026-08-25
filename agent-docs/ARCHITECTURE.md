@@ -710,16 +710,13 @@ better spelling of the self-write case is structural: read a signal the write
 does not move, which is what `fetchGeneration` is and why the body never needed
 `isLoading`.
 
-Why the byte estimate is dropped here: `displayedRegionIndex` is reused across
-chromosomes, so a stale estimate describes the previous chromosome's numbers and
-the banner quotes them at the new region until a re-measure lands. Only that
-long — the new region moves `gateViewport.key`, so `gateMeasurementStale` lets
-the next fetch through — but a banner quoting the wrong file's cost is worth one
-line to avoid. `clearAllRpcData` deliberately leaves the estimate alone (no
-flicker on an ordinary clear), which is why the drop lives in the autorun rather
-than in that action. This is one of **two** places it is dropped; the other is
-`RegionTooLargeMixin`'s own `ClearByteEstimateOnTierSwap`, for a display that
-reads a different file at different zooms.
+The byte estimate is not dropped here. `RegionTooLargeMixin`'s own
+`ClearByteEstimateOnNavOrTierSwap` autorun drops it on the same trigger and on
+a tier swap, since both change which fetch the estimate describes — a stale one
+would quote the previous chromosome's numbers at the new region until a
+re-measure landed. `clearAllRpcData` deliberately leaves it alone, so an
+ordinary clear doesn't flicker the banner
+(REGION_TOO_LARGE.md § How the verdict is built).
 
 Subclasses override `fetchNeeded` to call one of the fan-out helpers
 (`fetchEachRegion`, `fetchAllRegions`, `fetchRegionsBatched`). A gated display
