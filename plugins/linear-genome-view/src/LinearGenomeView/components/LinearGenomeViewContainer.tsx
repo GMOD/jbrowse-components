@@ -19,6 +19,7 @@ import { stickyChromeTops } from '../stickyChrome.ts'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
+import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
@@ -161,9 +162,21 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         {/* Everything the wheel may zoom, in both modes — see tracksRef. */}
         <div ref={tracksRef}>
           {model.scalebarOnly ? (
-            <Scalebar
+            // Wrapped, the same way TracksContainer wraps it below. Collapsing
+            // a row is about HEIGHT — a mate panel of a launched stack has no
+            // tracks, so its "No tracks active" block was the tallest thing in
+            // the view — and a bare Scalebar here took the ruler's gesture with
+            // it: a collapsed row could not be drag-selected at all, so the
+            // synteny launch the user guide offers "on any row's scale bar" was
+            // reachable on every row except the ones a multi-way launch makes.
+            <Rubberband
               model={model}
-              style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+              ControlComponent={
+                <Scalebar
+                  model={model}
+                  style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+                />
+              }
             />
           ) : (
             <TracksContainer model={model}>

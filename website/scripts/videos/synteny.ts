@@ -1138,11 +1138,14 @@ export const syntenyVideos: VideoSpec[] = [
     description:
       'One selection on K-12, three views: the Launch menu offering the graph beside the synteny stack, the stack anchored on K-12 with the segments lane on its top row, that lane cutting the graph below, and a drag on the Sakai row re-anchoring the stack on Sakai',
     url: roundTripStart,
-    // Sized to the END state, a five-row stack over the graph pane: the stack
-    // measures ~620 (multiway_synteny/ecoli_launch_result) and a launched graph
-    // pane lands the app at ~1100 (pangenome/pggb_subgraph_launch). The page
-    // background under the opening lanes is the cost of filming two launches.
-    viewportHeight: 1110,
+    // Sized to the TALLEST state, which is not the last one: the run measured
+    // 1353 with the graph pane under a stack whose K-12 row still carries the
+    // segments lane, and 1254 after the re-anchor drops that lane. The slack
+    // over 1353 is the caption chip's strip. The ~970px of page background
+    // under the opening lanes is the cost of filming two launches -- a tour
+    // that grows the app fivefold has one frame for every state it passes
+    // through, and cutting the graph pane off is the worse half to spend it on.
+    viewportHeight: 1410,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 180000,
     settleMs: 12000,
