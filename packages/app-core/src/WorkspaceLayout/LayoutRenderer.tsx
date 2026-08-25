@@ -143,6 +143,7 @@ const Splitter = observer(function Splitter({
 }) {
   const { classes, cx } = useSplitterStyles()
   const dragRef = useRef<{
+    pointerId: number
     axis: 'clientX' | 'clientY'
     start: number
     pairPx: number
@@ -151,13 +152,26 @@ const Splitter = observer(function Splitter({
 
   const horizontal = branch.direction === 'row'
 
+  /**
+   * The same three rules the tab drag owns (see `useLayoutDrag`), on the handle
+   * that was written before they were written down.
+   *
+   * A resize starts on the PRIMARY button of the primary pointer. A right-press
+   * armed the drag and then lost its `pointerup` to the native context menu,
+   * and capture routes every later move back here — so a button-less pointer
+   * went on resizing from the start position the right-press recorded.
+   */
   const onPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
+      if (event.button !== 0 || !event.isPrimary) {
+        return
+      }
       const pairPx = measurePairPx(event.currentTarget, index, horizontal)
       if (pairPx <= 0) {
         return
       }
       dragRef.current = {
+        pointerId: event.pointerId,
         axis: horizontal ? 'clientX' : 'clientY',
         start: horizontal ? event.clientX : event.clientY,
         pairPx,
@@ -168,10 +182,13 @@ const Splitter = observer(function Splitter({
     [branch, index, horizontal],
   )
 
+  // One `pointerId` per gesture: a second finger landing on the handle steered
+  // the first one's resize from the first one's start position, and its release
+  // ended the gesture the first one was still holding.
   const onPointerMove = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current
-      if (!drag) {
+      if (drag?.pointerId !== event.pointerId) {
         return
       }
       // the pointer's travel as a fraction of the pair's pixels, applied to the
@@ -197,8 +214,24 @@ const Splitter = observer(function Splitter({
 
   const onPointerUp = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
+      if (dragRef.current && dragRef.current.pointerId !== event.pointerId) {
+        return
+      }
       endDrag()
       event.currentTarget.releasePointerCapture(event.pointerId)
+    },
+    [endDrag],
+  )
+
+  // `pointercancel` ends the gesture — a touch long-press opens the platform's
+  // context menu and cancels the pointer with no `pointerup` behind it. A
+  // browser also fires `lostpointercapture` for that, so this is the rule
+  // stated where it belongs rather than inferred from a second event.
+  const onPointerCancel = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (dragRef.current?.pointerId === event.pointerId) {
+        endDrag()
+      }
     },
     [endDrag],
   )
@@ -266,6 +299,7 @@ const Splitter = observer(function Splitter({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
       // capture can end without a pointerup — the browser drops it if the
       // element is removed, and then the next pointer that merely passes over
       // the handle would go on resizing from the stale start sizes

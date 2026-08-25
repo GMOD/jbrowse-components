@@ -48,7 +48,8 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
   `moveTabToPanel`, where no index means append.
 - Pointer events, so own the three rules the browser was applying: **primary
   button of the primary pointer**, **one `pointerId` per gesture**,
-  **`pointercancel` ends it**.
+  **`pointercancel` ends it**. Both gestures — the tab drag and the splitter —
+  and any third one.
 - **The in-flight drag is React state, never MST** — every hover would enter
   undo. Escape cancels from a `window` listener and must clear `pendingRef` too,
   since the drag is rebuilt from `pending` on every move.

@@ -450,6 +450,94 @@ test('the splitter reports where it sits, as a percentage of its pair', () => {
 })
 
 // ---------------------------------------------------------------------------
+// The splitter's pointer drag. Pointer events are chosen for capture, which
+// means owning the rules the browser was applying — the same three the tab drag
+// owns (`useLayoutDrag`), on the handle that predates them being written down.
+//
+// jsdom lays nothing out, so every rect is zero, `measurePairPx` returns 0 and
+// the handler bails before arming: the pair has to be given a width for any of
+// this to be reachable at all, which is why it went untested.
+// ---------------------------------------------------------------------------
+
+function splitterOverPanes(session: ReturnType<typeof TestSession.create>) {
+  const { container } = renderLayout(session)
+  for (const el of container.querySelectorAll<HTMLElement>('div')) {
+    el.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 500, height: 500 }) as DOMRect
+  }
+  return container.querySelector('[data-splitter]') as HTMLElement
+}
+
+function twoPanes() {
+  const session = TestSession.create({ name: 't' })
+  session.splitPanel(session.panels[0]!.id, 'row')
+  return session
+}
+
+test('a splitter drag moves the boundary with the pointer', () => {
+  const session = twoPanes()
+  const splitter = splitterOverPanes(session)
+
+  fireEvent.pointerDown(splitter, { button: 0, pointerId: 1, clientX: 500 })
+  fireEvent.pointerMove(splitter, { pointerId: 1, clientX: 600 })
+
+  // 100px of a 1000px pair, moved from the right pane to the left
+  expect(childSizes(session)[0]!).toBeCloseTo(0.6, 5)
+  expect(childSizes(session)[1]!).toBeCloseTo(0.4, 5)
+})
+
+// A right-press armed the drag and then lost its `pointerup` to the native
+// context menu, and capture routes every later move back to the handle — so a
+// button-less pointer went on resizing from where the right-press started.
+test('only the primary button of the primary pointer starts a resize', () => {
+  const session = twoPanes()
+  const splitter = splitterOverPanes(session)
+
+  fireEvent.pointerDown(splitter, { button: 2, pointerId: 1, clientX: 500 })
+  fireEvent.pointerMove(splitter, { pointerId: 1, clientX: 600 })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
+
+  fireEvent.pointerDown(splitter, {
+    button: 0,
+    pointerId: 7,
+    isPrimary: false,
+    clientX: 500,
+  })
+  fireEvent.pointerMove(splitter, { pointerId: 7, clientX: 600 })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
+})
+
+// One pointerId per gesture: a second finger landing on the handle steered the
+// first one's resize from the first one's start position, and its release ended
+// the gesture the first one was still holding.
+test('a second pointer neither steers nor ends the resize', () => {
+  const session = twoPanes()
+  const splitter = splitterOverPanes(session)
+
+  fireEvent.pointerDown(splitter, { button: 0, pointerId: 1, clientX: 500 })
+  fireEvent.pointerMove(splitter, { pointerId: 9, clientX: 900 })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
+
+  fireEvent.pointerUp(splitter, { pointerId: 9 })
+  fireEvent.pointerMove(splitter, { pointerId: 1, clientX: 600 })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.6, 5)
+})
+
+// A touch long-press opens the platform's context menu and cancels the pointer
+// with no `pointerup` behind it, leaving the resize armed to resume from the
+// next move.
+test('pointercancel ends the resize', () => {
+  const session = twoPanes()
+  const splitter = splitterOverPanes(session)
+
+  fireEvent.pointerDown(splitter, { button: 0, pointerId: 1, clientX: 500 })
+  fireEvent.pointerCancel(splitter, { pointerId: 1 })
+  fireEvent.pointerMove(splitter, { pointerId: 1, clientX: 600 })
+
+  expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
+})
+
+// ---------------------------------------------------------------------------
 // Overflow. The strip scrolls and hides its scrollbar (it is chrome, and a
 // scrollbar across it would be noise), so with more tabs than fit there is
 // nothing saying there is more and nothing a mouse can do about it. Measured at
