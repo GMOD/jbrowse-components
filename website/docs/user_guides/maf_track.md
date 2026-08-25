@@ -144,11 +144,11 @@ reference's and labels the change synonymous or nonsynonymous.
 
 ## Getting the alignment out as FASTA
 
-Drag a selection across the track and right-click it for **View subsequences
-(all rows)**, or **(selected rows)** to take only the rows the drag covered.
-Either opens the aligned columns for that window, one sequence per species, with
-**Download as FASTA** and **Copy to clipboard** in its menu. That is the slice a
-downstream alignment viewer or tree builder wants.
+Drag a selection across the track and the menu that opens on release offers
+**View subsequences (all rows)**, or **(selected rows)** to take only the rows
+the drag covered. Either opens the aligned columns for that window, one sequence
+per species, with **Download as FASTA** and **Copy to clipboard** in its menu.
+That is the slice a downstream alignment viewer or tree builder wants.
 
 The same menu offers **Show only differences**, which blanks every base matching
 the reference so substitutions are all that remain, plus **Include insertions**,
@@ -159,9 +159,9 @@ A drag crossing a region boundary clips to the region it began in.
 ## Jumping to a species' own genome
 
 The rows of a MAF carry each species' own coordinates, so a row can be opened in
-its own genome. The same right-click menu lists **one entry per species** the
-selection covers, naming that species' locus in its own coordinates; clicking
-one opens a view there.
+its own genome. That same menu lists **one entry per species** the selection
+covers, naming that species' locus in its own coordinates; clicking one opens a
+view there.
 
 Only rows with aligned bases in the selection are listed, and only those whose
 sample names a genome the session can open: a sample configured with an

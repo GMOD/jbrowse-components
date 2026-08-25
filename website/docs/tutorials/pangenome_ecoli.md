@@ -558,9 +558,9 @@ per-row identity, and codon view, all derived from the alignment with no extra
 files.
 
 A row is also a comparison waiting to be opened. Drag across the rows and the
-right-click menu lists each strain the selection covers: **Open Sakai ... in new
-view** puts that strain's own genome beside this one at the aligned stretch, and
-**Launch synteny view, K12 vs...** opens the two as a
+menu that opens on release lists each strain the selection covers: **Open Sakai
+... in new view** puts that strain's own genome beside this one at the aligned
+stretch, and **Launch synteny view, K12 vs...** opens the two as a
 [linear synteny view](/docs/user_guides/linear_synteny_view), the ribbons cut
 from these same columns. The strains are navigable because the config loads them
 as assemblies under the names the MAF calls them; a
