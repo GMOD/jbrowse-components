@@ -74,11 +74,12 @@ and two of them divide or merge real alleles.
   the junction's own upper placements into a second one: one allele reported as
   two candidates with its support divided, caused by a chain the `minReads`
   floor was about to discard anyway.
-- **Single linkage** — join each endpoint to its nearest neighbour, which is
-  what `scripts/sv_multihop.py` does for its own dedup — lets clusters chain,
-  and this data has a real case. COLO829's two chr9 fold-back junctions sit
-  28 bp apart, and read jitter between them bridges the two into one cluster,
-  merging two alleles into one candidate.
+- **Single linkage** — join each endpoint to its nearest neighbour — lets
+  clusters chain, and this data has a real case. COLO829's two chr9 fold-back
+  junctions sit 28 bp apart, and read jitter between them bridges the two into
+  one cluster, merging two alleles into one candidate. (`scripts/sv_multihop.py`'s
+  dedup is a leader sweep over kept records, not this; its check suite pins
+  that a drifting run does not merge.)
 - **Mode seeding** — count the exact endpoints, take them as seeds in
   descending-count order, and let each seed claim every unclaimed endpoint
   within the tolerance *of the seed itself* — is what `buildClusterOf` does.

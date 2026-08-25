@@ -387,13 +387,17 @@ property in `computePaths.test.ts` is the case that separates the two.
 
 **The cluster rule caps a cluster at the tolerance around its own seed, and
 that is load-bearing.** Linking each endpoint to its nearest neighbour instead —
-single linkage, which is what `sv_multihop.py` does for its own dedup — lets
-clusters chain, and this data has a real case: COLO829's two chr9 fold-back
-junctions sit **28 bp apart**, and jittered reads between them bridge the two
-into one cluster, merging two alleles into one candidate. Two junctions further
-apart than the tolerance are two modes, so each seeds its own cluster.
-`sv_multihop.py` has the same exposure on any callset with a re-break that
-close; it has not been checked.
+single linkage — lets clusters chain, and this data has a real case: COLO829's
+two chr9 fold-back junctions sit **28 bp apart**, and jittered reads between
+them bridge the two into one cluster, merging two alleles into one candidate.
+Two junctions further apart than the tolerance are two modes, so each seeds its
+own cluster. `sv_multihop.py`'s `dedupe_junctions` is not single linkage either:
+it compares each record against the records already KEPT, so a drifting run of
+300/308/316 keeps the two ends and drops only the middle, which
+`check-build-scripts.py` pins ("does not merge transitively"). What it anchors
+on is the first record kept, the leader-sweep shape above, and at a 10 bp
+tolerance over a callset that is the right trade — a caller writes one
+position per record, so there is no pile of reads for a stray to re-anchor.
 
 Two consequences to know about. The der(3) window now returns **two** rows: the
 four-segment allele at 28 reads, and at 2 reads the three-segment route that
