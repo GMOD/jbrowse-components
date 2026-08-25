@@ -1,4 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
+import { walkBreakendChain } from '@jbrowse/sv-core'
 import { autorun } from 'mobx'
 
 import stateModelFactory from './SpreadsheetModel.tsx'
@@ -334,12 +335,78 @@ describe('the junctions the sheet can walk', () => {
     ])
     sheet.setVisibleRows({ 0: true, 1: false })
     expect(sheet.visibleRows).toHaveLength(1)
+    // both spellings of the reciprocal pair are here — `b` filed at chr5, and
+    // `a` reached through its mate end — and both name the same next locus, so
+    // the walk reads one way onward rather than two
     expect(
-      await sheet.findJunctionsNear()({
-        refName: 'chr5',
-        start: 800,
-        end: 1000,
-      }),
-    ).toHaveLength(1)
+      (
+        await sheet.findJunctionsNear()({
+          refName: 'chr5',
+          start: 800,
+          end: 1000,
+        })
+      ).map(j => `${j.refName}:${j.pos}`),
+    ).toEqual(['chr1:100', 'chr5:899'])
+  })
+
+  test('a junction filed at its other end is still in the window', async () => {
+    const sheet = sheetWith([bnd('a', 'chr1', 100, 'C]chr5:900]')])
+    expect(
+      (
+        await sheet.findJunctionsNear()({
+          refName: 'chr5',
+          start: 800,
+          end: 1000,
+        })
+      ).map(j => j.refName),
+    ).toEqual(['chr1'])
+  })
+
+  // The whole point of the sheet answering this instead of an adapter. A
+  // coordinate index knows one coordinate per record, so a chain written one
+  // record per junction walks 4 / 3 / 2 stops depending on which record was
+  // clicked; the sheet holds the parsed callset and matches on either end, so
+  // every record of the event returns the same event.
+  test('a chain written one record per junction walks from its last record', async () => {
+    const sheet = sheetWith([
+      bnd('j1', 'chr1', 100, 'C]chr2:201]'),
+      bnd('j2', 'chr2', 200, 'C]chr3:301]'),
+      bnd('j3', 'chr3', 300, 'C]chr4:401]'),
+    ])
+    const findJunctionsNear = sheet.findJunctionsNear()
+    const stops = await walkBreakendChain({
+      start: sheet.svJunctions[2]!,
+      findJunctionsNear,
+    })
+    expect(stops.map(s => `${s.refName}:${s.pos}`)).toEqual([
+      'chr1:100',
+      'chr2:200',
+      'chr3:300',
+      'chr4:400',
+    ])
+  })
+
+  test('the own-locus-only filter an adapter is stuck with stops at two', async () => {
+    const sheet = sheetWith([
+      bnd('j1', 'chr1', 100, 'C]chr2:201]'),
+      bnd('j2', 'chr2', 200, 'C]chr3:301]'),
+      bnd('j3', 'chr3', 300, 'C]chr4:401]'),
+    ])
+    const stops = await walkBreakendChain({
+      start: sheet.svJunctions[2]!,
+      findJunctionsNear: region =>
+        Promise.resolve(
+          sheet.svJunctions.filter(
+            j =>
+              j.refName === region.refName &&
+              j.pos >= region.start &&
+              j.pos < region.end,
+          ),
+        ),
+    })
+    expect(stops.map(s => `${s.refName}:${s.pos}`)).toEqual([
+      'chr3:300',
+      'chr4:400',
+    ])
   })
 })

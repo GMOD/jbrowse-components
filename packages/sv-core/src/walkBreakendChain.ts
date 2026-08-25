@@ -297,6 +297,11 @@ export function nextJunctionFrom({
  * missing one mate, or a single-record `<TRA>` naming CHR2 — see
  * `makeFindJunctionsNear` for why no query can rescue those.
  *
+ * A reader that is not coordinate-indexed has none of this. The SV inspector's
+ * sheet holds the whole parsed callset in memory and matches a window against
+ * BOTH ends of every junction, so the same four-locus chain returns 4 stops
+ * from any of its records — see `SpreadsheetModel`'s `findJunctionsNear`.
+ *
  * Bounded by `maxStops` because the input is somebody's VCF: a callset dense in
  * breakends within a kilobase of each other (an amplicon, a chromothriptic
  * shard) is a chain the walk can follow much further than a reader can take in,

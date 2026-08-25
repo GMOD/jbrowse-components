@@ -223,6 +223,18 @@ export default function stateModelFactory() {
        * no way to query the callset at all and simply did not offer the option,
        * while the chord click asked the chord track's adapter and so shipped
        * the callset back through RPC to re-read what the sheet already holds.
+       *
+       * **Either end counts, which no coordinate-indexed query can offer.** A
+       * tabix index knows one coordinate per record, so an adapter answering
+       * this hands back the records filed AT the window and a junction written
+       * once, at its other end, is unreachable — the walk then extends only as
+       * far as the callset happens to have filed records at loci it has already
+       * reached, and on a four-locus chain written one record per junction that
+       * is 4 stops from the first record, 3 from the second, 2 from the third.
+       * Here the whole callset is already parsed in memory, so matching on the
+       * mate end costs one more comparison and the walk goes both ways from any
+       * record of the event. `nextJunctionFrom` turns a candidate around
+       * itself, so a junction matched by its mate end needs no flipping.
        */
       findJunctionsNear(): (region: {
         refName: string
@@ -231,15 +243,19 @@ export default function stateModelFactory() {
       }) => Promise<
         { refName: string; pos: number; mateRefName: string; matePos: number }[]
       > {
-        return region =>
-          Promise.resolve(
+        return region => {
+          const inWindow = (refName: string, pos: number) =>
+            refName === region.refName &&
+            pos >= region.start &&
+            pos < region.end
+          return Promise.resolve(
             this.svJunctions.filter(
               j =>
-                j.refName === region.refName &&
-                j.pos >= region.start &&
-                j.pos < region.end,
+                inWindow(j.refName, j.pos) ||
+                inWindow(j.mateRefName, j.matePos),
             ),
           )
+        }
       },
     }))
     .views(self => ({
