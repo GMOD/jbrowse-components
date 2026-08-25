@@ -12,18 +12,8 @@ import type { BaseLinearDisplayConfigModel } from '@jbrowse/display-kit/configSc
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-/**
- * The members a composing display provides that this gate reads but doesn't own:
- * the config (via `getConf`) and the `RegionTooLargeMixin` names the density
- * axis needs — "may anything gate?" and which tier a measurement is about.
- * Declared once so the gate can reference them type-safely without threading
- * them through every getter — the runtime instance has them because the final
- * model also composes `MultiRegionDisplayMixin`, which brings
- * `RegionTooLargeMixin`.
- */
+/** What this mixin reads off its host: the config and `RegionTooLargeMixin`'s gate terms. */
 export interface GateHost {
-  // Narrow, not `AnyConfigurationModel`, so `maxFeatureScreenDensity` below
-  // keeps its slot-name check — the widened form switches it off silently
   configuration: BaseLinearDisplayConfigModel
   gateActive: boolean
   densityGateActive: boolean
@@ -38,14 +28,7 @@ function gateView(self: object) {
   return getContainingView(self) as LinearGenomeViewModel
 }
 
-/**
- * What one region's fetch measured, feeding both gate axes: the byte index size
- * (`bytes`, absent when the adapter has no index estimate) and the feature count
- * (`featureCount`, absent on a byte short-circuit). Shaped as the fetch result
- * plus the region it came from — so a call site hands over what its RPC returned
- * and the span arithmetic (features per bp) stays in the gate, not repeated in
- * every display's fetch.
- */
+/** One region's fetch result plus the region, so the gate does the span arithmetic. */
 export interface RegionGateMeasurement {
   displayedRegionIndex: number
   region: { start: number; end: number }
@@ -53,28 +36,11 @@ export interface RegionGateMeasurement {
 }
 
 /**
- * Shared density region-too-large gate for canvas feature displays.
- *
- * Composes on top of `RegionTooLargeMixin` (via `MultiRegionDisplayMixin`) to add
- * the *density* axis — the byte axis, its worker budget (`resolvedByteLimit()`)
- * and its commit are entirely the base mixin's — so a display whose fetch RPC
- * counts features as well as measuring bytes opts in by composing this mixin
- * and calling `commitGateMeasurements` from its fetch. The
- * mixin clears its own stale per-region stats on chromosome nav (its `afterAttach`,
- * so a composing display can't forget the cleanup and silently mis-gate a reused
- * `displayedRegionIndex`). Every gating decision routes through the shared pure
- * helpers in `regionTooLargeUtils` (`resolveByteLimit`, `evaluateRegionTooLarge`, both via the
- * base mixin) so both canvas feature displays decide identically.
- *
- * This is the **model-side** counterpart to `DisplayChrome`: the gate's whole job
- * is to feed one signal — `regionTooLarge` (on `RegionTooLargeMixin`) — which
- * `DisplayChrome`'s `computeDisplayPhase` reads to render the shared
- * `TooLargeMessage` banner (see
- * [DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md)).
- * A
- * display opts into the whole banner story by composing this mixin (the decision)
- * and rendering `DisplayChrome` (the UI) — the same "single shared layer, small
- * opt-in contract" shape DisplayChrome uses for loading/error/retry.
+ * The density axis of the region-too-large gate, composed after
+ * `MultiRegionDisplayMixin` by the canvas feature displays: how the
+ * features-per-pixel number is measured and the worker budget for it. The
+ * byte axis is entirely `RegionTooLargeMixin`'s. A display opts in by composing
+ * this and calling `commitGateMeasurements` from its fetch's `onComplete`.
  *
  * #stateModel CanvasFeatureGateMixin
  * #category display
@@ -85,10 +51,8 @@ export default function CanvasFeatureGateMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * per-region feature counts (keyed by displayedRegionIndex), so the density
-       * verdict is a live max over the visible regions at the current bpPerPx —
-       * never a stale fetch-time snapshot. Survives viewport-change clears; dropped
-       * on chromosome nav by `clearGateMeasurements`.
+       * Per-region feature counts, keyed by `displayedRegionIndex`, so the
+       * verdict is a live max at the current `bpPerPx`. Cleared on navigation.
        */
       densityStatsPerRegion: regionDataMap<RegionDensityStats>(
         'densityStatsPerRegion',
@@ -97,38 +61,23 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * The byte-gate opt-in, contributed by composing this mixin. It overrides
-       * `RegionTooLargeMixin`'s `false`, so this mixin has to be composed AFTER
-       * the one that declares it — `types.compose` resolves a member collision
-       * to the later argument, and the wrong order hands the opt-in back to the
-       * default with no banner and no error. `no-restricted-syntax` fails that
-       * order and says why.
+       * The byte-gate opt-in, contributed here. `types.compose` resolves a
+       * collision to the later argument, so this mixin must follow the one that
+       * declares it; `no-restricted-syntax` fails the other order.
        */
       get gateEnabled() {
         return true
       },
       /**
        * #getter
-       * The density axis is on where something measures it, and this mixin is
-       * the only thing that does — `densityTooLarge` below is the measurement,
-       * this is the switch, and they belong together. `RegionTooLargeMixin`
-       * defaults it false so the byte-only displays don't claim an axis they
-       * have no number for.
-       *
-       * Contributed the same way as `gateEnabled` above, and it fails the same
-       * way in the wrong compose order — the base's `false` wins and the
-       * density axis is silently off. `no-restricted-syntax` fails a
-       * `CanvasFeatureGateMixin()` written before `MultiRegionDisplayMixin()` in
-       * one `types.compose` and says why, so neither opt-in needs a getter read
-       * back at attach to notice.
+       * The density axis is on where something measures it.
        */
       get densityGateEnabled() {
         return true
       },
       /**
        * #method
-       * Highest features-per-pixel across the visible regions at `bpPerPx`, from
-       * the cached per-region counts.
+       * Highest features-per-pixel across the visible regions at `bpPerPx`.
        */
       observedMaxDensity(bpPerPx: number) {
         return Math.max(
@@ -143,17 +92,11 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * Current density across the visible regions at the debounced coarseBpPerPx,
-       * so the verdict shares the layout cadence and doesn't flicker mid-zoom.
+       * Density at the debounced `coarseBpPerPx`, so the verdict shares the
+       * layout cadence. Zero before the view is measured.
        */
       get visibleFeatureDensityPerPx() {
         const view = gateView(self)
-        // Nothing is on screen before the view has a width, so there is no
-        // density to observe — and asking anyway throws rather than returning
-        // an empty list, because `visibleRegions` walks the dynamic blocks and
-        // those read `width`. Reached during `afterAttach` (TrackHeightMixin's
-        // scroll clamp runs its autorun body straight away), which is before
-        // the view is measured.
         if (!view.initialized) {
           return 0
         }
@@ -163,12 +106,7 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * The density budget passed to the worker and used by the derived verdict:
-       * undefined (gate off) when the axis can't gate, otherwise the config.
-       * Every term for that — the opt-in, force-load, the `AUTO_FORCE_LOAD_BP`
-       * floor — is inside `densityGateActive`, so approving a track's *size*
-       * does not half-disable its *density* axis by side effect and none of
-       * them is restated here.
+       * The worker's density budget; undefined when the axis may not act.
        */
       get maxFeatureDensity(): number | undefined {
         return host(self).densityGateActive
@@ -179,13 +117,8 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * The density axis of `RegionTooLargeMixin`'s verdict (false in the base
-       * mixin, so byte-only displays never gate on it).
-       *
-       * The comparison is `overDensityBudget`, the same one the worker's two
-       * short-circuits make — sharing the number (`featuresPerPx`) without the
-       * comparison leaves the banner free to disagree with the decision that
-       * produced it at exactly the boundary.
+       * The density axis of the verdict, through the same `overDensityBudget`
+       * the worker's short-circuits use.
        */
       get densityTooLarge() {
         return overDensityBudget(
@@ -203,15 +136,6 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #action
-       * Drop the cached per-region density stats on chromosome navigation
-       * (displayedRegion indices get reused, so a stale entry would gate the new
-       * region against the wrong stats). Driven by the mixin's own `afterAttach`
-       * below — no composing display has to wire it up. The byte estimate is
-       * dropped by `MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun
-       * on the same trigger.
-       *
-       * Measurements only. Force-load is a track-wide boolean that deliberately
-       * outlives navigation, so there is no per-region ceiling to expire here.
        */
       clearGateMeasurements() {
         self.densityStatsPerRegion.clear()
@@ -220,10 +144,8 @@ export default function CanvasFeatureGateMixin() {
     .actions(self => ({
       /**
        * #action
-       * Commit a batch of per-region fetch outcomes on the **density** axis
-       * alone. The byte axis is `RegionTooLargeMixin.commitFetchBytes`, which
-       * the fan-out helper calls for every display whose RPC carries a
-       * `byteLimit` — this mixin owns only the number nothing else measures.
+       * Commit a batch of per-region fetch results on the density axis, judged
+       * by the tier captured at issue. The byte axis is `commitFetchBytes`.
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],
@@ -232,10 +154,6 @@ export default function CanvasFeatureGateMixin() {
         const { viewport, tierKey } = issued
         if (
           !viewport ||
-          // the tier guard `nextGateState` applies to the byte half, applied
-          // to the density half too: a fetch issued against a previous adapter
-          // config must not gate the new file against the old file's feature
-          // counts. Same rule, both axes.
           (tierKey !== undefined && tierKey !== host(self).byteGateAdapterKey)
         ) {
           return
@@ -252,12 +170,6 @@ export default function CanvasFeatureGateMixin() {
       },
     }))
     .actions(self => ({
-      // The fork auto-chains afterAttach, so this runs ahead of the composing
-      // display's own afterAttach without either calling super. Owning the
-      // chromosome-nav cleanup here — rather than leaving each display to wire
-      // onDisplayedRegionsChange itself — makes composing the mixin the whole
-      // opt-in: a new canvas feature display can't forget it and silently gate a
-      // reused displayedRegionIndex against a prior chromosome's stats.
       afterAttach() {
         onDisplayedRegionsChange(
           self,

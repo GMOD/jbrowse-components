@@ -21,19 +21,6 @@ import type {
   GateViewport,
 } from './regionTooLargeUtils.ts'
 
-/**
- * Move the gate's three volatiles through {@link nextGateState}, which is where
- * the whole commit protocol lives — so the rules about *order* (which of two
- * measurements wins, what a clear leaves behind, what an approval outlives) are
- * reachable by a walk over event sequences instead of only by whichever
- * interleaving someone thought to write an example test for.
- *
- * All three are assigned unconditionally, and that is safe rather than sloppy:
- * the reducer hands back `prev` itself when nothing moved, and a volatile is
- * `observable.ref`, so writing an identical value notifies nobody. Every caller
- * is already inside an MST action, which is what makes these writes legal from
- * a plain function.
- */
 function applyGateEvent(self: GateState, event: GateEvent) {
   const next = nextGateState(self, event)
   self.byteEstimate = next.byteEstimate
@@ -43,9 +30,6 @@ function applyGateEvent(self: GateState, event: GateEvent) {
 
 /** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
 export interface RegionTooLargeHost {
-  // The mixin's own field table, not `AnyConfigurationModel` (which switches
-  // off `getConf`'s slot-name check) and not `baseLinearDisplayConfigSchema`,
-  // which five composers do not extend.
   configuration: RegionTooLargeConfigModel
 }
 
@@ -54,78 +38,14 @@ function host(self: object) {
 }
 
 /**
- * Shared mixin owning "region too large" state and force-load UI.
- *
- * Composed by the two fetch foundations, `MultiRegionDisplayMixin` and
- * `GlobalFetchMixin`. Owns the state that TooLargeMessage reads:
- * regionTooLarge, regionTooLargeReason, forceLoad.
- *
- * ## Measurement follows the viewport
- *
- * `regionTooLarge` is a pure function of one cached measurement
- * (`tooLargeStatus`), and that measurement is kept describing the viewport it is
- * judging. Two mechanisms, one per state, and between them the estimate is never
- * a model:
- *
- * - **Not gated:** the fetch measures. Every gated display's feature RPC takes
- *   `resolvedByteLimit()` and reads the index before it downloads, so every
- *   fetch re-anchors the estimate to what it is about to pull.
- * - **Gated:** the fetch measures anyway, once. Both fetch skeletons skip on
- *   `gateSkipsMeasuredViewport` — one getter, read by both — so a blocked
- *   display runs one fetch per settled viewport, and that fetch stops at
- *   whichever gate rejected it, which is what releases the banner. No second,
- *   measurement-only RPC path exists, and canvas therefore keeps the
- *   single-call fetch it was built around.
- *
- *   What that costs, precisely, because "it re-fetches while blocked" reads
- *   alarming: on the **byte** axis, one index read and no features. On canvas's
- *   **density** axis, the pre-fetch probe
- *   (`samplePreFetchDensity`) — a 1kb sample window, doubling until it has seen
- *   70 features — and then the short-circuit. A region dense enough to be
- *   density-blocked is exactly the region that satisfies that on the first
- *   window, so it is small and bounded, but it is not nothing.
- *
- * The estimate is never scaled by span to release the banner: an index quotes
- * whole blocks, so bytes are a step function whose steps are a property of the
- * file — the whole-genome `hs37d5.HG002…sv.vcf.gz` charges an identical 15,408
- * bytes from 7.8 Mb of span all the way down, where a linear model
- * extrapolated from chr1 predicts 22 (HISTORICAL.md § "The byte estimate was a
- * rate").
- *
- * A display opts in with two lines: override `gateEnabled` to true, and pass
- * `byteLimit: self.resolvedByteLimit()` in its fetch RPC's args. The commit is
- * the fetch runners' — the three fan-out helpers per-region, `runGlobalFetch`
- * global — so the measurement and the verdict both live here, they can't drift
- * apart, and the "capture the viewport before the await" rule is structural
- * rather than a call-site convention. Add `densityTooLarge` for a second gating
- * axis (canvas's feature-density gate); the budget hooks default off the
- * display config.
- *
- * The mixin's own `afterAttach` drops the cached estimate on chromosome
- * navigation and on a tier swap; it intentionally survives viewport-change
- * clears. Used by canvas/LD/arc/maf/MultiSampleVariant/alignments.
- *
- * A display that opts into neither axis never gates on size (`regionTooLarge` is
- * a literal false, so the LGV-only `tooLargeStatus` getters aren't evaluated —
- * safe for ungated / non-LGV consumers like synteny).
- *
- * ## The names, and the one rule behind them
- *
- * **A `byte`/`density` prefix means the term is genuinely about that axis, and
- * nothing else carries one.** The gate reads as three questions asked in order,
- * and the middle one is shared:
- *
- * - *does this display measure at all?* — `gateEnabled`.
- * - *may the gate act right now?* — `gateActive` (opted in, not exempt, view
- *   measured). Nothing axis-specific here.
- * - *may this axis act?* — `gateActive` plus that axis's own terms.
- *   `densityGateActive` adds `densityGateEnabled` and the `AUTO_FORCE_LOAD_BP`
- *   floor; the byte axis adds nothing, which is why it has no getter of its own
- *   and reads `gateActive` directly.
- *
- * A name claiming an axis it has no term from is how a reader comes to believe
- * force-load only lifts the byte gate (HISTORICAL.md § "Names that claimed an
- * axis").
+ * The region-too-large gate: a display opts in by overriding `gateEnabled` and
+ * passing `byteLimit: self.resolvedByteLimit()` to its fetch RPC. The RPC
+ * measures the index before it downloads and answers a refusal when a region
+ * is over budget; the fetch runners commit what it measured, and
+ * `regionTooLarge` is derived from that last measurement. While the banner is
+ * up the fetch runs once per settled viewport, which is the re-measure.
+ * Composed by `MultiRegionDisplayMixin` and `GlobalFetchMixin`. The rules and
+ * the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
  *
  * #stateModel RegionTooLargeMixin
  * #category display
@@ -136,186 +56,79 @@ export default function RegionTooLargeMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * The force-load button's answer: render this track regardless of region
-       * size or feature density. One boolean for the whole track, not a raised
-       * ceiling per region — the banner already tells the user how much data is
-       * involved, so one informed click approves the track and they never have to
-       * re-approve it per locus.
-       *
-       * Volatile, not persisted, so it can't leak a disabled gate into a saved or
-       * shared session (a recipient would download the same data with no warning
-       * and no way to see why). A page load re-arms the gate. The durable,
-       * declarative equivalent is the `forceLoad` config slot, for session specs,
-       * embeds and `jbrowse-img --force`.
+       * The force-load button's track-wide approval. Volatile so it never
+       * reaches a saved session; the `forceLoad` config slot is the durable form.
        */
       forceLoadTrack: false,
       /**
        * #volatile
-       * The last byte measurement for this display: the estimated bytes, the span
-       * they were measured at, and whether zooming has been shown not to shrink
-       * them. One volatile rather than three, because they are a single
-       * measurement — written together by `setByteEstimate`, dropped together by
-       * `clearByteEstimate`, and meaningless apart. Survives `clearAllRpcData` so
-       * an ordinary viewport change doesn't flicker the banner; the two things
-       * that do drop it are chromosome navigation and a tier swap, which are one
-       * rule on two axes — the measurement is about a fetch, and each changes
-       * which fetch that is. Ignored unless `gateEnabled`.
+       * The last byte measurement: bytes, the span they were taken at, and
+       * whether zooming has been shown not to shrink them. Survives
+       * `clearAllRpcData`; dropped on chromosome navigation and on a tier swap.
        */
       byteEstimate: undefined as ByteEstimate | undefined,
       /**
        * #volatile
-       * The viewport (`gateViewport().key`) the gate last got a measurement for,
-       * on **either** axis. Not part of `byteEstimate`, because a fetch can
-       * measure density and no bytes at all — a dense region short-circuits on
-       * the feature count with the byte estimate deliberately left alone — and
-       * that fetch still asked the adapter about this viewport.
-       *
-       * Its whole job is `gateMeasurementStale`, which is what lets the fetch
-       * autoruns run exactly one fetch per settled viewport while the banner
-       * holds. Keying it on bytes instead loops forever on a density rejection.
+       * The viewport key the gate last asked the adapter about, on either axis.
+       * Separate from `byteEstimate` because a density refusal measures no bytes.
        */
       gateMeasuredViewportKey: undefined as string | undefined,
     }))
     .views(self => ({
       /**
        * #getter
-       * Whether this display measures at all. **The whole opt-in**: a display
-       * that answers true passes `resolvedByteLimit()` into its fetch RPC, that
-       * RPC measures the index before it downloads anything and answers a
-       * `RegionTooLargeResult` when the region is over budget, and the fan-out
-       * helper commits what came back. False for the ungated displays (wiggle,
-       * manhattan, sequence, synteny), which therefore never evaluate the
-       * LGV-only getters below. Every override is a literal `true` or `false`,
-       * and `check-gated-adapter-budgets` insists on that: the mixin's own
-       * `afterAttach` and `commitFetchBytes` return early on it, which is safe
-       * only while no override depends on an observable.
-       *
-       * **Nothing in the tree turns it off once on**, and there is no reason
-       * to. "Can this adapter be measured" is the adapter's answer, not
-       * a display's: one with no index estimate reports `undefined`, and an
-       * unmeasurable estimate keeps the byte axis out of the verdict on its
-       * own. It is emphatically not for a fetch believed to be small — a
-       * display that reads a cheaper file at some zooms points
-       * `byteGateAdapterConfig` at that file and stays gated, which is what MAF
-       * does. Off means nothing is watching, and "this tier is cheap" is a
-       * premise, not a bound.
-       *
-       * A mixin contributing this — `CanvasFeatureGateMixin` is the one that
-       * does — has to be composed AFTER the mixin that declares it, since
-       * `types.compose` resolves a member collision to the later argument.
-       * `no-restricted-syntax` fails the other order and says why.
+       * The opt-in. Overridden with a literal `true` by gated displays, and
+       * `check-gated-adapter-budgets` insists on a literal: this mixin returns
+       * early on it in an autorun and in `commitFetchBytes`.
        */
       get gateEnabled(): boolean {
         return false
       },
       /**
        * #getter
-       * Whether the **density** (features-per-pixel) axis applies to this
-       * display at all. **False here, and `CanvasFeatureGateMixin` is what
-       * turns it on** — the axis is on exactly where something measures it, and
-       * that mixin is the only thing in the tree that does. It contributes this
-       * beside `gateEnabled` for the same reason and by the same route. False
-       * by default so the five byte-only displays claim no axis they cannot
-       * measure.
-       *
-       * It lives on this mixin rather than on `CanvasFeatureGateMixin` because
-       * it is the second half of a contract whose first half
-       * (`densityTooLarge`) is here, and because a hook the base doesn't know
-       * about cannot be folded into `densityGateActive` — "is the density axis
-       * on?" would have two spellings.
-       *
-       * `LinearMultiRowFeatureDisplay` composes that mixin and turns this back
-       * off: it paints into fixed lanes, so a high total feature count is not a
-       * per-glyph render cost and only the download budget should gate it. That
-       * override is in its own `.views` block, after the `.compose`, so it wins
-       * over the contributed `true` regardless of mixin order.
+       * Whether the density axis applies. `CanvasFeatureGateMixin` contributes
+       * `true` beside its measurement; byte-only displays leave it.
        */
       get densityGateEnabled(): boolean {
         return false
       },
       /**
        * #getter
-       * Which adapter the gate measures: the config sitting at
-       * `byteGateAdapterPath`, which is `['adapter']` here — the display's own,
-       * correct wherever a display has one fetch path.
-       *
-       * **Derived from the path rather than declared beside it**, so a display
-       * that swaps tiers by zoom overrides one hook instead of two and the
-       * measurement cannot name a file the budget doesn't. MAF is the case it
-       * was built for: past the force-load floor it reads a `summaryAdapter`
-       * instead of the alignment, and measuring the alignment there would quote a
-       * download nobody is doing. The alternative it replaced — turning
-       * `gateEnabled` off for the cheap tier — exempted that tier from the
-       * gate entirely, which is only safe if the tier really is bounded. A
-       * `BigBedAdapter` read is a full-feature download (see its `getFeatures`),
-       * so at genome scale it is not, and the exemption was hiding it.
-       *
-       * Still overridable, and the case that needs it is a display whose
-       * `adapterConfig` is *synthesized* rather than read — GC content wraps the
-       * track's sequence adapter and folds `windowSize` / `gcMode` in, so no
-       * path on the track config names what it fetches. Neither GC-content
-       * display gates today; one that opted in would override this getter and
-       * leave the path alone.
+       * The adapter config the gate measures — the one at `byteGateAdapterPath`.
+       * Overridable for a display whose adapter config is synthesized rather
+       * than read off the track.
        */
       get byteGateAdapterConfig(): Record<string, unknown> {
         return getConf(getContainingTrack(self), this.byteGateAdapterPath)
       },
       /**
        * #getter
-       * The composing display's configured `fetchSizeLimit`, read straight from
-       * its config. The slot is this mixin's own
-       * (`regionTooLargeConfigSchemaFields`), so every composing display
-       * declares it — by extending `baseLinearDisplayConfigSchema`, which
-       * spreads the table, or by spreading it directly. A display with a
-       * bespoke source can still override this getter.
+       * The display's `fetchSizeLimit` slot, from `regionTooLargeConfigSchemaFields`.
        */
       get configuredFetchSizeLimit(): number {
         return getConf(host(self), 'fetchSizeLimit')
       },
       /**
        * #getter
-       * Second (non-byte) too-large axis folded into the derived verdict — canvas
-       * overrides it with its feature-density gate. Byte-only derived displays
-       * leave it false.
+       * The density axis's verdict; canvas overrides it.
        */
       get densityTooLarge(): boolean {
         return false
       },
       /**
        * #getter
-       * Where on the track config the adapter `byteGateAdapterConfig` names
-       * lives. The track's own `adapter` by default; a display that swaps tiers
-       * overrides **this one hook**, and both the measurement and the budget
-       * follow it, so they cannot describe two different files.
-       *
-       * A path rather than the node or the budget itself because
-       * `byteGateAdapterConfig` is a resolved snapshot, and a snapshot cannot
-       * answer this: it omits every slot sitting at its schema default, so a
-       * sub-adapter's declared limit is absent from it in any config that does
-       * not restate the number. Pointing `adapterFetchSizeLimit` at the same
-       * path is what makes a sub-adapter's own `fetchSizeLimit` reachable at
-       * all. Inert in the tree today — the four adapters declaring the slot are
-       * Bam/Cram/VcfTabix/SplitVcfTabix and MAF's summary tier is a BigBed — and
-       * a static check cannot close it, because which adapter type sits behind
-       * an override is a config-time fact.
+       * Where on the track config the measured adapter sits. A tiered display
+       * overrides this one hook (MAF: `['adapter', 'summaryAdapter']` while
+       * `showSummary`), and both the measurement and the budget follow it.
        */
       get byteGateAdapterPath(): string[] {
         return ['adapter']
       },
       /**
        * #getter
-       * The measured adapter's own `fetchSizeLimit` slot (undefined when its
-       * type declares none); `resolveByteLimit` prefers it over the display
-       * config. Read on the main thread, and only here — the estimate that
-       * crosses the worker boundary carries bytes and nothing else, so the
-       * banner and the worker budget have no second spelling of "the adapter's
-       * limit" to disagree about.
-       *
-       * A slot **path off the live config**, not a read off `self.adapterConfig`:
-       * that getter is a snapshot, which by design omits slots sitting at their
-       * default, so a BAM's declared 5 Mb read back as `undefined` in every config
-       * that doesn't restate it. Resolved values come from a config node — see
-       * CONFIG_PATTERN.md §"Reading a slot: node, not snapshot".
+       * The measured adapter's own `fetchSizeLimit` slot, read off the live
+       * track config rather than the `adapterConfig` snapshot, which omits
+       * slots at their default.
        */
       get adapterFetchSizeLimit(): number | undefined {
         return readConfObject(getContainingTrack(self).configuration, [
@@ -325,40 +138,17 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Declarative force-load: when true the display always renders regardless
-       * of region size / feature density (the config-driven equivalent of the
-       * force-load button). Read straight from the `forceLoad` config slot in
-       * this mixin's own field table (same ownership as
-       * `configuredFetchSizeLimit`), so every opt-in display honors it without
-       * per-display wiring.
+       * The declarative `forceLoad` slot.
        */
       get configForceLoad(): boolean {
         return getConf(host(self), 'forceLoad')
       },
       /**
        * #getter
-       * What a measurement taken right now would be about: the span on screen,
-       * and a comparable identity for the exact stretch of genome it covers.
-       * Undefined before the view is measured, which every reader takes as
-       * "there is nothing to measure yet".
-       *
-       * **The gate's only read of the view** — `adapterFetchSizeLimit` reaches
-       * the containing track, and nothing else leaves the display — which is
-       * also why the pre-init guard lives here once: `visibleBp` reads
-       * `view.width`, which throws before measurement, and a bare getter must
-       * never throw. The two readers that want the span alone take
-       * `gateViewport?.spanBp`, so that guard exists once.
-       *
-       * Captured as one value, and captured *before* the round trip, because
-       * both halves answer a question about the measurement that cannot be
-       * recovered afterwards. The span is what `zoomIneffective` compares across
-       * two measurements; the key is what tells the fetch autoruns whether the
-       * stored estimate still describes what the user is looking at
-       * (`gateMeasurementStale`). Reading either at commit time would label the
-       * number with a viewport it never covered.
-       *
-       * Rounded, because `visibleRegions` carries fractional bp and a key that
-       * changed on sub-base jitter would call every estimate stale.
+       * What a measurement taken now would be about: the span on screen and a
+       * key for the stretch of genome it covers. Undefined until the view is
+       * measured, and the mixin's only read of the view. Captured before the
+       * fetch's round trip, never at commit.
        */
       get gateViewport(): GateViewport | undefined {
         const view = getContainingView(self) as RegionHost
@@ -378,41 +168,15 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * Which tier the stored estimate is *about*, as a comparable value. The
-       * cached estimate answers "how many bytes would the fetch pull", and a
-       * display that swaps `byteGateAdapterConfig` by zoom changes which fetch
-       * that is — so past the swap the stored number describes a download nobody
-       * is going to do, exactly the way a stale estimate describes the previous
-       * chromosome's. Both are dropped, and for the same reason.
-       *
-       * Stringified rather than compared by reference: `byteGateAdapterConfig`
-       * is a snapshot getter, and whether a given display's is referentially
-       * stable is not something this mixin should have to rely on. An identity
-       * comparison that turned out unstable would clear the estimate on every
-       * recompute — a banner that flickers on pan, which is the property the
-       * cached estimate exists to provide.
+       * Which tier the estimate is about, as a comparable string.
        */
       get byteGateAdapterKey(): string {
         return JSON.stringify(self.byteGateAdapterConfig)
       },
       /**
        * #getter
-       * Whether the span on screen is above `AUTO_FORCE_LOAD_BP` — that constant
-       * compared here and nowhere else. False before the view is measured.
-       *
-       * Three readers, each doing something different with the same span, which
-       * is why this is one getter rather than a term inside any of them: the
-       * **density** axis stops gating below it (`densityGateActive`), MAF's
-       * `showSummary` swaps to the cheap summary adapter at it, and the **byte**
-       * axis multiplies its budget by `SUB_FLOOR_BYTE_BUDGET_FACTOR` below it
-       * (`gateByteLimit`).
-       *
-       * Deliberately independent of the opt-in and of force-load, so a display
-       * whose *own* opt-in depends on the floor can read it without a cycle:
-       * `byteGateAdapterConfig` is downstream of MAF's swap. The two gate
-       * getters add `gateActive` and their axis's own terms on top — so note
-       * this is false on an unmeasured view, and a reader that isn't already
-       * behind `gateActive` has to say what it wants that to mean.
+       * Whether the span on screen is at or above `AUTO_FORCE_LOAD_BP`, the one
+       * comparison against that constant. False on an unmeasured view.
        */
       get aboveForceLoadFloor(): boolean {
         const spanBp = self.gateViewport?.spanBp
@@ -420,49 +184,22 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * True when nothing may gate, on either axis and in both the worker and the
-       * banner: the declarative `forceLoad` slot, or the force-load button. One
-       * boolean is the whole force-load mechanism — there is no per-region ceiling
-       * to carry, expire, or reconcile between the two axes. A self-summarizing
-       * adapter (BigWig, HiC, sequence) needs no term here: it reports no byte
-       * estimate at all, which already keeps the byte axis out of the verdict.
+       * Nothing may gate on either axis: the `forceLoad` slot or the button.
        */
       get gateExempt() {
         return self.configForceLoad || self.forceLoadTrack
       },
       /**
        * #getter
-       * How many bytes we estimate the fetch this display would issue right now
-       * would pull. The stored measurement, unmodified — the viewport it
-       * describes is kept current by re-measuring rather than by scaling it (see
-       * the mixin docstring). Undefined when nothing has been measured — which
-       * includes the adapter offering no index estimate, since neither path
-       * stores one for that — and that keeps the byte axis out of the verdict
-       * entirely.
+       * The stored estimate's bytes; undefined when nothing has been measured.
        */
       get estimatedFetchBytes() {
         return self.byteEstimate?.bytes
       },
       /**
        * #getter
-       * Whether the gate's last measurement is about a viewport the user has
-       * since left. True when there has been no measurement at all.
-       *
-       * **This is what lets the gate release.** The fetch autoruns skip while
-       * `regionTooLarge` holds — they have to, or a too-large region would
-       * refetch forever off its own `fetchGeneration` bump — and skipping is
-       * also what leaves the verdict frozen at the viewport it was taken at. So
-       * they skip on `gateSkipsMeasuredViewport` instead: one fetch
-       * per settled viewport while blocked, and none once that viewport has been
-       * measured.
-       *
-       * Running the ordinary fetch is the whole re-measure, because every gated
-       * display's fetch begins by measuring and stops there when the answer is
-       * over budget — `measureRegionBytes` ahead of the download, inside the
-       * display's own feature RPC. On the byte axis that is one index read and
-       * no features; on canvas's density axis it is the 1kb pre-fetch probe. A
-       * second, measurement-only RPC path would buy nothing and cost every
-       * display the two-call coordination.
+       * Whether the last measurement is about a viewport the user has since
+       * left. True before any measurement.
        */
       get gateMeasurementStale(): boolean {
         return self.gateMeasuredViewportKey !== self.gateViewport?.key
@@ -471,23 +208,8 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * The byte budget the gate enforces: the adapter's limit, else the display
-       * config, raised by `SUB_FLOOR_BYTE_BUDGET_FACTOR` below the
-       * `AUTO_FORCE_LOAD_BP` span. Also what `resolvedByteLimit()` hands the
-       * worker, so the two can't gate against different numbers. Force-load
-       * doesn't raise this — it exempts the track outright via `gateExempt`.
-       *
-       * The span tier makes this swing at 20kb, which is safe only because this
-       * budget reaches the worker as a call-site argument rather than through
-       * `rpcProps()`. In the payload it would be an RPC cache key, and crossing
-       * the floor would be a full `clearAllRpcData()` refetch. "Neither worker
-       * budget may be an RPC cache key", in REGION_TOO_LARGE.md § How the
-       * verdict is built.
-       *
-       * `aboveForceLoadFloor` is also false on an unmeasured view, so this must
-       * be read under `gateActive` — which is why nothing reads it directly.
-       * `resolvedByteLimit()` is the one consumer, and it is what the verdict,
-       * the worker and MAF's `framesReadOverBudget` all take.
+       * The byte budget: the adapter's limit, else the display's, doubled below
+       * `AUTO_FORCE_LOAD_BP`. Read only through `resolvedByteLimit()`.
        */
       get gateByteLimit() {
         return resolveByteLimit({
@@ -498,35 +220,11 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Whether the gate may act at this moment, on **any** axis: the display
-       * opted in, nothing exempts it, and the view is measured. Every per-axis
-       * question is this plus that axis's own terms — today that is nothing at
-       * all on the byte side and `densityGateEnabled && aboveForceLoadFloor` on
-       * the density one.
-       *
-       * No span floor on the byte axis: the gate re-measures at whatever is on
-       * screen, so below 20kb the verdict is the same measured comparison it is
-       * above. "A small span is a small fetch" is false often enough to matter
-       * — a 470-way MAF is 6-8MB inside a 40kb window, an amplicon pileup tens
-       * of MB — and where it holds, the measured estimate is orders of
-       * magnitude under `fetchSizeLimit` and no banner appears.
-       *
-       * What the span does below 20kb is raise the *budget*
-       * (`SUB_FLOOR_BYTE_BUDGET_FACTOR`, on `gateByteLimit`) rather than switch
-       * this off, so the gate stays reachable at every zoom: index estimates
-       * are monotone in span, so an off-switch makes the gate bypassable by
-       * zooming into it, which is what its own banner tells people to do.
-       *
-       * Everything reads it rather than restating it: the verdict, the worker's
-       * `resolvedByteLimit()` (an undefined budget is an RPC that measures
-       * nothing at all), and the density axis below.
+       * Whether the gate may act right now, on any axis: opted in, not exempt,
+       * view measured. The view is read last, so an ungated display never
+       * touches it.
        */
       get gateActive(): boolean {
-        // The view is consulted only past the two cheap terms, so a display that
-        // never gates — including a non-LGV consumer of this mixin — never
-        // touches `getContainingView`. A measured view is still required: with
-        // no viewport there are no regions to measure, so there would be
-        // nothing to label a measurement with.
         return (
           self.gateEnabled &&
           !self.gateExempt &&
@@ -537,25 +235,8 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * Whether the **density** axis may gate at this moment — `gateActive`
-       * plus this axis's own two terms: the display opted the axis in, and the
-       * span is above the `AUTO_FORCE_LOAD_BP` floor, which is now the floor's
-       * only remaining job.
-       *
-       * The two axes part company because their numbers do. The byte estimate is
-       * measured at the span being judged; the density figure is a model — the
-       * last fetch's features-per-bp times the current bpPerPx — with nothing
-       * measured under it at that span, and it is not monotone in the way the
-       * byte axis's argument for dropping the floor relies on (features clump, so
-       * a smaller window can hold a *higher* local density than the window that
-       * produced the stat). A scan of every indexed file in this repo
-       * (2026-08-06) found the density gate would trip below 20kb on exactly two,
-       * both cohort copy-number BEDs whose feature count doesn't fall with span
-       * at all — and both are `LinearMultiRowFeatureDisplay` tracks, which turn
-       * this axis off. So the floor here costs nothing measurable and removing it
-       * would buy nothing measurable.
-       *
-       * `CanvasFeatureGateMixin` reads this for its `maxFeatureDensity` budget.
+       * `gateActive` plus the density axis's own terms: the axis is on, and the
+       * span is above the floor.
        */
       get densityGateActive(): boolean {
         return (
@@ -564,36 +245,21 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #method
-       * The gated byte budget: `gateByteLimit` under `gateActive`, and the only
-       * spelling of that pair. Undefined (unlimited) when the gate may not act.
-       *
-       * **Three things take it, which is why it exists rather than each of them
-       * writing the ternary**: the fetch RPCs enforce it worker-side,
-       * short-circuiting an over-budget region before it downloads any features;
-       * `tooLargeStatus` compares the estimate against it for the banner; and
-       * MAF's `framesReadOverBudget` bounds a third file with it. A worker
-       * rejecting a region the banner then calls fine is a blank display that
-       * never refetches, and it is reachable only by two of these resolving
-       * differently.
-       *
-       * Lives here, not on the canvas gate that consumes it, because both its
-       * terms are this mixin's — canvas owns only how the density number is
-       * measured.
+       * The budget the worker enforces and the banner compares against — the
+       * one spelling of that pair. Undefined when the gate may not act.
        */
       resolvedByteLimit(): number | undefined {
         return self.gateActive ? self.gateByteLimit : undefined
       },
       /**
        * #method
-       * The gate as it is right now, for a fetch about to be issued. Calling it
-       * is the capture, which is why it is a method.
+       * The gate as it stands for a fetch about to be issued. Calling it is the
+       * capture, which is why it is a method.
        */
       gateFetchState(): GateFetchState {
         return {
           viewport: self.gateViewport,
           gated: self.gateActive,
-          // guarded so an ungated display never evaluates
-          // `byteGateAdapterConfig` — "nothing below the opt-in is evaluated"
           tierKey: self.gateEnabled ? self.byteGateAdapterKey : undefined,
         }
       },
@@ -601,42 +267,13 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * The verdict the whole mixin exists to produce, with the banner text: true
-       * when the measured download for what is on screen exceeds the resolved
-       * byte budget, or when the display's own density axis trips (bytes take
-       * precedence for the text). One expression per axis, each already carrying
-       * every "may this axis gate" term — the opt-ins, force-load, the density
-       * floor — so none of them is restated here.
-       *
-       * **The byte term is `resolvedByteLimit()`, the very budget the worker
-       * enforces**, rather than a second `gateActive ? gateByteLimit :
-       * undefined` beside it that would have to be kept equal by hand — the
-       * drift this subsystem is least able to afford: a worker rejecting a region the banner then calls fine is a
-       * blank display that never refetches. It also carries the `gateActive`
-       * guard that keeps `gateByteLimit`'s containing-track read out of an
-       * ungated display — "nothing below the opt-in is evaluated", which the
-       * ungated composers (wiggle, Manhattan, sequence) and the simplified test
-       * models rely on. The estimate needs no such guard: it is a volatile read
-       * that reaches nothing, and an undefined budget refuses nothing.
-       *
-       * The fetch autoruns re-measure rather than fetch while `regionTooLarge` is
-       * true, and `DisplayChrome` renders the banner from `regionTooLargeReason`.
+       * The verdict and its banner text, from the stored estimate against
+       * `resolvedByteLimit()` and the density axis when it may act.
        */
       get tooLargeStatus() {
         return evaluateRegionTooLarge({
           estimatedFetchBytes: self.estimatedFetchBytes,
           byteLimit: self.resolvedByteLimit(),
-          // `densityGateActive` here is a **contract check with no reachable
-          // path**, and is kept deliberately. The only override of
-          // `densityTooLarge` in the tree reads the flag already — through
-          // `maxFeatureDensity`, which has to go undefined when the axis is off
-          // because it is also the worker's budget — so removing this term
-          // leaves every display in the tree behaving identically, which is
-          // measured and not assumed (the whole canvas/maf/variants/alignments/
-          // arc suite passes without it). What it holds is the rule for the
-          // next display that fills the hook: an axis that may not act does not
-          // gate, and that stays this mixin's answer rather than something each
-          // overrider has to remember.
           densityTooLarge: self.densityGateActive && self.densityTooLarge,
         })
       },
@@ -651,8 +288,7 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #getter
-       * Which axis tripped, as banner text: the estimated download size, or
-       * "Too many features". Empty string when the region isn't too large.
+       * Banner text for the axis that tripped; empty when not too large.
        */
       get regionTooLargeReason() {
         return self.tooLargeStatus.reason
@@ -660,29 +296,8 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #getter
-       * Whether "zoom in to see features" is still honest advice — the banner
-       * offers that way out only when this is true, and force-load alone when it
-       * isn't.
-       *
-       * **Asked of the axis that actually tripped**, because only one of the two
-       * can ever answer no. Screen density is features ÷ pixels, so it falls
-       * with `bpPerPx` by construction and zooming always releases it. Bytes
-       * don't work that way: an index quotes whole blocks, so whether zooming
-       * shrinks a given file's fetch is a property of that file's blocks and not
-       * of any span threshold, and `ByteEstimate.zoomIneffective` records that
-       * the user zoomed in materially and the bytes did not move.
-       *
-       * Reading `zoomIneffective` alone gets the density case backwards on
-       * exactly the files that axis exists for. A dense VCF is small on disk and
-       * flat across zooms, so two zoom steps while density-blocked set the flag
-       * — the worker reports `bytes` alongside a density rejection, so the
-       * estimate keeps updating while the banner holds — and the banner would
-       * then withhold the one way out that works.
-       *
-       * True until proven otherwise, so a track that has been measured once
-       * still reads as escapable. That is the right default: the failure this
-       * guards is telling someone to keep zooming forever, not withholding the
-       * suggestion for one zoom step.
+       * Whether "zoom in to see features" is honest advice. Density always
+       * releases on zoom; bytes only if the last zoom-in moved the estimate.
        */
       get zoomCanReleaseGate(): boolean {
         return (
@@ -694,18 +309,8 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * The skip both fetch foundations apply before consulting the display's
-       * own gate: the banner is up **and** the measurement behind it already
-       * describes the viewport on screen, so this run has nothing to do. Its
-       * negation is the rule `gateMeasurementStale` states — one fetch per
-       * settled viewport while blocked, which IS the re-measure and the only
-       * thing that can release the gate.
-       *
-       * One getter for both fetch skeletons: a guard kept in two copies is
-       * where an escape clause gets added to one of them.
-       *
-       * A display that opts into no byte gate reads `regionTooLarge` as a
-       * literal false, so this is false for it too.
+       * The skip both fetch skeletons apply: the banner is up and its
+       * measurement already describes the viewport on screen.
        */
       get gateSkipsMeasuredViewport(): boolean {
         return self.regionTooLarge && !self.gateMeasurementStale
@@ -714,12 +319,8 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * The bytes half of a measurement alone — `gated: false` stamps no
-       * viewport, `tierKey: undefined` waives the tier guard. Production commits
-       * through `commitFetchBytes`; this is what a test stages a display with.
-       * `viewport` must be `gateViewport` read when the measurement was
-       * requested, not at commit time, or `gateMeasurementStale` and
-       * `zoomIneffective` both answer about a viewport the number never covered.
+       * The bytes half of a measurement alone, for a test staging a display.
+       * Production commits through `commitFetchBytes`.
        */
       setByteEstimate(measurement: { bytes: number; viewport: GateViewport }) {
         applyGateEvent(self, {
@@ -736,15 +337,8 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
-       * Drops the cached estimate. The estimate describes one fetch, and the
-       * two triggers — chromosome navigation and a tier swap, both read by this
-       * mixin's own `afterAttach` autorun — each change which fetch that is.
-       * Not an ordinary viewport change: the estimate intentionally survives
-       * `clearAllRpcData` so panning doesn't flicker the banner.
-       *
-       * `forceLoadTrack` deliberately survives both: it is a track-wide
-       * approval, so expiring it here is exactly the per-locus re-approval the
-       * button exists to avoid.
+       * Drops the estimate and the viewport stamp. `forceLoadTrack` survives:
+       * it is a track-wide approval.
        */
       clearByteEstimate() {
         applyGateEvent(self, { kind: 'invalidated' })
@@ -752,10 +346,6 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
-       * Exempt this track from the gate (or put it back under it). Separate from
-       * `forceLoad` so turning the gate off and refetching stay separable — a
-       * caller that just wants the flag (a revoke, a test) doesn't trigger a
-       * fetch, and `forceLoad` doesn't have to inline a volatile write.
        */
       setForceLoadTrack(flag: boolean) {
         applyGateEvent(self, { kind: 'forceLoad', approved: flag })
@@ -763,31 +353,16 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
+       * Overridden by the composing display.
        */
-      reload() {
-        // no-op, overridden by composing display models
-      },
+      reload() {},
     }))
     .actions(self => ({
       /**
        * #action
-       * The byte axis of a finished fetch, committed from what its results
-       * measured. **The fetch runners call this, not the display**: a display
-       * opts into the gate by passing `byteLimit: self.resolvedByteLimit()` in
-       * its RPC call and nothing else, and every RPC that takes that budget
-       * answers `bytes` — in the payload when it was under, in the
-       * `RegionTooLargeResult` when it was not.
-       *
-       * **Max, not sum**: the budget is what one region may cost, so a batch
-       * commits its largest. An empty batch commits nothing, because a fetch
-       * with no results asked the adapter nothing and stamping the viewport
-       * would tell `gateMeasurementStale` otherwise. An ungated display
-       * measured nothing either, and skipping it here keeps
-       * `byteGateAdapterKey` unevaluated below the opt-in.
-       *
-       * Which measurement wins, what an unmeasurable result leaves alone and
-       * which tier a number is about are `nextGateState`'s rules; this adds
-       * only the max and the current tier.
+       * The byte axis of a finished fetch, called by the fetch runners with the
+       * `gateFetchState()` they captured at issue. Commits the per-region max;
+       * an empty batch, or an ungated display, commits nothing.
        */
       commitFetchBytes(
         perRegionBytes: (number | undefined)[],
@@ -806,10 +381,7 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * Force-load: exempt this track from the gate and refetch. One click covers
-       * every region and both axes, informed by the size the banner just quoted.
-       * The display chrome calls this from TooLargeMessage's button; concrete
-       * display models override `reload()` to do the actual refetch.
+       * The banner's button: exempt the track on both axes and refetch.
        */
       forceLoad() {
         self.setForceLoadTrack(true)
@@ -817,18 +389,7 @@ export default function RegionTooLargeMixin() {
       },
     }))
     .actions(self => ({
-      // The fork auto-chains afterAttach, so this runs alongside the composing
-      // display's own without either calling super.
       afterAttach() {
-        // The estimate describes one fetch, and two things change which fetch
-        // that is: chromosome navigation (`displayedRegionIndex` is reused, so
-        // the old number would gate the new region) and a tier swap (MAF
-        // captures a 470-way detail estimate below 20kb, zooms out into the
-        // cheap summary tier, and megabytes banner a ~60 kB read). Owned here
-        // so composing the mixin, or overriding `byteGateAdapterPath`, is the
-        // whole opt-in and no display has to remember a wire. The reads are the
-        // autorun's own: an MST action runs untracked. Guarded so a display
-        // that never gates never evaluates `byteGateAdapterConfig`.
         autorunOnReadyView(
           self,
           view => {

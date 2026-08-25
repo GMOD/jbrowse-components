@@ -5,19 +5,12 @@ import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken, StopTokenChecker } from '../util/stopToken.ts'
 import type { AugmentedRegion } from '../util/types/data.ts'
 
-// The size gate's shared vocabulary, on both sides of the worker boundary — the
-// byte budget, and the answer a worker gives when either axis refuses a region.
-// Why each rule is what it is: agent-docs/reference/REGION_TOO_LARGE.md
-// § "A budget has a scope".
-
-/** Which question about a region set a byte budget asks. */
+/**
+ * Which question a byte budget asks of a region set: the gate's per-region
+ * budget, or the save dialog's bound on the whole download.
+ */
 export type ByteEstimateScope = 'largestRegion' | 'wholeRequest'
 
-/**
- * What the two measurement helpers below need an adapter to be. A duck type,
- * not `BaseFeatureDataAdapter`: this module sits under the adapter layer, and
- * the one method the byte axis reads is this one.
- */
 export interface ByteMeasurableAdapter {
   getRegionByteSize: (
     regions: AugmentedRegion[],
@@ -26,40 +19,16 @@ export interface ByteMeasurableAdapter {
 }
 
 /**
- * What a fetch RPC answers **instead of a payload** when a region is over
- * budget on either axis. Every in-fetch-gated RPC returns
- * `Payload | RegionTooLargeResult`, so "was this region refused" is one shape
- * rather than a per-RPC convention — see {@link isRegionRefused}.
+ * What a gated fetch RPC answers instead of a payload when a region is over
+ * budget on either axis, carrying everything measured on the way: the byte
+ * stage runs first, so a density refusal still has `bytes`.
  */
 export interface RegionTooLargeResult {
   regionTooLarge: true
-  // Which gate tripped, plus everything measured on the way there — NOT one or
-  // the other. The byte stage runs first, so a density rejection still carries
-  // the index estimate it cleared (`tooManyFeaturesResult` takes it as an
-  // argument for exactly this reason), and `commitGateMeasurements` records both
-  // axes off one result. A byte short-circuit returns before any features are
-  // counted, so that one carries `bytes` alone.
-  //
-  // `bytes` is absent when the adapter offers no index estimate, or when the
-  // fetch carried no `byteLimit` and so measured nothing.
   featureCount?: number
   bytes?: number
 }
 
-/**
- * Whether a fetch answered "refused" rather than data for this region.
- *
- * **The one test, because the answer decides what `loadedRegions` may claim.**
- * A refused region stored nothing, so marking it loaded over the span the fetch
- * asked for makes the viewport read as covered against data that does not exist
- * — the plan then reports `covered`, nothing refetches, and nothing
- * re-measures. That is invisible on a region fetched for the first time (the
- * data map is empty and the display notices) and permanent on one the reader
- * already had data for, which is every region they zoomed out from.
- *
- * So the fan-out helpers and the displays that fold the gate into their own RPC
- * both ask here, rather than each spelling out `'regionTooLarge' in result`.
- */
 export function isRegionRefused(
   result: unknown,
 ): result is RegionTooLargeResult {
@@ -91,14 +60,7 @@ export function overByteBudget(
   return bytes !== undefined && byteLimit !== undefined && bytes > byteLimit
 }
 
-/**
- * The bytes a fetch result reports it measured, whether it came back as a
- * payload or as a refusal. A probe over `unknown` for the same reason
- * {@link isRegionRefused} is one: the fan-out helpers are generic over what a
- * display's RPC returns, and the gate only ever wants this one field off it.
- * Absent means "this fetch measured nothing", which the commit protocol keeps
- * distinct from "measured zero".
- */
+/** The bytes a fetch result reports, payload or refusal; absent means unmeasured. */
 export function measuredBytes(result: unknown) {
   return typeof result === 'object' &&
     result !== null &&
@@ -109,21 +71,10 @@ export function measuredBytes(result: unknown) {
 }
 
 /**
- * Stage 1 of every gated feature fetch: each region's index-only byte estimate,
- * taken before any feature download, so an over-budget region short-circuits
- * without pulling data — on a whole-genome fan-out that's one cheap index read
- * per chromosome instead of every chromosome's features. Regions are measured
- * separately and the largest is what the budget judges, because the budget is
- * what ONE region may cost.
- *
- * `bytes` comes back either way (undefined when the adapter offers no index
- * estimate, or when there is no budget to check against), because the result
- * carries it to the main-thread gate whether or not the region tripped. When
- * `tooLarge` is set the caller must return it as-is and fetch nothing.
- *
- * In core because every gated feature RPC in the tree runs it as its first
- * await, and a second copy is a second answer to "is this region over budget".
- * See agent-docs/reference/REGION_TOO_LARGE.md.
+ * The first await of every gated feature fetch: each region's index-only byte
+ * estimate, judged by the largest because the budget is per region. `bytes`
+ * comes back either way; when `tooLarge` is set the caller returns it and
+ * fetches nothing. No budget means no measurement.
  */
 export async function measureRegionBytes({
   dataAdapter,
@@ -143,9 +94,6 @@ export async function measureRegionBytes({
   if (byteLimit === undefined) {
     return {}
   }
-  // Labelled because this is the first thing a fetch does: the display has just
-  // cleared its status, and without a phase here the overlay flashed its
-  // 'Loading' fallback for as long as the index read took.
   const bytes = largestRegionBytes(
     await updateStatus('Checking region size', statusCallback, () =>
       Promise.all(
