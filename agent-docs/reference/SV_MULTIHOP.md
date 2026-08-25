@@ -300,6 +300,18 @@ looking for. The last colon is the separator by construction, which is the rule
 returns undefined instead of a NaN that reached a fetch region and a panel's
 `centerAt`, neither of which reports one.
 
+**The walk's one concession on ambiguity is a caller that assembled the
+answer.** Two junctions leaving one locus stop the walk by design. GRIDSS writes
+`BEID`, the ids of the breakend assembly contigs behind a call, and Esvee
+`ASMID`; two junctions sharing one were assembled on a single contig, which is
+the caller saying they are phased cis. `junctionFromFeature` carries both into
+`Junction.assemblyIds`, and `nextJunctionFrom` takes the one continuation that
+shares a contig with the arrival junction — only when exactly one does, and
+never when the locus was unambiguous anyway. Synthetic test only: no GRIDSS or
+Esvee callset is in the tree. The rest of that stack — LINX's `links.tsv` as a
+ready-made chain, junction copy number as a tiebreak — is parked in
+[ideas/linx-chains-in-the-breakend-walk.md](../ideas/linx-chains-in-the-breakend-walk.md).
+
 ## HG008-T, the reconstruction's second dataset
 
 The picker is checked against a second cancer on different chemistry, in
