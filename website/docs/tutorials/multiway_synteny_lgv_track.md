@@ -51,7 +51,7 @@ assembly: the display finds the first GFF3 feature track declared for the lane's
 assembly alone and fetches its genes over the lane's window, so exons and
 introns come from the same annotation the ortholog table was built from. A lane
 with no gene track draws the table's own gene spans as outlined boxes instead,
-and says `no annotation` in its header — a placement box and a gene model are
+and says `no annotation` in its header. A placement box and a gene model are
 never the same ink, so one box filling a lane cannot be misread as one enormous
 gene.
 
@@ -106,13 +106,15 @@ declarative equivalent, as a `defaultSession`:
 
 The track entry names the display type and its settings the same way any track
 entry in a session spec does. `rowOrder` pins the lanes it names to the top, in
-its order; lanes it does not name follow in the order the data brings them up.
+its order. Lanes it does not name follow densest-first, counted over the whole
+fetched table rather than the viewport, so the order holds still across a pan.
 
 <Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes carry their own gene models from those genomes' gene tracks, the lanes without one carry the table's gene spans as boxes, and a ribbon chain stops at the first lane missing the ortholog." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
-Ordering the lanes by how much of the block each genome keeps is what lets the
-ribbon chains run: a ribbon connects **adjacent** lanes only, so a near-empty
-lane placed mid-stack would cut the chains of every denser lane below it.
+That default is what lets the ribbon chains run: a ribbon connects **adjacent**
+lanes only, so a near-empty lane placed mid-stack would cut the chains of every
+denser lane below it. Most stacks therefore need no `rowOrder` at all, and the
+one above is only pinning an order a reader of this locus already expects.
 
 ## Zooming to genes
 

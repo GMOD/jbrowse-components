@@ -397,11 +397,6 @@ import json
 
 panel = [l.split('\t') for l in open('cfhr_panel.txt').read().splitlines()]
 names = [f'{s}.{h}' for s, h, _ in panel]
-# Non-carriers first, so a chain the deletion cuts runs through every lane that
-# kept the genes and stops at the first lane that lost them. A ribbon joins
-# ADJACENT lanes only, which is what makes that reading possible.
-lanes = [f'{s}.{h}' for s, h, label in panel if label != 'carrier']
-lanes += [f'{s}.{h}' for s, h, label in panel if label == 'carrier']
 
 
 def uri(path):
@@ -448,7 +443,7 @@ print(json.dumps({
         'type': 'SyntenyTrack',
         'trackId': 'hprc_cfhr_multiway',
         'name': f'CFH cluster orthologs (hg38 + {len(names)} haplotypes, CAT)',
-        'assemblyNames': ['hg38', *lanes],
+        'assemblyNames': ['hg38', *names],
         'adapter': {
             'type': 'MCScanBlocksAdapter',
             'mcscanBlocksLocation': uri('hprc_cfhr.blocks'),
@@ -457,6 +452,12 @@ print(json.dumps({
             + [uri(f'hprc_cfhr_{name}.bed') for name in names],
             'assemblyNames': ['hg38', *names],
         },
+        # No rowOrder: the display stacks its lanes densest-first, and here
+        # that IS the reading order. A non-carrier kept CFHR3 and CFHR1 and so
+        # carries two placements a carrier does not, which puts every
+        # non-carrier above every carrier without anything naming them — a
+        # ribbon joins ADJACENT lanes only, so the chain runs through the lanes
+        # that kept the genes and stops at the first lane that lost them.
         'displays': [{
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 'hprc_cfhr_multiway-MultiWaySyntenyDisplay',

@@ -1131,9 +1131,9 @@ bcftools view -r chr1:196753075-196753075 -Oz -o cfhr_site.vcf.gz "$WAVE"
 It then walks the homozygous samples in callset order and keeps a haplotype only
 if three things hold: its alignment in the window sits on one contig, release 2
 annotated it, and its own CAT annotation agrees with the genotype it was picked
-on — no _CFHR3_ or _CFHR1_ on a carrier, both on a non-carrier. The third is the
-control, since the callset and the annotation are separate products of the
-release, and a lane is drawn only where the two say the same thing.
+on, meaning no _CFHR3_ or _CFHR1_ on a carrier and both on a non-carrier. The
+third is the control, since the callset and the annotation are separate products
+of the release, and a lane is drawn only where the two say the same thing.
 
 That last check is the one that costs: a CAT annotation is ~110 MB, whole
 genome, and ships no index, so the shortlist is fetched concurrently
