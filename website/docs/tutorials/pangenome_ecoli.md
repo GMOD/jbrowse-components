@@ -557,6 +557,18 @@ The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity, and codon view, all derived from the alignment with no extra
 files.
 
+A row is also a comparison waiting to be opened. Drag across the rows and the
+right-click menu lists each strain the selection covers: **Open Sakai ... in new
+view** puts that strain's own genome beside this one at the aligned stretch, and
+**Launch synteny view, K12 vs...** opens the two as a
+[linear synteny view](/docs/user_guides/linear_synteny_view), the ribbons cut
+from these same columns. The strains are navigable because the config loads them
+as assemblies under the names the MAF calls them; a
+[`samples` entry](/docs/config_guides/maf_track#the-samples-array) names the
+assembly explicitly where the two differ.
+
+<Video src="/media/synteny/maf_row_synteny.mp4" caption="From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the NCTC86 entry opens, with K12's genes over the alignment and NCTC86's genes under the ribbon." />
+
 ## Pangenome depth projection (core vs accessory)
 
 The three projections above show where the genomes differ. Depth shows how much
@@ -830,9 +842,14 @@ view → Graph genome view (this region)** cuts a subgraph from the index with n
 that **Launch** submenu carries **Linear synteny view** beside it, so one drag
 offers both readings of a locus: the graph, and a row per strain with the
 alignment drawn between neighbours. Each view reaches the other again. A synteny
-row is a linear view with the same ruler, and the
+row is a linear view with the same ruler, so a drag on any row's scale bar
+raises the same **Launch** menu anchored on that strain, and **Replace current
+view** there re-anchors the whole stack on it; the segments lane rides onto the
+K12 row, so its track menu cuts the graph from inside the stack; and the
 [graph's own menu](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
 opens the strains as a stack.
+
+<Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, three views: the Launch menu offering the graph beside the synteny stack, the stack anchored on K12 with the segments lane on its top row, that lane's track menu cutting the graph below, and a drag on the Sakai row re-anchoring the stack on Sakai in place." />
 
 The clip below takes that from the beginning: a K12 session carrying the plugin
 and its gene track, the block above pasted in through **Open track...**, and the

@@ -7,9 +7,10 @@
 // chain block.
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
+import { GRAPH_DRAWN } from '../specs/graph-fixtures.ts'
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
 import { syntenyVideoFixtures } from '../specs/synteny.ts'
-import { LOCATION_BOX, RUBBERBAND } from './shared.ts'
+import { LOCATION_BOX, RUBBERBAND, trackMenu } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -70,6 +71,11 @@ const COLOR_BY_MENU = '[data-testid="color_by_menu"]'
 const LAUNCH_SUBMENU = '[data-testid="cascading-submenu-launch"]'
 const LAUNCH_SYNTENY_VIEW =
   '[data-testid="cascading-menuitem-linear_synteny_view"]'
+
+const MAF_DISPLAY = '[data-testid="maf-display"]'
+// `cascading-menuitem-<label>`, lowercased with whitespace as `_`: the child's
+// label is the strain and its locus, and only the strain half is stable.
+const MAF_NCTC86_ENTRY = '[data-testid^="cascading-menuitem-nctc86_chr"]'
 
 // One of the launch dialog's reorder arrows. Labelled with the assembly AND its
 // position, because a self-alignment track lists the anchor's assembly twice and
@@ -1095,6 +1101,237 @@ export const syntenyVideos: VideoSpec[] = [
       // The launched view: hg38 over hs1, the gene track carried into the panel
       // for the assembly the launch came from and the other panel empty.
       { type: 'delay', ms: 4000 },
+    ],
+    tailMs: 4500,
+  },
+
+  // THE ROUND TRIP, which pangenome_ecoli.md's "Browsing the whole graph by
+  // locus" states in one paragraph: a rubberband on K-12 offers the graph and
+  // the synteny stack from one Launch menu; the stack's K-12 row carries the
+  // segments lane, so the graph is one track menu away from inside the stack;
+  // and a drag on any other row's ruler raises the same launch anchored on that
+  // strain, whose Replace current view re-anchors the stack in place. Three
+  // launches, each from the view the last one produced.
+  //
+  // The graph comes BEFORE the re-anchor, and the order is forced: a launch
+  // copies the launching row's tracks onto the anchor panel and nothing onto the
+  // mates, so once the stack is re-anchored on Sakai the K-12 row is a bare
+  // ruler with no segments lane to launch from. Filmed the other way round the
+  // graph beat has no track to click.
+  //
+  // The Sakai row's drag is a selector anchor with `dx` either side of the
+  // ruler's centre rather than a locus: Sakai's coordinates for this window
+  // are whatever the launch resolved them to, and naming them here would pin
+  // the tour to one resolution of the PAF.
+  {
+    name: 'synteny/ecoli_roundtrip',
+    description:
+      'One selection on K-12, three views: the Launch menu offering the graph beside the synteny stack, the stack anchored on K-12 with the segments lane on its top row, that lane cutting the graph below, and a drag on the Sakai row re-anchoring the stack on Sakai',
+    url: syntenyVideoFixtures.roundTripStart,
+    // Sized to the END state, a five-row stack over the graph pane: the stack
+    // measures ~620 (multiway_synteny/ecoli_launch_result) and a launched graph
+    // pane lands the app at ~1100 (pangenome/pggb_subgraph_launch). The page
+    // background under the opening lanes is the cost of filming two launches.
+    viewportHeight: 1110,
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 180000,
+    settleMs: 12000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'K-12: one lane per strain, and the graph segments',
+      },
+      {
+        type: 'drag',
+        fromAnchor: {
+          locus: syntenyVideoFixtures.allVsAllSpan.start,
+          band: RUBBERBAND,
+        },
+        toAnchor: {
+          locus: syntenyVideoFixtures.allVsAllSpan.end,
+          band: RUBBERBAND,
+        },
+        say: 'Drag across the scale bar',
+        hold: 900,
+      },
+      { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
+      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1200 },
+      { type: 'waitForText', text: 'Graph genome view (this selection)' },
+      { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
+      {
+        type: 'delay',
+        ms: 2200,
+        say: 'The graph or the stack, from one selection',
+      },
+      {
+        type: 'click',
+        selector: LAUNCH_SYNTENY_VIEW,
+        say: 'Linear synteny view',
+      },
+      { type: 'waitForText', text: 'Panels, top to bottom' },
+      {
+        type: 'waitForSelector',
+        selector: panelArrow(syntenyVideoFixtures.allVsAllMoved, 5, 'up'),
+        timeout: 180000,
+      },
+      { type: 'delay', ms: 2500, say: 'One panel per strain that aligns' },
+      {
+        type: 'click',
+        text: 'Replace current view',
+        say: 'Replace current view',
+      },
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 180000,
+      },
+      { type: 'waitForAppSettled', timeout: 180000 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'The stack, anchored on K-12, with its lanes on the top row',
+      },
+      // The graph, from the segments lane the launch carried onto the K-12 row.
+      {
+        type: 'click',
+        selector: trackMenu(syntenyVideoFixtures.segmentsTrackId),
+        say: 'The segments lane: Track menu',
+        hold: 700,
+      },
+      { type: 'waitForText', text: 'Launch view' },
+      { type: 'click', text: 'Launch view', say: 'Launch view', hold: 700 },
+      { type: 'waitForText', text: 'Graph genome view (this region)' },
+      {
+        type: 'click',
+        text: 'Graph genome view (this region)',
+        say: 'Graph genome view (this region)',
+      },
+      { type: 'waitForSelector', selector: GRAPH_DRAWN, timeout: 180000 },
+      { type: 'waitForAppSettled', timeout: 180000 },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 3000, say: 'The graph, cut from inside the stack' },
+      // The re-anchor: a drag on the Sakai row's own ruler.
+      {
+        type: 'drag',
+        fromAnchor: {
+          selector: RUBBERBAND,
+          view: [0, 1],
+          alignX: 'center',
+          dx: -220,
+        },
+        toAnchor: {
+          selector: RUBBERBAND,
+          view: [0, 1],
+          alignX: 'center',
+          dx: 220,
+        },
+        say: 'Drag on the Sakai row',
+        hold: 900,
+      },
+      { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
+      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1000 },
+      { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
+      {
+        type: 'click',
+        selector: LAUNCH_SYNTENY_VIEW,
+        say: 'Linear synteny view',
+      },
+      { type: 'waitForText', text: 'Sakai (your selection)' },
+      {
+        type: 'waitForSelector',
+        selector: panelArrow(syntenyVideoFixtures.allVsAllMoved, 5, 'up'),
+        timeout: 180000,
+      },
+      { type: 'delay', ms: 2500, say: 'The same dialog, anchored on Sakai' },
+      {
+        type: 'click',
+        text: 'Replace current view',
+        say: 'Replace current view',
+      },
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 180000,
+      },
+      { type: 'waitForAppSettled', timeout: 180000 },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'The stack re-anchored on Sakai, the graph still below',
+      },
+    ],
+    tailMs: 4500,
+  },
+
+  // THE MAF ROW LAUNCH, which pangenome_ecoli.md's alignment section states in
+  // one paragraph: a drag across the rows lists the strains it covers, and the
+  // synteny entry opens the reference against one of them with the ribbons cut
+  // from the columns. The drag is a selector anchor inside the MAF display's
+  // own box -- the rows are laid out below the coverage band, so it runs from
+  // the middle of the display to near its bottom edge -- because no locus names
+  // a row.
+  //
+  // The submenu child is picked by its testid prefix rather than by text: the
+  // inline "Open NCTC86 ... in new view" entry above it contains the same
+  // words, and a text match lands on whichever comes first.
+  {
+    name: 'synteny/maf_row_synteny',
+    description:
+      "From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the NCTC86 entry opens",
+    url: syntenyVideoFixtures.mafRows,
+    // The linear view plus the two-row view the launch adds below it, which the
+    // probe that verified the route measured at ~1100 with both on screen.
+    viewportHeight: 1110,
+    readySelector: displayPainted('maf-display'),
+    readyTimeout: 180000,
+    settleMs: 8000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 2500, say: 'The alignment, one row per strain' },
+      {
+        type: 'drag',
+        fromAnchor: {
+          selector: MAF_DISPLAY,
+          alignX: 'center',
+          alignY: 'center',
+          dx: -220,
+          dy: 10,
+        },
+        toAnchor: {
+          selector: MAF_DISPLAY,
+          alignX: 'center',
+          alignY: 'bottom',
+          dx: 220,
+          dy: -6,
+        },
+        say: 'Drag across the rows',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Launch synteny view, K12 vs...' },
+      { type: 'delay', ms: 1800, say: 'One entry per strain the drag covers' },
+      {
+        type: 'click',
+        text: 'Launch synteny view, K12 vs...',
+        say: 'Launch synteny view, K12 vs...',
+        hold: 1200,
+      },
+      { type: 'waitForSelector', selector: MAF_NCTC86_ENTRY },
+      { type: 'click', selector: MAF_NCTC86_ENTRY, say: 'NCTC86' },
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 180000,
+      },
+      { type: 'waitForAppSettled', timeout: 180000 },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'K-12 over NCTC86, the ribbon cut from the columns',
+      },
     ],
     tailMs: 4500,
   },

@@ -477,6 +477,64 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
 // The grasses multi-way lanes at the rice window the maize-WGD stacked figure
 // reads, shared between the `multiway_synteny/grasses_rice_lanes` still and
 // the track-menu launch tour so the film and the figure open the same app.
+// Where the round trip starts: the same K-12 lanes, with the graph's rGFA
+// segments lane beside them — the two datasets the one rubberband offers a
+// view of, and the segments lane is what the launched stack's K-12 row carries
+// into the graph launch (anchorPanelTracks copies every non-synteny track).
+const ECOLI_ROUND_TRIP_START = sessionSpec(
+  encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+  {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'K12',
+        loc: 'chr:795,000-815,000',
+        tracks: [
+          {
+            trackId: 'ecoli_ava',
+            type: 'LGVSyntenyDisplay',
+            groupBy: { type: 'mateAssembly' },
+            hideSelfAlignments: true,
+            featureHeight: 14,
+            height: 135,
+          },
+          {
+            trackId: 'ecoli_minigraph_segments',
+            type: 'LinearBasicDisplay',
+            showLabels: 'none',
+            height: 60,
+          },
+        ],
+      },
+    ],
+  },
+)
+
+// Where the MAF-row launch starts: the pggb alignment over one operon window
+// on K-12, narrow enough that every strain's row is a run of bases rather than
+// a bar, with the gene lane that names what the rows are aligning.
+const ECOLI_MAF_ROWS = sessionSpec(
+  encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+  {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'K12',
+        loc: 'chr:1,446,000-1,449,000',
+        tracks: [
+          {
+            trackId: 'K12_genes',
+            type: 'LinearBasicDisplay',
+            showOnlyGenes: true,
+            displayMode: 'compact',
+          },
+          'ecoli_pggb_maf',
+        ],
+      },
+    ],
+  },
+)
+
 const GRASSES_RICE_LANES = sessionSpec(
   encodeURIComponent(
     'https://jbrowse.org/demos/orthofinder_grasses/config.json',
@@ -4779,6 +4837,11 @@ export const syntenyVideoFixtures = {
   // PAF drawn as an LGVSyntenyDisplay, one lane per other strain. The same const
   // the three composite frames load, so the film and the stills cannot drift.
   allVsAllLanes: ECOLI_ONE_VS_ALL_LANES,
+  roundTripStart: ECOLI_ROUND_TRIP_START,
+  mafRows: ECOLI_MAF_ROWS,
+  // The rGFA segments lane's track, which the round trip launches the graph
+  // from once it has ridden onto the stack's K-12 row.
+  segmentsTrackId: 'ecoli_minigraph_segments',
   // The span the tour rubberbands, which is the span the composite's own drag
   // covers (`launchFromSelectionParts` measures it in pixels; this names it).
   //
