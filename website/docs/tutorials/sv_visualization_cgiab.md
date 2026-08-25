@@ -387,7 +387,17 @@ and the Cancer Gene Census genes it covers.
 Clicking a segment shows all of it, each census gene listed at its tier.
 
 `HG008-T--HG008-N.bicseq2.txt` is the same segmentation in quantitative form,
-one log2 ratio per segment, and it reshapes into a bedGraph in one `awk` line.
+one log2 ratio per segment. It is a 20 KB download and one `awk` away from a
+bedGraph:
+
+<!-- from: scripts/build_sv_visualization_cgiab.sh -->
+
+```bash
+# column 9 is log2.copyRatio, and the file is 1-based where bedGraph is not
+awk 'NR>1 {printf "%s\t%d\t%d\t%.4f\n", $1, $2-1, $3, $9}' \
+  HG008-T--HG008-N.bicseq2.txt > HG008-T_bicseq2_log2ratio.bedgraph
+```
+
 Plot it as a **Line (step)** over a fixed range, since a homozygous deletion
 carries no reads and so no finite ratio. The balanced baseline sits above zero
 because BIC-seq2 normalizes on total read counts and this genome is hypodiploid;
@@ -805,9 +815,14 @@ multi-bigwig track, which is fast at any zoom:
 
 The two rows in the figures here come from
 [goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov), which
-normalizes each sample to its own median. That is what lets them share an axis:
-the normal sits flat at 1, and every level the tumor holds reads as a ratio
-against it.
+divides each sample by its own median. That normalization is what lets the rows
+share an axis at all: the tumor and the normal were sequenced to different
+depths, so raw coverage separates them before any copy number does, where
+normalized rows put the normal flat at 1 and read every level the tumor holds as
+a ratio against it. Those two files are published beside the demo rather than
+built by the pipeline above — `HG008-N_indexcov.bw` and `HG008-T_indexcov.bw`
+under https://jbrowse.org/demos/cgiab/ — and load as a multi-wiggle track by
+URL.
 
 Zoom to a region and open the benchmark CNV BED to check the coverage changes
 against the called intervals. Coverage says a level changed; the BAF track in

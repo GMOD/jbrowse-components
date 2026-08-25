@@ -133,8 +133,8 @@ homozygous reference. Two settings make them comparable:
 - Turn the pileup off from the track menu's **Show...** submenu, since at this
   width the individual reads are a solid mass and it is the coverage curve that
   carries the comparison.
-- Set an explicit **Set min/max score...** on each, so the three coverage lanes
-  share one axis.
+- Pin each lane's axis from the track menu's **Score → Set min/max score...**,
+  so the three coverage lanes share one scale.
 
 <Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
