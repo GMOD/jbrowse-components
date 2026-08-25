@@ -54,7 +54,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface LaunchableTrack {
+export interface LaunchableTrack {
   trackId: string
   name: string
 }

@@ -54,31 +54,38 @@ a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 ### From a locus you are already looking at
 
-The other way in starts from a locus in a linear genome view whose assembly a
-synteny dataset covers, and lets JBrowse frame the panels. The dataset does not
-have to be an open track:
+The other way in starts from a locus in a linear genome view with a synteny
+track open on it, and lets JBrowse frame the panels. The track has to be open:
+its ribbons are what say the locus aligns anywhere at all, and a dataset that is
+configured but closed is what the import form above is for.
 
 - **Drag-select a region** on the scale bar and pick **Launch → Linear synteny
-  view**. The dialog's first field is the **synteny dataset** to read the region
-  back out of, listing every one in the session that covers this assembly, the
-  view's own tracks first; changing it refetches the panels below. JBrowse finds
-  every assembly aligning to the region in that dataset and opens a panel for
-  each. The dialog lists them top to bottom with up/down arrows, the assembly
-  you selected in among them: ribbons are drawn between neighbouring panels
-  only, so that order decides which comparisons the view can show. This is the
-  form to use for an [all-vs-all](/docs/tutorials/allvsall_synteny) dataset,
-  where a locus reaches several assemblies at once.
+  view**. The dialog names the **synteny dataset** the region is read back out
+  of — a select when the view has more than one open, a line otherwise — and
+  changing it refetches the panels below. JBrowse finds every assembly aligning
+  to the region in that dataset and opens a panel for each. The dialog lists
+  them top to bottom with the locus and size each panel will open on and up/down
+  arrows, the assembly you selected in among them: ribbons are drawn between
+  neighbouring panels only, so that order decides which comparisons the view can
+  show. This is the form to use for an
+  [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus reaches
+  several assemblies at once.
 - **Right-click a single alignment** in a synteny track drawn in a linear genome
   view and pick **Launch synteny view for this position**, which opens the one
   pair that alignment describes. Its **Use CIGAR to map the current visible
   region to the target** option walks the alignment to find the interval that
   matches what you are looking at; without it the panels frame on the whole
-  block's endpoints. An alignment carrying no CIGAR — a PAF written without
-  minimap2's `-c`, MashMap, MCScan, the coarse tier of a PIF — offers the same
-  option as **Clip the panels to the current visible region**, estimating the
-  target interval by interpolating across the block, which is the straight line
-  its ribbon is already drawn as. Worked through in
-  [](/docs/tutorials/genomes_synteny).
+  block's endpoints, and the dialog prints where each panel will open either
+  way. An alignment carrying no CIGAR — a PAF written without minimap2's `-c`,
+  MashMap, MCScan, the coarse tier of a PIF — offers the same option as **Clip
+  the panels to the current visible region**, estimating the target interval by
+  interpolating across the block, which is the straight line its ribbon is
+  already drawn as. Worked through in [](/docs/tutorials/genomes_synteny). On a
+  track declaring three or more assemblies the same menu also offers **Launch
+  synteny view for all assemblies here**, the multi-panel dialog above cut from
+  this track at the block you clicked in. The same pairwise launch is the
+  **Launch linear synteny view on this feature** link in the feature's details
+  panel, clipped to the panel's visible window.
 - The same **Linear synteny view (visible region)** entry sits in the view's
   hamburger menu under **Launch view**, for when the region you want is the
   whole view and there is nothing to select.

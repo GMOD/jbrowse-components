@@ -14,8 +14,8 @@ import {
 //   [featX, mateX] — how far we advanced on the target axis (capped at
 //   startX) and the corresponding distance on the query/mate axis.
 //
-// Used by buildSyntenyViewSpec to translate a user-visible region into the
-// matching mate region via CIGAR walk.
+// Used by resolvePanel to translate a user-visible region into the matching
+// mate region via CIGAR walk.
 //
 // Insertion-at-the-boundary rule: an insertion is zero-width on the feature
 // axis, so a feature-offset that lands exactly on one maps ambiguously to

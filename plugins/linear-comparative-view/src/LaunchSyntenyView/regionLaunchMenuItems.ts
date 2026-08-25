@@ -7,6 +7,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
 import { makeMateDiscovery } from './discoverMates.ts'
 
+import type { LaunchableTrack } from './LaunchSyntenyViewForRegionDialog.tsx'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -19,6 +20,7 @@ import type {
   RpcHost,
   TrackCatalog,
 } from '@jbrowse/core/util'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 /**
  * What launching a synteny view from a region asks of its host: an assembly to
@@ -34,17 +36,10 @@ export interface SyntenyLaunchHost
     NotificationSink,
     RpcHost,
     TrackCatalog {}
-import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 const LaunchSyntenyViewForRegionDialog = lazy(
   () => import('./LaunchSyntenyViewForRegionDialog.tsx'),
 )
-
-interface LaunchableTrack {
-  trackId: string
-  name: string
-  conf: AnyConfigurationModel
-}
 
 // The synteny datasets the launching view has OPEN that touch `assemblyName`.
 //
@@ -73,7 +68,7 @@ function launchableTracks(
   session: AssemblyHost & TrackCatalog,
   assemblyName: string,
   openTracks: AnyConfigurationModel[],
-): LaunchableTrack[] {
+): (LaunchableTrack & { conf: AnyConfigurationModel })[] {
   return getSyntenyTracks(
     openTracks,
     [assemblyName],

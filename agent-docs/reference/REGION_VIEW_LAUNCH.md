@@ -108,7 +108,7 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
 | what persists | `loadedTrackId` + `loadedRegion` view props | resolved locstrings in `init` |
 | size guard | `MAX_GRAPH_REGION_BP = 100_000`, disabled item + `disabledHelpText` | none |
 | source linkage | `connectedViewId` → hover sync | none |
-| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband, alignment context menu (pairwise) |
+| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband, MultiWaySyntenyDisplay track menu, alignment context menu (pairwise, and multi-panel on a track declaring 3+ assemblies), feature-detail link (pairwise) |
 
 **The dialog split is real, not an oversight.** A subgraph is fully determined
 by `(region, trackId)`, so there is nothing to ask. A synteny launch is not: the
@@ -163,7 +163,38 @@ for hover sync (`hoverSync/graphViewHighlights.ts`). A synteny stack launched
 from a locus could highlight back into the LGV it came from.
 
 **Synteny track menu entry.** The graph plugin offers "(this region)" from the
-graph track's own menu; synteny has no track-menu equivalent.
+graph track's own menu; `MultiWaySyntenyDisplay` has one, `LGVSyntenyDisplay`
+reaches the same dialog from a block's right-click instead.
+
+**An outlier filter before the union.** `resolvePanel` keeps every block on the
+winning contig, so one stray same-contig hit stretches a launched panel to tens
+of megabases — brachypodium came back `1:5,237,628..54,451,482` for a 185 kb
+rice window whose lane frame was 185 kb
+([multiway-synteny-lgv-track](../ideas/multiway-synteny-lgv-track.md)). The
+dialog prints the span so a reader can untick the row; the fix is
+`computeRowFrame`'s length-weighted median-reach filter applied before the
+union. It is shared launch machinery (rubberband, view menu, right-click,
+feature widget), so it wants its own pass with an MCScan table, an HSP table
+and a split PAF in hand.
+
+**The closed-track case, honestly.** `launchableTracks` went open-tracks-only
+because a session-wide list preselected the first dataset in config order. The
+objection was to the preselection, not to the offer: an entry that appears when
+no synteny track is open, with the dataset select empty and required, restores
+the "browsing genes, want to compare" route the graph launcher has without
+deciding a panel list the user cannot judge. A product call.
+
+**MAF rows as a synteny launch.** `openSampleInNewView` (plugins/maf) opens a
+plain LGV on the sample's genome. A MAF row over the selection is already a
+gapped pairwise alignment — `AlignmentRecord` carries `chr`, `start`, `strand`
+and the gapped `seq` — so "anchor vs this sample" is derivable with no adapter:
+build synteny features with a CIGAR from the gapped columns, put them in a
+`FromConfigAdapter` synteny track and open `LinearSyntenyView` the way
+`buildReadVsRefSpec` does for a read. Where `source.assemblyName` is loaded the
+bottom panel is the real genome; otherwise the read-vs-ref synthetic-assembly
+path applies. The all-rows variant is a stack with the anchor on top; sample-vs-
+sample bands would need column-transitive features, a second step. Parked in
+[maf-row-synteny-launch](../ideas/maf-row-synteny-launch.md).
 
 ## Gotchas
 
