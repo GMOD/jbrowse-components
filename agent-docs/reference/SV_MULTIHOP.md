@@ -251,6 +251,17 @@ sidesteps it, but a mate refName handed to consumers as the caller wrote it
 (`CHR10` against a `chr10` CHROM) means anything that groups on it has to
 normalize — the same bug this file had, one layer up.
 
+The breakpoint split view was one of those consumers, and this was not
+hypothetical: every one of the 66 BND records in COLO829's VCF writes CHROM
+`chr3` and spells the same contig `CHR3` in the ALT bracket, so
+`getMatchedBreakendFeatures` gave a reciprocal pair two bucket keys and
+`findMatchingAlt` matched no alt. The reader got two panels and no curve between
+them — a wrong picture, not an error. Both now key through sv-core's
+`breakendLocKey`. sv-core's own producers were never affected:
+`junctionFromFeature` and `getBreakendCoveringRegions` resolve both ends through
+`toCanonicalRefName`, whose `getCanonicalRefName2` already falls back to
+`lowerCaseRefNameAliases`.
+
 **And the walk's own "don't go back the way you came" guard worked in one
 direction only.** A junction is reachable from either end, so which end the walk
 came in on is a fact about the HOP; `nextJunctionFrom` read it off the RECORD

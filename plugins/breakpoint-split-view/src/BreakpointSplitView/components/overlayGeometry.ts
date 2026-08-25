@@ -29,7 +29,7 @@
 // ../eagerBoundary.test.ts now fails on the import instead of the bundle.
 import { notEmpty } from '@jbrowse/core/util'
 import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
-import { safeParseBreakend } from '@jbrowse/sv-core'
+import { breakendLocKey, safeParseBreakend } from '@jbrowse/sv-core'
 
 import type { LayoutRecord, OverlayLevel } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -38,13 +38,21 @@ import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 // The ALT of feat1 that names feat2's position as its mate, so Breakends can ask
 // which side of the junction it is drawing. Moved off the model side with
 // nothing left behind: only this component ever called it.
+//
+// Through breakendLocKey, because the ALT's spelling of a contig is the caller's
+// and the feature's is the file's CHROM column: nanomonsv writes `chr3` in one
+// and `CHR3` in the other. No alt matched, Breakends drew nothing, and the
+// reader got two panels with no curve between them -- a wrong picture rather
+// than an error.
 export function findMatchingAlt(feat1: Feature, feat2: Feature) {
   const alts = feat1.get('ALT') as string[] | undefined
-  const target = `${feat2.get('refName')}:${feat2.get('start') + 1}`
+  const target = breakendLocKey(
+    `${feat2.get('refName')}:${feat2.get('start') + 1}`,
+  )
   return alts
     ?.map(alt => safeParseBreakend(alt))
     .filter(notEmpty)
-    .find(bnd => bnd.MatePosition === target)
+    .find(bnd => breakendLocKey(bnd.MatePosition ?? '') === target)
 }
 
 // Mirrors VIEW_DIVIDER_HEIGHT in ../util.ts, which is also the CSS height of

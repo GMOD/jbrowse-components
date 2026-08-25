@@ -12,7 +12,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
 import { getTag } from '@jbrowse/modifications-utils'
-import { safeParseBreakend } from '@jbrowse/sv-core'
+import { breakendLocKey, safeParseBreakend } from '@jbrowse/sv-core'
 
 import type { ChainSegment, LayoutMatch } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -186,12 +186,21 @@ export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
     if (!alts) {
       continue
     }
-    const cur = `${f.get('refName')}:${f.get('start') + 1}`
+    const cur = breakendLocKey(`${f.get('refName')}:${f.get('start') + 1}`)
     for (const a of alts) {
       const bnd = safeParseBreakend(a)
       if (bnd?.MatePosition) {
-        // canonical key so feature A→B and feature B→A land in the same bucket
-        bucket(candidates, [cur, bnd.MatePosition].sort().join('\t'), f)
+        // canonical key so feature A→B and feature B→A land in the same bucket.
+        // breakendLocKey because one end reads the file's CHROM column and the
+        // other the caller's ALT text, and nanomonsv spells the same contig
+        // `chr3` in one and `CHR3` in the other -- so a reciprocal pair got two
+        // keys, multi() dropped both, and the pair the view was opened on had
+        // no curve drawn between its panels.
+        bucket(
+          candidates,
+          [cur, breakendLocKey(bnd.MatePosition)].sort().join('\t'),
+          f,
+        )
       }
     }
   }

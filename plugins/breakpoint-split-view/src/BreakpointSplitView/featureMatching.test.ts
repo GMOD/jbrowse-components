@@ -75,6 +75,19 @@ describe('getMatchedBreakendFeatures', () => {
     expect(result).toHaveLength(2)
   })
 
+  // Verbatim from the COLO829 nanomonsv callset the cancer_sv demo serves: the
+  // CHROM column is `chr3`/`chr10` and the ALT bracket spells the same contigs
+  // `CHR3`/`CHR10`. All 66 BND records in that file do it, so every reciprocal
+  // pair got two keys, multi() dropped both, and the split view the reader
+  // opened on one of them drew two panels with no curve between them.
+  test('pairs a reciprocal pair whose ALT spells the contig in another case', () => {
+    const up1 = fakeBnd('r_12_1', 'chr3', 25_359_567, 'CHR10', 58_717_464)
+    const up2 = fakeBnd('r_12_0', 'chr10', 58_717_463, 'CHR3', 25_359_568)
+    const result = getMatchedBreakendFeatures(mapOf(up1, up2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toHaveLength(2)
+  })
+
   test('two BNDs sharing the same MatePosition are not incorrectly merged', () => {
     // E and F both point to chr2:200, but are not mates of each other
     const E = fakeBnd('e', 'chr5', 0, 'chr2', 200)
@@ -815,6 +828,15 @@ describe('findMatchingAlt', () => {
   test('returns undefined when no ALT points at the other feature', () => {
     const other = fakeBnd('c', 'chr9', 0, 'chrX', 1)
     expect(findMatchingAlt(A, other)).toBeUndefined()
+  })
+
+  // The other half of the COLO829 case above: even once the two features are
+  // bucketed together, Breakends returns no path at all when this finds no alt,
+  // so the curve depends on the two spellings matching here too.
+  test('matches an ALT that spells the contig in another case', () => {
+    const upper = fakeBnd('r_12_1', 'chr3', 25_359_567, 'CHR10', 58_717_464)
+    const mate = fakeBnd('r_12_0', 'chr10', 58_717_463, 'CHR3', 25_359_568)
+    expect(findMatchingAlt(upper, mate)?.MatePosition).toBe('CHR10:58717464')
   })
 
   test('returns undefined when the feature has no ALT', () => {

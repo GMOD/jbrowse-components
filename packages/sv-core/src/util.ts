@@ -190,6 +190,27 @@ export function svMateLocus(feature: Feature) {
 }
 
 /**
+ * #api
+ * A breakend locstring reduced to the form two spellings of one locus compare
+ * equal in.
+ *
+ * Case, because that is what the two halves of one record disagree about:
+ * nanomonsv writes CHROM `chr3` and spells the same contig `CHR3` inside the ALT
+ * bracket, and all 66 BND records of the COLO829 callset the cancer_sv demo
+ * serves do it. Case is also the whole of the fallback `getCanonicalRefName`
+ * makes, through `lowerCaseRefNameAliases`.
+ *
+ * For grouping two ends of one junction, not for navigation: `chr10` against
+ * `10` still needs an assembly, and the callers here — the overlay's alt
+ * matching and its breakend bucketing — hold features and no assembly. A
+ * producer that has one resolves properly instead, through
+ * `toCanonicalRefName`.
+ */
+export function breakendLocKey(locString: string) {
+  return locString.toLowerCase()
+}
+
+/**
  * Resolve a refName read out of a feature or an ALT string through the
  * assembly's aliases, leaving one it doesn't know alone. The two functions that
  * turn a VCF record into coordinates — `getBreakendCoveringRegions` here and
