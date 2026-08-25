@@ -320,4 +320,22 @@ describe('parseSvAlt with a colon in the mate refName', () => {
     })
     expect(parseSvAlt(feature as any, alt)).toBeUndefined()
   })
+
+  // `Number` is too generous to screen a position on, and screening on
+  // `Number.isFinite` alone let all four of these through as real locations —
+  // `''` parses to 0, which reaches `svMateLocus` as -1.
+  test.each([
+    ['an empty position', 'C[chr2:['],
+    ['a negative position', 'C[chr2:-5['],
+    ['a fractional position', 'C[chr2:100.7['],
+    ['a hexadecimal position', 'C[chr2:0x10['],
+    ['position zero, which is not 1-based', 'C[chr2:0['],
+  ])('refuses %s', (_, alt) => {
+    const feature = createMockFeature({
+      ALT: [alt],
+      start: 123455,
+      refName: '13',
+    })
+    expect(parseSvAlt(feature as any, alt)).toBeUndefined()
+  })
 })

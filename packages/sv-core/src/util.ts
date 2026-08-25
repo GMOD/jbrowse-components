@@ -106,11 +106,13 @@ export function parseSvAlt(
     // chromosome as `HLA-A*01` and the position as 1.
     const colon = mateLocString.lastIndexOf(':')
     const mateRefName = mateLocString.slice(0, colon)
-    const matePos = Number(mateLocString.slice(colon + 1))
-    // A position that is not a number is not a location. Returning one anyway
-    // put a NaN through `svMateLocus` into a fetch region and a panel's
-    // `centerAt`, neither of which reports anything.
-    if (colon <= 0 || !Number.isFinite(matePos)) {
+    const matePosStr = mateLocString.slice(colon + 1)
+    const matePos = Number(matePosStr)
+    // A position that is not a 1-based coordinate is not a location. Returning
+    // one anyway put it through `svMateLocus` into a fetch region and a panel's
+    // `centerAt`, neither of which reports anything. `Number` alone is too
+    // generous to screen on: it reads `''` as 0 and `'0x10'` as 16.
+    if (colon <= 0 || !/^\d+$/.test(matePosStr) || matePos < 1) {
       return undefined
     }
     // `Join: 'right'` means the mate piece is joined to the RIGHT of the ref
