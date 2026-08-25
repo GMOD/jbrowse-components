@@ -351,7 +351,10 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   stops" for why this is a different argument from the shared-pass-list rule,
   and
   [ADR-075](../architecture-decision-records/adr-075-the-isoform-cap-runs-in-the-worker.md)
-  for the isoform-cap placement the same doc got wrong.
+  for the isoform-cap placement the same doc got wrong — except it turns out it
+  did not: the placement it argued for is where the trim lives now
+  ([ADR-092](../architecture-decision-records/adr-092-isoform-trimming-is-a-rung-of-the-fit-ladder.md)),
+  and what the doc got wrong was the cost of building it there.
 - **A view-space GPU pass for the cross-region arcs** — designed in full as
   `ideas/cross-region-arcs-view-space-pass.md`, then closed as a contingency
   nobody is going to reach. The idea is sound: pack the cross-region arcs against

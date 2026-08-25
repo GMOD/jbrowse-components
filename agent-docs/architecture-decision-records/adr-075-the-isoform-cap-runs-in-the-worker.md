@@ -1,5 +1,5 @@
 ---
-status: Accepted
+status: Superseded
 summary: "The per-gene isoform cap collapses in the worker's layoutSubfeatures and puts the expanded-gene set in the RPC cache key, reversing the main-thread design the parked canvas-glyph proposal argued for — the worker→main boundary carries no isoform structure to relayout over"
 ---
 
@@ -7,7 +7,12 @@ summary: "The per-gene isoform cap collapses in the worker's layoutSubfeatures a
 
 ## Status
 
-Accepted (2026-08). The mechanism is `collapseIsoforms` in
+Superseded (2026-08) by
+[ADR-092](adr-092-isoform-trimming-is-a-rung-of-the-fit-ladder.md), on the
+trigger the amendment below names: the fit ladder needed per-isoform structure
+on the main thread. The text stands as the record of why the worker version
+existed, and its amendment as the list of what had to cross the boundary. The
+mechanism it describes was `collapseIsoforms` in
 `plugins/canvas/src/RenderFeatureDataRPC/glyphs/subfeatures.ts` and
 `effectiveMaxIsoforms` in `LinearBasicDisplay/model.ts`.
 
@@ -88,8 +93,6 @@ reasons above against the code as it stands:
   that carried the cap across the boundary, and so the reason track height is an
   RPC cache key at all:
 
-<!-- BEGIN GENERATED MEASUREMENT isoform-cap-payload -->
-
 | track height | isoform cap |  payload | saved vs uncapped | saved |
 | ------------ | ----------: | -------: | ----------------: | ----: |
 | uncapped     |           0 | 180.4 KB |            0.0 KB |  0.0% |
@@ -98,9 +101,8 @@ reasons above against the code as it stands:
 | ~100px lane  |           6 | 114.2 KB |           66.2 KB | 36.7% |
 | ~20px lane   |           1 |  55.5 KB |          124.9 KB | 69.2% |
 
-<!-- END GENERATED MEASUREMENT isoform-cap-payload -->
-
-  At the track heights people actually use the cap removes a minority of the
+  Measured 2026-08 and frozen here — the harness that generated it
+  (`isoformCapPayload.measure.test.ts`) went with the cap. At the track heights people actually use the cap removes a minority of the
   payload, roughly half of which was crossing zero-copy as a transferable
   anyway. It matters at a ~100px lane and below, which is the case it was built
   for; it does not pay for a resize invalidating every loaded region.

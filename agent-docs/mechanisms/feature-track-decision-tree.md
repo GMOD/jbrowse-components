@@ -32,21 +32,25 @@ those name a meaning rather than a shape.
 
 - `displayMode` sets the body height and padding; `collapsed` puts everything on
   one row and suppresses every label.
-- `geneGlyphMode` decides how many transcripts a gene contributes.
-- `maxIsoforms` is a **budget of rows**: estimated on the main thread from what
-  a gene costs, then re-spent in the worker over the real children.
-- That estimate sizes ONE gene to the whole track, so the worker **divides the
-  lane** before spending it (`laneShares` / `laneBudgetRows`): a sweep charges
-  each gene the other MULTI-ISOFORM genes stacking at the busiest point of its
-  span. Undivided, a second gene stacking with the first overflowed by the same
-  factor at every height — so dragging a fitted track taller bought isoforms and
-  never the label rows the ladder needs. Single-row neighbours are deliberately
-  not charged: they take real rows, but charging them floored a gene to one
-  transcript because a `contig` backdrop overlapped it. See `LaneShare`.
+- `geneGlyphMode` decides how many transcripts a gene contributes. Under `auto`
+  at coarse zoom (>100 bp/px) the worker collapses each gene to one — the
+  curated tag, else the longest protein — which is the only isoform decision
+  left in the worker.
+- Everything else a gene gives up, it gives up on the **main thread**, where the
+  pack is visible. The worker ships every isoform with the ordinal of the direct
+  child it belongs to and an `IsoformStack` per gene: children in drawn order
+  with their rank, their gene-local geometry, and how many isoforms the gene has.
 - Where the display fits to height, the **fit ladder** runs: `full` → `labels`
-  (descriptions dropped) → `decimated` (a name only where it is isolated) →
-  `bodies` (no labels). The first rung that fits wins, each rung is laid out
-  lazily, and the last always returns.
+  (descriptions dropped) → `isoforms` (each gene trimmed to the count that fits
+  WITH its names) → `decimated` (a name only where it is isolated) → `bodies` (no
+  labels). The first rung that fits wins, each rung is laid out lazily, and the
+  last always returns.
+- The `isoforms` rung bisects the transcripts-per-gene the track can hold. It
+  sits above `decimated` because the policy is **names before isoforms**, and
+  when even one per gene overflows the two rungs below inherit that 1 rather than
+  going back to the full stack to save a name. A fixed-height track runs the
+  short ladder `full` → `isoforms` and scrolls; `grow` never trims, because its
+  height IS its content's.
 - One uniform scale then grows or squeezes the kept rung, floored so the
   shortest **drawn** box stays visible. Past that, the track scrolls.
 
@@ -87,9 +91,11 @@ included, unless a slot overrides them.
 - **The squeeze floor is built on the shortest drawn box**, not on a feature's
   laid-out extent: a gene's extent is every stacked transcript plus its label
   rows, so a floor built on it promised 2px boxes.
-- **The row budget's label allowance is a constant**, not a read of the label
-  settings, because it is an RPC cache key — reading them made a label toggle
-  refetch every region.
+- **The isoform count is solved after the fetch, not before it.** It was a
+  pre-fetch estimate for two releases, and no pre-fetch estimate can price what
+  a gene shares its row with: a strand arrow is 8px of layout width the worker
+  never sees, so two genes 4px apart in bp stacked anyway and a 145px track
+  landed on `bodies` with every name gone (ADR-092).
 - **A UTR read as a separate colour broke its own rule**: with a `color` set on a
   BED12 track the exon took it and the UTR took the file's `itemRgb`, so the
   config beat the file at one end of a gene and lost at the other.
@@ -117,8 +123,10 @@ Same family as the wiggle plugin's raw-versus-resolved summary mode
 ([wiggle-decision-tree](wiggle-decision-tree.md)): the drawing side may resolve;
 the fetching side may not.
 
-**A budget spent twice needs one test that fails when its two spenders
-disagree.** The main thread estimates what a gene costs in rows and the worker
-re-spends that budget over the real children, because only the worker knows how
-tall an isoform is. Two arithmetics for one rule drift silently, so the
-estimator is exported for the sole purpose of being pinned against the packer.
+**Decide where you can measure, not where the data is cheapest.** The isoform
+count was decided in the worker because that is where the child list lives, and
+it was a promise about a lane only the main-thread packer can see. Two
+arithmetics for one rule — an estimator on one side, a re-spend on the other —
+drift silently, and pinning them to each other only proves they agree, not that
+either is right. One spender, on the side that can measure the answer, needs no
+mirror and no test for the mirror.

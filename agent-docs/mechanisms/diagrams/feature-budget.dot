@@ -18,26 +18,28 @@ digraph feature_budget {
   one  [label="one per gene: MANE or\nRefSeq Select, else longest coding"]
   zoom [label="by zoom"]
 
-  budget [label="maxIsoforms\na budget of ROWS, estimated on the\nmain thread, divided in the worker among\nthe genes stacking in one lane, and re-spent\nover the real children"]
-  allt -> budget  one -> budget  zoom -> budget
+  ship [label="the worker ships every isoform,\neach primitive stamped with the gene\nchild it belongs to, plus a per-gene\nstack table: rank, geometry, count"]
+  allt -> ship  one -> ship  zoom -> ship
 
   pack [label="pack rows,\nreserving label rows"]
-  budget -> pack -> fits
+  ship -> pack -> fits
 
   fits [label="fit to display height"]
   fits -> plain  [label=" no"]
   fits -> ladder [label=" yes"]
-  plain [label="one layout; overflow scrolls"]
+  plain [label="fixed: full then isoforms, then scroll.\ngrow: full, and never a trim"]
 
   ladder [label="the fit ladder\nfirst rung that fits wins,\nthe last rung always returns,\neach rung is laid out lazily", style=bold]
-  ladder -> full -> labels -> decimated -> bodies
+  ladder -> full -> labels -> isoforms -> decimated -> bodies
   full      [label="full: names and descriptions"]
   labels    [label="labels: descriptions dropped"]
+  isoforms  [label="isoforms: each gene trimmed to the largest\ntranscripts-per-gene whose NAMED pack fits,\nfound by bisection — names before isoforms"]
   decimated [label="decimated: a name only where it is\nisolated; the whitespace factor is the\nsmallest that fits, found by bisection"]
   bodies    [label="bodies: no labels"]
+  isoforms -> decimated [label=" the two below\n inherit the count\n it failed at"]
 
   scale [label="one uniform scale over the kept rung:\ngrow to fill, or squeeze until the\nshortest drawn box hits its floor"]
-  full -> scale  labels -> scale  decimated -> scale  bodies -> scale
+  full -> scale  labels -> scale  isoforms -> scale  decimated -> scale  bodies -> scale
   scale -> over
   over [label="still taller than the track"]
   over -> scroll [label=" yes"]
