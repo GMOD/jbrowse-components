@@ -224,11 +224,13 @@ branch above; all three are the run's own litter, and all three are fixed here.
 3. **`no link duplicates its target title`** —
    `website/docs/user_guides/linear_synteny_view.md:100` wrote `[MAF
    track](/docs/user_guides/maf_track)`, duplicating the target's own title.
-   From `40e3f5769a` (synteny-launch), and named as open item 1 in
-   [derivative-allele-thread](DERIVATIVE_ALLELE_THREAD.md) — `bc04116182` was
-   pushed with `SKIP_DOCS_CHECK=1` because of it. Now the empty-text form the
-   rest of the guides use, which renders the same words. **That handoff's open
-   item 1 is closed**; its other two remain.
+   From `40e3f5769a` (synteny-launch); `bc04116182` was pushed with
+   `SKIP_DOCS_CHECK=1` because of it. Now the empty-text form the rest of the
+   guides use, which renders the same words. This was open item 1 of the
+   derivative-allele thread's handoff, which is closed out and deleted — the
+   lineage question it also held is answered in
+   [reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md), "Give a
+   pluggable element an `extendsType`".
 
 ## The graph plugin's tsc errors, and its three unpushed commits
 
