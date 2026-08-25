@@ -279,9 +279,10 @@ export const PARK_CURSOR: ScreenshotAction = {
 // Shrink the gene track's isoform notice — the loud "Isoforms trimmed" / "RefSeq
 // Select" chip — to the quiet icon that is always in that corner afterwards.
 // The chip carries no (×): opening its menu is what marks the notice read, so
-// this opens it and closes it again by the backdrop, the same neutral click
-// `dismissMenus` uses. Every step is asserted, because a chip left up moves the
-// corner of every later frame.
+// this opens it and closes it again with Escape, which `useTrackControlMenu`
+// handles directly (unlike the MUI menu cascade `dismissMenus` backs out of).
+// Every step is asserted, because a chip left up moves the corner of every
+// later frame.
 //
 // `geneGlyphNoticeDismissed` is VOLATILE (LinearBasicDisplay/model.ts) — a
 // session spec cannot set it, and this is the only way in. `track-control-isoform`
@@ -292,7 +293,7 @@ export const PARK_CURSOR: ScreenshotAction = {
 export const readIsoformNotice = (): ScreenshotAction[] => [
   { type: 'click', selector: '[data-testid="track-control-isoform"]' },
   { type: 'waitForText', text: 'Representative transcript' },
-  { type: 'click', from: { x: 550, y: 58 } },
+  { type: 'press', key: 'Escape' },
   { type: 'waitForText', text: 'Representative transcript', hidden: true },
   { type: 'delay', ms: 300 },
 ]

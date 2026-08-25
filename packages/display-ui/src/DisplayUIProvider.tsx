@@ -97,7 +97,8 @@ export function resolveOverlays(overlays?: Partial<DisplayChromeOverlays>) {
  * `DisplayChrome` and `TrackControl` are in that display's chunk either way,
  * and merely stop rendering. Keeping them out of the graph means writing your
  * own display component over `DisplayChromeBase`, which takes `overlays` as a
- * prop and imports no toolkit. See `agent-docs/reference/DISPLAYCHROME.md`.
+ * prop and imports no toolkit. See
+ * [DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md).
  */
 export default function DisplayUIProvider({
   overlays,

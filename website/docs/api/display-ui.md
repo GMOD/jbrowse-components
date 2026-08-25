@@ -111,7 +111,8 @@ unship the Material components a _stock display_ imports: `DisplayChrome` and
 `TrackControl` are in that display's chunk either way, and merely stop
 rendering. Keeping them out of the graph means writing your own display
 component over `DisplayChromeBase`, which takes `overlays` as a prop and imports
-no toolkit. See `agent-docs/reference/DISPLAYCHROME.md`.
+no toolkit. See
+[DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md).
 
 ```js
 // type signature
