@@ -112,6 +112,23 @@ test('an unsized sibling takes what the sized ones left over', () => {
   expect(sizes(tree)).toEqual([0.7, 0.3])
 })
 
+// The half of that rule urlparams.md used to state and then contradict: the
+// proportions reading ("7 and 3 lay out the same as 70 and 30") holds only when
+// every sibling is sized. Beside a bare one the number is a percentage, so 7 is
+// a 7% sliver rather than the 70% the same spec means with a 3 written next to
+// it.
+test('beside a bare sibling, a small size is a percentage and not a weight', () => {
+  const tree = treeFromSpec(
+    {
+      direction: 'horizontal',
+      children: [{ viewIds: ['a'], size: 7 }, { viewIds: ['b'] }],
+    },
+    nextId,
+  )
+
+  expect(sizes(tree)).toEqual([0.07, 0.93])
+})
+
 test('several unsized siblings divide the remainder between them', () => {
   const tree = treeFromSpec(
     {

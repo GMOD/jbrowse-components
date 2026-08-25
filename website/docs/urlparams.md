@@ -1381,10 +1381,13 @@ A panel's `size` gives its proportion of the split:
 A 70/30 split, the left panel taking 70% of the width.
 
 `size` works at **any depth**, so a nested container sizes its own children as
-well as taking a share of its parent — see the nested example below. A panel
-left unsized takes an equal share of whatever the sized panels leave over, so
-`70` beside a bare panel is a 70/30 split. Sizes are proportions rather than
-strict percentages: `7` and `3` lay out the same as `70` and `30`.
+well as taking a share of its parent — see the nested example below.
+
+Size every sibling and the numbers are proportions rather than strict
+percentages: `7` and `3` lay out the same as `70` and `30`. Leave one bare and
+they are read as percentages, because the bare panel takes an equal share of
+what the sized ones leave over — `70` beside a bare panel is a 70/30 split, and
+`7` beside a bare panel is a 7/93 one.
 
 Drag the divider to adjust from there; the position is saved with the session.
 

@@ -7,10 +7,10 @@ import EditIcon from '@mui/icons-material/Edit'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 const useStyles = makeStyles()({
-  // hidden until the tab is hovered, by a rule in `PanelView` keyed on the
-  // `jbrowse-tab-menu` class — hence the plain class name beside the generated
-  // one. `visibility` rather than `display`, so the tab does not change width
-  // under the pointer as it arrives.
+  // hidden until the tab is hovered or focused, by a rule in `TabStrip` keyed
+  // on the `jbrowse-tab-menu` class — hence the plain class name beside the
+  // generated one. `visibility` rather than `display`, so the tab does not
+  // change width under the pointer as it arrives.
   tabIcons: {
     display: 'flex',
     alignItems: 'center',

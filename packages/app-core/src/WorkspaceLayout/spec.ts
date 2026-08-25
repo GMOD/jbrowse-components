@@ -25,16 +25,6 @@ export interface PendingMove {
 }
 
 /**
- * Build a layout tree from a spec.
- *
- * The old converter had to answer "which dockview group does a nested split
- * address?" and could not, because dockview forces orientation to alternate by
- * depth — which is why `size` was honoured only on the top-level split, and
- * only if every panel there carried one. Here the spec's nesting is the tree's
- * nesting, so `size` applies wherever it is written and there is no all-or-
- * nothing pass.
- */
-/**
  * The effective size of each child of one branch.
  *
  * `size` is documented as a **percentage**, so a spec that sizes some siblings
@@ -69,6 +59,16 @@ function resolveSizes(children: LayoutSpecNode[]): number[] {
   return stated.map(size => size ?? share)
 }
 
+/**
+ * Build a layout tree from a spec.
+ *
+ * The old converter had to answer "which dockview group does a nested split
+ * address?" and could not, because dockview forces orientation to alternate by
+ * depth — which is why `size` was honoured only on the top-level split, and
+ * only if every panel there carried one. Here the spec's nesting is the tree's
+ * nesting, so `size` applies wherever it is written and there is no all-or-
+ * nothing pass.
+ */
 export function treeFromSpec(
   spec: LayoutSpecNode,
   nextId: (kind: NodeKind) => string,

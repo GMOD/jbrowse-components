@@ -13,7 +13,12 @@ branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked vertically)
 
 - **Both middle levels are legal empty.** Nothing prunes as a rule;
   `pruneEmptyPanel` / `pruneEmptyTabIn` are called by the gesture that emptied
-  the thing. A tabless panel renders nothing at all.
+  the thing. A tabless panel renders nothing at all — not the launcher an empty
+  TAB shows — and needs no case, for two reasons worth knowing before adding
+  one: with views left, the prunes collapse the cell, and with none
+  `ViewsContainer` renders `ViewLauncher` in place of the whole workspace rather
+  than mounting it. `homeViews` mints a tab in a tabless panel on top of that,
+  so the state self-heals if it is ever built.
 - Ids come from `createElementId()` (nanoid) and are `types.identifier`s, unique
   within the tree _including a restored snapshot_. `integrity.test.ts` catches a
   counter; the obvious test doesn't.
