@@ -366,6 +366,12 @@ export interface IsoformStack {
   isoformCount: number
   // what put the head of the ranking first, for the chip
   canonicalTag?: string
+  // How many isoforms the WORKER's own collapse leaves, when it leaves fewer
+  // than the gene has — 1 under `longestCoding`, absent otherwise. A gene the
+  // user expanded ships every isoform whatever the mode says, so this is the
+  // only thing that says what it was expanded FROM, which is the count its
+  // "show fewer" badge offers to go back to.
+  collapsedIsoformCount?: number
   gapPx: number
   children: IsoformStackChild[]
 }

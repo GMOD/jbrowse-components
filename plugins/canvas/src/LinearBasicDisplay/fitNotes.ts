@@ -17,6 +17,11 @@ export function fitDrops(
   stage: Pick<FitStage, 'level' | 'scale'>,
   showLabels: boolean,
   showDescriptions: boolean,
+  // whether descriptions are actually painted at the rung that survived. Read
+  // rather than inferred from the level: fixed height reaches `isoforms`
+  // keeping them, fit mode only reaches it after `labels` dropped them, and one
+  // level answers both.
+  renderedShowDescriptions: boolean,
 ): FitDrops {
   const names = !showLabels
     ? 'none'
@@ -25,7 +30,7 @@ export function fitDrops(
       : stage.level === 'decimated'
         ? 'some'
         : 'none'
-  const descriptions = showDescriptions && stage.level !== 'full'
+  const descriptions = showDescriptions && !renderedShowDescriptions
   const pct = Math.round(stage.scale * 100)
   return {
     names,

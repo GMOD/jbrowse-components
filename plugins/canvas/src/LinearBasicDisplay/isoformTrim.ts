@@ -109,13 +109,22 @@ export function planIsoformTrims(
   maxIsoforms: number | undefined,
   expandedGeneIds: ReadonlySet<string> | undefined,
 ): IsoformTrimPlan {
-  if (maxIsoforms === undefined) {
-    return NO_ISOFORM_TRIM
-  }
   const trims = new Map<string, IsoformTrim>()
   const expandedHidden = new Map<string, number>()
   for (const [featureId, stack] of stacks) {
-    const trim = trimIsoformStack(stack, maxIsoforms)
+    // The tighter of the ladder's count and the worker's own collapse. The
+    // second only bites on a gene the user EXPANDED — every other gene under
+    // `longestCoding` already arrives with one child, where trimming to one is
+    // a no-op — and it is what keeps that gene's "show fewer" badge naming the
+    // count it was opened from.
+    const count = Math.min(
+      maxIsoforms ?? Number.POSITIVE_INFINITY,
+      stack.collapsedIsoformCount ?? Number.POSITIVE_INFINITY,
+    )
+    if (count === Number.POSITIVE_INFINITY) {
+      continue
+    }
+    const trim = trimIsoformStack(stack, count)
     if (trim.keptOrdinals.size === stack.children.length) {
       continue
     }

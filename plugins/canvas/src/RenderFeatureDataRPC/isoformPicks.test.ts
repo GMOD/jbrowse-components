@@ -1,6 +1,6 @@
 import {
+  addTrimmedIsoformPicks,
   anyIsoformsHidden,
-  capHidIsoforms,
   isoformPickEntries,
   mergeIsoformPicks,
   summarizeIsoformPicks,
@@ -14,12 +14,10 @@ import type { FeatureLayout } from './types.ts'
 const gene = (
   isoformsCollapsed: boolean,
   canonicalTag?: string,
-  isoformsCappedByHeight?: boolean,
 ): FeatureLayout =>
   ({
     isoformsCollapsed,
     canonicalTag,
-    isoformsCappedByHeight,
   }) as unknown as FeatureLayout
 
 describe('summarizeIsoformPicks', () => {
@@ -55,25 +53,39 @@ describe('summarizeIsoformPicks', () => {
     })
   })
 
-  // A gene keeping every isoform has no pick to report — the height cap fires
-  // per gene, so a region holds both kinds at once.
+  // A gene keeping every isoform has no pick to report — `longestCoding`
+  // leaves a single-isoform gene alone, so a region holds both kinds at once.
   it('ignores the genes that kept every isoform', () => {
     expect(
       summarizeIsoformPicks([gene(false, 'MANE Select'), gene(false)]),
     ).toEqual({ byTag: {}, byLength: 0, byCap: 0 })
   })
 
-  // The cap ranks its survivors by the same tag the mode does, so the tag
-  // count alone cannot say which rule collapsed a gene. The cap's count is
-  // its own, on top of the rule's.
-  it('counts the genes the height cap trimmed, under their rule as well', () => {
+  // The worker no longer trims by height, so it never reports a trim. `byCap`
+  // is the main thread's to fill in — see addTrimmedIsoformPicks below.
+  it('reports no trim of its own', () => {
     expect(
-      summarizeIsoformPicks([
-        gene(true, 'MANE Select', true),
-        gene(true, undefined, true),
-        gene(true, 'MANE Select', false),
-      ]),
+      summarizeIsoformPicks([gene(true, 'MANE Select'), gene(true)]).byCap,
+    ).toBe(0)
+  })
+})
+
+// The trim ranks its survivors by the same tag `longestCoding` does, so the tag
+// count alone cannot say which rule hid a gene's transcripts. The trim's count
+// is its own, on top of the rule's.
+describe('addTrimmedIsoformPicks', () => {
+  it('counts each trimmed gene under its rule and under byCap', () => {
+    expect(
+      addTrimmedIsoformPicks(
+        { byTag: { 'MANE Select': 1 }, byLength: 0, byCap: 0 },
+        [{ canonicalTag: 'MANE Select' }, { canonicalTag: undefined }],
+      ),
     ).toEqual({ byTag: { 'MANE Select': 2 }, byLength: 1, byCap: 2 })
+  })
+
+  it('hands the worker picks straight back when nothing was trimmed', () => {
+    const picks = { byTag: { 'MANE Select': 1 }, byLength: 0, byCap: 0 }
+    expect(addTrimmedIsoformPicks(picks, [])).toBe(picks)
   })
 })
 
@@ -141,20 +153,5 @@ describe('anyIsoformsHidden', () => {
     expect(
       anyIsoformsHidden({ byTag: { 'MANE Select': 1 }, byLength: 0, byCap: 0 }),
     ).toBe(true)
-  })
-})
-
-// The model gates the height cap's chip on this, not on anyIsoformsHidden: a
-// region fetched under `longestCoding` reports every multi-isoform gene as
-// collapsed, and a cap read off the current height went loud on that data for
-// a whole fetch.
-describe('capHidIsoforms', () => {
-  it('needs the cap itself to have trimmed a gene', () => {
-    expect(capHidIsoforms(undefined)).toBe(false)
-    expect(capHidIsoforms({ byTag: {}, byLength: 3, byCap: 0 })).toBe(false)
-    expect(
-      capHidIsoforms({ byTag: { 'MANE Select': 3 }, byLength: 0, byCap: 0 }),
-    ).toBe(false)
-    expect(capHidIsoforms({ byTag: {}, byLength: 1, byCap: 1 })).toBe(true)
   })
 })

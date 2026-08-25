@@ -925,6 +925,7 @@ export default function baseStateModelFactory(
             self.fitStage,
             self.showLabels,
             self.effectiveShowDescriptions,
+            this.renderedShowDescriptions,
           )
         },
       }))

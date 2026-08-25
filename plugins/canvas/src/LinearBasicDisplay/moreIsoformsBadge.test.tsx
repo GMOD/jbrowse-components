@@ -13,16 +13,15 @@ import {
 } from '../RenderFeatureDataRPC/constants.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import {
-  labelsMap,
-  makeFeatureData,
-  makeFlatbushItem,
   mockDisplayConfig,
+  packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { computeLabelExtraWidth } from './components/labelPositioning.ts'
 import { FloatingLabelsLayer } from './components/overlayElements.tsx'
 import { computeLaidOutData } from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
   FeatureItemEntry,
   VisibleRegion,
@@ -40,9 +39,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // one gene without turning every other gene on screen into a stack.
 //
 // This walks the whole chain, because every link in it is a place the badge can
-// go silently wrong: the worker counts, the packer reserves width for it, the
-// positioner anchors it to the name, and the label layer routes its click
-// somewhere other than the three gestures that already live on a label.
+// go silently wrong: the trim counts, the packer reserves width for it at the
+// count it is probing, the positioner anchors it to the name, and the label
+// layer routes its click somewhere other than the three gestures that already
+// live on a label.
 
 const jexl = createJexlInstance()
 
@@ -122,131 +122,153 @@ function geneWith(n: number, name?: string) {
 function layoutGene(
   n: number,
   overrides: {
-    maxIsoforms?: number
+    geneGlyphMode?: DisplayConfig['geneGlyphMode']
     expandedGeneIds?: ReadonlySet<string>
     name?: string | undefined
   } = {},
 ) {
-  const feature = geneWith(n, 'name' in overrides ? overrides.name : 'GENE1')
-
   return layoutSubfeatures({
-    feature,
-    config: labelledConfig({ maxIsoforms: overrides.maxIsoforms }),
+    feature: geneWith(n, 'name' in overrides ? overrides.name : 'GENE1'),
+    config: labelledConfig({ geneGlyphMode: overrides.geneGlyphMode }),
     jexl,
     expandedGeneIds: overrides.expandedGeneIds,
   })
 }
 
-describe('the worker counts what the collapse leaves out', () => {
-  it('reports the hidden isoforms of a capped gene', () => {
-    const layout = layoutGene(9, { maxIsoforms: 3 })
-    expect(layout.children).toHaveLength(3)
-    expect(layout.isoformOverflow).toEqual({ hidden: 6, expanded: false })
+const INPUTS: LayoutInputs = {
+  bpPerPx: 1,
+  showLabels: true,
+  showDescriptions: false,
+  reversedRegions: new Set<number>(),
+  displayMode: 'normal',
+  pinnedFeatureIds: new Set<string>(),
+}
+
+// One region holding one gene, straight from the worker's own emitter.
+function regionFor(layout: ReturnType<typeof layoutSubfeatures>) {
+  return {
+    regionKey: 'v:ctgA',
+    ...collectRenderData({
+      layouts: [layout],
+      regionStart: 0,
+      regionEnd: 100_000,
+      config: labelledConfig(),
+      colorByCDS: false,
+      jexl,
+    }),
+    featureCount: 1,
+  }
+}
+
+// The whole chain the badge crosses: the worker emits every isoform, the
+// main-thread trim drops the losers and writes the badge onto what is left.
+function trimmedRegion(
+  layout: ReturnType<typeof layoutSubfeatures>,
+  maxIsoformsPerGene?: number,
+  expandedGeneIds?: ReadonlySet<string>,
+) {
+  return computeLaidOutData(new Map([[0, regionFor(layout)]]), {
+    ...INPUTS,
+    maxIsoformsPerGene,
+    expandedGeneIds,
+  }).get(0)!
+}
+
+const labelsAt = (
+  n: number,
+  maxIsoformsPerGene?: number,
+  opts: Parameters<typeof layoutGene>[1] = {},
+) =>
+  trimmedRegion(layoutGene(n, opts), maxIsoformsPerGene, opts.expandedGeneIds)
+    .floatingLabelsData
+
+describe('the trim counts what it leaves out', () => {
+  it('reports the hidden isoforms of a trimmed gene', () => {
+    const region = trimmedRegion(layoutGene(9), 3)
+    expect(region.flatbushItems[0]!.isoformStack!.isoformCount).toBe(9)
+    expect(
+      region.floatingLabelsData.get('gene1')!.moreIsoformsLabel,
+    ).toMatchObject({ hidden: 6, expanded: false })
   })
 
   it('reports nothing for a gene that draws every isoform it has', () => {
-    expect(layoutGene(3, { maxIsoforms: 9 }).isoformOverflow).toBeUndefined()
-    expect(layoutGene(3).isoformOverflow).toBeUndefined()
+    expect(labelsAt(3, 9).get('gene1')!.moreIsoformsLabel).toBeUndefined()
+    expect(labelsAt(3).get('gene1')!.moreIsoformsLabel).toBeUndefined()
   })
 
-  // An expanded gene draws all of them but keeps reporting the count, which is
-  // what lets the badge that opened it offer the way back. Were `hidden` to drop
-  // to 0 here the badge would vanish on its own click and the only way to
+  // An expanded gene draws all of them and keeps reporting the count, which is
+  // what lets the badge that opened it offer the way back. Were `hidden` to
+  // drop to 0 here the badge would vanish on its own click and the only way to
   // re-collapse one gene would be to re-collapse the whole track.
   it('keeps the count on a gene the user opened', () => {
-    const layout = layoutGene(9, {
-      maxIsoforms: 3,
-      expandedGeneIds: new Set(['gene1']),
-    })
-    expect(layout.children).toHaveLength(9)
-    expect(layout.isoformOverflow).toEqual({ hidden: 6, expanded: true })
+    const region = trimmedRegion(layoutGene(9), 3, new Set(['gene1']))
+    expect(region.rectYs.length).toBe(
+      trimmedRegion(layoutGene(9)).rectYs.length,
+    )
+    expect(
+      region.floatingLabelsData.get('gene1')!.moreIsoformsLabel,
+    ).toMatchObject({ hidden: 6, expanded: true })
   })
 
-  // The badge reports a collapse the reader did not ask for and cannot see the
+  // The badge reports a trim the reader did not ask for and cannot see the
   // extent of. `longestCoding` is neither: it is a track-wide mode the user
   // picked and the corner chip already names, so a badge under every gene there
   // is one sentence repeated once per label — on exactly the zoomed-out view
   // the mode exists to keep readable.
   it('reports nothing for the representative-transcript mode', () => {
-    const layout = layoutSubfeatures({
-      feature: geneWith(4),
-      config: labelledConfig({ geneGlyphMode: 'longestCoding' }),
-      jexl,
-    })
+    const layout = layoutGene(4, { geneGlyphMode: 'longestCoding' })
     expect(layout.children).toHaveLength(1)
-    expect(layout.isoformOverflow).toBeUndefined()
-  })
-
-  // A lane short enough resolves the height cap to 1 as well, so the two rules
-  // cannot be told apart by the count they leave — which is why the rule itself
-  // is what decides.
-  it('reports a height cap of one, which looks identical from the count', () => {
-    const layout = layoutSubfeatures({
-      feature: geneWith(4),
-      config: labelledConfig({ maxIsoforms: 1 }),
-      jexl,
-    })
-    expect(layout.children).toHaveLength(1)
-    expect(layout.isoformOverflow).toEqual({ hidden: 3, expanded: false })
+    expect(
+      trimmedRegion(layout).floatingLabelsData.get('gene1')!.moreIsoformsLabel,
+    ).toBeUndefined()
   })
 
   // The badge is the only way back for a gene the user opened, so it survives a
   // switch into a mode that would not have offered it — otherwise that gene
-  // stands fully stacked among collapsed ones with no control on it.
+  // stands fully stacked among collapsed ones with no control on it. The mode's
+  // own count rides on the stack (`collapsedIsoformCount`), because an expanded
+  // gene ships every isoform and nothing else says what it was opened from.
   it('keeps the badge on an expanded gene whatever mode it lands in', () => {
-    const layout = layoutSubfeatures({
-      feature: geneWith(4),
-      config: labelledConfig({ geneGlyphMode: 'longestCoding' }),
-      jexl,
+    const layout = layoutGene(4, {
+      geneGlyphMode: 'longestCoding',
       expandedGeneIds: new Set(['gene1']),
     })
     expect(layout.children).toHaveLength(4)
-    expect(layout.isoformOverflow).toEqual({ hidden: 3, expanded: true })
+    expect(
+      trimmedRegion(
+        layout,
+        undefined,
+        new Set(['gene1']),
+      ).floatingLabelsData.get('gene1')!.moreIsoformsLabel,
+    ).toMatchObject({ hidden: 3, expanded: true })
   })
 })
 
-function labelDataFor(
-  layout: ReturnType<typeof layoutSubfeatures>,
-  config = labelledConfig(),
-) {
-  return collectRenderData({
-    layouts: [layout],
-    regionStart: 0,
-    regionEnd: 100_000,
-    config,
-    colorByCDS: false,
-    jexl,
-  }).floatingLabelsData
-}
-
 describe('the badge rides the gene name label', () => {
-  it('reads "+N more" collapsed and "show fewer" expanded', () => {
-    expect(
-      labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get('gene1')!
-        .moreIsoformsLabel,
-    ).toMatchObject({ text: '+6 more', hidden: 6, expanded: false })
+  it('reads "+N more" trimmed and "show fewer" expanded', () => {
+    expect(labelsAt(9, 3).get('gene1')!.moreIsoformsLabel).toMatchObject({
+      text: '+6 more',
+      hidden: 6,
+      expanded: false,
+    })
 
     expect(
-      labelDataFor(
-        layoutGene(9, { maxIsoforms: 3, expandedGeneIds: new Set(['gene1']) }),
-      ).get('gene1')!.moreIsoformsLabel,
+      labelsAt(9, 3, { expandedGeneIds: new Set(['gene1']) }).get('gene1')!
+        .moreIsoformsLabel,
     ).toMatchObject({ text: 'show fewer', hidden: 6, expanded: true })
   })
 
-  it('is absent where nothing is collapsed', () => {
-    expect(
-      labelDataFor(layoutGene(3)).get('gene1')!.moreIsoformsLabel,
-    ).toBeUndefined()
+  it('is absent where nothing is trimmed', () => {
+    expect(labelsAt(3).get('gene1')!.moreIsoformsLabel).toBeUndefined()
   })
 
   // The badge qualifies a name, so a gene the annotation never named has none to
   // qualify — floating one alone under the glyph would read as a transcript
   // label rather than as this gene's own missing count.
   it('is absent on a gene with no name', () => {
-    const data = labelDataFor(
-      layoutGene(9, { maxIsoforms: 3, name: undefined }),
-    )
-    expect(data.get('gene1')?.moreIsoformsLabel).toBeUndefined()
+    expect(
+      labelsAt(9, 3, { name: undefined }).get('gene1')?.moreIsoformsLabel,
+    ).toBeUndefined()
   })
 
   // The width every consumer that has to cover the label re-derives — the hit
@@ -254,9 +276,7 @@ describe('the badge rides the gene name label', () => {
   // the name on the same row, so all of them have to reserve both or the box
   // stops at the name and the badge hangs outside its own feature.
   it("bakes its width at the size it draws, not the name's", () => {
-    const badge = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get(
-      'gene1',
-    )!.moreIsoformsLabel!
+    const badge = labelsAt(9, 3).get('gene1')!.moreIsoformsLabel!
     // `renderedTextWidth` scales every baked width from LABEL_FONT_SIZE, so
     // measuring the badge at the smaller size is what makes each reservation
     // land on the width it paints without knowing there are two sizes in play.
@@ -266,7 +286,7 @@ describe('the badge rides the gene name label', () => {
   })
 
   it('counts toward the label width the hit box and highlight reserve', () => {
-    const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get('gene1')!
+    const data = labelsAt(9, 3).get('gene1')!
     const extra = (d: typeof data) =>
       computeLabelExtraWidth(d, 0, true, true, LABEL_FONT_SIZE)
     const withBadge = extra(data)
@@ -281,7 +301,7 @@ describe('the badge rides the gene name label', () => {
   })
 
   it('reserves the gap at the drawn size in a compact mode', () => {
-    const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get('gene1')!
+    const data = labelsAt(9, 3).get('gene1')!
     const fontSize = LABEL_FONT_SIZE / 2
     const withBadge = computeLabelExtraWidth(data, 0, true, true, fontSize)
     const withoutBadge = computeLabelExtraWidth(
@@ -299,69 +319,49 @@ describe('the badge rides the gene name label', () => {
   })
 })
 
-const INPUTS: LayoutInputs = {
-  bpPerPx: 1,
-  showLabels: true,
-  showDescriptions: false,
-  reversedRegions: new Set<number>(),
-  displayMode: 'normal',
-  pinnedFeatureIds: new Set<string>(),
-}
+// The packer widens a feature's layout span by its reserved label overhang, so
+// a badge left out of the reservation is text drawn straight over the
+// neighbour. The badge's text depends on the count being probed, which is why
+// its width is priced in `decideLabelReservations` rather than baked into the
+// label the worker ships.
+const overhangPx = (text: string, fontSize: number) =>
+  measureText(text, fontSize) + LABEL_PADDING_PX
 
-// Two features 50bp apart, the left one carrying a 30px name — which clears the
-// gap — plus a badge of `badgeWidth`, which may not. The packer widens a
-// feature's layout span by its reserved label overhang, so a badge left out of
-// the reservation is text drawn straight over the neighbour.
-function twoFeatures(badgeWidth: number | undefined) {
-  const label = (text: string, textWidth: number) => ({
-    text,
-    relativeY: 0,
-    textWidth,
-  })
-  return new Map([
-    [
-      0,
+// Just past the name's own overhang and inside the badge's, so the two cases
+// below differ by the badge alone.
+const NEIGHBOUR_BP = Math.round(
+  overhangPx('GENE1', LABEL_FONT_SIZE) +
+    overhangPx('+6 more', LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE) / 2,
+)
+
+// One named gene at the origin and a plain neighbour that far along, packed at
+// 1 bp/px so the bp numbers above are pixels.
+function rowOfNeighbour(isoforms: number, maxIsoformsPerGene?: number) {
+  const region = {
+    regionKey: 'v:ctgA',
+    ...packStackedGenes([
+      { featureId: 'gene1', startBp: 0, endBp: 10, isoforms, name: 'GENE1' },
       {
-        regionKey: 'v:ctgA',
-        ...makeFeatureData({
-          flatbushItems: [
-            makeFlatbushItem({ featureId: 'gene1', startBp: 0, endBp: 10 }),
-            makeFlatbushItem({ featureId: 'gene2', startBp: 60, endBp: 70 }),
-          ],
-          floatingLabelsData: labelsMap({
-            gene1: {
-              featureId: 'gene1',
-              minX: 0,
-              maxX: 10,
-              topY: 0,
-              featureHeight: 10,
-              nameLabel: label('GENE1', 30),
-              moreIsoformsLabel:
-                badgeWidth === undefined
-                  ? undefined
-                  : {
-                      ...label('+6 more', badgeWidth),
-                      hidden: 6,
-                      expanded: false,
-                    },
-            },
-          }),
-        }),
+        featureId: 'gene2',
+        startBp: NEIGHBOUR_BP,
+        endBp: NEIGHBOUR_BP + 10,
+        isoforms: 1,
+        name: '',
       },
-    ],
-  ])
+    ]),
+  }
+  return computeLaidOutData(new Map([[0, region]]), {
+    ...INPUTS,
+    maxIsoformsPerGene,
+  }).get(0)!.flatbushItems[1]!.topPx
 }
-
-const rowOfNeighbour = (badgeWidth: number | undefined) =>
-  computeLaidOutData(twoFeatures(badgeWidth), INPUTS).get(0)!.flatbushItems[1]!
-    .topPx
 
 test('the packer reserves the badge width alongside the name', () => {
   // the name alone stops short of the neighbour, so both sit on row 0
-  expect(rowOfNeighbour(undefined)).toBe(0)
-  // the badge carries the reservation past it, so the neighbour takes a row of
-  // its own rather than being painted over
-  expect(rowOfNeighbour(40)).toBeGreaterThan(0)
+  expect(rowOfNeighbour(3)).toBe(0)
+  // trimming 9 to 3 adds a "+6 more" badge, whose reservation carries past the
+  // neighbour — so it takes a row of its own rather than being painted over
+  expect(rowOfNeighbour(9, 3)).toBeGreaterThan(0)
 })
 
 const VR: VisibleRegion = {
@@ -381,17 +381,7 @@ const VIEW = {
   visibleRegions: [VR],
 } as unknown as LinearGenomeViewModel
 
-const BADGE_DATA = {
-  ...collectRenderData({
-    layouts: [layoutGene(9, { maxIsoforms: 3 })],
-    regionStart: 0,
-    regionEnd: 100_000,
-    config: labelledConfig({ maxIsoforms: 3 }),
-    colorByCDS: false,
-    jexl,
-  }),
-  featureCount: 1,
-}
+const BADGE_DATA = trimmedRegion(layoutGene(9), 3)
 
 function renderLabelLayer(
   overrides: Record<string, unknown>,
@@ -536,9 +526,10 @@ describe('the badge in the label layer', () => {
   })
 })
 
-// The collapse is `layoutSubfeatures`', which only the worker runs — so the set
-// has to reach it as an RPC argument, and a click has to invalidate the cache
-// the same way hiding or soloing a feature does.
+// `longestCoding` is still the worker's, and an expanded gene has to escape it
+// — so the set reaches the worker as an RPC argument, and a click invalidates
+// the cache the same way hiding or soloing a feature does. The fit ladder's own
+// trim needs no fetch (ADR-076); this is what is left.
 test('an expanded gene reaches the worker as a fetch input', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()

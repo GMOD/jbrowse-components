@@ -1,4 +1,7 @@
-import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
+import {
+  makeFeatureData,
+  packStackedGenes,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // The bottom-right isoform-collapse control (GeneGlyphControl) is gated by
@@ -136,47 +139,37 @@ describe('gene-glyph collapse notice', () => {
     })
   })
 
-  // The height cap's chip announces a number, so it must fire on a cap that
-  // actually dropped something — a cap every gene in view fits inside picks
-  // nothing, and the worker's summary is where that shows.
-  it('announces the height cap only once it has hidden something', () => {
+  // The trim's chip announces a number, so it must fire on a trim that actually
+  // dropped something — a track tall enough for every gene in view trims
+  // nothing, and the ladder's own solve is where that shows.
+  it('announces the trim only once the ladder has made one', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setGeneGlyphMode('auto')
-    display.setCoarseTrackHeight(100)
-    const cap = display.effectiveMaxIsoforms
-    expect(cap).toBeDefined()
-
+    display.configuration.setSlot('height', 600)
     display.setRpcData(
       0,
-      makeFeatureData({ hasMultiIsoformGenes: true }),
+      packStackedGenes([
+        { featureId: 'gene1', startBp: 0, endBp: 5000, isoforms: 12 },
+      ]),
       region,
     )
     expect(display.geneGlyphIsoformCap).toBeUndefined()
     expect(display.geneGlyphCollapsed).toBe(false)
 
-    display.setRpcData(
-      0,
-      makeFeatureData({
-        hasMultiIsoformGenes: true,
-        isoformPicks: { byTag: {}, byLength: 1, byCap: 1 },
-      }),
-      region,
-    )
-    expect(display.geneGlyphIsoformCap).toBe(cap)
+    display.configuration.setSlot('height', 60)
+    expect(display.geneGlyphIsoformCap).toBeLessThan(12)
     expect(display.geneGlyphCollapsed).toBe(true)
   })
 
-  // Zooming in past `auto`'s threshold turns the cap on at once, while the
-  // loaded data is still the `longestCoding` fetch — which reports every
-  // multi-isoform gene as collapsed. Gated on "something is hidden", the chip
-  // announced the cap for that whole fetch, on data the cap never touched.
-  it('does not announce the cap on data the collapse mode hid', () => {
+  // Zooming out past `auto`'s threshold puts every multi-isoform gene through
+  // the worker's `longestCoding` collapse, which reports a pick per gene. The
+  // ladder trimmed none of them, so the chip must not claim a count.
+  it('does not announce a trim on data the collapse mode hid', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setGeneGlyphMode('auto')
-    display.setCoarseTrackHeight(100)
-    expect(display.effectiveMaxIsoforms).toBeDefined()
+    display.configuration.setSlot('height', 600)
 
     display.setRpcData(
       0,
@@ -187,6 +180,5 @@ describe('gene-glyph collapse notice', () => {
       region,
     )
     expect(display.geneGlyphIsoformCap).toBeUndefined()
-    expect(display.geneGlyphCollapsed).toBe(false)
   })
 })

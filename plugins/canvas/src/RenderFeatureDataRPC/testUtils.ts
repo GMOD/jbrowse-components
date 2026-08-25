@@ -1,4 +1,5 @@
 import { LITERAL } from './colorClasses.ts'
+import { createFeatureFloatingLabels } from './floatingLabels.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RectData } from './packRenderArrays.ts'
@@ -129,6 +130,103 @@ export function makeAminoAcidOverlayItem(
     labelRowsAbove: 0,
     ...overrides,
   }
+}
+
+// One gene as the worker ships it under `all`: N one-row isoforms stacked with
+// the inter-transcript gap, every rect stamped with its isoform's ordinal, and
+// the `IsoformStack` the fit ladder's trim reads. The ranking is the drawn
+// order unless `rank` says otherwise, which is the case a trim-by-rank test
+// needs and the packer's own sort otherwise gives.
+export interface StackedGeneSpec {
+  featureId: string
+  startBp: number
+  endBp: number
+  isoforms: number
+  name?: string
+  heightPx?: number
+  gapPx?: number
+  canonicalTag?: string
+  // rank per isoform, drawn order; defaults to the drawn order itself
+  ranks?: number[]
+  // bp span per isoform, defaults to the gene's own
+  spans?: [number, number][]
+}
+
+export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
+  const rects: RectData[] = []
+  const flatbushItems: FlatbushItem[] = []
+  const floatingLabelsData = new Map<string, FeatureLabelData>()
+
+  for (const [flatbushIdx, spec] of genes.entries()) {
+    const heightPx = spec.heightPx ?? 10
+    const gapPx = spec.gapPx ?? heightPx * 0.2
+    const children = Array.from({ length: spec.isoforms }, (_, i) => {
+      const [startBp, endBp] = spec.spans?.[i] ?? [spec.startBp, spec.endBp]
+      return {
+        featureId: `${spec.featureId}-${i}`,
+        ordinal: i,
+        isoform: true,
+        rank: spec.ranks?.[i] ?? i,
+        yPx: i * (heightPx + gapPx),
+        heightPx,
+        labelRows: 0,
+        startBp,
+        endBp,
+      }
+    })
+    for (const child of children) {
+      rects.push({
+        start: child.startBp,
+        end: child.endBp,
+        y: child.yPx,
+        height: heightPx,
+        color: 0xff_80_40_ff,
+        colorClass: LITERAL,
+        strand: 0,
+        flatbushIdx,
+        labelRowsAbove: 0,
+        childOrdinal: child.ordinal,
+      })
+    }
+    const totalPx =
+      spec.isoforms * heightPx + Math.max(0, spec.isoforms - 1) * gapPx
+    flatbushItems.push(
+      makeFlatbushItem({
+        featureId: spec.featureId,
+        startBp: spec.startBp,
+        endBp: spec.endBp,
+        bottomPx: totalPx,
+        featureHeightPx: totalPx,
+        name: spec.name ?? spec.featureId,
+        isoformStack: {
+          isoformCount: spec.isoforms,
+          canonicalTag: spec.canonicalTag,
+          gapPx,
+          children,
+        },
+      }),
+    )
+    floatingLabelsData.set(spec.featureId, {
+      featureId: spec.featureId,
+      minX: spec.startBp,
+      maxX: spec.endBp,
+      topY: 0,
+      featureHeight: totalPx,
+      ...createFeatureFloatingLabels({
+        name: spec.name ?? spec.featureId,
+        description: undefined,
+      }),
+    })
+  }
+
+  return makeFeatureData({
+    ...packRenderArrays(rects, [], [], 0, Number.MAX_SAFE_INTEGER),
+    flatbushItems,
+    floatingLabelsData,
+    featureCount: genes.length,
+    hasMultiIsoformGenes: genes.some(g => g.isoforms > 1),
+    labelKinds: { name: true, description: false, subfeature: false },
+  })
 }
 
 // A full FeatureDataResult built from the production packer, so tests never

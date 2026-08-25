@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import configSchemaFactory from '../../LinearBasicDisplay/configSchema.ts'
+import { trimIsoformStack } from '../../LinearBasicDisplay/isoformTrim.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
 
@@ -252,7 +253,8 @@ describe('layoutSubfeatures layout', () => {
       ])
     })
 
-    // The cap leaves them alone and this is the cap at one, so it does too.
+    // The main-thread trim leaves them alone and this is that trim at one, so
+    // it does too.
     it('keeps the decorations beside the isoform it collapses to', () => {
       const gene = mockFeature({
         type: 'gene',
@@ -272,7 +274,6 @@ describe('layoutSubfeatures layout', () => {
       })
       const layout = layoutSubfeatures({ feature: gene, config })
       expect(layout.isoformsCollapsed).toBe(true)
-      expect(layout.isoformsCappedByHeight).toBe(false)
       expect(layout.children.map(c => c.feature.get('name'))).toEqual([
         'mRNA-2',
         'promoter',
@@ -303,42 +304,57 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
-  // The row budget `auto` derives from the track height
-  // (effectiveMaxIsoforms), so a gene with 28 transcripts does not draw all 28
-  // inside a 100px lane's own scrollbar.
-  describe('maxIsoforms cap', () => {
-    const capped = (names: string[], maxIsoforms: number | undefined) =>
-      layoutSubfeatures({
+  // Every isoform ships, with the ranking the fit ladder's trim keeps the best
+  // by. The trim itself is main-thread (isoformTrim.test.ts); what is pinned
+  // here is the table it reads.
+  describe('isoform stack', () => {
+    const trimmedNames = (names: string[], maxIsoforms: number) => {
+      const layout = layoutSubfeatures({
         feature: makeGeneWithTranscripts(names),
-        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms }),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
       })
+      const stack = layout.isoformStack!
+      const kept = trimIsoformStack(stack, maxIsoforms).keptOrdinals
+      return stack.children
+        .filter(c => kept.has(c.ordinal))
+        .map(c => layout.children[c.ordinal]!.feature.get('name'))
+    }
 
-    it('keeps every isoform when the gene already fits', () => {
-      const layout = capped(['a', 'b', 'c'], 5)
-      expect(layout.children).toHaveLength(3)
+    it('ships every isoform and counts them', () => {
+      const layout = layoutSubfeatures({
+        feature: makeGeneWithTranscripts(['a', 'b', 'c', 'd', 'e']),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      expect(layout.children).toHaveLength(5)
       expect(layout.isoformsCollapsed).toBe(false)
+      expect(layout.isoformStack).toMatchObject({ isoformCount: 5 })
+      expect(layout.isoformStack!.children).toHaveLength(5)
     })
 
-    it('keeps only the cap when it does not, and says isoforms are hidden', () => {
-      const layout = capped(['a', 'b', 'c', 'd', 'e'], 2)
-      expect(layout.children).toHaveLength(2)
-      // the flag longestCoding sets: the label and hit box anchor to what drew
-      expect(layout.isoformsCollapsed).toBe(true)
-      // and the one it does not: the chip announces the cap off this alone
-      expect(layout.isoformsCappedByHeight).toBe(true)
-      expect(layout.hasMultipleIsoforms).toBe(true)
+    // The gap after each child, in the gene's own px, so the trim closes the
+    // hole a dropped isoform leaves with the same number the layout opened it
+    // with rather than re-deriving the ratio.
+    it('carries the inter-transcript gap the layout spent', () => {
+      const layout = layoutSubfeatures({
+        feature: makeGeneWithTranscripts(['a', 'b']),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      const stack = layout.isoformStack!
+      const [first, second] = stack.children
+      expect(second!.yPx - (first!.yPx + first!.heightPx)).toBeCloseTo(
+        stack.gapPx,
+      )
     })
 
     // every isoform here has the same 100bp CDS, so this exercises the
-    // later-wins tiebreak the two share
-    it('agrees with the longestCoding collapse at a cap of one', () => {
+    // later-wins tiebreak the ranking and the collapse share
+    it('ranks so a trim to one agrees with the longestCoding collapse', () => {
       const names = ['a', 'b', 'c']
-      const one = capped(names, 1).children.map(c => c.feature.id())
       const longest = layoutSubfeatures({
         feature: makeGeneWithTranscripts(names),
         config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
-      }).children.map(c => c.feature.id())
-      expect(one).toEqual(longest)
+      }).children.map(c => c.feature.get('name'))
+      expect(trimmedNames(names, 1)).toEqual(longest)
     })
 
     it('ranks a longer protein above a shorter one', () => {
@@ -369,35 +385,25 @@ describe('layoutSubfeatures layout', () => {
       })
       const layout = layoutSubfeatures({
         feature: gene,
-        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms: 1 }),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
       })
-      expect(layout.children.map(c => c.feature.get('name'))).toEqual(['long'])
+      const stack = layout.isoformStack!
+      const kept = trimIsoformStack(stack, 1).keptOrdinals
+      expect(
+        stack.children
+          .filter(c => kept.has(c.ordinal))
+          .map(c => layout.children[c.ordinal]!.feature.get('name')),
+      ).toEqual(['long'])
     })
 
     it('leaves the survivors in the order they would have had', () => {
-      const uncapped = capped(['a', 'b', 'c'], undefined).children.map(c =>
-        c.feature.get('name'),
-      )
-      expect(
-        capped(['a', 'b', 'c'], 3).children.map(c => c.feature.get('name')),
-      ).toEqual(uncapped)
-    })
-
-    it('does not apply on top of longestCoding', () => {
-      const layout = layoutSubfeatures({
-        feature: makeGeneWithTranscripts(['a', 'b', 'c']),
-        config: mockDisplayConfig({
-          geneGlyphMode: 'longestCoding',
-          maxIsoforms: 2,
-        }),
-      })
-      expect(layout.children).toHaveLength(1)
+      expect(trimmedNames(['a', 'b', 'c'], 3)).toEqual(['a', 'b', 'c'])
     })
 
     // `transcriptTypes` names seven types and none of the non-coding ones NCBI
-    // hangs off a gene beside its mRNAs, so a cap that counted only its members
-    // left every `lnc_RNA`/`misc_RNA` isoform exempt: a gene capped at 2 drew
-    // 7, which is the overflow the cap exists to end reached a different way.
+    // hangs off a gene beside its mRNAs, so a stack that counted only its
+    // members left every `lnc_RNA`/`misc_RNA` isoform out of the ranking: a
+    // gene trimmed to 2 drew 7.
     it('counts isoforms transcriptTypes does not name', () => {
       const gene = mockFeature({
         type: 'gene',
@@ -413,14 +419,28 @@ describe('layoutSubfeatures layout', () => {
       })
       const layout = layoutSubfeatures({
         feature: gene,
-        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms: 2 }),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
       })
-      expect(layout.children).toHaveLength(2)
+      const stack = layout.isoformStack!
+      expect(stack.isoformCount).toBe(5)
+      const kept = trimIsoformStack(stack, 2).keptOrdinals
       // coding still ranks above non-coding, so the two mRNAs are the survivors
-      expect(layout.children.map(c => c.feature.get('type'))).toEqual([
-        'mRNA',
-        'mRNA',
-      ])
+      expect(
+        stack.children
+          .filter(c => kept.has(c.ordinal))
+          .map(c => layout.children[c.ordinal]!.feature.get('type')),
+      ).toEqual(['mRNA', 'mRNA'])
+    })
+
+    // Under `longestCoding` the gene ships one child and still counts them
+    // all, so the badge reads the same way from either source.
+    it('counts every isoform under longestCoding too', () => {
+      const layout = layoutSubfeatures({
+        feature: makeGeneWithTranscripts(['a', 'b', 'c']),
+        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+      })
+      expect(layout.children).toHaveLength(1)
+      expect(layout.isoformStack).toMatchObject({ isoformCount: 3 })
     })
   })
 
@@ -428,7 +448,7 @@ describe('layoutSubfeatures layout', () => {
   // Select` (Ensembl/GENCODE with MANE_Select / Ensembl_canonical), which is a
   // curator's answer to the question both collapses are asking. It outranks
   // protein length, so the same tag decides what `longestCoding` shows and what
-  // the height cap keeps first.
+  // the trim keeps first.
   describe('canonical transcript tag', () => {
     // 'short' is tagged and 'long' has three times the CDS, so every assertion
     // below is the tag beating the measurement. `tagLast` puts the tagged one
@@ -593,16 +613,21 @@ describe('layoutSubfeatures layout', () => {
       })
     })
 
-    it('is the first isoform the height cap keeps', () => {
+    it('is the first isoform a trim to one keeps', () => {
+      const layout = layoutSubfeatures({
+        feature: geneWithTag({ tag: 'RefSeq Select' }),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      const stack = layout.isoformStack!
+      const kept = trimIsoformStack(stack, 1).keptOrdinals
       expect(
-        names(
-          { tag: 'RefSeq Select' },
-          { geneGlyphMode: 'all', maxIsoforms: 1 },
-        ),
+        stack.children
+          .filter(c => kept.has(c.ordinal))
+          .map(c => layout.children[c.ordinal]!.feature.get('name')),
       ).toEqual(['short'])
     })
 
-    // The isoform a capped gene keeps first should also be the one it draws
+    // The isoform a trimmed gene keeps first should also be the one it draws
     // first, so the gene reads top-down. Both isoforms here are coding, so the
     // coding-first stack sort is a no-op and only the tag can reorder them.
     it('stacks on top of the untagged isoforms', () => {
@@ -658,12 +683,15 @@ describe('layoutSubfeatures layout', () => {
         expect(tagOf({ tag: 'basic' })).toBeUndefined()
       })
 
-      it('names the tag under the height cap too', () => {
+      // The stack carries it too, because the trim that reads the stack is the
+      // one hiding transcripts under `all` and the chip credits the same rule
+      // either way.
+      it('rides on the isoform stack for the main-thread trim', () => {
         expect(
-          tagOf(
-            { tag: 'RefSeq Select' },
-            { geneGlyphMode: 'all', maxIsoforms: 1 },
-          ),
+          layoutSubfeatures({
+            feature: geneWithTag({ tag: 'RefSeq Select' }),
+            config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+          }).isoformStack?.canonicalTag,
         ).toBe('RefSeq Select')
       })
 
@@ -887,17 +915,30 @@ describe('layoutSubfeatures layout', () => {
       expect(names(layout)).toEqual(['polyprotein'])
     })
 
-    // The cap measures the rows a gene really packs and a 16-product
-    // polyprotein packs 16 of them, so this gene overflows a 4-row lane that an
-    // isoform COUNT would have let through whole — and the ranking then decides
-    // what it keeps.
-    it('is what the measuring cap keeps', () => {
+    // A 16-product polyprotein is one isoform and 16 rows tall, which is why
+    // the trim prices a gene in px off the stack rather than counting rows: the
+    // stack carries its real height, so the ladder charges it what it costs.
+    it('carries its real height on the isoform stack', () => {
       const layout = layoutSubfeatures({
         feature: viralGene(),
-        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms: 4 }),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
       })
-      expect(layout.isoformsCollapsed).toBe(true)
-      expect(names(layout)).toEqual(['polyprotein'])
+      const [polyprotein, tx1] = layout.isoformStack!.children
+      expect(polyprotein!.heightPx).toBeGreaterThan(tx1!.heightPx * 4)
+    })
+
+    it('outranks the plain mRNAs beside it', () => {
+      const layout = layoutSubfeatures({
+        feature: viralGene(),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      const stack = layout.isoformStack!
+      const kept = trimIsoformStack(stack, 1).keptOrdinals
+      expect(
+        stack.children
+          .filter(c => kept.has(c.ordinal))
+          .map(c => layout.children[c.ordinal]!.feature.get('name')),
+      ).toEqual(['polyprotein'])
     })
 
     it('stacks on top when nothing is collapsed', () => {

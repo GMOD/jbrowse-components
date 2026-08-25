@@ -277,6 +277,7 @@ function buildIsoformStack({
   scores,
   gapPx,
   canonicalTag,
+  collapsedIsoformCount,
 }: {
   drawn: Feature[]
   children: FeatureLayout[]
@@ -285,6 +286,7 @@ function buildIsoformStack({
   scores: Scores
   gapPx: number
   canonicalTag: string | undefined
+  collapsedIsoformCount: number | undefined
 }): IsoformStack {
   const rankById = new Map(
     rankIsoforms(
@@ -295,6 +297,7 @@ function buildIsoformStack({
   return {
     isoformCount,
     canonicalTag,
+    collapsedIsoformCount,
     gapPx,
     children: drawn.map((child, ordinal) => {
       const layout = children[ordinal]!
@@ -430,6 +433,10 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
             scores,
             gapPx: heightPx * TRANSCRIPT_PADDING_RATIO,
             canonicalTag: collapsed?.canonicalTag,
+            collapsedIsoformCount:
+              geneGlyphMode === 'longestCoding' && hasMultipleIsoforms
+                ? 1
+                : undefined,
           })
         : undefined,
   }
