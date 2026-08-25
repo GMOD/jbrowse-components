@@ -68,6 +68,9 @@ const useStyles = makeStyles()(theme => ({
  * through it, so a dismissal survives the condition going away and coming back.
  * Passing an object rather than children keeps that state one prop rather than
  * a `shown` flag the caller can contradict.
+ *
+ * `onClick` makes the chip act instead of dismiss — the subtree-filter chip
+ * clears the filter, which is what makes the condition go away.
  */
 export function SidebarHintChip({
   hint,
@@ -75,12 +78,14 @@ export function SidebarHintChip({
   maxWidth,
   warning = false,
   testId,
+  onClick,
 }: {
   hint?: { title: string; text: string }
   top?: number
   maxWidth?: number
   warning?: boolean
   testId: string
+  onClick?: () => void
 }) {
   const { classes, cx } = useStyles()
   const [dismissed, setDismissed] = useState(false)
@@ -91,9 +96,12 @@ export function SidebarHintChip({
       style={{ top, maxWidth }}
       data-testid={testId}
       title={hint.title}
-      onClick={() => {
-        setDismissed(true)
-      }}
+      onClick={
+        onClick ??
+        (() => {
+          setDismissed(true)
+        })
+      }
     >
       {hint.text}
     </button>

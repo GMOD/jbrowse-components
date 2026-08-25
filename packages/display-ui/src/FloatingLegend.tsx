@@ -115,6 +115,21 @@ const useStyles = makeStyles()(theme => ({
       marginBottom: 0,
     },
   },
+  // A row that acts: the same layout, as a plain button (see `closeButton`
+  // for why not Material's), so a key naming groups of rows can focus one.
+  itemButton: {
+    font: 'inherit',
+    padding: 0,
+    border: 0,
+    background: 'none',
+    width: '100%',
+    textAlign: 'left',
+    color: 'inherit',
+    cursor: 'pointer',
+    '&:hover': {
+      background: theme.palette.action.hover,
+    },
+  },
   swatches: {
     display: 'flex',
     gap: 2,
@@ -169,9 +184,11 @@ export type {
 const LegendItemList = observer(function LegendItemList({
   items,
   maxItems,
+  onItemClick,
 }: {
   items: LegendItem[]
   maxItems: number
+  onItemClick?: (item: LegendItem) => void
 }) {
   const { classes } = useStyles()
   const [expanded, setExpanded] = useState(false)
@@ -185,26 +202,46 @@ const LegendItemList = observer(function LegendItemList({
   const columns = Math.max(1, ...shown.map(i => legendSwatches(i).length))
   return (
     <>
-      {shown.map((item, i) => (
-        // eslint-disable-next-line @eslint-react/no-array-index-key
-        <div key={`${item.label}-${i}`} className={classes.item}>
-          <div
-            className={classes.swatches}
-            style={{ minWidth: columns * SWATCH + (columns - 1) * 2 }}
+      {shown.map((item, i) => {
+        const row = (
+          <>
+            <div
+              className={classes.swatches}
+              style={{ minWidth: columns * SWATCH + (columns - 1) * 2 }}
+            >
+              {legendSwatches(item).map(swatch => (
+                <svg
+                  key={`${swatch.color}-${swatch.mark ?? 'fill'}`}
+                  width={SWATCH}
+                  height={SWATCH}
+                >
+                  <LegendSwatchGlyph swatch={swatch} size={SWATCH} />
+                </svg>
+              ))}
+            </div>
+            <span className={classes.label}>{item.label}</span>
+          </>
+        )
+        return onItemClick ? (
+          <button
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            key={`${item.label}-${i}`}
+            type="button"
+            className={cx(classes.item, classes.itemButton)}
+            title="Show only these rows"
+            onClick={() => {
+              onItemClick(item)
+            }}
           >
-            {legendSwatches(item).map(swatch => (
-              <svg
-                key={`${swatch.color}-${swatch.mark ?? 'fill'}`}
-                width={SWATCH}
-                height={SWATCH}
-              >
-                <LegendSwatchGlyph swatch={swatch} size={SWATCH} />
-              </svg>
-            ))}
+            {row}
+          </button>
+        ) : (
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <div key={`${item.label}-${i}`} className={classes.item}>
+            {row}
           </div>
-          <span className={classes.label}>{item.label}</span>
-        </div>
-      ))}
+        )
+      })}
       {collapsible ? (
         <button
           type="button"
@@ -226,12 +263,18 @@ const LegendItemList = observer(function LegendItemList({
 // display). Section titles + per-section close buttons only appear when there
 // is more than one section, so a single-scheme legend looks unchanged. `title`
 // is a heading for the whole box, shown regardless of section count.
+//
+// `onItemClick` makes the rows act — for a key whose entries name groups of
+// rows, clicking one focuses those rows. It is handed the section too, so a
+// display with several vocabularies can act on the one that names rows and
+// leave the others inert.
 const FloatingLegend = observer(function FloatingLegend({
   items,
   sections,
   title,
   onDismiss,
   onDismissSection,
+  onItemClick,
   maxItems = DEFAULT_MAX_ITEMS,
   maxWidth = DEFAULT_MAX_WIDTH,
   top = 10,
@@ -241,6 +284,7 @@ const FloatingLegend = observer(function FloatingLegend({
   title?: string
   onDismiss?: () => void
   onDismissSection?: (id: string) => void
+  onItemClick?: (item: LegendItem, section: LegendSection) => void
   maxItems?: number
   // How wide the box may grow before labels ellipsize. The box floats OVER the
   // data, so this is an occlusion budget, not a text budget — which is why it is
@@ -323,7 +367,17 @@ const FloatingLegend = observer(function FloatingLegend({
                 ) : null}
               </div>
             ) : null}
-            <LegendItemList items={section.items} maxItems={maxItems} />
+            <LegendItemList
+              items={section.items}
+              maxItems={maxItems}
+              onItemClick={
+                onItemClick
+                  ? item => {
+                      onItemClick(item, section)
+                    }
+                  : undefined
+              }
+            />
           </div>
         ))}
       </div>

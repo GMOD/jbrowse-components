@@ -112,6 +112,26 @@ describe('FloatingLegend', () => {
   // can only count a legend that some page actually raises, and no page there
   // turns on a colorBy that raises one. A browser check that never runs is not
   // a check.
+  // A key whose rows name groups of rows can focus one; a key with no handler
+  // stays inert text, so a display keying features rather than rows offers no
+  // dead buttons.
+  it('makes the rows act only when given a handler', () => {
+    const clicked: string[] = []
+    const { getByText, rerender } = render(
+      <FloatingLegend
+        sections={[{ id: 'group', title: 'Population', items: items(2) }]}
+        onItemClick={(item, section) => {
+          clicked.push(`${section.id}:${item.label}`)
+        }}
+      />,
+    )
+    fireEvent.click(getByText('item1'))
+    expect(clicked).toEqual(['group:item1'])
+
+    rerender(<FloatingLegend items={items(2)} />)
+    expect(getByText('item1').closest('button')).toBeNull()
+  })
+
   it('renders no Material UI, in every state that has a control', () => {
     const { container } = render(
       <FloatingLegend

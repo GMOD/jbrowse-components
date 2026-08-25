@@ -34,6 +34,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  focusRows,
   loadedRegionIndexAt,
   paletteColorsByRow,
 } from '@jbrowse/tree-sidebar'
@@ -51,7 +52,7 @@ import {
   variantShowSubmenuItems,
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
-import { getVariantLegendSections } from './variantLegend.ts'
+import { UNLABELED_GROUP, getVariantLegendSections } from './variantLegend.ts'
 import {
   DEFAULT_VARIANT_LANE_HEIGHT,
   variantTopBandsGeometry,
@@ -1471,6 +1472,23 @@ export default function MultiSampleVariantBaseModelF(
           if (hit) {
             self.sortByGenotype(hit.id)
           }
+        },
+        /**
+         * #action
+         * Narrow the rows to one `colorBy` group — what clicking that group's
+         * swatch in the legend does. `label` is the legend's own spelling, so
+         * the unlabeled group comes in as it is listed there.
+         */
+        focusGroup(label: string) {
+          const value = label === UNLABELED_GROUP ? '' : label
+          // `editableSources`, the unfiltered list: a second click on another
+          // group has to reach the rows the first click hid
+          focusRows(
+            self,
+            self.editableSources
+              .filter(s => String(s[self.colorBy] ?? '') === value)
+              .map(s => s.name),
+          )
         },
       }))
       .views(self => ({

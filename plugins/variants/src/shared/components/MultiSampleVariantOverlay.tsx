@@ -16,6 +16,7 @@ interface VariantOverlayModel extends VariantRowsModel {
   legendSections(): LegendSection[]
   setShowLegend(s: boolean): void
   dismissLegendSection(id: string): void
+  focusGroup(label: string): void
 }
 
 // Everything the multi-sample variant displays float over their canvas: the
@@ -89,6 +90,13 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
           }}
           onDismissSection={id => {
             model.dismissLegendSection(id)
+          }}
+          // the group section names rows, so its swatches focus them; the
+          // cell-color sections name genotypes and stay inert
+          onItemClick={(item, section) => {
+            if (section.id === 'group') {
+              model.focusGroup(item.label)
+            }
           }}
         />
       ) : null}

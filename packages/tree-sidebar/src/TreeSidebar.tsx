@@ -9,7 +9,9 @@ import { observer } from 'mobx-react'
 
 import { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 import { StaleTreeHint } from './StaleTreeHint.tsx'
+import { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
 import { getLeafNames, subtreeCoversEveryRow } from './clusterUtils.ts'
+import { focusRows } from './focusRows.ts'
 import { pickTreeNode } from './spatialIndex.ts'
 import {
   TREE_RESIZE_HANDLE_WIDTH,
@@ -202,10 +204,7 @@ const TreeSidebar = observer(function TreeSidebar({
   }
 
   function applyFilter(names?: string[]) {
-    model.setSubtreeFilter(names)
-    // the filter re-lays-out the tree from y=0; without this the old scroll
-    // offset strands the (usually shorter) subtree at the bottom, out of view
-    model.setScrollTop?.(0)
+    focusRows(model, names)
     closeMenu()
   }
 
@@ -214,11 +213,13 @@ const TreeSidebar = observer(function TreeSidebar({
   if (!treeIsShowing(model) || !sources?.length) {
     // one of those is "there IS a tree, it just doesn't describe these rows any
     // more" — which needs saying rather than silently drawing nothing. Portaled
-    // for the same reason the panel is: it is text in the gutter.
+    // for the same reason the panel is: it is text in the gutter. The filter
+    // chip is here too: a focus outlives the tree that set it.
     return (
       <TrackOverlayPortal>
         <GutterLayer top={top}>
           <StaleTreeHint model={model} top={innerTop} />
+          <SubtreeFilterHint model={model} top={innerTop} />
         </GutterLayer>
       </TrackOverlayPortal>
     )
@@ -247,6 +248,7 @@ const TreeSidebar = observer(function TreeSidebar({
             }}
           />
           <ClusterProvenanceHint model={model} top={innerTop} />
+          <SubtreeFilterHint model={model} top={innerTop} />
           {/* the ref callbacks are the model's own actions, which are stable per
               instance — wrapping them in useCallback([model]) bought nothing */}
           <canvas

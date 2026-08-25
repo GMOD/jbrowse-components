@@ -22,6 +22,7 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
+  focusRows,
   loadedRegionIndexAt,
   reconcileLayout,
   resetRowOrderMenuItems,
@@ -421,6 +422,24 @@ export default function stateModelFactory(
 
       setShowRowSeparators(arg: boolean) {
         setConf(self, 'showRowSeparators', arg)
+      },
+
+      /**
+       * #action
+       * Narrow the rows to the subtracks one color-key row stands for — what
+       * clicking that swatch does. A key row is a group where the subtrack has
+       * one and the subtrack itself otherwise (`buildLegendItems`), so this
+       * matches the same way.
+       */
+      focusLegendGroup(label: string) {
+        // `editableSources`, the unfiltered list: a second click on another
+        // group has to reach the rows the first click hid
+        focusRows(
+          self,
+          self.editableSources
+            .filter(s => (s.group ?? s.label ?? s.name) === label)
+            .map(s => s.name),
+        )
       },
 
       /**

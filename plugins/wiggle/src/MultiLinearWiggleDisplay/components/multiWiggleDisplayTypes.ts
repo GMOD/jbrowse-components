@@ -51,6 +51,7 @@ export interface MultiWiggleDisplayModel
   hasOverlayLegend: boolean
   scoreRamp: ScoreRamp | undefined
   setShowLegend: (arg: boolean) => void
+  focusLegendGroup: (label: string) => void
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement | null

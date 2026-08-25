@@ -201,6 +201,9 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           onDismiss={() => {
             model.setShowLegend(false)
           }}
+          onItemClick={item => {
+            model.focusLegendGroup(item.label)
+          }}
         />
       ) : null}
 

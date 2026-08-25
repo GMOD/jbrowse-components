@@ -77,6 +77,10 @@ export function getGenotypeLegendItems({
   ]
 }
 
+// How the legend names the rows whose `colorBy` attribute is blank. Exported so
+// `focusGroup` can map the label back to the value it stands for.
+export const UNLABELED_GROUP = '(unlabeled)'
+
 // Sample-grouping legend (the per-row sidebar coloring): one entry per distinct
 // `colorBy` metadata value (e.g. population), most-common first, reusing the
 // `labelColor` the palette already assigned to that group's sources. Empty
@@ -108,7 +112,7 @@ export function getSampleGroupLegendItems(
     .sort((a, b) => b[1] - a[1])
     .map(([value]) => ({
       color: colorByValue.get(value),
-      label: value || '(unlabeled)',
+      label: value || UNLABELED_GROUP,
     }))
 }
 
