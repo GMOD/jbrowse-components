@@ -26,7 +26,7 @@ import type {
 } from './layout.ts'
 
 /**
- * What the fit ladder reads off the display that installs it. The four memo
+ * What the fit ladder reads off the display that installs it. The five memo
  * instances are volatiles the display holds (see `fitLadderVolatiles`); the
  * rest are the layout inputs and the height-mode answers the ladder is solved
  * against.
@@ -55,7 +55,7 @@ export interface FitLadderHost {
 }
 
 /**
- * The four packing memos the ladder escalates through. One instance per
+ * The five packing memos the ladder escalates through. One instance per
  * reservation config, so each keeps its own stable per-group references and
  * prior-row ordering — a single shared instance can only cache one config at a
  * time.
@@ -110,9 +110,10 @@ export function fitLadderVolatiles() {
 }
 
 /**
- * The fit ladder: every candidate stack, the whitespace solve that chooses the
- * `decimated` rung's factor, the scale bounds, and the `fitStage` that resolves
- * them into one outcome.
+ * The fit ladder: every candidate stack, the two solves that choose the
+ * `isoforms` rung's transcript count and the `decimated` rung's whitespace
+ * factor, the scale bounds, and the `fitStage` that resolves them into one
+ * outcome.
  *
  * A plain `.views()` layer rather than a mixin: `types.compose` depth is a real
  * ceiling in this chain (ADR-041), and the ladder reads `height`-mode and

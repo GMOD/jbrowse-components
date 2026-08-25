@@ -1175,10 +1175,12 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.showLabels).toBe(false)
 
     const h = maxBottom(display.baseLaidOutDataMap)
-    // Nothing is reserved anywhere, so all four rungs are the one base stack —
-    // shared by reference, not packed four times. The decimated rung skips its
-    // whole factor solve too: with names off there is nothing to decimate.
+    // Nothing is reserved anywhere, so all five rungs are the one base stack —
+    // shared by reference, not packed five times. The decimated rung skips its
+    // whole factor solve too: with names off there is nothing to decimate, and
+    // this fixture stacks no gene, so the isoform rung has nothing to trim.
     expect(display.fitLabelsOnlyLayout).toBe(display.baseLaidOutDataMap)
+    expect(display.fitIsoformsSolved).toBe(display.baseLaidOutDataMap)
     expect(display.fitDecimatedSolved).toBe(display.baseLaidOutDataMap)
     expect(display.fitBodiesOnlyLayout).toBe(display.baseLaidOutDataMap)
     expect(maxBottom(display.fitLabelsOnlyLayout)).toBe(h)
