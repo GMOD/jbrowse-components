@@ -2840,6 +2840,35 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The same bin off the LIVE zoom, and read by `dataSuperseded` alone.
+         *
+         * The debounced bin cannot answer "is the held data sampled finely
+         * enough for what is on screen": it is the value the held data was
+         * fetched under, so for the whole 500ms the debounce takes to catch up
+         * the two agree by construction and a supersession test built on it can
+         * only ever say no. That is half the window `dataSuperseded` exists to
+         * cover — the debounce half, where the picture is already several
+         * octaves coarser than the zoom it is drawn at — and it is the half an
+         * export lands in, since a reader zooms and then reaches for the menu.
+         *
+         * It stays out of `regionFetchKey`, which drives the refetch, and the
+         * reason is not that a live key would flip more often — the
+         * quantization means it flips per octave either way, and wiggle keys on
+         * live `bpPerPx` outright (ADR-008). It is that `FetchVisibleRegions`
+         * runs on the leading edge, so a live key makes a fast multi-octave
+         * gesture issue a refetch at each octave it passes through, and this is
+         * the pipeline whose extract is the OOM the per-base bin exists to
+         * bound. Latest-wins cancels the RPC, not worker work already running.
+         */
+        get livePerBaseBinBp() {
+          const view = self.view
+          return isPerBaseScheme(self.colorBy.type) && view.initialized
+            ? subPixelBinBp(view.bpPerPx)
+            : 1
+        },
+
+        /**
+         * #getter
          */
         get hoveredFeature() {
           const featId = self.featureIdUnderMouse
@@ -2892,14 +2921,27 @@ export default function stateModelFactory(
          * reads as current for the debounce-plus-RPC window, and an SVG export
          * that samples `svgReady` inside it renders a wall sampled for a zoom
          * four times coarser than the one it is drawn at.
+         *
+         * Two terms for the two halves of that window. The stamp-vs-key term is
+         * the RPC half, stated in the key's own vocabulary so a future key axis
+         * stays covered by it. The debounce half cannot be stated that way at
+         * all — the stamp IS the settled bin, so the two agree by construction
+         * until the debounce catches up — so it is a value compare of the
+         * settled bin against the live one. Restating the key's string format
+         * on the live side instead would latch this true the day the key grows
+         * a second axis, and a latched supersession is an export that hangs to
+         * `awaitSvgReady`'s timeout rather than one that fails.
          */
         get dataSuperseded(): boolean {
-          return self.view.visibleRegions.some(block => {
-            const loaded = self.loadedRegions.get(block.displayedRegionIndex)
-            return (
-              loaded !== undefined && loaded.fetchKey !== self.regionFetchKey
-            )
-          })
+          return (
+            self.perBaseBinBp !== self.livePerBaseBinBp ||
+            self.view.visibleRegions.some(block => {
+              const loaded = self.loadedRegions.get(block.displayedRegionIndex)
+              return (
+                loaded !== undefined && loaded.fetchKey !== self.regionFetchKey
+              )
+            })
+          )
         },
       }))
       .views(self => ({

@@ -74,8 +74,8 @@ export interface RenderAlignmentDataArgs {
    * `byteLimit` is one — it swings with zoom, and in the payload each swing is a
    * `SettingsInvalidate` that drops every fetched region. The display spells it
    * as its `regionFetchKey` instead, so a bin flip refetches the regions on
-   * screen and leaves the rest alone (REGION_TOO_LARGE.md §"Neither worker
-   * budget may be an RPC cache key").
+   * screen and leaves the rest alone ("Neither worker budget may be an RPC cache
+   * key", in REGION_TOO_LARGE.md §"How the verdict is built").
    */
   perBaseBinBp?: number
 }
