@@ -586,6 +586,13 @@ Two sub-points on the input side, both settled since:
   the output ceiling (~8,193 variants on a 128 MiB-floor device) for any cohort
   a browser would load. `planLDDispatch.test.ts` holds these four figures.
 
+**Which estimator runs is a config slot, not a property of the file.**
+`ldMethod` ('auto' | 'phased' | 'composite', `SharedLDConfigSchema`) is
+resolved by `resolveLDMethod`, and the two directions are asymmetric: composite
+is honoured whatever the callset carries, phased is a preference that unphased
+data declines. Neither choice changes the ceilings above, since the two kernels
+now read three planes and four planes of the same width and cost the same order.
+
 **Genomic mode costs 5x this, and the check does not see it.**
 `buildGenomicCellBuffers` allocates `positions` and `cellSizes`, two more
 `Float32Array(numCells * 2)`, so `useGenomicPositions` is 20 bytes/cell against

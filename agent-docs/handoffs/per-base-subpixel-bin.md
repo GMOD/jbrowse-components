@@ -191,10 +191,19 @@ Three ways out, none taken:
 - **`binBp <= bpPerPx / 4`.** One line, buys a second octave, halves the win.
 - **Accept it.** Self-correcting, bounded by debounce + RPC.
 
-Do not reach for the debounce as the fix by switching to live `bpPerPx`: the
-quantization means the key would still only flip per octave, so it looks free,
-but a viewport parked on an octave boundary would then thrash a full region
-refetch on every jitter.
+Do not reach for the debounce as the fix by switching to live `bpPerPx`. The
+argument this file used to make for that, a parked viewport thrashing a refetch
+on every jitter at an octave boundary, does not hold: a parked viewport
+produces no changes to jitter over, and the quantization flips the key once per
+octave whichever zoom it reads. The real cost is on the MOVING viewport.
+`FetchVisibleRegions` runs on the leading edge and then throttles at 600ms
+rather than settling, so it runs while a gesture is still going, and a live key
+hands each of those runs the bin of a zoom the gesture is only passing through.
+Each such run refetches the one pipeline whose extract is the OOM this bin exists
+to bound, once per intermediate zoom the throttle happens to sample. Latest-wins cancels the
+RPC, not extract work already running. `livePerBaseBinBp`'s JSDoc states this;
+`dataSuperseded` is the reader that wants the live bin, and it is not a refetch
+trigger.
 
 ## Open: typed columns vs objects, and the measurement that says don't
 

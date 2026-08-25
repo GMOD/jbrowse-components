@@ -326,7 +326,8 @@ level up: **if a display can sit indefinitely in a state where its fetch trigger
 is false, that state has to reach `svgReady` some other way** — `error`,
 `regionTooLarge`, `fetchCanceled`, or `fetchInert`. Otherwise one such track
 hangs the whole view's export, because `renderToSvg` awaits every display and
-`awaitSvgReady` has no time bound. The cancel is the resting state every
+`awaitSvgReady`'s only bound is a half-hour backstop (`SVG_READY_TIMEOUT_MS`,
+elapsed rather than idle, and picked to sit far past any real export). The cancel is the resting state every
 fetching display has: the user parks it, Retry or a viewport change releases
 it, and an export does neither — which is why `SvgReadyTerminals` takes it as a
 required field rather than leaving it to each display's memory.

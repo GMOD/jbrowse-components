@@ -1192,9 +1192,9 @@ narrow, `paintLayer`'s raster-vs-vector dispatch, the JSX-SVG exception classes,
 and model-scoped clip ids — is in
 [reference/SVG_EXPORT.md](reference/SVG_EXPORT.md).
 
-**`awaitSvgReady` has no time bound, so every resting state that never fetches
-must be terminal.** A correct `dataCurrent` says whether held data is current; it
-cannot say whether data will ever arrive. So read a display's fetch gate and ask
+**`awaitSvgReady`'s only bound is a half-hour backstop, so every resting state
+that never fetches must be terminal.** A correct `dataCurrent` says whether held
+data is current; it cannot say whether data will ever arrive. So read a display's fetch gate and ask
 what leaves it false indefinitely — a user toggle inside it (LD's
 `showLDTriangle`), an unmet prerequisite (HiC's `prepare` needs an
 `effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
@@ -1566,7 +1566,7 @@ Keeping them apart is what lets a display say "the data is fine, it just isn't
 here" without inventing a key value for absence — a key that changed when data
 arrived would be the `rpcProps()` loop in different clothes.
 
-**Three declarations key on zoom:**
+**Four declarations key on zoom:**
 
 - **Wiggle**: BigWig has discrete zoom levels; the worker picks one from
   `bpPerPx / resolution`, so the key is `String(view.bpPerPx)` and any zoom
@@ -1588,6 +1588,25 @@ arrived would be the `rpcProps()` loop in different clothes.
   `cellDataMode === 'matrix' ? String(bpPerPx) : ''` — wiggle's rule in matrix
   mode only, since the *regular* variant display draws each variant at its
   genomic position.
+- **Alignments** (`LinearAlignmentsDisplay`): the two per-base colour schemes
+  sample the wall at a sub-pixel bin, so what the worker's extract holds for a
+  region is a function of zoom. The key is `String(perBaseBinBp)`, which is one
+  constant string in every other colour scheme, and `perBaseBinBp` is
+  `subPixelBinBp` over the **debounced** `coarseBpPerPx`. That same getter rides
+  to the worker as a call-site RPC argument, so the key describes the fetch that
+  was actually issued.
+
+  Keying live `bpPerPx` instead would not be wrong for flipping more often: the
+  quantization flips the bin once per octave either way, and wiggle keys on live
+  `bpPerPx` outright. It is wrong because `FetchVisibleRegions` runs on the
+  leading edge and then *throttles* at 600ms rather than settling. It runs while
+  a gesture is still moving, and a live key hands each of those runs the bin of
+  a zoom the gesture is only passing through. Every one of those mismatches
+  refetches the one pipeline whose worker extract is the OOM the bin exists to
+  bound, and latest-wins cancels the RPC, not extract work already running. The
+  debounce costs no latency where a user would feel it, since every discrete
+  placement flushes the coarse blocks itself (`settleCoarseBlocks`) and only the
+  continuous zoom and drag paths wait out the 500ms.
 
 **Three answer presence instead**, and the last of them is the zoom case that
 looks most like a key:
@@ -1610,6 +1629,38 @@ looks most like a key:
   re-read each time. `LinearMafDisplay/summaryTierSwap.test.ts` pins both
   directions. Worth stating once, since the shape recurs: **"which map holds it"
   is a presence question, not a staleness one.**
+
+**A third hook sits beside those two and is not a cache question at all:
+`dataSuperseded`** (default false). The cache hooks decide whether a region is
+refetched. This one decides whether what is held is still what is on screen,
+which is an export-readiness question: it is the third term of `dataCurrent`
+(`viewportWithinLoadedData`, a non-empty `loadedRegions`, and not superseded),
+and `dataCurrent` is the freshness half of `foundationSvgReady`.
+
+The window it covers is invisible on screen, since the clear lands a tick later
+and the loading scrim covers it, which is exactly why it needs stating.
+`awaitSvgReady` samples freshness once, so an export sampling it inside that
+window renders the data that is about to be discarded, or nothing at all once
+the clear lands mid-render.
+
+Both overrides in tree are a display invalidating its own load rather than the
+viewport moving off it:
+
+- **GWAS Manhattan**: adopting the top hit as the LD index SNP is an `rpcProps`
+  write, so the load that produced the top hit is the load it invalidates.
+- **Alignments**: the per-base bin, where the window is the debounce *plus* the
+  RPC. The mixin's hook says "a fetch input this display has already settled on
+  has moved past it", and this override widens that on purpose to cover the
+  debounce window too, where the settled bin has not moved yet, the clear is
+  inevitable but not yet committed, and the wall on screen is already several octaves
+  coarser than the zoom it is drawn at. That is the half an export lands in,
+  since a reader zooms and then reaches for the menu.
+
+**It fails hung, not stale**, the same trade `viewSignature` makes: a
+supersession that latches true never lets `dataCurrent` go true again, and every
+export of that display then waits out `awaitSvgReady`'s backstop instead of
+failing. So a supersession compare states only the half it can prove, and leaves
+key strings to the key.
 
 **`regionFetchKey` is a getter, so MST makes it a computed.** That is the point
 — the observables it reads join `FetchVisibleRegions`' dependency set, where an
@@ -1723,6 +1774,13 @@ and 12 lines — and both have since been given the sections they wanted.
   zoom-staleness](#per-region-zoom-staleness), and [the hook
   table](#the-hooks-and-who-is-sitting-on-a-default) for what every other
   unoverridden hook leaves you with.
+- Don't restate `regionFetchKey`'s string vocabulary in a second derivation. A
+  supersession compare states the live-vs-settled half as a **value** compare
+  and leaves the stamps to the key; a second spelling reads `"16|fine"` against
+  a live `"16"` the day the key grows an axis, latches true, and every export of
+  that display waits out `awaitSvgReady`'s backstop instead of failing.
+  `LinearAlignmentsDisplay`'s `dataSuperseded` is the worked example. See
+  [per-region zoom-staleness](#per-region-zoom-staleness).
 
 ### Upload and render
 
@@ -1772,12 +1830,19 @@ and 12 lines — and both have since been given the sections they wanted.
 
 ### Chrome, readiness and export
 
-- Don't leave a resting state that never fetches non-terminal. `awaitSvgReady`
-  has no time bound, so a user toggle, an unmet prerequisite, a standing user
-  cancel or a static "zoom in" mode must reach `svgReady` through `error`,
+- Don't leave a resting state that never fetches non-terminal. `awaitSvgReady`'s
+  only bound is a half-hour backstop, so a user toggle, an unmet prerequisite, a
+  standing user cancel or a static "zoom in" mode must reach `svgReady` through
+  `error`,
   `regionTooLarge`, `fetchCanceled` or `fetchInert` — otherwise one track hangs
   the whole view's export with the dialog spinner up. Enumerate every way the
   prerequisite fails, not just the throw. See [SVG export](#svg-export).
+- Don't ask readiness from a view's raw `bodyMounted`; ask
+  `effectiveBodyMounted`, which folds in the answer of every view this one is
+  nested inside. `ViewContainer`'s effect is the only writer of the raw flag and
+  never reaches a view nested in another view's rows (synteny rows, breakpoint
+  panels), so there the raw flag reads `true` for a subtree that is out of the
+  DOM, and every display in it waits for a first paint nothing will make.
 - Don't derive the export's terminal set separately from the loading overlay's.
   They are the same states, plus two readers outside the display
   (`displaysSettled`, the retry check), which is why `fetchInert` is one mixin

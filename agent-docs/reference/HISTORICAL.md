@@ -243,6 +243,40 @@ is gone and 100+ Gbp genomes render correctly. See `reference/BP_PRECISION.md`
 `hpmath.slang` once both views dropped it; the LGV in-shader
 `hpSplitUint`/`hpToClipX` path was untouched.
 
+## The composite LD kernel looped per sample, and lost the answer (closed 2026-08)
+
+`ldCompute.slang` took genotype dosages as bytes, four samples to a u32, and
+looped over every sample to accumulate six float moments, where
+`ldPhasedCompute.slang` already popcounted haplotype bit planes.
+`ARCHITECTURAL_LIMITS.md` carried the ~6x gap that costs as a live limit and the
+port as deliberately not queued, on the ground that it would save ~430ms
+off-thread behind the 500ms fetch debounce (`ldFetchPhases`).
+
+That reasoning was about latency, and the byte loop was not only a latency cost.
+Measured on a Radeon Pro 5300M over 50,000 variants x 2,504 samples, against its
+own CPU twin `calculateLDStatsDosageBits`: max |gpu - cpu| was 2.8e-8 at a
+200-variant window, 1.2e-2 at 500, then 1.0 at 1,000 and 2,000, a zero where the
+exact answer is r² = 1. The 2,000 row also came back in 411 ms against the
+1,000 row's 17 s, non-monotonic in the work, which is the tell. The dispatch was
+returning incomplete and the buffer read back as a plausible all-zero matrix;
+WebGPU raises no validation error for that, so the `pushErrorScope` around the
+dispatch never fired and the display had no way to know.
+
+The fix was the port. The kernel now reads the same three planes `packDosages`
+builds (het, homAlt, valid) and `getLDMatrixGPU` packs with `packDosages`
+itself, so the GPU and CPU paths cannot encode one genotype two ways. The six
+moments come out of nine popcounts per 32-sample word exactly, not
+approximately, because a dosage is 0, 1 or 2: a het contributes 1 to a sum and 1
+to a sum of squares, a hom-alt 2 and 4. Every window now passes parity at f32
+noise (2.8e-8 to 6.0e-7), and the composite kernel is the cheaper of the two,
+reading three planes per variant against phased's four.
+
+Two things not to re-derive from the old entry. A slow kernel here was not
+"correct but late": on this hardware it changed the answer, silently. And
+"phasing a cohort changes what the matrix costs" is no longer true, since the
+two kernels are the same shape now, so phasing changes which estimator runs and
+nothing else.
+
 ## React Compiler × ternary sensitivity (now a style choice)
 
 The terminal branches in `DisplayChrome` were once sensitive to

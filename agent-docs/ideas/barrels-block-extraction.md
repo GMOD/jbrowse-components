@@ -117,6 +117,33 @@ cause turned up in the way and are also gone: `RpcRegistry.ts` took
 `@jbrowse/core/util`. `moduleClosure.test.ts` now holds type ceilings on these
 entries too.
 
+*2026-08-25, one layer up*: the sweep had held ceilings only on `util/` and the
+fetch harness, and `packages/core/src/ui` turned out to hold the same two
+shapes. `MenuTypes.ts`, a React-free type module of 196 lines with one import,
+measured **374 files / 47,407 lines** of type closure because it took `Pin` from
+`promotableDefaults.ts`, and `Pin` is four members with no dependencies. `Pin`
+is now `configuration/promotablePin.ts`, a zero-import leaf that
+`promotableDefaults.ts` re-exports; `MenuTypes.ts` is 374 → **2**, and nine
+menu-builder modules that reach it collapse with it (`menuItems.ts` 378 → 8,
+`filterMenuItems`, `toggleMenuItems`, `launchViewMenu`, `launchTargetsMenuItem`
+and `showSubMenu` 374-375 → 3, `promotableMenuItems` and `radioSubMenu` → 4,
+`legendMenuItem` → 5).
+
+The second one is the mirror image and worth naming separately. `legendSpec.ts`,
+a plain-data legend description, imported `ColorLegendEntry` from
+`SvgColorLegend.tsx` while that component imported `LegendSwatch` back from
+`legendSpec.ts`: **a type-only cycle between a data module and the React
+component that draws it**, worth 375 files. The type moved down to
+`legendSpec.ts` and the component re-exports it; 375 → **1**. Neither of these
+is a barrel. The barrel was one way a leaf ends up importing an application; a
+data type sharing a file with the thing that renders it is another, and it does
+not announce itself with an `index.ts` in the specifier.
+
+Both were invisible because `ENTRIES` listed no `ui/` file. It now holds
+`MenuTypes.ts`, `menuItems.ts` and `legendSpec.ts`. `menuItems.ts` is there
+deliberately: its 8-file closure is the whole builder family, so one ceiling
+there fails any builder that takes a type off a module that renders.
+
 **What is left in the runtime column is real.**
 `installPerRegionFetchAutoruns` keeps 42 because it reads a track's assembly
 names out of a config, and `MultiRegionDisplayMixin` keeps 150 because it
