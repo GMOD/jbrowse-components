@@ -1,9 +1,6 @@
-import { lazy } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
-  getDialogHost,
   getNotificationSink,
   getSession,
 } from '@jbrowse/core/util'
@@ -17,7 +14,8 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
-import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
+import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
+import { syntenyRegionMenuItems } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { getCigar, getMate } from '../syntenyMate.ts'
 import {
   containingPanelStack,
@@ -25,15 +23,10 @@ import {
   moveMatePanels,
 } from './matePanelNavigation.ts'
 
-import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-const LaunchSyntenyViewDialog = lazy(
-  () => import('../LaunchSyntenyView/LaunchSyntenyViewDialog.tsx'),
-)
 
 // The feature half of LGVSyntenyDisplay's right-click menu, kept out of the
 // model so the model's `.views()` block holds the method rather than the menu.
@@ -45,10 +38,12 @@ interface SyntenyContextMenuModel extends IStateTreeNode {
   contextMenuFeatureId: string | undefined
   contextMenuFeature: Feature | undefined
   // What the right-click landed on, of which only the visible block is read
-  // here. Duck-typed to that one field rather than importing the alignments
+  // here. Duck-typed to those two fields rather than importing the alignments
   // display's `ContextMenuHit`: this menu asks nothing about which mark
   // answered.
-  contextMenuHit: { block: { bpRange: [number, number] } } | undefined
+  contextMenuHit:
+    | { block: { bpRange: [number, number]; refName: string } }
+    | undefined
   view: LinearGenomeViewModel
   selectFeature: (feature: Feature) => void
   withFeatureById: (
@@ -56,6 +51,13 @@ interface SyntenyContextMenuModel extends IStateTreeNode {
     onFeat: (feat: Feature) => void,
   ) => Promise<void>
 }
+
+// The visible block the user right-clicked in: what the launch dialog offers to
+// clip the synteny view to, what the move maps across, and what the multi-panel
+// launch reads back out of the dataset.
+type ClickedBlock = NonNullable<
+  SyntenyContextMenuModel['contextMenuHit']
+>['block']
 
 /**
  * Open the feature's details, and copy them — the two items that need nothing
@@ -108,49 +110,73 @@ function featureDetailItems(
 function launchSyntenyItem(
   self: SyntenyContextMenuModel,
   feature: Feature,
-  region: RegionOfInterest | undefined,
+  block: ClickedBlock | undefined,
+): MenuItem[] {
+  const launch = pairwiseSyntenyLaunch({
+    host: getSession(self),
+    feature,
+    anchorView: self.view,
+    track: getContainingTrack(self).configuration,
+    region: block
+      ? { start: block.bpRange[0], end: block.bpRange[1] }
+      : undefined,
+    // ...so the launched view can take this one's place rather than stacking
+    // below it, showing the same locus twice
+    sourceView: self.view,
+  })
+  return launch
+    ? [
+        {
+          label: 'Launch synteny view for this position',
+          icon: CompareArrowsIcon,
+          onClick: launch,
+        },
+      ]
+    : []
+}
+
+/**
+ * The multi-panel launch, from the same right-click: a row for every assembly
+ * the clicked block's window aligns to in this dataset, not just the mate of
+ * the alignment under the cursor.
+ *
+ * Only on a track declaring three or more assemblies. On a pairwise track the
+ * region launch discovers the one mate the item above already offers, so the
+ * second entry would be the first with a fetch in front of it. A one-vs-all
+ * track whose extra mates are undeclared PanSN samples is the same case: those
+ * cannot open a panel whichever route is taken.
+ *
+ * The lane track is the only dataset offered — the region launch from the view
+ * menu lists every open synteny track, but a click on this track's block means
+ * this track. The pairwise item above and the panel-move below need the feature;
+ * this needs only the block, and the assemblies gate reads config, so it could
+ * be offered before the fetch lands — it is not, so the three launch-shaped
+ * items arrive together rather than the menu reordering under the cursor.
+ */
+function launchAllAssembliesItem(
+  self: SyntenyContextMenuModel,
+  block: ClickedBlock | undefined,
 ): MenuItem[] {
   const view = self.view
-  // The anchor panel opens on the view's own assembly, which is what the
-  // features were fetched against — more dependable than the feature's own
-  // `assemblyName` field, which not every adapter sets.
-  const anchorAssembly = view.assemblyNames[0]
+  const assemblyName = view.assemblyNames[0]
   const track = getContainingTrack(self)
-  if (
-    anchorAssembly === undefined ||
-    !canLaunchSyntenyForMate(
-      getConf(track, 'assemblyNames'),
-      getMate(feature)?.assemblyName,
-    )
-  ) {
+  const declared = new Set(getConf(track, 'assemblyNames') as string[])
+  if (!block || assemblyName === undefined || declared.size < 3) {
     return []
   }
-  return [
-    {
-      label: 'Launch synteny view for this position',
-      icon: CompareArrowsIcon,
-      onClick: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          LaunchSyntenyViewDialog,
-          {
-            region,
-            trackId: getConf(track, 'trackId'),
-            handleClose,
-            session: getSession(self),
-            anchorAssembly,
-            // the anchor panel opens on this view's assembly, so it can open on
-            // this view's tracks too — this chain track excluded, since it
-            // becomes the ribbon band
-            anchorTracks: anchorPanelTracks(view.tracks),
-            // ...and so the launched view can take this one's place rather than
-            // stacking below it, showing the same locus twice
-            sourceView: view,
-            feature,
-          },
-        ])
-      },
+  return syntenyRegionMenuItems({
+    label: 'Launch synteny view for all assemblies here',
+    region: {
+      assemblyName,
+      refName: block.refName,
+      start: block.bpRange[0],
+      end: block.bpRange[1],
     },
-  ]
+    session: getSession(self),
+    openTracks: [track.configuration],
+    anchorTracks: anchorPanelTracks(view.tracks),
+    sourceView: view,
+  })
 }
 
 /**
@@ -184,11 +210,11 @@ function launchSyntenyItem(
 function movePanelItem(
   self: SyntenyContextMenuModel,
   feature: Feature,
-  region: RegionOfInterest | undefined,
+  block: ClickedBlock | undefined,
 ): MenuItem[] {
   const view = self.view
   const stack = containingPanelStack(view)
-  if (!stack || !region || !getCigar(feature)) {
+  if (!stack || !block || !getCigar(feature)) {
     return []
   }
   const anchorIndex = stack.views.indexOf(view)
@@ -212,7 +238,7 @@ function movePanelItem(
               anchorIndex,
               indexes,
               feature,
-              region,
+              region: { start: block.bpRange[0], end: block.bpRange[1] },
               session: getSession(self),
             }).catch((e: unknown) => {
               getNotificationSink(self).notifyError(`${e}`, e)
@@ -225,7 +251,7 @@ function movePanelItem(
 
 /**
  * Everything LGVSyntenyDisplay's right-click menu adds to the shared hit items:
- * two items from the id alone, then the two that need the fetched feature.
+ * two items from the id alone, then the ones that need the fetched feature.
  */
 export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
   const featureId = self.contextMenuFeatureId
@@ -236,19 +262,13 @@ export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
   if (!feature) {
     return featureDetailItems(self, featureId, feature)
   }
-  // The visible block the user right-clicked in, which the launch dialog offers
-  // to clip the synteny view to and which the move maps across. Snapshotted here
-  // rather than read in an onClick because closeContextMenu nulls it first, and
-  // taken from the click rather than searched for by refName: a feature abutting
-  // a region boundary overlaps two visible blocks, and only the cursor says
-  // which one it was drawn in.
+  // Snapshotted here rather than read in an onClick because closeContextMenu
+  // nulls it first.
   const block = self.contextMenuHit?.block
-  const region = block
-    ? { start: block.bpRange[0], end: block.bpRange[1] }
-    : undefined
   return [
     ...featureDetailItems(self, featureId, feature),
-    ...launchSyntenyItem(self, feature, region),
-    ...movePanelItem(self, feature, region),
+    ...launchSyntenyItem(self, feature, block),
+    ...launchAllAssembliesItem(self, block),
+    ...movePanelItem(self, feature, block),
   ]
 }

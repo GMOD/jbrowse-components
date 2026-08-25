@@ -29,10 +29,21 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * `neighbourAssembly` puts that LGV in a two-panel STACK, with the second panel
  * open on the named assembly — the shape "Move other panel to the matching
  * region" exists for, and the one the standalone default cannot reach.
+ *
+ * `trackAssemblyNames` is what the track declares (two names by default, so a
+ * three-name all-vs-all track is opt-in), and `getCanonicalAssemblyName` is
+ * the alias table, which knows nothing by default so every comparison degrades
+ * to the raw name.
  */
 export function createDisplay({
   neighbourAssembly,
-}: { neighbourAssembly?: string } = {}) {
+  trackAssemblyNames = ['volvox', 'volvox_random'],
+  getCanonicalAssemblyName = () => undefined,
+}: {
+  neighbourAssembly?: string
+  trackAssemblyNames?: string[]
+  getCanonicalAssemblyName?: (name: string) => string | undefined
+} = {}) {
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
   const configSchema = configSchemaF(pluginManager)
@@ -78,7 +89,7 @@ export function createDisplay({
     {
       type: 'SyntenyTrack',
       trackId: 'test_track',
-      assemblyNames: ['volvox', 'volvox_random'],
+      assemblyNames: trackAssemblyNames,
     },
     { pluginManager },
   )
@@ -107,10 +118,14 @@ export function createDisplay({
         // the readiness reactions a displayed region wakes only need something
         // to ask.
         assemblyManager: {
-          get: () => testAssembly(),
-          // knows no aliases, so every assembly comparison degrades to the raw
-          // name — which is what these fixtures spell on both sides
-          getCanonicalAssemblyName: () => undefined,
+          // `hasName` is what the fetch autorun asks when a track's declared
+          // name is not the region's spelling, which is the alias case above
+          get: () => ({
+            ...testAssembly(),
+            hasName: (name: string) =>
+              (getCanonicalAssemblyName(name) ?? name) === 'volvox',
+          }),
+          getCanonicalAssemblyName,
         },
         getTrackById: (id: string) =>
           id === 'test_track' ? trackConfig : undefined,

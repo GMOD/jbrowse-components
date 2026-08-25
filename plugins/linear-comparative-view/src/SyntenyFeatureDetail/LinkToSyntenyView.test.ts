@@ -1,9 +1,9 @@
-import { findAnchorAssembly } from './LinkToSyntenyView.tsx'
+import { anchorRow } from './LinkToSyntenyView.tsx'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
 
 // A plain LGV, reached via LGVSyntenyDisplay's own context menu: no rows to
-// index, so the view's own assembly is the anchor.
+// index, so the view itself is the anchor.
 function lgv(assemblyNames: string[]) {
   return { type: 'LinearGenomeView', assemblyNames }
 }
@@ -17,26 +17,30 @@ function syntenyView(rowAssemblyNames: string[][]) {
   }
 }
 
-test('uses the LGV assembly when opened from LGVSyntenyDisplay (no level)', () => {
+test('the LGV is its own anchor when opened from LGVSyntenyDisplay (no level)', () => {
+  const view = lgv(['volvox'])
   const model = {
-    view: lgv(['volvox']),
+    view,
     level: undefined,
   } as unknown as SyntenyFeatureDetailModel
-  expect(findAnchorAssembly(model)).toBe('volvox')
+  expect(anchorRow(model)).toBe(view)
 })
 
-test('uses the row at `level`, not the outer union, when opened from a ribbon click', () => {
-  const model = {
-    view: syntenyView([['volvox'], ['volvox2']]),
-    level: 1,
-  } as unknown as SyntenyFeatureDetailModel
-  expect(findAnchorAssembly(model)).toBe('volvox2')
+test('the row at `level`, not the outer view, when opened from a ribbon click', () => {
+  const view = syntenyView([['volvox'], ['volvox2']])
+  const model = { view, level: 1 } as unknown as SyntenyFeatureDetailModel
+  expect(anchorRow(model)?.assemblyNames).toEqual(['volvox2'])
 })
 
-test('does not fall back to feature.assemblyName: a missing row resolves to undefined', () => {
-  const model = {
-    view: syntenyView([['volvox']]),
-    level: 5,
-  } as unknown as SyntenyFeatureDetailModel
-  expect(findAnchorAssembly(model)).toBeUndefined()
+test('a missing row is no anchor: nothing falls back to the outer view', () => {
+  const view = syntenyView([['volvox']])
+  expect(
+    anchorRow({ view, level: 5 } as unknown as SyntenyFeatureDetailModel),
+  ).toBeUndefined()
+  expect(
+    anchorRow({
+      view,
+      level: undefined,
+    } as unknown as SyntenyFeatureDetailModel),
+  ).toBeUndefined()
 })

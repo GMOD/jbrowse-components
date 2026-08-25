@@ -150,3 +150,27 @@ test('a mate outside the track assemblies can still move a panel already on it',
   expect(labelled).not.toContain(LAUNCH)
   expect(labelled).toContain(MOVE)
 })
+
+const LAUNCH_ALL = 'Launch synteny view for all assemblies here'
+
+// A block on a track declaring three or more assemblies can reach more than
+// the one mate under the cursor, so the multi-panel launch is offered beside
+// the pairwise one, cut from this track at the clicked block.
+test('a three-assembly track also offers the multi-panel launch', () => {
+  const labelled = rightClick(
+    createDisplay({
+      trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_extra'],
+    }),
+    makeFeature('volvox_random'),
+  )
+  expect(labelled).toContain(LAUNCH)
+  expect(labelled).toContain(LAUNCH_ALL)
+})
+
+// On a pairwise track the region launch would discover the one mate the
+// pairwise item already opens, with a fetch in front of it.
+test('a pairwise track offers only the pairwise launch', () => {
+  expect(
+    rightClick(createDisplay(), makeFeature('volvox_random')),
+  ).not.toContain(LAUNCH_ALL)
+})

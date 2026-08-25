@@ -98,12 +98,14 @@ test('nav to synteny from feature details', async () => {
       await findByText('Launch linear synteny view on this feature'),
     )
     // "Open in new view", not "Submit": this link reaches the same dialog the
-    // right-click does, so it offers the same two destinations
+    // right-click does, so it offers the same two destinations — and the same
+    // framing: the launch is clipped to the panel's visible window rather than
+    // the whole block, which for a chain is the whole contig
     fireEvent.click(await findByText('Open in new view'))
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
-      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:1..50,001')
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe(ANCHOR_LOC)
     }, delay)
     expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
   })

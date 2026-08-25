@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ActionLink } from '@jbrowse/core/ui'
@@ -7,19 +5,12 @@ import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
-import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
-import { getMate } from '../syntenyMate.ts'
+import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { syntenyCenterTargets } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
 import type { SimpleFeatureSerialized, TrackCatalog } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/core/util/tracks'
-
-// lazies
-const LaunchSyntenyViewDialog = lazy(
-  () => import('../LaunchSyntenyView/LaunchSyntenyViewDialog.tsx'),
-)
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The launched view needs the track back, so its id has to resolve to a track
 // config we can read `assemblyNames` off — the same gate the LGV synteny
@@ -30,43 +21,25 @@ const LaunchSyntenyViewDialog = lazy(
 // allSessionTracks rather than session.tracks, which holds only the session's
 // own: a synteny track arriving from a connection is the case this link used to
 // drop, hiding the launch on exactly the datasets that are loaded by reference.
-function findTrackAssemblyNames(
-  session: TrackCatalog,
-  trackId: string | undefined,
-) {
-  const track = allSessionTracks(session).find(
+function findTrack(session: TrackCatalog, trackId: string | undefined) {
+  return allSessionTracks(session).find(
     t => readConfObject(t, 'trackId') === trackId,
   )
-  return track
-    ? (readConfObject(track, 'assemblyNames') as string[] | undefined)
-    : undefined
 }
 
-// The anchor panel opens on the view's own assembly — more dependable than the
-// feature's own `assemblyName` field, which not every adapter sets (the same
-// reasoning LGVSyntenyDisplay's context menu applies, see its comment). A
-// ribbon click hands this widget the outer LinearSyntenyView itself, with
-// `level` saying which row produced the feature; a track's own context menu
-// instead hands over the single LGV it lives in, which has no rows to index.
-export function findAnchorAssembly({ view, level }: SyntenyFeatureDetailModel) {
-  return level !== undefined && 'views' in view
-    ? view.views[level]?.assemblyNames[0]
-    : view.assemblyNames[0]
-}
-
-// The tracks that panel already has open, for the launched view to open with —
-// the same two shapes findAnchorAssembly resolves, so the tracks and the
-// assembly always come from the same panel. A ribbon click with no `level` names
-// no row, so it offers nothing rather than guessing one.
-function findAnchorTracks({
+// The panel the launch is anchored on: its assembly is the anchor's, its tracks
+// carry over, and its visible window is what the dialog offers to clip to. A
+// track's own context menu hands this widget the single LGV it lives in; a
+// ribbon click hands over the outer LinearSyntenyView itself, with `level`
+// saying which row produced the feature, and names no row without one.
+export function anchorRow({
   view,
   level,
-}: SyntenyFeatureDetailModel): TrackInit[] {
+}: SyntenyFeatureDetailModel): LinearGenomeViewModel | undefined {
   if (!('views' in view)) {
-    return anchorPanelTracks(view.tracks)
+    return view
   }
-  const row = level === undefined ? undefined : view.views[level]
-  return row ? anchorPanelTracks(row.tracks) : []
+  return level === undefined ? undefined : view.views[level]
 }
 
 const LinkToSyntenyView = observer(function LinkToSyntenyView({
@@ -78,21 +51,32 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
 }) {
   const { view, level, trackId } = model
   const session = getSession(model)
-  const feature = new SimpleFeature(feat)
-  const mate = getMate(feature)
-  const anchorAssembly = findAnchorAssembly(model)
-  const trackAssemblyNames = findTrackAssemblyNames(session, trackId)
-  const canLaunch =
-    trackId !== undefined &&
-    anchorAssembly !== undefined &&
-    trackAssemblyNames !== undefined &&
-    canLaunchSyntenyForMate(trackAssemblyNames, mate?.assemblyName)
+  const row = anchorRow(model)
+  const track = findTrack(session, trackId)
+  const launch =
+    row && track
+      ? pairwiseSyntenyLaunch({
+          host: session,
+          feature: new SimpleFeature(feat),
+          anchorView: row,
+          track,
+          // The view this widget was opened from, so the dialog can offer to
+          // put the launched view in its slot rather than below it — the same
+          // choice the two menu-driven launches make. Passed for both shapes
+          // and filtered by the dialog: `canReplaceView` keeps the offer to a
+          // view the session actually holds a slot for, which drops the LGV
+          // *row* of a synteny view (a ribbon click's widget names the outer
+          // view, which does have one) without this having to know which
+          // shape it got.
+          sourceView: view,
+        })
+      : undefined
   const canCenter = 'views' in view
   // No card at all rather than an empty one titled "Link to view". A synteny
   // track opened inside a plain LGV has no rows to center, and a mate whose
   // assembly the track does not declare cannot launch a view either — which
   // left the panel showing a heading over an empty list.
-  if (!canCenter && !canLaunch) {
+  if (!canCenter && !launch) {
     return null
   }
   return (
@@ -129,33 +113,9 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
             </ActionLink>
           </li>
         ) : null}
-        {canLaunch ? (
+        {launch ? (
           <li>
-            <ActionLink
-              onClick={() => {
-                session.queueDialog(handleClose => [
-                  LaunchSyntenyViewDialog,
-                  {
-                    session,
-                    feature,
-                    anchorAssembly,
-                    anchorTracks: findAnchorTracks(model),
-                    // The view this widget was opened from, so the dialog can
-                    // offer to put the launched view in its slot rather than
-                    // below it — the same choice the two menu-driven launches
-                    // make. Passed for both shapes and filtered by the dialog:
-                    // `canReplaceView` keeps the offer to a view the session
-                    // actually holds a slot for, which drops the LGV *row* of a
-                    // synteny view (a ribbon click's widget names the outer
-                    // view, which does have one) without this having to know
-                    // which shape it got.
-                    sourceView: view,
-                    trackId,
-                    handleClose,
-                  },
-                ])
-              }}
-            >
+            <ActionLink onClick={launch}>
               Launch linear synteny view on this feature
             </ActionLink>
           </li>

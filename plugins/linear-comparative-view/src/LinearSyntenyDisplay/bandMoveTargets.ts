@@ -1,4 +1,4 @@
-import { visibleSpanOnRefName } from './moveMatchingPanel.ts'
+import { visibleSpanOnRefName } from '../LaunchSyntenyView/visibleSpanOnRefName.ts'
 
 import type { SpanOfInterest } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FeatPos } from './model.ts'
