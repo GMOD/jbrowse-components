@@ -437,6 +437,18 @@ missing feature and is usually a claim the graph cannot support.
 - The rGFA-only allele inventory (`build_rgfa_alleles.sh`) agrees with `--call`
   on 747 of 842 alleles; the 95 that differ are compound routes at 69 nested
   bubbles.
+- **`ecoli_pggb.maf.bed.gz` carries a row only for a strain that ALIGNS**, and
+  the demo's own tutorial window is one where most do not. A block's field 6 is
+  a comma-separated `NAME.chr:start:len:strand:srcSize:SEQ` per strain, so a
+  window inside an accessory island reads as a nearly empty lane and every
+  feature built from the covered rows — the row menu's per-strain entries, the
+  synteny launch — lists one strain. 3,728 of the file's 4,780 blocks carry all
+  five; the three under `chr:1,446,000-1,449,000` (the paa island) carry K12
+  with CFT073/IAI39/NCTC86 once and then K12 with NCTC86 alone. Backbone worth
+  reusing: every block between 797,952 and 801,145, which is where
+  `synteny/maf_row_synteny` drags and which sits inside the 795,000-815,000
+  window `allVsAllLanes` opens at. `tabix … | awk -F'\t' '{n=split($6,s,","); print $2"-"$3, n}'`
+  answers it for any candidate locus in one command.
 - **The five-strain `.og` is on this box**: `~/ecoli_graph5/pggb/*.smooth.final.og`
   with the `.gfa` and `-V` VCF beside it, plus the PanSN fastas in
   `~/ecoli_graph5/`. Do **not** use `~/depth_build/`, the pre-IAI39 four-strain

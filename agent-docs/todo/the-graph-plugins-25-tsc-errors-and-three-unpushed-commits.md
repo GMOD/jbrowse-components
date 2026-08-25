@@ -46,6 +46,10 @@ this repo does not, so no in-tree check could ever have raised it.
 3ea526b fix(graph): a row layout's deletion bow is capped, so a big one stops enclosing the drawing
 ```
 
-`76c3904` is the row-aware `connectedViewId` fix that
-[synteny-roundtrip-tours](../handoffs/SYNTENY_ROUNDTRIP_TOURS.md) lists as its
-second item, so that thread wants it pushed.
+`76c3904` is the row-aware `connectedViewId` fix `linearViewTarget` needs to
+walk nested `views[]`. Until `betabuild.sh` republishes the hosted bundle at
+`demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js`, **Open in
+K12** from a graph node adds a pane rather than scrolling the synteny row the
+graph was launched from — which is the last step of the round trip
+`pangenome_ecoli.md` describes, and the only part of that page the reader cannot
+perform. `synteny/ecoli_roundtrip` stops one beat short of it deliberately.
