@@ -1,17 +1,49 @@
 /// <reference types="@webgpu/types" />
 
-import { packDosages } from '@jbrowse/ld-core'
+import {
+  calculateLDStatsDosageBits,
+  calculateLDStatsPhasedBits,
+  packDosages,
+} from '@jbrowse/ld-core'
 import { getGpuDevice, onDeviceLost } from '@jbrowse/render-core/gpuDevice'
 
 import * as ldCompute from '../LDDisplay/components/shaders/ldCompute.generated.ts'
 import * as ldPhasedCompute from '../LDDisplay/components/shaders/ldPhasedCompute.generated.ts'
 import { bandCellCount } from './ldBand.ts'
+import { planLDDispatch } from './ldDispatchPlan.ts'
+import { findLDSpotCheckMismatch } from './ldGpuSpotCheck.ts'
 
 import type { LDMetric } from './getLDMatrix.ts'
+import type { DispatchPlan } from './ldDispatchPlan.ts'
 import type { PackedHaplotypes } from '@jbrowse/ld-core'
 import type { ShaderBinding } from '@jbrowse/render-core/hal'
 
 const MIN_WORK = 500_000
+
+// Which of the pair a cell holds, matching `computeLDMatrixCPU`'s one-line
+// selection and the kernels' `ldFinalize`.
+function metricOf(stats: { r2: number; dprime: number }, ldMetric: LDMetric) {
+  return ldMetric === 'dprime' ? stats.dprime : stats.r2
+}
+
+// Throws rather than returning null so `getLDMatrix`'s catch reports WHY the
+// matrix went to the CPU. A silent null there is the same silence this exists to
+// break — see `ldGpuSpotCheck.ts` for what it is watching for.
+function assertSpotCheck(
+  values: Float32Array,
+  n: number,
+  band: number,
+  statsFor: (i: number, j: number) => number,
+) {
+  const mismatch = findLDSpotCheckMismatch(values, n, band, statsFor)
+  if (mismatch) {
+    throw new Error(
+      `LD compute returned a matrix its CPU twin disagrees with: ${mismatch}. ` +
+        `A dispatch that comes back incomplete raises no validation error, so ` +
+        `this is the only thing that sees one.`,
+    )
+  }
+}
 
 interface ComputeState {
   device: GPUDevice
@@ -101,37 +133,6 @@ const ensurePhasedPipeline = makePipelineCache(
   ldPhasedCompute.COMPUTE_ENTRY_POINT,
   ldPhasedCompute.BINDINGS,
 )
-
-interface DispatchPlan {
-  width: number
-  height: number
-  rowStride: number
-}
-
-// Cells are dispatched over a 2D workgroup grid, because a 1D dispatch is
-// capped at maxComputeWorkgroupsPerDimension (65535) workgroups — only ~4.19M
-// cells, which just ~2896 SNPs already exceeds. The kernel rebuilds the flat
-// cell index as `gid.y * rowStride + gid.x`.
-//
-// Returns null when the work doesn't fit this device even as a 2D grid, or the
-// output buffer would exceed its limits; the caller then leaves the matrix to
-// the CPU path rather than issuing a dispatch that would fail validation.
-function planDispatch(
-  device: GPUDevice,
-  numCells: number,
-  workgroupSizeX: number,
-): DispatchPlan | null {
-  const maxPerDim = device.limits.maxComputeWorkgroupsPerDimension
-  const groups = Math.ceil(numCells / workgroupSizeX)
-  const width = Math.min(groups, maxPerDim)
-  const height = Math.ceil(groups / width)
-  const outputBytes = numCells * 4
-  const fits =
-    height <= maxPerDim &&
-    outputBytes <= device.limits.maxStorageBufferBindingSize &&
-    outputBytes <= device.limits.maxBufferSize
-  return fits ? { width, height, rowStride: width * workgroupSizeX } : null
-}
 
 async function runGPUCompute({
   device,
@@ -250,7 +251,18 @@ export async function computeLDMatrixGPU(
     return null
   }
 
-  const plan = planDispatch(device, numCells, ldCompute.WORKGROUP_SIZE_X)
+  // Three bit planes per SNP, laid out [het, homAlt, valid] to match getWord in
+  // ldCompute.slang. packDosages is the same function the CPU fallback packs
+  // with, so the two paths cannot drift into different encodings of the same
+  // genotypes — the only difference here is that the planes are copied into one
+  // flat buffer for a single upload.
+  const numWords = Math.ceil(numSamples / 32)
+  const plan = planLDDispatch(
+    device.limits,
+    numCells,
+    n * 3 * numWords * 4,
+    ldCompute.WORKGROUP_SIZE_X,
+  )
   if (!plan) {
     return null
   }
@@ -258,12 +270,6 @@ export async function computeLDMatrixGPU(
   const { pipeline, bindGroupLayout, bindings } =
     await ensureUnphasedPipeline(device)
 
-  // Three bit planes per SNP, laid out [het, homAlt, valid] to match getWord in
-  // ldCompute.slang. packDosages is the same function the CPU fallback packs
-  // with, so the two paths cannot drift into different encodings of the same
-  // genotypes — the only difference here is that the planes are copied into one
-  // flat buffer for a single upload.
-  const numWords = Math.ceil(numSamples / 32)
   const genoPacked = new Uint32Array(n * 3 * numWords)
   for (let snp = 0; snp < n; snp++) {
     const { het, homAlt, valid } = packDosages(encodedGenotypes[snp]!)
@@ -283,7 +289,7 @@ export async function computeLDMatrixGPU(
     dispatchRowStride: plan.rowStride,
   })
 
-  return runGPUCompute({
+  const values = await runGPUCompute({
     device,
     pipeline,
     bindGroupLayout,
@@ -293,6 +299,17 @@ export async function computeLDMatrixGPU(
     numCells,
     dispatch: plan,
   })
+  assertSpotCheck(values, n, band, (i, j) =>
+    metricOf(
+      calculateLDStatsDosageBits(
+        packDosages(encodedGenotypes[i]!),
+        packDosages(encodedGenotypes[j]!),
+        signedLD,
+      ),
+      ldMetric,
+    ),
+  )
+  return values
 }
 
 export async function computeLDMatrixGPUPhased(
@@ -319,7 +336,12 @@ export async function computeLDMatrixGPUPhased(
     return null
   }
 
-  const plan = planDispatch(device, numCells, ldPhasedCompute.WORKGROUP_SIZE_X)
+  const plan = planLDDispatch(
+    device.limits,
+    numCells,
+    n * 4 * numWords * 4,
+    ldPhasedCompute.WORKGROUP_SIZE_X,
+  )
   if (!plan) {
     return null
   }
@@ -349,7 +371,7 @@ export async function computeLDMatrixGPUPhased(
     dispatchRowStride: plan.rowStride,
   })
 
-  return runGPUCompute({
+  const values = await runGPUCompute({
     device,
     pipeline,
     bindGroupLayout,
@@ -359,4 +381,15 @@ export async function computeLDMatrixGPUPhased(
     numCells,
     dispatch: plan,
   })
+  assertSpotCheck(values, n, band, (i, j) =>
+    metricOf(
+      calculateLDStatsPhasedBits(
+        packedHaplotypes[i]!,
+        packedHaplotypes[j]!,
+        signedLD,
+      ),
+      ldMetric,
+    ),
+  )
+  return values
 }

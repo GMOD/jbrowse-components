@@ -542,7 +542,7 @@ these on other hardware.
 cost of a view is therefore quadratic in the SNP count, and **the ceiling is the
 output matrix, not the kernel**.
 
-`planDispatch` checks that matrix against `maxStorageBufferBindingSize` and
+`planLDDispatch` checks that matrix against `maxStorageBufferBindingSize` and
 `maxBufferSize` and returns null when it does not fit, dropping to the CPU path:
 
 | adapter                    | cap          | max SNPs   |
@@ -563,27 +563,56 @@ not a different order of magnitude. Within that band the win is large (phased,
 2504 samples: 510ms -> 31ms at n=800, 1741ms -> 89ms at n=1500); past n=16,000 the
 GPU itself takes tens of seconds.
 
-Two sub-points, both live:
+Two sub-points on the input side, both settled since:
 
-- **`planDispatch` checks only the OUTPUT buffer.** The genotype input is
-  unchecked: unphased packs `n * samples` bytes, so a 128 MiB-floor device breaks
-  at ~65k samples with no plan-time refusal. It survives only because
-  `pushErrorScope('validation')` in `runGPUCompute` routes the failed dispatch to
-  the CPU path.
-- **The unphased kernel is the slow algorithm on fast hardware.** `ldCompute.slang`
-  loops per sample where the phased kernel popcounts bit planes, and the ~6x gap
-  that costs shows up on the GPU too (n=1500: 522ms unphased vs 89ms phased, same
-  cells). The CPU side of that gap is closed —
-  `calculateLDStatsDosageBits` in `@jbrowse/ld-core` is bit-planed and exact-parity
-  tested against `calculateLDStats`. Porting the same planes into the kernel is
-  deliberately NOT queued: it would save ~430ms off-thread behind the 500ms fetch
-  debounce (`ldFetchPhases`), inside a band that is already fast enough.
+- **Both kernels are bit-planed, and the composite one is the cheaper input.**
+  `ldCompute.slang` looped per sample over genotype bytes until 3f4c3f6ee4 took
+  the same three planes `packDosages` already builds. Its input is therefore
+  `n * 3 * ceil(samples/32) * 4` bytes rather than `n * samples`, exactly 3/8 of
+  it once `samples` is a multiple of 32, and the phased kernel's four planes
+  (`n * 4 * ceil(samples/32) * 4`) are now the larger of the two. At 2,504
+  samples the composite input for 50,000 variants is 45.2 MiB where the byte
+  loop needed 119.4 MiB. That port also fixed a correctness bug — see the
+  detector below.
+- **`planLDDispatch` now checks BOTH buffers.** It weighed only the output; the
+  genotype input reached the device unchecked and survived by an accident of
+  ordering, since `createBuffer` runs before `runGPUCompute`'s
+  `pushErrorScope('validation')` and what that scope actually caught was the
+  later `setBindGroup` against the invalid handle. Refusing at plan time costs
+  no allocation and says the same thing deliberately. Where the byte loop broke:
+  `n * samples` at 128 MiB, i.e. 53,601 variants at 2,504 samples, or 65,536
+  samples at n = 2,048. Bit-planed: 141,579 variants at 2,504 samples, and
+  174,752 samples at n = 2,048 — 8/3 more room, which puts the input clear of
+  the output ceiling (~8,193 variants on a 128 MiB-floor device) for any cohort
+  a browser would load. `planLDDispatch.test.ts` holds these four figures.
 
 **Genomic mode costs 5x this, and the check does not see it.**
 `buildGenomicCellBuffers` allocates `positions` and `cellSizes`, two more
 `Float32Array(numCells * 2)`, so `useGenomicPositions` is 20 bytes/cell against
-`ldValues`' 4. `planDispatch` weighs only `ldValues`, so the ceilings above are
-the uniform-mode ones; genomic mode reaches the same wall at a fifth of the SNPs.
+`ldValues`' 4. `planLDDispatch` weighs `ldValues` and the genotype input, not
+these, so the ceilings above are the uniform-mode ones; genomic mode reaches the
+same wall at a fifth of the SNPs.
+
+**A dispatch that comes back incomplete raises nothing, so a spot check reads
+it back.** This is the correctness bug 3f4c3f6ee4 fixed by making the kernel
+fast: the byte loop was slow enough on wide windows that workgroups failed to
+run, and the cells they would have written stayed the zeros the buffer was
+created with. That is a plausible LD matrix. Against its own CPU twin at 50,000
+variants over 2,504 samples on a Radeon Pro 5300M, max |gpu−cpu| went 2.8e-8 at
+a 200-variant window, 1.2e-2 at 500, then 1.0 at 1000 and 2000 — a zero where
+the answer is r² = 1 — and the 2000 row returned in 411 ms against the 1000
+row's 17 s, non-monotonic in the work, which was the tell. `pushErrorScope`
+cannot see it: the dispatch is valid, it is submitted, and `mapAsync` resolves.
+
+Speed is not a detector, so `ldGpuSpotCheck.ts` is: after the readback,
+recompute about a dozen cells on the CPU — weighted to the end of the flat
+order, where a truncated dispatch leaves its hole — and throw if any disagrees
+by more than 1e-3, which routes the matrix to the CPU path with a reason. The
+tolerance sits between the f32-vs-f64 gap the kernels legitimately show (2.8e-8
+to 6.0e-7 across every window measured after the port) and the smallest
+disagreement truncation produced (1.2e-2). The cost is O(samples) per probed
+cell against a dispatch only reached when `numCells * samples` is at least
+500,000.
 
 **The mitigation is `maxVariantSeparation`** (`SharedLDConfigSchema`), plink's
 `--ld-window`: pairs separated by more than `k` variants are not computed and
