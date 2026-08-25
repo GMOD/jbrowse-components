@@ -97,10 +97,10 @@ configured but closed is what the import form above is for.
   aligning to it there. **Replace current view** then swaps the stack for one
   anchored on that row, which is how a stack is re-anchored on any of its
   genomes.
-- **A row of a [MAF track](/docs/user_guides/maf_track)** opens as a synteny
-  view too: drag-select across the rows and pick **Launch synteny view, \<ref\>
-  vs...**, then the sample. The ribbons are cut from the alignment's own
-  columns, so no synteny file is involved.
+- **A row of a [](/docs/user_guides/maf_track)** opens as a synteny view too:
+  drag-select across the rows and pick **Launch synteny view, \<ref\> vs...**,
+  then the sample. The ribbons are cut from the alignment's own columns, so no
+  synteny file is involved.
 
 Both dialogs offer a **window size** (padding added to every panel) and a
 **horizontally flip inverted targets** checkbox. Without flipping, an inverted
