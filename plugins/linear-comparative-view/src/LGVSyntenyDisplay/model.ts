@@ -4,6 +4,8 @@ import {
   makePin,
   setConf,
 } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   getColorByMenuItem,
@@ -132,14 +134,28 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * mate-assembly group key IS that assembly name. Hidden as a group key
          * rather than filtered out of the fetch, so unchecking the option shows
          * it again without a refetch.
+         *
+         * The key is the name the adapter resolved out of the track's
+         * `assemblyNames`, and the view may spell the same assembly another way,
+         * so every declared name that is this assembly goes in beside the
+         * view's own.
          */
         get hiddenGroupKeys(): ReadonlySet<string> {
           const assemblyName = self.view.assemblyNames[0]
-          return this.hideSelfAlignments &&
-            self.groupBy?.type === 'mateAssembly' &&
-            assemblyName !== undefined
-            ? new Set([assemblyName])
-            : NO_HIDDEN_GROUPS
+          if (
+            !this.hideSelfAlignments ||
+            self.groupBy?.type !== 'mateAssembly' ||
+            assemblyName === undefined
+          ) {
+            return NO_HIDDEN_GROUPS
+          }
+          const { assemblyManager } = getSession(self)
+          return new Set([
+            assemblyName,
+            ...(getConf(self.parentTrack, 'assemblyNames') as string[]).filter(
+              name => isSameAssemblyName(name, assemblyName, assemblyManager),
+            ),
+          ])
         },
       }))
       .views(self => ({
