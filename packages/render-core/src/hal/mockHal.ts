@@ -132,7 +132,7 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
 
   protected createTexture(
     passId: string,
-    binding: TextureBinding,
+    _binding: TextureBinding,
     data: Uint8Array,
     width: number,
     height: number,
