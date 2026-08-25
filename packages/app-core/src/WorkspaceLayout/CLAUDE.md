@@ -55,6 +55,11 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
   button of the primary pointer**, **one `pointerId` per gesture**,
   **`pointercancel` ends it**. Both gestures — the tab drag and the splitter —
   and any third one.
+- **Capture is also what stops a drag selecting the text it crosses**, so
+  neither gesture needs `user-select: none` or a cancelled `pointerdown`.
+  Measured against the real `Splitter` in Chrome: take `setPointerCapture` out
+  and one sash drag selects both cells' content, as well as no longer resizing.
+  A synthetic repro of this answers the opposite — drive the component.
 - **The in-flight drag is React state, never MST** — every hover would enter
   undo. Escape cancels from a `window` listener and must clear `pendingRef` too,
   since the drag is rebuilt from `pending` on every move.
