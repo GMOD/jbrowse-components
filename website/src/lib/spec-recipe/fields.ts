@@ -1577,7 +1577,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
           path: `${path} → ${OFFSCREEN_MATE_STEPS[value ? 'both' : 'query']}`,
-          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair. It is not what marks the lower row: that strip is drawn at the step before, for every alignment the upper row has scrolled off.',
+          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair, and it is the only thing that puts a strip along the bottom edge: a mark down there stands for an alignment the upper row has scrolled off, and one query holds only the part of that inside its pan buffer, so the strip would stop at the edge of the fetch rather than at the edge of the data.',
         }
       : undefined
   },

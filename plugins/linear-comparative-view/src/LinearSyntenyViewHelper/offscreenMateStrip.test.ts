@@ -35,6 +35,7 @@ function source(over: Record<string, unknown> = {}) {
     linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(3) } }],
     parentView: {
       showOffscreenMates: true,
+      bidirectionalFetch: false,
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -46,7 +47,9 @@ function source(over: Record<string, unknown> = {}) {
 
 // The mirror: alignments anchored on the row BELOW, whose query end is on a
 // contig the row above is not displaying. Only a bidirectional fetch produces
-// these, and they are placed against the lower row's own ruler.
+// these, and they are placed against the lower row's own ruler — so the flag is
+// part of the fixture rather than incidental to it: the lower strip is drawn
+// only for a row the fetch went and asked about.
 function bothSides(over: Record<string, unknown> = {}) {
   return {
     level: 0,
@@ -60,6 +63,7 @@ function bothSides(over: Record<string, unknown> = {}) {
     ],
     parentView: {
       showOffscreenMates: true,
+      bidirectionalFetch: true,
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
@@ -383,4 +387,59 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
     side: 'bottom',
     displayed: true,
   })
+})
+
+// The ring, and why the lower strip waits. A culled target-axis mark is an
+// alignment whose query end is off the row above, so a single fetch holds only
+// the ones inside its pan buffer — the strip would stop at the fetch window's
+// edge rather than at the data's, and step there as the upper row pans. The
+// same model with the second query on draws it (above); with the query off it
+// draws nothing rather than a fraction.
+test('without the second query the lower strip draws nothing at all', () => {
+  const model = bothSides({
+    parentView: {
+      showOffscreenMates: true,
+      bidirectionalFetch: false,
+      minAlignmentLength: 0,
+      overdrawPx: 1000,
+      width: 800,
+      views: [QUERY_ROW, QUERY_ROW],
+    },
+    linearSyntenyDisplays: [
+      {
+        featureData: {
+          offscreenMates: mates(0),
+          targetOffscreenMates: mates(0),
+        },
+        culledRibbonMates: {
+          onQueryAxis: culled('inBand', [0, 50]),
+          onTargetAxis: culled('scrolledAway', [100_000, 100_050]),
+        },
+      },
+    ],
+  })
+  expect(offscreenMateStrips(model)).toEqual([])
+  expect(offscreenMateHit(withBand(model), 1, 99)).toBeUndefined()
+})
+
+// The count is the half of it that would be a wrong NUMBER rather than a
+// missing mark, so it goes silent by the same gate and not by a second one.
+test('an ungated lower lane is not counted either', () => {
+  expect(offscreenMateCount(bothSides(), 'fromTarget', 'bottom')).toBe(1)
+  expect(
+    offscreenMateCount(
+      bothSides({
+        parentView: {
+          showOffscreenMates: true,
+          bidirectionalFetch: false,
+          minAlignmentLength: 0,
+          overdrawPx: 1000,
+          width: 800,
+          views: [QUERY_ROW, QUERY_ROW],
+        },
+      }),
+      'fromTarget',
+      'bottom',
+    ),
+  ).toBe(0)
 })

@@ -356,15 +356,39 @@ The two cannot double-mark, because being outside a row's band means being more
 than `overdrawPx` off that row's screen — so an alignment culled on one end has
 exactly one axis the layout will place it on.
 
-D does NOT need the second fetch, and is drawn at the middle step too: the fetch
-window is the visible window plus a pan buffer, so the alignments in that margin
-are held, culled, and have a target-axis position. On the grape/peach figure
-zoomed to 4Mb that is not a sliver — the lower strip paints 8,004 device px at
-the middle step against the upper strip's 3,984, and 18,024 with the second
-query. So the setting gates the QUERY, which is the only thing that costs
-anything, and the labels were rewritten to say so: the middle step names the
-panels it marks ("Mark them on both panels") and the last names what it
-queries ("Mark them, and query the lower panel for more").
+**D DOES need the second fetch, and the day it spent not needing it is worth
+keeping.** The fetch window is the visible window plus a pan buffer, so the
+alignments in that margin are held, culled, and have a target-axis position —
+which read as "free" and shipped that way, relabelling the menu to describe it
+(the middle step named the panels it marked, the last what it queried). It is
+not free, it is INCOMPLETE, and the difference is invisible at the pixel level:
+a class D mark stands for an alignment whose query end is off the row above, so
+one fetch holds only what fell inside `syntenyPanBufferPx`. Counted on the
+peach/grape figure, the lower strip's marks by how far off the upper row's edge
+their query end sits:
+
+| | marks | 1000–2000px off | 2000–2364px | beyond |
+| --- | ---: | ---: | ---: | ---: |
+| one query | 396 | 272 | 124 | **0** |
+| two queries | 849 | 272 | 577 | to 3651px |
+
+The zero is the finding. The strip stops at the FETCH WINDOW's edge, not at the
+data's; it steps as the upper row pans across the snap grid; and the tooltip
+count — which on the upper strip is a fact a reader can act on — becomes an
+arbitrary fraction of the alignments going to that contig, with nothing saying
+so. An empty strip is a better answer than a number nobody can use.
+
+So the rule is symmetric, and it is the one thing this whole feature turns on:
+**a row's strip is complete if and only if that row was queried.** The upper row
+always is, so classes A and C are whole at the middle step. Classes B and D are
+the mirror and wait for the second query — B because it is never requested, D
+because it is requested only in part. `laneData` enforces it in one place, which
+is the place draw, hit test, tooltip count and SVG export all read.
+
+The labels went back to naming rows, in the words the rule gives them: "Mark
+them on the upper panel" and "Query the lower panel too, and mark it as well".
+The 8,004 device px the lower strip painted at the middle step was measuring the
+ring, and goes with it.
 
 **Off the instances, not the feature lanes.** `starts`/`ends` are the adapter's
 untrimmed coordinates; a CIGAR-clipped block draws from corners the projection

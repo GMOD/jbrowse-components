@@ -25,6 +25,9 @@ function source(counts: Record<string, number>) {
     ],
     parentView: {
       showOffscreenMates: true,
+      // a hover on the lower edge implies it: that strip exists only for a row
+      // the fetch went and asked about
+      bidirectionalFetch: true,
       minAlignmentLength: 0,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
     },
@@ -108,6 +111,9 @@ function bothLanes() {
     ],
     parentView: {
       showOffscreenMates: true,
+      // a hover on the lower edge implies it: that strip exists only for a row
+      // the fetch went and asked about
+      bidirectionalFetch: true,
       minAlignmentLength: 0,
       views: [{ bpPerPx: 1, offsetPx: 0 }],
     },

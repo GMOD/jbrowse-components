@@ -304,27 +304,33 @@ Where the mate sits on the facing panel is a live question, so the marks answer
 it live. Scroll that panel onto the mate and the mark becomes the ribbon it
 stood in for. **Overdraw** is the edge it is measured against.
 
-**Off-screen mates** in the settings menu is where **Mark them on both panels**
-turns the strips on, and it is on by default. Each mark sits where the alignment
-is on the panel it does have, stopping short of the ribbons so it cannot be read
-as an alignment to whatever is directly below. A run of marks to one contig
-carries that contig's name; where several contigs cover the same stretch, their
-names stack.
+**Off-screen mates** in the settings menu is where **Mark them on the upper
+panel** turns the marks on, and it is on by default. Each mark sits where the
+alignment is on the panel it does have, stopping short of the ribbons so it
+cannot be read as an alignment to whatever is directly below. A run of marks to
+one contig carries that contig's name; where several contigs cover the same
+stretch, their names stack.
 
 **Which panel a mark lands on is decided by which one still has the alignment.**
 An alignment is undrawable as soon as _either_ of its ends leaves its own panel,
-so a band has two strips and they say opposite things. A mark along the top edge
-means the upper panel still has that alignment and the lower panel cannot pair
-it — its other end is on a contig the lower panel is not displaying, or on one
-it has scrolled away from. A mark along the bottom edge is the same sentence
-with the panels swapped: the lower panel still has it, and the upper panel is
-the one that cannot pair it. Clicking a mark always moves the _other_ panel, the
-one that would have to show that contig for the two to be a ribbon.
+so the two edges of a band say opposite things. A mark along the top edge means
+the upper panel still has that alignment and the lower panel cannot pair it —
+its other end is on a contig the lower panel is not displaying, or on one it has
+scrolled away from. A mark along the bottom edge is the same sentence with the
+panels swapped: the lower panel still has it, and the upper panel is the one
+that cannot pair it. Clicking a mark always moves the _other_ panel, the one
+that would have to show that contig for the two to be a ribbon.
 
-Both strips are drawn from the alignments this view has already loaded, so
-neither costs anything. The lower panel's strip is not something you switch on
-separately — the step that mentions the lower panel below is about querying it,
-which is a different question.
+**A panel gets a strip only if the file was queried from it.** The upper panel
+always is, which is what makes marking it free: every alignment anchored in the
+window it is showing came back, including the ones there is no way to draw, so
+the top edge accounts for all of them. The lower panel is queried only at the
+step described below, and until it is, the alignments anchored down there are
+held only where they happened to fall inside the upper panel's fetch. A strip
+drawn from those would stop where the fetch stops rather than where the data
+does, shift as the upper panel pans, and give each mark a count that is some
+fraction of the alignments going to that contig. So the bottom edge stays empty
+until there is a query behind it.
 
 A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and
@@ -361,23 +367,18 @@ alignment anchored on a contig the lower panel is showing — whose other end is
 somewhere the upper panel is not — is never asked for at all. The same two
 genomes therefore report differently depending on which one you stacked on top.
 
-**Mark them, and query the lower panel for more** — the last step of that same
-submenu — adds that second query.
-
-Read the label literally: what it adds is a _query_, not a strip. The lower
-panel is already marked at the step before, for every alignment the upper panel
-has scrolled away from. What no amount of marking can produce is an alignment
-nobody asked the file for, and that is what this step goes and gets.
+**Query the lower panel too, and mark it as well** — the last step of that same
+submenu — adds that second query, and with it the strip along the bottom edge.
 
 What comes back splits two ways. An alignment whose other end is on a contig the
-upper panel is not displaying at all has no second endpoint, so it joins the
-lower panel's strip; clicking one of those marks navigates the **upper** panel.
-An alignment whose other end is on a contig the upper panel _is_ displaying,
-outside the window it is showing, is a ribbon in principle — but a ribbon with
-one end that far off the edge is not drawn, which is the same rule that governs
-any alignment reaching a long way off screen, so it joins the same strip.
-Raising **Overdraw** past the panel's pan buffer is what turns those marks into
-the ribbons they stand for.
+upper panel is not displaying at all has no second endpoint, so it becomes a
+mark; clicking one of those navigates the **upper** panel. An alignment whose
+other end is on a contig the upper panel _is_ displaying, outside the window it
+is showing, is a ribbon in principle — but a ribbon with one end that far off
+the edge is not drawn, which is the same rule that governs any alignment
+reaching a long way off screen, so it becomes a mark too. Raising **Overdraw**
+past the panel's pan buffer is what turns those marks into the ribbons they
+stand for.
 
 It is off by default: it is a second query per panel pair, which on a
 whole-genome alignment file is real work.

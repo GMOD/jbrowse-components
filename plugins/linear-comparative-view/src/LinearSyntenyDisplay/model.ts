@@ -388,6 +388,13 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * LAZY BY CONSTRUCTION rather than gated on the setting:
        * `offscreenMateStrips` reads `showOffscreenMates` before it reads this,
        * so with the marks off nothing observes it and the pass never runs.
+       *
+       * BOTH PERSPECTIVES ARE BUILT WHATEVER THE FETCH IS, because they are one
+       * walk — the query span is what says whether the target span is a mate at
+       * all — and whether the lower row's is DRAWN is a separate question that
+       * `laneData` answers: a row gets a strip only if the file was queried
+       * from it, or the strip stops at the fetch window's edge rather than at
+       * the data's.
        */
       get culledRibbonMates() {
         const { featureData, instanceData } = self

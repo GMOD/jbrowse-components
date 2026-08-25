@@ -51,6 +51,9 @@ export interface OffscreenMateSource extends MarkColorSource {
   }[]
   parentView: {
     showOffscreenMates: boolean
+    // whether the LOWER row was queried too, which is what decides whether it
+    // gets a strip at all — see `laneData`
+    bidirectionalFetch: boolean
     minAlignmentLength: number
     // the band the ribbons are culled against, which is the edge a mark stands
     // in for — one number, so the two cannot come apart
@@ -66,14 +69,31 @@ export interface OffscreenMateSource extends MarkColorSource {
 // assemblies. Within a side the two datasets hold contigs of the same one, and
 // are disjoint: an alignment the worker never decorated has no geometry to be
 // culled, and one it did is not in the worker's tally.
+//
+// A ROW GETS A STRIP ONLY IF IT WAS QUERIED, which is the whole of why a fetch
+// input is read here. The upper row always is, so both its lanes are complete:
+// every alignment anchored in its visible window came back, whether its mate
+// then had no place on the facing axis (the worker's lane) or a place that has
+// scrolled off it (the culled lane). The lower row's lanes are the mirror and
+// are NOT complete without the second query — a culled alignment placed on the
+// target axis is one whose query end is off the row above, so the only ones the
+// single fetch holds are those inside `syntenyPanBufferPx`. That margin is a
+// CACHE boundary: the marks stop where the fetch window ends rather than where
+// the data does, they step on the snap grid as the upper row pans, and the count
+// a mark's tooltip prints is then a fraction of the alignments that go there
+// with nothing saying so. A number no reader can act on is worse than an empty
+// strip, so the lane waits for the query that completes it.
 function laneData(
+  model: OffscreenMateSource,
   display: OffscreenMateSource['linearSyntenyDisplays'][number],
   side: OffscreenMateSide,
 ): (OffscreenMateDataset | undefined)[] {
   const { featureData, culledRibbonMates } = display
   return side === 'top'
     ? [featureData?.offscreenMates, culledRibbonMates?.onQueryAxis]
-    : [featureData?.targetOffscreenMates, culledRibbonMates?.onTargetAxis]
+    : model.parentView.bidirectionalFetch
+      ? [featureData?.targetOffscreenMates, culledRibbonMates?.onTargetAxis]
+      : []
 }
 
 // Nothing this dataset holds can be off the facing axis, so the strip need not
@@ -106,7 +126,7 @@ function lane(
 ) {
   const out: OffscreenMateDataset[] = []
   for (const display of model.linearSyntenyDisplays) {
-    for (const data of laneData(display, side)) {
+    for (const data of laneData(model, display, side)) {
       if (data && data.starts.length > 0 && mayHide(data, band)) {
         out.push(data)
       }
@@ -300,7 +320,7 @@ export function offscreenMateCount(
 ) {
   let total = 0
   for (const display of model.linearSyntenyDisplays) {
-    for (const data of laneData(display, side)) {
+    for (const data of laneData(model, display, side)) {
       const id = data?.mateRefNameDict.indexOf(refName) ?? -1
       if (data && id >= 0) {
         total += data.counts[id] ?? 0

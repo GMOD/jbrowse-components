@@ -219,7 +219,7 @@ test('the last off-screen step is the one that adds the second query', async () 
   expect(view.showOffscreenMates).toBe(true)
   expect(view.bidirectionalFetch).toBe(false)
 
-  pick('Off-screen mates', 'Mark them, and query the lower panel for more')
+  pick('Off-screen mates', 'Query the lower panel too, and mark it as well')
   expect(view.bidirectionalFetch).toBe(true)
 
   pick('Off-screen mates', 'Off')
