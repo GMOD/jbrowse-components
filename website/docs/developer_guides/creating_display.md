@@ -88,7 +88,7 @@ _fetches_; how it _renders_ is a separate axis on top.
 | Foundation | Brings | Used by |
 | --- | --- | --- |
 | `MultiRegionDisplayMixin()` | Per-region fetch + render: the fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case. | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
-| `GlobalFetchMixin()` | One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`. | `LinearArcDisplay`, `LinearHicDisplay`, `LinearPairedArcDisplay`, `MultiWaySyntenyDisplay`, `MultiWaySyntenyDisplay`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
+| `GlobalFetchMixin()` | One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`. | `LinearArcDisplay`, `LinearHicDisplay`, `LinearPairedArcDisplay`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
 
 <!-- DISPLAY_FOUNDATIONS END -->
 

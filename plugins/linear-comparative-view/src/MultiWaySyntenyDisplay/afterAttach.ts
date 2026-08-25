@@ -1,26 +1,23 @@
-import { dedupe, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { dedupe, getSession, isAbortException } from '@jbrowse/core/util'
+import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
+import { installFetch } from '@jbrowse/core/util/installFetch'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
-import { installKeyedFetch } from './installKeyedFetch.ts'
 import { laneGeneFeatures } from './layoutMultiWay.ts'
 
-import type {
-  LaneGenesFetchSpec,
-  LaneLinksFetchSpec,
-  LaneRegion,
-  MultiWaySyntenyDisplayModel,
-} from './model.ts'
+import type { LaneRegion, MultiWaySyntenyDisplayModel } from './model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 interface MultiWayFetchArgs {
   regions: ContentBlock[]
 }
 
-// the debounce on both dependent fetches: they are derived from lane frames
-// that move on every pan, and a frame settles well inside this
+// Both dependent fetches are derived from lane frames that move on every pan,
+// and a frame settles well inside this. Leading edge like every fetch installer,
+// so the first one is not charged the wait.
 const DEPENDENT_FETCH_DELAY = 500
 
 function fetchPhases(
@@ -62,6 +59,48 @@ async function laneRegions(
   }))
 }
 
+/**
+ * One RPC per lane, concurrently, each on its own status slot so the parallel
+ * calls aggregate into one bar rather than clobbering each other.
+ *
+ * **One lane failing is a partial result, not a failed fetch.** That lane keeps
+ * the placement boxes it already draws and every other lane keeps its gene
+ * models, where a rejected `Promise.all` used to drop the whole map and blank
+ * them all for one assembly's missing annotation file. So this resolves either
+ * way and the commit always happens — which is also what settles `displayPhase`
+ * off `loading` when the first one lands.
+ *
+ * The log guard is `handleFetchError`'s rule applied per lane rather than per
+ * fetch: an abort is the ordinary end of a superseded run, and a stale run's
+ * failure belongs to whatever replaced it.
+ */
+async function fetchEachLane<Spec>(
+  label: string,
+  specs: Spec[],
+  ctx: FetchContext,
+  fetchOne: (
+    spec: Spec,
+    ctx: FetchContext,
+  ) => Promise<readonly [string, Feature[]]>,
+) {
+  const perLane = fanOutStatus(ctx, specs.length)
+  const settled = await Promise.allSettled(
+    specs.map((spec, i) => fetchOne(spec, perLane[i]!)),
+  )
+  const entries: (readonly [string, Feature[]])[] = []
+  for (const result of settled) {
+    if (result.status === 'fulfilled') {
+      entries.push(result.value)
+    } else if (!ctx.isStale() && !isAbortException(result.reason)) {
+      console.error(
+        `${label}: one lane failed, the rest still draw`,
+        result.reason,
+      )
+    }
+  }
+  return new Map(entries)
+}
+
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
@@ -69,62 +108,94 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWaySyntenyFetch',
   })
 
-  // the second, dependent fetch: once the ortholog groups have settled into
-  // lane frames, pull each lane's gene models from that assembly's own gene
-  // track
-  installKeyedFetch<LaneGenesFetchSpec, Feature[]>(self, {
+  // The second fetch, dependent on the first: once the ortholog groups have
+  // settled into lane frames, pull each lane's gene models from that assembly's
+  // own gene track.
+  //
+  // Both dependent fetches take the shared skeleton, which owns what they used
+  // to hand-roll between them: the latest-wins rotation and its `isCurrent`
+  // (a key compared by hand says a fetch is current again after the view goes
+  // away and comes back, which the rotation does not), the token released
+  // however the run ends, the currency-guarded error rule, and the
+  // unconditional `reloadCounter` read that makes Retry reach them at all.
+  //
+  // No `contract`: both are SECOND fetches on a display whose global foundation
+  // already installed the two dev-only contract checks.
+  installFetch(self, {
     name: 'MultiWayLaneGenes',
     delay: DEPENDENT_FETCH_DELAY,
-    specsOf: () => self.laneGenesFetchSpecs,
-    fetchOne: async (spec, stopToken) => {
-      const session = getSession(self)
-      const features = await session.rpcManager.call(
-        getRpcSessionId(self),
-        'CoreGetFeatures',
-        {
+    // The display's own window, lent rather than a channel of its own: a lane
+    // refetch runs over lanes that are already drawn, so `displayPhase` is
+    // `ready` and this reports through the corner progress chip instead of the
+    // scrim — and it shares the window with the fetch it depends on rather than
+    // opening a second writer on the same field.
+    report: { statusWindow: self.statusWindow },
+    gate: () => !self.isMinimized,
+    // The committed key is the gate, and `reload()` clears it — a gate on a
+    // freshness signal that a reload does not invalidate is a dead Retry
+    prepare: () => {
+      const { key, specs } = self.laneGenesFetchSpecs
+      return specs.length > 0 && key !== self.laneGenesKey
+        ? { key, specs }
+        : undefined
+    },
+    run: ({ specs }, ctx) =>
+      fetchEachLane('MultiWayLaneGenes', specs, ctx, async (spec, laneCtx) => {
+        const features = await laneCtx.callRpc('CoreGetFeatures', {
           adapterConfig: spec.adapterConfig,
-          regions: await laneRegions(session, spec.assemblyName, spec.regions),
-          stopToken,
-          // a deliberate no-op: the lane fetch refines a track that is already
-          // drawn, and holds displayPhase at loading while it runs, so there is
-          // no second bar to feed
-          statusCallback: () => {},
-        },
-      )
-      return [spec.assemblyName, laneGeneFeatures(features)] as const
+          regions: await laneRegions(
+            getSession(self),
+            spec.assemblyName,
+            spec.regions,
+          ),
+        })
+        return [spec.assemblyName, laneGeneFeatures(features)] as const
+      }),
+    commit: (genes, { key }) => {
+      self.setLaneGenes(key, genes)
     },
-    commit: (key, entries) => {
-      self.setLaneGenes(key, entries)
-    },
+    // A lane's annotation is an enhancement over placement boxes that are
+    // already correct, so a lane failure is not the display's error: `run`
+    // degrades per lane and logs there, and this must not reach the error slot
+    // the ortholog fetch owns — least of all through the clear it would do at
+    // the start of every run
+    setError: () => {},
   })
 
-  // the third fetch, for alignment-level sources: the direct records between
+  // The third fetch, for alignment-level sources: the direct records between
   // each ADJACENT mate-lane pair, out of the same all-vs-all track. The specs
   // exist only when the source names no genes, so a gene table never issues
   // these.
-  installKeyedFetch<LaneLinksFetchSpec, Feature[]>(self, {
+  installFetch(self, {
     name: 'MultiWayLaneLinks',
     delay: DEPENDENT_FETCH_DELAY,
-    specsOf: () => self.laneLinksFetchSpecs,
-    fetchOne: async (spec, stopToken) => {
-      const session = getSession(self)
-      const features = await session.rpcManager.call(
-        getRpcSessionId(self),
-        'CoreGetFeatures',
-        {
+    report: { statusWindow: self.statusWindow },
+    gate: () => !self.isMinimized,
+    prepare: () => {
+      const { key, specs } = self.laneLinksFetchSpecs
+      return specs.length > 0 && key !== self.laneLinksKey
+        ? { key, specs }
+        : undefined
+    },
+    run: ({ specs }, ctx) =>
+      fetchEachLane('MultiWayLaneLinks', specs, ctx, async (spec, laneCtx) => {
+        const features = await laneCtx.callRpc('CoreGetFeatures', {
           adapterConfig: self.adapterConfig,
-          regions: await laneRegions(session, spec.region.assemblyName, [
-            spec.region,
-          ]),
+          regions: await laneRegions(
+            getSession(self),
+            spec.region.assemblyName,
+            [spec.region],
+          ),
           opts: { targetAssemblyName: spec.lowerAssembly },
-          stopToken,
-          statusCallback: () => {},
-        },
-      )
-      return [`${spec.upperAssembly}|${spec.lowerAssembly}`, features] as const
+        })
+        return [
+          `${spec.upperAssembly}|${spec.lowerAssembly}`,
+          features,
+        ] as const
+      }),
+    commit: (links, { key }) => {
+      self.setLaneLinks(key, links)
     },
-    commit: (key, entries) => {
-      self.setLaneLinks(key, entries)
-    },
+    setError: () => {},
   })
 }

@@ -437,7 +437,7 @@ table).
 | Foundation (composed on `BaseDisplay`) | Composes | Displays |
 | --- | --- | --- |
 | `MultiRegionDisplayMixin()` | `RegionTooLargeMixin`, `RenderLifecycleMixin`, `FetchMixin` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
-| `GlobalFetchMixin()` | `RegionTooLargeMixin`, `RenderLifecycleMixin`, `FetchMixin` | `LinearArcDisplay`, `LinearHicDisplay`, `LinearPairedArcDisplay`, `MultiWaySyntenyDisplay`, `MultiWaySyntenyDisplay`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
+| `GlobalFetchMixin()` | `RegionTooLargeMixin`, `RenderLifecycleMixin`, `FetchMixin` | `LinearArcDisplay`, `LinearHicDisplay`, `LinearPairedArcDisplay`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
 
 <!-- DISPLAY_FOUNDATION_STACKS END -->
 

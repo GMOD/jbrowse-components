@@ -201,7 +201,9 @@ function installContractChecks(self: FetchSkeletonHost, contract: string) {
  *
  * Every fetch in the tree is this shape except one — the prerequisite reads
  * (HiC's header, the multi-sample sample list), both comparative displays, the
- * circular view's chord fetch and the breakpoint overlay fetch all take it. The
+ * circular view's chord fetch, the breakpoint overlay fetch and the multi-way
+ * synteny display's two DEPENDENT fetches (lane genes, lane links, each gated on
+ * the key its own commit stamps) all take it. The
  * exception is `FetchMixin.runFetch`, the viewport fetch of an LGV display: its
  * rotation is a member rather than a closure (so `cancelFetch` can reach it)
  * and its trigger list is the per-region or global foundation's, so it holds
