@@ -77,7 +77,7 @@ async function probe(height: number) {
       : []
     return {
       height: d?.height,
-      maxIsoforms: d?.effectiveMaxIsoforms,
+      maxIsoforms: d?.fitStage?.maxIsoforms,
       fitLevel: d?.fitStage?.level,
       total: labels.length,
       names: names.filter(n => labels.includes(n)),

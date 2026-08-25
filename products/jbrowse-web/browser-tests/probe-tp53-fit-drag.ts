@@ -9,12 +9,13 @@
 // multi-isoform genes deep.
 //
 // Samples the DRAG, not a set of heights. The complaint was that a taller track
-// shows its names and then loses them a moment later, and that is a transient
-// between two settled states: `coarseTrackHeight` is debounced HEIGHT_SETTLE_MS
-// (300ms), so the frames right after a resize are laid out against the OLD
-// isoform budget, and the refetch that follows replaces them. Navigating to a
-// height and waiting cannot see it — every probe that does reports both frames
-// as whichever one it happened to catch.
+// shows its names and then loses them a moment later. That WAS a transient
+// between two settled states — the isoform budget was debounced 300ms behind
+// the height, so the frames right after a resize were laid out against the old
+// one and the refetch that followed replaced them. ADR-092 moved the trim onto
+// the fit ladder, so a drag re-solves in the frame rather than refetching, and
+// the rows below should read the same from +80ms on. A row that does not is the
+// regression this probe is for.
 //
 // Reads the hosted hg19 config, so it needs network; nothing in CI depends on
 // it.
@@ -56,7 +57,7 @@ function readState(names: string[]) {
     : []
   return {
     height: d?.height,
-    maxIsoforms: d?.effectiveMaxIsoforms,
+    maxIsoforms: d?.fitStage?.maxIsoforms,
     fitLevel: d?.fitStage?.level,
     named: names.filter(n => labels.includes(n)).length,
     descriptions: d?.renderedShowDescriptions,
@@ -112,16 +113,16 @@ try {
   row('settled at 150', await sample())
 
   // The drag itself: the resize handle writes `height` every frame, so this is
-  // what the model sees. `coarseTrackHeight` — and so `maxIsoforms`, and so the
-  // fetch — does not move until 300ms after the last write.
+  // what the model sees. Nothing about the track's size reaches the worker now,
+  // so the count moves with the frame.
   await page.evaluate(DRAG_TO => {
     const d = (window as any).JBrowseSession?.views?.[0]?.tracks?.[0]
       ?.displays?.[0]
     d?.configuration?.setSlot?.('height', DRAG_TO)
   }, DRAG_TO)
-  // Straddling HEIGHT_SETTLE_MS (300ms): the first two samples are laid out
-  // against the OLD budget at the NEW height, which is the frame that looks
-  // best and cannot last; the rest are what the user is left with.
+  // The first two samples used to be laid out against the old budget at the new
+  // height — the frame that looked best and could not last. They should now
+  // match the rest.
   let elapsed = 0
   for (const at of [80, 200, 400, 800, 1600, 3200]) {
     await delay(at - elapsed)

@@ -116,11 +116,11 @@ const suite: TestSuite = {
     // font size, and EDEN.1/.2/.3 land on top of each other and of the glyphs.
     //
     // The height is load-bearing and was picked by probing the model, not by
-    // taste. Below ~60px the isoform cap (`effectiveMaxIsoforms`) collapses every
-    // gene to a single transcript: one subfeature label on screen, nothing for it
-    // to collide with, and the DOM is identical whether the guard is there or
-    // not. The first spelling of this test used 30px and passed against a
-    // deliberately broken build. At 150 the cap admits five, three subfeature
+    // taste. Below ~60px the fit ladder's isoform rung solves to one transcript
+    // per gene: one subfeature label on screen, nothing for it to collide with,
+    // and the DOM is identical whether the guard is there or not. The first
+    // spelling of this test used 30px and passed against a deliberately broken
+    // build. At 150 the rung admits five, three subfeature
     // labels survive the fetch, and the squeeze is ~0.5.
     {
       name: 'a squeezed fit drops the subfeature labels it shrank',

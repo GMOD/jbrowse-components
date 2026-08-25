@@ -41,7 +41,7 @@ async function probe(display: Record<string, unknown>) {
       : []
     return {
       height: d?.height,
-      maxIsoforms: d?.effectiveMaxIsoforms,
+      maxIsoforms: d?.fitStage?.maxIsoforms,
       total: labels.length,
       subfeature: labels.filter(t => t.startsWith('EDEN.')).length,
       gene: labels.filter(t => t === 'EDEN').length,
