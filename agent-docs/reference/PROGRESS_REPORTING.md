@@ -285,17 +285,24 @@ the copy, so the envelope injects that operation's slot rather than the batch's.
 
 It sits in core rather than in either fetch family because both fan out inside
 one run: `callEachRegion` (and `fetchEachRegion` through it) over N regions, and
-a display's own `run` under the shared `installFetch` — the multi-way synteny
-display's N lanes, one `CoreGetFeatures` per lane assembly.
+a `run` under the shared `installFetch` — the multi-way synteny display's N
+lanes, one `CoreGetFeatures` per lane assembly, and the breakpoint split view's
+N matched tracks.
+
+**A VIEW's fetch rebuilds each slot as a context on its track**, which the
+breakpoint one is the only instance of: `rpcSessionId` is `BaseTrackModel`'s and
+nothing above it declares one, so `callRpc` on the context the skeleton hands a
+view has nothing to resolve. `makeFetchContext` says so at more length.
 
 Inside the worker, and in the main-thread paths that still fan out by hand,
 reach for `createStatusFanOut` yourself: `BaseFeatureDataAdapter`'s multi-region
-`merge`, a `Promise.all` over sidecar files, MAF's two concurrent branches. Two
-main-thread ones are left and both are `installFetch` runs that predate the
-shared helper — the circular view's chord fetch (features ‖ refName map) and the
-breakpoint split view's overlay fetch (N matched tracks); both should take
-`fanOutStatus`, and chord's half that bypasses `ctx.callRpc` should take that
-too. The tell that a fan-out is missing: the first operation to finish writes the
+`merge`, a `Promise.all` over sidecar files, MAF's two concurrent branches. One
+main-thread one is left: the circular view's chord fetch, whose two halves
+(features ‖ refName map) predate the shared helper. It should take
+`fanOutStatus`, and its features half should take `ctx.callRpc` with it — that
+half hand-threads the stop token into a bare `rpcManager.call` today, and chord
+is a DISPLAY, so unlike the breakpoint view it has an `rpcSessionId` to resolve.
+The tell that a fan-out is missing: the first operation to finish writes the
 `''` that every phase helper clears with, and the label blanks while the rest are
 still running.
 
