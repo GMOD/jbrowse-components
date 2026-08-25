@@ -1,4 +1,4 @@
-import { hubBaseUrl, makeLoc, makeLocFromUri } from './util.ts'
+import { htmlLink, hubBaseUrl, makeLoc, makeLocFromUri } from './util.ts'
 
 import type { HubLocation } from './util.ts'
 
@@ -96,4 +96,16 @@ test('makeLoc uses the fallback when the path is empty', () => {
     uri: 'https://x.org/volvox/tiny.bam.bai',
     locationType: 'UriLocation',
   })
+})
+
+// `html`/`htmlPath` are hub-controlled text going into markup, and the anchor
+// is stored in metadata rather than rendered through the sanitizer every
+// current reader happens to sit behind. The label side is the one `new URL`
+// does not already percent-encode, so it is the side that carries the risk.
+test('htmlLink escapes hub-controlled text on both sides of the tag', () => {
+  const link = htmlLink('"><img src=x onerror=alert(1)>', 'https://x.org/hub/')
+  const label = link.slice(link.indexOf('>') + 1, link.lastIndexOf('</a>'))
+  expect(label).toBe('&quot;&gt;&lt;img src=x onerror=alert(1)&gt;')
+  expect(link).not.toContain('<img')
+  expect(link.match(/"/g)).toHaveLength(2)
 })
