@@ -50,6 +50,15 @@ export async function renderPage({ data, title }) {
     })
     const { render } = await import(pathToFileURL(serverFile).href)
     const appHtml = render(data)
+    // --inline-images makes every capture a quarter-megabyte data: URI, and
+    // rendering it into the markup means the JSON no longer has to carry one
+    // too. The client reads them back off the DOM before it hydrates.
+    const lean = {
+      ...data,
+      cards: data.cards.map(c =>
+        c.img?.startsWith('data:') ? { ...c, img: undefined } : c,
+      ),
+    }
     const appJs = await build(
       esbuild,
       'client.jsx',
@@ -68,7 +77,7 @@ export async function renderPage({ data, title }) {
     return template
       .replace('__TITLE__', () => title.replaceAll(/[<&]/g, ''))
       .replace('__APP_HTML__', () => appHtml)
-      .replace('__DATA__', () => closeTags(JSON.stringify(data)))
+      .replace('__DATA__', () => closeTags(JSON.stringify(lean)))
       .replace('__APP_JS__', () => closeTags(appJs))
   } finally {
     fs.rmSync(dir, { recursive: true, force: true })

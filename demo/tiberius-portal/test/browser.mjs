@@ -8,6 +8,9 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { CLASSES } from '../lib/classify.mjs'
+import { renderPage } from '../lib/page.mjs'
+
 const HERE = import.meta.dirname
 
 let puppeteer
@@ -390,6 +393,61 @@ await check(
   5,
 )
 await still.close()
+
+// A portal built with --inline-images keeps its captures in the markup and out
+// of the JSON, so the client has to put them back before hydrating — otherwise
+// React renders an <img> with no src over one that has it, and the picture
+// disappears the moment the script runs.
+const SHOT = `data:image/png;base64,${'A'.repeat(2000)}`
+const inlined = path.join(tmp, 'inlined.html')
+fs.writeFileSync(
+  inlined,
+  await renderPage({
+    title: 'T',
+    data: {
+      portalId: 'inline-test',
+      title: 'T',
+      eyebrow: 'e',
+      lede: 'l',
+      footer: 'f',
+      total: 1,
+      agrees: 0,
+      flagged: 1,
+      tally: {},
+      classes: CLASSES,
+      classOrder: ['novel-locus'],
+      cards: [
+        {
+          id: 'm1',
+          cls: 'novel-locus',
+          loc: 'ctgA:1-2',
+          nExons: 1,
+          spanKb: 1,
+          strand: '+',
+          genes: [],
+          url: 'https://example.org/',
+          img: SHOT,
+        },
+      ],
+    },
+  }),
+)
+const inlinePage = await browser.newPage()
+const inlineErrors = []
+inlinePage.on('pageerror', e => inlineErrors.push(String(e)))
+inlinePage.on('console', m => {
+  if (m.type() === 'error') {
+    inlineErrors.push(m.text())
+  }
+})
+await inlinePage.goto(`file://${inlined}`, { waitUntil: 'load' })
+await check(
+  'the capture survives hydration',
+  () => inlinePage.$eval('img.shot', e => e.getAttribute('src')),
+  SHOT,
+)
+await check('and hydrating it logged nothing', () => inlineErrors, [])
+await inlinePage.close()
 
 await browser.close()
 fs.rmSync(tmp, { recursive: true, force: true })

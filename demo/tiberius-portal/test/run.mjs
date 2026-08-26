@@ -12,7 +12,8 @@ import {
   relativeLink,
   sessionFor,
 } from '../lib/capture.mjs'
-import { classify, conflictBed } from '../lib/classify.mjs'
+import { classify, CLASSES, conflictBed } from '../lib/classify.mjs'
+import { renderPage } from '../lib/page.mjs'
 import { buildConfig } from '../lib/prepare.mjs'
 
 const HERE = import.meta.dirname
@@ -394,6 +395,49 @@ check(
 
 fs.rmSync(flaky.dir, { recursive: true, force: true })
 fs.rmSync(dead.dir, { recursive: true, force: true })
+
+// --- the page carries an inlined capture once, not twice ------------------
+
+const SHOT = `data:image/png;base64,${'A'.repeat(2000)}`
+const pageData = {
+  portalId: 'test-portal',
+  title: 'T',
+  eyebrow: 'e',
+  lede: 'l',
+  footer: 'f',
+  total: 2,
+  agrees: 1,
+  flagged: 1,
+  tally: {},
+  classes: CLASSES,
+  classOrder: ['novel-locus'],
+  cards: [
+    {
+      id: 'm1',
+      cls: 'novel-locus',
+      loc: 'ctgA:1-2',
+      nExons: 1,
+      spanKb: 1,
+      strand: '+',
+      genes: [],
+      url: 'https://example.org/',
+      img: SHOT,
+    },
+  ],
+}
+const page = await renderPage({ data: pageData, title: 'T' })
+check(
+  'the capture is rendered into the markup',
+  page.includes(`src="${SHOT}"`),
+  true,
+)
+// It used to ride in the JSON as well, which doubled a 2 MB portal.
+check('and appears exactly once in the file', page.split(SHOT).length - 1, 1)
+check(
+  'the card is in the HTML before any script runs',
+  page.includes('data-id="m1"'),
+  true,
+)
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall checks passed')
 if (failures) {
