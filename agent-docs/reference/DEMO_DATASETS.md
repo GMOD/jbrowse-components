@@ -63,6 +63,44 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   3/2,567) and is the wrong pick, because at 2,500 reads the pileup cannot be
   drawn and the figure is two bands with nothing under them.
 
+- **Read-pair SV contact channels → NA12878 at three 1000G phase 3 calls**
+  (`demos/sv_contact_maps`, `scripts/build_sv_contact_maps.sh`). Cue's encoding
+  as four `.hic` files over one GIAB HG001 300x slice. Measured off the BAM, so
+  do not re-pick by SV type:
+  - **INV `7:70,420,799-70,438,952`** (het, delly). 605 of the 660 same-strand
+    contacts in the whole chr7 slice land in the one cell at 70,420k x 70,438k.
+    This is the only one of the three with junction pairs at all.
+  - **DUP `5:175,353,978-175,371,353`** (hom, `DUP_gs`). Depth roughly doubles
+    over ~23 kb starting ~9 kb left of the call's edge; inside a 65 kb window on it
+    the same-strand channel holds nothing, the outward channel two contacts and
+    the discordant channel 37, all of them near-diagonal and none at the
+    breakpoints. That is the demo's built-in control.
+  - **DUP `17:16,661,446-16,704,453`** (`DUP_gs`, 43 kb). Depth rises over the
+    call, and the depth channel is still the WRONG figure: the flanks are
+    KRT16/USP32/CCDC144A pseudogenes whose own depth swings as hard as the call,
+    so the channel comes back a full plaid with no shape in it. The chr5 call
+    framed at 120 kb is the one that draws the two arms and the pale wedge.
+
+  Four things the spike's own notes get wrong or leave out, each measured here:
+
+  - **juicer_tools 1.22.01 `pre` FLOORS a position into its bin**, at every
+    offset from 0 to binsize-1. The claim that it rounds, so that a bin-centre
+    position lands one bin along, does not reproduce;
+    `scripts/check-build-scripts.py` pins the flooring. Bin start + 1 is still
+    the convention `sv_contact_maps.py` writes, because the number then names
+    the bin it means.
+  - **`pre` exits 57 on an empty contacts file**, at the end of a run that has
+    already paid for the whole scan. A depth-only call legitimately produces an
+    empty pair channel, so the helper writes no `.hic` for one and says so.
+  - **A `LinearHicDisplay` whose region comes back with no records never leaves
+    `Loading...`** (240s twice, with two sibling displays over the same window
+    painting in seconds). It is why the control figure runs the discordant and
+    outward channels rather than same-strand, whose chr5 contacts all pair a
+    bin in the slice with one at 177.3 Mb and so leave the window empty.
+  - **The novoalign GIAB BAMs carry no `SA` tags at all** (0 in 467,940 records
+    over the chr7 slice), so the split-read half of the discordant channel
+    contributes nothing on this data.
+
 - **Synteny against a real diploid → the `demos/hg002` mat-vs-pat chain.** Two
   loci out of it, both measured off the file rather than picked by reputation,
   and between them they cover what synteny code gets wrong:
