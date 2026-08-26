@@ -1,3 +1,4 @@
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
@@ -43,8 +44,6 @@ function pifSide(line: PifLine): AlignedSide {
 
 export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<AllVsAllIndexedPAFAdapterConfig> {
   private pif = new PifFile(this)
-  private seqIndexP?: Promise<Map<string, Map<string, string[]>>>
-
   // The distinct PanSN seqids (tier letter t/q/T/Q stripped, deduped across
   // tiers) grouped prefix -> contig -> seqids. Every seqid is filed under each
   // prefix it is addressable by (`grape` and `grape#1`), so a sample-level
@@ -56,26 +55,20 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
   // of seqids, and getRefNames and every getFeatures call — one per band, per
   // region, per pan/zoom — would otherwise re-split and re-scan the entire
   // contig list.
-  private async seqIndex(opts?: BaseOptions) {
-    this.seqIndexP ??= this.pif
-      .refSeqNames(opts)
-      .then(names => {
-        const index = new Map<string, Map<string, string[]>>()
-        for (const seq of new Set(names.map(n => n.slice(1)))) {
-          const contig = panSNContig(seq)
-          for (const prefix of panSNPrefixes(seq)) {
-            const byContig = getOrCreate(index, prefix, () => new Map())
-            getOrCreate(byContig, contig, () => []).push(seq)
-          }
+  private seqIndex = cachedSetup({
+    setup: async opts => {
+      const names = await this.pif.refSeqNames(opts)
+      const index = new Map<string, Map<string, string[]>>()
+      for (const seq of new Set(names.map(n => n.slice(1)))) {
+        const contig = panSNContig(seq)
+        for (const prefix of panSNPrefixes(seq)) {
+          const byContig = getOrCreate(index, prefix, () => new Map())
+          getOrCreate(byContig, contig, () => []).push(seq)
         }
-        return index
-      })
-      .catch((e: unknown) => {
-        this.seqIndexP = undefined
-        throw e
-      })
-    return this.seqIndexP
-  }
+      }
+      return index
+    },
+  })
 
   // What the file holds, for the message a query naming an unknown assembly
   // raises. The tier letter (t/q/T/Q) is not part of a name.

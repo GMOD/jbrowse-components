@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
@@ -11,10 +14,8 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdapterConfig> {
-  protected bedFeatures?: Promise<{
-    header: string
-    features: Record<string, string[]>
-  }>
+  // No `label`: `fetchAndMaybeUnzip` narrates the download from inside.
+  loadData = cachedSetup({ setup: opts => this.loadDataP(opts) })
 
   protected intervalTrees: Record<
     string,
@@ -79,14 +80,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
     return this.intervalTrees[refName]
   }
 
-  async loadData(opts: BaseOptions = {}) {
-    this.bedFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
-      this.bedFeatures = undefined
-      throw e
-    })
-
-    return this.bedFeatures
-  }
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return intervalTreeFeatures(query, opts, refName =>
       this.loadFeatureIntervalTree(refName),

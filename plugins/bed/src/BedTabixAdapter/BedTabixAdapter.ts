@@ -1,7 +1,10 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, downloadStatus, updateStatus } from '@jbrowse/core/util'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature, downloadStatus } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
@@ -26,7 +29,13 @@ import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdapterConfig> {
   // the parser needs the column names, which come from the file's header, so
   // it cannot be built in the constructor
-  private parserP?: Promise<BED>
+  private getParser = cachedSetup({
+    setup: async (): Promise<BED> =>
+      makeParser({
+        autoSql: readConfObject(this.config, 'autoSql'),
+        columnNames: await this.getNames(),
+      }),
+  })
 
   private readonly bedGzLoc: FileLocation
 
@@ -34,15 +43,20 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
+  // `label` because the index metadata download narrates nothing itself; the
+  // helper shows it only while the first attempt is in flight, so pan/zoom
+  // re-entry (every getFeatures awaits it) doesn't re-flash "Downloading index"
+  getMetadata = cachedSetup({
+    label: 'Downloading index',
+    setup: () => this.bed.getMetadata(),
+  })
 
-  // undefined when the file declares no column names — parseNamesFromHeader's
-  // answer for a header it can't read names out of
-  private namesP?: Promise<string[] | undefined>
-
-  // true once the index metadata has downloaded; gates the status label so
-  // pan/zoom re-entry into getMetadata() doesn't re-flash "Downloading index"
-  private setupReady = false
+  // Memoized: getFeatures needs the names on every query, and reading them goes
+  // to the file's leading blocks — a fetch and a decompress that was being
+  // repeated on every pan and zoom. Resolves undefined when the file declares
+  // no column names — parseNamesFromHeader's answer for a header it can't read
+  // names out of.
+  getNames = cachedSetup({ setup: () => this.readNames() })
 
   public constructor(
     config: BedTabixAdapterConfig,
@@ -84,58 +98,6 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     return this.bed.bytesForRegions(regions, opts)
   }
 
-  private async configure() {
-    this.setupP ??= this.bed
-      .getMetadata()
-      .then(metadata => {
-        this.setupReady = true
-        return metadata
-      })
-      .catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    return this.setupP
-  }
-
-  // Show "Downloading index" only while the index metadata is genuinely
-  // downloading. Once loaded, callers (every getFeatures on pan/zoom) await the
-  // cached promise silently rather than re-flashing the label.
-  async getMetadata(opts?: BaseOptions) {
-    const { statusCallback } = opts ?? {}
-    return this.setupReady
-      ? this.configure()
-      : updateStatus('Downloading index', statusCallback, () =>
-          this.configure(),
-        )
-  }
-
-  // Memoized: getFeatures needs the names on every query, and reading them goes
-  // to the file's leading blocks — a fetch and a decompress that was being
-  // repeated on every pan and zoom.
-  async getNames() {
-    this.namesP ??= this.readNames().catch((e: unknown) => {
-      this.namesP = undefined
-      throw e
-    })
-    return this.namesP
-  }
-
-  private async getParser() {
-    this.parserP ??= this.getNames()
-      .then(columnNames =>
-        makeParser({
-          autoSql: readConfObject(this.config, 'autoSql'),
-          columnNames,
-        }),
-      )
-      .catch((e: unknown) => {
-        this.parserP = undefined
-        throw e
-      })
-    return this.parserP
-  }
-
   private async readNames() {
     const columnNames: string[] = readConfObject(this.config, 'columnNames')
     if (columnNames.length) {
@@ -154,7 +116,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     return ObservableCreate<Feature>(async observer => {
       // warms the index under its own status label — getLines would otherwise
       // download it under "Downloading features"
-      await this.getMetadata()
+      await this.getMetadata(opts)
       const names = await this.getNames()
       const parser = await this.getParser()
       const scoreColumn = readConfObject(this.config, 'scoreColumn')

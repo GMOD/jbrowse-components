@@ -1,6 +1,9 @@
 import { BigBed } from '@gmod/bbi'
 import BED from '@gmod/bed'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   SimpleFeature,
   doesIntersect2,
@@ -24,26 +27,20 @@ import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterConfig> {
-  private cachedP?: Promise<{
-    bigbed: BigBed
-    header: Awaited<ReturnType<BigBed['getHeader']>>
-    parser: BED
-  }>
+  // `label` on cachedSetup so "Downloading header" shows only while the first
+  // fetch is in flight; every later getFeatures resolves from the memo with no
+  // re-flash.
+  public configure = cachedSetup({
+    label: 'Downloading header',
+    setup: opts => this.configurePre(opts),
+  })
 
   public async configurePre(opts?: BaseOptions) {
-    const { statusCallback } = opts ?? {}
     const pm = this.pluginManager
     const bigbed = new BigBed({
       filehandle: openLocation(this.getConf('bigBedLocation'), pm),
     })
-    // Status lives inside configurePre (the memoized part) so "Downloading
-    // header" flashes only on the genuine first fetch; every later getFeatures
-    // resolves from cachedP with no re-flash.
-    const header = await updateStatus(
-      'Downloading header',
-      statusCallback,
-      () => bigbed.getHeader(opts),
-    )
+    const header = await bigbed.getHeader(opts)
     const parser = new BED({
       autoSql: header.autoSql,
     })
@@ -52,14 +49,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
       header,
       parser,
     }
-  }
-
-  public async configure(opts?: BaseOptions) {
-    this.cachedP ??= this.configurePre(opts).catch((e: unknown) => {
-      this.cachedP = undefined
-      throw e
-    })
-    return this.cachedP
   }
 
   public async getRefNames(opts?: BaseOptions) {

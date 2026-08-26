@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
@@ -15,11 +18,8 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, IntervalTree, Region } from '@jbrowse/core/util'
 
 export default class BedpeAdapter extends BaseFeatureDataAdapter<BedpeAdapterConfig> {
-  protected bedpeFeatures?: Promise<{
-    header: string
-    feats1: Record<string, string[]>
-    feats2: Record<string, string[]>
-  }>
+  // No `label`: `fetchAndMaybeUnzip` narrates the download from inside.
+  private loadData = cachedSetup({ setup: opts => this.loadDataP(opts) })
 
   protected intervalTrees: Record<
     string,
@@ -59,15 +59,6 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter<BedpeAdapterCon
       feats1,
       feats2,
     }
-  }
-
-  private async loadData(opts: BaseOptions = {}) {
-    this.bedpeFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
-      this.bedpeFeatures = undefined
-      throw e
-    })
-
-    return this.bedpeFeatures
   }
 
   public async getRefNames(opts: BaseOptions = {}) {

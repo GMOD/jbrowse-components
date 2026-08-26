@@ -1,4 +1,5 @@
 import { TabixIndexedFile } from '@gmod/tabix'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
@@ -33,8 +34,6 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
  */
 export class PifFile {
   private tabix: TabixIndexedFile
-  private refSeqNamesP?: Promise<string[]>
-
   constructor(adapter: BaseFeatureDataAdapter) {
     const pm = adapter.pluginManager
     this.tabix = new TabixIndexedFile({
@@ -59,18 +58,11 @@ export class PifFile {
   /**
    * The tabix contig list, read once. Every seqid is a refName prefixed with its
    * tier letter (fine q/t, coarse Q/T); both `getRefNames` and the coarse-tier
-   * probe derive from this one fetch. A rejection clears the memo so the next
-   * caller retries rather than inheriting a permanent failure.
+   * probe derive from this one fetch.
    */
-  async refSeqNames(opts?: BaseOptions) {
-    this.refSeqNamesP ??= this.tabix
-      .getReferenceSequenceNames(opts)
-      .catch((e: unknown) => {
-        this.refSeqNamesP = undefined
-        throw e
-      })
-    return this.refSeqNamesP
-  }
+  refSeqNames = cachedSetup({
+    setup: opts => this.tabix.getReferenceSequenceNames(opts),
+  })
 
   /**
    * Whether make-pif emitted the coarse tier. It did if any seqid carries an

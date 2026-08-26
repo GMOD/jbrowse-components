@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   IntervalTree,
   SimpleFeature,
@@ -21,14 +24,18 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig> {
-  protected bedFeatures?: Promise<{
-    header: string
-    features: Record<string, string[]>
-  }>
+  // No `label`: `fetchAndMaybeUnzip` narrates the download from inside.
+  loadData = cachedSetup({ setup: opts => this.loadDataP(opts) })
 
   // the parser needs the column names, which come from the header, so it can
   // only be built once the file is loaded
-  private parserP?: Promise<BED>
+  private getParser = cachedSetup({
+    setup: async (): Promise<BED> =>
+      makeParser({
+        autoSql: this.getConf('autoSql'),
+        columnNames: await this.getNames(),
+      }),
+  })
 
   protected intervalTrees: Record<
     string,
@@ -43,15 +50,6 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
       opts,
     )
     return bucketBedLines(buffer, opts?.statusCallback)
-  }
-
-  async loadData(opts: BaseOptions = {}) {
-    this.bedFeatures ??= this.loadDataP(opts).catch((e: unknown) => {
-      this.bedFeatures = undefined
-      throw e
-    })
-
-    return this.bedFeatures
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -69,18 +67,6 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
       this.getConf('columnNames'),
       async () => (await this.loadData()).header,
     )
-  }
-
-  private async getParser() {
-    this.parserP ??= this.getNames()
-      .then(columnNames =>
-        makeParser({ autoSql: this.getConf('autoSql'), columnNames }),
-      )
-      .catch((e: unknown) => {
-        this.parserP = undefined
-        throw e
-      })
-    return this.parserP
   }
 
   private async loadFeatureIntervalTreeHelper(refName: string) {

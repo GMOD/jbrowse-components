@@ -1,4 +1,5 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, sum, withProgress } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { decodedRecordsBudget } from '@jbrowse/core/util/cacheBudgets'
@@ -126,23 +127,12 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
 
   private seqIdToOriginalRefName: string[] = []
 
-  private seqAdapterRefNamesP?: Promise<Set<string>>
-
-  private async getSeqAdapterRefNames() {
-    this.seqAdapterRefNamesP ??= this.getSequenceAdapter()
-      .then(async adapter => {
-        if (!adapter) {
-          return new Set<string>()
-        }
-        const refNames = await adapter.getRefNames()
-        return new Set(refNames)
-      })
-      .catch((e: unknown) => {
-        this.seqAdapterRefNamesP = undefined
-        throw e
-      })
-    return this.seqAdapterRefNamesP
-  }
+  private getSeqAdapterRefNames = cachedSetup({
+    setup: async () => {
+      const adapter = await this.getSequenceAdapter()
+      return new Set(adapter ? await adapter.getRefNames() : [])
+    },
+  })
 
   private async resolveSeqFetchRefName(seqId: number) {
     const originalName = this.refIdToOriginalName(seqId)

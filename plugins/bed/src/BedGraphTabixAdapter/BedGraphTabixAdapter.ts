@@ -1,6 +1,9 @@
 import { TabixIndexedFile } from '@gmod/tabix'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { downloadStatus } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
@@ -16,15 +19,13 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGraphTabixAdapterConfig> {
-  private configured?: Promise<{
-    bedGraph: TabixIndexedFile
-    header: string
-    columnNames: string[]
-  }>
-
-  // true once the index has finished downloading; gates the status label so
-  // pan/zoom re-entry into configure() doesn't re-flash "Downloading index"
-  private configureReady = false
+  // `label` because the index setup narrates nothing itself; the helper shows
+  // it only while the first attempt is in flight, so pan/zoom re-entry (every
+  // getFeatures/byte-estimate awaits it) doesn't re-flash "Downloading index"
+  protected configure = cachedSetup({
+    label: 'Downloading index',
+    setup: () => this.configurePre(),
+  })
 
   private async configurePre() {
     const pm = this.pluginManager
@@ -49,30 +50,6 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
       bedGraph,
       header,
     }
-  }
-
-  private async configureOnce() {
-    this.configured ??= this.configurePre()
-      .then(result => {
-        this.configureReady = true
-        return result
-      })
-      .catch((e: unknown) => {
-        this.configured = undefined
-        throw e
-      })
-    return this.configured
-  }
-
-  // Show "Downloading index" only while the index is genuinely downloading. Once
-  // configured, callers (every getFeatures/byte-estimate on pan/zoom) await the
-  // cached promise silently rather than re-flashing the label.
-  protected async configure(opts?: BaseOptions) {
-    return this.configureReady
-      ? this.configureOnce()
-      : updateStatus('Downloading index', opts?.statusCallback, () =>
-          this.configureOnce(),
-        )
   }
 
   async getNames() {

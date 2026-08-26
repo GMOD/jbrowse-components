@@ -1,10 +1,10 @@
 import {
   BaseFeatureDataAdapter,
+  cachedSetup,
   isSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * What every adapter feeding an AlignmentsTrack needs regardless of container
@@ -14,26 +14,20 @@ import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapte
 export abstract class BaseAlignmentsAdapter<
   CONF extends AnyConfigurationModel,
 > extends BaseFeatureDataAdapter<CONF> {
-  private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
-
   /**
    * The assembly's sequence adapter, when one is configured and actually serves
    * sequence — a ChromSizesAdapter is a legitimate assembly adapter with no
    * getSequence, and reading through it would throw rather than degrade to "no
    * reference available".
    */
-  async getSequenceAdapter() {
-    const config = this.sequenceAdapterConfig
-    if (config && this.getSubAdapter) {
-      this.sequenceAdapterP ??= this.getSubAdapter(config)
-        .then(({ dataAdapter }) =>
-          isSequenceAdapter(dataAdapter) ? dataAdapter : undefined,
-        )
-        .catch((e: unknown) => {
-          this.sequenceAdapterP = undefined
-          throw e
-        })
-    }
-    return this.sequenceAdapterP
-  }
+  getSequenceAdapter = cachedSetup({
+    setup: async () => {
+      const config = this.sequenceAdapterConfig
+      if (!config || !this.getSubAdapter) {
+        return undefined
+      }
+      const { dataAdapter } = await this.getSubAdapter(config)
+      return isSequenceAdapter(dataAdapter) ? dataAdapter : undefined
+    },
+  })
 }
