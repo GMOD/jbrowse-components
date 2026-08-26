@@ -426,7 +426,7 @@ export function groupByForMode(
 // keep up with. Takes the EFFECTIVE grouping (`groupByForMode`) — chain mode
 // degrades a per-read dimension to ungrouped without the slot moving.
 export function groupKeySpaceOf(groupBy: GroupBy | undefined) {
-  return groupBy ? `${groupBy.type} ${groupBy.tag ?? ''}` : ''
+  return groupBy ? `${groupBy.type}\0${groupBy.tag ?? ''}` : ''
 }
 
 // Dimensions as menu radio options, in the given order: the one join between the
