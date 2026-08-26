@@ -11,9 +11,10 @@ overview, **Display stacks**, and **Data fetching pipeline** first for how a
 display is composed and how data reaches the main thread. This doc picks up at
 the point where the model has data and needs to draw it.
 
-Everything here applies to displays that draw to a canvas. Arc — the one display
-class that paints JSX SVG on both the on-screen and export paths — composes none
-of it; see ARCHITECTURE.md §"Display stacks".
+Everything here applies to displays that draw to a canvas. A display that paints
+JSX SVG on both the on-screen and export paths composes none of it — the arc
+classes and `MultiWaySyntenyDisplay` today; see ARCHITECTURE.md
+§"Display stacks".
 
 ## Package layout
 
