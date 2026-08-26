@@ -301,9 +301,7 @@ Reconstruction reads split alignments and counts them, so what it recovers
 follows from what the aligner wrote and how many molecules crossed the event.
 The figures below come from scoring it at every junction two published somatic
 callsets report — COLO829 on ONT and C-GIAB's HG008-T on PacBio HiFi, 215
-junctions between them
-([SV_MULTIHOP.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SV_MULTIHOP.md)
-carries the run and the rest of its numbers).
+junctions between them, with the matched normals and random loci as controls.
 
 - **Long reads, from an aligner that emits SA tags** — minimap2 and ngmlr both
   do. A 100 bp Illumina library over the same breakpoints ranks each junction on
