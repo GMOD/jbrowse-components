@@ -1,14 +1,22 @@
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { addViewMenuItems } from '@jbrowse/core/pluggableElementTypes'
-import { launchTargetsMenuItem } from '@jbrowse/core/ui'
-import { getDialogHost } from '@jbrowse/core/util'
+import {
+  addDisplayMenuItems,
+  addViewMenuItems,
+} from '@jbrowse/core/pluggableElementTypes'
+import { LAUNCH_VIEW_LABEL, launchTargetsMenuItem } from '@jbrowse/core/ui'
+import {
+  getContainingTrack,
+  getContainingView,
+  getDialogHost,
+} from '@jbrowse/core/util'
 import NotesIcon from '@mui/icons-material/Notes'
 
 import type { ConsensusDisplay } from './ConsensusSequenceDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // plugin install() runs at startup, so a static import would put the dialog
 // (and the MUI Slider it uses) in the first-paint bundle
@@ -19,6 +27,11 @@ const ConsensusSequenceDialog = lazy(
 // "Get" is dropped along with the flat placement: under the rubberband menu's
 // "Launch" group the verb is already there.
 const CONSENSUS_LABEL = 'Consensus sequence'
+
+// The track menu's copy names the region it starts from, the way the synteny
+// launch's two entries do: the selection is what the rubberband entry has and
+// this one does not.
+const VISIBLE_LABEL = `${CONSENSUS_LABEL} (visible region)`
 
 // The dialog's own prop type plus the discriminator picking it out of a track's
 // displays, so what the dialog reads off a display is checked here rather than
@@ -80,5 +93,36 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
             }
           },
       }),
+  })
+
+  // The same dialog from the track menu, where a reader who has not already
+  // drawn a rubberband can find it: the entry above exists only inside a menu a
+  // selection opens, so it is reachable only by someone who knows it is there.
+  // The visible region seeds the dialog's own region field rather than fixing
+  // the call — the field is editable, and a window over the size guard opens
+  // saying so.
+  addDisplayMenuItems(pluginManager, 'LinearAlignmentsDisplay', {
+    menu: 'trackMenuItems',
+    group: LAUNCH_VIEW_LABEL,
+    items: self => ({
+      label: VISIBLE_LABEL,
+      icon: NotesIcon,
+      onClick: () => {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        // The VIEW, as the rubberband entry passes: the dialog's "Open as
+        // variant track" shows what it added in it, and a display has no
+        // `showTrack` to show it with.
+        getDialogHost(self).queueDialog(handleClose => [
+          ConsensusSequenceDialog,
+          {
+            model: view,
+            display: self,
+            trackName: `${getConf(getContainingTrack(self), 'name')}`,
+            regions: view.dynamicBlocks.contentBlocks,
+            handleClose,
+          },
+        ])
+      },
+    }),
   })
 }

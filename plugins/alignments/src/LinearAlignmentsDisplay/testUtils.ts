@@ -399,9 +399,17 @@ export function bootAlignmentsDisplay({
  * Hands back a `createDisplay` rather than a display, because those suites
  * build several independent ones against one registration, and the spy so a
  * case can read what the display asked for.
+ *
+ * `register` reaches `bootAlignmentsDisplay`'s, so a menu contribution can be
+ * installed against the same world — a track-menu item that reads the view's
+ * blocks needs the measured view this builds, not a bare model.
  */
-export function createRpcTestEnvironment() {
-  const { baseSession, mount } = bootAlignmentsDisplay()
+export function createRpcTestEnvironment({
+  register,
+}: {
+  register?: (pluginManager: PluginManager) => void
+} = {}) {
+  const { baseSession, mount } = bootAlignmentsDisplay({ register })
   const mockRpcCall = jest.fn()
   const asm = {
     initialized: true,
@@ -424,10 +432,19 @@ export function createRpcTestEnvironment() {
         isValidRefName: () => true,
       },
     }))
-    .actions(() => ({
+    .volatile(() => ({
+      // what `queueDialog` was handed, so a case can assert on the props a
+      // menu item opens its dialog with rather than only that it opened one
+      queuedDialogs: [] as Record<string, unknown>[],
+    }))
+    .actions(self => ({
       notify() {},
       notifyError() {},
-      queueDialog() {},
+      queueDialog(
+        cb: (close: () => void) => [unknown, Record<string, unknown>],
+      ) {
+        self.queuedDialogs.push(cb(() => {})[1])
+      },
     }))
 
   function createDisplay() {
