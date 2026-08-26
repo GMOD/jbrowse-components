@@ -148,7 +148,7 @@ useful for checking intron retention.
 **Sashimi arcs → Hide non-canonical junctions** drops every arc whose intron
 does not begin and end with GT-AG, GC-AG or AT-AC on either strand. At depth the
 thin arcs are mostly these alignment artefacts, and they are what **Sashimi arcs
-→ Filter by score** cannot remove without also removing a real junction
+→ Min read support** cannot remove without also removing a real junction
 supported by few reads.
 
 ## Loading your own RNA-seq data

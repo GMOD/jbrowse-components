@@ -1224,7 +1224,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Read connections → Arc / read cloud band options → Draw arcs below coverage band',
   ),
   minSashimiScore: numberField(n => ({
-    path: `${TRACK_MENU} → Sashimi arcs → Filter by score → ${n}`,
+    path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${n}`,
     note: 'Hides splice junctions supported by fewer reads than this.',
   })),
   maxHeight: numberField(n => ({

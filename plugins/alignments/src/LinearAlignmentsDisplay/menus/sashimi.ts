@@ -1,4 +1,4 @@
-import { makeSizeMenu } from '@jbrowse/core/ui'
+import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import {
   promotableRadioItems,
   promotableToggleItem,
@@ -39,8 +39,21 @@ interface SashimiModel {
 }
 
 // All sashimi (splice-junction arc) controls in one place. The labels,
-// placement, and score-filter options tune what's already drawn, so they're
-// revealed only when the arcs are on (never shown disabled).
+// placement, and filter options tune what's already drawn, so they're revealed
+// only when the arcs are on (never shown disabled).
+//
+// ARITY ORDERS THE REVEALED ROWS — the checkboxes, then the choice, then the
+// value — so the row shape changes once down the menu rather than flickering,
+// the rule the synteny and dotplot settings menus already follow. It puts the
+// two filters (the non-canonical toggle and the read-support floor) at opposite
+// ends of the menu on purpose: five rows do not earn the section headings that
+// would let subject group them, and a lone submenu between two checkboxes reads
+// as a mis-set row.
+//
+// The floor is a submenu holding its slider (`makeSizeSubMenu`) for the same
+// reason. Drawn inline it is a two-line block carrying a widget no other row
+// here has, which is fine where a menu has one of them and wrong beside four
+// rows of `label + [?] + (checkbox | chevron)`.
 export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
     promotableToggleItem({
@@ -61,6 +74,18 @@ export function getSashimiMenuItem(model: SashimiModel) {
             },
             pin: model.showSashimiLabelsDisplayTypeDefault,
           }),
+          promotableToggleItem({
+            label: 'Hide non-canonical junctions',
+            helpText:
+              'Drop junctions whose intron does not start and end with GT-AG, GC-AG or AT-AC on either strand, read off the reference sequence. On deep RNA-seq the thin arcs are mostly these alignment artefacts, which a read-count floor cannot separate from a real junction at low depth',
+            checked: model.hideNonCanonicalJunctions,
+            onToggle: () => {
+              model.setHideNonCanonicalJunctions(
+                !model.hideNonCanonicalJunctions,
+              )
+            },
+            pin: model.hideNonCanonicalJunctionsDisplayTypeDefault,
+          }),
           {
             label: 'Arc placement',
             type: 'subMenu' as const,
@@ -73,9 +98,10 @@ export function getSashimiMenuItem(model: SashimiModel) {
               mode => model.sashimiArcsModeDisplayTypeDefault(mode),
             ),
           },
-          makeSizeMenu({
-            label: 'Filter by score',
+          makeSizeSubMenu({
+            label: 'min read support',
             title: 'Min read support',
+            help: 'Drops a junction supported by fewer reads than this, whatever its splice motif. 1 keeps every junction.',
             // read support spans small integers to thousands on deep RNA-seq, so
             // log-scale. 1 already shows every arc (filter is `count >= min` and
             // a junction has at least one read); 0 would be a dead notch, since
@@ -93,18 +119,6 @@ export function getSashimiMenuItem(model: SashimiModel) {
             onReset: () => {
               model.setMinSashimiScore(DEFAULT_MIN_SASHIMI_SCORE)
             },
-          }),
-          promotableToggleItem({
-            label: 'Hide non-canonical junctions',
-            helpText:
-              'Drop junctions whose intron does not start and end with GT-AG, GC-AG or AT-AC on either strand, read off the reference sequence. On deep RNA-seq the thin arcs are mostly these alignment artefacts, which a read-count floor cannot separate from a real junction at low depth',
-            checked: model.hideNonCanonicalJunctions,
-            onToggle: () => {
-              model.setHideNonCanonicalJunctions(
-                !model.hideNonCanonicalJunctions,
-              )
-            },
-            pin: model.hideNonCanonicalJunctionsDisplayTypeDefault,
           }),
         ]
       : []),

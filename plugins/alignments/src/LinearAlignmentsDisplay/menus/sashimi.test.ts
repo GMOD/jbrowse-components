@@ -72,10 +72,40 @@ describe('sashimi menu', () => {
     expect(labels(model)).toEqual([
       'Show sashimi arcs',
       'Show labels',
-      'Arc placement',
-      'Filter by score',
       'Hide non-canonical junctions',
+      'Arc placement',
+      'Min read support',
     ])
+  })
+
+  // Arity orders the rows, so the row shape changes once down the menu rather
+  // than flickering — the rule the synteny and dotplot settings menus follow.
+  // Pinned as a shape run rather than by the label order above, which a sixth
+  // setting dropped in beside its subject would satisfy while breaking this.
+  test('every checkbox precedes every submenu', () => {
+    const model = makeModel()
+    model.showSashimiArcs = true
+    const shapes = getSashimiMenuItem(model).subMenu.map(i =>
+      'subMenu' in i ? 'submenu' : 'checkbox',
+    )
+    expect(shapes.lastIndexOf('checkbox')).toBeLessThan(
+      shapes.indexOf('submenu'),
+    )
+    expect(new Set(shapes)).toEqual(new Set(['checkbox', 'submenu']))
+  })
+
+  test('the read-support floor is a submenu holding its slider', () => {
+    const model = makeModel()
+    model.showSashimiArcs = true
+    const floor = getSashimiMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === 'Min read support',
+    )
+    if (!floor || !('subMenu' in floor)) {
+      throw new Error('no read-support submenu')
+    }
+    // the size row itself, which draws its own slider rather than reaching the
+    // menu's shared trailing column (ui/makeSizeMenu.tsx)
+    expect(floor.subMenu.map(i => 'type' in i && i.type)).toEqual(['custom'])
   })
 
   test('"Hide non-canonical junctions" toggles and carries a pin', () => {

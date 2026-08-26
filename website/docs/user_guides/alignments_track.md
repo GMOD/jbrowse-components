@@ -306,12 +306,13 @@ the assembly to have a sequence adapter; without one the motif stays unknown.
 The track menu's **Sashimi arcs** submenu controls them:
 
 - **Show labels** prints each junction's supporting-read count on its arc
-- **Arc placement** splits the arcs above/below the coverage row
-- **Filter by score** drops low-support junctions
 - **Hide non-canonical junctions** drops the junctions whose motif is none of
   the three canonical pairs. On deep RNA-seq the thin arcs are mostly these
   alignment artefacts, and a read-count floor cannot separate them from a real
   junction at low depth, so this is the filter to reach for first
+- **Arc placement** splits the arcs above/below the coverage row
+- **Min read support** drops the junctions carried by fewer reads than the
+  slider's value
 
 Turn the arcs off from the same submenu. See the
 [RNA-seq tutorial](/docs/tutorials/rnaseq) for a worked splice-junction example.
