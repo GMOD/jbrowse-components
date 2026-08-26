@@ -88,7 +88,10 @@ export function getSortByMenuItem(
   opts?: {
     noun?: string
     modes?: SortMode[]
-    disabled?: boolean
+    // Why an ordering can't take effect, or absent when it can — the gate is
+    // derived from it rather than passed alongside, so the menu cannot grey out
+    // without naming the switch that brings it back. LGVSyntenyDisplay passes
+    // nothing: its ordering is always live.
     disabledHelpText?: string
   },
 ) {
@@ -164,7 +167,7 @@ export function getSortByMenuItem(
     label: 'Sort by...',
     type: 'subMenu' as const,
     icon: SwapVertIcon,
-    disabled: opts?.disabled,
+    disabled: opts?.disabledHelpText !== undefined,
     disabledHelpText: opts?.disabledHelpText,
     subMenu: modes.map(m => items[m]),
   }

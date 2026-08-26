@@ -934,19 +934,37 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Why an explicit read ordering cannot take effect, or `undefined` when
+         * it can — one value carrying both the gate and the copy that names the
+         * switch, so a surface cannot grey a control out without saying which
+         * setting brings it back, and the two reasons cannot get out of step
+         * with the condition that produced them.
+         *
+         * There has to be a pileup to order, and chain layout is handed neither
+         * `sortedBy` nor `largeFeaturesFirst` (`buildLaidOutChainMap` takes
+         * neither) because its rows are chains, ordered by chain distance.
+         * Without this a chain-mode sort was a silent no-op, and the tag mode
+         * additionally refetched the region to extract `sortTagValues` (it is in
+         * `rpcProps`) that nothing reads.
+         */
+        get sortReadsBlockedReason(): string | undefined {
+          return self.isChainMode
+            ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
+            : self.showPileup
+              ? undefined
+              : 'Turn on "Show pileup" to sort reads'
+        },
+
+        /**
+         * #getter
          * Whether an explicit read ordering can take effect, and so whether the
-         * ordering controls are live: there has to be a pileup to order, and
-         * chain layout is handed neither `sortedBy` nor `largeFeaturesFirst`
-         * (`buildLaidOutChainMap` takes neither) because its rows are chains,
-         * ordered by chain distance. The sibling of `canCollapseGroupRows`, and
+         * ordering controls are live. The sibling of `canCollapseGroupRows`, and
          * read by both surfaces that can set an ordering — the track menu's
          * "Sort by..." and the context menu's position-anchored sorts — so the
-         * two can't answer it differently. Without it a chain-mode sort was a
-         * silent no-op, and the tag mode additionally refetched the region to
-         * extract `sortTagValues` (it is in `rpcProps`) that nothing reads.
+         * two can't answer it differently.
          */
         get canSortReads() {
-          return self.showPileup && !self.isChainMode
+          return this.sortReadsBlockedReason === undefined
         },
 
         /**
@@ -3901,13 +3919,11 @@ export default function stateModelFactory(
               },
               pin: (colorBy: ColorBy) => makePin(self, 'colorBy', colorBy),
             }),
-            // Both reasons an ordering can't take effect live in
-            // `canSortReads`; only the copy naming the one in force is here.
+            // The gate and the copy naming the switch are one value
+            // (`sortReadsBlockedReason`), so this cannot grey the menu out
+            // without saying what brings it back.
             getSortByMenuItem(self, {
-              disabled: !self.canSortReads,
-              disabledHelpText: self.isChainMode
-                ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
-                : 'Turn on "Show pileup" to sort reads',
+              disabledHelpText: self.sortReadsBlockedReason,
             }),
             ...getFiltersMenuItems(self, { readCategories: true }),
             getGroupByMenuItem(self),
