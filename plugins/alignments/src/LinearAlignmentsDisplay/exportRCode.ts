@@ -9,12 +9,12 @@ import {
   getTrackRMeta,
   rStr,
   safeVarName,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/RExportFragment'
 
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
-import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 
 interface AdapterConf {
   type?: string

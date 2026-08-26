@@ -3,10 +3,10 @@ import {
   getTrackRMeta,
   rStr,
   safeVarName,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/RExportFragment'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
-import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 
 interface AdapterConf {
   bigWigLocation?: { uri?: string }

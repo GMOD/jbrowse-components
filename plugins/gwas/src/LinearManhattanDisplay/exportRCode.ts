@@ -3,13 +3,13 @@ import {
   getTrackRMeta,
   rStr,
   safeVarName,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/RExportFragment'
 
 import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
 import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
 
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
-import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 
 interface AdapterConf {
   bedGzLocation?: { uri?: string }

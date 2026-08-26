@@ -1,4 +1,4 @@
-import { firstUri, rName, rStr, safeVarName } from './rexportShared.ts'
+import { firstUri, rName, rStr, safeVarName } from './RExportFragment.ts'
 
 describe('firstUri', () => {
   it('takes the first non-empty candidate', () => {

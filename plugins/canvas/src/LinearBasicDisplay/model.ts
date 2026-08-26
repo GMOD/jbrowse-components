@@ -36,11 +36,9 @@ import type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,
 } from './configSchema.ts'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  LegendItem,
-  RTrackFragment,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export type { Region } from '@jbrowse/core/util'
 

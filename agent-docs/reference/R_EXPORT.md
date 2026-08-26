@@ -189,11 +189,17 @@ separately.
 
 ## Next steps (prioritized)
 
+Checked against the tree after the rebase onto main. Two of the four were
+already implemented and are struck through; strike an item when you close it,
+rather than leaving the next reader to re-derive which ones are still real.
+
 - **Bisulfite / 5mC-5hmC methylation.** `bam_modifications` handles MM/ML modBAM
   but not reference-dependent bisulfite C→T (no MM tag), the 5mC/5hmC
   winner-take-all collapse, or `shownModifications`/`hiddenModifications` per-type
   filtering (all types currently render).
-- **Gene-label declutter** (avoid a `ggrepel` dep; maybe only label top-level).
+- ~~**Gene-label declutter**~~ — done, and without a `ggrepel` dep:
+  `label_room.R` is the R counterpart of JBrowse's `fitWidth` decimation, and
+  drops a name where it would collide with the next on the same packed row.
 - **Phased-HP PS hue.** Phased genotype export flattens phase-set (`PS`) coloring
   to the flat mfa/secondary color instead of a per-phase-set hue.
 - **Multi-wiggle pos/neg bicolor split** isn't reproduced (signed data colors by

@@ -36,12 +36,10 @@ import type {
   HicRenderingBackend,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  LinearGenomeViewModel,
-  RTrackFragment,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /**
