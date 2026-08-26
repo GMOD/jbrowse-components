@@ -5,10 +5,11 @@ The static review portal the
 links to: Tiberius predictions on chr22 read against GENCODE 47, one card per
 model that disagrees, each with a JBrowse capture and a link back into the app.
 
-Two objects are deployed. `config.json` is here and is the copy to deploy from.
-`index.html` is generated and is **not** checked in, because it carries its
-captures inline and runs to about 1.1 MB; regenerate it with the command below
-and deploy it with `DEPLOY_DEMO_ALLOW_UNTRACKED=1`.
+Three objects are deployed. `config.json` is here and is the copy to deploy
+from; `portal.png` is a screenshot of the finished page, for linking from a PR
+or an issue. `index.html` is generated and is **not** checked in, because it
+carries its captures inline and runs to about 1.1 MB; regenerate it with the
+command below and deploy it with `DEPLOY_DEMO_ALLOW_UNTRACKED=1`.
 
 ```bash
 node demo/tiberius-portal/bin/make-portal.mjs \
@@ -25,6 +26,7 @@ node demo/tiberius-portal/bin/make-portal.mjs \
 
 scripts/deploy-demo.sh demos/tiberius_review/config.json tiberius_review/config.json
 DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh /tmp/tiberius_review/index.html tiberius_review/index.html
+DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh portal.png tiberius_review/portal.png
 ```
 
 **No data is hosted here.** Every URI in the config points at files that were

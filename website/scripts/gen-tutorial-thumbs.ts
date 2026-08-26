@@ -132,6 +132,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.28, 1],
     position: 'left',
   },
+  gene_prediction_review: {
+    // Both annotation lanes past the app header: the Tiberius model running
+    // unbroken over the two GENCODE genes is the whole card, and it only reads
+    // with the reference lane under it.
+    src: 'gene_prediction_merge.png',
+    band: [0.3, 0.85],
+    // Keeps the two track names, which are what say which lane is which.
+    position: 'left',
+  },
   rnaseq: {
     // sashimi arcs over the junction reads
     src: 'rnaseq/basic.png',
