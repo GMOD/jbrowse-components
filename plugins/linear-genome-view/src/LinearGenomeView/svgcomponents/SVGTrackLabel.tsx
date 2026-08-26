@@ -33,27 +33,22 @@ function labelPosition({
   textHeight: number
   fontSize: number
   x: number
-}) {
-  return trackLabels === 'left'
-    ? {
-        x: trackLabelOffset - TRACK_LABEL_GAP,
-        y: insetLabelBaselineY(fontSize),
-        textAnchor: 'end' as const,
-      }
-    : trackLabels === 'offset'
-      ? {
-          x,
-          y: offsetLabelBaselineY(textHeight, fontSize),
-          // left-aligned is the SVG default; omit rather than spend bytes on it
-          textAnchor: undefined,
-        }
-      : {
-          // inset over the track body, on a baseline far enough down that the
-          // ascenders stay inside it (at y=0 they rose into the track above)
-          x: x + 5,
-          y: insetLabelBaselineY(fontSize),
-          textAnchor: undefined,
-        }
+}): { x: number; y: number; textAnchor?: 'end' } {
+  if (trackLabels === 'left') {
+    return {
+      x: trackLabelOffset - TRACK_LABEL_GAP,
+      y: insetLabelBaselineY(fontSize),
+      textAnchor: 'end',
+    }
+  }
+  // the other two are left-aligned, which is the SVG default, so neither emits
+  // a textAnchor at all
+  if (trackLabels === 'offset') {
+    return { x, y: offsetLabelBaselineY(textHeight, fontSize) }
+  }
+  // inset over the track body, on a baseline far enough down that the ascenders
+  // stay inside it (at y=0 they rose into the track above)
+  return { x: x + 5, y: insetLabelBaselineY(fontSize) }
 }
 
 export default function SVGTrackLabel({
@@ -73,6 +68,9 @@ export default function SVGTrackLabel({
   x: number
 }) {
   const theme = useTheme()
+  if (trackLabels === 'none') {
+    return null
+  }
   const pos = labelPosition({
     trackLabels,
     trackLabelOffset,
@@ -80,7 +78,7 @@ export default function SVGTrackLabel({
     fontSize,
     x,
   })
-  return trackLabels !== 'none' ? (
+  return (
     <text
       x={pos.x}
       y={pos.y}
@@ -90,5 +88,5 @@ export default function SVGTrackLabel({
     >
       {trackName}
     </text>
-  ) : null
+  )
 }

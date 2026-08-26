@@ -342,6 +342,28 @@ test('a highlight band does not move when the view pans', async () => {
   expect(band()).toBe(before)
 })
 
+// The other half of freezing the highlight layer: frozen and stale is no better
+// than live and misaligned, so a band added under a drawn figure has to make it
+// a new figure. It is in `figureKey` for that, and a highlight is the one thing
+// in a figure a reader adds without navigating anywhere.
+test('adding a highlight redraws the figure', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { svg } = await renderFigure(view)
+  const band = () => svg().querySelector('[fill-opacity]')
+  expect(band()).toBeNull()
+
+  await act(async () => {
+    view.setHighlight([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 1000, end: 2000 },
+    ])
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(band()).toBeTruthy()
+  })
+})
+
 test('a display with no renderSvg is named, not drawn, and reserves no height', async () => {
   const both = await renderFigure(
     makeView([

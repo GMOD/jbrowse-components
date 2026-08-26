@@ -35,5 +35,4 @@ export interface ExportSvgOptions {
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   theme?: ThemeOptions
   legendWidth?: number
-  createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }

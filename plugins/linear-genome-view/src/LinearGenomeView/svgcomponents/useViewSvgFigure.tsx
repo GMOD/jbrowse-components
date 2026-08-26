@@ -49,7 +49,11 @@ import type React from 'react'
 //   React render they get. Re-render the figure between snapshots and the ruler
 //   slides while the features stay put — two clocks, reading as a rendering bug.
 //   An export cannot hit it, because `wrapSvgExport` renders the whole document
-//   in one synchronous pass.
+//   in one synchronous pass. The `memo` below is what holds it, and it holds
+//   only against a render arriving from above: nothing inside the figure may be
+//   an `observer`, which re-renders itself on a subscription no memo is between.
+//   That is why the highlight layer is not one, and it is the one rule a plugin
+//   contributing to `LinearGenomeView-HighlightSVGComponent` has to keep too.
 // - **the geometry.** The header band, the label gutter, the legend gutter and
 //   the 50px `exportMargin` are all the caller's to reserve, and getting the
 //   last one wrong clips a wiggle's y-axis labels, which are drawn left of zero.
@@ -106,29 +110,26 @@ export interface ViewSvgFigureResult {
   isLoading: boolean
 }
 
-interface FigureSnapshot {
+type ResolvedOptions = Required<Omit<ViewSvgFigureOptions, 'themeName'>> & {
+  themeName: string | undefined
+}
+
+// The options the figure was drawn under, plus everything derived from them.
+// Extending rather than re-listing the options: every one of them is read again
+// when the figure renders, and a snapshot that spelled its own copy of the list
+// is a second place for one to go missing.
+interface FigureSnapshot extends ResolvedOptions {
   displayResults: SvgDisplayResult[]
   theme: ThemeOptions | undefined
   width: number
   height: number
   bandHeight: number
-  contentTop: number
   tracksHeight: number
   legendWidth: number
   trackLabelOffset: number
   textHeight: number
-  fontSize: number
-  rulerHeight: number
-  trackLabels: TrackLabelMode
-  showGridlines: boolean
-  showScalebar: boolean
-  margin: number
   locstring: string
   skipped: string[]
-}
-
-type ResolvedOptions = Required<Omit<ViewSvgFigureOptions, 'themeName'>> & {
-  themeName: string | undefined
 }
 
 /**
@@ -146,23 +147,20 @@ async function renderFigure(
   view: LinearGenomeViewModel,
   opts: ResolvedOptions,
 ): Promise<FigureSnapshot> {
-  const {
-    fontSize,
-    rulerHeight,
-    trackLabels,
-    showGridlines,
-    showScalebar,
-    rasterizeLayers,
-    margin,
-    themeName,
-  } = opts
+  const { fontSize, rulerHeight, trackLabels, rasterizeLayers, showScalebar } =
+    opts
   const session = getSession(view)
-  const theme = session.getActiveThemeOptions?.(themeName)
+  const theme = session.getActiveThemeOptions?.(opts.themeName)
   const textHeight = defaultTextHeight(fontSize)
   const { tracks, displayResults, tracksHeight, legendWidth, skippedTracks } =
     await renderViewTracks({
       view,
-      opts: { fontSize, trackLabels, rasterizeLayers, themeName },
+      opts: {
+        fontSize,
+        trackLabels,
+        rasterizeLayers,
+        themeName: opts.themeName,
+      },
       theme,
       textHeight,
       trackLabels,
@@ -181,22 +179,16 @@ async function renderFigure(
     session,
   })
   return {
+    ...opts,
     displayResults,
     theme,
-    width: view.width + margin * 2 + legendWidth + trackLabelOffset,
-    height: bandHeight + rulerHeight + tracksHeight + margin,
+    width: view.width + opts.margin * 2 + legendWidth + trackLabelOffset,
+    height: bandHeight + rulerHeight + tracksHeight + opts.margin,
     bandHeight,
-    contentTop: rulerHeight,
     tracksHeight,
     legendWidth,
     trackLabelOffset,
     textHeight,
-    fontSize,
-    rulerHeight,
-    trackLabels,
-    showGridlines,
-    showScalebar,
-    margin,
     locstring: view.visibleLocStrings,
     skipped: skippedTracks.map(track => svgTrackName(track, session)),
   }
@@ -269,7 +261,9 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
               textHeight={snapshot.textHeight}
               trackLabels={snapshot.trackLabels}
               trackLabelOffset={snapshot.trackLabelOffset}
-              contentTop={snapshot.contentTop}
+              // the row header is exactly the ruler, so the bodies start at its
+              // height
+              contentTop={snapshot.rulerHeight}
               tracksHeight={snapshot.tracksHeight}
               showGridlines={snapshot.showGridlines}
               // the left gutter the per-track clip may bleed into, so content
@@ -300,8 +294,16 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  * figure then draws a header over nothing, and nothing else ever changes to
  * correct it); **their heights and minimized flags**, since the geometry is
  * derived from them; **the width**, since a resize can widen the canvas without
- * moving the locus; and **the theme**, since each display bakes colors into its
- * own bodies, so a figure from the other mode is not stale but unreadable.
+ * moving the locus; **the theme**, since each display bakes colors into its own
+ * bodies, so a figure from the other mode is not stale but unreadable; and **the
+ * highlight bands**, which are drawn in the figure and are the one thing in it a
+ * reader adds without navigating anywhere.
+ *
+ * A plugin's own overlay (grid-bookmark's bookmarks, through
+ * `LinearGenomeView-HighlightSVGComponent`) is state this cannot see, so a
+ * bookmark added under a drawn figure shows up at its next redraw rather than at
+ * once. Subscribing from inside the figure is the thing that must not happen —
+ * see the note at the top of the file.
  */
 function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
   // `view.width` throws by design before the view has been measured, and
@@ -321,6 +323,8 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
       track.displays[0]?.height,
     ]),
     session.getActiveThemeOptions?.(themeName),
+    session.highlightsVisible ? view.highlight : false,
+    view.labelsVisible,
   ])
 }
 
@@ -362,11 +366,11 @@ function useFigureKey(
  * screen — so a figure costs no requests.
  *
  * `useFetch` under it, which is what discards a redraw that lands after the pan
- * that overtook it, and what makes a theme change *clear* the figure while a pan
- * only replaces it: a key change drops the stale data, where a refetch under the
- * same key would leave it up. Both are right. A figure the reader panned away
- * from is still a legible picture of somewhere; one baked in the other mode is
- * light-grey feature labels on a white page.
+ * that overtook it. Every change of key clears its data, a pan as much as a
+ * theme switch, so `figure` goes undefined for as long as the next one takes to
+ * build — which is what `width`/`height` holding the last figure's box is for:
+ * the reservation keeps its size while the content is away, instead of
+ * collapsing and walking the page.
  */
 export function useViewSvgFigure(
   view: LinearGenomeViewModel,

@@ -93,14 +93,18 @@ export async function renderViewTracks<T extends SvgExportTrack>({
   // a legend, so its displays float theirs over the plot instead.
   reserveLegendWidth?: boolean
 }): Promise<ViewTracksSvg<T>> {
-  const visible = [...view.pinnedTracks, ...view.unpinnedTracks].filter(
-    t => !t.minimized,
-  )
   // Partitioned before anything is measured, so a skipped track reserves no
   // height and takes no place in the label gutter — the alternative is a figure
-  // with a labelled empty band where the track would have been.
-  const tracks = visible.filter(t => t.displays[0]?.renderSvg)
-  const skippedTracks = visible.filter(t => !t.displays[0]?.renderSvg)
+  // with a labelled empty band where the track would have been. One pass, so
+  // the test for "can this render" is written once and the two lists cannot
+  // disagree about a track.
+  const tracks: T[] = []
+  const skippedTracks: T[] = []
+  for (const track of [...view.pinnedTracks, ...view.unpinnedTracks]) {
+    if (!track.minimized) {
+      ;(track.displays[0]?.renderSvg ? tracks : skippedTracks).push(track)
+    }
+  }
   const legendWidth = reserveLegendWidth
     ? max(
         tracks.map(track => track.displays[0]!.svgLegendWidth?.() ?? 0),

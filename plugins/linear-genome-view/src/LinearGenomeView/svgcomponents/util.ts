@@ -45,9 +45,12 @@ export function gridlineTickXs(model: {
   gridlineTicks: { major: boolean; x: number }[]
 }) {
   const dx = model.staticBlocksTranslateX
-  const xs = (wantMajor: boolean) =>
-    model.gridlineTicks.filter(t => t.major === wantMajor).map(t => dx + t.x)
-  return { dx, major: xs(true), minor: xs(false) }
+  const major: number[] = []
+  const minor: number[] = []
+  for (const tick of model.gridlineTicks) {
+    ;(tick.major ? major : minor).push(dx + tick.x)
+  }
+  return { dx, major, minor }
 }
 
 // `d` for a run of vertical tick lines, collapsed into one <path> rather than a
@@ -285,7 +288,9 @@ export function trackLabelLeftOffset({
   fontFamily?: string
   session: TrackCatalog
 }) {
-  return trackLabels === 'left'
+  // no labels means no gutter, and that includes having no tracks to label: the
+  // gap alone would push the whole figure right of a margin nothing is drawn in
+  return trackLabels === 'left' && tracks.length > 0
     ? max(
         tracks.map(t =>
           measureText(svgTrackName(t, session), fontSize, fontFamily),

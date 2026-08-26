@@ -48,9 +48,9 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   // owns the two orderings this used to spell out by hand: legendWidth before
   // the awaits, tracksHeight after them. Every display's `renderSvg` owns its
-  // own readiness wait — block renderers await their byte estimate inside
-  // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout inside
-  // their own `renderSvg` implementations.
+  // own readiness wait — an LGV display through `renderDisplaySvg`'s
+  // `awaitSvgReady`, a non-LGV one (dotplot, synteny, circular) by calling that
+  // itself.
   const { tracks, displayResults, tracksHeight, legendWidth, skippedTracks } =
     await renderViewTracks({
       view: model,
