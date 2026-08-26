@@ -12,7 +12,6 @@ color
 colorDomain
 connectedView
 displayMode
-filterBy
 followSynteny
 growMaxHeight
 height

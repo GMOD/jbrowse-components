@@ -542,12 +542,57 @@ test('clear appears only when a read/tag filter is active and keeps flags', () =
   })
   const filter = findSubMenu(run(model), 'Filter')
   filter.find(i => i.label === 'Clear read/tag filters')!.onClick()
-  expect(model.filterCalls).toEqual([{ flagInclude: 0, flagExclude: 1540 }])
+  expect(model.filterCalls).toEqual([
+    {
+      flagInclude: 0,
+      flagExclude: 1540,
+      readName: undefined,
+      tagFilters: undefined,
+    },
+  ])
+})
+
+// The row names two filters and undoes two. It cleared by rebuilding filterBy
+// from the masks, which was the same thing until every read category moved in
+// there — after which this row silently cleared four filters it did not set and
+// does not name. "Clear all filters" in the track menu is the one that clears
+// everything.
+test('clear leaves the read categories alone', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+    filterBy: {
+      flagInclude: 0,
+      flagExclude: 1540,
+      readName: 'readABC',
+      properPairs: 'exclude',
+      split: 'only',
+    },
+  })
+  findSubMenu(run(model), 'Filter')
+    .find(i => i.label === 'Clear read/tag filters')!
+    .onClick()
+  expect(model.filterCalls[0]).toMatchObject({
+    properPairs: 'exclude',
+    split: 'only',
+    readName: undefined,
+  })
 })
 
 test('no clear item without an active read/tag filter', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
+  })
+  const filter = findSubMenu(run(model), 'Filter')
+  expect(filter.map(i => i.label)).not.toContain('Clear read/tag filters')
+})
+
+// A category on its own is not a read/tag filter, so it does not raise a row
+// offering to clear one — it has its own "All reads" radio, and the track
+// menu's group clear.
+test('a read category alone offers no clear item', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+    filterBy: { flagInclude: 0, flagExclude: 1540, spliced: 'only' },
   })
   const filter = findSubMenu(run(model), 'Filter')
   expect(filter.map(i => i.label)).not.toContain('Clear read/tag filters')

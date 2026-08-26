@@ -115,7 +115,7 @@ const MULTIHOP_GENE_HEIGHT = 70
 // since neither of the run's size reports can see an overflow INSIDE a track.
 //
 // The review's other idea, filtering to split reads by grouping on the SA tag,
-// is already what `showOnlySplitAlignments` does one line down, and it is why
+// is already what `filterBy: { split: 'only' }` does one line down, and it is why
 // the set is 250 rows rather than 600x of coverage.
 const SPLIT_READS = { featureHeight: 4 }
 
@@ -290,7 +290,7 @@ export const cancerSvVideoFixtures = {
 // on left" is. The window is the fix, not a setting: at 5 kb both ends of every
 // connector are in frame, the curves converge on the junction, and the chr10
 // landing site reads as the 199 bp island it is. Reducing the read count first
-// (`showOnlySplitAlignments` below) halved the comb and did not remove it -- it
+// (`split: 'only'` below) halved the comb and did not remove it -- it
 // is geometry, not density.
 //
 // The derivative pane stays at 380 bp, and widening it to match was tried and
@@ -383,11 +383,11 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
     // panel is tall, so a connector leaving a row the pileup drew BELOW the
     // visible band still gets drawn, and a couple of hundred of them at 2px
     // spacing come out as two diagonal ladders running off both edges with no
-    // read at either end. `showOnlySplitAlignments` keeps the reads the
+    // read at either end. `split: 'only'` keeps the reads the
     // aligner emitted a supplementary segment for -- the chimeric evidence
     // this pane exists to show -- and every connector then starts and ends on
     // a row a reader can see.
-    showOnlySplitAlignments: true,
+    filterBy: { split: 'only' },
     // 2px rows, not the 1px SUPER_COMPACT the other cancer_sv pileups take: at
     // 1px a read is a hairline and the rows fuse into a grey slab with white
     // streaks where the pack happens to leave a gap, which reads as a rendering
@@ -456,7 +456,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       }),
       // 5 kb a panel. A wider window means more reads stack, which is what
       // kept this at 380 bp before -- the answer to that is
-      // `showOnlySplitAlignments` above rather than a narrower frame, and the
+      // `split: 'only'` above rather than a narrower frame, and the
       // split subset fits the panel at 2 px a row.
       // The connections rather than a delay -- the overlay publishes
       // `<trackId>-loaded` only once a read has matches on BOTH panels, which
@@ -1146,7 +1146,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // every read stops at a junction and its remainder is
                 // somewhere else in the row, or in another window of it.
                 //
-                // `showOnlySplitAlignments`, so this is the SAME SUBSET as the
+                // `split: 'only'`, so this is the SAME SUBSET as the
                 // lane below rather than the whole 200x tumour pileup: the
                 // reads the aligner emitted a supplementary segment for are
                 // the chimeric molecules the allele is reconstructed from.
@@ -1170,7 +1170,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
-                  showOnlySplitAlignments: true,
+                  filterBy: { split: 'only' },
                   linkedReads: 'normal',
                   // CURVED CONNECTORS (reviewer: "i am not seeing 'beziers'
                   // connecting the reads in the first row like i expected").
@@ -1570,7 +1570,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
-                  showOnlySplitAlignments: true,
+                  filterBy: { split: 'only' },
                   linkedReads: 'normal',
                   // curved connectors, same reviewer note and same reason as the
                   // sibling lane on derivative_synteny: chain mode alone leaves
@@ -1636,7 +1636,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   showLegend: true,
                   // A BAND OVER THE SPLIT SUBSET, which is what this lane is
                   // and what the band therefore has to be read as.
-                  // `showOnlySplitAlignments` filters in the worker
+                  // `split: 'only'` filters in the worker
                   // (`filterChainFeatures`), before partitioning and therefore
                   // before `runCoveragePipeline`, so the depth here counts only
                   // the chimeric reads drawn under it and is NOT tumour
@@ -2256,7 +2256,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           coverageHeight: 150,
           // a read whose chr9 alignment has a chr22 supplementary IS the
           // fusion's support, so every remaining row crosses the junction
-          showOnlySplitAlignments: true,
+          filterBy: { split: 'only' },
           linkedReads: 'normal',
           // THE LEGEND, WHICH IS THE ANSWER TO "unclear why the reads are
           // red/pink on the left but not on the right" (review). The colours
@@ -2472,7 +2472,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // so the pileup is nowhere near this ceiling.
           growMaxHeight: 2400,
           coverageHeight: 190,
-          showOnlySplitAlignments: true,
+          filterBy: { split: 'only' },
           // one row per molecule across both regions -- see the note above
           linkedReads: 'normal',
           // No longer load-bearing for the chr22<->chr9 fan, and kept only so

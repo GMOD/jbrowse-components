@@ -232,9 +232,13 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       })
     }
   }
+  // Undoes the two rows above and nothing else. It used to rebuild `filterBy`
+  // from the masks alone, which was the same thing while those were the only
+  // other fields — now that every read category lives there too, dropping them
+  // would clear four filters this row does not name and did not set. The track
+  // menu's "Clear all filters" is the one that clears everything.
   const hasReadOrTagFilter =
     self.filterBy.readName !== undefined ||
-    self.filterBy.spliced !== undefined ||
     (self.filterBy.tagFilters?.length ?? 0) > 0
   if (hasReadOrTagFilter) {
     sub.push({
@@ -242,8 +246,9 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       icon: FilterAltOffIcon,
       onClick: () => {
         self.setFilterBy({
-          flagInclude: self.filterBy.flagInclude,
-          flagExclude: self.filterBy.flagExclude,
+          ...self.filterBy,
+          readName: undefined,
+          tagFilters: undefined,
         })
       },
     })

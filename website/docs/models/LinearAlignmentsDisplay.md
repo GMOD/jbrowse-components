@@ -147,13 +147,10 @@ the whole surface.
 | <span id="getter-coveragesnpminfrequency">**coverageSnpMinFrequency**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
-| <span id="getter-drawsingletons">**drawSingletons**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
-| <span id="getter-drawproperpairs">**drawProperPairs**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
-| <span id="getter-showonlysplitalignments">**showOnlySplitAlignments**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-flipstrandlongreadchains">**flipStrandLongReadChains**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-colorsupplementarychains">**colorSupplementaryChains**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-drawinter">**drawInter**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
-| <span id="getter-drawproperpairarcs">**drawProperPairArcs**</span><br><code>boolean</code> | Whether ordinary concordant pairs get an arc. Same definition of concordant as `drawProperPairs`, which hides the reads themselves — see `isConcordantPairRead`. | LinearAlignmentsDisplay |
+| <span id="getter-drawproperpairarcs">**drawProperPairArcs**</span><br><code>boolean</code> | Whether ordinary concordant pairs get an arc. Same definition of concordant as `filterBy.properPairs`, which hides the reads themselves — see `isConcordantPairRead`. | LinearAlignmentsDisplay |
 | <span id="getter-mininterchromsupport">**minInterchromSupport**</span><br><code>number</code> | Reads a translocation must gather, within one fragment length on both sides, before its connector ticks are drawn. See `clusteredInterchromSupport` — the count is over a window because a mate-pair breakpoint is not localized to a base. | LinearAlignmentsDisplay |
 | <span id="getter-drawlongrange">**drawLongRange**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-arccolorbytype">**arcColorByType**</span><br><code>"insertSize" &#124; "insertSizeAndOrientation" &#124; "orientation"</code> |  | LinearAlignmentsDisplay |
@@ -437,9 +434,6 @@ the whole surface.
 | <span id="action-setdrawlongrange">**setDrawLongRange**</span><br><code>(draw: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setarccolorbytype">**setArcColorByType**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(type: "insertSize" &#124; "insertSizeAndOrientation" &#124; "orientation…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(type: "insertSize" &#124; "insertSizeAndOrientation" &#124; "orientation") =&gt; void</code></pre></dialog></span> |  | LinearAlignmentsDisplay |
 | <span id="action-setshowmismatches">**setShowMismatches**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
-| <span id="action-setdrawsingletons">**setDrawSingletons**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
-| <span id="action-setdrawproperpairs">**setDrawProperPairs**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
-| <span id="action-setshowonlysplitalignments">**setShowOnlySplitAlignments**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setflipstrandlongreadchains">**setFlipStrandLongReadChains**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setcolorsupplementarychains">**setColorSupplementaryChains**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |

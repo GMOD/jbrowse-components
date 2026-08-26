@@ -54,20 +54,22 @@ const useStyles = makeStyles()(theme => ({
     gap: theme.spacing(1),
     alignItems: 'center',
   },
-  // Label column takes the slack; the three radio columns are only as wide as
-  // their headings, so the radios line up in a scannable stack.
-  categoryGrid: {
+  // `auto` for the label column and `justifyContent: start`, NOT `1fr`: a
+  // fraction hands it every spare pixel of the dialog, which put ~450px of
+  // whitespace between "read paired" and the box that answers for it — the
+  // wide-table problem, where the eye loses the row on the way across. Sizing
+  // to the longest label keeps each row readable as one line.
+  grid: {
     display: 'grid',
-    gridTemplateColumns: '1fr repeat(3, auto)',
     alignItems: 'center',
+    justifyContent: 'start',
     columnGap: theme.spacing(2),
   },
-  // Same shape, two columns: one row per flag rather than the flag list twice.
+  categoryGrid: {
+    gridTemplateColumns: 'auto repeat(3, auto)',
+  },
   flagGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr repeat(2, auto)',
-    alignItems: 'center',
-    columnGap: theme.spacing(2),
+    gridTemplateColumns: 'auto repeat(2, auto)',
   },
   heading: {
     textAlign: 'center',
@@ -127,7 +129,7 @@ function FlagFilterSection(props: {
   setFlagInclude: (arg: number) => void
   setFlagExclude: (arg: number) => void
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const { flagInclude, flagExclude, setFlagInclude, setFlagExclude } = props
   const atDefault =
     flagInclude === defaultFilterFlags.flagInclude &&
@@ -168,7 +170,7 @@ function FlagFilterSection(props: {
             setFlag={setFlagExclude}
           />
         </div>
-        <div className={classes.flagGrid}>
+        <div className={cx(classes.grid, classes.flagGrid)}>
           <span />
           <Typography variant="caption" className={classes.heading}>
             Require
@@ -222,12 +224,12 @@ function ReadCategorySection(props: {
   categories: Record<ReadCategoryKey, ReadCategoryChoice>
   setCategory: (key: ReadCategoryKey, choice: ReadCategoryChoice) => void
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const { categories, setCategory } = props
   return (
     <Paper className={classes.paper} variant="outlined">
       <Typography>Read categories</Typography>
-      <div className={classes.categoryGrid}>
+      <div className={cx(classes.grid, classes.categoryGrid)}>
         <span />
         {CHOICES.map(({ heading }) => (
           <Typography

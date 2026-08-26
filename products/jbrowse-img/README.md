@@ -656,14 +656,23 @@ Reads & coloring:
 
 Which reads are drawn. These filter before the coverage pipeline as well as
 before layout, so a filter that removes reads removes them from the coverage
-band too:
+band too.
 
-| Modifier                  | Example             | Description                                                                                                     |
-| ------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `flags:include:exclude`   | `flags:2:1540`      | SAM flag masks, `samtools -f` then `-F`. Either half may be empty to keep the default (include 0, exclude 1540) |
-| `filterTag:TAG:value`     | `filterTag:HP:1`    | Keep only reads whose tag has this value. Repeatable, and every one must pass                                   |
-| `properPairs:true\|false` | `properPairs:false` | Draw properly-paired reads. Off leaves the discordant and split chains, which is an SV view                     |
-| `splitOnly:true\|false`   | `splitOnly`         | Only reads that are part of a split/chimeric alignment (SAM flag 0x800)                                         |
+The last four name a read category and take one vocabulary: `only` keeps that
+category, `exclude` drops it, and omitting the modifier leaves it alone. They
+are AND-ed with each other and with the masks above, so the SV export — the
+split reads of the pairs the aligner did not call concordant — is
+`properPairs:exclude split:only`. Passing `all` is accepted and stores nothing,
+which lets a script pass a category through from a variable that may be empty.
+
+| Modifier                    | Example               | Description                                                                                                                               |
+| --------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `flags:include:exclude`     | `flags:2:1540`        | SAM flag masks, `samtools -f` then `-F`. Either half may be empty to keep the default (include 0, exclude 1540)                           |
+| `filterTag:TAG:value`       | `filterTag:HP:1`      | Keep only reads whose tag has this value. Repeatable, and every one must pass                                                             |
+| `properPairs:only\|exclude` | `properPairs:exclude` | Concordant pairs — flagged proper (0x2) AND in FR orientation. Excluding them leaves the discordant and split chains, which is an SV view |
+| `split:only\|exclude`       | `split:only`          | Reads the aligner gave a supplementary segment (SAM flag 0x800), read off the SA tag                                                      |
+| `singletons:only\|exclude`  | `singletons:exclude`  | Reads whose mate and supplementary segments are all outside the window                                                                    |
+| `spliced:only\|exclude`     | `spliced:only`        | Reads whose CIGAR carries a reference skip (N) — an intron, in RNA-seq                                                                    |
 
 Overlays & subtracks:
 

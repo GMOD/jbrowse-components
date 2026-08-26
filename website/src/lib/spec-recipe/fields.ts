@@ -1,5 +1,6 @@
 import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
+import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readCategoryFilters.ts'
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
 import {
   STRAND_COLOR_JEXL,
@@ -703,6 +704,38 @@ const checkbox = (label: string, note?: string): FieldRecipe => {
       : undefined
 }
 
+// `filterBy` carries every read filter, and only the read categories have a
+// click path worth writing: the flag masks and tag filters are typed into the
+// dialog rather than picked off a menu, so a figure setting one of those gets
+// the row that opens the dialog and stops there.
+//
+// Every label comes off `READ_CATEGORIES`, which is what the menu builds its
+// rows from, so a renamed category cannot leave figures naming a row that is
+// gone — the "imported, cannot drift" guarantee the color-scheme table above
+// has.
+const readCategoryPath: FieldRecipe = value => {
+  const filter = asRecord(value)
+  if (!filter) {
+    return undefined
+  }
+  const steps = READ_CATEGORIES.flatMap(({ key, noun, only, exclude }) => {
+    const choice = asString(filter[key])
+    return choice === 'only'
+      ? [`${noun} → ${only}`]
+      : choice === 'exclude'
+        ? [`${noun} → ${exclude}`]
+        : []
+  })
+  return steps.length > 0
+    ? {
+        path: steps
+          .map(step => `${TRACK_MENU} → Filter by... → ${step}`)
+          .join(', then '),
+        note: 'A read filter drops reads in the worker before layout, so it thins the coverage histogram along with the pileup.',
+      }
+    : { path: `${TRACK_MENU} → Filter by... → Edit filters...` }
+}
+
 const fromTable = (
   label: string,
   table: Record<string, string>,
@@ -1167,17 +1200,11 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Show soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
-  // Both live on the alignments display but in different submenus: the curve is
-  // a rendering choice (menus/readConnections.ts), the filter a read-set one
-  // (menus/reads.ts, inside the same "Show..." submenu as soft clipping).
   showBezierConnections: checkbox(
     'Read connections → Use curved connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
-  showOnlySplitAlignments: checkbox(
-    'Show... → Show only split alignments',
-    'Keeps only reads the aligner gave a supplementary segment (SAM flag 0x800), so what is left is the breakpoint evidence rather than the pileup it sits in.',
-  ),
+  filterBy: readCategoryPath,
   // Sits directly under "Show coverage" in the alignments "Show..." submenu
   // (menus/reads.ts). Unchecking it leaves the coverage band alone, which is
   // what a figure comparing depth across samples wants: at whole-gene zoom a

@@ -156,12 +156,12 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-20 registered displays declare 188 config slots, 41 MST properties and 57 volatiles between them — counting what each display's own directory declares.
+20 registered displays declare 185 config slots, 41 MST properties and 57 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
 | --- | --- | --- | --- | --- |
-| `LinearAlignmentsDisplay` | `plugins/alignments` | 49 | 2 | 17 |
+| `LinearAlignmentsDisplay` | `plugins/alignments` | 46 | 2 | 17 |
 | `LinearBasicDisplay` | `plugins/canvas` | 26 | 8 | 13 |
 | `LinearMafDisplay` | `plugins/maf` | 18 | 2 | 8 |
 | `LDDisplay` | `plugins/variants` | 17 | 1 | 2 |

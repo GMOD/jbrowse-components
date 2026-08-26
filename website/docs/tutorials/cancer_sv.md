@@ -466,8 +466,9 @@ this view uses three regions, the _BCR_ donor and two acceptor windows.
 A read that crosses the junction is one alignment on chr22 and a supplementary
 alignment on chr9. **Read connections → Use curved connectors** draws a curve
 between the two, and with both partners displayed those curves cross from one
-region into the other. **Show... → Show only split alignments** then drops every
-read that stays on one chromosome, so the pileup is the fusion's own support.
+region into the other. **Filter by... → Split alignments → Only split
+alignments** then drops every read that stays on one chromosome, so the pileup
+is the fusion's own support.
 
 Near-identical curves stack into one line, so a curve per molecule cannot show
 how many molecules agree on a junction. **Read connections → Show read arcs**

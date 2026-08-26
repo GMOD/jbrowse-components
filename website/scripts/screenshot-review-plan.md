@@ -459,9 +459,9 @@ tolerance ball for "did this figure move".
   pair is never an arc — it drops a tick at each endpoint, `compute.ts`
   `if (p1Ref !== p2Ref)`, so a segdup at 30x draws a picket fence) and
   `drawLongRange: false` (otherwise a mate's RECORDED position outside the
-  window still gets an arc). Neither `drawProperPairs` nor a jexl insert-size
-  filter is available as a third: both run before the COVERAGE pipeline, so they
-  take the curve with them.
+  window still gets an arc). Neither `properPairs: 'exclude'` nor a jexl
+  insert-size filter is available as a third: both run before the COVERAGE
+  pipeline, so they take the curve with them.
 - **The nested-bubble trap** (pggb/Minigraph-Cactus variant tracks): both emit
   top-level bubble records thousands of bp wide alongside the decomposed SNPs,
   one alt allele per sample. A single such record paints kilobases of flat solid

@@ -3161,18 +3161,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "drawSingletons",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "drawProperPairs",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "showOnlySplitAlignments",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "flipStrandLongReadChains",
           "type": "(JexlString | boolean)"
         },
@@ -3476,18 +3464,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showInterbaseIndicators",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "drawSingletons",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "drawProperPairs",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "showOnlySplitAlignments",
           "type": "(JexlString | boolean)"
         },
         {
