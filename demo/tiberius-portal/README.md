@@ -42,6 +42,16 @@ whole deployment. Verdicts live in the reviewer's browser (`localStorage`);
 `bgzip`, `tabix` and `samtools` on PATH (htslib + samtools), plus the `jbrowse`
 CLI for `--with-app`. Captures run `products/jbrowse-capture` from this repo.
 
+## Outside the monorepo
+
+The same pipeline ships on its own as
+[cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal),
+which is where to send someone who wants to run it against their own prediction
+without cloning JBrowse. The two trees differ only in how they find the capture
+tool — a sibling product here, the `@jbrowse/capture` dependency there — so a
+change to `lib/` or `bin/` belongs in both. Once `@jbrowse/capture` is published
+this copy can go, and the tutorial can name `npx gene-review-portal` instead.
+
 ## How a model gets flagged
 
 | class              | test                                                                          | annotator action        |

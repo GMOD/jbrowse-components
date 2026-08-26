@@ -116,6 +116,11 @@ Everything it writes is a file: the page, a JBrowse config naming the data, one
 PNG per candidate, and with `--with-app` a copy of JBrowse. Copying the
 directory to a web server is the whole deployment.
 
+The command above runs from a JBrowse checkout. The same pipeline also stands on
+its own at
+[cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal),
+which is the one to clone to point it at your own prediction.
+
 Adding `--rnaseq reads.bam` puts an alignment track under every model, in the
 captures and in the links both, which is what settles a novel locus that no
 reference gene supports: exons with reads across them are a candidate gene, and
