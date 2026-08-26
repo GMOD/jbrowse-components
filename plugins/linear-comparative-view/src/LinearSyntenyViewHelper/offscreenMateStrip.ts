@@ -87,13 +87,17 @@ function laneData(
   model: OffscreenMateSource,
   display: OffscreenMateSource['linearSyntenyDisplays'][number],
   side: OffscreenMateSide,
-): (OffscreenMateDataset | undefined)[] {
+): OffscreenMateDataset[] {
   const { featureData, culledRibbonMates } = display
-  return side === 'top'
-    ? [featureData?.offscreenMates, culledRibbonMates?.onQueryAxis]
-    : model.parentView.bidirectionalFetch
-      ? [featureData?.targetOffscreenMates, culledRibbonMates?.onTargetAxis]
-      : []
+  const lanes =
+    side === 'top'
+      ? [featureData?.offscreenMates, culledRibbonMates?.onQueryAxis]
+      : model.parentView.bidirectionalFetch
+        ? [featureData?.targetOffscreenMates, culledRibbonMates?.onTargetAxis]
+        : []
+  // A lane the fetch has not produced yet is absent rather than empty, and both
+  // readers wanted the same thing from it — dropped here so neither restates it
+  return lanes.filter(lane => lane !== undefined)
 }
 
 // Nothing this dataset holds can be off the facing axis, so the strip need not
@@ -127,7 +131,7 @@ function lane(
   const out: OffscreenMateDataset[] = []
   for (const display of model.linearSyntenyDisplays) {
     for (const data of laneData(model, display, side)) {
-      if (data && data.starts.length > 0 && mayHide(data, band)) {
+      if (data.starts.length > 0 && mayHide(data, band)) {
         out.push(data)
       }
     }
@@ -321,8 +325,8 @@ export function offscreenMateCount(
   let total = 0
   for (const display of model.linearSyntenyDisplays) {
     for (const data of laneData(model, display, side)) {
-      const id = data?.mateRefNameDict.indexOf(refName) ?? -1
-      if (data && id >= 0) {
+      const id = data.mateRefNameDict.indexOf(refName)
+      if (id >= 0) {
         total += data.counts[id] ?? 0
       }
     }
