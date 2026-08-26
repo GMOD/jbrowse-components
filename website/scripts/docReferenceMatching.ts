@@ -182,8 +182,14 @@ export function normalizeHeading(s: string) {
 //
 // The lead runs to its closing `**` and the rest of the line is the paragraph it
 // opens, so only the heading half is anchored at the end.
-const HEADING = /^#{1,6}\s+(.*?)\s*#*\s*$/
-const BOLD_LEAD = /^\s*(?:[-*+]\s+)?\*\*(.+?)\*\*/
+//
+// A lead may run past its own line — agent-docs is hand-wrapped at 80 columns
+// and a lead of more than a dozen words wraps like anything else — so the bold
+// span crosses newlines. It is bounded rather than open-ended because an
+// unbalanced `**` would otherwise swallow the rest of the file and answer to
+// every citation in it; a name longer than this is not one anybody quotes.
+const HEADING = /^#{1,6}[ \t]+(.*?)[ \t]*#*[ \t]*$/gm
+const BOLD_LEAD = /^[ \t]*(?:[-*+][ \t]+)?\*\*([\s\S]{1,200}?)\*\*/gm
 
 /**
  * Every piece of a doc a citation may name, normalized.
@@ -196,12 +202,18 @@ const BOLD_LEAD = /^\s*(?:[-*+]\s+)?\*\*(.+?)\*\*/
  * heading. Seven live citations resolved the moment the lead-ins joined.
  *
  * Matching is by PREFIX at the call site, so a citation may quote a stable
- * opening of a longer target and drop a trailing period.
+ * opening of a longer target and drop a trailing period. It has to quote from
+ * the START of one: a phrase lifted out of the middle of a lead is not a name,
+ * and the two that did were both citations of something the doc had stopped
+ * saying anyway.
  */
 export function citableTargets(text: string) {
-  return text
-    .split('\n')
-    .map(l => HEADING.exec(l)?.[1] ?? BOLD_LEAD.exec(l)?.[1])
-    .filter(t => t !== undefined)
-    .map(normalizeHeading)
+  const targets: string[] = []
+  for (const re of [HEADING, BOLD_LEAD]) {
+    re.lastIndex = 0
+    for (const m of text.matchAll(re)) {
+      targets.push(normalizeHeading(m[1]!))
+    }
+  }
+  return targets
 }

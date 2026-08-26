@@ -253,6 +253,19 @@ describe('citableTargets', () => {
     ).toEqual(['give an element an extendstype'])
   })
 
+  // agent-docs is hand-wrapped at 80 columns, so a lead of more than a dozen
+  // words wraps like any other sentence and the bold span crosses a newline.
+  test('takes a bolded lead that wraps, as one name', () => {
+    expect(
+      citableTargets('**A lead long enough\nto wrap.** Then the paragraph.'),
+    ).toEqual(['a lead long enough to wrap.'])
+  })
+
+  // An unbalanced `**` would otherwise answer to every citation after it.
+  test('does not run an unclosed bold past its bound', () => {
+    expect(citableTargets(`**unclosed ${'x'.repeat(400)}`)).toEqual([])
+  })
+
   test('ignores bold in the middle of a sentence', () => {
     expect(citableTargets('the rule is **load-bearing** here')).toEqual([])
   })
