@@ -443,14 +443,22 @@ export const rexportSpecs: RExportSpec[] = [
     },
   }),
 
-  // `qc/callsets_at_smn` (three SV callsets at SMN) is deliberately NOT here.
-  // It exports correctly now — the BigBed reader and the label-room rule both
-  // came out of trying it — but the figure is unusable: DGV alone packs 1009
-  // overlapping records into 61 rows across that 2.5 Mb window, and a feature
-  // panel gets a fixed height weight however many rows it packs, so all 61 are
-  // squeezed into ~2 inches. The browser has a scrollable track and a fit
-  // ladder; the R panel would need its height weighted by the row count it
-  // discovers at draw time. Worth doing, and then this figure is worth adding.
+  // `qc/callsets_at_smn` was the candidate here and both halves of the reason it
+  // was parked have since expired, in opposite directions.
+  //
+  // The stated blocker — a feature panel taking a fixed height weight however
+  // many rows it packs, so DGV's 61 rows at SMN landed in ~2 inches — is gone:
+  // `heightWeightExpr` weights the panel by the row count R discovers at draw
+  // time (`exportRCode.ts`, and see the note beside `heights` in exportR.ts).
+  // 61 rows now asks for ~30 inches, inside ggsave's 50-inch ceiling.
+  //
+  // The source spec is what went away instead. `specs/qc.ts` deleted it on
+  // review ("this is not a good figure ... furthermore this should just be
+  // combined") and folded its long-read lane into the island figure; DGV stayed
+  // out because packed it was eight rows of boxes wall to wall with no record
+  // as the subject. So there is nothing to derive a command from, and the
+  // figure it would publish is one a reviewer already rejected. Don't restore
+  // it to un-park this.
 
   // A biallelic CNV: copy number over the SV calls and the genes.
   //
