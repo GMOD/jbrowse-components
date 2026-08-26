@@ -1,5 +1,6 @@
 import { applyDisplayOpts } from './applyTrackOpts.ts'
 
+import type { FilterBySnapshot } from './applyTrackOpts.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // `filterBy` is the one modifier target that is EDITED rather than stated, so it
@@ -8,9 +9,13 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // the display through its own action instead, and composes with what the track's
 // config already said.
 
-function fakeView(configured: Record<string, unknown> = {}) {
+function fakeView(configured: FilterBySnapshot = {}) {
   const display = {
-    filterBy: { flagInclude: 0, flagExclude: 1540, ...configured },
+    filterBy: {
+      flagInclude: 0,
+      flagExclude: 1540,
+      ...configured,
+    } as FilterBySnapshot,
     setFilterBy(f: unknown) {
       this.filterBy = f as typeof this.filterBy
     },
