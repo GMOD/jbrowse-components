@@ -1973,30 +1973,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #getter
-         * Max right-edge pixel position for each displayedRegionIndex, derived
-         * from staticBlocks geometry. staticBlocks caches a stable reference
-         * when only offsetPx changes, so this getter is also stable during
-         * normal scroll — avoiding a Map rebuild every frame.
-         * Used by ScalebarRefNameLabels to clip chromosome name labels.
-         */
-        get scalebarRegionEndPx() {
-          const m = new Map<number, number>()
-          for (const block of this.staticBlocks.blocks) {
-            if (
-              block.type === 'ContentBlock' &&
-              block.displayedRegionIndex !== undefined
-            ) {
-              const endPx = block.offsetPx + block.widthPx
-              const cur = m.get(block.displayedRegionIndex)
-              if (cur === undefined || endPx > cur) {
-                m.set(block.displayedRegionIndex, endPx)
-              }
-            }
-          }
-          return m
-        },
-        /**
-         * #getter
          * The x shift that maps the **staticBlocks frame** onto the viewport:
          * `translateX(view.staticBlocksTranslateX)` on one container places
          * every `gridlineTicks`, `scalebarLabels` and `paddingSpans` entry at
@@ -2114,25 +2090,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * The bold refName labels drawn along the scalebar, as plain data:
-         * `{key, refName, displayedRegionIndex, transform, maxWidth,
-         * paddingLeft, text}` each. One per run of same-refName regions, plus a
-         * "sticky" one pinned to the viewport's left edge naming the refName
-         * under it, so panning into a chromosome does not scroll its own name
-         * off the screen.
+         * `{key, refName, displayedRegionIndex, lastDisplayedRegionIndex,
+         * sticky, transform, maxWidth, paddingLeft, text}` each. One per run of
+         * same-refName regions, plus a "sticky" one pinned to the viewport's
+         * left edge naming the refName under it, so panning into a chromosome
+         * does not scroll its own name off the screen.
          *
          * Three rules live in here that a host drawing region names will
          * otherwise rediscover the hard way, and two of them are invisible until
          * the data is awkward:
          *
-         * - the sticky label rides the rightmost block that has scrolled off the
+         * - the sticky label rides the rightmost run that has scrolled off the
          *   left, not the region's first block — that one is gone from
          *   staticBlocks entirely once you zoom into a region's interior, taking
          *   the chromosome name off screen at exactly the zoom where nothing
          *   else names it.
          * - adjacent regions of the same refName (collapsed introns) get one
-         *   label between them, not one each.
+         *   label between them, not one each. That label names the whole run and
+         *   is fitted to the whole run, and `displayedRegionIndex` /
+         *   `lastDisplayedRegionIndex` bracket what it stands for.
          * - a name is drawn whole or not at all, measured against the space its
-         *   region leaves. Clipped to its own width, `chr16` reads as `chr1` —
+         *   run leaves. Clipped to its own width, `chr16` reads as `chr1` —
          *   a different chromosome rather than a shortened name, which is why
          *   this is a fit test rather than an ellipsis.
          *
@@ -2153,7 +2131,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return getScalebarRefNameLabels({
             blocks: this.staticBlocks.blocks,
             offsetPx: self.offsetPx,
-            regionEndPx: this.scalebarRegionEndPx,
             prefix: self.scalebarDisplayPrefix,
           })
         },

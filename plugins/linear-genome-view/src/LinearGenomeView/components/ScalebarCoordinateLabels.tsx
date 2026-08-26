@@ -1,7 +1,11 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { TICK_LABEL_FONT_SIZE } from '../util.ts'
+import {
+  TICK_LABEL_FONT_SIZE,
+  refNameLabelSpanPx,
+  tickLabelWidth,
+} from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -51,6 +55,18 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
   // ZoomTransform: these children are text, and a fractional offset blurs it.
   const offsetLeft = Math.round(staticBlocksTranslateX)
 
+  // `runRefNameLabelPx` keeps the numbers out from under a refName label at its
+  // run's left edge, in this frame, which is what lets scalebarLabels stay
+  // stable across a scroll. It cannot reach the label pinned to the VIEWPORT's
+  // left edge, whose x is a function of the scroll — and that one is drawn over
+  // a run whose own left edge is off screen, so nothing reserved for it. The
+  // number underneath came out with its leading digits painted over: "22,000"
+  // showing as ",000" reads as a coordinate, just not the right one. Hide it
+  // instead, the same call the run-start reservation makes, and hide rather
+  // than drop so the node count this list pools stays put.
+  const sticky = model.scalebarRefNameLabels.labels.find(l => l.sticky)
+  const stickySpan = sticky ? refNameLabelSpanPx(sticky) : undefined
+
   return (
     <div
       className={classes.container}
@@ -69,16 +85,27 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
       was the largest single source of DOM churn during interaction. These are
       stateless text nodes, so position is a safe identity.
       reference/INTERACTION_PERF.md has the measurement. */}
-      {scalebarLabels.map(({ x, label }, i) => (
-        <div
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by label is what the pooling above removes
-          key={i}
-          className={classes.tick}
-          style={{ transform: `translateX(${x}px)` }}
-        >
-          <div className={classes.tickLabel}>{label}</div>
-        </div>
-      ))}
+      {scalebarLabels.map(({ x, label }, i) => {
+        const halfWidth = tickLabelWidth(label) / 2
+        const centerPx = offsetLeft - 1 + x
+        const hidden =
+          stickySpan !== undefined &&
+          centerPx - halfWidth < stickySpan.right &&
+          centerPx + halfWidth > stickySpan.left
+        return (
+          <div
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by label is what the pooling above removes
+            key={i}
+            className={classes.tick}
+            style={{
+              transform: `translateX(${x}px)`,
+              visibility: hidden ? 'hidden' : undefined,
+            }}
+          >
+            <div className={classes.tickLabel}>{label}</div>
+          </div>
+        )
+      })}
     </div>
   )
 })

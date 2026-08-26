@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, assembleLocStrings } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -23,6 +23,7 @@ interface MenuState {
   anchorEl: HTMLElement
   refName: string
   displayedRegionIndex: number
+  lastDisplayedRegionIndex: number
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -43,13 +44,18 @@ const useStyles = makeStyles()(theme => ({
     lineHeight: 'normal',
     zIndex: 1,
     background: theme.palette.background.paper,
-    cursor: 'pointer',
     // clip, not hidden: transform/maxWidth are patched on every scroll-zoom
     // frame, and `hidden` would make each label its own scroll container —
     // scrollable-overflow bookkeeping and scroll anchoring per label per frame,
     // for a box that never scrolls. clip is a paint-time rect instead
     overflow: 'clip',
     whiteSpace: 'nowrap',
+  },
+  // only a refName label opens a menu. The assembly-name chip beside it is a
+  // caption, and wearing the pointer and the hover tint made it look like the
+  // one thing on the row that does nothing when clicked
+  clickable: {
+    cursor: 'pointer',
     '&:hover': {
       // action.hover is a mode-aware translucent overlay; the old hardcoded
       // grey[300] stayed light in dark mode, washing out the light label text
@@ -78,9 +84,16 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 
   return (
     <>
-      {labels.map(label => (
+      {/* Keyed by POSITION, not by the run's key, which makes this list a pool:
+      a zoom changes every block key at once, so keying by it tore down and
+      rebuilt every label each frame of a zoom gesture rather than repositioning
+      and relabelling it. Same reasoning, and the same measurement, as the tick
+      numbers next door — see ScalebarCoordinateLabels. These are stateless
+      spans, so position is a safe identity. */}
+      {labels.map((label, i) => (
         <RefLabel
-          key={label.key}
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by the run makes the list churn on zoom
+          key={i}
           model={model}
           label={label}
           onOpenMenu={state => {
@@ -127,10 +140,11 @@ function RefLabel({
   label: ScalebarRefNameLabel
   onOpenMenu: (state: MenuState) => void
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const {
     refName,
     displayedRegionIndex,
+    lastDisplayedRegionIndex,
     transform,
     maxWidth,
     paddingLeft,
@@ -138,7 +152,7 @@ function RefLabel({
   } = label
   return (
     <span
-      className={classes.refLabel}
+      className={cx(classes.refLabel, classes.clickable)}
       style={{
         transform: `translateX(${transform}px)`,
         paddingLeft,
@@ -151,7 +165,12 @@ function RefLabel({
       onClick={e => {
         model.setScalebarRefNameClickPending(false)
         model.setIsScalebarRefNameMenuOpen(true)
-        onOpenMenu({ anchorEl: e.currentTarget, refName, displayedRegionIndex })
+        onOpenMenu({
+          anchorEl: e.currentTarget,
+          refName,
+          displayedRegionIndex,
+          lastDisplayedRegionIndex,
+        })
       }}
     >
       {text}
@@ -169,16 +188,25 @@ const RefNameMenu = observer(function RefNameMenu({
   onClose: () => void
 }) {
   const { displayedRegions } = model
-  const { refName, displayedRegionIndex: idx } = menuState
+  const {
+    refName,
+    displayedRegionIndex: idx,
+    lastDisplayedRegionIndex: lastIdx,
+  } = menuState
   const numRegions = displayedRegions.length
-  const { canMoveLeft, canMoveRight, canMoveFarLeft, canMoveFarRight } =
-    regionMoveActions(idx, numRegions)
-  const moves = [
-    { show: canMoveLeft, label: 'Move left', to: idx - 1 },
-    { show: canMoveRight, label: 'Move right', to: idx + 1 },
-    { show: canMoveFarLeft, label: 'Move to far left', to: 0 },
-    { show: canMoveFarRight, label: 'Move to far right', to: numRegions - 1 },
-  ]
+  const labeled = displayedRegions.slice(idx, lastIdx + 1)
+  // A label naming several regions is the collapsed-intron case: adjacent
+  // regions sharing a refName get one label between them. Reverse/move/remove
+  // are per-region and this label names no particular one — it used to act on
+  // whichever region the label happened to ride, which for the pinned label
+  // changed as you scrolled — so a run offers only the two items that mean the
+  // whole run.
+  const oneRegion = idx === lastIdx
+  // one region keeps its `{assembly}` qualifier; a run drops the qualifier the
+  // regions all share, as the view header does for the same list
+  const locString = oneRegion
+    ? assembleLocString(displayedRegions[idx]!)
+    : assembleLocStrings(labeled)
 
   return (
     <Menu
@@ -193,15 +221,14 @@ const RefNameMenu = observer(function RefNameMenu({
         {
           label: `Focus on ${refName}`,
           // moveTo by index, not navTo by refName: navTo resolves to the FIRST
-          // region carrying the name, so on a duplicated refName (collapsed
-          // introns, a chromosome displayed twice) clicking the third chr1 label
-          // jumped to the first. Every other item in this menu is already
-          // idx-based.
+          // region carrying the name, so on a duplicated refName (a chromosome
+          // displayed twice) clicking the third chr1 label jumped to the first.
+          // Every other item in this menu is already idx-based.
           onClick: () => {
-            const region = displayedRegions[idx]!
+            const last = displayedRegions[lastIdx]!
             model.moveTo(
               { index: idx, offset: 0 },
-              { index: idx, offset: region.end - region.start },
+              { index: lastIdx, offset: last.end - last.start },
             )
           },
         },
@@ -217,50 +244,50 @@ const RefNameMenu = observer(function RefNameMenu({
             {
               label: 'Region',
               onClick: () => {
-                void copyText(
-                  model,
-                  assembleLocString(displayedRegions[idx]!),
-                  'region',
-                )
+                void copyText(model, locString, 'region')
               },
             },
           ],
         },
-        {
-          label: 'Actions',
-          subMenu: [
-            {
-              label: 'Reverse region',
-              onClick: () => {
-                model.setDisplayedRegions(
-                  withRegionReversed(displayedRegions, idx),
-                )
-              },
-            },
-            ...moves
-              .filter(m => m.show)
-              .map(({ label, to }) => ({
-                label,
-                onClick: () => {
-                  model.setDisplayedRegions(
-                    withRegionMoved(displayedRegions, idx, to),
-                  )
-                },
-              })),
-            ...(numRegions > 1
-              ? [
+        ...(oneRegion
+          ? [
+              {
+                label: 'Actions',
+                subMenu: [
                   {
-                    label: 'Remove this region from view',
+                    label: 'Reverse region',
                     onClick: () => {
                       model.setDisplayedRegions(
-                        withRegionRemoved(displayedRegions, idx),
+                        withRegionReversed(displayedRegions, idx),
                       )
                     },
                   },
-                ]
-              : []),
-          ],
-        },
+                  ...regionMoveActions(idx, numRegions).map(
+                    ({ label, to }) => ({
+                      label,
+                      onClick: () => {
+                        model.setDisplayedRegions(
+                          withRegionMoved(displayedRegions, idx, to),
+                        )
+                      },
+                    }),
+                  ),
+                  ...(numRegions > 1
+                    ? [
+                        {
+                          label: 'Remove this region from view',
+                          onClick: () => {
+                            model.setDisplayedRegions(
+                              withRegionRemoved(displayedRegions, idx),
+                            )
+                          },
+                        },
+                      ]
+                    : []),
+                ],
+              },
+            ]
+          : []),
       ]}
     />
   )

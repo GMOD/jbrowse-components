@@ -96,14 +96,13 @@ function SVGRefNameLabels({ model }: { model: LGV }) {
   const { labels } = getScalebarRefNameLabels({
     blocks: model.staticBlocks.blocks,
     offsetPx: model.offsetPx,
-    regionEndPx: model.scalebarRegionEndPx,
     prefix: undefined,
   })
   return (
     <>
-      {/* a label is fitted to its region, which usually runs past the right
-      edge of the view, so drop the ones SVGRuler's clip would cut — as the
-      tick numbers at that same edge are dropped rather than half-drawn */}
+      {/* a label is fitted to its run of regions, which usually runs past the
+      right edge of the view, so drop the ones SVGRuler's clip would cut — as
+      the tick numbers at that same edge are dropped rather than half-drawn */}
       {labels
         .filter(label => refNameLabelFitsInView(label, model.width))
         .map(label => (
@@ -118,9 +117,9 @@ function SVGRefNameLabels({ model }: { model: LGV }) {
   )
 }
 
-// One refName label, clipped to the pixels left before its region ends so a
-// long name can't run past the region it belongs to — the vector counterpart of
-// the on-screen label's maxWidth + overflow:clip. The clip rect spans the whole
+// One refName label, clipped to the pixels left before its run of regions ends
+// so a long name can't run past what it names — the vector counterpart of the
+// on-screen label's maxWidth + overflow:clip. The clip rect spans the whole
 // label box from its left edge, paddingLeft included, which is the box-sizing
 // the on-screen span states for the same reason.
 function SVGRefNameLabel({

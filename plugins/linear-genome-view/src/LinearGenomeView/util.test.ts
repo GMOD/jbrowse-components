@@ -9,7 +9,6 @@ import {
   makeOverviewTicks,
   makeTicks,
   regionMoveActions,
-  stickyBlockIndex,
   tickLabelWidth,
   withRegionMoved,
   withRegionRemoved,
@@ -404,26 +403,19 @@ function refBlock({
   }
 }
 
-// map of displayedRegionIndex -> right-edge px (offsetPx + widthPx)
-function regionEnds(blocks: BaseBlock[]) {
-  const m = new Map<number, number>()
-  for (const b of blocks) {
-    if (b.type === 'ContentBlock' && b.displayedRegionIndex !== undefined) {
-      m.set(
-        b.displayedRegionIndex,
-        Math.max(m.get(b.displayedRegionIndex) ?? 0, b.offsetPx + b.widthPx),
-      )
-    }
-  }
-  return m
-}
+describe('the sticky label picks its run', () => {
+  const stickyLabel = (blocks: BaseBlock[], offsetPx: number) =>
+    getScalebarRefNameLabels({
+      blocks,
+      offsetPx,
+      prefix: undefined,
+    }).labels.find(l => l.sticky)
 
-describe('stickyBlockIndex', () => {
-  test('no content blocks yields -1', () => {
-    expect(stickyBlockIndex([], 0)).toBe(-1)
+  test('no content blocks yields no labels', () => {
+    expect(stickyLabel([], 0)).toBeUndefined()
   })
 
-  test('nothing scrolled off left falls back to first content block', () => {
+  test('nothing scrolled off the left pins the first run', () => {
     const blocks = [
       refBlock({
         key: 'a',
@@ -431,6 +423,7 @@ describe('stickyBlockIndex', () => {
         displayedRegionIndex: 0,
         offsetPx: 0,
         widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
       }),
       refBlock({
         key: 'b',
@@ -440,34 +433,21 @@ describe('stickyBlockIndex', () => {
         widthPx: 800,
       }),
     ]
-    expect(stickyBlockIndex(blocks, 0)).toBe(0)
+    expect(stickyLabel(blocks, 0)!.key).toBe('a')
   })
 
-  test('picks rightmost block whose left edge is off the left of the viewport', () => {
-    const blocks = [
+  test('picks the rightmost run whose left edge is off the left of the viewport', () => {
+    const blocks = ['c1', 'c2', 'c3'].map((refName, i) =>
       refBlock({
-        key: 'a',
-        refName: 'c1',
-        displayedRegionIndex: 0,
-        offsetPx: 0,
+        key: refName,
+        refName,
+        displayedRegionIndex: i,
+        offsetPx: i * 800,
         widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
       }),
-      refBlock({
-        key: 'b',
-        refName: 'c1',
-        displayedRegionIndex: 0,
-        offsetPx: 800,
-        widthPx: 800,
-      }),
-      refBlock({
-        key: 'c',
-        refName: 'c1',
-        displayedRegionIndex: 0,
-        offsetPx: 1600,
-        widthPx: 800,
-      }),
-    ]
-    expect(stickyBlockIndex(blocks, 1000)).toBe(1)
+    )
+    expect(stickyLabel(blocks, 1000)!.key).toBe('c2')
   })
 })
 
@@ -493,7 +473,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels, showPrefixFallback } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
-      regionEndPx: regionEnds(blocks),
       prefix: '',
     })
     expect(showPrefixFallback).toBe(false)
@@ -502,6 +481,8 @@ describe('getScalebarRefNameLabels', () => {
         key: 'a',
         refName: 'chr1',
         displayedRegionIndex: 0,
+        lastDisplayedRegionIndex: 0,
+        sticky: true,
         transform: 0,
         maxWidth: 1599,
         paddingLeft: 0,
@@ -524,7 +505,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels, showPrefixFallback } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
-      regionEndPx: regionEnds(blocks),
       prefix: 'hg38',
     })
     expect(showPrefixFallback).toBe(false)
@@ -553,7 +533,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
-      regionEndPx: regionEnds(blocks),
       prefix: '',
     })
     expect(labels.map(l => l.key)).toEqual(['a'])
@@ -580,14 +559,13 @@ describe('getScalebarRefNameLabels', () => {
     const { labels } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 1000,
-      regionEndPx: regionEnds(blocks),
       prefix: '',
     })
-    // run-start block 'a' has scrolled entirely off the left, so its label is
-    // dropped rather than drawn off-canvas; block 'b' is the sticky one pinned
-    // to the viewport edge and already names chr1 there
+    // both blocks are one chr1 run, which has scrolled past its own left edge,
+    // so the run gets a single label pinned to the viewport edge rather than a
+    // second one drawn off-canvas at the edge it no longer has on screen
     expect(labels.map(l => ({ key: l.key, transform: l.transform }))).toEqual([
-      { key: 'b', transform: 0 },
+      { key: 'a', transform: 0 },
     ])
   })
 
@@ -613,7 +591,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 900,
-      regionEndPx: regionEnds(blocks),
       prefix: '',
     })
     expect(labels.map(l => l.refName)).toEqual(['chr2'])
@@ -640,16 +617,17 @@ describe('getScalebarRefNameLabels', () => {
     const { labels } = getScalebarRefNameLabels({
       blocks,
       offsetPx: -50,
-      regionEndPx: regionEnds(blocks),
       prefix: '',
     })
-    // pinned at the region's left edge (screen 50), so available width runs from
-    // frame-x 0 to regionEnd 1600 → 1599, never the over-counted 1600-(-50)-1
+    // pinned at the run's left edge (screen 50), so available width runs from
+    // frame-x 0 to the run end 1600 → 1599, never the over-counted 1600-(-50)-1
     expect(labels).toEqual([
       {
         key: 'a',
         refName: 'chr1',
         displayedRegionIndex: 0,
+        lastDisplayedRegionIndex: 0,
+        sticky: true,
         transform: 50,
         maxWidth: 1599,
         paddingLeft: 0,
@@ -672,7 +650,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels, showPrefixFallback } = getScalebarRefNameLabels({
       blocks,
       offsetPx: -300,
-      regionEndPx: regionEnds(blocks),
       prefix: 'hg38',
     })
     // the label is out at the region's left edge (screen 300), nowhere near the
@@ -698,7 +675,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels, showPrefixFallback } = getScalebarRefNameLabels({
       blocks,
       offsetPx: -5,
-      regionEndPx: regionEnds(blocks),
       prefix: 'hg38',
     })
     expect(labels[0]!.text).toBe('hg38:chr1')
@@ -720,7 +696,6 @@ describe('getScalebarRefNameLabels', () => {
       getScalebarRefNameLabels({
         blocks,
         offsetPx,
-        regionEndPx: regionEnds(blocks),
         prefix: 'hg38',
       }).labels[0]!.text
     // "hg38" is ~25.6px wide and a sticky label carries no padding of its own,
@@ -753,7 +728,6 @@ describe('getScalebarRefNameLabels', () => {
     return getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
-      regionEndPx: regionEnds(blocks),
       prefix: '',
     }).labels
   }
@@ -793,7 +767,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels, showPrefixFallback } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
-      regionEndPx: regionEnds(blocks),
       prefix: 'hg38',
     })
     expect(labels).toEqual([])
@@ -826,7 +799,6 @@ describe('getScalebarRefNameLabels', () => {
     const { labels } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
-      regionEndPx: regionEnds(blocks),
       prefix: '',
     })
     const [chr1, chr14] = labels
@@ -862,7 +834,6 @@ describe('getScalebarRefNameLabels', () => {
       getScalebarRefNameLabels({
         ...args,
         blocks: adjacent,
-        regionEndPx: regionEnds(adjacent),
       }).labels.map(l => l.key),
     ).toEqual(['r0'])
 
@@ -875,55 +846,75 @@ describe('getScalebarRefNameLabels', () => {
       getScalebarRefNameLabels({
         ...args,
         blocks: separated,
-        regionEndPx: regionEnds(separated),
       }).labels.map(l => l.key),
     ).toEqual(['r0', 'r2'])
+  })
+
+  // Collapsed introns lay one chromosome out as many adjacent regions, and the
+  // dedupe above gives the lot a single label. Fitting that label to the FIRST
+  // region's width dropped it whenever the exon under the viewport's left edge
+  // was narrow, so the chromosome name blinked out around every internal region
+  // boundary — 30px of every 100 here — with nothing left naming the row.
+  describe('a run of same-name regions is fitted to the whole run', () => {
+    const blocks = Array.from({ length: 8 }, (_, i) =>
+      refBlock({
+        key: `r${i}`,
+        refName: 'chr1',
+        displayedRegionIndex: i,
+        offsetPx: i * 100,
+        widthPx: 100,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    )
+    const labelsAt = (offsetPx: number) =>
+      getScalebarRefNameLabels({ blocks, offsetPx, prefix: undefined }).labels
+
+    test('the name survives every scroll position across the run', () => {
+      for (let offsetPx = 0; offsetPx <= 700; offsetPx += 10) {
+        expect(labelsAt(offsetPx).map(l => l.text)).toEqual(['chr1'])
+      }
+    })
+
+    test('width runs to the end of the run, not the end of one region', () => {
+      // 80px into a 100px region, the region itself leaves 19px — less than
+      // "chr1" needs — while the run leaves 719
+      expect(labelsAt(80)[0]!.maxWidth).toBe(719)
+    })
+
+    test('the label brackets the regions it stands for', () => {
+      const [label] = labelsAt(250)
+      expect(label!.displayedRegionIndex).toBe(0)
+      expect(label!.lastDisplayedRegionIndex).toBe(7)
+    })
   })
 })
 
 describe('regionMoveActions', () => {
   test('single region: no moves offered', () => {
-    expect(regionMoveActions(0, 1)).toEqual({
-      canMoveLeft: false,
-      canMoveRight: false,
-      canMoveFarLeft: false,
-      canMoveFarRight: false,
-    })
+    expect(regionMoveActions(0, 1)).toEqual([])
   })
 
   test('two regions: only single steps, never "far" (would duplicate)', () => {
-    expect(regionMoveActions(0, 2)).toEqual({
-      canMoveLeft: false,
-      canMoveRight: true,
-      canMoveFarLeft: false,
-      canMoveFarRight: false,
-    })
-    expect(regionMoveActions(1, 2)).toEqual({
-      canMoveLeft: true,
-      canMoveRight: false,
-      canMoveFarLeft: false,
-      canMoveFarRight: false,
-    })
+    expect(regionMoveActions(0, 2)).toEqual([{ label: 'Move right', to: 1 }])
+    expect(regionMoveActions(1, 2)).toEqual([{ label: 'Move left', to: 0 }])
   })
 
   test('adjacent-to-end index suppresses the redundant "far" move', () => {
     // idx 1 of 3: "far left" (→0) would duplicate "left" (→0), so it's off;
     // "far right" (→2) would duplicate "right" (→2), so it's off too
-    expect(regionMoveActions(1, 3)).toEqual({
-      canMoveLeft: true,
-      canMoveRight: true,
-      canMoveFarLeft: false,
-      canMoveFarRight: false,
-    })
+    expect(regionMoveActions(1, 3)).toEqual([
+      { label: 'Move left', to: 0 },
+      { label: 'Move right', to: 2 },
+    ])
   })
 
   test('interior index with a gap to both ends offers all four', () => {
-    expect(regionMoveActions(2, 5)).toEqual({
-      canMoveLeft: true,
-      canMoveRight: true,
-      canMoveFarLeft: true,
-      canMoveFarRight: true,
-    })
+    expect(regionMoveActions(2, 5)).toEqual([
+      { label: 'Move left', to: 1 },
+      { label: 'Move right', to: 3 },
+      { label: 'Move to far left', to: 0 },
+      { label: 'Move to far right', to: 4 },
+    ])
   })
 })
 

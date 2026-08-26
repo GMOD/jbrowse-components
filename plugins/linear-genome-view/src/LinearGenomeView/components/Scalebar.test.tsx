@@ -232,4 +232,44 @@ describe('Scalebar genome view component', () => {
       expect(labelA.textContent).toBe('ctgA')
     })
   })
+  // The pinned chromosome name is drawn on an opaque backing, over a run whose
+  // own left edge is off screen — so `runRefNameLabelPx`, which keeps the
+  // numbers out from under a name at its run's left edge, has reserved nothing
+  // there. The number underneath came out with its leading digits painted over,
+  // and ",000" reads as a coordinate, just not the right one.
+  it('hides the coordinate number the pinned refName label would paint over', async () => {
+    const session = createTestSession({
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 10,
+            displayedRegions: [
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 0,
+                end: 100_000,
+              },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
+    }) as any
+    const model = session.views[0]
+    model.setWidth(800)
+    // "ctgA" occupies screen [0, 23.1]; "22,000" is centered at 18.9, spanning
+    // [0.1, 37.7], so all but its last three digits sit under the name
+    model.scrollTo(2180)
+
+    const { getByText } = render(<Scalebar model={model} />)
+    await waitFor(() => {
+      expect(getByText('22,000').parentElement!.style.visibility).toBe('hidden')
+    })
+    // the next number along is 200px clear of the name and still drawn
+    expect(getByText('24,000').parentElement!.style.visibility).toBe('')
+  })
 })

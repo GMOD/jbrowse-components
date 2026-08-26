@@ -195,17 +195,66 @@ export function showRefNameLabels<T>(
 }
 
 /**
- * Index of the block carrying the "sticky" refName label pinned to the left
- * edge: the rightmost content block whose left edge has scrolled off the left of
- * the viewport, or the first content block when none have.
+ * A maximal run of adjacent content blocks sharing one refName — the span a
+ * single scalebar refName label names, and therefore the span it is fitted to.
+ *
+ * The unit is the run rather than the displayed region because collapsed
+ * introns lay one chromosome out as many adjacent regions, and the label is
+ * deduped down to one for the lot. Fitting that one label to the *first*
+ * region's width dropped it whenever the exon under the viewport's left edge
+ * was narrow, so the chromosome name blinked out every time a region boundary
+ * passed the left edge and nothing named the row until the next one arrived.
+ *
+ * A nameless block (elided, padding) ends a run: what an elided block hides is
+ * other chromosomes, so the same name on its far side starts a region the
+ * reader needs named again.
  */
-export function stickyBlockIndex(blocks: BaseBlock[], offsetPx: number) {
-  const scrolledOff = blocks.findLastIndex(
-    b => b.type === 'ContentBlock' && b.offsetPx < offsetPx,
-  )
-  return scrolledOff === -1
-    ? blocks.findIndex(b => b.type === 'ContentBlock')
-    : scrolledOff
+interface RefNameRun {
+  key: string
+  refName: string
+  offsetPx: number
+  endPx: number
+  firstRegionIndex: number
+  lastRegionIndex: number
+  isLeftEndOfDisplayedRegion: boolean
+}
+
+function refNameRuns(blocks: BaseBlock[]) {
+  const runs: RefNameRun[] = []
+  let current: RefNameRun | undefined
+  for (const block of blocks) {
+    if (
+      block.type !== 'ContentBlock' ||
+      block.displayedRegionIndex === undefined
+    ) {
+      current = undefined
+    } else if (current?.refName === block.refName) {
+      current.endPx = block.offsetPx + block.widthPx
+      current.lastRegionIndex = block.displayedRegionIndex
+    } else {
+      current = {
+        key: block.key,
+        refName: block.refName,
+        offsetPx: block.offsetPx,
+        endPx: block.offsetPx + block.widthPx,
+        firstRegionIndex: block.displayedRegionIndex,
+        lastRegionIndex: block.displayedRegionIndex,
+        isLeftEndOfDisplayedRegion: !!block.isLeftEndOfDisplayedRegion,
+      }
+      runs.push(current)
+    }
+  }
+  return runs
+}
+
+/**
+ * Index of the run carrying the "sticky" refName label pinned to the left edge:
+ * the rightmost run whose left edge has scrolled off the left of the viewport,
+ * or the first run when none have.
+ */
+function stickyRunIndex(runs: RefNameRun[], offsetPx: number) {
+  const scrolledOff = runs.findLastIndex(run => run.offsetPx < offsetPx)
+  return scrolledOff === -1 ? 0 : scrolledOff
 }
 
 /** Clearance between the standalone assembly-name chip and a sticky label. */
@@ -217,7 +266,16 @@ const REF_NAME_LABEL_PADDING_PX = 7
 export interface ScalebarRefNameLabel {
   key: string
   refName: string
+  // first and last displayed region the label names. They differ only where
+  // adjacent regions share a refName (collapsed introns), which is exactly
+  // where the one deduped label stands for several regions — a menu hung off it
+  // has to know that rather than act on an arbitrary member
   displayedRegionIndex: number
+  lastDisplayedRegionIndex: number
+  // the label pinned to the viewport's left edge, as opposed to one sitting at
+  // its own run's left edge. Only this one moves with the scroll, so it is the
+  // only one the coordinate numbers cannot dodge in the block frame
+  sticky: boolean
   transform: number
   maxWidth: number
   paddingLeft: number
@@ -226,7 +284,7 @@ export interface ScalebarRefNameLabel {
 
 /**
  * translateX, maxWidth and paddingLeft for one refName label. Sticky labels
- * start at the viewport's left edge; others start at their block's left edge.
+ * start at the viewport's left edge; others start at their run's left edge.
  *
  * maxWidth is the width of the whole label box, paddingLeft included, so the
  * text has `maxWidth - paddingLeft` to draw in — that is what both consumers
@@ -235,37 +293,31 @@ export interface ScalebarRefNameLabel {
  * that (see refNameLabelWidth); a name is drawn whole or not at all.
  */
 function refLabelLayout({
-  blockOffsetPx,
-  regionEnd,
+  run,
   offsetPx,
   sticky,
 }: {
-  blockOffsetPx: number
-  // right edge of the label's region, or undefined if the caller's regionEndPx
-  // has no entry for it (impossible for a block from the same staticBlocks the
-  // map was built from) — treated as no room at all: no label
-  regionEnd: number | undefined
+  run: RefNameRun
   offsetPx: number
   sticky: boolean
 }) {
   const transform = sticky
     ? Math.max(0, -offsetPx)
-    : blockOffsetPx - offsetPx - 1
+    : run.offsetPx - offsetPx - 1
   // block-frame x where the label actually starts. Derived from `transform` (=
-  // transform + offsetPx) so the width-to-region-end clip stays in lockstep
-  // with where the label is drawn: a sticky label pins to the region's left
-  // edge, not the viewport's, whenever the view is left-overscrolled
-  // (offsetPx < 0) — reading offsetPx directly there over-counted the available
-  // width by |offsetPx|, letting the name bleed past its region's right edge.
+  // transform + offsetPx) so the width-to-run-end clip stays in lockstep with
+  // where the label is drawn: a sticky label pins to the run's left edge, not
+  // the viewport's, whenever the view is left-overscrolled (offsetPx < 0) —
+  // reading offsetPx directly there over-counted the available width by
+  // |offsetPx|, letting the name bleed past its run's right edge.
   const labelStartPx = transform + offsetPx
   // A non-sticky label's transform anchors at the same x as the region
   // divider drawn just to its left (SVGRegionSeparators, a 3px bar spanning
-  // local [0,3] from this same block.offsetPx edge), so paddingLeft must clear
+  // local [0,3] from this same run.offsetPx edge), so paddingLeft must clear
   // that bar plus a few px of breathing room, else the text visually touches
   // the divider. Sticky labels sit at the viewport's own left edge, no divider.
   const paddingLeft = sticky ? 0 : REF_NAME_LABEL_PADDING_PX
-  const maxWidth = regionEnd === undefined ? 0 : regionEnd - labelStartPx - 1
-  return { transform, maxWidth, paddingLeft }
+  return { transform, maxWidth: run.endPx - labelStartPx - 1, paddingLeft }
 }
 
 /**
@@ -286,12 +338,10 @@ function refLabelLayout({
 export function getScalebarRefNameLabels({
   blocks,
   offsetPx,
-  regionEndPx,
   prefix,
 }: {
   blocks: BaseBlock[]
   offsetPx: number
-  regionEndPx: Map<number, number>
   prefix: string | undefined
 }) {
   const hasPrefix = prefix !== undefined && prefix !== ''
@@ -301,40 +351,26 @@ export function getScalebarRefNameLabels({
   // starting at exactly the chip's right edge abuts it and the two read as a
   // single word ("volvoxctgA") for the few px of scroll around the threshold
   const prefixSpanPx = hasPrefix ? refNameLabelWidth(prefix) + PREFIX_GAP : 0
-  const stickyIdx = stickyBlockIndex(blocks, offsetPx)
-  const isRunStart = showRefNameLabels(blocks, getBlockRefName)
+  const runs = refNameRuns(blocks)
+  const stickyIdx = stickyRunIndex(runs, offsetPx)
   const labels: ScalebarRefNameLabel[] = []
   let stickyHasPrefix = false
 
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i]!
+  for (const [i, run] of runs.entries()) {
     const sticky = i === stickyIdx
-    // A non-sticky block starting left of the viewport is entirely off-screen:
-    // the sticky block is by definition the rightmost one starting there, so
-    // every earlier block also *ends* left of the viewport. Its label would
-    // just repeat the name the sticky label already shows, drawn off-canvas —
-    // invisible on screen (overflow:hidden) but bleeding into the margin of an
+    // A non-sticky run starting left of the viewport is entirely off-screen:
+    // the sticky run is by definition the rightmost one starting there, so
+    // every earlier run also *ends* left of the viewport. Its label would just
+    // repeat the name the sticky label already shows, drawn off-canvas —
+    // invisible on screen (overflow:clip) but bleeding into the margin of an
     // SVG export, which has no such clip.
-    const runStart =
-      block.offsetPx >= offsetPx &&
-      !!block.isLeftEndOfDisplayedRegion &&
-      isRunStart[i]!
-    if (
-      block.type !== 'ContentBlock' ||
-      block.displayedRegionIndex === undefined ||
-      !(sticky || runStart)
-    ) {
+    const runStart = run.offsetPx >= offsetPx && run.isLeftEndOfDisplayedRegion
+    if (!(sticky || runStart)) {
       continue
     }
-    const idx = block.displayedRegionIndex
-    const layout = refLabelLayout({
-      blockOffsetPx: block.offsetPx,
-      regionEnd: regionEndPx.get(idx),
-      offsetPx,
-      sticky,
-    })
+    const layout = refLabelLayout({ run, offsetPx, sticky })
     const withPrefix = sticky && hasPrefix && layout.transform < prefixSpanPx
-    const text = withPrefix ? `${prefix}:${block.refName}` : block.refName
+    const text = withPrefix ? `${prefix}:${run.refName}` : run.refName
     // draw the name whole or not at all: a name clipped mid-glyph reads as a
     // different chromosome ("LG2" cut to "LG"), and measuring it means a short
     // name gets its label in a region a fixed minimum width would have skipped
@@ -343,9 +379,11 @@ export function getScalebarRefNameLabels({
     }
     stickyHasPrefix ||= withPrefix
     labels.push({
-      key: block.key,
-      refName: block.refName,
-      displayedRegionIndex: idx,
+      key: run.key,
+      refName: run.refName,
+      displayedRegionIndex: run.firstRegionIndex,
+      lastDisplayedRegionIndex: run.lastRegionIndex,
+      sticky,
       transform: layout.transform,
       maxWidth: layout.maxWidth,
       paddingLeft: layout.paddingLeft,
@@ -356,10 +394,25 @@ export function getScalebarRefNameLabels({
 }
 
 /**
+ * Screen-x span a refName label paints over: its padding and its glyphs, which
+ * is the whole of it, since the box shrinks to its text rather than filling the
+ * `maxWidth` it was fitted against. Anything drawn under this span is hidden by
+ * the label's opaque backing, so the coordinate numbers use it to stay out from
+ * under the sticky label the way `runRefNameLabelPx` keeps them out from under
+ * the others.
+ */
+export function refNameLabelSpanPx(label: ScalebarRefNameLabel) {
+  return {
+    left: label.transform,
+    right: label.transform + label.paddingLeft + refNameLabelWidth(label.text),
+  }
+}
+
+/**
  * Whether a label from getScalebarRefNameLabels is drawn whole within a
- * viewport `widthPx` wide. The labels themselves are only fitted to their
- * *region*, which routinely runs past the right edge of the view, so one
- * starting a few px before that edge passes the region fit and is then cut by
+ * viewport `widthPx` wide. The labels themselves are only fitted to their own
+ * *run of regions*, which routinely runs past the right edge of the view, so
+ * one starting a few px before that edge passes the run fit and is then cut by
  * the viewport clip. On screen that reads as a name scrolled partly out of
  * frame, but a static SVG export has no frame to scroll — there a cut "LG2"
  * just names a chromosome that doesn't exist, so the export drops it instead,
@@ -369,25 +422,27 @@ export function refNameLabelFitsInView(
   label: ScalebarRefNameLabel,
   widthPx: number,
 ) {
-  return (
-    label.transform + label.paddingLeft + refNameLabelWidth(label.text) <=
-    widthPx
-  )
+  return refNameLabelSpanPx(label).right <= widthPx
 }
 
 /**
- * Which reorder actions the refName-label menu should offer for the region at
- * `idx` of `numRegions`. The "far" moves are gated on there being a gap of more
- * than one between `idx` and the end — otherwise "Move to far left/right" would
- * target the same index as "Move left/right" and duplicate the entry.
+ * The reorder entries the refName-label menu offers for the region at `idx` of
+ * `numRegions`, each already carrying the index it moves to. The "far" moves
+ * need a gap of more than one between `idx` and the end — otherwise "Move to
+ * far left/right" targets the same index as "Move left/right" and duplicates
+ * the entry.
  */
 export function regionMoveActions(idx: number, numRegions: number) {
-  return {
-    canMoveLeft: idx > 0,
-    canMoveRight: idx < numRegions - 1,
-    canMoveFarLeft: idx > 1,
-    canMoveFarRight: idx < numRegions - 2,
-  }
+  return [
+    { when: idx > 0, label: 'Move left', to: idx - 1 },
+    { when: idx < numRegions - 1, label: 'Move right', to: idx + 1 },
+    { when: idx > 1, label: 'Move to far left', to: 0 },
+    {
+      when: idx < numRegions - 2,
+      label: 'Move to far right',
+      to: numRegions - 1,
+    },
+  ].flatMap(({ when, label, to }) => (when ? [{ label, to }] : []))
 }
 
 /**
