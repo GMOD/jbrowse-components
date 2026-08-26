@@ -5,9 +5,11 @@ description: The state of the LGV "Export R script" exporter after its second pa
 
 # R export — handoff
 
-Nothing here has been committed. A concurrent agent's commit `546f55d69c` already
-swept in an earlier `products/jbrowse-img/src/renderRegion.ts` edit (shared
-worktree — commit with an explicit pathspec).
+All of this is committed. The branch was rebased onto main long afterwards — see
+the `feat(r-export): export a linear view as a reproducible R script` commit
+message for what 4834 commits of drift forced, and note that `bam_mismatches`
+has since grown a reference fallback for reads with no MD tag, which the
+descriptions below of it as "reference-free" predate.
 
 ## Done in the first pass
 
@@ -184,8 +186,10 @@ columns of `methylation_clip.bam`.
   `longestCoding`; the R panel draws every transcript. Same family as the above.
 - **`rexport/genes_sarscov2` is a weak figure** — the caption promises ORF1ab's
   mature peptide products and the panel shows one bar. Predates this pass.
-- `pnpm figures:push` and commit `figures.lock`: the rexport figures exist only
-  on this machine (the run reports `NOT IN THE FIGURE STORE`).
+- ~~`pnpm figures:push` and commit `figures.lock`~~ — done. All 19
+  `img/rexport/*` figures resolve in the store; verified against every hash in
+  `figures.lock` after the rebase onto main, since a lock line whose bytes were
+  never pushed breaks `figures:pull` for every fresh checkout and for CI.
 
 ## Checks
 
