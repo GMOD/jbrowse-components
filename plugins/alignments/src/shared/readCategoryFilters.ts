@@ -1,4 +1,6 @@
-import type { CategoryFilter, FilterBy } from './types.ts'
+import type { CategoryFilter, FilterBy, ReadCategoryKey } from './types.ts'
+
+export type { ReadCategoryKey }
 
 /**
  * The read-category filters, declared once.
@@ -30,8 +32,6 @@ export interface ReadCategorySpec {
   /** Shown once, on the menu's category row, rather than on each of its radios. */
   helpText: string
 }
-
-export type ReadCategoryKey = 'properPairs' | 'singletons' | 'split' | 'spliced'
 
 export const READ_CATEGORIES = [
   {

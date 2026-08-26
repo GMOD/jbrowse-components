@@ -233,11 +233,46 @@ export function normalizeFilterBy(
   filterBy: Partial<FilterBy> & { tagFilter?: TagFilter },
 ): FilterBy {
   const { tagFilter, ...rest } = filterBy
-  const base = { ...defaultFilterFlags, ...rest }
+  const base = { ...defaultFilterFlags, ...rest, ...categoryFilters(rest) }
   return tagFilter !== undefined && base.tagFilters === undefined
     ? { ...base, tagFilters: [tagFilter] }
     : base
 }
+
+// A category value this vocabulary does not have means UNFILTERED, said once
+// here so the four readers cannot each guess differently. `frozen` gets no MST
+// validation, so a hand-written config or a share link can put any string in
+// one of these fields; `keepCategory` in the worker tests `=== 'only'` and so
+// read anything else — 'all', the word the radios and the jbrowse-img flag both
+// use for OFF — as `exclude`, dropping nearly every read while the menu showed
+// "All reads" ticked and the badge counted the filter active.
+function categoryFilters(filterBy: Partial<FilterBy>) {
+  return Object.fromEntries(
+    READ_CATEGORY_KEYS.map(key => [
+      key,
+      filterBy[key] === 'only' || filterBy[key] === 'exclude'
+        ? filterBy[key]
+        : undefined,
+    ]),
+  ) as Pick<FilterBy, (typeof READ_CATEGORY_KEYS)[number]>
+}
+
+/**
+ * The four read-category fields of {@link FilterBy}, as a list.
+ *
+ * Here rather than beside the labels in `readCategoryFilters.ts` because they
+ * are `FilterBy`'s own fields and this is the file that may not import that one
+ * — and because a second list is a list that goes stale: jbrowse-img kept one,
+ * guarded by a `Covers<>` type check whose whole job was to notice when it had.
+ */
+export const READ_CATEGORY_KEYS = [
+  'properPairs',
+  'singletons',
+  'split',
+  'spliced',
+] as const satisfies readonly (keyof FilterBy)[]
+
+export type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
 
 // In-track stacked grouping. `type` selects the per-read group-key generator
 // (see shared/groupFeatures.ts); `tag` carries the tag name for tag/HP/RG
