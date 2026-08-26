@@ -407,6 +407,7 @@ grep for in `website/scripts` to find the generator behind a block, and
 | `PALETTE_KEYS` | `website/docs/developer_guides/theming.md` |
 | `PROMOTABLE_SLOTS` | `website/docs/user_guides/display_defaults.md` |
 | `REEXPORT_MODULES` | `website/docs/developer_guides/imports_and_reexports.md` |
+| `REXPORT_COMMANDS` | `website/docs/user_guides/r_export_gallery.md` |
 | `SEARCH_RESULT_FIELDS` | `website/docs/developer_guides/creating_text_search_adapter.md` |
 | `SHADER_EXPORTS` | `website/docs/developer_guides/creating_gpu_display.md` |
 | `SLOT_TYPES` | `website/docs/developer_guides/configuration_schema.md` |

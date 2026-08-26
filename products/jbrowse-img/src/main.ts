@@ -29,6 +29,7 @@ import {
   getTrackLabels,
   ignoredComparativeOptions,
   knownOptions,
+  wantsRScript,
 } from './options.ts'
 import { runBatch } from './runBatch.ts'
 import { writeRendered } from './util.ts'
@@ -117,7 +118,9 @@ async function main() {
     }
 
     const width = getNumber(rest, 'width', DEFAULT_WIDTH)
+    const outFile = getString(rest, 'out')
     const renderOpts = {
+      emitR: wantsRScript(outFile),
       fasta: getString(rest, 'fasta'),
       aliases: getString(rest, 'aliases'),
       assembly: getString(rest, 'assembly'),
@@ -179,11 +182,7 @@ async function main() {
         process.exitCode = 1
       }
     } else {
-      writeRendered(
-        await renderRegion(renderOpts),
-        getString(rest, 'out'),
-        width,
-      )
+      writeRendered(await renderRegion(renderOpts), outFile, width)
     }
   }
 }

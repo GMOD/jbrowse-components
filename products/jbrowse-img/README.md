@@ -479,6 +479,16 @@ jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw height:300 --loc GAPDH --out mult
 jb2export --hub hg38 --multiwig sources.json height:520 --loc GCG --out multi.png
 ```
 
+**Give it a `name:`.** Every other track flag labels its panel with the file it
+opened, but a comma-separated list has no one filename to be named after — it
+falls back to `multiwig`, so the panel says nothing about what the rows are, and
+a second list is only `multiwig-2`:
+
+```bash
+jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw 'name:PBMC accessibility' \
+  height:300 --loc GAPDH --out multi.png
+```
+
 This example renders the CATlas single-cell ATAC accessibility-by-cell-type data
 (Zhang et al 2021): 16 human cell types, each a BigWig, wired up with per-row
 labels/colors/groups in
@@ -552,14 +562,14 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
 
 ### Gene tracks and the reference sequence
 
-Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`, or a hosted `--track`) render
-their glyphs with labels, and `--refseq` adds the assembly's reference-sequence
-track. Zoomed to base level, it shows the DNA bases and the six-frame
-translation (green start codons, red stops). This human example zooms into a
-`TP53` intron/CDS boundary so the gene track's structure reads at base level:
-the intron thins to a connector line, the coding exon begins as a solid CDS
-block, and that block edge lines up with a specific reference base and reading
-frame. `showOnlyGenes` keeps the RefSeq track to its gene features:
+Feature tracks (`--gffgz`, `--gff`, `--bigbed`, `--bedgz`, or a hosted
+`--track`) render their glyphs with labels, and `--refseq` adds the assembly's
+reference-sequence track. Zoomed to base level, it shows the DNA bases and the
+six-frame translation (green start codons, red stops). This human example zooms
+into a `TP53` intron/CDS boundary so the gene track's structure reads at base
+level: the intron thins to a connector line, the coding exon begins as a solid
+CDS block, and that block edge lines up with a specific reference base and
+reading frame. `showOnlyGenes` keeps the RefSeq track to its gene features:
 
 <!-- jb2export: gene_track -->
 
@@ -1210,6 +1220,9 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
   [MultiWiggle](#multiwiggle-many-bigwigs-in-one-track)
 - `--vcfgz`
 - `--gffgz`
+- `--gff` — a plain, unindexed GFF3, read whole and filtered in memory. For the
+  small annotation files that come without a tabix index (a virus genome, a
+  plasmid); a chromosome-scale file wants `--gffgz`
 - `--bigbed`
 - `--bedgz`
 - `--hic`
@@ -1269,7 +1282,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out             Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
@@ -1297,8 +1310,10 @@ Examples:
       Render from config with a JSON tracks file
   jb2export --fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg
       Render BigWig with cytobands
+  jb2export --fasta ref.fa --bigwig signal.bw --loc chr1:1-50000 --out fig.R
+      Emit an editable ggplot2 script instead of an image, then Rscript fig.R
 
-Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
+Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --gff, --hic, --bigbed, --bedgz
 
 Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular, breakpoint
 
@@ -1316,7 +1331,7 @@ Options:
   --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session             Path to session JSON (or "-" for stdin)
   --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out                 Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
@@ -1360,7 +1375,7 @@ Options:
   --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session             Path to session JSON (or "-" for stdin)
   --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out                 Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
@@ -1408,7 +1423,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out             Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]

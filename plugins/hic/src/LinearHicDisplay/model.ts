@@ -22,6 +22,7 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { calcAxisBlocks } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
+import { exportRCode } from './exportRCode.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -37,7 +38,10 @@ import type {
 import type { HicTrackConfigModel } from './configSchema.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LinearGenomeViewModel,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /**
@@ -643,6 +647,17 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearHicDisplayModel, opts)
+        },
+
+        /**
+         * #method
+         * Build the R ggplot fragment for this track, used by the view's
+         * "Export R script" to regenerate the Hi-C contact-map panel from
+         * source with strawr + ggplot2. Undefined until the .hic resolutions
+         * have loaded (the panel needs a bin size).
+         */
+        exportRCode(): RTrackFragment | undefined {
+          return exportRCode(self as LinearHicDisplayModel)
         },
       }
     })

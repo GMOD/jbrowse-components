@@ -1,0 +1,1555 @@
+import { execFileSync, spawnSync } from 'node:child_process'
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+
+import { assembleRScript } from '@jbrowse/plugin-linear-genome-view'
+
+import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
+import {
+  applyDepthDependentThreshold,
+  computeMismatchFrequencies,
+} from '../shared/computeFrequenciesAndThresholds.ts'
+import {
+  classifyInsertSize,
+  getInsertSizeStats,
+} from '../shared/insertSizeStats.ts'
+import { featureFrequencyThreshold } from './constants.ts'
+import { alignmentsFragments } from './exportRCode.ts'
+
+import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
+
+const baseParams = {
+  isCram: false,
+  reference: '',
+  linkReads: false,
+  showLowFreqMismatches: false,
+  modificationThreshold: 0.1,
+  sortPos: -1,
+  bpPerPx: 1,
+}
+
+// Only run when R + the Bioconductor alignment stack are installed (skipped in
+// CI). Executes the *real* generated script so a codegen change that emits
+// invalid or non-running R fails the test.
+function rWithAlignmentStack() {
+  const probe = spawnSync(
+    'Rscript',
+    [
+      '-e',
+      'cat(requireNamespace("GenomicAlignments", quietly = TRUE) && requireNamespace("Rsamtools", quietly = TRUE))',
+    ],
+    { encoding: 'utf8' },
+  )
+  return probe.status === 0 && probe.stdout.trim() === 'TRUE'
+}
+
+// CRAM decoding shells out to samtools (Rsamtools can't read CRAM), so the CRAM
+// test additionally needs samtools on PATH.
+function haveSamtools() {
+  return spawnSync('samtools', ['--version'], { encoding: 'utf8' }).status === 0
+}
+
+const maybe = rWithAlignmentStack() ? test : test.skip
+const maybeCram = rWithAlignmentStack() && haveSamtools() ? test : test.skip
+
+maybe(
+  'generated alignments R script runs and produces a figure',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: true,
+      showPileup: true,
+      colorBy: 'normal',
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      fragments,
+    )
+
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-bam-'))
+    const scriptPath = join(dir, 'view.R')
+    writeFileSync(scriptPath, script)
+
+    execFileSync('Rscript', [scriptPath], { cwd: dir, stdio: 'pipe' })
+
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  90000,
+)
+
+// The interbase helper library, plus the synthetic tally the tests below run on.
+// Events: 103 = 2 ins; 105 = 4 ins; 106 = 3 ins + 4 soft; 107 = 5 soft;
+// 109 = 4 hard. Depth is 10 everywhere except 108 and 109, which are 5 — both,
+// because an interbase position's local depth is the larger of the two bases it
+// sits between, so leaving 108 at 10 would put 109 over the gate.
+function interbaseProbePreamble() {
+  // any coverage fragment emits the interbase helper defs; reuse them
+  const [cov] = alignmentsFragments({
+    ...baseParams,
+    trackId: 'aln',
+    trackName: 'x',
+    uri: '/dev/null',
+    showCoverage: true,
+    showPileup: false,
+    colorBy: 'normal',
+  })
+  const script = assembleRScript({ refName: 'ctgA', start: 100, end: 110 }, [
+    cov!,
+  ])
+  return `${script.split('# Data sources')[0]!}
+cov <- data.frame(pos = 100:110, depth = rep(10, 11))
+cov$depth[cov$pos %in% c(108, 109)] <- 5
+indels <- data.frame(
+  refpos = c(105L, 105L, 105L, 105L, 103L, 103L, 106L, 106L, 106L),
+  length = 1L, type = "I", stringsAsFactors = FALSE)
+clips <- data.frame(
+  pos = c(rep(107L, 5), rep(106L, 4), rep(109L, 4)),
+  type = c(rep("S", 5), rep("S", 4), rep("H", 4)), stringsAsFactors = FALSE)
+ibc <- interbase_counts(indels, clips)
+`
+}
+
+function runR(prefix: string, probe: string) {
+  const dir = mkdtempSync(join(tmpdir(), prefix))
+  writeFileSync(join(dir, 'probe.R'), probe)
+  return execFileSync('Rscript', [join(dir, 'probe.R')], {
+    cwd: dir,
+    encoding: 'utf8',
+  }).trim()
+}
+
+// interbase_counts is the tally the coverage band's count histogram is drawn
+// from: one row per (column, event type) that actually occurred, stacked
+// insertion -> softclip -> hardclip into the half-open count range JBrowse's
+// yOffset/segHeight pair encodes (computeInterbaseCoverage's segment pass).
+maybe(
+  'interbase_counts stacks each column insertion, softclip, hardclip',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-counts-',
+      `${interbaseProbePreamble()}
+cat(paste(ibc$pos, ibc$type, ibc$count, ibc$ybase, ibc$ytop, ibc$total, sep = ":"), "\\n")
+`,
+    )
+    // 106 stacks 3 insertions under 4 soft clips: the softclip bar starts at 3
+    // and ends at 7, and both rows report the column total of 7. A type with no
+    // event at a column emits no row at all (109 is hardclip-only).
+    expect(out).toBe(
+      '103:I:2:0:2:2 105:I:4:0:4:4 106:I:3:0:3:7 106:S:4:3:7:7 107:S:5:0:5:5 109:H:4:0:4:4',
+    )
+  },
+  90000,
+)
+
+// interbase_indicators reproduces JBrowse's coverage-band breakpoint flags over
+// that same tally: significant only where local depth >= 8 and the interbase
+// events exceed 30% of it, typed by the dominant event (insertion, else
+// softclip, else hardclip). Synthetic inputs make the significant set
+// deterministic: 105 (4 ins, I); 106 (3 ins + 4 soft, soft dominates → S); 107
+// (5 soft, S); 103 dropped (2 ins < 30% of 10); 109 dropped (both its flanking
+// bases are at depth 5, under the min of 8).
+maybe(
+  'interbase_indicators applies the depth/threshold gate and dominant type',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-',
+      `${interbaseProbePreamble()}
+ind <- interbase_indicators(ibc, cov)
+o <- order(ind$pos)
+cat(paste(ind$pos[o], ind$type[o], ind$count[o], sep = ":"), "\\n")
+`,
+    )
+    // the count reported is the column total across types, not the dominant
+    // type's own count — 106 flags as S and reports all 7 events
+    expect(out).toBe('105:I:4 106:S:7 107:S:5')
+  },
+  90000,
+)
+
+// The count histogram over a real breakpoint: volvox-long-reads-sv ctgA:2559-2760
+// is the clipping locus the gallery figure uses, so the helper chain the coverage
+// panel runs must find stacked soft clips there. Also pins the two properties the
+// panel's geometry depends on — the stack is contiguous within a column, and an
+// event anchored outside the region is dropped rather than drawn on the shared axis.
+maybe(
+  'interbase_counts stacks real clips at the volvox breakpoint',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/volvox/volvox-long-reads-sv.bam',
+    )
+    const out = runR(
+      'jb-rexport-interbase-bam-',
+      `${interbaseProbePreamble()}
+start <- 2559; end <- 2760
+ibc <- interbase_counts(bam_indels(${JSON.stringify(bam)}, "ctgA", start, end),
+                        bam_clips(${JSON.stringify(bam)}, "ctgA", start, end))
+cat("outside", sum(ibc$pos < start | ibc$pos >= end), "\\n")
+ibc <- ibc[ibc$pos >= start & ibc$pos < end, , drop = FALSE]
+cat("rows", nrow(ibc), "\\n")
+# within a column the stack is contiguous and starts at 0: ybase[1] == 0 and each
+# ytop is the next ybase, which is what makes the hanging bars abut
+cat("contiguous", all(unlist(by(ibc, ibc$pos, function(g)
+  c(g$ybase[1] == 0, head(g$ytop, -1) == tail(g$ybase, -1),
+    tail(g$ytop, 1) == g$total[1])))), "\\n")
+top <- ibc[which.max(ibc$count), ]
+cat("top", top$pos, top$type, top$count, "\\n")
+cov0 <- bam_coverage(${JSON.stringify(bam)}, "ctgA", start, end, NULL)
+ind <- interbase_indicators(ibc, cov0)
+cat("flagged", paste(ind$pos, ind$type, sep = ":"), "\\n")
+`,
+    )
+    // a long read overlapping the region carries its whole CIGAR, so most of its
+    // events are anchored outside it — the crop the panel does is not vacuous
+    expect(out).toMatch(/outside [1-9]/)
+    expect(out).toMatch(/rows [1-9]/)
+    expect(out).toContain('contiguous TRUE')
+    // the breakpoint column itself: a stack of soft clips, not a lone event
+    expect(out).toMatch(/top 2700 S \d\d/)
+    // and it is the one column significant enough for an indicator. Coverage
+    // falls off a cliff there — depth 0 at 2700, 17 to its left — so this only
+    // holds with the interbase depth rule.
+    expect(out).toContain('flagged 2700:S')
+  },
+  90000,
+)
+
+// The whole coverage panel over that same breakpoint (so the histogram branch
+// actually has rows to draw), both ways round: the histogram is drawn with a geom
+// whose y aesthetics are computed from columns interbase_counts supplies, so a
+// rename or a missing column is a ggplot error at draw time — after every read
+// has been fetched — not a codegen one.
+maybe(
+  'the coverage panel draws with and without the interbase marks',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/volvox/volvox-long-reads-sv.bam',
+    )
+    for (const showInterbaseIndicators of [true, false]) {
+      const fragments = alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox reads',
+        uri: bam,
+        showCoverage: true,
+        showPileup: false,
+        showInterbaseIndicators,
+        colorBy: 'normal',
+      })
+      const script = assembleRScript(
+        { refName: 'ctgA', start: 2559, end: 2760 },
+        fragments,
+      )
+      const dir = mkdtempSync(
+        join(tmpdir(), `jb-rexport-ib-${showInterbaseIndicators}-`),
+      )
+      writeFileSync(join(dir, 'view.R'), script)
+      execFileSync('Rscript', [join(dir, 'view.R')], {
+        cwd: dir,
+        stdio: 'pipe',
+      })
+      expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+    }
+  },
+  120000,
+)
+
+// The breakpoint case the indicator exists for, and the one a right-hand-only
+// depth lookup silently drops: every read's soft clip is anchored where the
+// alignments stop, so the base to the RIGHT of that column has depth 0. JBrowse's
+// interbaseDepthAt takes the larger of the two bases the interbase position sits
+// between, which is the full depth on the left.
+maybe(
+  'interbase_indicators flags a breakpoint at the edge of a coverage cliff',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-cliff-',
+      `${interbaseProbePreamble()}
+# coverage runs out after column 299: 300 onward is zero
+cliff_cov <- data.frame(pos = 290:310, depth = c(rep(20, 10), rep(0, 11)))
+cliff_clips <- data.frame(pos = rep(300L, 17), type = "S", stringsAsFactors = FALSE)
+cliff <- interbase_indicators(interbase_counts(NULL, cliff_clips), cliff_cov)
+cat(nrow(cliff), paste(cliff$pos, cliff$type, cliff$count, sep = ":"), "\\n")
+`,
+    )
+    expect(out).toBe('1 300:S:17')
+  },
+  90000,
+)
+
+// A tie between two types at one column: JBrowse only upgrades the dominant type
+// on a strict majority (`entry.softclip > dominantCount`), so equal counts keep
+// the earlier of insertion, softclip, hardclip.
+maybe(
+  'interbase_indicators keeps the earlier type on a tie',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-tie-',
+      `${interbaseProbePreamble()}
+tie_indels <- data.frame(refpos = rep(200L, 4L),
+  length = 1L, type = "I", stringsAsFactors = FALSE)
+tie_clips <- data.frame(pos = c(rep(200L, 4), rep(201L, 4)),
+  type = c(rep("S", 4), rep("H", 4)), stringsAsFactors = FALSE)
+tie_cov <- data.frame(pos = 200:201, depth = c(10, 10))
+tie <- interbase_indicators(interbase_counts(tie_indels, tie_clips), tie_cov)
+o <- order(tie$pos)
+cat(paste(tie$pos[o], tie$type[o], sep = ":"), "\\n")
+`,
+    )
+    // 200: 4 ins vs 4 soft → I wins the tie. 201: 4 hard alone → H.
+    expect(out).toBe('200:I 201:H')
+  },
+  90000,
+)
+
+// Cross-implementation equivalence: the R insertSize branch of read_fill_colors
+// must classify every read exactly as the JS getInsertSizeStats/classifyInsertSize
+// does over the same data — the robust median±3·1.4826·MAD spread from primary
+// proper-pair |TLEN| values (not mean±3·sd, which the right-skewed SV tail would
+// inflate so no read is ever flagged "short"). Same reads drive both sides.
+maybe(
+  'R insertSize coloring matches JS getInsertSizeStats read-for-read',
+  () => {
+    // right-skewed |TLEN|: a tight bulk near 300 plus a long SV tail
+    const reads: { isize: number; flag: number }[] = []
+    for (let i = 0; i < 200; i++) {
+      reads.push({ isize: 250 + ((i * 7) % 100), flag: 0x2 })
+    }
+    for (const s of [3000, 3500, 4000, 4500, 5000]) {
+      reads.push({ isize: s, flag: 0x2 })
+    }
+    // discriminating probes + reads excluded from the stat set
+    reads.push({ isize: 320, flag: 0x2 }) // bulk → normal
+    reads.push({ isize: 100, flag: 0x2 }) // short under MAD, normal under mean±sd
+    reads.push({ isize: 6000, flag: 0x2 }) // long
+    reads.push({ isize: 0, flag: 0x2 }) // tlen 0 → always normal
+    reads.push({ isize: 80, flag: 0x0 }) // not proper-pair: excluded from stats
+    reads.push({ isize: 9000, flag: 0x2 | 0x800 }) // supplementary: excluded
+
+    // JS side: stats over exactly the primary proper-pair, |TLEN|>0 reads
+    const statSet = reads
+      .filter(r => !!(r.flag & 0x2) && !(r.flag & 0x100) && !(r.flag & 0x800))
+      .map(r => r.isize)
+      .filter(s => s > 0)
+    const stats = getInsertSizeStats(statSet)
+    const expected = reads.map(r => classifyInsertSize(r.isize, stats))
+    // the two estimators must disagree on the isize=100 read, else the test is toothless
+    expect(expected[reads.findIndex(r => r.isize === 100)]).toBe('short')
+
+    // R side: run read_fill_colors(reads, "insertSize") over the identical reads
+    const [pileup] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'x',
+      uri: '/dev/null',
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'insertSize',
+    })
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      pileup!,
+    ]).split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-isize-'))
+    const probe = `${helpers}
+reads <- data.frame(isize = c(${reads.map(r => r.isize).join(', ')}),
+                    flag = c(${reads.map(r => r.flag).join(', ')}))
+col <- read_fill_colors(reads, "insertSize")
+cls <- ifelse(col == "#ff0000", "long", ifelse(col == "#ffc0cb", "short", "normal"))
+cat(cls, "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    expect(out.split(/\s+/)).toEqual(expected)
+  },
+  90000,
+)
+
+// Cross-implementation equivalence: R's mismatch_fade_alpha must reproduce
+// JBrowse's pileup low-frequency fade — the actual computeMismatchFrequencies +
+// applyDepthDependentThreshold(featureFrequencyThreshold), then frequencyFade's
+// base + (freqByte/255)·(1−base) lerp — for every tick over identical data.
+maybe(
+  'R mismatch_fade_alpha matches JS frequencyFade read-for-read',
+  () => {
+    const bpPerPx = 4
+    const regionStart = 1000
+    const depthVal = 20
+    // per-tick (position, base): a high-freq C and low-freq A at 1010; a G above
+    // and a T below the depth-20 threshold (0.55) at 1020
+    const ticks: { pos: number; base: string }[] = []
+    const push = (pos: number, base: string, n: number) => {
+      for (let i = 0; i < n; i++) {
+        ticks.push({ pos, base })
+      }
+    }
+    push(1010, 'A', 3) // 0.15 → below threshold → faint
+    push(1010, 'C', 17) // 0.85 → opaque-ish
+    push(1020, 'G', 12) // 0.60 → above 0.55 → kept
+    push(1020, 'T', 3) // 0.15 → below → faint
+
+    // JS side: the real frequency + threshold pipeline, then frequencyFade's lerp
+    const positions = Uint32Array.from(ticks.map(t => t.pos))
+    const bases = Uint8Array.from(ticks.map(t => t.base.charCodeAt(0)))
+    const depths = new Float32Array(60).fill(depthVal)
+    const freqBytes = computeMismatchFrequencies(
+      positions,
+      bases,
+      depths,
+      regionStart,
+    )
+    applyDepthDependentThreshold(
+      freqBytes,
+      positions,
+      depths,
+      regionStart,
+      featureFrequencyThreshold,
+    )
+    const baseAlpha = 1 / bpPerPx
+    const jsAlpha = ticks.map(
+      (_, i) => baseAlpha + (freqBytes[i]! / 255) * (1 - baseAlpha),
+    )
+
+    // R side: mismatch_fade_alpha over the identical ticks + a flat depth table
+    const [pileup] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'x',
+      uri: '/dev/null',
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      bpPerPx,
+    })
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      pileup!,
+    ]).split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-fade-'))
+    const probe = `${helpers}
+refpos <- c(${ticks.map(t => t.pos).join(', ')})
+base <- c(${ticks.map(t => `"${t.base}"`).join(', ')})
+depth <- data.frame(pos = 1000:1059, depth = rep(${depthVal}, 60))
+a <- mismatch_fade_alpha(refpos, base, depth, ${bpPerPx})
+cat(sprintf("%.6f", a), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const rAlpha = out.split(/\s+/).map(Number)
+    expect(rAlpha).toHaveLength(jsAlpha.length)
+    rAlpha.forEach((a, i) => {
+      expect(a).toBeCloseTo(jsAlpha[i]!, 5)
+    })
+    // and the test must actually exercise the fade: low-freq A (idx 0) faint at
+    // the noise floor, high-freq C (idx 3) near opaque
+    expect(jsAlpha[0]).toBeCloseTo(baseAlpha, 5) // A → noise floor
+    expect(jsAlpha[3]).toBeGreaterThan(0.8) // C → near opaque
+  },
+  90000,
+)
+
+// exercise every color-by scheme's read_fill_colors branch (incl. the MAPQ hue
+// ramp + insert-size stats) through the real generated script
+maybe(
+  'generated script runs for each color-by scheme',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    for (const colorBy of [
+      'normal',
+      'strand',
+      'mappingQuality',
+      'insertSize',
+      'pairOrientation',
+    ]) {
+      const fragments = alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox reads',
+        uri: bam,
+        showCoverage: false,
+        showPileup: true,
+        colorBy,
+      })
+      const script = assembleRScript(
+        { refName: 'ctgA', start: 0, end: 5000 },
+        fragments,
+      )
+      const dir = mkdtempSync(join(tmpdir(), `jb-rexport-color-${colorBy}-`))
+      const scriptPath = join(dir, 'view.R')
+      writeFileSync(scriptPath, script)
+      execFileSync('Rscript', [scriptPath], { cwd: dir, stdio: 'pipe' })
+      expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+    }
+  },
+  120000,
+)
+
+// the MD-tag mismatch walk is the accuracy-critical part; run it directly and
+// assert it finds the real C-SNP at ctgA:1693 (~20 reads) that pileup() confirms
+maybe(
+  'bam_mismatches finds the known SNP column, reference-free',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const [fragment] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: true,
+      showPileup: false,
+      colorBy: 'normal',
+    })
+    // emit only the helper defs, then probe bam_mismatches over the SNP region
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      fragment!,
+    ]).split('# Data sources')[0]!
+    const probe = `${helpers}
+mm <- bam_mismatches(${JSON.stringify(bam)}, "ctgA", 1600, 1800)
+snp <- aggregate(read_index ~ refpos + base, data = mm, FUN = length)
+top <- snp[which.max(snp$read_index), ]
+cat(top$refpos, as.character(top$base), top$read_index, "\\n")
+`
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-mm-'))
+    const scriptPath = join(dir, 'probe.R')
+    writeFileSync(scriptPath, probe)
+    const out = execFileSync('Rscript', [scriptPath], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [refpos, altBase, count] = out.split(/\s+/)
+    expect(refpos).toBe('1693')
+    expect(altBase).toBe('C')
+    expect(Number(count)).toBeGreaterThanOrEqual(15)
+  },
+  90000,
+)
+
+// the MM/ML modification parse is the other accuracy-critical walk; run the real
+// generated modifications pileup against a modBAM and assert bam_modifications
+// recovers a plausible number of high-confidence 5mC ('m') calls, reference-free
+maybe(
+  'modifications pileup script runs and bam_modifications finds 5mC calls',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/modifications_test/methylation_clip.bam',
+    )
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'ONT modBAM',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'modifications',
+      modificationThreshold: 0.5,
+    })
+    const script = assembleRScript(
+      { refName: '20', start: 0, end: 12000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-mods-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // probe bam_modifications directly over the region
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+mm <- bam_modifications(${JSON.stringify(bam)}, "20", 0, 12000, 0.5)
+cat(nrow(mm), paste(unique(mm$modtype), collapse = ","), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [n, types] = out.split(/\s+/)
+    expect(Number(n)).toBeGreaterThan(50)
+    expect(types).toBe('m')
+  },
+  90000,
+)
+
+// The modification COVERAGE panel is the other half of a modBAM figure, and its
+// arithmetic is the part a reader would trust without being able to check: the
+// bar heights are read counts corrected by a denominator (which reads even carry
+// the base, and of those which were examined at all). Run the generated panel end
+// to end, then check each helper against an independent oracle — mod_coverage
+// against the TypeScript computeModificationCoverage the browser draws with, and
+// read_base_counts against Rsamtools' own pileup().
+const MOD_COV_BAM = 'test_data/modifications_test/methylation_clip.bam'
+
+function modCoverageFragment(uri: string) {
+  const [cov] = alignmentsFragments({
+    ...baseParams,
+    trackId: 'aln',
+    trackName: 'ONT modBAM',
+    uri,
+    showCoverage: true,
+    showPileup: false,
+    colorBy: 'modifications',
+    modificationThreshold: 0.5,
+  })
+  return cov!
+}
+
+maybe(
+  'modifications coverage panel runs and stacks mod bars over the depth',
+  () => {
+    const bam = resolve(process.cwd(), MOD_COV_BAM)
+    const script = assembleRScript({ refName: '20', start: 0, end: 12000 }, [
+      modCoverageFragment(bam),
+    ])
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-modcov-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // this modBAM's MM groups are all 'C+m' with no '-' partner, so 5mC resolves
+    // simplex — the case where dividing by every read carrying the base would
+    // halve each bar
+    const out = runR(
+      'jb-rexport-modcov-probe-',
+      `${script.split('# Data sources')[0]!}
+bam <- ${JSON.stringify(bam)}
+mods <- bam_modifications(bam, "20", 0, 12000, 0.5)
+at <- sort(unique(mods$refpos)); at <- at[at >= 0 & at < 12000]
+mods <- mods[mods$refpos %in% at, , drop = FALSE]
+cat(paste(attr(mods, "mm_strands"), collapse = ","),
+    paste(sort(unique(mods$base)), collapse = ","),
+    paste(mod_simplex_types(attr(mods, "mm_strands")), collapse = ","), "\\n")
+`,
+    )
+    // the MM group strand rides on the result as an attribute (it must survive
+    // the threshold filter, so it cannot be a column), and 'base' is the group's
+    // target base as written in the tag
+    expect(out.split(/\s+/)).toEqual(['+m', 'C', 'm'])
+  },
+  120000,
+)
+
+// mod_coverage against the browser's own computeModificationCoverage, on one
+// hand-built frame covering all three things the R rewrite could get wrong: the
+// simplex denominator, the fixed stack order, and the mean-likelihood alpha.
+maybe(
+  'mod_coverage reproduces computeModificationCoverage exactly',
+  () => {
+    // (position, modType, base, probability) — 5mC and 5hmC competing at one
+    // column plus a 6mA on a different base, so the stack has to order them
+    const calls: [number, string, string, number][] = [
+      [100, 'm', 'C', 0.9],
+      [100, 'm', 'C', 0.8],
+      [100, 'm', 'C', 0.7],
+      [100, 'h', 'C', 0.6],
+      [100, 'a', 'A', 0.95],
+      [101, 'm', 'C', 0.55],
+      [101, 'm', 'C', 0.65],
+      [102, 'm', 'C', 0.5],
+    ]
+    const baseCounts: Record<number, StrandBaseCounts> = {
+      100: {
+        C: { fwd: 4, rev: 1 },
+        G: { fwd: 2, rev: 3 },
+        A: { fwd: 3, rev: 2 },
+        T: { fwd: 1, rev: 0 },
+      },
+      101: { C: { fwd: 2, rev: 2 }, G: { fwd: 1, rev: 1 } },
+      102: { C: { fwd: 1, rev: 0 }, G: { fwd: 0, rev: 1 } },
+    }
+    const depths = [11, 8, 4]
+    // 'm' simplex, 'a' duplex, so one bar in the same column takes each branch
+    const simplex = ['m']
+
+    const browserCoverage = (simplexTypes: string[]) =>
+      computeModificationCoverage(
+        calls.map(([position, modType, base, prob], readIndex) => ({
+          readIndex,
+          position,
+          base,
+          modType,
+          strand: 1 as const,
+          color: 0,
+          prob,
+          noMod: false,
+        })),
+        new Map(Object.entries(baseCounts).map(([k, v]) => [Number(k), v])),
+        100,
+        { depths: Float32Array.from(depths), maxDepth: 11, startPos: 100 },
+        new Set(simplexTypes),
+      )
+
+    const packed = browserCoverage(simplex)
+    const expected = Array.from({ length: packed.count }, (_, i) => ({
+      pos: packed.positions[i]!,
+      ybase: packed.yOffsets[i]!,
+      ytop: packed.yOffsets[i]! + packed.heights[i]!,
+      // the segment's alpha byte IS the mean call likelihood
+      alpha: (packed.colors[i]! >>> 24) & 0xff,
+    }))
+
+    const rVec = (xs: (string | number)[]) =>
+      `c(${xs.map(x => (typeof x === 'string' ? JSON.stringify(x) : x)).join(', ')})`
+    const bcRows = Object.entries(baseCounts).flatMap(([pos, sc]) =>
+      Object.entries(sc).map(([b, c]) => ({ pos: +pos, base: b, ...c })),
+    )
+    const out = runR(
+      'jb-rexport-modcov-parity-',
+      `${assembleRScript({ refName: '20', start: 0, end: 1 }, [modCoverageFragment('/dev/null')]).split('# Data sources')[0]!}
+mods <- data.frame(read_index = ${rVec(calls.map((_, i) => i + 1))},
+  refpos = ${rVec(calls.map(c => c[0]))}, modtype = ${rVec(calls.map(c => c[1]))},
+  base = ${rVec(calls.map(c => c[2]))}, prob = ${rVec(calls.map(c => c[3]))},
+  stringsAsFactors = FALSE)
+counts <- data.frame(pos = ${rVec(bcRows.map(r => r.pos))}, base = ${rVec(bcRows.map(r => r.base))},
+  fwd = ${rVec(bcRows.map(r => r.fwd))}, rev = ${rVec(bcRows.map(r => r.rev))},
+  stringsAsFactors = FALSE)
+cov <- data.frame(pos = ${rVec([100, 101, 102])}, depth = ${rVec(depths)})
+mc <- mod_coverage(mods, counts, cov, ${rVec(simplex)})
+for (i in seq_len(nrow(mc))) cat(mc$pos[i], sprintf("%.9f", mc$ybase[i]),
+  sprintf("%.9f", mc$ytop[i]), as.integer(round(mc$prob[i] * 255)), "\\n")
+`,
+    )
+    const rows = out.split('\n').map(l => {
+      const [pos, ybase, ytop, alpha] = l.trim().split(/\s+/)
+      return {
+        pos: Number(pos),
+        ybase: Number(ybase),
+        ytop: Number(ytop),
+        alpha: Number(alpha),
+      }
+    })
+    expect(rows).toHaveLength(expected.length)
+    for (const [i, want] of expected.entries()) {
+      expect(rows[i]!.pos).toBe(want.pos)
+      expect(rows[i]!.ybase).toBeCloseTo(want.ybase, 6)
+      expect(rows[i]!.ytop).toBeCloseTo(want.ytop, 6)
+      expect(rows[i]!.alpha).toBe(want.alpha)
+    }
+    // the simplex correction is the part of the formula a rewrite is most likely
+    // to drop, and dropping it is silent — the bars just come out half height.
+    // Pin that the two branches actually differ on this input.
+    expect(rows[0]!.ytop).toBeGreaterThan(
+      browserCoverage([]).heights[0] ?? Infinity,
+    )
+  },
+  120000,
+)
+
+// read_base_counts is a hand-rolled CIGAR walk over each read's own SEQ, so check
+// it against Rsamtools' pileup() — an independent implementation of the same
+// per-strand base tally — at exactly the columns a modification was called on.
+maybe(
+  'read_base_counts agrees with Rsamtools pileup at the modified columns',
+  () => {
+    const bam = resolve(process.cwd(), MOD_COV_BAM)
+    const out = runR(
+      'jb-rexport-basecounts-',
+      `${assembleRScript({ refName: '20', start: 0, end: 1 }, [modCoverageFragment(bam)]).split('# Data sources')[0]!}
+bam <- ${JSON.stringify(bam)}
+mods <- bam_modifications(bam, "20", 0, 12000, 0.5)
+# a read overlapping the window carries its whole CIGAR, so clip to the window
+# the pileup below covers - which is what the generated panel does too
+at <- sort(unique(mods$refpos)); at <- at[at >= 0 & at < 12000]
+mine <- read_base_counts(bam, "20", 0, 12000, at)
+pu <- pileup(bam, scanBamParam = ScanBamParam(which = GRanges("20", IRanges(1, 12000))),
+  pileupParam = PileupParam(distinguish_strands = TRUE, distinguish_nucleotides = TRUE,
+    min_base_quality = 0, min_mapq = 0, min_nucleotide_depth = 1, max_depth = 100000,
+    include_deletions = FALSE, include_insertions = FALSE))
+pu$pos0 <- pu$pos - 1L
+pu <- pu[pu$pos0 %in% at & pu$nucleotide %in% c("A", "C", "G", "T"), ]
+pu$fwd <- ifelse(pu$strand == "+", pu$count, 0L)
+pu$rev <- ifelse(pu$strand == "-", pu$count, 0L)
+ref <- aggregate(cbind(fwd, rev) ~ pos0 + nucleotide, data = pu, FUN = sum)
+names(ref) <- c("pos", "base", "fwd", "rev"); ref$base <- as.character(ref$base)
+cols <- c("pos", "base", "fwd", "rev")
+a <- mine[order(mine$pos, mine$base), cols]; rownames(a) <- NULL
+b <- ref[order(ref$pos, ref$base), cols]; rownames(b) <- NULL
+cat(nrow(a), isTRUE(all.equal(a, b)), "\\n")
+`,
+    )
+    const [rows, identical] = out.split(/\s+/)
+    expect(Number(rows)).toBeGreaterThan(50)
+    expect(identical).toBe('TRUE')
+  },
+  180000,
+)
+
+// perBaseQuality: the generated pileup must run, and bam_base_quality must map a
+// Phred score onto every aligned base (the signal the color-by paints), with
+// quality_colors turning each into a valid hex on JBrowse's ramp
+maybe(
+  'perBaseQuality pileup runs and bam_base_quality scores every base',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'perBaseQuality',
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 3000, end: 3200 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-baseq-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+bq <- bam_base_quality(${JSON.stringify(bam)}, "ctgA", 3000, 3200)
+cols <- quality_colors(bq$score)
+cat(nrow(bq), max(bq$score), sum(!grepl("^#[0-9A-Fa-f]{6}$", cols)), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [count, maxScore, badColors] = out.split(/\s+/).map(Number)
+    // many aligned bases scored, all as valid Phred integers, every color a hex
+    expect(count!).toBeGreaterThan(100)
+    expect(maxScore!).toBeGreaterThan(0)
+    expect(badColors).toBe(0)
+  },
+  90000,
+)
+
+// linkedReads = "normal": the generated chain-layout script must run, and
+// link_reads must group a paired BAM's records into chains by read name and
+// produce mate-gap connectors (each chain spans its full template, so it uses
+// as many or more rows than a flat pileup, not fewer)
+maybe(
+  'linkReads chain-layout script runs and links mates onto shared rows',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/volvox/volvox-simple-inv-paired.bam',
+    )
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox pairs',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'pairOrientation',
+      linkReads: true,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 5000, end: 9000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-link-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // probe link_reads: records group into fewer chains by read name, every read
+    // gets a chain row, and mate-pair gaps yield connector segments
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+reads <- read_bam(${JSON.stringify(bam)}, "ctgA", 5000, 9000)
+linked <- link_reads(reads)
+# every record gets exactly one chain row; chains number <= records (grouping)
+cat(nrow(reads), length(unique(linked$reads$name)), nrow(linked$links),
+    sum(is.na(linked$reads$row)), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [records, chains, links, unrowed] = out.split(/\s+/).map(Number)
+    // grouping by read name collapses records into fewer (or equal) chains
+    expect(chains!).toBeLessThan(records!)
+    // paired mates in the window produce gap connectors (link_reads' whole point)
+    expect(links!).toBeGreaterThan(0)
+    // every read is assigned a chain row
+    expect(unrowed).toBe(0)
+  },
+  90000,
+)
+
+// sortedBy "base": the generated sort-pileup script must run, and
+// sorted_pileup_layout must order the reads covering the center column by their
+// base there — the alt-allele reads (the known C-SNP at ctgA:1693) all take
+// lower rows than the reference-matching reads, JBrowse's "Sort by base" grouping
+maybe(
+  'base-sort pileup script runs and groups alt reads above ref reads',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      sortType: 'base',
+      sortPos: 1693,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 1600, end: 1800 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-sortbase-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // probe: the reads covering 1693 must be sorted so every C-allele read sits
+    // above (lower row) every reference-matching read
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+reads <- read_bam(${JSON.stringify(bam)}, "ctgA", 1600, 1800)
+mm <- bam_mismatches(${JSON.stringify(bam)}, "ctgA", 1600, 1800)
+laid <- sorted_pileup_layout(reads, 1693, "base", mm)
+ov <- which(laid$start <= 1693 & laid$end > 1693)
+# alt = reads carrying any mismatch base at the SNP column; ref = reads matching
+# the reference there (no mismatch entry) - the base sort places all alt above ref
+alt <- intersect(mm$read_index[mm$refpos == 1693], ov)
+ref <- setdiff(ov, alt)
+cat(length(alt), length(ref), max(laid$row[alt]), min(laid$row[ref]), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [nAlt, nRef, maxAltRow, minRefRow] = out.split(/\s+/).map(Number)
+    // both allele groups are present at the SNP column (the C-SNP dominates, so
+    // only a few reads still match the reference there)
+    expect(nAlt!).toBeGreaterThan(3)
+    expect(nRef!).toBeGreaterThan(0)
+    // and every alt read is placed strictly above every ref read (the sort)
+    expect(maxAltRow!).toBeLessThan(minRefRow!)
+  },
+  90000,
+)
+
+// base sort deletion fidelity: JBrowse ranks a read carrying a *deletion* over
+// sort_pos as '*' (ASCII 42), ahead of every ACGT mismatch base and ahead of the
+// reference-matching reads. sorted_pileup_layout must reproduce that ordering
+// from the CIGAR indels passed alongside the mismatches. Synthetic reads (four
+// reads all covering the center column: a deletion, a 'T' mismatch, an 'A'
+// mismatch, and a reference match) make the expected order deterministic.
+maybe(
+  'base sort places a deletion over sort_pos ahead of ACGT and reference reads',
+  () => {
+    // any base-sort fragment emits the sorted_pileup_layout helper def; reuse it
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'x',
+      uri: '/dev/null',
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      sortType: 'base',
+      sortPos: 100,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 200 },
+      fragments,
+    )
+    const helpers = script.split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-delsort-'))
+    // read 1 reference-matching (no mm, no indel), 2 = 'T' (84), 3 = 'A' (65),
+    // 4 = deletion over 100 (should rank '*' = 42, ahead of all)
+    const probe = `${helpers}
+reads <- data.frame(name = paste0("r", 1:4), start = rep(50L, 4),
+                    end = rep(150L, 4), strand = "+", stringsAsFactors = FALSE)
+mm <- data.frame(read_index = c(2L, 3L), refpos = c(100L, 100L),
+                 base = c("T", "A"), stringsAsFactors = FALSE)
+indels <- data.frame(read_index = 4L, refpos = 98L, length = 5L, type = "D",
+                     stringsAsFactors = FALSE)
+laid <- sorted_pileup_layout(reads, 100, "base", mm, indels)
+cat(laid$row[4], laid$row[3], laid$row[2], laid$row[1], "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [delRow, aRow, tRow, refRow] = out.split(/\s+/).map(Number)
+    // deletion above 'A' above 'T' above the reference-matching read
+    expect(delRow!).toBeLessThan(aRow!)
+    expect(aRow!).toBeLessThan(tRow!)
+    expect(tRow!).toBeLessThan(refRow!)
+  },
+  90000,
+)
+
+// sortedBy "position"/"strand": the localized sort at the center line orders the
+// reads covering it (position = ascending start; strand = forward first) and the
+// generated figure runs
+maybe(
+  'position/strand-sort pileup scripts run and order the center reads',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    for (const sortType of ['position', 'strand'] as const) {
+      const fragments = alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox reads',
+        uri: bam,
+        showCoverage: false,
+        showPileup: true,
+        colorBy: 'normal',
+        sortType,
+        sortPos: 3100,
+      })
+      const script = assembleRScript(
+        { refName: 'ctgA', start: 3000, end: 3200 },
+        fragments,
+      )
+      const dir = mkdtempSync(join(tmpdir(), `jb-rexport-sort-${sortType}-`))
+      writeFileSync(join(dir, 'view.R'), script)
+      execFileSync('Rscript', [join(dir, 'view.R')], {
+        cwd: dir,
+        stdio: 'pipe',
+      })
+      expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+    }
+
+    // probe position sort: among the reads covering the column, row order follows
+    // ascending genomic start (each overlapping read gets its own row)
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox reads',
+        uri: bam,
+        showCoverage: false,
+        showPileup: true,
+        colorBy: 'normal',
+        sortType: 'position',
+        sortPos: 3100,
+      })[0]!,
+    ]).split('# Data sources')[0]!
+    const probe = `${helpers}
+reads <- read_bam(${JSON.stringify(bam)}, "ctgA", 3000, 3200)
+laid <- sorted_pileup_layout(reads, 3100, "position")
+ov <- which(laid$start <= 3100 & laid$end > 3100)
+o <- ov[order(laid$row[ov])]
+cat(length(ov), as.integer(!is.unsorted(laid$start[o])), "\\n")
+`
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-sortpos-'))
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [nOverlap, startsAscending] = out.split(/\s+/).map(Number)
+    expect(nOverlap!).toBeGreaterThan(1)
+    // rows follow ascending genomic start for the reads over the sort column
+    expect(startsAscending).toBe(1)
+  },
+  90000,
+)
+
+// filterBy: the generated pileup runs read_filter, which must drop reads by SAM
+// flag exactly like JBrowse (a filtered read gets an NA row and goes undrawn) —
+// here excluding the reverse-strand bit (0x10) keeps only the forward reads
+maybe(
+  'filter-by-flag pileup runs and read_filter drops reads by SAM flag',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'strand',
+      filterFlagExclude: 16,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-filterflag-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+reads <- read_bam(${JSON.stringify(bam)}, "ctgA", 0, 5000)
+kept <- read_filter(reads, ${JSON.stringify(bam)}, "ctgA", 0, 5000, 0, 16)
+# excluding 0x10 keeps exactly the forward-strand reads, none dropped otherwise
+cat(nrow(reads), sum(kept$keep), sum(reads$strand == "+"), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [total, kept, forward] = out.split(/\s+/).map(Number)
+    expect(total!).toBeGreaterThan(0)
+    // some reads are filtered (there are reverse reads to drop)
+    expect(kept!).toBeLessThan(total!)
+    // and the kept set is exactly the forward-strand reads
+    expect(kept).toBe(forward)
+  },
+  90000,
+)
+
+// filterBy tag filter: volvox-rg.bam carries RG:Z:4 / RG:Z:5 read groups (200
+// each). read_filter must keep only the reads whose tag matches, honor "*"
+// (has-the-tag), and drop everything for an absent value — JBrowse's tag filter.
+maybe(
+  'filter-by-tag pileup runs and read_filter matches the RG tag',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-rg.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox RG',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      filterTagFilters: [{ tag: 'RG', value: '4' }],
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-filtertag-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+b <- ${JSON.stringify(bam)}
+reads <- read_bam(b, "ctgA", 0, 5000)
+f4 <- read_filter(reads, b, "ctgA", 0, 5000, 0, 0, NULL, list(list(tag = "RG", value = "4")))
+fhas <- read_filter(reads, b, "ctgA", 0, 5000, 0, 0, NULL, list(list(tag = "RG", value = "*")))
+fnone <- read_filter(reads, b, "ctgA", 0, 5000, 0, 0, NULL, list(list(tag = "RG", value = "nope")))
+cat(nrow(reads), sum(f4$keep), sum(fhas$keep), sum(fnone$keep), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [total, rg4, hasRg, none] = out.split(/\s+/).map(Number)
+    expect(total).toBe(400)
+    expect(rg4).toBe(200) // exactly the RG:Z:4 reads
+    expect(hasRg).toBe(400) // every read has an RG tag
+    expect(none).toBe(0) // no read matches a bogus value
+  },
+  90000,
+)
+
+// CRAM: Rsamtools can't read CRAM, so each panel's cram_to_bam() decodes the
+// region to a temp BAM with samtools first. Run the real generated script end to
+// end, then prove the reference-free MD-tag mismatch walk still finds the known
+// ctgA:1693 C-SNP through the CRAM decode (samtools restores MD from the ref).
+maybeCram(
+  'generated CRAM script decodes via samtools and keeps MD mismatches',
+  () => {
+    const cram = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.cram')
+    const ref = resolve(process.cwd(), 'test_data/volvox/volvox.fa')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox CRAM',
+      uri: cram,
+      isCram: true,
+      reference: ref,
+      showCoverage: true,
+      showPileup: true,
+      colorBy: 'normal',
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-cram-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // probe: decode the CRAM region, then run the reference-free MD walk on it
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+bam <- cram_to_bam(${JSON.stringify(cram)}, "ctgA", 1600, 1800, ${JSON.stringify(ref)})
+mm <- bam_mismatches(bam, "ctgA", 1600, 1800)
+snp <- aggregate(read_index ~ refpos + base, data = mm, FUN = length)
+top <- snp[which.max(snp$read_index), ]
+cat(top$refpos, as.character(top$base), top$read_index, "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [refpos, altBase, count] = out.split(/\s+/)
+    expect(refpos).toBe('1693')
+    expect(altBase).toBe('C')
+    expect(Number(count)).toBeGreaterThanOrEqual(15)
+  },
+  90000,
+)
+
+// CIGAR indels: the generated pileup must run, and bam_indels must recover the
+// deletion cluster (multiple reads sharing a 1D op at the same reference column,
+// the deletion signal) that read_bam's aligned span otherwise swallows
+maybe(
+  'indel pileup script runs and bam_indels finds the deletion column',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 3700, end: 3900 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-indel-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+d <- bam_indels(${JSON.stringify(bam)}, "ctgA", 3700, 3900)
+dd <- d[d$type == "D", ]
+cat(nrow(dd), as.integer(names(which.max(table(dd$refpos)))), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [count, modalRefpos] = out.split(/\s+/).map(Number)
+    // several reads carry the deletion, all at the same 0-based reference column
+    expect(count!).toBeGreaterThan(5)
+    expect(modalRefpos).toBe(3858)
+  },
+  90000,
+)
+
+// spliced (RNA-seq) reads: bam_indels must recover the shared intron (N op),
+// which the pileup erases from the read body + draws a thin teal connector over
+maybe(
+  'bam_indels finds the spliced-read intron (N op)',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/spliced.bam')
+    const [fragment] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox spliced',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+    })
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      fragment!,
+    ]).split('# Data sources')[0]!
+    const probe = `${helpers}
+s <- bam_indels(${JSON.stringify(bam)}, "ctgA", 400, 1000)
+ss <- s[s$type == "N", ]
+cat(nrow(ss), as.integer(names(which.max(table(ss$length)))), "\\n")
+`
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-skip-'))
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [count, modalLen] = out.split(/\s+/).map(Number)
+    expect(count!).toBeGreaterThan(3)
+    expect(modalLen).toBe(347)
+  },
+  90000,
+)
+
+// soft/hard clip bars: the generated pileup must run, and bam_clips must recover
+// the clips clustered at an SV breakpoint (the diagnostic value of clip display)
+maybe(
+  'clip pileup script runs and bam_clips finds soft/hard clips',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sv.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox SV',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 41000, end: 44000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-clip-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+clips <- bam_clips(${JSON.stringify(bam)}, "ctgA", 41000, 44000)
+cat(nrow(clips), sum(clips$type == "S"), paste(sort(unique(clips$type)), collapse = ""), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [total, soft, types] = out.split(/\s+/)
+    // the SV region carries clipped reads, dominated by soft clips
+    expect(Number(total)).toBeGreaterThan(10)
+    expect(Number(soft)).toBeGreaterThan(0)
+    expect(types).toMatch(/S/)
+  },
+  90000,
+)
+
+// Multi-region: three discontiguous regions concatenated on one cumulative-bp
+// axis. Exercises the per-region read + read_index renumbering + combined layout
+// path for both the coverage and pileup panels.
+maybe(
+  'multi-region alignments script runs and produces a figure',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: true,
+      showPileup: true,
+      colorBy: 'normal',
+    })
+    const script = assembleRScript(
+      [
+        { refName: 'ctgA', start: 1000, end: 6000 },
+        { refName: 'ctgA', start: 15000, end: 17000 },
+        { refName: 'ctgA', start: 30000, end: 33000 },
+      ],
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-mr-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  90000,
+)
+
+// Cross-region connectors: in chain mode (link_reads), a read pair with one mate
+// in each of two regions must be linked across the divider on the cumulative
+// axis. This is the multi-region feature faceting structurally cannot do. The
+// probe reads two regions bracketing separated mates, combines onto the
+// cumulative axis, and asserts link_reads emits connectors spanning the divider.
+maybe(
+  'chain layout links a mate pair split across two regions',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/volvox/paired_end_stranded_rnaseq.bam',
+    )
+    const [pileup] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'paired',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      linkReads: true,
+      colorBy: 'normal',
+    })
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      pileup!,
+    ]).split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-xregion-'))
+    const probe = `${helpers}
+regions <- region_layout(data.frame(chrom = c("ctgA", "ctgA"),
+  start = c(1, 2000), end = c(2000, 7600), stringsAsFactors = FALSE))
+divider <- regions$cum_end[1] + regions$gap[1] / 2
+parts <- lapply(seq_len(nrow(regions)), function(ri) {
+  chrom <- regions$chrom[ri]; start <- regions$start[ri]; end <- regions$end[ri]
+  shift <- regions$offset[ri] - regions$start[ri]
+  reads <- read_bam(${JSON.stringify(bam)}, chrom, start, end)
+  reads$start <- pmin(pmax(reads$start, start), end) + shift
+  reads$end <- pmin(pmax(reads$end, start), end) + shift
+  reads
+})
+reads <- do.call(rbind, parts)
+links <- link_reads(reads)$links
+spanning <- sum(links$xstart < divider & links$xend > divider)
+cat(nrow(links), spanning, "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [total, spanning] = out.split(/\s+/)
+    // some links exist, and at least one connects a mate across the divider
+    expect(Number(total)).toBeGreaterThan(0)
+    expect(Number(spanning)).toBeGreaterThan(0)
+  },
+  90000,
+)
+
+// The coverage panel must respect "Filter by" like JBrowse does. JBrowse filters
+// in the adapter, so the filtered read stream feeds the SNP coverage as well as
+// the pileup; this panel used to count every read, contradicting the pileup drawn
+// directly below it. volvox-rg.bam splits its reads across read groups, so a
+// tag filter is a clean way to prove the depth actually responds.
+maybe(
+  'coverage counts only reads passing "Filter by" (tag + flag)',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-rg.bam')
+    const build = (filterTagFilters?: { tag: string; value?: string }[]) =>
+      alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox RG',
+        uri: bam,
+        showCoverage: true,
+        showPileup: false,
+        colorBy: 'normal',
+        filterTagFilters,
+      })
+
+    // the filtered script runs end to end and draws a figure
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      build([{ tag: 'RG', value: '4' }]),
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-covfilter-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // total depth over the region, unfiltered vs filtered to one read group
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+uri <- ${JSON.stringify(bam)}
+chrom <- "ctgA"; start <- 0; end <- 5000
+all_reads <- read_filter(read_bam(uri, chrom, start, end), uri, chrom, start, end,
+  0, 1540, NULL, list())
+rg4 <- read_filter(read_bam(uri, chrom, start, end), uri, chrom, start, end,
+  0, 1540, NULL, list(list(tag = "RG", value = "4")))
+cov_all <- bam_coverage(uri, chrom, start, end, all_reads$keep)
+cov_rg4 <- bam_coverage(uri, chrom, start, end, rg4$keep)
+# a mismatch overlay must lose the filtered reads' rows too
+mm_all <- bam_mismatches(uri, chrom, start, end)
+cat(sum(all_reads$keep), sum(rg4$keep),
+    sum(cov_all$depth), sum(cov_rg4$depth),
+    nrow(mm_all), nrow(keep_rows(mm_all, rg4$keep)), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [keptAll, keptRg4, depthAll, depthRg4, mmAll, mmRg4] = out
+      .split(/\s+/)
+      .map(Number)
+
+    // the tag filter keeps a strict, non-empty subset of the reads...
+    expect(keptRg4).toBeGreaterThan(0)
+    expect(keptRg4).toBeLessThan(keptAll!)
+    // ...and the coverage follows it down, rather than counting every read
+    expect(depthRg4).toBeGreaterThan(0)
+    expect(depthRg4).toBeLessThan(depthAll!)
+    // as do the stacked per-base mismatch counts
+    expect(mmRg4).toBeLessThan(mmAll!)
+  },
+  90000,
+)
+
+// The tag sort has the most panel wiring of any sort: the loop must read each
+// read's tag with bam_tag_values and hang it on the reads frame as sort_tag, so
+// it survives the multi-region rbind and stays joined to its read. Run the real
+// generated script over volvox-rg.bam, whose reads carry an RG tag.
+maybe(
+  'generated tag-sort pileup runs and orders reads by the tag',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-rg.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox RG',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      sortType: 'tag',
+      sortTag: 'RG',
+      sortPos: 200,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 800 },
+      fragments,
+    )
+    expect(script).toContain('bam_tag_values(bam, chrom, start, end, "RG")')
+
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-tagsort-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // the tag really is read per-read, and the reads crossing the sort column
+    // come out grouped by it: every row above the last RG:Z:1 read is RG:Z:1
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+uri <- ${JSON.stringify(bam)}
+chrom <- "ctgA"; start <- 0; end <- 800; sort_pos <- 200
+reads <- read_filter(read_bam(uri, chrom, start, end), uri, chrom, start, end,
+  0, 1540, NULL, list())
+reads$sort_tag <- bam_tag_values(uri, chrom, start, end, "RG")
+laid <- sorted_pileup_layout(reads, sort_pos, "tag")
+ov <- laid[laid$start <= sort_pos & laid$end > sort_pos & !is.na(laid$row), ]
+ov <- ov[order(ov$row), ]
+cat(length(unique(reads$sort_tag)), nrow(ov),
+    paste(ov$sort_tag, collapse = ","), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [distinct, n, order] = out.split(/\s+/)
+    // several distinct RG values are actually read off the reads
+    expect(Number(distinct)).toBeGreaterThan(1)
+    expect(Number(n)).toBeGreaterThan(1)
+    // and the sorted reads are grouped by tag, descending (JBrowse's order)
+    const tags = order!.split(',')
+    expect([...tags].sort().reverse()).toEqual(tags)
+  },
+  90000,
+)

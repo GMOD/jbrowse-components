@@ -468,6 +468,40 @@ describe('readData', () => {
     warn.mockRestore()
   })
 
+  // `path.basename` of a comma-separated --multiwig argument is the LAST entry
+  // (or, with no directories in it, the whole comma string) — so a four-BigWig
+  // track was named after one of its files, and two lists ending in the same
+  // filename shared an id.
+  test('a --multiwig list is not named after one of its files', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const result = readData({
+      fasta: '/ref.fa',
+      trackList: [
+        ['multiwig', ['a/v1.bw,a/v2.bw']],
+        ['multiwig', ['b/v1.bw,b/v2.bw', 'name:Cohort B']],
+      ],
+    })
+    expect(result.tracks.map(t => t.trackId)).toEqual([
+      'multiwig',
+      'multiwig-2',
+    ])
+    // ...and `name:` is what tells the two panels apart, as for any other flag
+    expect(result.tracks.map(t => t.name)).toEqual(['multiwig', 'Cohort B'])
+    warn.mockRestore()
+  })
+
+  // A `.json` sources file, though, does have one filename to be named after.
+  test('a --multiwig sources file keeps its own basename', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbimg-'))
+    const sources = path.join(dir, 'cohort.json')
+    fs.writeFileSync(sources, JSON.stringify(['a.bw', 'b.bw']))
+    const result = readData({
+      fasta: '/ref.fa',
+      trackList: [['multiwig', [sources]]],
+    })
+    expect(result.tracks.map(t => t.trackId)).toEqual(['cohort.json'])
+  })
+
   test('a file basename colliding with a --tracks trackId is suffixed too', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbimg-'))

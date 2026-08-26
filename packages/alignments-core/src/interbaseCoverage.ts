@@ -35,8 +35,13 @@ export interface ClipEntry {
   length: number
 }
 
-const MINIMUM_INDICATOR_READ_DEPTH = 8
-const INDICATOR_THRESHOLD = 0.3
+// The gate an interbase column has to clear to earn an indicator triangle.
+// Exported because the R export emits them as editable script variables and
+// passes them to its own `interbase_indicators` — a second copy of either number
+// would be a silent disagreement between the figure and the browser it claims to
+// reproduce, visible only as a triangle that is there in one and not the other.
+export const MINIMUM_INDICATOR_READ_DEPTH = 8
+export const INDICATOR_THRESHOLD = 0.3
 
 interface InterbaseBucket {
   insertion: number

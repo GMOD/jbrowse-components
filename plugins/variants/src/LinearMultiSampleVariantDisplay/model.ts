@@ -35,6 +35,7 @@ import {
 } from '../shared/variantTopBands.ts'
 import { markersForBlock } from './components/drawVariantInsertionGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
+import { exportRCode } from './exportRCode.ts'
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
 import { buildLaneRenderData } from './laneRenderData.ts'
 
@@ -54,6 +55,7 @@ import type {
   LayoutRegionData,
   ShowLabelsMode,
 } from '@jbrowse/plugin-canvas'
+import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * The unscaled height a lane mark is packed at, before the fit ladder scales the
@@ -691,6 +693,11 @@ export function stateModelFactory(
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts)
+        },
+        // explicit return type breaks the self-referential MST model-type cycle
+        // (same trick as renderSvg); builds the R panel for this track
+        exportRCode(): RTrackFragment | undefined {
+          return exportRCode(self as LinearMultiSampleVariantDisplayModel)
         },
       }))
       .actions(self => ({

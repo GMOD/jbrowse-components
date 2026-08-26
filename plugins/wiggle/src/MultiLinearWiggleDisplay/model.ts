@@ -49,6 +49,7 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
+import { exportRCode } from './exportRCode.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
@@ -66,6 +67,7 @@ import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -647,6 +649,16 @@ export default function stateModelFactory(
           // row mode is still what that display comes back to
           ...resetRowOrderMenuItems(self),
         ]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Build the R ggplot fragment for this track, used by the view's "Export
+       * R script" to regenerate the multi-wiggle panel from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment | undefined {
+        return exportRCode(self as MultiLinearWiggleDisplayModel)
       },
     }))
     .actions(self => ({

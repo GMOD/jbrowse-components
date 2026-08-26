@@ -167,7 +167,10 @@ test_data/1000g_cnv/samples.tsv
 # batch study corpora, refetchable with scripts/derivative_path_study.ts fetch
 .derivative-study/
 
-# alignment indexes samtools downloads beside a remote BAM/CRAM query
+# Rsamtools caches a remote BAM/CRAM index into the CURRENT DIRECTORY when it
+# reads one, so running an exported R script from the repo root leaves the
+# index behind. samtools does the same beside a remote query.
 *.bam.bai
+*.bam.csi
 *.cram.crai
 products/jbrowse-web/browser-tests/tmp*

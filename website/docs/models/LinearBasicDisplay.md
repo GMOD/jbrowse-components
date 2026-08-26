@@ -266,6 +266,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; {…}</code> |  | LinearBasicDisplay |
+| <span id="method-exportrcode">**exportRCode**</span><br><code>() =&gt; RTrackFragment &#124; undefined</code> | Build the R ggplot gene-model panel for the view's "Export R script", regenerating this feature track from source in ggplot2. | LinearBasicDisplay |
 | <span id="method-featurenarrowings">**featureNarrowings**</span><br><code>() =&gt; { showOnlyGenes: { count: number; clear: () =&gt; void; }; }</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenuradiogroups">**showSubmenuRadioGroups**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |

@@ -17,6 +17,7 @@ import { writeMarkerIndexDocs } from './generateMarkerIndex.ts'
 import { writeMenuDocs } from './generateMenuDocs.ts'
 import { writeOrthofinderSetDocs } from './generateOrthofinderSetDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
+import { writeRExportCommandDocs } from './generateRExportCommands.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
 import { writeSearchResultDocs } from './generateSearchResultDocs.ts'
 import { writeShaderExportDocs } from './generateShaderExportDocs.ts'
@@ -50,6 +51,10 @@ export interface MarkerGenerator {
 }
 
 export const MARKER_GENERATORS: MarkerGenerator[] = [
+  {
+    label: 'R export commands',
+    write: (_corpus, opts) => writeRExportCommandDocs(opts),
+  },
   {
     label: 'Color tables',
     write: (_corpus, opts) => writeColorDocs(opts),

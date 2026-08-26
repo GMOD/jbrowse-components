@@ -7,6 +7,7 @@ import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { genomicViewportX } from '../shared/genomicViewportX.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
+import { exportRCode } from './exportRCode.ts'
 
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
@@ -16,6 +17,7 @@ import type {
 } from './components/variantMatrixRenderingBackendTypes.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearMultiSampleVariantMatrixDisplay
@@ -196,6 +198,11 @@ export default function stateModelFactory(
           return screenCol >= 0 && screenCol < n
             ? self.connectorCoordsByColumn[screenCol]
             : undefined
+        },
+        // explicit return type breaks the self-referential MST model-type cycle
+        // (same trick as renderSvg); builds the R panel for this track
+        exportRCode(): RTrackFragment | undefined {
+          return exportRCode(self as LinearMultiSampleVariantMatrixDisplayModel)
         },
       }))
       .actions(self => ({

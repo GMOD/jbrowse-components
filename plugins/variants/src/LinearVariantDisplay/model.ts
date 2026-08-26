@@ -14,11 +14,15 @@ import {
   SV_TYPE_COLOR_JEXL,
 } from '../shared/variantSvType.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
+import { exportRCode } from './exportRCode.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearVariantDisplay
@@ -215,6 +219,16 @@ export default function stateModelFactory(
             examples: VARIANT_FILTER_EXAMPLES,
           },
         ])
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Build the R ggplot fragment for this track, used by the view's "Export
+       * R script" to regenerate the variant panel from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment | undefined {
+        return exportRCode(self as LinearVariantDisplayModel)
       },
     }))
 }

@@ -11,8 +11,9 @@
 // allowed to exist), -page (per-page setup and network diagnosis), -report
 // (what the run noticed and how it says so), -embedded (the component-only
 // capture mode).
-import { execFile, execFileSync } from 'node:child_process'
+import { execFile, execFileSync, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
@@ -41,6 +42,7 @@ import {
   pngDiffFraction,
   trailingBackgroundPx,
 } from './image-pipeline.ts'
+import { rExportInvocation } from './rexportCommand.ts'
 import {
   assertRenderSettled,
   assertSamePageAsReady,
@@ -95,6 +97,7 @@ import type {
   BrowserScreenshotSpec,
   CliSpec,
   ComposeSpec,
+  RExportSpec,
   ScreenshotAction,
   ScreenshotSpec,
   ScreenshotStage,
@@ -605,6 +608,97 @@ async function captureCliSpec(spec: CliSpec) {
   return result
 }
 
+// Which of `names` R cannot load. Probed in one Rscript so a spec pays a single
+// process, and cached because the whole gallery asks about the same handful.
+const rPackageCache = new Map<string, boolean>()
+
+function missingRPackages(names: string[]) {
+  const unknown = names.filter(n => !rPackageCache.has(n))
+  if (unknown.length > 0) {
+    const probe = spawnSync(
+      'Rscript',
+      [
+        '-e',
+        `cat(sapply(c(${unknown.map(n => JSON.stringify(n)).join(',')}), function(p) requireNamespace(p, quietly = TRUE)))`,
+      ],
+      { encoding: 'utf8' },
+    )
+    // No R at all (status !== 0, or the ENOENT that leaves stdout empty) counts
+    // as every package missing, which is the same skip path.
+    const answers = probe.stdout.trim().split(/\s+/)
+    for (const [i, name] of unknown.entries()) {
+      rPackageCache.set(name, probe.status === 0 && answers[i] === 'TRUE')
+    }
+  }
+  return names.filter(n => !rPackageCache.get(n))
+}
+
+// Build the view's R script with jb2export, then run it. The script ends in its
+// own `ggsave` (see assembleRScript), so Rscript writes the PNG itself and this
+// only has to point that write at `renderPath` — no re-sizing here, which is
+// what makes the committed figure identical to what a reader gets by running
+// the downloaded script unmodified.
+//
+// `rExportInvocation` is the whole argv, published verbatim by the gallery page
+// and run verbatim here, so the two cannot disagree about what drew the figure.
+// Whichever form it takes, the files it names are public URLs rather than the
+// local dev server: they are read by rtracklayer / Rsamtools / samtools, not by
+// JBrowse, and those are built for remote genomics files over https and are
+// markedly less happy range-reading a BigWig or CRAM off localhost — which
+// showed up as "UCSC library operation failed" and a cram_to_bam that could not
+// decode. It is also what makes the emitted script copy-pasteable.
+async function renderRExportSpecToTemp(spec: RExportSpec, suffix = '') {
+  const renderPath = tempPath('jb-rexport', spec.name, suffix)
+  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-rexport-'))
+  try {
+    const scriptPath = path.join(workDir, 'view.R')
+    await execFileAsync(
+      'node',
+      [
+        '--experimental-strip-types',
+        jb2exportBin,
+        ...rExportInvocation(spec),
+        '--out',
+        scriptPath,
+      ],
+      { cwd: jbrowseImgDir, maxBuffer: 1024 * 1024 * 64 },
+    )
+    // Retarget the script's own ggsave at our temp png, and drop the sibling
+    // pdf write and the interactive print(p) — both are for a human running the
+    // download, and the pdf alone doubles the render time of a dense pileup.
+    const script = fs.readFileSync(scriptPath, 'utf8')
+    const retargeted = script
+      .replace(
+        /ggsave\("jbrowse_region\.png"/,
+        `ggsave(${JSON.stringify(renderPath)}`,
+      )
+      .replace(/^ggsave\("jbrowse_region\.pdf".*$/m, '')
+      .replace(/^print\(p\)$/m, '')
+    if (retargeted === script) {
+      throw new Error(
+        'generated script has no ggsave("jbrowse_region.png") to retarget — assembleRScript\'s output shape changed',
+      )
+    }
+    fs.writeFileSync(scriptPath, retargeted)
+    await execFileAsync('Rscript', [scriptPath], {
+      cwd: workDir,
+      maxBuffer: 1024 * 1024 * 64,
+    })
+    if (!fs.existsSync(renderPath)) {
+      throw new Error('Rscript produced no figure')
+    }
+    optimizePng(renderPath)
+    return renderPath
+  } finally {
+    fs.rmSync(workDir, { recursive: true, force: true })
+  }
+}
+
+async function captureRExportSpec(spec: RExportSpec) {
+  const renderPath = await renderRExportSpecToTemp(spec)
+  return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
+}
+
 // Copy a committed jb2export image into the website static mirror, only when the
 // bytes differ, so an unchanged spec doesn't churn the tracked website copy.
 function mirrorFile(src: string, dest: string) {
@@ -838,9 +932,16 @@ async function main() {
   // Only url-mode specs pointing at a relative path need the jbrowse-web server.
   // embedded specs serve their own harness; cli specs bypass the browser; compose
   // specs (and http-url specs) only read already-committed PNGs off disk.
-  const needsLocalServer = filteredSpecs.some(
-    s => s.mode === 'url' && !s.url.startsWith('http'),
-  )
+  //
+  // An rexport spec needs no server: it reads the hosted mirror of test_data
+  // (see rExportArgs), because R and samtools do the reading, not a browser.
+  const needsLocalServer = filteredSpecs.some(spec => {
+    if (spec.mode === 'url') {
+      return !spec.url.startsWith('http')
+    } else {
+      return false
+    }
+  })
 
   let server: Server | undefined
 
@@ -1090,6 +1191,21 @@ async function main() {
       skip(spec, 'heavy remote data; name it in --filter to re-render')
       return
     }
+    // Same shape as headedOnly: an R export needs R plus a Bioconductor stack
+    // that most machines running a screenshot sweep won't have, and a skip
+    // keeps the committed figure rather than reddening the run. Named packages
+    // so the message says what to install, not just "R missing".
+    if (spec.mode === 'rexport') {
+      const missing = missingRPackages([
+        'ggplot2',
+        'patchwork',
+        ...(spec.rPackages ?? []),
+      ])
+      if (missing.length > 0) {
+        skip(spec, `needs R + ${missing.join(', ')}`)
+        return
+      }
+    }
     // Stacking a part that just failed to render would publish a figure half
     // made of a stale image, and the run would still report success.
     const brokenParts =
@@ -1113,6 +1229,14 @@ async function main() {
           await checkTwice(spec, suffix => renderCliSpecToTemp(spec, suffix))
         } else {
           result = await captureCliSpec(spec)
+        }
+      } else if (spec.mode === 'rexport') {
+        if (check) {
+          await checkTwice(spec, suffix =>
+            renderRExportSpecToTemp(spec, suffix),
+          )
+        } else {
+          result = await captureRExportSpec(spec)
         }
       } else if (check) {
         await checkTwice(spec, suffix =>

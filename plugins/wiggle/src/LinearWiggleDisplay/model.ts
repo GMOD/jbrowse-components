@@ -36,6 +36,7 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { SINGLE_WIGGLE_SOURCE_NAME, WIGGLE_RENDERINGS } from '../util.ts'
+import { exportRCode } from './exportRCode.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
@@ -44,6 +45,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
@@ -269,6 +271,16 @@ export default function stateModelFactory(
           ],
           negColor: self.useBicolor ? self.negColor : solidColor,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Build the R ggplot fragment for this track, used by the view's "Export
+       * R script" to regenerate the wiggle panel from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment | undefined {
+        return exportRCode(self as LinearWiggleDisplayModel)
       },
     }))
     .actions(self => ({

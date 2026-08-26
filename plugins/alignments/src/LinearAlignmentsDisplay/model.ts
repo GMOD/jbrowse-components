@@ -95,6 +95,7 @@ import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { configSlotViews } from './configSlotViews.ts'
 import { ColorScheme } from './constants.ts'
+import { exportRCode } from './exportRCode.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
   applyChainStrandFrames,
@@ -193,7 +194,10 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LinearGenomeViewModel,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
 // dependency onto the startup path; the consumer renders it inside a Suspense
@@ -3964,6 +3968,15 @@ export default function stateModelFactory(
          */
         clearHoveredFeature() {
           self.clearMouseoverState()
+        },
+
+        /**
+         * #method
+         * Build the R ggplot panels (coverage + pileup) for the view's "Export R
+         * script", regenerating the alignments view from source in ggplot2.
+         */
+        exportRCode(): RTrackFragment[] {
+          return exportRCode(self as LinearAlignmentsDisplayModel)
         },
 
         afterAttach() {

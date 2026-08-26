@@ -920,6 +920,23 @@ export function applyDisplayOpts(
   // already said instead of erasing its siblings.
   const { filterBy, ...displaySnap } = snap
 
+  // A `--spec` / `--session` view arrives with its tracks already open, and
+  // showTrackGeneric returns an already-open track UNTOUCHED — everything built
+  // above would be dropped without a word. That is what made `--spec view.json
+  // --track my_bam sort:base` a silent no-op, and with it the R gallery's whole
+  // "Sort by base" figure: its session comes from a spec, so the modifier never
+  // reached the display and the exported script sorted nothing.
+  //
+  // Re-open instead, so the display is CREATED in the requested state (the same
+  // one path a fresh open takes — no second way to mutate one into shape), then
+  // put the track back where it was. Panel order is what a stacked figure is
+  // made of, so a modifier must not quietly move a track to the bottom.
+  const at = view.tracks.findIndex(t => t.configuration.trackId === trackId)
+  const successorId = at === -1 ? undefined : view.tracks[at + 1]?.id
+  if (at !== -1) {
+    view.hideTrack(trackId)
+  }
+
   // Create the display already in its target state rather than mutating a
   // default display with setter actions. An explicit `display:` selects a
   // non-default display via the snapshot `type` showTrack reads.
@@ -961,5 +978,12 @@ export function applyDisplayOpts(
         `Warning: filter options on "${trackId}" ignored — its display has no filterBy`,
       )
     }
+  }
+
+  // Re-shown tracks land at the bottom; moveTrack onto the track that followed
+  // this one puts it back (moving UP inserts before the target). No successor
+  // means it was already last.
+  if (successorId) {
+    view.moveTrack(opened.id, successorId)
   }
 }

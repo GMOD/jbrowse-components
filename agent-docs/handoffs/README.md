@@ -69,4 +69,5 @@ doc that carries none. Don't edit between the markers; write the doc's
 | --- | --- |
 | [fetch-convergence-review](fetch-convergence-review.md) | What is left of the 2026-08-26 audit of fetch keys and freshness signatures across all four fetch families. The per-region export gate landed; the remaining thread is the committed-key gate the shared skeleton does not own yet, whose naive version trades one silent staleness for two others, plus three smaller items each with the reason its obvious fix is wrong. |
 | [launch-menu-rename-and-reconstruction-limits](launch-menu-rename-and-reconstruction-limits.md) | What is left after the "Launch" rename and the derivative-allele guidelines — the figures and one tour that still show the old label, and two proposals nobody has started, one of which needs a measurement before it can be judged. |
+| [r-export-handoff](R_EXPORT_HANDOFF.md) | The state of the LGV "Export R script" exporter after its second pass — what was fixed (wiggle coordinates, sort-by-base under --spec, gene filters, discontiguous Hi-C), the unsupported-track skip, and the codegen bugs the gallery renders found. |
 <!-- END GENERATED HANDOFFS INDEX -->

@@ -3,6 +3,8 @@ import fs from 'node:fs'
 
 import { fileSync } from 'tmp'
 
+import { wantsRScript } from './options.ts'
+
 // `-` as a file argument means stdin, so a JSON input can be piped in rather
 // than staged as a file: `jq … | jb2export --spec -`
 export const STDIN_ARG = '-'
@@ -40,7 +42,11 @@ export function writeRendered(
     return
   }
   const lower = outFile.toLowerCase()
-  if (lower.endsWith('.png')) {
+  // `.R` is not an image at all — the result is already R source, so it goes out
+  // verbatim rather than through a converter that would read it as SVG.
+  if (wantsRScript(outFile)) {
+    fs.writeFileSync(outFile, result)
+  } else if (lower.endsWith('.png')) {
     convert(result, { out: outFile, width: String(width) })
   } else if (lower.endsWith('.pdf')) {
     convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])

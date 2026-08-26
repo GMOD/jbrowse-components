@@ -144,11 +144,13 @@ export { fetchResults, SearchResultsNotFoundError } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {
   BpOffset,
+  ExportRCodeOptions,
   ExportSvgOptions,
   HighlightType,
   InitState,
   LinearGenomeViewLaunchProps,
   NavLocation,
+  RTrackFragment,
   TrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'
@@ -186,6 +188,26 @@ export type {
 export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
 export { default as SVGRowHeader } from './LinearGenomeView/svgcomponents/SVGRowHeader.tsx'
+export {
+  assembleRScript,
+  buildRScript,
+  resolveHelpers,
+} from './LinearGenomeView/exportR.ts'
+export {
+  FIGURE_DPI,
+  FIGURE_INCHES_PER_WEIGHT,
+  FIGURE_WIDTH_INCHES,
+  firstUri,
+  getTrackRMeta,
+  rDataVariable,
+  rName,
+  rStr,
+  safeVarName,
+} from './LinearGenomeView/rexportShared.ts'
+export type {
+  RFileLocation,
+  RTrackMeta,
+} from './LinearGenomeView/rexportShared.ts'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as SVGHighlightsOverlay } from './LinearGenomeView/svgcomponents/SVGHighlightsOverlay.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'

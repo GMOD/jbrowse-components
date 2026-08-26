@@ -239,6 +239,35 @@ export const hicSpecs: ScreenshotSpec[] = [
   // `observed` 200 are drawn fully transparent — that display has no filter
   // slot, and 14 of the 15 calls with an anchor in this window are weak ones
   // whose other anchor is megabases away, i.e. the fan the review objected to.
+  // Two discontiguous windows side by side on one cumulative-bp axis. The block
+  // between the two panels carries their cross-region contacts — the same
+  // geometry that puts a bright off-diagonal block at a translocation's partner
+  // loci. Nothing has to be clicked for it; it falls out of a multi-region
+  // `loc`.
+  //
+  // Kept as a still even though `videos/hic.ts` now films the same route: this
+  // session is what the R gallery's `multiregion` figure derives its loc and
+  // track list from (`rexportCommand.ts` reads it by name), so retiring the
+  // still takes the exported command with it.
+  {
+    mode: 'url',
+    name: 'hic/two_regions',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      // two windows close enough that the cross-block carries real signal —
+      // 5Mb-apart windows fetch their pair just the same, but Hi-C contact
+      // frequency has decayed to near background by then and the block reads
+      // as empty, which shows the geometry without showing the data
+      loc: 'chr8:52,000,000-54,000,000 chr8:54,200,000-56,200,000',
+      trackLabels: 'offset',
+      tracks: ['hic'],
+    }),
+    viewportHeight: 530,
+    readySelector: '[data-testid="hic-display-done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+
   {
     mode: 'url',
     name: 'hic/loops_and_domains',

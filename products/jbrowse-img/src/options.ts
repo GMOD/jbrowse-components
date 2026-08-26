@@ -138,7 +138,7 @@ const optionDefs: OptionDef[] = [
   {
     name: 'out',
     description:
-      'Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats',
+      'Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view\'s reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats',
   },
   {
     name: 'width',
@@ -265,6 +265,18 @@ export function ignoredComparativeOptions(mode: ViewMode) {
     .map(o => o.name)
 }
 
+/**
+ * True when `--out` asks for the view's R script rather than an image.
+ *
+ * Read twice: before the render, where it selects the emitter (`Opts.emitR`),
+ * and after it, where it decides that the result is written verbatim instead of
+ * going through rsvg-convert. Case-insensitive, matching the `.png`/`.pdf`
+ * dispatch beside it — `.R` is the conventional spelling, `.r` is common.
+ */
+export function wantsRScript(outFile: string | undefined) {
+  return outFile?.toLowerCase().endsWith('.r') ?? false
+}
+
 const examples: [string, string][] = [
   [
     '--fasta ref.fa --bam reads.bam --loc chr1:1-10000 --out out.svg',
@@ -289,6 +301,10 @@ const examples: [string, string][] = [
   [
     '--fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg',
     'Render BigWig with cytobands',
+  ],
+  [
+    '--fasta ref.fa --bigwig signal.bw --loc chr1:1-50000 --out fig.R',
+    'Emit an editable ggplot2 script instead of an image, then Rscript fig.R',
   ],
 ]
 

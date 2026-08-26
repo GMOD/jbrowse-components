@@ -80,6 +80,8 @@ export {
   packModCovSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export {
+  INDICATOR_THRESHOLD,
+  MINIMUM_INDICATOR_READ_DEPTH,
   computeInterbaseCoverage,
   emptyInterbaseCoverage,
 } from './interbaseCoverage.ts'
