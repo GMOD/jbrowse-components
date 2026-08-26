@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { DialogTitle, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { makeStyles } from '../util/tss-react/index.ts'
 import Dialog from './Dialog.tsx'
 
 import type { Props as DialogProps } from './Dialog.tsx'

@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 
-import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import useMeasure from '../util/useMeasure.ts'
 
 import type { TypographyProps } from '@mui/material'
 import type { Ref } from 'react'

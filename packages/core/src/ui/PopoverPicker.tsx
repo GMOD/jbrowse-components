@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-
+import { makeStyles } from '../util/tss-react/index.ts'
 import { ColorPopover } from './ColorPicker.tsx'
 import { swatchStyle } from './colorSwatchStyle.ts'
 
