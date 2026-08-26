@@ -3,7 +3,7 @@
 channels Cue encodes, as `.hic` files the JBrowse HicTrack reads
 (website/docs/tutorials/sv_contact_maps.md).
 
-Cue (Popic et al., Nature Communications 2023) images an SV rather than
+Cue (Popic et al., Nature Methods 2023) images an SV rather than
 genotyping it: pixel (a, b) counts the read pairs and split reads with one end
 in bin a and the other in bin b, each pair-orientation class held in its own
 channel, plus a channel carrying |depth[a] - depth[b]| that draws a plaid
