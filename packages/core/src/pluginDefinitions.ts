@@ -56,8 +56,8 @@ export interface CJSPluginDefinition {
 }
 
 /**
- * A plugin named by its plugin-store package rather than by a url — the query
- * ("msaview, for this JBrowse") instead of a precomputed answer ("these exact
+ * A plugin named by its plugin-store entry rather than by a url — the query
+ * ("MsaView, for this JBrowse") instead of a precomputed answer ("these exact
  * bytes"). `resolveStorePluginRefs` (util/pluginStore.ts) turns one into a
  * concrete, version-pinned, integrity-carrying definition against the published
  * manifest, so a definition in this shape never reaches PluginLoader.
@@ -67,7 +67,15 @@ export interface CJSPluginDefinition {
  * then read for years by whatever JBrowse loads it. A url there is an answer
  * computed on the day the config was generated, and the only answer that keeps
  * working is the store's mutable `latest/` path: no integrity hash, and the same
- * bytes for every host. A package name defers both decisions to load time.
+ * bytes for every host. A store name defers both decisions to load time.
+ *
+ * The value is the store's `name` — the same string a url-bearing entry puts in
+ * `name`, and the UMD global the bundle defines. NOT the npm package. A config
+ * at a permanent url must name something that cannot be renamed out from under
+ * it, and the npm package is owned by npm and the plugin's author: a scope move
+ * strands every config that named it, which is the mistake naming a url makes,
+ * one level up. The store owns its `name`, so it can point one at a different
+ * package without touching a config. See jbrowse-plugin-list ADR 0008.
  */
 export interface StorePluginDefinition {
   storePlugin: string
@@ -81,6 +89,11 @@ export interface StorePluginDefinition {
  * emitting refs before every host reading it understands them. And resolution
  * keeps the field on what it produces, so a resolved definition still records
  * which store entry it came from and `samePlugin` can match it against a ref.
+ *
+ * On a resolved definition `storePlugin` and `name` hold the same string, since
+ * both are the store's `name`. They are still distinct fields: `name` is what
+ * `loadUMDPlugin` looks up on `globalThis`, and `storePlugin` is the assertion
+ * that the manifest is where this came from.
  */
 export type PluginDefinition = (
   | UMDUrlPluginDefinition
@@ -123,8 +136,8 @@ export function isStorePluginDefinition(
   return 'storePlugin' in def && typeof def.storePlugin === 'string'
 }
 
-/** The store package a definition names, resolved or not. */
-export function storePluginPackage(def: PluginDefinition) {
+/** The store entry a definition names, resolved or not. */
+export function storePluginName(def: PluginDefinition) {
   return isStorePluginDefinition(def) ? def.storePlugin : undefined
 }
 
@@ -197,7 +210,7 @@ export function pluginDescriptionString(d: PluginDefinition) {
     return `UMD plugin ${d.name}`
   } else if (isStorePluginDefinition(d)) {
     // an unresolved ref, which is what a resolution failure is reported on: it
-    // has no url yet, so the package name is the only thing that identifies it
+    // has no url yet, so the store name is the only thing that identifies it
     return `store plugin ${d.storePlugin}`
   } else {
     return 'unknown plugin'
@@ -269,20 +282,22 @@ export function pluginLabel(definition: PluginDefinition) {
  * url, a hand-written one no package), and a missing field never matches: two
  * definitions are not the same plugin just because neither names one.
  *
- * The store package is checked first because it is the only one of the three
- * that survives resolution intact. A ref and its resolved form share it; they
- * share no url, and a *pure* ref has no name until the manifest supplies one.
+ * The store name is checked first because it is the only one of the three that
+ * survives resolution intact. A ref and its resolved form share it; they share
+ * no url, and a *bare* ref has no `name` until the manifest supplies one — so
+ * this clause is doing work even though a resolved definition's `storePlugin`
+ * and `name` agree.
  *
  * This is the single answer to "is this plugin already installed" — dedupe
  * across plugin sources, the plugin store's installed-check — so those cannot
  * drift apart and disagree about what is a duplicate.
  */
 export function samePlugin(a: PluginDefinition, b: PluginDefinition) {
-  const [pkgA, pkgB] = [storePluginPackage(a), storePluginPackage(b)]
+  const [refA, refB] = [storePluginName(a), storePluginName(b)]
   const [nameA, nameB] = [pluginName(a), pluginName(b)]
   const [urlA, urlB] = [maybePluginUrl(a), maybePluginUrl(b)]
   return (
-    (pkgA !== undefined && pkgA === pkgB) ||
+    (refA !== undefined && refA === refB) ||
     (nameA !== undefined && nameA === nameB) ||
     (urlA !== undefined && urlA === urlB)
   )

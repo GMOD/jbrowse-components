@@ -43,7 +43,7 @@ function isTrustedUrl(url: string) {
  * Whether a definition can run without consulting the store listing or asking
  * the user.
  *
- * A store ref names a package, and resolution can only turn it into a
+ * A store ref names a store entry, and resolution can only turn it into a
  * `https://jbrowse.org/plugins/` url — the prefix trusted outright above — so a
  * ref carrying no url of its own is trusted by construction. There would be
  * nothing to show a user anyway: the url does not exist until the manifest is

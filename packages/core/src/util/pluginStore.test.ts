@@ -241,8 +241,9 @@ describe('getPluginUpdate', () => {
 })
 
 // The store entry a config's ref points at, in the shape jbrowse-plugin-list
-// actually publishes: a version-pinned url with an integrity hash, and the UMD
-// global name the config no longer has to know.
+// actually publishes: a version-pinned url with an integrity hash, keyed by the
+// store's `name`. A ref names that, never `packageName` — see ADR 0008 and the
+// test below that pins it.
 const store = [
   plugin({
     name: 'MsaView',
@@ -264,13 +265,13 @@ const resolvedMsaView = {
   name: 'MsaView',
   url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.3.0/dist/m.js',
   integrity: 'sha384-msa',
-  storePlugin: 'jbrowse-plugin-msaview',
+  storePlugin: 'MsaView',
 }
 
 describe('resolveStoreRefs', () => {
   it('turns a ref into the pinned, integrity-carrying definition', () => {
     const { definitions, failures } = resolveStoreRefs(
-      [{ storePlugin: 'jbrowse-plugin-msaview' }],
+      [{ storePlugin: 'MsaView' }],
       store,
       '4.3.0',
     )
@@ -279,20 +280,29 @@ describe('resolveStoreRefs', () => {
   })
 
   // the name is what dropVendoredPlugins and PluginLoader's UMD global lookup
-  // both read, and taking it from the store is what lets a config generator
-  // stop knowing it
+  // both read, and taking it from the store rather than from the config is what
+  // keeps the two from drifting apart
   it('takes the UMD name from the store, not from the config', () => {
     const { definitions } = resolveStoreRefs(
-      [
-        {
-          storePlugin: 'jbrowse-plugin-msaview',
-          name: 'WhateverTheConfigSaid',
-        },
-      ],
+      [{ storePlugin: 'MsaView', name: 'WhateverTheConfigSaid' }],
       store,
       '4.3.0',
     )
     expect(definitions[0]).toEqual(resolvedMsaView)
+  })
+
+  // The whole point of ADR 0008's key choice. npm owns the package name and can
+  // rename it; the store owns `name`. A ref that resolved against packageName
+  // would strand every config naming a plugin that moved scope — the mistake
+  // naming a url makes, one level up. So the package name is NOT a ref.
+  it('does not resolve a ref that names the npm package', () => {
+    const { definitions, failures } = resolveStoreRefs(
+      [{ storePlugin: 'jbrowse-plugin-msaview' }],
+      store,
+      '4.3.0',
+    )
+    expect(definitions).toEqual([])
+    expect(`${failures[0]!.error}`).toMatch(/not in the plugin store/)
   })
 
   it('leaves a definition that is not a ref alone', () => {
@@ -308,12 +318,12 @@ describe('resolveStoreRefs', () => {
   // url is no worse than not having tried.
   it.each([
     ['the store cannot be read', undefined],
-    ['the package is not listed', store],
+    ['the name is not listed', store],
   ])('falls back to the url it carries when %s', (_why, listing) => {
     const hybrid = {
       name: 'Retired',
       url: 'https://jbrowse.org/plugins/jbrowse-plugin-retired/latest/dist/r.js',
-      storePlugin: 'jbrowse-plugin-retired',
+      storePlugin: 'Retired',
     }
     const { definitions, failures } = resolveStoreRefs(
       [hybrid],
@@ -326,7 +336,7 @@ describe('resolveStoreRefs', () => {
 
   it('fails a ref with no url to fall back on', () => {
     const { definitions, failures } = resolveStoreRefs(
-      [{ storePlugin: 'jbrowse-plugin-retired' }],
+      [{ storePlugin: 'Retired' }],
       store,
       '4.3.0',
     )
@@ -359,7 +369,7 @@ describe('resolveStoreRefs', () => {
         {
           name: 'Old',
           url: 'https://jbrowse.org/plugins/jbrowse-plugin-old/latest/dist/o.js',
-          storePlugin: 'jbrowse-plugin-old',
+          storePlugin: 'Old',
         },
       ],
       listing,
@@ -390,7 +400,7 @@ describe('resolveStorePluginRefs', () => {
     const hybrid = {
       name: 'MsaView',
       url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/m.js',
-      storePlugin: 'jbrowse-plugin-msaview',
+      storePlugin: 'MsaView',
     }
     const { definitions, failures } = await resolveStorePluginRefs(
       [hybrid],
@@ -403,7 +413,7 @@ describe('resolveStorePluginRefs', () => {
 
   it('fetches once and resolves against what it got', async () => {
     const { definitions } = await resolveStorePluginRefs(
-      [{ storePlugin: 'jbrowse-plugin-msaview' }],
+      [{ storePlugin: 'MsaView' }],
       '4.3.0',
       () => Promise.resolve({ plugins: store }),
     )

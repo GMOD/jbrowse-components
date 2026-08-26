@@ -6,7 +6,7 @@ import {
   isStorePluginDefinition,
   maybePluginUrl,
   samePlugin,
-  storePluginPackage,
+  storePluginName,
   vendoredPluginNames,
 } from '../pluginDefinitions.ts'
 
@@ -261,11 +261,16 @@ export interface StorePluginResolution {
  * publishes for this JBrowse version, and passes everything else through
  * untouched.
  *
- * `storePlugins` is `undefined` when the manifest could not be read at all.
- * That is a different situation from a package the manifest does not list, but
- * it gets the same answer, and the split that matters is elsewhere:
+ * A ref names the store's `name`, not the npm package — the store owns the
+ * former and can repoint it at a different package without breaking a config
+ * that named it years ago (jbrowse-plugin-list ADR 0008). `packageName` stays
+ * the key on the install side, where pinning is the point.
  *
- * - **No answer from the store** — unreachable, or the package is not listed
+ * `storePlugins` is `undefined` when the manifest could not be read at all.
+ * That is a different situation from a name the manifest does not list, but it
+ * gets the same answer, and the split that matters is elsewhere:
+ *
+ * - **No answer from the store** — unreachable, or the name is not listed
  *   (retired, renamed, never published). A ref that also carries a url falls
  *   back to it: that url is what a JBrowse without ref support loads from the
  *   same config today, so falling back is exactly no worse than not having
@@ -280,7 +285,8 @@ export interface StorePluginResolution {
  * The resolved definition keeps `storePlugin`. It is the only one of the three
  * identity keys that survives resolution, so it is what lets `samePlugin` match
  * a config's resolved entry against a session's still-unresolved ref for the
- * same plugin.
+ * same plugin. It ends up equal to the definition's `name`, because the store's
+ * `name` is what both are.
  */
 export function resolveStoreRefs(
   defs: PluginDefinition[],
@@ -290,12 +296,12 @@ export function resolveStoreRefs(
   const definitions: PluginDefinition[] = []
   const failures: StorePluginFailure[] = []
   for (const definition of defs) {
-    const packageName = storePluginPackage(definition)
-    if (packageName === undefined) {
+    const ref = storePluginName(definition)
+    if (ref === undefined) {
       definitions.push(definition)
       continue
     }
-    const entry = storePlugins?.find(p => p.packageName === packageName)
+    const entry = storePlugins?.find(p => p.name === ref)
     if (entry === undefined) {
       const fallback = maybePluginUrl(definition)
       if (fallback === undefined) {
@@ -303,13 +309,13 @@ export function resolveStoreRefs(
           definition,
           error: new Error(
             storePlugins === undefined
-              ? `Could not read the plugin store, so "${packageName}" could not be resolved, and it names no url to fall back on.`
-              : `"${packageName}" is not in the plugin store, and it names no url to fall back on.`,
+              ? `Could not read the plugin store, so "${ref}" could not be resolved, and it names no url to fall back on.`
+              : `"${ref}" is not in the plugin store, and it names no url to fall back on.`,
           ),
         })
       } else {
         console.warn(
-          `Loading "${packageName}" from ${fallback} — ${
+          `Loading "${ref}" from ${fallback} — ${
             storePlugins === undefined
               ? 'the plugin store could not be read'
               : 'it is not in the plugin store'
@@ -324,7 +330,7 @@ export function resolveStoreRefs(
       failures.push({
         definition,
         error: new Error(
-          `The plugin store publishes no build of "${packageName}" for JBrowse ${jbrowseVersion}${
+          `The plugin store publishes no build of "${ref}" for JBrowse ${jbrowseVersion}${
             resolved.supportedRanges.length > 0
               ? ` (it supports ${resolved.supportedRanges.join(' or ')}).`
               : '.'
@@ -333,7 +339,7 @@ export function resolveStoreRefs(
       })
       continue
     }
-    definitions.push({ ...resolved.definition, storePlugin: packageName })
+    definitions.push({ ...resolved.definition, storePlugin: ref })
   }
   return { definitions, failures }
 }

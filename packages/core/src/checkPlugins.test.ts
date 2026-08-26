@@ -271,15 +271,13 @@ describe('checkPlugins with real plugin store', () => {
   })
 })
 
-// A ref names a package, and resolution can only turn one into a
+// A ref names a store entry, and resolution can only turn one into a
 // jbrowse.org/plugins url — already trusted outright. So a ref needs no prompt,
 // and there is no url to put in one anyway. A ref carrying a fallback url is a
 // different question: that url is what runs when the store cannot answer.
 describe('store refs', () => {
   it('trusts a ref with no url of its own', async () => {
-    await expect(
-      checkPlugins([{ storePlugin: 'jbrowse-plugin-msaview' }]),
-    ).resolves.toBe(true)
+    await expect(checkPlugins([{ storePlugin: 'MsaView' }])).resolves.toBe(true)
   })
 
   it('trusts a ref whose fallback url is on a trusted host', async () => {
@@ -288,7 +286,7 @@ describe('store refs', () => {
         {
           name: 'MsaView',
           url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/m.js',
-          storePlugin: 'jbrowse-plugin-msaview',
+          storePlugin: 'MsaView',
         },
       ]),
     ).resolves.toBe(true)
@@ -303,7 +301,7 @@ describe('store refs', () => {
           {
             name: 'MsaView',
             url: 'https://evil.example.com/m.js',
-            storePlugin: 'jbrowse-plugin-msaview',
+            storePlugin: 'MsaView',
           },
         ],
         store([]),

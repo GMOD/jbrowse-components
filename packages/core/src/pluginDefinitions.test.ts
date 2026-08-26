@@ -96,48 +96,42 @@ describe('pluginsNotIn', () => {
 })
 
 // A store ref and the definition it resolves to share no url and, until the
-// manifest supplies one, no name. The package is the only key that spans them,
-// and every "do I already have this" answer runs through samePlugin.
+// manifest supplies one, no name. `storePlugin` is the only key that spans
+// them, and every "do I already have this" answer runs through samePlugin.
 describe('store refs', () => {
-  const ref: PluginDefinition = { storePlugin: 'jbrowse-plugin-msaview' }
+  const ref: PluginDefinition = { storePlugin: 'MsaView' }
   const resolved: PluginDefinition = {
     name: 'MsaView',
     url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.3.0/dist/m.js',
-    storePlugin: 'jbrowse-plugin-msaview',
+    storePlugin: 'MsaView',
   }
 
   it('matches a ref against what it resolved to', () => {
     expect(samePlugin(ref, resolved)).toBe(true)
   })
 
-  it('does not match two refs to different packages', () => {
-    expect(samePlugin(ref, { storePlugin: 'jbrowse-plugin-protein3d' })).toBe(
-      false,
-    )
+  it('does not match two refs to different store entries', () => {
+    expect(samePlugin(ref, { storePlugin: 'Protein3d' })).toBe(false)
   })
 
   // "unknown plugin from unknown url" is what an unresolved ref used to report
   // itself as, which is the text a resolution failure is shown on
-  it('describes itself by package when it has no url yet', () => {
-    expect(pluginDescriptionString(ref)).toBe(
-      'store plugin jbrowse-plugin-msaview',
-    )
+  it('describes itself by store name when it has no url yet', () => {
+    expect(pluginDescriptionString(ref)).toBe('store plugin MsaView')
   })
 
-  // dropVendoredPlugins matches on the UMD name, which a ref does not carry —
-  // so a config naming a vendored plugin by package only gets dropped once
-  // resolution has supplied the name. Ordering, not a filter change, is the fix;
-  // this pins both halves.
+  // dropVendoredPlugins matches on `name`, which a bare ref does not carry even
+  // though `storePlugin` holds the same string — so a config naming a vendored
+  // plugin by ref only gets dropped once resolution has supplied the name.
+  // Ordering, not a filter change, is the fix; this pins both halves.
   it('is dropped as vendored only after resolution supplies the name', () => {
-    expect(
-      dropVendoredPlugins([{ storePlugin: 'jbrowse-plugin-mafviewer' }]),
-    ).toHaveLength(1)
+    expect(dropVendoredPlugins([{ storePlugin: 'MafViewer' }])).toHaveLength(1)
     expect(
       dropVendoredPlugins([
         {
           name: 'MafViewer',
           url: 'https://jbrowse.org/plugins/jbrowse-plugin-mafviewer/1.0.0/dist/m.js',
-          storePlugin: 'jbrowse-plugin-mafviewer',
+          storePlugin: 'MafViewer',
         },
       ]),
     ).toEqual([])

@@ -105,7 +105,7 @@ describe('store refs', () => {
   it('resolves before dropping vendored, so a ref to one is still dropped', async () => {
     mockStore([mafviewer])
     const calls = captureLoad()
-    await loadRuntimePlugins([{ storePlugin: 'jbrowse-plugin-mafviewer' }], {
+    await loadRuntimePlugins([{ storePlugin: 'MafViewer' }], {
       dropVendored: true,
       jbrowseVersion,
     })
@@ -125,7 +125,7 @@ describe('store refs', () => {
     mockStore([])
     captureLoad()
     await expect(
-      loadRuntimePlugins([{ storePlugin: 'jbrowse-plugin-nope' }], {
+      loadRuntimePlugins([{ storePlugin: 'Nope' }], {
         dropVendored: true,
         jbrowseVersion,
       }),
