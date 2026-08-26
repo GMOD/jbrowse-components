@@ -1,9 +1,12 @@
 import { compareVersions, satisfies } from 'compare-versions'
 
+import { fetchPlugins } from '../checkPlugins.ts'
 import {
   desktopVendoredPluginNames,
+  isStorePluginDefinition,
   maybePluginUrl,
   samePlugin,
+  storePluginPackage,
   vendoredPluginNames,
 } from '../pluginDefinitions.ts'
 
@@ -230,4 +233,132 @@ export function getPluginUpdate(
     isNewer(resolved.pluginVersion, installedVersion)
     ? { pluginVersion: resolved.pluginVersion, name: plugin.name, definition }
     : undefined
+}
+
+/**
+ * A definition whose store ref could not be turned into something loadable,
+ * with the reason.
+ *
+ * Structurally identical to `PluginLoader`'s `PluginLoadFailure`, and
+ * deliberately re-declared rather than imported: that module pulls in ReExports
+ * — effectively all of core — which is the whole reason inspecting a definition
+ * lives apart from running one. Matching the shape lets a product report a
+ * plugin that could not be resolved and one that could not be loaded through a
+ * single path, which is what its user sees anyway.
+ */
+export interface StorePluginFailure {
+  definition: PluginDefinition
+  error: unknown
+}
+
+export interface StorePluginResolution {
+  definitions: PluginDefinition[]
+  failures: StorePluginFailure[]
+}
+
+/**
+ * Replaces every store ref in `defs` with the concrete definition the store
+ * publishes for this JBrowse version, and passes everything else through
+ * untouched.
+ *
+ * `storePlugins` is `undefined` when the manifest could not be read at all.
+ * That is a different situation from a package the manifest does not list, but
+ * it gets the same answer, and the split that matters is elsewhere:
+ *
+ * - **No answer from the store** — unreachable, or the package is not listed
+ *   (retired, renamed, never published). A ref that also carries a url falls
+ *   back to it: that url is what a JBrowse without ref support loads from the
+ *   same config today, so falling back is exactly no worse than not having
+ *   tried. A ref with no url has nothing to fall back on and fails.
+ * - **An answer of "not for this JBrowse"** — the package is listed and no
+ *   published version's `jbrowseRange` covers the running version. This does
+ *   NOT fall back. The store has an opinion and the opinion is that the bundle
+ *   does not work here; loading the url anyway is the hole ADR 0007 describes,
+ *   where narrowing a range hid a broken plugin from careful clients and left
+ *   it armed for everyone else.
+ *
+ * The resolved definition keeps `storePlugin`. It is the only one of the three
+ * identity keys that survives resolution, so it is what lets `samePlugin` match
+ * a config's resolved entry against a session's still-unresolved ref for the
+ * same plugin.
+ */
+export function resolveStoreRefs(
+  defs: PluginDefinition[],
+  storePlugins: JBrowsePlugin[] | undefined,
+  jbrowseVersion: string,
+): StorePluginResolution {
+  const definitions: PluginDefinition[] = []
+  const failures: StorePluginFailure[] = []
+  for (const definition of defs) {
+    const packageName = storePluginPackage(definition)
+    if (packageName === undefined) {
+      definitions.push(definition)
+      continue
+    }
+    const entry = storePlugins?.find(p => p.packageName === packageName)
+    if (entry === undefined) {
+      const fallback = maybePluginUrl(definition)
+      if (fallback === undefined) {
+        failures.push({
+          definition,
+          error: new Error(
+            storePlugins === undefined
+              ? `Could not read the plugin store, so "${packageName}" could not be resolved, and it names no url to fall back on.`
+              : `"${packageName}" is not in the plugin store, and it names no url to fall back on.`,
+          ),
+        })
+      } else {
+        console.warn(
+          `Loading "${packageName}" from ${fallback} — ${
+            storePlugins === undefined
+              ? 'the plugin store could not be read'
+              : 'it is not in the plugin store'
+          }.`,
+        )
+        definitions.push(definition)
+      }
+      continue
+    }
+    const resolved = resolvePlugin(entry, jbrowseVersion)
+    if (!resolved.compatible || resolved.definition === undefined) {
+      failures.push({
+        definition,
+        error: new Error(
+          `The plugin store publishes no build of "${packageName}" for JBrowse ${jbrowseVersion}${
+            resolved.supportedRanges.length > 0
+              ? ` (it supports ${resolved.supportedRanges.join(' or ')}).`
+              : '.'
+          }`,
+        ),
+      })
+      continue
+    }
+    definitions.push({ ...resolved.definition, storePlugin: packageName })
+  }
+  return { definitions, failures }
+}
+
+/**
+ * `resolveStoreRefs` with the manifest fetched for it — the form a product
+ * calls, immediately before it drops vendored plugins and loads what is left.
+ *
+ * Fetches nothing when no definition is a ref, which is every config that
+ * predates them and every session a user assembled by hand. The store is on the
+ * boot path only for the configs that opted in.
+ */
+export async function resolveStorePluginRefs(
+  defs: PluginDefinition[],
+  jbrowseVersion: string,
+  fetchStore: () => Promise<{ plugins: JBrowsePlugin[] }> = fetchPlugins,
+): Promise<StorePluginResolution> {
+  if (!defs.some(isStorePluginDefinition)) {
+    return { definitions: defs, failures: [] }
+  }
+  let storePlugins: JBrowsePlugin[] | undefined
+  try {
+    storePlugins = (await fetchStore()).plugins
+  } catch (error) {
+    console.error(error)
+  }
+  return resolveStoreRefs(defs, storePlugins, jbrowseVersion)
 }

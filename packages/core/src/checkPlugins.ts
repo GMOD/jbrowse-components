@@ -1,4 +1,8 @@
-import { pluginUrl } from './pluginDefinitions.ts'
+import {
+  isStorePluginDefinition,
+  maybePluginUrl,
+  pluginUrl,
+} from './pluginDefinitions.ts'
 
 import type { PluginDefinition } from './pluginDefinitions.ts'
 import type { JBrowsePlugin } from './util/types/index.ts'
@@ -35,6 +39,27 @@ function isTrustedUrl(url: string) {
   return TRUSTED_PLUGIN_URL_PREFIXES.some(prefix => url.startsWith(prefix))
 }
 
+/**
+ * Whether a definition can run without consulting the store listing or asking
+ * the user.
+ *
+ * A store ref names a package, and resolution can only turn it into a
+ * `https://jbrowse.org/plugins/` url — the prefix trusted outright above — so a
+ * ref carrying no url of its own is trusted by construction. There would be
+ * nothing to show a user anyway: the url does not exist until the manifest is
+ * read.
+ *
+ * A ref that ALSO carries a fallback url is judged on that url, not on being a
+ * ref. The fallback is what `resolveStoreRefs` loads when the store cannot
+ * answer, so trusting the ref and ignoring the url would vet one thing and run
+ * another — the same drift `assertSingleKind` and `pluginDescriptionString`
+ * exist to prevent on the loader side.
+ */
+function isTrustedDefinition(def: PluginDefinition) {
+  const url = maybePluginUrl(def)
+  return url === undefined ? isStorePluginDefinition(def) : isTrustedUrl(url)
+}
+
 // Every url a store entry can resolve to: the top-level fallback plus each
 // version-pinned build. A config plugin is "in the store" if its url is any of
 // these.
@@ -58,17 +83,18 @@ export function checkPluginsAgainstStore(
   }
   const storeUrls = new Set(storePlugins.plugins.flatMap(storePluginUrls))
   return pluginsToCheck.every(
-    p => isTrustedUrl(pluginUrl(p)) || storeUrls.has(pluginUrl(p)),
+    p => isTrustedDefinition(p) || storeUrls.has(pluginUrl(p)),
   )
 }
 
 export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
-  // Trusted-by-prefix plugins are accepted without consulting the store, so
-  // when every plugin is already trusted (the common case: an empty list, or
-  // jbrowse.org-hosted plugins) skip the network entirely. This keeps a
+  // Trusted-by-prefix plugins and store refs are accepted without consulting
+  // the store listing, so when every plugin is already trusted (the common
+  // case: an empty list, or jbrowse.org-hosted plugins) skip the network
+  // entirely. This keeps a
   // plugin-store outage — or being offline — from blocking a config/session
   // load that needed no verification (e.g. restoring your own local session).
-  if (pluginsToCheck.every(p => isTrustedUrl(pluginUrl(p)))) {
+  if (pluginsToCheck.every(isTrustedDefinition)) {
     return true
   }
   return checkPluginsAgainstStore(pluginsToCheck, await fetchPlugins())

@@ -55,13 +55,42 @@ export interface CJSPluginDefinition {
   name?: string
 }
 
-export type PluginDefinition =
+/**
+ * A plugin named by its plugin-store package rather than by a url — the query
+ * ("msaview, for this JBrowse") instead of a precomputed answer ("these exact
+ * bytes"). `resolveStorePluginRefs` (util/pluginStore.ts) turns one into a
+ * concrete, version-pinned, integrity-carrying definition against the published
+ * manifest, so a definition in this shape never reaches PluginLoader.
+ *
+ * It exists for the population nobody can revisit. A config at a permanent url
+ * — jbrowse.org/ucsc/hg38, the ~50k genark hubs — names its plugins once and is
+ * then read for years by whatever JBrowse loads it. A url there is an answer
+ * computed on the day the config was generated, and the only answer that keeps
+ * working is the store's mutable `latest/` path: no integrity hash, and the same
+ * bytes for every host. A package name defers both decisions to load time.
+ */
+export interface StorePluginDefinition {
+  storePlugin: string
+  name?: string
+}
+
+/**
+ * `storePlugin` also rides along on the url-bearing forms, in both directions.
+ * A config can carry a ref *and* a url — the ref for a JBrowse that resolves it,
+ * the url for one that does not — which is what lets a config generator start
+ * emitting refs before every host reading it understands them. And resolution
+ * keeps the field on what it produces, so a resolved definition still records
+ * which store entry it came from and `samePlugin` can match it against a ref.
+ */
+export type PluginDefinition = (
   | UMDUrlPluginDefinition
   | UMDLocPluginDefinition
   | LegacyUMDPluginDefinition
   | ESMLocPluginDefinition
   | ESMUrlPluginDefinition
   | CJSPluginDefinition
+  | StorePluginDefinition
+) & { storePlugin?: string }
 
 export function isUMDPluginDefinition(
   def: PluginDefinition,
@@ -81,6 +110,24 @@ export function isCJSPluginDefinition(
   return 'cjsUrl' in def
 }
 
+/**
+ * Whether a definition names a store entry to resolve. Deliberately not part of
+ * the CJS/ESM/UMD trio `assertSingleKind` counts: those are loaders, and a ref
+ * is not one. A ref names *which plugin*, and pairing it with a url is the
+ * supported migration shape rather than the two-loaders ambiguity that guard
+ * exists to refuse.
+ */
+export function isStorePluginDefinition(
+  def: PluginDefinition,
+): def is PluginDefinition & { storePlugin: string } {
+  return 'storePlugin' in def && typeof def.storePlugin === 'string'
+}
+
+/** The store package a definition names, resolved or not. */
+export function storePluginPackage(def: PluginDefinition) {
+  return isStorePluginDefinition(def) ? def.storePlugin : undefined
+}
+
 // Plugins that used to ship as external config `plugins[]` entries but are now
 // bundled into the jbrowse-web/desktop core build. Remote configs on jbrowse.org
 // still list them, so we drop those entries before loading: core already
@@ -88,7 +135,10 @@ export function isCJSPluginDefinition(
 // skipping the external copy avoids a redundant network fetch plus a flurry of
 // "already registered" console warnings. Matched on the config-level `name`
 // (the external plugin's UMD-global name, e.g. "MafViewer"/"GWAS"), not the core
-// class name. Apply only in products whose core bundle actually vendors these —
+// class name — so this runs AFTER `resolveStorePluginRefs`, which is where a
+// store ref acquires the name to match on. Run it before, and a config naming a
+// vendored plugin by package slips through and installs a second copy beside
+// core's. Apply only in products whose core bundle actually vendors these —
 // not globally — so CLI indexing, @jbrowse/img, and react-circular (which don't
 // bundle them) still load the external plugin. Also drives the plugin store,
 // which hides these so a user can't install a colliding second copy
@@ -145,6 +195,10 @@ export function pluginDescriptionString(d: PluginDefinition) {
     return `ESM plugin ${'esmUrl' in d ? d.esmUrl : d.esmLoc.uri}`
   } else if (isUMDPluginDefinition(d)) {
     return `UMD plugin ${d.name}`
+  } else if (isStorePluginDefinition(d)) {
+    // an unresolved ref, which is what a resolution failure is reported on: it
+    // has no url yet, so the package name is the only thing that identifies it
+    return `store plugin ${d.storePlugin}`
   } else {
     return 'unknown plugin'
   }
@@ -208,20 +262,27 @@ export function pluginLabel(definition: PluginDefinition) {
 
 /**
  * Whether two definitions describe the same plugin. They can without being
- * identical — a UMD name+url in a config, an esmUrl in the global list — so
- * either a shared name or a shared url is enough. Both are optional (an ESM
- * definition carries no name, an unloadable one no url), and a missing field
- * never matches: two definitions are not the same plugin just because neither
- * names one.
+ * identical — a UMD name+url in a config, an esmUrl in the global list, a store
+ * ref in one and the pinned definition it resolves to in the other — so a
+ * shared store package, a shared name, or a shared url is each enough. All
+ * three are optional (an ESM definition carries no name, an unloadable one no
+ * url, a hand-written one no package), and a missing field never matches: two
+ * definitions are not the same plugin just because neither names one.
+ *
+ * The store package is checked first because it is the only one of the three
+ * that survives resolution intact. A ref and its resolved form share it; they
+ * share no url, and a *pure* ref has no name until the manifest supplies one.
  *
  * This is the single answer to "is this plugin already installed" — dedupe
  * across plugin sources, the plugin store's installed-check — so those cannot
  * drift apart and disagree about what is a duplicate.
  */
 export function samePlugin(a: PluginDefinition, b: PluginDefinition) {
+  const [pkgA, pkgB] = [storePluginPackage(a), storePluginPackage(b)]
   const [nameA, nameB] = [pluginName(a), pluginName(b)]
   const [urlA, urlB] = [maybePluginUrl(a), maybePluginUrl(b)]
   return (
+    (pkgA !== undefined && pkgA === pkgB) ||
     (nameA !== undefined && nameA === nameB) ||
     (urlA !== undefined && urlA === urlB)
   )

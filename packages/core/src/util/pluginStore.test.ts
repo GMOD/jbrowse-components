@@ -3,6 +3,8 @@ import {
   installablePlugins,
   installedVersionFromUrl,
   resolvePlugin,
+  resolveStorePluginRefs,
+  resolveStoreRefs,
 } from './pluginStore.ts'
 
 import type { JBrowsePlugin } from './types/data.ts'
@@ -235,5 +237,176 @@ describe('getPluginUpdate', () => {
 
   it('tolerates an unparsable installed version', () => {
     expect(getPluginUpdate(versioned, '4.3.0', 'garbage')).toBeUndefined()
+  })
+})
+
+// The store entry a config's ref points at, in the shape jbrowse-plugin-list
+// actually publishes: a version-pinned url with an integrity hash, and the UMD
+// global name the config no longer has to know.
+const store = [
+  plugin({
+    name: 'MsaView',
+    packageName: 'jbrowse-plugin-msaview',
+    url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.3.0/dist/m.js',
+    integrity: 'sha384-msa',
+    versions: [
+      {
+        pluginVersion: '3.3.0',
+        jbrowseRange: '*',
+        url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.3.0/dist/m.js',
+        integrity: 'sha384-msa',
+      },
+    ],
+  }),
+]
+
+const resolvedMsaView = {
+  name: 'MsaView',
+  url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.3.0/dist/m.js',
+  integrity: 'sha384-msa',
+  storePlugin: 'jbrowse-plugin-msaview',
+}
+
+describe('resolveStoreRefs', () => {
+  it('turns a ref into the pinned, integrity-carrying definition', () => {
+    const { definitions, failures } = resolveStoreRefs(
+      [{ storePlugin: 'jbrowse-plugin-msaview' }],
+      store,
+      '4.3.0',
+    )
+    expect(failures).toEqual([])
+    expect(definitions).toEqual([resolvedMsaView])
+  })
+
+  // the name is what dropVendoredPlugins and PluginLoader's UMD global lookup
+  // both read, and taking it from the store is what lets a config generator
+  // stop knowing it
+  it('takes the UMD name from the store, not from the config', () => {
+    const { definitions } = resolveStoreRefs(
+      [
+        {
+          storePlugin: 'jbrowse-plugin-msaview',
+          name: 'WhateverTheConfigSaid',
+        },
+      ],
+      store,
+      '4.3.0',
+    )
+    expect(definitions[0]).toEqual(resolvedMsaView)
+  })
+
+  it('leaves a definition that is not a ref alone', () => {
+    const defs = [
+      { name: 'Other', url: 'https://example.com/o.js' },
+      { esmUrl: 'https://example.com/e.js' },
+    ]
+    expect(resolveStoreRefs(defs, store, '4.3.0').definitions).toEqual(defs)
+  })
+
+  // the migration shape: the ref for a JBrowse that resolves it, the `latest/`
+  // url for one that does not. An unreadable store is exactly the case where the
+  // url is no worse than not having tried.
+  it.each([
+    ['the store cannot be read', undefined],
+    ['the package is not listed', store],
+  ])('falls back to the url it carries when %s', (_why, listing) => {
+    const hybrid = {
+      name: 'Retired',
+      url: 'https://jbrowse.org/plugins/jbrowse-plugin-retired/latest/dist/r.js',
+      storePlugin: 'jbrowse-plugin-retired',
+    }
+    const { definitions, failures } = resolveStoreRefs(
+      [hybrid],
+      listing,
+      '4.3.0',
+    )
+    expect(failures).toEqual([])
+    expect(definitions).toEqual([hybrid])
+  })
+
+  it('fails a ref with no url to fall back on', () => {
+    const { definitions, failures } = resolveStoreRefs(
+      [{ storePlugin: 'jbrowse-plugin-retired' }],
+      store,
+      '4.3.0',
+    )
+    expect(definitions).toEqual([])
+    expect(failures).toHaveLength(1)
+    expect(`${failures[0]!.error}`).toMatch(/not in the plugin store/)
+  })
+
+  // ADR 0007's hole, in test form: a range that excludes this host is the store
+  // saying the bundle does not work here, so the fallback url must NOT run.
+  // Falling back would hide the plugin from clients that read ranges and leave
+  // it armed for everyone else.
+  it('refuses the fallback when the store has no build for this JBrowse', () => {
+    const listing = [
+      plugin({
+        name: 'Old',
+        packageName: 'jbrowse-plugin-old',
+        url: 'https://jbrowse.org/plugins/jbrowse-plugin-old/1.0.0/dist/o.js',
+        versions: [
+          {
+            pluginVersion: '1.0.0',
+            jbrowseRange: '<2.0.0',
+            url: 'https://jbrowse.org/plugins/jbrowse-plugin-old/1.0.0/dist/o.js',
+          },
+        ],
+      }),
+    ]
+    const { definitions, failures } = resolveStoreRefs(
+      [
+        {
+          name: 'Old',
+          url: 'https://jbrowse.org/plugins/jbrowse-plugin-old/latest/dist/o.js',
+          storePlugin: 'jbrowse-plugin-old',
+        },
+      ],
+      listing,
+      '4.3.0',
+    )
+    expect(definitions).toEqual([])
+    expect(`${failures[0]!.error}`).toMatch(/no build .* for JBrowse 4\.3\.0/)
+    expect(`${failures[0]!.error}`).toMatch(/<2\.0\.0/)
+  })
+})
+
+describe('resolveStorePluginRefs', () => {
+  it('does not touch the network when nothing is a ref', async () => {
+    const fetchStore = jest.fn()
+    const defs = [{ name: 'Other', url: 'https://example.com/o.js' }]
+    const { definitions } = await resolveStorePluginRefs(
+      defs,
+      '4.3.0',
+      fetchStore,
+    )
+    expect(fetchStore).not.toHaveBeenCalled()
+    expect(definitions).toEqual(defs)
+  })
+
+  // the store being down must not be able to take out a config that also names
+  // a url, which is every config the migration shape produces
+  it('resolves against an unreadable store as if nothing were listed', async () => {
+    const hybrid = {
+      name: 'MsaView',
+      url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/m.js',
+      storePlugin: 'jbrowse-plugin-msaview',
+    }
+    const { definitions, failures } = await resolveStorePluginRefs(
+      [hybrid],
+      '4.3.0',
+      () => Promise.reject(new Error('offline')),
+    )
+    expect(failures).toEqual([])
+    expect(definitions).toEqual([hybrid])
+  })
+
+  it('fetches once and resolves against what it got', async () => {
+    const { definitions } = await resolveStorePluginRefs(
+      [{ storePlugin: 'jbrowse-plugin-msaview' }],
+      '4.3.0',
+      () => Promise.resolve({ plugins: store }),
+    )
+    expect(definitions).toEqual([resolvedMsaView])
   })
 })

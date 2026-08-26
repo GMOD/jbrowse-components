@@ -1,5 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
+import { resolveStorePluginRefs } from '@jbrowse/core/util'
 
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
@@ -34,10 +35,28 @@ export interface LoadPluginsArgs {
  */
 export async function loadRuntimePlugins(
   pluginDefinitions: PluginDefinition[],
-  { dropVendored, ...args }: LoadPluginsArgs & { dropVendored: boolean },
+  {
+    dropVendored,
+    jbrowseVersion,
+    ...args
+  }: LoadPluginsArgs & { dropVendored: boolean; jbrowseVersion: string },
 ) {
+  // Before dropVendoredPlugins, which matches on the UMD name a ref does not
+  // carry until the store supplies it. `jbrowseVersion` is required rather than
+  // defaulted so a product that forgets it fails to compile instead of quietly
+  // resolving every range against the wrong host.
+  const { definitions, failures } = await resolveStorePluginRefs(
+    pluginDefinitions,
+    jbrowseVersion,
+  )
+  // This path ends in `load`, which is all-or-nothing (see below) — so a ref
+  // that resolved to nothing is a failure now rather than a plugin the embedder
+  // silently never receives.
+  if (failures[0]) {
+    throw failures[0].error
+  }
   const pluginLoader = new PluginLoader(
-    dropVendored ? dropVendoredPlugins(pluginDefinitions) : pluginDefinitions,
+    dropVendored ? dropVendoredPlugins(definitions) : definitions,
     args,
   )
   pluginLoader.installGlobalReExports(window)

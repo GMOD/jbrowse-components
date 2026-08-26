@@ -9,8 +9,10 @@ import {
   pluginUrl,
   samePlugin,
 } from '@jbrowse/core/pluginDefinitions'
+import { resolveStorePluginRefs } from '@jbrowse/core/util'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
+import packageJSON from '../../../package.json' with { type: 'json' }
 import corePlugins from '../../corePlugins.ts'
 import { invokeIpc } from '../../ipc.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
@@ -110,7 +112,13 @@ async function buildPluginManager(
   definitions: PluginDefinition[],
   isGlobal: (definition: PluginDefinition) => boolean,
 ) {
-  const { records, failures } = await makePluginLoader(definitions).loadSettled(
+  // Ahead of makePluginLoader, whose dropVendoredPlugins matches on the UMD
+  // name a store ref does not carry until the manifest supplies it. Fetches
+  // nothing unless a definition is actually a ref, so an offline launch of a
+  // config that names none is unaffected.
+  const { definitions: resolved, failures: unresolved } =
+    await resolveStorePluginRefs(definitions, packageJSON.version)
+  const { records, failures } = await makePluginLoader(resolved).loadSettled(
     window.location.href,
   )
   const pluginManager = new PluginManager(pluginRecords(records, isGlobal))
@@ -118,7 +126,7 @@ async function buildPluginManager(
   // whatever the global plugins were going to do to this launch, they have now
   // done it, so the next one need not suspect them
   markGlobalPluginLoadSucceeded()
-  return { pluginManager, failures }
+  return { pluginManager, failures: [...unresolved, ...failures] }
 }
 
 // A manager built from the global plugins alone, so the start screen — which

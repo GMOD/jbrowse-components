@@ -127,11 +127,15 @@ export {
 export {
   type PluginUpdate,
   type ResolvedPlugin,
+  type StorePluginFailure,
+  type StorePluginResolution,
   getPluginUpdate,
   installablePlugins,
   installedVersionFromUrl,
   isPluginInstalled,
   resolvePlugin,
+  resolveStorePluginRefs,
+  resolveStoreRefs,
 } from './pluginStore.ts'
 export {
   type PhaseFailure,

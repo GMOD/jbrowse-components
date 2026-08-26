@@ -4,9 +4,10 @@ import {
 } from '@jbrowse/app-core'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
-import { indexedDBAvailable } from '@jbrowse/core/util'
+import { indexedDBAvailable, resolveStorePluginRefs } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
+import packageJSON from '../package.json' with { type: 'json' }
 import { openSessionDB } from './openSessionDB.ts'
 import { configBaseUri } from './resolveConfigPath.ts'
 import { upsertSessionRows } from './sessionDbOps.ts'
@@ -23,12 +24,28 @@ import type { InitState } from '@jbrowse/plugin-linear-genome-view'
  * and the caller reports the failure once there is a session to report it on.
  */
 export async function loadPluginRecords(defs: PluginDefinition[]) {
-  const loader = new PluginLoader(dropVendoredPlugins(defs), {
+  // Store refs resolve first: `dropVendoredPlugins` matches on the UMD name a
+  // ref does not carry until the store supplies it, so a config naming a
+  // vendored plugin by package would otherwise install a second copy beside
+  // core's. Resolution fetches nothing unless a definition is actually a ref.
+  //
+  // What resolution produces is what the rest of the session sees — the trust
+  // gate has already run, PluginManager records these definitions, and
+  // RpcManager ships them to the worker. So main thread and worker cannot
+  // resolve the same ref to two different builds; only one of them resolves.
+  const { definitions, failures: unresolved } = await resolveStorePluginRefs(
+    defs,
+    packageJSON.version,
+  )
+  const loader = new PluginLoader(dropVendoredPlugins(definitions), {
     fetchESM: url => import(/* webpackIgnore:true */ url),
   })
   loader.installGlobalReExports(window)
   const { records, failures } = await loader.loadSettled(window.location.href)
-  return { records: [...records], failures }
+  // A ref with no build for this JBrowse and a bundle that 404s are the same
+  // thing to the person looking at the session — a feature that is not there —
+  // so they are reported through one path.
+  return { records: [...records], failures: [...unresolved, ...failures] }
 }
 
 export function readSessionFromStorage(query: string) {

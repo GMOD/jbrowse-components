@@ -270,3 +270,44 @@ describe('checkPlugins with real plugin store', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })
+
+// A ref names a package, and resolution can only turn one into a
+// jbrowse.org/plugins url — already trusted outright. So a ref needs no prompt,
+// and there is no url to put in one anyway. A ref carrying a fallback url is a
+// different question: that url is what runs when the store cannot answer.
+describe('store refs', () => {
+  it('trusts a ref with no url of its own', async () => {
+    await expect(
+      checkPlugins([{ storePlugin: 'jbrowse-plugin-msaview' }]),
+    ).resolves.toBe(true)
+  })
+
+  it('trusts a ref whose fallback url is on a trusted host', async () => {
+    await expect(
+      checkPlugins([
+        {
+          name: 'MsaView',
+          url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/m.js',
+          storePlugin: 'jbrowse-plugin-msaview',
+        },
+      ]),
+    ).resolves.toBe(true)
+  })
+
+  // vetting the ref and running the url is exactly the drift assertSingleKind
+  // exists to prevent on the loader side
+  it('judges a ref with an untrusted fallback on that url', () => {
+    expect(
+      checkPluginsAgainstStore(
+        [
+          {
+            name: 'MsaView',
+            url: 'https://evil.example.com/m.js',
+            storePlugin: 'jbrowse-plugin-msaview',
+          },
+        ],
+        store([]),
+      ),
+    ).toBe(false)
+  })
+})

@@ -171,6 +171,12 @@ export interface JBrowsePlugin {
   // v2 plugin store entries list per-version urls + JBrowse compatibility ranges.
   // When absent, the top-level url applies to all JBrowse versions.
   versions?: JBrowsePluginVersion[]
+  // The store's version-agnostic `latest/` path, published for config
+  // generators. Deliberately not among the urls `publishedBuilds` /
+  // `resolvePlugin` consider: it is mutable and carries no integrity hash, so
+  // installing from it would break the hash on the next publish — the whole
+  // reason an install pins a version.
+  latestUrl?: string
   license: string
   image?: string
   // Free-form labels from the store manifest, used to filter the store list.

@@ -1,5 +1,7 @@
 import { loadRuntimePlugins } from '@jbrowse/product-core'
 
+import { version } from './version.ts'
+
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { LoadPluginsArgs } from '@jbrowse/product-core'
 
@@ -18,5 +20,9 @@ export default function loadPlugins(
   pluginDefinitions: PluginDefinition[],
   args?: LoadPluginsArgs,
 ) {
-  return loadRuntimePlugins(pluginDefinitions, { ...args, dropVendored: true })
+  return loadRuntimePlugins(pluginDefinitions, {
+    ...args,
+    dropVendored: true,
+    jbrowseVersion: version,
+  })
 }
