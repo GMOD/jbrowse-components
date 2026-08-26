@@ -9,10 +9,11 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/sessionModel/index.ts).
 
 The full-app web session: the shared web session plus the saved-session database
-management surface (favorites, recent sessions, activate/delete).
+management surface (favorites, recent sessions, activate/delete) and the
+permanent plugin list.
 
-JBrowseWebSessionModel declares no members of its own — it composes the models
-below, and everything here is theirs.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 
@@ -56,6 +57,7 @@ below, and everything here is theirs.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="volatile-permanentplugins">**permanentPlugins**</span><br><code>permanentPlugins: readPermanentPlugins()</code> | the plugins installed for this config on this browser, mirrored from localStorage.<br><br>Volatile rather than a view over storage, because a view is a MobX computed and this one would read no observable: it would compute once inside the plugin store's `observer` and cache the list forever. And volatile rather than a property, because the list belongs to the browser rather than to this session — sharing or exporting a session must not carry it. | JBrowseWebSessionModel |
 | <span id="volatile-pendingfilehandleids">**pendingFileHandleIds**</span><br><code>pendingFileHandleIds: [] as string[]</code> |  | [BaseWebSessionModel](../basewebsessionmodel#volatile-pendingfilehandleids) |
 | <span id="volatile-sessionthemename">**sessionThemeName**</span><br><code>sessionThemeName: localStorageGetItem('themeName') ?? 'default'</code> |  | [ThemeManagerSessionMixin](../thememanagersessionmixin#volatile-sessionthemename) |
 | <span id="volatile-selection">**selection**</span><br><code>selection: undefined as unknown</code> | <span data-pagefind-ignore>this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.</span> | [BaseSessionModel](../basesessionmodel#volatile-selection) |
@@ -144,6 +146,9 @@ below, and everything here is theirs.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="action-syncpermanentplugins">**syncPermanentPlugins**</span><br><code>() =&gt; void</code> | re-reads the permanent plugin list from the browser, after something outside this session has written it | JBrowseWebSessionModel |
+| <span id="action-addpermanentplugin">**addPermanentPlugin**</span><br><code>(plugin: PluginDefinition) =&gt; void</code> | keeps a plugin for every future visit to this JBrowse, and asks for the whole-app reload every plugin change needs | JBrowseWebSessionModel |
+| <span id="action-removepermanentplugin">**removePermanentPlugin**</span><br><code>(plugin: PluginDefinition) =&gt; void</code> |  | JBrowseWebSessionModel |
 | <span id="action-addassemblyconf">**addAssemblyConf**</span><br><code>(conf: AnyConfiguration) =&gt; void</code> |  | [BaseWebSessionModel](../basewebsessionmodel#action-addassemblyconf) |
 | <span id="action-addsessionplugin">**addSessionPlugin**</span><br><code>(plugin: PluginDefinition &amp; { name: string; }) =&gt; void</code> |  | [BaseWebSessionModel](../basewebsessionmodel#action-addsessionplugin) |
 | <span id="action-removesessionplugin">**removeSessionPlugin**</span><br><code>(pluginDefinition: PluginDefinition) =&gt; void</code> |  | [BaseWebSessionModel](../basewebsessionmodel#action-removesessionplugin) |

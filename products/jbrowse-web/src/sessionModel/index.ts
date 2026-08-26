@@ -64,6 +64,8 @@ export default function sessionModelFactory({
       .actions(self => ({
         /**
          * #action
+         * re-reads the permanent plugin list from the browser, after something
+         * outside this session has written it
          */
         syncPermanentPlugins() {
           self.permanentPlugins = readPermanentPlugins()
@@ -83,6 +85,8 @@ export default function sessionModelFactory({
         },
         /**
          * #action
+         * keeps a plugin for every future visit to this JBrowse, and asks for
+         * the whole-app reload every plugin change needs
          */
         addPermanentPlugin(plugin: PluginDefinition) {
           addPermanentPlugin(plugin)

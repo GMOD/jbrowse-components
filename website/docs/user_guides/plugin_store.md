@@ -27,6 +27,35 @@ yourself.
 
 <Figure caption="The plugin store inside the app." src="/img/plugin_store.png" />
 
+## Keeping a plugin for every visit
+
+A plugin installed in a web session goes when the session does: a new session,
+or someone else's link, starts without it. The pin beside a plugin in the
+**Installed plugins** list keeps it instead, so that JBrowse loads it every time
+you open it in this browser.
+
+- The list is per configuration, not per site. A plugin kept on
+  `jbrowse.org/code/jb2/main/?config=demos/hg002/config.json` does not load on
+  another demo, or on another version of the app.
+- It lives in this browser and nowhere else. A session you share carries none of
+  it, and neither does the same JBrowse opened on another machine.
+- **Tools → Permanent plugins...** is the list itself, where one can be switched
+  off without being removed, or taken out for good.
+- An admin editing `config.json` is installing for every visitor instead, so the
+  pin does not appear in admin mode.
+
+Because these load before anything is on screen, a plugin that crashes on load
+would otherwise take the app down on every visit with no way back to the menu.
+Two things stop that:
+
+- The fatal error dialog offers **Reload without permanent plugins**.
+- A load that never finishes turns them off by itself next time, and says which
+  ones were loading. **Tools → Permanent plugins...** turns them back on once
+  the culprit is switched off.
+
+Adding `?safeMode` to the URL does the same thing deliberately, and accuses
+nobody.
+
 ## See also
 
 - [Plugin store page](/plugin_store)
@@ -38,3 +67,6 @@ yourself.
 - [GLOBAL_PLUGINS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GLOBAL_PLUGINS.md)
   — Desktop's global list, and the crash marker behind safe mode: when it arms,
   and what clears it
+- [PERMANENT_PLUGINS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PERMANENT_PLUGINS.md)
+  — the same idea in jbrowse-web, and why its list is keyed on the config rather
+  than on the origin
