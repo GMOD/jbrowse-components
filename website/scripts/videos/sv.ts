@@ -201,8 +201,8 @@ export const svVideos: VideoSpec[] = [
       // Clicked rather than hovered: CascadingSubmenu opens on either, and the
       // pileup re-lays-out as reads stream, which can move a hovered row out
       // from under the cursor.
-      { type: 'waitForText', text: 'Launch view' },
-      { type: 'click', text: 'Launch view', say: 'Launch view', hold: 1200 },
+      { type: 'waitForText', text: 'Launch' },
+      { type: 'click', text: 'Launch', say: 'Launch', hold: 1200 },
       { type: 'waitForText', text: 'Reconstruct derivative allele...' },
       {
         type: 'click',

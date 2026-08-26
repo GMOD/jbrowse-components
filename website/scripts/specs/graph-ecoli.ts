@@ -1630,7 +1630,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       //
       // The node menu is FLAT — `Node details` then one `Open in <assembly> —
       // <locus>` row per launchable target (graphMenuItems.ts). It is not the
-      // `Launch view` submenu the view and track menus carry, so there is no
+      // `Launch` submenu the view and track menus carry, so there is no
       // cascade to drive here.
       { type: 'rightclick', anchor: { view: 0, graphNode: '118465-' } },
       { type: 'waitForText', text: 'Open in CFT073' },
@@ -2506,7 +2506,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         type: 'rightclick',
         selector: `[data-testid="feature-name-${SEGMENT_LABEL}"]`,
       },
-      { type: 'waitForText', text: 'Launch view' },
+      { type: 'waitForText', text: 'Launch' },
       { type: 'delay', ms: 500 },
     ],
     stages: [
@@ -2936,7 +2936,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: `${LAUNCH_OUT_VIEW} [data-testid="view_menu_icon"]`,
           },
-          { type: 'click', text: 'Launch view' },
+          { type: 'click', text: 'Launch' },
           { type: 'waitForText', text: 'Linear synteny view' },
           { type: 'delay', ms: 500 },
         ],
@@ -2954,7 +2954,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // rather than of a workflow (review: "we need the things being clicked
           // in menus to have red boxes around them"). Anchored by the item text,
           // so a box cannot end up on a row the actions do not take.
-          { type: 'box', anchor: { text: 'Launch view' } },
+          { type: 'box', anchor: { text: 'Launch' } },
           { type: 'box', anchor: { text: 'Linear synteny view' } },
         ],
       },
@@ -2978,7 +2978,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: `${LAUNCH_OUT_VIEW} [data-testid="view_menu_icon"]`,
           },
-          { type: 'click', text: 'Launch view' },
+          { type: 'click', text: 'Launch' },
           { type: 'click', text: 'Linear synteny view' },
           // the ribbons, not the panels: the panel headers paint long before
           // the PAF the whole point of the launch is
@@ -3108,7 +3108,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: `${PKS_VIEW} [data-testid="view_menu_icon"]`,
           },
-          { type: 'click', text: 'Launch view' },
+          { type: 'click', text: 'Launch' },
           // expand the per-strain list rather than leaving it a closed submenu
           // row: which strains the graph can open, and at which of their own
           // coordinates, is half of what the menu says here
@@ -3124,7 +3124,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             },
           },
           // the three rows the click path takes, in order
-          { type: 'box', anchor: { text: 'Launch view' } },
+          { type: 'box', anchor: { text: 'Launch' } },
           { type: 'box', anchor: { text: 'Linear genome view' } },
           { type: 'box', anchor: { text: 'CFT073 chr:' } },
           // ...and WHICH node that last row is about, in three words. This was
@@ -3165,7 +3165,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: `${PKS_VIEW} [data-testid="view_menu_icon"]`,
           },
-          { type: 'click', text: 'Launch view' },
+          { type: 'click', text: 'Launch' },
           { type: 'hover', text: 'Linear genome view' },
           { type: 'waitForText', text: 'CFT073 chr:' },
           { type: 'click', text: 'CFT073 chr:' },

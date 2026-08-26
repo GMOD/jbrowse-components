@@ -183,7 +183,7 @@ A breakpoint split view, the right half of the figure above, stacks the loci the
 chain visits and draws the reads that leave one panel and arrive in another.
 
 The reads already know which loci those are and in what order, so the view is
-built from them. On the tumor track, **Launch view → Reconstruct derivative
+built from them. On the tumor track, **Launch → Reconstruct derivative
 allele...** lists the routes the reads describe; pick one, set **Draw as** to
 **Breakpoint split view** and choose **Replace current view**, and the launching
 view is replaced by a panel per segment of that route, in the order the reads
@@ -240,6 +240,16 @@ number of reads that independently describe it.
 A read count ranks the paths, and each row also draws its segments to scale: a
 rearrangement is usually a long arm carrying short inserts, and a read the
 aligner chopped into pieces is a row of equal blocks of the same total length.
+
+This dataset is the reconstruction at its easiest: ONT reads tens of kilobases
+long, an event that moves whole arms, and 29 molecules crossing all three loci.
+Scored across two published somatic callsets, it recovers 129 of the 130
+junctions above 10 kb or between chromosomes, 60% and 65% of those between 1 and
+10 kb, and about one in ten below 1 kb — the small ones because the aligner
+writes them inside a read's CIGAR rather than as a split alignment, where
+nothing reading SA tags can see them. What the reconstruction needs, and how to
+weigh a route once it appears, is in
+[](/docs/user_guides/sv_visualization#what-the-reconstruction-needs).
 
 The result is the view type **Linear read vs ref** produces from a read you
 right-click, with the lower panel holding the path a group of reads agrees on,

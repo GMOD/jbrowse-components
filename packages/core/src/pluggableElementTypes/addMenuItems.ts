@@ -54,7 +54,7 @@ interface MenuItemsOptions<M, K extends keyof M> {
   /** which menu to add to */
   menu: K
   /**
-   * a submenu label to collect the items under, e.g. `LAUNCH_VIEW_LABEL`. The
+   * a submenu label to collect the items under, e.g. `LAUNCH_LABEL`. The
    * submenu is created once and shared, so several plugins naming the same
    * group land in one place rather than each adding a top-level row
    */
@@ -154,7 +154,7 @@ export function addViewMenuItems<
  * ```ts
  * addDisplayMenuItems(pluginManager, 'LinearAlignmentsDisplay', {
  *   menu: 'contextMenuItems',
- *   group: LAUNCH_VIEW_LABEL,
+ *   group: LAUNCH_LABEL,
  *   items: self =>
  *     self.contextMenuFeatureId === undefined
  *       ? undefined

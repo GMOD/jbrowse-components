@@ -15,10 +15,10 @@ variant track).
 
 Two ways in, differing only in which region the panel opens on:
 
-- **From the track menu** — **Launch view → Consensus sequence (visible
-  region)** on the alignments track. The panel opens on what the view is
-  showing, and its **Region** field is editable, so this is a starting point
-  rather than the call.
+- **From the track menu** — **Launch → Consensus sequence (visible region)** on
+  the alignments track. The panel opens on what the view is showing, and its
+  **Region** field is editable, so this is a starting point rather than the
+  call.
 - **From a selection** — click and drag across the region of interest, then
   **Launch → Consensus sequence** in the menu that appears, then the alignments
   track to call from. That last step is there even with a single track open

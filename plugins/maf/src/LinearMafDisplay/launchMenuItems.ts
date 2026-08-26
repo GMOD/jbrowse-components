@@ -1,4 +1,4 @@
-import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
+import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import NotesIcon from '@mui/icons-material/Notes'
 
 import {
@@ -72,5 +72,5 @@ export function mafLaunchMenuItems({
     ...sampleNavigationItems(session, model, targets),
     ...mafSyntenyLaunchItems(session, model, targets),
   ]
-  return [{ label: LAUNCH_VIEW_LABEL, type: 'subMenu', subMenu }]
+  return [{ label: LAUNCH_LABEL, type: 'subMenu', subMenu }]
 }

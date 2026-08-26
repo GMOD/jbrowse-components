@@ -1,5 +1,5 @@
 import { addViewMenuItems } from '@jbrowse/core/pluggableElementTypes'
-import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
+import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
@@ -59,7 +59,7 @@ function menuItemsFor(
 export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
   addViewMenuItems(pluginManager, 'LinearGenomeView', {
     menu: 'menuItems',
-    group: LAUNCH_VIEW_LABEL,
+    group: LAUNCH_LABEL,
     items: self =>
       menuItemsFor(
         self,

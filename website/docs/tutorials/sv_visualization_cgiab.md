@@ -689,10 +689,10 @@ both under `cluster_3` alongside two further breakends and tags them
 sees the whole callset at once. It cannot say which molecule carries them.
 
 **The reads.** Put both breakpoint loci on screen and, from the tumor PacBio
-HiFi track's menu, choose **Launch view → Reconstruct derivative allele...**.
-The reads in the window are grouped by the route their split alignments
-describe, each offered with the number of reads that independently take it. The
-top route runs chr13 forward into the junction and then down chr3 inverted, the
+HiFi track's menu, choose **Launch → Reconstruct derivative allele...**. The
+reads in the window are grouped by the route their split alignments describe,
+each offered with the number of reads that independently take it. The top route
+runs chr13 forward into the junction and then down chr3 inverted, the
 orientation the black splines above draw. The matched normal is the control and
 a track away: the tumor reads split at this position, the normal reads read
 through it.

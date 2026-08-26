@@ -79,9 +79,7 @@ function launchSubMenu(m: MafLaunchModel) {
     model: m,
     view: m.view as unknown as LinearGenomeViewModel,
   })
-  expect(entry && 'label' in entry ? entry.label : undefined).toBe(
-    'Launch view',
-  )
+  expect(entry && 'label' in entry ? entry.label : undefined).toBe('Launch')
   return entry && 'subMenu' in entry ? entry.subMenu : []
 }
 

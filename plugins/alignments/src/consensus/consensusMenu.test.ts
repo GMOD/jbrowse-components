@@ -13,7 +13,7 @@ test('the alignments track menu offers a consensus, no rubberband needed', () =>
   })
   const { display } = createDisplay()
   expect(
-    menuSubItems(display.trackMenuItems(), 'Launch view').map(i =>
+    menuSubItems(display.trackMenuItems(), 'Launch').map(i =>
       'label' in i ? i.label : undefined,
     ),
   ).toContain(LABEL)

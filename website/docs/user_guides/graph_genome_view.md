@@ -149,10 +149,9 @@ The `uri` is the shared prefix: the adapter resolves `.segs.bed.gz`,
 [HPRC tutorial](/docs/tutorials/pangenome_hprc#load-the-graph) needs one,
 because that graph calls the reference `GRCh38` while the assembly is `hg38`.
 
-Then **Track menu → Launch view → Graph genome view (this region)** cuts a
-subgraph from the index. The item is offered only for a track whose adapter can
-cut one, and past the size the view will draw it greys out and names its own
-limit.
+Then **Track menu → Launch → Graph genome view (this region)** cuts a subgraph
+from the index. The item is offered only for a track whose adapter can cut one,
+and past the size the view will draw it greys out and names its own limit.
 
 How wide a window that is depends on the graph. A minigraph graph records
 structural variation and collapses everything smaller, so a legible window is
@@ -392,7 +391,7 @@ assembly it will mark, so it reads **Highlight in hg38** on an HPRC session.
 
 Every segment carries the sequence it came from and its offset there. With only
 the reference loaded that gets you back to the reference; with the contributing
-assemblies loaded, the graph's **Launch view** menu gains two ways out:
+assemblies loaded, the graph's **Launch** menu gains two ways out:
 
 - **one linear view per contributing strain**, framed on that strain's own
   coordinates for this locus. Right-clicking a single allele does it for that
@@ -409,7 +408,7 @@ in a
 offers the same jump from its right-click menu, **Open \<strain\> at the
 matching region**, so a strain reads the same way out of either view.
 
-<Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus." src="/img/pangenome/rgfa_launch_out_menu.png" />
+<Figure caption="Top: the graph's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
 Taking the other entry answers a different question. K12's `asnW`/`asnU`/`asnV`
 tRNA genes are the sites E. coli pathogenicity islands integrate at, and in that

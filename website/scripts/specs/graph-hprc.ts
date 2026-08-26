@@ -22,7 +22,7 @@ import type {
 
 // The HPRC figures take the other route into the same view: instead of a whole
 // GFA file, a GraphGenomeView carrying `loadedTrackId`/`loadedRegion` — the exact
-// snapshot the "Launch view, then Graph genome view (this region)" menu item
+// snapshot the "Launch, then Graph genome view (this region)" menu item
 // writes, so the figure documents the launch route rather than a second way in.
 // The view cuts its subgraph from the track's own tabix indexes on attach.
 const HPRC_CONFIG = local('test_data/graphgenomeview/hprc.json')

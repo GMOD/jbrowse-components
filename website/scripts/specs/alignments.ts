@@ -405,7 +405,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // drawn over it, so the report sees an empty pileup where the figure's whole
     // subject is. It asked for 141 px at 620 and another 71 at 550; taking the
     // second cut off the bottom of the track menu, losing Sashimi arcs and
-    // Launch view. Rendered at all three.
+    // Launch. Rendered at all three.
     viewportWidth: 1100,
     viewportHeight: 620,
     settleMs: 4000,

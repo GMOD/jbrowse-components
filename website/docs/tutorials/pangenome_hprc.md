@@ -232,8 +232,8 @@ The graph draws a window at a time, and there are three ways to pick one:
 - **Drag across the ruler** and choose **Graph genome view (this selection)**.
   Selecting more than the view will draw greys the item out and displays its
   limit.
-- **Launch view → Graph genome view (this region)** in the track menu takes
-  whatever is on screen.
+- **Launch → Graph genome view (this region)** in the track menu takes whatever
+  is on screen.
 - **Right-click one segment** to cut the graph around that segment.
 
 Any of them works without a graph track in the view: the item appears whenever
@@ -428,8 +428,8 @@ A donor row names the haplotype the sequence was taken from, the
   the graph and leaves it there.
 - **Open in hg38** scrolls that view to it.
 
-The graph's own **Launch view** menu does the same for the whole window it was
-cut from.
+The graph's own **Launch** menu does the same for the whole window it was cut
+from.
 
 What you are offered depends on which segment you clicked, because rGFA states
 each segment's source sequence (`SN`) and offset (`SO`):

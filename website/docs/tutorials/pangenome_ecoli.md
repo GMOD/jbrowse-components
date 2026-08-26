@@ -1037,7 +1037,7 @@ A segment the reference never visits sits on **its own carrier's coordinates**,
 so the graph can open the strain itself. Right-click that 75 bp CFT073 segment
 and pick **Open in CFT073**, and it opens CFT073 at `1,048,515`, its own offset,
 carrying CFT073's gene track. A node's own menu is flat, one entry per assembly
-the session has loaded; the **Launch view** cascade the view menu carries is the
+the session has loaded; the **Launch** cascade the view menu carries is the
 whole-window version of the same thing.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's own menu opened on the CFT073 allele, and the view its Open in entry adds: CFT073 on its own coordinates, with its gene track already under it." />

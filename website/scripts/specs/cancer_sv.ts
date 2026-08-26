@@ -73,7 +73,7 @@ const DEEP_ONT = { type: 'LinearAlignmentsDisplay', forceLoad: true }
 // dont care about height differences necessarily").
 //
 // So the pair is back, and the right half is now the split view the app builds
-// ITSELF out of the reads on screen: the same Launch view -> Reconstruct
+// ITSELF out of the reads on screen: the same Launch -> Reconstruct
 // derivative allele... -> breakpoint split view route the tutorial teaches,
 // driven through the real UI, with no locus typed anywhere. The figure that
 // captured that route as two frames of its own is gone with it — its result
@@ -804,7 +804,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // by trackId, not by the track's display name: the name is the
           // config's to change and this figure is not about it
           trackMenuIcon(TUMOUR),
-          // the item sits under `Launch view`, beside `Linear read vs ref`,
+          // the item sits under `Launch`, beside `Linear read vs ref`,
           // because it goes in through pushLaunchViewMenuItem. Clicked rather
           // than hovered: CascadingSubmenu opens on either, and the pileup
           // re-lays-out as reads stream, which can move a hovered row out from

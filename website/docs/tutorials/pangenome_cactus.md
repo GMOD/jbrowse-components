@@ -517,7 +517,7 @@ view → Graph genome view (this region)** cuts a subgraph at whatever is on
 screen. The link under the clip opens the session it starts in, so the same
 route runs on any graph indexed this way.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS1 element past flhD, and Launch view → Graph genome view (this region) on the segments lane's own menu." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) on the segments lane's own menu." />
 
 A kilobase or two is the width to open one at, and the downstream edge of the
 flagellar operon is a place where the five strains have something to disagree

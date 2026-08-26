@@ -12,7 +12,7 @@
 // this check left zero exceptions behind.
 //
 // Two shapes, because the separator lands in two places:
-//   BETWEEN two spans   `Launch view` -> `Linear read vs ref`
+//   BETWEEN two spans   `Launch` -> `Linear read vs ref`
 //   INSIDE one span     **Show... > Show coverage**
 //
 // The inside-one-span form is restricted to **bold**, never backticks, which is
@@ -37,7 +37,7 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 const SPAN = String.raw`(?:\*\*[^*]+\*\*|\`[^\`]+\`)`
 const RULES = [
   {
-    // `Launch view` -> `Linear read vs ref`, **About ▸ Copy config** split
+    // `Launch` -> `Linear read vs ref`, **About ▸ Copy config** split
     // across two bold runs, and so on.
     re: new RegExp(String.raw`${SPAN}\s*(?:->|>|▸)\s*${SPAN}`),
     what: 'menu path between two labels',

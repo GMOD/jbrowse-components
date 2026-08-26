@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { addDisplayMenuItems } from '@jbrowse/core/pluggableElementTypes'
-import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
+import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import { getContainingTrack, getDialogHost } from '@jbrowse/core/util'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 
@@ -57,7 +57,7 @@ export default function LinearDerivativeVsRefMenuItemF(pm: PluginManager) {
   })
   addDisplayMenuItems(pm, ['LinearAlignmentsDisplay', 'LGVSyntenyDisplay'], {
     menu: 'trackMenuItems',
-    group: LAUNCH_VIEW_LABEL,
+    group: LAUNCH_LABEL,
     items,
   })
 }

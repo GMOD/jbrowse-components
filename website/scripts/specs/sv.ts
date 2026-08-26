@@ -1659,6 +1659,8 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 2000,
     actions: [
+      // the ViewLauncher BUTTON, not the menu group that used to share this
+      // wording: the group is `Launch` now, this one is still `Launch view`
       { type: 'click', text: 'Launch view' },
       { type: 'waitForText', text: 'Show all regions in assembly' },
       { type: 'delay', ms: 2000 },

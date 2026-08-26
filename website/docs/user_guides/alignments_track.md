@@ -391,8 +391,8 @@ splits it into a primary alignment plus one supplementary alignment per
 additional locus, records the whole set in each record's `SA` tag, and the
 pileup draws them as separate rows, often far apart or on different chromosomes.
 
-Right-click any of them and choose **Launch view → Linear read vs ref** to put
-them back together, which the `SA` tag makes possible from one record. The read
+Right-click any of them and choose **Launch → Linear read vs ref** to put them
+back together, which the `SA` tag makes possible from one record. The read
 becomes its own assembly along one lane, every reference locus it touches is
 laid out along the other, and each alignment segment is drawn as a ribbon
 between them, in the order the read visits them rather than in reference order.

@@ -234,8 +234,8 @@ function launchGraphSteps(trackId: string): VideoStep[] {
       say: 'Track menu',
       hold: 700,
     },
-    { type: 'waitForText', text: 'Launch view' },
-    { type: 'click', text: 'Launch view', say: 'Launch view', hold: 700 },
+    { type: 'waitForText', text: 'Launch' },
+    { type: 'click', text: 'Launch', say: 'Launch', hold: 700 },
     { type: 'waitForText', text: 'Graph genome view (this region)' },
     {
       type: 'click',
@@ -622,7 +622,7 @@ export const pangenomeVideos: VideoSpec[] = [
   // it cannot show is that the second view came out of the first one's node.
   //
   // The node menu is FLAT — `Node details`, then one `Open in <assembly>` row
-  // per assembly the session carries. There is no `Launch view` cascade on a
+  // per assembly the session carries. There is no `Launch` cascade on a
   // node, which is the thing the page used to say and the reason this tour is
   // worth more than the sentence it replaces: a reader hunting for a submenu
   // that is not there gives up on the route entirely.

@@ -40,8 +40,8 @@ export async function injectOverlay(page: Page) {
       //
       // A step's caption is usually the label of the thing it is about to click,
       // and the steps find their targets with puppeteer's `::-p-text(…)`. With
-      // the words in the DOM, a caption reading `Launch view` is a second
-      // element containing "Launch view" — and the resolver took it, so the tour
+      // the words in the DOM, a caption reading `Launch` is a second
+      // element containing "Launch" — and the resolver took it, so the tour
       // clicked its own subtitle and the menu item was never touched. Content
       // from `attr()` is not in textContent and cannot be matched.
       const style = document.createElement('style')

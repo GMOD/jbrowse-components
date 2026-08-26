@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getNotificationSink,
@@ -313,7 +314,7 @@ export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
   return [
     ...featureDetailItems(self, featureId, feature),
     ...(launches.length
-      ? [{ type: 'subHeader' as const, label: 'Launch view' }, ...launches]
+      ? [{ type: 'subHeader' as const, label: LAUNCH_LABEL }, ...launches]
       : []),
     ...movePanelItem(self, feature, block),
   ]

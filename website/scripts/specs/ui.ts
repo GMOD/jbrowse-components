@@ -1337,7 +1337,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // locus) — checked against the other reads piled up at this same site and
   // 634bp is already effectively the largest consistently-supported insertion
   // there (up to 636bp on a couple of reads, within noise). Driven live via
-  // rightclick -> Launch view -> Linear read vs ref (buildReadVsRefSpec.ts)
+  // rightclick -> Launch -> Linear read vs ref (buildReadVsRefSpec.ts)
   // instead of a frozen share-link session, so the inline-config fix actually
   // gets exercised. Read glyphs are canvas-drawn, so the rightclick names the
   // insertion's coordinate and a depth into the pileup rather than a viewport
@@ -1375,7 +1375,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
       },
       { type: 'waitForText', text: 'Open feature details' },
-      { type: 'hover', text: 'Launch view' },
+      { type: 'hover', text: 'Launch' },
       { type: 'waitForText', text: 'Linear read vs ref' },
       { type: 'click', text: 'Linear read vs ref' },
       { type: 'waitForText', text: 'Set window size' },
@@ -2139,6 +2139,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 231,
     settleMs: 2000,
     actions: [
+      // the ViewLauncher BUTTON, not the menu group that used to share this
+      // wording: the group is `Launch` now, this one is still `Launch view`
       { type: 'click', text: 'Launch view' },
       { type: 'waitForText', text: 'Select assembly to view' },
       { type: 'delay', ms: 1500 },

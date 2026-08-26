@@ -4,7 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
+import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import {
   addAndShowTrack,
   getContainingTrack,
@@ -491,7 +491,7 @@ export function modelFactory(
           // visible window is the selection a reader who navigated to a locus
           // has already made.
           {
-            label: LAUNCH_VIEW_LABEL,
+            label: LAUNCH_LABEL,
             type: 'subMenu' as const,
             subMenu: [
               {

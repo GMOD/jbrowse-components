@@ -89,8 +89,8 @@ configured but closed is what the import form above is for.
   maps your window to, for any mate the session has loaded. The same three are
   links in the feature's details panel, clipped to the panel's visible window.
 - The same **Linear synteny view (visible region)** entry sits in the view's
-  hamburger menu under **Launch view**, for when the region you want is the
-  whole view and there is nothing to select.
+  hamburger menu under **Launch**, for when the region you want is the whole
+  view and there is nothing to select.
 - **A row of a synteny view launches too.** Drag-select on any row's scale bar
   and the same **Launch → Linear synteny view** reads the bands' datasets, so
   the dialog opens anchored on that row's genome with a panel for every assembly

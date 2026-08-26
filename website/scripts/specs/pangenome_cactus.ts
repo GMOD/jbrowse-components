@@ -128,7 +128,7 @@ const ODGI_PATH_COLORS = [
 export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // The graph itself, which every projection above is a flattening of: the
   // segments lane over a 2 kb K12 window, and under it the subgraph the track
-  // menu's Launch view cuts from that same window. Both read the two tabix
+  // menu's Launch cuts from that same window. Both read the two tabix
   // indexes build_pggb_tabix.sh writes over mc/ecoli.gfa.gz, so a block in the
   // lane and a node below it are the same segment.
   //

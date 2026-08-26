@@ -1,5 +1,5 @@
 import { addDisplayMenuItems } from '@jbrowse/core/pluggableElementTypes'
-import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
+import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import { getContainingTrack } from '@jbrowse/core/util'
 import {
   queueReadVsRefDialog,
@@ -14,7 +14,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function LinearReadVsRefMenuItemF(pm: PluginManager) {
   addDisplayMenuItems(pm, 'LinearAlignmentsDisplay', {
     menu: 'contextMenuItems',
-    group: LAUNCH_VIEW_LABEL,
+    group: LAUNCH_LABEL,
     // Offered from the read id, which the hit test carries, so the item is
     // there when the menu opens rather than a fetch later; the feature it needs
     // is resolved in the onClick (normally already in hand, since the fetch

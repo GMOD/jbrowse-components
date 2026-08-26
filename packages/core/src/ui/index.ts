@@ -133,7 +133,7 @@ export type {
 } from './MenuTypes.ts'
 export { staysOpenOnClick } from './MenuTypes.ts'
 export {
-  LAUNCH_VIEW_LABEL,
+  LAUNCH_LABEL,
   pushIntoSubMenu,
   pushLaunchViewMenuItem,
 } from './launchViewMenu.ts'

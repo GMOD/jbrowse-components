@@ -177,7 +177,7 @@ test('the launch items sit under one heading, the move outside it', () => {
     label?: string
   }[]
   const heading = items.findIndex(i => i.type === 'subHeader')
-  expect(items[heading]?.label).toBe('Launch view')
+  expect(items[heading]?.label).toBe('Launch')
   expect(items[heading + 1]?.label).toBe(LAUNCH)
   expect(items.at(-1)?.label).toBe(MOVE)
   const noLaunch = createDisplay({ neighbourAssembly: 'HG002#1' })

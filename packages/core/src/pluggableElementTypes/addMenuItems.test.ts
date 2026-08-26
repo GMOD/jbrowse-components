@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
-import { LAUNCH_VIEW_LABEL } from '../ui/launchViewMenu.ts'
+import { LAUNCH_LABEL } from '../ui/launchViewMenu.ts'
 import ViewType from './ViewType.ts'
 import { addViewMenuItems } from './addMenuItems.ts'
 
@@ -139,12 +139,12 @@ test('group collects both plugins items under one submenu', () => {
   for (const label of ['first', 'second']) {
     addViewMenuItems(pm, 'TestMenuView', {
       menu: 'menuItems',
-      group: LAUNCH_VIEW_LABEL,
+      group: LAUNCH_LABEL,
       items: () => ({ label, onClick: () => {} }),
     })
   }
   const items = makeView(pm).menuItems()
-  expect(labels(items)).toEqual(['base', LAUNCH_VIEW_LABEL])
+  expect(labels(items)).toEqual(['base', LAUNCH_LABEL])
   expect(labels((items[1] as SubMenuItem).subMenu)).toEqual(['first', 'second'])
 })
 
@@ -155,7 +155,7 @@ test('reopening the menu does not accumulate', () => {
   const pm = new PluginManager([])
   addViewMenuItems(pm, 'TestMenuView', {
     menu: 'menuItems',
-    group: LAUNCH_VIEW_LABEL,
+    group: LAUNCH_LABEL,
     items: () => ({ label: 'mine', onClick: () => {} }),
   })
   const view = makeView(pm)

@@ -150,8 +150,8 @@ the drag covered. Either opens the aligned columns for that window, one sequence
 per species, with **Download as FASTA** and **Copy to clipboard** in its menu.
 That is the slice a downstream alignment viewer or tree builder wants.
 
-Without a drag, the track menu's **Launch view → View subsequences (visible
-region)** takes the whole window and every row.
+Without a drag, the track menu's **Launch → View subsequences (visible region)**
+takes the whole window and every row.
 
 The same menu offers **Show only differences**, which blanks every base matching
 the reference so substitutions are all that remain, plus **Include insertions**,
@@ -176,7 +176,7 @@ just that one at click time, which is what lets a 26-way or 470-way alignment
 stay navigable without every species' genome being present in the config. Past
 six species the entries move into a submenu.
 
-The track menu's **Launch view** submenu lists the same entries over the visible
+The track menu's **Launch** submenu lists the same entries over the visible
 window, so reaching a species' genome needs no selection.
 
 ## Comparing a species against the reference

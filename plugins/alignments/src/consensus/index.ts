@@ -5,7 +5,7 @@ import {
   addDisplayMenuItems,
   addViewMenuItems,
 } from '@jbrowse/core/pluggableElementTypes'
-import { LAUNCH_VIEW_LABEL, launchTargetsMenuItem } from '@jbrowse/core/ui'
+import { LAUNCH_LABEL, launchTargetsMenuItem } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getContainingView,
@@ -104,7 +104,7 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
   // saying so.
   addDisplayMenuItems(pluginManager, 'LinearAlignmentsDisplay', {
     menu: 'trackMenuItems',
-    group: LAUNCH_VIEW_LABEL,
+    group: LAUNCH_LABEL,
     items: self => ({
       label: VISIBLE_LABEL,
       icon: NotesIcon,

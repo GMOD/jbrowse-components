@@ -283,7 +283,7 @@ is the structure of the rearrangement. See
 ## Reconstructing a derivative allele
 
 A split read is an ordered, oriented list of reference intervals, which is what
-a derivative allele is. The alignments track menu's **Launch view → Reconstruct
+a derivative allele is. The alignments track menu's **Launch → Reconstruct
 derivative allele...** groups the reads in the window by the route their split
 alignments describe and lists each route with the number of reads that
 independently take it. **Draw as** picks which view it opens in:
@@ -547,7 +547,7 @@ workflow end-to-end with the HG008 phased tumor assembly.
 | Read arcs                     | Read connections in track menu  | Overview of long-range connections                 |
 | Read cloud                    | Read connections in track menu  | Counting discordant pairs, orientation per read    |
 | Linear read vs ref            | Right-click on any read         | Complex alignment of a single long read            |
-| Reconstruct derivative allele | Launch view in the track menu   | The route several long reads agree on              |
+| Reconstruct derivative allele | Launch in the track menu        | The route several long reads agree on              |
 | Breakpoint split view         | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
 | Sort/color by HP tag          | Sort/color by tag in track menu | Confirming heterozygous SVs on one haplotype       |
 | Dotplot view                  | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |

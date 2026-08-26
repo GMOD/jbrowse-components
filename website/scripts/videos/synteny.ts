@@ -1213,8 +1213,8 @@ export const syntenyVideos: VideoSpec[] = [
         say: 'The segments lane: Track menu',
         hold: 700,
       },
-      { type: 'waitForText', text: 'Launch view' },
-      { type: 'click', text: 'Launch view', say: 'Launch view', hold: 700 },
+      { type: 'waitForText', text: 'Launch' },
+      { type: 'click', text: 'Launch', say: 'Launch', hold: 700 },
       { type: 'waitForText', text: 'Graph genome view (this region)' },
       {
         type: 'click',
