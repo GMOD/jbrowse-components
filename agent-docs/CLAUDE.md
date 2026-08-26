@@ -133,9 +133,10 @@ It selects by PATH, so it runs the suites that live beside a change and none of
 the ones that exercise it from outside — and the suites that exercise a plugin
 from outside are nearly all in `products/jbrowse-web`. Three of them went red on
 main in one week that way, each broken by a change whose own tests moved with
-it: a config-slot removal staled `ConfigSlotDefaults`, a menu group becoming a
-submenu broke `AlignmentsFilters`, and a new scalebar caption staled
-`ReversedRegionLabels`. `pnpm test plugins/alignments` is green across all three.
+it: a config-slot removal staled `ConfigSlotDefaults.test.ts`, a menu group
+becoming a submenu broke `AlignmentsFilters.test.tsx`, and a new scalebar
+caption staled `ReversedRegionLabels.test.tsx`. `pnpm test plugins/alignments`
+is green across all three.
 
 `test-related` walks the module GRAPH (`jest --findRelatedTests`) over the files
 this branch changed, so an integration suite that imports the app — and so,
