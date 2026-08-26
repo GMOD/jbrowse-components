@@ -12,9 +12,9 @@ const originalWarn = console.warn
 // the test that collected it.
 //
 // A FAMILY of prefixes rather than one literal, because the mechanism was never
-// about displays: `display` and `session` exist today. A new family needs no
-// change here, which is the point — the alternative is a check that mislabels
-// itself to reach the gate.
+// about displays: `display`, `session` and `figure` exist today. A new family
+// needs no change here, which is the point — the alternative is a check that
+// mislabels itself to reach the gate. `\w+`, so a family name carries no hyphen.
 const CONTRACT_PREFIX = /\[jbrowse \w+ contract]/
 
 // An exception thrown out of an `autorun`/`reaction` body is caught by MobX and

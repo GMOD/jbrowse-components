@@ -11,8 +11,10 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { addExtensionElement } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
@@ -192,6 +194,13 @@ function initialize() {
   return { Session, LinearGenomeModel, stubManager }
 }
 
+// A real view's id is a nanoid, and `svgNodeId` falls back to it for a view
+// sitting at a path with no index — which this harness's `/view` is. One
+// hardcoded id shared across two harness views would make them share every SVG
+// id, a collision the app cannot produce and the one-figure-per-view check
+// correctly reports.
+let viewCount = 0
+
 function makeView(tracks: { trackId: string; name: string; type: string }[]) {
   const { Session, LinearGenomeModel, stubManager } = initialize()
   // the env carries the plugin manager, which the highlight layer reaches for
@@ -201,7 +210,7 @@ function makeView(tracks: { trackId: string; name: string; type: string }[]) {
     { pluginManager: stubManager },
   ).setView(
     LinearGenomeModel.create({
-      id: 'svgFigureView',
+      id: `svgFigureView${viewCount++}`,
       type: 'LinearGenomeView',
     }),
   )
@@ -377,4 +386,81 @@ test('a display with no renderSvg is named, not drawn, and reserves no height', 
     makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }]),
   )
   expect(alone.text('size')).toBe(both.text('size'))
+})
+
+// The two ways to hold a figure wrong. Both draw a plausible picture and say
+// nothing, so they report through the `[jbrowse figure contract]` channel —
+// `takeContractReports()` is both the assertion and the opt-in that stops the
+// gate failing a violation provoked on purpose.
+
+test('two figures of one view report their colliding ids', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const first = await renderFigure(view)
+  const second = await renderFigure(view)
+
+  // the collision is real, not merely reported: every id the second figure
+  // minted is one the first already owns, and url(#...) takes the first
+  const ids = (c: HTMLElement) => [...c.querySelectorAll('[id]')].map(e => e.id)
+  expect(ids(second.container)).toEqual(ids(first.container))
+
+  const [report, ...rest] = takeContractReports()
+  expect(rest).toHaveLength(0)
+  expect(report).toContain('2 live figures of one view')
+})
+
+test('an observer contributed to the highlight layer reports when it drifts', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  // the door left open once SVGHighlights stopped being one: a plugin's own
+  // component, reached through the extension point the figure fires
+  const Drifting = observer(function Drifting({
+    model,
+  }: {
+    model: LinearGenomeViewModel
+  }) {
+    return <rect data-testid="plugin-band" x={-model.offsetPx} width={1} />
+  })
+  addExtensionElement(
+    getEnv(view).pluginManager,
+    'LinearGenomeView-HighlightSVGComponent',
+    Drifting,
+  )
+  const { svg } = await renderFigure(view)
+  const at = () =>
+    svg().querySelector('[data-testid="plugin-band"]')?.getAttribute('x')
+  expect(at()).toBe('0')
+
+  await act(async () => {
+    view.scrollTo(view.offsetPx + 137)
+    await Promise.resolve()
+  })
+  // it really did move, against a figure whose ruler and bodies did not
+  await waitFor(() => {
+    expect(at()).toBe('-137')
+  })
+  await waitFor(() => {
+    expect(takeContractReports().join(' ')).toContain(
+      'redrew part of itself against a snapshot that did not change',
+    )
+  })
+})
+
+// Closing a view under a mounted figure is a host doing an ordinary thing, not a
+// misuse, so it clears rather than reports: the MST node dies on the write and
+// the redraw key re-runs against it before React can take the figure down. The
+// key used to read `track.configuration.trackId` off a dead node and throw a
+// TypeError inside the reaction, where MobX swallows it.
+test('removing the view clears the figure instead of throwing', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const { container } = await renderFigure(view)
+  expect(container.querySelector('svg')).toBeTruthy()
+
+  const session = getParent<{ setView: (v: undefined) => void }>(view)
+  await act(async () => {
+    session.setView(undefined)
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(container.querySelector('svg')).toBeNull()
+  })
 })

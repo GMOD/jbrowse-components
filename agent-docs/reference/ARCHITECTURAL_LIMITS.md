@@ -1167,6 +1167,31 @@ only on a real violation):
   scolding for something nobody did** — and the tell is a message whose remedy
   the reported caller cannot reach.
 
+- **Nothing inside a live SVG figure may be an `observer`, and a view may hold
+  one figure.** `figureContract.ts` (LGV `svgcomponents/`), the `figure` family,
+  called from `useViewSvgFigure`. Both violations draw a plausible picture and
+  say nothing, which is why they report rather than being left to review: an
+  observer inside re-renders on its own subscription and slides the live half of
+  the drawing across track bodies frozen at a moment in the past, and two figures
+  of one view mint identical SVG ids, where `url(#…)` takes the first and clips
+  every later figure with the first one's rects. Three components shipped the
+  first (`SVGHighlights`, grid-bookmark's `LGVHighlightSVG`, alignments'
+  `SashimiArcsSvg`) before anyone noticed, and the door they came through —
+  `LinearGenomeView-HighlightSVGComponent`, and whatever a display's `renderSvg`
+  returns — is open to any plugin.
+
+  **The general move: where the shape is not detectable, check the state the
+  shape would produce.** `observer(f)` on a function component is `memo(f)` with
+  no marker on it, so it cannot be told from a plain `memo`, which is harmless —
+  an enumeration of component types would have to guess. A `MutationObserver` on
+  the figure's own subtree, reporting only while the snapshot is unchanged, is
+  exact instead, and it covers what an enumeration could not name: a plugin's
+  component, an observer inside a `renderSvg` result, a subscription that is not
+  MobX's. The dual move for the id check: **a deterministic id is a collision the
+  moment two of the thing exist**, and here the determinism is load bearing (an
+  unchanged view exports to the same bytes — `svgNodeId`), so the check goes on
+  the second mount rather than on the ids.
+
 **Checked without a runtime check:**
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**

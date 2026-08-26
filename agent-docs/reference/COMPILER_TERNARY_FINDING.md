@@ -118,6 +118,12 @@ was load-bearing and unverifiable by any run in the repo for exactly this
 reason — deleting it failed nothing compiled, and fails the figure's freeze test
 immediately under `NO_RC=1`.
 
+What that `memo` never covered is the other direction, and no run tells you
+either: it sits between the figure and its parent, not between an `observer`
+inside the figure and MobX. That one reports itself in both runs now — see
+[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"Ordering is the contract",
+the `figure` family.
+
 Reaching for `'use no memo'` instead does not work: the compiler memoizes the
 whole chain, so opting out the one component under test moves the absorption a
 level down and the check stays green. Switch the plugin off for the run.

@@ -13,11 +13,16 @@ import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { getSession } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { reaction } from 'mobx'
 
 import SVGRowHeader from './SVGRowHeader.tsx'
 import SVGView from './SVGView.tsx'
+import {
+  useFrozenFigureContract,
+  useOneFigurePerView,
+} from './figureContract.ts'
 import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
@@ -50,16 +55,21 @@ import type React from 'react'
 //   slides while the features stay put — two clocks, reading as a rendering bug.
 //   An export cannot hit it, because `wrapSvgExport` renders the whole document
 //   in one synchronous pass. The `memo` below is what holds it, and it holds
-//   only against a render arriving from above: nothing inside the figure may be
-//   an `observer`, which re-renders itself on a subscription no memo is between.
-//   That is why the highlight layer is not one, and it is the one rule a plugin
-//   contributing to `LinearGenomeView-HighlightSVGComponent` has to keep too.
+//   only against a render arriving from above — `figureContract.ts` is what
+//   watches the other direction, and says which rule was broken.
 // - **the geometry.** The header band, the label gutter, the legend gutter and
 //   the 50px `exportMargin` are all the caller's to reserve, and getting the
 //   last one wrong clips a wiggle's y-axis labels, which are drawn left of zero.
 //
 // The file export stays one call (`view.exportSvg`), and the markup string stays
 // one call (`renderToSvg`). This is the third form.
+//
+// **A figure in a page is the least-used of the three, and the one whose
+// failures are quietest**, so what it gets is checks rather than features. The
+// two rules a host can break — one figure per view, and nothing inside it
+// subscribed to the view — report themselves in dev through `figureContract.ts`;
+// a redraw in flight clears the figure and holds its box, which the prose on
+// `width`/`height` states rather than the code papering over.
 
 /** What a figure's shape is, where JBrowse has no opinion of its own. */
 export interface ViewSvgFigureOptions {
@@ -230,10 +240,15 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
   snapshot: FigureSnapshot
 }) {
   const { width, height, margin, theme } = snapshot
+  // dev-only, and it watches for the one thing this component cannot enforce:
+  // an observer INSIDE the tree, which the memo above is not between
+  const ref = useRef<SVGSVGElement>(null)
+  useFrozenFigureContract(ref, snapshot)
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <StyleThemeProvider theme={resolveStyleTheme({ configTheme: theme })}>
         <svg
+          ref={ref}
           width={width}
           height={height}
           viewBox={`0 0 ${width} ${height}`}
@@ -306,10 +321,18 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  * see the note at the top of the file.
  */
 function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
+  // A closed view is not an error, it is a host doing an ordinary thing in an
+  // order React cannot help with: the MST node dies on the write, and this
+  // reaction re-runs against the corpse before the host's own render takes the
+  // figure down. Every read below is then a dead-node read — `track.displays[0]`
+  // warns and `track.configuration` comes back undefined, so the key used to
+  // throw a TypeError inside the reaction, where MobX swallows it. No key means
+  // no figure, which is what a host that closed the view wanted anyway.
+  //
   // `view.width` throws by design before the view has been measured, and
   // `ready` is the gate that says it has been — and that there are regions to
   // draw, which is the second async step `initialized` does not cover
-  if (!view.ready) {
+  if (!isAlive(view) || !view.ready) {
     return ''
   }
   const session = getSession(view)
@@ -386,6 +409,7 @@ export function useViewSvgFigure(
   }: ViewSvgFigureOptions = {},
 ): ViewSvgFigureResult {
   const key = useFigureKey(view, themeName)
+  useOneFigurePerView(view)
   const {
     data: snapshot,
     error,

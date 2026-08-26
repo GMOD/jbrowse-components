@@ -3,9 +3,10 @@
 // The dev-only checks that report one are listed in
 // `agent-docs/reference/ARCHITECTURAL_LIMITS.md` §"Ordering is the contract" —
 // don't restate them here, because that list moves and this comment would be the
-// stale copy. Two families exist: `display` (compose order, hook placement, the
-// dead Retry button) and `session` (a track config written into a list that
-// outlives the assembly drawing it — ADR-084).
+// stale copy. The families are `display` (compose order, hook placement, the
+// dead Retry button), `session` (a track config written into a list that
+// outlives the assembly drawing it — ADR-084) and `figure` (a live SVG figure
+// holding an observer, or two figures sharing one view's ids).
 //
 // Each is a `console.error` and never a `throw`, deliberately and permanently:
 // an error escaping `afterAttach` is read by the session loader as an invalid
