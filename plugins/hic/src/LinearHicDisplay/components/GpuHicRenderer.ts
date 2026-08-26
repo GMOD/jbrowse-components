@@ -66,11 +66,21 @@ export class GpuHicRenderer
     this.hal.uploadTexture(PASS_MAIN, colors, 256, 1)
   }
 
-  // binWidth comes from the payload the buffers were packed from, so an
-  // uploaded buffer with no current data draws nothing rather than scaling bins
-  // by a stand-in. The resize and the beginFrame/endFrame around this belong to
+  // A fetched matrix with no contacts is a finished frame: the cleared canvas
+  // IS the picture, and nothing later will upload bytes for it. Answering false
+  // there leaves `canvasDrawn` unset for good, and the loading scrim stays up
+  // over a channel that is simply empty in this window — an outward-pair track
+  // over a window with no everted pairs sat on "Loading" until the capture
+  // timed out. The buffer-count guard below is the other case: a payload that
+  // has arrived but whose upload autorun has not run yet, which a later frame
+  // does paint. binWidth comes from the payload the buffers were packed from,
+  // so that frame draws nothing rather than scaling bins by a stand-in. The
+  // resize and the beginFrame/endFrame around this belong to
   // `GpuGlobalRenderingBackend`.
   protected draw(data: HicUploadData, state: HicRenderState) {
+    if (data.numContacts === 0) {
+      return true
+    }
     if (this.hal.getBufferCount(REGION_KEY, PASS_MAIN) === 0) {
       return false
     }

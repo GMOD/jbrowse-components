@@ -199,13 +199,18 @@ describe('GpuHicRenderer paint reporting', () => {
     expect(renderer.render(makeData(), makeRenderState())).toBe(false)
   })
 
-  it('false for a region that fetched no contacts', () => {
+  it('true for a region that fetched no contacts', () => {
+    // The cleared canvas is the whole picture for an empty matrix, and no later
+    // frame will upload bytes for it. `false` here left `canvasDrawn` unset for
+    // good, and `computeLoadingTerm` held the scrim over a channel that was
+    // simply empty in this window.
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
     const empty = makeData({ numContacts: 0 })
     renderer.upload('data', empty)
 
-    expect(renderer.render(empty, makeRenderState())).toBe(false)
+    expect(renderer.render(empty, makeRenderState())).toBe(true)
+    expect(hal.callsOf('drawPass').length).toBe(0)
   })
 
   it('false with no payload at all', () => {
