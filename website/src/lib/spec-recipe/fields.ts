@@ -178,7 +178,13 @@ function colorByStep(
   // needed to look up a scheme named by arbitrary JSON
   const scheme = Object.values(COLOR_SCHEMES).find(s => s.type === type)
   if (!scheme) {
-    return undefined
+    // The three arc-only schemes live under their own submenu
+    // (menus/colorBy.ts), and a track drawing arcs with the pileup hidden
+    // names one of them here.
+    const arc = ARC_COLOR_OPTIONS.find(o => o.value === type)
+    return arc
+      ? { path: `${TRACK_MENU} → Color by... → Arc color → ${arc.label}` }
+      : undefined
   }
   const { menu } = scheme
   const inPairedEnd = menu.kind === 'radio' && menu.group === 'pairedEnd'
@@ -1271,6 +1277,10 @@ export const trackFields: Record<string, FieldRecipe> = {
   showSashimiLabels: checkbox('Sashimi arcs → Show labels'),
   readConnectionsDown: checkbox(
     'Read connections → Arc / read cloud band options → Draw arcs below coverage band',
+  ),
+  drawProperPairArcs: checkbox(
+    'Read connections → Arc / read cloud band options → Show concordant-pair arcs',
+    'Unchecked, the band keeps only the arcs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
   minSashimiScore: numberField(n => ({
     path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${n}`,
