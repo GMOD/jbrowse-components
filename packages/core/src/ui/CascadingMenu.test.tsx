@@ -452,23 +452,6 @@ describe('CascadingMenu submenu hover intent', () => {
     expect(expandedIn(getByTestId)('colors')).toBe('true')
   })
 
-  // The deadline belongs to the pending change, not to the row that asked for
-  // it: restarting the timer per row means a pointer sliding down a long list
-  // never closes the panel at all, which is the naive way to write the delay.
-  it('does not restart the delay on each further row crossed', () => {
-    const { getByText, getByTestId } = renderMenu(items)
-    fireEvent.mouseOver(getByText('Colors'))
-    fireEvent.mouseOver(getByText('Beta'))
-    act(() => {
-      jest.advanceTimersByTime(200)
-    })
-    fireEvent.mouseOver(getByText('Gamma'))
-    act(() => {
-      jest.advanceTimersByTime(200)
-    })
-    expect(expandedIn(getByTestId)('colors')).toBe('false')
-  })
-
   it('waits before letting another submenu row take over', () => {
     const { getByText, getByTestId } = renderMenu(items)
     const expanded = expandedIn(getByTestId)
@@ -497,5 +480,85 @@ describe('CascadingMenu submenu hover intent', () => {
       key: 'ArrowRight',
     })
     expect([expanded('colors'), expanded('shapes')]).toEqual(['false', 'true'])
+  })
+
+  // Everything above runs on jsdom's zero-sized boxes, where the cone cannot be
+  // measured and every hover falls back to the grace. These give the panel a
+  // real box, which is the only way to see the cone decide anything — and, since
+  // it is measured off the paper MUI portals away, the only way to catch the
+  // panel ref never arriving.
+  describe('with a panel that has a box', () => {
+    // menu paper ending at x=200; the panel it opened occupying 200..400 across
+    // and 0..300 down, its top level with the row the pointer left
+    const panelBox = { left: 200, right: 400, top: 0, bottom: 300, width: 200 }
+
+    function openColorsAndMeasure(utils: ReturnType<typeof renderMenu>) {
+      fireEvent.mouseOver(utils.getByText('Colors'), {
+        clientX: 100,
+        clientY: 10,
+      })
+      const paper = utils.getByText('Red').closest('.MuiPaper-root')!
+      paper.getBoundingClientRect = () => panelBox as DOMRect
+      return expandedIn(utils.getByTestId)
+    }
+
+    it('closes at once for a pointer that was never heading there', () => {
+      const utils = renderMenu(items)
+      const expanded = openColorsAndMeasure(utils)
+      // straight down the menu: no horizontal progress, so nothing to wait for
+      fireEvent.mouseOver(utils.getByText('Beta'), {
+        clientX: 100,
+        clientY: 100,
+      })
+      expect(expanded('colors')).toBe('false')
+    })
+
+    it('defers for a pointer inside the cone', () => {
+      const utils = renderMenu(items)
+      const expanded = openColorsAndMeasure(utils)
+      fireEvent.mouseOver(utils.getByText('Beta'), {
+        clientX: 150,
+        clientY: 100,
+      })
+      expect(expanded('colors')).toBe('true')
+      settle()
+      expect(expanded('colors')).toBe('false')
+    })
+
+    // Veering off can happen without crossing into another row — turn around
+    // inside the one you are already on — so a row's own hover cannot be the
+    // only thing that notices.
+    it('closes the moment the pointer leaves the cone mid-travel', () => {
+      const utils = renderMenu(items)
+      const expanded = openColorsAndMeasure(utils)
+      fireEvent.mouseOver(utils.getByText('Beta'), {
+        clientX: 120,
+        clientY: 40,
+      })
+      expect(expanded('colors')).toBe('true')
+      fireEvent.mouseMove(document, { clientX: 120, clientY: 200 })
+      expect(expanded('colors')).toBe('false')
+    })
+
+    // The grace catches a pointer that STOPS while still aimed. One that keeps
+    // going has to outlive it however long the trip takes, or the cone would be
+    // decoration over the delay it replaced.
+    it('outlives the grace while the pointer is still traveling', () => {
+      const utils = renderMenu(items)
+      const expanded = openColorsAndMeasure(utils)
+      fireEvent.mouseOver(utils.getByText('Beta'), {
+        clientX: 120,
+        clientY: 40,
+      })
+      for (let x = 130; x <= 190; x += 10) {
+        act(() => {
+          jest.advanceTimersByTime(150)
+        })
+        fireEvent.mouseMove(document, { clientX: x, clientY: 40 + (x - 120) })
+      }
+      expect(expanded('colors')).toBe('true')
+      settle()
+      expect(expanded('colors')).toBe('false')
+    })
   })
 })

@@ -23,6 +23,7 @@ function HoverMenu({
   anchorEl,
   onClose,
   onMouseEnter,
+  paperRef,
   anchorOrigin,
   transformOrigin,
   zIndex,
@@ -32,6 +33,8 @@ function HoverMenu({
   anchorEl: HTMLElement | null
   onClose: () => void
   onMouseEnter?: () => void
+  // the panel's own box, which the parent list measures its aim cone against
+  paperRef?: React.Ref<HTMLElement>
   anchorOrigin: PopoverOrigin
   transformOrigin: PopoverOrigin
   zIndex?: React.CSSProperties['zIndex']
@@ -46,7 +49,11 @@ function HoverMenu({
       transformOrigin={transformOrigin}
       style={{ pointerEvents: 'none', zIndex }}
       slotProps={{
-        paper: { style: { pointerEvents: 'auto' }, onMouseEnter },
+        paper: {
+          style: { pointerEvents: 'auto' },
+          onMouseEnter,
+          ref: paperRef,
+        },
       }}
       // A submenu is portaled in the DOM but is still a React *descendant* of
       // the parent menu's list, so React replays its key events into the parent

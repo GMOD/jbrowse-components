@@ -12,10 +12,12 @@ import {
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import { useEventCallback } from '../util/useEventCallback.ts'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { staysOpenOnClick } from './MenuTypes.ts'
 import { hasMenuItemAdornment } from './menuItemAdornment.tsx'
+import { isAimedAtPanel } from './submenuAim.ts'
 
 import type { MenuColumnFlags } from './MenuItemTrailing.tsx'
 import type {
@@ -27,6 +29,7 @@ import type {
   MenuItemsGetter,
   SubMenuItem,
 } from './MenuTypes.ts'
+import type { AimPoint } from './submenuAim.ts'
 import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
@@ -88,29 +91,39 @@ function useCascadingMenu() {
 }
 
 /**
- * How long a hover waits before it changes which submenu is open.
+ * How long a change deferred by the aim cone waits before it happens anyway.
  *
- * A submenu panel opens level with its parent row and extends downward, so
- * reaching a row inside it means traveling diagonally across the rows below the
- * parent — and those rows want the panel closed. Acting on the first one
- * crossed made that diagonal unwalkable: the panel vanished the instant the
- * pointer strayed off the parent row. Waiting lets a pointer that is merely
- * passing through reach the panel, whose own hover cancels the pending change,
- * while one that settles elsewhere still closes it.
- *
- * Long enough to cross several rows at a normal pointer speed; short enough
- * that a deliberate move to another submenu row doesn't read as a hang.
+ * Only a pointer INSIDE the cone is ever deferred, and every further move
+ * inside it re-arms this — so it expires only once the pointer has stopped
+ * while still aimed at the panel, which is someone who set out for the submenu
+ * and changed their mind. A pointer that keeps traveling reaches the panel; one
+ * that veers off leaves the cone and is acted on at once. That is what lets
+ * this be short: it is a backstop for a stalled pointer, not the mechanism.
  */
-const submenuHoverDelayMs = 300
+const submenuAimGraceMs = 200
 
 /**
- * Which submenu of ONE list is open, plus the hover intent that moves it. A
- * click or ArrowRight is unambiguous and acts at once; a hover schedules.
+ * Which submenu of ONE list is open, plus the hover intent that moves it.
+ *
+ * A click or ArrowRight says where the pointer meant to go and acts at once. A
+ * hover is read against {@link isAimedAtPanel}: outside the cone it acts at
+ * once too, and inside it defers, because the rows between a submenu row and
+ * its panel are exactly the ones a pointer on its way there has to cross.
  */
 function useSubmenuHover() {
   const [openSubmenu, setOpenSubmenu] = useState<string | undefined>()
+  // the open panel's paper, so the cone has a real edge to open onto. Written
+  // by whichever CascadingSubmenu is open and cleared as it closes, so at most
+  // one submenu of this list ever owns it
+  const panelRef = useRef<HTMLElement | null>(null)
+  // where the pointer was when the open panel opened — the cone's tip
+  const apex = useRef<AimPoint | undefined>(undefined)
   const pending = useRef<
-    | { key: string | undefined; timer: ReturnType<typeof setTimeout> }
+    | {
+        key: string | undefined
+        point: AimPoint
+        timer: ReturnType<typeof setTimeout>
+      }
     | undefined
   >(undefined)
 
@@ -129,35 +142,85 @@ function useSubmenuHover() {
     [],
   )
 
-  const setSubmenu = (key: string | undefined) => {
+  const commit = (key: string | undefined, point?: AimPoint) => {
     cancelPending()
+    apex.current = key === undefined ? undefined : point
     setOpenSubmenu(key)
   }
 
+  // 'unmeasured' is its own answer, not a lenient 'inside': a cone pointing at
+  // nothing would call every row crossed a veer-off, and a move handler that
+  // re-armed on it would hold the panel open for as long as the pointer kept
+  // moving anywhere at all
+  const aimAt = (point: AimPoint) => {
+    const panel = panelRef.current
+    const tip = apex.current
+    if (!panel || !tip) {
+      return 'unmeasured' as const
+    }
+    const rect = panel.getBoundingClientRect()
+    if (rect.width === 0 && rect.height === 0) {
+      return 'unmeasured' as const
+    }
+    return isAimedAtPanel(point, tip, rect) ? ('inside' as const) : 'outside'
+  }
+
+  const defer = (key: string | undefined, point: AimPoint) => {
+    cancelPending()
+    pending.current = {
+      key,
+      point,
+      timer: setTimeout(() => {
+        commit(key, point)
+      }, submenuAimGraceMs),
+    }
+  }
+
+  // Watched only while a panel is up, and only a deferred change is waiting on
+  // it. A row's own hover cannot answer this alone: the pointer can leave the
+  // cone without ever crossing into another row, by turning around inside the
+  // one it is already on.
+  const onPointerMove = useEventCallback((event: MouseEvent) => {
+    const deferred = pending.current
+    if (!deferred) {
+      return
+    }
+    const aim = aimAt({ x: event.clientX, y: event.clientY })
+    if (aim === 'outside') {
+      commit(deferred.key, deferred.point)
+    } else if (aim === 'inside') {
+      // still traveling, so the grace starts over — it is there to catch a
+      // pointer that stops, and this one has not
+      defer(deferred.key, deferred.point)
+    }
+  })
+  useEffect(() => {
+    if (openSubmenu === undefined) {
+      return
+    }
+    document.addEventListener('mousemove', onPointerMove)
+    return () => {
+      document.removeEventListener('mousemove', onPointerMove)
+    }
+  }, [openSubmenu, onPointerMove])
+
   return {
     openSubmenu,
-    setSubmenu,
+    panelRef,
+    setSubmenu: commit,
     // the pointer reached the open panel, so whatever was scheduled is stale
     keepSubmenuOpen: cancelPending,
     // the pointer arrived at a row wanting `key` open — undefined from a row
     // with no submenu, i.e. "close whatever is"
-    hoverSubmenu: (key: string | undefined) => {
+    hoverSubmenu: (key: string | undefined, point: AimPoint) => {
       if (key === openSubmenu) {
         cancelPending()
-      } else if (openSubmenu === undefined) {
-        // nothing to protect, so opening the first panel stays instant
-        setSubmenu(key)
-      } else if (!pending.current || pending.current.key !== key) {
-        // a run of rows all asking for the same change keeps the original
-        // deadline: restarting it on each row crossed means a pointer sliding
-        // down the list never closes the panel at all
-        cancelPending()
-        pending.current = {
-          key,
-          timer: setTimeout(() => {
-            setSubmenu(key)
-          }, submenuHoverDelayMs),
-        }
+      } else if (openSubmenu === undefined || aimAt(point) === 'outside') {
+        // nothing to protect, or a pointer that was never heading for the open
+        // panel: either way there is nothing to wait for
+        commit(key, point)
+      } else {
+        defer(key, point)
       }
     },
   }
@@ -172,6 +235,19 @@ type SubmenuHover = ReturnType<typeof useSubmenuHover>
 // the open panel would jump to whichever row landed at that index.
 function submenuKey(label: React.ReactNode) {
   return `subMenu-${label}`
+}
+
+// Where the aim cone's tip goes for a submenu opened from the keyboard, which
+// has no pointer to put it at: the middle of the row, so a pointer picked up
+// afterwards is judged by a cone the same shape hovering the row would have
+// given it. The row's leading edge, not its trailing one — a tip level with the
+// panel's near edge leaves no gap to open a cone across.
+function rowCentre(row: HTMLElement | null) {
+  if (!row) {
+    return undefined
+  }
+  const rect = row.getBoundingClientRect()
+  return { x: (rect.left + rect.right) / 2, y: (rect.top + rect.bottom) / 2 }
 }
 
 // Build a `cascading-<kind>-<label>` data-testid, or undefined for non-string
@@ -264,7 +340,7 @@ function CustomMenuRow({
   onHover,
 }: {
   item: CustomMenuItem
-  onHover: () => void
+  onHover: (event: React.MouseEvent) => void
 }) {
   const { onCloseRoot } = useCascadingMenu()
   return (
@@ -350,15 +426,15 @@ function CascadingSubmenu({
           // into the panel. Presentational on a `menuitem` — MUI derives
           // aria-checked from `selected` only for the checkbox/radio roles.
           selected={isOpen}
-          onMouseEnter={() => {
-            hover.hoverSubmenu(itemKey)
+          onMouseEnter={e => {
+            hover.hoverSubmenu(itemKey, { x: e.clientX, y: e.clientY })
           }}
-          onClick={() => {
-            hover.setSubmenu(itemKey)
+          onClick={e => {
+            hover.setSubmenu(itemKey, { x: e.clientX, y: e.clientY })
           }}
           onKeyDown={e => {
             if (e.key === 'ArrowRight') {
-              hover.setSubmenu(itemKey)
+              hover.setSubmenu(itemKey, rowCentre(anchorEl))
             } else if (e.key === 'ArrowLeft') {
               e.stopPropagation()
               onNavigateBack?.()
@@ -379,6 +455,10 @@ function CascadingSubmenu({
         // the pointer completed the trip, so drop the close a row it crossed on
         // the way scheduled
         onMouseEnter={hover.keepSubmenuOpen}
+        // only while open: a panel MUI is still fading out is not something to
+        // aim at, and this list keeps one cone target for whichever submenu is
+        // up
+        paperRef={isOpen ? hover.panelRef : undefined}
         onClose={() => {
           hover.setSubmenu(undefined)
         }}
@@ -409,7 +489,7 @@ function CascadingMenuItem({
   inset: boolean
   columns: MenuColumnFlags
   onNavigateBack?: () => void
-  onHover: () => void
+  onHover: (event: React.MouseEvent) => void
 }) {
   const { closeAfterItemClick, onMenuItemClick, onCloseRoot } =
     useCascadingMenu()
@@ -462,9 +542,11 @@ function CascadingMenuList({
   const { classes } = useStyles()
   const hover = useSubmenuHover()
   // every row a pointer can rest on asks for the open panel to go away; only a
-  // row that owns a submenu, or the panel itself, keeps one up
-  const closeOnHover = () => {
-    hover.hoverSubmenu(undefined)
+  // row that owns a submenu, or the panel itself, keeps one up. Whether the ask
+  // is granted now or waited out is the aim cone's call, which is why the
+  // pointer comes with it
+  const closeOnHover = (event: React.MouseEvent) => {
+    hover.hoverSubmenu(undefined, { x: event.clientX, y: event.clientY })
   }
 
   const { hasIcon, columns } = getMenuColumnFlags(menuItems)
