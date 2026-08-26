@@ -539,9 +539,14 @@ function offscreenMateRectAt(
 /**
  * The contig the mark under a point stands for, or undefined.
  *
- * LAST MATCH WINS, so the answer is whatever a reader sees on top where two
- * marks overlap — the scan runs backwards over the datasets the canvas paints
- * forwards, and later paints over earlier.
+ * LAST MATCH WINS: the scan runs backwards over the datasets the canvas paints
+ * forwards, so where two marks overlap it answers with the one on top. That is
+ * the paint order exactly for a strip in the band's grey, which is ONE path in
+ * dataset order. A lane painting by contig groups its rects by fill instead, and
+ * two COLORS that overlap composite at `MARK_ALPHA` with neither on top — so
+ * there is no "on top" there for this to disagree with. What the two hit tests
+ * must not differ on is the order between THEM, and both take it off the
+ * datasets.
  *
  * THE STRIP IS TESTED BEFORE ANY ALIGNMENT IS. Every mark has the same height,
  * and the strip is a few pixels of a band ~100 tall, so the overwhelming
@@ -617,9 +622,10 @@ export interface OffscreenMateSpan {
  * DIFFERENT assemblies, so a name matched across them would union coordinates
  * from two genomes.
  *
- * ONE FORWARD PASS, unlike the hover's backwards early exit — the contig on top
- * is the one painted last, which the same walk that accumulates the spans knows
- * by the time it ends. For the SHAPE, not for speed: asking the hit test for
+ * ONE FORWARD PASS, unlike the hover's backwards early exit — it answers with
+ * the last contig the scan meets, which is `offscreenMateAt`'s own rule read
+ * forwards, and the same walk that accumulates the spans knows it by the time it
+ * ends. For the SHAPE, not for speed: asking the hit test for
  * the name and then scanning again for its coordinates is two traversals that
  * have to agree on which contig won, and the sentinels the second one needed
  * went with it. The measured difference is 0.014ms on the demo fixture, which

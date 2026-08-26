@@ -308,6 +308,11 @@ function stripHit<T>(
  * `agent-docs/measurements/culled-ribbon-mates.json` — to answer a question the
  * mark's presence answers for free.
  *
+ * `minAlignmentLength` is not applied either, by the same rule rather than by
+ * oversight: the floor decides which alignments are worth DRAWING, and the ones
+ * it hides still go to that contig. It is a fourth way the count exceeds the
+ * marks beside it, and the only one the reader set themselves.
+ *
  * Scoped to this band rather than the view, because the band is what the pointer
  * is over.
  *
