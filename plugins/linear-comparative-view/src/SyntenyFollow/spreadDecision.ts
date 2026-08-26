@@ -35,10 +35,12 @@ export interface SpreadDecision {
   spreading: boolean
   // the contig the row is placed on instead, when it is not spreading
   onto?: string
-  // and the anchor's other contigs, whose answers are the ones not shown. The
-  // reader can reach them by scrolling the anchor onto one — it becomes the
-  // widest window and the rows follow it — but only if something says they are
-  // there, which is the whole of what the header does with this.
+  // and the anchor's other contigs THAT ANSWERED, whose answers are the ones not
+  // shown. The reader can reach them by scrolling the anchor onto one — it
+  // becomes the widest window and the rows follow it — but only if something
+  // says they are there, which is the whole of what the header does with this.
+  // A contig with no alignment in the file answers nothing, so scrolling onto it
+  // shows nothing and naming it is advice that cannot be taken.
   elsewhere?: string[]
   // undefined when nothing measurable was placed, which is the spreading case
   coverage?: number
@@ -153,6 +155,7 @@ export function decideSpread({
   movingRegions,
   windows,
   spans,
+  mapped,
   previous,
 }: {
   blocks: ContentBlock[]
@@ -160,6 +163,8 @@ export function decideSpread({
   movingRegions: Region[]
   windows: FollowWindow[]
   spans: ResolvedSpan[]
+  /** the anchor contigs a span came back for, from `followSpreadSpans` */
+  mapped: ReadonlySet<string>
   previous?: SpreadDecision
 }): SpreadDecision {
   if (
@@ -184,7 +189,9 @@ export function decideSpread({
   return {
     spreading: false,
     onto,
-    elsewhere: windows.filter(w => w.refName !== onto).map(w => w.refName),
+    elsewhere: windows
+      .filter(w => w.refName !== onto && mapped.has(w.refName))
+      .map(w => w.refName),
     coverage,
   }
 }

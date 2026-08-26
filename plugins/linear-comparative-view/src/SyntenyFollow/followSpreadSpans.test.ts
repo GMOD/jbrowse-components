@@ -27,7 +27,7 @@ const win = (refName: string, start: number, end: number): FollowWindow => ({
 const spread = (
   displays: LinearSyntenyDisplayModel[],
   windows: FollowWindow[],
-) => followSpreadSpans({ displays, windows, toMate: true })
+) => followSpreadSpans({ displays, windows, toMate: true }).spans
 
 // The grape/peach/cacao shape: the mate row's contigs are ORDERED DIFFERENTLY,
 // which is why the two outermost windows do not bound the answer and every
@@ -105,4 +105,17 @@ test('a track whose data has not arrived contributes nothing', () => {
       [win('chr1', 0, 20_000)],
     ),
   ).toHaveLength(1)
+})
+
+// Which ANCHOR contigs answered, which the spans cannot say — they name the
+// moving row's contigs. A refused spread's header offers the reader the ones
+// worth scrolling onto, and a contig with no alignment in the file is not one.
+test('reports the anchor contigs that mapped, not the ones asked about', () => {
+  expect(
+    followSpreadSpans({
+      displays: [permuted],
+      windows: [win('chr1', 0, 20_000), win('chrUn', 0, 1_000)],
+      toMate: true,
+    }).mapped,
+  ).toEqual(new Set(['chr1']))
 })

@@ -19,6 +19,12 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * That vote exists so a sparse track cannot pull the row off the locus the
  * dense one covers; here there is no locus to be pulled off, and a track that
  * covers a contig the other does not should widen the answer to include it.
+ *
+ * `mapped` is WHICH ANCHOR CONTIGS ANSWERED — the windows a span came back for.
+ * The spans themselves are on the moving row and cannot say, and a refused
+ * spread's header offers the reader the anchor contigs worth scrolling onto:
+ * built off the windows instead it named contigs with no alignment in the file
+ * at all.
  */
 export function followSpreadSpans({
   displays,
@@ -32,20 +38,22 @@ export function followSpreadSpans({
   mateAssembly?: string
 }) {
   const spans: ResolvedSpan[] = []
+  const mapped = new Set<string>()
   for (const display of displays) {
     const data = display.featureData
     if (data) {
-      for (const span of followWindowsMapping({
+      for (const [i, span] of followWindowsMapping({
         data,
         windows,
         toMate,
         mateAssembly,
-      })) {
+      }).entries()) {
         if (span) {
           spans.push(span)
+          mapped.add(windows[i]!.refName)
         }
       }
     }
   }
-  return spans
+  return { spans, mapped }
 }

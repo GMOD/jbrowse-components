@@ -421,7 +421,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     placed: PlacedWindows
   }) {
     const { level, stayingView, movingView, toMate, mateAssembly } = pair
-    const spans = followSpreadSpans({
+    const { spans, mapped } = followSpreadSpans({
       displays: level.linearSyntenyDisplays,
       windows,
       toMate,
@@ -440,6 +440,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             movingRegions: untracked(() => movingView.displayedRegions),
             windows,
             spans,
+            mapped,
             previous: state.spread,
           })
     state.spread = decision
@@ -522,6 +523,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // overview placed every other row on whichever single contig aligned to the
     // anchor's widest, which is what "show all regions" then only did to the
     // anchor row.
+    // ONE WINDOW IS NOT A REFUSAL, and `state.spread` is only ever written by
+    // the rung below. Left standing it made the `partial` report below outlive
+    // the panel it was about: the header told the reader to scroll onto the
+    // other contig, they did, and it went on naming the contig they had left and
+    // telling them to scroll onto the one they were now on — while the row was
+    // in fact following that one, by the `widest` fallback.
+    if (windows.length <= 1) {
+      state.spread = undefined
+    }
     const spread =
       windows.length > 1
         ? planSpread({ pair, windows, carried: !!carried, state, placed })
@@ -687,7 +697,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           const spread =
             windows.length > 1 ? levelStates.spreadFor(level) : undefined
           if (windows.length > 1 && spread?.spreading !== false) {
-            const spans = followSpreadSpans({
+            const { spans } = followSpreadSpans({
               displays: level.linearSyntenyDisplays,
               windows,
               toMate,

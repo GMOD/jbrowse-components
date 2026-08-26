@@ -125,6 +125,7 @@ describe('the decision', () => {
     stayingRegions: regions,
     movingRegions: regions,
     windows: [win('chr1', 900_000, CONTIG), win('chr2', 0, 100_000)],
+    mapped: new Set(['chr1', 'chr2']),
   }
 
   test('a straddle whose answers are a genome apart is refused', () => {
@@ -161,6 +162,7 @@ describe('the decision', () => {
         stayingRegions: regions,
         movingRegions: regions,
         windows: [win('chr1', 0, CONTIG), win('chr9', 0, CONTIG)],
+        mapped: new Set(['chr1', 'chr9']),
         spans: [
           { refName: 'chr1', start: 0, end: 100_000 },
           { refName: 'chr9', start: 0, end: 100_000 },
@@ -242,5 +244,27 @@ describe('the decision', () => {
         }),
       ).toMatchObject({ onto: 'chr2' })
     })
+  })
+
+  // The reader reaches a refused answer by scrolling the anchor onto the contig
+  // that carries it, so a contig carrying none is advice that cannot be taken.
+  test('the contigs it names are the ones that answered', () => {
+    expect(
+      decideSpread({
+        ...straddle,
+        blocks: [block('chr1', 500), block('chr2', 400), block('chr3', 400)],
+        windows: [
+          win('chr1', 900_000, CONTIG),
+          win('chr2', 0, 100_000),
+          win('chr3', 0, 100_000),
+        ],
+        // chr3 is on screen and aligns to nothing in the file
+        mapped: new Set(['chr1', 'chr2']),
+        spans: [
+          { refName: 'chr1', start: 0, end: CONTIG },
+          { refName: 'chr9', start: 0, end: CONTIG },
+        ],
+      }),
+    ).toMatchObject({ onto: 'chr1', elsewhere: ['chr2'] })
   })
 })

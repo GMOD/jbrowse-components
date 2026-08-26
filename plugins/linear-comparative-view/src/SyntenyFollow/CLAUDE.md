@@ -174,6 +174,15 @@ whole `showOffscreenMateContig` dance. `followDebug` prints the whole decision
 per settle under `localStorage.debugSyntenyFollow`, and
 `browser-tests/follow-spread-probe.ts` drives a live session with it.
 
+**Both halves of that sentence are only true while the panel it describes is on
+screen.** `FollowLevelState.spread` is written by this rung alone, so a reader
+who takes the advice leaves a panel the rung does not reach — and the report,
+read unconditionally, went on naming the contig they had left and telling them
+to scroll onto the one they were now on. `planLevel` clears the decision when
+the anchor is down to one window. The contigs it offers are the ones
+`followSpreadSpans` actually MAPPED, too: a contig with no alignment in the file
+answers nothing, so scrolling onto it shows nothing.
+
 **Every visible contig is asked, not the two outer edges.** Mapping the leftmost
 and rightmost visible bp is the obvious cheaper spelling and is wrong whenever
 the two assemblies order their contigs differently — which the multiway demo

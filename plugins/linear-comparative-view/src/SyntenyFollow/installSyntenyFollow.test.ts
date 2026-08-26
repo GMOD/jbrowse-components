@@ -270,6 +270,27 @@ describe('a straddle whose answers are far apart', () => {
     })
   })
 
+  // The refusal's own advice, taken. `state.spread` is written only by the
+  // multi-contig rung, which a one-contig panel does not reach, so the report
+  // outlived the panel it was about: the header went on naming chr1 and telling
+  // the reader to scroll onto chr2 while they were already there — and the row
+  // really was following chr2, by the fallback below the rung.
+  test('scrolling onto the contig it named stops naming it', async () => {
+    const { rows, host } = stack('chr9')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(host.followPartial).toEqual({
+      following: 'chr1',
+      elsewhere: ['chr2'],
+    })
+
+    place(rows[0]!, 1_100_000, 1_500_000)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(followAnchorWindows(rows[0]!.coarseDynamicBlocks)).toHaveLength(1)
+    // the row really is following chr2 now — chr9 is what chr2 maps to
+    expect(shown(rows[1]!)).toEqual(['chr9'])
+    expect(host.followPartial).toBeUndefined()
+  })
+
   test('and it spreads as before when the two answers are neighbours', async () => {
     const { rows, host } = stack('chr2')
     await new Promise(resolve => setTimeout(resolve, 0))
