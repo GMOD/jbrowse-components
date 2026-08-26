@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   getConf,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
@@ -32,6 +33,7 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
+import { laneOrderMenuItem, laneSettingsMenuItems } from './menus.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
@@ -167,6 +169,24 @@ export function stateModelFactory(
        */
       setHoveredGroupKey(key: string | undefined) {
         self.hoveredGroupKey = key
+      },
+      /**
+       * #action
+       */
+      setRowOrder(order: string[]) {
+        self.rowOrder.replace(order)
+      },
+      /**
+       * #action
+       */
+      setDrawCurves(flag: boolean) {
+        setConf(self, 'drawCurves', flag)
+      },
+      /**
+       * #action
+       */
+      setShowLaneTicks(flag: boolean) {
+        setConf(self, 'showLaneTicks', flag)
       },
     }))
     .views(self => ({
@@ -558,6 +578,9 @@ export function stateModelFactory(
               anchorTracks: anchorPanelTracks(view.tracks),
               sourceView: view,
             }),
+            { type: 'divider' },
+            ...laneSettingsMenuItems(self),
+            ...laneOrderMenuItem(self),
           ]
         },
       }
@@ -568,12 +591,6 @@ export function stateModelFactory(
        */
       selectFeature(feature: Feature) {
         openFeatureWidget(self, feature.toJSON(), { feature })
-      },
-      /**
-       * #action
-       */
-      setRowOrder(order: string[]) {
-        self.rowOrder.replace(order)
       },
     }))
     .actions(self => ({

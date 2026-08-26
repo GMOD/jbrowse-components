@@ -6,6 +6,7 @@ import configSnapshot from '../../test_data/multiway_blocks/config.json' with { 
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { MultiWaySyntenyDisplayModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
@@ -218,4 +219,58 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
     framed((first.anchor.start + first.anchor.end) / 2),
     0,
   )
+}, 40000)
+
+// Lane order was densest-first with no way in but hand-authoring `rowOrder`,
+// and it is the one edit a reader wants in front of the picture: a ribbon joins
+// ADJACENT lanes only, so a sparse lane mid-stack cuts every chain below it.
+// Driven through the menu item's own onClick rather than `setRowOrder`, since
+// what the row writes back — the whole order, not the lane that moved — is the
+// half that would go unnoticed.
+test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: ['multiway_blocks'],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.rowAssemblies).toEqual(['peach', 'cacao'])
+      return d!
+    },
+    { timeout: 30000 },
+  )
+
+  const rowNamed = (items: MenuItem[], label: string) => {
+    const hit = items.find(i => 'label' in i && i.label === label)
+    if (!hit) {
+      throw new Error(`no menu row ${label} in ${JSON.stringify(items)}`)
+    }
+    return hit
+  }
+  const subMenuOf = (item: MenuItem) =>
+    'subMenu' in item ? item.subMenu : ([] as MenuItem[])
+  const laneOrder = () =>
+    subMenuOf(rowNamed(display.trackMenuItems(), 'Lane order'))
+  const click = (item: MenuItem) => {
+    ;(item as { onClick: () => void }).onClick()
+  }
+
+  click(rowNamed(subMenuOf(rowNamed(laneOrder(), 'cacao')), 'Move up'))
+  expect([...display.rowOrder]).toEqual(['cacao', 'peach'])
+  expect(display.rowAssemblies).toEqual(['cacao', 'peach'])
+
+  click(rowNamed(laneOrder(), 'Reset lane order'))
+  expect([...display.rowOrder]).toEqual([])
+  expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
 }, 40000)

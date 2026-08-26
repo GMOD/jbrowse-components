@@ -42,7 +42,26 @@ test('the stacked-synteny launcher is on the track menu, over the inherited rows
   const display = createDisplay()
   const items = display.trackMenuItems()
 
+  // no lane-order row: the harness commits no features, so there is no mate
+  // lane to order. `menus.test.ts` covers that one on its own
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Launch stacked synteny view (visible region)',
+    undefined,
+    'Draw curved ribbons',
+    'Show lane ticks',
   ])
+})
+
+// The two drawing settings were config-only, and a menu toggle that writes
+// anywhere but the slot the getter reads is a checkbox that ticks and does
+// nothing.
+test('the drawing toggles write the slots the display reads back', () => {
+  const display = createDisplay()
+  expect(display.drawCurves).toBe(false)
+  expect(display.showLaneTicks).toBe(true)
+
+  display.setDrawCurves(true)
+  display.setShowLaneTicks(false)
+  expect(display.drawCurves).toBe(true)
+  expect(display.showLaneTicks).toBe(false)
 })
