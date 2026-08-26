@@ -59,7 +59,6 @@ the half that rots is the half it covers.
 | [One mark per interchromosomal cluster](todo/draw-one-mark-per-interchromosomal-cluster.md) | alignments | a figure-changing decision; pick the position rule first |
 | [Bound a cluster's diameter](todo/bound-an-interchromosomal-clusters-diameter.md) | alignments | measure at depth before changing what the floor means |
 | [Re-measure the bicolor split on the main thread](todo/re-measure-the-bicolor-split-on-the-main-thread.md) | wiggle, perf | ADR-016's premise is gone under ADR-078; take the number on a 1000-source multiwiggle |
-| [The read cloud's axis follows one outlier](todo/the-read-clouds-y-axis-autoscales-to-a-single-outlier.md) | alignments | needs a measurement on deep data, not a chosen statistic |
 | [Linearize the pangenome](todo/linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs.md) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Pangenome graph view queue](todo/pangenome-graph-view-the-open-queue.md) | pangenome | three items unblock the rest; take the LGV axis first |
 | [Collapse trivial bubbles in a file-loaded graph](todo/coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles.md) | pangenome | designed; path lanes are the open question |

@@ -261,6 +261,78 @@ in read cloud** — the cloud ticks every interchromosomal connection, displayed
 partner or not — so the caller reads `readConnections`, the same setting
 `resolveArcs` branches on, rather than assuming.
 
+## The read cloud draws a bar only between two places on screen
+
+**A flat mark whose partner is outside every LOADED region collapses onto the
+end the view can place and sits on the band's zero anchor**
+(`ARC_SHAPE_FLAT_UNPLACED`). Two things go wrong at once when it does not, and
+the parked row is one answer to both.
+
+The bar is drawn between two feet, so a partner the view has no block for is
+extrapolated: the line runs off the screen edge to a coordinate nothing covers
+and paints the full width of the band, saying nothing its near foot does not. And
+the same connection's span sets `arcsYDomainBp`, which every lane shares and
+`insertSizeTickSections` prints at the top of the axis.
+
+Measured on HG002 300x (`NHGRI_Illumina300X_AJtrio`, hs37d5) over 47 20 kb
+windows across chr1, 2, 5, 11, 17 and 20 — 5,281 cloud arcs after the
+concordant-FR drop:
+
+```
+span decade | arcs | in a >=3-pair cluster | biggest cluster
+1e3         | 1574 | 1516 (96%)            | 24
+1e4         |    3 |    0                  |  1
+1e5         |   61 |   46 (75%)            | 46
+1e6         |  102 |   55 (54%)            | 35
+1e7         |  219 |    0                  |  2
+1e8         |   58 |    0                  |  1
+```
+
+379 arcs (7.2%) have a partner more than 1 Mb away, spread uniformly over the
+chromosome — 6% of them in the 1e6 decade, 42% in 1e7, 52% in 1e8, which is what
+a mate placed at random on a 60-250 Mb contig looks like — and past 10 Mb not one
+of 277 has two other pairs agreeing on its junction. The median window's axis
+topped out at 73 Mb, so the range every real pair sits in was squeezed into the
+top third of the band, and each of those pairs drew a screen-wide bar: 96 of them
+in one 200 kb window, which is the solid mass along the bottom.
+
+**IT IS A PLACEMENT TEST, NOT A SPAN THRESHOLD**, and that is the part to not
+"simplify". A pair 5 Mb apart in a view showing BOTH of its ends — two
+discontiguous displayed regions at the two breakpoints, the view read connections
+exist for — draws its bar between two real pixels and belongs on the axis; a pair
+30 kb apart in a 20 kb window does not. No ordering of spans reproduces those two
+answers. The picture follows the view: zoom out, or open a second region at the
+partner's locus, and the same connection joins the axis.
+
+**Asked of the LOADED list, and `displayedRegions` will not do.** An ordinary LGV
+shows one displayed region and it is the whole chromosome, so a mate 214 Mb away
+resolves to a region and reads as perfectly placeable — the rule would be a no-op
+in the case it exists for. The loaded list is the fetch (the blocks on screen plus
+the half-screen each side `planRegionFetch` buffers), which is the data a bar
+could be drawn between. `cloudUnplaced.test.ts` pins the distinction, and a
+sabotage swapping the lists is the one it catches.
+
+**The collapse is in bp, in `resolveArcs`, before anything is projected**, which
+is what lets all four renderers draw the mark with no geometry of their own:
+`arcMarkFrom` resolves a zero-length bar to `ARC_FLAT_MIN_PX` centred on the foot,
+the two endpoint squares land on each other there, and the hit test measures the
+same stub. It also narrows `arcTouchesRegion` to the one region, so an unplaced
+connection stops being packed into every region on its chromosome. The cost is
+the far coordinate, which the hover reports as a distance instead
+(`unplacedPartnerBp`) — its two feet are one coordinate, so the location range and
+the distance between them would read as zero-width over a partner megabases away.
+
+**`plotsOnInsertSizeAxis` is the other half.** Taking the bar away is not the fix
+if the span still sizes the axis, so `maxFlatArcSpanBp` reads the two shapes that
+plot ON the axis rather than `isFlatArcShape`, which is the right predicate for
+"does this draw as a bar" and admits all three.
+
+**The edge ring is the priced cost.** A pair straddling the loaded region's
+boundary is unplaced too, whatever its span — 5 of 75 arcs in a 24 kb window at
+1:2,000,000 on HG002 300x, at ordinary spans of 139-1,185 bp. They cost nothing to
+look at: the boundary is half a screen outside the visible window, so those reads
+are off screen anyway and their bars ran off the block edge.
+
 ## Questions asked of the band, and of the lanes
 
 **Ask `hasArcBandInk`, not `numArcs`.** A lane whose only interchromosomal partner
@@ -282,12 +354,15 @@ arc reaching no displayed region is dropped, so keying a swatch off the
 pre-regionization set names a colour nothing draws.
 
 **`isFlatArcShape` answers "does this draw as a bar", never "does this have an
-insert size".** Both flat variants draw as a bar, and only `ARC_SHAPE_FLAT` — the
-mate link — has a TLEN. `computeArcShape` gives `ARC_SHAPE_FLAT_SPLIT`
-`spanBp = |p2Bp - p1Bp|`, which is exactly the arc's own span, so gating the
-tooltip's insert-size row on the drawing predicate printed the Distance line over
-again under a name a split read cannot carry. The two questions look like one
-because the read cloud is the only mode either is asked in.
+insert size" and never "does this size the axis".** All three flat variants draw
+as a bar, and only `ARC_SHAPE_FLAT` — the placed mate link — has a TLEN;
+`plotsOnInsertSizeAxis` and `isUnplacedArcShape` are the other two questions.
+
+`computeArcShape` gives `ARC_SHAPE_FLAT_SPLIT` `spanBp = |p2Bp - p1Bp|`, which is
+exactly the arc's own span, so gating the tooltip's insert-size row on the drawing
+predicate printed the Distance line over again under a name a split read cannot
+carry. The three questions look like one because the read cloud is the only mode
+any of them is asked in.
 
 ## Breakend feet
 
