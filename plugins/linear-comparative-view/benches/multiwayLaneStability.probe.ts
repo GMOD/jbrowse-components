@@ -55,7 +55,6 @@ import {
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
 
 class BlocksOnly extends Plugin {
   name = 'BlocksOnly'
