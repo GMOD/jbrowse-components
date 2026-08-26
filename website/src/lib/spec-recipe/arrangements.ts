@@ -9,7 +9,7 @@ import type { FieldStep } from './fields.ts'
 
 // An arrangement is a set of display settings one track-menu row applies
 // together. `fieldSteps` is one field, one step, so without this pass a figure
-// that clicks a single checkbox reads as six instructions spread over four
+// that clicks a single checkbox reads as five instructions spread over four
 // menus — the arrangement the row exists to spare the reader, reassembled in
 // the docs.
 //
@@ -17,10 +17,18 @@ import type { FieldStep } from './fields.ts'
 // arrangement and which are framing is the arrangement's definition —
 // `isSvChannelsActive` leaves `readConnectionsDown` out because the side the
 // arcs hang on is a framing choice — and a second answer here would drift in
-// silence, a figure one slot off emitting six steps with nothing to say why.
+// silence, a figure one slot off emitting five steps with nothing to say why.
 //
 // Presence is this module's half: the predicate answers what the values mean,
 // so a spec that omits a slot altogether has to fail before reaching it.
+//
+// The SECOND member belongs in the plugin, not here. One arrangement does not
+// pay for a registry, and this list is the cheapest place to put it while the
+// count is one; a second — methylation is the candidate, `colorBy:
+// modifications` beside `groupBy: tag HP`, which specs/methylation.ts already
+// carries as a `grouped` boolean — makes the vocabulary something the menu and
+// the recipes share, and it moves to a UI-free leaf module in
+// plugins/alignments the way COMPACTNESS_PRESETS did.
 interface Arrangement {
   label: string
   displayType: string
