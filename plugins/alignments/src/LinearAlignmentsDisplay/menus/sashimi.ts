@@ -53,7 +53,13 @@ interface SashimiModel {
 // The floor is a submenu holding its slider (`makeSizeSubMenu`) for the same
 // reason. Drawn inline it is a two-line block carrying a widget no other row
 // here has, which is fine where a menu has one of them and wrong beside four
-// rows of `label + [?] + (checkbox | chevron)`.
+// rows of `label + (checkbox | chevron)`.
+//
+// NO ROW CARRIES A `?`. Each label already says what its setting does, and the
+// splice motifs behind "non-canonical" are on the page a reader reaches for
+// them on — the user guide's sashimi section, the arc's own tooltip and its
+// detail panel, all of which can name the motif THIS junction has. A tooltip
+// repeating that in the abstract is a fourth copy that goes stale first.
 export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
     promotableToggleItem({
@@ -76,8 +82,6 @@ export function getSashimiMenuItem(model: SashimiModel) {
           }),
           promotableToggleItem({
             label: 'Hide non-canonical junctions',
-            helpText:
-              'Drop junctions whose intron does not start and end with GT-AG, GC-AG or AT-AC on either strand, read off the reference sequence. On deep RNA-seq the thin arcs are mostly these alignment artefacts, which a read-count floor cannot separate from a real junction at low depth',
             checked: model.hideNonCanonicalJunctions,
             onToggle: () => {
               model.setHideNonCanonicalJunctions(
@@ -101,7 +105,6 @@ export function getSashimiMenuItem(model: SashimiModel) {
           makeSizeSubMenu({
             label: 'min read support',
             title: 'Min read support',
-            help: 'Drops a junction supported by fewer reads than this, whatever its splice motif. 1 keeps every junction.',
             // read support spans small integers to thousands on deep RNA-seq, so
             // log-scale. 1 already shows every arc (filter is `count >= min` and
             // a junction has at least one read); 0 would be a dead notch, since

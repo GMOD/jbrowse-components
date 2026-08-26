@@ -94,6 +94,18 @@ describe('sashimi menu', () => {
     expect(new Set(shapes)).toEqual(new Set(['checkbox', 'submenu']))
   })
 
+  // Every label here says what its setting does, and the splice motifs behind
+  // "non-canonical" are in the user guide, the arc's tooltip and its detail
+  // panel — the last two naming the motif that junction actually has.
+  test('no row carries a "?"', () => {
+    const model = makeModel()
+    model.showSashimiArcs = true
+    const withHelp = getSashimiMenuItem(model).subMenu.filter(
+      i => 'helpText' in i && i.helpText,
+    )
+    expect(withHelp).toEqual([])
+  })
+
   test('the read-support floor is a submenu holding its slider', () => {
     const model = makeModel()
     model.showSashimiArcs = true
