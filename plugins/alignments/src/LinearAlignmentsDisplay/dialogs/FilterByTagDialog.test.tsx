@@ -126,59 +126,52 @@ test('a whole-number bitmask is applied', () => {
   )
 })
 
-// The grid is four rows of one vocabulary, so every category is addressed the
-// same way: "<row>: <column>".
-test('a category radio stores only/exclude and drops the filter for "All"', () => {
-  const { setFilterBy } = renderDialog()
-  fireEvent.click(screen.getByLabelText('Spliced reads: Only'))
-  fireEvent.click(screen.getByLabelText('Proper pairs: Hide'))
-  submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
-    expect.objectContaining({ spliced: 'only', properPairs: 'exclude' }),
-  )
-})
-
-// 'all' is the UI's name for the absent filter; storing it would be a second
-// spelling of the same state for activeFilterCount to get wrong.
-test('a category returned to "All" is stored as absent, not as "all"', () => {
-  const { setFilterBy } = renderDialog({ split: 'only' })
-  expect(
-    screen.getByLabelText<HTMLInputElement>('Split alignments: Only').checked,
-  ).toBe(true)
-  fireEvent.click(screen.getByLabelText('Split alignments: All'))
-  submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
-    expect.objectContaining({ split: undefined }),
-  )
-})
-
-test('every category round-trips from a stored filterBy', () => {
-  renderDialog({
-    properPairs: 'exclude',
-    singletons: 'only',
-    split: 'exclude',
-    spliced: 'only',
-  })
-  for (const label of [
-    'Proper pairs: Hide',
-    'Reads without a mate: Only',
-    'Split alignments: Hide',
-    'Spliced reads: Only',
-  ]) {
-    expect(screen.getByLabelText<HTMLInputElement>(label).checked).toBe(true)
-  }
-})
-
-test('resetting clears every stored category', () => {
+// The read categories are track-menu rows, not dialog fields (see the header
+// comment there), so this dialog must carry them through untouched rather than
+// rebuild filterBy from what it shows. It rebuilt it once, and Submitting a
+// flag change silently cleared four filters set from the menu.
+test('a submit preserves the read categories it does not show', () => {
   const { setFilterBy } = renderDialog({
-    spliced: 'exclude',
+    properPairs: 'exclude',
+    split: 'only',
+  })
+  fireEvent.change(screen.getByPlaceholderText('Enter read name'), {
+    target: { value: 'readA' },
+  })
+  submit()
+  expect(setFilterBy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      readName: 'readA',
+      properPairs: 'exclude',
+      split: 'only',
+    }),
+  )
+})
+
+// Reset undoes this dialog, not every filter on the track — the same rule the
+// read right-click's "Clear read/tag filters" follows. "Clear all filters" in
+// the track menu is the one that resets the whole of filterBy.
+test('resetting leaves the read categories alone', () => {
+  const { setFilterBy } = renderDialog({
+    readName: 'readA',
+    spliced: 'only',
     properPairs: 'exclude',
   })
   fireEvent.click(screen.getByText('Reset defaults'))
   submit()
   expect(setFilterBy).toHaveBeenCalledWith(
-    expect.objectContaining({ spliced: undefined, properPairs: undefined }),
+    expect.objectContaining({
+      readName: undefined,
+      spliced: 'only',
+      properPairs: 'exclude',
+    }),
   )
+})
+
+test('no read-category control is offered here', () => {
+  renderDialog({ split: 'only' })
+  expect(screen.queryByText('Read categories')).toBeNull()
+  expect(screen.queryByLabelText('Split alignments: Only')).toBeNull()
 })
 
 // One row per flag with a Require and an Exclude box, so the same flag can be

@@ -13,33 +13,14 @@ import {
   DialogContent,
   Link,
   Paper,
-  Radio,
   TextField,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  READ_CATEGORIES,
-  readCategoryChoice,
-  setReadCategory,
-} from '../../shared/readCategoryFilters.ts'
 import { defaultFilterFlags } from '../../shared/util.ts'
 
-import type {
-  ReadCategoryChoice,
-  ReadCategoryKey,
-} from '../../shared/readCategoryFilters.ts'
 import type { FilterBy } from '../../shared/types.ts'
-
-// The three choices every read category offers, in one order, so the grid below
-// is four rows under one set of column headings rather than four radio groups
-// each restating its own options.
-const CHOICES = [
-  { value: 'all', heading: 'All' },
-  { value: 'only', heading: 'Only' },
-  { value: 'exclude', heading: 'Hide' },
-] as const satisfies readonly { value: ReadCategoryChoice; heading: string }[]
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -64,9 +45,6 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     justifyContent: 'start',
     columnGap: theme.spacing(2),
-  },
-  categoryGrid: {
-    gridTemplateColumns: 'auto repeat(3, auto)',
   },
   flagGrid: {
     gridTemplateColumns: 'auto repeat(2, auto)',
@@ -211,58 +189,6 @@ function FlagFilterSection(props: {
   )
 }
 
-// The four read categories as one grid: four rows under one All/Only/Hide
-// heading, driven by READ_CATEGORIES so this and the track menu offer the same
-// four filters in the same order.
-//
-// Plain `Radio`s sharing a `name` per row rather than a MUI `RadioGroup`: the
-// group wrapper is a flex container, which would break each row out of the grid
-// and lose the column alignment that makes the four readable together. A shared
-// `name` is what actually makes them one group to the browser and to the
-// keyboard.
-function ReadCategorySection(props: {
-  categories: Record<ReadCategoryKey, ReadCategoryChoice>
-  setCategory: (key: ReadCategoryKey, choice: ReadCategoryChoice) => void
-}) {
-  const { classes, cx } = useStyles()
-  const { categories, setCategory } = props
-  return (
-    <Paper className={classes.paper} variant="outlined">
-      <Typography>Read categories</Typography>
-      <div className={cx(classes.grid, classes.categoryGrid)}>
-        <span />
-        {CHOICES.map(({ heading }) => (
-          <Typography
-            key={heading}
-            variant="caption"
-            className={classes.heading}
-          >
-            {heading}
-          </Typography>
-        ))}
-        {READ_CATEGORIES.map(({ key, noun, helpText }) => (
-          <Fragment key={key}>
-            <label title={helpText}>{noun}</label>
-            {CHOICES.map(({ value, heading }) => (
-              <Radio
-                key={value}
-                size="small"
-                name={key}
-                className={classes.checkbox}
-                checked={categories[key] === value}
-                onChange={() => {
-                  setCategory(key, value)
-                }}
-                slotProps={{ input: { 'aria-label': `${noun}: ${heading}` } }}
-              />
-            ))}
-          </Fragment>
-        ))}
-      </div>
-    </Paper>
-  )
-}
-
 function TagFilterSection(props: {
   tag: string
   tagValue: string
@@ -324,20 +250,19 @@ function ReadNameFilterSection(props: {
   )
 }
 
-function initialCategories(filterBy: FilterBy) {
-  return Object.fromEntries(
-    READ_CATEGORIES.map(c => [c.key, readCategoryChoice(filterBy, c.key)]),
-  ) as Record<ReadCategoryKey, ReadCategoryChoice>
-}
-
-const ALL_CATEGORIES = Object.fromEntries(
-  READ_CATEGORIES.map(c => [c.key, 'all']),
-) as Record<ReadCategoryKey, ReadCategoryChoice>
-
-// Sections in the order a user reaches for them: the read categories are the
-// everyday filter, a read name or tag is the targeted one, and the flag masks
-// are the expert control that used to open the dialog and outweigh the rest of
-// it put together.
+// The filters a user TYPES: a read name, a tag and its value, and the flag
+// masks. The four read categories are picked off a list instead, so they are
+// rows in the "Filter by..." submenu and are deliberately not repeated here —
+// one control, one home, and one commitment model. Offering them in both places
+// meant the same filter applied on click in the menu and only on Submit here,
+// with Cancel undoing one and not the other.
+//
+// Which is also why this dialog's Submit and Reset touch only the three fields
+// below: everything it does not show, it preserves. The menu's "Clear all
+// filters" is what resets the whole of `filterBy`.
+//
+// Sections run in the order a user reaches for them, the flag masks last —
+// they used to open the dialog and outweigh the rest of it put together.
 const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   model: {
     filterBy: FilterBy
@@ -360,9 +285,6 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     filterBy.tagFilters?.slice(1) ?? [],
   )
   const [readName, setReadName] = useState(filterBy.readName ?? '')
-  const [categories, setCategories] = useState(() =>
-    initialCategories(filterBy),
-  )
   // TagTextField is uncontrolled (seeds from defaultValue on mount), so clearing
   // `tag` state alone leaves its visible text stale. Bump this to remount it.
   const [resetNonce, setResetNonce] = useState(0)
@@ -374,7 +296,6 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     setTagValue('')
     setOtherTagFilters([])
     setReadName('')
-    setCategories(ALL_CATEGORIES)
     setResetNonce(nonce => nonce + 1)
   }
 
@@ -390,7 +311,11 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       ...(tag !== '' ? [{ tag, value: tagValue === '' ? '*' : tagValue }] : []),
       ...otherTagFilters,
     ]
-    const base: FilterBy = {
+    model.setFilterBy({
+      // Spread first: the read categories live in `filterBy` too and are edited
+      // from the track menu, so a Submit here must carry them through rather
+      // than rebuild the object from what this dialog happens to show.
+      ...filterBy,
       flagInclude,
       flagExclude,
       // An empty field means "no read-name filter", so omit it rather than
@@ -399,15 +324,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       // would also change `filterBy` identity and trigger a pointless refetch.
       readName: readName === '' ? undefined : readName,
       tagFilters: tagFilters.length > 0 ? tagFilters : undefined,
-    }
-    // Through `setReadCategory` so the 'all' -> absent mapping is written once,
-    // here and in the track menu alike.
-    model.setFilterBy(
-      READ_CATEGORIES.reduce(
-        (acc, c) => setReadCategory(acc, c.key, categories[c.key]),
-        base,
-      ),
-    )
+    })
     handleClose()
   }
 
@@ -428,12 +345,6 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
         }}
       >
         <DialogContent>
-          <ReadCategorySection
-            categories={categories}
-            setCategory={(key, choice) => {
-              setCategories(prev => ({ ...prev, [key]: choice }))
-            }}
-          />
           <ReadNameFilterSection
             readName={readName}
             setReadName={setReadName}
