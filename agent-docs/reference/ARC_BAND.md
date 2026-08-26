@@ -261,9 +261,10 @@ the cluster's N. An 8-pair event draws 8 arcs — or 8 + 8 ticks — each stroke
 though it alone carried 8 reads and each hovering "supported by 8". The ink is
 O(N) marks at width(N) where the evidence is one junction, which is the opposite
 of what coalescing is for, and `compute.test.ts` pins it as `[5,5,5,5,5,5,5,5,5,5]`.
-Filed with the options in `agent-docs/TODO.md`, "Draw one mark per
-interchromosomal cluster" — it changes what every published translocation figure
-looks like, so it is a decision and not a fix.
+Filed with the options in
+[ideas/draw-one-mark-per-interchromosomal-cluster.md](../ideas/draw-one-mark-per-interchromosomal-cluster.md)
+— it changes what every published translocation figure looks like, so it is a
+decision and not a fix.
 
 **A tick is DASHED, and that is what separates it from an arc's foot.** The two
 land on the same x whenever a breakpoint reaches one acceptor the view shows and
@@ -433,9 +434,9 @@ inversion. Three things about the scope are load-bearing:
   under the band, not a set of directions.
 
   The ticks are the half that IS worth it, and are filed rather than declined —
-  `agent-docs/TODO.md`, "Give the interchromosomal ticks breakend feet too". Same
-  reasoning as the arcs': their colour channel is spent too, and a tick has no
-  second endpoint to read an orientation off at all.
+  [ideas/give-the-interchromosomal-ticks-breakend-feet-too.md](../ideas/give-the-interchromosomal-ticks-breakend-feet-too.md).
+  Same reasoning as the arcs': their colour channel is spent too, and a tick has
+  no second endpoint to read an orientation off at all.
 
 - **Interchromosomal is the one family that is ALWAYS cross-region**, so drawing
   the feet in `CrossRegionArcsOverlay` covers all of it. Feet on the
@@ -473,8 +474,9 @@ Neither should be "fixed" to match the other.
 A foot is `ARC_FOOT_PX` from its anchor unconditionally, so two feet closer than
 that merge into one bar — which is the mark working, since they overlap precisely
 because both ends keep the same stretch. What is NOT handled is a foot crossing
-its region's seam, and the obvious bound (by the other foot) clamps the merge case
-instead: `agent-docs/TODO.md`, "Bound a breakend foot by its displayed region".
+its region's seam, and the obvious bound (by the other foot) clamps the merge
+case instead:
+[ideas/bound-a-breakend-foot-by-its-displayed-region.md](../ideas/bound-a-breakend-foot-by-its-displayed-region.md).
 
 ## The gesture guard
 

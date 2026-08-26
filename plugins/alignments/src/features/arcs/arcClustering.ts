@@ -155,7 +155,7 @@ export const DEFAULT_INTERCHROM_WINDOW_BP = 1000
 // reads as a diameter claim ("how far a supporting read can sit from the
 // breakpoint is one fragment length") and the rule is a density one. That is a
 // live question about what the floor means at depth rather than a slip —
-// `agent-docs/TODO.md`, "Bound an interchromosomal cluster's diameter".
+// `agent-docs/ideas/bound-an-interchromosomal-clusters-diameter.md`.
 // One interchromosomal connection, in the endpoint order the clustering keys on:
 // `bpA` on the lexicographically-first contig, `bpB` on the other, `index` back
 // into the caller's `pendingArcs`.

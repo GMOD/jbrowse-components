@@ -1525,8 +1525,8 @@ re-run placement, every per-feature Y remap and the modification Flatbush to
 change two arrays. Split, the layout computed stays memoized across a recolor,
 and because the overlay *spreads* its input rather than rebuilding it, `readYs`
 survives with it: the GPU renderer reads that identity as "same layout run" and
-rewrites the read pass alone (GPU_RENDERING.md, "skipping a region inside the
-rebuild transaction"). The same reasoning applies to any value a derived map
+rewrites the read pass alone (GPU_RENDERING.md, "Whole-map synced: skipping a
+region without leaving stale buffers"). The same reasoning applies to any value a derived map
 reads but only *sometimes* spends — the band-overhead input to the grouped fit
 budget is a thunk for exactly that reason, so band geometry stays out of the
 layout computed's dependency set on the ungrouped path.

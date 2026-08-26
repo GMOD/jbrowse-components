@@ -11,7 +11,7 @@ const { defaultsSession, trackId } = settingsVideoFixtures
 
 // The share dialog's mode picker. It is a CascadingMenuButton behind a settings
 // gear rather than a control on the dialog's face, which is the half of the
-// route display_settings.md's "click Share, choose Plaintext JSON" cannot say
+// route display_settings.md's "Ask JBrowse what you just set" cannot say
 // and a still cannot show being taken. The label comes off the tooltip MUI
 // hands the icon button.
 const SHARE_MODE_MENU = '[aria-label="Session sharing settings"]'

@@ -56,8 +56,8 @@ returns **absolute-uint32 feature data** (not pixels), the main thread uploads i
 once to the GPU, and an autorun redraws every frame from the same buffers — so
 pan/zoom is a cheap redraw, not a refetch+re-rasterize. The per-block `blockState`
 map, per-block RPC, and per-block React components collapsed into a single
-`rpcDataMap` + the upload/render autorun pair (`ARCHITECTURE.md` §"Life of a
-frame"). Recovery plan for the external compat plugin, and the vetting of which
+`rpcDataMap` + the upload/render autorun pair (`ARCHITECTURE.md` §"Data fetching
+pipeline"). Recovery plan for the external compat plugin, and the vetting of which
 external plugins survive, is tracked outside these docs (pre-rip anchor
 `d673d7e390`).
 
@@ -239,7 +239,7 @@ Synteny + dotplot used to split cumBp into a 4096-bp-aligned Float32 hi/lo pair
 that — a ~68.7 Gbp whole-assembly ceiling. The current window-relative Float32
 base (`cumBp − fetch-time base`) cancels the genome-scale magnitude, so the cap
 is gone and 100+ Gbp genomes render correctly. See `reference/BP_PRECISION.md`
-§"window-relative." The old shared helper `hpCornerScreenX` was removed from
+§"Synteny + dotplot". The old shared helper `hpCornerScreenX` was removed from
 `hpmath.slang` once both views dropped it; the LGV in-shader
 `hpSplitUint`/`hpToClipX` path was untouched.
 

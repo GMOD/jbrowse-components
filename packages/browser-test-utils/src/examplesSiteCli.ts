@@ -17,7 +17,7 @@ import { measureDemoHeights } from './examplesDemoHeights.ts'
 // file is written — which is why the copies were byte-identical with nothing
 // holding them that way.
 //
-// EXAMPLES_SITES.md's "a symlinked file may have no relative imports" rules out
+// EXAMPLES_SITES.md's "Why `ExampleSection.astro` is four copies" rules out
 // sharing `ExampleLayout.astro`/`ExampleSection.astro` the same way; it does not
 // apply to these, which node runs directly and which reach the site only through
 // the anchor.

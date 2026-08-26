@@ -176,9 +176,9 @@ Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/c
 The plugin `exports` half now has the baseline described in the first section,
 which is the half that stops a repeat of the two `LinearGenomeViewPlugin`
 removals above. The session half is still open, and it is blocked rather than
-undecided — see `TODO.md` § "Do the session and plugin `exports` surfaces earn a
-baseline", which carries what the record's home costs core's published `exports`
-map.
+undecided — see
+[todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md](../todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md),
+which carries what the record's home costs core's published `exports` map.
 
 ## The symptom
 
@@ -346,8 +346,8 @@ drift.**
 > hard-enough forcing function (a whole-pipeline rewrite) overrode it. The
 > analysis below still holds for every export *not* worth a rewrite to shed; read
 > it as "the cost of keeping," with the block stack as the case where the cost of
-> keeping finally lost. See `ARCHITECTURE.md` §"The legacy block stack" and
-> `reference/HISTORICAL.md`.
+> keeping finally lost. See `reference/HISTORICAL.md` §"The old block-based
+> (server-side) rendering system".
 
 The pre-rip situation, and the graceful path we *didn't* take:
 

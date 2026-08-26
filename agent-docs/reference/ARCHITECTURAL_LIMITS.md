@@ -156,7 +156,7 @@ and nothing else.
 exactly. One alignments track dragged to the canvas clamp holds **316.5 MiB** by
 itself in a 1266 CSS px window. Nothing counts any of it, and the session that
 produced the 109.7 is nobody's idea of a heavy one. The table and the repro are
-[GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"the MSAA target".
+[GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"The one number that generalizes badly".
 
 **What was measured is what the descriptor asks for, not what is resident**, and
 on one class of GPU those differ. `beginFrame` attaches the MSAA view with
@@ -886,10 +886,10 @@ removes one on its own, which is why that is a note here rather than the entry.
 
 **Retire when** a track close and an undo across one both measure zero liveliness
 reads. That is the same root cause as the session-switch residual, not a second
-one: the undisposed `observer()` reactions in [../TODO.md](../TODO.md)'s
-"Destroying an MST tree that something still observes" are what recompute against
-the dying nodes, and nothing below a view has to be detached if nothing is left
-observing it.
+one: the undisposed `observer()` reactions in
+[ideas/destroying-an-mst-tree-that-something-still-observes.md](../ideas/destroying-an-mst-tree-that-something-still-observes.md)
+are what recompute against the dying nodes, and nothing below a view has to be
+detached if nothing is left observing it.
 
 ---
 
@@ -996,8 +996,8 @@ key until 2026-08-04, and because `gateActive` folds in `AUTO_FORCE_LOAD_BP` it
 flipped `undefined ↔ number` at 20 kb of visible span: zooming across that floor
 fired `SettingsInvalidate` and blanked the whole display, for data identical on
 both sides of it. See
-[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) § "Neither worker budget may be an RPC
-cache key" for why nothing is left unguarded by that.
+[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §"Neither budget is an RPC cache key"
+for why nothing is left unguarded by that.
 `loadedRegions`, not `rpcDataMap`, is the signal when measuring — the
 canvas base keeps fetched features through a settings clear on purpose. Guarded by
 the `SettingsInvalidate keys on the payload, not the reads` suite in

@@ -307,8 +307,8 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   vertical space), but overlay puts the label's top at the box's top and the two
   shrink on different curves, so in superCompact a 7.15px label sits on a 3px box
   and spills ~4px onto the transcript below. It trades a fixed overlap for an
-  unfixed one. The overlap itself is a live question — TODO.md, "Overlay labels
-  cover the row below".
+  unfixed one. The overlap itself is a live question —
+  [ideas/overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes.md](../ideas/overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes.md).
 - **Making the canvas `featureItemMap` first-wins to match `indexById`** — tried
   2026-08-11 and reverted. The two tables resolve a region-spanning feature
   differently on paper, but `laidOutDataMap` is the LAID-OUT map and the packer
@@ -1478,8 +1478,9 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `products/jbrowse-web/browser-tests/probe-hic-buffered-vertex-cost.ts` carries
   the whole table, the GPU each column was taken on, and the two-line switch the
   visible-span arm needs.
-  **The lever also conflicts with a live idea** — [TODO.md](../TODO.md) §"Fill
-  the whole display rectangle" wants the buffer *wider*, because the contacts
+  **The lever also conflicts with a live idea** —
+  [ideas/fill-the-whole-display-rectangle-not-just-the-hi-c-triangle.md](../ideas/fill-the-whole-display-rectangle-not-just-the-hi-c-triangle.md)
+  wants the buffer *wider*, because the contacts
   measured here as vertex cost are the ones that fill the triangle's empty
   corners. Whichever is built kills the other; decide that before either.
 - **Rendering the hi-C matrix as a dense count texture instead of instanced

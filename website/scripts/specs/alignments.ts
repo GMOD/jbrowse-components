@@ -993,7 +993,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // No two-windows-on-chr8 figure. It showed the region-pair fetch on two
   // windows 200 kb apart, which is the same picture hic/bcr_abl1_translocation
   // makes with a real result in it (chr9 x chr22 in K562, empty in GM12878), so
-  // hic_track.md's "Comparing two regions" links there instead of carrying a
+  // user_guides/hic_track.md's "Comparing two regions" links there instead of a
   // second, weaker copy of the geometry.
 
   // The same region-pair machinery taken to the whole genome: every chromosome

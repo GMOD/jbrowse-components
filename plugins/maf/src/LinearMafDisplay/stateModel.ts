@@ -1347,7 +1347,7 @@ export default function stateModelFactory(
          * track load, and `SettingsInvalidate` then throws away the region that
          * just arrived — a measured 2 × `LinearMafGetAlignmentData` per region.
          * Loop-safe but not free, which is exactly the case ARCHITECTURE.md's
-         * "rpcProps() must read only user-controlled settings" is about. Pinned by
+         * "`rpcProps()` loop trap and how to break it" is about. Pinned by
          * `singleFetchPerRegion.test.ts`.
          */
         rpcProps() {

@@ -4,8 +4,8 @@ import { createTestEnvironment } from './testEnv.ts'
 // once the one-shot `CoreGetInfo` lands. So that call failing is terminal for
 // the display, not a degradation — and a terminal state that never reaches
 // `error` is both a permanent loading scrim and an SVG export that never
-// finishes, because `awaitSvgReady` has no time bound (ARCHITECTURE.md, "every
-// resting state that never fetches must be terminal"). It used to go to a
+// finishes, because `awaitSvgReady` has no time bound (ARCHITECTURE.md,
+// "`awaitSvgReady`'s only bound is a half-hour backstop"). It used to go to a
 // session snackbar, which left `error` unset.
 
 function flush() {

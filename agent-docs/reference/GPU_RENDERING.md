@@ -644,7 +644,7 @@ The one sub-region exception is the **recolor**, and it rides on a narrower fact
 it. Same bytes everywhere but the two per-read color arrays ⇒ skip the region
 and rewrite the read pass alone. Same split as
 `GpuSyntenyRenderer.getInterleaved`'s geometry/color token (ARCHITECTURE.md,
-"the color-lane patch"). It requires the model to keep the color bake in its own
+"`gpuProps()` and derived region maps"). It requires the model to keep the color bake in its own
 computed downstream of layout — the `laidOutByGroupUncolored` →
 `laidOutByGroupFramed` → `laidOutByGroup` chain.
 

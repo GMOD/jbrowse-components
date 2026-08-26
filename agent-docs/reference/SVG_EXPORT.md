@@ -12,7 +12,7 @@ capture (`settled`) gate.
 
 The rule that makes it all work: **the GPU shader path is an accelerator; the
 Canvas2D draw function is the source of truth, and SVG export runs it.** See
-`ARCHITECTURE.md` §"Keeping the two backends in parity."
+`GPU_RENDERING.md` §"Keeping the two backends in parity".
 
 ## Two draw-API shapes
 

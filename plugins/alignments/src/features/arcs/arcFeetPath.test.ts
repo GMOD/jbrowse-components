@@ -11,7 +11,7 @@ import { ARC_SHAPE_ARC } from './shapes.ts'
 // A foot is deliberately NOT bounded by the arc it hangs off, so two feet closer
 // together than a foot is long merge into one bar; `ARC_FOOT_PX` carries the
 // worked case. What is unfinished is bounding one by its own DISPLAYED REGION —
-// agent-docs/TODO.md, "Bound a breakend foot by its displayed region".
+// agent-docs/ideas/bound-a-breakend-foot-by-its-displayed-region.md.
 const FRAME = {
   arcsTop: 0,
   arcsH: 100,

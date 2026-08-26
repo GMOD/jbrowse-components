@@ -1911,8 +1911,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       // saying nothing twice. What the pane cannot say for itself is why one
       // node is charcoal in a rainbow: `reference-position` ramps hue across the
       // window the cut came from and drops any segment with no reference
-      // coordinate off the ramp entirely (graph_genome_view.md, "Colors that
-      // mean the same thing in both panels"). So the boxed arc is grey for
+      // coordinate off the ramp entirely (graph_genome_view.md, "Color schemes
+      // and matching a linear track"). So the boxed arc is grey for
       // exactly the reason the pane above it carries no coordinates for that
       // sequence -- one claim, stated once per pane in each pane's own terms.
       //

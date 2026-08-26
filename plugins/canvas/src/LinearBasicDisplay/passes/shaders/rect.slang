@@ -92,7 +92,7 @@ struct VsOut {
 //     half-pixel offsets, because the old code formed the ±half-width as
 //     `2.0 / canvasWidth` in a normalized space. Recorded so nobody re-derives
 //     it; not a reason to have made the change, and not worth chasing further.
-//     Sub-pixel placement is best-effort between the backends (ARCHITECTURE.md,
+//     Sub-pixel placement is best-effort between the backends (GPU_RENDERING.md,
 //     "Keeping the two backends in parity") — what has to agree is the RULE:
 //     that a degenerate span is a point at all, and straddles its coordinate.
 public float2 rectSpanPx(float x1Px, float x2Px, bool isPoint) {

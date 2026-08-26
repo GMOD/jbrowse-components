@@ -183,9 +183,7 @@ rather than asking for a viewport its attachment cannot hold. Re-verified on the
 same panel: the walk paints to 8000 CSS px with no validation error at any
 height. [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"A canvas past
 `MAX_CANVAS_DIM_PX` renders wrong, not smaller" has the mechanism; what remains
-is only whether a drag should be *bounded* as well, which is
-[../TODO.md](../TODO.md) §"Decide whether a track's height should be bounded at
-all".
+is only whether a drag should be *bounded* as well, which nobody has filed.
 
 ---
 
