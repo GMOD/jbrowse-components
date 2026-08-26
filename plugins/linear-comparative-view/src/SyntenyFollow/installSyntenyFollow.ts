@@ -493,6 +493,16 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const windows =
       carried ?? followAnchorWindows(stayingView.coarseDynamicBlocks)
     const widest = windows[0]
+    // A DECISION ABOUT SEVERAL CONTIGS SAYS NOTHING ABOUT ONE. The rung is out
+    // of reach below two windows, so `planSpread` does not run and a refusal
+    // left standing outlives the window set it was made over: the header went
+    // on naming a region the anchor no longer spans, ahead of `approximate` in
+    // the wording, and the frame pass inherited the incumbent and the
+    // hysteresis band when the anchor widened again. Both are answers to a
+    // question this pass is no longer asking.
+    if (windows.length <= 1) {
+      state.spread = undefined
+    }
     if (!widest) {
       // an anchor with no window says nothing about alignment either way
       return { unaligned: false, approximate: false }
@@ -689,9 +699,16 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             }
             continue
           }
-          const window = spread
-            ? windows.find(w => w.refName === spread.onto)
-            : windows[0]
+          // The demoted level's kept contig, and the WIDEST WINDOW when the
+          // anchor has since scrolled off it. A refusal names a contig out of
+          // the window set it was measured over, and the settle that would
+          // re-measure is half a second away — so a pan that carries the kept
+          // contig off screen left the row frozen for the rest of the drag,
+          // where the same fall-through the settle takes places it from the
+          // window the reader is now mostly looking at. The DECISION is still
+          // the settle's; this is only which window carries it out.
+          const window =
+            windows.find(w => w.refName === spread?.onto) ?? windows[0]
           // the block the last settle chose, rather than re-picking one per
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since

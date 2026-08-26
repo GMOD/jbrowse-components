@@ -10,6 +10,7 @@ import { requestCigarMap } from './requestCigarMap.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
 import type { FollowPair } from './installSyntenyFollow.ts'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./requestCigarMap.ts', () => ({
@@ -31,41 +32,51 @@ const WIDTH = 800
 
 // Base1DView is the whole of what the follow reads off a row: the blocks it is
 // showing, the layout it can be placed within, and moveTo's two actions. The
-// debounce the real `coarseDynamicBlocks` carries is the one thing a test does
-// not want.
-const Row = Base1DView.views(self => ({
-  get coarseDynamicBlocks() {
-    return self.dynamicBlocks.contentBlocks
-  },
-})).actions(self => ({
-  horizontallyFlip() {
-    self.setDisplayedRegions(
-      [...self.displayedRegions]
-        .reverse()
-        .map(region => ({ ...region, reversed: !region.reversed })),
-    )
-    self.scrollTo(self.displayedRegionsTotalPx - self.offsetPx - self.width)
-  },
-  // the one LGV action the settled pass reaches, since the rung below the
-  // spread navigates rather than positions
-  navTo({
-    refName,
-    start,
-    end,
-  }: {
-    refName: string
-    start: number
-    end: number
-  }) {
-    const { displayedRegions } = self
-    const lo = bpToOffset({ refName, coord: start, displayedRegions })
-    const hi = bpToOffset({ refName, coord: end, displayedRegions })
-    if (!lo || !hi) {
-      throw new Error('not in this row')
-    }
-    moveTo(self, lo, hi)
-  },
+// debounce the real `coarseDynamicBlocks` carries is the one thing most of
+// these tests do not want — so the two clocks run together until a test calls
+// `holdCoarseBlocks`, which latches them where they are and leaves later
+// placements moving the live ones alone. That is a drag between settles, which
+// is the only state the frame pass can be seen in.
+const Row = Base1DView.volatile(() => ({
+  heldBlocks: undefined as ContentBlock[] | undefined,
 }))
+  .views(self => ({
+    get coarseDynamicBlocks() {
+      return self.heldBlocks ?? self.dynamicBlocks.contentBlocks
+    },
+  }))
+  .actions(self => ({
+    holdCoarseBlocks() {
+      self.heldBlocks = [...self.dynamicBlocks.contentBlocks]
+    },
+    horizontallyFlip() {
+      self.setDisplayedRegions(
+        [...self.displayedRegions]
+          .reverse()
+          .map(region => ({ ...region, reversed: !region.reversed })),
+      )
+      self.scrollTo(self.displayedRegionsTotalPx - self.offsetPx - self.width)
+    },
+    // the one LGV action the settled pass reaches, since the rung below the
+    // spread navigates rather than positions
+    navTo({
+      refName,
+      start,
+      end,
+    }: {
+      refName: string
+      start: number
+      end: number
+    }) {
+      const { displayedRegions } = self
+      const lo = bpToOffset({ refName, coord: start, displayedRegions })
+      const hi = bpToOffset({ refName, coord: end, displayedRegions })
+      if (!lo || !hi) {
+        throw new Error('not in this row')
+      }
+      moveTo(self, lo, hi)
+    },
+  }))
 
 function row(assemblyName: string) {
   const view = Row.create({ bpPerPx: 2500 })
@@ -264,6 +275,59 @@ describe('a straddle whose answers are far apart', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1', 'chr2'])
     expect(host.followPartial).toBeUndefined()
+  })
+
+  // The refusal is measured over a window set, so it dies with it. Zoomed into
+  // one contig the rung is out of reach, nothing re-decides, and a refusal left
+  // standing went on naming a region the anchor no longer spans — ahead of
+  // `approximate` in the header's wording, so it was also the sentence the
+  // reader saw.
+  test('the report clears once the anchor is back on one contig', async () => {
+    const { rows, host } = stack('chr9')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(host.followPartial).toBeDefined()
+    place(rows[0]!, 200_000, 600_000)
+    expect(followAnchorWindows(rows[0]!.coarseDynamicBlocks)).toHaveLength(1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(host.followPartial).toBeUndefined()
+  })
+
+  // The frame pass follows the settle's DECISION, not its window: the decision
+  // names a contig, and half a second of drag can carry that contig off screen.
+  // Frozen there, the row stopped following for the rest of the drag.
+  test('the row keeps following when the kept contig scrolls away mid-drag', async () => {
+    const rows = [row('a'), row('b')]
+    const host = Host.create()
+    host.setFollowPairs([
+      {
+        level: {
+          linearSyntenyDisplays: [
+            display([
+              pairing('chr1', 'chr1'),
+              pairing('chr2', 'chr9'),
+              pairing('chr3', 'chr3'),
+            ]),
+          ],
+        },
+        stayingView: rows[0] as unknown as LinearGenomeViewModel,
+        movingView: rows[1] as unknown as LinearGenomeViewModel,
+        toMate: true,
+      },
+    ])
+    place(rows[0]!, 200_000, 1_100_000)
+    rows[0]!.holdCoarseBlocks()
+    installSyntenyFollow(host)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(host.followPartial).toEqual({
+      following: 'chr1',
+      elsewhere: ['chr2'],
+    })
+    expect(shown(rows[1]!)).toEqual(['chr1'])
+
+    place(rows[0]!, 1_200_000, 2_100_000)
+    expect(shown(rows[0]!)).toEqual(['chr2', 'chr3'])
+    // chr2's own answer, which is where the widest window now points
+    expect(shown(rows[1]!)).toEqual(['chr9'])
   })
 })
 
