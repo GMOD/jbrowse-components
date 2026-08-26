@@ -4,23 +4,18 @@ title: LinearCanvasBaseDisplay
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`canvas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseModel.ts).
 
-Shared GPU-accelerated feature display base for canvas-rendered tracks. Handles
-fetching, layout, the "Show labels" / "Show descriptions" UI, and the
-fetch-invalidation autorun. Subclasses layer schema-specific properties and
-menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
-super-extension pattern, and extend rpcProps() via the standard super-capture
-pattern.
+Shared GPU-accelerated feature display base for canvas-rendered tracks.
+Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
+the fetch-invalidation autorun. Subclasses layer schema-specific properties
+and menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
+super-extension pattern, and extend rpcProps() via the standard
+super-capture pattern.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearcanvasbasedisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearcanvasbasedisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

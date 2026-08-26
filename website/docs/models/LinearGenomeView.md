@@ -4,16 +4,12 @@ title: LinearGenomeView
 sidebar_label: View -> LinearGenomeView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-genome-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
 
 ## Example usage
 
 A `LinearGenomeView` is what you hand-author under `defaultSession.views`. The
 `init` shorthand fills in `displayedRegions`/`bpPerPx`/`offsetPx` for you:
-
 ```js
 defaultSession: {
   name: 'My session',
@@ -31,14 +27,13 @@ defaultSession: {
   ],
 }
 ```
-
-`init` holds only keys that need on-attach resolution — also `tracklist`, `nav`,
-`highlight` (see the `init` property below). Plain view props like `colorByCDS`,
-`showAminoAcids`, `showCenterLine`, `trackLabels`, `showHighlightChips` are set
-directly on the view (MST restores them natively). At runtime the same model is
-driven imperatively — every property and action below is reachable on
-`viewState.session.views[0]`:
-
+`init` holds only keys that need on-attach resolution — also `tracklist`,
+`nav`, `highlight` (see the `init` property below). Plain view props like
+`colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`,
+`showHighlightChips` are set
+directly on the view (MST restores them natively).
+At runtime the same model is driven imperatively — every property and action
+below is reachable on `viewState.session.views[0]`:
 ```js
 const view = viewState.session.views[0]
 await view.navToLocString('chr1:2,000,000-2,100,000')
@@ -46,8 +41,7 @@ view.showTrack('alignments')
 view.zoomTo(view.bpPerPx * 2) // zoom out 2x
 ```
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

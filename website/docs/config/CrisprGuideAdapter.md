@@ -4,17 +4,13 @@ title: CrisprGuideAdapter
 sidebar_label: Adapter -> CrisprGuideAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/CrisprGuideAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/CrisprGuideAdapter/configSchema.ts).
 
 ## Example usage
 
-The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — so a track needs no
-slots at all. It scans the assembly's own sequence, which is why there is no
-file location:
-
+The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — so a track needs
+no slots at all. It scans the assembly's own sequence, which is why there is
+no file location:
 ```js
 {
   type: 'FeatureTrack',
@@ -29,10 +25,9 @@ file location:
 
 ### Example: a different nuclease
 
-Cas12a/Cpf1 reads a `TTTV` PAM at the 5' end with a longer guide, and cuts far
-from the PAM — so `pamLocation` and both cut offsets move too, or the guides are
-found in the right places and drawn cutting in the wrong ones:
-
+Cas12a/Cpf1 reads a `TTTV` PAM at the 5' end with a longer guide, and cuts
+far from the PAM — so `pamLocation` and both cut offsets move too, or the
+guides are found in the right places and drawn cutting in the wrong ones:
 ```js
 {
   type: 'FeatureTrack',
@@ -66,13 +61,7 @@ source and silently desyncs the track if the assembly's sequence changes.
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "CrisprGuideAdapter", ... }`. This adapter has no `uri`
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
-location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "CrisprGuideAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

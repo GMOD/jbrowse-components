@@ -4,16 +4,13 @@ title: HighlightsMixin
 sidebar_label: Mixin -> HighlightsMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/HighlightsMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/HighlightsMixin.ts).
 
 The `view.highlight` band state shared verbatim by the LinearGenomeView and
 DotplotView: an array of translucent highlight regions plus the
-`showHighlightChips` toggle for their interactive chips. Both views compose this
-so the props and actions stay identical by construction rather than by two
-hand-kept copies. Visibility across all views is the session-wide
+`showHighlightChips` toggle for their interactive chips. Both views compose
+this so the props and actions stay identical by construction rather than by
+two hand-kept copies. Visibility across all views is the session-wide
 `highlightsVisible` flag (on BaseSession), not a prop here.
 
 ## Properties

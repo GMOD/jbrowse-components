@@ -4,17 +4,14 @@ title: SPARQLAdapter
 sidebar_label: Adapter -> SPARQLAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `rdf` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/rdf/src/SPARQLAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `rdf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/rdf/src/SPARQLAdapter/configSchema.ts).
 
 ## Example usage
 
-`{refName}`, `{start}` and `{end}` are substituted per request, so the endpoint
-is queried for the visible window rather than the whole genome. The result
-columns become feature fields, so the query has to select at least `?start`,
-`?end` and a `?uniqueID`:
-
+`{refName}`, `{start}` and `{end}` are substituted per request, so the
+endpoint is queried for the visible window rather than the whole genome. The
+result columns become feature fields, so the query has to select at least
+`?start`, `?end` and a `?uniqueID`:
 ```js
 {
   type: 'FeatureTrack',
@@ -35,8 +32,8 @@ columns become feature fields, so the query has to select at least `?start`,
 
 _See the **Config slots** section below for all available configuration fields._
 
-fetches features from a SPARQL endpoint, substituting the queried region into a
-query template
+fetches features from a SPARQL endpoint, substituting the queried region into
+a query template
 
 ## Related links
 
@@ -48,13 +45,7 @@ query template
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "SPARQLAdapter", ... }`. This adapter has no `uri`
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
-location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "SPARQLAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

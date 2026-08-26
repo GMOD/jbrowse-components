@@ -4,10 +4,7 @@ title: MotifListAdapter
 sidebar_label: Adapter -> MotifListAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/MotifListAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/MotifListAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -35,13 +32,7 @@ source and silently desyncs the track if the assembly's sequence changes.
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "MotifListAdapter", ... }`. This adapter has no `uri`
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
-location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "MotifListAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

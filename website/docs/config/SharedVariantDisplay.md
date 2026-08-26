@@ -4,28 +4,17 @@ title: SharedVariantDisplay
 sidebar_label: Display -> SharedVariantDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `variants`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/SharedVariantConfigSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/SharedVariantConfigSchema.ts).
 
 ## Related links
 
-- **Extended by:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Extended by:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Extended by:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Extended by:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
 ## Config slots
 
-`SharedVariantDisplay` is a shared base schema, not a type you name in a config.
-Set these slots on one of the configs under **Extended by** above, each of which
-lists them as inherited and shows the shape in its own example. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+`SharedVariantDisplay` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

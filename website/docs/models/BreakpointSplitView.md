@@ -4,17 +4,13 @@ title: BreakpointSplitView
 sidebar_label: View -> BreakpointSplitView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`breakpoint-split-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `breakpoint-split-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts).
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`. `init` is an array — one entry per
-stacked panel — each declaring the `assembly`, a `loc`, and the `tracks` to
-show. The two panels flank a structural-variant breakpoint:
-
+Hand-authored under `defaultSession.views`. `init` is an array — one entry
+per stacked panel — each declaring the `assembly`, a `loc`, and the `tracks`
+to show. The two panels flank a structural-variant breakpoint:
 ```js
 {
   type: 'BreakpointSplitView',
@@ -24,12 +20,10 @@ show. The two panels flank a structural-variant breakpoint:
   ],
 }
 ```
+Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to
+set per-panel display options (e.g. a shorter alignments height).
 
-Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to set
-per-panel display options (e.g. a shorter alignments height).
-
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

@@ -4,17 +4,13 @@ title: LinearWiggleDisplay
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `wiggle`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts).
 
 ## Example usage
 
 Minimal `QuantitativeTrack` config. See the
 [quantitative track guide](/docs/config_guides/quantitative_track) for all
 adapter and display options:
-
 ```js
 {
   type: 'QuantitativeTrack',
@@ -26,7 +22,6 @@ adapter and display options:
 ```
 
 Taller track, log scale, custom color:
-
 ```js
 {
   type: 'QuantitativeTrack',
@@ -44,13 +39,12 @@ Taller track, log scale, custom color:
 
 _See the **Config slots** section below for all available configuration fields._
 
-configuration for the wiggle (quantitative/numeric) display showing XY plot,
-density, line, or scatter renderings
+configuration for the wiggle (quantitative/numeric) display showing XY plot, density, line, or scatter renderings
 
-These are display-level slots: set them inside a track's `displays` to change
-its defaults (setting them at the track top level has no effect). The object
-shorthand `displayDefaults: { key: value }` is equivalent to the full
-`displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
+These are display-level slots: set them inside a track's `displays` to
+change its defaults (setting them at the track top level has no effect).
+The object shorthand `displayDefaults: { key: value }` is equivalent to the
+full `displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).
 
@@ -65,13 +59,7 @@ array form — see
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearWiggleDisplay", ... }]`, or in the track's
-[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
-is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearWiggleDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

@@ -4,15 +4,12 @@ title: BedTabixAdapter
 sidebar_label: Adapter -> BedTabixAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedTabixAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedTabixAdapter/configSchema.ts).
 
 ## Example usage
 
-The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
-index instead:
-
+The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
+`.csi` index instead:
 ```js
 {
   type: 'FeatureTrack',
@@ -26,10 +23,7 @@ index instead:
 }
 ```
 
-`features.bed.gz` infers `BedTabixAdapter` and `FeatureTrack` on its own, and
-`name` defaults to the file name. In a config declaring one assembly,
-`assemblyNames` comes from there too — see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`features.bed.gz` infers `BedTabixAdapter` and `FeatureTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -52,14 +46,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "BedTabixAdapter", ... }`. It also accepts the
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
-`baseUri`, `csi` in place of writing a location slot out. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "BedTabixAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

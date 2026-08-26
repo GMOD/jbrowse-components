@@ -4,18 +4,14 @@ title: JBrowse1Connection
 sidebar_label: Connection -> JBrowse1Connection
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`legacy-jbrowse` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
 
 ## Example usage
 
-An entry in the config's `connections`, pointing at a JBrowse 1 data directory —
-the one holding `trackList.json` and `seq/`. Its tracks are translated to
-JBrowse 2 equivalents on connect, which is the path for serving an existing
-JBrowse 1 instance's data without re-processing it.
-
+An entry in the config's `connections`, pointing at a JBrowse 1 data
+directory — the one holding `trackList.json` and `seq/`. Its tracks are
+translated to JBrowse 2 equivalents on connect, which is the path for serving
+an existing JBrowse 1 instance's data without re-processing it.
 ```js
 {
   type: 'JBrowse1Connection',
@@ -35,11 +31,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots are top-level fields of the connection's entry in `connections`.
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the connection's entry in `connections`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

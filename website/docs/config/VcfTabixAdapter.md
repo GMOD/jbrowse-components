@@ -4,16 +4,12 @@ title: VcfTabixAdapter
 sidebar_label: Adapter -> VcfTabixAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `variants`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VcfTabixAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VcfTabixAdapter/configSchema.ts).
 
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 `.csi` index):
-
 ```js
 {
   type: 'VariantTrack',
@@ -27,10 +23,7 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 }
 ```
 
-`variants.vcf.gz` infers `VcfTabixAdapter` and `VariantTrack` on its own, and
-`name` defaults to the file name. In a config declaring one assembly,
-`assemblyNames` comes from there too — see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`variants.vcf.gz` infers `VcfTabixAdapter` and `VariantTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -44,10 +37,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 :::caution Gotcha
 
-TBI cannot index a chromosome longer than 512 Mb, which some plant and animal
-genomes exceed. Index those with CSI instead: pass `csi: true` alongside the
-`uri` shorthand, or set both `index.location` and `index.indexType: 'CSI'`
-explicitly.
+TBI cannot index a chromosome longer than 512 Mb, which some plant and animal genomes exceed. Index those with CSI instead: pass `csi: true` alongside the `uri` shorthand, or set both `index.location` and `index.indexType: 'CSI'` explicitly.
 
 :::
 
@@ -58,23 +48,14 @@ used to load bgzip-compressed, tabix-indexed VCF files
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LDDisplay](../lddisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "VcfTabixAdapter", ... }`. It also accepts the
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
-`baseUri`, `csi` in place of writing a location slot out. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "VcfTabixAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

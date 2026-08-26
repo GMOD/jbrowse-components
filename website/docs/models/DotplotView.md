@@ -4,17 +4,13 @@ title: DotplotView
 sidebar_label: View -> DotplotView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`dotplot-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts).
 
 ## Example usage
 
 Hand-authored under `defaultSession.views`. `init.views` lists the two
-assemblies on the axes and `tracks` the synteny track(s) to plot (self-vs-self
-is allowed):
-
+assemblies on the axes and `tracks` the synteny track(s) to plot
+(self-vs-self is allowed):
 ```js
 {
   type: 'DotplotView',
@@ -25,12 +21,10 @@ is allowed):
   },
 }
 ```
-
 Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 `loc` on each `views` entry — see the `init` property below.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

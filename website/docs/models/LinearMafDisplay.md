@@ -4,17 +4,13 @@ title: LinearMafDisplay
 sidebar_label: Display -> LinearMafDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`maf` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/stateModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/stateModel.ts).
 
 ## Example usage
 
-A complete `MafTrack` config to paste into `tracks`. `samples` lists the aligned
-species in track order; `rowHeight` sets the per-sample band height in px (or
-`0` to stretch rows to fill the track height):
-
+A complete `MafTrack` config to paste into `tracks`. `samples` lists the
+aligned species in track order; `rowHeight` sets the per-sample band
+height in px (or `0` to stretch rows to fill the track height):
 ```js
 {
   type: 'MafTrack',
@@ -37,11 +33,9 @@ species in track order; `rowHeight` sets the per-sample band height in px (or
 }
 ```
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearmafdisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearmafdisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

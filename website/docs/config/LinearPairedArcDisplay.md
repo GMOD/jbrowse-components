@@ -4,9 +4,7 @@ title: LinearPairedArcDisplay
 sidebar_label: Display -> LinearPairedArcDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `arc` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearPairedArcDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `arc` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearPairedArcDisplay/configSchema.ts).
 
 ## Example usage
 
@@ -15,7 +13,6 @@ from its position to its mate breakend (parsed from the VCF `ALT`), connecting
 the two loci even when the mate is on another chromosome / displayed region.
 Short ticks mark each breakend's mate direction; clicking an arc opens the
 variant details. `color` is jexl-evaluated per `(feature, alt)`:
-
 ```js
 {
   type: 'VariantTrack',
@@ -49,13 +46,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearPairedArcDisplay", ... }]`, or in the track's
-[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
-is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearPairedArcDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

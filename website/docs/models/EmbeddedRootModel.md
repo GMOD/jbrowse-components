@@ -4,20 +4,16 @@ title: EmbeddedRootModel
 sidebar_label: Root -> EmbeddedRootModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/embedded-core/src/createEmbeddedRootModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/embedded-core/src/createEmbeddedRootModel.ts).
 
 Root model shared by the single-view embedded products
 (react-linear-genome-view, react-circular-genome-view). Each product supplies
 its own model name, version, and session model, and may `.props()` on extra
 fields (e.g. the LGV `disableAddTracks`/`drawerViewHeight`). Internet accounts
-come from the same product-core mixin the web/desktop root models use, so config
-`internetAccounts` are auto-initialized (no manual wiring needed).
+come from the same product-core mixin the web/desktop root models use, so
+config `internetAccounts` are auto-initialized (no manual wiring needed).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

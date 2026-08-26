@@ -4,17 +4,13 @@ title: LGVSyntenyDisplay
 sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-comparative-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts).
 
 ## Example usage
 
 Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
 two-row synteny view). Same track config as a synteny track — just pick this
 display type:
-
 ```js
 {
   type: 'SyntenyTrack',
@@ -36,14 +32,12 @@ display type:
 }
 ```
 
-displays location of "synteny" feature in a plain LGV, allowing linking out to
-external synteny views
+displays location of "synteny" feature in a plain LGV, allowing linking out
+to external synteny views
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/lgvsyntenydisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/lgvsyntenydisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

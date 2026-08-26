@@ -4,17 +4,13 @@ title: LinearSyntenyView
 sidebar_label: View -> LinearSyntenyView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-comparative-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts).
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`. `init.views` declares the two member
-assemblies (stacked as linear views) and `tracks` the synteny feature track
-connecting them with a ribbon:
-
+Hand-authored under `defaultSession.views`. `init.views` declares the two
+member assemblies (stacked as linear views) and `tracks` the synteny feature
+track connecting them with a ribbon:
 ```js
 {
   type: 'LinearSyntenyView',
@@ -25,15 +21,13 @@ connecting them with a ribbon:
   },
 }
 ```
-
 `init` also takes the launch commands (`levelHeights`, `autoDiagonalize`,
-`sameScale`, `collapseEmptyRows`) and ANY property below — `colorBy`, `alpha`,
-`minAlignmentLength`, `drawLocationMarkers`, … . There is no list to join:
-`applyInitSettings` matches an init key against this model's own properties, and
-`LinearSyntenyViewInit` is derived from its snapshot type.
+`sameScale`, `collapseEmptyRows`) and ANY property below — `colorBy`,
+`alpha`, `minAlignmentLength`, `drawLocationMarkers`, … . There is no list to
+join: `applyInitSettings` matches an init key against this model's own
+properties, and `LinearSyntenyViewInit` is derived from its snapshot type.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

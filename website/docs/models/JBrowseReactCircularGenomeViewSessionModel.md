@@ -4,23 +4,20 @@ title: JBrowseReactCircularGenomeViewSessionModel
 sidebar_label: Session -> JBrowseReactCircularGenomeViewSessionModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts).
 
-The shared EmbeddedSessionMixin plus this product's tracks mixin and its single
-CircularView. Both are spelled out here rather than passed to a shared factory
-because `types.compose` cannot infer through a generic — see
+The shared EmbeddedSessionMixin plus this product's tracks mixin and
+its single CircularView. Both are spelled out here rather than passed to a
+shared factory because `types.compose` cannot infer through a generic — see
 EmbeddedSessionMixin.
 
-The tracks mixin is the session-tracks one, the same the linear embed uses. The
-plainer `TracksManagerSessionMixin` sends `addTrackConf` on to
-`jbrowse.addTrackConf`, which the embedded root config model does not have — so
-a host adding a track after mount got a TypeError, and there was no other door:
-this product's whole track set had to be decided at build time.
+The tracks mixin is the session-tracks one, the same the linear embed uses.
+The plainer `TracksManagerSessionMixin` sends `addTrackConf` on to
+`jbrowse.addTrackConf`, which the embedded root config model does not have —
+so a host adding a track after mount got a TypeError, and there was no other
+door: this product's whole track set had to be decided at build time.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

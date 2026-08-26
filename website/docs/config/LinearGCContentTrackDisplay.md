@@ -4,16 +4,12 @@ title: LinearGCContentTrackDisplay
 sidebar_label: Display -> LinearGCContentTrackDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `gccontent`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/configSchemaTrack.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/configSchemaTrack.ts).
 
 ## Example usage
 
 GC-skew mode with a small, overlapping sliding window (a `windowDelta` under
 `windowSize` overlaps the windows, which smooths the signal):
-
 ```js
 {
   type: 'GCContentTrack',
@@ -32,7 +28,8 @@ GC content as its own track: the display of a `GCContentTrack`, whose
 [](/docs/config/lineargccontentdisplay) instead to hang GC off an existing
 `ReferenceSequenceTrack` without configuring a second adapter.
 
-Every slot comes from the shared base below; this display adds none of its own.
+Every slot comes from the shared base below; this display adds none of its
+own.
 
 ## Related links
 
@@ -41,13 +38,7 @@ Every slot comes from the shared base below; this display adds none of its own.
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearGCContentTrackDisplay", ... }]`, or in the
-track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays)
-when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are
-explained in the [config slot types reference](/docs/config_guides/slot_types).
-Slots a base configuration contributes are listed here too, so this table is the
-whole surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearGCContentTrackDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
