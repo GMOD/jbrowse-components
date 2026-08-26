@@ -45,12 +45,34 @@ export function getAccountLabel(account: BaseInternetAccountModel) {
   return truncateLabel(name)
 }
 
+/**
+ * The toggles a selector offers, in the order it draws them — and so the set a
+ * selection has to come from.
+ *
+ * One list because three places used to answer this apart, and a selection none
+ * of the drawn buttons carries leaves the group with nothing pressed:
+ * `SourceTypeSelector` withheld File in admin mode while `getInitialSourceType`
+ * went on opening an empty slot on it, and a location whose `internetAccountId`
+ * names an account this host does not install opened on a toggle that was never
+ * drawn. `FileSelector` resolves against this rather than trusting either.
+ *
+ * No File toggle in admin mode: a BlobLocation cannot be written into the
+ * config.json the admin server saves.
+ */
+export function availableSourceTypes(accountIds: string[]) {
+  return [...(isAdminMode() ? [] : ['file']), 'url', ...accountIds]
+}
+
 // Which toggle a selector opens on. A form's empty slot is spelled as a
 // UriLocation with an empty uri, which isUriLocation rejects, so an untouched
 // field falls to `emptyDefault` rather than reading as a URL. A form that knows
 // how its user is working passes the answer: the add-genome pane's index inputs
 // sit directly under a box of pasted URLs, and offering a local file picker
 // there is a question already answered.
+//
+// What the location WANTS, which is not the same as what is on offer —
+// `availableSourceTypes` is the other half, and `FileSelector` is where the two
+// meet.
 export function getInitialSourceType(
   location?: FileLocation,
   emptyDefault = 'file',

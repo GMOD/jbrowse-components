@@ -11,6 +11,7 @@ import { useEmptySourceType } from './emptySourceType.ts'
 import useInternetAccounts from './useInternetAccounts.ts'
 import {
   addAccountToLocation,
+  availableSourceTypes,
   getInitialSourceType,
   sourceTypeForLocation,
 } from './util.ts'
@@ -38,6 +39,20 @@ const FileSelector = observer(function FileSelector({
   const [sourceType, setSourceType] = useState(() =>
     getInitialSourceType(location, emptySourceType),
   )
+  const {
+    accountMap,
+    shownAccounts,
+    hiddenAccounts,
+    recentlyUsed,
+    setRecentlyUsed,
+  } = useInternetAccounts(rootModel)
+
+  // What a location wants and what the group draws are answered separately, so
+  // they have to be reconciled somewhere: a selection no button carries leaves
+  // the group with nothing pressed. Derived rather than clamped into state, so
+  // an account that installs after this mounted takes its selection back.
+  const sourceTypes = availableSourceTypes(Object.keys(accountMap))
+  const shownSourceType = sourceTypes.includes(sourceType) ? sourceType : 'url'
 
   // A location the form filled in for the user has to be able to show itself.
   // The toggle is picked once, at mount, from a slot that is usually still
@@ -48,21 +63,13 @@ const FileSelector = observer(function FileSelector({
   const [lastLocation, setLastLocation] = useState(location)
   if (location !== lastLocation) {
     setLastLocation(location)
-    const needed = sourceTypeForLocation(location, sourceType)
+    const needed = sourceTypeForLocation(location, shownSourceType)
     if (needed) {
       setSourceType(needed)
     }
   }
 
-  const {
-    accountMap,
-    shownAccounts,
-    hiddenAccounts,
-    recentlyUsed,
-    setRecentlyUsed,
-  } = useInternetAccounts(rootModel)
-
-  const selectedAccount = accountMap[sourceType]
+  const selectedAccount = accountMap[shownSourceType]
 
   const handleLocationChange = useCallback(
     (loc: FileLocation) => {
@@ -119,7 +126,8 @@ const FileSelector = observer(function FileSelector({
         }}
       >
         <SourceTypeSelector
-          value={sourceType}
+          value={shownSourceType}
+          sourceTypes={sourceTypes}
           shownAccounts={shownAccounts}
           hiddenAccounts={hiddenAccounts}
           onChange={(_event, newValue) => {
@@ -128,7 +136,7 @@ const FileSelector = observer(function FileSelector({
           onHiddenAccountSelect={handleSourceTypeChange}
         />
         <LocationInput
-          toggleButtonValue={sourceType}
+          toggleButtonValue={shownSourceType}
           selectedAccount={selectedAccount}
           location={location}
           inline={inline}

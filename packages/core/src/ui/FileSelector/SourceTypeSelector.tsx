@@ -2,7 +2,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
 
 import CascadingMenuButton from '../CascadingMenuButton.tsx'
-import { getAccountLabel, isAdminMode } from './util.ts'
+import { getAccountLabel } from './util.ts'
 
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/index.ts'
 
@@ -48,12 +48,16 @@ function MoreButton({
 
 export default function SourceTypeSelector({
   value,
+  sourceTypes,
   shownAccounts,
   hiddenAccounts,
   onChange,
   onHiddenAccountSelect,
 }: {
   value: string
+  // What is on offer, from `availableSourceTypes` — the same list `FileSelector`
+  // resolves `value` against, so a button and a pressed state cannot disagree
+  sourceTypes: string[]
   shownAccounts: BaseInternetAccountModel[]
   hiddenAccounts: BaseInternetAccountModel[]
   onChange: (event: React.MouseEvent, newValue: string | null) => void
@@ -67,7 +71,7 @@ export default function SourceTypeSelector({
       onChange={onChange}
       aria-label="file, url, or account picker"
     >
-      {!isAdminMode() && (
+      {sourceTypes.includes('file') && (
         <ToggleButton value="file" aria-label="local file">
           File
         </ToggleButton>

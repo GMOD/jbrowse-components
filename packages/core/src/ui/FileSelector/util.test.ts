@@ -1,6 +1,7 @@
 import {
   MAX_LABEL_LENGTH,
   addAccountToLocation,
+  availableSourceTypes,
   dirFromPath,
   getAccountLabel,
   getInitialSourceType,
@@ -173,6 +174,38 @@ describe('getInitialSourceType', () => {
       localPath: '/path/to/file.bam',
     }
     expect(getInitialSourceType(location, 'url')).toBe('file')
+  })
+})
+
+describe('availableSourceTypes', () => {
+  const setUrl = (rest: string) => {
+    window.history.replaceState(null, '', `${window.location.pathname}${rest}`)
+  }
+  afterEach(() => {
+    setUrl('')
+  })
+
+  test('File and URL, then one entry per account', () => {
+    expect(availableSourceTypes(['dropbox', 'gdrive'])).toEqual([
+      'file',
+      'url',
+      'dropbox',
+      'gdrive',
+    ])
+  })
+
+  // a BlobLocation cannot be written into the config.json the admin server
+  // saves, which is why SourceTypeSelector withholds the button
+  test('no File toggle in admin mode', () => {
+    setUrl('?adminKey=abc')
+    expect(availableSourceTypes([])).toEqual(['url'])
+  })
+
+  // the fallback FileSelector resolves an unavailable selection to, so it has
+  // to be here whatever else is
+  test('URL is always on offer', () => {
+    setUrl('?adminKey=abc')
+    expect(availableSourceTypes(['dropbox'])).toContain('url')
   })
 })
 
