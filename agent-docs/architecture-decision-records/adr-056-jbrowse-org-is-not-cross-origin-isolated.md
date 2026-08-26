@@ -119,6 +119,19 @@ something that must keep working anyway.
 - `coi-probe.ts` is not dead code either. It is the regression check that the SAB
   path still works wherever isolation *does* exist — an embedding host page that
   isolates itself gets the fast path today with no work from us.
+- **2026-08-26: the code did not implement this bullet until now.**
+  `hasSharedArrayBuffer` asked whether a `SharedArrayBuffer` could be
+  CONSTRUCTED, never whether the page was isolated — which agree in a browser,
+  because it gates the constructor, and disagree in a V8 embedder, which both of
+  ours are. Jest constructed one unconditionally, so the whole suite ran the
+  fast path while every deployment ran the string path, and the two do not check
+  at the same moments: that inversion hid `withProgress`'s open-phase bug
+  (a9e5daba8f) for as long as it existed. Electron with `nodeIntegration: true`
+  put Node's globals on the renderer, so jbrowse-desktop very likely took the
+  fast path off a `file://` page as well — unverifiable from the tree, and now
+  moot. The gate reads `crossOriginIsolated` directly, so this ADR's analysis
+  and the code now say the same thing, and the free-rider clause above is
+  unaffected: an isolated host reports isolated and gets the fast path.
 - Nothing here is a code change. If someone wants the empirical blast radius
   rather than this analysis, `Cross-Origin-Embedder-Policy-Report-Only` on the
   distribution costs nothing and touches no source.

@@ -370,7 +370,11 @@ every worker, and a `SharedArrayBuffer` token additionally carries an atomic fla
 that a *synchronous* loop can read without yielding. Only the message path ever
 runs in practice, because SAB needs `crossOriginIsolated` and nothing sets
 COOP/COEP (see [NETWORK_ABORT.md](NETWORK_ABORT.md) for why that is deliberate
-and not fixable for an embeddable library).
+and not fixable for an embeddable library). `hasSharedArrayBuffer` asks
+`crossOriginIsolated` directly — it used to ask only whether one could be
+constructed, which is the same question in a browser and a different one in a
+V8 embedder, so jest and Electron both took a path no deployment takes. ADR-056's
+consequences carry what that cost.
 
 `node website/scripts/coi-probe.ts [--coi]` serves the build with and without
 `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy:
