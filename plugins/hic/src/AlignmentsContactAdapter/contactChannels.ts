@@ -41,8 +41,7 @@ const EVERSION_SLOP = 5
 
 /**
  * One alignment, in the fields these rules read. `strand` is the feature's own
- * — never re-derived from a flag — and the pairing comes from the SAM flag
- * word, the mate's reference name and position, and the raw `SA` tag.
+ * and is never re-derived from a flag — see plugins/alignments/src/CLAUDE.md.
  */
 export interface AlignmentRecord {
   refName: string
@@ -67,12 +66,14 @@ export interface ChannelOptions {
   minSpan: number
 }
 
-/** Whether a channel drops cells on the diagonal, where both ends share a bin. */
+/**
+ * Cue scores the orientation channels off-diagonal only: a pair whose two ends
+ * share a bin is the ordinary library, not a signature.
+ */
 export function isOffDiagonalOnly(channel: ContactChannel) {
   return channel === 'sameStrand' || channel === 'outward'
 }
 
-/** A secondary, supplementary or unmapped record contributes nothing anywhere. */
 export function isPrimaryAligned(record: AlignmentRecord) {
   return !(
     record.flags &
@@ -80,7 +81,7 @@ export function isPrimaryAligned(record: AlignmentRecord) {
   )
 }
 
-/** The bin a read is counted into for depth: its midpoint's. */
+/** Depth counts a read by its midpoint, so one read lands in one bin. */
 export function depthBin(record: AlignmentRecord, resolution: number) {
   return Math.floor((record.start + record.end) / 2 / resolution)
 }
@@ -99,7 +100,6 @@ function mateOnSameRef(record: AlignmentRecord) {
   )
 }
 
-/** Whether this mate is the one that speaks for a symmetric pair signature. */
 function emitsForPair(record: AlignmentRecord, nextPos: number) {
   return record.start === nextPos
     ? !!(record.flags & SAM_FLAG_FIRST_IN_PAIR)
@@ -133,7 +133,6 @@ export function splitContacts(record: AlignmentRecord): Contact[] {
   return out
 }
 
-/** Every contact one record contributes to a channel. */
 export function contactsForRecord(
   record: AlignmentRecord,
   { channel, minSpan }: ChannelOptions,
