@@ -19,6 +19,12 @@ import {
 } from '../lib/capture.mjs'
 import { classify, CLASSES, conflictBed } from '../lib/classify.mjs'
 import {
+  classTable,
+  evidenceTable,
+  runTable,
+  writeRecords,
+} from '../lib/measurements.mjs'
+import {
   buildConfig,
   checkTools,
   fetchRegions,
@@ -101,6 +107,13 @@ OPTIONAL
                          link naming one of those fails to open. Default: no
                          track, so the view arrives and the annotator turns
                          Apollo's own layer on.
+  --measurement <prefix> write the run's counts as agent-docs measurement records
+                         — \`<prefix>-classes.json\` and \`<prefix>-run.json\`, plus
+                         \`-evidence.json\` when --rnaseq is given. A tutorial then
+                         quotes a cell instead of a number somebody typed, which
+                         is what goes stale the first time the comparison
+                         changes. In this repo the prefix is
+                         \`agent-docs/measurements/<name>\`.
   --no-capture           skip the screenshots; links still work
   --inline-images        embed the captures in index.html, so the portal is one
                          file. Needs --region with remote inputs.
@@ -164,6 +177,8 @@ function parseArgs(argv) {
     } else if (a === '--app-branch') {
       o.appBranch = next()
       o.withApp = true
+    } else if (a === '--measurement') {
+      o.measurement = next()
     } else if (a === '--no-capture') {
       o.capture = false
     } else if (a === '--inline-images') {
@@ -468,6 +483,60 @@ const cards = candidates.map(c => {
           ),
   }
 })
+
+if (opts.measurement && rows.length) {
+  const prefix = path.resolve(opts.measurement)
+  const name = path.basename(prefix)
+  const region = opts.region.join(', ')
+  // The record is only worth having if somebody else can take it again, so the
+  // repro is the invocation verbatim, quoted — a track name with a space in it
+  // is one word here and two when pasted back.
+  const quote = a =>
+    /^[\w./:@=-]+$/.test(a) ? a : `'${a.replaceAll("'", String.raw`'\''`)}'`
+  const repro = [
+    'node',
+    'demo/tiberius-portal/bin/make-portal.mjs',
+    ...process.argv.slice(2),
+  ]
+    .map(quote)
+    .join(' ')
+  const records = [
+    classTable({
+      id: `${name}-classes`,
+      repro,
+      classes: CLASSES,
+      classOrder: CLASS_ORDER,
+      tally,
+      region,
+    }),
+    runTable({
+      id: `${name}-run`,
+      repro,
+      rows,
+      tally,
+      bedRecords: conflictBed(rows)
+        .split('\n')
+        .filter(l => l && !l.startsWith('#')).length,
+      region,
+    }),
+  ]
+  if (rnaRefs.length) {
+    console.log('  counting evidence reads per candidate')
+    records.push(
+      evidenceTable({
+        id: `${name}-evidence`,
+        repro,
+        candidates,
+        loci: candidates.map(c => sessionFor(c, [], assembly).loc),
+        bams: opts.rnaseq,
+        names: opts.rnaseqName,
+      }),
+    )
+  }
+  for (const f of writeRecords(prefix, records)) {
+    console.log(`  ${path.relative(process.cwd(), f)}`)
+  }
+}
 
 const title = opts.title || `${assembly} gene models that need a human`
 const data = {

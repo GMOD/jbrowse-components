@@ -6,11 +6,35 @@ description: On the reference genome, a gene prediction disagreeing with GENCODE
 # Reviewing an annotation with no reference to review it against
 
 `demo/tiberius-portal` sorts predicted gene models by how they disagree with a
-reference annotation. That works, and it has a ceiling: on GRCh38 chr22,
-Tiberius produces 559 models, 424 of which share junctions with a GENCODE gene,
-and exactly **3** disagree at every junction. One merged model. Twelve novel
-loci. The signal is thin because the predictor and the reference are describing
-the same sequence, and the predictor is good.
+reference annotation. That works, and it has a ceiling:
+
+<!-- BEGIN GENERATED MEASUREMENT tiberius-chr22-classes -->
+
+| Class              | What it means                                                       | On chr22 | What an annotator does  |
+| ------------------ | ------------------------------------------------------------------- | -------: | ----------------------- |
+| Agrees             | Shares splice junctions with a reference gene                       |      424 | nothing                 |
+| Merged model       | One prediction covers two separate reference genes                  |        1 | split into two models   |
+| Structure conflict | Covers one reference gene but shares none of its splice junctions   |        3 | check exon structure    |
+| Novel locus        | Predicted where the reference annotates nothing at all              |       12 | assess, then create     |
+| Novel coding       | Predicted coding where the reference has only non-coding annotation |      119 | assess coding potential |
+
+<!-- END GENERATED MEASUREMENT tiberius-chr22-classes -->
+
+Three models out of 559 disagree at every junction. The signal is thin because
+the predictor and the reference are describing the same sequence, and the
+predictor is good.
+
+<!-- BEGIN GENERATED MEASUREMENT tiberius-chr22-run -->
+
+| What the run reports                     | chr22 |
+| ---------------------------------------- | ----: |
+| Models predicted                         |   559 |
+| Flagged for review                       |   135 |
+| Records in conflicts.bed                 |   229 |
+| Agreeing models carrying a junction edit |    64 |
+| Widest gap inside a merged model, bp     | 5,809 |
+
+<!-- END GENERATED MEASUREMENT tiberius-chr22-run -->
 
 The interesting version is annotation of sequence the reference does not
 describe: a de novo assembly, a non-reference haplotype, a tumour, another
@@ -52,11 +76,27 @@ is a sharper finding than any whole-model score, and it slots straight into what
 the conflict machinery already emits: the record in `conflicts.bed` and the read
 count are the same object.
 
-The check that keeps it honest is the same one the reference comparison needed:
-CCDC116, the one clean structure conflict left on chr22, has almost no reads in
-either HBR or UHR because it is testis-specific. Absence of support is not
-evidence against a model unless the locus is expressed at all, so the score has
-to carry the depth it was measured at.
+The check that keeps it honest is the same one the reference comparison needed.
+Read depth over the candidate windows spans three orders of magnitude, and the
+bottom of it is not weak evidence against a model — `g13682.t1` sits on `DDT`
+and `g13605.t1` on the testis-specific `CCDC116`, neither of which either
+tissue expresses:
+
+<!-- BEGIN GENERATED MEASUREMENT tiberius-chr22-evidence -->
+
+| Model     | Reference genes                | RNA-seq · brain (HBR) | RNA-seq · universal reference (UHR) |
+| --------- | ------------------------------ | --------------------: | ----------------------------------: |
+| g14001.t1 | IL17REL + TTLL8                |                 1,350 |                                 178 |
+| g13516.t1 | MICAL3                         |                 2,936 |                               1,429 |
+| g13682.t1 | DDT + GSTT3P + ENSG00000250470 |                     2 |                                  17 |
+| g13494.t1 | —                              |                     4 |                                   9 |
+| g13472.t1 | —                              |                     2 |                                   0 |
+| g13566.t1 | ENSG00000290950 + USP41P       |                   120 |                                 306 |
+| g13664.t1 | FAM230I + ENSG00000287864      |                    12 |                                 165 |
+
+<!-- END GENERATED MEASUREMENT tiberius-chr22-evidence -->
+
+So the score has to carry the depth it was measured at.
 
 ## Running several predictors
 
@@ -79,6 +119,11 @@ The way around it is not to diff the two annotations at all: score each
 annotation against its own sample's evidence, and compare the two scores. A gene
 whose junction support collapses in the sample and holds in the reference is the
 finding, and no projection was involved in producing it.
+
+Every figure above comes from `agent-docs/measurements/tiberius-chr22-*.json`,
+which `make-portal.mjs --measurement` writes from the run itself. Nothing here
+is typed in, which is the point: the first version of this doc would have said
+21 structure conflicts.
 
 Related: `reference/REJECTED_IDEAS.md` for what has been tried and declined,
 `demo/tiberius-portal/README.md` for what the comparison does today.

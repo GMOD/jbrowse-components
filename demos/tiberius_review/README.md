@@ -38,6 +38,8 @@ node demo/tiberius-portal/bin/make-portal.mjs \
   --assembly hg38 --region chr22 --max 2 --height 1000 \
   --prediction-name "Tiberius predictions" --reference-name "GENCODE 47" \
   --app-branch main --inline-images \
+  --instance https://jbrowse.org/code/jb2/main/ \
+  --measurement agent-docs/measurements/tiberius-chr22 \
   --public-config https://jbrowse.org/demos/tiberius_review/config.json \
   --title "Tiberius predictions on chr22 that need a human" \
   --out /tmp/tiberius_review
@@ -62,8 +64,18 @@ for f in HBR_brain_rnaseq_chr22.bam UHR_reference_rnaseq_chr22.bam; do
 done
 ```
 
-`--app-branch main` rather than `--with-app`: bare `jbrowse create` installs the
-latest npm release, and the point of this demo is to show what JBrowse does now.
+**Two flags say which JBrowse, and both are needed.** `--app-branch main`
+bundles the development build for the _captures_, where bare `jbrowse create`
+would install the latest npm release;
+`--instance https://jbrowse.org/code/jb2/main/` points the **Open in JBrowse**
+links at the hosted main instance, where they would otherwise open
+`code/jb2/latest`, which is that same release. The point of this demo is to show
+what JBrowse does now, and a picture of main behind a link to the last release
+is half of it.
+
+`--measurement` rewrites `agent-docs/measurements/tiberius-chr22-*.json` from
+the run, which is where the tutorial's counts come from. Rebuild without it and
+the prose keeps last run's numbers.
 
 **Two data files are hosted here**, and only because their source has no CORS
 headers. Both are the Griffith lab's RNA-seq course data from

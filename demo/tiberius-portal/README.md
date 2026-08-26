@@ -137,6 +137,11 @@ fixture missed the bug for as long as it did.
 - Without `--with-app` the links point at `jbrowse.org/code/jb2/latest`, which
   **cannot read a config on your laptop** — that mode is for data already
   published at a public URL. The CLI says so when it applies.
+- `--measurement <prefix>` writes the run's counts as `agent-docs/measurements/`
+  records, so a tutorial quotes a generated cell rather than a number somebody
+  typed. That is the one that goes stale first: fixing the junction comparison
+  moved chr22's structure conflicts from 21 to 3 and took a card the prose named
+  down with it.
 - **The captures show a release unless you say otherwise.** `jbrowse create`
   installs the latest npm release and `code/jb2/latest` is that same release, so
   a portal showing off work that has not shipped shows the version before it.

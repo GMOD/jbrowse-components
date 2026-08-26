@@ -57,24 +57,27 @@ a viewing decision. What the browser can do is find every locus that needs one.
 
 ## Sorting the models
 
-Tiberius predicts 559 models on chr22. Most of them share splice junctions with
-a GENCODE gene and need no attention; the rest disagree in one of four ways, and
-only those reach the portal.
+Tiberius predicts 559<!--m:tiberius-chr22-run.models-predicted.count--> models
+on chr22. Most of them share splice junctions with a GENCODE gene and need no
+attention; the rest disagree in one of four ways, and only those reach the
+portal.
+
+| Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
+| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
+| Agrees             | shares splice junctions with a reference gene                     | 424<!--m:tiberius-chr22-classes.agrees.models-->           | nothing                  |
+| Merged model       | one prediction covers two separate reference genes                | 1<!--m:tiberius-chr22-classes.merged-model.models-->       | split into two models    |
+| Structure conflict | covers one gene but shares none of its splice junctions           | 3<!--m:tiberius-chr22-classes.structure-conflict.models--> | check the exon structure |
+| Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
+| Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
 
 A junction is shared with a gene when it is an intron of one of that gene's
 transcripts. Reading the gene's exons as one list instead — cheaper, and wrong —
 manufactures junctions no transcript has, which is worth stating because it is
 what the first version of this comparison did. Against RANBP1's 13 isoforms it
 matched none of Tiberius's five correct junctions, and 18 of the 21 structure
-conflicts it reported were that arithmetic rather than the prediction.
-
-| Class              | What it means                                                     | On chr22 | What an annotator does   |
-| ------------------ | ----------------------------------------------------------------- | -------- | ------------------------ |
-| Agrees             | shares splice junctions with a reference gene                     | 424      | nothing                  |
-| Merged model       | one prediction covers two separate reference genes                | 1        | split into two models    |
-| Structure conflict | covers one gene but shares none of its splice junctions           | 3        | check the exon structure |
-| Novel locus        | predicted where the reference annotates nothing                   | 12       | assess, then create      |
-| Novel coding       | predicted coding where the reference has only non-coding features | 119      | assess coding potential  |
+conflicts it reported were that arithmetic rather than the prediction. Every
+number on this page comes out of the run rather than off a keyboard, for the
+same reason: the paragraph you are reading would otherwise still say 21.
 
 Two rules keep merged models down to one entry. The comparison runs at exon
 level against genes on the same strand, and a fusion counts only when the genes
@@ -124,9 +127,12 @@ The example portal carries two, both from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
 Human Brain Reference and Universal Human Reference, a pool of ten cell lines.
 Two, because coverage splits both ways — the merged `IL17REL`/`TTLL8` model has
-1,350 brain reads against 178 UHR, and `g13664.t1`, predicted coding over the
-lncRNA `FAM230I`, has 165 UHR against 12 brain. A model with reads in neither is
-the one worth doubting.
+1,350<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_1--> brain reads against
+178<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_2--> UHR, and `g13664.t1`,
+predicted coding over the lncRNA `FAM230I`, has
+165<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_2--> UHR against
+12<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_1--> brain. A model with reads
+in neither is the one worth doubting.
 
 Tiberius has an evidence mode of its own — Nextflow, taking proteins, RNA-Seq
 and Iso-Seq — that folds evidence into the prediction. The released human
@@ -182,7 +188,10 @@ chr22  50012765  50018574  g14001.t1:split          0  -
 **The BED reaches further than the page does.** Cards exist only for the four
 flagged classes, so a model that shares four junctions out of five is filed as
 `agrees` and never gets one — while the fifth is still a real splice-site edit.
-On chr22 that is 64 models the page cannot show and the file lists.
+On chr22 that is
+64<!--m:tiberius-chr22-run.agreeing-models-carrying-a-junction-edit.count-->
+models the page cannot show, among
+229<!--m:tiberius-chr22-run.records-in-conflicts-bed.count--> records in all.
 
 ## Checking the merge against the raw data
 
@@ -198,9 +207,11 @@ tabix https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaf
 ```
 
 `IL17REL` ends at 50,012,765 and `TTLL8` starts at 50,018,575, both on the minus
-strand: 5,809 bp apart, with the Tiberius model running straight through the
-gap. The same query at _PI4KA_ returns two genes on opposite strands, which is
-why that one is not on the list.
+strand:
+5,809<!--m:tiberius-chr22-run.widest-gap-inside-a-merged-model-bp.count--> bp
+apart, with the Tiberius model running straight through the gap. The same query
+at _PI4KA_ returns two genes on opposite strands, which is why that one is not
+on the list.
 
 ## See also
 

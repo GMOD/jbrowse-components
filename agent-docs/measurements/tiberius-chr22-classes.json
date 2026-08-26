@@ -1,0 +1,75 @@
+{
+  "id": "tiberius-chr22-classes",
+  "measured": "2026-08-26",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node demo/tiberius-portal/bin/make-portal.mjs --prediction https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz --reference https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt --rnaseq https://jbrowse.org/demos/tiberius_review/HBR_brain_rnaseq_chr22.bam --rnaseq-name 'RNA-seq \u00b7 brain (HBR)' --rnaseq https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam --rnaseq-name 'RNA-seq \u00b7 universal reference (UHR)' --assembly hg38 --region chr22 --max 2 --no-capture --measurement agent-docs/measurements/tiberius-chr22 --out /tmp/claude-1001/-home-cdiesh-src-jbrowse-components/89997f3f-20eb-4162-87b9-d841c6842cbe/scratchpad/pm",
+    "notes": "One row per class the comparison sorts a predicted model into, and the count of models in it. The comparison is at exon level against same-strand genes, and a gene's junctions are the union of its transcripts' introns \u2014 reading them off a flat sort of every isoform's exons invents junctions no transcript has, which is what first reported 21 structure conflicts here rather than 3."
+  },
+  "columns": [
+    {
+      "key": "class",
+      "label": "Class",
+      "format": "text"
+    },
+    {
+      "key": "means",
+      "label": "What it means",
+      "format": "text"
+    },
+    {
+      "key": "models",
+      "label": "On chr22",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "action",
+      "label": "What an annotator does",
+      "format": "text"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "class": "Agrees",
+        "means": "Shares splice junctions with a reference gene",
+        "models": 424,
+        "action": "nothing"
+      }
+    },
+    {
+      "values": {
+        "class": "Merged model",
+        "means": "One prediction covers two separate reference genes",
+        "models": 1,
+        "action": "split into two models"
+      }
+    },
+    {
+      "values": {
+        "class": "Structure conflict",
+        "means": "Covers one reference gene but shares none of its splice junctions",
+        "models": 3,
+        "action": "check exon structure"
+      }
+    },
+    {
+      "values": {
+        "class": "Novel locus",
+        "means": "Predicted where the reference annotates nothing at all",
+        "models": 12,
+        "action": "assess, then create"
+      }
+    },
+    {
+      "values": {
+        "class": "Novel coding",
+        "means": "Predicted coding where the reference has only non-coding annotation",
+        "models": 119,
+        "action": "assess coding potential"
+      }
+    }
+  ]
+}
