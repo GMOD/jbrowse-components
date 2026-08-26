@@ -12,7 +12,10 @@ import {
 } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
 
-import { ARC_SHAPE_FLAT } from '../../features/arcs/shapes.ts'
+import {
+  ARC_SHAPE_FLAT,
+  isUnplacedArcShape,
+} from '../../features/arcs/shapes.ts'
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
@@ -114,6 +117,12 @@ export interface ArcTooltipPayload {
   // Absent for a curved arc, whose Y is derived from the endpoints and would
   // just restate the span.
   insertSize?: number
+  // How far away the partner is, for a read-cloud mark whose partner is outside
+  // every loaded region. Present INSTEAD of the location range, which such a
+  // mark cannot answer: its two feet are collapsed onto the one end the view can
+  // place, so `start` and `end` are that single coordinate and a range between
+  // them is zero wide. See `ARC_SHAPE_FLAT_UNPLACED`.
+  unplacedPartnerBp?: number
 }
 
 // An interchromosomal connector tick. Its own payload rather than an
@@ -670,6 +679,20 @@ export function formatArcTooltip(
       category,
     }
   }
+  // The partner is off screen, so there is no range and no distance to print
+  // between two coordinates — only where this end is and how far away the other
+  // one was reported to be.
+  if (isUnplacedArcShape(hit.shapeType)) {
+    return {
+      type: 'arc',
+      refName,
+      start: hit.x1,
+      end: hit.x1,
+      support: hit.support,
+      category,
+      unplacedPartnerBp: hit.spanBp,
+    }
+  }
   return {
     type: 'arc',
     refName,
@@ -677,13 +700,16 @@ export function formatArcTooltip(
     end: Math.max(hit.x1, hit.x2),
     support: hit.support,
     category,
-    // ARC_SHAPE_FLAT alone — the read cloud's MATE LINK, the one shape whose
-    // `spanBp` is a template length. Deliberately not `isFlatArcShape`, which
-    // is the right predicate for "does this draw as a bar" and the wrong one
-    // for "does this have an insert size": it also admits ARC_SHAPE_FLAT_SPLIT,
-    // and a split junction has no TLEN at all. `computeArcShape` gives that arm
-    // `spanBp = |p2Bp - p1Bp|`, which is exactly `end - start` above, so the row
-    // was the Distance line over again under a name the read cannot support.
+    // ARC_SHAPE_FLAT alone — the read cloud's placed MATE LINK, the one shape
+    // whose `spanBp` is a template length. Deliberately not `isFlatArcShape`,
+    // which is the right predicate for "does this draw as a bar" and the wrong
+    // one for "does this have an insert size": it also admits
+    // ARC_SHAPE_FLAT_SPLIT, and a split junction has no TLEN at all.
+    // `computeArcShape` gives that arm `spanBp = |p2Bp - p1Bp|`, which is
+    // exactly `end - start` above, so the row was the Distance line over again
+    // under a name the read cannot support. The unplaced shape is handled
+    // above, where the same number is the distance to a partner rather than a
+    // template length a molecule had.
     //
     // A curve is excluded for the milder reason: its Y is the genomic radius,
     // half the span already shown.

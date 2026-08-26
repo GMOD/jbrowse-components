@@ -24,7 +24,8 @@ import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
-  isFlatArcShape,
+  ARC_SHAPE_FLAT_UNPLACED,
+  plotsOnInsertSizeAxis,
 } from './shapes.ts'
 import { hasArcBandInk } from './types.ts'
 
@@ -94,14 +95,42 @@ function pairJitter01(aBp: number, bBp: number) {
 // exactly the reads read cloud exists to surface on the baseline. Otherwise it's
 // the single curved ARC shape (the renderer chooses dome vs vertical-lines by
 // zoom); Y is the genomic radius.
+//
+// A CONNECTION THE VIEW CAN PLACE ONLY ONE END OF LEAVES THE AXIS
+// (ARC_SHAPE_FLAT_UNPLACED at `yBp` 0, drawn on the zero anchor). A read cloud
+// bar joins two feet, and when the partner sits outside every loaded region
+// there is no second pixel to draw to: the bar is extrapolated to a coordinate
+// no block covers, runs off the screen edge, and paints the full width of the
+// band while saying nothing its near foot does not. On HG002 300x that is 96
+// screen-wide bars in one 200 kb window, and they are the solid mass along the
+// bottom.
+//
+// The same connection also sets `arcsYDomainBp` for every lane — 379 of 5,281
+// arcs over 47 deep 20 kb windows have a partner more than 1 Mb away, spread
+// uniformly over the chromosome, so the median window's axis topped out at 73 Mb
+// and every real pair was squeezed into the top third of the band. That is the
+// failure the interchromosomal exclusion below was written to prevent, reached
+// from a same-chromosome connection; `plotsOnInsertSizeAxis` is the other half.
+//
+// IT IS A PLACEMENT TEST, NOT A SPAN THRESHOLD, and the difference is the whole
+// design. A pair 5 Mb apart in a view showing BOTH of its ends — two
+// discontiguous displayed regions at the two breakpoints, which is what read
+// connections exist for — draws its bar between two real pixels and belongs on
+// the axis. A pair 30 kb apart in a 20 kb window does not. So the question is
+// what is on screen, and the answer moves with the view: zoom out, or bring the
+// partner's locus into a second region, and the same connection joins the axis.
 function computeArcShape({
   cloud,
   arc,
   absrad,
+  placed,
 }: {
   cloud: boolean
   arc: PendingArc
   absrad: number
+  // Whether BOTH feet fall in a region this fetch loaded — the one question
+  // that decides whether a bar can be drawn at all.
+  placed: boolean
 }) {
   const { p1Bp, p2Bp } = arc
   if (cloud) {
@@ -111,6 +140,12 @@ function computeArcShape({
     // which arm has a tlen.
     const gapBp = Math.abs(p2Bp - p1Bp)
     const spanBp = arc.isSplit ? gapBp : Math.abs(arc.tlen) || gapBp
+    if (!placed) {
+      // No jitter: the anchor row is not a scale, so there is nothing for a
+      // ±8% offset to separate. `spanBp` survives for the hover, which is the
+      // only place the distance to the unplaced partner is still readable.
+      return { shapeType: ARC_SHAPE_FLAT_UNPLACED, yBp: 0, spanBp }
+    }
     const jitter = 1 + CLOUD_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {
       shapeType: arc.isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
@@ -201,8 +236,9 @@ function resolveArcs(
   pendingArcs: PendingArc[],
   { hasPaired, stats }: ArcScale,
   settings: ArcSettings,
-  displayedRegions: RegionInfo[],
+  regions: ArcRegions,
 ) {
+  const { displayed: displayedRegions, loaded: loadedRegions } = regions
   const {
     colorByType,
     cloud = false,
@@ -601,12 +637,61 @@ function resolveArcs(
       continue
     }
 
+    // CAN THE VIEW PLACE THIS CONNECTION'S TWO ENDS? Asked of the LOADED list,
+    // not the displayed one, and that is the whole point of asking it here:
+    // `displayedRegions` in an ordinary LGV is the WHOLE chromosome, so a mate
+    // 214 Mb away resolves to a region and reads as perfectly placeable. The
+    // loaded list is the fetch — the blocks on screen plus the half-screen each
+    // side `planRegionFetch` buffers — which is the data a bar could actually
+    // be drawn between.
+    //
+    // Two discontiguous displayed regions are two loaded regions, so a pair
+    // bridging the breakpoints of a long-range event has both feet placed and
+    // keeps its bar however far apart they are. That view is what read
+    // connections exist for, and the span it puts on the axis is the one the
+    // reader asked to see.
+    const p1Placed = regionIndexOf(loadedRegions, p1Ref, p1Bp) !== undefined
+    const p2Placed = regionIndexOf(loadedRegions, p2Ref, p2Bp) !== undefined
+    const shape = computeArcShape({
+      cloud,
+      arc,
+      absrad,
+      placed: p1Placed && p2Placed,
+    })
+    // AN UNPLACED CONNECTION IS ONE MARK AT THE END THAT IS ON SCREEN, so both
+    // feet collapse onto that end here rather than one being left at a
+    // coordinate no block covers.
+    //
+    // Collapsing in bp, before anything is projected, is what makes all four
+    // renderers agree without a fourth mark geometry: `arcMarkFrom` resolves a
+    // zero-length bar to `ARC_FLAT_MIN_PX` centred on the foot, the two endpoint
+    // squares land on top of each other there, and the hit test measures that
+    // same stub. `arcTouchesRegion` narrows to that one region too, so an
+    // unplaced connection stops being packed into every region on its
+    // chromosome.
+    //
+    // `p1` is the placed end for every connection either mate-link producer
+    // makes — both put a FETCHED read's own outer edge there (`mateLinkArc`,
+    // `offScreenMateArcs`) — but a split chain can step through an off-screen SA
+    // segment on either side, so the foot is chosen rather than assumed. Neither
+    // placed means the connection joins two off-screen segments, which
+    // `arcTouchesRegion` drops from every region anyway.
+    //
+    // The far coordinate is not lost, only unplotted: `spanBp` carries the
+    // distance into the hover, which is the one place it can still be read.
+    const keepP1 = p1Placed || !p2Placed
+    const foot = keepP1
+      ? { refName: p1Ref, bp: p1Bp }
+      : { refName: p2Ref, bp: p2Bp }
+    const unplaced = shape.shapeType === ARC_SHAPE_FLAT_UNPLACED
+    const p1 = unplaced ? foot : { refName: p1Ref, bp: p1Bp }
+    const p2 = unplaced ? foot : { refName: p2Ref, bp: p2Bp }
     pushArc(
       {
-        p1: { refName: p1Ref, bp: p1Bp },
-        p2: { refName: p2Ref, bp: p2Bp },
+        p1,
+        p2,
         colorType,
-        ...computeArcShape({ cloud, arc, absrad }),
+        ...shape,
       },
       p1RegionIndex,
       p2RegionIndex,
@@ -664,12 +749,10 @@ export function computeArcsFromPileupData(
   displayedRegions: RegionInfo[] = regions,
 ) {
   const inputs = collectArcInputs(rpcDataMap, regions, settings)
-  return resolveArcs(
-    inputs.pendingArcs,
-    poolArcScale([inputs]),
-    settings,
-    displayedRegions,
-  )
+  return resolveArcs(inputs.pendingArcs, poolArcScale([inputs]), settings, {
+    loaded: regions,
+    displayed: displayedRegions,
+  })
 }
 
 /**
@@ -750,7 +833,7 @@ export function computeArcsByGroup(
       input.pendingArcs,
       scale,
       settings,
-      regions.displayed,
+      regions,
     )
     // The per-region feed is keyed on the LOADED list, unchanged: it is what a
     // block draws from, and a displayed region whose fetch has not landed has
@@ -781,7 +864,10 @@ export function computeArcsByGroup(
     }
     for (const arc of crossRegion) {
       colorSlots.add(arc.colorType)
-      if (isFlatArcShape(arc.shapeType) && arc.spanBp > maxFlatArcSpanBp) {
+      if (
+        plotsOnInsertSizeAxis(arc.shapeType) &&
+        arc.spanBp > maxFlatArcSpanBp
+      ) {
         maxFlatArcSpanBp = arc.spanBp
       }
     }

@@ -424,16 +424,26 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       )
     }
     case 'arc': {
-      const { refName, endRefName, start, end, support, category, insertSize } =
-        tooltipData
+      const {
+        refName,
+        endRefName,
+        start,
+        end,
+        support,
+        category,
+        insertSize,
+        unplacedPartnerBp,
+      } = tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
             <div>
               <strong>
-                {endRefName === undefined
-                  ? 'Read connection'
-                  : 'Translocation connection'}
+                {unplacedPartnerBp !== undefined
+                  ? 'Read connection, partner off screen'
+                  : endRefName === undefined
+                    ? 'Read connection'
+                    : 'Translocation connection'}
               </strong>
             </div>
             {/* Two POSITIONS across chromosomes, one RANGE within one. A range
@@ -442,7 +452,19 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                 it is a subtraction of two unrelated number lines — which is the
                 same reason `resolveArcs` refuses to colour these by insert size
                 or orientation. */}
-            {endRefName === undefined ? (
+            {/* An unplaced mark has ONE end. Its two feet are collapsed onto
+                the coordinate the view can place, so the range and the distance
+                between them would read as a zero-width location over a partner
+                that may be megabases away — the distance is reported instead. */}
+            {unplacedPartnerBp !== undefined ? (
+              <>
+                <div>Location: {formatLocation(refName, start)}</div>
+                <div>
+                  Partner is {toLocale(unplacedPartnerBp)} bp away, outside the
+                  loaded regions
+                </div>
+              </>
+            ) : endRefName === undefined ? (
               <>
                 <div>Location: {formatLocationRange(refName, start, end)}</div>
                 <div>Distance: {toLocale(end - start)} bp</div>
