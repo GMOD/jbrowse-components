@@ -88,6 +88,55 @@ describe('a connection the view can place only one end of', () => {
     expect(arc.spanBp).toBe(50_000_000)
   })
 
+  // The collapse moves both feet onto one coordinate, so keying the cluster on
+  // what the mark DRAWS between asks "same foot, same colour?" — and at any real
+  // depth every read stacked on that outer edge answers yes. They coalesced into
+  // one mark whose stroke width counted them all and whose `spanBp` was
+  // whichever arrived first, so the hover read "Supported by 2 reads" over a
+  // partner distance true of one of them.
+  test('two reads sharing a foot are two marks when their partners differ', () => {
+    const two = pairData({
+      readPositions: new Uint32Array([1000, 1150, 1000, 1150]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([50_000_000, 90_000_000]),
+      readPairOrientations: new Uint8Array([2, 2]),
+      ...namesToBlock(['readA', 'readB']),
+      ...nextRefsToTable(['chr1', 'chr1']),
+      readNextPositions: new Uint32Array([50_001_000, 90_001_000]),
+    })
+    const { arcs } = runCloud(two, [region(0, 20_000)])
+    expect(arcs).toHaveLength(2)
+    expect(arcs.map(a => a.shapeType)).toEqual([
+      ARC_SHAPE_FLAT_UNPLACED,
+      ARC_SHAPE_FLAT_UNPLACED,
+    ])
+    // each still stands for one read, and reports its own partner
+    expect(arcs.map(a => a.support)).toEqual([1, 1])
+    expect(arcs.map(a => a.spanBp).sort((a, b) => a - b)).toEqual([
+      50_000_000, 90_000_000,
+    ])
+  })
+
+  // The converse, so the fix above is not just "never coalesce": two reads that
+  // agree on the SAME junction are still one mark with the support to say so.
+  test('two reads agreeing on one partner are one mark of support 2', () => {
+    const two = pairData({
+      readPositions: new Uint32Array([1000, 1150, 1000, 1150]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([50_000_000, 50_000_000]),
+      readPairOrientations: new Uint8Array([2, 2]),
+      ...namesToBlock(['readA', 'readB']),
+      ...nextRefsToTable(['chr1', 'chr1']),
+      readNextPositions: new Uint32Array([50_001_000, 50_001_000]),
+    })
+    const { arcs } = runCloud(two, [region(0, 20_000)])
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.support).toBe(2)
+    expect(arcs[0]!.spanBp).toBe(50_000_000)
+  })
+
   // The case the whole design turns on, and the one a span threshold gets
   // wrong. Nothing about the pair changed: the reader opened a second region at
   // the far breakpoint, and now both ends are on screen.

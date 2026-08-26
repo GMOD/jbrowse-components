@@ -404,12 +404,21 @@ function resolveArcs(
     // counted a read at a time — `ComputedArc.support`. Absent means COUNT: each
     // connection is one more read agreeing on this junction to the base.
     clusterSupport?: number,
+    // WHAT THIS CONNECTION JOINS, when that is no longer what it DRAWS between.
+    // An unplaced mark has both feet collapsed onto its on-screen end, so keying
+    // off the drawn feet asks "same foot, same colour?" — and every read at that
+    // outer edge answers yes however far away its own partner is. They then
+    // coalesce into one mark whose `support` counts them all and whose `spanBp`
+    // is whichever arrived first, so the hover says "Supported by 2 reads" over
+    // a partner distance true of one of them. One arc is one junction, and a
+    // junction is its two ends.
+    keyFeet?: { p1Ref: string; p1Bp: number; p2Ref: string; p2Bp: number },
   ) {
     const key = arcKey({
-      p1Ref: arc.p1.refName,
-      p1Bp: arc.p1.bp,
-      p2Ref: arc.p2.refName,
-      p2Bp: arc.p2.bp,
+      p1Ref: keyFeet?.p1Ref ?? arc.p1.refName,
+      p1Bp: keyFeet?.p1Bp ?? arc.p1.bp,
+      p2Ref: keyFeet?.p2Ref ?? arc.p2.refName,
+      p2Bp: keyFeet?.p2Bp ?? arc.p2.bp,
       colorType: arc.colorType,
       shapeType: arc.shapeType,
       yBp: arc.yBp,
@@ -692,7 +701,9 @@ function resolveArcs(
     // `arcTouchesRegion` drops from every region anyway.
     //
     // The far coordinate is not lost, only unplotted: `spanBp` carries the
-    // distance into the hover, which is the one place it can still be read.
+    // distance into the hover, which is the one place it can still be read —
+    // and `keyFeet` below keeps it in the cluster key, so two connections that
+    // merely share a foot stay two marks.
     const keepP1 = p1Placed || !p2Placed
     const foot = keepP1
       ? { refName: p1Ref, bp: p1Bp }
@@ -710,6 +721,8 @@ function resolveArcs(
       p1RegionIndex,
       p2RegionIndex,
       arc,
+      undefined,
+      unplaced ? { p1Ref, p1Bp, p2Ref, p2Bp } : undefined,
     )
   }
 
