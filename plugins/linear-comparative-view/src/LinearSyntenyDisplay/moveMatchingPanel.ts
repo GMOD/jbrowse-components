@@ -230,12 +230,11 @@ export async function resolveMatchingSpan({
     // display's status field belongs to its fetch autorun, whose `fetching` flag
     // is what raises the chip. Both are answered by giving the click a surface
     // of its own, not by picking a default here.
-    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax -- reports nothing and stops for nothing: see the paragraph above
     {
       adapterConfig,
-      // the block's own extent on the QUERY axis, which is the axis the band's
-      // fetch queries -- so the lookup finds the feature whichever panel is
-      // being moved
+      // The lookup fields, whose terms are `AlignmentLookupArgs` — why the
+      // QUERY axis, and why the tier travels with the id.
       //
       // Canonical since the fetch canonicalizes `refNameDict`, and this is the
       // one refName on this path that goes back OUT: the method extends
@@ -252,8 +251,6 @@ export async function resolveMatchingSpan({
       featureId: feat.id,
       window,
       toMate,
-      // the resolved tier, matching the fetch that produced this feature id:
-      // ids are not comparable across a tiered PIF's two tiers
       lodMode: model.lodTier,
     },
   )

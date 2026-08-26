@@ -1,22 +1,15 @@
-import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 import { rpcResult, rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
-import type { CigarMap } from './buildCigarMap.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { Region } from '@jbrowse/core/util'
+import { findAlignmentById } from './findAlignmentById.ts'
 
-export interface SyntenyGetCigarMapArgs {
-  adapterConfig: Record<string, unknown>
-  // The block's own extent on the QUERY axis, the axis the band's fetch queries
-  // — the same lookup `SyntenyResolveMatchingRegion` does, for the same reason.
-  regions: Region[]
-  featureId: string
-  // Ids are only comparable within one tier, so the lookup has to name the tier
-  // the picked feature came from.
-  lodMode?: BaseOptions['lodMode']
-}
+import type { CigarMap } from './buildCigarMap.ts'
+import type { AlignmentLookupArgs } from './findAlignmentById.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+
+// Nothing beyond the lookup: this method answers about the BLOCK, so the window
+// `SyntenyResolveMatchingRegion` also takes has no place here.
+export type SyntenyGetCigarMapArgs = AlignmentLookupArgs
 
 /**
  * A CIGAR map plus the block extents it is measured against, which is what lets
@@ -65,35 +58,13 @@ export default class SyntenyGetCigarMap extends RpcMethodTypeWithRenameRegions<'
   name = 'SyntenyGetCigarMap' as const
 
   async execute(args: RpcExecuteArgs<'SyntenyGetCigarMap'>) {
-    const {
-      sessionId,
-      adapterConfig,
-      regions,
-      featureId,
-      lodMode,
-      stopToken,
-      statusCallback,
-    } = args
     // `transferables: true` on the registry entry means every return is
     // wrapped, misses included — an unwrapped `undefined` is a type error here
-    // rather than a runtime surprise, which is the point of declaring it.
+    // rather than a runtime surprise, which is the point of declaring it. It is
+    // also why `findAlignmentById` hands back the feature rather than a miss:
+    // the wrapping is this method's, not the lookup's.
     const miss = rpcResult(undefined, [])
-    const region = regions[0]
-    if (!region) {
-      return miss
-    }
-    const dataAdapter = await getFeatureAdapter({
-      pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-    })
-    const features =
-      (await dataAdapter?.getFeaturesArray(region, {
-        lodMode,
-        stopToken,
-        statusCallback,
-      })) ?? []
-    const alignment = features.find(f => f.id() === featureId)
+    const alignment = await findAlignmentById(this.pluginManager, args)
     if (!alignment) {
       return miss
     }

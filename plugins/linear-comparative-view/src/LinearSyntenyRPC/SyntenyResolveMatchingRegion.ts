@@ -1,32 +1,26 @@
-import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { ResolvedSpan, SpanOfInterest } from './resolveAlignmentSpan.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { Region } from '@jbrowse/core/util'
+import { findAlignmentById } from './findAlignmentById.ts'
 
-export interface SyntenyResolveMatchingRegionArgs {
-  adapterConfig: Record<string, unknown>
-  // The clicked block's own extent on the QUERY axis, which is the axis the
-  // band's fetch queries (`executeSyntenyFeaturesAndPositions` is single-axis:
-  // "The fetch is single-axis (query only)"). Both directions of the resolve
-  // therefore look the feature up the same way — only the walk differs.
-  regions: Region[]
-  featureId: string
+import type { AlignmentLookupArgs } from './findAlignmentById.ts'
+import type { ResolvedSpan, SpanOfInterest } from './resolveAlignmentSpan.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+
+/**
+ * The lookup, plus the window to walk once the alignment is in hand.
+ *
+ * The inherited `lodMode` carries a second meaning here that it does not carry
+ * for the map: it is the tier whose CIGARs decide whether there is an answer at
+ * all. The coarse tier carries none, which is why the menu items are hidden
+ * there rather than relying on this returning `undefined`.
+ */
+export interface SyntenyResolveMatchingRegionArgs extends AlignmentLookupArgs {
   // The visible window of the panel that is STAYING, in that panel's own
   // genomic coordinates.
   window: SpanOfInterest
   // true when the panel being moved is on the mate axis, false when it is on
   // the feature axis
   toMate: boolean
-  // The tier the band was fetched at. Feature ids are only comparable within
-  // one tier -- a tiered PIF numbers its coarse and fine rows from different
-  // file offsets -- so the lookup has to ask for the same one. It is also the
-  // tier whose CIGARs decide whether there is an answer at all: the coarse tier
-  // carries none, which is why the menu items are hidden there rather than
-  // relying on this returning undefined.
-  lodMode?: BaseOptions['lodMode']
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -53,37 +47,8 @@ export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenam
   name = 'SyntenyResolveMatchingRegion' as const
 
   async execute(args: RpcExecuteArgs<'SyntenyResolveMatchingRegion'>) {
-    const {
-      sessionId,
-      adapterConfig,
-      regions,
-      featureId,
-      window,
-      toMate,
-      lodMode,
-      stopToken,
-      statusCallback,
-    } = args
-
-    const region = regions[0]
-    if (!region) {
-      return undefined
-    }
-    const dataAdapter = await getFeatureAdapter({
-      pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-    })
-    // Forwarded rather than rebuilt: locating one alignment by id re-reads the
-    // whole region out of the PAF/chain file, so a fresh opts object made this
-    // uncancellable and silent.
-    const features =
-      (await dataAdapter?.getFeaturesArray(region, {
-        lodMode,
-        stopToken,
-        statusCallback,
-      })) ?? []
-    const alignment = features.find(f => f.id() === featureId)
+    const { window, toMate } = args
+    const alignment = await findAlignmentById(this.pluginManager, args)
     if (!alignment) {
       return undefined
     }
