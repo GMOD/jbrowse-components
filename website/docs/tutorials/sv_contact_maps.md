@@ -245,22 +245,23 @@ The other two loci in the slice are duplications, and the 1000 Genomes map calls
 both of them with genome-STRiP, which works from read depth alone. Open the one
 on chromosome 5.
 
-<Figure src="/img/sv_contact_maps/depth_only_duplication.png" caption="A duplication call in NA12878 with the depth channel over the four channels as arcs. The LR band's coverage doubles across the marked breakpoints and the depth channel is at the top of its ramp between them; the RL band a tandem duplication would fill holds nothing across the call." links="Open this view=sv_contact_maps/depth_only_duplication" />
+<Figure src="/img/sv_contact_maps/depth_only_duplication.png" caption="A genome-STRiP duplication call with no read-pair evidence under it: the RL band a tandem duplication's junction pairs would fill is empty across the call, and so are both same-strand bands. Depth alone marks it, and the raised block does not line up with the breakpoints." links="Open this view=sv_contact_maps/depth_only_duplication" />
 
-The LR band's coverage is raised across the call, from a little left of the
-first marked breakpoint to the second, and the depth channel above it lights up
-over the same stretch. The RL band is the one a tandem duplication is supposed
-to fill: a fragment crossing the junction of a head-to-tail duplication has its
-two ends facing away from each other, and that pair would be an arc standing on
-the two marked breakpoints. There is none. The same-strand bands are empty too,
-and the LR band's long-fragment scatter is the library's, no denser here than
-outside the call.
+Start with the RL band, because what it does not hold is the point. A fragment
+crossing the junction of a head-to-tail duplication has its two ends facing away
+from each other, so that pair would draw an arc standing on the two marked
+breakpoints. There is none. The same-strand bands are empty across the call too,
+and the LR band's scatter of long fragments is the library's own, no denser here
+than outside it. Every pair channel is blank, and the call rests on depth alone.
 
-The call was made on depth, the reads are in the demo, and no pair in them joins
-these two breakpoints. A duplication that landed somewhere else in the genome,
-or one whose junction sits inside a repeat long enough to swallow a fragment,
-leaves the same trace: a copy-number change with no junction under it. The
-inversion window a section ago is the same bands with a junction in them.
+Depth carries it loosely. Coverage rises over the call, but the raised block
+starts left of the first breakpoint and has fallen back toward its surroundings
+before the second, so the step and the record's edges do not line up. The reads
+are in the demo and no pair in them joins those two breakpoints. A duplication
+that landed somewhere else in the genome, or one whose junction sits inside a
+repeat long enough to swallow a fragment, leaves the same trace: a copy-number
+change with no junction under it. The inversion window a section ago is the same
+bands with a junction in them.
 
 <Figure src="/img/sv_contact_maps/depth_channel.png" caption="The depth channel alone over the same duplication, framed four times wider, with the coverage lane under it. The two marked breakpoints stand at the top corners of a pale wedge, with the channel's brightest cells on either side of it." links="Open this view=sv_contact_maps/depth_channel" />
 
