@@ -32,6 +32,12 @@ import { observer } from 'mobx-react'
 // that is the honest trade this page is about: the canvas above is what pans at
 // 60fps.
 //
+// The band over BRCA1 is `view.highlight`, which the figure draws for you: it is
+// part of what a figure is a picture of, so it is in the hook's redraw key and a
+// band added under a drawn figure makes a new one. It appears only in the figure
+// here because the canvas half of this page mounts no overlay of its own -- the
+// Highlight a region page is the one that draws bands on the canvas side.
+//
 // Self-contained, like every page here: the engine, mounting and dark-mode parts
 // introduced on earlier pages are repeated rather than imported.
 
@@ -74,13 +80,27 @@ const featureTrack = {
 
 const trackIds = ['hg38_phylop', 'hg38_genes']
 
+// The gene, in a window with room either side of it, so the highlight below
+// reads as a band over something rather than as a tint over the whole figure.
+const brca1 = {
+  assemblyName: 'hg38',
+  refName: 'chr17',
+  start: 43044295,
+  end: 43125364,
+  label: 'BRCA1',
+}
+
 function makeView() {
   const state = createViewState({
     assembly: hg38,
     tracks: [conservationTrack, featureTrack],
     init: {
-      loc: 'chr17:43,044,295..43,125,364',
+      loc: 'chr17:43,000,000..43,170,000',
       tracks: trackIds,
+      // an `init` entry rather than a `view.highlight` write after the fact,
+      // for the reason `loc` is one: the view resolves both once it has an
+      // assembly, so nothing here has to wait for that
+      highlight: [brca1],
     },
   })
   const { view } = state.session
