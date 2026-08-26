@@ -1,11 +1,13 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import {
+  assembleLocStrings,
   getDialogHost,
   getSession,
   isSessionWithAddSessionTrack,
   toLocale,
 } from '@jbrowse/core/util'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { copyText } from '@jbrowse/core/util/copyText'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -31,10 +33,6 @@ import {
 import type { LinearGenomeViewModel } from './model.ts'
 import type { BpOffset } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-function toLocaleRounded(n: number) {
-  return toLocale(Math.round(n))
-}
 
 const TRACK_LABEL_OPTIONS = [
   { value: 'overlapping', label: 'Overlapping' },
@@ -262,20 +260,15 @@ export function buildRubberBandMenuItems(
   self: LinearGenomeViewModel,
   launchItems: MenuItem[],
 ): MenuItem[] {
-  const { leftOffset, rightOffset } = self
-  const leftRef = leftOffset?.refName ?? ''
-  const rightRef = rightOffset?.refName ?? ''
-  // `coord` is already 1-based (`regionCoord` = `regionBase0` + 1), so the left
-  // end needs no increment, and the right end is the exclusive bound — the base
-  // one past the selection. Incrementing the left and taking the right raw
-  // named a range shifted one base right of the one `Zoom to region` navigates
-  // to, from the same two offsets.
-  const leftCoord = toLocaleRounded(leftOffset?.coord ?? 0)
-  const rightCoord = toLocaleRounded((rightOffset?.coord ?? 1) - 1)
-  const rangeString =
-    leftRef === rightRef
-      ? `${leftRef}:${leftCoord}-${rightCoord}`
-      : `${leftRef}:${leftCoord}..${rightRef}:${rightCoord}`
+  // The same regions `Get sequence` fetches and `Zoom to region` navigates to,
+  // named the way the header names what it is showing. Arithmetic on the two
+  // offsets' `coord` cannot do this: `coord` is the POINT convention, so on a
+  // reversed region it names neither the base painted at the pixel nor the ends
+  // in ascending order, and a `leftRef === rightRef` test calls a selection
+  // crossing a collapsed intron one range when it is two.
+  const rangeString = assembleLocStrings(
+    self.getSelectedRegions(self.leftOffset, self.rightOffset),
+  )
 
   return [
     {
@@ -333,15 +326,19 @@ export function buildRubberbandClickMenuItems(
   self: LinearGenomeViewModel,
   clickOffset: BpOffset,
 ): MenuItem[] {
-  const { coord, refName } = clickOffset
-  if (coord === undefined || refName === undefined) {
+  const { refName, start, end, reversed, offset } = clickOffset
+  if (refName === undefined || start === undefined || end === undefined) {
     return []
   }
-  // `coord` is 1-based, so it is the label as it stands. `centerAt` goes
-  // through `bpToPx`, which takes the 0-based BED-style coord — the two
-  // conventions meet here and nowhere else.
-  const locString = `${refName}:${toLocaleRounded(coord)}`
-  const coord0 = coord - 1
+  // `basePaintedAt`, not `coord`: `coord` is the point convention, which on a
+  // reversed region names the base one PAST the one under the pointer — and at
+  // the region's first column names a base off the end of the contig entirely.
+  // Forward the two agree, so this only ever moves the reversed answer.
+  //
+  // The result is 0-based, which is what `centerAt` takes (it goes through
+  // `bpToPx`); the label adds the 1 back.
+  const coord0 = basePaintedAt({ start, end, reversed }, offset)
+  const locString = `${refName}:${toLocale(coord0 + 1)}`
   return [
     {
       label: 'Center view here',

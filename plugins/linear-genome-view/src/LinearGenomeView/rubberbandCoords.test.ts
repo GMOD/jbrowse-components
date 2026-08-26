@@ -7,6 +7,7 @@ import {
 
 import type { LinearGenomeViewModel } from './index.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Region } from '@jbrowse/core/util/types'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -24,10 +25,14 @@ afterEach(() => {
   sessionStorage.clear()
 })
 
+const WHOLE_CONTIG: Region[] = [
+  { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 10000 },
+]
+
 // `pxToBp().coord` is 1-based (`regionBase0() + 1`), and `bpToPx` — which
 // `centerAt` calls — is documented as taking the 0-based BED-style coord. The
 // rubberband menus are the one place both conventions meet.
-function setup() {
+function setup(displayedRegions = WHOLE_CONTIG, width = 800) {
   const session = createTestSession()
   session.addAssemblyConf({
     name: 'volMyt1',
@@ -43,14 +48,23 @@ function setup() {
     },
   })
   const view = session.addView('LinearGenomeView', {
-    displayedRegions: [
-      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 10000 },
-    ],
+    displayedRegions,
   }) as LinearGenomeViewModel
-  view.setWidth(800)
+  view.setWidth(width)
   view.zoomTo(1)
   view.scrollTo(0)
   return { session, view }
+}
+
+function copiedRange(
+  view: LinearGenomeViewModel,
+  leftPx: number,
+  rightPx: number,
+) {
+  view.setOffsets(view.pxToBp(leftPx), view.pxToBp(rightPx))
+  mockCopyText.mockClear()
+  clickItem(buildRubberBandMenuItems(view, []), 'Copy range')
+  return mockCopyText.mock.calls[0]![1] as string
 }
 
 // MenuItem is a union — dividers carry no label, custom items no onClick
@@ -102,9 +116,53 @@ test('"Zoom to base level" centers the base that was clicked', () => {
 
 test('"Copy range" names the first and last selected bases', () => {
   const { view } = setup()
-  view.setOffsets(view.pxToBp(100), view.pxToBp(200))
-  clickItem(buildRubberBandMenuItems(view, []), 'Copy range')
   // the selection covers 0-based [100,200) — bases 101..200 counting from one,
   // which is the region `Zoom to region` navigates to
-  expect(mockCopyText).toHaveBeenCalledWith(view, 'ctgA:101-200', 'range')
+  expect(copiedRange(view, 100, 200)).toBe('ctgA:101..200')
+})
+
+// A rubberband's two offsets are ordered by PIXEL, so on a reversed region the
+// left one carries the higher coordinate. Arithmetic on `coord` therefore named
+// the ends backwards AND one base outward at each end — a string that does not
+// even round-trip through `parseLocString`, which read `ctgA:9,901-9,800` as
+// {start: 9900, end: 9800}.
+test('"Copy range" on a reversed region names the bases actually selected', () => {
+  const { view } = setup([{ ...WHOLE_CONTIG[0]!, reversed: true }])
+  expect(copiedRange(view, 100, 200)).toBe('ctgA:9,801..9,900')
+})
+
+test('"Copy coordinate" on a reversed region names the base under the pointer', () => {
+  const { view } = setup([{ ...WHOLE_CONTIG[0]!, reversed: true }])
+  // px 0 paints the contig's last base. `coord` names 10,001 there, which is
+  // off the end of a 10,000 bp contig entirely.
+  expect(labelOf(clickAt(view, 0), 'Copy coordinate')).toBe(
+    'Copy coordinate (ctgA:10,000)',
+  )
+  expect(labelOf(clickAt(view, 100), 'Copy coordinate')).toBe(
+    'Copy coordinate (ctgA:9,900)',
+  )
+})
+
+test('"Center view here" on a reversed region centers the base the label names', () => {
+  const { view } = setup([{ ...WHOLE_CONTIG[0]!, reversed: true }])
+  // px 100 paints base 9,900 counting from one, 9899 0-based; centering the
+  // base one past it is what the old `coord - 1` did
+  clickItem(clickAt(view, 100), 'Center view here')
+  const centered = view.bpToPx({ refName: 'ctgA', coord: 9899 })!
+  expect(centered.offsetPx - view.offsetPx).toBeCloseTo(view.width / 2, 6)
+})
+
+// Two displayed regions with a collapsed intron between them. `Get sequence`
+// and `Zoom to region` both read the same two offsets as two regions; a
+// `leftRef === rightRef` test called them one, and emitted a range 50x the
+// selection because it spanned the gap the view is not showing.
+test('"Copy range" across a collapsed intron names both regions', () => {
+  const { view } = setup(
+    [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 5000, end: 5100 },
+    ],
+    200,
+  )
+  expect(copiedRange(view, 50, 150)).toBe('ctgA:51..100 ctgA:5,001..5,050')
 })
