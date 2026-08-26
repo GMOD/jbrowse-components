@@ -25,6 +25,7 @@ const MIN_RIBBON_PX = 2
 interface RibbonSpec {
   key: string
   groupKey: string
+  feature: Feature
   d: string
 }
 
@@ -238,6 +239,10 @@ const RibbonLayer = observer(function RibbonLayer({
             d={spec.d}
             fill={hovered ? palette.text.primary : ribbonColor}
             fillOpacity={hovered ? 0.45 : undefined}
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              model.selectFeature(spec.feature)
+            }}
             onMouseEnter={() => {
               model.setHoveredGroupKey(spec.groupKey)
             }}
@@ -446,13 +451,17 @@ const MultiWayRows = observer(function MultiWayRows({
   for (let row = 0; row + 1 < lanes.length; row++) {
     const upper = lanes[row]!
     const lower = lanes[row + 1]!
-    for (const [groupKey, uppers] of upper.spans) {
-      for (const [i, s1] of uppers.entries()) {
-        for (const [j, s2] of (lower.spans.get(groupKey) ?? []).entries()) {
+    // over the groups rather than over `upper.spans`, so a ribbon carries the
+    // feature its click opens — the same one its boxes open, and a far bigger
+    // target than they are
+    for (const group of visibleGroups) {
+      for (const [i, s1] of (upper.spans.get(group.key) ?? []).entries()) {
+        for (const [j, s2] of (lower.spans.get(group.key) ?? []).entries()) {
           if (wideEnough(s1, s2)) {
             ribbonSpecs.push({
-              key: `ribbon-${row}-${groupKey}-${i}-${j}`,
-              groupKey,
+              key: `ribbon-${row}-${group.key}-${i}-${j}`,
+              groupKey: group.key,
+              feature: group.feature,
               d: ribbonPath(
                 s1,
                 upper.glyphTop + glyphHeight,
@@ -512,6 +521,10 @@ const MultiWayRows = observer(function MultiWayRows({
                   drawCurves,
                 )}
                 fill={ribbonColor}
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  model.selectFeature(link)
+                }}
               >
                 <title>
                   {`${upper.assemblyName} ${link.get('refName')}:${fmt(link.get('start'))}-${fmt(link.get('end'))}\n${lower.assemblyName} ${mate.refName}:${fmt(mate.start)}-${fmt(mate.end)}`}
