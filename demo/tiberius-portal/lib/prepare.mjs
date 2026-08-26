@@ -135,6 +135,20 @@ export function prepareBam(input, outDir) {
   return path.basename(target)
 }
 
+// Every annotation lane sizes itself to what it drew and stops. A gene track
+// left at the fixed 100px default spends most of a card on whitespace — two
+// rows of features in a lane deep enough for six — and three such lanes above
+// the evidence is where the vertical budget went.
+const grownLane = (displayId, growMaxHeight, rest = {}) => [
+  {
+    type: 'LinearBasicDisplay',
+    displayId,
+    heightMode: 'grow',
+    growMaxHeight,
+    ...rest,
+  },
+]
+
 export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, conflictsRef, referenceRef, rnaRefs, rnaNames = [], rnaHeight, predictionName, referenceName }) {
   const uri = f => (isUrl(f) ? f : `data/${f}`)
   const tracks = [
@@ -145,6 +159,7 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, con
       category: ['Review'],
       assemblyNames: [assembly],
       adapter: { type: 'Gff3TabixAdapter', uri: uri(predictionRef) },
+      displays: grownLane('prediction-LinearBasicDisplay', 130),
     },
   ]
   // Directly under the prediction, because the whole complaint about a capture
@@ -159,15 +174,7 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, con
       category: ['Review'],
       assemblyNames: [assembly],
       adapter: { type: 'BedTabixAdapter', uri: uri(conflictsRef) },
-      // A handful of short boxes on one row. Left at the default it takes as
-      // much of the frame as the alignments below it.
-      displays: [
-        {
-          type: 'LinearBasicDisplay',
-          displayId: 'conflicts-LinearBasicDisplay',
-          height: 60,
-        },
-      ],
+      displays: grownLane('conflicts-LinearBasicDisplay', 130),
     })
   }
   if (referenceRef) {
@@ -178,6 +185,12 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, con
       category: ['Review'],
       assemblyNames: [assembly],
       adapter: { type: 'Gff3TabixAdapter', uri: uri(referenceRef) },
+      // The one lane that is genuinely many rows deep, and the one that earns
+      // `compact`: the reference's isoforms are context here, not the subject,
+      // so a shorter glyph buys the evidence below a hundred pixels.
+      displays: grownLane('reference_annotation-LinearBasicDisplay', 170, {
+        displayMode: 'compact',
+      }),
     })
   }
   rnaRefs.forEach((r, i) => {
@@ -195,15 +208,21 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, con
     // other two routes works on a released JBrowse: `displayDefaults` postdates
     // it, and a session spec's tracks are ids, so a track written as an object
     // to hang settings off resolves to nothing at all.
-    if (rnaHeight) {
-      track.displays = [
-        {
-          type: 'LinearAlignmentsDisplay',
-          displayId: `${trackId}-LinearAlignmentsDisplay`,
-          height: rnaHeight,
-        },
-      ]
-    }
+    track.displays = [
+      {
+        type: 'LinearAlignmentsDisplay',
+        displayId: `${trackId}-LinearAlignmentsDisplay`,
+        ...(rnaHeight ? { height: rnaHeight } : {}),
+        // Compact reads (3px against the 7px default) and spliced ones laid out
+        // first. A card is a gene-scale window, where an individual read is a
+        // tick either way — so what the pileup owes the reader is the shape of
+        // the splicing, and both settings buy that: three times the depth in
+        // the same lane, with every read carrying a junction in the top rows
+        // rather than scattered among the reads that carry none.
+        featureHeight: 3,
+        splicedReadsFirst: true,
+      },
+    ]
     tracks.push(track)
   })
 

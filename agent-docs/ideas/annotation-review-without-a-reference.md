@@ -86,13 +86,13 @@ tissue expresses:
 
 | Model     | Reference genes                | RNA-seq · brain (HBR) | RNA-seq · universal reference (UHR) |
 | --------- | ------------------------------ | --------------------: | ----------------------------------: |
-| g14001.t1 | IL17REL + TTLL8                |                 1,350 |                                 178 |
-| g13516.t1 | MICAL3                         |                 2,936 |                               1,429 |
+| g14001.t1 | IL17REL + TTLL8                |                 1,770 |                                 228 |
+| g13516.t1 | MICAL3                         |                 4,005 |                               1,825 |
 | g13682.t1 | DDT + GSTT3P + ENSG00000250470 |                     2 |                                  17 |
 | g13494.t1 | —                              |                     4 |                                   9 |
 | g13472.t1 | —                              |                     2 |                                   0 |
-| g13566.t1 | ENSG00000290950 + USP41P       |                   120 |                                 306 |
-| g13664.t1 | FAM230I + ENSG00000287864      |                    12 |                                 165 |
+| g13566.t1 | ENSG00000290950 + USP41P       |                   385 |                                 807 |
+| g13664.t1 | FAM230I + ENSG00000287864      |                    14 |                                 188 |
 
 <!-- END GENERATED MEASUREMENT tiberius-chr22-evidence -->
 

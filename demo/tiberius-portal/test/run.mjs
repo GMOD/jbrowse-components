@@ -175,12 +175,12 @@ check('a self-comparison agrees with itself', self.tally, {
 const candidate = { refName: 'chr22', start: 20000, end: 30000 }
 const { loc, session } = sessionFor(candidate, ['prediction'], 'hg38')
 
-// 15% of a 10 kb model is 1,500, under the 2 kb floor, so both ends move 2 kb
-check('a small model gets the padding floor, not 15%', loc, 'chr22:18000-32000')
+// 40% of a 10 kb model is 4,000, over the 2 kb floor, so both ends move 4 kb
+check('a big model gets 40% of its span', loc, 'chr22:16000-34000')
 check(
-  'a big model gets 15% of its span',
-  sessionFor({ refName: 'chr22', start: 100000, end: 200000 }, [], 'hg38').loc,
-  'chr22:85000-215000',
+  'a small one gets the padding floor instead',
+  sessionFor({ refName: 'chr22', start: 20000, end: 24000 }, [], 'hg38').loc,
+  'chr22:18000-26000',
 )
 check(
   'padding cannot walk off the start of a contig',
@@ -255,10 +255,22 @@ check(
   withEvidence.tracks.map(t => t.trackId).slice(0, 3),
   ['prediction', 'conflicts', 'reference_annotation'],
 )
+// Every annotation lane sizes itself to what it drew. Left at the fixed 100px
+// default the three of them spent about 200px of a card on whitespace, which is
+// what pushed the second evidence lane off the bottom of the frame.
 check(
-  'and stands on one short row rather than a default lane',
-  withEvidence.tracks.find(t => t.trackId === 'conflicts').displays[0].height,
-  60,
+  'and sizes itself to the rows it drew, like the annotations around it',
+  withEvidence.tracks
+    .filter(t => t.type === 'FeatureTrack')
+    .map(t => t.displays[0].heightMode),
+  ['grow', 'grow', 'grow'],
+)
+check(
+  'the reference annotation is the one drawn compact',
+  withEvidence.tracks
+    .filter(t => t.type === 'FeatureTrack')
+    .map(t => t.displays[0].displayMode),
+  [undefined, undefined, 'compact'],
 )
 check(
   'and it is left out when there is nothing to mark',
@@ -290,16 +302,24 @@ check(
   evidence[0].displays[0].height,
   110,
 )
+// Compactness is not the caller's to ask for: a card is a gene-scale window
+// where a read is a tick, so what the pileup owes the reader is the shape of
+// the splicing, and both settings buy that whatever height the lane opens at.
 check(
-  'and an unasked-for height leaves the display alone',
+  'and the reads are compact and spliced-first whether or not a height was asked for',
   buildConfig({
     assembly: 'hg38',
     fastaRef: 'hg38.fa.gz',
     predictionRef: 'prediction.gff.gz',
     referenceRef: null,
     rnaRefs: ['brain.bam'],
-  }).tracks.find(t => t.type === 'AlignmentsTrack').displays,
-  undefined,
+  }).tracks.find(t => t.type === 'AlignmentsTrack').displays[0],
+  {
+    type: 'LinearAlignmentsDisplay',
+    displayId: 'rnaseq_1-LinearAlignmentsDisplay',
+    featureHeight: 3,
+    splicedReadsFirst: true,
+  },
 )
 
 // ---- a flaky capture gets a second go -----------------------------------

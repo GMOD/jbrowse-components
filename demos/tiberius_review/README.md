@@ -10,23 +10,28 @@ from; `conflicts.bed.gz` and its `.tbi` are written by the build and are what
 the **Disagreements** track reads. `portal.png` is the screenshot to link from a
 PR or an issue, and what it frames should be a card where the RNA-seq earns its
 place: dense pileups either side of a junction, sashimi arcs over both lanes,
-and a prediction the reads do not support. The first card on the page is the
-merged model, which spans 61.8 kb and so shows the same evidence as a smear.
-`index.html` is generated and is **not** checked in, because it carries its
-captures inline and runs to about 1.8 MB; regenerate it with the command below
-and deploy it with `DEPLOY_DEMO_ALLOW_UNTRACKED=1`. The last two are the RNA-seq
-BAMs below and their indexes.
+and a prediction the reads do not support. `g13516.t1` over `MICAL3` is that
+card. The first card on the page is the merged model, which spans 61.8 kb and so
+shows the same evidence as a smear. `index.html` is generated and is **not**
+checked in, because it carries its captures inline and runs to about 1.8 MB;
+regenerate it with the command below and deploy it with
+`DEPLOY_DEMO_ALLOW_UNTRACKED=1`. The last two are the RNA-seq BAMs below and
+their indexes.
 
-**What is deployed is stale.** The live `portal.png` frames the `RANBP1` card,
-and `RANBP1` is no longer a candidate: the comparison used to read a gene's
-exons as one flat list, which invents junctions no transcript has, and that is
-what put a model matching all five of RANBP1's junctions in the
+**What is deployed is stale**, in two ways. The live `portal.png` frames the
+`RANBP1` card, and `RANBP1` is no longer a candidate: the comparison used to
+read a gene's exons as one flat list, which invents junctions no transcript has,
+and that is what put a model matching all five of RANBP1's junctions in the
 structure-conflict bucket. chr22 now has 3 structure conflicts rather than 21.
-Rebuild, reframe the screenshot on a card that survives, and redeploy.
+The deployed captures also predate the compact layout below, so their evidence
+lanes are the tall ones and the second lane falls off the bottom of the frame.
+Rebuild and redeploy.
 
-`portal.png` itself is not checked in — it is a local file the last line below
-uploads, which is why that line needs `DEPLOY_DEMO_ALLOW_UNTRACKED=1` like the
-generated `index.html` does.
+`portal.png` is not checked in either — `frame-card.mjs` writes it from the
+built portal, which is why the line that uploads it needs
+`DEPLOY_DEMO_ALLOW_UNTRACKED=1` like the generated `index.html` does. Framing it
+by hand is what made the deployed one go stale on a card that no longer exists;
+naming the model on a command line means reframing it costs one run.
 
 ```bash
 node demo/tiberius-portal/bin/make-portal.mjs \
@@ -38,8 +43,8 @@ node demo/tiberius-portal/bin/make-portal.mjs \
   --rnaseq-name "RNA-seq · brain (HBR)" \
   --rnaseq https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam \
   --rnaseq-name "RNA-seq · universal reference (UHR)" \
-  --rnaseq-height 280 \
-  --assembly hg38 --region chr22 --max 2 --height 1000 \
+  --rnaseq-height 170 \
+  --assembly hg38 --region chr22 --max 2 --height 920 \
   --prediction-name "Tiberius predictions" --reference-name "GENCODE 47" \
   --app-branch main --inline-images \
   --instance https://jbrowse.org/code/jb2/main/ \
@@ -54,7 +59,12 @@ for x in conflicts.bed.gz conflicts.bed.gz.tbi; do
     "/tmp/tiberius_review/data/$x" "tiberius_review/$x"
 done
 DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh /tmp/tiberius_review/index.html tiberius_review/index.html
-DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh portal.png tiberius_review/portal.png
+
+node demo/tiberius-portal/bin/frame-card.mjs \
+  --portal /tmp/tiberius_review --card g13516.t1 \
+  --out /tmp/tiberius_review/portal.png
+DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh \
+  /tmp/tiberius_review/portal.png tiberius_review/portal.png
 ```
 
 The two RNA-seq BAMs and their indexes are already up; they only need deploying
@@ -91,9 +101,9 @@ ten cell lines. Their refNames say `22`, which the alias table below resolves.
 Everything else in the config points at files that were already on jbrowse.org.
 
 **Two tissues, because one is not evidence of absence.** Coverage over the
-candidate loci splits both ways: the merged `IL17REL`/`TTLL8` model has 1,350
-brain reads against 178 UHR, and `g13664.t1`, predicted coding over the lncRNA
-`FAM230I`, has 165 UHR against 12 brain. A model with reads in neither is the
+candidate loci splits both ways: the merged `IL17REL`/`TTLL8` model has 1,770
+brain reads against 228 UHR, and `g13664.t1`, predicted coding over the lncRNA
+`FAM230I`, has 188 UHR against 14 brain. A model with reads in neither is the
 one worth doubting.
 
 The prediction is Tiberius's released human annotation, made with default
@@ -114,16 +124,23 @@ pictures do not depend on the deploy having happened yet; `--public-config` is
 what points the links at the deployed config instead of the local one. The
 `jbrowse/` directory the run produces is not uploaded.
 
-`--rnaseq-height 280` is what puts the evidence in the picture rather than under
-it. An evidence lane opens 250px deep and spends most of that on whitespace at
-gene scale, so the first pass shortened it to 110 and fitted four tracks into a
-560px capture — which left the reads too small to read. Taller lanes in a taller
-capture is the other way out of the same problem: the sashimi arcs sit over deep
-pileups, and on a card like `MICAL3` — 2,936 brain reads over the window — those
-arcs are what say which of the two exon structures the reads support. The
-setting rides in the track config rather than in the link because the config is
-the one place the picture and the live view both read — `displayDefaults`
-postdates the released JBrowse, and a session spec's tracks are ids, so a track
-written as an object to hang settings off resolves to nothing at all. `--max 2`
-keeps two candidates per class. The merged-model class has only one member on
-chr22, so the portal has seven cards rather than eight.
+**`--rnaseq-height 170` with `--height 920` is a whole card**, and getting there
+was mostly about the three annotation lanes rather than the evidence. Left at
+the 100px default each of them drew two rows of features in a lane deep enough
+for six, which cost about 200px of frame between them and pushed the second
+RNA-seq lane off the bottom; they size themselves to what they drew now
+(`heightMode: 'grow'`), and the reference annotation — context here rather than
+the subject — draws its isoforms compact. That paid for evidence lanes with
+compact reads in them: at 3px against the default 7px a lane holds three times
+the depth, so 170px shows the pileup the old 280 did with the sashimi arcs still
+over it, and on a card like `MICAL3` — 4,005 brain reads over the window — those
+arcs are what say which of the two exon structures the reads support. Reads that
+carry a junction take the top rows (`splicedReadsFirst`) instead of scattering
+among the ones that do not.
+
+Every one of those settings rides in the track config rather than in the link,
+because the config is the one place the picture and the live view both read —
+`displayDefaults` postdates the released JBrowse, and a session spec's tracks
+are ids, so a track written as an object to hang settings off resolves to
+nothing at all. `--max 2` keeps two candidates per class. The merged-model class
+has only one member on chr22, so the portal has seven cards rather than eight.

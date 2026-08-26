@@ -127,11 +127,11 @@ The example portal carries two, both from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
 Human Brain Reference and Universal Human Reference, a pool of ten cell lines.
 Two, because coverage splits both ways — the merged `IL17REL`/`TTLL8` model has
-1,350<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_1--> brain reads against
-178<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_2--> UHR, and `g13664.t1`,
+1,770<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_1--> brain reads against
+228<!--m:tiberius-chr22-evidence.g14001-t1.rnaseq_2--> UHR, and `g13664.t1`,
 predicted coding over the lncRNA `FAM230I`, has
-165<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_2--> UHR against
-12<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_1--> brain. A model with reads
+188<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_2--> UHR against
+14<!--m:tiberius-chr22-evidence.g13664-t1.rnaseq_1--> brain. A model with reads
 in neither is the one worth doubting.
 
 Tiberius has an evidence mode of its own — Nextflow, taking proteins, RNA-Seq

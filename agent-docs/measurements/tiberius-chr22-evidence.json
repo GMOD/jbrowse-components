@@ -4,7 +4,7 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "node demo/tiberius-portal/bin/make-portal.mjs --prediction https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz --reference https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt --rnaseq https://jbrowse.org/demos/tiberius_review/HBR_brain_rnaseq_chr22.bam --rnaseq-name 'RNA-seq · brain (HBR)' --rnaseq https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam --rnaseq-name 'RNA-seq · universal reference (UHR)' --rnaseq-height 280 --assembly hg38 --region chr22 --max 2 --height 1000 --prediction-name 'Tiberius predictions' --reference-name 'GENCODE 47' --app-branch main --inline-images --instance https://jbrowse.org/code/jb2/main/ --measurement agent-docs/measurements/tiberius-chr22 --public-config https://jbrowse.org/demos/tiberius_review/config.json --title 'Tiberius predictions on chr22 that need a human' --out /tmp/tiberius_review",
+    "repro": "node demo/tiberius-portal/bin/make-portal.mjs --prediction https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz --reference https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt --rnaseq https://jbrowse.org/demos/tiberius_review/HBR_brain_rnaseq_chr22.bam --rnaseq-name 'RNA-seq · brain (HBR)' --rnaseq https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam --rnaseq-name 'RNA-seq · universal reference (UHR)' --rnaseq-height 170 --assembly hg38 --region chr22 --max 2 --height 920 --prediction-name 'Tiberius predictions' --reference-name 'GENCODE 47' --app-branch main --inline-images --instance https://jbrowse.org/code/jb2/main/ --measurement agent-docs/measurements/tiberius-chr22 --public-config https://jbrowse.org/demos/tiberius_review/config.json --title 'Tiberius predictions on chr22 that need a human' --out /tmp/tiberius_review",
     "notes": "Reads overlapping the window each card shows — the padded locus, not the gene span, because that is what a reader sees. Two tissues because coverage splits both ways, and a model with reads in neither is the one worth doubting rather than the one to reject."
   },
   "columns": [
@@ -36,16 +36,16 @@
       "values": {
         "model": "g14001.t1",
         "genes": "IL17REL + TTLL8",
-        "rnaseq_1": 1350,
-        "rnaseq_2": 178
+        "rnaseq_1": 1770,
+        "rnaseq_2": 228
       }
     },
     {
       "values": {
         "model": "g13516.t1",
         "genes": "MICAL3",
-        "rnaseq_1": 2936,
-        "rnaseq_2": 1429
+        "rnaseq_1": 4005,
+        "rnaseq_2": 1825
       }
     },
     {
@@ -76,16 +76,16 @@
       "values": {
         "model": "g13566.t1",
         "genes": "ENSG00000290950 + USP41P",
-        "rnaseq_1": 120,
-        "rnaseq_2": 306
+        "rnaseq_1": 385,
+        "rnaseq_2": 807
       }
     },
     {
       "values": {
         "model": "g13664.t1",
         "genes": "FAM230I + ENSG00000287864",
-        "rnaseq_1": 12,
-        "rnaseq_2": 165
+        "rnaseq_1": 14,
+        "rnaseq_2": 188
       }
     }
   ]

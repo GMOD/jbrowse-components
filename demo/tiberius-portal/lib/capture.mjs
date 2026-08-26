@@ -14,7 +14,11 @@ export function captureBin() {
   )
 }
 
-export function sessionFor(candidate, trackIds, assembly, padFraction = 0.15) {
+// A card frames the model with a healthy margin rather than tight against its
+// ends: the neighbouring genes are what say whether a prediction is a plausible
+// object here, and at gene scale a read is a tick whichever width you pick, so
+// the context costs the pileup nothing.
+export function sessionFor(candidate, trackIds, assembly, padFraction = 0.4) {
   const pad = Math.max(2000, Math.round((candidate.end - candidate.start) * padFraction))
   const start = Math.max(1, candidate.start - pad)
   const end = candidate.end + pad

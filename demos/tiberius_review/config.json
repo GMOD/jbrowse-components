@@ -28,7 +28,15 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz"
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "prediction-LinearBasicDisplay",
+          "heightMode": "grow",
+          "growMaxHeight": 130
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -44,7 +52,8 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "conflicts-LinearBasicDisplay",
-          "height": 60
+          "heightMode": "grow",
+          "growMaxHeight": 130
         }
       ]
     },
@@ -57,7 +66,16 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz"
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "reference_annotation-LinearBasicDisplay",
+          "heightMode": "grow",
+          "growMaxHeight": 170,
+          "displayMode": "compact"
+        }
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -73,7 +91,9 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "rnaseq_1-LinearAlignmentsDisplay",
-          "height": 280
+          "height": 170,
+          "featureHeight": 3,
+          "splicedReadsFirst": true
         }
       ]
     },
@@ -91,7 +111,9 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "rnaseq_2-LinearAlignmentsDisplay",
-          "height": 280
+          "height": 170,
+          "featureHeight": 3,
+          "splicedReadsFirst": true
         }
       ]
     }

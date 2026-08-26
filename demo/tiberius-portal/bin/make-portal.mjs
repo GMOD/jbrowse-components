@@ -65,11 +65,12 @@ STRONGLY RECOMMENDED
 OPTIONAL
   --rnaseq <bam>         evidence track, repeatable. Appears in every capture
                          and every live link.
-  --rnaseq-height <px>   starting height of an evidence lane, and the choice is
-                         between two pictures: ~110 fits four tracks in a short
-                         capture and leaves the reads too small to read, ~280
-                         with --height 1000 shows the pileups and the sashimi
-                         arcs over them. A BAM left alone opens at 250.
+  --rnaseq-height <px>   starting height of an evidence lane. The reads in one
+                         are compact and spliced-first, and the annotation lanes
+                         above size themselves to what they drew, so ~170 in a
+                         --height 920 capture shows two lanes whole — coverage,
+                         sashimi arcs and pileup each. A BAM left alone opens at
+                         250 and pushes the second lane off the picture.
   --rnaseq-name <s>      label for the evidence track, repeatable and paired
                          with --rnaseq in order. Two unlabelled tracks are
                          "RNA-seq 1" and "RNA-seq 2", which says nothing about
