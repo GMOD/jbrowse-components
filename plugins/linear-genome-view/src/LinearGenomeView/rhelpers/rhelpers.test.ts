@@ -1,5 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { readdirSync } from 'node:fs'
+import { mkdtempSync, readdirSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // The helper library is real R source (rather than strings inside a TS template
@@ -36,19 +37,22 @@ maybe.each(files)('%s is syntactically valid R', file => {
 maybe('the whole library sources cleanly and defines each helper', () => {
   const paths = files.map(f => JSON.stringify(join(dir, f))).join(', ')
   const names = files.map(f => JSON.stringify(f.replace(/\.R$/, ''))).join(', ')
-  const out = execFileSync(
-    'Rscript',
-    [
-      '-e',
-      `env <- new.env()
-       for (f in c(${paths})) sys.source(f, envir = env)
-       missing <- setdiff(c(${names}), ls(env))
-       extra <- setdiff(ls(env), c(${names}))
-       cat("MISSING", length(missing), paste(missing, collapse = ","), "\\n")
-       cat("EXTRA", length(extra), paste(extra, collapse = ","), "\\n")`,
-    ],
-    { encoding: 'utf8' },
+  // Through a file rather than `-e`: R caps the length of an `-e` expression,
+  // and one absolute path per helper crosses it — at 52 helpers under a
+  // worktree's own deep path R truncated the expression and reported a WARNING
+  // where the assertion expected a count, which reads as a helper defining the
+  // wrong name rather than as a command line too long.
+  const script = join(mkdtempSync(join(tmpdir(), 'jb-rhelpers-')), 'check.R')
+  writeFileSync(
+    script,
+    `env <- new.env()
+     for (f in c(${paths})) sys.source(f, envir = env)
+     missing <- setdiff(c(${names}), ls(env))
+     extra <- setdiff(ls(env), c(${names}))
+     cat("MISSING", length(missing), paste(missing, collapse = ","), "\\n")
+     cat("EXTRA", length(extra), paste(extra, collapse = ","), "\\n")`,
   )
+  const out = execFileSync('Rscript', [script], { encoding: 'utf8' })
   // each file defines exactly the helper it is named for, and nothing else
   expect(out).toContain('MISSING 0')
   expect(out).toContain('EXTRA 0')

@@ -193,6 +193,9 @@ export {
   buildRScript,
   resolveHelpers,
 } from './LinearGenomeView/exportR.ts'
+// The helper library itself, so a test can drive the R a script actually
+// carries rather than a copy of it that can drift.
+export { HELPERS } from './LinearGenomeView/rHelpers.generated.ts'
 export {
   FIGURE_DPI,
   FIGURE_INCHES_PER_WEIGHT,
