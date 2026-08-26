@@ -1,6 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import { observer } from 'mobx-react'
 
 import CrossRegionArcMarkers from './CrossRegionArcMarkers.tsx'
 import { bandScreenTop } from './sectionScreen.ts'
@@ -16,7 +15,12 @@ import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 // overlay applies as `overflow: hidden` and the same one both renderers scissor
 // their arc passes to — an export that drew them unclipped would show a figure
 // the screen never did.
-const CrossRegionArcsSvg = observer(function CrossRegionArcsSvg({
+// Not an observer, for the reason `SashimiArcsSvg` states: this draws into a
+// figure `useViewSvgFigure` freezes with a `memo`, and a `memo` does not hold
+// an observer still. Subscribing here re-derived `bandScreenTop` from the live
+// scroll, and `crossRegionArcSections` from the live pan, while the pileup
+// underneath stayed where the snapshot left it.
+export default function CrossRegionArcsSvg({
   model,
   width,
 }: {
@@ -49,6 +53,4 @@ const CrossRegionArcsSvg = observer(function CrossRegionArcsSvg({
       </SvgClipRect>
     </g>
   ))
-})
-
-export default CrossRegionArcsSvg
+}

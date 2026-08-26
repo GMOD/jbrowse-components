@@ -1,5 +1,3 @@
-import { observer } from 'mobx-react'
-
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
@@ -14,7 +12,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // PileupBezierOverlay, minus the hover/click handlers, and now at the same
 // scrollTop: the arcs connect reads, so pinning them to 0 while the reads
 // scrolled left them hanging off the wrong rows.
-const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
+//
+// Not an observer, for the reason `SashimiArcsSvg` states: the geometry is
+// built from `view.offsetPx`/`bpPerPx`, so subscribing slid these arcs across
+// a frozen figure's reads on every pan.
+export default function PileupBezierArcsSvg({
   model,
   view,
 }: {
@@ -40,6 +42,4 @@ const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
       ))}
     </g>
   ) : null
-})
-
-export default PileupBezierArcsSvg
+}
