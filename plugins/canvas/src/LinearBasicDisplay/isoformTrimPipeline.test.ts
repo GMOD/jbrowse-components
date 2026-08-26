@@ -60,6 +60,7 @@ const GENE = mockFeature({
 function layoutAt(
   maxIsoformsPerGene: number | undefined,
   gene: Feature = GENE,
+  peptideDataMap?: Map<string, { protein: string }>,
 ) {
   const config = mockDisplayConfig({
     subfeatureLabels: 'below',
@@ -72,6 +73,7 @@ function layoutAt(
     config,
     colorByCDS: false,
     jexl,
+    peptideDataMap,
   })
   const raw = {
     ...packed,
@@ -185,6 +187,33 @@ const SINGLE_INTRON_GENE = mockFeature({
             ],
     }),
   ),
+})
+
+// Peptides on the isoform the trim drops AND on the one it keeps, so the codon
+// overlay has an entry on either side of the cut.
+describe('the amino-acid overlay', () => {
+  const peptides = new Map([
+    ['mRNA-a', { protein: 'MFKL' }],
+    ['mRNA-b', { protein: 'MFKL' }],
+  ])
+  const full = layoutAt(undefined, GENE, peptides)
+  const trimmed = layoutAt(1, GENE, peptides)
+  const kept = trimmed.subfeatureInfos.find(i => i.featureId === 'mRNA-b')!
+
+  it('drops the codons of the isoform it dropped, and moves the rest up', () => {
+    expect(new Set(full.aminoAcidOverlay!.map(aa => aa.childOrdinal))).toEqual(
+      new Set([0, 1]),
+    )
+    const overlay = trimmed.aminoAcidOverlay!
+    expect(new Set(overlay.map(aa => aa.childOrdinal))).toEqual(new Set([1]))
+    expect(overlay).toHaveLength(
+      full.aminoAcidOverlay!.filter(aa => aa.childOrdinal === 1).length,
+    )
+    for (const aa of overlay) {
+      expect(aa.topPx).toBeGreaterThanOrEqual(kept.topPx)
+      expect(aa.topPx).toBeLessThan(kept.bottomPx)
+    }
+  })
 })
 
 describe('a primitive kind the trim drops nothing from', () => {
