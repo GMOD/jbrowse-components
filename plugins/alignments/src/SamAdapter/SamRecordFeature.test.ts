@@ -19,10 +19,10 @@ test('ML probabilities survive the SAM text round trip', () => {
   const bytes = getModProbabilityBytes(
     feature('MM:Z:C+m?,0;\tML:B:C,251,0,128'),
   )
-  expect([...bytes!]).toEqual([251, 0, 128])
+  expect(Array.from(bytes!)).toEqual([251, 0, 128])
 })
 
 test('a single-element ML array is not mistaken for its subtype', () => {
   const bytes = getModProbabilityBytes(feature('MM:Z:C+m?,0;\tML:B:C,200'))
-  expect([...bytes!]).toEqual([200])
+  expect(Array.from(bytes!)).toEqual([200])
 })
