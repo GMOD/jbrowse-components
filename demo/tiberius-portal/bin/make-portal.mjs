@@ -6,6 +6,7 @@ import { execFileSync } from 'child_process'
 // Everything it emits is static: the data, the config, the pictures, the page,
 // and (with --with-app) JBrowse itself. Copy the directory to any web server.
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 
 import {
@@ -18,6 +19,8 @@ import { classify, CLASSES } from '../lib/classify.mjs'
 import {
   buildConfig,
   checkTools,
+  fetchRegions,
+  isUrl,
   prepareBam,
   prepareFasta,
   prepareGff,
@@ -50,6 +53,11 @@ STRONGLY RECOMMENDED
 OPTIONAL
   --rnaseq <bam>         evidence track, repeatable. Appears in every capture
                          and every live link.
+  --aliases <file|url>   a refName alias table (UCSC style, two columns). Needed
+                         whenever the annotations say chr22 and the FASTA says 22,
+                         which JBrowse reports as "unknown reference sequence name".
+  --prediction-name <s>  track label for the prediction (default: its filename)
+  --reference-name <s>   track label for the reference (default: its filename)
   --assembly <name>      assembly name in the config (default: the fasta's basename)
   --region <refName>     restrict the scan to one contig, repeatable
   --max <n>              candidates kept per class (default 12)
@@ -58,6 +66,11 @@ OPTIONAL
                          of JBrowse and needs no internet at all
   --instance <url>       drive/link a hosted JBrowse instead (default ${DEFAULT_INSTANCE})
   --no-capture           skip the screenshots; links still work
+  --inline-images        embed the captures in index.html, so the portal is one
+                         file. Needs --region with remote inputs.
+  --public-config <url>  where config.json will be published. Captures still run
+                         against the local copy; only the links use this, which
+                         is what lets a single-file portal be deployed on its own.
   --width/--height <px>  capture size (default 1400x400)
   --scale <n>            capture device pixel ratio (default 2)
 
@@ -94,6 +107,11 @@ function parseArgs(argv) {
     else if (a === '--instance') o.instance = next()
     else if (a === '--with-app') o.withApp = true
     else if (a === '--no-capture') o.capture = false
+    else if (a === '--inline-images') o.inlineImages = true
+    else if (a === '--public-config') o.publicConfig = next()
+    else if (a === '--aliases') o.aliases = next()
+    else if (a === '--prediction-name') o.predictionName = next()
+    else if (a === '--reference-name') o.referenceName = next()
     else if (a === '--width') o.width = +next()
     else if (a === '--height') o.height = +next()
     else if (a === '--scale') o.scale = +next()
@@ -112,8 +130,10 @@ for (const f of [
   opts.prediction,
   opts.reference,
   opts.fasta,
+  opts.aliases,
   ...opts.rnaseq,
 ].filter(Boolean)) {
+  if (isUrl(f)) continue
   if (!fs.existsSync(f)) {
     console.error(`no such file: ${f}`)
     process.exit(1)
@@ -129,6 +149,13 @@ const assembly =
   'genome'
 const portalId = `${assembly}-${path.basename(opts.prediction).replace(/\W+/g, '_')}`
 
+function copyAlongside(input, dir) {
+  fs.mkdirSync(dir, { recursive: true })
+  const base = path.basename(input)
+  fs.copyFileSync(input, path.join(dir, base))
+  return base
+}
+
 console.log(`→ ${out}`)
 checkTools({ needsBam: opts.rnaseq.length > 0 })
 fs.mkdirSync(dataDir, { recursive: true })
@@ -141,18 +168,27 @@ const referenceRef = opts.reference
   : null
 const rnaRefs = opts.rnaseq.map(b => prepareBam(b, dataDir))
 
+const aliasesRef = opts.aliases
+  ? isUrl(opts.aliases)
+    ? opts.aliases
+    : copyAlongside(opts.aliases, dataDir)
+  : null
+
 const config = buildConfig({
   assembly,
   fastaRef,
+  aliasesRef,
   predictionRef,
   referenceRef,
   rnaRefs,
-  predictionName: path
-    .basename(opts.prediction)
-    .replace(/\.gff3?(\.gz)?$/i, ''),
-  referenceName: opts.reference
-    ? path.basename(opts.reference).replace(/\.gff3?(\.gz)?$/i, '')
-    : null,
+  predictionName:
+    opts.predictionName ||
+    path.basename(opts.prediction).replace(/\.gff3?(\.gz)?$/i, ''),
+  referenceName:
+    opts.referenceName ||
+    (opts.reference
+      ? path.basename(opts.reference).replace(/\.gff3?(\.gz)?$/i, '')
+      : null),
 })
 fs.writeFileSync(path.join(out, 'config.json'), JSON.stringify(config, null, 2))
 const trackIds = config.tracks.map(t => t.trackId)
@@ -162,13 +198,33 @@ if (!opts.reference) {
   console.log('  no --reference given: every model is reported unclassified')
 }
 const refNames = opts.region.length ? new Set(opts.region) : null
+
+// The config can name a remote GFF directly, but the classifier has to read
+// one. Pull down just the regions asked for rather than the whole annotation.
+function readable(input, name) {
+  if (!isUrl(input)) {
+    return input
+  }
+  if (!opts.region.length) {
+    console.error(
+      `--${name} is a URL, so --region is required: the classifier reads the file and will not fetch a whole remote annotation.`,
+    )
+    process.exit(1)
+  }
+  const local = path.join(scratch, `${name}.gff`)
+  console.log(`  fetching ${opts.region.join(', ')} from ${input}`)
+  return fetchRegions(input, opts.region, local)
+}
+
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'make-portal-'))
 const { rows, tally, total } = opts.reference
   ? classify({
-      predictionFile: opts.prediction,
-      referenceFile: opts.reference,
+      predictionFile: readable(opts.prediction, 'prediction'),
+      referenceFile: readable(opts.reference, 'reference'),
       refNames,
     })
   : { rows: [], tally: {}, total: 0 }
+fs.rmSync(scratch, { recursive: true, force: true })
 
 const agrees = tally.agrees || 0
 const flagged = total - agrees
@@ -243,7 +299,14 @@ if (opts.capture && candidates.length) {
 
 const imgFor = id => {
   const hit = captured.find(c => c.id === id)
-  return hit && hit.ok ? `img/${hit.file}` : null
+  if (!hit || !hit.ok) {
+    return null
+  }
+  if (!opts.inlineImages) {
+    return `img/${hit.file}`
+  }
+  const bytes = fs.readFileSync(path.join(imgDir, hit.file))
+  return `data:image/png;base64,${bytes.toString('base64')}`
 }
 
 const cards = candidates.map(c => {
@@ -259,9 +322,19 @@ const cards = candidates.map(c => {
     genes: c.genes,
     gapBp: c.gapBp,
     img: imgFor(c.id),
-    url: opts.withApp
-      ? relativeLink(session)
-      : absoluteLink(session, opts.instance || DEFAULT_INSTANCE, 'config.json'),
+    url: opts.publicConfig
+      ? absoluteLink(
+          session,
+          opts.instance || DEFAULT_INSTANCE,
+          opts.publicConfig,
+        )
+      : opts.withApp
+        ? relativeLink(session)
+        : absoluteLink(
+            session,
+            opts.instance || DEFAULT_INSTANCE,
+            'config.json',
+          ),
   }
 })
 

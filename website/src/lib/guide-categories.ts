@@ -93,6 +93,7 @@ export const TUTORIAL_CATEGORIES = [
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',
+  'Genes & annotation',
   'Configuration & embedding',
 ]
 

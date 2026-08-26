@@ -29,6 +29,30 @@ export function checkTools({ needsBam }) {
 
 const isGz = f => f.endsWith('.gz')
 
+export const isUrl = s => /^https?:\/\//.test(s)
+
+// Pull just the regions the portal covers out of a remote tabix-indexed file,
+// so an example over a published genome costs a few hundred kB rather than the
+// whole annotation.
+//
+// Runs from the output directory on purpose: tabix caches a remote .tbi into
+// the process's working directory, so calling it from wherever the user
+// happened to be drops a stray index file beside their shell.
+export function fetchRegions(url, regions, outFile) {
+  const cwd = path.dirname(outFile)
+  fs.mkdirSync(cwd, { recursive: true })
+  const out = JSON.stringify(path.resolve(outFile))
+  run('sh', ['-c', `tabix -H ${JSON.stringify(url)} > ${out} || true`], { cwd })
+  for (const r of regions) {
+    run(
+      'sh',
+      ['-c', `tabix ${JSON.stringify(url)} ${JSON.stringify(r)} >> ${out}`],
+      { cwd },
+    )
+  }
+  return outFile
+}
+
 // A GFF has to be sorted by contig then start before tabix will index it, and
 // the header lines have to stay on top.
 function sortGff(input, output) {
@@ -37,6 +61,9 @@ function sortGff(input, output) {
 }
 
 export function prepareGff(input, outDir, name) {
+  if (isUrl(input)) {
+    return input
+  }
   fs.mkdirSync(outDir, { recursive: true })
   const target = path.join(outDir, `${name}.gff.gz`)
   if (isGz(input)) {
@@ -57,6 +84,9 @@ export function prepareGff(input, outDir, name) {
 }
 
 export function prepareFasta(input, outDir, name) {
+  if (isUrl(input)) {
+    return input
+  }
   fs.mkdirSync(outDir, { recursive: true })
   const target = path.join(outDir, `${name}.fa.gz`)
   if (isGz(input)) {
@@ -75,6 +105,9 @@ export function prepareFasta(input, outDir, name) {
 }
 
 export function prepareBam(input, outDir) {
+  if (isUrl(input)) {
+    return input
+  }
   fs.mkdirSync(outDir, { recursive: true })
   const target = path.join(outDir, path.basename(input))
   fs.copyFileSync(input, target)
@@ -88,9 +121,7 @@ export function prepareBam(input, outDir) {
   return path.basename(target)
 }
 
-const isUrl = s => /^https?:\/\//.test(s)
-
-export function buildConfig({ assembly, fastaRef, predictionRef, referenceRef, rnaRefs, predictionName, referenceName }) {
+export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, referenceRef, rnaRefs, predictionName, referenceName }) {
   const uri = f => (isUrl(f) ? f : `data/${f}`)
   const tracks = [
     {
@@ -123,17 +154,25 @@ export function buildConfig({ assembly, fastaRef, predictionRef, referenceRef, r
     })
   })
 
+  const asm = {
+    name: assembly,
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: `${assembly}-ref`,
+      adapter: { type: 'BgzipFastaAdapter', uri: uri(fastaRef) },
+    },
+  }
+  // A prediction GFF says chr22 where a reference FASTA often says 22, and
+  // JBrowse reports the mismatch as "unknown reference sequence name" with the
+  // assembly otherwise loading fine.
+  if (aliasesRef) {
+    asm.refNameAliases = {
+      adapter: { type: 'RefNameAliasAdapter', uri: uri(aliasesRef) },
+    }
+  }
+
   return {
-    assemblies: [
-      {
-        name: assembly,
-        sequence: {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${assembly}-ref`,
-          adapter: { type: 'BgzipFastaAdapter', uri: uri(fastaRef) },
-        },
-      },
-    ],
+    assemblies: [asm],
     tracks,
     defaultSession: {
       name: 'Review',

@@ -1,0 +1,55 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-ref",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "prediction",
+      "name": "Tiberius predictions",
+      "category": ["Review"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "reference_annotation",
+      "name": "GENCODE 47",
+      "category": ["Review"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Review",
+    "views": [
+      {
+        "id": "review",
+        "type": "LinearGenomeView",
+        "tracks": []
+      }
+    ]
+  }
+}
