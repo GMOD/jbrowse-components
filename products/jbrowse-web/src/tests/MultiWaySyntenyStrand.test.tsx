@@ -81,6 +81,7 @@ function ribbons(svg: string) {
     return {
       y1,
       y2,
+      xs: [x1, x2, x3, x4],
       crossed: Math.sign(x4 - x1) !== Math.sign(x3 - x2),
     }
   })
@@ -133,4 +134,144 @@ test('a reverse-strand link between two mate lanes draws a crossed ribbon', asyn
   expect(
     drawn.filter(r => r.y1 < deepest.y1).map(r => r.crossed),
   ).not.toContain(true)
+}, 60000)
+
+// A bp the lane's frame does not reach maps through `rowFrameX`, which
+// extrapolates. The fourth row here runs Pp1:0-1100, straddling the edge of a
+// frame that starts around Pp1:625 — a record an intersection test passes and
+// the lane still cannot draw whole. Unclipped it put an endpoint 716 px off the
+// left of the canvas, where the svg clips the rect it belongs to and the ribbon
+// sweeps the page.
+function farPafConfig() {
+  const config = reversePafConfig()
+  config.tracks.push({
+    type: 'SyntenyTrack',
+    trackId: 'three_way_far',
+    name: 'grape/peach/cacao with an off-frame pair record',
+    assemblyNames: ['grape', 'peach', 'cacao'],
+    adapter: {
+      type: 'AllVsAllPAFAdapter',
+      assemblyNames: ['grape', 'peach', 'cacao'],
+      pafLocation: {
+        uri: 'three_way_far.paf',
+        locationType: 'UriLocation',
+      },
+    },
+    displays: [
+      {
+        type: 'MultiWaySyntenyDisplay',
+        displayId: 'three_way_far-MultiWaySyntenyDisplay',
+      },
+    ],
+  })
+  return config
+}
+
+test('a link record outside a lane frame draws no ribbon off the canvas', async () => {
+  const { rootModel } = getPluginManager(farPafConfig())
+  rootModel.setDefaultSession()
+  const view = rootModel.session!.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: [
+        {
+          trackId: 'three_way_far',
+          type: 'MultiWaySyntenyDisplay',
+          rowOrder: ['peach', 'cacao'],
+        },
+      ],
+    },
+  })
+  const width = 800
+  view.setWidth(width)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.rowFrames.get('peach')).toBeDefined()
+      return d!
+    },
+    { timeout: 30000 },
+  )
+
+  // both peach/cacao records come back — the fetch window reaches the far one
+  await waitFor(
+    () => {
+      expect(display.laneLinks?.get('peach|cacao')?.length).toBe(2)
+    },
+    { timeout: 30000 },
+  )
+  // and it STRADDLES the frame's edge, which is the case a bare intersection
+  // test lets through
+  const frame = display.rowFrames.get('peach')!
+  const far = display
+    .laneLinks!.get('peach|cacao')!
+    .find(f => f.get('end') - f.get('start') === 1100)!
+  expect(far.get('start')).toBeLessThan(frame.min)
+  expect(far.get('end')).toBeGreaterThan(frame.min)
+
+  const drawn = ribbons(renderToString(<>{await display.renderSvg()}</>))
+  expect(drawn.length).toBeGreaterThan(0)
+  for (const { xs } of drawn) {
+    for (const x of xs) {
+      expect(x).toBeGreaterThanOrEqual(0)
+      expect(x).toBeLessThanOrEqual(width)
+    }
+  }
+}, 60000)
+
+// `groupSpansOnRow` hands back the end corresponding to the anchor's START
+// first, and `ribbonPath` joins first end to first end. `anchorSpans` sorted
+// its pair ascending instead, so a horizontally flipped view — where the
+// anchor's start draws to the RIGHT of its end, and the lane below mirrors to
+// follow — paired every ortholog crosswise. A flip is a mirror: it may move
+// where a ribbon is drawn, never whether it twists.
+test('flipping the view horizontally does not twist the ribbons', async () => {
+  const { rootModel } = getPluginManager(structuredClone(baseConfig))
+  rootModel.setDefaultSession()
+  const view = rootModel.session!.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: [
+        {
+          trackId: 'multiway_blocks',
+          type: 'MultiWaySyntenyDisplay',
+          rowOrder: ['peach', 'cacao'],
+        },
+      ],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.rowFrames.get('peach')?.flipped).toBe(false)
+      return d!
+    },
+    { timeout: 30000 },
+  )
+
+  const twists = async () => {
+    const drawn = ribbons(renderToString(<>{await display.renderSvg()}</>))
+    const top = Math.min(...drawn.map(r => r.y1))
+    return drawn
+      .filter(r => r.y1 === top)
+      .map(r => r.crossed)
+      .sort()
+  }
+  const before = await twists()
+  expect(before.length).toBeGreaterThan(1)
+
+  view.horizontallyFlip()
+  // the lane below follows the anchor's new reading direction, which is what
+  // makes this the case that used to invert
+  expect(display.rowFrames.get('peach')!.flipped).toBe(true)
+  expect(await twists()).toEqual(before)
 }, 60000)

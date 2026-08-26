@@ -31,17 +31,26 @@ export function keepNearMedian<T>(
     const { start, end } = span(item)
     return end - start
   }
-  const sorted = [...items].sort((a, b) => mid(a) - mid(b))
-  const total = sorted.reduce((sum, item) => sum + length(item), 0)
-  let acc = 0
-  let center = mid(sorted[0]!)
-  for (const item of sorted) {
-    acc += length(item)
-    if (acc >= total / 2) {
-      center = mid(item)
-      break
-    }
-  }
+  const center = weightedMedian(
+    items.map(item => ({ value: mid(item), weight: length(item) })),
+  )
   const kept = items.filter(item => Math.abs(mid(item) - center) <= reachBp)
   return kept.length ? kept : items
+}
+
+/**
+ * The value at the halfway point of the summed weights — the median an item's
+ * length gets a vote in, rather than one where every item counts once.
+ */
+export function weightedMedian(samples: { value: number; weight: number }[]) {
+  const sorted = [...samples].sort((a, b) => a.value - b.value)
+  const total = sorted.reduce((sum, s) => sum + s.weight, 0)
+  let acc = 0
+  for (const sample of sorted) {
+    acc += sample.weight
+    if (acc >= total / 2) {
+      return sample.value
+    }
+  }
+  return 0
 }

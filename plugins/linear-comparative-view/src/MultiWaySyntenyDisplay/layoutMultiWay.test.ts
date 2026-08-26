@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { resolvePanel } from '../LaunchSyntenyView/resolvePanel.ts'
 import {
   alignRowFrames,
   computeRowFrame,
@@ -1184,19 +1185,20 @@ test('lane genes arriving once per static block draw once', () => {
   expect(laneGeneFeatures([gene('g1'), gene('g1'), gene('g2')])).toHaveLength(2)
 })
 
-// A lane's own contig is whichever holds the most ALIGNED BP, the vote
-// `resolvePanel` runs for the panel this lane launches. Counting placements
-// instead let a cluster of short repeat hits outvote the syntenic block that is
-// the lane, and put the launch and the lane it launched from on different
-// contigs.
-test('a lane sits on the contig holding the most aligned bp, not the most hits', () => {
+// A lane's own contig is whichever explains the most of the ANCHOR window, the
+// vote `resolvePanel` runs on the same axis for the panel this lane launches.
+// Counting placements instead let a cluster of short repeat hits outvote the
+// syntenic blocks that are the lane, and put the launch and the lane it
+// launched from on different contigs.
+test('a lane sits on the contig explaining the most anchor bp, not the most hits', () => {
   const groups = groupFeatures([
+    // three short repeat hits...
     ...['a', 'b', 'c'].map((suffix, i) =>
       pairFeature({
         uniqueId: `repeat${suffix}`,
-        name: `g${i + 1}`,
+        name: `r${suffix}`,
         start: 100 * (i + 1),
-        end: 100 * (i + 1) + 50,
+        end: 100 * (i + 1) + 20,
         mate: {
           assemblyName: 'peach',
           refName: 'Pp_repeats',
@@ -1206,12 +1208,13 @@ test('a lane sits on the contig holding the most aligned bp, not the most hits',
         },
       }),
     ),
+    // ...against two syntenic blocks, which are fewer and far longer
     ...['d', 'e'].map((suffix, i) =>
       pairFeature({
         uniqueId: `block${suffix}`,
-        name: `g${i + 1}`,
-        start: 100 * (i + 1),
-        end: 100 * (i + 1) + 50,
+        name: `b${suffix}`,
+        start: 1000 * (i + 1),
+        end: 1000 * (i + 1) + 400,
         mate: {
           assemblyName: 'peach',
           refName: 'Pp1',
@@ -1223,6 +1226,50 @@ test('a lane sits on the contig holding the most aligned bp, not the most hits',
     ),
   ])
   expect(computeRowFrame(groups, 'peach')!.refName).toBe('Pp1')
+})
+
+// ...and it has to be the SAME vote, on the same axis: a lane's contig and the
+// contig the panel launched off it opens on come from two functions over one
+// dataset, and a reader who launches a lane expects the panel to be the lane.
+// This fixture is built so the two axes disagree — long anchor genes against
+// short mate fragments on one contig, the reverse on the other — so weighing
+// mate bp on either side would split them.
+test('the lane and the panel launched off it pick the same contig', () => {
+  const mixed = [
+    ...['a', 'b', 'c'].map((suffix, i) =>
+      pairFeature({
+        uniqueId: `long-anchor-${suffix}`,
+        name: `la${suffix}`,
+        start: 1000 * (i + 1),
+        end: 1000 * (i + 1) + 400,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp2',
+          start: 2000 * (i + 1),
+          end: 2000 * (i + 1) + 20,
+          name: `la${suffix}`,
+        },
+      }),
+    ),
+    ...['d', 'e'].map((suffix, i) =>
+      pairFeature({
+        uniqueId: `long-mate-${suffix}`,
+        name: `lm${suffix}`,
+        start: 100 * (i + 1),
+        end: 100 * (i + 1) + 20,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 5000 * (i + 1),
+          end: 5000 * (i + 1) + 400,
+          name: `lm${suffix}`,
+        },
+      }),
+    ),
+  ]
+  expect(computeRowFrame(groupFeatures(mixed), 'peach')!.refName).toBe(
+    resolvePanel(mixed, undefined)!.refName,
+  )
 })
 
 describe('lane geometry', () => {

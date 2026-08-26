@@ -61,6 +61,11 @@ export interface LaneLinksFetchSpec {
   region: LaneRegion
 }
 
+// what a fetch is stale against: the region it asked for, spelled once
+function regionKey(r: LaneRegion) {
+  return `${r.refName}:${r.start}-${r.end}`
+}
+
 /**
  * #stateModel MultiWaySyntenyDisplay
  * #displayFoundation GlobalFetchMixin
@@ -346,11 +351,15 @@ export function stateModelFactory(
           if (names.length !== 1 || !adapter?.type?.startsWith('Gff3')) {
             continue
           }
-          const lane = lanes.find(assemblyName =>
-            isSameAssemblyName(names[0], assemblyName, assemblyManager),
-          )
-          if (lane !== undefined && !out.has(lane)) {
-            out.set(lane, adapter as Record<string, unknown>)
+          // every lane the track answers for, not the first: two mates can
+          // spell one assembly two ways and both lanes draw from the one track
+          for (const lane of lanes) {
+            if (
+              !out.has(lane) &&
+              isSameAssemblyName(names[0], lane, assemblyManager)
+            ) {
+              out.set(lane, adapter as Record<string, unknown>)
+            }
           }
         }
         return out
@@ -457,9 +466,7 @@ export function stateModelFactory(
           key: specs
             .map(spec =>
               spec.regions
-                .map(
-                  r => `${spec.assemblyName}:${r.refName}:${r.start}-${r.end}`,
-                )
+                .map(r => `${spec.assemblyName}:${regionKey(r)}`)
                 .join(','),
             )
             .join(';'),
@@ -498,7 +505,7 @@ export function stateModelFactory(
           key: specs
             .map(
               spec =>
-                `${spec.upperAssembly}>${spec.lowerAssembly}:${spec.region.refName}:${spec.region.start}-${spec.region.end}`,
+                `${spec.upperAssembly}>${spec.lowerAssembly}:${regionKey(spec.region)}`,
             )
             .join(';'),
           specs,

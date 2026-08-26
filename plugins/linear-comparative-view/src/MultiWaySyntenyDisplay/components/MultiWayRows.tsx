@@ -518,38 +518,46 @@ const MultiWayRows = observer(function MultiWayRows({
       />,
     )
 
-    if (genes?.length && geneDrawing) {
-      for (const gene of genes) {
-        if (geneDrawing.shows(gene)) {
-          const selected = selectedFeatureId === gene.id()
-          glyphs.push(
-            <GeneGlyph
-              key={`gene-${assemblyName}-${gene.id()}`}
-              feature={gene}
-              xOf={geneDrawing.xOf(gene)}
-              y={y}
-              glyphHeight={glyphHeight}
-              strokeColor={palette.text.primary}
-              color={
-                selected
-                  ? palette.highlight.main
-                  : readConfObject(model.configuration, 'color', {
-                      feature: gene,
-                    })
-              }
-              utrColor={
-                selected
-                  ? palette.highlight.main
-                  : readConfObject(model.configuration, 'utrColor', {
-                      feature: gene,
-                    })
-              }
-              onClick={() => {
-                model.selectFeature(gene)
-              }}
-            />,
-          )
-        }
+    // the genes this lane can actually draw, not the ones it fetched: the fetch
+    // covers the whole window the frame slides in, so a frame over a gene
+    // desert can hold a non-empty list and show none of it — and the lane then
+    // drew neither genes nor the placement boxes below
+    const drawn = geneDrawing
+      ? (genes?.filter(geneDrawing.shows) ?? []).map(gene => ({
+          gene,
+          xOf: geneDrawing.xOf(gene),
+        }))
+      : []
+    if (drawn.length) {
+      for (const { gene, xOf } of drawn) {
+        const selected = selectedFeatureId === gene.id()
+        glyphs.push(
+          <GeneGlyph
+            key={`gene-${assemblyName}-${gene.id()}`}
+            feature={gene}
+            xOf={xOf}
+            y={y}
+            glyphHeight={glyphHeight}
+            strokeColor={palette.text.primary}
+            color={
+              selected
+                ? palette.highlight.main
+                : readConfObject(model.configuration, 'color', {
+                    feature: gene,
+                  })
+            }
+            utrColor={
+              selected
+                ? palette.highlight.main
+                : readConfObject(model.configuration, 'utrColor', {
+                    feature: gene,
+                  })
+            }
+            onClick={() => {
+              model.selectFeature(gene)
+            }}
+          />,
+        )
       }
     } else {
       // A lane with no annotation draws the table's own gene spans, outlined

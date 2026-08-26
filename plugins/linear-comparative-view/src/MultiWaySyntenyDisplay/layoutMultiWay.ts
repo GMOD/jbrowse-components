@@ -1,6 +1,10 @@
 import { clamp, dedupe, doesIntersect2 } from '@jbrowse/core/util'
 
-import { OUTLIER_REACH, keepNearMedian } from '../keepNearMedian.ts'
+import {
+  OUTLIER_REACH,
+  keepNearMedian,
+  weightedMedian,
+} from '../keepNearMedian.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -230,8 +234,16 @@ export function computeRowFrame(
   assemblyName: string,
   minSpanBp = 0,
 ): RowFrame | undefined {
+  // Each contig weighed by how much of the ANCHOR it explains, not by a count
+  // of placements: a handful of short repeat hits outnumbers the few long
+  // syntenic blocks that are the lane. Anchor-side rather than mate-side
+  // because the reader is looking at the anchor window and the honest question
+  // is which contig covers it — and because that is the vote `resolvePanel`
+  // runs, on the same axis, for the panel this lane launches.
   const byRef = new Map<string, MultiWayPlacement[]>()
+  const anchorBp = new Map<string, number>()
   for (const group of groups) {
+    const weight = Math.max(group.anchor.end - group.anchor.start, 1)
     for (const p of group.mates.get(assemblyName) ?? []) {
       let bucket = byRef.get(p.refName)
       if (!bucket) {
@@ -239,21 +251,12 @@ export function computeRowFrame(
         byRef.set(p.refName, bucket)
       }
       bucket.push(p)
+      anchorBp.set(p.refName, (anchorBp.get(p.refName) ?? 0) + weight)
     }
   }
-  // Summed aligned bp, not a count of placements: a handful of short repeat
-  // hits outnumbers the few long syntenic blocks that are the lane, and every
-  // other vote here weighs length (`keepNearMedian`, `groupRunsOnRow`,
-  // `readsBackwards`). It is also the vote `resolvePanel` runs for the panel
-  // this lane launches, and the two picking different contigs for one dataset
-  // is the disagreement their shared outlier filter exists to prevent.
   let dominant: string | undefined
   let dominantBp = 0
-  for (const [refName, placements] of byRef) {
-    const bp = placements.reduce(
-      (sum, p) => sum + Math.max(p.end - p.start, 1),
-      0,
-    )
+  for (const [refName, bp] of anchorBp) {
     if (bp > dominantBp) {
       dominant = refName
       dominantBp = bp
@@ -308,10 +311,15 @@ export function rowFrameX(frame: RowFrame, bp: number, width: number) {
  * One bp interval in a lane's own frame, as a px pair in the interval's own
  * order, or undefined when the frame shows nothing of it.
  *
- * The clip is what keeps a ribbon on the page. `rowFrameX` extrapolates, so an
- * endpoint the frame does not reach maps to tens of thousands of pixels: the
+ * CLIPPED TO THE FRAME, not merely tested against it. `rowFrameX` extrapolates,
+ * so an end the frame does not reach maps to tens of thousands of pixels: the
  * rect drawn from it is clipped by the svg and looks fine, while the ribbon
- * keeps that endpoint and sweeps across everything.
+ * keeps that endpoint and sweeps across everything. A record STRADDLING the
+ * frame edge passes any intersection test, and the lane fetches a window wider
+ * than its frame by construction, so straddlers arrive on every fetch.
+ *
+ * Clipping in bp keeps the pair in the interval's own order and keeps a flipped
+ * lane's mirroring intact, since `rowFrameX` is monotonic either way.
  */
 export function frameSpan(
   frame: RowFrame,
@@ -320,7 +328,10 @@ export function frameSpan(
   width: number,
 ): Span | undefined {
   return doesIntersect2(frame.min, frame.max, start, end)
-    ? [rowFrameX(frame, start, width), rowFrameX(frame, end, width)]
+    ? [
+        rowFrameX(frame, clamp(start, frame.min, frame.max), width),
+        rowFrameX(frame, clamp(end, frame.min, frame.max), width),
+      ]
     : undefined
 }
 
@@ -424,13 +435,11 @@ interface PlacementRun {
 
 // The group's placements on one row as maximal OVERLAPPING RUNS: two hits the
 // row shows apart from each other stay two spans, and only placements that
-// actually touch merge into one. Min-of-starts to max-of-ends across the whole
-// set instead drew the gap between two disjoint hits as syntenic sequence.
+// actually touch merge into one, so the gap between two disjoint hits is not
+// drawn as syntenic sequence.
 //
-// The frame filter is the load-bearing part: `computeRowFrame` throws out the
-// repeat hit that lands megabases away so it cannot stretch the lane, and
-// without the same filter here that placement comes straight back as a drawn
-// span. See `frameSpan` for what that costs.
+// Filtered to the frame, which is what keeps `computeRowFrame`'s outlier rule
+// from being undone here — see `frameSpan`.
 function groupRunsOnRow(
   group: MultiWayGroup,
   assemblyName: string,
@@ -496,12 +505,10 @@ export function groupSpansOnRow(
   frame: RowFrame,
   width: number,
 ): Span[] {
-  return groupRunsOnRow(group, assemblyName, frame).flatMap(run => {
-    const span = frameSpan(frame, run.min, run.max, width)
-    if (!span) {
-      return []
-    }
-    return [run.orientation < 0 ? ([span[1], span[0]] as const) : span]
+  // every run holds a placement the frame shows, so `frameSpan` always answers
+  return groupRunsOnRow(group, assemblyName, frame).map(run => {
+    const [a, b] = frameSpan(frame, run.min, run.max, width)!
+    return run.orientation < 0 ? ([b, a] as const) : ([a, b] as const)
   })
 }
 
@@ -515,13 +522,20 @@ export function laneFetchWindow(frame: RowFrame) {
 }
 
 // The region a lane's dependent fetches ask for: the window the frame can slide
-// in, widened to a stable power-of-two grid so a sub-grid pan reuses the last
-// fetch. Keyed on the window rather than the frame because the frame moves with
-// the alignment shift and with the viewport width, and a lane must not refetch
-// its annotation because the browser window was resized.
+// in, widened to a power-of-two grid so a sub-grid pan reuses the last fetch.
+// Keyed on the window rather than the frame because the frame moves with the
+// alignment shift and with the viewport width, and a lane must not refetch its
+// annotation because the browser window was resized.
+//
+// The grid comes off the RUNG SPAN alone. Taken off the window's own width it
+// moves with the fitted extent, and that width ranges over [span, 2*span) —
+// which straddles a power of two, so one more ortholog entering the viewport
+// could double the grid and refetch every lane for a gesture that moved no
+// frame.
 export function laneFetchRegion(frame: RowFrame) {
   const { min, max } = laneFetchWindow(frame)
-  const grid = 2 ** Math.ceil(Math.log2(Math.max(max - min, 1)))
+  const grid =
+    2 ** Math.ceil(Math.log2(Math.max(2 * (frame.max - frame.min), 1)))
   return {
     refName: frame.refName,
     start: Math.max(0, Math.floor(min / grid) * grid),
@@ -584,19 +598,6 @@ function readsBackwards(
   return concordance < 0
 }
 
-function weightedMedian(samples: { value: number; weight: number }[]) {
-  const sorted = [...samples].sort((a, b) => a.value - b.value)
-  const total = sorted.reduce((sum, s) => sum + s.weight, 0)
-  let acc = 0
-  for (const sample of sorted) {
-    acc += sample.weight
-    if (acc >= total / 2) {
-      return sample.value
-    }
-  }
-  return 0
-}
-
 // A lane slides in whole multiples of this, so the median moving by a pixel or
 // two as a pan swaps one group for another cannot slide the whole lane
 const SHIFT_QUANTUM_PX = 8
@@ -611,9 +612,7 @@ const SHIFT_QUANTUM_PX = 8
 // placement cannot drag a lane.
 //
 // The shift is held to slack that keeps the frame over its own fitted extent
-// AND at or above zero — `snapFrameToLadder` already refuses a negative `min`,
-// and a shift that reintroduced one had the lane header printing a coordinate
-// its contig does not have and `frameTickXs` walking from it.
+// AND at or above zero, the floor `snapFrameToLadder` fits to.
 function alignFrameTo(
   upperX: Map<string, number>,
   lane: LanePlacement[],
@@ -694,7 +693,6 @@ export interface LaneBand {
 }
 
 export interface LaneGeometry {
-  labelHeight: number
   glyphHeight: number
   bandHeight: number
   rows: LaneBand[]
@@ -718,7 +716,6 @@ export function laneGeometry(height: number, rowCount: number): LaneGeometry {
       ? 0
       : (glyphTop(row - 1) + glyphHeight + glyphTop(row) - LABEL_HEIGHT) / 2
   return {
-    labelHeight: LABEL_HEIGHT,
     glyphHeight,
     bandHeight: LABEL_HEIGHT + glyphHeight,
     rows: Array.from({ length: rowCount }, (_, row) => ({
