@@ -133,6 +133,7 @@ import {
   getReadsMenuItems,
   getSashimiMenuItem,
   getSortByMenuItem,
+  getSvChannelsMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
@@ -3899,6 +3900,7 @@ export default function stateModelFactory(
          */
         trackMenuItems() {
           return [
+            getSvChannelsMenuItem(self),
             getColorByMenuItem(self, {
               includeTagOption: true,
               includePairedEnd: true,

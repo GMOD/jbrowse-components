@@ -20,3 +20,10 @@ export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'
 export { getGroupByMenuItem, getSortByMenuItem } from './sortGroup.ts'
+export { getSvChannelsMenuItem } from './svChannels.ts'
+export {
+  SV_CHANNELS_LABEL,
+  SV_CHANNELS_OFF,
+  SV_CHANNELS_ON,
+  isSvChannelsActive,
+} from './svChannelsPreset.ts'
