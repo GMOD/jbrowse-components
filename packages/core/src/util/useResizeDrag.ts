@@ -21,10 +21,10 @@ import type React from 'react'
  *     display.resizeHeight(distance)
  *   },
  *   onDragStart: () => {
- *     display.setResizing(true)
+ *     track.setResizing(true)
  *   },
  *   onDragEnd: () => {
- *     display.setResizing(false)
+ *     track.setResizing(false)
  *   },
  * })
  * return (

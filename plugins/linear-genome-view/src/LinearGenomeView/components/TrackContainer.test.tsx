@@ -1,6 +1,13 @@
+import Plugin from '@jbrowse/core/Plugin'
+import {
+  ConfigurationReference,
+  ConfigurationSchema,
+} from '@jbrowse/core/configuration'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { colord } from '@jbrowse/core/util/colord'
-import { getRoot, onAction } from '@jbrowse/mobx-state-tree'
+import { getRoot, onAction, types } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, waitFor } from '@testing-library/react'
@@ -8,10 +15,19 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import { RESIZE_HANDLE_HEIGHT } from '../consts.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-async function setup() {
+async function setup({
+  runtimePlugins,
+  displays,
+}: {
+  runtimePlugins?: Parameters<typeof createTestSession>[0]['runtimePlugins']
+  displays?: Record<string, unknown>[]
+} = {}) {
   const session = createTestSession({
+    runtimePlugins,
     sessionSnapshot: {
       views: [
         {
@@ -55,6 +71,7 @@ async function setup() {
       type: 'FromConfigAdapter',
       features: [{ refName: 'ctgA', uniqueId: 'f1', start: 10, end: 100 }],
     },
+    ...(displays ? { displays } : {}),
   })
   const model = session.views[0]
   model.setWidth(800)
@@ -157,4 +174,103 @@ test('double-clicking the divider asks the display to expand', async () => {
   dispose()
 
   expect(calls).toContain('expandToContentHeight')
+}, 20000)
+
+/**
+ * The shape that broke in #5626: `BaseDisplay` plus only the height members
+ * every linear display has had since 2020, and none of what `TrackHeightMixin`
+ * has grown since. `LinearDisplayModel` used to alias the whole mixin instance,
+ * so each member added to it silently became mandatory for a third-party
+ * display that mirrors the mixin by hand rather than composing it — Apollo's
+ * does, and started throwing `display.setResizing is not a function` mid-drag.
+ */
+class PreMixinDisplayPlugin extends Plugin {
+  name = 'PreMixinDisplayPlugin'
+
+  install(pluginManager: PluginManager) {
+    pluginManager.addDisplayType(() => {
+      const configSchema = ConfigurationSchema(
+        'PreMixinDisplay',
+        {},
+        { explicitlyTyped: true },
+      )
+      return new DisplayType({
+        name: 'PreMixinDisplay',
+        displayName: 'Pre-mixin display',
+        configSchema,
+        stateModel: types
+          .compose(
+            'PreMixinDisplay',
+            BaseDisplay,
+            types.model({
+              type: types.literal('PreMixinDisplay'),
+              configuration: ConfigurationReference(configSchema),
+            }),
+          )
+          .volatile(() => ({
+            localHeight: 100,
+          }))
+          .views(self => ({
+            get height() {
+              return self.localHeight
+            },
+          }))
+          .actions(self => ({
+            resizeHeight(distance: number) {
+              const next = Math.max(self.localHeight + distance, 20)
+              const delta = next - self.localHeight
+              self.localHeight = next
+              return delta
+            },
+          })),
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: () => <div data-testid="pre-mixin-display" />,
+      })
+    })
+  }
+}
+
+test('a display without the height mixin survives drag and double click', async () => {
+  const model = await setup({
+    runtimePlugins: [
+      {
+        plugin: new PreMixinDisplayPlugin(),
+        definition: { name: 'PreMixinDisplay', umdUrl: 'pre-mixin.js' },
+      },
+    ],
+    displays: [{ type: 'PreMixinDisplay', displayId: 'pre-mixin-display' }],
+  })
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <LinearGenomeView model={model} />
+    </ThemeProvider>,
+  )
+
+  const handle = await waitFor(() => {
+    const found = [...container.querySelectorAll('div')].find(
+      el => getComputedStyle(el).cursor === 'row-resize',
+    )
+    expect(found).toBeTruthy()
+    return found!
+  })
+
+  const track = model.tracks[0]!
+  const display = track.displays[0]!
+  expect(display.type).toBe('PreMixinDisplay')
+  expect('setResizing' in display).toBe(false)
+  expect('expandToContentHeight' in display).toBe(false)
+
+  // the gesture the crash report came from
+  // on the handle, not window: usePointerDrag takes pointer capture, so every
+  // event in the gesture keeps being delivered to the element itself
+  fireEvent.pointerDown(handle, { clientY: 0, pointerId: 1 })
+  expect(track.resizing).toBe(true)
+  fireEvent.pointerMove(handle, { clientY: 30, pointerId: 1 })
+  fireEvent.pointerUp(handle, { clientY: 30, pointerId: 1 })
+  expect(track.resizing).toBe(false)
+  expect(display.height).toBeGreaterThan(100)
+
+  // and the other one, which would have thrown on expandToContentHeight
+  fireEvent.doubleClick(handle)
 }, 20000)

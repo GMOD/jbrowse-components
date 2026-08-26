@@ -1146,9 +1146,10 @@ export default function stateModelFactory(
          * dragging a track taller unable to show a single extra species.
          *
          * The `resizing` flag that sits the letter overlay out of the drag is
-         * set by the handle itself (TrackContainer / `MafBandResizeHandle`), not
-         * here — this action sees only individual deltas and can't tell the last
-         * one from the next, which is why it used to need a settle timer.
+         * set on the track by the handle itself (TrackContainer /
+         * `MafBandResizeHandle`), not here — this action sees only individual
+         * deltas and can't tell the last one from the next, which is why it used
+         * to need a settle timer.
          */
         resizeHeight(distance: number) {
           const oldHeight = self.height

@@ -160,17 +160,20 @@ const TrackContainer = observer(function TrackContainer({
         onDrag={distance => display.resizeHeight(distance)}
         // the drag's shortcut: grow the track by whatever it is scrolled over,
         // so a pileup showing three rows of forty opens to all forty
+        // Optional: only a display that scrolls its own content has anything
+        // hidden to expand to.
         onDoubleClick={() => {
-          display.expandToContentHeight()
+          display.expandToContentHeight?.()
         }}
         // Bracket the drag so a display can sit an expensive per-frame layer
         // out of it (see `resizing` on TrackHeightMixin). Causal rather than a
-        // per-display debounce: the handle owns both ends of the gesture.
+        // per-display debounce: the handle owns both ends of the gesture. On
+        // the track, so this holds whatever the active display is.
         onDragStart={() => {
-          display.setResizing(true)
+          track.setResizing(true)
         }}
         onDragEnd={() => {
-          display.setResizing(false)
+          track.setResizing(false)
         }}
         className={classes.resizeHandle}
       />

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { getContainingTrack } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -50,6 +51,9 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   // of the drag: clear `resizing` only if this handle set it, or a drag here
   // cancels the suppression a concurrent track-height drag owns.
   const suppressesLetters = model.rowHeight === 0
+  // The same flag the track's own resize handle brackets — it lives on the
+  // track, which is what lets two handles share one gesture state.
+  const track = getContainingTrack(model)
 
   return show ? (
     <ResizeHandle
@@ -60,14 +64,14 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
         setDragging(true)
         onActiveChange(true)
         if (suppressesLetters) {
-          model.setResizing(true)
+          track.setResizing(true)
         }
       }}
       onDragEnd={() => {
         setDragging(false)
         onActiveChange(hovered)
         if (suppressesLetters) {
-          model.setResizing(false)
+          track.setResizing(false)
         }
       }}
       onMouseEnter={() => {

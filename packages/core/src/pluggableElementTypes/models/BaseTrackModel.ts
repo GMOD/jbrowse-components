@@ -122,6 +122,21 @@ export function createBaseTrackModel(
         >,
       ),
     })
+    .volatile(() => ({
+      /**
+       * Whether a height-resize gesture is in progress on this track. Set by
+       * whichever handle owns the drag — the view's track resize handle, or a
+       * handle a display draws inside itself — and read by displays that sit an
+       * expensive per-frame layer out of the gesture.
+       *
+       * On the track rather than the display because the gesture belongs to the
+       * container running it, not to whatever display happens to be active: the
+       * view can bracket a drag without knowing which display it landed on, and
+       * two handles on one track share one flag rather than racing to clear
+       * each other's.
+       */
+      resizing: false,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -284,6 +299,12 @@ export function createBaseTrackModel(
        */
       setMinimized(flag: boolean) {
         self.minimized = flag
+      },
+      /**
+       * #action
+       */
+      setResizing(flag: boolean) {
+        self.resizing = flag
       },
 
       /**
