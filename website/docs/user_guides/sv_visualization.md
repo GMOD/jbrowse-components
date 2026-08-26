@@ -151,6 +151,27 @@ that the strongest cue wins:
 - A large insert with normal orientation paints red, the classic deletion
   signature.
 
+### SV channels
+
+Every scheme above paints one pileup, so an event's evidence arrives mixed into
+the rows around it: a minority of abnormally oriented pairs among concordant
+grey, their arcs crossing everything else's. **Track menu → SV channels (pairs
+by orientation)** takes the same reads apart. Each orientation class becomes its
+own band with its own coverage curve and its own arcs, the concordant pairs drop
+out of the arcs, and the pileup goes away.
+
+The bands are the rows of the orientation table above, and the
+[signatures below](#sv-type-signatures) are the key to reading them. An
+inversion lights the two same-strand bands on the same pair of breakpoints. A
+tandem duplication lights the outward-pointing band. A band that stays empty
+under a call is a call with no read-pair evidence behind it, which is as much of
+a finding as a band that fills.
+
+<Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles standing on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty." src="/img/sv_channels.png" />
+
+Clicking the row again restores an ordinary pileup: the default coloring and no
+read connections, rather than whatever the track carried before.
+
 ## SV-type signatures
 
 The patterns below describe what each SV type typically looks like in the

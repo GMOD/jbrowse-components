@@ -185,6 +185,13 @@ systematic basecalling error rather than a variant.
 
 <Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
 
+One arrangement of those two moves has a row of its own. **Track menu → SV
+channels (pairs by orientation)** groups by pair orientation, drops the pileup
+and turns the arcs on together, so each orientation class arrives as its own
+coverage band with its own arcs;
+[SV channels](/docs/user_guides/sv_visualization#sv-channels) is what the bands
+say.
+
 ## Read height and track sizing
 
 The track menu's **Read height** submenu holds two independent choices: how tall

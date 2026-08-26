@@ -11,7 +11,8 @@ data: hosted
 
 **TL;DR:** take one whole-gene deletion out of the 1000 Genomes ensemble SV
 callset, sort the cohort's genotypes at it, then open three of those samples'
-reads and watch the coverage go to zero, halve, and stay flat.
+reads and watch the coverage go to zero, halve, and stay flat. The page ends on
+a call from the same cohort whose coverage does none of that.
 
 ## Prerequisites
 
@@ -157,6 +158,35 @@ aligner could not confidently place come out red.
 Residual coverage inside a called deletion turns up wherever the deleted
 sequence has a close paralog. Raising the track's mapping quality filter empties
 the span the same way.
+
+## An SV the coverage cannot see
+
+A deletion moves the coverage, which is why every step so far could be read off
+the curve. Most structural variants leave it alone. The same demo carries a
+complex call on chromosome 1 in HG02768, and the profile under it looks like
+anywhere else on the arm.
+
+Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments
+from **1000 Genomes → Alignments**. The ensemble callset draws the call above
+the reads, and nothing in the coverage marks where it starts or stops.
+
+Which way the pairs point does. Turn on **Track menu → SV channels (pairs by
+orientation)**: the reads split into one band per orientation class, each with
+its own coverage curve and its own arcs.
+
+- The normal band holds the flat profile, the same reading the homozygous
+  reference sample gave at _RHD_.
+- The two same-strand bands each carry a bundle of arcs standing on one pair of
+  breakpoints. Pairs that point the same way are the inversion signature.
+- The outward-pointing band stays near empty, which is where a tandem
+  duplication would have gone.
+
+<Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles standing on one pair of breakpoints, the normal band's coverage runs on unremarked, and the outward-pointing band is near empty." src="/img/sv_channels.png" />
+
+The call names a duplicated copy in its `INFO.CPX_INTERVALS` too, and no band
+shows it. A copy that lands beside where it came from leaves pair orientation
+alone, so this half of the call is back to reading the coverage, at a size where
+the profile's own noise is the same shape.
 
 ## See also
 

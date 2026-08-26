@@ -979,6 +979,56 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 30000,
   },
 
+  // The same INVdup as one band per pair orientation, which is what the track
+  // menu's SV channels row arranges. inverted_duplication above draws every
+  // class into one pileup; here each class gets its own coverage curve and its
+  // own arcs, so the LL and RR bundles stand alone on the two breakpoints while
+  // the LR band's ordinary coverage is the negative.
+  //
+  // The six settings are SV_CHANNELS_ON verbatim (svChannelsPreset.ts), so the
+  // figure shows what the checkbox does rather than a hand-tuned neighbour of
+  // it. Only the heights below are the figure's own.
+  {
+    mode: 'url',
+    name: 'sv_channels',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:39,658,200-39,661,800',
+          trackLabels: 'offset',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG02768.final',
+              type: 'LinearAlignmentsDisplay',
+              showPileup: false,
+              groupBy: { type: 'pairOrientation' },
+              colorBy: { type: 'pairOrientation' },
+              readConnections: 'arc',
+              readConnectionsDown: true,
+              drawProperPairArcs: false,
+              coverageHeight: 60,
+              readConnectionsHeight: 90,
+              // the four bands' own stack, so the track box ends where the LL
+              // arcs do. A taller one pads the frame from inside, which neither
+              // the clipped-below-the-fold report nor the blank-below-content
+              // one can see.
+              height: 640,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG02768',
+    readyTimeout: 60000,
+    // the fourth band is the LL half of the inversion's evidence, and it is the
+    // one a default-height frame drops.
+    viewportHeight: 990,
+    settleMs: 30000,
+  },
+
   // Same inversion, short reads vs long reads, in ONE sample (HG00151). The
   // companion to inverted_duplication: that figure shows how short paired-end
   // reads only *infer* an inversion (from discordant pair orientation + a few
