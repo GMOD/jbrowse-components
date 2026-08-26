@@ -224,6 +224,30 @@ test('safeMode is read from the hash when the params live there', async () => {
   expect(p.getPermanentPlugins()).toEqual([])
 })
 
+// The banner's and the fatal dialog's two buttons, which are the whole way in
+// and out of safe mode. jsdom implements no navigation, so the reload itself is
+// a no-op here and what is pinned is the state each one leaves behind.
+test('asking for safe mode puts it in the url, without touching the list', async () => {
+  const p = await importFresh()
+  p.addPermanentPlugin(gwas)
+  const quiet = jest.spyOn(console, 'error').mockImplementation(() => {})
+  p.reloadInSafeMode()
+  quiet.mockRestore()
+  expect(window.location.search).toContain('safeMode=1')
+  expect(p.readPermanentPlugins()).toEqual([gwas])
+})
+
+test('turning them back on clears the marker that turned safe mode on', async () => {
+  const key = markerKey('http://localhost/volvox/config.json')
+  localStorage.setItem(key, JSON.stringify(['GWAS (x)']))
+  const p = await importFresh('/?config=volvox/config.json&safeMode=1')
+  const quiet = jest.spyOn(console, 'error').mockImplementation(() => {})
+  p.reloadWithPermanentPlugins()
+  quiet.mockRestore()
+  expect(localStorage.getItem(key)).toBeNull()
+  expect(window.location.search).not.toContain('safeMode')
+})
+
 test('a session is told when the list changes underneath it', async () => {
   const p = await importFresh()
   const seen: PluginDefinition[][] = []
