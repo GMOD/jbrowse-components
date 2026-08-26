@@ -153,6 +153,13 @@ const devExports = {}
 
 // Generate publish exports (pointing to esm)
 // Note: No "." entry - this package is designed for subpath imports only
+//
+// A bare string, not a `{types, import}` condition object: tsc finds the
+// `.d.ts` beside the emitted `.js` on its own, and an `import` condition only
+// buys the power to refuse a resolver that asks under `require` — which for a
+// package that publishes one ESM file per subpath is nothing it wanted to
+// refuse. See scripts/generate-publish-exports.ts, which does the same for the
+// packages whose map is hand-curated.
 const publishExports = {}
 
 // Generate typesVersions for moduleResolution "node" consumers
@@ -168,10 +175,7 @@ for (const entry of imports) {
 
   devExports[exportPath] = `./src${srcPath}`
 
-  publishExports[exportPath] = {
-    types: `./esm${outPath.replace('.js', '.d.ts')}`,
-    import: `./esm${outPath}`,
-  }
+  publishExports[exportPath] = `./esm${outPath}`
 
   // typesVersions uses paths without leading './' and maps to array of paths
   const typesVersionsKey = exportPath.slice(2) // remove './'

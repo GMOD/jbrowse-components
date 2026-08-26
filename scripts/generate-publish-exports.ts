@@ -3,8 +3,8 @@
 // installs is the same one the workspace enforces.
 //
 // The two maps say the same thing about different trees — `./src/x.ts` in the
-// workspace, `./esm/x.js` + `./esm/x.d.ts` in the tarball — and only the second
-// one is what an external plugin actually resolves against. Hand-maintained,
+// workspace, `./esm/x.js` in the tarball — and only the second one is what an
+// external plugin actually resolves against. Hand-maintained,
 // they drifted the way hand-maintained pairs do, and in the direction that
 // costs the most: render-core's workspace map was an explicit 27-entry
 // allowlist while its publishConfig ended in a `"./*"` wildcard, so
@@ -14,7 +14,20 @@
 // package served every one of them. ADR-030 makes the exports map the public
 // API contract; a wildcard means there isn't one.
 //
-// `typesVersions` is not redundant with the per-subpath `types` conditions: a
+// Each subpath maps to a bare string, not a `{types, import}` condition
+// object. Neither condition earns its keep. `types` is redundant on every
+// resolver that reads `exports` at all: tsc substitutes `.js` for `.d.ts` and
+// finds the declaration sitting beside the emitted module, which under
+// `bundler` / `node16` / `nodenext` it does from a bare string too. `import`
+// does do something — it makes the subpath resolve for an ESM importer and
+// fail for a `require()` one, since `@rollup/plugin-node-resolve` picks its
+// condition list off the importer (`['default','module','import']` vs
+// `['default','module','require']`). That refusal was never the point: this
+// package publishes one ESM file per subpath and has nothing else to offer a
+// caller, so all the condition bought was resolvers it declined to answer.
+// GMOD/jbrowse-components#5626 is what that cost.
+//
+// `typesVersions` stays, and is the one thing here that isn't redundant: a
 // consumer on `moduleResolution: "node"` doesn't read `exports` at all, and 8
 // of the 22 plugins in the reference external-plugin set are still on it. They
 // resolve types through this map or not at all.
@@ -61,15 +74,12 @@ for (const pkg of PACKAGES) {
     throw new Error(`${pkg}/package.json has no "exports" map to derive from`)
   }
 
-  const publishExports: Record<string, { types: string; import: string }> = {}
+  const publishExports: Record<string, string> = {}
   const typesVersions: Record<string, string[]> = {}
 
   for (const [subpath, srcPath] of Object.entries(exports)) {
     const stem = emittedStem(srcPath)
-    publishExports[subpath] = {
-      types: `./esm/${stem}.d.ts`,
-      import: `./esm/${stem}.js`,
-    }
+    publishExports[subpath] = `./esm/${stem}.js`
     // typesVersions keys are subpaths without the leading './', and '.' has no
     // key at all — the top-level `types` field covers the barrel.
     if (subpath !== '.') {

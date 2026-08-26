@@ -64,26 +64,11 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./esm/index.d.ts",
-        "import": "./esm/index.js"
-      },
-      "./esm/makeWorkerInstance": {
-        "types": "./esm/makeWorkerInstance.d.ts",
-        "import": "./esm/makeWorkerInstance.js"
-      },
-      "./esm/makeWorkerInstance.js": {
-        "types": "./esm/makeWorkerInstance.d.ts",
-        "import": "./esm/makeWorkerInstance.js"
-      },
-      "./esm/rpcWorker": {
-        "types": "./esm/rpcWorker.d.ts",
-        "import": "./esm/rpcWorker.js"
-      },
-      "./esm/rpcWorker.js": {
-        "types": "./esm/rpcWorker.d.ts",
-        "import": "./esm/rpcWorker.js"
-      }
+      ".": "./esm/index.js",
+      "./esm/makeWorkerInstance": "./esm/makeWorkerInstance.js",
+      "./esm/makeWorkerInstance.js": "./esm/makeWorkerInstance.js",
+      "./esm/rpcWorker": "./esm/rpcWorker.js",
+      "./esm/rpcWorker.js": "./esm/rpcWorker.js"
     }
   },
   "sideEffects": false

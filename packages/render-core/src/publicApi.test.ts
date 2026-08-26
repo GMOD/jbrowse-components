@@ -28,7 +28,7 @@ import { join } from 'node:path'
 interface Manifest {
   exports: Record<string, string>
   publishConfig: {
-    exports: Record<string, { types: string; import: string }>
+    exports: Record<string, unknown>
     typesVersions: Record<string, Record<string, string[]>>
   }
 }
@@ -41,6 +41,16 @@ const manifest = JSON.parse(
 describe('render-core public surface', () => {
   it('pins the subpath exports', () => {
     expect(Object.keys(manifest.exports).sort()).toMatchSnapshot()
+  })
+
+  // See display-kit's copy: a condition object can only narrow who gets an
+  // answer, and there is one ESM file per subpath to narrow between.
+  it('maps each subpath to a bare string, not a condition object', () => {
+    expect(
+      Object.entries(manifest.publishConfig.exports).filter(
+        ([, target]) => typeof target !== 'string',
+      ),
+    ).toEqual([])
   })
 
   it('serves no wildcard subpath', () => {

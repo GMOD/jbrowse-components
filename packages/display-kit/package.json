@@ -95,190 +95,52 @@
   "publishConfig": {
     "access": "public",
     "exports": {
-      "./BlockMsg": {
-        "types": "./esm/BlockMsg.d.ts",
-        "import": "./esm/BlockMsg.js"
-      },
-      "./BottomRightIndicators": {
-        "types": "./esm/BottomRightIndicators.d.ts",
-        "import": "./esm/BottomRightIndicators.js"
-      },
-      "./DisplayBackgroundProgress": {
-        "types": "./esm/DisplayBackgroundProgress.d.ts",
-        "import": "./esm/DisplayBackgroundProgress.js"
-      },
-      "./DisplayChrome": {
-        "types": "./esm/DisplayChrome.d.ts",
-        "import": "./esm/DisplayChrome.js"
-      },
-      "./DisplayChromeBase": {
-        "types": "./esm/DisplayChromeBase.d.ts",
-        "import": "./esm/DisplayChromeBase.js"
-      },
-      "./DisplayErrorBar": {
-        "types": "./esm/DisplayErrorBar.d.ts",
-        "import": "./esm/DisplayErrorBar.js"
-      },
-      "./DisplayLoadingOverlay": {
-        "types": "./esm/DisplayLoadingOverlay.d.ts",
-        "import": "./esm/DisplayLoadingOverlay.js"
-      },
-      "./DisplayRenderErrorOverlay": {
-        "types": "./esm/DisplayRenderErrorOverlay.d.ts",
-        "import": "./esm/DisplayRenderErrorOverlay.js"
-      },
-      "./DisplayStatusChromeBase": {
-        "types": "./esm/DisplayStatusChromeBase.d.ts",
-        "import": "./esm/DisplayStatusChromeBase.js"
-      },
-      "./FetchMixin": {
-        "types": "./esm/FetchMixin.d.ts",
-        "import": "./esm/FetchMixin.js"
-      },
-      "./GlobalFetchMixin": {
-        "types": "./esm/GlobalFetchMixin.d.ts",
-        "import": "./esm/GlobalFetchMixin.js"
-      },
-      "./HeightModeMixin": {
-        "types": "./esm/HeightModeMixin.d.ts",
-        "import": "./esm/HeightModeMixin.js"
-      },
-      "./LegendMixin": {
-        "types": "./esm/LegendMixin.d.ts",
-        "import": "./esm/LegendMixin.js"
-      },
-      "./MultiRegionDisplayMixin": {
-        "types": "./esm/MultiRegionDisplayMixin.d.ts",
-        "import": "./esm/MultiRegionDisplayMixin.js"
-      },
-      "./RegionTooLargeMixin": {
-        "types": "./esm/RegionTooLargeMixin.d.ts",
-        "import": "./esm/RegionTooLargeMixin.js"
-      },
-      "./TooLargeMessage": {
-        "types": "./esm/TooLargeMessage.d.ts",
-        "import": "./esm/TooLargeMessage.js"
-      },
-      "./TrackControl": {
-        "types": "./esm/trackControl/TrackControl.d.ts",
-        "import": "./esm/trackControl/TrackControl.js"
-      },
-      "./TrackHeightIndicator": {
-        "types": "./esm/TrackHeightIndicator.d.ts",
-        "import": "./esm/TrackHeightIndicator.js"
-      },
-      "./TrackHeightMixin": {
-        "types": "./esm/TrackHeightMixin.d.ts",
-        "import": "./esm/TrackHeightMixin.js"
-      },
-      "./configSchema": {
-        "types": "./esm/configSchema.d.ts",
-        "import": "./esm/configSchema.js"
-      },
-      "./const": {
-        "types": "./esm/const.d.ts",
-        "import": "./esm/const.js"
-      },
-      "./displayAutoruns": {
-        "types": "./esm/displayAutoruns.d.ts",
-        "import": "./esm/displayAutoruns.js"
-      },
-      "./fetchEachRegion": {
-        "types": "./esm/fetchEachRegion.d.ts",
-        "import": "./esm/fetchEachRegion.js"
-      },
-      "./foundationDisplayPhase": {
-        "types": "./esm/foundationDisplayPhase.d.ts",
-        "import": "./esm/foundationDisplayPhase.js"
-      },
-      "./foundationPaintInert": {
-        "types": "./esm/foundationPaintInert.d.ts",
-        "import": "./esm/foundationPaintInert.js"
-      },
-      "./foundationSvgReady": {
-        "types": "./esm/foundationSvgReady.d.ts",
-        "import": "./esm/foundationSvgReady.js"
-      },
-      "./foundationView": {
-        "types": "./esm/foundationView.d.ts",
-        "import": "./esm/foundationView.js"
-      },
-      "./heightMode": {
-        "types": "./esm/heightMode.d.ts",
-        "import": "./esm/heightMode.js"
-      },
-      "./heightModeConfigSchemaFields": {
-        "types": "./esm/heightModeConfigSchemaFields.d.ts",
-        "import": "./esm/heightModeConfigSchemaFields.js"
-      },
-      "./heightModeMenu": {
-        "types": "./esm/heightModeMenu.d.ts",
-        "import": "./esm/heightModeMenu.js"
-      },
-      "./installClearHoverOnViewportChange": {
-        "types": "./esm/installClearHoverOnViewportChange.d.ts",
-        "import": "./esm/installClearHoverOnViewportChange.js"
-      },
-      "./installGlobalFetchAutorun": {
-        "types": "./esm/installGlobalFetchAutorun.d.ts",
-        "import": "./esm/installGlobalFetchAutorun.js"
-      },
-      "./installPerRegionFetchAutoruns": {
-        "types": "./esm/installPerRegionFetchAutoruns.d.ts",
-        "import": "./esm/installPerRegionFetchAutoruns.js"
-      },
-      "./planRegionFetch": {
-        "types": "./esm/planRegionFetch.d.ts",
-        "import": "./esm/planRegionFetch.js"
-      },
-      "./regionCommit": {
-        "types": "./esm/regionCommit.d.ts",
-        "import": "./esm/regionCommit.js"
-      },
-      "./regionHost": {
-        "types": "./esm/regionHost.d.ts",
-        "import": "./esm/regionHost.js"
-      },
-      "./regionTooLargeConfigSchemaFields": {
-        "types": "./esm/regionTooLargeConfigSchemaFields.d.ts",
-        "import": "./esm/regionTooLargeConfigSchemaFields.js"
-      },
-      "./regionTooLargeUtils": {
-        "types": "./esm/regionTooLargeUtils.d.ts",
-        "import": "./esm/regionTooLargeUtils.js"
-      },
-      "./renderDisplaySvg": {
-        "types": "./esm/renderDisplaySvg.d.ts",
-        "import": "./esm/renderDisplaySvg.js"
-      },
-      "./rpcPropsCacheKey": {
-        "types": "./esm/rpcPropsCacheKey.d.ts",
-        "import": "./esm/rpcPropsCacheKey.js"
-      },
-      "./squashToHeightMenuItem": {
-        "types": "./esm/squashToHeightMenuItem.d.ts",
-        "import": "./esm/squashToHeightMenuItem.js"
-      },
-      "./subPixelBinBp": {
-        "types": "./esm/subPixelBinBp.d.ts",
-        "import": "./esm/subPixelBinBp.js"
-      },
-      "./triangleTransform": {
-        "types": "./esm/triangleTransform.d.ts",
-        "import": "./esm/triangleTransform.js"
-      },
-      "./triangleYScalar": {
-        "types": "./esm/triangleYScalar.d.ts",
-        "import": "./esm/triangleYScalar.js"
-      },
-      "./types": {
-        "types": "./esm/types.d.ts",
-        "import": "./esm/types.js"
-      },
-      "./viewportEmpty": {
-        "types": "./esm/viewportEmpty.d.ts",
-        "import": "./esm/viewportEmpty.js"
-      }
+      "./BlockMsg": "./esm/BlockMsg.js",
+      "./BottomRightIndicators": "./esm/BottomRightIndicators.js",
+      "./DisplayBackgroundProgress": "./esm/DisplayBackgroundProgress.js",
+      "./DisplayChrome": "./esm/DisplayChrome.js",
+      "./DisplayChromeBase": "./esm/DisplayChromeBase.js",
+      "./DisplayErrorBar": "./esm/DisplayErrorBar.js",
+      "./DisplayLoadingOverlay": "./esm/DisplayLoadingOverlay.js",
+      "./DisplayRenderErrorOverlay": "./esm/DisplayRenderErrorOverlay.js",
+      "./DisplayStatusChromeBase": "./esm/DisplayStatusChromeBase.js",
+      "./FetchMixin": "./esm/FetchMixin.js",
+      "./GlobalFetchMixin": "./esm/GlobalFetchMixin.js",
+      "./HeightModeMixin": "./esm/HeightModeMixin.js",
+      "./LegendMixin": "./esm/LegendMixin.js",
+      "./MultiRegionDisplayMixin": "./esm/MultiRegionDisplayMixin.js",
+      "./RegionTooLargeMixin": "./esm/RegionTooLargeMixin.js",
+      "./TooLargeMessage": "./esm/TooLargeMessage.js",
+      "./TrackControl": "./esm/trackControl/TrackControl.js",
+      "./TrackHeightIndicator": "./esm/TrackHeightIndicator.js",
+      "./TrackHeightMixin": "./esm/TrackHeightMixin.js",
+      "./configSchema": "./esm/configSchema.js",
+      "./const": "./esm/const.js",
+      "./displayAutoruns": "./esm/displayAutoruns.js",
+      "./fetchEachRegion": "./esm/fetchEachRegion.js",
+      "./foundationDisplayPhase": "./esm/foundationDisplayPhase.js",
+      "./foundationPaintInert": "./esm/foundationPaintInert.js",
+      "./foundationSvgReady": "./esm/foundationSvgReady.js",
+      "./foundationView": "./esm/foundationView.js",
+      "./heightMode": "./esm/heightMode.js",
+      "./heightModeConfigSchemaFields": "./esm/heightModeConfigSchemaFields.js",
+      "./heightModeMenu": "./esm/heightModeMenu.js",
+      "./installClearHoverOnViewportChange": "./esm/installClearHoverOnViewportChange.js",
+      "./installGlobalFetchAutorun": "./esm/installGlobalFetchAutorun.js",
+      "./installPerRegionFetchAutoruns": "./esm/installPerRegionFetchAutoruns.js",
+      "./planRegionFetch": "./esm/planRegionFetch.js",
+      "./regionCommit": "./esm/regionCommit.js",
+      "./regionHost": "./esm/regionHost.js",
+      "./regionTooLargeConfigSchemaFields": "./esm/regionTooLargeConfigSchemaFields.js",
+      "./regionTooLargeUtils": "./esm/regionTooLargeUtils.js",
+      "./renderDisplaySvg": "./esm/renderDisplaySvg.js",
+      "./rpcPropsCacheKey": "./esm/rpcPropsCacheKey.js",
+      "./squashToHeightMenuItem": "./esm/squashToHeightMenuItem.js",
+      "./subPixelBinBp": "./esm/subPixelBinBp.js",
+      "./triangleTransform": "./esm/triangleTransform.js",
+      "./triangleYScalar": "./esm/triangleYScalar.js",
+      "./types": "./esm/types.js",
+      "./viewportEmpty": "./esm/viewportEmpty.js"
     },
     "typesVersions": {
       "*": {

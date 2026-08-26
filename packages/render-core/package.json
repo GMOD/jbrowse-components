@@ -84,162 +84,45 @@
   "publishConfig": {
     "access": "public",
     "exports": {
-      "./RenderCanvas": {
-        "types": "./esm/RenderCanvas.d.ts",
-        "import": "./esm/RenderCanvas.js"
-      },
-      "./RenderLifecycleMixin": {
-        "types": "./esm/RenderLifecycleMixin.d.ts",
-        "import": "./esm/RenderLifecycleMixin.js"
-      },
-      "./blockClipUtils": {
-        "types": "./esm/blockClipUtils.d.ts",
-        "import": "./esm/blockClipUtils.js"
-      },
-      "./canvas2dUtils": {
-        "types": "./esm/canvas2dUtils.d.ts",
-        "import": "./esm/canvas2dUtils.js"
-      },
-      "./canvasContext": {
-        "types": "./esm/canvasContext.d.ts",
-        "import": "./esm/canvasContext.js"
-      },
-      "./coverageBand": {
-        "types": "./esm/coverageBand.d.ts",
-        "import": "./esm/coverageBand.js"
-      },
-      "./coverageBandBuffers": {
-        "types": "./esm/coverageBandBuffers.d.ts",
-        "import": "./esm/coverageBandBuffers.js"
-      },
-      "./createRenderingBackend": {
-        "types": "./esm/createRenderingBackend.d.ts",
-        "import": "./esm/createRenderingBackend.js"
-      },
-      "./displayPhase": {
-        "types": "./esm/displayPhase.d.ts",
-        "import": "./esm/displayPhase.js"
-      },
-      "./globalRenderingBackend": {
-        "types": "./esm/globalRenderingBackend.d.ts",
-        "import": "./esm/globalRenderingBackend.js"
-      },
-      "./gpuDevice": {
-        "types": "./esm/gpuDevice.d.ts",
-        "import": "./esm/gpuDevice.js"
-      },
-      "./graphicsCapabilities": {
-        "types": "./esm/graphicsCapabilities.d.ts",
-        "import": "./esm/graphicsCapabilities.js"
-      },
-      "./hal": {
-        "types": "./esm/hal/index.d.ts",
-        "import": "./esm/hal/index.js"
-      },
-      "./installUpload": {
-        "types": "./esm/installUpload.d.ts",
-        "import": "./esm/installUpload.js"
-      },
-      "./instanceCache": {
-        "types": "./esm/instanceCache.d.ts",
-        "import": "./esm/instanceCache.js"
-      },
-      "./instancePass": {
-        "types": "./esm/instancePass.d.ts",
-        "import": "./esm/instancePass.js"
-      },
-      "./keyedRenderingBackend": {
-        "types": "./esm/keyedRenderingBackend.d.ts",
-        "import": "./esm/keyedRenderingBackend.js"
-      },
-      "./namedReactions": {
-        "types": "./esm/namedReactions.d.ts",
-        "import": "./esm/namedReactions.js"
-      },
-      "./OverlayCanvas": {
-        "types": "./esm/OverlayCanvas.d.ts",
-        "import": "./esm/OverlayCanvas.js"
-      },
-      "./perRegionRenderingBackend": {
-        "types": "./esm/perRegionRenderingBackend.d.ts",
-        "import": "./esm/perRegionRenderingBackend.js"
-      },
-      "./regionDataMap": {
-        "types": "./esm/regionDataMap.d.ts",
-        "import": "./esm/regionDataMap.js"
-      },
-      "./renderBlock": {
-        "types": "./esm/renderBlock.d.ts",
-        "import": "./esm/renderBlock.js"
-      },
-      "./renderingBackendBase": {
-        "types": "./esm/renderingBackendBase.d.ts",
-        "import": "./esm/renderingBackendBase.js"
-      },
-      "./ScrollLockedOverlay": {
-        "types": "./esm/ScrollLockedOverlay.d.ts",
-        "import": "./esm/ScrollLockedOverlay.js"
-      },
-      "./shaders/coverageBar": {
-        "types": "./esm/shaders/coverageBar.generated.d.ts",
-        "import": "./esm/shaders/coverageBar.generated.js"
-      },
-      "./shaders/coverageIndicator": {
-        "types": "./esm/shaders/coverageIndicator.generated.d.ts",
-        "import": "./esm/shaders/coverageIndicator.generated.js"
-      },
-      "./shaders/coverageInterbase": {
-        "types": "./esm/shaders/coverageInterbase.generated.d.ts",
-        "import": "./esm/shaders/coverageInterbase.generated.js"
-      },
-      "./shaders/coverageMod": {
-        "types": "./esm/shaders/coverageMod.generated.d.ts",
-        "import": "./esm/shaders/coverageMod.generated.js"
-      },
-      "./shaders/coverageSnp": {
-        "types": "./esm/shaders/coverageSnp.generated.d.ts",
-        "import": "./esm/shaders/coverageSnp.generated.js"
-      },
-      "./shaders/hpmath": {
-        "types": "./esm/shaders/hpmath.js.generated.d.ts",
-        "import": "./esm/shaders/hpmath.js.generated.js"
-      },
-      "./shaders/pointGlyph": {
-        "types": "./esm/shaders/pointGlyph.js.generated.d.ts",
-        "import": "./esm/shaders/pointGlyph.js.generated.js"
-      },
-      "./shaders/pointGlyphConsts": {
-        "types": "./esm/shaders/pointGlyph.generated.d.ts",
-        "import": "./esm/shaders/pointGlyph.generated.js"
-      },
-      "./shaders/rowRect": {
-        "types": "./esm/shaders/rowRect.js.generated.d.ts",
-        "import": "./esm/shaders/rowRect.js.generated.js"
-      },
-      "./shaders/rowRectConsts": {
-        "types": "./esm/shaders/rowRect.generated.d.ts",
-        "import": "./esm/shaders/rowRect.generated.js"
-      },
-      "./shaders/scoreScale": {
-        "types": "./esm/shaders/scoreScale.js.generated.d.ts",
-        "import": "./esm/shaders/scoreScale.js.generated.js"
-      },
-      "./slangPass": {
-        "types": "./esm/slangPass.d.ts",
-        "import": "./esm/slangPass.js"
-      },
-      "./useGraphicsCapabilities": {
-        "types": "./esm/useGraphicsCapabilities.d.ts",
-        "import": "./esm/useGraphicsCapabilities.js"
-      },
-      "./useRenderingBackend": {
-        "types": "./esm/useRenderingBackend.d.ts",
-        "import": "./esm/useRenderingBackend.js"
-      },
-      "./useTabVisibilityRerender": {
-        "types": "./esm/useTabVisibilityRerender.d.ts",
-        "import": "./esm/useTabVisibilityRerender.js"
-      }
+      "./RenderCanvas": "./esm/RenderCanvas.js",
+      "./RenderLifecycleMixin": "./esm/RenderLifecycleMixin.js",
+      "./blockClipUtils": "./esm/blockClipUtils.js",
+      "./canvas2dUtils": "./esm/canvas2dUtils.js",
+      "./canvasContext": "./esm/canvasContext.js",
+      "./coverageBand": "./esm/coverageBand.js",
+      "./coverageBandBuffers": "./esm/coverageBandBuffers.js",
+      "./createRenderingBackend": "./esm/createRenderingBackend.js",
+      "./displayPhase": "./esm/displayPhase.js",
+      "./globalRenderingBackend": "./esm/globalRenderingBackend.js",
+      "./gpuDevice": "./esm/gpuDevice.js",
+      "./graphicsCapabilities": "./esm/graphicsCapabilities.js",
+      "./hal": "./esm/hal/index.js",
+      "./installUpload": "./esm/installUpload.js",
+      "./instanceCache": "./esm/instanceCache.js",
+      "./instancePass": "./esm/instancePass.js",
+      "./keyedRenderingBackend": "./esm/keyedRenderingBackend.js",
+      "./namedReactions": "./esm/namedReactions.js",
+      "./OverlayCanvas": "./esm/OverlayCanvas.js",
+      "./perRegionRenderingBackend": "./esm/perRegionRenderingBackend.js",
+      "./regionDataMap": "./esm/regionDataMap.js",
+      "./renderBlock": "./esm/renderBlock.js",
+      "./renderingBackendBase": "./esm/renderingBackendBase.js",
+      "./ScrollLockedOverlay": "./esm/ScrollLockedOverlay.js",
+      "./shaders/coverageBar": "./esm/shaders/coverageBar.generated.js",
+      "./shaders/coverageIndicator": "./esm/shaders/coverageIndicator.generated.js",
+      "./shaders/coverageInterbase": "./esm/shaders/coverageInterbase.generated.js",
+      "./shaders/coverageMod": "./esm/shaders/coverageMod.generated.js",
+      "./shaders/coverageSnp": "./esm/shaders/coverageSnp.generated.js",
+      "./shaders/hpmath": "./esm/shaders/hpmath.js.generated.js",
+      "./shaders/pointGlyph": "./esm/shaders/pointGlyph.js.generated.js",
+      "./shaders/pointGlyphConsts": "./esm/shaders/pointGlyph.generated.js",
+      "./shaders/rowRect": "./esm/shaders/rowRect.js.generated.js",
+      "./shaders/rowRectConsts": "./esm/shaders/rowRect.generated.js",
+      "./shaders/scoreScale": "./esm/shaders/scoreScale.js.generated.js",
+      "./slangPass": "./esm/slangPass.js",
+      "./useGraphicsCapabilities": "./esm/useGraphicsCapabilities.js",
+      "./useRenderingBackend": "./esm/useRenderingBackend.js",
+      "./useTabVisibilityRerender": "./esm/useTabVisibilityRerender.js"
     },
     "typesVersions": {
       "*": {

@@ -51,14 +51,8 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./esm/index.d.ts",
-        "import": "./esm/index.js"
-      },
-      "./*": {
-        "types": "./esm/*.d.ts",
-        "import": "./esm/*.js"
-      }
+      ".": "./esm/index.js",
+      "./*": "./esm/*.js"
     }
   },
   "sideEffects": false
