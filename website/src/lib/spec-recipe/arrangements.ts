@@ -29,8 +29,11 @@ import type { FieldStep } from './fields.ts'
 // carries as a `grouped` boolean — makes the vocabulary something the menu and
 // the recipes share, and it moves to a UI-free leaf module in
 // plugins/alignments the way COMPACTNESS_PRESETS did.
+// `menu` is the submenu the row is served from, so an arrangement that moves
+// carries its own path rather than every emitted step sharing one guess.
 interface Arrangement {
   label: string
+  menu: string
   displayType: string
   settings: Record<string, unknown>
   matches: (settings: Record<string, unknown>) => boolean
@@ -39,6 +42,7 @@ interface Arrangement {
 const ARRANGEMENTS: Arrangement[] = [
   {
     label: SV_CHANNELS_LABEL,
+    menu: 'Read connections',
     displayType: 'LinearAlignmentsDisplay',
     settings: { ...SV_CHANNELS_ON },
     matches: settings =>
@@ -76,7 +80,7 @@ export function takeArrangement(
     return { rest: entries }
   }
   return {
-    step: { path: `Track menu → ${found.label}` },
+    step: { path: `Track menu → ${found.menu} → ${found.label}` },
     rest: entries.filter(
       ([field, value]) =>
         !(field in found.settings && same(value, found.settings[field])),

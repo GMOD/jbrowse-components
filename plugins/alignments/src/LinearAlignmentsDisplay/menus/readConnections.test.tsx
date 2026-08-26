@@ -3,6 +3,7 @@ import { staysOpenOnClick } from '@jbrowse/core/ui'
 import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
+import type { GroupBy } from '../../shared/types.ts'
 import type { Pin } from '@jbrowse/core/configuration'
 
 // stateful stand-in for a Pin (the menu builder and the promote
@@ -61,6 +62,16 @@ function makeModel() {
     minInterchromSupport: DEFAULT_MIN_INTERCHROM_SUPPORT,
     setMinInterchromSupport(v: number) {
       this.minInterchromSupport = v
+    },
+    // The SV-channel row is served from this menu, so its two settings from
+    // outside it are on the mock as well.
+    showPileup: true,
+    setShowPileup(v: boolean) {
+      this.showPileup = v
+    },
+    groupBy: undefined as GroupBy | undefined,
+    setGroupBy(v?: GroupBy) {
+      this.groupBy = v
     },
   }
 }

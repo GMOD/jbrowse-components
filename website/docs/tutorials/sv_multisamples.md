@@ -170,9 +170,9 @@ Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments
 from **1000 Genomes → Alignments**. The ensemble callset draws the call above
 the reads, and nothing in the coverage marks where it starts or stops.
 
-Which way the pairs point does. Turn on **Track menu → SV channels (pairs by
-orientation)**: the reads split into one band per orientation class, each with
-its own coverage curve and its own arcs.
+Which way the pairs point does. Turn on **Track menu → Read connections → SV
+channels (pairs by orientation)**: the reads split into one band per orientation
+class, each with its own coverage curve and its own arcs.
 
 - The normal band holds the flat profile, the same reading the homozygous
   reference sample gave at _RHD_.

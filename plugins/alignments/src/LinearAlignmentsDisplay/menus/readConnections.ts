@@ -3,8 +3,10 @@ import { promotableToggleItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
 import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
+import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
+import type { SvChannelsModel } from './svChannels.ts'
 import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -39,7 +41,15 @@ interface ReadConnectionsModel {
 // options are always present but greyed out (disabled submenu + disabledHelpText)
 // until an overlay is active, so the settings are discoverable instead of
 // vanishing.
-export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
+//
+// The SV-channel row sits here too, under the two overlay modes it builds on.
+// It spent a day at the top of the track menu, where it was the one bare
+// checkbox in a column of submenus; three of the five settings it writes are
+// this menu's own, and the reader watching "Show read arcs" tick as they turn
+// it on is what says how the row and the switches relate.
+export function getReadConnectionsMenuItem(
+  model: ReadConnectionsModel & SvChannelsModel,
+) {
   const linked = model.linkedReads !== 'off'
   const overlayActive = model.readConnections !== 'off'
   const subMenu: MenuItem[] = [
@@ -77,6 +87,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
       },
       pin: model.readCloudDisplayTypeDefault,
     }),
+    getSvChannelsMenuItem(model),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
     // or a chain layout, so this is always offered.
     toggleItem(

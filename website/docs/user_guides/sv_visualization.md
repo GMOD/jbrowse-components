@@ -156,10 +156,10 @@ that the strongest cue wins:
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
 the rows around it: a minority of abnormally oriented pairs among concordant
-grey, their arcs crossing everything else's. **Track menu → SV channels (pairs
-by orientation)** takes the same reads apart. Each orientation class becomes its
-own band with its own coverage curve and its own arcs, the concordant pairs drop
-out of the arcs, and the pileup goes away.
+grey, their arcs crossing everything else's. **Track menu → Read connections →
+SV channels (pairs by orientation)** takes the same reads apart. Each
+orientation class becomes its own band with its own coverage curve and its own
+arcs, the concordant pairs drop out of the arcs, and the pileup goes away.
 
 The bands are the rows of the orientation table above, and the
 [signatures below](#sv-type-signatures) are the key to reading them. An

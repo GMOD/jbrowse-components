@@ -13,7 +13,9 @@ function entries(extra: Record<string, unknown> = {}) {
 
 test('the arrangement is one step, and its settings leave the per-field walk', () => {
   const { step, rest } = takeArrangement(entries(), ALIGNMENTS)
-  expect(step?.path).toBe(`Track menu → ${SV_CHANNELS_LABEL}`)
+  expect(step?.path).toBe(
+    `Track menu → Read connections → ${SV_CHANNELS_LABEL}`,
+  )
   expect(rest).toEqual([])
 })
 
