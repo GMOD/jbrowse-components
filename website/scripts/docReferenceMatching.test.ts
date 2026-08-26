@@ -14,7 +14,12 @@
  * silently unchecked, and a citation that wrapped before its § was skipped for
  * long enough that the heading it named got reworded underneath it.
  */
-import { anchorOf, citationText, repoPathRefs } from './docReferenceMatching.ts'
+import {
+  anchorOf,
+  citationText,
+  repoPathRefs,
+  sectionCites,
+} from './docReferenceMatching.ts'
 
 describe('repoPathRefs', () => {
   test('finds a plain repo path', () => {
@@ -105,14 +110,16 @@ describe('anchorOf', () => {
 })
 
 // Every fixture below interpolates the filename rather than writing it out.
-// check-doc-imports scans this directory's source for `§` and checks whatever
-// citation it finds, so a fixture spelled literally is a citation — and one
+// check-doc-imports scans this directory's source for citations and checks
+// whatever it finds, so a fixture spelled literally is a citation — and one
 // deliberately split across an array literal parses as a doc called
 // `ARCHITECTURE.md` cited at §"Display', 'stacks". Keeping the `.md` off the
 // raw line is what stops a test about citations from failing the checker it
-// tests.
+// tests. The pre-filter is `.md` rather than `§` now, which makes this stricter,
+// not looser: a fixture spelling a comma citation literally would be checked too.
 const DOC = 'ARCHITECTURE.md'
 const SECTION = 'Display stacks'
+const MD = '.md'
 
 describe('citationText', () => {
   test('leaves a citation that fits on one line alone', () => {
@@ -132,6 +139,29 @@ describe('citationText', () => {
     expect(citationText(lines, 0)).toContain(`${DOC} §"${SECTION}"`)
   })
 
+  // Both wrap points again, for the separators the join did not know about.
+  // A comma citation that wrapped was skipped for exactly the reason a § one
+  // used to be, and it is the form the drifted backlog citations were in.
+  test('joins the other separators at both wrap points', () => {
+    expect(citationText([`see ${DOC}`, `, "${SECTION}" for it`], 0)).toContain(
+      `${DOC} , "${SECTION}"`,
+    )
+    expect(
+      citationText([`see ${DOC}, "Display`, 'stacks" for it'], 0),
+    ).toContain(`, "${SECTION}"`)
+    expect(citationText([`see ${DOC}'s "Display`, 'stacks"'], 0)).toContain(
+      `'s "${SECTION}"`,
+    )
+  })
+
+  // Joining more than needed is safe; missing a join is not. `sectionCites`
+  // still demands a `.md` before the separator, so this pairs with the
+  // "declines a bare quote after prose" case below.
+  test('joins a prose comma, which then matches no citation', () => {
+    const joined = citationText(['he said,', '"well" and left'], 0)
+    expect(sectionCites(joined)).toEqual([])
+  })
+
   test('strips a comment marker so one path serves prose and comments', () => {
     const lines = [` * see ${DOC}`, ` * §"${SECTION}"`]
     expect(citationText(lines, 0)).toContain(`${DOC} §"${SECTION}"`)
@@ -139,5 +169,62 @@ describe('citationText', () => {
 
   test('does not run off the end of the file', () => {
     expect(citationText([`trailing ${DOC}`], 0)).toBe(`trailing ${DOC} `)
+  })
+})
+
+/**
+ * The separators and the two reference spellings, which decide whether a
+ * citation is checked at all. Same failure shape as the skips above: a form this
+ * does not recognize is not reported, it is silently not checked, and three of
+ * the four forms below were in that state until 2026-08-26.
+ */
+describe('sectionCites', () => {
+  test('reads the section-mark form it always read', () => {
+    expect(sectionCites(`see ${DOC} §"${SECTION}"`)).toEqual([
+      { ref: DOC, title: SECTION },
+    ])
+  })
+
+  test('reads a comma, with or without the backticks around the path', () => {
+    expect(sectionCites(`see \`agent-docs/${DOC}\`, "${SECTION}"`)).toEqual([
+      { ref: `agent-docs/${DOC}`, title: SECTION },
+    ])
+    expect(sectionCites(`see ${DOC}, "${SECTION}"`)).toEqual([
+      { ref: DOC, title: SECTION },
+    ])
+  })
+
+  test('reads a possessive, straight or curly', () => {
+    expect(sectionCites(`${DOC}'s "${SECTION}"`)).toEqual([
+      { ref: DOC, title: SECTION },
+    ])
+    expect(sectionCites(`${DOC}’s "${SECTION}"`)).toEqual([
+      { ref: DOC, title: SECTION },
+    ])
+  })
+
+  // A link's TARGET is the reference; its label is prose. Reading the label
+  // instead resolves to a doc named after the link text, which is to say to
+  // nothing, silently.
+  test('takes a markdown link by its target, not its label', () => {
+    expect(sectionCites(`see [the spec](../${DOC}) §"${SECTION}"`)).toEqual([
+      { ref: `../${DOC}`, title: SECTION },
+    ])
+    expect(sectionCites(`see [x](../${DOC}#anchor), "${SECTION}"`)).toEqual([
+      { ref: `../${DOC}`, title: SECTION },
+    ])
+  })
+
+  test('declines a bare quote after prose, with no doc named', () => {
+    expect(sectionCites(`the rule, "${SECTION}", is old`)).toEqual([])
+  })
+
+  test('reads several citations on one line', () => {
+    expect(
+      sectionCites(`${DOC} §"a" and ../reference/OTHER${MD}, "b"`),
+    ).toEqual([
+      { ref: DOC, title: 'a' },
+      { ref: `../reference/OTHER${MD}`, title: 'b' },
+    ])
   })
 })

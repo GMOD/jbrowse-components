@@ -33,7 +33,12 @@
 //      stacks"` (a real one: this comment is inside the scan) —
 //      checked so a heading still starts with the quoted text. This is the
 //      checker 4 asks for, and the only reference that runs *from* code *into*
-//      the docs, so it scans source as well as docs.
+//      the docs, so it scans source as well as docs. A citation is a doc, a
+//      separator and a quoted title; the separator may be a section mark, a
+//      comma or a possessive, and the doc may be a markdown link, in which case
+//      its target is the reference. Recognizing only the section mark is how
+//      seven citations of a backlog section that moved on 2026-08-26 stayed
+//      green, and `docReferenceMatching.test.ts` pins each form.
 //
 // They are all the same failure — a plausible-looking reference that no longer
 // resolves — and nothing else in CI reads doc code fences, prose paths, blob or
@@ -50,7 +55,12 @@ import { dirname, join, resolve } from 'node:path'
 
 import { isFile, reportProblems, walkFiles } from './check-utils.ts'
 import { CODE_FENCE_LANGS, FENCE } from './docFenceRegions.ts'
-import { anchorOf, citationText, repoPathRefs } from './docReferenceMatching.ts'
+import {
+  anchorOf,
+  citationText,
+  repoPathRefs,
+  sectionCites,
+} from './docReferenceMatching.ts'
 import { docRelative, docsDir, repoRoot } from './paths.ts'
 
 // The agent-docs knowledge base (ARCHITECTURE.md et al.) is where architecture
@@ -853,15 +863,24 @@ function scanSymbols(path: string, lines: string[]): Problem[] {
 //
 // Numbers in a heading are the common way this happens, which is why the
 // convention is now to keep a count out of any heading a citation can name.
-const SECTION_CITE = /([\w./-]*\.md)\s*§\s*"([^"]+)"/g
 // A citation may quote a stable prefix of a longer heading (`§"Synteny +
 // dotplot"` for "Synteny + dotplot: window-relative Float32 cumulative-bp"), so
 // prefix — not equality — is the test. Case, backticks and `*` emphasis are all
 // noise: a citation reasonably drops them, as the one naming "The same disease
 // rots the docs" does for a heading that italicizes *docs*. Underscores are
 // left alone — they appear in identifiers, not as emphasis, in these headings.
+//
+// Quote marks go with them, and that one is structural rather than a courtesy:
+// a citation is delimited by double quotes, so a heading containing one cannot
+// be quoted literally at all. Every citation of HISTORICAL.md's `Each display
+// asserted its own "did we paint?"` respells it with single quotes, which is
+// the only spelling available and was not a match.
 function normalizeHeading(s: string) {
-  return s.toLowerCase().replaceAll(/[`*]/g, '').replaceAll(/\s+/g, ' ').trim()
+  return s
+    .toLowerCase()
+    .replaceAll(/[`*"'‘’“”]/g, '')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
 }
 
 const headingTextCache = new Map<string, string[] | undefined>()
@@ -883,14 +902,28 @@ function headingTexts(absPath: string) {
   return headingTextCache.get(absPath)
 }
 
-// Resolve the doc a citation names. A path resolves from the repo root; a bare
-// `CLAUDE.md` is the nearest one at or above the citing file (that is what a
-// sibling-doc reference means); any other bare basename is looked up in
-// agent-docs, which is where the cited knowledge base lives.
+// Resolve the doc a citation names, against the three roots a citation is
+// actually written from: the repo, the citing file's own directory, and
+// agent-docs. Only the first was tried, which meant a citation resolved or not
+// by where its author was standing — `../reference/CROSS_BACKEND_GATE.md` from
+// a `todo/` entry and `reference/BP_PRECISION.md` from a sibling reference doc
+// are both ordinary cross-links there, and neither is a repo path.
+//
+// A bare `CLAUDE.md` is the nearest one at or above the citing file (that is
+// what a sibling-doc reference means); any other bare basename is looked up in
+// agent-docs and then in the site guides, both of which are cited that way.
 function resolveCitedDoc(ref: string, fromFile: string) {
   if (ref.includes('/')) {
-    const abs = join(repoRoot, ref)
-    return isFile(abs) ? abs : undefined
+    for (const abs of [
+      join(repoRoot, ref),
+      join(dirname(fromFile), ref),
+      join(agentDocsDir, ref),
+    ]) {
+      if (isFile(abs)) {
+        return abs
+      }
+    }
+    return undefined
   }
   if (ref === 'CLAUDE.md') {
     for (let dir = fromFile; dir.includes('/');) {
@@ -905,16 +938,40 @@ function resolveCitedDoc(ref: string, fromFile: string) {
     }
     return undefined
   }
-  return walkFiles(agentDocsDir, name => name === ref)[0]
+  return (
+    walkFiles(agentDocsDir, name => name === ref)[0] ??
+    walkFiles(docsDir, name => name === ref)[0]
+  )
 }
+
+// A slashed citation that resolves nowhere is only OURS to report when it looks
+// like a path in this repo. `check-quoted-figures.ts` cites
+// `bgzf-filehandle/docs/optimizations.md` — a doc in a sibling checkout, and the
+// right thing to cite — and the anchor is what tells the two apart, exactly as
+// `repoPathRefs` uses it for prose paths. A relative ref is local by
+// construction; a bare basename never reaches this.
+const CITE_ROOTS = new Set([
+  'packages',
+  'plugins',
+  'products',
+  'example-plugins',
+  'component_tests',
+  'agent-docs',
+  'website',
+  'scripts',
+  'test_data',
+])
+const citesThisRepo = (ref: string) =>
+  ref.startsWith('.') || CITE_ROOTS.has(ref.split('/')[0]!)
 
 function scanSectionCites(path: string, lines: string[]): Problem[] {
   const problems: Problem[] = []
   lines.forEach((line, i) => {
-    for (const m of citationText(lines, i).matchAll(SECTION_CITE)) {
-      const ref = m[1]!
-      const title = m[2]!
+    for (const { ref, title } of sectionCites(citationText(lines, i))) {
       const doc = resolveCitedDoc(ref, path)
+      if (!doc && ref.includes('/') && !citesThisRepo(ref)) {
+        continue
+      }
       const problem = (reason: string) => {
         problems.push({
           file: path,
@@ -1029,6 +1086,12 @@ const isSource = (name: string) =>
   /\.(tsx?|jsx?|mjs|cjs|py|sh|slang)$/.test(name)
 const isBuildOutput = (file: string) =>
   file.includes('/esm/') || file.includes('/dist/')
+// Every citation names a `.md`, so that is the cheap pre-filter. It used to be
+// `§`, which is the pre-filter for ONE of the three separators — a source
+// comment citing a doc with a comma was skipped here before `scanSectionCites`
+// ever saw it, so widening the grammar alone changed nothing for the four in
+// `plugins/` that cite a backlog item that has since moved.
+const mayCite = (text: string) => text.includes('.md')
 for (const base of [
   'packages',
   'plugins',
@@ -1042,7 +1105,7 @@ for (const base of [
       continue
     }
     const text = readFileSync(file, 'utf8')
-    if (text.includes('§')) {
+    if (mayCite(text)) {
       problems.push(...scanSectionCites(file, text.split('\n')))
     }
   }
@@ -1054,7 +1117,7 @@ for (const name of readdirSync(repoRoot)) {
   const file = join(repoRoot, name)
   if (isSource(name) && isFile(file)) {
     const text = readFileSync(file, 'utf8')
-    if (text.includes('§')) {
+    if (mayCite(text)) {
       problems.push(...scanSectionCites(file, text.split('\n')))
     }
   }

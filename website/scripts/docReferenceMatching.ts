@@ -85,6 +85,20 @@ export function repoPathRefs(line: string): string[] {
   return refs
 }
 
+// A citation names a doc, then a separator, then the heading in quotes. The doc
+// half is either a bare path or a markdown link, in which case the LINK TARGET
+// is the reference and the label is prose. The separator half is a section mark,
+// a comma, or a possessive — the last two were unrecognized until 2026-08-26,
+// which is how seven citations of a renamed backlog section stayed green.
+//
+// A comma is loose enough to match a sentence that happens to quote something
+// after naming a doc. That is the intended trade: this repo's convention is that
+// a quoted title after a doc reference IS a citation, so a false positive here
+// is a sentence to rephrase, while the alternative was not checking the form
+// most citations are actually written in.
+export const SECTION_CITE =
+  /(?:\[[^\]]*\]\(\s*([\w./-]*\.md)(?:#[^)]*)?\s*\)|([\w./-]*\.md)`?)\s*(?:§|,|['’]s)\s*"([^"]+)"/g
+
 // Strip a leading comment marker, so one path serves prose and comments. A
 // no-op on a prose line.
 const strip = (l: string) => l.replace(/^\s*(\/\/|\*|\/\*\*?)\s?/, '')
@@ -93,18 +107,52 @@ const strip = (l: string) => l.replace(/^\s*(\/\/|\*|\/\*\*?)\s?/, '')
  * The text a section citation on `lines[i]` should be matched against.
  *
  * A citation wraps in two places — inside the quoted title, or between the
- * filename and the § — and joining only on the first was the bug: agent-docs is
- * in `.prettierignore` and hand-wrapped at 80 columns, so the second break is
- * the common one for any citation naming a path and a title of more than a few
- * words. An unmatched citation is not reported, it is skipped, so the effect was
- * a checker that silently declined to check its most typical input.
+ * filename and the separator — and joining only on the first was the bug:
+ * agent-docs is in `.prettierignore` and hand-wrapped at 80 columns, so the
+ * second break is the common one for any citation naming a path and a title of
+ * more than a few words. An unmatched citation is not reported, it is skipped,
+ * so the effect was a checker that silently declined to check its most typical
+ * input.
+ *
+ * Both halves are per-separator, and each stayed section-mark-only after
+ * `SECTION_CITE` learned the other two: a comma citation that wrapped inside its
+ * title went unchecked for the same reason a section-mark one used to.
+ *
+ * Joining more lines than needed is safe in a way missing one is not. The joined
+ * text is only ever fed back to `SECTION_CITE`, which still demands a `.md`
+ * before the separator, so a prose comma before a quote joins a line and matches
+ * nothing.
  *
  * Only joins when this line cannot already carry a whole citation, so a
  * single-line hit is not matched twice.
  */
 export function citationText(lines: string[], i: number) {
   const line = lines[i] ?? ''
-  return /(?:§\s*"[^"]*|\.md\s*)$/.test(line)
+  return /(?:(?:§|,|['’]s)\s*"[^"]*|\.md`?\)?\s*(?:§|,|['’]s)?\s*)$/.test(line)
     ? `${strip(line)} ${strip(lines[i + 1] ?? '')}`
     : line
+}
+
+/**
+ * The doc-and-heading pairs a line cites by quoted title.
+ *
+ * `§` was the only separator this recognized, and the citations that drifted
+ * furthest used the other two. A bulk move of 34 backlog entries out of
+ * `TODO.md` on 2026-08-26 left seven citations naming headings that no longer
+ * existed, every one of them written as a comma or a possessive, so check 6
+ * skipped all seven while reporting that citations resolve. The forms are
+ * spelled out in the tests rather than here: this file is inside the scan, so a
+ * literal citation in a comment is one the checker then has to resolve.
+ *
+ * The markdown-link form is the same gap one level down — a link carrying a
+ * section mark still escaped, because the `)` sits between the filename and the
+ * separator. A link's target is the reference; its label is prose and may say
+ * anything.
+ */
+export function sectionCites(text: string) {
+  const cites: { ref: string; title: string }[] = []
+  for (const m of text.matchAll(SECTION_CITE)) {
+    cites.push({ ref: m[1] ?? m[2]!, title: m[3]! })
+  }
+  return cites
 }
