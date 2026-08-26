@@ -1,12 +1,13 @@
 ---
 name: give-an-arcs-right-click-something-to-offer
-description: decide the item set; the hit already resolves coordinates and support
-metadata:
-  area: alignments, arcs
-  category: ready
+description: an arc's right-click falls through to the browser's menu, and everything a menu would offer is already resolved at hit time — but nobody has decided the item set, and reaching a menu at all means giving `ContextMenuHit` a second shape, which the split-state sort bugs earned it against
 ---
 
 # Give an arc's right-click something to offer
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The fall-through is the right
+rule today, so what is proposed is a product call nobody has made — and the
+invariant in its way is one a class of bugs put there.
 
 A right-click on an arc or a tick falls through to the browser's menu, because
 `contextMenuTargetForHit` returns `undefined` for `type: 'arc'`. The fall-through

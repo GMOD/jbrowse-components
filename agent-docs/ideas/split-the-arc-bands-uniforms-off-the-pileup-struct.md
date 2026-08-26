@@ -64,7 +64,7 @@ is the thing to check first, and it is a smaller change than either.
 
 ## Where the budget question lives
 
-[cut-webgl2-contexts-per-display](../todo/cut-webgl2-contexts-per-display.md) is about
+[cut-webgl2-contexts-per-display](cut-webgl2-contexts-per-display.md) is about
 CONTEXT count, not bytes, and its measure-first note applies here too: 17 tracks
 x 1 MiB saved is 17 MiB, and nothing has yet shown that the ring is what a real
 session is short of. Measure before spending the regen.

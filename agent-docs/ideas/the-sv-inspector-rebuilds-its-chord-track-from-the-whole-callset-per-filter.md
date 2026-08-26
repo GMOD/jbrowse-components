@@ -1,12 +1,13 @@
 ---
 name: the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter
-description: time it on a callset in the thousands, not the 44-row table
-metadata:
-  area: SV inspector
-  category: measure-first
+description: a changed filter tears down and rebuilds a chord track whose config carries the whole callset inline, cloned once and validated twice — but the only callset in the tree is 44 rows, so nobody knows whether any of it is felt, and the structural fix changes what the SV inspector persists
 ---
 
 # The SV inspector rebuilds its chord track from the whole callset per filter
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The redundant rebuilds are
+already gone, so what is left may measure to nothing — and the fixture that
+would show it otherwise is not in the tree.
 
 `featuresCircularTrackConfiguration` carries every visible feature inline, so a
 changed filter means `hideTrack` + `addTrackConf` on a conf holding the callset.

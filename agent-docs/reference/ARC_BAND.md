@@ -511,7 +511,7 @@ As a variant, each gesture is right by default instead of by remembering:
   junction could offer. `ArcMarkHit` narrows to `{tooltip, highlight}` and drops
   the `ArcBandHitResult` behind them, which is what actually forecloses it
   downstream. See
-  [An arc's right-click offers nothing](../todo/give-an-arcs-right-click-something-to-offer.md).
+  [An arc's right-click offers nothing](../ideas/give-an-arcs-right-click-something-to-offer.md).
 
 `arcGestureGuard.test.ts` holds the behaviour, and it works the one pixel where an
 arc's ink lies over an interbase bar — the mark that answers a click with a widget

@@ -1,12 +1,14 @@
 ---
 name: alignments-still-repacks-every-row-instanced-pass-on-the-main-thread
-description: profile the pack/upload/clone split first
-metadata:
-  area: alignments, GPU
-  category: measure-first
+description: a genuine relayout still packs every row-instanced pass on the main thread, and Y is the only layout-dependent field in most of those structs — but nobody has profiled the pack/upload/clone split, and each of the three ways to stop shipping the rest through a main-thread packer reaches the HALs or the shaders
 ---
 
 # Alignments still repacks every row-instanced pass on the main thread
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. Nobody has profiled the split
+it proposes to attack, its own text allows that at gene-scale defaults none of
+this is justified, and all three designs are unchosen — two of them reach both
+HALs, one reaches every row-instanced shader.
 
 ADR-004's open item #3, and now the only large one left on that path: the
 per-region upload skip and the layout/color split cut the syncs that repack

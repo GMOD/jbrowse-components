@@ -1,12 +1,14 @@
 ---
 name: two-spellings-of-how-tall-is-the-embed
-description: the LGV ships `height`; decide whether the app's CSS variable becomes the same prop
-metadata:
-  area: embedded, API
-  category: ready
+description: the LGV takes a `height` prop and react-app2 takes a `--jbrowse-app-height` CSS variable, and both are deliberate — so unifying them is an API question with no commitment either way, and one of its two answers is a documented split rather than a change
 ---
 
 # Two spellings of "how tall is the embed"
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The issue behind it is
+answered and shipped; what is left is a question about the published API that
+nobody has taken a position on, and one of its answers is a sentence in the
+docs.
 
 `@jbrowse/react-linear-genome-view2` takes `height` — any CSS height, applied to
 the component's own root — and a bounded view pins its chrome and scrolls only

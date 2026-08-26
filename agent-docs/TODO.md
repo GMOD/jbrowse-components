@@ -6,9 +6,9 @@ description: The backlog — action items to build or fix, grouped by how ready 
 # Backlog
 
 Grouped by **what you have to do first**, because that is the thing most of these
-entries actually disagree on. 36 are ordinary build work, some of them carrying a
+entries actually disagree on. 32 are ordinary build work, some of them carrying a
 design that survived a rejected alternative and needs following rather than
-re-deriving. 8 open with an instruction to go measure something, because the
+re-deriving. 5 open with an instruction to go measure something, because the
 premise or the cost attribution is not established and building first would be
 guessing. Twelve are blocked on a visual call
 that is not the implementer's to make.
@@ -21,11 +21,13 @@ it; move a row when the reason above the table stops describing it.
 Exploratory concepts that are *not* committed work live in
 [ideas/](ideas/README.md), one file per proposal.
 
-**An entry earns its place by being worth doing, not by being written down.** A
-triage on 2026-08-26 sent fourteen the other way: an entry whose own text says it
-may close on a measurement rather than a build, and one whose horizon is a
-session of its own that nobody has committed to, are both proposals. Each carries
-a note at its top recording the move and why.
+**An entry earns its place by being worth doing, not by being written down.** Two
+triage passes on 2026-08-26 sent twenty-one the other way. Three shapes keep
+turning up, and all three are proposals: an entry whose own text says it may
+close on a measurement rather than a build; one whose horizon is a session of its
+own that nobody has committed to; and one whose first move is a product or API
+call nobody has taken a position on, where "leave it as it is" is a live answer.
+Each carries a note at its top recording the move and why.
 
 **One file per item, under [todo/](todo/).** Each carries the full entry as its
 own doc, with `name:`/`description:` frontmatter and a `metadata.category`
@@ -58,7 +60,6 @@ capture, then release validation.
 | [Extra large text SVG mode](todo/extra-large-text-svg-mode-for-pub-ready-figures.md) | SVG export | thread a scale the way `fontFamily` threads |
 | [A repeat's subpart labels collide in one row](todo/a-repeats-subpart-labels-collide-inside-the-row-they-now-share.md) | canvas | the row is reserved now; decide whether the one-row design survives |
 | [Give colorNeutralRead a dark variant](todo/give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr.md) | alignments, palette | decide two neutrals or one before editing either |
-| [An arc's right-click offers nothing](todo/give-an-arcs-right-click-something-to-offer.md) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
 | [Let a dotplot click open the alignment it is on](todo/let-a-dotplot-click-open-the-alignment-it-is-on.md) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [A config slot for `bezierRadiusRatio`](todo/decide-whether-bezierradiusratio-becomes-a-config-slot.md) | circular view, config | decide whether the state-model property stays beside the slot |
 | [PanSN prefixes in the add-track form](todo/offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form.md) | comparative | the error half shipped; this is the discovery half |
@@ -67,8 +68,6 @@ capture, then release validation.
 | [Feet on the interchromosomal ticks](todo/give-the-interchromosomal-ticks-breakend-feet-too.md) | alignments | decide what a coalesced tick's direction is, then the shader |
 | [One mark per interchromosomal cluster](todo/draw-one-mark-per-interchromosomal-cluster.md) | alignments | a figure-changing decision; pick the position rule first |
 | [A fixed tick pool for the coordinate ruler](todo/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md) | LGV, perf | the key half landed; what is left is the count delta |
-| [Two spellings of "how tall is the embed"](todo/two-spellings-of-how-tall-is-the-embed.md) | embedded, API | the LGV ships `height`; decide whether the app's CSS variable becomes the same prop |
-| [A validator gate for the examples sites' configs](todo/decide-whether-the-examples-sites-configs-get-a-validator-gate.md) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [Do the plugin `exports` surfaces earn a baseline](todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md) | plugins, ABI | recorded; build the plugin-`exports` baseline, and read the session one's blocker first |
 | [Give `session.jbrowse` a real type](todo/give-sessionjbrowse-a-real-type.md) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
 | [Stop rewriting the worker's arrays](todo/stop-rewriting-the-workers-arrays-to-lay-out-features.md) | canvas | measured: skip the row offset, convert the two object arrays to SoA. The cheap half is the WIRE format alone — two files, 365ms to ~60ms at 60k — and is worth taking before the ~55-file version anyone commits to |
@@ -78,7 +77,6 @@ capture, then release validation.
 | [Name the reference base in the coverage tooltip](todo/name-the-reference-base-in-the-coverage-tooltips-ref-row.md) | alignments | read `GetConsensusSequence` first — the seam for a non-render sequence fetch may already exist |
 | [Group the canvas pileup by strand](todo/group-the-canvas-pileup-by-strand.md) | canvas, alignments | copy `GROUP_BY_DIMENSIONS`; `applyRowGroups` is a different axis |
 | [Group reads by sample or library](todo/group-reads-by-sample-or-library-from-the-rg-header.md) | alignments | the adapter has to hand over an RG-to-SM/LB map; the grouping already exists |
-| [A quantitative splice-junction track](todo/a-quantitative-splice-junction-track-of-its-own.md) | alignments, rnaseq | sashimi is an overlay only; the motif classification is already computed |
 | [Rebuild the OrthoFinder demos' chrom.sizes](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all. `demos/orthofinder_*` is still at `ffa68a2e84` and the two spec-side workarounds are still carrying it |
 | [Shoot the multihop chain as counted arcs](todo/shoot-the-multihop-chain-as-counted-arcs-in-one-lgv.md) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Capture the junction-BED tutorial figure](todo/capture-a-figure-for-the-junction-bed-tutorial-section.md) | figures, rnaseq | build and host the junction BED first; the capture is ordinary once it exists |
@@ -112,20 +110,19 @@ should mean.
 
 ## Measure first: the premise or the cost attribution is unconfirmed
 
-Ordered by what the measurement costs, cheapest first — the top of this table is
-an afternoon's worth of numbers that between them close or unblock five entries.
-Every entry here still has a number owed; two that no longer did moved to the
-first table on 2026-08-26, since what was unconfirmed in them had become the
-scope of the build rather than the premise.
+Ordered by what the measurement costs, cheapest first, and the whole table is now
+within an afternoon. Every entry here owes a number *and* has a build someone
+wants behind it: two whose premise had become settled moved to the first table on
+2026-08-26, and the three whose *build* was the unsettled part — context pooling,
+a main-thread repack with three unchosen designs, a rebuild nobody has felt —
+moved to [ideas/](ideas/README.md) the same day. A measurement gating a build
+nobody has committed to is a proposal.
 
 | Item | Area | First move |
 | --- | --- | --- |
 | [Cross-region arc count at 300x](todo/read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from.md) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
 | [Watch the per-base refetch on a real BAM](todo/watch-the-per-base-refetch-on-a-real-bam.md) | alignments, RPC | count `RenderAlignmentData` calls over a scripted zoom; don't reason about the throttle |
 | [Re-measure the bicolor split on the main thread](todo/re-measure-the-bicolor-split-on-the-main-thread.md) | wiggle, perf | ADR-016's premise is gone under ADR-078; take the number on a 1000-source multiwiggle |
-| [Cut WebGL2 contexts per display](todo/cut-webgl2-contexts-per-display.md) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it. Read the analytics `software-rendering` bit first: it says how much of the no-WebGPU population is still in the group this would serve |
 | [The swapped track resolves to a point](todo/the-swapped-assembly-track-resolves-to-a-point.md) | synteny | the hang is fixed; what is left is the swap, still not isolated — one more fixture separates orientation from column order |
-| [The SV inspector rebuilds its chord track per filter](todo/the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter.md) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [Time a two-tier PIF to settled](todo/time-a-two-tier-pif-to-settled-in-a-browser.md) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
-| [Alignments main-thread repack](todo/alignments-still-repacks-every-row-instanced-pass-on-the-main-thread.md) | alignments, GPU | profile the pack/upload/clone split first |
 

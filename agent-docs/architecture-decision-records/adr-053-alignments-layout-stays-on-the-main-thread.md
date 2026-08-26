@@ -70,7 +70,7 @@ can pack everything else — the same split that already sends coverage / SNP /
 interbase / indicator bytes pre-packed. Three routes (worker packs with `y = 0`
 and the main thread patches one lane; Y as a second instance buffer; Y as a
 per-read indirection the shader reads) are written up in
-[TODO.md](../TODO.md#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread),
+[ideas/alignments-still-repacks-every-row-instanced-pass-on-the-main-thread.md](../ideas/alignments-still-repacks-every-row-instanced-pass-on-the-main-thread.md),
 with the measurement to do first.
 
 Two cheaper wins on the same path have landed and are worth knowing about before

@@ -1,12 +1,13 @@
 ---
 name: decide-whether-the-examples-sites-configs-get-a-validator-gate
-description: the file is fixed; what is open is the copy and where a gate lives
-metadata:
-  area: embedded, config
-  category: ready
+description: the react-app site's forked volvox config is fixed, so what is left is process rather than a defect — whether the copy should exist at all, and whether a gate is worth putting `@jbrowse/cli` in four sites' installs for one function
 ---
 
 # Decide whether the examples sites' configs get a validator gate
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The defect landed; what is
+left is whether to build process around it, and "no gate, two fixtures" is a
+live answer.
 
 The react-app site's `volvox-config.json` is fixed — it was a copy forked before
 the config migration, and its eight pre-slot spellings (`pileupDisplay`,

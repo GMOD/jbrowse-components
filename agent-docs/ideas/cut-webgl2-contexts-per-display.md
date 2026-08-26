@@ -1,12 +1,13 @@
 ---
 name: cut-webgl2-contexts-per-display
-description: build — ceiling measured at 16, one ordinary view crosses it
-metadata:
-  area: GPU, limits
-  category: measure-first
+description: the 16-context ceiling is measured and one 17-track view crosses it — but the two routings that landed since, WebGPU first and Canvas2D for software rasterizers, may have emptied the population this would serve, and the analytics bit that says so has not been read
 ---
 
 # Cut WebGL2 contexts per display
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The entry's own first move is
+to re-measure the population, and the structural build behind it — context
+pooling, track-level mount/release — is a session nobody has committed to.
 
 The ceiling is **16 live contexts** and one LGV with 17 GPU tracks crosses it —
 measured 2026-08-05, same on a real Intel GPU and on SwiftShader, so it is a
