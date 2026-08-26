@@ -25,6 +25,14 @@ You can also extract or copy the sequence underlying selected features; see the
 Searching the reference sequence for a pattern, CRISPR guide, or restriction
 site is a view-level feature; see [](/docs/user_guides/sequence_search).
 
+## Getting the sequence out
+
+The track menu's **Launch view → Get sequence (visible region)** opens the
+sequence for the window as FASTA, with reverse and complement toggles and a
+download. A
+[rubberband selection](/docs/user_guides/basic_usage#rubberband-selection) opens
+the same panel for a span narrower than the window.
+
 ## See also
 
 - [](/docs/user_guides/gene_track)

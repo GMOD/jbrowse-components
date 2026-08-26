@@ -295,17 +295,73 @@ independently take it. **Draw as** picks which view it opens in:
 
 Either goes into the launching view's place or into a new view below it.
 
-It reads SA tags, so the far side of a junction does not have to be on screen.
-It needs reads long enough to carry more than one junction, which in practice
-means long reads: a route whose segments are each about one read long is an
-aligner splitting a short read across the genome rather than an allele, and the
-strip and segment sizes beside each row are what separate the two.
+### What the reconstruction needs
+
+Reconstruction reads split alignments and counts them, so what it recovers
+follows from what the aligner wrote and how many molecules crossed the event.
+The figures below come from scoring it at every junction two published somatic
+callsets report — COLO829 on ONT and C-GIAB's HG008-T on PacBio HiFi, 215
+junctions between them
+([SV_MULTIHOP.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SV_MULTIHOP.md)
+carries the run and the rest of its numbers).
+
+- **Long reads, from an aligner that emits SA tags** — minimap2 and ngmlr both
+  do. A 100 bp Illumina library over the same breakpoints ranks each junction on
+  its own and produces no multi-junction route, because no read reaches from one
+  junction to the next.
+- **An event above about 10 kb, or interchromosomal.** Across those two
+  callsets, 129 of the 130 junctions above 10 kb or between chromosomes are
+  recovered; between 1 and 10 kb it is 60% and 65%; below 1 kb, 11% and 10%. The
+  cliff is a representation, not a limit on the event: 50 of the 58 misses are
+  events the aligner wrote as a deletion inside one read's CIGAR rather than as
+  a split alignment, which nothing reading SA tags can reach, and the pileup's
+  own deletion marks are where those show. Where the cliff falls is as much the
+  aligner's doing as the browser's, so another aligner puts it somewhere else.
+- **Two reads that agree.** A route reaches the list once at least two of them
+  cross the same junctions in the same order and orientation. Listing one-read
+  routes as well buys three points of recall and twelve times as many routes at
+  loci with no event, which is what the floor is there for — it is not a
+  judgement that a single split read is mismapped.
+- **The reads actually loaded.** A window over the track's byte budget renders
+  as `force load` with nothing behind it; the dialog says so rather than
+  reporting that no route is supported. Narrow the window.
+- **Every locus you want ranked on screen.** A read anchored in the window
+  brings its whole SA chain, so the far side of a junction needs no panel of its
+  own. Reads sitting only at that far locus contribute nothing until it is
+  shown: over one of the HG008-T demo slices the picker offers a single route,
+  and over both it offers seven.
+
+The same entry on a synteny track reads contigs rather than reads — a de novo
+assembly aligned to the reference is the same object at a larger scale — and
+there one contig is enough to list a route, while every locus has to be on
+screen, since an alignment block names nothing the view has not fetched.
+
+### Judging what it lists
 
 A read count ranks the routes; it does not vouch for them. Reads mismapped into
 a repeat produce a confident-looking route, so the output is a proposal to check
-against the reads rather than a call. [](/docs/tutorials/cancer_sv) works
-through both shapes it produces, a two-segment fold-back and a four-segment
-allele across three chromosomes.
+against the reads rather than a call.
+
+- **The matched normal is the strongest check.** At the same windows, the normal
+  recovers none of the somatic junctions in either callset. It does propose
+  routes elsewhere — at 40% of COLO829's control windows and 4% of HG008-T's —
+  so a route on its own says a locus has split reads, not that it has an event.
+- **Look at the top two rows.** Where a published junction is recovered, it
+  ranks first in 48 of 51 (COLO829) and 96 of 106 (HG008-T), and first or second
+  in every single case. A route further down the list is unlikely to be the one
+  you came for.
+- **Read the segment sizes.** A route whose segments are each about one read
+  long is an aligner splitting a short read across the genome rather than an
+  allele; the segment strip drawn to scale beside each row, and the sizes under
+  it, are what separate the two.
+- **A row marked "part of a longer route in this list"** crosses a run of
+  another row's junctions and stops. It is consistent with the longer route
+  rather than a rival to it.
+- **Dozens of routes means a repetitive window**, not a complicated allele. The
+  picker says how many it left off the list for that reason.
+
+[](/docs/tutorials/cancer_sv) works through both shapes it produces, a
+two-segment fold-back and a four-segment allele across three chromosomes.
 
 ### Where split-read reconstruction comes from
 

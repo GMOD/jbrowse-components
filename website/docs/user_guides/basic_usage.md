@@ -282,6 +282,12 @@ of what the loaded plugins can start from the selection:
 
 Both name the track they run on, because that choice decides the result.
 
+Every entry here has a track-menu twin that takes the visible window instead of
+a selection, so none of them needs a drag to be found: **Get sequence (visible
+region)** on the reference sequence track, **Consensus sequence (visible
+region)** on an alignments track, and the synteny launch's own
+[visible-region entry](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
+
 ## Scalebar chromosome name menu
 
 The chromosome (reference sequence) names drawn along the scale bar are

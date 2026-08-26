@@ -13,14 +13,21 @@ variant track).
 
 ## Opening the panel
 
-Click and drag across the region of interest in the linear genome view, then
-choose **Launch → Consensus sequence** from the menu that appears, then the
-alignments track to call from. That last step is there even with a single track
-open (which track the reads come from decides the answer, so it is always
-named), and the dialog title repeats the name.
+Two ways in, differing only in which region the panel opens on:
+
+- **From the track menu** — **Launch view → Consensus sequence (visible
+  region)** on the alignments track. The panel opens on what the view is
+  showing, and its **Region** field is editable, so this is a starting point
+  rather than the call.
+- **From a selection** — click and drag across the region of interest, then
+  **Launch → Consensus sequence** in the menu that appears, then the alignments
+  track to call from. That last step is there even with a single track open
+  (which track the reads come from decides the answer, so it is always named),
+  and the dialog title repeats the name.
 
 Regions are limited to 500kb. Reads are much heavier to fetch than reference
-sequence, so a larger selection is refused.
+sequence, so a larger region is refused — the panel says so and waits for a
+smaller one typed into the field.
 
 ## How a position is called
 
