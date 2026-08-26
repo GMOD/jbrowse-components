@@ -95,7 +95,7 @@ function mateOnSameRef(record: AlignmentRecord) {
     !!(flags & SAM_FLAG_PAIRED) &&
     !(flags & SAM_FLAG_MATE_UNMAPPED) &&
     nextPos !== undefined &&
-    (nextRefName === undefined || nextRefName === record.refName)
+    nextRefName === record.refName
   )
 }
 
