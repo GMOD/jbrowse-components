@@ -2147,9 +2147,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          *   padding only before the first region and after the last — so this
          *   bar is the only thing separating two of them. Without it a
          *   two-region view reads as a one-region view scrolled somewhere
-         *   strange. `isRightEndOfDisplayedRegion` is what marks it;
-         *   `scalebarRegionEndPx` looks like a shortcut for the same filter and
-         *   is not one, being the right edge of the blocks currently *loaded*.
+         *   strange. `isRightEndOfDisplayedRegion` is what marks it, and the
+         *   right edge of the blocks currently *loaded* — which is what block
+         *   geometry hands you — is not the same filter.
          * - `elided`: a region too narrow to draw at this zoom. Whole-genome on
          *   a real assembly is mostly these — hg38 has 455 sequences and all
          *   but the 24 chromosomes land sub-pixel — so a host that skips them
