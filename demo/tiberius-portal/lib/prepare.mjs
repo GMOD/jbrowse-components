@@ -202,27 +202,27 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, con
       category: ['Evidence'],
       assemblyNames: [assembly],
       adapter: { type: 'BamAdapter', uri: uri(r) },
+      // A display block in the TRACK CONFIG is the one way to stage a lane that
+      // both halves of a card obey, because both read this file. Neither of the
+      // other two routes works on a released JBrowse: `displayDefaults`
+      // postdates it, and a session spec's tracks are ids, so a track written
+      // as an object to hang settings off resolves to nothing at all.
+      displays: [
+        {
+          type: 'LinearAlignmentsDisplay',
+          displayId: `${trackId}-LinearAlignmentsDisplay`,
+          ...(rnaHeight ? { height: rnaHeight } : {}),
+          // Compact reads (3px against the 7px default) and spliced ones laid
+          // out first. A card is a gene-scale window, where an individual read
+          // is a tick either way — so what the pileup owes the reader is the
+          // shape of the splicing, and both settings buy that: three times the
+          // depth in the same lane, with every read carrying a junction in the
+          // top rows rather than scattered among the reads that carry none.
+          featureHeight: 3,
+          splicedReadsFirst: true,
+        },
+      ],
     }
-    // A display block in the TRACK CONFIG is the one way to stage a lane that
-    // both halves of a card obey, because both read this file. Neither of the
-    // other two routes works on a released JBrowse: `displayDefaults` postdates
-    // it, and a session spec's tracks are ids, so a track written as an object
-    // to hang settings off resolves to nothing at all.
-    track.displays = [
-      {
-        type: 'LinearAlignmentsDisplay',
-        displayId: `${trackId}-LinearAlignmentsDisplay`,
-        ...(rnaHeight ? { height: rnaHeight } : {}),
-        // Compact reads (3px against the 7px default) and spliced ones laid out
-        // first. A card is a gene-scale window, where an individual read is a
-        // tick either way — so what the pileup owes the reader is the shape of
-        // the splicing, and both settings buy that: three times the depth in
-        // the same lane, with every read carrying a junction in the top rows
-        // rather than scattered among the reads that carry none.
-        featureHeight: 3,
-        splicedReadsFirst: true,
-      },
-    ]
     tracks.push(track)
   })
 
