@@ -95,6 +95,14 @@ nothing in the display; it is a placement source that answers "which haplotypes
 differ here" cheaply, which is the wave VCF's genotype matrix, not the
 alignment.
 
+The ORDER of whatever set that picks is its own file —
+[ordering-synteny-lanes-by-similarity](ordering-synteny-lanes-by-similarity.md),
+which reaches the same "not from the alignment at cohort scale" conclusion by
+counting fetches, and adds the two constraints this paragraph does not: a ribbon
+joins only ADJACENT lanes, so the objective is seriation rather than clustering,
+and the shared-group matrix the gene sources need is free where the alignment
+one costs N(N-1)/2 adapter calls.
+
 **Placement and annotation providers beyond the two shipped.** The display's
 contract is source-agnostic in two places: placements (features-with-mates from
 the track adapter) and lane annotations (first single-assembly GFF3 track per
