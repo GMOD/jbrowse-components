@@ -31,12 +31,28 @@ const files = readdirSync(todoDir).filter(f => f.endsWith('.md'))
 
 const lines = readFileSync(todoPath, 'utf8').split('\n')
 
+// Each `## ` heading is one category's table, so walking the file in order says
+// which table a row landed in as well as which rows exist.
+const CATEGORY_BY_HEADING: Record<string, string> = {
+  'Ready to build: small and self-contained': 'ready',
+  'Blocked on a visual call': 'visual-call',
+  'Measure first: the premise or the cost attribution is unconfirmed':
+    'measure-first',
+}
+
 // A row is `| [label](todo/<file>) | area | first move |`.
 const rowFiles = new Map<string, string>()
+const tableByFile = new Map<string, string | undefined>()
+let currentTable: string | undefined
 for (const line of lines) {
+  const heading = /^##\s+(.*\S)\s*$/.exec(line)
+  if (heading) {
+    currentTable = CATEGORY_BY_HEADING[heading[1]!]
+  }
   const m = /^\|\s*\[([^\]]+)]\(todo\/([^)]+\.md)\)\s*\|/.exec(line)
   if (m) {
     rowFiles.set(m[2]!, m[1]!)
+    tableByFile.set(m[2]!, currentTable)
   }
 }
 
@@ -67,6 +83,21 @@ for (const [file, label] of rowFiles) {
       `${rel}: index row "${label}" points at todo/${file}, which does not exist. The entry was renamed or removed — other docs and source comments may cite this filename, so check what else names it before settling on a fix.`,
     )
   }
+}
+
+// The preamble promises each entry carries "a `metadata.category` matching which
+// table below it is in", and until 2026-08-26 nothing held it to that: the
+// category was read for the visual-call count alone, so a row filed under the
+// wrong heading disagreed with its own doc in silence. It is the same class as
+// the drift above — the tables are hand-ordered, so a row moves by hand.
+for (const [file, table] of tableByFile) {
+  const category = categoryByFile.get(file)
+  if (category === undefined || table === undefined || category === table) {
+    continue
+  }
+  problems.push(
+    `${rel}: todo/${file} declares \`category: ${category}\` but its row sits in the "${table}" table. Move the row, or change the category — whichever the entry now is.`,
+  )
 }
 
 // The preamble also carries a count — "Nine are blocked on a visual call" —

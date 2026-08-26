@@ -34,9 +34,10 @@ restate the entries, the way `ideas/README.md` does not restate its proposals.
 
 **The index below is checked, not merely written.**
 `website/scripts/check-todo-index.ts` (under `pnpm check-docs`) fails when a
-file under `todo/` has no row, or a row points at a file that does not exist —
-it cannot check the `Area` and `First move` columns, which are editorial, but
-the half that rots is the half it covers.
+file under `todo/` has no row, when a row points at a file that does not exist,
+and when a row sits in a table its entry's own `category` disagrees with — it
+cannot check the `Area` and `First move` columns, or the row ORDER, which are
+editorial, but the half that rots is the half it covers.
 
 ## Ready to build: small and self-contained
 
