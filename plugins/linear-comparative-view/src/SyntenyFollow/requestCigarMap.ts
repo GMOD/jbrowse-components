@@ -5,6 +5,7 @@ import type {
   FeatPos,
   LinearSyntenyDisplayModel,
 } from '../LinearSyntenyDisplay/model.ts'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * The CIGAR map for one picked block, asked for once and then read every frame.
@@ -27,16 +28,23 @@ import type {
 export async function requestCigarMap({
   model,
   feat,
+  stopToken,
 }: {
   model: LinearSyntenyDisplayModel
   feat: FeatPos
+  // The follow store's epoch token. Locating one alignment by id re-reads the
+  // whole region out of the PAF/chain file — the PIF adapter checks the token
+  // inside `getFeatures` — so a map nobody will keep is work nobody should be
+  // doing. `createFollowLevelStates` stops it.
+  stopToken: StopToken
 }) {
   const { rpcManager } = getSession(model)
   return rpcManager.call(
     getRpcSessionId(model),
     'SyntenyGetCigarMap',
-    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax -- reports nothing: a fire-and-forget per-block precision fetch nobody awaits, and `followApproximate` is already the surface for the frames it improves. Borrowing the display's status field would flash its fetch chip once per block crossed during a drag.
     {
+      stopToken,
       adapterConfig: model.adapterConfig,
       regions: [
         {

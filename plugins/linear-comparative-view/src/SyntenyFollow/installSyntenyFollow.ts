@@ -353,7 +353,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
     state.mapPending = featureId
     const generation = levelStates.generation
-    requestCigarMap({ model: step.display, feat: step.feat })
+    requestCigarMap({
+      model: step.display,
+      feat: step.feat,
+      stopToken: levelStates.stopToken,
+    })
       .then(value => {
         // The map is a property of the BLOCK, so `seq` is the wrong guard —
         // a later window inside the same block still wants this. What makes it
@@ -566,6 +570,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
   }
 
+  // The store's own teardown. `clear()` already runs on follow-off, inside the
+  // autorun below — this is the other way a follow ends, and without it a map
+  // in flight when the view closes went on reading the file for a store nobody
+  // would look at again.
+  addDisposer(self, () => {
+    levelStates.clear()
+  })
   addDisposer(
     self,
     autorun(
