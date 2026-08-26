@@ -160,9 +160,6 @@ export default class AlignmentsContactAdapter
   }
 
   /**
-   * The bin sizes the display may pick from, finest first, and `NONE` — nothing
-   * here is normalized, so there is one scheme to offer.
-   *
    * Every bin size is offered whatever the view, and `depthDifference` may
    * still decline the finest one: its cell count is quadratic in the span, so a
    * view wide enough to blow {@link MAX_DEPTH_CELLS} comes back at a coarser
@@ -179,9 +176,9 @@ export default class AlignmentsContactAdapter
   }
 
   /**
-   * Contacts are not a per-region feature stream — the display fetches them
-   * through `getMultiRegionContactRecords`. This satisfies the abstract
-   * `BaseFeatureDataAdapter` contract, as it does on `HicAdapter`.
+   * Empty by design, as on `HicAdapter`: contacts leave through
+   * `getMultiRegionContactRecords`, and this only satisfies the abstract
+   * `BaseFeatureDataAdapter` contract.
    */
   public getFeatures(_region: Region, _opts?: BaseOptions) {
     return ObservableCreate<Feature>(observer => {
