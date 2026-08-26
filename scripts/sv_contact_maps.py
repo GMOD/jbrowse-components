@@ -139,9 +139,11 @@ def depth_bin(pos, span, bin_size):
 def depth_contacts(depth, bin_size, max_bin_span):
     """`|depth[a] - depth[b]|` for every bin pair within max_bin_span bins.
 
-    A position is BIN START PLUS ONE, not the bin's centre: juicer rounds a
-    position to the nearest bin, so a centre lands exactly on .5 and half of
-    the matrix comes back shifted one bin along.
+    A position is BIN START PLUS ONE, so the number written names the bin it
+    means. juicer_tools 1.22.01 floors a position into its bin, so a bin-centre
+    position would land in the same cell today; check-build-scripts.py pins the
+    flooring, because a writer that rounded instead would shift every cell of
+    this channel one bin along and still draw a plausible plaid.
     """
     for chrom in sorted({c for c, _ in depth}):
         bins = sorted(b for c, b in depth if c == chrom)
@@ -318,6 +320,13 @@ def main(argv=None):
 
     jar = args.juicer or fetch_juicer(args.out)
     for name in CHANNELS:
+        # An empty channel is an answer, and juicer `pre` exits 57 on one. A
+        # depth-only duplication call has no junction pair anywhere in the BAM,
+        # so a run over one locus can legitimately produce nothing here.
+        if os.path.getsize(paths[name]) == 0:
+            os.remove(paths[name])
+            print("%s: no contacts, no .hic written" % name, file=sys.stderr)
+            continue
         # juicer `pre` reads a short-format file in chromosome-pair order.
         subprocess.run(["sort", "-k2,2d", "-k6,6d", "-o", paths[name], paths[name]],
                        check=True)
