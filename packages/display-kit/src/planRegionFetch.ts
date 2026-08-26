@@ -1,3 +1,5 @@
+import { heldDataAnswers } from './regionTooLargeUtils.ts'
+
 import type { Region } from '@jbrowse/core/util/types/data'
 
 /** A region paired with the index that joins it to the display's data map. */
@@ -81,11 +83,12 @@ export interface RegionFetchInputs {
    * owes a re-measure — and the ordinary fetch IS the re-measure, there being no
    * measurement-only path.
    *
-   * Read below as the one thing that outranks `covered`: holding data for a span
-   * says nothing about whether the gate would still refuse it, and while the
-   * banner is up the display is showing none of that data anyway. Zooming back
-   * into a span the display had already loaded is precisely where the two meet,
-   * and the fetch that would have released the banner never ran.
+   * Read below through `heldDataAnswers`, the shared precedence both families
+   * apply: holding data for a span says nothing about whether the gate would
+   * still refuse it, and while the banner is up the display is showing none of
+   * that data anyway. Zooming back into a span the display had already loaded is
+   * precisely where the two meet, and the fetch that would have released the
+   * banner never ran.
    */
   gateBlocked: boolean
   /**
@@ -276,9 +279,12 @@ export function planRegionFetch({
     // display says `fetchInert` (sequence, whose `zoomedOut` implies it)
     // or `awaitingPrerequisite` (variants, until `sourcesBase` lands).
     if (
-      !gateBlocked &&
-      isBlockCovered(loadedRegion(block.displayedRegionIndex), block) &&
-      isCacheValid(block.displayedRegionIndex)
+      heldDataAnswers(
+        gateBlocked,
+        () =>
+          isBlockCovered(loadedRegion(block.displayedRegionIndex), block) &&
+          isCacheValid(block.displayedRegionIndex),
+      )
     ) {
       continue
     }

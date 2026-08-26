@@ -183,6 +183,60 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
+  // The global family's spelling of "a blocked display runs one fetch per
+  // settled viewport": the viewport it returns to is one it already HOLDS data
+  // for, so `dataCurrent` is true from that earlier commit. Held data answers
+  // nothing while the banner hides it and the fetch is the only re-measure, so
+  // `heldDataAnswers` makes `regionTooLarge` outrank it. Declining there left
+  // the phase at `tooLarge` with zero RPCs and no way out but force-load or
+  // chromosome nav — the per-region family's `gateBlocked` outranks `covered`
+  // for the same reason, and this side shipped without it.
+  it('fetches at a viewport whose data it still holds', async () => {
+    const { display, view, mockRpcCall } =
+      createTestEnvironment().createDisplay()
+    await new Promise(res => setTimeout(res, 0))
+
+    view.zoomTo(50)
+    const loadedViewport = display.fetchSignature
+    mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+      method === 'RenderLDData' ? { bytes: 100_000, ldData: [] } : null,
+    )
+    await runGlobalFetch(display, ldFetchPhases(display))
+    expect(display.dataCurrent).toBe(true)
+
+    // out to a viewport the gate refuses
+    view.zoomTo(100)
+    mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+      method === 'RenderLDData'
+        ? { regionTooLarge: true, bytes: 6_000_000 }
+        : null,
+    )
+    await runGlobalFetch(display, ldFetchPhases(display))
+    expect(display.regionTooLarge).toBe(true)
+
+    // back to the one whose data is still in hand: the banner holds, the
+    // measurement behind it is about the viewport just left, and the freshness
+    // gate would answer "nothing owed"
+    view.zoomTo(50)
+    expect(display.fetchSignature).toBe(loadedViewport)
+    expect(display.dataCurrent).toBe(true)
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.gateMeasurementStale).toBe(true)
+
+    mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+      method === 'RenderLDData' ? { bytes: 100_000, ldData: [] } : null,
+    )
+    mockRpcCall.mockClear()
+    await runGlobalFetch(display, ldFetchPhases(display))
+
+    // exactly one, and it released the banner
+    expect(
+      mockRpcCall.mock.calls.filter(c => c[1] === 'RenderLDData'),
+    ).toHaveLength(1)
+    expect(display.regionTooLarge).toBe(false)
+    expect(display.gateMeasurementStale).toBe(false)
+  })
+
   // One RPC carries the whole region set, and the worker measures each region
   // separately against the same per-region budget (`measureRegionBytes`) — so
   // LD reads the budget the way every other display does: what ONE region may

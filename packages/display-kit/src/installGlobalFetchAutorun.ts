@@ -8,6 +8,7 @@ import { untracked } from 'mobx'
 
 import { autorunOnReadyView } from './displayAutoruns.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
+import { heldDataAnswers } from './regionTooLargeUtils.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { GateFetchState } from './regionTooLargeUtils.ts'
@@ -51,6 +52,10 @@ export interface GlobalFetchHost extends IStateTreeNode {
   fetchSignature: string | undefined
   signatureCurrent: boolean
   commitFetchResult: (commit: () => void, signature: string) => void
+  // `RegionTooLargeMixin`'s verdict, which outranks `signatureCurrent` above —
+  // see `heldDataAnswers`. A display with no byte gate reads it as a literal
+  // false.
+  regionTooLarge: boolean
   // `RegionTooLargeMixin`'s byte-gate commit pair: the gate as it stood when
   // this fetch was issued, and where the bytes its result reports go. A display
   // that passes no `byteLimit` measures nothing and commits nothing, which is
@@ -82,11 +87,11 @@ export interface GlobalFetchAutorunHost extends GlobalFetchHost {
   // two terms are not listed separately: this helper reads only the combined
   // one, and naming the parts here would invite the expression back.
   gateSkipsMeasuredViewport: boolean
-  // The stored-hover clear's inputs — `regionTooLarge` is the fourth axis it
-  // watches, `clearHoveredFeature` is `BaseDisplay`'s no-op default a storer
-  // overrides. Installed here for the reason the per-region foundation installs
-  // it: a display that forgets keeps naming what used to be under the cursor.
-  regionTooLarge: boolean
+  // The stored-hover clear's inputs — `regionTooLarge`, declared on the base
+  // above, is the fourth axis it watches, and `clearHoveredFeature` is
+  // `BaseDisplay`'s no-op default a storer overrides. Installed here for the
+  // reason the per-region foundation installs it: a display that forgets keeps
+  // naming what used to be under the cursor.
   scrollTop?: number
   clearHoveredFeature: () => void
 }
@@ -104,11 +109,15 @@ export interface GlobalFetchAutorunHost extends GlobalFetchHost {
  * HiC's signature missed the settings axis, a reload had to remember its own
  * invalidation).
  *
- * **A refused result commits its bytes and nothing else.** `signatureCurrent`
- * therefore stays false, and what stops the autorun spinning on that is
- * `gateSkipsMeasuredViewport` one level up: the commit stamped the viewport the
- * measurement was taken at, so the next run has nothing left to learn until the
- * user moves.
+ * **`regionTooLarge` outranks `signatureCurrent`**, through the shared
+ * `heldDataAnswers`. A refused result commits its bytes and nothing else, so
+ * `signatureCurrent` stays false for the fetch that was just refused — but it
+ * can be true from an EARLIER commit, which is what a return to a
+ * previously-loaded viewport looks like. The banner is hiding that data, and
+ * this fetch is the only re-measure, so declining on it left the display
+ * refused forever. `gateSkipsMeasuredViewport` one level up is what stops the
+ * autorun spinning instead: the commit stamped the viewport the measurement was
+ * taken at, so the next run has nothing left to learn until the user moves.
  *
  * Returns the fetch's promise, or `undefined` when the gates or the display's
  * `prepare` declined — so the autorun below can say which happened, and a
@@ -119,7 +128,11 @@ export function runGlobalFetch<TArgs, TResult>(
   { prepare, run, commit }: GlobalFetchPhases<TArgs, TResult>,
 ): Promise<void> | undefined {
   const signature = self.fetchSignature
-  if (self.isMinimized || signature === undefined || self.signatureCurrent) {
+  if (
+    self.isMinimized ||
+    signature === undefined ||
+    heldDataAnswers(self.regionTooLarge, () => self.signatureCurrent)
+  ) {
     return undefined
   }
   const args = prepare()
@@ -250,9 +263,10 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
       }
 
       // Below the skeleton's own skip sit only `runGlobalFetch`'s shared gates
-      // (minimized, signature pending, data current) and the display's
-      // `prepare` — all synchronous in this body, so whatever they read to
-      // decline stays tracked and re-wakes the run.
+      // (minimized, signature pending, data current — and that last one is void
+      // while the banner holds) and the display's `prepare` — all synchronous in
+      // this body, so whatever they read to decline stays tracked and re-wakes
+      // the run.
       const started = runGlobalFetch(self, opts) !== undefined
       noteFetchAutorunRun(started ? 'fetched' : 'declined')
       // arms the debounce — the pre-fetch runs (view-init, the resolution list

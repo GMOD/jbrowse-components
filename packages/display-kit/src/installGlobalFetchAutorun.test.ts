@@ -14,6 +14,7 @@
 // on how often it fetched: re-running the body is the thing the trigger reads
 // buy, and a gate that stays shut is allowed to keep declining.
 
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { flow, types } from '@jbrowse/mobx-state-tree'
 
 import { installGlobalFetchAutorun } from './installGlobalFetchAutorun.ts'
@@ -91,21 +92,26 @@ const TestDisplay = types
     // handed — the byte gate's whole main-thread surface now that the fetch
     // itself measures
     committedBytes: [] as (number | undefined)[][],
+    // `GlobalFetchMixin`'s: what `commitFetchResult` stamps and
+    // `signatureCurrent` compares against
+    loadedFetchSignature: undefined as string | undefined,
   }))
   .views(self => ({
     rpcProps() {
       void self.consulted
       return { setting: self.setting }
     },
-    // `GlobalFetchMixin`'s freshness pair, stubbed open: the shared
-    // data-current gate is exercised end-to-end by the display suites (HiC's
-    // panRedraw, arc's fetchArcFeatures, LD's staleSignature), while this file
-    // keeps the gate in `prepare` so `gateCalls` counts every body run.
+    // `GlobalFetchMixin`'s freshness pair, spelled the way that mixin spells
+    // it: the signature the held data was committed under against the one the
+    // view and settings call for now. Constant here, so a commit leaves the
+    // display current until `reload()` drops the stamp — which is the state
+    // `signatureCurrent` had to reach for the too-large tests below to mean
+    // anything, and a hard-stubbed `false` never could.
     get fetchSignature(): string | undefined {
       return 'sig'
     },
     get signatureCurrent() {
-      return false
+      return isDataCurrent(self.loadedFetchSignature, this.fetchSignature)
     },
     // `FetchMixin`'s hook, which this fixture composes by hand — the check reads
     // it off the node in both families rather than taking a predicate.
@@ -138,10 +144,10 @@ const TestDisplay = types
         },
       })
     }),
-    // `GlobalFetchMixin.commitFetchResult`, minus the signature stamp the
-    // display suites cover
-    commitFetchResult(commit: () => void, _signature: string) {
+    // `GlobalFetchMixin.commitFetchResult`
+    commitFetchResult(commit: () => void, signature: string) {
       commit()
+      self.loadedFetchSignature = signature
     },
     // `RegionTooLargeMixin`'s byte-gate commit pair. The gate state is what a
     // measurement is judged against; this fixture records the bytes the runner
@@ -153,8 +159,17 @@ const TestDisplay = types
         tierKey: undefined,
       }
     },
-    commitFetchBytes(perRegionBytes: (number | undefined)[]) {
+    commitFetchBytes(
+      perRegionBytes: (number | undefined)[],
+      issued: { gated: boolean },
+    ) {
       self.committedBytes.push(perRegionBytes)
+      // `nextGateState`'s stamp, cut down to what these tests read of it: a
+      // fetch the gate was active for measured the viewport it was issued at,
+      // so nothing further is owed there.
+      if (issued.gated) {
+        self.gateMeasurementStale = false
+      }
     },
   }))
   .actions(self => ({
@@ -188,6 +203,7 @@ const TestDisplay = types
     },
     reload() {
       self.reloadCounter += 1
+      self.loadedFetchSignature = undefined
     },
     // `FetchMixin`'s pair, cut down to the flag: the internal reset the
     // viewport-change autorun runs, and the user gesture the overlay's Cancel
@@ -209,7 +225,13 @@ type TestDisplayModel = Instance<typeof TestDisplay>
 // runs that reached `prepare`, `fetched` the ones that reached `run`.
 // Async because the leading edge is a microtask: every test here starts from
 // "the first run has happened", rather than each one remembering to flush.
-async function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
+async function setup(
+  shouldFetch: (d: TestDisplayModel) => boolean,
+  // what `run` answers. Undefined by default, so a fetch commits nothing and
+  // the freshness gate stays open; a test that needs the display to be HOLDING
+  // data passes a payload.
+  result?: string,
+) {
   const view = TestView.create({ display: {} })
   const { display } = view
   const gateCalls = { count: 0 }
@@ -221,7 +243,7 @@ async function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
     },
     run: async () => {
       fetched.count += 1
-      return undefined
+      return result
     },
     commit: () => {},
     delay: DELAY,
@@ -647,6 +669,29 @@ describe('a blocked display still re-measures', () => {
     // the user moves somewhere the estimate says nothing about
     display.setTooLarge(true, /* stale */ true)
     view.setBlocks(['chr1:0-300'])
+    await settle()
+    expect(fetched.count).toBe(afterFirst + 1)
+  })
+
+  // The same invariant against a display that is HOLDING data for the viewport
+  // it returns to, which is the half `signatureCurrent` used to break: the
+  // freshness gate answers "nothing owed" for a span whose data was committed
+  // earlier, while the banner is hiding that very data and this fetch is the
+  // only re-measure. `heldDataAnswers` is what makes `regionTooLarge` outrank it, and
+  // `gateSkipsMeasuredViewport` is what keeps it to one.
+  it('fetches a viewport whose data it still holds, and only once', async () => {
+    const { view, display, fetched } = await setup(() => true, 'data')
+    await settle()
+    expect(display.signatureCurrent).toBe(true)
+    const afterFirst = fetched.count
+
+    display.setTooLarge(true, /* stale */ true)
+    view.setBlocks(['chr1:0-400'])
+    await settle()
+    expect(fetched.count).toBe(afterFirst + 1)
+
+    // that fetch stamped the viewport it measured, so the runs behind it stop
+    expect(display.gateMeasurementStale).toBe(false)
     await settle()
     expect(fetched.count).toBe(afterFirst + 1)
   })

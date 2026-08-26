@@ -341,6 +341,35 @@ describe('the too-large gate re-measures once per settled viewport', () => {
     expect(display.loadedRegions.size).toBeGreaterThan(0)
   })
 
+  // The viewport the user comes back to is one whose data this display still
+  // holds, so `covered` would answer "nothing owed" — while the banner is
+  // hiding that data and the fetch is the only re-measure. `heldDataAnswers`
+  // gives the gate the precedence, and `gateSkipsMeasuredViewport` keeps it to
+  // one fetch. The global family shipped without this and wedged
+  // (`installGlobalFetchAutorun`).
+  it('re-measures a viewport it still holds data for, once, and releases', async () => {
+    const { display, view, control } = setup({
+      measuresBytes: true,
+      estimateBytes: 100,
+    })
+    const home = view.offsetPx
+    await quiet(display)
+    expect(display.loadedRegions.size).toBeGreaterThan(0)
+
+    control.estimateBytes = OVER_BUDGET
+    view.scrollTo(home + view.width * 4)
+    await quiet(display)
+    expect(display.regionTooLarge).toBe(true)
+
+    control.estimateBytes = 100
+    view.scrollTo(home)
+    const measured = control.estimateCalls
+    const fetches = await quiet(display)
+    expect(control.estimateCalls).toBe(measured + 1)
+    expect(display.fetchLog).toHaveLength(fetches)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
   it('force-load exempts the track and the data lands', async () => {
     const { display } = setup({
       measuresBytes: true,

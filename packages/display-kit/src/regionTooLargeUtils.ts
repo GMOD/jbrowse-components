@@ -201,3 +201,25 @@ export function evaluateRegionTooLarge({
   }
   return NOT_TOO_LARGE
 }
+
+/**
+ * Whether the data a display already holds may answer this run, or whether the
+ * gate outranks it.
+ *
+ * While `regionTooLarge` holds, every "already have it" gate is void — the
+ * per-region family's `covered`, the global family's `signatureCurrent`. Held
+ * data answers nothing while the banner hides it, and the fetch is the only
+ * re-measure, so a return to a viewport whose data is still loaded has to fetch
+ * or the banner can never be released.
+ *
+ * `held` is a thunk, so a caller's own short-circuit survives: the per-region
+ * plan reads `isCacheValid` only for a block it already found covered, and
+ * evaluating it eagerly would widen that autorun's dependency set.
+ *
+ * The one skip that outranks this is `gateSkipsMeasuredViewport`, applied by
+ * both callers above their fetch — without it a still-refused display spins on
+ * the `fetchGeneration` bump.
+ */
+export function heldDataAnswers(gateBlocked: boolean, held: () => boolean) {
+  return !gateBlocked && held()
+}
