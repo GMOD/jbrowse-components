@@ -91,9 +91,9 @@ export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
   // Trusted-by-prefix plugins and store refs are accepted without consulting
   // the store listing, so when every plugin is already trusted (the common
   // case: an empty list, or jbrowse.org-hosted plugins) skip the network
-  // entirely. This keeps a
-  // plugin-store outage — or being offline — from blocking a config/session
-  // load that needed no verification (e.g. restoring your own local session).
+  // entirely. This keeps a plugin-store outage — or being offline — from
+  // blocking a config/session load that needed no verification (e.g. restoring
+  // your own local session).
   if (pluginsToCheck.every(isTrustedDefinition)) {
     return true
   }
