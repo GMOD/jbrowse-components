@@ -985,9 +985,12 @@ export const svSpecs: ScreenshotSpec[] = [
   // own arcs, so the LL and RR bundles stand alone on the two breakpoints while
   // the LR band's ordinary coverage is the negative.
   //
-  // The five settings are SV_CHANNELS_ON verbatim (svChannelsPreset.ts), so the
+  // The four settings are SV_CHANNELS_ON verbatim (svChannelsPreset.ts), so the
   // figure shows what the checkbox does rather than a hand-tuned neighbour of
-  // it. Only the heights below are the figure's own.
+  // it. `readConnectionsDown` is the figure's own, as the heights are: the
+  // preset stopped writing it once leaving the arrangement was found to be
+  // pinning it, and the row it hangs the arcs below is still what this capture
+  // wants.
   //
   // No `colorBy`: the arrangement wrote one until 2026-08-26, and dropping it
   // left this capture byte-identical, which is the measurement behind taking it

@@ -172,6 +172,20 @@ describe('read connections menu', () => {
     model.readConnections = 'arc'
     expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(true)
   })
+
+  // WHERE it is, not just that it exists. svChannels.test.ts calls the builder
+  // directly and the spec-recipe test asserts against arrangements.ts's own
+  // hardcoded path string, so between them the row could return to nowhere with
+  // three published docs still sending readers here for it —
+  // `check-menu-labels` gates each segment as a string somewhere in plugins/,
+  // never the nesting.
+  test('the SV-channel row is a direct child of this submenu', () => {
+    const model = makeModel()
+    const labels = getReadConnectionsMenuItem(model).subMenu.map(i =>
+      'label' in i ? i.label : undefined,
+    )
+    expect(labels).toContain('SV channels (pairs by orientation)')
+  })
 })
 
 describe('read-connection band options submenu is disabled until an overlay is active', () => {

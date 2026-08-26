@@ -197,7 +197,7 @@ export function arcsToRegionResult(
     // NOT the same predicate one line up, and the display's CLAUDE.md says why
     // the two questions look like one. Every flat variant is packed and drawn
     // as a bar with endpoint squares; only the two ON the axis may size it. A
-    // parked pair (`ARC_SHAPE_FLAT_OFF_AXIS`) is drawn at the anchor precisely
+    // parked pair (`ARC_SHAPE_FLAT_UNPLACED`) is drawn at the anchor precisely
     // because its span has no place on the axis, so letting that span set the
     // domain would be the failure parking exists to fix, arriving one step later.
     if (plotsOnInsertSizeAxis(arc.shapeType) && arc.spanBp > maxFlatArcSpanBp) {
