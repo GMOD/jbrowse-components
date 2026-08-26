@@ -175,13 +175,12 @@ columns of `methylation_clip.bam`.
 
 ## Still open
 
-- **`qc/callsets_at_smn` is deliberately not a gallery figure** (see the comment
-  in `website/scripts/specs/rexport.ts`). It exports correctly now, but DGV packs
-  1009 records into 61 rows there and a feature panel gets a fixed
-  `heightWeight: 2` however many rows it discovers. The fix is to weight a
-  feature panel's height by its row count — which is only known at draw time in
-  R, so it needs either a codegen-time estimate off the display's own layout or a
-  patchwork height computed inside `plot_regions`.
+- ~~**`qc/callsets_at_smn` is deliberately not a gallery figure**~~ — closed,
+  and not by doing the work it asks for. The height fix already exists
+  (`heightWeightExpr` weights a feature panel by the row count R finds at draw
+  time, so 61 rows ask for ~30 inches), and main has since DELETED the source
+  spec on review. The comment in `website/scripts/specs/rexport.ts` has both
+  halves. Nothing to do here.
 - **`geneGlyphMode` is not translated.** `cancer_sv/foldback_reconstruction` sets
   `longestCoding`; the R panel draws every transcript. Same family as the above.
 - **`rexport/genes_sarscov2` is a weak figure** — the caption promises ORF1ab's
