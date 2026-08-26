@@ -87,6 +87,17 @@ export async function runCommand(args: string | string[]): Promise<{
       outputReceived = true
     })
 
+  // The captured buffers below are strings, not a terminal, so the mocked
+  // streams have to say so: cli-progress draws its bar only when isTTY, and the
+  // spy would otherwise fold that decoration into stderr, which becomes `error`.
+  // Without this a text-index test passes piped and fails from a terminal.
+  const originalIsTTY = {
+    stdout: process.stdout.isTTY,
+    stderr: process.stderr.isTTY,
+  }
+  process.stdout.isTTY = false
+  process.stderr.isTTY = false
+
   // Mock process.stdout.write
   const stdoutWriteSpy = jest
     .spyOn(process.stdout, 'write')
@@ -139,6 +150,8 @@ export async function runCommand(args: string | string[]): Promise<{
     stdoutWriteSpy.mockRestore()
     stderrWriteSpy.mockRestore()
     processExitSpy.mockRestore()
+    process.stdout.isTTY = originalIsTTY.stdout
+    process.stderr.isTTY = originalIsTTY.stderr
   }
 
   // If we have stderr but no error, create an error from stderr
