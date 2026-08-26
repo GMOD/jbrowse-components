@@ -329,10 +329,19 @@ as an orphan.
   — corrupted Puppeteer cache: `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`.
 - **"libpxbackend-1.0.so not found"** — system snap Chrome is broken; use
   Puppeteer's cached binary (`~/.cache/puppeteer/`).
-- **Port 3333 in use (`EADDRINUSE`) / stray processes** —
-  `fuser -k 3333/tcp && pkill -9 chrome firefox`. `runner.ts` also reaps stale
-  automation browsers at startup (`killStaleTestBrowsers`, Linux-only) and
-  force-kills its own launched browsers on exit.
+- **Port 3333 in use (`EADDRINUSE`) / stray processes** — `fuser -k 3333/tcp`.
+  Never `pkill chrome`: other agents run browsers on this machine. `runner.ts`
+  reaps only orphaned automation browsers at startup — those whose launching
+  `node` is gone, told by the parent's `/proc/<pid>/exe`
+  (`browser-tests/staleBrowsers.ts`, Linux-only) — and force-kills its own on
+  exit.
+- **`Attempted to use detached Frame` then `Session closed` some seconds into
+  a page, with no `pageerror`, no `error` crash event and no navigation** —
+  something outside the page SIGKILLed the browser's main process. A renderer
+  kill reports as `Page crashed!`; a GPU or utility kill is invisible. Look for
+  a runner or a `pkill` that started elsewhere on the machine at that second
+  (this was the reaper itself, reading Node 24's `MainThread` as not-`node`,
+  2026-08-25).
 - **Console errors** — runner forwards `[alignments]` / `[webgl-wiggle]` logs;
   add patterns in `runner.ts`.
 - **A `waitFor` that burns its full 30s, blamed on a line that never ran.** In
