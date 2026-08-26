@@ -53,13 +53,16 @@ UCSC hg38 [hub](/docs/user_guides/hub_url).
 
 ## Reading the triangle
 
-Red means two variants are almost always inherited together, white means they
-are independent, so the triangle shows where a stretch of chromosome travels as
-a unit. It is a pairwise matrix turned on its corner: the vertical axis is the
-distance between the two variants being compared.
+Start with what the picture means:
 
-An [`LDDisplay`](/docs/config/lddisplay/) on an ordinary `VariantTrack` is the
-whole setup:
+- Red means two variants are almost always inherited together, white means they
+  are independent, so the triangle shows where a stretch of chromosome travels
+  as a unit.
+- It is a pairwise matrix turned on its corner, so the vertical axis is the
+  distance between the two variants being compared.
+
+To draw one, add an [`LDDisplay`](/docs/config/lddisplay/) to an ordinary
+`VariantTrack` in an hg38 session:
 
 ```json addtrack
 {
@@ -84,40 +87,41 @@ whole setup:
 }
 ```
 
-[`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter)
-thins a dense callset to the common, block-tagging variants, and
-[`useGenomicPositions`](/docs/config/sharedlddisplay/#slot-usegenomicpositions)
-sizes each cell by genomic distance, so the block's edges land under the
-coordinates they are at.
+What each setting does:
 
-r² is computed from the genotypes themselves, so a window this wide asks for
-more data than a track fetches unasked, and the lane arrives as a "too much
-data" banner with a FORCE LOAD button on it. Setting
-[`forceLoad`](/docs/config/sharedlddisplay/#slot-forceload) is that button
-pressed in advance, which is what a view nobody will click needs: a figure, an
-embed, a notebook. `forceLoad` speaks for the one display that declares it,
-while [`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) sets
-the ceiling for the whole track.
+- [`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter)
+  thins a dense callset to the common, block-tagging variants.
+- [`useGenomicPositions`](/docs/config/sharedlddisplay/#slot-usegenomicpositions)
+  sizes each cell by genomic distance, so the block's edges land under the
+  coordinates they are at.
+- [`forceLoad`](/docs/config/sharedlddisplay/#slot-forceload) presses the
+  **FORCE LOAD** button for you. r² is computed from the genotypes themselves,
+  so a window this wide asks for more data than a track fetches unasked, and the
+  lane arrives as a "too much data" banner instead. Set it when nobody is there
+  to click: a figure, an embed, a notebook.
+- [`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) sets
+  that ceiling for the whole track, where `forceLoad` speaks for the one display
+  that declares it.
 
-An [`LDTrack`](/docs/config/ldtrack) reads r² PLINK has already computed, so the
-browser fetches a table of pairs rather than the genotypes behind them, which is
-what a cohort too large to correlate live wants. The adapter takes plink2's
-`.vcor` or PLINK 1.9's `.ld`, and [](/docs/tutorials/ld_mosquitoes) takes that
-route over a 22 Mb inversion.
+Why there is a block here at all:
 
-The block here is a selective sweep. Selection favouring one variant, the allele
-that keeps lactase switched on into adulthood, carried the whole run of
-neighbouring variants up in frequency with it, leaving them correlated
-([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). That allele is
-`rs4988235`, and its [dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235)
-carries its ClinVar entry and the frequency table population by population.
+- Selection favoured one variant, the allele that keeps lactase switched on into
+  adulthood, and carried the whole run of neighbouring variants up in frequency
+  with it, leaving them correlated
+  ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)).
+- That allele is `rs4988235`. Its
+  [dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) carries the ClinVar
+  entry and the frequency table population by population.
 
 ## Cut the region out of the VCF
 
-The triangle is drawn from what the file holds, so the slice has to reach past
-both edges of the block for those edges to be in frame. r² is a correlation
-across every sample in the file, so the same region is cut twice: once over the
-whole release, once over the European panel the sweep happened in.
+The triangle is drawn from what the file holds, so the slice you cut decides the
+picture:
+
+- Reach past both edges of the block, or those edges are not in frame.
+- Cut the same region twice, once over the whole release and once over the
+  European panel the sweep happened in. r² is a correlation across every sample
+  in the file, so the two files draw two different triangles.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -134,15 +138,16 @@ bcftools view -S panel.samples -Oz -o panel.vcf.gz pooled.vcf.gz
 tabix -p vcf panel.vcf.gz
 ```
 
-How wide is wide enough is a question for the file rather than for the picture.
-The [reproduce script](#reproduce-it-end-to-end) bins r² against the causal
-variant by position and prints where the correlation falls away, which is where
-this window comes from.
+Two things to know about the window you just cut:
 
-The two files also end up drawing different variants, because
-`minorAlleleFrequencyFilter` is a frequency in whatever samples the file holds:
-a variant common in one panel and rare elsewhere clears the floor in the panel
-file and falls below it in the pooled one.
+- **How wide is wide enough is a question for the file**, not for the picture.
+  The [reproduce script](#reproduce-it-end-to-end) bins r² against the causal
+  variant by position and prints where the correlation falls away, which is
+  where this window comes from.
+- **The two files draw different variants.** `minorAlleleFrequencyFilter` is a
+  frequency in whatever samples the file holds, so a variant common in one panel
+  and rare elsewhere clears the floor in the panel file and falls below it in
+  the pooled one.
 
 ## Compute Fst per variant
 
@@ -178,8 +183,8 @@ bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across a wide span of chr2. Under the wedge, the same locus and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
 The lower frame is all block, so it cannot tell you the locus is unusual:
-everything in it sits on the swept haplotype, which makes the sweep the frame's
-own background. The lanes around it are where that comparison comes from.
+everything in it sits on the swept haplotype. Read the lanes around it for the
+comparison:
 
 - **Fst, top.** Fst scores how differently two sets of samples carry a variant,
   so a variant one panel carries and the other mostly lacks scores high. Widened
@@ -206,12 +211,15 @@ own background. The lanes around it are where that comparison comes from.
 ## The haplotypes behind the triangle
 
 The same VCF draws those haplotypes in the same view, one lane below the
-triangle. A
-[`LinearMultiSampleVariantMatrixDisplay`](/docs/config/linearmultisamplevariantmatrixdisplay/)
-in
-[`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-renderingmode)
-gives one row per chromosome and one column per variant, with population in its
-sidebar stripe.
+triangle:
+
+- a
+  [`LinearMultiSampleVariantMatrixDisplay`](/docs/config/linearmultisamplevariantmatrixdisplay/)
+  in
+  [`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-renderingmode)
+  gives one row per chromosome and one column per variant
+- [`colorBy`](/docs/config/sharedvariantdisplay/#slot-colorby) puts population
+  in the sidebar stripe, so which populations carry the block reads off the rows
 
 ```json addtrack
 {
@@ -239,34 +247,32 @@ sidebar stripe.
 }
 ```
 
-Run the clustering from the track menu's **Clustering** → **Cluster rows by
-genotype...**, or bake it into a session with the
-[`runClustering`](/docs/models/multisamplevariantbasemodel/#property-runclustering)
-and
-[`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
-model properties, which is what the figure below does.
+Run the clustering two ways:
+
+- from the track menu, **Clustering** → **Cluster rows by genotype...**
+- baked into a session with the
+  [`runClustering`](/docs/models/multisamplevariantbasemodel/#property-runclustering)
+  and
+  [`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
+  model properties, which is what the figure below does
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises: 1000 Genomes chromosomes at LCT/MCM6, one row each, clustered by genotype. The pale slab is one cluster of near-identical chromosomes, uniform across the block that fills the triangle above."/>
 
 The highlight across both lanes is the 89 kb of _LCT_ and _MCM6_ that selection
 acted on.
 
-**Ordering is what makes a block visible.** In file order the same matrix is a
-plaid at any size, because a block is a set of alleles travelling together and
-which of them is the non-reference allele varies from site to site. Clustering
-puts near-identical chromosomes next to each other, and a swept haplotype
-carries little variation of its own, so it resolves into one slab.
-
-`rs4988235` falls below the figure's own frequency floor, so it is not one of
-the matrix columns and the ClinVar lane is what marks where it is, independently
-of the rows the clustering ran on. That lane is the hub's ClinVar track narrowed
-to the phenotype with
-`jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'`. Unfiltered it draws
-every ClinVar record in the window, congenital lactase deficiency in the same
-gene included, and marks nothing.
-[`colorBy`](/docs/config/sharedvariantdisplay/#slot-colorby) keeps the
-populations in the sidebar stripe, so which of them carry the block reads off
-the clustered rows.
+- **Ordering is what makes a block visible.** In file order the same matrix is a
+  plaid at any size, because a block is a set of alleles travelling together and
+  which of them is the non-reference allele varies from site to site. Clustering
+  puts near-identical chromosomes next to each other, and a swept haplotype
+  carries little variation of its own, so it resolves into one slab.
+- **The ClinVar lane marks the causal variant, not the matrix.** `rs4988235`
+  falls below the figure's own frequency floor, so it is not one of the columns,
+  and that lane places it independently of the rows the clustering ran on.
+- **Narrow that lane or it marks nothing.** It is the hub's ClinVar track
+  filtered with `jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'`;
+  unfiltered it draws every ClinVar record in the window, congenital lactase
+  deficiency in the same gene included.
 
 ### The subsample behind the figure {#rows-have-to-be-worth-a-pixel}
 
@@ -278,13 +284,17 @@ third script under [Reproduce it end to end](#reproduce-it-end-to-end).
 ## Reproduce it end to end
 
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
-cuts the region out of the 1000 Genomes 30x callset without downloading it, then
-writes a ready-to-serve config carrying both LD lanes, the Fst lane, the genetic
-map and the haplotype matrix. The VCFs it writes hold genotypes only, and
-JBrowse computes the r² from them as it draws the triangle. It also prints the
-two PLINK tables the window and the panel choice rest on: r² against `rs4988235`
-binned by position, and mean pairwise r² inside the block for the panel against
-the pooled release.
+does the whole build for you:
+
+- cuts the region out of the 1000 Genomes 30x callset without downloading it
+- writes a ready-to-serve config carrying both LD lanes, the Fst lane, the
+  genetic map and the haplotype matrix
+- prints the two PLINK tables the window and the panel choice rest on: r²
+  against `rs4988235` binned by position, and mean pairwise r² inside the block
+  for the panel against the pooled release
+
+The VCFs it writes hold genotypes only, and JBrowse computes the r² from them as
+it draws the triangle.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_ld.sh
@@ -312,6 +322,13 @@ since the whole release draws a flat wash at that lane height:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_haploblock.sh
 bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
 ```
+
+## When the cohort is too large to correlate live
+
+An [`LDTrack`](/docs/config/ldtrack) reads r² PLINK has already computed, so the
+browser fetches a table of pairs rather than the genotypes behind them. The
+adapter takes plink2's `.vcor` or PLINK 1.9's `.ld`, and
+[](/docs/tutorials/ld_mosquitoes) goes that way over a 22 Mb inversion.
 
 ## See also
 
