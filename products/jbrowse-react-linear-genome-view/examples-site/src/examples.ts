@@ -14,13 +14,18 @@ export const pages: ExamplePage[] = [
     slug: 'setting-up-the-view',
     title: 'View setup',
     description:
-      'Render the component and give it a starting state, declaratively or through the useCreateViewState hook.',
+      'Render the component and give it a starting state, declaratively, in shorthand, or through the useCreateViewState hook.',
     group: 'Getting started',
     sections: [
       {
         slug: 'one-linear-genome-view',
         title: 'The simplest example',
         description: 'One component, three props: assembly, tracks, init.',
+      },
+      {
+        slug: 'with-track-shorthand',
+        title: 'Tracks as an id and a uri',
+        description: 'The extension picks the track type and the adapter.',
       },
       {
         slug: 'with-init',

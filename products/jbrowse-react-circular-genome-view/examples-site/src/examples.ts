@@ -12,7 +12,18 @@ export const pages: ExamplePage[] = [
     description:
       'A structural-variant VCF on the volvox assembly, via the managed CircularGenomeView component.',
     group: 'Getting started',
-    sections: [{ slug: 'volvox', title: 'Volvox structural variants' }],
+    sections: [
+      {
+        slug: 'volvox',
+        title: 'Volvox structural variants',
+        description: 'assembly, tracks and init as props.',
+      },
+      {
+        slug: 'with-track-shorthand',
+        title: 'The same view, in shorthand',
+        description: 'The extension picks the track type and the adapter.',
+      },
+    ],
   },
   {
     slug: 'show-track',

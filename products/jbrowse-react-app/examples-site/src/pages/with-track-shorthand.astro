@@ -1,0 +1,15 @@
+---
+import Example from '../examples/WithTrackShorthand.tsx'
+import code from '../examples/WithTrackShorthand.tsx?raw'
+import { getPage } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('with-track-shorthand')
+---
+
+<Layout page={page}>
+  <Section slug="with-track-shorthand" code={code}>
+    <Example client:only="react" />
+  </Section>
+</Layout>

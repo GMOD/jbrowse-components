@@ -1,15 +1,22 @@
 ---
 import Example from '../examples/Volvox.tsx'
 import code from '../examples/Volvox.tsx?raw'
-import { pages } from '../examples.ts'
+import WithTrackShorthand from '../examples/WithTrackShorthand.tsx'
+import WithTrackShorthandCode from '../examples/WithTrackShorthand.tsx?raw'
+import { pages, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
 
 const page = pages.find(p => p.slug === 'volvox')!
+const sec0 = section(page, 'volvox')
+const sec1 = section(page, 'with-track-shorthand')
 ---
 
 <Layout page={page}>
-  <Section slug="volvox" code={code}>
+  <Section {...sec0} code={code}>
     <Example client:only="react" />
+  </Section>
+  <Section {...sec1} code={WithTrackShorthandCode}>
+    <WithTrackShorthand client:only="react" />
   </Section>
 </Layout>

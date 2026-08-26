@@ -18,6 +18,16 @@ export const pages: ExamplePage[] = [
     sections: [{ slug: 'basic-example', title: 'Basic example' }],
   },
   {
+    slug: 'with-track-shorthand',
+    title: 'Tracks as an id and a uri',
+    description:
+      'Three tracks written as a trackId and a data file, with the track type and the adapter read off each extension.',
+    group: 'Getting started',
+    sections: [
+      { slug: 'with-track-shorthand', title: 'Tracks as an id and a uri' },
+    ],
+  },
+  {
     slug: 'customizing-the-app',
     title: 'Customizing the app',
     description:
