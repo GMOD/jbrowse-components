@@ -15,8 +15,6 @@ interface MultiWayFetchArgs {
   regions: ContentBlock[]
 }
 
-// both dependent fetches are derived from lane frames that move on every pan,
-// and a frame settles well inside this
 const DEPENDENT_FETCH_DELAY = 500
 
 function fetchPhases(
@@ -97,6 +95,70 @@ async function fetchEachLane<Spec>(
   return new Map(entries)
 }
 
+/**
+ * A SECOND fetch on this display: one that runs off the lane frames the
+ * ortholog fetch produced, asks per lane, and commits under the key its specs
+ * were built at.
+ *
+ * There are two of them and they differ only in what a lane asks for and where
+ * the answer lands. Everything else here is a rule with a reason, and each was
+ * worth stating once rather than twice:
+ *
+ * - **The delay** is the same for both because both are derived from lane
+ *   frames that move on every pan, and a frame settles well inside 500ms.
+ * - **The status window is the display's own, lent** rather than a channel of
+ *   its own: a lane refetch runs over lanes that are already drawn, so
+ *   `displayPhase` is `ready` and this reports through the corner progress chip
+ *   instead of the scrim.
+ * - **`prepare` answers only "is there anything to fetch".** Whether the
+ *   committed result already answers these specs is `dataCurrent`, which the
+ *   skeleton overrides on a reload — so neither pair needs a `reload()` of its
+ *   own. Spelling that comparison in `prepare` instead is the dead Retry this
+ *   display shipped once and `installFetch` exists to make unspellable.
+ * - **No `contract`**: both are second fetches on a display whose global
+ *   foundation already installed the two dev-only contract checks.
+ * - **`setError` is a noop.** A lane's extra records are an enhancement over
+ *   placement boxes that are already correct, so a lane failure must not reach
+ *   the error slot the ortholog fetch owns — least of all through the clear it
+ *   would do at the start of every run.
+ */
+function installLaneFetch<Spec>(
+  self: MultiWaySyntenyDisplayModel,
+  {
+    name,
+    fetchSpecs,
+    committedKey,
+    fetchOne,
+    commit,
+  }: {
+    name: string
+    fetchSpecs: () => { key: string; specs: Spec[] }
+    committedKey: () => string
+    fetchOne: (
+      spec: Spec,
+      ctx: FetchContext,
+    ) => Promise<readonly [string, Feature[]]>
+    commit: (key: string, byLane: Map<string, Feature[]>) => void
+  },
+) {
+  installFetch(self, {
+    name,
+    delay: DEPENDENT_FETCH_DELAY,
+    report: { statusWindow: self.statusWindow },
+    gate: () => !self.isMinimized,
+    prepare: () => {
+      const { key, specs } = fetchSpecs()
+      return specs.length > 0 ? { key, specs } : undefined
+    },
+    dataCurrent: ({ key }) => key === committedKey(),
+    run: ({ specs }, ctx) => fetchEachLane(name, specs, ctx, fetchOne),
+    commit: (byLane, { key }) => {
+      commit(key, byLane)
+    },
+    setError: () => {},
+  })
+}
+
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
@@ -104,84 +166,47 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWaySyntenyFetch',
   })
 
-  // The second fetch, dependent on the first: once the ortholog groups have
-  // settled into lane frames, pull each lane's gene models from that assembly's
-  // own gene track.
-  //
-  // No `contract`: both dependent fetches are SECOND fetches on a display whose
-  // global foundation already installed the two dev-only contract checks.
-  installFetch(self, {
+  // The second fetch: once the ortholog groups have settled into lane frames,
+  // each lane's gene models out of that assembly's own gene track.
+  installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
-    delay: DEPENDENT_FETCH_DELAY,
-    // the display's own window, lent rather than a channel of its own: a lane
-    // refetch runs over lanes that are already drawn, so `displayPhase` is
-    // `ready` and this reports through the corner progress chip instead of the
-    // scrim
-    report: { statusWindow: self.statusWindow },
-    gate: () => !self.isMinimized,
-    // `prepare` answers only "is there anything to fetch". Whether the
-    // committed genes already answer these specs is `dataCurrent`, which the
-    // skeleton overrides on a reload, so this pair needs no `reload()` of its own
-    prepare: () => {
-      const { key, specs } = self.laneGenesFetchSpecs
-      return specs.length > 0 ? { key, specs } : undefined
+    fetchSpecs: () => self.laneGenesFetchSpecs,
+    committedKey: () => self.laneGenesKey,
+    fetchOne: async (spec, ctx) => {
+      const features = await ctx.callRpc('CoreGetFeatures', {
+        adapterConfig: spec.adapterConfig,
+        regions: await laneRegions(
+          getSession(self),
+          spec.assemblyName,
+          spec.regions,
+        ),
+      })
+      return [spec.assemblyName, laneGeneFeatures(features)] as const
     },
-    dataCurrent: ({ key }) => key === self.laneGenesKey,
-    run: ({ specs }, ctx) =>
-      fetchEachLane('MultiWayLaneGenes', specs, ctx, async (spec, laneCtx) => {
-        const features = await laneCtx.callRpc('CoreGetFeatures', {
-          adapterConfig: spec.adapterConfig,
-          regions: await laneRegions(
-            getSession(self),
-            spec.assemblyName,
-            spec.regions,
-          ),
-        })
-        return [spec.assemblyName, laneGeneFeatures(features)] as const
-      }),
-    commit: (genes, { key }) => {
+    commit: (key, genes) => {
       self.setLaneGenes(key, genes)
     },
-    // a lane's annotation is an enhancement over placement boxes that are
-    // already correct, so a lane failure must not reach the error slot the
-    // ortholog fetch owns — least of all through the clear it would do at the
-    // start of every run
-    setError: () => {},
   })
 
-  // The third fetch, for alignment-level sources: the direct records between
-  // each ADJACENT mate-lane pair, out of the same all-vs-all track. The specs
-  // exist only when the source names no genes, so a gene table never issues
-  // these.
-  installFetch(self, {
+  // The third, for alignment-level sources: the direct records between each
+  // ADJACENT mate-lane pair, out of the same all-vs-all track. The specs exist
+  // only when the source names no genes, so a gene table never issues these.
+  installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
-    delay: DEPENDENT_FETCH_DELAY,
-    report: { statusWindow: self.statusWindow },
-    gate: () => !self.isMinimized,
-    prepare: () => {
-      const { key, specs } = self.laneLinksFetchSpecs
-      return specs.length > 0 ? { key, specs } : undefined
+    fetchSpecs: () => self.laneLinksFetchSpecs,
+    committedKey: () => self.laneLinksKey,
+    fetchOne: async (spec, ctx) => {
+      const features = await ctx.callRpc('CoreGetFeatures', {
+        adapterConfig: self.adapterConfig,
+        regions: await laneRegions(getSession(self), spec.region.assemblyName, [
+          spec.region,
+        ]),
+        opts: { targetAssemblyName: spec.lowerAssembly },
+      })
+      return [`${spec.upperAssembly}|${spec.lowerAssembly}`, features] as const
     },
-    dataCurrent: ({ key }) => key === self.laneLinksKey,
-    run: ({ specs }, ctx) =>
-      fetchEachLane('MultiWayLaneLinks', specs, ctx, async (spec, laneCtx) => {
-        const features = await laneCtx.callRpc('CoreGetFeatures', {
-          adapterConfig: self.adapterConfig,
-          regions: await laneRegions(
-            getSession(self),
-            spec.region.assemblyName,
-            [spec.region],
-          ),
-          opts: { targetAssemblyName: spec.lowerAssembly },
-        })
-        return [
-          `${spec.upperAssembly}|${spec.lowerAssembly}`,
-          features,
-        ] as const
-      }),
-    commit: (links, { key }) => {
+    commit: (key, links) => {
       self.setLaneLinks(key, links)
     },
-    setError: () => {},
   })
 }
