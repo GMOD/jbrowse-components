@@ -245,6 +245,29 @@ describe('a connection the view can place only one end of', () => {
     )
   })
 
+  // THE OTHER SIDE OF THE FOOT CHOICE. Every case above has the placed end at
+  // `p1`, which is what both mate-link producers guarantee — but a split chain
+  // is walked in READ order, so its off-screen segment can be the leading one
+  // and leave `p1` the unplaced end. Hardcoding the foot to `p1` parks the mark
+  // on a coordinate no block covers, `arcTouchesRegion` then drops it from every
+  // region, and the junction disappears instead of standing on its visible end.
+  test('a split junction whose LEADING segment is off screen parks on the other', () => {
+    const data = pairData({
+      readPositions: new Uint32Array([5_000_001, 5_000_201, 1000, 1500]),
+      readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([0, 0]),
+      readPairOrientations: new Uint8Array([0, 0]),
+      ...namesToBlock(['readA', 'readA']),
+    })
+    const { arcs } = runCloud(data, [region(0, 20_000)])
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
+    // the end the view can place, not the leading one
+    expect(arcs[0]!.p1.bp).toBe(1000)
+    expect(arcs[0]!.p2.bp).toBe(1000)
+  })
+
   test('arc mode places nothing on the anchor — its Y is a genomic radius', () => {
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, loneMateAt(50_001_000, 50_000_000)]]),
@@ -281,10 +304,48 @@ describe('an unplaced connection no longer sizes the axis', () => {
     )
     // The near pair, and only it. 50000000 is what the domain was.
     expect(result.maxFlatArcSpanBp).toBe(8_000)
+
+    // And it is still PACKED. The two predicates one line apart in
+    // `arcsToRegionResult` are asked different questions — every flat variant is
+    // drawn as a bar, only the two on the axis may size it — so the axis
+    // assertion above cannot see the packing one. Swapped, the unplaced mark
+    // drops out of `packArcFlats`/`packArcMarkers` while `packArcs` keeps
+    // over-allocating for it, and the domain stays right the whole time.
+    const upload = result.byGroup.get('')!.get(0)!
+    expect(upload.numFlatArcs).toBe(2)
   })
 })
 
 // The collapse in `resolveArcs` is what buys the unplaced mark its geometry:
+// An unplaced arc has ONE foot, so it belongs to ONE region — and the region
+// indices have to collapse with the feet or the routing still reads it as a
+// connection between two places.
+describe('an unplaced connection belongs to the region its foot is in', () => {
+  // The far mate sits inside a second DISPLAYED region while being outside every
+  // LOADED one, which is what makes the two indices differ. Nothing has to be
+  // exotic for that: a whole-chromosome region beside the zoomed window is two
+  // displayed regions, and only the window is fetched.
+  const loaded = [region(0, 20_000, 0)]
+  const displayed = [region(0, 20_000, 0), region(0, 1_000_000, 1)]
+
+  test('it stays in the per-region feed rather than the cross-region overlay', () => {
+    const { arcs, crossRegion } = computeArcsFromPileupData(
+      new Map([[0, loneMateAt(500_000, 500_000)]]),
+      loaded,
+      CLOUD,
+      displayed,
+    )
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
+    // `CrossRegionArcsOverlay` projects each foot through its OWN region index.
+    // Both feet are one coordinate now, so a second index is a second screen x
+    // for a connection with one place to be: the collapsed mark draws back out
+    // as a screen-wide bar with its two squares in two regions — the picture the
+    // parking exists to remove, rebuilt one layer down.
+    expect(crossRegion).toHaveLength(0)
+  })
+})
+
 // with both feet on one bp every consumer already handles it, so there is no
 // fourth mark kind for a renderer to get wrong. This pins the shape that
 // follows.

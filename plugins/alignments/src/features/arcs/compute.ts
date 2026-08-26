@@ -711,6 +711,16 @@ function resolveArcs(
     const unplaced = shape.shapeType === ARC_SHAPE_FLAT_UNPLACED
     const p1 = unplaced ? foot : { refName: p1Ref, bp: p1Bp }
     const p2 = unplaced ? foot : { refName: p2Ref, bp: p2Bp }
+    // The REGION INDICES collapse with the feet, or the routing below still
+    // reads a one-footed mark as a connection between two places and files it
+    // cross-region. `CrossRegionArcsOverlay` then projects each foot through its
+    // own index — and where those two regions overlap in bp, the second lookup
+    // succeeds and the collapsed mark draws back out as a screen-wide bar with
+    // its squares in two regions, which is the picture parking exists to
+    // remove. The far mate need not be exotic to land in a second displayed
+    // region: a whole-chromosome region beside a zoomed window is two, and only
+    // the window is fetched.
+    const footRegionIndex = keepP1 ? p1RegionIndex : p2RegionIndex
     pushArc(
       {
         p1,
@@ -718,8 +728,8 @@ function resolveArcs(
         colorType,
         ...shape,
       },
-      p1RegionIndex,
-      p2RegionIndex,
+      unplaced ? footRegionIndex : p1RegionIndex,
+      unplaced ? footRegionIndex : p2RegionIndex,
       arc,
       undefined,
       unplaced ? { p1Ref, p1Bp, p2Ref, p2Bp } : undefined,
@@ -889,6 +899,12 @@ export function computeArcsByGroup(
         maxFlatArcSpanBp = data.maxFlatArcSpanBp
       }
     }
+    // The same axis rule the per-region arm applies, and DEFENSIVE here rather
+    // than load-bearing: an unplaced mark's region indices collapse with its
+    // feet, so it always files into the per-region feed and this arm never sees
+    // the one shape the two predicates disagree about. Stated the same way
+    // anyway — the reason a span may size the axis is the shape, not which
+    // buffer the arc happened to land in.
     for (const arc of crossRegion) {
       colorSlots.add(arc.colorType)
       if (
