@@ -30,8 +30,12 @@ import {
 
 const noBounds: [undefined, undefined] = [undefined, undefined]
 
-function nice(scaleType: string, domain: [number, number]) {
-  return getNiceDomain({ scaleType, domain, bounds: noBounds })
+function nice(
+  scaleType: string,
+  domain: [number, number],
+  bounds: [number | undefined, number | undefined] = noBounds,
+) {
+  return getNiceDomain({ scaleType, domain, bounds })
 }
 
 // Domains the app can actually reach, each already through getNiceDomain the
@@ -129,6 +133,30 @@ describe('a degenerate domain', () => {
     expect(normalizeScore(9, 5, 5, SCALE_TYPE_SYMLOG, 1)).toBe(0)
   })
 
+  // Reachable from Track menu → Set min/max score by filling in only the min:
+  // the dialog checks `max > min` solely when BOTH fields carry a number, and
+  // `autoscale: localpercentile` (the config default) can put the 99th
+  // percentile below whatever was typed.
+  test('both answer 0 on a descending one', () => {
+    for (const [min, max] of [
+      [200, 60],
+      [-1, -40],
+      [0.5, -0.5],
+    ] as [number, number][]) {
+      for (const scaleType of [
+        SCALE_TYPE_LINEAR,
+        SCALE_TYPE_LOG,
+        SCALE_TYPE_SYMLOG,
+      ]) {
+        const normalize = makeScoreNormalizer(min, max, scaleType, 1)
+        for (const score of [min, max, 0, 1, 10, (min + max) / 2]) {
+          expect(normalize(score)).toBe(0)
+          expect(normalizeScore(score, min, max, scaleType, 1)).toBe(0)
+        }
+      }
+    }
+  })
+
   test('getNiceDomain never hands a log display one', () => {
     // `max <= min` is widened to `min * 2`, so the log branch above is only
     // ever swept over domains with real span
@@ -140,5 +168,31 @@ describe('a degenerate domain', () => {
       const [min, max] = nice('log', raw)
       expect(max).toBeGreaterThan(min)
     }
+  })
+})
+
+// The domain guard is what keeps the sweep above honest: the two normalizers
+// now agree on a descending domain, but a display should never be handed one in
+// the first place, because a descending domain has no ticks either.
+describe('a bound that would invert the domain', () => {
+  test.each(['linear', 'symlog', 'log'])('%s stays ascending', scaleType => {
+    for (const bounds of [
+      [200, undefined],
+      [undefined, -100],
+      [200, 60],
+      [-1, -40],
+    ] as [number | undefined, number | undefined][]) {
+      const [min, max] = nice(scaleType, [-40, 60], bounds)
+      expect(max).toBeGreaterThan(min)
+    }
+  })
+
+  test('the end the user pinned is the one that survives', () => {
+    // min only: the autoscaled top moves above it
+    expect(nice('linear', [0, 60], [200, undefined])[0]).toBe(200)
+    // max only: the autoscaled bottom moves below it
+    expect(nice('linear', [-40, 60], [undefined, -100])[1]).toBe(-100)
+    // both pinned: no free end, so the two numbers come back ordered
+    expect(nice('linear', [0, 60], [200, 60])).toEqual([60, 200])
   })
 })

@@ -64,6 +64,12 @@ function symlog(x: number, c: number) {
  * already resolved by {@link resolveSymlogConstant} — the shader gets the same
  * resolved number as a uniform, so the "auto" rule lives on this side only and
  * the two backends compare like for like.
+ *
+ * A range that is zero **or negative** normalizes everything to 0, which is the
+ * rule `scoreScale.slang` spells as `range <= 0.0`. Testing `range === 0` here
+ * instead let a descending domain through to a negative `1 / range`, so every
+ * score saturated to 1 on this side while the shader flattened them all to 0 —
+ * one view, opposite plots. `normalizeScoreParity.test.ts` sweeps the two.
  */
 export function makeScoreNormalizer(
   min: number,
@@ -78,7 +84,7 @@ export function makeScoreNormalizer(
     const tMin = symlog(min, c)
     const tMax = symlog(max, c)
     const tRange = tMax - tMin
-    if (tRange === 0) {
+    if (tRange <= 0) {
       return () => 0
     }
     const invRange = 1 / tRange
@@ -101,7 +107,7 @@ export function makeScoreNormalizer(
     const logMin = Math.log2(floor)
     const logMax = Math.log2(Math.max(max, floor))
     const logRange = logMax - logMin
-    if (logRange === 0) {
+    if (logRange <= 0) {
       return () => 0
     }
     const invLogRange = 1 / logRange
@@ -111,7 +117,7 @@ export function makeScoreNormalizer(
     }
   }
   const range = max - min
-  if (range === 0) {
+  if (range <= 0) {
     return () => 0
   }
   const invRange = 1 / range

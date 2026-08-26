@@ -2,6 +2,7 @@ import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
+  getNiceDomain,
   makeScoreNormalizer,
   resolveSymlogConstant,
   scaleTypeFromString,
@@ -178,11 +179,36 @@ describe('a minScore bound', () => {
     expect(computeCoverageTicks([0, 60], 150).items[0]!.value).toBe(0)
   })
 
-  test('a bound that swallows the data leaves one honest tick', () => {
-    // minScore above the visible peak: every bar is flat, so there is nothing to
-    // ladder between
-    const { items } = computeCoverageTicks([200, 60], 150)
-    expect(items.map(t => t.value)).toEqual([60])
+  test('a bound above the visible peak flattens the bars onto the baseline', () => {
+    // minScore 200 against an autoscaled peak of 60. `getNiceDomain` widens the
+    // autoscaled TOP rather than handing anything a descending domain — which
+    // the two normalizers used to answer in opposite directions, so the same
+    // band drew empty on the GPU and solid full-height in an SVG export.
+    const domain = getNiceDomain({
+      scaleType: 'linear',
+      domain: [0, 60],
+      bounds: [200, undefined],
+    })
+    expect(domain[1]).toBeGreaterThan(domain[0])
+
+    const { items } = computeCoverageTicks(domain, 150)
+    expect(items[0]!.value).toBe(200)
+
+    // and every depth the data actually holds sits at the baseline, on both
+    // backends — flat at the BOTTOM, which the old `[200, 60]` pin could not
+    // tell apart from flat at the top
+    const scale = makeCoverageScale({
+      coverageMinDepth: domain[0],
+      coverageMaxDepth: domain[1],
+      coverageScaleType: SCALE_TYPE_LINEAR,
+      coverageSymlogConstant: 1,
+    })!
+    for (const depth of [0, 1, 10, 30, 60]) {
+      expect(scale.normalize(depth)).toBe(0)
+      expect(
+        normalizeDepthScalar(depth, domain[0], domain[1], SCALE_TYPE_LINEAR, 1),
+      ).toBe(0)
+    }
   })
 })
 

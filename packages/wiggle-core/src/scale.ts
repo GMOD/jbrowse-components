@@ -119,6 +119,10 @@ export function getScale({
  * Rounds a domain to "nice" endpoints, clamped to the origin. An end given an
  * explicit `bounds` value keeps that value exactly — only an autoscaled end is
  * rounded. A log scale's floor still outranks a bound it cannot hold.
+ *
+ * The result never descends: a bound that would put `min` above `max` widens
+ * the other end instead, so no consumer has to guess what a backwards domain
+ * means.
  */
 // No `symlogConstant` parameter: `niceDomain` puts symlog through d3's linear
 // path, which never reads the constant, so one passed here only looked like it
@@ -170,6 +174,22 @@ export function getNiceDomain({
     }
     if (max <= min) {
       max = min * 2
+    }
+  } else if (max < min) {
+    // A bound can invert the domain — `minScore: 200` against an autoscaled max
+    // of 60, or `maxScore: -100` against an autoscaled min of -40. A descending
+    // domain is not a picture: the two score normalizers disagree about it, so
+    // the same view draws an empty band on the GPU and a solid full-height
+    // block in an SVG export. Widen whichever end the user did not pin, keeping
+    // the one they did; with both pinned there is no free end, so order them.
+    // (log has its own version above — its positivity floor has already moved
+    // `min`, so it can only ever widen upward.)
+    if (maxScore === undefined) {
+      max = min * 2
+    } else if (minScore === undefined) {
+      min = max * 2
+    } else {
+      ;[min, max] = [max, min]
     }
   }
 
