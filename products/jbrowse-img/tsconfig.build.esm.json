@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.esm.json",
   "references": [
+    { "path": "../../packages/cigar-utils/tsconfig.build.esm.json" },
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
     { "path": "../../packages/sv-core/tsconfig.build.esm.json" },

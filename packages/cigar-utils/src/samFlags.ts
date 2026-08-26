@@ -64,6 +64,30 @@ export const samFlagLabels = [
  * as `samFlagLabels` (index `i` describes bit `1 << i`). Surfaced as tooltips in
  * the feature-details flag list so the terse labels are self-explanatory.
  */
+/**
+ * The name samtools accepts for each SAM flag bit, in the same canonical order
+ * as `samFlagLabels` (index `i` names bit `1 << i`).
+ *
+ * These are `samtools view -f`/`-F`'s own spellings, so a mask written by hand
+ * reads the way the command line a reader already knows writes it. Separate
+ * from `samFlagLabels`, which is prose for a checkbox column and would make a
+ * poor token.
+ */
+export const samFlagNames = [
+  'PAIRED',
+  'PROPER_PAIR',
+  'UNMAP',
+  'MUNMAP',
+  'REVERSE',
+  'MREVERSE',
+  'READ1',
+  'READ2',
+  'SECONDARY',
+  'QCFAIL',
+  'DUP',
+  'SUPPLEMENTARY',
+] as const
+
 export const samFlagDescriptions = [
   'Template has multiple segments in sequencing (paired-end / mate-pair)',
   'Each segment is properly aligned according to the aligner',

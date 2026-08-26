@@ -279,6 +279,35 @@ describe('alignments settings a static export cannot reach any other way', () =>
     ).toEqual({ flagInclude: 2 })
   })
 
+  // The names carry their own arithmetic, so a reader who wants "drop secondary
+  // as well" writes that rather than working out that 1540 becomes 1796.
+  test('flags takes samtools flag names as well as numbers', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['flags::SECONDARY,DUP']).snap
+        .filterBy,
+    ).toEqual({ flagExclude: 256 | 1024 })
+    expect(
+      buildDisplaySnapshot('alignments', ['flags:proper_pair']).snap.filterBy,
+    ).toEqual({ flagInclude: 2 })
+    // The display's own default mask, said both ways — and the pair below is
+    // the reason the names are worth having: 1540 and 1796 differ by one bit
+    // nobody reads off the number.
+    expect(
+      buildDisplaySnapshot('alignments', ['flags::UNMAP,QCFAIL,DUP']).snap
+        .filterBy,
+    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1540']).snap.filterBy)
+    expect(
+      buildDisplaySnapshot('alignments', ['flags::UNMAP,SECONDARY,QCFAIL,DUP'])
+        .snap.filterBy,
+    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1796']).snap.filterBy)
+  })
+
+  test('an unknown flag name lists the vocabulary', () => {
+    expect(() =>
+      buildDisplaySnapshot('alignments', ['flags::SECONDRY']),
+    ).toThrow(/PAIRED, PROPER_PAIR/)
+  })
+
   // AND-ed, so a second one is a second condition rather than a replacement
   test('tag filters accumulate, and coexist with the flag masks', () => {
     expect(

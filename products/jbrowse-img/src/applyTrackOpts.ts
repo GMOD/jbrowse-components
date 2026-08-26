@@ -1,3 +1,5 @@
+import { samFlagNames } from '@jbrowse/cigar-utils'
+
 import { trackMatches, trackName } from './trackFields.ts'
 
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
@@ -18,6 +20,15 @@ import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 import type { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+
+// The filter half of an alignments display's state, as the CLI may state it.
+// Every field optional: `normalizeFilterBy` on the display side fills the masks
+// a partial one leaves out, and an absent category is an unfiltered one.
+export type FilterBySnapshot = {
+  flagInclude?: number
+  flagExclude?: number
+  tagFilters?: { tag: string; value: string }[]
+} & Partial<Record<ReadCategoryKey, CategoryFilter>>
 
 type WiggleDisplayModel = Instance<
   ReturnType<typeof linearWiggleDisplayModelFactory>
@@ -228,11 +239,7 @@ interface DisplaySnapshot {
   // display runs every read of it through `normalizeFilterBy`, which fills
   // whichever masks a hand-written config left out, and an absent category is
   // an unfiltered one.
-  filterBy?: {
-    flagInclude?: number
-    flagExclude?: number
-    tagFilters?: { tag: string; value: string }[]
-  } & Partial<Record<ReadCategoryKey, CategoryFilter>>
+  filterBy?: FilterBySnapshot
   // wiggle / score
   color?: string
   useBicolor?: boolean
@@ -337,6 +344,32 @@ function invalid(prefix: string, val: string, expected: string): never {
 function parseNum(prefix: string, val: string, expected = 'a number') {
   const n = val === '' ? Number.NaN : +val
   return Number.isNaN(n) ? invalid(prefix, val, expected) : n
+}
+
+// A SAM flag mask, written as a number or as samtools' flag names.
+//
+// The names carry their own arithmetic — `SECONDARY,DUP` is an OR — so a reader
+// who wants "drop secondary as well" writes that rather than working out that
+// 1540 becomes 1796. A bad name lists the vocabulary, since twelve tokens is
+// short enough to print and guessing one is the likely mistake.
+function parseFlagMask(prefix: string, val: string) {
+  return /^[0-9]+$/.test(val.trim())
+    ? parseNum(prefix, val.trim())
+    : val
+        .split(',')
+        .map(name => {
+          const i = samFlagNames.indexOf(
+            name.trim().toUpperCase() as (typeof samFlagNames)[number],
+          )
+          return i < 0
+            ? invalid(
+                prefix,
+                name,
+                `a number or one of ${samFlagNames.join(', ')}`,
+              )
+            : 1 << i
+        })
+        .reduce((a, b) => a | b, 0)
 }
 
 // A modifier whose value is mandatory and free-form (a color, a tag, a display
@@ -636,17 +669,18 @@ const modifiers: Record<string, Modifier> = {
   // before reaching for one of these to tidy up an arc band.
   ...readCategoryModifiers(),
   // samtools' own vocabulary, because it is the one a reader of this flag
-  // already has: `flags:include:exclude` is `-f` then `-F`. The display's
-  // default is include 0 / exclude 1540 (unmapped, duplicate, failed-QC), so
-  // both halves are optional and an omitted one keeps that default rather than
-  // silently becoming 0.
+  // already has: `flags:include:exclude` is `-f` then `-F`. Each half is either
+  // a number or samtools' flag NAMES, comma-separated and case-insensitive —
+  // `flags::SECONDARY,DUP` says what `flags::1280` says, and says it to the
+  // next reader too. Both halves are optional; an omitted one leaves that mask
+  // wherever the track's own config left it.
   flags: {
     on: ['alignments'],
     apply: (r, include, exclude) => {
       r.snap.filterBy = {
         ...r.snap.filterBy,
-        ...(include ? { flagInclude: parseNum('flags', include) } : {}),
-        ...(exclude ? { flagExclude: parseNum('flags', exclude) } : {}),
+        ...(include ? { flagInclude: parseFlagMask('flags', include) } : {}),
+        ...(exclude ? { flagExclude: parseFlagMask('flags', exclude) } : {}),
       }
     },
   },
@@ -877,13 +911,24 @@ export function applyDisplayOpts(
     }
   }
 
+  // `filterBy` is the one slot a modifier EDITS rather than states, so it can't
+  // ride in on the snapshot: the slot is `frozen`, and showTrack writes a frozen
+  // slot by replacing the whole object. A track configured with
+  // `filterBy: {flagExclude: 1796}` rendered with `split:only` would come back
+  // with the schema's 1540 and its secondary alignments silently restored —
+  // `flags:` says it keeps an omitted mask, and this is what made that untrue.
+  // Applied after the open, through the display's own action, so each of
+  // `flags:`, `filterTag:` and the four categories composes onto what the config
+  // already said instead of erasing its siblings.
+  const { filterBy, ...displaySnap } = snap
+
   // Create the display already in its target state rather than mutating a
   // default display with setter actions. An explicit `display:` selects a
   // non-default display via the snapshot `type` showTrack reads.
   const opened = view.showTrack(
     trackId,
     {},
-    displayType ? { ...snap, type: displayType } : snap,
+    displayType ? { ...displaySnap, type: displayType } : displaySnap,
   )
   // showTrack returns undefined on any failure (invalid track config, or a
   // display: type that doesn't exist for this track) — surface a clear message
@@ -892,5 +937,31 @@ export function applyDisplayOpts(
     throw new Error(
       `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}`,
     )
+  }
+  if (filterBy) {
+    const display = opened.displays[0] as
+      | { filterBy?: FilterBySnapshot; setFilterBy?: (f: unknown) => void }
+      | undefined
+    if (display?.setFilterBy) {
+      const { tagFilters, ...rest } = filterBy
+      display.setFilterBy({
+        ...display.filterBy,
+        ...rest,
+        // AND-ed, like every other tag filter: a `filterTag:` on the command
+        // line adds a condition to the track's own rather than replacing it.
+        ...(tagFilters
+          ? {
+              tagFilters: [
+                ...(display.filterBy?.tagFilters ?? []),
+                ...tagFilters,
+              ],
+            }
+          : {}),
+      })
+    } else {
+      console.warn(
+        `Warning: filter options on "${trackId}" ignored — its display has no filterBy`,
+      )
+    }
   }
 }

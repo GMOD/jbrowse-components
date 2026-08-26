@@ -99,4 +99,5 @@ export {
   SAM_FLAG_UNMAPPED,
   samFlagDescriptions,
   samFlagLabels,
+  samFlagNames,
 } from './samFlags.ts'

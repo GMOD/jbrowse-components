@@ -40,6 +40,7 @@
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
+    "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1",

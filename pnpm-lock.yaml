@@ -2235,6 +2235,9 @@ importers:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1)
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
