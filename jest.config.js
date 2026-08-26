@@ -16,7 +16,7 @@ function resolveMaxWorkers() {
     return override
   }
 
-  // 2. Agent sessions get 2. Claude Code exports CLAUDECODE=1 into every command
+  // 2. Agent sessions get 1. Claude Code exports CLAUDECODE=1 into every command
   //    it runs, and it is not in any shell profile here, so it marks agent runs
   //    and only agent runs — a human `pnpm test` in a normal terminal never sees
   //    it. Several agent worktrees run suites concurrently and each one sizes
@@ -24,10 +24,13 @@ function resolveMaxWorkers() {
   //    (however many agents), which is what actually saturates the box: two
   //    sessions at the old '50%' measured 8 workers each on a 16-core machine,
   //    16 total, and nothing in a per-run config could see the other half.
-  //    2 keeps a handful of concurrent agents inside the core count, and stays
-  //    at the >1 floor the OOM note below requires.
+  //    Measured at 14 concurrent sessions, four jest runs at 2 held 7.2GB while
+  //    the box sat 33GB into swap, so an agent run gets one worker.
+  //
+  //    1 is a worker, not in-band, and the distinction is the whole reason this
+  //    is safe — see the maxWorkers note below.
   if (process.env.CLAUDECODE) {
-    return 2
+    return 1
   }
 
   // 3. Interactive runs: half the machine, clamped.
@@ -126,13 +129,23 @@ export default {
   // Never a bare percentage, and never unbounded. resolveMaxWorkers() above has
   // the tiers; the reasons for the numbers are here.
   //
-  // Floor of 2, which every tier respects: '25%' resolves to a single worker on
-  // 4-core CI runners, which Jest runs in-band in the main process. The full-app
-  // integration suites each retain ~140MB (root model + RPC workers + autoruns
-  // are not torn down), so a lone accumulating process climbs to the heap
-  // ceiling and OOMs. Using >1 worker plus workerIdleMemoryLimit recycles a
-  // worker once it grows past the limit, capping memory regardless of the
-  // per-suite leak.
+  // One worker is safe here, and NOT the same thing as in-band. The hazard is
+  // real — the full-app integration suites each retain ~140MB (root model + RPC
+  // workers + autoruns are not torn down), so a lone accumulating process climbs
+  // to the heap ceiling and OOMs — but it is in-band that has it, because
+  // nothing recycles the main process. A worker gets recycled the moment it
+  // passes workerIdleMemoryLimit, which caps memory whatever the per-suite leak.
+  //
+  // jest only runs in-band on a worker count of 1 when workerIdleMemoryLimit is
+  // unset: `shouldRunInBand` (jest 30.4.2, @jest/core) guards its whole
+  // one-worker-or-one-test branch behind `workerIdleMemoryLimit === undefined`,
+  // commented "when specifying a memory limit, workers should be used". The
+  // limit is set right below, so maxWorkers 1 forks one real worker. Verified by
+  // counting a run's own worker children: 1 with the limit set, 0 without.
+  //
+  // `--runInBand` is the thing to avoid, and no worker count reaches it. It is
+  // the first branch of that function and returns before the limit is consulted,
+  // so it re-enables exactly the OOM described above.
   //
   // Ceiling of 4: a bare percentage scales with the machine, and on a big dev
   // box that is 8+ workers each entitled to workerIdleMemoryLimit before it is

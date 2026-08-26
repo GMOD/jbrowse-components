@@ -65,15 +65,22 @@ const tscArgs = (project: string) => [
 // Watching starts every project at once, since the first watcher never returns.
 // Anything else runs one project at a time — together they would restore
 // exactly the peak the checker count holds down.
+//
+// Watch is also the one form that skips heavy-run-slot.sh below, and has to:
+// a watcher would hold its slot for the length of the session.
 if (flags.some(f => f === '--watch' || f === '-w')) {
   for (const project of projects) {
     spawn(process.execPath, tscArgs(project), { stdio: 'inherit' })
   }
 } else {
+  // One checker each still totals one per checkout, and the checkouts cannot
+  // see each other. The slot is machine-wide so they queue instead.
   for (const project of projects) {
-    const { status } = spawnSync(process.execPath, tscArgs(project), {
-      stdio: 'inherit',
-    })
+    const { status } = spawnSync(
+      'scripts/heavy-run-slot.sh',
+      [process.execPath, ...tscArgs(project)],
+      { stdio: 'inherit' },
+    )
     if (status !== 0) {
       process.exit(status ?? 1)
     }
