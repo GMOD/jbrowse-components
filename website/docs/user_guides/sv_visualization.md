@@ -21,9 +21,8 @@ evidence in the SAM format), see
 For end-to-end walkthroughs, see
 [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) (HG008
 tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
-[Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples) (a
-whole-gene deletion across the cohort, then a call its coverage is silent
-about).
+[](/docs/tutorials/sv_multisamples) (a whole-gene deletion across the cohort,
+then a call its coverage is silent about).
 
 ## SV signals in the alignments track
 
