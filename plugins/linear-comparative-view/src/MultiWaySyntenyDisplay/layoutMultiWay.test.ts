@@ -3,12 +3,15 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import {
   alignRowFrames,
   computeRowFrame,
+  frameSpan,
   frameTickXs,
+  laneFetchRegion,
   laneFetchWindow,
   geneGlyphShape,
   groupFeatures,
   groupSpansOnRow,
   laneGeneFeatures,
+  laneGeometry,
   rowAssembliesOf,
   rowFrameX,
   tickIntervalFor,
@@ -145,21 +148,41 @@ const features = [
 
 test('groups by anchor gene, dedupes repeated mates, sorts by anchor position', () => {
   const groups = groupFeatures(features)
-  expect(groups.map(g => g.name)).toEqual(['g1', 'g2', 'g3'])
+  expect(groups.map(g => g.key)).toEqual(['g1', 'g2', 'g3'])
   expect(groups[0]!.mates.get('peach')).toHaveLength(1)
   expect(groups[0]!.mates.get('cacao')).toHaveLength(1)
   expect(groups[1]!.mates.has('cacao')).toBe(false)
 })
 
+// the display binds this to `isSameAssemblyName` over the session's assembly
+// manager; a fixture spelling every name canonically needs only equality
+const exactName = (a: string, b: string) => a === b
+
 test('row assemblies come out densest lane first, rowOrder pinning over that', () => {
-  expect(rowAssembliesOf(groupFeatures(features), [])).toEqual([
+  expect(rowAssembliesOf(groupFeatures(features), [], exactName)).toEqual([
     'peach',
     'cacao',
   ])
-  expect(rowAssembliesOf(groupFeatures(features), ['cacao'])).toEqual([
-    'cacao',
-    'peach',
-  ])
+  expect(
+    rowAssembliesOf(groupFeatures(features), ['cacao'], exactName),
+  ).toEqual(['cacao', 'peach'])
+})
+
+// `rowOrder` is authored in a session spec or a config defaultSession, so it
+// spells an assembly the way the session does, while the lane it has to match
+// is spelled the way the synteny table's BED did. Comparing those raw is the
+// `===` the assembly-name rule forbids, and it fails by silently pinning
+// nothing.
+test('rowOrder pins a lane it names through an alias', () => {
+  const canonical = (name: string) =>
+    name === 'Theobroma_cacao' ? 'cacao' : name
+  expect(
+    rowAssembliesOf(
+      groupFeatures(features),
+      ['Theobroma_cacao'],
+      (a, b) => canonical(a) === canonical(b),
+    ),
+  ).toEqual(['cacao', 'peach'])
 })
 
 // A ribbon connects ADJACENT lanes only, so a lane holding one placement sitting
@@ -195,7 +218,7 @@ test('a sparse lane sorts below a denser one that appears after it', () => {
       }),
     ),
   ]
-  expect(rowAssembliesOf(groupFeatures(sparseFirst), [])).toEqual([
+  expect(rowAssembliesOf(groupFeatures(sparseFirst), [], exactName)).toEqual([
     'dense',
     'sparse',
   ])
@@ -355,9 +378,9 @@ test('a group with nothing on the dominant refName gets no span on that row', ()
   ])
   const frame = computeRowFrame(groups, 'peach')!
   expect(frame.refName).toBe('Pp1')
-  const g4 = groups.find(g => g.name === 'g4')!
+  const g4 = groups.find(g => g.key === 'g4')!
   expect(groupSpansOnRow(g4, 'peach', frame, 800)).toEqual([])
-  const g1 = groups.find(g => g.name === 'g1')!
+  const g1 = groups.find(g => g.key === 'g1')!
   const span = groupSpansOnRow(g1, 'peach', frame, 800)[0]!
   expect(span[0]).toBeLessThan(span[1])
 })
@@ -1080,5 +1103,150 @@ describe('a group placed twice on one lane', () => {
     const spans = groupSpansOnRow(groups[0]!, 'peach', frame, 800)
     expect(spans).toHaveLength(1)
     expect(spans[0]![0]).toBeGreaterThan(spans[0]![1])
+  })
+})
+
+// The fit-side guard is `snapFrameToLadder`'s; this is the other half. The
+// alignment shift is clamped to the slack the rung left over the fitted extent,
+// which for a lane whose placements fill a fraction of its rung is most of the
+// span — so a lane that fits near a contig start could be slid back below zero
+// after being placed, and the header printed a coordinate the contig does not
+// have.
+test('the alignment shift cannot slide a lane below zero', () => {
+  const groups = groupFeatures([
+    pairFeature({
+      uniqueId: '1',
+      name: 'g1',
+      start: 700,
+      end: 800,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 0,
+        end: 100,
+        name: 'p1',
+      },
+    }),
+    pairFeature({
+      uniqueId: '2',
+      name: 'g2',
+      start: 900,
+      end: 1000,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 500,
+        end: 600,
+        name: 'p2',
+      },
+    }),
+  ])
+  const width = 800
+  // the anchor draws this pair at the RIGHT of the canvas while the lane fits
+  // them at its left, so the offset pass wants to slide the lane left
+  const frame = alignRowFrames(
+    groups,
+    ['peach'],
+    anchorSeed(groups, width),
+    1000,
+    width,
+  ).get('peach')!
+  expect(frame.min).toBeGreaterThanOrEqual(0)
+  expect(frame.max).toBeGreaterThanOrEqual(frame.fitMax)
+})
+
+// `rowFrameX` extrapolates, so an endpoint the frame does not reach maps to
+// tens of thousands of px: the rect drawn from it is clipped by the svg and
+// looks fine while the ribbon on it sweeps the page. The lane-links fetch asks
+// for the whole window the frame can SLIDE in, which is wider than the frame by
+// construction, so records outside it arrive on every fetch.
+test('a span outside the frame has no px pair to draw from', () => {
+  const frame = computeRowFrame(groupFeatures(features), 'peach', 1000)!
+  const region = laneFetchRegion(frame)
+  expect(region.end).toBeGreaterThan(frame.max)
+
+  expect(frameSpan(frame, frame.min + 10, frame.min + 20, 800)).toBeDefined()
+  expect(frameSpan(frame, region.end - 10, region.end, 800)).toBeUndefined()
+})
+
+// The anchor lane's genes are fetched over the view's static blocks, so a gene
+// straddling a block boundary comes back once per block it touches — two
+// glyphs, and two React children under one key.
+test('lane genes arriving once per static block draw once', () => {
+  const gene = (uniqueId: string) =>
+    new SimpleFeature({
+      uniqueId,
+      refName: 'ctgA',
+      start: 900,
+      end: 1100,
+      type: 'gene',
+    })
+  expect(laneGeneFeatures([gene('g1'), gene('g1'), gene('g2')])).toHaveLength(2)
+})
+
+// A lane's own contig is whichever holds the most ALIGNED BP, the vote
+// `resolvePanel` runs for the panel this lane launches. Counting placements
+// instead let a cluster of short repeat hits outvote the syntenic block that is
+// the lane, and put the launch and the lane it launched from on different
+// contigs.
+test('a lane sits on the contig holding the most aligned bp, not the most hits', () => {
+  const groups = groupFeatures([
+    ...['a', 'b', 'c'].map((suffix, i) =>
+      pairFeature({
+        uniqueId: `repeat${suffix}`,
+        name: `g${i + 1}`,
+        start: 100 * (i + 1),
+        end: 100 * (i + 1) + 50,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp_repeats',
+          start: 1000 * (i + 1),
+          end: 1000 * (i + 1) + 20,
+          name: `r${suffix}`,
+        },
+      }),
+    ),
+    ...['d', 'e'].map((suffix, i) =>
+      pairFeature({
+        uniqueId: `block${suffix}`,
+        name: `g${i + 1}`,
+        start: 100 * (i + 1),
+        end: 100 * (i + 1) + 50,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 5000 * (i + 1),
+          end: 5000 * (i + 1) + 400,
+          name: `b${suffix}`,
+        },
+      }),
+    ),
+  ])
+  expect(computeRowFrame(groups, 'peach')!.refName).toBe('Pp1')
+})
+
+describe('lane geometry', () => {
+  // The bands are what stops the view's gridlines — true on the anchor lane
+  // and a lie on every other one — at the anchor. A band covering only its own
+  // header and glyphs left them standing in the gutters, which is most of the
+  // ink in a tall track.
+  test('the bands below the anchor tile without gaps', () => {
+    const { rows } = laneGeometry(240, 4)
+    for (const [row, band] of rows.entries()) {
+      if (row > 0) {
+        expect(band.bandStart).toBeCloseTo(rows[row - 1]!.bandEnd, 6)
+        expect(band.bandStart).toBeLessThan(band.bandTop)
+      }
+    }
+    expect(rows.at(-1)!.bandEnd).toBe(240)
+  })
+
+  test('every lane fits inside the track height, at any lane count', () => {
+    for (const rowCount of [1, 2, 5, 12]) {
+      const { glyphHeight, rows } = laneGeometry(240, rowCount)
+      expect(rows).toHaveLength(rowCount)
+      expect(rows[0]!.bandTop).toBeGreaterThanOrEqual(0)
+      expect(rows.at(-1)!.glyphTop + glyphHeight).toBeLessThanOrEqual(240)
+    }
   })
 })

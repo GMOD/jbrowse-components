@@ -15,9 +15,8 @@ interface MultiWayFetchArgs {
   regions: ContentBlock[]
 }
 
-// Both dependent fetches are derived from lane frames that move on every pan,
-// and a frame settles well inside this. Leading edge like every fetch installer,
-// so the first one is not charged the wait.
+// both dependent fetches are derived from lane frames that move on every pan,
+// and a frame settles well inside this
 const DEPENDENT_FETCH_DELAY = 500
 
 function fetchPhases(
@@ -65,14 +64,11 @@ async function laneRegions(
  *
  * **One lane failing is a partial result, not a failed fetch.** That lane keeps
  * the placement boxes it already draws and every other lane keeps its gene
- * models, where a rejected `Promise.all` used to drop the whole map and blank
- * them all for one assembly's missing annotation file. So this resolves either
- * way and the commit always happens — which is also what settles `displayPhase`
- * off `loading` when the first one lands.
- *
- * The log guard is `handleFetchError`'s rule applied per lane rather than per
- * fetch: an abort is the ordinary end of a superseded run, and a stale run's
- * failure belongs to whatever replaced it.
+ * models, so this resolves either way and the commit always happens — which is
+ * also what settles `displayPhase` off `loading` when the first one lands. The
+ * log guard is `handleFetchError`'s rule per lane: an abort is the ordinary end
+ * of a superseded run, and a stale run's failure belongs to whatever replaced
+ * it.
  */
 async function fetchEachLane<Spec>(
   label: string,
@@ -112,30 +108,20 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   // settled into lane frames, pull each lane's gene models from that assembly's
   // own gene track.
   //
-  // Both dependent fetches take the shared skeleton, which owns what they used
-  // to hand-roll between them: the latest-wins rotation and its `isCurrent`
-  // (a key compared by hand says a fetch is current again after the view goes
-  // away and comes back, which the rotation does not), the token released
-  // however the run ends, the currency-guarded error rule, the unconditional
-  // `reloadCounter` read that makes Retry reach them at all, and — through
-  // `dataCurrent` — the reload that has to override their freshness gate.
-  //
-  // No `contract`: both are SECOND fetches on a display whose global foundation
-  // already installed the two dev-only contract checks.
+  // No `contract`: both dependent fetches are SECOND fetches on a display whose
+  // global foundation already installed the two dev-only contract checks.
   installFetch(self, {
     name: 'MultiWayLaneGenes',
     delay: DEPENDENT_FETCH_DELAY,
-    // The display's own window, lent rather than a channel of its own: a lane
+    // the display's own window, lent rather than a channel of its own: a lane
     // refetch runs over lanes that are already drawn, so `displayPhase` is
     // `ready` and this reports through the corner progress chip instead of the
-    // scrim — and it shares the window with the fetch it depends on rather than
-    // opening a second writer on the same field.
+    // scrim
     report: { statusWindow: self.statusWindow },
     gate: () => !self.isMinimized,
-    // `prepare` answers only "is there anything to fetch" — no gene track for
-    // any lane means no specs, and no retry should change that. Whether the
+    // `prepare` answers only "is there anything to fetch". Whether the
     // committed genes already answer these specs is `dataCurrent`, which the
-    // skeleton overrides on a reload so this pair needs no `reload()` of its own
+    // skeleton overrides on a reload, so this pair needs no `reload()` of its own
     prepare: () => {
       const { key, specs } = self.laneGenesFetchSpecs
       return specs.length > 0 ? { key, specs } : undefined
@@ -156,11 +142,10 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     commit: (genes, { key }) => {
       self.setLaneGenes(key, genes)
     },
-    // A lane's annotation is an enhancement over placement boxes that are
-    // already correct, so a lane failure is not the display's error: `run`
-    // degrades per lane and logs there, and this must not reach the error slot
-    // the ortholog fetch owns — least of all through the clear it would do at
-    // the start of every run
+    // a lane's annotation is an enhancement over placement boxes that are
+    // already correct, so a lane failure must not reach the error slot the
+    // ortholog fetch owns — least of all through the clear it would do at the
+    // start of every run
     setError: () => {},
   })
 

@@ -29,7 +29,7 @@ test('the lane fetch is part of loading only until it first lands', () => {
   // the pan: the specs move off the committed key, so the lanes are stale and
   // a refetch is due — but they are drawn, and the phase says so
   display.setLaneGenes('a-key-the-specs-have-moved-off', new Map())
-  expect(display.laneGenesCurrent).toBe(false)
+  expect(display.laneGenesFetchSpecs.key).not.toBe(display.laneGenesKey)
   expect(display.displayPhase).toBe('ready')
 })
 

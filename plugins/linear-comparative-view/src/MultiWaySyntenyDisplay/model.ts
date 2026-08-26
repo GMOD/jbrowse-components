@@ -27,13 +27,13 @@ import {
 import {
   alignRowFrames,
   groupFeatures,
-  laneFetchWindow,
+  laneFetchRegion,
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
-import type { RowFrame } from './layoutMultiWay.ts'
+import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -59,16 +59,6 @@ export interface LaneLinksFetchSpec {
   upperAssembly: string
   lowerAssembly: string
   region: LaneRegion
-}
-
-// widen a lane frame outward to a stable grid, so a sub-grid pan reuses the
-// last gene fetch the way the anchor's static blocks do
-function quantizeSpan({ min, max }: { min: number; max: number }) {
-  const grid = 2 ** Math.ceil(Math.log2(Math.max(max - min, 1)))
-  return {
-    start: Math.max(0, Math.floor(min / grid) * grid),
-    end: Math.ceil(max / grid) * grid,
-  }
 }
 
 /**
@@ -208,8 +198,6 @@ export function stateModelFactory(
       get painted(): boolean {
         return self.features !== undefined || !!self.error
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * anchor-sorted gene groups reconstructed from the pairwise features
@@ -217,23 +205,17 @@ export function stateModelFactory(
       get groups() {
         return self.features ? groupFeatures(self.features) : []
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * mate assemblies densest-first, one lane each below the anchor lane,
-       * with any `rowOrder` lanes pinned above them
+       * a gene-level source names its features and groups chain on the names;
+       * an alignment-level source (all-vs-all PAF) names nothing, which is
+       * what makes the per-pair link fetch worth issuing
        */
-      get rowAssemblies() {
-        // a paralogy record's mate is the anchor assembly itself; those draw
-        // on the anchor's own axis, not as a lane. Through the aliases,
-        // because the view holds what the session opened it on while a mate
-        // holds whatever the track config or a PanSN prefix spelled
-        const { assemblyManager } = getSession(self)
-        const anchor = self.lgv.assemblyNames[0]
-        return rowAssembliesOf(self.groups, [...self.rowOrder]).filter(
-          assemblyName =>
-            !isSameAssemblyName(assemblyName, anchor, assemblyManager),
+      get featuresAreNameless() {
+        return (
+          self.features !== undefined &&
+          self.features.length > 0 &&
+          self.features.every(f => f.get('name') === undefined)
         )
       },
       /**
@@ -280,6 +262,32 @@ export function stateModelFactory(
       get anchorAssembly() {
         return getSession(self).assemblyManager.get(self.anchorAssemblyName)
       },
+      /**
+       * #getter
+       * mate assemblies densest-first, one lane each below the anchor lane,
+       * with any `rowOrder` lanes pinned above them. A paralogy record's mate
+       * is the anchor assembly itself; those draw on the anchor's own axis
+       * rather than as a lane
+       */
+      get rowAssemblies() {
+        const { assemblyManager } = getSession(self)
+        const sameName = (a: string, b: string) =>
+          isSameAssemblyName(a, b, assemblyManager)
+        return rowAssembliesOf(
+          self.groups,
+          [...self.rowOrder],
+          sameName,
+        ).filter(
+          assemblyName => !sameName(assemblyName, self.anchorAssemblyName),
+        )
+      },
+      /**
+       * #getter
+       */
+      get visibleBpSpan() {
+        const view = self.lgv
+        return view.initialized ? view.width * view.bpPerPx : 0
+      },
     }))
     .views(self => ({
       /**
@@ -311,27 +319,60 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the one bp interval every lane draws its ticks at, so tick spacing is
+       * readable as bp-per-pixel across lanes drawn in different frames
        */
-      get visibleBpSpan() {
-        const view = self.lgv
-        return view.initialized ? view.width * view.bpPerPx : 0
+      get tickIntervalBp() {
+        return tickIntervalFor(self.visibleBpSpan)
+      },
+      /**
+       * #getter
+       * per lane, the session's own gene track for that assembly: the first
+       * GFF3 feature track declared for it alone. The real pipelines this
+       * display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs
+       * from exactly these annotations, so the lane's exon structure comes
+       * from the file the table was built from
+       */
+      get laneGeneAdapters() {
+        const session = getSession(self)
+        const { assemblyManager } = session
+        const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
+        const out = new Map<string, Record<string, unknown>>()
+        for (const track of session.tracks) {
+          const names = readConfObject(track, 'assemblyNames') as string[]
+          const adapter = readConfObject(track, 'adapter') as {
+            type?: string
+          } | null
+          if (names.length !== 1 || !adapter?.type?.startsWith('Gff3')) {
+            continue
+          }
+          const lane = lanes.find(assemblyName =>
+            isSameAssemblyName(names[0], assemblyName, assemblyManager),
+          )
+          if (lane !== undefined && !out.has(lane)) {
+            out.set(lane, adapter as Record<string, unknown>)
+          }
+        }
+        return out
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * where the anchor lane draws each visible group, in canvas px — the
-       * view's own `bpToPx`, which is the only honest answer: it is piecewise
-       * over the displayed regions and no `RowFrame` can stand in for it.
+       * where the anchor lane draws each visible group, in canvas px, in the
+       * anchor's own direction — start end first, so a horizontally flipped
+       * view hands the ribbons the crossed pair it is drawing.
        *
-       * Read both by the lane-alignment seed and by the anchor lane's own
-       * ribbons, so "the lanes line up against where the anchor actually draws"
-       * holds by construction rather than by two loops agreeing.
+       * The view's own `bpToPx`, which is the only honest answer: it is
+       * piecewise over the displayed regions and no `RowFrame` can stand in
+       * for it. Read both by the lane-alignment seed and by the anchor lane's
+       * own ribbons, so "the lanes line up against where the anchor actually
+       * draws" holds by construction rather than by two loops agreeing
        */
-      get anchorSpans(): Map<string, readonly [number, number]> {
+      get anchorSpans(): Map<string, Span> {
         const view = self.lgv
         const assembly = self.anchorAssembly
-        const out = new Map<string, readonly [number, number]>()
+        const out = new Map<string, Span>()
         if (!view.initialized || !assembly) {
           return out
         }
@@ -340,9 +381,10 @@ export function stateModelFactory(
           const a = view.bpToPx({ refName, coord: group.anchor.start })
           const b = view.bpToPx({ refName, coord: group.anchor.end })
           if (a !== undefined && b !== undefined) {
-            const x1 = a.offsetPx - view.offsetPx
-            const x2 = b.offsetPx - view.offsetPx
-            out.set(group.key, x1 < x2 ? [x1, x2] : [x2, x1])
+            out.set(group.key, [
+              a.offsetPx - view.offsetPx,
+              b.offsetPx - view.offsetPx,
+            ])
           }
         }
         return out
@@ -363,16 +405,6 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the one bp interval every lane draws its ticks at, so tick spacing is
-       * readable as bp-per-pixel across lanes drawn in different frames
-       */
-      get tickIntervalBp() {
-        return tickIntervalFor(self.visibleBpSpan)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * each mate lane's local coordinate frame
        */
       get rowFrames(): Map<string, RowFrame | undefined> {
@@ -384,48 +416,12 @@ export function stateModelFactory(
           self.canvasWidth,
         )
       },
-      /**
-       * #getter
-       * per lane, the session's own gene track for that assembly: the first
-       * GFF3 feature track declared for it alone. The real pipelines this
-       * display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs
-       * from exactly these annotations, so the lane's exon structure comes
-       * from the file the table was built from
-       */
-      get laneGeneAdapters() {
-        const session = getSession(self)
-        const { assemblyManager } = session
-        const out = new Map<string, Record<string, unknown>>()
-        for (const assemblyName of [
-          self.anchorAssemblyName,
-          ...self.rowAssemblies,
-        ]) {
-          const conf = session.tracks.find(track => {
-            const names = readConfObject(track, 'assemblyNames') as string[]
-            const adapterType = (
-              readConfObject(track, 'adapter') as { type?: string } | undefined
-            )?.type
-            return (
-              names.length === 1 &&
-              isSameAssemblyName(names[0], assemblyName, assemblyManager) &&
-              !!adapterType?.startsWith('Gff3')
-            )
-          })
-          if (conf) {
-            out.set(
-              assemblyName,
-              readConfObject(conf, 'adapter') as Record<string, unknown>,
-            )
-          }
-        }
-        return out
-      },
     }))
     .views(self => ({
       /**
        * #getter
        * what the lane-genes autorun fetches: one spec per lane with a gene
-       * track, over quantized windows so a small pan reuses the last fetch
+       * track, over the quantized window each lane's frame slides in
        */
       get laneGenesFetchSpecs() {
         const view = self.lgv
@@ -433,39 +429,26 @@ export function stateModelFactory(
         const specs: LaneGenesFetchSpec[] = []
         if (view.initialized) {
           const anchorAdapter = adapters.get(self.anchorAssemblyName)
-          if (anchorAdapter) {
-            const regions = view.staticBlocks.contentBlocks.map(block => ({
+          const regions = view.staticBlocks.contentBlocks.map(block => ({
+            assemblyName: self.anchorAssemblyName,
+            refName: block.refName,
+            start: Math.max(0, Math.floor(block.start)),
+            end: Math.ceil(block.end),
+          }))
+          if (anchorAdapter && regions.length) {
+            specs.push({
               assemblyName: self.anchorAssemblyName,
-              refName: block.refName,
-              start: Math.max(0, Math.floor(block.start)),
-              end: Math.ceil(block.end),
-            }))
-            if (regions.length) {
-              specs.push({
-                assemblyName: self.anchorAssemblyName,
-                adapterConfig: anchorAdapter,
-                regions,
-              })
-            }
+              adapterConfig: anchorAdapter,
+              regions,
+            })
           }
           for (const [assemblyName, frame] of self.rowFrames) {
             const adapter = adapters.get(assemblyName)
             if (adapter && frame) {
-              // the window every position the frame can slide to, NOT the frame
-              // itself: the frame moves with the alignment shift and therefore
-              // with the viewport width, and keying the fetch on that refetches
-              // a lane's annotation on a window resize
-              const reach = laneFetchWindow(frame)
               specs.push({
                 assemblyName,
                 adapterConfig: adapter,
-                regions: [
-                  {
-                    assemblyName,
-                    refName: frame.refName,
-                    ...quantizeSpan(reach),
-                  },
-                ],
+                regions: [{ assemblyName, ...laneFetchRegion(frame) }],
               })
             }
           }
@@ -483,27 +466,10 @@ export function stateModelFactory(
           specs,
         }
       },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * a gene-level source names its features and groups chain on the names;
-       * an alignment-level source (all-vs-all PAF) names nothing, which is
-       * what makes the per-pair link fetch below worth issuing
-       */
-      get featuresAreNameless() {
-        return (
-          self.features !== undefined &&
-          self.features.length > 0 &&
-          self.features.every(f => f.get('name') === undefined)
-        )
-      },
-    }))
-    .views(self => ({
       /**
        * #getter
        * one spec per ADJACENT mate-lane pair when the source is an all-vs-all
-       * alignment file: the upper lane's frame queried against the lower
+       * alignment file: the upper lane's window queried against the lower
        * lane's assembly, which an all-vs-all adapter answers with the direct
        * records it holds for that pair
        */
@@ -517,24 +483,12 @@ export function stateModelFactory(
             const upper = self.rowFrames.get(upperAssembly)
             const lower = self.rowFrames.get(lowerAssembly)
             if (upper && lower) {
-              // the window the upper frame can slide in, NOT the frame — the
-              // same key the lane-genes fetch uses and for the same reason: the
-              // frame moves with the alignment shift and the viewport width, so
-              // keying on it refetches every pair on a window resize
-              const reach = laneFetchWindow(upper)
               specs.push({
                 upperAssembly,
                 lowerAssembly,
                 region: {
                   assemblyName: upperAssembly,
-                  refName: upper.refName,
-                  // Off the fetch window, not off the frame. The frame slides
-                  // as the alignment pass re-medians, and the seed now moves
-                  // with the pan, so keying on it churns this fetch on a
-                  // gesture that changed no data. `laneFetchWindow` is exactly
-                  // the shift-independent envelope, and is what the lane gene
-                  // fetch already keys on.
-                  ...quantizeSpan(reach),
+                  ...laneFetchRegion(upper),
                 },
               })
             }
@@ -554,61 +508,20 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       */
-      get laneLinksCurrent() {
-        const { key, specs } = self.laneLinksFetchSpecs
-        return (
-          specs.length === 0 ||
-          (self.laneLinks !== undefined && self.laneLinksKey === key)
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * whether the committed lane genes answer the current lane frames — the
-       * term `displayPhase` reads to hold at `loading` until the first fetch
-       * lands, and the dependent fetch's own gate through `laneGenesKey`
-       */
-      get laneGenesCurrent() {
-        const { key, specs } = self.laneGenesFetchSpecs
-        return (
-          specs.length === 0 ||
-          (self.laneGenes !== undefined && self.laneGenesKey === key)
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * the dependent fetches are part of loading until they first land, so an
+       * the dependent fetches are part of loading until they FIRST land, so an
        * export or a capture never lands between the ortholog fetch and the
-       * gene models that fill the lanes. A failed lane fetch commits an empty
-       * result rather than hanging this at loading (see afterAttach).
-       *
-       * **Until they first land, not for good.** Holding the phase at loading
-       * for every subsequent refetch put the striped loading scrim over lanes
-       * that were already drawn on any pan that moved a quantized lane window:
-       * the fetch is debounced 500 ms and the overlay's anti-flash delay is
-       * 250 ms, so the scrim always won that race. Before the first commit
-       * there is nothing on screen to flash over and a capture would shoot
-       * placement boxes, which is what this is for; after it, the lanes are an
-       * enhancement over boxes that are already correct, and a refetch says so
-       * through the corner progress chip that `ready` gates rather than the
-       * scrim.
-       *
-       * So `displaySettled` — `[data-display-phase="ready"]`, what every figure
-       * spec waits on — covers a load-and-shoot and not a pan-then-shoot. Every
-       * `multiway_synteny/*` spec is the former. A pan-then-shoot one would
-       * need a finer wait, and should add it then: this display published a
-       * `data-lanes-current` attribute for that case which nothing ever read,
-       * and which covered only the genes half of the two fetches.
+       * gene models that fill the lanes. Not for later refetches: those run
+       * over lanes that are already drawn, and holding the phase at loading
+       * puts the striped scrim over them. A failed lane fetch commits an empty
+       * result rather than hanging this at loading (see afterAttach)
        */
       get displayPhase(): DisplayStatusPhase {
         const base = foundationDisplayStatusPhase(self, () => true)
         const firstFetchPending =
-          (self.laneGenes === undefined && !self.laneGenesCurrent) ||
-          (self.laneLinks === undefined && !self.laneLinksCurrent)
+          (self.laneGenes === undefined &&
+            self.laneGenesFetchSpecs.specs.length > 0) ||
+          (self.laneLinks === undefined &&
+            self.laneLinksFetchSpecs.specs.length > 0)
         return base === 'ready' && firstFetchPending ? 'loading' : base
       },
     }))
@@ -645,7 +558,7 @@ export function stateModelFactory(
        * #action
        */
       selectFeature(feature: Feature) {
-        openFeatureWidget(self, feature.toJSON())
+        openFeatureWidget(self, feature.toJSON(), { feature })
       },
       /**
        * #action

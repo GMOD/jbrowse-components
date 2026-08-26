@@ -59,7 +59,7 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
     { timeout: 30000 },
   )
 
-  expect(display.groups.map(g => g.name)).toEqual(['g1', 'g2', 'g3', 'g4'])
+  expect(display.groups.map(g => g.key)).toEqual(['g1', 'g2', 'g3', 'g4'])
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
   const g1 = display.groups[0]!
   expect(g1.mates.get('peach')).toHaveLength(1)

@@ -4,19 +4,18 @@ import { doesIntersect2, getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import {
+  frameSpan,
   frameTickXs,
   geneGlyphShape,
   groupSpansOnRow,
+  laneGeometry,
   rowFrameX,
 } from '../layoutMultiWay.ts'
 
-import type { MultiWayGroup, RowFrame } from '../layoutMultiWay.ts'
+import type { RowFrame, Span } from '../layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
-
-type Span = readonly [number, number]
-
-const LABEL_HEIGHT = 12
 
 // ribbons narrower than this on both ends are clutter at alignment-record
 // density; the blocks they connect are still drawn in the lanes
@@ -25,8 +24,23 @@ const MIN_RIBBON_PX = 2
 interface RibbonSpec {
   key: string
   groupKey: string
-  name: string
   d: string
+}
+
+interface Lane {
+  assemblyName: string
+  assembly: Assembly | undefined
+  // undefined on the anchor lane, which draws on the view's own axis, and on a
+  // mate lane the visible groups place nothing on
+  frame: RowFrame | undefined
+  genes: Feature[] | undefined
+  // the visible groups' px spans on this lane, one entry per run of placements
+  // the lane shows
+  spans: Map<string, Span[]>
+  glyphTop: number
+  bandTop: number
+  bandStart: number
+  bandEnd: number
 }
 
 // The two spans are ORDERED pairs, not intervals: `s1[0]` joins `s2[0]` and
@@ -45,6 +59,12 @@ function ribbonPath(
     return `M ${s1[0]} ${y1} C ${s1[0]} ${ym}, ${s2[0]} ${ym}, ${s2[0]} ${y2} L ${s2[1]} ${y2} C ${s2[1]} ${ym}, ${s1[1]} ${ym}, ${s1[1]} ${y1} Z`
   }
   return `M ${s1[0]} ${y1} L ${s2[0]} ${y2} L ${s2[1]} ${y2} L ${s1[1]} ${y1} Z`
+}
+
+function wideEnough(s1: Span, s2: Span) {
+  return (
+    Math.max(Math.abs(s1[1] - s1[0]), Math.abs(s2[1] - s2[0])) >= MIN_RIBBON_PX
+  )
 }
 
 function fmt(n: number) {
@@ -176,7 +196,7 @@ function GeneGlyph({
         />
       ))}
       {arrow ? <path d={arrow} stroke={strokeColor} fill="none" /> : null}
-      <title>{feature.get('name') ?? feature.get('id')}</title>
+      <title>{feature.get('name') ?? feature.id()}</title>
     </g>
   )
 }
@@ -210,7 +230,7 @@ const RibbonLayer = observer(function RibbonLayer({
               model.setHoveredGroupKey(undefined)
             }}
           >
-            <title>{spec.name}</title>
+            <title>{spec.groupKey}</title>
           </path>
         )
       })}
@@ -229,8 +249,10 @@ const MultiWayRows = observer(function MultiWayRows({
   const view = model.lgv
   const { assemblyManager } = getSession(model)
   const {
+    anchorAssembly,
     anchorAssemblyName,
     anchorSpans,
+    canvasWidth: width,
     visibleBpSpan,
     rowAssemblies,
     rowFrames,
@@ -245,72 +267,54 @@ const MultiWayRows = observer(function MultiWayRows({
     showLaneTicks,
     tickIntervalBp,
   } = model
-  const assembly = assemblyManager.get(anchorAssemblyName)
-  if (!assembly) {
+  if (!anchorAssembly) {
     return null
   }
-  const width = model.canvasWidth
 
-  // What a lane's header calls its sequence. A placement carries whatever
-  // refName the table's BED used, which for an assembly whose annotation names
-  // sequences by INSDC accession is `CM028642.2` where the reader knows the
-  // chromosome as `3L`. The assembly's own alias table closes that, the same
-  // call the anchor's bpToPx below makes for the opposite reason.
+  // What a lane calls its sequence. A placement carries whatever refName the
+  // table's BED used, a gene whatever that assembly's GFF3 used, and for a
+  // genome whose annotation names sequences by INSDC accession those are
+  // `CM028642.2` and `3L`. The assembly's own alias table closes that; raw
+  // `===` between two file spellings drops every gene.
+  const canon = (lane: Lane, refName: string) =>
+    lane.assembly?.getCanonicalRefName2(refName) ?? refName
+
   const anchorX = (refName: string, bp: number) => {
     const px = view.bpToPx({
-      refName: assembly.getCanonicalRefName2(refName),
+      refName: anchorAssembly.getCanonicalRefName2(refName),
       coord: bp,
     })?.offsetPx
     return px === undefined ? undefined : px - view.offsetPx
   }
 
-  // One lane's refNames resolved into that assembly's own canonical spelling.
-  // The lane's two sources of refName are two FILES: the frame's comes from the
-  // synteny table's BED, and a gene's from that assembly's GFF3, which for a
-  // genome whose annotation names sequences by INSDC accession is `CM028642.2`
-  // where the table says `3L`. The RPC resolves each through the alias table on
-  // its way out (`afterAttach`) and `renameRegionsIfNeeded` then rewrites it
-  // into the adapter's own namespace, so what comes back is the FILE's
-  // spelling — never the frame's. Comparing the two raw is the same `===` the
-  // assembly-name rule forbids, one level down, and it drops every gene.
-  const canonicalRefName = (assemblyName: string, refName: string) =>
-    assemblyManager.get(assemblyName)?.getCanonicalRefName2(refName) ?? refName
-
-  const rowCount = rowAssemblies.length + 1
-  const glyphHeight = Math.max(
-    5,
-    Math.min(18, height / rowCount - LABEL_HEIGHT - 6),
-  )
-  const usable = height - LABEL_HEIGHT - glyphHeight - 4
-  const glyphTop = (rowIndex: number) =>
-    LABEL_HEIGHT + (rowCount === 1 ? 0 : (rowIndex * usable) / (rowCount - 1))
-  const bandTop = (rowIndex: number) => glyphTop(rowIndex) - LABEL_HEIGHT
-  const bandHeight = LABEL_HEIGHT + glyphHeight
-  // A mate lane's band owns half the gutter on each side, so the bands TILE
-  // everything below the anchor lane. A band that covered only its own header
-  // and glyphs left the view's gridlines standing in the gaps between lanes,
-  // which is most of the ink in a tall track and the whole thing being fixed.
-  const bandStart = (rowIndex: number) =>
-    (glyphTop(rowIndex - 1) + glyphHeight + bandTop(rowIndex)) / 2
-  const bandEnd = (rowIndex: number) =>
-    rowIndex + 1 < rowCount ? bandStart(rowIndex + 1) : height
-
-  const frameOf = (rowIndex: number): RowFrame | undefined =>
-    rowIndex === 0 ? undefined : rowFrames.get(rowAssemblies[rowIndex - 1]!)
-
-  // one span per run of placements the row shows, so two hits a lane holds
-  // apart draw as two blocks with two ribbons rather than as one solid block
-  // spanning the gap between them
-  const spansOnRow = (group: MultiWayGroup, rowIndex: number): Span[] => {
-    if (rowIndex === 0) {
-      const anchor = anchorSpans.get(group.key)
-      return anchor ? [anchor] : []
+  const names = [anchorAssemblyName, ...rowAssemblies]
+  const { glyphHeight, bandHeight, rows } = laneGeometry(height, names.length)
+  const lanes: Lane[] = names.map((assemblyName, row) => {
+    const frame = row === 0 ? undefined : rowFrames.get(assemblyName)
+    const spans = new Map<string, Span[]>()
+    for (const group of visibleGroups) {
+      const anchorSpan = anchorSpans.get(group.key)
+      const laneSpans =
+        row === 0
+          ? anchorSpan
+            ? [anchorSpan]
+            : []
+          : frame
+            ? groupSpansOnRow(group, assemblyName, frame, width)
+            : []
+      if (laneSpans.length) {
+        spans.set(group.key, laneSpans)
+      }
     }
-    const frame = frameOf(rowIndex)
-    return frame
-      ? groupSpansOnRow(group, rowAssemblies[rowIndex - 1]!, frame, width)
-      : []
-  }
+    return {
+      assemblyName,
+      assembly: assemblyManager.get(assemblyName),
+      frame,
+      genes: laneGenes?.get(assemblyName),
+      spans,
+      ...rows[row]!,
+    }
+  })
 
   // Every lane below the anchor is drawn in its OWN coordinate frame, and the
   // view's gridlines — painted under the whole track at the ANCHOR's bp ticks —
@@ -319,30 +323,31 @@ const MultiWayRows = observer(function MultiWayRows({
   // grouping it otherwise reads without: header, ticks and glyphs as one unit,
   // with the ribbons in the gutters between.
   const bands: React.ReactNode[] = []
-  for (let rowIndex = 1; rowIndex < rowCount; rowIndex++) {
-    const top = bandStart(rowIndex)
-    const bandPitch = bandEnd(rowIndex) - top
-    bands.push(
-      <rect
-        key={`band-${rowIndex}`}
-        x={0}
-        y={top}
-        width={width}
-        height={bandPitch}
-        fill={palette.background.paper}
-      />,
-    )
-    if (rowIndex % 2 === 1) {
+  for (const [row, lane] of lanes.entries()) {
+    if (row > 0) {
+      const pitch = lane.bandEnd - lane.bandStart
       bands.push(
         <rect
-          key={`tint-${rowIndex}`}
+          key={`band-${row}`}
           x={0}
-          y={top}
+          y={lane.bandStart}
           width={width}
-          height={bandPitch}
-          fill={palette.action.hover}
+          height={pitch}
+          fill={palette.background.paper}
         />,
       )
+      if (row % 2 === 1) {
+        bands.push(
+          <rect
+            key={`tint-${row}`}
+            x={0}
+            y={lane.bandStart}
+            width={width}
+            height={pitch}
+            fill={palette.action.hover}
+          />,
+        )
+      }
     }
   }
 
@@ -352,17 +357,16 @@ const MultiWayRows = observer(function MultiWayRows({
   // bands cover, in the frame where it means something.
   const ticks: React.ReactNode[] = []
   if (showLaneTicks) {
-    for (let rowIndex = 1; rowIndex < rowCount; rowIndex++) {
-      const frame = frameOf(rowIndex)
-      if (frame) {
-        for (const x of frameTickXs(frame, tickIntervalBp, width)) {
+    for (const [row, lane] of lanes.entries()) {
+      if (lane.frame) {
+        for (const x of frameTickXs(lane.frame, tickIntervalBp, width)) {
           ticks.push(
             <line
-              key={`tick-${rowIndex}-${Math.round(x)}`}
+              key={`tick-${row}-${Math.round(x)}`}
               x1={x}
               x2={x}
-              y1={bandTop(rowIndex)}
-              y2={bandTop(rowIndex) + bandHeight}
+              y1={lane.bandTop}
+              y2={lane.bandTop + bandHeight}
               stroke={palette.gridlineMinor}
             />,
           )
@@ -372,25 +376,21 @@ const MultiWayRows = observer(function MultiWayRows({
   }
 
   const ribbonSpecs: RibbonSpec[] = []
-  for (let rowIndex = 0; rowIndex < rowCount - 1; rowIndex++) {
-    for (const group of visibleGroups) {
-      const uppers = spansOnRow(group, rowIndex)
-      const lowers = spansOnRow(group, rowIndex + 1)
+  for (let row = 0; row + 1 < lanes.length; row++) {
+    const upper = lanes[row]!
+    const lower = lanes[row + 1]!
+    for (const [groupKey, uppers] of upper.spans) {
       for (const [i, s1] of uppers.entries()) {
-        for (const [j, s2] of lowers.entries()) {
-          if (
-            Math.max(Math.abs(s1[1] - s1[0]), Math.abs(s2[1] - s2[0])) >=
-            MIN_RIBBON_PX
-          ) {
+        for (const [j, s2] of (lower.spans.get(groupKey) ?? []).entries()) {
+          if (wideEnough(s1, s2)) {
             ribbonSpecs.push({
-              key: `ribbon-${rowIndex}-${group.key}-${i}-${j}`,
-              groupKey: group.key,
-              name: group.name,
+              key: `ribbon-${row}-${groupKey}-${i}-${j}`,
+              groupKey,
               d: ribbonPath(
                 s1,
-                glyphTop(rowIndex) + glyphHeight,
+                upper.glyphTop + glyphHeight,
                 s2,
-                glyphTop(rowIndex + 1),
+                lower.glyphTop,
                 drawCurves,
               ),
             })
@@ -404,51 +404,54 @@ const MultiWayRows = observer(function MultiWayRows({
   // mate lanes (the per-pair fetch); each draws at both lanes' own frames
   const linkRibbons: React.ReactNode[] = []
   if (laneLinks) {
-    for (let i = 0; i + 1 < rowAssemblies.length; i++) {
-      const upperAssembly = rowAssemblies[i]!
-      const lowerAssembly = rowAssemblies[i + 1]!
-      const upper = rowFrames.get(upperAssembly)
-      const lower = rowFrames.get(lowerAssembly)
-      const links = laneLinks.get(`${upperAssembly}|${lowerAssembly}`)
-      if (upper && lower && links) {
-        const y1 = glyphTop(i + 1) + glyphHeight
-        const y2 = glyphTop(i + 2)
-        const upperRefName = canonicalRefName(upperAssembly, upper.refName)
-        const lowerRefName = canonicalRefName(lowerAssembly, lower.refName)
+    for (let row = 1; row + 1 < lanes.length; row++) {
+      const upper = lanes[row]!
+      const lower = lanes[row + 1]!
+      const links = laneLinks.get(`${upper.assemblyName}|${lower.assemblyName}`)
+      if (upper.frame && lower.frame && links) {
+        const upperRefName = canon(upper, upper.frame.refName)
+        const lowerRefName = canon(lower, lower.frame.refName)
         for (const link of links) {
           const mate = link.get('mate') as {
             refName: string
             start: number
             end: number
           }
-          // the alignment record's own strand, which the pairwise renderer
-          // reads for the same reason: -1 means the record's two ends
-          // correspond crosswise
-          const reversed = link.get('strand') === -1
           if (
-            canonicalRefName(upperAssembly, link.get('refName')) ===
-              upperRefName &&
-            canonicalRefName(lowerAssembly, mate.refName) === lowerRefName
+            canon(upper, link.get('refName')) !== upperRefName ||
+            canon(lower, mate.refName) !== lowerRefName
           ) {
-            const a = rowFrameX(upper, link.get('start'), width)
-            const b = rowFrameX(upper, link.get('end'), width)
-            const c = rowFrameX(lower, mate.start, width)
-            const d = rowFrameX(lower, mate.end, width)
-            if (Math.max(Math.abs(b - a), Math.abs(d - c)) >= MIN_RIBBON_PX) {
-              linkRibbons.push(
-                <path
-                  key={`link-${i}-${link.id()}`}
-                  d={ribbonPath(
-                    [a, b],
-                    y1,
-                    reversed ? [d, c] : [c, d],
-                    y2,
-                    drawCurves,
-                  )}
-                  fill={ribbonColor}
-                />,
-              )
-            }
+            continue
+          }
+          // clipped to both frames, or the endpoint the frame does not reach
+          // extrapolates to tens of thousands of px and the ribbon sweeps the
+          // page — the fetch window is wider than the frame by construction
+          const s1 = frameSpan(
+            upper.frame,
+            link.get('start'),
+            link.get('end'),
+            width,
+          )
+          const s2 = frameSpan(lower.frame, mate.start, mate.end, width)
+          if (s1 && s2 && wideEnough(s1, s2)) {
+            // the alignment record's own strand, which the pairwise renderer
+            // reads for the same reason: -1 means the record's two ends
+            // correspond crosswise
+            const ordered: Span =
+              link.get('strand') === -1 ? [s2[1], s2[0]] : s2
+            linkRibbons.push(
+              <path
+                key={`link-${row}-${link.id()}`}
+                d={ribbonPath(
+                  s1,
+                  upper.glyphTop + glyphHeight,
+                  ordered,
+                  lower.glyphTop,
+                  drawCurves,
+                )}
+                fill={ribbonColor}
+              />,
+            )
           }
         }
       }
@@ -458,44 +461,34 @@ const MultiWayRows = observer(function MultiWayRows({
   // What a lane's header says on the right: the span, because a range makes
   // the reader subtract two eight-digit numbers to answer "how zoomed is this
   // lane", and the multiple only where it is not 1 — so a stack of lanes at
-  // the anchor's own scale says so by staying quiet.
-  const scaleLabelOf = (rowIndex: number, frame: RowFrame | undefined) => {
-    if (rowIndex === 0) {
-      // The anchor lane's ink is the view's own Gridlines, at the view's
-      // interval — the lane tick loop starts at row 1. Naming `tickIntervalBp`
-      // here claimed a grid this display does not draw.
+  // the anchor's own scale says so by staying quiet. Against `visibleBpSpan`,
+  // which is the unit the ladder rounded the lane's span to.
+  const scaleLabelOf = (row: number, frame: RowFrame | undefined) => {
+    if (row === 0) {
       return visibleBpSpan > 0 ? getBpDisplayStr(visibleBpSpan) : ''
     }
     if (frame === undefined) {
       return ''
     }
     const laneSpan = frame.max - frame.min
-    // Against `visibleBpSpan`, which is the unit `snapFrameToLadder` rounded
-    // the lane's span to. Dividing by an anchor frame's span instead used a
-    // second denominator, so a lane sitting exactly on rung 1 read `1.1x`
-    // while its ticks lined up with the anchor's.
     const multiple = visibleBpSpan > 0 ? laneSpan / visibleBpSpan : 1
     return multiple > 1.02
       ? `${getBpDisplayStr(laneSpan)}  ${Number(multiple.toFixed(1))}×`
       : getBpDisplayStr(laneSpan)
   }
 
-  const lanes: React.ReactNode[] = []
+  const glyphs: React.ReactNode[] = []
   const headers: React.ReactNode[] = []
-  for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-    const assemblyName =
-      rowIndex === 0 ? anchorAssemblyName : rowAssemblies[rowIndex - 1]!
-    const frame = frameOf(rowIndex)
-    const y = glyphTop(rowIndex)
-    const genes = laneGenes?.get(assemblyName)
-    const frameRefName = frame && canonicalRefName(assemblyName, frame.refName)
+  for (const [row, lane] of lanes.entries()) {
+    const { assemblyName, frame, genes } = lane
+    const y = lane.glyphTop
+    const frameRefName = frame && canon(lane, frame.refName)
     // How this lane draws a gene, or `undefined` for a lane that cannot: the
     // anchor lane maps bp through the view and shows everything the view
     // fetched, every other lane maps through its own frame and shows what that
-    // frame reaches. Derived here so the frame is narrowed once rather than
-    // asserted at each of the three places below that read it.
+    // frame reaches
     const geneDrawing =
-      rowIndex === 0
+      row === 0
         ? {
             shows: () => true,
             xOf: (gene: Feature) => (bp: number) =>
@@ -505,8 +498,7 @@ const MultiWayRows = observer(function MultiWayRows({
           ? undefined
           : {
               shows: (gene: Feature) =>
-                canonicalRefName(assemblyName, gene.get('refName')) ===
-                  frameRefName &&
+                canon(lane, gene.get('refName')) === frameRefName &&
                 doesIntersect2(
                   frame.min,
                   frame.max,
@@ -515,7 +507,7 @@ const MultiWayRows = observer(function MultiWayRows({
                 ),
               xOf: () => (bp: number) => rowFrameX(frame, bp, width),
             }
-    lanes.push(
+    glyphs.push(
       <line
         key={`baseline-${assemblyName}`}
         x1={0}
@@ -530,7 +522,7 @@ const MultiWayRows = observer(function MultiWayRows({
       for (const gene of genes) {
         if (geneDrawing.shows(gene)) {
           const selected = selectedFeatureId === gene.id()
-          lanes.push(
+          glyphs.push(
             <GeneGlyph
               key={`gene-${assemblyName}-${gene.id()}`}
               feature={gene}
@@ -565,7 +557,7 @@ const MultiWayRows = observer(function MultiWayRows({
       // a real gene model in the same ink, and one flat box across a lane
       // reads as a single enormous gene.
       for (const group of visibleGroups) {
-        for (const [i, span] of spansOnRow(group, rowIndex).entries()) {
+        for (const [i, span] of (lane.spans.get(group.key) ?? []).entries()) {
           // a box, unlike a ribbon, wants the ends the low-to-high way round
           const [boxLeft, boxRight] =
             span[0] <= span[1] ? span : [span[1], span[0]]
@@ -575,9 +567,9 @@ const MultiWayRows = observer(function MultiWayRows({
             : readConfObject(model.configuration, 'color', {
                 feature: group.feature,
               })
-          lanes.push(
+          glyphs.push(
             <rect
-              key={`glyph-${rowIndex}-${group.key}-${i}`}
+              key={`glyph-${row}-${group.key}-${i}`}
               x={boxLeft}
               y={y + 1}
               width={Math.max(1, boxRight - boxLeft)}
@@ -590,7 +582,7 @@ const MultiWayRows = observer(function MultiWayRows({
                 model.selectFeature(group.feature)
               }}
             >
-              <title>{group.name}</title>
+              <title>{group.key}</title>
             </rect>,
           )
         }
@@ -598,14 +590,12 @@ const MultiWayRows = observer(function MultiWayRows({
     }
 
     const where =
-      rowIndex === 0
+      row === 0
         ? view.coarseVisibleLocStrings || view.visibleLocStrings
         : frame &&
-          `${canonicalRefName(assemblyName, frame.refName)}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
+          `${frameRefName}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
     // `no annotation` is a claim about the SESSION, so it asks whether a track
-    // exists rather than whether this window drew any genes: a lane with a gene
-    // track over an empty stretch draws placement boxes, and calling that `no
-    // annotation` would be a claim about the config that is not true
+    // exists rather than whether this window drew any genes
     headers.push(
       <text
         key={`label-${assemblyName}`}
@@ -630,7 +620,7 @@ const MultiWayRows = observer(function MultiWayRows({
         textAnchor="end"
         fill={palette.text.secondary}
       >
-        {scaleLabelOf(rowIndex, frame)}
+        {scaleLabelOf(row, frame)}
       </text>,
     )
   }
@@ -641,7 +631,7 @@ const MultiWayRows = observer(function MultiWayRows({
       <RibbonLayer model={model} specs={ribbonSpecs} />
       {linkRibbons}
       {ticks}
-      {lanes}
+      {glyphs}
       {headers}
     </>
   )
