@@ -87,7 +87,35 @@ export function isStopToken(value: unknown): value is StopToken {
 // Browser support for SharedArrayBuffer requires cross-origin isolation
 // headers (COOP/COEP). Exported so diagnostic surfaces (about widget,
 // error stack trace) can show whether the page actually got the fast path.
+//
+// **ISOLATION IS THE QUESTION, not constructibility**, which is what the
+// sentence above has always claimed and what a bare `new SharedArrayBuffer(4)`
+// never asked. A browser gates the constructor on isolation, so on the web the
+// two agree — but a V8 embedder does not, and both of ours are embedders:
+//
+// - **jest.** Node constructs one unconditionally, so every test ran the SAB
+//   path while every browser deployment ran the string path. That inverted the
+//   fidelity — the SAB check reads its atomic once every 10 iterations where a
+//   string token's time gate fires on the first call — and hid a real bug for
+//   as long as it existed (`withProgress`'s kickoff `report(0)` throwing past
+//   `endPhase()` on an already-stopped token, a9e5daba8f). A test suite that
+//   cannot reach the deployment path by default is the wrong way round.
+// - **Electron.** `nodeIntegration: true` puts Node's globals on the renderer,
+//   so jbrowse-desktop constructed one too, off a `file://` page that no
+//   definition of cross-origin isolation covers. Whether that was true was not
+//   knowable from the tree, and this makes it not need to be.
+//
+// What this does NOT change is the one configuration the branch is kept for:
+// an embedding host that sets COOP/COEP is cross-origin isolated, reports so
+// here, and still gets the fast path (ADR-056). `website/scripts/coi-probe.ts`
+// serves exactly that page and is the regression check.
 export const hasSharedArrayBuffer = (() => {
+  if (
+    (globalThis as { crossOriginIsolated?: boolean }).crossOriginIsolated !==
+    true
+  ) {
+    return false
+  }
   try {
     return isSharedArrayBuffer(new SharedArrayBuffer(4))
   } catch {
@@ -180,6 +208,21 @@ export function createStopToken(): StopToken {
 // beside `createObjectURL` in a profile.
 const emptyBlob = new Blob()
 
+// Uniqueness for the fallback id below, which is the one thing it must have and
+// the one thing `nanoid()` alone does not guarantee: it draws from
+// `crypto.getRandomValues`, and an environment is free to replace that. Ours
+// does — `config/jest/deterministicIds.js` swaps in a counter PRNG and RESETS
+// it before every test, so every test drew the same first id. Since a stopped
+// id is recorded in a module-global map, one stopped token then read as stopped
+// in every later test of the file, which is a live token that throws.
+//
+// Invisible until it mattered: this fallback serves the realms with no
+// `createObjectURL`, jest among them, and jest minted SharedArrayBuffers — whose
+// identity is the object — until `hasSharedArrayBuffer` started asking about
+// cross-origin isolation. A browser has `createObjectURL` and mints distinct
+// ids per call, so nothing here changes for a deployment.
+let stringTokenSeq = 0
+
 function createStringToken() {
   // A blob URL serves as both the token's unique id (which is all the message
   // path needs) and the thing the sync probe fails against once revoked. Where
@@ -188,7 +231,7 @@ function createStringToken() {
   // longer the old hole, where such a token could never be cancelled at all.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return URL.createObjectURL === undefined
-    ? nanoid()
+    ? `${nanoid()}-${++stringTokenSeq}`
     : URL.createObjectURL(emptyBlob)
 }
 

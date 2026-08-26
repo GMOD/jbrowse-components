@@ -38,9 +38,6 @@ const contract = (globalThis.__jbrowseContract ??= {
 
 console.log = (...args) => {
   const r = String(args)
-  if (r.includes('SharedArrayBuffer available, using fast atomic abort')) {
-    return undefined
-  }
   originalLog.call(console, ...args)
 }
 

@@ -4,6 +4,7 @@ import {
   checkStopToken,
   createStopToken,
   createStopTokenChecker,
+  hasSharedArrayBuffer,
   isStopped,
   markStopTokenStopped,
   registerStopTokenBroadcaster,
@@ -12,9 +13,12 @@ import {
   withStopTokenSignal,
 } from './stopToken.ts'
 
-// SAB is available in Node.js, so both paths are fully testable here: the atomic
-// flag directly, and the message path because it asks nothing of the
-// environment (a stopped id is recorded in this same module instance).
+// SAB is CONSTRUCTIBLE in Node.js, so both paths are fully testable here: the
+// atomic flag by naming a buffer directly, and the message path because it asks
+// nothing of the environment (a stopped id is recorded in this same module
+// instance). Naming the buffer is also what keeps those tests honest now that
+// `createStopToken()` answers with the string every deployment gets — the SAB
+// path is exercised on purpose rather than by accident of the realm.
 
 describe('stopToken', () => {
   describe('SharedArrayBuffer path', () => {
@@ -240,6 +244,33 @@ describe('stopToken', () => {
     it('returns a token', () => {
       const token = createStopToken()
       expect(token).toBeDefined()
+    })
+
+    // The deployment path, and the reason it is asserted rather than assumed:
+    // this realm CAN construct a SharedArrayBuffer, and until the gate asked
+    // about cross-origin isolation instead, that alone was enough to hand every
+    // test a token no browser deployment ever gets. The two paths do not check
+    // at the same moments, so a suite on the wrong one is a suite that cannot
+    // see a whole class of cancellation bug.
+    // TWO TESTS, because one cannot see it: the id has to be unique across the
+    // whole module instance, and `stoppedIds` is module-global while
+    // `config/jest/deterministicIds.js` resets its counter PRNG before every
+    // test. So the id `nanoid()` draws is the same one in both halves below,
+    // and without a per-realm sequence the second token is born stopped.
+    it('stops one token', () => {
+      const token = createStopToken()
+      stopStopToken(token)
+      expect(isStopped(token)).toBe(true)
+    })
+
+    it('and the next token is live, though the RNG repeats', () => {
+      expect(isStopped(createStopToken())).toBe(false)
+    })
+
+    it('is a string wherever the page is not cross-origin isolated', () => {
+      expect(globalThis.crossOriginIsolated).not.toBe(true)
+      expect(typeof createStopToken()).toBe('string')
+      expect(hasSharedArrayBuffer).toBe(false)
     })
   })
 
