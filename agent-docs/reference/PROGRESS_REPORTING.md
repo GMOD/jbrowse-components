@@ -250,7 +250,7 @@ it by hand captures the *first* caller's `opts`, so its `statusCallback` is the
 only one the parse ever reaches: once that fetch is superseded (its callback
 gated off by the display's latest-wins guard) the fetch replacing it awaits the
 same promise in silence, behind a blank overlay. `createSharedSetup(run)`
-(`packages/core/src/util/createSharedSetup.ts`) fans progress out to the live
+(`packages/core/src/util/cachedSetup.ts`) fans progress out to the live
 waiter set instead, and clears the memo on failure so the next caller retries.
 
 It deliberately drops `stopToken`: the work is shared, so honoring one caller's
