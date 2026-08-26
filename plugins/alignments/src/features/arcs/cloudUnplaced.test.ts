@@ -268,6 +268,32 @@ describe('a connection the view can place only one end of', () => {
     expect(arcs[0]!.p2.bp).toBe(1000)
   })
 
+  // The collapse sets p1 = p2 = the near foot and pins `yBp` to 0, so partner
+  // distance is the ONLY thing left telling two parked marks apart — and
+  // `arcKey` used to hash neither foot's distance nor the span. Two reads at one
+  // bp with mates megabases apart coalesced, and the survivor hovered as
+  // "Partner is 5,000,000 bp away … supported by 2 reads" with `arcLineWidth`
+  // thickening it to match.
+  test('two parked marks at one bp do not coalesce across different partners', () => {
+    const data = pairData({
+      readPositions: new Uint32Array([1000, 1150, 1000, 1150]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([5_000_000, 80_000_000]),
+      readPairOrientations: new Uint8Array([2, 2]),
+      ...namesToBlock(['readNear', 'readFar']),
+      ...nextRefsToTable(['chr1', 'chr1']),
+      readNextPositions: new Uint32Array([5_001_000, 80_001_000]),
+    })
+    const { arcs } = runCloud(data, [region(0, 20_000)])
+    expect(arcs).toHaveLength(2)
+    expect(arcs.every(a => a.shapeType === ARC_SHAPE_FLAT_UNPLACED)).toBe(true)
+    expect(arcs.map(a => a.support)).toEqual([1, 1])
+    expect(arcs.map(a => a.spanBp).sort((a, b) => a - b)).toEqual([
+      5_000_000, 80_000_000,
+    ])
+  })
+
   test('arc mode places nothing on the anchor — its Y is a genomic radius', () => {
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, loneMateAt(50_001_000, 50_000_000)]]),

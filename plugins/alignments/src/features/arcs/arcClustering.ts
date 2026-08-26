@@ -9,9 +9,19 @@ import type { PendingArc } from './arcTypes.ts'
 // coalesce on an exact `arcKey`, interchromosomal ones cluster inside a
 // fragment-length window. `ComputedArc.support` carries why they differ.
 
-// The identity of a drawn arc: two endpoints, a colour, a shape and the Y it
-// plots at. Two connections agreeing on all five produce the same pixels, which
-// is what makes them summable.
+// The identity of a drawn arc: two endpoints, a colour, a shape, the Y it plots
+// at and the span it reports. Two connections agreeing on all six produce the
+// same pixels AND the same hover, which is what makes them summable.
+//
+// `spanBp` IS part of the key, and for a sharper version of the `yBp` argument
+// below: `ARC_SHAPE_FLAT_UNPLACED` collapses BOTH feet onto the near one and
+// pins `yBp` to 0, so without it the key drops partner distance entirely and two
+// reads at one bp whose mates lie 5 Mb and 80 Mb away coalesce. The survivor
+// then hovers as "Partner is 5,000,000 bp away, supported by 2 reads" and
+// `arcLineWidth` thickens it as though two reads agreed on a distance only one
+// of them has. It groups nothing differently on the other shapes: a cloud bar's
+// `yBp` is `spanBp` times a hash of its endpoints, and an arc's is the half-span
+// the key already carries.
 //
 // `yBp` IS part of the key, and the argument for leaving it out — that it is
 // derived from the endpoints and the shape, so arcs agreeing on the rest agree
@@ -46,6 +56,7 @@ export function arcKey(a: {
   colorType: number
   shapeType: number
   yBp: number
+  spanBp: number
 }) {
   // ENDPOINT ORDER IS NORMALIZED, because the drawn arc is symmetric in it and
   // so the key has to be. `strokeArcMark` centres on (p1+p2)/2 with |p2-p1|/2 as its
@@ -64,7 +75,7 @@ export function arcKey(a: {
   const [r1, b1, r2, b2] = swap
     ? [a.p2Ref, a.p2Bp, a.p1Ref, a.p1Bp]
     : [a.p1Ref, a.p1Bp, a.p2Ref, a.p2Bp]
-  return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}\0${a.yBp}`
+  return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}\0${a.yBp}\0${a.spanBp}`
 }
 
 // The Y an interchromosomal arc plots at: the top of the band, at every zoom.

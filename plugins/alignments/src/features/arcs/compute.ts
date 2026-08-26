@@ -422,6 +422,7 @@ function resolveArcs(
       colorType: arc.colorType,
       shapeType: arc.shapeType,
       yBp: arc.yBp,
+      spanBp: arc.spanBp,
     })
     const seen = byKey.get(key)
     if (seen) {
