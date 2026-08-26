@@ -137,6 +137,12 @@ fixture missed the bug for as long as it did.
 - Without `--with-app` the links point at `jbrowse.org/code/jb2/latest`, which
   **cannot read a config on your laptop** — that mode is for data already
   published at a public URL. The CLI says so when it applies.
+- **The captures show a release unless you say otherwise.** `jbrowse create`
+  installs the latest npm release and `code/jb2/latest` is that same release, so
+  a portal showing off work that has not shipped shows the version before it.
+  `--app-branch main` bundles the development build instead, `--app-dir <dir>` a
+  build you made yourself, and `--instance https://jbrowse.org/code/jb2/main/`
+  drives main without bundling anything.
 
 ## Known gap
 

@@ -32,6 +32,9 @@ import { serveStatic } from '../lib/serve.mjs'
 
 const HERE = import.meta.dirname
 const DEFAULT_INSTANCE = 'https://jbrowse.org/code/jb2/latest/'
+// release.yml publishes code/jb2/latest, push.yml publishes code/jb2/<ref>, so
+// "latest" is the latest release and main is reachable under its own name.
+const MAIN_INSTANCE = 'https://jbrowse.org/code/jb2/main/'
 const CLASS_ORDER = [
   'merge',
   'structure-conflict',
@@ -76,7 +79,16 @@ OPTIONAL
   --title <text>         page heading
   --with-app             run \`jbrowse create\` so the portal ships its own copy
                          of JBrowse and needs no internet at all
-  --instance <url>       drive/link a hosted JBrowse instead (default ${DEFAULT_INSTANCE})
+  --app-branch <name>    bundle the development build from a git branch rather
+                         than the npm RELEASE \`jbrowse create\` installs on its
+                         own — \`--app-branch main\` is what makes a capture show
+                         current main. Implies --with-app.
+  --app-dir <dir>        bundle a JBrowse you built yourself, for a branch with
+                         no published build or for work not yet pushed:
+                         \`products/jbrowse-web/build\` after
+                         \`pnpm --filter @jbrowse/web build\`. Implies --with-app.
+  --instance <url>       drive/link a hosted JBrowse instead (default ${DEFAULT_INSTANCE},
+                         which is also the latest release; ${MAIN_INSTANCE} is main)
   --apollo <url>         an Apollo 3 instance. Every card gains an \`Edit in
                          Apollo\` link that opens the same window there, which is
                          where the annotator action actually happens.
@@ -146,6 +158,12 @@ function parseArgs(argv) {
       o.instance = next()
     } else if (a === '--with-app') {
       o.withApp = true
+    } else if (a === '--app-dir') {
+      o.appDir = next()
+      o.withApp = true
+    } else if (a === '--app-branch') {
+      o.appBranch = next()
+      o.withApp = true
     } else if (a === '--no-capture') {
       o.capture = false
     } else if (a === '--inline-images') {
@@ -183,6 +201,14 @@ const opts = parseArgs(process.argv.slice(2))
 if (opts.help || !opts.prediction || !opts.fasta || !opts.out) {
   usage()
   process.exit(opts.help ? 0 : 1)
+}
+if (opts.appDir && opts.appBranch) {
+  console.error('--app-dir and --app-branch both say where JBrowse comes from')
+  process.exit(1)
+}
+if (opts.appDir && !fs.existsSync(path.join(opts.appDir, 'index.html'))) {
+  console.error(`--app-dir has no index.html in it: ${opts.appDir}`)
+  process.exit(1)
 }
 for (const f of [
   opts.prediction,
@@ -331,9 +357,17 @@ if (opts.withApp) {
   const appDir = path.join(out, 'jbrowse')
   if (fs.existsSync(path.join(appDir, 'index.html'))) {
     console.log('bundling JBrowse — already present, skipping')
+  } else if (opts.appDir) {
+    console.log(`bundling JBrowse from ${opts.appDir}`)
+    fs.cpSync(opts.appDir, appDir, { recursive: true })
   } else {
-    console.log('bundling JBrowse (jbrowse create)')
-    execFileSync('jbrowse', ['create', appDir], { stdio: 'inherit' })
+    // Bare `jbrowse create` installs the latest npm release, so a capture of a
+    // feature that has not shipped shows the version before it.
+    const branch = opts.appBranch ? ['--branch', opts.appBranch] : []
+    console.log(
+      `bundling JBrowse (jbrowse create${branch.length ? ` --branch ${opts.appBranch}` : ''})`,
+    )
+    execFileSync('jbrowse', ['create', appDir, ...branch], { stdio: 'inherit' })
   }
 }
 

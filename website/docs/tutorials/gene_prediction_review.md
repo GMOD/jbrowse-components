@@ -97,7 +97,9 @@ JBrowse view at each candidate and writes the page:
 ```bash
 # --region keeps the scan to one chromosome, so the remote annotations are
 # fetched by tabix rather than downloaded whole
-# --with-app bundles JBrowse itself, so the output directory needs no network
+# --with-app bundles JBrowse itself, so the output directory needs no network.
+# `jbrowse create` installs the latest RELEASE; --app-branch main bundles the
+# development build instead, which is what a portal showing unreleased work needs
 # --max caps how many candidates of each class are kept
 node demo/tiberius-portal/bin/make-portal.mjs \
   --prediction https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz \
@@ -122,8 +124,9 @@ The example portal carries two, both from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
 Human Brain Reference and Universal Human Reference, a pool of ten cell lines.
 Two, because coverage splits both ways — the merged `IL17REL`/`TTLL8` model has
-1,350 brain reads against 178 UHR, and `RANBP1` has 3,469 UHR against 549 brain.
-A model with reads in neither is the one worth doubting.
+1,350 brain reads against 178 UHR, and `g13664.t1`, predicted coding over the
+lncRNA `FAM230I`, has 165 UHR against 12 brain. A model with reads in neither is
+the one worth doubting.
 
 Tiberius has an evidence mode of its own — Nextflow, taking proteins, RNA-Seq
 and Iso-Seq — that folds evidence into the prediction. The released human

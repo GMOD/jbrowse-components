@@ -37,7 +37,7 @@ node demo/tiberius-portal/bin/make-portal.mjs \
   --rnaseq-height 280 \
   --assembly hg38 --region chr22 --max 2 --height 1000 \
   --prediction-name "Tiberius predictions" --reference-name "GENCODE 47" \
-  --with-app --inline-images \
+  --app-branch main --inline-images \
   --public-config https://jbrowse.org/demos/tiberius_review/config.json \
   --title "Tiberius predictions on chr22 that need a human" \
   --out /tmp/tiberius_review
@@ -62,6 +62,9 @@ for f in HBR_brain_rnaseq_chr22.bam UHR_reference_rnaseq_chr22.bam; do
 done
 ```
 
+`--app-branch main` rather than `--with-app`: bare `jbrowse create` installs the
+latest npm release, and the point of this demo is to show what JBrowse does now.
+
 **Two data files are hosted here**, and only because their source has no CORS
 headers. Both are the Griffith lab's RNA-seq course data from
 [genomedata.org](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/)
@@ -73,8 +76,9 @@ Everything else in the config points at files that were already on jbrowse.org.
 
 **Two tissues, because one is not evidence of absence.** Coverage over the
 candidate loci splits both ways: the merged `IL17REL`/`TTLL8` model has 1,350
-brain reads against 178 UHR, and `RANBP1` has 3,469 UHR against 549 brain. A
-model with reads in neither is the one worth doubting.
+brain reads against 178 UHR, and `g13664.t1`, predicted coding over the lncRNA
+`FAM230I`, has 165 UHR against 12 brain. A model with reads in neither is the
+one worth doubting.
 
 The prediction is Tiberius's released human annotation, made with default
 weights rather than through its Nextflow evidence mode, so the RNA-seq here is
@@ -99,11 +103,11 @@ it. An evidence lane opens 250px deep and spends most of that on whitespace at
 gene scale, so the first pass shortened it to 110 and fitted four tracks into a
 560px capture — which left the reads too small to read. Taller lanes in a taller
 capture is the other way out of the same problem: the sashimi arcs sit over deep
-pileups, and on a card like `RANBP1` those arcs are what say which of the two
-exon structures the reads support. The setting rides in the track config rather
-than in the link because the config is the one place the picture and the live
-view both read — `displayDefaults` postdates the released JBrowse, and a session
-spec's tracks are ids, so a track written as an object to hang settings off
-resolves to nothing at all. `--max 2` keeps two candidates per class. The
-merged-model class has only one member on chr22, so the portal has seven cards
-rather than eight.
+pileups, and on a card like `MICAL3` — 2,936 brain reads over the window — those
+arcs are what say which of the two exon structures the reads support. The
+setting rides in the track config rather than in the link because the config is
+the one place the picture and the live view both read — `displayDefaults`
+postdates the released JBrowse, and a session spec's tracks are ids, so a track
+written as an object to hang settings off resolves to nothing at all. `--max 2`
+keeps two candidates per class. The merged-model class has only one member on
+chr22, so the portal has seven cards rather than eight.
