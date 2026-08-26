@@ -11,7 +11,7 @@ import {
 import { buildResultRegions } from '../regionOffsets.ts'
 import { computeCountStats } from './countStats.ts'
 
-import type HicAdapter from '../HicAdapter/HicAdapter.ts'
+import type { ContactAdapter } from '../HicAdapter/HicAdapter.ts'
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -27,6 +27,7 @@ export async function executeRenderHicData({
   const {
     sessionId,
     adapterConfig,
+    sequenceAdapter,
     regions,
     axisBlocks,
     originBp,
@@ -41,7 +42,11 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
   )
-  const adapter = dataAdapter as HicAdapter
+  const adapter = dataAdapter as unknown as ContactAdapter
+  // A `.hic` file needs no reference, so this primes only the adapter that
+  // does: `AlignmentsContactAdapter` hands it to a CRAM subadapter, which
+  // cannot decode a read without one.
+  adapter.setSequenceAdapterConfig?.(sequenceAdapter)
 
   const {
     bin1: contactBin1,
