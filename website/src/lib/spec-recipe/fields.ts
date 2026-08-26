@@ -667,6 +667,16 @@ const READ_CONNECTIONS: Record<string, string> = {
 
 // verified against the inline radio list in makeSummaryScoreModeSubMenu
 // (plugins/wiggle/src/shared/wiggleMenuItems.tsx)
+// The alignments coverage band's allele-fraction floor, keyed by the slot value
+// its radio row writes (SNP_FREQUENCY_OPTIONS in menus/coverage.ts).
+const SNP_FREQUENCY_ROWS: Record<string, string> = {
+  '0': 'All mismatches',
+  '0.01': 'Above 1%',
+  '0.05': 'Above 5%',
+  '0.1': 'Above 10%',
+  '0.2': 'Above 20%',
+}
+
 const SUMMARY_SCORE_MODES: Record<string, string> = {
   min: 'Minimum',
   max: 'Maximum',
@@ -1213,6 +1223,18 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Show... → Show pileup',
     'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
   ),
+  // A radio list of five fractions rather than a number entry
+  // (menus/coverage.ts), so the recipe names the row and not the value.
+  coverageSnpMinFrequency: value => {
+    const row =
+      typeof value === 'number' ? SNP_FREQUENCY_ROWS[String(value)] : undefined
+    return row
+      ? {
+          path: `${TRACK_MENU} → Coverage → Color SNPs above... → ${row}`,
+          note: 'At high depth every sequencing error paints a sliver on the coverage band, so a figure about the band\'s height wants a floor under what gets colored.',
+        }
+      : undefined
+  },
   // Its own submenu rather than "Show...", because the arcs carry a placement
   // and a score threshold alongside the toggle (menus/sashimi.ts). Unchecking
   // leaves the coverage band, which is what a figure about the histogram wants:
