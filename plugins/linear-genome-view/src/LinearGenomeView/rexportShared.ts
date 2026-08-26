@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingTrack } from '@jbrowse/core/util'
+import { fileUrlToLocalPath } from '@jbrowse/core/util/io'
 
 /**
  * Shared codegen primitives for the R script exporters. Every display's
@@ -91,7 +92,13 @@ export function firstUri(
       continue
     }
     if (c?.uri) {
-      return c.baseUri ? new URL(c.uri, c.baseUri).href : c.uri
+      const uri = c.baseUri ? new URL(c.uri, c.baseUri).href : c.uri
+      // A `file:` URL is a path to R, not something to fetch — the same
+      // conversion `openLocation` makes. Desktop reaches this on every track: a
+      // config.json opened from disk carries its own directory as `baseUri`, so
+      // a relative `reads.bam` resolves here as `file:///dir/reads.bam`, which
+      // Rsamtools cannot open.
+      return fileUrlToLocalPath(uri) ?? uri
     }
     if (c?.localPath) {
       return c.localPath

@@ -51,7 +51,7 @@ export function resolveUriLocation(location: UriLocation) {
  * Windows URL parses as `/C:/data/x.bam`, whose leading slash is part of the URL
  * grammar rather than the path.
  */
-function fileUrlToLocalPath(uri: string) {
+export function fileUrlToLocalPath(uri: string) {
   if (!uri.startsWith('file:')) {
     return undefined
   }
