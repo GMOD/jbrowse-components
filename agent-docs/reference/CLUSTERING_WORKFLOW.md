@@ -47,10 +47,43 @@ Re-render
 
 - **Rows** = sources (tracks)
 - **Columns** = genomic positions, binned by `bpPerPx`
-- **Values** = `Float32Array` score values from features
+- **Values** = `Float32Array`, each column the MEAN of every feature covering it
 
-Features are fetched from the first loaded region; scores indexed by source
-name, then binned into columns.
+Every visible region contributes a segment and they concatenate, so a
+whole-genome or collapsed-intron view clusters on all of them —
+`buildSegments`. Reading only the first block was a real bug, not a
+simplification.
+
+A column averages rather than takes the last writer, because several features
+routinely land in one: `addSpan`'s own case is hundreds of a bedMethyl's CpGs at
+10 kb/px, and whole-genome is tens of thousands.
+
+**The accumulator is `Float64Array` and the row it lands in is `Float32Array`,
+and the split is deliberate.** Summing that many f32s into an f32 is naive
+summation with no compensation, which the clusterer's own distance build does
+not do to itself (hclust 5.1.0 promotes to f64x2 every 16 elements). Measured:
+
+<!-- BEGIN GENERATED MEASUREMENT wiggle-bin-accumulator-width -->
+
+| scores       | features per column | f32 sums, max rel err (ppb) | f64 sums → f32 row (ppb) | rows moved of 40 |
+| ------------ | ------------------: | --------------------------: | -----------------------: | ---------------: |
+| methylation  |                 500 |                       1,500 |                       41 |                0 |
+| coverage     |                 500 |                       1,500 |                       59 |                0 |
+| small on big |                 500 |                       4,100 |                       56 |                0 |
+| methylation  |              20,000 |                       7,700 |                       38 |                0 |
+| coverage     |              20,000 |                      29,000 |                       56 |                0 |
+| small on big |              20,000 |                      33,000 |                       46 |                0 |
+
+<!-- END GENERATED MEASUREMENT wiggle-bin-accumulator-width -->
+
+The row stays f32 because it is a `postMessage` transferable and a BigWig's
+scores are f32 in the file, so widening it would buy false precision at double
+the wire cost. **No cluster order moved in any arm**, so this is a correct column
+mean rather than a different tree — which matters because
+`MultiWiggleGetScoreMatrix` hands the same matrix to the display.
+`getScoreMatrix.test.ts` pins the accumulator width with a 2e7 outlier among a
+hundred 1s; nothing else in that file reaches it, since every other case sums a
+handful of small values where the two widths agree exactly.
 
 ### Variants — genotype matrix (`getGenotypeMatrix.ts`)
 

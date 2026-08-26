@@ -51,7 +51,7 @@ function buildSegments(regions: Region[], invBpPerPx: number) {
 // base-resolution bedGraph/bedMethyl case — contributed an all-zero row, and the
 // clusterer had nothing to tell the rows apart by.
 function addSpan(
-  sums: Float32Array,
+  sums: Float64Array,
   counts: Int32Array,
   seg: Segment,
   invBpPerPx: number,
@@ -81,7 +81,7 @@ function addSpan(
 type RegionValues = RawFeatureArrays | Feature[]
 
 function addValues(
-  sums: Float32Array,
+  sums: Float64Array,
   counts: Int32Array,
   seg: Segment,
   invBpPerPx: number,
@@ -201,13 +201,30 @@ export async function getScoreMatrix({
 
   const valuesBySource = await fetchMatrixData(dataAdapter, regions, args)
 
-  // One counts array reused across sources, not one per row: each row is
-  // averaged before the next starts, so only one is ever live. Binning stays
-  // sequential — it writes into the shared matrix and has to stay interruptible.
+  // One sums and one counts array reused across sources, not one per row: each
+  // row is averaged before the next starts, so only one of each is ever live.
+  // Binning stays sequential — it writes into the shared matrix and has to stay
+  // interruptible.
+  //
+  // The accumulator is f64 while the row it lands in stays f32. A column sums
+  // every feature covering it, which `addSpan` says is hundreds of a bedMethyl's
+  // CpGs at 10 kb/px and is tens of thousands at whole-genome, and summing that
+  // many f32s into an f32 is naive summation with no compensation — the
+  // clusterer's own distance build promotes to f64 every 16 elements and this
+  // had no counterpart. Measured at 20,000 features per column it cost 3.3e-5
+  // relative on the column mean, which widening drops to the 4e-8 floor of
+  // storing an f64 back into an f32 at all.
+  //
+  // The ROW stays f32 deliberately: it is a postMessage transferable, a BigWig's
+  // scores are f32 in the file, and no cluster order moved across the two arms
+  // at any depth measured. So this buys a correct column mean, not a different
+  // tree. measurements/wiggle-bin-accumulator-width.json.
+  const sums = new Float64Array(totalWidth)
   const counts = new Int32Array(totalWidth)
   for (const { name } of sources) {
-    const sums = rows.get(name)!
+    const row = rows.get(name)!
     const perRegion = valuesBySource.get(name)
+    sums.fill(0)
     counts.fill(0)
     for (const [i, seg] of segments.entries()) {
       const values = perRegion?.[i]
@@ -218,9 +235,7 @@ export async function getScoreMatrix({
     // A column nothing covered stays 0 rather than becoming NaN.
     for (let x = 0; x < totalWidth; x++) {
       const n = counts[x]!
-      if (n > 1) {
-        sums[x] = sums[x]! / n
-      }
+      row[x] = n > 1 ? sums[x]! / n : sums[x]!
     }
     checkStopTokenThrottled(stopTokenCheck)
   }

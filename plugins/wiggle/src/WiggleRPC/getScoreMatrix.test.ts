@@ -99,6 +99,28 @@ describe('getScoreMatrix', () => {
     expect(Array.from(rows.get('a')!)).toEqual([0, 0, 3, 0, 0, 0, 0, 5, 0, 0])
   })
 
+  // Pins the ACCUMULATOR's width, which no ordinary assertion reaches: every
+  // other case here sums a handful of small values, where f32 and f64 agree
+  // exactly. One score above 2^24 with a hundred 1s behind it separates them,
+  // because at 2e7 the f32 spacing is 2 and each += 1 rounds straight back —
+  // an f32 accumulator returns 2e7/101 having lost all hundred of them, while
+  // the f64 one carries the +100. Every feature is sub-column so `addSpan`
+  // floors them into column 0 together.
+  it('sums a column in f64, not in the row it lands in', async () => {
+    const features = [
+      feat('a', 0, 1, 2e7),
+      ...Array.from({ length: 100 }, (_, i) => feat('a', i + 1, i + 2, 1)),
+    ]
+    const rows = await run({
+      features,
+      regions: [region('chr1', 0, 1000)],
+      sources: ['a'],
+      bpPerPx: 1000,
+    })
+    expect(rows.get('a')![0]).toBeCloseTo((2e7 + 100) / 101, 1)
+    expect(rows.get('a')![0]).not.toBeCloseTo(2e7 / 101, 1)
+  })
+
   it('leaves a source with no features an all-zero row', async () => {
     const rows = await run({
       features: [feat('a', 0, 100, 4)],

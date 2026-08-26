@@ -1,0 +1,25 @@
+{
+  "id": "wiggle-bin-accumulator-width",
+  "measured": "2026-08-25",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "`node browser-tests/probe-wiggle-bin-precision.ts 40 2000 500` and `... 40 500 20000` in products/jbrowse-web. Plain node. Three arms over identical scores, differing only in accumulator width: f32 sums (what getScoreMatrix did before 2026-08-25), f64 sums stored back to the f32 row (what it does now), and f64 throughout as the reference. `rows moved` clusters the f32 and f64 matrices through `clusterMatrix` and counts positions where the returned order differs.",
+    "notes": "Synthetic scores in three shapes, since what f32 summation costs is set by the value distribution and not by the biology: `methylation` is uniform 0-100 (a narrow band where f32 has mantissa to spare), `coverage` is 10^U(0,6) (orders of magnitude inside one column), `smallOnBig` puts a 1e7 outlier among values under 10 (absorption, the worst case). Depth is the other axis: 500 features per column is `addSpan`'s own stated case of a bedMethyl at 10 kb/px, 20,000 is whole-genome. The f64->f32 column is NOT zero because the row stays a Float32Array -- ~5e-8 is the floor of storing an f64 mean into f32 at all, and no accumulator can beat it. The order never moved in any arm at any depth, so this buys a correct column mean and not a different tree; the same matrix is what MultiWiggleGetScoreMatrix returns to the display, which is the other reason to want it right. Read alongside cluster-distance-gpu.json: the 3.6e-5 there is an UNWIRED GPU kernel with no f64 promotion, while hclust 5.1.0's shipped wasm already promotes to f64x2 every 16 elements -- the two are separate exposures that happen to land at the same order."
+  },
+  "columns": [
+    { "key": "scores", "label": "scores" },
+    { "key": "perColumn", "label": "features per column", "format": "int", "align": "right" },
+    { "key": "f32", "label": "f32 sums, max rel err (ppb)", "format": "int", "align": "right" },
+    { "key": "wide", "label": "f64 sums → f32 row (ppb)", "format": "int", "align": "right" },
+    { "key": "moved", "label": "rows moved of 40", "format": "int", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "scores": "methylation", "perColumn": 500, "f32": 1500, "wide": 41, "moved": 0 } },
+    { "values": { "scores": "coverage", "perColumn": 500, "f32": 1500, "wide": 59, "moved": 0 } },
+    { "values": { "scores": "small on big", "perColumn": 500, "f32": 4100, "wide": 56, "moved": 0 } },
+    { "values": { "scores": "methylation", "perColumn": 20000, "f32": 7700, "wide": 38, "moved": 0 } },
+    { "values": { "scores": "coverage", "perColumn": 20000, "f32": 29000, "wide": 56, "moved": 0 } },
+    { "values": { "scores": "small on big", "perColumn": 20000, "f32": 33000, "wide": 46, "moved": 0 } }
+  ]
+}
