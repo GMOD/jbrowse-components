@@ -1,5 +1,6 @@
 import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
+import { takeArrangement } from './arrangements.ts'
 
 import type { RawTrack, TrackInfo  } from './configs.ts'
 import {
@@ -254,11 +255,17 @@ function trackStep(
     noun: trackNoun(info?.type, displayType),
     displayType,
   }
+  // An arrangement first, and the per-field walk over what it did not claim:
+  // the settings one menu row writes together are one step, not one step each.
+  const arrangement = takeArrangement(specTrackSettings(entry), displayType)
   const { steps: settings, unmapped } = fieldSteps(
-    specTrackSettings(entry),
+    arrangement.rest,
     trackFields,
     context,
   )
+  if (arrangement.step) {
+    settings.unshift({ title: arrangement.step.path })
+  }
   const name = info ? `“${info.name}”` : `the “${trackId}” track`
   const needs = kind ? ` This one needs ${kind}.` : ''
   return {
