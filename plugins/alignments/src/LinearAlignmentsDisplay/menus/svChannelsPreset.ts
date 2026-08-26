@@ -41,6 +41,7 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // `trackStrands`/`bisulfite`). So the one setting that cost a reader their
 // methylation or insert-size coloring on the way in, and reset it to `normal`
 // on the way out, was also the one changing nothing in the picture.
+//
 // `readConnectionsDown` is in NEITHER preset, and that is the same statement
 // `isSvChannelsActive` makes by not matching on it: which side of the coverage
 // the arcs hang on is a framing choice the arrangement has no opinion about.
