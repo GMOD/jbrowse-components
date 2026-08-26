@@ -159,6 +159,16 @@ export default class AlignmentsContactAdapter
     return adapter
   }
 
+  /**
+   * The bin sizes the display may pick from, finest first, and `NONE` — nothing
+   * here is normalized, so there is one scheme to offer.
+   *
+   * Every bin size is offered whatever the view, and `depthDifference` may
+   * still decline the finest one: its cell count is quadratic in the span, so a
+   * view wide enough to blow {@link MAX_DEPTH_CELLS} comes back at a coarser
+   * bin size than the one requested. The result carries the bin size it was
+   * built at, so the display labels what it drew.
+   */
   public async getHeader(_opts?: BaseOptions) {
     return { norms: ['NONE'], resolutions: this.binSizes }
   }
