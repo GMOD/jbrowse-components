@@ -6,7 +6,7 @@ description: The backlog — action items to build or fix, grouped by how ready 
 # Backlog
 
 Grouped by **what you have to do first**, because that is the thing most of these
-entries actually disagree on. 37 are ordinary build work, some of them carrying a
+entries actually disagree on. 36 are ordinary build work, some of them carrying a
 design that survived a rejected alternative and needs following rather than
 re-deriving. 8 open with an instruction to go measure something, because the
 premise or the cost attribution is not established and building first would be
@@ -49,7 +49,6 @@ capture, then release validation.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [Bump the graph configs off the old plugin pin](todo/bump-the-graph-figure-configs-off-the-old-plugin-pin.md) | graph plugin, figures | the plugin shipped 2026-08-26 as `8f9efd68f339` and readers have it; the four `test_data/graphgenomeview/` configs still pin the 08-14 build. Bumping them is a figure RE-RENDER, since `3ea526b` caps a row layout's deletion bow — do not move a pin and leave the PNG |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | probably already done — verify before spending the pipeline; three need a review, not a capture |
 | [Verify the shared rect buffer headed](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
 | [Brand the out-of-request refNames](todo/brand-the-out-of-request-refnames.md) | synteny, RPC | type-only; brand BOTH ends or the compare still passes. Take it while the comparisons still agree — that is what makes it type-only, and it stops being true as the tree grows |

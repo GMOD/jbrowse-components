@@ -12,7 +12,29 @@ findings that are expensive to re-derive. Replaces `GENERAL_GFA_HANDOFF.md` and
 The view itself is a third-party plugin,
 `~/src/jb2plugins/jbrowse-plugin-graphgenomeview` — build and deploy traps are
 in the `key_pattern_graphgenomeview_plugin_deploy_and_autofit` memory. User docs
-are `website/docs/user_guides/graph_genome_view.md`.
+are `website/docs/user_guides/graph_genome_view.md`. The package, its bundle,
+its GitHub repo and its hosted prefix are all spelled
+`graphgenomeview**er**`; only the local checkout and `test_data/graphgenomeview/`
+drop the `er`.
+
+**A publish is a two-sided move, and `test_data/graphgenomeview/README.md` is
+the rule**: the four figure fixtures pin `demos/graphgenomeviewer/<hash>/` while
+the `demos/` configs and the tutorials name the unversioned url, and
+`pnpm check-live-configs` fails both halves the wrong way round. So publishing
+the plugin gives readers the new build immediately and leaves the figures where
+they were until someone bumps the pin — which is the point, since a figure must
+not change without a commit here to attribute it to.
+
+**Read the build's date against the commits before assuming a bump re-renders
+anything.** The 2026-08-26 publish looked like it carried a visual change —
+`3ea526b` caps a row layout's deletion bow — and did not: the previous build was
+made two minutes *after* that commit landed, so the pinned bundle already had
+it. What was genuinely unpublished was a launch-behaviour fix and a typecheck
+pass, neither of which touches geometry, and a re-render of
+`pangenome/hprc_cfhr_deletion` across the bump came back with its graph pane
+unchanged. `git log --format='%ad'` on the plugin against the `dist/` mtime is
+the check; "there are unpushed commits" is not the same claim as "the deployed
+bundle lacks them".
 
 ## Coordinates are the only real difference between formats
 

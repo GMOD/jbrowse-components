@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "GraphGenomeView",
-      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/4bcef24fbaa7/jbrowse-plugin-graphgenomeviewer.esm.js"
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/8f9efd68f339/jbrowse-plugin-graphgenomeviewer.esm.js"
     }
   ],
   "assemblies": [
