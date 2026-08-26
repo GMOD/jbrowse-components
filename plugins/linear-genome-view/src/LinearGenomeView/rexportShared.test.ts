@@ -37,6 +37,19 @@ describe('firstUri', () => {
     ).toBe('https://example.com/x.bw')
   })
 
+  // Desktop's normal case: a config.json opened from disk stamps its own
+  // directory as the baseUri, so every relative track uri resolves to a `file:`
+  // URL. Rsamtools/rtracklayer open a path, not a URL, so emitting the URL is a
+  // script that fails on every track — and only for desktop users.
+  it('a file: uri becomes the path R opens', () => {
+    expect(
+      firstUri({ uri: 'reads.bam', baseUri: 'file:///data/proj/config.json' }),
+    ).toBe('/data/proj/reads.bam')
+    expect(firstUri({ uri: 'file:///data/x%20y/reads.bam' })).toBe(
+      '/data/x y/reads.bam',
+    )
+  })
+
   it('skips a location that carries neither', () => {
     expect(firstUri({}, { localPath: '/data/b.bw' })).toBe('/data/b.bw')
     expect(firstUri(undefined, { uri: '' }, 'fallback.bw')).toBe('fallback.bw')
