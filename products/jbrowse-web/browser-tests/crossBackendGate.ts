@@ -296,10 +296,14 @@ function isExcluded(name: string) {
 // measurement, not an edit.
 //
 // The two alignments suites joined on the same evidence — three consecutive
-// clean runs, tight drift — but they hold **only while CI runs
-// `--skip-webgpu`**. Both go eight-failures red the moment webgpu enters the
-// gate, so whoever widens the backend set re-measures this pair first rather
-// than reading its presence here as a clean bill.
+// clean runs, tight drift — and for a while they held only because CI ran
+// `--skip-webgpu`: under webgpu they went eight pairs over threshold. That was
+// the capture scrolling the canvas under the app header, not the render, and
+// `captureElementPng` fixed it on 2026-08-26 — the same 40 pairs now measure 0
+// over threshold, max 0.91%. `pnpm test:browser:gate` renders webgpu because of
+// that; `:gate:ci` still does not, because the CI runner has no Firefox Nightly
+// and no display. agent-docs/reference/CROSS_BACKEND_GATE.md, "Alignments under
+// webgpu".
 export const CI_GATE_SUITES = [
   'Additional Track Types',
   'Alignments Color Schemes',

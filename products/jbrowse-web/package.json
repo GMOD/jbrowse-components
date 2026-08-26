@@ -20,7 +20,7 @@
     "test:browser:headed": "node browser-tests/runner.ts --headed",
     "test:browser:update": "node browser-tests/runner.ts --update-snapshots",
     "test:browser:compare": "node browser-tests/compare-backends.ts",
-    "test:browser:gate": "node browser-tests/runner.ts --backend=all --skip-webgpu --swiftshader --gate-only",
+    "test:browser:gate": "node browser-tests/runner.ts --backend=all --swiftshader --gate-only",
     "test:browser:gate:ci": "node browser-tests/runner.ts --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate",
     "review-snapshots-web": "node browser-tests/review-snapshots-web.ts",
     "snapshots": "node browser-tests/snapshots.ts",

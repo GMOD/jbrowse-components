@@ -46,10 +46,17 @@ node browser-tests/runner.ts --filter=synteny --test="chr7"
 node browser-tests/runner.ts --include-remote
 # (not needed when --filter is given — remote is auto-enabled)
 
+# Every backend, webgpu included — the hand run, which `pnpm test:browser:gate`
+# now spells. webgpu is Firefox Nightly (--firefox=<path> or
+# FIREFOX_NIGHTLY_PATH) and runs headed, so it needs a display.
+node browser-tests/runner.ts --backend=all --swiftshader --gate-only
+
 # Exactly what the blocking CI job renders — CI_GATE_SUITES, remote forced off.
 # Scoping only, so it composes. --retries=N (default 1 under --ci-gate, 0
 # otherwise) re-runs a failing test in a fresh browser and names it in the
-# summary.
+# summary. It still skips webgpu, which the hand run above does not: that backend
+# is Firefox Nightly, headed, and the ubuntu-latest job has neither it nor a
+# display. See CROSS_BACKEND_GATE.md, "Widening the gate scripts".
 node browser-tests/runner.ts --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate
 
 # The same set on the machine's real GPU. Use --real-gpu; do NOT just drop

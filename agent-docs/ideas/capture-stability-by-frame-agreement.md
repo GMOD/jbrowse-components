@@ -57,9 +57,33 @@ Both were measured on the way and hold regardless of what happens to the retry:
   cross-backend while its targeted canvas stayed at 0.00%. `pageSnapshot` is back
   to one shot.
 
-Related: [../reference/SCREENSHOT_CAPTURE_RACE.md](../reference/SCREENSHOT_CAPTURE_RACE.md)
+## An attack on the compositor directly: measured, and it separated
+
+"Or an attack on the compositor directly rather than by retry" is no longer
+hypothetical, and it did not need several hundred runs. Every wait this thread
+had tried asks the *app* whether it has finished; an `IntersectionObserver`
+callback is queued from inside update-the-rendering, so awaiting one asks the
+*browser* whether it has produced a frame. Three capture paths alternating on one
+settled canvas2d page (`browser-tests/probe-capture-barrier.ts`): `el.screenshot`
+3/15 then 0/25 blank, a bare clip 5/15 then 6/25, the clip behind that barrier
+**0/15 and 0/25**. `captureElementPng` takes the third.
+
+That is one page and one backend, so it does not close the blank captures — but
+it is the first arm in this thread that separated from its controls, and it costs
+one frame rather than the two rAF round trips that made the double-rAF version
+unaffordable. **Re-measure the retry against a tree that already has the barrier
+before spending several hundred runs on it**; the base rate this idea's power
+calculation assumes may no longer be the base rate.
+
+The by-product above is the same phenomenon seen from the other side: the handle
+detaches because the display *swaps its canvas element*, measured at 100% of
+captures on a pileup — `isConnected` false afterwards while
+`document.querySelector` still finds one canvas at the same rect. Read geometry
+through the selector, never through a cached handle.
+
+Related: [../reference/SCREENSHOT_CAPTURE_RACE.md](../reference/SCREENSHOT_CAPTURE_RACE.md),
+whose "The third one" was a *different* drift with a settled attribution — app
+chrome composited in after `el.screenshot()` scrolled the element — and is fixed;
 and the backlog's
-[make the capture scroll-invariant](../todo/make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu.md),
-which is a *different* drift with a settled attribution — that one is app chrome
-composited in after `el.screenshot()` scrolled the element, and is fixable in
-`snapshot.ts`.
+[render webgpu in the blocking gate job](../todo/render-webgpu-in-the-blocking-cross-backend-gate-job.md),
+which is what that fix left over.

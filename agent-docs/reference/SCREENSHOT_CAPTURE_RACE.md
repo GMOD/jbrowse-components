@@ -154,7 +154,10 @@ Found on the alignments suites' canvas2d-vs-webgpu pairs, which are also a
 Chrome-vs-Firefox pair, since WebGPU needs Firefox Nightly. Eight stable
 over-threshold pairs, 3-4% on the targeted captures and 16-27% on the fullpage
 ones, holding to the decimal across runs. Measured with
-`browser-tests/probe-webgpu-coverage.ts`:
+`browser-tests/probe-webgpu-coverage.ts`, which prints both capture paths side
+by side and had to be repaired first: `b7f076fe04` swept a node-side selector
+helper into a `page.evaluate` body, so every run of it between that commit and
+2026-08-26 threw `displayPainted is not defined` on its first read.
 
 | | Chrome (canvas2d, webgl) | Firefox (webgpu) |
 | --- | --- | --- |
@@ -191,11 +194,64 @@ Firefox decides a scroll is needed), and like a WebGPU one (only that backend
 runs in Firefox). The band is fixed at 37px whether `coverageHeight` is 45 or
 90, which is what rules the first one out.
 
-**The fix belongs on the capture side**: size the viewport so the display needs
-no scroll, or scroll to a deterministic position before capturing, applied to
-both sides of every pair. Not a threshold override, which would be excusing a
-harness artifact as a rendering difference. The invariant to assert is that
-**the element's rect is unchanged across the capture**, on every backend.
+### Fixed 2026-08-26: the capture clips where the element already is
+
+`captureElementPng` in `browser-tests/snapshot.ts` is the one path every element
+capture in the suite now takes. It reads the rect through the **selector**, calls
+`page.screenshot({ clip })`, reads the rect again and throws if it moved — which
+is all `el.screenshot()` does apart from the scroll it is being avoided for. A
+threshold override was never the answer: it would have excused a harness artifact
+as a rendering difference.
+
+Measured on the two alignments suites, `--backend=all --swiftshader --gate-only
+--drift-report`, same build either side of the change:
+
+| pair (canvas2d vs webgpu) | before | after |
+| --- | --- | --- |
+| `fullpage_color-by-strand` | 27.01% | 0.48% |
+| `fullpage_color-by-tag-hp` | 24.21% | 0.49% |
+| `fullpage_color-by-mapping-quality` | 23.13% | 0.48% |
+| `fullpage_alignments-bam` | 15.01% | 0.91% |
+| `targeted_color-by-strand` | 3.88% | 0.08% |
+| `targeted_color-by-mapping-quality` | 3.88% | 0.07% |
+| `targeted_color-by-tag-hp` | 3.51% | 0.01% |
+| `targeted_alignments-bam` | 3.47% | 0.01% |
+
+40 pairs, 8 over threshold before and **0 after**, max 0.91%, median 0.08%. The
+control that makes it a fix rather than a coincidence: every canvas2d-vs-webgl
+figure in the same two runs is unchanged to the decimal (0.70 / 0.62 / 0.23 /
+0.21 / 0.14 / 0.07), because Chrome was never scrolling and its captures did not
+move.
+
+Three things the fix turned up that the attribution above did not predict:
+
+- **Assert the rect through the selector, not through an element handle.** A
+  pileup display swaps its canvas element during the capture on *every* run —
+  `isConnected` reads false afterwards while `document.querySelector` still finds
+  one canvas at the same `1266x600@6,197`. `el.boundingBox()` answers `null` for
+  a page that never moved, so the first spelling of this invariant failed 100% of
+  the time on the suite it was written for.
+- **The scroll was carrying a compositor barrier.** `scrollIntoViewIfNeeded`
+  awaits an `IntersectionObserver`, whose callback the spec queues inside
+  update-the-rendering, so puppeteer had always produced a frame before
+  capturing. Removing the scroll removed that, and blank captures went *up*.
+  `browser-tests/probe-capture-barrier.ts` measures the three paths on one
+  settled canvas2d page:
+
+  | capture path | N=15 | N=25 |
+  | --- | --- | --- |
+  | `el.screenshot` (puppeteer's own barrier) | 3/15 blank | 0/25 blank |
+  | clip, no barrier | 5/15 blank | 6/25 blank |
+  | clip, `IntersectionObserver` barrier | **0/15** | **0/25** |
+
+  So the barrier is now explicit, and better placed than the one it replaces:
+  puppeteer's ran before the scroll decision with a round trip after it, and this
+  one is the last thing before the clip. That is a lead on the blank captures in
+  the section above, which no amount of *app-level* waiting could fix.
+- **`scrollIntoView: false` works at runtime and does not typecheck.** Puppeteer
+  25 declares it only on `screenshot`'s implementation signature; both public
+  overloads take a plain `ScreenshotOptions`. Passing it needs a cast that would
+  go stale silently, which is why the clip is computed here instead.
 
 ## Debugging tips that saved time here
 

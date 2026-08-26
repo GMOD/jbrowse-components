@@ -99,6 +99,17 @@ WebGL canvas reaches. Both strings carry the finding now, and
 `probe-canvas-selfreport.ts` prints the two notes side by side on a page that is
 demonstrably rendering: run it before trusting any future readback verdict.
 
+**There is now one wait that does move the number, and it is not an app-level
+one.** Every wait this section rules out asks the *app* whether it has finished;
+an `IntersectionObserver` callback is queued from inside update-the-rendering, so
+awaiting one asks the *browser* whether it has produced a frame. Measured on one
+settled canvas2d page with `browser-tests/probe-capture-barrier.ts`, alternating
+three capture paths: `el.screenshot` 3/15 then 0/25 blank, a bare clip 5/15 then
+6/25, and a clip behind that barrier **0/15 and 0/25**. `captureElementPng` takes
+the third path. That is a measurement on one page and one backend, not a claim
+that the blank captures are closed — but it is the first thing tried against them
+that separated from its controls, and the two arms above did not.
+
 The durable capture-side mechanics are in
 [SCREENSHOT_CAPTURE_RACE.md](SCREENSHOT_CAPTURE_RACE.md).
 
@@ -115,7 +126,12 @@ The durable capture-side mechanics are in
 - **Compositor double-rAF: tested, INCONCLUSIVE, not in the tree.** Blanks went
   5 → 4 while within-arm spread (1 vs 7) exceeded the between-arm difference. It
   was verified active first (58 ms under swiftshader, 1670 ms in plain headless),
-  and 1.67 s × ~160 captures is why it was reverted rather than kept.
+  and 1.67 s × ~160 captures is why it was reverted rather than kept. **The
+  `IntersectionObserver` barrier in `captureElementPng` is a different animal and
+  is in the tree**: it costs one frame rather than two whole rAF round trips, it
+  was measured per capture path on one page rather than by whole-suite failure
+  counts, and it separated cleanly (0/25 against 6/25). Don't read this bullet as
+  covering it.
 - **A whole-suite A/B cannot resolve an effect of this size.** Failure counts
   ranged 0–20 per run under nominally identical conditions. **Stop running
   whole-suite A/Bs against this** — instrument the failing path instead, which is
@@ -553,53 +569,80 @@ change**, and the machine has to be quiet for it — these are the remote suites
 and a capture degraded under load pushed as a golden is worse than a stale one.
 `--exact --filter`, never bare.
 
-## Alignments under webgpu: 8 of 40 pairs over threshold, and it is the harness
+## Alignments under webgpu: was 8 of 40 pairs over threshold, and it was the harness
 
-`test:browser:gate` and `:gate:ci` both pass `--skip-webgpu`, so webgpu pairs
-were in no measurement here until 2026-08-08. **This table is the number to check
-any alignments render change against** — every figure reproduced to the decimal
-across a from-scratch baseline build at `82ac1951f6` and two later runs:
+`test:browser:gate` and `:gate:ci` both passed `--skip-webgpu`, so webgpu pairs
+were in no measurement here until 2026-08-08, and what that first measurement
+found was eight stable failures: 3-4% on the targeted alignments captures and
+15-27% on the full-page ones, reproducing to the decimal across a from-scratch
+baseline build at `82ac1951f6` and every later run.
 
-| pair (canvas2d vs webgpu) | drift |
-| --- | --- |
-| `fullpage_color-by-strand` | 26.95% |
-| `fullpage_color-by-tag-hp` | 24.39% |
-| `fullpage_color-by-mapping-quality` | 23.09% |
-| `fullpage_alignments-bam` | 16.38% |
-| `targeted_color-by-strand` | 3.88% |
-| `targeted_color-by-mapping-quality` | 3.87% |
-| `targeted_color-by-tag-hp` | 3.49% |
-| `targeted_alignments-bam` | 3.46% |
-| `targeted_alignments-long-reads-sv-linked` | 2.00% |
-| `fullpage_alignments-long-reads-sv-linked` | 0.93% |
-| `targeted_color-by-insert-size-orientation` | 0.68% |
+**It was the capture, not the render, and it is fixed as of 2026-08-26.**
+`el.screenshot()` scrolls the element into view first; Firefox scrolled an inner
+container by 73px where Chrome did not; the canvas top then sat under the app
+header and the capture composited 37px of locstring box, toolbar divs and ruler
+into the canvas rectangle. `captureElementPng` measures the rect and clips to it
+instead, and asserts the rect across the capture. Mechanism, the numbers either
+side, and two things the fix turned up that the attribution did not predict:
+[SCREENSHOT_CAPTURE_RACE.md](SCREENSHOT_CAPTURE_RACE.md), "The third one".
+`browser-tests/probe-webgpu-coverage.ts` prints both capture paths in one run.
 
-The canvas2d-vs-webgl pairs in the same runs stayed at their usual 1.99 / 0.71 /
-0.65 / 0.62 / 0.23, and synteny under the same invocation was 64 pairs / 0 over
-threshold.
+Re-measured on the two suites, `--backend=all --swiftshader --gate-only
+--drift-report`, same build either side of the change:
 
-**The cause is settled and it is the harness, not the render** —
-`el.screenshot()` scrolls the element into view first, Firefox scrolls an inner
-container by 73px where Chrome does not, the canvas top then sits under the app
-header, and the capture composites 37px of locstring box, toolbar divs and ruler
-into the canvas rectangle. The backing store held the full coverage strip the
-whole time. Written up in [SCREENSHOT_CAPTURE_RACE.md](SCREENSHOT_CAPTURE_RACE.md),
-"The third one"; `browser-tests/probe-webgpu-coverage.ts` reproduces all of it in
-one run. **Read that before touching this**, because three separate correlations
-point at the wrong subsystem: it looks like a coverage-strip bug, a
-zoom-dependent bug and a WebGPU bug, and it is none of them.
+| pair (canvas2d vs webgpu) | before | after |
+| --- | --- | --- |
+| `fullpage_color-by-strand` | 27.01% | 0.48% |
+| `fullpage_color-by-tag-hp` | 24.21% | 0.49% |
+| `fullpage_color-by-mapping-quality` | 23.13% | 0.48% |
+| `fullpage_alignments-bam` | 15.01% | 0.91% |
+| `targeted_color-by-strand` | 3.88% | 0.08% |
+| `targeted_color-by-mapping-quality` | 3.88% | 0.07% |
+| `targeted_color-by-tag-hp` | 3.51% | 0.01% |
+| `targeted_alignments-bam` | 3.47% | 0.01% |
 
-The split across tests is the locus, downstream of the scroll — a zoomed-in locus
-stacks more pileup rows, so the display is taller. `alignments-pileup-coverage`'s
-4.69% is a different thing: its one hot row is hot under webgl too, so it is
-shared.
+40 pairs, **8 over threshold before and 0 after**, max 0.91%, median 0.08%. The
+control that makes it a fix rather than a coincidence: every canvas2d-vs-webgl
+figure in the same two runs is unchanged to the decimal — 0.70 / 0.62 / 0.23 /
+0.21 / 0.14 / 0.07 — because Chrome was never scrolling, so its captures did not
+move.
 
-**Consequence:** adding `Alignments Track` and `Alignments Color Schemes` to
-`CI_GATE_SUITES` is safe **only because CI runs `--skip-webgpu`**. Say that out
-loud when adding them, or the next person widening the gate to webgpu gets eight
-failures and no context. **Do not add a threshold override to paper over these** —
-the number would be excusing a harness artifact as a rendering difference, and
-`inversion-pbsim` above is this project's own record of what that costs.
+**No threshold override was added and none should be**, which was the pressure
+this section existed to resist: the number would have excused a harness artifact
+as a rendering difference, and `inversion-pbsim` above is this project's own
+record of what that costs. Three separate correlations also pointed at the wrong
+subsystem — it looked like a coverage-strip bug (the band is where the coverage
+strip is), a zoom-dependent one (a zoomed-in locus stacks more pileup rows, so
+the display is taller and Firefox decides a scroll is needed) and a WebGPU one
+(only that backend runs in Firefox). The band held at 37px whether
+`coverageHeight` was 45 or 90, which is what ruled the first one out.
+
+`alignments-pileup-coverage` was never part of this: its one hot row is hot under
+webgl too, so it is shared, and it measures 0.09% / 0.07% now.
+
+**`Alignments Track` and `Alignments Color Schemes` were safe in `CI_GATE_SUITES`
+only because CI ran `--skip-webgpu`.** That is no longer the reason they are
+safe; the drift is gone on its own.
+
+### Widening the gate scripts: the drift half is done, the CI half is not
+
+`test:browser:gate` — the hand run — drops `--skip-webgpu` as of 2026-08-26.
+**`test:browser:gate:ci` does not, and the blocker is the runner, not the
+pixels.** `cross_backend_gate` in `push.yml` runs on `ubuntu-latest`, and the
+webgpu backend is the only one that is not Chrome:
+
+- it needs Firefox Nightly at `/usr/bin/firefox-nightly`
+  (`FIREFOX_NIGHTLY_PATH` / `--firefox=` override it), which neither the workflow
+  nor `.github/actions/setup` installs;
+- `runWithRenderingBackend` launches it with `headless: false` deliberately, so
+  the job would also need a virtual display;
+- and a GPU-less runner has no WebGPU adapter, where `--swiftshader` only ever
+  spoke for Chrome's WebGL.
+
+None of that is checkable from a worktree, and landing an unverifiable change to
+a blocking job is worse than a job that renders two backends. So the CI half is
+its own piece of work: provision Firefox Nightly plus a display plus a software
+WebGPU adapter in the job, prove it on a branch, then drop the flag there too.
 
 ## Two cheap habits this thread paid for
 

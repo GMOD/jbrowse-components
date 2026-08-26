@@ -39,6 +39,12 @@ webgl in one run and diffs the two, so it needs no committed baseline. Scope and
 its reasons live next to the list; `agent-docs/reference/CROSS_BACKEND_GATE.md`
 is what to read before widening it.
 
+**`pnpm test:browser:gate` renders webgpu as well and the CI one does not**, and
+the difference is the runner rather than the pixels: webgpu is Firefox Nightly,
+launched headed, and `ubuntu-latest` has neither the browser nor a display. So
+CI's two backends are a coverage gap, not a verdict — `agent-docs/todo/`
+carries what closing it needs.
+
 **The 10-25% blank-capture flake was `fullPage: true`** (fixed 2026-07-26).
 Puppeteer implements `fullPage` by resizing the viewport to the scroll size and
 restoring it afterwards; that resize invalidates the page raster, and under load
