@@ -5,6 +5,7 @@ import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
 interface CoverageModel extends ScoreScaleModel {
   numStdDev: number
+  showCoverage: boolean
   coverageSnpMinFrequency: number
   setCoverageSnpMinFrequency: (fraction: number) => void
 }
@@ -26,10 +27,21 @@ const SNP_FREQUENCY_OPTIONS = [
 // relabelled "Coverage" with a reduced, dynamic-σ autoscale list — no adapter
 // shim needed. The on/off toggle lives in the "Show..." menu (see reads.ts)
 // rather than being duplicated here.
+//
+// Which is why the whole submenu greys out with the band hidden. Every setting
+// in it feeds the band's draw and its hit test and nothing else, so with
+// `showCoverage` off this is four live controls over a band that isn't there —
+// and unlike the sashimi and read-connection menus, which lead with their own
+// visibility toggle, there is nothing in here that could turn it back on. The
+// gate names that switch instead. Safe to grey because no row inside carries a
+// pin: a disabled row's pin is disabled with it (`menuItemAdornment`).
 export function getCoverageMenuItem(model: CoverageModel) {
   const sigma = model.numStdDev
   return makeScoreSubMenu(model, {
     label: 'Coverage',
+    disabled: !model.showCoverage,
+    disabledHelpText:
+      'These settings scale the coverage band — turn on "Show coverage" first',
     autoscaleOptions: [
       ['local', 'Local'],
       ['localsd', `Local ± ${sigma}σ`],

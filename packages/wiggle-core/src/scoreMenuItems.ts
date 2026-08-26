@@ -121,11 +121,10 @@ export function makeCrossHatchItem(self: {
 
 // The single Score submenu used by every wiggle-family display. Composition is
 // capability-driven: `leadingItems` lets wiggle prepend its Resolution/Summary
-// submenus and coverage prepend its on/off + y-axis toggles, `trailingItems`
-// appends what belongs after the range controls rather than before them (the
-// alignments band's allele-fraction floor); `scaleType` is dropped by manhattan
-// (linear-only); `autoscaleOptions` is overridden by coverage's reduced +
-// dynamic-σ list.
+// submenus, `trailingItems` appends what belongs after the range controls rather
+// than before them (the alignments band's allele-fraction floor); `scaleType` is
+// dropped by manhattan (linear-only); `autoscaleOptions` is overridden by
+// coverage's reduced + dynamic-σ list.
 //
 // `autoscale` is the same kind of opt-out as `scaleType`, and exists for the
 // same reason: a display whose domain doesn't consult `autoscaleType` must not
@@ -143,6 +142,12 @@ export function makeScoreSubMenu(
     autoscaleOptions?: [string, string][]
     leadingItems?: MenuItem[]
     trailingItems?: MenuItem[]
+    // Greys the whole submenu out — for a display whose band can be hidden, where
+    // every setting in here scales something that isn't drawn (the alignments
+    // coverage band). Taken as a pair so a caller cannot grey the menu out
+    // without saying which switch brings it back.
+    disabled?: boolean
+    disabledHelpText?: string
   } = {},
 ): MenuItem {
   const {
@@ -152,10 +157,14 @@ export function makeScoreSubMenu(
     autoscaleOptions,
     leadingItems = [],
     trailingItems = [],
+    disabled,
+    disabledHelpText,
   } = opts
   return {
     label,
     icon: EqualizerIcon,
+    disabled,
+    disabledHelpText,
     subMenu: [
       ...leadingItems,
       ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),
