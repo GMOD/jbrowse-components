@@ -4,12 +4,14 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
 import {
   addAndShowTrack,
   getContainingTrack,
   getContainingView,
   getPaletteHost,
   getSession,
+  getDialogHost,
   isSessionWithAddSessionTrack,
   makeTrackId,
 } from '@jbrowse/core/util'
@@ -21,6 +23,7 @@ import MultiRegionDisplayMixin, {
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
+import { GetSequenceDialog } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
@@ -39,6 +42,7 @@ import type {
 } from './components/sequenceGeometry.ts'
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -481,34 +485,60 @@ export function modelFactory(
        * #method
        */
       trackMenuItems() {
-        return self.isDna
-          ? [
+        return [
+          // "Get sequence" otherwise lives only inside the menu a rubberband
+          // opens, so it is found by people who already know it is there. The
+          // visible window is the selection a reader who navigated to a locus
+          // has already made.
+          {
+            label: LAUNCH_VIEW_LABEL,
+            type: 'subMenu' as const,
+            subMenu: [
               {
-                label: 'Show forward',
-                type: 'checkbox',
-                checked: self.showForward,
+                label: 'Get sequence (visible region)',
                 onClick: () => {
-                  self.toggleShowForward()
+                  const view = getContainingView(self) as LinearGenomeViewModel
+                  getDialogHost(self).queueDialog(handleClose => [
+                    GetSequenceDialog,
+                    {
+                      model: view,
+                      regions: view.dynamicBlocks.contentBlocks,
+                      handleClose,
+                    },
+                  ])
                 },
               },
-              {
-                label: 'Show reverse',
-                type: 'checkbox',
-                checked: self.showReverse,
-                onClick: () => {
-                  self.toggleShowReverse()
+            ],
+          },
+          ...(self.isDna
+            ? ([
+                {
+                  label: 'Show forward',
+                  type: 'checkbox',
+                  checked: self.showForward,
+                  onClick: () => {
+                    self.toggleShowForward()
+                  },
                 },
-              },
-              {
-                label: 'Show translation',
-                type: 'checkbox',
-                checked: self.showTranslation,
-                onClick: () => {
-                  self.toggleShowTranslation()
+                {
+                  label: 'Show reverse',
+                  type: 'checkbox',
+                  checked: self.showReverse,
+                  onClick: () => {
+                    self.toggleShowReverse()
+                  },
                 },
-              },
-            ]
-          : []
+                {
+                  label: 'Show translation',
+                  type: 'checkbox',
+                  checked: self.showTranslation,
+                  onClick: () => {
+                    self.toggleShowTranslation()
+                  },
+                },
+              ] satisfies MenuItem[])
+            : []),
+        ]
       },
     }))
 }
