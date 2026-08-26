@@ -124,8 +124,7 @@ test('a mark with a mate locus shows that locus, not the whole contig', async ()
   const { view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level + 1, {
-    start: 200_000,
-    end: 201_000,
+    locus: { start: 200_000, end: 201_000 },
   })
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
@@ -145,8 +144,7 @@ test('a locus narrower than the floor is widened around itself', async () => {
   const { view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level + 1, {
-    start: 200_000,
-    end: 200_500,
+    locus: { start: 200_000, end: 200_500 },
   })
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
@@ -165,8 +163,7 @@ test('the navigation offers an undo that restores what the row was showing', asy
   const before = view.views[1]!.bpPerPx
 
   level.showOffscreenMateContig('ctgB', level.level + 1, {
-    start: 200_000,
-    end: 201_000,
+    locus: { start: 200_000, end: 201_000 },
   })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
@@ -195,7 +192,9 @@ test('with the follow off, the undo leaves the anchor row alone', async () => {
   // row 1, which is not the anchor — so an undo that wrote the anchor back
   // unconditionally would have to write something, and the only thing it had
   // was the row it just navigated
-  level.showOffscreenMateContig('ctgB', 1, { start: 200_000, end: 201_000 })
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+  })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   view.setFollowAnchorIndex(1)
@@ -214,7 +213,9 @@ test('with the follow on, the undo gives back the anchor the click took', async 
   view.setRowSyncMode('follow')
   view.setFollowAnchorIndex(1)
 
-  level.showOffscreenMateContig('ctgB', 0, { start: 200_000, end: 201_000 })
+  level.showOffscreenMateContig('ctgB', 0, {
+    locus: { start: 200_000, end: 201_000 },
+  })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   expect(view.followAnchorIndex).toBe(0)
 
@@ -234,7 +235,9 @@ test('a navigation that fails does not keep the anchor it took', async () => {
   view.setRowSyncMode('follow')
   expect(view.followAnchorIndex).toBe(0)
 
-  level.showOffscreenMateContig('nope', 1, { start: 200_000, end: 201_000 })
+  level.showOffscreenMateContig('nope', 1, {
+    locus: { start: 200_000, end: 201_000 },
+  })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(session.snackbarMessages[0]!.level).toBe('error')
@@ -262,12 +265,10 @@ const MATE_CENTER_BP = BP + 200_500
 test('a contig the row already displays is scrolled to, not navigated to', async () => {
   const { view, level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig(
-    'ctgB',
-    1,
-    { start: 200_000, end: 201_000 },
-    true,
-  )
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    displayed: true,
+  })
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
@@ -286,12 +287,10 @@ test('a contig the row already displays is scrolled to, not navigated to', async
 test('the row travels to it rather than appearing there', async () => {
   const { level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig(
-    'ctgB',
-    1,
-    { start: 200_000, end: 201_000 },
-    true,
-  )
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    displayed: true,
+  })
   await when(() => row.windowWidthBp > 40_000, { timeout: 5000 })
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
@@ -307,12 +306,10 @@ test('with animation off the row is simply placed there', async () => {
   const { session, level, row } = await scrollableSetup()
   session.setPreferenceOverride('animationMode', 'disabled')
 
-  level.showOffscreenMateContig(
-    'ctgB',
-    1,
-    { start: 200_000, end: 201_000 },
-    true,
-  )
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    displayed: true,
+  })
 
   expect(row.windowStartBp).toBe(MATE_CENTER_BP - 40_000 / 2)
 })
@@ -327,12 +324,10 @@ test('the flight survives the follow it just became the anchor of', async () => 
   view.setRowSyncMode('follow')
   expect(view.followAnchorIndex).toBe(0)
 
-  level.showOffscreenMateContig(
-    'ctgB',
-    1,
-    { start: 200_000, end: 201_000 },
-    true,
-  )
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    displayed: true,
+  })
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
     { timeout: 5000 },
@@ -349,12 +344,10 @@ test('the flight survives the follow it just became the anchor of', async () => 
 test('the undo wins against a flight still in the air', async () => {
   const { session, level, row } = await scrollableSetup()
 
-  level.showOffscreenMateContig(
-    'ctgB',
-    1,
-    { start: 200_000, end: 201_000 },
-    true,
-  )
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    displayed: true,
+  })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   await when(() => row.windowStartBp !== 0, { timeout: 5000 })
   const [action] = session.snackbarMessages[0]!.actions!
@@ -375,7 +368,7 @@ test('the undo wins against a flight still in the air', async () => {
 test('a locus at the start of its contig still gets the whole floor', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB', 1, { start: 100, end: 600 })
+  level.showOffscreenMateContig('ctgB', 1, { locus: { start: 100, end: 600 } })
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks

@@ -284,12 +284,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // through to clear the clicked feature on its way.
     const mate = offscreenMateNavHit(model, coords.x, coords.y)
     if (mate) {
-      model.showOffscreenMateContig(
-        mate.refName,
-        mate.navRow,
-        mate.locus,
-        mate.displayed,
-      )
+      model.showOffscreenMateContig(mate.refName, mate.navRow, mate)
       return
     }
     // A release outside the band answers no hit (the pick engine rejects a y

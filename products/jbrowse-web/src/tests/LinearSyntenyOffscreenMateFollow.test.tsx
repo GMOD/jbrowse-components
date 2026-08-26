@@ -36,7 +36,7 @@ interface SyntenyView {
     showOffscreenMateContig: (
       refName: string,
       row: number,
-      locus?: { start: number; end: number },
+      mate?: { locus: { start: number; end: number }; displayed?: boolean },
     ) => void
   }[]
   setWidth: (n: number) => void
@@ -107,7 +107,9 @@ async function followingSwap() {
 test('a mark on a followed row shows its contig, and is not undone by the follow', async () => {
   const { view, row1 } = await followingSwap()
 
-  view.levels[0]!.showOffscreenMateContig('ctgB', 1, { start: 0, end: 6079 })
+  view.levels[0]!.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 0, end: 6079 },
+  })
   await settle()
 
   expect(regionsOf(row1)).toEqual(['ctgB'])
@@ -124,7 +126,9 @@ test('...and the undo puts the anchor back with the regions', async () => {
     snackbarMessages: { message: string; actions?: { onClick: () => void }[] }[]
   }
 
-  view.levels[0]!.showOffscreenMateContig('ctgB', 1, { start: 0, end: 6079 })
+  view.levels[0]!.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 0, end: 6079 },
+  })
   await waitFor(() => {
     expect(session.snackbarMessages.length).toBeGreaterThan(0)
   }, timeout)
@@ -145,7 +149,9 @@ test('a mark on the anchor row leaves the anchor alone', async () => {
     snackbarMessages: { message: string }[]
   }
 
-  view.levels[0]!.showOffscreenMateContig('ctgA', 0, { start: 0, end: 6079 })
+  view.levels[0]!.showOffscreenMateContig('ctgA', 0, {
+    locus: { start: 0, end: 6079 },
+  })
   await waitFor(() => {
     expect(session.snackbarMessages.length).toBeGreaterThan(0)
   }, timeout)

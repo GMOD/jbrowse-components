@@ -386,13 +386,14 @@ export function linearSyntenyViewHelperModelFactory(
        * and one on the target axis names a contig the row ABOVE is not. The
        * caller resolved which strip it hit, and the hit carries the answer.
        *
-       * THE LOCUS, NOT THE CONTIG, when the hit carries one. A bare refName is
-       * a whole chromosome, so every click used to answer a question about one
-       * locus by zooming out past every other one — and the mate coordinates
-       * that make it answerable were being collected and dropped
-       * (`collectOffscreenMates`). `grow` and a floor rather than an exact span,
-       * so the ribbons that now have both ends have something around them to be
-       * read against at either end of the size range.
+       * THE LOCUS, NOT THE CONTIG. A bare refName is a whole chromosome, so
+       * every click used to answer a question about one locus by zooming out
+       * past every other one — and the mate coordinates that make it answerable
+       * were being collected and dropped (`collectOffscreenMates`). `grow` and a
+       * floor rather than an exact span, so the ribbons that now have both ends
+       * have something around them to be read against at either end of the size
+       * range. Every mark carries one; the bare form here is for a caller that
+       * has a contig and nothing else.
        *
        * A CONTIG THAT ROW ALREADY HAS IS SCROLLED TO, not navigated to. Its
        * marks are the ones the band is culling rather than the ones it never
@@ -423,8 +424,12 @@ export function linearSyntenyViewHelperModelFactory(
       showOffscreenMateContig(
         refName: string,
         row: number,
-        locus?: OffscreenMateLocus,
-        displayed?: boolean,
+        // ONE ARGUMENT, because `displayed` without a locus is the state that
+        // sends the scroll class down the region-replacing branch — see
+        // `OffscreenMateSpan`. Nested, the pair cannot come apart: no mate is
+        // the whole contig, which is what a click did before there were
+        // coordinates. `OffscreenMateNavHit` is one of these.
+        mate?: { locus: OffscreenMateLocus; displayed?: boolean },
       ) {
         const { parentView } = self
         const view = parentView.views[row]
@@ -438,8 +443,8 @@ export function linearSyntenyViewHelperModelFactory(
           // that produces these marks in the first place — would answer "your
           // mate is over there" by throwing away every other chromosome of the
           // row it was pointing at.
-          if (displayed && locus) {
-            const center = Math.round((locus.start + locus.end) / 2)
+          if (mate?.displayed) {
+            const center = Math.round((mate.locus.start + mate.locus.end) / 2)
             // FLOWN, not jumped, when the reader wants motion. The scroll class
             // arises where a row displays whole assemblies, so this is a jump of
             // a chromosome or more: landed instantly, the reader is somewhere
@@ -476,7 +481,7 @@ export function linearSyntenyViewHelperModelFactory(
             )
             return
           }
-          const loc = navLocString(refName, locus)
+          const loc = navLocString(refName, mate?.locus)
           view
             .navToLocString(loc)
             .then(landed => {

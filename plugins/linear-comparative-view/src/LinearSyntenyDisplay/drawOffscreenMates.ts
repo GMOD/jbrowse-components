@@ -594,17 +594,24 @@ export interface OffscreenMateLocus {
   end: number
 }
 
-// What a CLICK on a mark resolves to. The locus is optional because the mark is
-// not: a lane with no mate coordinates still names a contig worth navigating to,
-// and answering `undefined` there would turn its clicks into no-ops.
+/**
+ * What a CLICK on a mark resolves to.
+ *
+ * BOTH FIELDS ALWAYS, which is what keeps the caller's two branches from
+ * crossing. `displayed` says the facing row already has this contig and has
+ * merely scrolled off it, so the click SCROLLS; false says the only way to show
+ * it is to replace what that row is displaying. A `displayed` mark with no locus
+ * has nowhere to scroll to and falls into the replacement — which is the one
+ * thing that branch exists to prevent — so the pair is stated as a pair rather
+ * than as two optionals, the same reason `MateAxisPlacement` is one object.
+ *
+ * Every lane carries mate coordinates (`OffscreenMateDataset` requires them), so
+ * there is nothing left for the optional to describe.
+ */
 export interface OffscreenMateSpan {
   refName: string
-  locus?: OffscreenMateLocus
-  // The facing row already displays this contig and has merely scrolled off it,
-  // so the click has somewhere to scroll TO. False for a contig that row is not
-  // displaying at all, where the only way to show it is to replace what the row
-  // is displaying with it.
-  displayed?: boolean
+  locus: OffscreenMateLocus
+  displayed: boolean
 }
 
 /**
@@ -667,14 +674,12 @@ export function offscreenMateSpanAt(
   if (!top) {
     return undefined
   }
-  const locus = spans.get(top)!
-  // A degenerate zero-length span still navigates, as a whole contig — which is
-  // what every click did before there were coordinates to do better with.
-  return {
-    refName: top,
-    locus: locus.end > locus.start ? locus : undefined,
-    displayed,
-  }
+  // A DEGENERATE SPAN IS STILL A PLACE. It used to be dropped and the click fell
+  // back to the whole contig, which is the answer these coordinates were added
+  // to stop — and on a `displayed` mark the fallback is the region-replacing
+  // navigation that class must never take. `OFFSCREEN_MATE_NAV_MIN_BP` frames a
+  // zero-width locus the same way it frames a 500bp one.
+  return { refName: top, locus: spans.get(top)!, displayed }
 }
 
 /**

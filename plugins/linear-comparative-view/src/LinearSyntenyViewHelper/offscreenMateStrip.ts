@@ -9,8 +9,8 @@ import type {
   OffscreenMateDataset,
   OffscreenMateLane,
   OffscreenMateLayout,
-  OffscreenMateLocus,
   OffscreenMateSide,
+  OffscreenMateSpan,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { MarkColorSource } from './offscreenMateMarkColors.ts'
@@ -216,15 +216,12 @@ export interface OffscreenMateHit {
 }
 
 // What a CLICK on a mark resolves to: the same hit, plus where on that contig
-// the alignments under the pointer land, in its own bp — which is what lets the
-// navigation land on the locus rather than on the whole chromosome. Absent when
-// the lane carries no mate coordinates, and then the contig alone navigates.
-export interface OffscreenMateNavHit extends OffscreenMateHit {
-  locus?: OffscreenMateLocus
-  // the facing row is displaying this contig already, so the click scrolls
-  // rather than replacing what that row is displaying
-  displayed?: boolean
-}
+// the alignments under the pointer land and whether that row is already showing
+// it — which is what lets the navigation land on the locus rather than on the
+// whole chromosome, and scroll rather than replace. `OffscreenMateSpan` says why
+// the two travel together.
+export interface OffscreenMateNavHit
+  extends OffscreenMateHit, Omit<OffscreenMateSpan, 'refName'> {}
 
 /**
  * The mark a pointer in either strip is over, or undefined.

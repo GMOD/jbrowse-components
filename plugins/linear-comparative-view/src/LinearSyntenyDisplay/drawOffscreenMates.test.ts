@@ -925,11 +925,13 @@ test('below the strip a click resolves nothing, like the hover', () => {
   ).toBeUndefined()
 })
 
-// A lane with no usable mate coordinates still names a contig, and that contig
-// is still worth navigating to — which is what every click did before the
-// coordinates existed. Answering `undefined` here would instead make the click
-// fall through to the ribbon pick and clear the selection.
-test('a mark with no mate coordinates still resolves its contig', () => {
+// A COLLAPSED MATE SPAN IS A COORDINATE, not a missing one. It used to come
+// back as a bare contig, which is the whole-chromosome answer these coordinates
+// exist to replace — and on the `displayed` class that answer is the
+// region-replacing navigation, since the caller's scroll branch needs somewhere
+// to scroll TO. `OFFSCREEN_MATE_NAV_MIN_BP` frames a zero-width locus the same
+// way it frames a narrow one, so the caller needs no third case.
+test('a mark whose mate span collapses resolves to the point, not the contig', () => {
   const layout = {
     ...params,
     datasets: [data([[100, 400]], ['ctgB'], [[0, 0]])],
@@ -937,6 +939,7 @@ test('a mark with no mate coordinates still resolves its contig', () => {
   expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
     refName: 'ctgB',
     displayed: false,
+    locus: { start: 0, end: 0 },
   })
 })
 

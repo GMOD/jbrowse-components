@@ -389,6 +389,36 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
   })
 })
 
+// A ZERO-WIDTH MATE SPAN IS STILL A PLACE. Dropped, the click fell back to the
+// whole contig — the answer these coordinates exist to replace — and on this
+// class of mark that fallback is `navToLocString`, which replaces the regions of
+// the very row the mark says already has the contig. `displayed` and the locus
+// therefore travel as a pair rather than as two optionals.
+test('a mark whose mate span collapses still resolves to a place', () => {
+  const point = { ...culled('scrolledAway', [100_000, 100_050]) }
+  point.mateStarts = Float64Array.from([7_000])
+  point.mateEnds = Float64Array.from([7_000])
+  const model = bothSides({
+    linearSyntenyDisplays: [
+      {
+        featureData: {
+          offscreenMates: mates(0),
+          targetOffscreenMates: mates(0),
+        },
+        culledRibbonMates: {
+          onQueryAxis: culled('inBand', [0, 50]),
+          onTargetAxis: point,
+        },
+      },
+    ],
+  })
+  expect(offscreenMateNavHit(withBand(model), 1, 99)).toMatchObject({
+    refName: 'scrolledAway',
+    displayed: true,
+    locus: { start: 7_000, end: 7_000 },
+  })
+})
+
 // The ring, and why the lower strip waits. A culled target-axis mark is an
 // alignment whose query end is off the row above, so a single fetch holds only
 // the ones inside its pan buffer — the strip would stop at the fetch window's
