@@ -78,7 +78,12 @@ function runCapture(args, timeout) {
   })
 }
 
-export async function captureAll({ candidates, trackIds, assembly, instance, configUrl, outDir, captureBin, width, height, scale, settle, timeout, onProgress }) {
+// A failed capture costs its card the picture and nothing else: the run carries
+// on and the page says so. That is the right call for a locus that genuinely
+// will not draw, and the wrong one for a flake — Chromium drops a "detached
+// Frame" often enough that an unretried build ships a hole. So each candidate
+// gets a second attempt, and only a locus that fails twice is reported.
+export async function captureAll({ candidates, trackIds, assembly, instance, configUrl, outDir, captureBin, width, height, scale, settle, timeout, attempts = 2, onProgress }) {
   fs.mkdirSync(outDir, { recursive: true })
   const results = []
   for (const c of candidates) {
@@ -86,25 +91,31 @@ export async function captureAll({ candidates, trackIds, assembly, instance, con
     const specPath = path.join(outDir, `.${c.id}.session.json`)
     const out = path.join(outDir, `${c.id}.png`)
     fs.writeFileSync(specPath, JSON.stringify(session))
-    const { ok, err } = await runCapture(
-      [
-        captureBin,
-        '--instance', instance,
-        '--config', configUrl,
-        '--session', specPath,
-        '--width', String(width),
-        '--height', String(height),
-        '--scale', String(scale),
-        '--settle', String(settle),
-        '--timeout', String(timeout),
-        '-o', out,
-      ],
-      timeout,
-    )
+    let ok = false
+    let err = ''
+    let tries = 0
+    while (!ok && tries < attempts) {
+      tries++
+      ;({ ok, err } = await runCapture(
+        [
+          captureBin,
+          '--instance', instance,
+          '--config', configUrl,
+          '--session', specPath,
+          '--width', String(width),
+          '--height', String(height),
+          '--scale', String(scale),
+          '--settle', String(settle),
+          '--timeout', String(timeout),
+          '-o', out,
+        ],
+        timeout,
+      ))
+    }
     const note = ok ? '' : err.split('\n').slice(-2).join(' ').slice(0, 300)
     fs.unlinkSync(specPath)
-    results.push({ id: c.id, ok, note, file: ok ? path.basename(out) : null })
-    onProgress?.(c, ok, note)
+    results.push({ id: c.id, ok, note, tries, file: ok ? path.basename(out) : null })
+    onProgress?.(c, ok, note, tries)
   }
   return results
 }

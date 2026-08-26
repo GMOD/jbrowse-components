@@ -22,7 +22,8 @@ node demo/tiberius-portal/bin/make-portal.mjs \
   --rnaseq-name "RNA-seq · brain (HBR)" \
   --rnaseq https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam \
   --rnaseq-name "RNA-seq · universal reference (UHR)" \
-  --assembly hg38 --region chr22 --max 2 --height 820 \
+  --rnaseq-height 110 \
+  --assembly hg38 --region chr22 --max 2 --height 560 \
   --prediction-name "Tiberius predictions" --reference-name "GENCODE 47" \
   --with-app --inline-images \
   --public-config https://jbrowse.org/demos/tiberius_review/config.json \
@@ -77,6 +78,12 @@ pictures do not depend on the deploy having happened yet; `--public-config` is
 what points the links at the deployed config instead of the local one. The
 `jbrowse/` directory the run produces is not uploaded.
 
-`--height 820` is the capture size, raised from the default 400 to fit four
-tracks. `--max 2` keeps two candidates per class. The merged-model class has
-only one member on chr22, so the portal has seven cards rather than eight.
+`--rnaseq-height 110` shortens the two evidence lanes, which open 250px deep and
+spend most of that on whitespace under a thin pileup; at 110 the coverage and
+the junction arcs survive and four tracks fit a 560px capture. It rides in the
+track config rather than in the link because the config is the one place the
+picture and the live view both read — `displayDefaults` postdates the released
+JBrowse, and a session spec's tracks are ids, so a track written as an object to
+hang settings off resolves to nothing at all. `--max 2` keeps two candidates per
+class. The merged-model class has only one member on chr22, so the portal has
+seven cards rather than eight.

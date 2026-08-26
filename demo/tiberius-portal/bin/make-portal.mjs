@@ -55,6 +55,10 @@ STRONGLY RECOMMENDED
 OPTIONAL
   --rnaseq <bam>         evidence track, repeatable. Appears in every capture
                          and every live link.
+  --rnaseq-height <px>   starting height of an evidence lane. Left alone a BAM
+                         opens 250px deep, which at gene scale is mostly the
+                         whitespace under a thin pileup; ~110 keeps the coverage
+                         and the junction arcs and fits four lanes in a capture.
   --rnaseq-name <s>      label for the evidence track, repeatable and paired
                          with --rnaseq in order. Two unlabelled tracks are
                          "RNA-seq 1" and "RNA-seq 2", which says nothing about
@@ -124,6 +128,8 @@ function parseArgs(argv) {
       o.rnaseq.push(next())
     } else if (a === '--rnaseq-name') {
       o.rnaseqName.push(next())
+    } else if (a === '--rnaseq-height') {
+      o.rnaseqHeight = +next()
     } else if (a === '--assembly') {
       o.assembly = next()
     } else if (a === '--region') {
@@ -234,6 +240,7 @@ const config = buildConfig({
   referenceRef,
   rnaRefs,
   rnaNames: opts.rnaseqName,
+  rnaHeight: opts.rnaseqHeight,
   predictionName:
     opts.predictionName ||
     path.basename(opts.prediction).replace(/\.gff3?(\.gz)?$/i, ''),
@@ -336,18 +343,21 @@ if (opts.capture && candidates.length) {
       scale: opts.scale,
       settle: 900,
       timeout: 90000,
-      onProgress: (c, ok, note) => {
+      onProgress: (c, ok, note, tries) => {
+        const retried = tries > 1 ? ` (${tries} tries)` : ''
         console.log(
-          `  ${ok ? 'ok  ' : 'FAIL'} ${c.id} ${c.refName}:${c.start + 1}-${c.end}${ok ? '' : ` — ${note}`}`,
+          `  ${ok ? 'ok  ' : 'FAIL'} ${c.id} ${c.refName}:${c.start + 1}-${c.end}${retried}${ok ? '' : ` — ${note}`}`,
         )
       },
     })
   } finally {
     await server.close()
   }
-  const failed = captured.filter(c => !c.ok).length
-  if (failed) {
-    console.log(`  ${failed} capture(s) failed; their cards show the link only`)
+  const failed = captured.filter(c => !c.ok)
+  if (failed.length) {
+    console.log(
+      `  ${failed.length} capture(s) failed after ${failed[0].tries} tries, so their cards show the link only: ${failed.map(c => c.id).join(', ')}`,
+    )
   }
 }
 

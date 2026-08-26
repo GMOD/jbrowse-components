@@ -50,7 +50,14 @@
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://jbrowse.org/demos/tiberius_review/HBR_brain_rnaseq_chr22.bam"
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "rnaseq_1-LinearAlignmentsDisplay",
+          "height": 110
+        }
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -61,7 +68,14 @@
       "adapter": {
         "type": "BamAdapter",
         "uri": "https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam"
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "rnaseq_2-LinearAlignmentsDisplay",
+          "height": 110
+        }
+      ]
     }
   ],
   "defaultSession": {

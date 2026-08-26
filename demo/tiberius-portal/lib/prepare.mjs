@@ -121,7 +121,7 @@ export function prepareBam(input, outDir) {
   return path.basename(target)
 }
 
-export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, referenceRef, rnaRefs, rnaNames = [], predictionName, referenceName }) {
+export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, referenceRef, rnaRefs, rnaNames = [], rnaHeight, predictionName, referenceName }) {
   const uri = f => (isUrl(f) ? f : `data/${f}`)
   const tracks = [
     {
@@ -144,14 +144,30 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, ref
     })
   }
   rnaRefs.forEach((r, i) => {
-    tracks.push({
+    const trackId = `rnaseq_${i + 1}`
+    const track = {
       type: 'AlignmentsTrack',
-      trackId: `rnaseq_${i + 1}`,
+      trackId,
       name: rnaNames[i] || (rnaRefs.length > 1 ? `RNA-seq ${i + 1}` : 'RNA-seq'),
       category: ['Evidence'],
       assemblyNames: [assembly],
       adapter: { type: 'BamAdapter', uri: uri(r) },
-    })
+    }
+    // A display block in the TRACK CONFIG is the one way to stage a lane that
+    // both halves of a card obey, because both read this file. Neither of the
+    // other two routes works on a released JBrowse: `displayDefaults` postdates
+    // it, and a session spec's tracks are ids, so a track written as an object
+    // to hang settings off resolves to nothing at all.
+    if (rnaHeight) {
+      track.displays = [
+        {
+          type: 'LinearAlignmentsDisplay',
+          displayId: `${trackId}-LinearAlignmentsDisplay`,
+          height: rnaHeight,
+        },
+      ]
+    }
+    tracks.push(track)
   })
 
   const asm = {
