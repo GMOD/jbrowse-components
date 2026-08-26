@@ -16,6 +16,11 @@
   --keep: #2c7a55; --keep-soft: #e2f2ea;
   --reject: #b04238; --reject-soft: #fbe8e6;
   --edit: #96681a; --edit-soft: #f9eed8;
+  --on-cls: #fff;
+  --c-merge: #6d28d9; --c-merge-soft: #f3e8ff;
+  --c-structure-conflict: #b45309; --c-structure-conflict-soft: #ffedd5;
+  --c-novel-locus: #0f766e; --c-novel-locus-soft: #ccfbf1;
+  --c-novel-coding: #1d4ed8; --c-novel-coding-soft: #dbeafe;
   --shadow: 0 1px 2px rgba(19,24,32,.06), 0 8px 24px -12px rgba(19,24,32,.18);
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -25,6 +30,11 @@
   --keep: #62bd91; --keep-soft: #17301f;
   --reject: #e88b80; --reject-soft: #351c1c;
   --edit: #d9ad5c; --edit-soft: #32270f;
+  --on-cls: #10131a;
+  --c-merge: #c4b5fd; --c-merge-soft: #2a2148;
+  --c-structure-conflict: #f0b27a; --c-structure-conflict-soft: #3a2a14;
+  --c-novel-locus: #5eead4; --c-novel-locus-soft: #10312e;
+  --c-novel-coding: #93b4fc; --c-novel-coding-soft: #1b2a4d;
   --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
 } }
 :root[data-theme="dark"] {
@@ -34,8 +44,17 @@
   --keep: #62bd91; --keep-soft: #17301f;
   --reject: #e88b80; --reject-soft: #351c1c;
   --edit: #d9ad5c; --edit-soft: #32270f;
+  --on-cls: #10131a;
+  --c-merge: #c4b5fd; --c-merge-soft: #2a2148;
+  --c-structure-conflict: #f0b27a; --c-structure-conflict-soft: #3a2a14;
+  --c-novel-locus: #5eead4; --c-novel-locus-soft: #10312e;
+  --c-novel-coding: #93b4fc; --c-novel-coding-soft: #1b2a4d;
   --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
 }
+[data-cls="merge"] { --cls: var(--c-merge); --cls-soft: var(--c-merge-soft); }
+[data-cls="structure-conflict"] { --cls: var(--c-structure-conflict); --cls-soft: var(--c-structure-conflict-soft); }
+[data-cls="novel-locus"] { --cls: var(--c-novel-locus); --cls-soft: var(--c-novel-locus-soft); }
+[data-cls="novel-coding"] { --cls: var(--c-novel-coding); --cls-soft: var(--c-novel-coding-soft); }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--ground); color: var(--ink);
@@ -58,6 +77,8 @@ h1 { font-family: "Familjen Grotesk", sans-serif; font-size: 34px; font-weight: 
 .stat { display: flex; flex-direction: column; gap: 1px; }
 .stat .n { font-family: "IBM Plex Mono", monospace; font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .stat .k { font-size: 11.5px; color: var(--muted); }
+.stat.agrees .n { color: var(--keep); }
+.stat.flagged .n { color: var(--edit); }
 .rule { width: 1px; align-self: stretch; background: var(--line); }
 .progress { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 5px; }
 .progress .r { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
@@ -77,18 +98,20 @@ button { cursor: pointer; }
 button:hover { background: var(--surface-2); }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button[disabled] { opacity: .45; cursor: not-allowed; }
-.filters button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.filters button { display: inline-flex; align-items: center; gap: 7px; }
+.filters button[data-cls]:not([data-cls="all"])::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--cls); }
+.filters button[aria-pressed="true"] { background: var(--cls-soft, var(--accent-soft)); border-color: var(--cls, var(--accent)); color: var(--cls, var(--accent)); font-weight: 600; }
 .filters .count { font-family: "IBM Plex Mono", monospace; opacity: .75; margin-left: 5px; font-variant-numeric: tabular-nums; }
 input[type="search"] { min-width: 190px; }
 .spacer { margin-left: auto; }
 
 .cards { display: flex; flex-direction: column; gap: 20px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
-.card[data-verdict="keep"] { border-color: var(--keep); }
-.card[data-verdict="reject"] { border-color: var(--reject); }
-.card[data-verdict="edit"] { border-color: var(--edit); }
-.card-head { display: flex; flex-wrap: wrap; gap: 9px 15px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-.chip { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.card { background: var(--surface); border: 1px solid var(--verdict, var(--line)); border-left: 5px solid var(--cls, var(--verdict, var(--line))); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+.card[data-verdict="keep"] { --verdict: var(--keep); }
+.card[data-verdict="reject"] { --verdict: var(--reject); }
+.card[data-verdict="edit"] { --verdict: var(--edit); }
+.card-head { background: var(--cls-soft); display: flex; flex-wrap: wrap; gap: 9px 15px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.chip { font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; background: var(--cls, var(--accent)); color: var(--on-cls); white-space: nowrap; }
 .model { font-family: "IBM Plex Mono", monospace; font-size: 14px; font-weight: 500; }
 .genes { font-weight: 600; }
 .meta { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -198,8 +221,8 @@ footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color:
       '<div class="row1">' +
         '<div class="stat"><span class="n">' + DATA.total + '</span><span class="k">models predicted</span></div>' +
         '<div class="rule"></div>' +
-        '<div class="stat"><span class="n">' + DATA.agrees + '</span><span class="k">agree with reference</span></div>' +
-        '<div class="stat"><span class="n">' + DATA.flagged + '</span><span class="k">flagged</span></div>' +
+        '<div class="stat agrees"><span class="n">' + DATA.agrees + '</span><span class="k">agree with reference</span></div>' +
+        '<div class="stat flagged"><span class="n">' + DATA.flagged + '</span><span class="k">flagged</span></div>' +
         '<div class="rule"></div>' +
         '<div class="progress"><div class="r"><span>' + done + ' of ' + n + ' judged</span>' +
         '<span>' + c.keep + ' keep · ' + c.edit + ' edit · ' + c.reject + ' reject</span></div>' +
@@ -260,7 +283,7 @@ footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color:
       var pic = c.img
         ? '<img class="shot" loading="lazy" alt="Genome view of ' + esc(c.id) + '" src="' + esc(c.img) + '">'
         : '<div class="missing">No capture for this model — the portal was built with --no-capture, or this one failed. The link still opens it live.</div>'
-      return '<article class="card" data-verdict="' + esc(v) + '">' +
+      return '<article class="card" data-cls="' + esc(c.cls) + '" data-verdict="' + esc(v) + '">' +
         '<div class="card-head">' +
           '<span class="chip">' + esc(meta.label) + '</span>' +
           '<span class="model">' + esc(c.id) + '</span>' +

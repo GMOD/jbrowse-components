@@ -24,6 +24,15 @@
     --reject-soft: #fbe8e6;
     --edit: #96681a;
     --edit-soft: #f9eed8;
+    --on-cls: #fff;
+    --c-merge: #6d28d9;
+    --c-merge-soft: #f3e8ff;
+    --c-structure-conflict: #b45309;
+    --c-structure-conflict-soft: #ffedd5;
+    --c-novel-locus: #0f766e;
+    --c-novel-locus-soft: #ccfbf1;
+    --c-novel-coding: #1d4ed8;
+    --c-novel-coding-soft: #dbeafe;
     --shadow:
       0 1px 2px rgba(19, 24, 32, 0.06), 0 8px 24px -12px rgba(19, 24, 32, 0.18);
   }
@@ -44,6 +53,15 @@
       --reject-soft: #351c1c;
       --edit: #d9ad5c;
       --edit-soft: #32270f;
+      --on-cls: #10131a;
+      --c-merge: #c4b5fd;
+      --c-merge-soft: #2a2148;
+      --c-structure-conflict: #f0b27a;
+      --c-structure-conflict-soft: #3a2a14;
+      --c-novel-locus: #5eead4;
+      --c-novel-locus-soft: #10312e;
+      --c-novel-coding: #93b4fc;
+      --c-novel-coding-soft: #1b2a4d;
       --shadow:
         0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
     }
@@ -64,9 +82,34 @@
     --reject-soft: #351c1c;
     --edit: #d9ad5c;
     --edit-soft: #32270f;
+    --on-cls: #10131a;
+    --c-merge: #c4b5fd;
+    --c-merge-soft: #2a2148;
+    --c-structure-conflict: #f0b27a;
+    --c-structure-conflict-soft: #3a2a14;
+    --c-novel-locus: #5eead4;
+    --c-novel-locus-soft: #10312e;
+    --c-novel-coding: #93b4fc;
+    --c-novel-coding-soft: #1b2a4d;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
   }
 
+  [data-cls='merge'] {
+    --cls: var(--c-merge);
+    --cls-soft: var(--c-merge-soft);
+  }
+  [data-cls='structure-conflict'] {
+    --cls: var(--c-structure-conflict);
+    --cls-soft: var(--c-structure-conflict-soft);
+  }
+  [data-cls='novel-locus'] {
+    --cls: var(--c-novel-locus);
+    --cls-soft: var(--c-novel-locus-soft);
+  }
+  [data-cls='novel-coding'] {
+    --cls: var(--c-novel-coding);
+    --cls-soft: var(--c-novel-coding-soft);
+  }
   * {
     box-sizing: border-box;
   }
@@ -159,6 +202,12 @@
     color: var(--muted);
     letter-spacing: 0.04em;
   }
+  .stat.agrees .n {
+    color: var(--keep);
+  }
+  .stat.flagged .n {
+    color: var(--edit);
+  }
   .rule {
     width: 1px;
     align-self: stretch;
@@ -239,22 +288,24 @@
   }
   .card {
     background: var(--surface);
-    border: 1px solid var(--line);
+    border: 1px solid var(--verdict, var(--line));
+    border-left: 5px solid var(--cls, var(--verdict, var(--line)));
     border-radius: 10px;
     overflow: hidden;
     box-shadow: var(--shadow);
   }
   .card[data-verdict='keep'] {
-    border-color: var(--keep);
+    --verdict: var(--keep);
   }
   .card[data-verdict='reject'] {
-    border-color: var(--reject);
+    --verdict: var(--reject);
   }
   .card[data-verdict='edit'] {
-    border-color: var(--edit);
+    --verdict: var(--edit);
   }
 
   .card-head {
+    background: var(--cls-soft);
     display: flex;
     flex-wrap: wrap;
     gap: 10px 16px;
@@ -269,8 +320,8 @@
     text-transform: uppercase;
     padding: 3px 8px;
     border-radius: 5px;
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--cls, var(--accent));
+    color: var(--on-cls);
     white-space: nowrap;
   }
   .model {
@@ -618,8 +669,8 @@
     el.innerHTML =
       '<div class="stat"><span class="n">' + DATA.total + '</span><span class="k">models predicted</span></div>' +
       '<div class="rule"></div>' +
-      '<div class="stat"><span class="n">' + DATA.agrees + '</span><span class="k">agree with GENCODE</span></div>' +
-      '<div class="stat"><span class="n">' + DATA.flagged + '</span><span class="k">flagged for review</span></div>' +
+      '<div class="stat agrees"><span class="n">' + DATA.agrees + '</span><span class="k">agree with GENCODE</span></div>' +
+      '<div class="stat flagged"><span class="n">' + DATA.flagged + '</span><span class="k">flagged for review</span></div>' +
       '<div class="rule"></div>' +
       '<div class="progress">' +
         '<div class="row"><span>' + done + ' of ' + n + ' judged</span><span>' +
@@ -652,7 +703,7 @@
       const v = STATE.verdicts[c.id] || ''
       const genes = c.genes && c.genes.length ? c.genes.join(' + ') : 'no reference gene here'
       const gap = c.gapBp ? ' · ' + c.gapBp.toLocaleString() + ' bp apart' : ''
-      return '<article class="card" data-verdict="' + esc(v) + '">' +
+      return '<article class="card" data-cls="' + esc(c.cls) + '" data-verdict="' + esc(v) + '">' +
         '<div class="card-head">' +
           '<span class="chip">' + esc(meta.label) + '</span>' +
           '<span class="model">' + esc(c.id) + '</span>' +
