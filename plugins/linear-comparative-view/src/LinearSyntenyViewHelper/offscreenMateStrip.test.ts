@@ -395,9 +395,11 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
 // the very row the mark says already has the contig. `displayed` and the locus
 // therefore travel as a pair rather than as two optionals.
 test('a mark whose mate span collapses still resolves to a place', () => {
-  const point = { ...culled('scrolledAway', [100_000, 100_050]) }
-  point.mateStarts = Float64Array.from([7_000])
-  point.mateEnds = Float64Array.from([7_000])
+  const point = {
+    ...culled('scrolledAway', [100_000, 100_050]),
+    mateStarts: Float64Array.from([7_000]),
+    mateEnds: Float64Array.from([7_000]),
+  }
   const model = bothSides({
     linearSyntenyDisplays: [
       {

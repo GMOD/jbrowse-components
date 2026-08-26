@@ -293,3 +293,59 @@ space over `displayedRegions` and a `RowFrame` lane cannot consume it, so what
 actually moves is the union-of-spans idea plus `spreadDecision`'s coverage and
 `partialShare` gating — the hard-won part, and the reason to build lane-per-
 region on the follow side's concepts rather than a second time here.
+
+**The discrete choices are the unstable ones, and the orientation is the one
+that costs.** Everything continuous about a lane is quantised against exactly
+this — `SCALE_LADDER` for the scale, `SHIFT_QUANTUM_PX` for the offset,
+whole-fetch density for the lane order — because "fitting a lane exactly to its
+placements gives it an arbitrary bp/px that also MOVES". The two DISCRETE
+choices, which contig a lane is and which way it reads, are bare comparisons.
+SyntenyFollow arrived at the opposite arrangement and wrote down why:
+`preferIncumbent` is applied to its discrete choices and to nothing else,
+because a window panned across a fusion junction moves summed overlap from one
+mate contig to the other and the two are equal at the join.
+
+Measured on the deployed `demos/grape_peach_cacao` — a 2Mb window walked across
+grape chr1 in 100kb steps, 259 steps, every lane read out of `alignRowFrames`
+itself. A CHANGE IS NOT A FLICKER, so a lane moving from one syntenic block to
+the next and staying is counted apart from one that leaves an answer and comes
+back within a fifth of a window.
+
+<!-- BEGIN GENERATED MEASUREMENT multiway-lane-stability -->
+
+| lane        | contigs seen | contig chg | contig osc | drawn flip chg | drawn flip osc | fallback flip chg | fallback flip osc | empty steps |
+| ----------- | -----------: | ---------: | ---------: | -------------: | -------------: | ----------------: | ----------------: | ----------: |
+| peach       |            2 |          3 |          0 |             10 |              2 |                10 |                 2 |          33 |
+| citrus      |            3 |          7 |          0 |             10 |              1 |                11 |                 1 |          33 |
+| cacao       |            1 |          2 |          0 |             15 |              2 |                17 |                 2 |          33 |
+| poplar      |            5 |          8 |          0 |             16 |              3 |                16 |                 4 |          33 |
+| tomato      |            4 |          8 |          0 |             21 |              7 |                18 |                 7 |          33 |
+| arabidopsis |            4 |         12 |          3 |             20 |              7 |                15 |                 5 |          34 |
+
+<!-- END GENERATED MEASUREMENT multiway-lane-stability -->
+
+**The contig vote does not need an incumbent**, which is what the probe was
+written to check and the opposite of what it found: five of six lanes never
+oscillate. Weighting a contig by how much of the ANCHOR it explains — the fix
+above, that made it agree with `resolvePanel` — turns out to be decisive enough
+on real paleopolyploid data that an incumbent would have nothing to hold.
+
+**The orientation does.** Every lane mirrors itself and mirrors back over a pan
+the reader sees as smooth, and a whole-lane mirror is the loudest thing a lane
+can do. Both of its votes move in the same places, so `readsBackwards`
+overriding `computeRowFrame`'s anchor-order sign sum buys nothing here — which
+is consistent with the two being the same measurement at lane 1 and correlated
+below it. Neither carries the deadband the follow puts on this exact decision
+(`NEARLY_ALL`, 0.9, in `wantReversedFor`), and a balanced vote was read as
+"forwards" until 2026-08-26, when it became the `undefined` that defers.
+
+A deadband alone does not close it, which is why this is parked rather than
+tuned: an ambiguous window has to answer something, and the follow's answer is
+to leave the row as it was — `orientedKey`, applied once per DECISION rather
+than once per settle. `alignRowFrames` is a pure computed feeding the lane fetch
+specs and holds no previous value. So the choice is between a stateless
+tie-break that always answers the same way, which collapses the coin-toss
+windows onto one answer without new state, and carrying the previous frames the
+way `decideSpread` carries `previous`, which is faithful to the follow and puts
+memory into a computed. `multiwayLaneStability.probe.ts` takes the numbers
+again either way.
