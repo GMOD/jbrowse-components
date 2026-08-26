@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#129516;</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --ground: #f4f6f8; --surface: #fff; --surface-2: #eaeef4;
+  --ink: #131820; --muted: #5a6474; --line: #dde2ea; --line-strong: #c3cbd8;
+  --accent: #34457f; --accent-soft: #e7ebf7;
+  --keep: #2c7a55; --keep-soft: #e2f2ea;
+  --reject: #b04238; --reject-soft: #fbe8e6;
+  --edit: #96681a; --edit-soft: #f9eed8;
+  --shadow: 0 1px 2px rgba(19,24,32,.06), 0 8px 24px -12px rgba(19,24,32,.18);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #10131a; --surface: #181d26; --surface-2: #212733;
+  --ink: #e6eaf2; --muted: #98a2b3; --line: #2b3240; --line-strong: #3a4356;
+  --accent: #93a6ea; --accent-soft: #222a44;
+  --keep: #62bd91; --keep-soft: #17301f;
+  --reject: #e88b80; --reject-soft: #351c1c;
+  --edit: #d9ad5c; --edit-soft: #32270f;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+} }
+:root[data-theme="dark"] {
+  --ground: #10131a; --surface: #181d26; --surface-2: #212733;
+  --ink: #e6eaf2; --muted: #98a2b3; --line: #2b3240; --line-strong: #3a4356;
+  --accent: #93a6ea; --accent-soft: #222a44;
+  --keep: #62bd91; --keep-soft: #17301f;
+  --reject: #e88b80; --reject-soft: #351c1c;
+  --edit: #d9ad5c; --edit-soft: #32270f;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-family: "Familjen Grotesk", sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin: 0; text-wrap: balance; }
+.eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lede { max-width: 66ch; color: var(--muted); margin: 0; }
+.lede strong { color: var(--ink); font-weight: 600; }
+.masthead { display: flex; flex-direction: column; gap: 12px; }
+
+.controls {
+  position: sticky; top: 0; z-index: 10; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;
+}
+.row1 { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; }
+.stat { display: flex; flex-direction: column; gap: 1px; }
+.stat .n { font-family: "IBM Plex Mono", monospace; font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .k { font-size: 11.5px; color: var(--muted); }
+.rule { width: 1px; align-self: stretch; background: var(--line); }
+.progress { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 5px; }
+.progress .r { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; display: flex; }
+.bar span { height: 100%; transition: width .25s ease; }
+.b-keep { background: var(--keep); } .b-edit { background: var(--edit); } .b-reject { background: var(--reject); }
+
+.row2 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+button, select, input[type="search"] {
+  font: inherit; font-size: 13px; border-radius: 7px;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  padding: 6px 11px; transition: background .12s, border-color .12s, color .12s;
+}
+button { cursor: pointer; }
+button:hover { background: var(--surface-2); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button[disabled] { opacity: .45; cursor: not-allowed; }
+.filters button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.filters .count { font-family: "IBM Plex Mono", monospace; opacity: .75; margin-left: 5px; font-variant-numeric: tabular-nums; }
+input[type="search"] { min-width: 190px; }
+.spacer { margin-left: auto; }
+
+.cards { display: flex; flex-direction: column; gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+.card[data-verdict="keep"] { border-color: var(--keep); }
+.card[data-verdict="reject"] { border-color: var(--reject); }
+.card[data-verdict="edit"] { border-color: var(--edit); }
+.card-head { display: flex; flex-wrap: wrap; gap: 9px 15px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.chip { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.model { font-family: "IBM Plex Mono", monospace; font-size: 14px; font-weight: 500; }
+.genes { font-weight: 600; }
+.meta { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.why { padding: 12px 18px 0; color: var(--muted); font-size: 14px; max-width: 78ch; }
+.shot { display: block; width: 100%; height: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 13px; background: #fff; }
+.missing { margin: 13px 0 0; padding: 26px 18px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface-2); color: var(--muted); font-size: 13.5px; }
+.card-foot { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 13px 18px; }
+.verdicts { display: flex; gap: 7px; }
+.verdicts button[aria-pressed="true"][data-v="keep"] { background: var(--keep-soft); border-color: var(--keep); color: var(--keep); font-weight: 600; }
+.verdicts button[aria-pressed="true"][data-v="edit"] { background: var(--edit-soft); border-color: var(--edit); color: var(--edit); font-weight: 600; }
+.verdicts button[aria-pressed="true"][data-v="reject"] { background: var(--reject-soft); border-color: var(--reject); color: var(--reject); font-weight: 600; }
+.next { font-size: 13px; color: var(--muted); }
+.next b { color: var(--ink); font-weight: 600; }
+a.live { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); border-radius: 7px; padding: 6px 13px; white-space: nowrap; }
+a.live:hover { background: var(--accent-soft); }
+a.live:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.empty { padding: 44px 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line-strong); border-radius: 10px; }
+.note { font-size: 13px; color: var(--muted); background: var(--surface-2); border-radius: 8px; padding: 10px 14px; }
+footer { border-top: 1px solid var(--line); padding-top: 20px; color: var(--muted); font-size: 13.5px; display: flex; flex-direction: column; gap: 7px; max-width: 78ch; }
+footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 640px) { h1 { font-size: 27px; } .meta { margin-left: 0; width: 100%; } a.live { margin-left: 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1 id="title"></h1>
+    <p class="lede" id="lede"></p>
+  </div>
+  <div class="controls" id="controls"></div>
+  <div class="cards" id="cards"></div>
+  <footer id="footer"></footer>
+</div>
+
+<script id="portal-data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  var DATA = JSON.parse(document.getElementById('portal-data').textContent)
+  var KEY = 'gene-review:' + DATA.portalId
+  var VERDICTS = [
+    { v: 'keep', label: 'Keep' },
+    { v: 'edit', label: 'Needs editing' },
+    { v: 'reject', label: 'Reject' },
+  ]
+  var state = { verdicts: {}, cls: 'all', verdictFilter: 'all', q: '' }
+
+  try {
+    var saved = localStorage.getItem(KEY)
+    if (saved) state.verdicts = JSON.parse(saved).verdicts || {}
+  } catch (e) { /* private window, or site data blocked */ }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ verdicts: state.verdicts })) } catch (e) {}
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
+    })
+  }
+
+  function counts() {
+    var c = { keep: 0, edit: 0, reject: 0 }
+    Object.keys(state.verdicts).forEach(function (k) { if (c[state.verdicts[k]] !== undefined) c[state.verdicts[k]]++ })
+    return c
+  }
+
+  function visible() {
+    var q = state.q.trim().toLowerCase()
+    return DATA.cards.filter(function (c) {
+      if (state.cls !== 'all' && c.cls !== state.cls) return false
+      var v = state.verdicts[c.id] || ''
+      if (state.verdictFilter === 'unreviewed' && v) return false
+      if (state.verdictFilter !== 'all' && state.verdictFilter !== 'unreviewed' && v !== state.verdictFilter) return false
+      if (q) {
+        var hay = (c.id + ' ' + (c.genes || []).join(' ') + ' ' + c.loc).toLowerCase()
+        if (hay.indexOf(q) === -1) return false
+      }
+      return true
+    })
+  }
+
+  function renderHead() {
+    document.getElementById('eyebrow').textContent = DATA.eyebrow
+    document.getElementById('title').textContent = DATA.title
+    document.getElementById('lede').innerHTML = DATA.lede
+    document.getElementById('footer').innerHTML = DATA.footer
+  }
+
+  function renderControls() {
+    var c = counts()
+    var n = DATA.cards.length
+    var done = c.keep + c.edit + c.reject
+    var pct = function (x) { return (n ? (x / n) * 100 : 0) + '%' }
+    var clsCounts = {}
+    DATA.cards.forEach(function (x) { clsCounts[x.cls] = (clsCounts[x.cls] || 0) + 1 })
+
+    var chips = [{ k: 'all', label: 'All', n: n }].concat(
+      DATA.classOrder.filter(function (k) { return clsCounts[k] }).map(function (k) {
+        return { k: k, label: DATA.classes[k].label, n: clsCounts[k] }
+      }),
+    )
+
+    document.getElementById('controls').innerHTML =
+      '<div class="row1">' +
+        '<div class="stat"><span class="n">' + DATA.total + '</span><span class="k">models predicted</span></div>' +
+        '<div class="rule"></div>' +
+        '<div class="stat"><span class="n">' + DATA.agrees + '</span><span class="k">agree with reference</span></div>' +
+        '<div class="stat"><span class="n">' + DATA.flagged + '</span><span class="k">flagged</span></div>' +
+        '<div class="rule"></div>' +
+        '<div class="progress"><div class="r"><span>' + done + ' of ' + n + ' judged</span>' +
+        '<span>' + c.keep + ' keep · ' + c.edit + ' edit · ' + c.reject + ' reject</span></div>' +
+        '<div class="bar"><span class="b-keep" style="width:' + pct(c.keep) + '"></span>' +
+        '<span class="b-edit" style="width:' + pct(c.edit) + '"></span>' +
+        '<span class="b-reject" style="width:' + pct(c.reject) + '"></span></div></div>' +
+      '</div>' +
+      '<div class="row2">' +
+        '<div class="filters">' +
+          chips.map(function (ch) {
+            return '<button data-cls="' + esc(ch.k) + '" aria-pressed="' + (state.cls === ch.k) + '">' +
+              esc(ch.label) + '<span class="count">' + ch.n + '</span></button>'
+          }).join('') +
+        '</div>' +
+        '<span class="sep"></span>' +
+        '<select id="vf" aria-label="Filter by verdict">' +
+          ['all|Any verdict', 'unreviewed|Unreviewed', 'keep|Keep', 'edit|Needs editing', 'reject|Reject']
+            .map(function (o) {
+              var p = o.split('|')
+              return '<option value="' + p[0] + '"' + (state.verdictFilter === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'
+            }).join('') +
+        '</select>' +
+        '<input type="search" id="q" placeholder="Find a model or gene" value="' + esc(state.q) + '">' +
+        '<span class="spacer"></span>' +
+        '<button id="export">Export decisions</button>' +
+        '<button id="reset"' + (done ? '' : ' disabled') + '>Reset</button>' +
+      '</div>'
+
+    document.querySelectorAll('.filters button').forEach(function (b) {
+      b.addEventListener('click', function () { state.cls = b.getAttribute('data-cls'); render() })
+    })
+    document.getElementById('vf').addEventListener('change', function (e) {
+      state.verdictFilter = e.target.value; render()
+    })
+    var q = document.getElementById('q')
+    q.addEventListener('input', function (e) {
+      state.q = e.target.value
+      renderCards()
+    })
+    document.getElementById('export').addEventListener('click', exportTsv)
+    document.getElementById('reset').addEventListener('click', function () {
+      state.verdicts = {}; save(); render()
+    })
+  }
+
+  function renderCards() {
+    var list = visible()
+    var host = document.getElementById('cards')
+    if (!list.length) {
+      host.innerHTML = '<div class="empty">No models match these filters.</div>'
+      return
+    }
+    host.innerHTML = list.map(function (c) {
+      var meta = DATA.classes[c.cls]
+      var v = state.verdicts[c.id] || ''
+      var genes = c.genes && c.genes.length ? c.genes.join(' + ') : 'no reference gene here'
+      var gap = c.gapBp ? ' · ' + c.gapBp.toLocaleString() + ' bp apart' : ''
+      var pic = c.img
+        ? '<img class="shot" loading="lazy" alt="Genome view of ' + esc(c.id) + '" src="' + esc(c.img) + '">'
+        : '<div class="missing">No capture for this model — the portal was built with --no-capture, or this one failed. The link still opens it live.</div>'
+      return '<article class="card" data-verdict="' + esc(v) + '">' +
+        '<div class="card-head">' +
+          '<span class="chip">' + esc(meta.label) + '</span>' +
+          '<span class="model">' + esc(c.id) + '</span>' +
+          '<span class="genes">' + esc(genes) + '</span>' +
+          '<span class="meta">' + esc(c.loc) + ' · ' + c.nExons + ' exons · ' + c.spanKb + ' kb · ' +
+            (c.strand === '-' ? 'minus' : 'plus') + ' strand' + gap + '</span>' +
+        '</div>' +
+        '<div class="why">' + esc(meta.why) + '</div>' + pic +
+        '<div class="card-foot">' +
+          '<div class="verdicts">' +
+            VERDICTS.map(function (b) {
+              return '<button data-id="' + esc(c.id) + '" data-v="' + b.v + '" aria-pressed="' + (v === b.v) + '">' + b.label + '</button>'
+            }).join('') +
+          '</div>' +
+          '<span class="next">Annotator action: <b>' + esc(meta.action) + '</b></span>' +
+          '<a class="live" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open in JBrowse</a>' +
+        '</div>' +
+      '</article>'
+    }).join('')
+
+    host.querySelectorAll('.verdicts button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var id = b.getAttribute('data-id')
+        var val = b.getAttribute('data-v')
+        if (state.verdicts[id] === val) delete state.verdicts[id]
+        else state.verdicts[id] = val
+        save()
+        render()
+      })
+    })
+  }
+
+  function tsv() {
+    var head = ['model_id', 'class', 'locus', 'exons', 'strand', 'reference_genes', 'verdict']
+    var lines = [head.join('\t')]
+    DATA.cards.forEach(function (c) {
+      lines.push([c.id, c.cls, c.loc, c.nExons, c.strand, (c.genes || []).join(';'), state.verdicts[c.id] || 'unreviewed'].join('\t'))
+    })
+    return lines.join('\n') + '\n'
+  }
+
+  function exportTsv() {
+    var blob = new Blob([tsv()], { type: 'text/tab-separated-values' })
+    var a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = DATA.portalId + '-decisions.tsv'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(function () { URL.revokeObjectURL(a.href) }, 1000)
+  }
+
+  function render() { renderHead(); renderControls(); renderCards() }
+  render()
+})()
+</script>
+</body>
+</html>
