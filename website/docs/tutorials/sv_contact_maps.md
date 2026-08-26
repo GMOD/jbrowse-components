@@ -119,32 +119,39 @@ track draws as a blank triangle with the answer in it.
 ## The inversion
 
 The demo opens on a heterozygous inversion NA12878 carries on chromosome 7,
-called by delly in the 1000 Genomes map. Both breakpoints are on screen, with
-two of the channels above the reads they were computed from.
+called by delly in the 1000 Genomes map. Both breakpoints are on screen and
+marked with a band, with two of the channels above the reads they were computed
+from.
 
-<Figure src="/img/sv_contact_maps/inversion.png" caption="The same-strand and discordant channels over one inversion call in NA12878, with the read cloud and the 1000 Genomes call under them. One cell carries the inversion in both channels; the discordant channel draws it over a scatter of ordinary long fragments." links="Open this view=sv_contact_maps/inversion" />
+<Figure src="/img/sv_contact_maps/inversion.png" caption="The same-strand and discordant channels over one inversion call in NA12878, with the read cloud and the 1000 Genomes call under them. Two cells carry the inversion in both channels, each with its upper edges running back to the marked breakpoints; the discordant channel draws them over a scatter of ordinary long fragments." links="Open this view=sv_contact_maps/inversion" />
 
-The same-strand channel has one bright cell in it. Its two coordinates are the
-two breakpoints, which is what an inversion does to a read pair: the sequence
+The same-strand channel has two bright cells in it and nothing else. A cell's
+two coordinates are the places its pairs' ends landed, and the two edges leaving
+the top of it run back to the diagonal at exactly those coordinates, which is
+where the bands are. That is what an inversion does to a read pair: the sequence
 between the breakpoints is flipped, so a fragment straddling one of them puts
-its two ends on the same strand instead of facing each other. Every such pair in
-the window lands in that one cell, and nothing else in the window puts a pair
-there.
+its two ends on the same strand instead of facing each other.
 
-The discordant channel below it holds the same cell and a scatter of faint ones
-around it. That channel takes every pair whose ends are far enough apart,
+Both cells reach the same bin on the right, and their left ends sit either side
+of a hole in the coverage below, a few kilobases the alignment carries no reads
+over. Each orientation class anchors on the side of the hole it can align to.
+The callset says as much in the record's own name: `CINV` is a complex
+inversion, and the call carries a confidence interval on each end.
+
+The discordant channel below it holds the same two cells and a scatter of faint
+ones around them. That channel takes every pair whose ends are far enough apart,
 whichever way they face, so the scatter is the tail of an ordinary library: real
 long fragments, at no particular pair of coordinates. Splitting by orientation
 is what separates one from the other, and it is why Cue's encoding has channels
 rather than a single image.
 
 The read cloud below the channels is the same evidence one pair at a time. Each
-pair is drawn at the position of its two ends, at a height set by how far apart
-they are, so the pairs the same-strand cell counted are the tall marks standing
-above the modal band. Turn it on from the alignments track menu with **Read
-connections → Show read cloud**.
+pair is drawn across the position of its two ends, at a depth set by how far
+apart they are, so the pairs the two cells counted are the long bar under the
+modal band. Turn it on from the alignments track menu with **Read connections →
+Show read cloud**.
 
-How many pairs the cell holds is a number, and `juicer_tools` will read it back
+How many pairs a cell holds is a number, and `juicer_tools` will read it back
 out of the file the track is drawing:
 
 ```bash
@@ -159,8 +166,8 @@ java -jar juicer_tools.jar dump observed NONE \
 ```
 
 Three columns come back: the two bin starts and the count. Sorting on the third
-puts the inversion at the top, and the first two columns are the coordinates the
-figure drew it at.
+puts the inversion's cells at the top, and the first two columns are the
+coordinates the figure drew each one at.
 
 ## The duplication that only depth sees
 
@@ -168,32 +175,33 @@ The other two loci in the slice are duplications, and the 1000 Genomes map calls
 both of them with genome-STRiP, which works from read depth alone. Open the one
 on chromosome 5.
 
-<Figure src="/img/sv_contact_maps/depth_only_duplication.png" caption="A duplication call in NA12878 with the discordant and outward channels above the depth channel. Neither pair channel puts a cell on the two breakpoints; the depth channel is at the top of its ramp." links="Open this view=sv_contact_maps/depth_only_duplication" />
+<Figure src="/img/sv_contact_maps/depth_only_duplication.png" caption="A duplication call in NA12878 with the same-strand and outward channels above the depth channel, and read depth under it. Both pair channels are empty across the marked breakpoints; the depth channel is at the top of its ramp and the coverage lane is raised between them." links="Open this view=sv_contact_maps/depth_only_duplication" />
 
-The depth channel lights up across the call, and neither pair channel puts a
-cell where the two breakpoints meet. The outward channel is the one a tandem
+The depth channel lights up across the call, and both pair channels draw an
+empty triangle over the same window. The outward channel is the one a tandem
 duplication is supposed to appear in: a fragment crossing the junction of a
 head-to-tail duplication has its two ends facing away from each other rather
-than toward each other. What the discordant channel does carry here is a scatter
-hugging the diagonal, pairs a kilobase or two longer than the modal insert,
-which is the tail of an ordinary library rather than a junction.
+than toward each other. Above it sits the same-strand channel the inversion
+filled, drawn at the same height and the same scale, so a cell joining these two
+breakpoints would land in the same place in either.
 
 The call was made on depth, the reads are in the demo, and no pair in them joins
 these two breakpoints. A duplication that landed somewhere else in the genome,
 or one whose junction sits inside a repeat long enough to swallow a fragment,
 leaves the same trace: a copy-number change with no junction under it. The
-inversion window a section ago is the same two pair channels with a junction in
+inversion window a section ago is the same pair channels with a junction in
 them.
 
-<Figure src="/img/sv_contact_maps/depth_channel.png" caption="The depth channel alone over the same duplication, framed with flat sequence on both sides. Two bright arms meet over the call, and the wedge directly under it stays pale. The coverage lane below rises between the same two coordinates." links="Open this view=sv_contact_maps/depth_channel" />
+<Figure src="/img/sv_contact_maps/depth_channel.png" caption="The depth channel alone over the same duplication, framed four times wider, with the coverage lane under it. The two marked breakpoints stand at the top corners of a pale wedge, with the channel's brightest cells on either side of it." links="Open this view=sv_contact_maps/depth_channel" />
 
 Framed wider, the channel has a shape rather than a bright patch, and the shape
 is what the encoding produces. A bin inside an interval of changed copy number
-differs from every bin outside it, which draws the two arms, and from no bin
-inside it, which leaves the wedge between them pale. The demo carries a second
-depth-only duplication on chromosome 17 to open the same way; it sits in a field
-of pseudogenes whose own depth swings as hard as the call does, which is what
-this channel looks like where mappability is against you.
+differs from the bins outside it and least from the bins inside it with it,
+which fills the two fields either side and leaves the wedge between the
+breakpoints pale. The demo carries a second depth-only duplication on chromosome
+17 to open the same way; it sits in a field of pseudogenes whose own depth
+swings as hard as the call does, which is what this channel looks like where
+mappability is against you.
 
 ## Back to the reads
 
@@ -203,7 +211,7 @@ orientation from the track menu, **Color by... → Pair orientation**.
 
 <Figure src="/img/sv_contact_maps/breakpoint_reads.png" caption="The pileup at the inversion's right breakpoint, colored by pair orientation. Two same-strand classes meet at one column, one on each side of it, with the library's ordinary pairs drawn in grey through both." links="Open this view=sv_contact_maps/breakpoint_reads" />
 
-The colored reads are the ones the same-strand cell counted. Which class a read
+The colored reads are the ones the same-strand cells counted. Which class a read
 falls in swaps at one column, because a pair reaching across the breakpoint from
 the left has both ends on one strand and a pair reaching across from the right
 has both ends on the other. The grey reads running through both sides are the

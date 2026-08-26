@@ -247,8 +247,8 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   sv_contact_maps: {
     // The depth channel over one duplication, which is the only figure on the
     // page carrying no callout paint. The other three are the inversion (two
-    // pills), the empty-pair-channel control (two more) and a bare pileup, and
-    // of those the pileup is the one frame that does not say "contact map".
+    // pills), the empty-pair-channel control (three more) and a bare pileup,
+    // and of those the pileup is the one frame that does not say "contact map".
     src: 'sv_contact_maps/depth_channel.png',
     band: [0.22, 1],
   },
