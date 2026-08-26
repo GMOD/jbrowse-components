@@ -370,10 +370,9 @@ band, per-row identity, and codon-view options.
 <!-- FILE_TYPES hic START -->
 
 <!-- prettier-ignore -->
-| Format | Adapter | Track type | Notes |
-| --- | --- | --- | --- |
-| .hic contact matrix | [](/docs/config/hicadapter) | [](/docs/config/hictrack) |  |
-| BAM/CRAM read pairs | [](/docs/config/alignmentscontactadapter) | [](/docs/config/hictrack) | Contacts computed from the reads in view, so it needs no `.hic` file and shows nothing zoomed out |
+| Format | Adapter | Track type |
+| --- | --- | --- |
+| .hic contact matrix | [](/docs/config/hicadapter) | [](/docs/config/hictrack) |
 
 <!-- FILE_TYPES hic END -->
 

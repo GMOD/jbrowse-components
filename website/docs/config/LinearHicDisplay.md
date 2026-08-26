@@ -44,7 +44,6 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Adapter:** [AlignmentsContactAdapter](../alignmentscontactadapter)
 - **Adapter:** [HicAdapter](../hicadapter)
 - **State model:** [runtime API](../../models/linearhicdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)

@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import AlignmentsContactAdapterF from './AlignmentsContactAdapter/index.ts'
 import HicAdapterF from './HicAdapter/index.ts'
 import HicTrackF from './HicTrack/index.ts'
 import LinearHicDisplayF from './LinearHicDisplay/index.ts'
@@ -13,7 +12,6 @@ export default class HicPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     HicAdapterF(pluginManager)
-    AlignmentsContactAdapterF(pluginManager)
     HicTrackF(pluginManager)
     LinearHicDisplayF(pluginManager)
     HicDataRPCMethodsF(pluginManager)

@@ -150,7 +150,6 @@ explicit location slot, and derive the index location from it.
   shorthands: uri, baseUri, csi, nhUri
 - [HicAdapter](https://jbrowse.org/jb2/docs/config/hicadapter.md) — shorthands:
   uri, baseUri
-- [AlignmentsContactAdapter](https://jbrowse.org/jb2/docs/config/alignmentscontactadapter.md)
 - [AllVsAllPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallpafadapter.md)
   — shorthands: uri, baseUri
 - [AllVsAllIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallindexedpafadapter.md)

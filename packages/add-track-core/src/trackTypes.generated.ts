@@ -7,7 +7,6 @@
  * fall back to `FeatureTrack`.
  */
 export const adapterTypesToTrackTypeMap: Record<string, string> = {
-  AlignmentsContactAdapter: 'HicTrack',
   AllVsAllIndexedPAFAdapter: 'SyntenyTrack',
   AllVsAllPAFAdapter: 'SyntenyTrack',
   BamAdapter: 'AlignmentsTrack',
