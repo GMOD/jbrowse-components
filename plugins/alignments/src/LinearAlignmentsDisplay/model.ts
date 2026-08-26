@@ -191,13 +191,11 @@ import type {
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  LinearGenomeViewModel,
-  RTrackFragment,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
 // dependency onto the startup path; the consumer renders it inside a Suspense

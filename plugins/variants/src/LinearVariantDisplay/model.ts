@@ -18,11 +18,9 @@ import { exportRCode } from './exportRCode.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  LegendItem,
-  RTrackFragment,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearVariantDisplay

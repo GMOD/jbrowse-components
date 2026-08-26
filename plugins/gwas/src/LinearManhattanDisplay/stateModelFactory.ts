@@ -60,12 +60,10 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  LinearGenomeViewModel,
-  RTrackFragment,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { VisibleEntry } from '@jbrowse/wiggle-core'
 
 // The Manhattan walker: the worker ships each region's score extremes already

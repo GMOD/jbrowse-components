@@ -196,6 +196,10 @@ export {
 // The helper library itself, so a test can drive the R a script actually
 // carries rather than a copy of it that can drift.
 export { HELPERS } from './LinearGenomeView/rHelpers.generated.ts'
+// The R codegen kit moved to `@jbrowse/display-kit` with `RTrackFragment` —
+// a display building its fragment needs these, and reaching into a view plugin
+// for them was the wrong direction. Re-exported because published plugins
+// resolve them here.
 export {
   FIGURE_DPI,
   FIGURE_INCHES_PER_WEIGHT,
@@ -206,11 +210,11 @@ export {
   rName,
   rStr,
   safeVarName,
-} from './LinearGenomeView/rexportShared.ts'
+} from '@jbrowse/display-kit/RExportFragment'
 export type {
   RFileLocation,
   RTrackMeta,
-} from './LinearGenomeView/rexportShared.ts'
+} from '@jbrowse/display-kit/RExportFragment'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as SVGHighlightsOverlay } from './LinearGenomeView/svgcomponents/SVGHighlightsOverlay.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'

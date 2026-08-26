@@ -6,13 +6,13 @@ import {
   rName,
   rStr,
   safeVarName,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/RExportFragment'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type {
   RFileLocation,
   RTrackFragment,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/RExportFragment'
 
 interface SubadapterConf {
   type?: string

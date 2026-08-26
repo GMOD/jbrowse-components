@@ -45,6 +45,7 @@ import type { VariantRenderingBackend } from './components/variantRenderingBacke
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -55,7 +56,6 @@ import type {
   LayoutRegionData,
   ShowLabelsMode,
 } from '@jbrowse/plugin-canvas'
-import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * The unscaled height a lane mark is packed at, before the fit ladder scales the

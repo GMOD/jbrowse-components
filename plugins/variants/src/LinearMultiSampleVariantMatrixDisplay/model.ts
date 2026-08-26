@@ -15,9 +15,9 @@ import type {
   VariantMatrixRenderingBackend,
   VariantMatrixUploadData,
 } from './components/variantMatrixRenderingBackendTypes.ts'
+import type { RTrackFragment } from '@jbrowse/display-kit/RExportFragment'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearMultiSampleVariantMatrixDisplay

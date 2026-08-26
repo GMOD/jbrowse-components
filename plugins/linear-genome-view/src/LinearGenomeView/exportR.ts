@@ -2,12 +2,6 @@ import { getConf } from '@jbrowse/core/configuration'
 import { awaitSvgReady, awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { getSession, saveAs } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-
-import { HELPERS } from './rHelpers.generated.ts'
-import {
-  BROWSER_LOCAL_FILE_REASON,
-  readsBrowserLocalFile,
-} from './rexportLocalFiles.ts'
 import {
   FIGURE_DPI,
   FIGURE_INCHES_PER_WEIGHT,
@@ -16,7 +10,13 @@ import {
   rName,
   rStr,
   safeVarName,
-} from './rexportShared.ts'
+} from '@jbrowse/display-kit/RExportFragment'
+
+import { HELPERS } from './rHelpers.generated.ts'
+import {
+  BROWSER_LOCAL_FILE_REASON,
+  readsBrowserLocalFile,
+} from './rexportLocalFiles.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { ExportRCodeOptions, RTrackFragment } from './types.ts'
