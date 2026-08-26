@@ -72,7 +72,15 @@ where the display is defined; to add to one belonging to another plugin, use
      * #method
      */
     trackMenuItems() {
-      return [...superTrackMenuItems(), ...buildMafTrackMenuItems(self)]
+      return [
+        ...superTrackMenuItems(),
+        ...buildMafTrackMenuItems(self),
+        ...mafLaunchMenuItems({
+          session: getSession(self),
+          model: self,
+          view: getContainingView(self) as LinearGenomeViewModel,
+        }),
+      ]
     },
   }
 })
@@ -105,7 +113,7 @@ To add items to a menu on a display you do not own, use `addDisplayMenuItems`
 export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
   addDisplayMenuItems(pluginManager, 'LinearAlignmentsDisplay', {
     menu: 'contextMenuItems',
-    group: LAUNCH_VIEW_LABEL,
+    group: LAUNCH_LABEL,
     // Offered from the read id, which the hit test carries, so the item is
     // there when the menu opens rather than a fetch later; the feature it needs
     // is resolved in the onClick (normally already in hand, since the fetch

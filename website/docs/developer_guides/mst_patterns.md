@@ -401,7 +401,15 @@ the inherited track menu:
      * #method
      */
     trackMenuItems() {
-      return [...superTrackMenuItems(), ...buildMafTrackMenuItems(self)]
+      return [
+        ...superTrackMenuItems(),
+        ...buildMafTrackMenuItems(self),
+        ...mafLaunchMenuItems({
+          session: getSession(self),
+          model: self,
+          view: getContainingView(self) as LinearGenomeViewModel,
+        }),
+      ]
     },
   }
 })
