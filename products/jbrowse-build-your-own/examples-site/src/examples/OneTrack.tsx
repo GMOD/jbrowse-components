@@ -40,15 +40,13 @@ const hg38 = {
   },
 }
 
+// An id and a file: `.bw` picks the adapter and the track type, the one
+// assembly above is the one it sits on, and a key beside `uri` wins over the
+// guess. The doc below shows the same track written out.
 const conservationTrack = {
-  type: 'QuantitativeTrack',
   trackId: 'hg38_phylop',
   name: 'phyloP 100-way conservation',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-  },
+  uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   displayDefaults: {
     defaultRendering: 'xyplot',
     height: 100,

@@ -37,7 +37,7 @@ const DIVERGES = {
   TrackColumn:
     'the selector page renders the catalogue in its own order and skips what is hidden; the local-file page renders `view.tracks`, which is the order the files were opened -- nothing there can hide a track, so the order cannot shuffle',
   conservationTrack:
-    'EveryChromosome stacks it under its own chromosome strip and gives it more height for that layout; every other page uses it as a single quantitative track at the height wiggleTrack used to be',
+    'EveryChromosome stacks it under its own chromosome strip and gives it more height for that layout; the two Ultraminimal sections write it as `{ trackId, uri }`, the page being the floor; every other page uses it as a single quantitative track at the height wiggleTrack used to be, where seeing the adapter is the point',
 }
 
 // The other half of the rule, and the one this file was missing.
