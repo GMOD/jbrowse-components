@@ -2,6 +2,12 @@
 
 exports[`every registered schema slot default 1`] = `
 {
+  "adapter: AlignmentsContactAdapter": {
+    "binSizes": "frozen = [750,1500,5000,25000]",
+    "channel": "stringEnum = "discordant" of ["discordant","sameStrand","outward","depthDifference"]",
+    "minSpan": "number = 1000",
+    "subadapter": "frozen = null",
+  },
   "adapter: AllVsAllIndexedPAFAdapter": {
     "assemblyNameToPanSN": "frozen = {}",
     "assemblyNames": "stringArray = []",
