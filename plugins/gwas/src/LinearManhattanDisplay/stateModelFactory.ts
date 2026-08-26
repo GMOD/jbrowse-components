@@ -36,6 +36,7 @@ import {
   resolveRenderState,
   scoreRuleMarks,
   visibleStatsDomain,
+  widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -250,20 +251,40 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * the configured threshold score, or undefined when the slot is unset
+         */
+        get significanceLine(): number | undefined {
+          return getConf(self, 'significanceLine')
+        },
+        /**
+         * #getter
          * nice-rounded [min, max] -log10 p domain across the visible regions,
          * or undefined before any data loads. The only walker of the four that
          * reads shipped per-region extremes rather than scanning scores: the
          * worker already reduced them, so a block contributes its whole
          * region's extremes rather than the part it shows.
+         *
+         * Widened to reach the significance line, the same way the wiggle
+         * displays widen theirs to reach a configured `scoreRules` entry. The
+         * threshold answers "does anything here clear it?", so the window where
+         * the answer is no — every score well under the line — is the one where
+         * an unwidened axis drops the line and leaves the reader nothing to
+         * read the plot against. `widenRangeToRules` applies to the raw range,
+         * so an explicit `minScore`/`maxScore` still wins.
          */
         get domain() {
+          const line = this.significanceLine
           return visibleStatsDomain({
             active: true,
             view: getContainingView(self) as LinearGenomeViewModel,
             payloadFor: index => self.rpcDataMap.get(index),
             itemsFor: data => (data.numFeatures === 0 ? [] : [data]),
             accumulate: shippedExtremes,
-            range: ({ scoreMin, scoreMax }) => [scoreMin, scoreMax],
+            range: ({ scoreMin, scoreMax }) =>
+              widenRangeToRules(
+                [scoreMin, scoreMax],
+                line === undefined ? [] : [line],
+              ),
             bounds: [self.minScoreBound, self.maxScoreBound],
             scaleType: 'linear',
           })
@@ -286,25 +307,22 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * the configured threshold score, or undefined when the slot is unset
-         */
-        get significanceLine(): number | undefined {
-          return getConf(self, 'significanceLine')
-        },
-        /**
-         * #getter
-         * The threshold as a score rule, or `[]` when the slot is unset or the
-         * score falls outside the loaded regions' domain. Both the on-screen
-         * overlay and the SVG export take the line from here, so an exported
-         * figure cannot draw it at a different height than the screen did.
+         * The threshold as a score rule, or `[]` when the slot is unset. Both
+         * the on-screen overlay and the SVG export take the line from here, so
+         * an exported figure cannot draw it at a different height than the
+         * screen did.
          *
          * A one-element read of the same `scoreRuleMarks` the wiggle displays
          * place their configured rules with: this display's threshold is a rule
          * at a chosen score, which is what that helper is. Manhattan pins its
          * axis linear (see `domain`), so the normalizer is the linear one.
+         *
+         * The helper still drops a rule outside the domain, which here only
+         * happens where `domain` could not widen to it: an explicit
+         * `minScore`/`maxScore` bound that excludes the line.
          */
         get scoreRuleMarks() {
-          const line = this.significanceLine
+          const line = self.significanceLine
           const domain = self.domain
           if (line === undefined || !domain) {
             return []

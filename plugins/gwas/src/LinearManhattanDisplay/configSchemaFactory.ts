@@ -112,8 +112,10 @@ export function configSchemaFactory() {
        * draws none, since there is no threshold that is right for every scan.
        *
        * On the plot's own scale, so it is a `-log10(p)` where the points are
-       * and an Fst where `scoreColumn` names an Fst column. Nothing is drawn
-       * when the value falls outside the loaded regions' domain.
+       * and an Fst where `scoreColumn` names an Fst column. The autoscaled
+       * y-axis widens to reach it, so a window where nothing clears the
+       * threshold still shows the threshold; an explicit `minScore`/`maxScore`
+       * that excludes it still wins, and there the line is not drawn.
        */
       significanceLine: {
         type: 'maybeNumber',
