@@ -130,8 +130,9 @@ export default function MultiRegionDisplayMixin() {
          * **Spatial only, and it stays that way.** Whether the data held for a
          * block is still what a fetch would bring back is `isCacheValid`, which
          * `dataCurrent` conjoins for the export gate. The scrim reads this
-         * getter alone: a phase that went `loading` on a moved `regionFetchKey`
-         * would raise the overlay into every zoom.
+         * getter and `dataSuperseded`, never `isCacheValid`: a phase that went
+         * `loading` on a moved `regionFetchKey` would raise the overlay into
+         * every zoom.
          */
         get viewportWithinLoadedData() {
           const view = this.host
@@ -244,14 +245,20 @@ export default function MultiRegionDisplayMixin() {
          * hook: an override has to restate the freshness terms and then misses
          * the next one added.
          *
-         * On screen this window is invisible (the clear lands a tick later and
-         * the loading scrim covers it), which is exactly why it needs saying:
-         * `awaitSvgReady` samples freshness once, and an export that samples it
-         * inside this window renders the data that is about to be discarded —
-         * or, once the clear lands mid-render, nothing at all. GWAS's LD
-         * auto-index is the case: adopting the top hit as the index SNP is an
-         * `rpcProps` change, so the very load that produced the top hit is what
-         * it invalidates.
+         * Both answers a display gives about being finished read it — the
+         * export gate through `dataCurrent`, the loading scrim through
+         * `displayPhase`. The export gate is the sharper case: `awaitSvgReady`
+         * samples freshness once, and an export that samples it inside this
+         * window renders the data that is about to be discarded — or, once the
+         * clear lands mid-render, nothing at all. GWAS's LD auto-index is that
+         * case: adopting the top hit as the index SNP is an `rpcProps` change,
+         * so the very load that produced the top hit is what it invalidates.
+         *
+         * The window is NOT invisible on screen, which this used to say while
+         * `displayPhase` took a spatial-only argument: the clear lands a tick
+         * later, so until it does the display keeps drawing the superseded data
+         * with no scrim over it. Alignments' per-base wall spends the debounce
+         * plus the RPC painting a 1 px stripe every 8 px.
          *
          * **The input need not have settled yet.** Alignments counts the
          * debounce window ahead of its per-base bin, where the bin the data was
@@ -340,10 +347,10 @@ export default function MultiRegionDisplayMixin() {
          * a zoom that moves `regionFetchKey` leaves every held region covered and
          * stale at once — and an export sampling `svgReady` across that window
          * painted bins the worker computed for the previous zoom. `displayPhase`
-         * still reads `viewportWithinLoadedData` alone: folding staleness into
-         * the phase raises the loading scrim into every zoom, which is the trade
-         * REJECTED_IDEAS.md "Folding content staleness into `displayPhase`"
-         * turned down and this does not take.
+         * takes `dataSuperseded` but NOT this term: folding a moved
+         * `regionFetchKey` into the phase raises the loading scrim into every
+         * zoom, which is the trade REJECTED_IDEAS.md "Folding content staleness
+         * into `displayPhase`" turned down and this does not take.
          *
          * The term cannot latch, and the reason is structural rather than a case
          * list: a block reaches `fetchNeeded` unless `planRegionFetch` finds it
@@ -423,10 +430,26 @@ export default function MultiRegionDisplayMixin() {
          * its staleness argument, so a term added to `computeLoadingTerm`
          * reaches all three without being wired three times.
          *
-         * This family's argument is spatial: `loading` also covers stale data
-         * (viewport past loaded) still on screen through the pre-refetch
-         * debounce. A thunk, so a suppressed or already-loading display doesn't
-         * subscribe to viewport churn.
+         * This family's argument is spatial coverage AND `dataSuperseded`: stale
+         * data (viewport past loaded) still on screen through the pre-refetch
+         * debounce, plus data a settled fetch-input change is about to
+         * invalidate, which is being drawn wrong RIGHT NOW rather than merely
+         * about to be. Alignments is the second case — zooming perBaseLetter
+         * from 16 bp/px to 1 keeps the viewport inside the loaded region, so a
+         * spatial-only argument reported `ready` over a wall drawn as a 1 px
+         * stripe every 8 px for the whole debounce-plus-RPC window.
+         *
+         * **It is deliberately NOT `dataCurrent`**, which the export gate takes.
+         * That one also carries `isCacheValid`, and folding a moved
+         * `regionFetchKey` into the phase raises the loading scrim 250 ms into
+         * every ordinary zoom — the trade REJECTED_IDEAS.md "Folding content
+         * staleness into `displayPhase`" turned down, and which
+         * `displayPhaseWiring.test.ts` guards. `dataSuperseded` is the half that
+         * does belong: it is a settled value compare a display opts into, false
+         * on every display that does not.
+         *
+         * A thunk, so a suppressed or already-loading display doesn't subscribe
+         * to viewport churn.
          *
          * A subclass customizes this through `fetchInert` (FetchMixin),
          * never by overriding the getter — see that hook.
@@ -434,7 +457,7 @@ export default function MultiRegionDisplayMixin() {
         get displayPhase(): DisplayPhase {
           return foundationDisplayPhase(
             self,
-            () => self.viewportWithinLoadedData,
+            () => self.viewportWithinLoadedData && !self.dataSuperseded,
             () => self.host.effectiveBodyMounted,
           )
         },

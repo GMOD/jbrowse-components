@@ -117,9 +117,14 @@ them), `dataCurrent` (the cross-cutting freshness name), and `painted`
 (`RenderLifecycleMixin`), which is what consumers outside the display want.
 
 The loading scrim goes through `foundationDisplayPhase`, and this family
-supplies only `viewportWithinLoadedData`; `computeLoadingTerm` reads every other
-term off the model. Routing it through a display-local getter means
-re-remembering the cancel term — one edit from the dead-Retry bug.
+supplies only the staleness argument: spatial coverage and `dataSuperseded`,
+which is what puts a scrim over data a settled fetch-input change is already
+drawing wrong. It is NOT `dataCurrent` — the export gate takes that one, and its
+`isCacheValid` term would raise the scrim 250 ms into every zoom
+(REJECTED_IDEAS.md "Folding content staleness into `displayPhase`").
+`computeLoadingTerm` reads every other term off the model. Routing it through a
+display-local getter means re-remembering the cancel term — one edit from the
+dead-Retry bug.
 
 ## `dataSuperseded` covers what `regionFetchKey` cannot state
 

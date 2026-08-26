@@ -457,13 +457,26 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
   **The EXPORT-gate fold was taken 2026-08-26, and it is not the fold this entry
   rejects.** `MultiRegionDisplayMixin` conjoined `isCacheValid` into
-  `dataCurrent`, whose only consumer on this family is `foundationSvgReady`, so
-  an SVG export of a keyed display stops painting the previous zoom's data
-  across the debounce plus the RPC. `displayPhase` still reads
-  `viewportWithinLoadedData` alone — no scrim moved, and
+  `dataCurrent`, whose consumer on this family is `foundationSvgReady`, so an
+  SVG export of a keyed display stops painting the previous zoom's data across
+  the debounce plus the RPC. No scrim moved with it, and
   `zoomInvalidation.test.ts` and `displayPhaseWiring.test.ts` pin what they
-  always pinned. Read the new conjunct as this entry being reopened and you will
+  always pinned. Read that conjunct as this entry being reopened and you will
   delete a fix; the entry stands for the phase.
+
+  **`dataSuperseded` went into the phase 2026-08-26 and is likewise not this
+  fold.** `displayPhase` now takes `viewportWithinLoadedData &&
+  !dataSuperseded`, because a display that opts into `dataSuperseded` is drawing
+  its data wrong right now rather than merely about to: zooming alignments'
+  perBaseLetter from 16 bp/px to 1 keeps the viewport inside the loaded region
+  while the wall paints a 1 px stripe every 8 px for the whole
+  debounce-plus-RPC window. That term is false on every display that does not
+  override it, so it raises no scrim on an ordinary zoom, which is what this
+  entry is about. **`displayPhase` still must not read `dataCurrent`**, whose
+  `isCacheValid` term is exactly the 250 ms scrim rejected above — the one-line
+  edit that spells the argument `dataCurrent` for symmetry with the export gate
+  takes this fold by accident, and `displayPhaseWiring.test.ts` goes red saying
+  so.
 
 - **Gate the two per-base colour modes against the other backend** — built,
   measured, removed the same day (2026-08-27). The modes really were covered by

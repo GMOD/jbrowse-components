@@ -43,6 +43,7 @@ describe('per-base bin supersession', () => {
     expect(display.loadedRegions.get(0)?.fetchKey).toBe('8')
     expect(display.dataSuperseded).toBe(false)
     expect(display.svgReady).toBe(true)
+    expect(display.displayPhase).toBe('ready')
 
     // Three octaves in, and NOT settled — this is the debounce window. The
     // viewport stays inside the region it holds, so the spatial check still
@@ -55,6 +56,11 @@ describe('per-base bin supersession', () => {
     expect(display.livePerBaseBinBp).toBe(1)
     expect(display.dataSuperseded).toBe(true)
     expect(display.svgReady).toBe(false)
+    // The ON-SCREEN half, and the one a spatial-only staleness argument missed:
+    // the wall is drawn as a 1 px stripe every 8 px for the whole
+    // debounce-plus-RPC window, so the phase has to say so rather than reading
+    // `ready` off a viewport that never left its region.
+    expect(display.displayPhase).toBe('loading')
   })
 
   it('flips back once the refetch lands at the new bin', () => {
@@ -75,6 +81,7 @@ describe('per-base bin supersession', () => {
     expect(display.loadedRegions.get(0)?.fetchKey).toBe('1')
     expect(display.dataSuperseded).toBe(false)
     expect(display.svgReady).toBe(true)
+    expect(display.displayPhase).toBe('ready')
   })
 
   it('is unmoved by the same zoom in a scheme that paints no wall', () => {
