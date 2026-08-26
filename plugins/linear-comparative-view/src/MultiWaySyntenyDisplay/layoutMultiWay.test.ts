@@ -8,12 +8,8 @@ import {
   frameTickXs,
   laneFetchRegion,
   laneFetchWindow,
-  geneGlyphShape,
   groupFeatures,
   groupSpansOnRow,
-  isAnnotated,
-  laneGeneFeatures,
-  laneGeometry,
   rowAssembliesOf,
   rowFrameX,
   tickIntervalFor,
@@ -385,181 +381,6 @@ test('a group with nothing on the dominant refName gets no span on that row', ()
   const g1 = groups.find(g => g.key === 'g1')!
   const span = groupSpansOnRow(g1, 'peach', frame, 800)[0]!
   expect(span[0]).toBeLessThan(span[1])
-})
-
-test('geneGlyphShape merges exons across transcripts and falls back to the span', () => {
-  const gene = new SimpleFeature({
-    uniqueId: 'gene1',
-    refName: 'chr1',
-    start: 100,
-    end: 400,
-    subfeatures: [
-      {
-        uniqueId: 'rna1',
-        refName: 'chr1',
-        start: 100,
-        end: 400,
-        subfeatures: [
-          {
-            uniqueId: 'e1',
-            refName: 'chr1',
-            start: 100,
-            end: 150,
-            type: 'exon',
-          },
-          {
-            uniqueId: 'e2',
-            refName: 'chr1',
-            start: 300,
-            end: 400,
-            type: 'exon',
-          },
-        ],
-      },
-      {
-        uniqueId: 'rna2',
-        refName: 'chr1',
-        start: 100,
-        end: 400,
-        subfeatures: [
-          {
-            uniqueId: 'e3',
-            refName: 'chr1',
-            start: 120,
-            end: 200,
-            type: 'exon',
-          },
-        ],
-      },
-    ],
-  })
-  expect(geneGlyphShape(gene)).toEqual({
-    full: [
-      [100, 200],
-      [300, 400],
-    ],
-    thin: [],
-  })
-  const bare = new SimpleFeature({
-    uniqueId: 'bare',
-    refName: 'chr1',
-    start: 5,
-    end: 10,
-  })
-  expect(geneGlyphShape(bare)).toEqual({ full: [[5, 10]], thin: [] })
-})
-
-test('geneGlyphShape splits merged exons into CDS and UTR intervals', () => {
-  const gene = new SimpleFeature({
-    uniqueId: 'gene2',
-    refName: 'chr1',
-    start: 100,
-    end: 400,
-    subfeatures: [
-      {
-        uniqueId: 'rna1',
-        refName: 'chr1',
-        start: 100,
-        end: 400,
-        subfeatures: [
-          {
-            uniqueId: 'x1',
-            refName: 'chr1',
-            start: 100,
-            end: 160,
-            type: 'exon',
-          },
-          {
-            uniqueId: 'x2',
-            refName: 'chr1',
-            start: 300,
-            end: 400,
-            type: 'exon',
-          },
-          {
-            uniqueId: 'c1',
-            refName: 'chr1',
-            start: 140,
-            end: 160,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'c2',
-            refName: 'chr1',
-            start: 300,
-            end: 380,
-            type: 'CDS',
-          },
-        ],
-      },
-    ],
-  })
-  expect(geneGlyphShape(gene)).toEqual({
-    full: [
-      [140, 160],
-      [300, 380],
-    ],
-    thin: [
-      [100, 140],
-      [380, 400],
-    ],
-  })
-})
-
-test('geneGlyphShape draws a CDS-only annotation full height', () => {
-  const gene = new SimpleFeature({
-    uniqueId: 'gene3',
-    refName: 'chr1',
-    start: 100,
-    end: 200,
-    subfeatures: [
-      { uniqueId: 'c1', refName: 'chr1', start: 100, end: 150, type: 'CDS' },
-      { uniqueId: 'c2', refName: 'chr1', start: 170, end: 200, type: 'CDS' },
-    ],
-  })
-  expect(geneGlyphShape(gene)).toEqual({
-    full: [
-      [100, 150],
-      [170, 200],
-    ],
-    thin: [],
-  })
-})
-
-test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => {
-  const region = new SimpleFeature({
-    uniqueId: 'r',
-    refName: 'chr1',
-    start: 0,
-    end: 1000000,
-    type: 'region',
-  })
-  const gene = new SimpleFeature({
-    uniqueId: 'g',
-    refName: 'chr1',
-    start: 10,
-    end: 20,
-    type: 'gene',
-  })
-  const pseudo = new SimpleFeature({
-    uniqueId: 'p',
-    refName: 'chr1',
-    start: 30,
-    end: 40,
-    type: 'pseudogene',
-  })
-  expect(laneGeneFeatures([region, gene, pseudo]).map(f => f.id())).toEqual([
-    'g',
-    'p',
-  ])
-  const mrna = new SimpleFeature({
-    uniqueId: 'm',
-    refName: 'chr1',
-    start: 30,
-    end: 40,
-    type: 'mRNA',
-  })
-  expect(laneGeneFeatures([region, mrna]).map(f => f.id())).toEqual(['m'])
 })
 
 test('a far-flung repeat placement does not stretch the frame', () => {
@@ -1171,41 +992,6 @@ test('a span outside the frame has no px pair to draw from', () => {
   expect(frameSpan(frame, region.end - 10, region.end, 800)).toBeUndefined()
 })
 
-// The anchor lane's genes are fetched over the view's static blocks, so a gene
-// straddling a block boundary comes back once per block it touches — two
-// glyphs, and two React children under one key.
-test('lane genes arriving once per static block draw once', () => {
-  const gene = (uniqueId: string) =>
-    new SimpleFeature({
-      uniqueId,
-      refName: 'ctgA',
-      start: 900,
-      end: 1100,
-      type: 'gene',
-    })
-  expect(laneGeneFeatures([gene('g1'), gene('g1'), gene('g2')])).toHaveLength(2)
-})
-
-// The lane draws its annotation where it has one and the table's placement box
-// where it does not, and the choice is per GROUP. Made per lane — one drawn
-// gene anywhere suppressing every box — a table naming genes the lane's GFF3
-// does not left those groups' ribbons hanging off nothing.
-describe('a placement box beside the lane annotation', () => {
-  test('stands where no drawn gene reaches', () => {
-    expect(isAnnotated([[10, 40]], [100, 140])).toBe(false)
-    expect(isAnnotated([], [100, 140])).toBe(false)
-  })
-
-  test('gives way where one does, whichever way round either pair runs', () => {
-    expect(isAnnotated([[10, 40]], [30, 80])).toBe(true)
-    expect(isAnnotated([[40, 10]], [80, 30])).toBe(true)
-  })
-
-  test('is not suppressed by a gene that merely abuts it', () => {
-    expect(isAnnotated([[10, 40]], [40, 80])).toBe(false)
-  })
-})
-
 // A lane's own contig is whichever explains the most of the ANCHOR window, the
 // vote `resolvePanel` runs on the same axis for the panel this lane launches.
 // Counting placements instead let a cluster of short repeat hits outvote the
@@ -1310,32 +1096,6 @@ test('a lane fetches the same region as its fitted extent wobbles', () => {
   })
   // 131,072 sits between the two window widths these produce
   expect(laneFetchRegion(frame(68900))).toEqual(laneFetchRegion(frame(69000)))
-})
-
-describe('lane geometry', () => {
-  // The bands are what stops the view's gridlines — true on the anchor lane
-  // and a lie on every other one — at the anchor. A band covering only its own
-  // header and glyphs left them standing in the gutters, which is most of the
-  // ink in a tall track.
-  test('the bands below the anchor tile without gaps', () => {
-    const { rows } = laneGeometry(240, 4)
-    for (const [row, band] of rows.entries()) {
-      if (row > 0) {
-        expect(band.bandStart).toBeCloseTo(rows[row - 1]!.bandEnd, 6)
-        expect(band.bandStart).toBeLessThan(band.bandTop)
-      }
-    }
-    expect(rows.at(-1)!.bandEnd).toBe(240)
-  })
-
-  test('every lane fits inside the track height, at any lane count', () => {
-    for (const rowCount of [1, 2, 5, 12]) {
-      const { glyphHeight, rows } = laneGeometry(240, rowCount)
-      expect(rows).toHaveLength(rowCount)
-      expect(rows[0]!.bandTop).toBeGreaterThanOrEqual(0)
-      expect(rows.at(-1)!.glyphTop + glyphHeight).toBeLessThanOrEqual(240)
-    }
-  })
 })
 
 // The lane-above vote and the anchor-order one are separate evidence, and only

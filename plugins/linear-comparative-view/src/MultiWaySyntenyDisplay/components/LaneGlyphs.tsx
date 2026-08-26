@@ -2,8 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
-import { geneGlyphPx } from '../geneGlyphPx.ts'
-import { isAnnotated } from '../layoutMultiWay.ts'
+import { geneGlyphPx, isAnnotated } from '../geneGlyph.ts'
 
 import type { Lane } from '../laneStack.ts'
 import type { Span } from '../layoutMultiWay.ts'

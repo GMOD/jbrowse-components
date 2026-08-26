@@ -3,7 +3,7 @@ import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
-import { laneGeneFeatures } from './layoutMultiWay.ts'
+import { laneGeneFeatures } from './geneGlyph.ts'
 
 import type { LaneRegion, MultiWaySyntenyDisplayModel } from './model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'

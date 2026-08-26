@@ -1,7 +1,55 @@
-import { frameSpan, groupSpansOnRow, laneGeometry } from './layoutMultiWay.ts'
+import { clamp } from '@jbrowse/core/util'
+
+import { frameSpan, groupSpansOnRow } from './layoutMultiWay.ts'
 
 import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+const LABEL_HEIGHT = 12
+const MIN_GLYPH_PX = 5
+const MAX_GLYPH_PX = 18
+
+export interface LaneBand {
+  glyphTop: number
+  bandTop: number
+  bandStart: number
+  bandEnd: number
+}
+
+export interface LaneGeometry {
+  glyphHeight: number
+  bandHeight: number
+  rows: LaneBand[]
+}
+
+// Where each lane's header, glyphs and opaque band sit in a track `height` px
+// tall. The bands TILE — a lane owns half the gutter on each side — so the
+// view's gridlines, true on the anchor lane and a lie on every other one, are
+// covered everywhere below the anchor rather than standing in the gaps.
+export function laneGeometry(height: number, rowCount: number): LaneGeometry {
+  const glyphHeight = clamp(
+    height / rowCount - LABEL_HEIGHT - 6,
+    MIN_GLYPH_PX,
+    MAX_GLYPH_PX,
+  )
+  const usable = height - LABEL_HEIGHT - glyphHeight - 4
+  const glyphTop = (row: number) =>
+    LABEL_HEIGHT + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
+  const bandStart = (row: number) =>
+    row === 0
+      ? 0
+      : (glyphTop(row - 1) + glyphHeight + glyphTop(row) - LABEL_HEIGHT) / 2
+  return {
+    glyphHeight,
+    bandHeight: LABEL_HEIGHT + glyphHeight,
+    rows: Array.from({ length: rowCount }, (_, row) => ({
+      glyphTop: glyphTop(row),
+      bandTop: glyphTop(row) - LABEL_HEIGHT,
+      bandStart: bandStart(row),
+      bandEnd: row + 1 < rowCount ? bandStart(row + 1) : height,
+    })),
+  }
+}
 
 /**
  * One lane of the stack, and the display's central noun: every layer the

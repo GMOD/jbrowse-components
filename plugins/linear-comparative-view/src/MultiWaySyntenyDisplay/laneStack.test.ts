@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { buildLanes } from './laneStack.ts'
+import { buildLanes, laneGeometry } from './laneStack.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
 
 import type { BuildLanesOpts } from './laneStack.ts'
@@ -152,4 +152,30 @@ test('whether a lane has an annotation is not whether this window drew one', () 
 
 test('a lane whose genes have not landed yet holds an empty list, not undefined', () => {
   expect(stack().lanes.every(l => Array.isArray(l.genes))).toBe(true)
+})
+
+describe('lane geometry', () => {
+  // The bands are what stops the view's gridlines — true on the anchor lane
+  // and a lie on every other one — at the anchor. A band covering only its own
+  // header and glyphs left them standing in the gutters, which is most of the
+  // ink in a tall track.
+  test('the bands below the anchor tile without gaps', () => {
+    const { rows } = laneGeometry(240, 4)
+    for (const [row, band] of rows.entries()) {
+      if (row > 0) {
+        expect(band.bandStart).toBeCloseTo(rows[row - 1]!.bandEnd, 6)
+        expect(band.bandStart).toBeLessThan(band.bandTop)
+      }
+    }
+    expect(rows.at(-1)!.bandEnd).toBe(240)
+  })
+
+  test('every lane fits inside the track height, at any lane count', () => {
+    for (const rowCount of [1, 2, 5, 12]) {
+      const { glyphHeight, rows } = laneGeometry(240, rowCount)
+      expect(rows).toHaveLength(rowCount)
+      expect(rows[0]!.bandTop).toBeGreaterThanOrEqual(0)
+      expect(rows.at(-1)!.glyphTop + glyphHeight).toBeLessThanOrEqual(240)
+    }
+  })
 })
