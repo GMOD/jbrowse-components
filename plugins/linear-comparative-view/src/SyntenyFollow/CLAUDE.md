@@ -57,6 +57,14 @@ too, or a CIGAR-less block is asked about every settle forever.
 by the block's own coordinates in `cigarMapSpan`. Both: ids are only comparable
 within one LOD tier, and an all-vs-all file has several rows over one extent.
 
+**And a map request carries the store's own stop token**, so dropping the store
+stops the work and not merely the answer. The request re-reads the whole region
+out of the file, once per block, so a drag across a chromosome left one grinding
+per block crossed and closing the view left them all. The token is scoped to the
+generation rather than rotated per call, because the map rejects latest-wins — a
+later window inside the same block still wants the map already in flight for it,
+which is exactly what a rotation would cancel.
+
 **The row's scale is no longer constant through a pan, and that is the fix, not
 a side effect.** A 1001bp anchor window matches 1017bp of the target here and
 982bp four steps later, because a deletion came into view — so `offsetPx`, a
@@ -276,7 +284,9 @@ Switching the mode off issues no pass at all, so it still needs its own check in
 store leaves an in-flight `execute` holding a state object nobody will bump
 again. `levelStates` therefore counts its own resets and the plan carries the
 count: the one fact `seq` cannot state is that the store an answer was planned
-against no longer exists.
+against no longer exists. The count is what a resolve is DISCARDED by; the token
+beside it is what the map is STOPPED by, and the two are different questions
+because a resolve is shared by three re-entrant passes that still want it.
 
 ## What each pass may touch
 
