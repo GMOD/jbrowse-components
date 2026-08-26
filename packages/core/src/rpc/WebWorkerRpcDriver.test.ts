@@ -224,10 +224,11 @@ describe('WebWorkerRpcDriver pool destroy', () => {
     // the boot promise the notify routes through has to settle first
     await Promise.resolve()
 
-    // a string token, not createStopToken(): jsdom has SharedArrayBuffer, and a
-    // SAB token cancels through shared memory with no broadcast to make. The
-    // string path is the one every deployment without cross-origin isolation
-    // takes, which is all of ours.
+    // A literal token so the assertion below can name the id it expects to see
+    // broadcast. It is the string path either way now — `createStopToken()`
+    // answers with one wherever the page is not cross-origin isolated, which is
+    // every deployment of ours — and only the string path has a broadcast to
+    // make: a SAB token cancels through shared memory.
     stopStopToken('stop-1')
     await Promise.resolve()
     expect(driver.workers[0]!.stopped).toEqual(['stop-1'])

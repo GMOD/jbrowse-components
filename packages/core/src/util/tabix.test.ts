@@ -85,9 +85,10 @@ describe('readTabixLines', () => {
   // Asserted from inside the read, because withStopTokenSignal releases the
   // signal once the read settles — which is the point of the helper, and would
   // make an after-the-fact check pass for a signal that was never wired. A
-  // string token rather than createStopToken() so the abort is observable
-  // synchronously: a SharedArrayBuffer token routes through Atomics.waitAsync
-  // and lands a turn later.
+  // literal token rather than createStopToken() so the test names the id it
+  // stops; either way it is a string, whose abort is observable synchronously
+  // where a SharedArrayBuffer's routes through Atomics.waitAsync and lands a
+  // turn later.
   it('hands the reader a signal that is live and tracks the token', async () => {
     const stopToken = 'tabix-live-signal'
     let abortedDuringRead: boolean | undefined

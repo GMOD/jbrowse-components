@@ -758,9 +758,10 @@ describe('withProgress', () => {
   // label is one aggregateStatus counts as in flight for the rest of the batch,
   // so one cancelled region pinned the shared bar to a phase nothing was in.
   //
-  // A string token because that is the path a deployment without cross-origin
-  // isolation takes, and the only one whose check fires on the first call — a
-  // SharedArrayBuffer token reads its atomic once every 10.
+  // A string token because that is the path every deployment takes, and the
+  // only one whose check fires on the first call — a SharedArrayBuffer token
+  // reads its atomic once every 10, which is what hid this bug until
+  // `hasSharedArrayBuffer` started asking about cross-origin isolation.
   it('closes its phase when the token was stopped before it started', async () => {
     const seen: RpcStatus[] = []
     const cb = (s: RpcStatus) => {

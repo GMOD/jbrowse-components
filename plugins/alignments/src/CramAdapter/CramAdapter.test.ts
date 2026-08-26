@@ -196,8 +196,9 @@ test('getFeatures threads its stop token into the cram read as a signal', async 
   expect(signal!.aborted).toBe(false)
 
   // and it is this call's token driving it, not some unrelated signal. Awaited
-  // rather than asserted synchronously: a SharedArrayBuffer token aborts
-  // through Atomics.waitAsync, which resolves a tick after the store.
+  // rather than asserted synchronously so the assertion holds for either token
+  // shape: a SharedArrayBuffer's abort routes through Atomics.waitAsync and
+  // resolves a tick after the store, where a string's is synchronous.
   const aborted = new Promise<void>(resolve => {
     signal!.addEventListener('abort', () => {
       resolve()
