@@ -52,7 +52,18 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./*": "./esm/*.js"
+      "./constants": "./esm/constants.js",
+      "./normalize": "./esm/normalize.js"
+    },
+    "typesVersions": {
+      "*": {
+        "constants": [
+          "esm/constants.d.ts"
+        ],
+        "normalize": [
+          "esm/normalize.d.ts"
+        ]
+      }
     }
   },
   "sideEffects": false

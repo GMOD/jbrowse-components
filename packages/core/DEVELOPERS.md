@@ -39,13 +39,18 @@ exports to point to compiled output:
 ```json
 "publishConfig": {
   "exports": {
-    "./PluginManager": {
-      "types": "./esm/PluginManager.d.ts",
-      "import": "./esm/PluginManager.js"
-    }
+    "./PluginManager": "./esm/PluginManager.js"
   }
 }
 ```
+
+Each subpath maps to a bare string. A `{types, import}` condition object only
+narrows who gets an answer, and this package publishes one ESM file per subpath,
+so there is nothing to narrow between: `types` is redundant on any resolver that
+reads `exports` at all, since tsc substitutes `.js` for `.d.ts` and finds the
+declaration beside the emitted module, and `import` made the subpath resolve for
+an ESM importer and fail for a `require()` one — which is what
+[#5626](https://github.com/GMOD/jbrowse-components/issues/5626) cost.
 
 ### typesVersions (for moduleResolution "node" consumers)
 
