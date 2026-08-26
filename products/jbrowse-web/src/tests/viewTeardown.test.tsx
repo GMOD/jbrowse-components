@@ -12,7 +12,7 @@ import {
 } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
-import { measure } from './teardownNoise.ts'
+import { measure, suppressTeardownNoise } from './teardownNoise.ts'
 import {
   createView,
   doBeforeEach,
@@ -34,6 +34,10 @@ const config = volvoxConfigWithTracks(['volvox_test_vcf'])
 beforeEach(() => {
   doBeforeEach()
 })
+
+// every test here takes a tree out on purpose; see the helper for why the
+// deferred half of that is collected rather than printed
+suppressTeardownNoise()
 
 // "Copy track" and friends live in a "Track actions" submenu, so a flat find
 // misses them — which is how the bug below survived a hand check of the menu.

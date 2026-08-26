@@ -125,8 +125,17 @@ test('a bare store ref is kept, and loads', async () => {
 
 test('a corrupt value reads as an empty list rather than throwing', async () => {
   const p = await importFresh()
+  // the read reports the parse failure, which is the behavior being asked for —
+  // taken here rather than printed
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   localStorage.setItem(listKey('http://localhost/volvox/config.json'), '{oh no')
   expect(p.readPermanentPlugins()).toEqual([])
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('Invalid localStorage value'),
+    '{oh no',
+    expect.any(SyntaxError),
+  )
+  warn.mockRestore()
 })
 
 test('a disabled entry is kept but not loaded', async () => {

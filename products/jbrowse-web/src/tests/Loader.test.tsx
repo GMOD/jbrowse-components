@@ -4,6 +4,7 @@ import { LocalFile } from 'generic-filehandle2'
 
 import { handleRequest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
+import { suppressTeardownNoise } from './teardownNoise.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -55,6 +56,11 @@ afterEach(() => {
   sessionStorage.clear()
 })
 
+// each test here stands up a whole app and lets the previous one's tree go, so
+// the deferred destroy lands mid-test; see the helper for why that half is
+// collected rather than printed
+suppressTeardownNoise()
+
 test('errors with config in URL that does not exist', async () => {
   jest.spyOn(console, 'error').mockImplementation()
   const { findByText } = render(<App search="?config=doesNotExist.json" />)
@@ -62,12 +68,19 @@ test('errors with config in URL that does not exist', async () => {
 })
 
 test('can use config from a url with session param+sessionStorage', async () => {
+  // the URL's `session=abcdefg` names no known format on purpose — the loader
+  // reports that and falls back to what sessionStorage holds
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
   sessionStorage.setItem('current', `{"id": "abcdefg", "name": "testSession"}`)
   const { findByText } = render(
     <App search="?config=test_data/volvox/config_main_thread.json&session=abcdefg" />,
   )
 
   await findByText('Help', {}, delay)
+  expect(error.mock.calls.flat().join(' ')).toContain(
+    'Unrecognized URL session format',
+  )
+  error.mockRestore()
 }, 20000)
 
 // The boot half of the crash-recovery ladder, through the real Renderer: a
@@ -153,8 +166,13 @@ test('pops up a warning for evil plugin in sessionPlugins', async () => {
 }, 20000)
 
 test('can use config from a url with nonexistent share param ', async () => {
+  // no `password`, so the share cannot be decrypted — the reason is reported
+  // and the app shows the error this asserts
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { findAllByText } = render(
     <App search="?config=test_data/volvox/config_main_thread.json&session=share-nonexist" />,
   )
   await findAllByText(/Error/, {}, delay)
+  expect(error.mock.calls.flat().join(' ')).toContain('missing its "password"')
+  error.mockRestore()
 }, 20000)
