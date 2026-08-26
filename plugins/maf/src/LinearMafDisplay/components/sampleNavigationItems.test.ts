@@ -2,7 +2,10 @@ import {
   findAssemblyConf,
   openSampleInNewView,
 } from '../openSampleInNewView.ts'
-import { sampleNavigationItems } from './sampleNavigationItems.ts'
+import {
+  sampleNavigationItems,
+  selectedRowTargets,
+} from './sampleNavigationItems.ts'
 
 import type { SampleNavigationModel } from './sampleNavigationItems.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -69,11 +72,18 @@ function target(sampleLabel: string, start: number) {
   }
 }
 
+// the items are built from a row-target list, so a case names the selection it
+// came from and reads it through the same function the menu does
+function itemsFor(
+  m: SampleNavigationModel,
+  c: typeof coord = coord,
+): ReturnType<typeof sampleNavigationItems> {
+  return sampleNavigationItems(session, m, selectedRowTargets(m, c))
+}
+
 test('one entry per navigable row in the selection', () => {
-  const items = sampleNavigationItems(
-    session,
+  const items = itemsFor(
     model({ 0: target('SPRET_EiJ', 1000), 1: target('PWK_PhJ', 2000) }),
-    coord,
   )
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Open SPRET_EiJ chr2:1001-1020 in new view',
@@ -82,20 +92,15 @@ test('one entry per navigable row in the selection', () => {
 })
 
 test('rows with no navigation target contribute nothing', () => {
-  expect(sampleNavigationItems(session, model({}), coord)).toEqual([])
-  expect(
-    sampleNavigationItems(session, model({ 1: target('rn6', 5) }), coord),
-  ).toHaveLength(1)
+  expect(itemsFor(model({}))).toEqual([])
+  expect(itemsFor(model({ 1: target('rn6', 5) }))).toHaveLength(1)
 })
 
 test('many navigable rows collapse into a submenu', () => {
   const targets = Object.fromEntries(
     Array.from({ length: 8 }, (_, i) => [i, target(`s${i}`, i * 100)]),
   )
-  const items = sampleNavigationItems(session, model(targets), {
-    ...coord,
-    endY: 80,
-  })
+  const items = itemsFor(model(targets), { ...coord, endY: 80 })
   expect(items).toHaveLength(1)
   const [item] = items
   expect(item && 'subMenu' in item && item.subMenu).toHaveLength(8)

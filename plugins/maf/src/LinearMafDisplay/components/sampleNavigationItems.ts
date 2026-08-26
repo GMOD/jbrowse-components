@@ -10,7 +10,6 @@ import type {
   MafSyntenyLaunchModel,
 } from '../launchMafRowSynteny.ts'
 import type { SampleNavigationTarget } from '../openSampleInNewView.ts'
-import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafHitTestModel } from './mafHitTest.ts'
 import type { ContextCoord } from './useDragSelection.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -26,10 +25,16 @@ import type {
  * reason `MafHitTestModel` is: it keeps this a plain function, testable with a
  * literal instead of a live MST tree.
  */
-export type SampleNavigationModel = MafHitTestModel &
-  Pick<LinearMafDisplayModel, 'id' | 'rowNavigationTarget'> & {
-    view: { assemblyNames: string[] }
-  }
+export type SampleNavigationModel = MafHitTestModel & {
+  id: string
+  rowNavigationTarget: (
+    displayedRegionIndex: number,
+    startBp: number,
+    endBp: number,
+    rowIndex: number,
+  ) => SampleNavigationTarget | undefined
+  view: { assemblyNames: string[] }
+}
 
 /** Above this many navigable rows the entries move into a submenu. */
 const MAX_INLINE_ITEMS = 6
@@ -48,8 +53,58 @@ export function selectedRowTargets(
   contextCoord: ContextCoord,
 ) {
   const { startX, endX, startY, endY } = contextCoord
-  const left = mafPointerAt(model, Math.min(startX, endX), startY)
-  const right = mafPointerAt(model, Math.max(startX, endX), endY)
+  return rowTargetsBetween(model, {
+    leftPx: Math.min(startX, endX),
+    rightPx: Math.max(startX, endX),
+    leftY: startY,
+    rightY: endY,
+    ...rowSpanAtY(model, startY, endY),
+  })
+}
+
+/** The rows a span leads to, and the reference span itself. */
+export type RowTargets = ReturnType<typeof selectedRowTargets>
+
+/**
+ * The same list over the whole window and every row, which is what the track
+ * menu offers: a reader who has not drawn a selection has still chosen a locus,
+ * by navigating to it.
+ */
+export function visibleRowTargets(
+  model: SampleNavigationModel & {
+    sources: unknown[]
+    view: { width: number }
+  },
+) {
+  return rowTargetsBetween(model, {
+    leftPx: 0,
+    rightPx: model.view.width - 1,
+    startRow: 0,
+    endRow: model.sources.length,
+  })
+}
+
+/** What both of the above are: a bp span from two pixels, over a row range. */
+function rowTargetsBetween(
+  model: SampleNavigationModel,
+  {
+    leftPx,
+    rightPx,
+    leftY = 0,
+    rightY = 0,
+    startRow,
+    endRow,
+  }: {
+    leftPx: number
+    rightPx: number
+    leftY?: number
+    rightY?: number
+    startRow: number
+    endRow: number
+  },
+) {
+  const left = mafPointerAt(model, leftPx, leftY)
+  const right = mafPointerAt(model, rightPx, rightY)
   // The half-open span of bases actually painted between the two pixels, from
   // `baseBp` rather than a floor/ceil of the fractional coordinate — which on a
   // reversed region names one base past each edge (see `HoverBp`), so the
@@ -57,7 +112,6 @@ export function selectedRowTargets(
   // cover. Same span `selectionRegion` computes for the subsequence widget.
   const startBp = Math.min(left.baseBp, right.baseBp)
   const endBp = Math.max(left.baseBp, right.baseBp) + 1
-  const { startRow, endRow } = rowSpanAtY(model, startY, endY)
   const targets: (SampleNavigationTarget & { rowIndex: number })[] = []
   for (let row = startRow; row < endRow; row++) {
     const target = model.rowNavigationTarget(
@@ -91,11 +145,9 @@ export function selectedRowTargets(
  */
 export function sampleNavigationItems(
   session: AbstractViewContainer & AssemblyHost & NotificationSink,
-  model: SampleNavigationModel,
-  contextCoord: ContextCoord,
+  model: Pick<SampleNavigationModel, 'id'>,
+  { targets }: RowTargets,
 ): MenuItem[] {
-  const { targets } = selectedRowTargets(model, contextCoord)
-
   function menuItem(target: SampleNavigationTarget, label: string) {
     return {
       label,
@@ -134,13 +186,9 @@ export function sampleNavigationItems(
  */
 export function mafSyntenyLaunchItems(
   session: MafSyntenyHost & NotificationSink,
-  model: SampleNavigationModel & MafSyntenyLaunchModel,
-  contextCoord: ContextCoord,
+  model: MafSyntenyLaunchModel,
+  { targets, regionIndex, refName, startBp, endBp }: RowTargets,
 ): MenuItem[] {
-  const { targets, regionIndex, refName, startBp, endBp } = selectedRowTargets(
-    model,
-    contextCoord,
-  )
   const refAssembly = model.view.assemblyNames[0]
   return targets.length === 0 || refAssembly === undefined
     ? []

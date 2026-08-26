@@ -80,6 +80,7 @@ import { findRowSpan } from './components/findRowSpan.ts'
 import { coverageInsertionAt, coverageSnpSnap } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
+import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { isRowIdentityMode } from './rowIdentityModes.ts'
@@ -2209,7 +2210,15 @@ export default function stateModelFactory(
            * #method
            */
           trackMenuItems() {
-            return [...superTrackMenuItems(), ...buildMafTrackMenuItems(self)]
+            return [
+              ...superTrackMenuItems(),
+              ...buildMafTrackMenuItems(self),
+              ...mafLaunchMenuItems({
+                session: getSession(self),
+                model: self,
+                view: getContainingView(self) as LinearGenomeViewModel,
+              }),
+            ]
           },
         }
       })

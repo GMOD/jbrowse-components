@@ -2,7 +2,6 @@ import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 
 import type { Sample } from '../types.ts'
-import type { LinearMafDisplayModel } from './stateModel.ts'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -63,7 +62,9 @@ export function selectionRegion(left: PxToBpResult, right: PxToBpResult) {
  */
 export function openSubsequenceWidget(
   session: IStateTreeNode,
-  model: LinearMafDisplayModel,
+  // the one thing the widget takes off the display, so the track menu's
+  // visible-region entry can pass its own model without naming this one
+  model: { adapterConfig: Record<string, unknown> },
   view: LinearGenomeViewModel,
   startPx: number,
   endPx: number,

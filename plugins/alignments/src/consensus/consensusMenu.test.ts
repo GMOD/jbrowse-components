@@ -5,8 +5,6 @@ import {
 } from '../LinearAlignmentsDisplay/testUtils.ts'
 import ConsensusSequenceF from './index.ts'
 
-import type { MenuItem } from '@jbrowse/core/ui'
-
 const LABEL = 'Consensus sequence (visible region)'
 
 test('the alignments track menu offers a consensus, no rubberband needed', () => {

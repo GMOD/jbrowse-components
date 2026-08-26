@@ -7,9 +7,11 @@ import { rowSpanAtY } from './mafHitTest.ts'
 import {
   mafSyntenyLaunchItems,
   sampleNavigationItems,
+  selectedRowTargets,
 } from './sampleNavigationItems.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { RowTargets } from './sampleNavigationItems.ts'
 import type { ContextCoord } from './useDragSelection.ts'
 
 /**
@@ -19,6 +21,17 @@ import type { ContextCoord } from './useDragSelection.ts'
  * (via the shared `rowSpanAtY`, so the selection lands on the same rows the
  * hover hit-test would report).
  */
+// The two lists the selection's rows lead to, built from one pass over them
+// rather than one each: the same pair the track menu offers over the visible
+// region.
+function rowTargetItems(model: LinearMafDisplayModel, targets: RowTargets) {
+  const session = getSession(model)
+  return [
+    ...sampleNavigationItems(session, model, targets),
+    ...mafSyntenyLaunchItems(session, model, targets),
+  ]
+}
+
 const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   model,
   contextCoord,
@@ -64,10 +77,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
           },
         },
         ...(contextCoord
-          ? [
-              ...sampleNavigationItems(getSession(model), model, contextCoord),
-              ...mafSyntenyLaunchItems(getSession(model), model, contextCoord),
-            ]
+          ? rowTargetItems(model, selectedRowTargets(model, contextCoord))
           : []),
       ]}
     />
