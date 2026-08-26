@@ -1,0 +1,206 @@
+{
+  "assemblies": [
+    {
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Pd8Wh30ei9R",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg19/cytoBandIdeo.bed.gz"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_refseq_hg19",
+      "name": "NCBI RefSeq genes (hg19)",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "ncbi_refseq_hg19-LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "na12878_300x_reads",
+      "name": "NA12878 Illumina 300x (GIAB HG001)",
+      "assemblyNames": ["hg19"],
+      "category": ["Reads"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/sv_contact_maps/NA12878.sv_contact_maps.bam",
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/sv_contact_maps/NA12878.sv_contact_maps.bam.bai"
+          },
+          "indexType": "BAI"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "na12878_300x_reads-LinearAlignmentsDisplay",
+          "height": 420,
+          "readConnections": "cloud",
+          "readConnectionsHeight": 150,
+          "readConnectionsDown": true,
+          "forceLoad": true
+        }
+      ]
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "sv_contacts_discordant",
+      "name": "Contacts: discordant pairs and splits",
+      "assemblyNames": ["hg19"],
+      "category": ["Contact maps"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://jbrowse.org/demos/sv_contact_maps/discordant.hic"
+      },
+      "displays": [
+        {
+          "type": "LinearHicDisplay",
+          "displayId": "sv_contacts_discordant-LinearHicDisplay",
+          "height": 220,
+          "useColorPercentile": true,
+          "showResolutionControls": true,
+          "showLegend": true
+        }
+      ]
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "sv_contacts_same_strand",
+      "name": "Contacts: same-strand pairs (inversion)",
+      "assemblyNames": ["hg19"],
+      "category": ["Contact maps"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://jbrowse.org/demos/sv_contact_maps/same_strand.hic"
+      },
+      "displays": [
+        {
+          "type": "LinearHicDisplay",
+          "displayId": "sv_contacts_same_strand-LinearHicDisplay",
+          "height": 220,
+          "useColorPercentile": true,
+          "showResolutionControls": true,
+          "showLegend": true
+        }
+      ]
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "sv_contacts_outward",
+      "name": "Contacts: outward pairs (tandem duplication)",
+      "assemblyNames": ["hg19"],
+      "category": ["Contact maps"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://jbrowse.org/demos/sv_contact_maps/outward.hic"
+      },
+      "displays": [
+        {
+          "type": "LinearHicDisplay",
+          "displayId": "sv_contacts_outward-LinearHicDisplay",
+          "height": 220,
+          "useColorPercentile": true,
+          "showResolutionControls": true,
+          "showLegend": true
+        }
+      ]
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "sv_contacts_depth_difference",
+      "name": "Contacts: depth difference (copy number)",
+      "assemblyNames": ["hg19"],
+      "category": ["Contact maps"],
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://jbrowse.org/demos/sv_contact_maps/depth_difference.hic"
+      },
+      "displays": [
+        {
+          "type": "LinearHicDisplay",
+          "displayId": "sv_contacts_depth_difference-LinearHicDisplay",
+          "height": 220,
+          "useColorPercentile": true,
+          "showResolutionControls": true,
+          "showLegend": true
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "na12878_1000g_sv",
+      "name": "1000 Genomes phase 3 SVs, NA12878 non-reference",
+      "assemblyNames": ["hg19"],
+      "category": ["Variant calls"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/demos/sv_contact_maps/NA12878.1000g_sv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/sv_contact_maps/NA12878.1000g_sv.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "SV contact maps",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg19",
+          "loc": "7:70,400,000-70,460,000",
+          "tracks": [
+            "ncbi_refseq_hg19",
+            "na12878_1000g_sv",
+            "sv_contacts_same_strand",
+            "sv_contacts_discordant",
+            "sv_contacts_depth_difference",
+            "na12878_300x_reads"
+          ]
+        }
+      }
+    ]
+  }
+}
