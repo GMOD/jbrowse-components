@@ -23,6 +23,7 @@ import { buildPath, startServerOnFreePort } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 import { ensureGoldens } from './snapshot-store.ts'
 import { snapshotConfig, snapshotUpdates } from './snapshot.ts'
+import { parsePsTable, staleTestBrowsers } from './staleBrowsers.ts'
 
 import type { TestCase, TestSuite } from './types.ts'
 import type { Server } from 'node:http'
@@ -501,12 +502,10 @@ process.on('exit', () => {
 //   https://github.com/puppeteer/puppeteer/issues/1367
 //   https://github.com/puppeteer/puppeteer/issues/12854
 //
-// A leaked browser carries puppeteer's `--enable-automation` signature (never
-// present on a real Chrome) but its launching `node` is gone, so it's been
-// reparented to init/systemd. A concurrent live run keeps `node` as the parent,
-// so this is safe under the shared multi-agent worktree — we only kill browsers
-// whose runner has died. Killing each main process is enough; its renderer
-// children self-exit when the browser process's IPC pipe closes. Linux-only.
+// Only a browser whose launching `node` is gone (`staleTestBrowsers`), so this
+// is safe under the shared multi-agent machine. Killing each main process is
+// enough; its renderer children self-exit when the browser process's IPC pipe
+// closes. Linux-only.
 function killStaleTestBrowsers() {
   if (process.platform !== 'linux') {
     return
@@ -520,37 +519,13 @@ function killStaleTestBrowsers() {
   } catch {
     return // ps unavailable — skip the sweep rather than guess
   }
-
-  const procs = psOut
-    .split('\n')
-    .map(line => /^(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/.exec(line.trim()))
-    .filter(m => m !== null)
-    .map(m => ({
-      pid: +m[1]!,
-      ppid: +m[2]!,
-      comm: m[3]!,
-      argv: m[4]!.split(/\s+/),
-    }))
-  const commByPid = new Map(procs.map(p => [p.pid, p.comm]))
-
-  // A test browser is a chromium-family process carrying puppeteer's
-  // `--enable-automation` token (the user's own Chrome never has it). It's an
-  // orphan — its launching `node` died — when its parent is no longer `node`.
-  //
-  // MAIN PROCESSES ONLY. Chrome forwards `--enable-automation` to every
-  // renderer, and a renderer's parent is the zygote (`chrome`), never `node` —
-  // so without the `--type=` test this killed the live renderers of every
-  // browser another agent's run had open, each time a runner started. That
-  // surfaced there as `Target closed` and `Attempted to use detached Frame`
-  // some seconds into a page, with no crash event and nothing naming the cause
-  // (2026-08-25). A main process carries no `--type=`.
-  const orphans = procs.filter(
-    p =>
-      /^(chrome|chromium|headless_shell)/.test(p.comm) &&
-      p.argv.includes('--enable-automation') &&
-      !p.argv.some(a => a.startsWith('--type=')) &&
-      commByPid.get(p.ppid) !== 'node',
-  )
+  const orphans = staleTestBrowsers(parsePsTable(psOut), pid => {
+    try {
+      return fs.readlinkSync(`/proc/${pid}/exe`)
+    } catch {
+      return undefined
+    }
+  })
   for (const orphan of orphans) {
     try {
       process.kill(orphan.pid, 'SIGKILL')
