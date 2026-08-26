@@ -34,8 +34,24 @@ portal/
 ```
 
 Nothing points outside the directory, so `aws s3 sync portal/ s3://…` is the
-whole deployment. Verdicts live in the reviewer's browser (`localStorage`);
-**Export decisions** writes them out as TSV to hand back to a pipeline.
+whole deployment.
+
+## Reviewing
+
+The queue is meant to be read one card at a time, so it takes the keyboard:
+<kbd>j</kbd> and <kbd>k</kbd> move, <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> are
+keep / needs editing / reject on the card under the cursor, <kbd>o</kbd> opens
+it in JBrowse and <kbd>/</kbd> jumps to the search box. The same digit twice
+takes a verdict back off. **Keys** in the toolbar, or <kbd>?</kbd>, shows the
+list.
+
+Set **Unreviewed** as the verdict filter and the queue drains as it is judged,
+the cursor closing over each card that leaves.
+
+Verdicts live in the reviewer's browser (`localStorage`), which is one browser
+on one machine: **Export decisions** writes them out as TSV to hand back to a
+pipeline, and **Import** reads that TSV back, so a second reviewer, a second
+laptop or a cleared site setting is not a review started again from nothing.
 
 ## Requirements
 
@@ -125,6 +141,11 @@ node test/run.mjs
 Regenerates a synthetic genome built to produce one candidate of every class,
 then checks the classifier still puts each model where the fixture intends.
 Offline, about a second.
+
+It then drives the review page itself in a headless Chrome — the keyboard queue,
+the in-place repaint, the progress arithmetic and the TSV round trip, none of
+which the offline half can reach. That needs puppeteer; without it the run says
+so and stops rather than reporting a page it never opened.
 
 The fixture deliberately contains a small gene inside a big gene's intron **on
 the same strand**, which is the case that fails if the comparison reverts to

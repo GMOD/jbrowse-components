@@ -1,6 +1,6 @@
 // Regenerate the fixture and check the classifier still puts every model in the
 // class the fixture was built to produce. Runs offline in about a second.
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -396,4 +396,14 @@ fs.rmSync(flaky.dir, { recursive: true, force: true })
 fs.rmSync(dead.dir, { recursive: true, force: true })
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall checks passed')
-process.exit(failures ? 1 : 0)
+if (failures) {
+  process.exit(1)
+}
+
+// The review page is the other half, and it needs a browser. Runs last so a
+// classifier regression reports in a second rather than behind a Chrome launch.
+console.log('')
+const browser = spawnSync('node', [path.join(HERE, 'browser.mjs')], {
+  stdio: 'inherit',
+})
+process.exit(browser.status ?? 1)
