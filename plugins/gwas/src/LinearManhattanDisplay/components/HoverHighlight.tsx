@@ -1,6 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { axisPlotBox } from '@jbrowse/wiggle-core'
-import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   svg: {
@@ -16,7 +15,7 @@ const useStyles = makeStyles()({
 // Both ends of its box come off `axisPlotBox`, the same call that positions the
 // canvas beneath it: the ring is drawn at a `screenY` measured in that canvas'
 // space, so respelling either end here is what would drift it.
-const HoverHighlight = observer(function HoverHighlight({
+export default function HoverHighlight({
   screenX,
   screenY,
   width,
@@ -52,6 +51,4 @@ const HoverHighlight = observer(function HoverHighlight({
       />
     </svg>
   )
-})
-
-export default HoverHighlight
+}

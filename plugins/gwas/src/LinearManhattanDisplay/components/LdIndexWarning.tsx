@@ -1,5 +1,4 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   container: {
@@ -18,7 +17,7 @@ const useStyles = makeStyles()({
 // the LD data for the loaded region, so every point is grey. When the index is
 // simply panned off-screen (the common, benign case) the message says so;
 // otherwise it points at the likely data problem.
-const LdIndexWarning = observer(function LdIndexWarning({
+export default function LdIndexWarning({
   offsetTop,
   offscreen,
 }: {
@@ -33,6 +32,4 @@ const LdIndexWarning = observer(function LdIndexWarning({
         : 'Index SNP not found in the LD data for this region — every point is grey. Check that the index SNP is covered by the LD file and that its reference name matches (e.g. “chr2” vs “2”).'}
     </div>
   )
-})
-
-export default LdIndexWarning
+}
