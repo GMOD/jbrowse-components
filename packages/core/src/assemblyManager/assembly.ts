@@ -365,16 +365,21 @@ export default function assemblyFactory(
           }
           const maps = buildRefNameMaps(regions, refNameAliasCollection)
 
-          this.setLoaded({
-            ...maps,
-            regions: regions.map(r => ({
-              ...r,
-              refName: maps.refNameAliases[r.refName] ?? r.refName,
-              assemblyName,
-            })),
-            cytobands,
-            geneticCodes,
-          })
+          // the same tree-destroyed-mid-load case the status sink above is
+          // guarded for, at the write the load exists to make: a dead node has
+          // nothing to load into, and `setLoaded` is an action on it
+          if (isAlive(self)) {
+            this.setLoaded({
+              ...maps,
+              regions: regions.map(r => ({
+                ...r,
+                refName: maps.refNameAliases[r.refName] ?? r.refName,
+                assemblyName,
+              })),
+              cytobands,
+              geneticCodes,
+            })
+          }
         } finally {
           // the stream's own clear, not a bare write: it has to land (a status
           // inside a closed window would only queue) AND drop what is queued
@@ -407,9 +412,14 @@ export default function assemblyFactory(
           // stale error left over from the previous attempt
           self.setError(undefined)
           self.loadingP = self.loadPre().catch((e: unknown) => {
-            console.error(e)
-            self.setLoadingP(undefined)
-            self.setError(e)
+            // both writes are actions, and a failure can arrive after the tree
+            // holding this assembly is gone; the rejection still reaches
+            // whoever awaited it
+            if (isAlive(self)) {
+              console.error(e)
+              self.setLoadingP(undefined)
+              self.setError(e)
+            }
             throw e
           })
         }

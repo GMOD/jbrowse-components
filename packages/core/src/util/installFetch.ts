@@ -109,7 +109,14 @@ export async function runFetchOnce<TArgs, TResult>(
   } catch (e) {
     handleFetchError(e, isCurrent, setError)
   } finally {
-    onEnd?.(isCurrent())
+    // Both `onEnd` implementations are MST actions on `self`, and a display
+    // destroyed mid-fetch — a track closed, a display type switched out from
+    // under a load — still resumes here. `beforeDestroy` already stopped the
+    // token, so the bookkeeping is moot on a dead node; calling the action
+    // anyway only warns.
+    if (isAlive(self)) {
+      onEnd?.(isCurrent())
+    }
     // last, because it closes the guard `onEnd` reads, and unconditional
     // because a superseded run's status slot goes on voting for a phase that
     // is over until it is retired
