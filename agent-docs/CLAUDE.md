@@ -15,14 +15,19 @@ is filed:
   findings nobody has committed to. **Pointers, not content.** Delete when the
   thread lands.
 - Tried and declined → `reference/REJECTED_IDEAS.md`.
-- Work someone intends to do → `TODO.md`, in the order to take it.
+- Work **v5.0.0 turns on** → `TODO.md`, in the order to take it. Work someone
+  intends to do after it — including a measured defect — → `ideas/`, and move
+  it back once the release is out.
 - What a session did and which commits → **git already holds it.**
 
 That last one applies to `CLAUDE.md` files too and is the rule they break most.
 "State as of \<date\>" outside `handoffs/` means split it into the homes above.
 
-`TODO.md` vs `ideas/` is commitment, not size. Read a parked proposal before
-re-proposing it. `mechanisms/` vs `reference/` is which one is the subject: a
+`TODO.md` vs `ideas/` is commitment, not size — and while a release is in view
+the commitment being asked about is that release's. Read a parked proposal
+before re-proposing it, and expect `ideas/` to hold real bugs as well as
+proposals: 34 entries moved there on 2026-08-26 for missing the v5.0.0 bar, each
+saying so at its top. `mechanisms/` vs `reference/` is which one is the subject: a
 doc that cannot name its idea without naming the plugin is a subsystem writeup,
 and a mechanism doc points at that writeup for the depth rather than restating
 it.

@@ -140,7 +140,7 @@ There are two right answers and the choice is per consumer:
 Either way the gap is carried as a field (`hiddenSegmentsBetween`,
 `hiddenSegmentsBefore`) rather than being the silence left by a `continue`. The
 same-strand case is still open:
-[a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid](../todo/a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md).
+[a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid](../ideas/a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md).
 
 ## 6. A per-region answer about a chain is an answer about the region
 

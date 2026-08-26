@@ -34,7 +34,7 @@ const lines = readFileSync(todoPath, 'utf8').split('\n')
 // Each `## ` heading is one category's table, so walking the file in order says
 // which table a row landed in as well as which rows exist.
 const CATEGORY_BY_HEADING: Record<string, string> = {
-  'Ready to build: small and self-contained': 'ready',
+  'Ready to take': 'ready',
   'Blocked on a visual call': 'visual-call',
   'Measure first: the premise or the cost attribution is unconfirmed':
     'measure-first',

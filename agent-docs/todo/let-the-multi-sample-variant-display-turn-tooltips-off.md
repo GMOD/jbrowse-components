@@ -15,6 +15,6 @@ rewrite, and the only mention left in the tree is the legacy-props comment in
 may still carry (verified 2026-08-26 — that comment is the sole occurrence).
 
 Take it with
-[give-the-multi-sample-variant-display-a-hide-this-feature-item](give-the-multi-sample-variant-display-a-hide-this-feature-item.md):
+[give-the-multi-sample-variant-display-a-hide-this-feature-item](../ideas/give-the-multi-sample-variant-display-a-hide-this-feature-item.md):
 same display, same menu, and both are copies of something `plugins/canvas`
 already has.

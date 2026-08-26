@@ -1686,7 +1686,7 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   **What the investigation actually found**: MAF writes no per-frame inline
   styles at all. The dirty set is ~150-160 elements, ~90% of it the ~144 tick
   transforms at `ScalebarCoordinateLabels.tsx:81`. **Reopen only** via the
-  coordinate ruler — see `todo/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md`,
+  coordinate ruler — see `ideas/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md`,
   whose priority this raises, since the ruler turns out to be charging four
   other subsystems for its dirt.
 
