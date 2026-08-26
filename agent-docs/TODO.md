@@ -10,8 +10,8 @@ entries actually disagree on. Roughly two fifths are ordinary build work; a
 quarter carry a design that survived a rejected alternative and needs following
 rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing. Eleven are blocked on a visual call that is
-not the implementer's to make.
+building first would be guessing. Thirteen are blocked on a visual call
+that is not the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
 [ideas/](ideas/README.md), one file per proposal.
@@ -78,6 +78,8 @@ the half that rots is the half it covers.
 | [What colour is an arc with no pair orientation](todo/what-colour-is-an-arc-with-no-pair-orientation.md) | alignments | a visual call, then one of two edits |
 | [Midnight primary is invisible on dark stock](todo/midnight-primary-is-invisible-on-the-dark-stock-ground.md) | palette, theme | pick one of three; never re-tint a single component |
 | [The interbase stack overruns its half-band](todo/the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint.md) | alignments | a visual call; the overflow is measured, no fix is chosen |
+| [The read cloud's parked row is clipped by the band edge](todo/the-read-clouds-parked-row-is-clipped-by-the-band-edge.md) | alignments | a visual call; the clipping is measured and any inset has to reach the shaders |
+| [Read cloud ticks every interchromosomal connection as a full-band vertical](todo/read-cloud-ticks-every-interchromosomal-connection-as-a-full-band-vertical.md) | alignments | a visual call; the parked row is a candidate home, but a square carries neither the partner name nor the support width |
 | [Overlay labels cover the row below](todo/overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes.md) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [The polyprotein strand arrow centres on the whole stack](todo/the-polyprotein-strand-arrow-sits-at-the-centre-of-the-whole-stack.md) | canvas, glyphs | a visual call; the transcript path one file over says one row, this one says all of them |
 | [Synteny clicked outline in tiled mode](todo/the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode.md) | synteny | get the visual call — hull silhouette or per-tile |

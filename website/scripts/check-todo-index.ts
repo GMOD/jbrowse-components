@@ -87,6 +87,14 @@ const NUMBER_WORDS = [
   'Ten',
   'Eleven',
   'Twelve',
+  'Thirteen',
+  'Fourteen',
+  'Fifteen',
+  'Sixteen',
+  'Seventeen',
+  'Eighteen',
+  'Nineteen',
+  'Twenty',
 ]
 
 const visualCallEntries = [...categoryByFile.values()].filter(
@@ -100,6 +108,13 @@ const expected = NUMBER_WORDS[visualCallEntries]
 if (!claim) {
   problems.push(
     `${rel}: the preamble no longer says "<N> are blocked on a visual call". Restore the sentence or drop this check with it.`,
+  )
+} else if (expected === undefined) {
+  // Past the end of the list the message used to read `Write "undefined"`,
+  // which names neither the count nor the fix. The list is the thing that ran
+  // out, so say so.
+  problems.push(
+    `${rel}: agent-docs/todo/ holds ${visualCallEntries} entries with \`category: visual-call\`, past the end of NUMBER_WORDS in website/scripts/check-todo-index.ts. Add the word and update the preamble.`,
   )
 } else if (claim[1] !== expected) {
   problems.push(
