@@ -178,6 +178,11 @@ const suite: TestSuite = {
       displayTestId: pileup,
     }),
     lgvSnapshotTest({
+      // THE DEFAULT, and it sets nothing so that it stays the default:
+      // `readConnectionsDown`'s `promotedBase` is true (configSchema.ts), so
+      // arcs point DOWN — below the coverage band — unless a track says
+      // otherwise. This case is what a user gets, and the one below is the
+      // opt-out.
       name: 'cloud mode (paired-end SV)',
       snapshot: 'arcs-cloud',
       loc: 'ctgA:1-50000',
@@ -187,25 +192,22 @@ const suite: TestSuite = {
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
             readConnections: 'cloud',
-            // PINNED, and it is what makes this case different from the one
-            // below. `readConnectionsDown` is a promotable slot whose
-            // `promotedBase` is TRUE (configSchema.ts), so leaving it unset
-            // inherits the session-wide default and renders DOWN — the same
-            // thing the next test sets explicitly. It was written when the
-            // ambient default was false; `5556f47257` flipped it, and from
-            // then until this pin the two tests captured byte-identical
-            // goldens (same hash in snapshots.lock) and the band's up mode had
-            // no coverage at all. Up mode anchors the axis at the band's
-            // BOTTOM, which is where a read cloud's parked marks sit.
-            readConnectionsDown: false,
           },
         },
       ],
       displayTestId: pileup,
     }),
     lgvSnapshotTest({
-      name: 'cloud down mode (paired-end SV, scalebar left)',
-      snapshot: 'arcs-cloud-down',
+      // UP mode, the non-default, which is why it is the one spelling a value
+      // out. Its predecessor set `readConnectionsDown: true` and so captured
+      // the default over again: byte-identical goldens to the case above, on
+      // all three backends. That was invisible from 5556f47257 (2026-07-12),
+      // which flipped the ambient default to true months after this test was
+      // written against a false one — and it left up mode with no coverage at
+      // all. Up mode anchors the axis at the band's BOTTOM, which is where a
+      // read cloud's parked marks sit.
+      name: 'cloud up mode (arcs above the coverage band)',
+      snapshot: 'arcs-cloud-up',
       loc: 'ctgA:1-50000',
       tracks: [
         {
@@ -213,7 +215,7 @@ const suite: TestSuite = {
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
             readConnections: 'cloud',
-            readConnectionsDown: true,
+            readConnectionsDown: false,
           },
         },
       ],
