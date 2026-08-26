@@ -4,7 +4,10 @@ title: SyntenyFetchStateMixin
 sidebar_label: Mixin -> SyntenyFetchStateMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFetchStateMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFetchStateMixin.ts).
 
 The fetch-lifecycle bookkeeping shared by the two comparative displays
 (LinearSyntenyDisplay, DotplotDisplay): whether an RPC is in flight, the
@@ -19,23 +22,22 @@ each display's `displayPhase` and each view's `settled` gate — lives in
 `comparativeReadiness.ts`, as functions rather than as members here, for the
 `error` reason below.
 
-`loading`/`refetching`/`dataCurrent`/`svgReady` themselves stay on each
-display, and the reason is **`error`**, not the inputs you would guess.
-`ready` (each display holds its data in a different field) and
-`currentFetchKey` (view-specific inputs) could both be default-false hooks
-here, exactly as `fetchInert` is. `error` could not: it is a `BaseDisplay`
-volatile, and three of those four getters read it. Declaring it here to make
-them type-check would put a second `error` in the compose chain, where one
-set silently wins by argument order — the hazard `FetchMixin` documents
-against ADR-041 and the thing this mixin exists to avoid, not reproduce.
+`loading`/`refetching`/`dataCurrent`/`svgReady` themselves stay on each display,
+and the reason is **`error`**, not the inputs you would guess. `ready` (each
+display holds its data in a different field) and `currentFetchKey`
+(view-specific inputs) could both be default-false hooks here, exactly as
+`fetchInert` is. `error` could not: it is a `BaseDisplay` volatile, and three of
+those four getters read it. Declaring it here to make them type-check would put
+a second `error` in the compose chain, where one set silently wins by argument
+order — the hazard `FetchMixin` documents against ADR-041 and the thing this
+mixin exists to avoid, not reproduce.
 
-Note what is *not* the reason, since an earlier version of this comment said
-it was: none of the four is genuinely different between the two displays.
-Both `loading`s subtract `fetchInert` and both `svgReady`s pass it as
-`extraTerminal` (with `fetchCanceled` beside it), so the pairs differ only
-in which field holds the data (`ready` vs `instanceData`) and in the
-view-specific fetch key. If `error` ever becomes visible here, all four move
-up together.
+Note what is _not_ the reason, since an earlier version of this comment said it
+was: none of the four is genuinely different between the two displays. Both
+`loading`s subtract `fetchInert` and both `svgReady`s pass it as `extraTerminal`
+(with `fetchCanceled` beside it), so the pairs differ only in which field holds
+the data (`ready` vs `instanceData`) and in the view-specific fetch key. If
+`error` ever becomes visible here, all four move up together.
 
 ## Volatiles
 

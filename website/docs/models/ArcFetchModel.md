@@ -4,22 +4,25 @@ title: ArcFetchModel
 sidebar_label: Display -> ArcFetchModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `arc` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/shared/ArcFetchModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`arc` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/shared/ArcFetchModel.ts).
 
-Shared fetch/gating model for both arc displays. Composes `GlobalFetchMixin`
-— the one global foundation (cancel-safe `runFetch`, region-too-large gate,
+Shared fetch/gating model for both arc displays. Composes `GlobalFetchMixin` —
+the one global foundation (cancel-safe `runFetch`, region-too-large gate,
 `reload`/`reloadCounter`, `svgReady`, `displayPhase`) — and adds the
-arc-specific data
-state (`features` + its region signature) plus a **derived** `regionTooLarge`
-— the exact byte-only pattern LD and multi-sample variant use, so arc has no
-special region-too-large handling: the banner is a pure function of the last
-measurement, and what keeps that measurement describing the viewport on screen
-is that a blocked display keeps running this fetch once per settled viewport,
-stopping at the worker's own measurement. No imperative clear, and no derived
-second byte number scaled by span — see RegionTooLargeMixin §"Measurement
-follows the viewport".
+arc-specific data state (`features` + its region signature) plus a **derived**
+`regionTooLarge` — the exact byte-only pattern LD and multi-sample variant use,
+so arc has no special region-too-large handling: the banner is a pure function
+of the last measurement, and what keeps that measurement describing the viewport
+on screen is that a blocked display keeps running this fetch once per settled
+viewport, stopping at the worker's own measurement. No imperative clear, and no
+derived second byte number scaled by span — see RegionTooLargeMixin
+§"Measurement follows the viewport".
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Volatiles
 

@@ -4,11 +4,15 @@ title: LinearVariantDisplay
 sidebar_label: Display -> LinearVariantDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts).
 
 ## Example usage
 
 A complete `VariantTrack` config to paste into `tracks`:
+
 ```js
 {
   type: 'VariantTrack',
@@ -31,9 +35,11 @@ A complete `VariantTrack` config to paste into `tracks`:
 
 GPU-accelerated variant display with custom feature widget on click.
 
-The configuration slots for this model are documented on its [config schema page](../../config/linearvariantdisplay).
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearvariantdisplay).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

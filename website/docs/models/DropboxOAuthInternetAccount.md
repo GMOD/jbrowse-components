@@ -4,11 +4,16 @@ title: DropboxOAuthInternetAccount
 sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/model.tsx).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/model.tsx).
 
-The configuration slots for this model are documented on its [config schema page](../../config/dropboxoauthinternetaccount).
+The configuration slots for this model are documented on its
+[config schema page](../../config/dropboxoauthinternetaccount).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

@@ -4,13 +4,17 @@ title: BamAdapter
 sidebar_label: Adapter -> BamAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/BamAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/BamAdapter/configSchema.ts).
 
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.bai` index (pass `csi: true` for a
-`.csi` index). For a differently-named index, set `index` explicitly with
-the full slot form:
+`.csi` index). For a differently-named index, set `index` explicitly with the
+full slot form:
+
 ```js
 {
   type: 'AlignmentsTrack',
@@ -24,7 +28,10 @@ the full slot form:
 }
 ```
 
-`sample.bam` infers `BamAdapter` and `AlignmentsTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`sample.bam` infers `BamAdapter` and `AlignmentsTrack` on its own, and `name`
+defaults to the file name. In a config declaring one assembly, `assemblyNames`
+comes from there too — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -48,7 +55,14 @@ automatically supplies it from the enclosing assembly's sequence track.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "BamAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BamAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri`, `csi` in place of writing a location slot out. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

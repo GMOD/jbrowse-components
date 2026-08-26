@@ -4,12 +4,16 @@ title: ReferenceSequenceTrack
 sidebar_label: Track -> ReferenceSequenceTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts).
 
 ## Example usage
 
-Usually authored as the `sequence` member of an assembly rather than a
-top-level track:
+Usually authored as the `sequence` member of an assembly rather than a top-level
+track:
+
 ```js
 sequence: {
   type: 'ReferenceSequenceTrack',
@@ -29,12 +33,16 @@ used to display base level DNA sequence tracks
 
 ### ReferenceSequenceTrack - Identifier
 
-Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field that identifies it (not one of the config slots below).
+Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field
+that identifies it (not one of the config slots below).
 
 ## Related links
 
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay) ([state model](../../models/lineargccontentdisplay))
-- **Display:** [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay) ([state model](../../models/linearreferencesequencedisplay))
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+  ([state model](../../models/lineargccontentdisplay))
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+  ([state model](../../models/linearreferencesequencedisplay))
 - **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
 - **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
 - **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
@@ -45,7 +53,11 @@ Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field 
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots are top-level fields of the track config, alongside `trackId` and
+`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

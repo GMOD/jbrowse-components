@@ -4,13 +4,15 @@ title: SharedLDDisplay
 sidebar_label: Display -> SharedLDDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/SharedLDConfigSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `variants`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/SharedLDConfigSchema.ts).
 
 Shared config for the two LD displays: `LDDisplay` (on a `VariantTrack`,
-computing pairwise R² from the VCF's own genotypes) and `LDTrackDisplay` (on
-an `LDTrack`, reading pre-computed LD such as PLINK `--r2` output). Both
-register the same slots against different track types, so the slots live here
-once.
+computing pairwise R² from the VCF's own genotypes) and `LDTrackDisplay` (on an
+`LDTrack`, reading pre-computed LD such as PLINK `--r2` output). Both register
+the same slots against different track types, so the slots live here once.
 
 ## Related links
 
@@ -20,7 +22,13 @@ once.
 
 ## Config slots
 
-`SharedLDDisplay` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+`SharedLDDisplay` is a shared base schema, not a type you name in a config. Set
+these slots on one of the configs under **Extended by** above, each of which
+lists them as inherited and shows the shape in its own example. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

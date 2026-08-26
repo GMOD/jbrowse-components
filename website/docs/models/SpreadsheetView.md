@@ -4,13 +4,17 @@ title: SpreadsheetView
 sidebar_label: View -> SpreadsheetView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `spreadsheet-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`spreadsheet-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts).
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`. The `init` shorthand loads a
-tabular file (VCF/BED/CSV/etc) straight into the grid, skipping the import
-form; `assembly` is used to resolve genomic coordinates in the rows:
+Hand-authored under `defaultSession.views`. The `init` shorthand loads a tabular
+file (VCF/BED/CSV/etc) straight into the grid, skipping the import form;
+`assembly` is used to resolve genomic coordinates in the rows:
+
 ```js
 {
   type: 'SpreadsheetView',
@@ -22,7 +26,8 @@ form; `assembly` is used to resolve genomic coordinates in the rows:
 }
 ```
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

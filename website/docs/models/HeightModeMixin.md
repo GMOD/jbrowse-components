@@ -4,16 +4,22 @@ title: HeightModeMixin
 sidebar_label: Mixin -> HeightModeMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HeightModeMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HeightModeMixin.ts).
 
-#crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`
+#crossCuttingMixin Track-height strategy; the one row that must compose
+**after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides.
+`growTargetHeight` (default = the raw slot). Brings
+`heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive
+`height` override, `setHeightMode`, and the grow-aware `resizeHeight`
 
 The whole track-height strategy every display with a promotable `heightMode`
 config slot shares (the canvas feature display, the alignments display), so the
 fixed/grow/fit vocabulary is identical by construction rather than by two call
-sites that happen to agree. What differs between the two — canvas fits a
-feature stack, alignments a grouped pileup — is exactly one getter,
-`growTargetHeight`.
+sites that happen to agree. What differs between the two — canvas fits a feature
+stack, alignments a grouped pileup — is exactly one getter, `growTargetHeight`.
 
 `heightMode` is the single source of truth (resolved through the promotable
 session-default cascade); `autoHeight`/`fitHeightToDisplay` are plain-flag
@@ -25,10 +31,10 @@ computed cycle). In fixed/fit mode `fitTargetHeight` equals `height`.
 
 **Grow mode lives here in full.** A display supplies one getter —
 `growTargetHeight`, the height its laid-out content wants — and gets
-`grownHeight` (that, capped at `growMaxHeight`), the reactive `height`
-override, the drag-resize that leaves grow first, and the `setHeightMode`
-base. Both users previously carried character-identical copies of the last
-three, comments included.
+`grownHeight` (that, capped at `growMaxHeight`), the reactive `height` override,
+the drag-resize that leaves grow first, and the `setHeightMode` base. Both users
+previously carried character-identical copies of the last three, comments
+included.
 
 Must be composed **after** `TrackHeightMixin`: it overrides that mixin's
 `height` getter and `resizeHeight` action, and `types.compose` resolves a

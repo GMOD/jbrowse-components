@@ -4,13 +4,17 @@ title: SequenceSearchAdapter
 sidebar_label: Adapter -> SequenceSearchAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/SequenceSearchAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/SequenceSearchAdapter/configSchema.ts).
 
 ## Example usage
 
-`search` is a regular expression matched against the assembly's own sequence,
-so a track needs no file of its own. This one finds canonical polyadenylation
+`search` is a regular expression matched against the assembly's own sequence, so
+a track needs no file of its own. This one finds canonical polyadenylation
 signals on both strands:
+
 ```js
 {
   type: 'FeatureTrack',
@@ -29,6 +33,7 @@ signals on both strands:
 Both strands are scanned by default. Turn one off where the motif is
 strand-specific, so the track does not report the reverse-complement hit as a
 second site:
+
 ```js
 {
   type: 'FeatureTrack',
@@ -59,7 +64,13 @@ source and silently desyncs the track if the assembly's sequence changes.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "SequenceSearchAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "SequenceSearchAdapter", ... }`. This adapter has no `uri`
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
+location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

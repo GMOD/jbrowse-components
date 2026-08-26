@@ -4,14 +4,19 @@ title: JBrowse1Connection
 sidebar_label: Connection -> JBrowse1Connection
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`legacy-jbrowse` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts).
 
-Connection that imports tracks from a legacy JBrowse 1 data directory,
-composed on the base connection model.
+Connection that imports tracks from a legacy JBrowse 1 data directory, composed
+on the base connection model.
 
-The configuration slots for this model are documented on its [config schema page](../../config/jbrowse1connection).
+The configuration slots for this model are documented on its
+[config schema page](../../config/jbrowse1connection).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

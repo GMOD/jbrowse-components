@@ -4,11 +4,14 @@ title: BaseTrackModel
 sidebar_label: Track -> BaseTrackModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
 
-these MST models only exist for tracks that are *shown*. they should contain
-only UI state for the track, and have a reference to a track configuration.
-note that multiple displayed tracks could use the same configuration.
+these MST models only exist for tracks that are _shown_. they should contain
+only UI state for the track, and have a reference to a track configuration. note
+that multiple displayed tracks could use the same configuration.
 
 ## Properties
 

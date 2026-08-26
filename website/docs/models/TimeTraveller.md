@@ -4,10 +4,13 @@ title: TimeTraveller
 sidebar_label: General -> TimeTraveller
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/TimeTraveller.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/TimeTraveller.ts).
 
-Undo/redo history for a target state-tree node: records snapshots as it
-changes and exposes canUndo/canRedo with undo/redo actions.
+Undo/redo history for a target state-tree node: records snapshots as it changes
+and exposes canUndo/canRedo with undo/redo actions.
 
 ## Properties
 

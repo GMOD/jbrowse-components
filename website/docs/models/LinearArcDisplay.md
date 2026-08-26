@@ -4,15 +4,18 @@ title: LinearArcDisplay
 sidebar_label: Display -> LinearArcDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `arc` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearArcDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`arc` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearArcDisplay/model.ts).
 
 ## Example usage
 
-Selected on a `FeatureTrack`; each feature is drawn as one arc from its start
-to its end. `displayMode` is `arcs` (bezier) or `semicircles`. The
-`thickness` and `label` slots default to expressions over the feature
-`score`, so override them (plus `color` / `arcHeight`) for data without a
-score:
+Selected on a `FeatureTrack`; each feature is drawn as one arc from its start to
+its end. `displayMode` is `arcs` (bezier) or `semicircles`. The `thickness` and
+`label` slots default to expressions over the feature `score`, so override them
+(plus `color` / `arcHeight`) for data without a score:
+
 ```js
 {
   type: 'FeatureTrack',
@@ -36,14 +39,16 @@ score:
 }
 ```
 
-a non-block-based display drawing one arc per feature, connecting that
-feature's own start and end, rendered as plain SVG on the main thread. For
-arcs that connect two *separate* loci (a breakend and its mate) use
+a non-block-based display drawing one arc per feature, connecting that feature's
+own start and end, rendered as plain SVG on the main thread. For arcs that
+connect two _separate_ loci (a breakend and its mate) use
 [LinearPairedArcDisplay](../linearpairedarcdisplay) instead.
 
-The configuration slots for this model are documented on its [config schema page](../../config/lineararcdisplay).
+The configuration slots for this model are documented on its
+[config schema page](../../config/lineararcdisplay).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

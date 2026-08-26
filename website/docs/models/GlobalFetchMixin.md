@@ -4,31 +4,36 @@ title: GlobalFetchMixin
 sidebar_label: Mixin -> GlobalFetchMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/GlobalFetchMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/GlobalFetchMixin.ts).
 
-**The** foundation for a display holding a single global (non-regional)
-dataset — HiC's contact matrix, the LD triangle, both arc displays. One
-foundation rather than the two this family carried until 2026-08-23:
-`GlobalDataDisplayMixin` existed only to layer `RenderLifecycleMixin` on top
-for the GPU composers, because arc paints main-thread SVG `<path>`s and
-declined it — so the fetch foundation was split in two, and the three getters
-on the upper half (`canRender`, `paintInert`, `displayPhase`) were reachable
-only by whichever displays composed it. A display that composes this now gets
-the whole answer, and arc pays five unused volatiles and two autoruns it
-never installs (`attachRenderingBackend` is what installs them, and arc never
-calls it) for the same table row as everyone else.
+**The** foundation for a display holding a single global (non-regional) dataset
+— HiC's contact matrix, the LD triangle, both arc displays. One foundation
+rather than the two this family carried until 2026-08-23:
+`GlobalDataDisplayMixin` existed only to layer `RenderLifecycleMixin` on top for
+the GPU composers, because arc paints main-thread SVG `<path>`s and declined it
+— so the fetch foundation was split in two, and the three getters on the upper
+half (`canRender`, `paintInert`, `displayPhase`) were reachable only by
+whichever displays composed it. A display that composes this now gets the whole
+answer, and arc pays five unused volatiles and two autoruns it never installs
+(`attachRenderingBackend` is what installs them, and arc never calls it) for the
+same table row as everyone else.
 
 Composes:
-  - RegionTooLargeMixin (regionTooLarge, force-load, …)
-  - RenderLifecycleMixin (attachRenderingBackend, renderNow, renderError, …)
-  - FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
-                fetchGeneration)
+
+- RegionTooLargeMixin (regionTooLarge, force-load, …)
+- RenderLifecycleMixin (attachRenderingBackend, renderNow, renderError, …)
+- FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
+  fetchGeneration)
 
 Installs no autoruns — each display owns its fetch trigger, sharing the
 `installGlobalFetchAutorun` skeleton, to which it supplies only its own
 `prepare` / `run` / `commit` phases.
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Volatiles
 

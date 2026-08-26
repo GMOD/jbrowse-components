@@ -4,7 +4,10 @@ title: LinearCanvasBaseDisplay
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `canvas`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
 
 base config for canvas-based linear feature displays (pileup-style glyphs)
 
@@ -17,7 +20,13 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 ## Config slots
 
-`LinearCanvasBaseDisplay` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+`LinearCanvasBaseDisplay` is a shared base schema, not a type you name in a
+config. Set these slots on one of the configs under **Extended by** above, each
+of which lists them as inherited and shows the shape in its own example. Slot
+types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

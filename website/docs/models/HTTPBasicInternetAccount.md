@@ -4,16 +4,21 @@ title: HTTPBasicInternetAccount
 sidebar_label: Internet Account -> HTTPBasicInternetAccount
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/model.tsx).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/model.tsx).
 
 Internet account that authenticates requests with an HTTP Basic
-username/password the user enters through a dialog, optionally validated with
-a HEAD request. See [TokenEntryInternetAccount](../tokenentryinternetaccount)
-for the shared behavior.
+username/password the user enters through a dialog, optionally validated with a
+HEAD request. See [TokenEntryInternetAccount](../tokenentryinternetaccount) for
+the shared behavior.
 
-The configuration slots for this model are documented on its [config schema page](../../config/httpbasicinternetaccount).
+The configuration slots for this model are documented on its
+[config schema page](../../config/httpbasicinternetaccount).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

@@ -4,14 +4,17 @@ title: TrixTextSearchAdapter
 sidebar_label: Adapter -> TrixTextSearchAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `trix` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `trix` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts).
 
 ## Example usage
 
 `jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for
 you. The `uri` shorthand points at the `.ix`; the sibling `.ixx` and
-`_meta.json` are derived from it, so all three only need spelling out when
-they are named against convention.
+`_meta.json` are derived from it, so all three only need spelling out when they
+are named against convention.
+
 ```js
 {
   type: 'TextSearchAdapter',
@@ -33,13 +36,21 @@ _See the **Config slots** section below for all available configuration fields._
 
 ### TrixTextSearchAdapter - Identifier
 
-Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a top-level field (not one of the config slots below) that identifies it; it is auto-generated when omitted.
+Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a top-level
+field (not one of the config slots below) that identifies it; it is
+auto-generated when omitted.
 
 an explicit `textSearchAdapterId` is still honored when given
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "TrixTextSearchAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "TrixTextSearchAdapter", ... }`. This adapter has no `uri`
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
+location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

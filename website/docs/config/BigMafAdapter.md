@@ -4,7 +4,9 @@ title: BigMafAdapter
 sidebar_label: Adapter -> BigMafAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BigMafAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BigMafAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -12,6 +14,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 species keys in the file — a bigMaf carries the alignment but not a display
 order, so an omitted or misspelled name shows as a missing row rather than an
 error:
+
 ```js
 {
   type: 'MafTrack',
@@ -37,7 +40,13 @@ used to configure BigMaf adapter
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "BigMafAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BigMafAdapter", ... }`. This adapter has no `uri`
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
+location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

@@ -4,13 +4,17 @@ title: DropboxOAuthInternetAccount
 sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts).
 
 ## Example usage
 
 The Dropbox endpoints are pre-filled, so an entry needs only your own OAuth
 app's `clientId`. Leave `domains` off and the account is still selectable by
 hand in the Add Track form.
+
 ```js
 {
   type: 'DropboxOAuthInternetAccount',
@@ -29,7 +33,11 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots are top-level fields of the account's entry in `internetAccounts`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots are top-level fields of the account's entry in `internetAccounts`.
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
