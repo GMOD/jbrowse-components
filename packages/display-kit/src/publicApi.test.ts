@@ -12,7 +12,6 @@ interface Manifest {
   exports: Record<string, string>
   publishConfig: {
     exports: Record<string, unknown>
-    typesVersions: Record<string, Record<string, string[]>>
   }
 }
 
@@ -51,13 +50,14 @@ describe('display-kit public surface', () => {
     expect(Object.keys(manifest.publishConfig.exports).sort()).toEqual(
       Object.keys(manifest.exports).sort(),
     )
-    expect(
-      Object.keys(manifest.publishConfig.typesVersions['*']!).sort(),
-    ).toEqual(
-      Object.keys(manifest.exports)
-        .map(subpath => subpath.slice(2))
-        .sort(),
-    )
+  })
+
+  it('carries no typesVersions', () => {
+    // It answered only `moduleResolution: "node"`, which reads no `exports` map
+    // at all. The plugins still on that setting cap `@jbrowse/core` below this
+    // major, so the field resolved types for nobody who could install the
+    // package — and TS 7 removes `node10` regardless.
+    expect(manifest.publishConfig).not.toHaveProperty('typesVersions')
   })
 
   it('every declared subpath resolves to a source file', () => {

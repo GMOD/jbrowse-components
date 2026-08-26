@@ -162,12 +162,6 @@ const devExports = {}
 // packages whose map is hand-curated.
 const publishExports = {}
 
-// Generate typesVersions for moduleResolution "node" consumers
-// This allows TypeScript to resolve subpath imports even without exports field support
-const typesVersions = {
-  '*': {},
-}
-
 for (const entry of imports) {
   const exportPath = entry.replace('@jbrowse/core', '.')
   const srcPath = getSourcePath(entry)
@@ -176,14 +170,6 @@ for (const entry of imports) {
   devExports[exportPath] = `./src${srcPath}`
 
   publishExports[exportPath] = `./esm${outPath}`
-
-  // typesVersions uses paths without leading './' and maps to array of paths
-  const typesVersionsKey = exportPath.slice(2) // remove './'
-  if (typesVersionsKey) {
-    typesVersions['*'][typesVersionsKey] = [
-      `esm${outPath.replace('.js', '.d.ts')}`,
-    ]
-  }
 }
 
 if (unresolved.length) {
@@ -209,7 +195,7 @@ if (!packageJson.publishConfig) {
   packageJson.publishConfig = {}
 }
 packageJson.publishConfig.exports = publishExports
-packageJson.publishConfig.typesVersions = typesVersions
+delete packageJson.publishConfig.typesVersions
 
 const next = `${JSON.stringify(packageJson, null, 2)}\n`
 
@@ -228,7 +214,4 @@ if (process.argv.includes('--check')) {
 console.log(`Generated ${Object.keys(devExports).length} dev export entries`)
 console.log(
   `Generated ${Object.keys(publishExports).length} publish export entries`,
-)
-console.log(
-  `Generated ${Object.keys(typesVersions['*']).length} typesVersions entries`,
 )

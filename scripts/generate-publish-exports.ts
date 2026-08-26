@@ -1,6 +1,6 @@
-// Derives each listed package's `publishConfig.exports` (and `typesVersions`)
-// from the `exports` map it already declares, so the surface a third party
-// installs is the same one the workspace enforces.
+// Derives each listed package's `publishConfig.exports` from the `exports` map
+// it already declares, so the surface a third party installs is the same one
+// the workspace enforces.
 //
 // The two maps say the same thing about different trees — `./src/x.ts` in the
 // workspace, `./esm/x.js` in the tarball — and only the second one is what an
@@ -27,10 +27,18 @@
 // caller, so all the condition bought was resolvers it declined to answer.
 // GMOD/jbrowse-components#5626 is what that cost.
 //
-// `typesVersions` stays, and is the one thing here that isn't redundant: a
-// consumer on `moduleResolution: "node"` doesn't read `exports` at all, and 8
-// of the 22 plugins in the reference external-plugin set are still on it. They
-// resolve types through this map or not at all.
+// There is no `typesVersions` either, and it went for the reason the count
+// that justified it did not survive contact. It served exactly one audience —
+// a consumer on `moduleResolution: "node"`, which reads no `exports` map and so
+// resolves subpath types through `typesVersions` or not at all. The reference
+// external-plugin set had 8 of 22 on that setting, but six of them cap
+// `@jbrowse/core` at `^1.x` or `^2.x` and so cannot install this major at all,
+// and mafviewer, the seventh, is vendored at `plugins/maf`. That left
+// jbrowse-plugin-hubs, which typechecks clean against the real published tree
+// with `typesVersions` deleted and `"moduleResolution": "bundler"` in its
+// tsconfig — the one-line change TypeScript itself names in the TS2307 it
+// raises. TS 6 already errors on `node10` as deprecated and TS 7 removes it, so
+// the field was buying a reprieve nobody was left to spend.
 //
 // Run with `--check` in CI (via `pnpm autogen --check`) to fail on drift
 // instead of rewriting.
@@ -79,23 +87,16 @@ for (const pkg of PACKAGES) {
   }
 
   const publishExports: Record<string, string> = {}
-  const typesVersions: Record<string, string[]> = {}
 
   for (const [subpath, srcPath] of Object.entries(exports)) {
-    const stem = emittedStem(srcPath)
-    publishExports[subpath] = `./esm/${stem}.js`
-    // typesVersions keys are subpaths without the leading './', and '.' has no
-    // key at all — the top-level `types` field covers the barrel.
-    if (subpath !== '.') {
-      typesVersions[subpath.slice(2)] = [`esm/${stem}.d.ts`]
-    }
+    publishExports[subpath] = `./esm/${emittedStem(srcPath)}.js`
   }
 
   manifest.publishConfig = {
     ...manifest.publishConfig,
     exports: publishExports,
-    typesVersions: { '*': typesVersions },
   }
+  delete manifest.publishConfig.typesVersions
 
   const next = `${JSON.stringify(manifest, null, 2)}\n`
   if (check) {

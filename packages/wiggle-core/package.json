@@ -54,16 +54,6 @@
       ".": "./esm/index.js",
       "./constants": "./esm/constants.js",
       "./normalize": "./esm/normalize.js"
-    },
-    "typesVersions": {
-      "*": {
-        "constants": [
-          "esm/constants.d.ts"
-        ],
-        "normalize": [
-          "esm/normalize.d.ts"
-        ]
-      }
     }
   },
   "sideEffects": false
