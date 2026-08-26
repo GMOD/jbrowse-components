@@ -31,6 +31,34 @@ export interface InterRegionPaddingBlock extends BlockData {
 
 export type BaseBlock = ContentBlock | ElidedBlock | InterRegionPaddingBlock
 
+/**
+ * A content block as a region that addresses whole bases.
+ *
+ * `calculateDynamicBlocks` says in its own docstring that start/end may be
+ * FRACTIONAL — a block is a span of screen, and the view is only at a whole
+ * base when the pan and the zoom both happen to land there. Anything naming
+ * bases rather than pixels needs this: a sequence fetch, a bookmark, and above
+ * all a locString, since `BP_QUANTITY_SOURCE` rejects a bare fractional
+ * coordinate on purpose ("a bare '1.5' as a coordinate is a mistake").
+ *
+ * `reversed` is dropped with the pixels. It orients a projection, and a region
+ * that has left the screen is not being projected; carrying it only reached
+ * `assembleLocString`, which spells it `[rev]` in a field the user is about to
+ * read.
+ */
+export function wholeBaseRegion(block: ContentBlock) {
+  return {
+    assemblyName: block.assemblyName,
+    refName: block.refName,
+    start: Math.floor(block.start),
+    end: Math.ceil(block.end),
+  }
+}
+
+export function wholeBaseRegions(blocks: ContentBlock[]) {
+  return blocks.map(wholeBaseRegion)
+}
+
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 // A merged elided run can span several displayed regions, so its per-region

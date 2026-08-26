@@ -29,6 +29,7 @@ import {
   moveTo,
   pxToBp,
 } from '@jbrowse/core/util/Base1DUtils'
+import { wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
@@ -1624,16 +1625,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.minOffset,
           self.totalBp / bpPerPx - MAX_OFFSET_PADDING_PX,
         )
-        return calculateDynamicBlocks({
-          ...layout,
-          bpPerPx,
-          offsetPx,
-        }).contentBlocks.map(region => ({
-          assemblyName: region.assemblyName,
-          refName: region.refName,
-          start: Math.floor(region.start),
-          end: Math.ceil(region.end),
-        }))
+        return wholeBaseRegions(
+          calculateDynamicBlocks({
+            ...layout,
+            bpPerPx,
+            offsetPx,
+          }).contentBlocks,
+        )
       },
 
       /**
@@ -2262,6 +2260,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get hasVisibleContent() {
           return this.dynamicBlocks.contentBlocks.length > 0
+        },
+
+        /**
+         * #getter
+         * What is on screen, as regions that address whole bases — what a
+         * reader means by "the visible region" when they ask to fetch it,
+         * bookmark it or read it back in a locString field. `visibleRegions`
+         * below is the other half: pixels, and fractional by design.
+         */
+        get visibleWholeBaseRegions() {
+          return wholeBaseRegions(this.dynamicBlocks.contentBlocks)
         },
 
         /**

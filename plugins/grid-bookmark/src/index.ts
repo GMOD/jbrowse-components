@@ -58,17 +58,12 @@ export default class GridBookmarkPlugin extends Plugin {
            * #action
            */
           bookmarkCurrentRegion() {
-            const blocks = self.dynamicBlocks.contentBlocks
+            const regions = self.visibleWholeBaseRegions
             const bookmarkWidget = self.activateBookmarkWidget()
-            if (!blocks.length) {
+            if (!regions.length) {
               throw new Error('no region selected')
             } else {
-              const block = blocks[0]!
-              bookmarkWidget.addBookmark({
-                ...block,
-                start: Math.floor(block.start),
-                end: Math.ceil(block.end),
-              })
+              bookmarkWidget.addBookmark(regions[0]!)
             }
           },
         }))

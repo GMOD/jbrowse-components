@@ -110,6 +110,15 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
       icon: NotesIcon,
       onClick: () => {
         const view = getContainingView(self) as LinearGenomeViewModel
+        // Whole-base, as the rubberband entry passes: the dialog seeds its
+        // Region field by way of `assembleLocString`, and a fractional
+        // coordinate does not survive the parse back — the field opens red and
+        // nothing can be fetched. Any pan or zoom leaves the view between
+        // bases, so this is the ordinary case rather than an edge.
+        const regions = view.visibleWholeBaseRegions
+        if (!regions.length) {
+          return
+        }
         // The VIEW, as the rubberband entry passes: the dialog's "Open as
         // variant track" shows what it added in it, and a display has no
         // `showTrack` to show it with.
@@ -119,7 +128,7 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
             model: view,
             display: self,
             trackName: `${getConf(getContainingTrack(self), 'name')}`,
-            regions: view.dynamicBlocks.contentBlocks,
+            regions,
             handleClose,
           },
         ])

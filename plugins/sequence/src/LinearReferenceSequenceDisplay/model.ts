@@ -498,13 +498,16 @@ export function modelFactory(
                 label: 'Get sequence (visible region)',
                 onClick: () => {
                   const view = getContainingView(self) as LinearGenomeViewModel
+                  // Whole-base: a fractional span reaches `fetchSequence` and
+                  // comes back the wrong length, which the dialog reports as
+                  // "returned N bases, but should have returned M".
+                  const regions = view.visibleWholeBaseRegions
+                  if (!regions.length) {
+                    return
+                  }
                   getDialogHost(self).queueDialog(handleClose => [
                     GetSequenceDialog,
-                    {
-                      model: view,
-                      regions: view.dynamicBlocks.contentBlocks,
-                      handleClose,
-                    },
+                    { model: view, regions, handleClose },
                   ])
                 },
               },
