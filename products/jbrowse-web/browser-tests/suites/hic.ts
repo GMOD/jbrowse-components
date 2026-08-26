@@ -8,6 +8,7 @@ import {
   waitForDataLoaded,
   waitForDisplayPaint,
 } from '../helpers.ts'
+import { captureElementPng } from '../snapshot.ts'
 import { viewSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
@@ -64,8 +65,8 @@ async function capture(page: Page, loc: string) {
   )
   await waitForDisplayPaint(page, displayPainted('hic-display'), 60000)
   await waitForDataLoaded(page, 60000)
-  const el = await page.waitForSelector(CANVAS, { timeout: 60000 })
-  return chromaProfile(await el!.screenshot())
+  await page.waitForSelector(CANVAS, { timeout: 60000 })
+  return chromaProfile(await captureElementPng(page, CANVAS, `hic ${loc}`))
 }
 
 const meanAbs = (f: (i: number) => number, n: number) => {

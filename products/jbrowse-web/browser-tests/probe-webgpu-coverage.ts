@@ -1,18 +1,23 @@
 // Why the alignments coverage strip is missing from the webgpu capture while
-// every read below it is pixel-identical. See
-// agent-docs/handoffs/cross-backend-gate-ci.md, "The coverage strip is missing
-// from the webgpu capture".
+// every read below it is pixel-identical. The attribution is settled and
+// written up in agent-docs/reference/SCREENSHOT_CAPTURE_RACE.md, "The third
+// one"; this file is the instrument that settled it and the one that now checks
+// the fix.
 //
 // The pixel evidence cannot tell a render bug from a capture bug: a strip that
 // was never drawn and a strip that was drawn but did not composite look the
 // same in a screenshot. So this asks the page instead of the picture. For each
-// backend it reports the display's geometry and writes two PNGs of the same
-// canvas, the BACKING STORE (toDataURL, what was drawn) and the COMPOSITED
-// capture (el.screenshot, what the compositor served), then prints where they
+// backend it reports the display's geometry and writes PNGs of the same canvas
+// — the BACKING STORE (toDataURL, what was drawn), the capture the suite takes
+// (captureElementPng, a clip at the measured rect) and the capture puppeteer
+// takes on its own (el.screenshot, which scrolls first) — then prints where they
 // disagree, row by row. The disagreement is the verdict:
 //
 //   backing store has the band, screenshot does not -> capture/compositing side
 //   neither has it                                  -> the pass drew nothing
+//
+// With the fix in place the two capture lines separate: the harness capture
+// agrees with the backing store and the unfixed one carries the 37px band.
 //
 // Same instrument and same caveat as the blank-capture work: "drew nothing" is
 // conclusive on canvas2d and only consistent on a GPU backend, because a
@@ -42,12 +47,14 @@ import {
   waitForDisplayPaint,
 } from './helpers.ts'
 import { startServerOnFreePort } from './server.ts'
+import { captureElementPng } from './snapshot.ts'
 
 import type { Browser, Page } from 'puppeteer'
 
 const FIREFOX = process.env.FIREFOX ?? '/usr/bin/firefox-nightly'
 const OUT = process.env.OUT ?? path.join(os.tmpdir(), 'webgpu-coverage-probe')
-const SELECTOR = `${displayPainted('pileup-display')} canvas`
+const HOST = displayPainted('pileup-display')
+const SELECTOR = `${HOST} canvas`
 
 // color-by-strand: one of the four failures, at a locus that reproduces it.
 const spec = {
@@ -74,85 +81,93 @@ const spec = {
 // What the page can tell us that a screenshot cannot: where the canvas sits,
 // what else is layered near its top edge (if the ruler shows through under one
 // backend, it is one of these), and what the backing store holds.
+// `host` arrives as a selector string rather than being built in here.
+// `displayPainted` is a node-side import and `page.evaluate` ships the function
+// body to the browser, so calling it in there threw `displayPainted is not
+// defined` on the first read — which is every run of this probe since
+// b7f076fe04 swept the literal into the helper.
 async function readPage(page: Page) {
-  return page.evaluate((selector: string) => {
-    const canvas = document.querySelector(selector)
-    if (!(canvas instanceof HTMLCanvasElement)) {
-      return { error: `no canvas for ${selector}` }
-    }
-    const host = canvas.closest(displayPainted('pileup-display'))
-    const rect = canvas.getBoundingClientRect()
-    const hostRect = host?.getBoundingClientRect()
-    const near = [...document.querySelectorAll<HTMLElement>('[data-testid]')]
-      // An ancestor always "overlaps" the canvas and always by most of its
-      // height, which is noise on every backend. Only siblings layered over it
-      // can bleed into the capture.
-      .filter(el => !el.contains(canvas))
-      .map(el => {
-        const r = el.getBoundingClientRect()
-        return {
-          testid: el.dataset.testid,
-          top: Math.round(r.top),
-          height: Math.round(r.height),
-        }
-      })
-      .filter(e => e.top >= rect.top - 120 && e.top <= rect.top + 60)
-      .sort((a, b) => a.top - b.top)
-    // Per-row attribution: what is painted OVER the canvas at each row of the
-    // band. `near` can only find elements carrying a data-testid, and the rows
-    // it fails to account for are exactly the question. Sampled at three x
-    // positions because the chrome over the band is not full-width.
-    // `Element`, not `HTMLElement`: the callers include `elementsFromPoint`,
-    // which is typed to the former — so `.dataset` is not available here.
-    const describe = (el: Element) => {
-      // eslint-disable-next-line unicorn/dom-node-dataset
-      const testid = el.getAttribute('data-testid')
-      const cls = el.className
-      return testid
-        ? `[${testid}]`
-        : `${el.tagName.toLowerCase()}${typeof cls === 'string' && cls ? `.${cls.split(' ')[0]}` : ''}`
-    }
-    const rows: { row: number; over: string[] }[] = []
-    for (let k = 0; k < 44; k++) {
-      const found = new Set<string>()
-      for (const fx of [0.1, 0.5, 0.9]) {
-        const stack = document.elementsFromPoint(
-          rect.left + rect.width * fx,
-          rect.top + k + 0.5,
-        )
-        const at = stack.indexOf(canvas)
-        for (const el of at < 0 ? stack : stack.slice(0, at)) {
-          if (!el.contains(canvas)) {
-            found.add(describe(el))
+  return page.evaluate(
+    ([selector, host]: [string, string]) => {
+      const canvas = document.querySelector(selector)
+      if (!(canvas instanceof HTMLCanvasElement)) {
+        return { error: `no canvas for ${selector}` }
+      }
+      const hostEl = canvas.closest(host)
+      const rect = canvas.getBoundingClientRect()
+      const hostRect = hostEl?.getBoundingClientRect()
+      const near = [...document.querySelectorAll<HTMLElement>('[data-testid]')]
+        // An ancestor always "overlaps" the canvas and always by most of its
+        // height, which is noise on every backend. Only siblings layered over it
+        // can bleed into the capture.
+        .filter(el => !el.contains(canvas))
+        .map(el => {
+          const r = el.getBoundingClientRect()
+          return {
+            testid: el.dataset.testid,
+            top: Math.round(r.top),
+            height: Math.round(r.height),
+          }
+        })
+        .filter(e => e.top >= rect.top - 120 && e.top <= rect.top + 60)
+        .sort((a, b) => a.top - b.top)
+      // Per-row attribution: what is painted OVER the canvas at each row of the
+      // band. `near` can only find elements carrying a data-testid, and the rows
+      // it fails to account for are exactly the question. Sampled at three x
+      // positions because the chrome over the band is not full-width.
+      // `Element`, not `HTMLElement`: the callers include `elementsFromPoint`,
+      // which is typed to the former — so `.dataset` is not available here.
+      const describe = (el: Element) => {
+        // eslint-disable-next-line unicorn/dom-node-dataset
+        const testid = el.getAttribute('data-testid')
+        const cls = el.className
+        return testid
+          ? `[${testid}]`
+          : `${el.tagName.toLowerCase()}${typeof cls === 'string' && cls ? `.${cls.split(' ')[0]}` : ''}`
+      }
+      const rows: { row: number; over: string[] }[] = []
+      for (let k = 0; k < 44; k++) {
+        const found = new Set<string>()
+        for (const fx of [0.1, 0.5, 0.9]) {
+          const stack = document.elementsFromPoint(
+            rect.left + rect.width * fx,
+            rect.top + k + 0.5,
+          )
+          const at = stack.indexOf(canvas)
+          for (const el of at < 0 ? stack : stack.slice(0, at)) {
+            if (!el.contains(canvas)) {
+              found.add(describe(el))
+            }
           }
         }
+        rows.push({ row: k, over: [...found] })
       }
-      rows.push({ row: k, over: [...found] })
-    }
-    return {
-      canvas: {
-        cssTop: Math.round(rect.top),
-        cssLeft: Math.round(rect.left),
-        cssWidth: Math.round(rect.width),
-        cssHeight: Math.round(rect.height),
-        attrWidth: canvas.width,
-        attrHeight: canvas.height,
-        dpr: window.devicePixelRatio,
-      },
-      rows,
-      scrollY: Math.round(window.scrollY),
-      hostTop: hostRect ? Math.round(hostRect.top) : null,
-      hostHeight: hostRect ? Math.round(hostRect.height) : null,
-      near,
-      dataUrl: (() => {
-        try {
-          return canvas.toDataURL('image/png')
-        } catch (e) {
-          return `error: ${String(e)}`
-        }
-      })(),
-    }
-  }, SELECTOR)
+      return {
+        canvas: {
+          cssTop: Math.round(rect.top),
+          cssLeft: Math.round(rect.left),
+          cssWidth: Math.round(rect.width),
+          cssHeight: Math.round(rect.height),
+          attrWidth: canvas.width,
+          attrHeight: canvas.height,
+          dpr: window.devicePixelRatio,
+        },
+        rows,
+        scrollY: Math.round(window.scrollY),
+        hostTop: hostRect ? Math.round(hostRect.top) : null,
+        hostHeight: hostRect ? Math.round(hostRect.height) : null,
+        near,
+        dataUrl: (() => {
+          try {
+            return canvas.toDataURL('image/png')
+          } catch (e) {
+            return `error: ${String(e)}`
+          }
+        })(),
+      }
+    },
+    [SELECTOR, HOST] as [string, string],
+  )
 }
 
 // One channel of a pixel, composited over white. The backing store keeps its
@@ -250,7 +265,7 @@ function attributionRuns(rows: { row: number; over: string[] }[]) {
   const out: string[] = []
   let start = 0
   for (let i = 1; i <= rows.length; i++) {
-    const key = (r?: { over: string[] }) => (r ? r.over.join('+') : ' ')
+    const key = (r?: { over: string[] }) => (r ? r.over.join('+') : ' ')
     if (key(rows[i]) !== key(rows[start])) {
       const over = rows[start]!.over
       out.push(
@@ -280,12 +295,31 @@ async function probe(
       return
     }
     const el = await page.$(SELECTOR)
+    // The harness path first, because the scroll the other one performs is
+    // sticky and would contaminate everything read after it. `captureElementPng`
+    // clips to the rect it measured and asserts the rect did not move, so this
+    // line throwing IS the regression report for the fix.
+    const fixed = Buffer.from(await captureElementPng(page, SELECTOR, slug))
+    fs.writeFileSync(path.join(OUT, `${slug}.screenshot.png`), fixed)
+    const afterFixed = await readPage(page)
+    if (!('error' in afterFixed)) {
+      console.log(
+        `  harness capture: canvas cssTop ${info.canvas.cssTop} -> ` +
+          `${afterFixed.canvas.cssTop} (${
+            afterFixed.canvas.cssTop === info.canvas.cssTop
+              ? 'UNCHANGED, which is the invariant'
+              : 'MOVED — the fix is not holding'
+          })`,
+      )
+    }
+
+    // Now the unfixed path, kept so the probe still reproduces the artifact it
+    // was written to attribute: puppeteer scrolls the element into view before
+    // capturing, so the geometry that produced THIS capture is the one read
+    // after it, not the one read above. A sticky header that only overlaps the
+    // canvas once the page has scrolled is invisible to a before-reading.
     const shot = Buffer.from(await el!.screenshot())
-    fs.writeFileSync(path.join(OUT, `${slug}.screenshot.png`), shot)
-    // el.screenshot() scrolls the element into view first, so the geometry that
-    // produced the capture is the geometry AFTER it, not the one read above.
-    // A sticky header that only overlaps the canvas once the page has scrolled
-    // is invisible to a before-reading.
+    fs.writeFileSync(path.join(OUT, `${slug}.unfixed.png`), shot)
     const after = await readPage(page)
 
     console.log(`  canvas    ${JSON.stringify(info.canvas)}`)
@@ -323,7 +357,12 @@ async function probe(
       const backing = Buffer.from(info.dataUrl.split(',')[1]!, 'base64')
       fs.writeFileSync(path.join(OUT, `${slug}.backing.png`), backing)
       console.log(
-        `  backing store vs composited screenshot: ${hotRows(backing, shot)}`,
+        `  backing store vs UNFIXED capture: ${hotRows(backing, shot)}`,
+      )
+      // The same comparison against the capture the suite now takes. The band
+      // is the difference between these two lines.
+      console.log(
+        `  backing store vs harness capture: ${hotRows(backing, fixed)}`,
       )
     } else {
       console.log(`  backing store unreadable: ${info.dataUrl.slice(0, 100)}`)

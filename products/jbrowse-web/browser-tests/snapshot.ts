@@ -467,6 +467,119 @@ async function waitForMorphIdle(page: Page, timeout = 10000) {
     .catch(() => {})
 }
 
+// Every element capture in this suite goes through here, because
+// `el.screenshot()` on its own MOVES THE PAGE. Puppeteer calls
+// `scrollIntoViewIfNeeded` first, which asks an IntersectionObserver for a
+// visible ratio of exactly 1 and, failing that, runs
+// `scrollIntoView({ block: 'center' })`. Chrome answers 1 for a display that
+// fills the view and Firefox does not, so the webgpu side scrolled an inner
+// container by 73px with `window.scrollY` still 0, the canvas top landed under
+// the app's sticky header, and the capture composited 37px of locstring box,
+// toolbar divs and ruler into the canvas rectangle. That is 3-4% drift on the
+// targeted alignments pairs and 16-27% on the full-page ones — the scroll
+// outlives the call, so the `page.screenshot()` that follows photographs a
+// scrolled app. The render was never wrong; see
+// reference/SCREENSHOT_CAPTURE_RACE.md, "The third one".
+//
+// So measure the rectangle and clip to it, which is all `el.screenshot()` does
+// after the scroll it is being avoided for. Capturing where the page already
+// put the element is what Chrome was doing anyway, so the geometry now holds on
+// every backend rather than on the one that happened not to scroll, and the
+// same rect read afterwards asserts it: a differential oracle whose two sides
+// scroll differently compares scroll positions rather than renderers, and that
+// has to fail loudly instead of landing in a golden.
+//
+// The rect comes from the SELECTOR, never from an element handle. A pileup
+// display swaps its canvas element during the capture on every run —
+// `isConnected` reads false afterwards while `document.querySelector` still
+// finds one canvas at the same 1266x600@6,197 — so `el.boundingBox()` answers
+// null for a page that never moved, and an invariant asserted through the
+// handle fails 100% of the time on the suite it was written for.
+//
+// `scrollIntoView: false` would say this in one word and does work at runtime,
+// but puppeteer 25 declares it only on `screenshot`'s implementation signature;
+// both public overloads take a plain `ScreenshotOptions`, so passing it needs a
+// cast that would go stale silently.
+//
+// **Await an IntersectionObserver callback before clipping.** That await is the
+// compositor barrier the old code was paying for by accident: puppeteer reached
+// it through `isIntersectingViewport`, whose observer callback the spec queues
+// in the update-the-rendering step, so a frame had always been produced before
+// the capture. Dropping the scroll drops that too, and the capture then lands on
+// a canvas the compositor has not committed. Measured on canvas2d over one page,
+// `probe-capture-barrier.ts`, two runs of 15 and 25 captures per path:
+//
+//   el.screenshot (puppeteer's own barrier)   3/15, 0/25 blank
+//   clip, no barrier                          5/15, 6/25 blank
+//   clip, IntersectionObserver barrier        0/15, 0/25 blank
+//
+// So the barrier is not merely restored, it is better placed than the one
+// puppeteer gave us: puppeteer's runs before the scroll decision with a
+// round trip after it, and this one is the last thing before the clip.
+export async function captureElementPng(
+  page: Page,
+  selector: string,
+  label: string,
+) {
+  // Page coordinates, which is what `clip` is in: `visualViewport` carries the
+  // page scroll the rect is relative to.
+  const rect = () =>
+    page.evaluate(sel => {
+      const r = document.querySelector(sel)?.getBoundingClientRect()
+      const vv = window.visualViewport
+      return r
+        ? {
+            x: r.x + (vv?.pageLeft ?? window.scrollX),
+            y: r.y + (vv?.pageTop ?? window.scrollY),
+            width: r.width,
+            height: r.height,
+          }
+        : null
+    }, selector)
+  const fmt = (b: Awaited<ReturnType<typeof rect>>) =>
+    b
+      ? `${Math.round(b.width)}x${Math.round(b.height)}@${Math.round(b.x)},${Math.round(b.y)}`
+      : 'no element'
+
+  const before = await rect()
+  if (!before || before.width < 1 || before.height < 1) {
+    throw new Error(`${label}: nothing to capture (${fmt(before)})`)
+  }
+  await waitForRenderedFrame(page, selector)
+  const png = await page.screenshot({ type: 'png', clip: before })
+  const after = await rect()
+  if (fmt(before) !== fmt(after)) {
+    throw new Error(
+      `${label}: the element rect changed across the capture, ${fmt(before)} -> ` +
+        `${fmt(after)}. The bytes describe a rectangle the page no longer holds, ` +
+        `so they cannot be compared against another backend's.`,
+    )
+  }
+  return png
+}
+
+// Resolves once the browser has run the rendering steps at least once with this
+// element observed: an IntersectionObserver's first callback is queued from
+// inside update-the-rendering, so it cannot fire before a frame exists.
+export function waitForRenderedFrame(page: Page, selector: string) {
+  return page.evaluate(
+    sel =>
+      new Promise<void>(resolve => {
+        const el = document.querySelector(sel)
+        if (!el) {
+          resolve()
+          return
+        }
+        const observer = new IntersectionObserver(() => {
+          observer.disconnect()
+          resolve()
+        })
+        observer.observe(el)
+      }),
+    selector,
+  )
+}
+
 // Extract a canvas element's pixel data as PNG and compare it.
 // More reliable than full-page screenshots since it only captures
 // the rendered canvas content, avoiding UI/loading state variability.
@@ -495,7 +608,7 @@ export async function canvasSnapshot(
   // element a layout box: measured on the dotplot at 0x0@0,0 with a correctly
   // sized 1210x542 backing store, via probe-dotplot-drift-state.ts. Capturing
   // there returns plausible-looking bytes for a box that was never on screen,
-  // because `el.screenshot()` serves composited layers — a silently wrong image
+  // because a screenshot serves composited layers — a silently wrong image
   // rather than an error, and one this function's blank check does not catch
   // (the composite is not blank, just of nothing that was laid out).
   //
@@ -513,12 +626,16 @@ export async function canvasSnapshot(
     )
   }
 
-  const screenshot = await el.screenshot({ type: 'png' })
+  const screenshot = await captureElementPng(
+    page,
+    selector,
+    `${name} (${selector})`,
+  )
   if (assertContent) {
     const analysis = analyzeCanvasPng(screenshot)
     // Ask the canvas what IT holds, at the moment the screenshot came back
     // blank. This is the one question that separates the two candidate causes
-    // without needing the failure to be reproducible: `el.screenshot()` serves
+    // without needing the failure to be reproducible: a screenshot serves
     // *composited* layers, so a canvas that self-reports content while its
     // screenshot is blank puts the fault in the capture path, and both coming
     // back blank puts it in the render. One occurrence settles it; the A/Bs

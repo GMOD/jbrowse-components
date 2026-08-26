@@ -11,7 +11,11 @@ import {
 
 import { waitForAppMounted } from './appMounted.ts'
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
-import { canvasSelfReport, snapshotConfig } from './snapshot.ts'
+import {
+  canvasSelfReport,
+  captureElementPng,
+  snapshotConfig,
+} from './snapshot.ts'
 
 import type { Browser, ElementHandle, Page } from 'puppeteer'
 
@@ -468,11 +472,12 @@ export async function assertCanvasHasContent(
     timeout?: number
   } = {},
 ) {
-  const el = await page.waitForSelector(selector, { timeout })
-  if (!el) {
-    throw new Error(`assertCanvasHasContent: element not found: ${selector}`)
-  }
-  const buf = await el.screenshot({ type: 'png' })
+  await page.waitForSelector(selector, { timeout })
+  const buf = await captureElementPng(
+    page,
+    selector,
+    `assertCanvasHasContent(${selector})`,
+  )
   let stats = analyzeCanvasPng(buf)
   // Same render-vs-capture question canvasSnapshot asks, on the other path that
   // can report a blank — a blank arriving through here was invisible to that

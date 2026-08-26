@@ -8,7 +8,7 @@ import {
   waitForDataLoaded,
 } from '../helpers.ts'
 import { comparePngBuffers } from '../pngDiff.ts'
-import { snapshotConfig } from '../snapshot.ts'
+import { captureElementPng, snapshotConfig } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
@@ -49,11 +49,8 @@ async function loadAlignments(
 
 // Grab the rendered pixels of the pileup canvas as a PNG buffer.
 async function canvasPng(page: Page, selector = `${PILEUP_DONE} canvas`) {
-  const el = await page.waitForSelector(selector, { timeout: 60000 })
-  if (!el) {
-    throw new Error(`canvas not found: ${selector}`)
-  }
-  return el.screenshot({ type: 'png' })
+  await page.waitForSelector(selector, { timeout: 60000 })
+  return captureElementPng(page, selector, `canvasPng(${selector})`)
 }
 
 const suite: TestSuite = {
