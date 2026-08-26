@@ -411,7 +411,7 @@ describe('CascadingMenu submenu hover intent', () => {
     fireEvent.mouseOver(getByText('Colors'))
     fireEvent.mouseOver(getByText('Beta'))
     act(() => {
-      jest.advanceTimersByTime(100)
+      jest.advanceTimersByTime(30)
     })
     expect(expandedIn(getByTestId)('colors')).toBe('true')
   })
@@ -550,9 +550,12 @@ describe('CascadingMenu submenu hover intent', () => {
         clientX: 120,
         clientY: 40,
       })
-      for (let x = 130; x <= 190; x += 10) {
+      // steps short enough to stand in for a moving pointer, over a total
+      // several times the grace — what is asserted is that motion re-arms, and
+      // a step tuned right up against the constant would only be testing it
+      for (let x = 130; x <= 190; x += 5) {
         act(() => {
-          jest.advanceTimersByTime(150)
+          jest.advanceTimersByTime(50)
         })
         fireEvent.mouseMove(document, { clientX: x, clientY: 40 + (x - 120) })
       }

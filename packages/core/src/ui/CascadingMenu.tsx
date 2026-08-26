@@ -99,8 +99,22 @@ function useCascadingMenu() {
  * and changed their mind. A pointer that keeps traveling reaches the panel; one
  * that veers off leaves the cone and is acted on at once. That is what lets
  * this be short: it is a backstop for a stalled pointer, not the mechanism.
+ *
+ * Read it as the pause budget, because that is what it is once the cone is
+ * doing the work: whoever changes it is choosing how long a pointer may stop
+ * part way to a submenu before losing it, not how fast the menu answers. The
+ * paths a user feels as slow — veering off, heading straight down the list —
+ * never reach this timer at all.
+ *
+ * What stops it going shorter still is that a moving pointer re-arms it from
+ * mousemove, and mousemove stops arriving while the main thread is busy — a
+ * track finishing a fetch and repainting behind the menu is enough. Below the
+ * length of a stall like that, the panel would close under a pointer that never
+ * paused, which is the bug this whole mechanism exists to prevent, arriving by
+ * a different route. The cone is what made the number small; it cannot make it
+ * zero.
  */
-const submenuAimGraceMs = 200
+const submenuAimGraceMs = 120
 
 /**
  * Which submenu of ONE list is open, plus the hover intent that moves it.
