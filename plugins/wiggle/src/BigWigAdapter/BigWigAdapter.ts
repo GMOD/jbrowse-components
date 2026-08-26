@@ -1,10 +1,13 @@
 import { ArrayFeatureView, BigWig, BigWigFeature } from '@gmod/bbi'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   aggregateQuantitativeStats,
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import { downloadStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { calcStdFromSums } from '@jbrowse/core/util/stats'
@@ -95,33 +98,24 @@ function computeStatsFromView(
 }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterConfig> {
-  private setupP?: Promise<{
-    bigwig: BigWig
-    header: Awaited<ReturnType<BigWig['getHeader']>>
-  }>
+  setup = cachedSetup({
+    label: 'Downloading header',
+    setup: opts => this.setupPre(opts),
+  })
 
   public static capabilities = ['hasResolution']
 
   private async setupPre(opts?: BaseOptions) {
-    const { statusCallback } = opts ?? {}
-    const pluginManager = this.pluginManager
     const bigwig = new BigWig({
-      filehandle: openLocation(this.getConf('bigWigLocation'), pluginManager),
+      filehandle: openLocation(
+        this.getConf('bigWigLocation'),
+        this.pluginManager,
+      ),
     })
     return {
       bigwig,
-      header: await updateStatus('Downloading header', statusCallback, () =>
-        bigwig.getHeader(opts),
-      ),
+      header: await bigwig.getHeader(opts),
     }
-  }
-
-  async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
   }
 
   public async getRefNames(opts?: BaseOptions) {

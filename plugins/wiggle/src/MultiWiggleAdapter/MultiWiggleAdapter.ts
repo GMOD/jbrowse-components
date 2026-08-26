@@ -1,4 +1,7 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   aggregateQuantitativeStats,
   blankStats,
@@ -132,21 +135,7 @@ interface AdapterEntry {
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['hasResolution']
 
-  private adaptersP?: Promise<AdapterEntry[]>
-
-  public async getAdapters(): Promise<AdapterEntry[]> {
-    // Drop the memo on failure, the same way BigWigAdapter.setup does: a
-    // subadapter that throws once — a plugin whose adapter type has not
-    // registered yet, a transient failure inside getSubAdapter — otherwise
-    // leaves a rejected promise cached forever, so every later fetch, stats
-    // call and clustering run on this track rejects with the original error and
-    // a retry is impossible without rebuilding the adapter.
-    this.adaptersP ??= this.getAdaptersImpl().catch((e: unknown) => {
-      this.adaptersP = undefined
-      throw e
-    })
-    return this.adaptersP
-  }
+  getAdapters = cachedSetup({ setup: () => this.getAdaptersImpl() })
 
   private async getAdaptersImpl(): Promise<AdapterEntry[]> {
     const getSubAdapter = this.getSubAdapter

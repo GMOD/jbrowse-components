@@ -22,7 +22,9 @@ interface Config {
 }
 
 export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
-  protected statusLabel = 'Downloading index'
+  protected statusLabel() {
+    return 'Downloading index'
+  }
 
   protected async loadConfig(): Promise<Config> {
     const ldLocation = this.getConf('ldLocation')

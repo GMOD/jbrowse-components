@@ -1,6 +1,9 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
@@ -17,54 +20,27 @@ import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
 
-  private configured?: Promise<{
-    vcf: TabixIndexedFile
-    parser: VcfParser
-    header: string
-  }>
+  configure = cachedSetup({
+    label: 'Downloading index',
+    setup: () => this.configurePre(),
+  })
 
-  // true once the index has finished downloading; gates the status label so
-  // pan/zoom re-entry into configure() doesn't re-flash "Downloading index"
-  private configureReady = false
-
-  private configureOnce() {
-    if (!this.configured) {
-      const vcfGzLocation = this.getConf('vcfGzLocation')
-      const location = this.getConf(['index', 'location'])
-      const indexType = this.getConf(['index', 'indexType'])
-      const vcf = new TabixIndexedFile({
-        filehandle: openLocation(vcfGzLocation, this.pluginManager),
-        ...openTabixIndexFilehandle(location, indexType, this.pluginManager),
-        chunkCacheBudget: decompressedBytesBudget,
-        bgzfWorkerPool: sharedBgzfWorkerPool(),
-      })
-      this.configured = vcf
-        .getHeader()
-        .then(header => {
-          this.configureReady = true
-          return {
-            vcf,
-            parser: new VcfParser({ header }),
-            header,
-          }
-        })
-        .catch((e: unknown) => {
-          this.configured = undefined
-          throw e
-        })
+  private async configurePre() {
+    const vcfGzLocation = this.getConf('vcfGzLocation')
+    const location = this.getConf(['index', 'location'])
+    const indexType = this.getConf(['index', 'indexType'])
+    const vcf = new TabixIndexedFile({
+      filehandle: openLocation(vcfGzLocation, this.pluginManager),
+      ...openTabixIndexFilehandle(location, indexType, this.pluginManager),
+      chunkCacheBudget: decompressedBytesBudget,
+      bgzfWorkerPool: sharedBgzfWorkerPool(),
+    })
+    const header = await vcf.getHeader()
+    return {
+      vcf,
+      parser: new VcfParser({ header }),
+      header,
     }
-    return this.configured
-  }
-
-  // Show "Downloading index" only while the index is genuinely downloading. Once
-  // configured, callers (every getFeatures/byte-estimate on pan/zoom) await the
-  // cached promise silently rather than re-flashing the label.
-  async configure(opts?: BaseOptions) {
-    return this.configureReady
-      ? this.configureOnce()
-      : updateStatus('Downloading index', opts?.statusCallback, () =>
-          this.configureOnce(),
-        )
   }
 
   // Index-only compressed-byte estimate (no feature download), used by the

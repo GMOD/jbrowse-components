@@ -1,5 +1,8 @@
 import VcfParser from '@gmod/vcf'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
@@ -15,15 +18,9 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
 
 export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig> {
-  private vcfFeatures?: Promise<{
-    header: string
-    parser: VcfParser
-    intervalTreeMap: Record<
-      string,
-      (sc?: StatusCallback) => IntervalTree<Feature>
-    >
-    featureMap: Record<string, string[]>
-  }>
+  // No `label`: `fetchAndMaybeUnzip` narrates the download from the inside,
+  // and `groupLinesByRef` reports its own parse phase.
+  setup = cachedSetup({ setup: opts => this.setupPre(opts) })
 
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
 
@@ -37,7 +34,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
     return parser.getMetadata()
   }
 
-  private async setupP(opts?: BaseOptions) {
+  private async setupPre(opts?: BaseOptions) {
     const buffer = await fetchAndMaybeUnzip(
       openLocation(this.getConf('vcfLocation'), this.pluginManager),
       opts,
@@ -77,23 +74,15 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
     return { header, parser, intervalTreeMap, featureMap }
   }
 
-  private async setup() {
-    this.vcfFeatures ??= this.setupP().catch((e: unknown) => {
-      this.vcfFeatures = undefined
-      throw e
-    })
-    return this.vcfFeatures
-  }
-
-  public async getRefNames(_: BaseOptions = {}) {
-    const { intervalTreeMap } = await this.setup()
+  public async getRefNames(opts: BaseOptions = {}) {
+    const { intervalTreeMap } = await this.setup(opts)
     return Object.keys(intervalTreeMap)
   }
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = region
-      const { intervalTreeMap } = await this.setup()
+      const { intervalTreeMap } = await this.setup(opts)
       const tree = intervalTreeMap[refName]
       if (tree) {
         for (const f of tree(opts.statusCallback).search([start, end])) {
@@ -107,13 +96,13 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
   public async getExportData(
     regions: Region[],
     formatType: string,
-    _opts?: BaseOptions,
+    opts?: BaseOptions,
   ): Promise<string | undefined> {
     if (formatType !== 'vcf') {
       return undefined
     }
 
-    const { header, featureMap, parser } = await this.setup()
+    const { header, featureMap, parser } = await this.setup(opts)
     const exportLines: string[] = [header]
 
     for (const region of regions) {

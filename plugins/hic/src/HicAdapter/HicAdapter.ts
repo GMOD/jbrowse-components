@@ -1,5 +1,8 @@
 import { HicFile, NO_DATA_FOR_RESOLUTION } from '@gmod/hic'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   createProgressReporter,
   downloadStatus,
@@ -98,7 +101,15 @@ interface HicParser {
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
   private hic: HicParser
-  private metadataP: Promise<HicMetadata> | undefined
+
+  // `@gmod/hic` memoizes the parsed header, so every later call (e.g. on each
+  // zoom-level change) resolves from memory; `cachedSetup` keeps the label off
+  // those re-entries and retries a failed load rather than caching the
+  // rejection (like hicFile's initPromise).
+  private setup = cachedSetup({
+    label: 'Downloading header',
+    setup: () => this.hic.getMetaData(),
+  })
 
   public constructor(
     config: AnyConfigurationModel,
@@ -109,26 +120,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     this.hic = new HicFile({
       filehandle: openLocation(this.getConf('hicLocation'), this.pluginManager),
     })
-  }
-
-  private async setup(opts?: BaseOptions) {
-    const { statusCallback, stopToken } = opts ?? {}
-    // Only surface the "Downloading header" status on the genuine first
-    // fetch: `@gmod/hic` memoizes the parsed header, so every later call (e.g. on
-    // each zoom-level change) resolves from memory and shouldn't re-flash a
-    // download message for work that isn't happening. Memoize the promise, and
-    // clear it on failure (like hicFile's initPromise) so a failed load retries
-    // rather than caching a rejected promise forever.
-    this.metadataP ??= updateStatus(
-      'Downloading header',
-      statusCallback,
-      () => this.hic.getMetaData(),
-      stopToken,
-    ).catch((e: unknown) => {
-      this.metadataP = undefined
-      throw e
-    })
-    return this.metadataP
   }
 
   public async getHeader(opts?: BaseOptions) {

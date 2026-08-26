@@ -15,7 +15,9 @@ interface Config {
 }
 
 export default class PlinkLDAdapter extends PlinkLDAdapterBase<Config> {
-  protected statusLabel = 'Downloading LD data'
+  protected statusLabel() {
+    return 'Downloading LD data'
+  }
 
   protected async loadConfig(opts?: BaseOptions): Promise<Config> {
     const ldLocation = this.getConf('ldLocation')
