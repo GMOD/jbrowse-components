@@ -18,12 +18,15 @@ three clocks a track's cost splits into is waiting on a faster language.
 
 Three constraints decide what this renderer can be built on:
 
-- **Every display draws in Canvas2D.** Each canvas-drawing display ships a
-  Canvas2D draw function, [](/docs/developer_guides/svg_export) calls that
-  function rather than the shader, and a machine with no usable GPU runs it too.
-  Exported and on-screen pixels therefore cannot drift, and a GPU library adds a
-  third drawing path to hold in parity with those two — one none of the
-  candidates below can make cheap, since none of them has a Canvas2D backend.
+- **A display's drawing has to survive [](/docs/developer_guides/svg_export).**
+  A display that draws to a canvas ships a Canvas2D draw function, and the
+  export runs that function rather than the shader, so on-screen and exported
+  pixels cannot drift. A display light enough to skip the canvas emits SVG
+  directly instead — the arc displays and `MultiWaySyntenyDisplay` render the
+  same JSX `<path>` elements on screen and into the export. Either way the
+  display already owns a drawing path the GPU has no part in, and a rendering
+  library would add one more implementation of every glyph to keep in step with
+  it.
 - **The bytes are never converted.** A worker decodes a track into
   [one typed array per attribute](/docs/developer_guides/optimizations#the-worker-boundary),
   which crosses `postMessage` as a transferable and uploads to the GPU without

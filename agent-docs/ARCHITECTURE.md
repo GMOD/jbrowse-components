@@ -63,9 +63,10 @@ main:    model.rpcDataMap              (MST node, observable)
 
 Every canvas-drawing display **must** provide a Canvas2D draw function; the GPU
 shader path is an optional accelerator layered on top. Because SVG export runs
-the Canvas2D path, on-screen and exported pixels can't drift. Arc is the one
-non-canvas class *among LGV displays* — it paints JSX `<path>` elements on both
-paths (circular view's `ChordVariantDisplay` does the same off this axis
+the Canvas2D path, on-screen and exported pixels can't drift. Drawing to a
+canvas is itself a choice, though: the arc classes and
+`MultiWaySyntenyDisplay` paint JSX `<path>` elements on both paths and touch no
+canvas at all (circular view's `ChordVariantDisplay` does the same off this axis
 entirely); see [Display stacks](#display-stacks).
 
 ## Vocabulary
@@ -617,8 +618,10 @@ wiggle's strict-`bpPerPx` `regionFetchKey`; whether that is right for a new
 subclass is a question the tag table can't answer for you (see "Per-region
 zoom-staleness").
 
-Arc is the one display class that draws **neither** GPU canvas nor Canvas2D: its
-components emit JSX `<path>` elements, on screen and in SVG export alike. So it
+The arc classes draw **neither** GPU canvas nor Canvas2D: their components emit
+JSX `<path>` elements, on screen and in SVG export alike.
+`MultiWaySyntenyDisplay` is built the same way, and `renderMultiWaySvg` renders
+the on-screen `MultiWayRows` with `exportSVG` rather than a paint layer. So arc
 composes no `RenderLifecycleMixin`, and instead of `DisplayChrome` it renders
 `DisplayStatusChrome` — the backend-free half `DisplayChrome` itself delegates
 to, so its chrome is not merely identical to a GPU display's but the same
