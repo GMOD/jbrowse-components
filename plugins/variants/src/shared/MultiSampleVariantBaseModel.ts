@@ -133,6 +133,7 @@ const PORTABLE_CONFIG_KEYS = [
   'maxMissingnessFilter',
   'showRowLabels',
   'showRowSeparators',
+  'showTooltips',
   'showTree',
   'showBranchLength',
   'referenceDrawingMode',
@@ -410,11 +411,18 @@ export default function MultiSampleVariantBaseModelF(
           // trigger a run whose output is that mixin's state.
         }),
       )
-      // Unknown keys in an old display snapshot (blockState, showTooltips, the
-      // removed lengthCutoffFilter, display-instance height/heightOverride, a
+      // Unknown keys in an old display snapshot (blockState, the removed
+      // lengthCutoffFilter, display-instance height/heightOverride, a
       // pre-config-slot rowHeight) need no handling — MST drops them, and
       // length filtering is now a general jexl filter
       // (`jexl:get(feature,'end')-get(feature,'start')<N`).
+      //
+      // `showTooltips` is one of those keys again. It came back as a config slot
+      // rather than the display-instance prop it was before the rewrite, so an
+      // old session's copy names no prop and is dropped like the rest — the same
+      // answer `height` and `rowHeight` got when they made the same move, and the
+      // reason the slot defaults to the old prop's default. Only the value is
+      // lost, never the session.
       //
       // `jexlFilters` is the exception, because it held a live value: a session
       // saved before the rename carries the user's filters under it, and being
@@ -663,6 +671,17 @@ export default function MultiSampleVariantBaseModelF(
         get showRowSeparators(): boolean {
           return getConf(self, 'showRowSeparators')
         },
+        /**
+         * #getter
+         * Whether a hover draws the tooltip table. Only the tooltip: the
+         * crosshairs, the hovered-cell highlight and `hoveredFeature` (the
+         * cross-display hover channel) all keep working with it off, which is
+         * the point — the reader who turns it off wants the rows uncovered, not
+         * the pointer silenced.
+         */
+        get showTooltips(): boolean {
+          return getConf(self, 'showTooltips')
+        },
 
         /**
          * #getter
@@ -903,6 +922,12 @@ export default function MultiSampleVariantBaseModelF(
            */
           setShowRowSeparators(arg: boolean) {
             setConf(self, 'showRowSeparators', arg)
+          },
+          /**
+           * #action
+           */
+          setShowTooltips(arg: boolean) {
+            setConf(self, 'showTooltips', arg)
           },
           /**
            * #action
@@ -1381,10 +1406,15 @@ export default function MultiSampleVariantBaseModelF(
          * `buildVariantLaneHit` leaves `name` empty precisely so there is no
          * source to find here. A *cell* hover always finds one — both hit tests
          * take the name off `sources`, which is what `sourceMap` is built from.
+         *
+         * `showTooltips` is gated here rather than in the component, so the one
+         * getter feeding the tooltip is the one place that answers "is there a
+         * tooltip" — the hit test, `hoveredFeature` and the hovered-cell
+         * highlight go on reading `hoveredGenotype` and are unaffected.
          */
         get hoveredTooltipSource() {
           const { hoveredGenotype, sourceMap } = self
-          if (!hoveredGenotype) {
+          if (!hoveredGenotype || !self.showTooltips) {
             return undefined
           }
           const source = sourceMap.get(hoveredGenotype.name)

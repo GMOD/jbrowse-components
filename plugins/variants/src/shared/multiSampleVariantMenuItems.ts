@@ -54,6 +54,16 @@ export function variantShowSubmenuItems(
       },
       { pin: self.showLegendDisplayTypeDefault },
     ),
+    {
+      label: 'Show tooltips',
+      helpText:
+        'Show the hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs and the highlighted cell still follow the pointer — only the panel covering the rows beside it goes away',
+      type: 'checkbox',
+      checked: self.showTooltips,
+      onClick: () => {
+        self.setShowTooltips(!self.showTooltips)
+      },
+    },
   ]
 }
 

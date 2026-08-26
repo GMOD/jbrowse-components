@@ -43,8 +43,8 @@ editorial, but the half that rots is the half it covers.
 
 Ordered. The first four are checks owed on code that landed in the v5 window,
 where a wrong answer means something already shipped broken and two of them run
-the same gate. Then the one setting the rewrite dropped, then the two things the
-docs site publishes — one of which may already be done — then the ABI baseline
+the same gate. Then the two things the docs site publishes — one of which may
+already be done — then the ABI baseline
 this major release is the moment for, then the two halves of the
 release-validation exit criterion, which rise to the top of the file the moment a
 date exists.
@@ -55,7 +55,6 @@ date exists.
 | [Read the drift the AA ramp conversion predicts](todo/read-the-cross-backend-drift-the-aa-ramp-conversion-predicts.md) | shaders, GPU | all four converted; run the gate with the MSAA sample count held fixed, on a worktree with no second `runner.ts` in it |
 | [Make the capture scroll-invariant](todo/make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu.md) | browser tests | it is `snapshot.ts`, not a shader — attribution is done. Every gate script passes `--skip-webgpu` today, so webgpu ships ungated until this lands |
 | [Cover a per-base colour mode in the cross-backend gate](todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md) | alignments, browser tests | one scene per mode in the existing gate; pick a zoom where `binBp > 1`. Same gate as the row above, and this is the hole that already let a false appearance claim ship |
-| [Turn the multi-sample variant tooltips off](todo/let-the-multi-sample-variant-display-turn-tooltips-off.md) | variants | a v5 regression, not a feature — the rewrite dropped `showTooltips` and only the legacy-props comment remains |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | probably already done — verify before spending the pipeline; three need a review, not a capture |
 | [Rebuild the OrthoFinder demos' chrom.sizes](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all. `demos/orthofinder_*` is still at `ffa68a2e84` and the two spec-side workarounds are still carrying it |
 | [Do the plugin `exports` surfaces earn a baseline](todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md) | plugins, ABI | the plugin-`exports` baseline is built (`products/jbrowse-web/src/pluginExportsBaseline.json`); what is left is the session one, blocked on where its record lives. A major release is the moment to take one |

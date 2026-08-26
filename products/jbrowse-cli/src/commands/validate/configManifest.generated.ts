@@ -3867,6 +3867,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "showTooltips",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "renderingMode",
           "type": "(JexlString | RenderingMode)"
         },
@@ -3993,6 +3997,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showRowSeparators",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showTooltips",
           "type": "(JexlString | boolean)"
         },
         {

@@ -52,6 +52,25 @@ export default function sharedVariantConfigFactory() {
       },
       /**
        * #slot
+       * Show the hover tooltip naming the genotype, the sample and the record
+       * under the pointer. On by default; turning it off leaves every other
+       * hover affordance — the crosshairs, the highlighted cell, the
+       * cross-display `session.hovered` channel — alone, so the pointer still
+       * says where it is while the panel stops covering the rows beside it.
+       *
+       * A config slot rather than a display property, so a track config can
+       * ship with it off and a figure capture keeps it off across a reload.
+       * Both multi-sample displays honor it: they draw the same tooltip off the
+       * same `hoveredGenotype` slot.
+       */
+      showTooltips: {
+        type: 'boolean',
+        defaultValue: true,
+        description:
+          'show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way',
+      },
+      /**
+       * #slot
        */
       renderingMode: {
         type: 'stringEnum',
