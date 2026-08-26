@@ -6,17 +6,17 @@ import {
   type SvChannelsSettings,
 } from './svChannelsPreset.ts'
 
+// `colorBy` is on the mock and on neither preset: the arrangement used to write
+// it, and the round trip below is what says it no longer does.
 function mockModel(initial: SvChannelsSettings = SV_CHANNELS_OFF) {
   return {
     ...initial,
+    colorBy: { type: 'modifications' as const },
     setShowPileup(show: boolean) {
       this.showPileup = show
     },
     setGroupBy(groupBy?: SvChannelsSettings['groupBy']) {
       this.groupBy = groupBy
-    },
-    setColorScheme(colorBy: SvChannelsSettings['colorBy']) {
-      this.colorBy = colorBy
     },
     setReadConnections(mode: SvChannelsSettings['readConnections']) {
       this.readConnections = mode
@@ -30,12 +30,11 @@ function mockModel(initial: SvChannelsSettings = SV_CHANNELS_OFF) {
   }
 }
 
-test('the preset writes all six settings, not a subset', () => {
+test('the preset writes all five settings, not a subset', () => {
   const model = mockModel()
   applySvChannels(model, SV_CHANNELS_ON)
   expect(model.showPileup).toBe(false)
   expect(model.groupBy).toEqual({ type: 'pairOrientation' })
-  expect(model.colorBy).toEqual({ type: 'pairOrientation' })
   expect(model.readConnections).toBe('arc')
   expect(model.readConnectionsDown).toBe(true)
   expect(model.drawProperPairArcs).toBe(false)
@@ -54,12 +53,20 @@ test('clicking the menu row turns the arrangement on, then back off', () => {
   expect(model).toMatchObject(SV_CHANNELS_OFF)
 })
 
+test('the round trip leaves the color scheme alone', () => {
+  const model = mockModel()
+  getSvChannelsMenuItem(model).onClick()
+  expect(model.colorBy).toEqual({ type: 'modifications' })
+
+  getSvChannelsMenuItem(model).onClick()
+  expect(model.colorBy).toEqual({ type: 'modifications' })
+})
+
 // One case per matched field, so dropping any single comparison from
-// `isSvChannelsActive` fails a test rather than passing on the other five.
+// `isSvChannelsActive` fails a test rather than passing on the other four.
 test.each([
   ['showPileup', { showPileup: true }],
   ['groupBy', { groupBy: { type: 'strand' as const } }],
-  ['colorBy', { colorBy: { type: 'normal' as const } }],
   ['readConnections', { readConnections: 'cloud' as const }],
   ['drawProperPairArcs', { drawProperPairArcs: true }],
 ])('changing %s alone leaves the arrangement', (_name, override) => {

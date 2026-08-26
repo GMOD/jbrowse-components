@@ -21,8 +21,9 @@ evidence in the SAM format), see
 For end-to-end walkthroughs, see
 [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) (HG008
 tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
-[Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
-(population-scale genotypes, trio inheritance, a large inversion).
+[Structural variants (1000 Genomes)](/docs/tutorials/sv_multisamples) (a
+whole-gene deletion across the cohort, then a call its coverage is silent
+about).
 
 ## SV signals in the alignments track
 
@@ -169,8 +170,9 @@ a finding as a band that fills.
 
 <Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles standing on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty." src="/img/sv_channels.png" />
 
-Clicking the row again restores an ordinary pileup: the default coloring and no
-read connections, rather than whatever the track carried before.
+Clicking the row again restores an ordinary pileup. The color scheme is
+untouched in both directions, so a track colored by modifications or insert size
+still is on the way back out.
 
 ## SV-type signatures
 

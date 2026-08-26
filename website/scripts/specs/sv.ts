@@ -985,9 +985,13 @@ export const svSpecs: ScreenshotSpec[] = [
   // own arcs, so the LL and RR bundles stand alone on the two breakpoints while
   // the LR band's ordinary coverage is the negative.
   //
-  // The six settings are SV_CHANNELS_ON verbatim (svChannelsPreset.ts), so the
+  // The five settings are SV_CHANNELS_ON verbatim (svChannelsPreset.ts), so the
   // figure shows what the checkbox does rather than a hand-tuned neighbour of
   // it. Only the heights below are the figure's own.
+  //
+  // No `colorBy`: the arrangement wrote one until 2026-08-26, and dropping it
+  // left this capture byte-identical, which is the measurement behind taking it
+  // off the preset. Nothing here paints from a read fill.
   {
     mode: 'url',
     name: 'sv_channels',
@@ -1005,7 +1009,6 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               showPileup: false,
               groupBy: { type: 'pairOrientation' },
-              colorBy: { type: 'pairOrientation' },
               readConnections: 'arc',
               readConnectionsDown: true,
               drawProperPairArcs: false,

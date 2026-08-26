@@ -7,14 +7,13 @@ import {
   isSvChannelsActive,
 } from './svChannelsPreset.ts'
 
-import type { ColorBy, GroupBy } from '../../shared/types.ts'
+import type { GroupBy } from '../../shared/types.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsSettings } from './svChannelsPreset.ts'
 
 export interface SvChannelsModel extends SvChannelsSettings {
   setShowPileup: (show: boolean) => void
   setGroupBy: (groupBy?: GroupBy) => void
-  setColorScheme: (colorBy: ColorBy) => void
   setReadConnections: (mode: ReadConnectionsMode) => void
   setReadConnectionsDown: (down: boolean) => void
   setDrawProperPairArcs: (draw: boolean) => void
@@ -26,7 +25,6 @@ export function applySvChannels(
 ) {
   model.setShowPileup(settings.showPileup)
   model.setGroupBy(settings.groupBy)
-  model.setColorScheme(settings.colorBy)
   model.setReadConnections(settings.readConnections)
   model.setReadConnectionsDown(settings.readConnectionsDown)
   model.setDrawProperPairArcs(settings.drawProperPairArcs)
