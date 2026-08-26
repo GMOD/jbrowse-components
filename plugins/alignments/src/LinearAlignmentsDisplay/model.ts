@@ -3386,7 +3386,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setReadConnections(mode: ReadConnectionsMode) {
+          setReadConnections(mode?: ReadConnectionsMode) {
             setConf(self, 'readConnections', mode)
           },
 

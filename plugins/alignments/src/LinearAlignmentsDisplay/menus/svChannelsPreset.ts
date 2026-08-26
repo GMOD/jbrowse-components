@@ -6,12 +6,25 @@
 import type { GroupBy } from '../../shared/types.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 
+/** What the arrangement READS, to decide whether it is in effect. */
 export interface SvChannelsSettings {
   showPileup: boolean
   groupBy: GroupBy | undefined
   readConnections: ReadConnectionsMode
-  readConnectionsDown: boolean
   drawProperPairArcs: boolean
+}
+
+/**
+ * What a preset WRITES, which is not the same shape.
+ *
+ * `readConnections` is a promotable sentinel: its getter always resolves — to
+ * `promotedBase` 'off' when nothing is set — while its setter also takes
+ * `undefined`, meaning UNSET. Only the write side can say that, so only the
+ * write side has the wider type, and a preset asserting `SvChannelsSettings`
+ * could not express "hand this back to what it was inheriting" at all.
+ */
+export type SvChannelsWrite = Omit<SvChannelsSettings, 'readConnections'> & {
+  readConnections: ReadConnectionsMode | undefined
 }
 
 export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
@@ -28,25 +41,34 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // `trackStrands`/`bisulfite`). So the one setting that cost a reader their
 // methylation or insert-size coloring on the way in, and reset it to `normal`
 // on the way out, was also the one changing nothing in the picture.
-export const SV_CHANNELS_ON: SvChannelsSettings = {
+// `readConnectionsDown` is in NEITHER preset, and that is the same statement
+// `isSvChannelsActive` makes by not matching on it: which side of the coverage
+// the arcs hang on is a framing choice the arrangement has no opinion about.
+// Writing it was the read and the write disagreeing — flipping the side kept
+// the row ticked, then leaving and re-entering silently reverted the flip — and
+// on the way out it pinned an explicit `false` over a slot whose unset state
+// resolves to `true`, so a track that had never been near this menu came back
+// drawing its arcs above the coverage band.
+export const SV_CHANNELS_ON: SvChannelsWrite = {
   showPileup: false,
   groupBy: { type: 'pairOrientation' },
   readConnections: 'arc',
-  readConnectionsDown: true,
   drawProperPairArcs: false,
 }
 
-export const SV_CHANNELS_OFF: SvChannelsSettings = {
+// Leaving the arrangement UNSETS what it can unset rather than asserting a
+// state: `readConnections` goes back to inheriting, and the two plain booleans
+// go back to their schema defaults, which is the closest thing they have.
+//
+// It is still not a restore — a tag grouping or a read cloud in place before
+// the row was ticked does not come back, since nothing banks what it displaced.
+export const SV_CHANNELS_OFF: SvChannelsWrite = {
   showPileup: true,
   groupBy: undefined,
-  readConnections: 'off',
-  readConnectionsDown: false,
+  readConnections: undefined,
   drawProperPairArcs: true,
 }
 
-// `readConnectionsDown` is left out of the match: which side of the coverage the
-// arcs hang on is a framing choice, and flipping it should not read as having
-// left the arrangement.
 export function isSvChannelsActive(current: SvChannelsSettings) {
   return (
     current.showPileup === SV_CHANNELS_ON.showPileup &&

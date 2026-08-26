@@ -416,7 +416,7 @@ the whole surface.
 | <span id="action-setheightmode">**setHeightMode**</span><br><code>(mode: "fit" &#124; "fixed" &#124; "grow") =&gt; void</code> | The two pieces of transient state a uniform fit/grow contradicts that HeightModeMixin can't know about. The slot write and the scroll reset are its `setHeightMode`, captured as super above. | LinearAlignmentsDisplay |
 | <span id="action-setfittedheightpx">**setFittedHeightPx**</span><br><code>(px: number) =&gt; void</code> | Cache the fitted read height so the `featureHeight`/`featureSpacing` getters can split it into a body + derived gap. Written only by the driving autorun. | LinearAlignmentsDisplay |
 | <span id="action-setshowsashimiarcs">**setShowSashimiArcs**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
-| <span id="action-setreadconnections">**setReadConnections**</span><br><code>(mode: "arc" &#124; "cloud" &#124; "off") =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setreadconnections">**setReadConnections**</span><br><code>(mode?: "arc" &#124; "cloud" &#124; "off" &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setreadconnectionsdown">**setReadConnectionsDown**</span><br><code>(down: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setdebugarcgeometry">**setDebugArcGeometry**</span><br><code>(on: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setshowpileup">**setShowPileup**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |

@@ -29,8 +29,10 @@ function makeModel() {
     },
     pairsDisplayTypeDefault: control('linkedReads'),
     readConnections: 'off' as 'off' | 'arc' | 'cloud',
-    setReadConnections(mode: 'off' | 'arc' | 'cloud') {
-      this.readConnections = mode
+    // Unset resolves to 'off', as the promotable sentinel's getter does — the
+    // setter is the only side that can say undefined.
+    setReadConnections(mode?: 'off' | 'arc' | 'cloud') {
+      this.readConnections = mode ?? 'off'
     },
     arcsDisplayTypeDefault: control('readConnections'),
     readCloudDisplayTypeDefault: control('readConnections'),
