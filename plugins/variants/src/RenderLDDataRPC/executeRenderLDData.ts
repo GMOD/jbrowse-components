@@ -72,12 +72,6 @@ export async function executeRenderLDData({
     adapterConfig,
     regions,
     originBp,
-    ldMetric,
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-    hweFilterThreshold,
-    callRateFilter,
-    jexlFilters,
     signedLD,
     useGenomicPositions,
     byteLimit,
@@ -117,35 +111,15 @@ export async function executeRenderLDData({
   // is what keeps the ramp, the legend and the tooltip (all of which read this
   // back off the result) describing the same numbers.
   const signedResult = signedLD && !isPrecomputed
+  // `args` whole, never a re-listed subset: both matrix builders take a
+  // structural superset of the payload, and re-spelling the fields is how
+  // `maxVariantSeparation` and `ldMethod` came to be declared, sent, and then
+  // dropped on the floor here while every layer around them looked wired.
   const ldData = await (isPrecomputed
     ? updateStatus('Downloading LD data', statusCallback, () =>
-        getLDMatrixFromPlink({
-          pluginManager,
-          args: {
-            regions,
-            sessionId,
-            adapterConfig,
-            ldMetric,
-          },
-        }),
+        getLDMatrixFromPlink({ pluginManager, args }),
       )
-    : getLDMatrix({
-        pluginManager,
-        args: {
-          regions,
-          sessionId,
-          adapterConfig,
-          ldMetric,
-          minorAlleleFrequencyFilter,
-          lengthCutoffFilter,
-          hweFilterThreshold,
-          callRateFilter,
-          jexlFilters,
-          signedLD,
-          stopToken: args.stopToken,
-          statusCallback,
-        },
-      }))
+    : getLDMatrix({ pluginManager, args }))
 
   // Resolved before the empty check so both exits report the same thing.
   // Genomic-positions mode maps each SNP onto a single continuous bp axis

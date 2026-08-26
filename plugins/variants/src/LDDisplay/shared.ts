@@ -51,6 +51,7 @@ import type {
   LDRenderState,
   LDRenderingBackend,
 } from './components/ldRenderingBackendTypes.ts'
+import type { LDRpcProps } from './ldFetchPhases.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -513,7 +514,11 @@ export default function sharedModelFactory(
       // a change to any returned field refires the fetch while a read the
       // payload doesn't return cannot. No hand-enumerated fields at the top of
       // the autorun.
-      rpcProps() {
+      //
+      // Annotated, not inferred: the annotation is what makes a field the RPC
+      // does not declare an excess-property error here rather than a value the
+      // worker never sees.
+      rpcProps(): LDRpcProps {
         return {
           ldMetric: self.ldMetric,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,

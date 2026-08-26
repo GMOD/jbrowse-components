@@ -76,6 +76,7 @@ async function run(regions: Region[], useGenomicPositions: boolean) {
           hweFilterThreshold: 0,
           callRateFilter: 0,
           maxVariantSeparation: 0,
+          ldMethod: 'auto',
           jexlFilters: [],
           signedLD: false,
           useGenomicPositions,

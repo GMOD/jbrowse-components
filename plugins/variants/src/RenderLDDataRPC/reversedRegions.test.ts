@@ -11,7 +11,11 @@ import {
 } from '../VariantRPC/ldBand.ts'
 import { executeRenderLDData } from './executeRenderLDData.ts'
 
-import type { LDMatrixResult, LDSnp } from '../VariantRPC/getLDMatrix.ts'
+import type {
+  LDMatrixResult,
+  LDMethodRequest,
+  LDSnp,
+} from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
@@ -90,11 +94,19 @@ async function run(
   snps: LDSnp[],
   useGenomicPositions: boolean,
   maxVariantSeparation = 0,
+  ldMethod: LDMethodRequest = 'auto',
 ) {
+  // The band comes off the window the EXECUTOR forwarded, never off the one
+  // this harness was handed. Manufacturing it from the local argument injected
+  // the band the executor was supposed to cause, which is how the executor
+  // dropping `maxVariantSeparation` on its way to `getLDMatrix` — the full
+  // triangle every time, in production — sat under a green suite.
   jest
     .mocked(getLDMatrix)
-    .mockResolvedValue(
-      matrix(snps, resolveBand(snps.length, maxVariantSeparation)),
+    .mockImplementation(({ args }) =>
+      Promise.resolve(
+        matrix(snps, resolveBand(snps.length, args.maxVariantSeparation ?? 0)),
+      ),
     )
   // the envelope `deserializeReturn` takes off for the real caller: the four
   // Float32Arrays are transferred rather than cloned
@@ -115,6 +127,7 @@ async function run(
           hweFilterThreshold: 0,
           callRateFilter: 0,
           maxVariantSeparation,
+          ldMethod,
           jexlFilters: [],
           signedLD: false,
           useGenomicPositions,
@@ -123,6 +136,8 @@ async function run(
     ),
   )
 }
+
+const lastMatrixArgs = () => jest.mocked(getLDMatrix).mock.lastCall![0].args
 
 // LD value for a pair of SNPs, found by position rather than by index, so the
 // lookup doesn't assume either orientation's ordering.
@@ -313,5 +328,38 @@ describe('a screen-order pair the source band never computed', () => {
     expect(out.ldValues).toHaveLength((N * (N - 1)) / 2)
     expect(out.ldValues).toHaveLength(780)
     expect([...out.ldValues].filter(v => !ldValueComputed(v))).toHaveLength(0)
+  })
+})
+
+// Both of these were declared on `RenderLDDataArgs`, sent by the model, and
+// then dropped: the executor listed the fields of `getLDMatrix`'s argument
+// object by hand and neither was on the list, so `maxVariantSeparation`
+// defaulted to 0 (the full triangle, and a 4.66 GiB Float32Array at 50k
+// variants) and `ldMethod` to 'auto' (exact haplotypic LD on a phased callset a
+// track had asked to score with the composite estimator). Asserted on what
+// crossed into the matrix builder, because everything on either side of that
+// call reads correct.
+describe('the executor forwards the whole payload it was handed', () => {
+  test('the pair-separation window reaches getLDMatrix', async () => {
+    await run([region('a', false)], SNPS, false, 2)
+    expect(lastMatrixArgs().maxVariantSeparation).toBe(2)
+  })
+
+  test('the requested estimator reaches getLDMatrix', async () => {
+    await run([region('a', false)], SNPS, false, 0, 'composite')
+    expect(lastMatrixArgs().ldMethod).toBe('composite')
+  })
+
+  test('the filters and the metric reach it too', async () => {
+    await run([region('a', false)], SNPS, false)
+    expect(lastMatrixArgs()).toMatchObject({
+      ldMetric: 'r2',
+      minorAlleleFrequencyFilter: 0,
+      lengthCutoffFilter: 0,
+      hweFilterThreshold: 0,
+      callRateFilter: 0,
+      jexlFilters: [],
+      signedLD: false,
+    })
   })
 })

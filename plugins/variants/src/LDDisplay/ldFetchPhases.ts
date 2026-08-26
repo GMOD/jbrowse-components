@@ -5,6 +5,19 @@ import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchA
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+/**
+ * Everything the RPC takes that the fetch phase does not supply itself.
+ * Derived from the RPC's own arg type rather than restated, so a field added to
+ * the payload cannot arrive under a different name — and named here so the
+ * model can ANNOTATE `rpcProps` with it. Structural assignability of a method's
+ * return type admits extra properties, so an unannotated `rpcProps` returning
+ * `ldMethod` before the RPC declared one typechecked and was silently dropped.
+ */
+export type LDRpcProps = Omit<
+  RenderLDDataArgs,
+  'adapterConfig' | 'regions' | 'originBp' | 'byteLimit'
+>
+
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
 // silently turns off checking for every member below. See the note on
 // `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
@@ -12,12 +25,7 @@ export interface LDFetchSelf extends IStateTreeNode {
   showLDTriangle: boolean
   host: RegionHost
   adapterConfig: Record<string, unknown>
-  // Derived from the RPC's own arg type rather than restated, so a field added
-  // to the payload cannot arrive here under a different name.
-  rpcProps(): Omit<
-    RenderLDDataArgs,
-    'adapterConfig' | 'regions' | 'originBp' | 'byteLimit'
-  >
+  rpcProps(): LDRpcProps
   // `RegionTooLargeMixin`'s: the budget the worker enforces, and the same one
   // the banner compares against
   resolvedByteLimit(): number | undefined
