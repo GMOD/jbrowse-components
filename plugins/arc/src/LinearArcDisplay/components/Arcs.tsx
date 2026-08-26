@@ -11,13 +11,16 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 type ArcStyle = NonNullable<LinearArcDisplayModel['arcStyles']>[number]
 
-// semicircle dipping down from (left,0) to (right,0); SVG arc sweep-flag 0.
-// `Math.abs` keeps the radius (and label y) positive when a reversed region
-// puts `left` past `right`, matching the paired-arc convention.
-function getSemicirclePath(left: number, right: number) {
+// Semicircle dipping down from (left,0) to (right,0). A reversed region puts
+// `left` past `right`, and the sweep flag is the other half of that mirror: the
+// radius and the label y are `Math.abs`'d, so a fixed `0` swept the arc the
+// wrong way round and put the apex ABOVE the baseline, outside the container's
+// <svg> and clipped to two dots on the axis.
+export function getSemicirclePath(left: number, right: number) {
   const radius = Math.abs(right - left) / 2
+  const sweep = left <= right ? 0 : 1
   return {
-    d: `M ${left} 0 A ${radius} ${radius} 0 0 0 ${right} 0`,
+    d: `M ${left} 0 A ${radius} ${radius} 0 0 ${sweep} ${right} 0`,
     textYCoord: radius,
   }
 }
