@@ -12,7 +12,7 @@ import {
   relativeLink,
   sessionFor,
 } from '../lib/capture.mjs'
-import { classify } from '../lib/classify.mjs'
+import { classify, conflictBed } from '../lib/classify.mjs'
 import { buildConfig } from '../lib/prepare.mjs'
 
 const HERE = import.meta.dirname
@@ -39,9 +39,9 @@ const { rows, tally, total } = classify({
   referenceFile: path.join(FIXTURE, 'reference.gff3'),
 })
 
-check('every predicted transcript is classified', total, 12)
+check('every predicted transcript is classified', total, 13)
 check('class tally', tally, {
-  agrees: 7,
+  agrees: 8,
   merge: 1,
   'structure-conflict': 1,
   'novel-coding': 1,
@@ -66,6 +66,75 @@ check('the merge reports the gap between them', merge?.gapBp, 3999)
 const conflict = rows.find(r => r.cls === 'structure-conflict')
 check('the structure conflict names its gene', conflict?.genes, ['SHIFTY'])
 
+// The sabotage this pair is written against: build a gene's junctions by
+// sorting every isoform's exons into one list and joining consecutive pairs,
+// rather than reading one transcript at a time. That invents junctions no
+// transcript has. TWOFORM's second isoform shares none of the invented ones, so
+// flattening files a model that reproduces it exactly as a structure conflict —
+// which is what it did to 18 of the 21 conflicts reported on human chr22,
+// RANBP1 among them. Every other gene in this fixture has one isoform, where
+// flattening and reading per transcript agree.
+const twoform = rows.find(r => r.id === 'g600.t1')
+check('a model reproducing one isoform of two agrees', twoform?.cls, 'agrees')
+check(
+  "and it is credited with that isoform's junctions",
+  twoform?.sharedJunctions,
+  2,
+)
+
+// A class says a model disagrees; these say what the edit is. SHIFTY's
+// prediction is offset from it by a widening margin, so all three of its
+// introns land inside a reference intron with neither end shared.
+check(
+  'each disagreeing junction says how far it moved',
+  conflict?.conflicts.map(c => c.label),
+  ['shifted-110', 'shifted-150', 'shifted-190'],
+)
+check(
+  'and which junction of the model it is',
+  conflict?.conflicts.map(c => `${c.index}/${c.of}`),
+  ['1/3', '2/3', '3/3'],
+)
+check(
+  'an agreeing model reports nothing to fix',
+  rows.find(r => r.id === 'g1.t1')?.conflicts,
+  [],
+)
+
+// ---- the BED the same finding leaves behind ------------------------------
+
+const bed = conflictBed(rows)
+const bedRows = bed
+  .split('\n')
+  .filter(l => l && !l.startsWith('#'))
+  .map(l => l.split('\t'))
+check(
+  'every flagged model reaches the BED, and no agreeing one does',
+  [...new Set(bedRows.map(r => r[3].split(':')[0]))],
+  ['g100.t1', 'g200.t1', 'g300.t1', 'g400.t1', 'g401.t1'],
+)
+// A merged model is cut in the intergenic space, and a merge can put an exon
+// there, so the record is the gap rather than either junction beside it.
+check(
+  'a merge is one record over the gap it should be split at',
+  bedRows.filter(r => r[3] === 'g100.t1:split').map(r => +r[2] - +r[1]),
+  [merge.gapBp],
+)
+check(
+  'a novel locus is its span, having no reference to disagree with',
+  bedRows.find(r => r[3] === 'g400.t1:novel-locus')?.slice(0, 3),
+  ['ctgB', '7999', '10699'],
+)
+check(
+  'the records come out sorted, as tabix requires',
+  bedRows.map(r => `${r[0]}:${r[1]}`),
+  [...bedRows.map(r => `${r[0]}:${r[1]}`)].sort(
+    (a, b) =>
+      a.split(':')[0].localeCompare(b.split(':')[0]) ||
+      +a.split(':')[1] - +b.split(':')[1],
+  ),
+)
+
 const novel = rows.filter(r => r.cls === 'novel-locus').map(r => r.refName)
 check('novel loci are the ones off the annotated contig', novel, [
   'ctgB',
@@ -79,7 +148,7 @@ const scoped = classify({
   refNames: new Set(['ctgA']),
 })
 check('--region drops the other contig only', scoped.tally, {
-  agrees: 7,
+  agrees: 8,
   merge: 1,
   'structure-conflict': 1,
   'novel-coding': 1,
@@ -97,7 +166,7 @@ const self = classify({
   referenceFile: path.join(FIXTURE, 'reference.gff3'),
 })
 check('a self-comparison agrees with itself', self.tally, {
-  agrees: 11,
+  agrees: 13,
   'novel-coding': 1,
 })
 
@@ -172,11 +241,36 @@ const withEvidence = buildConfig({
   assembly: 'hg38',
   fastaRef: 'hg38.fa.gz',
   predictionRef: 'prediction.gff.gz',
+  conflictsRef: 'conflicts.bed.gz',
   referenceRef: 'reference.gff.gz',
   rnaRefs: ['brain.bam', 'uhr.bam'],
   rnaNames: ['brain'],
   rnaHeight: 110,
 })
+// Directly under the prediction and above the reference. The complaint this
+// lane answers is that a capture of a disagreement shows a correct-looking
+// model over a stack of isoforms and no way to see which junction is the one.
+check(
+  'the disagreements lane sits between the two annotations',
+  withEvidence.tracks.map(t => t.trackId).slice(0, 3),
+  ['prediction', 'conflicts', 'reference_annotation'],
+)
+check(
+  'and stands on one short row rather than a default lane',
+  withEvidence.tracks.find(t => t.trackId === 'conflicts').displays[0].height,
+  60,
+)
+check(
+  'and it is left out when there is nothing to mark',
+  buildConfig({
+    assembly: 'hg38',
+    fastaRef: 'hg38.fa.gz',
+    predictionRef: 'prediction.gff.gz',
+    referenceRef: null,
+    rnaRefs: [],
+  }).tracks.map(t => t.trackId),
+  ['prediction'],
+)
 const evidence = withEvidence.tracks.filter(t => t.type === 'AlignmentsTrack')
 check(
   'an unnamed second evidence track keeps its number',

@@ -104,6 +104,20 @@ export function prepareFasta(input, outDir, name) {
   return path.basename(target)
 }
 
+// The conflicts BED is written by the portal rather than handed to it, so it
+// lands twice: plain, because "where are the disagreements" should be a file
+// anyone can open, and bgzipped for the track that puts the answer in the
+// picture.
+export function prepareBed(text, outDir, name) {
+  fs.mkdirSync(outDir, { recursive: true })
+  const plain = path.join(outDir, `${name}.bed`)
+  const target = path.join(outDir, `${name}.bed.gz`)
+  fs.writeFileSync(plain, text)
+  run('sh', ['-c', `bgzip -f -c ${JSON.stringify(plain)} > ${JSON.stringify(target)}`])
+  run('tabix', ['-f', '-p', 'bed', target])
+  return path.basename(target)
+}
+
 export function prepareBam(input, outDir) {
   if (isUrl(input)) {
     return input
@@ -121,7 +135,7 @@ export function prepareBam(input, outDir) {
   return path.basename(target)
 }
 
-export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, referenceRef, rnaRefs, rnaNames = [], rnaHeight, predictionName, referenceName }) {
+export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, conflictsRef, referenceRef, rnaRefs, rnaNames = [], rnaHeight, predictionName, referenceName }) {
   const uri = f => (isUrl(f) ? f : `data/${f}`)
   const tracks = [
     {
@@ -133,6 +147,29 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, ref
       adapter: { type: 'Gff3TabixAdapter', uri: uri(predictionRef) },
     },
   ]
+  // Directly under the prediction, because the whole complaint about a capture
+  // of a disagreement is that the eye cannot find it among the reference's
+  // isoforms. This lane is one short box per disagreement, labelled with what
+  // moved.
+  if (conflictsRef) {
+    tracks.push({
+      type: 'FeatureTrack',
+      trackId: 'conflicts',
+      name: 'Disagreements',
+      category: ['Review'],
+      assemblyNames: [assembly],
+      adapter: { type: 'BedTabixAdapter', uri: uri(conflictsRef) },
+      // A handful of short boxes on one row. Left at the default it takes as
+      // much of the frame as the alignments below it.
+      displays: [
+        {
+          type: 'LinearBasicDisplay',
+          displayId: 'conflicts-LinearBasicDisplay',
+          height: 60,
+        },
+      ],
+    })
+  }
   if (referenceRef) {
     tracks.push({
       type: 'FeatureTrack',

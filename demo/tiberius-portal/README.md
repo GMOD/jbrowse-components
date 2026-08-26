@@ -27,7 +27,8 @@ npx serve ./portal
 portal/
   index.html      the review page — filters, verdicts, export
   config.json     a JBrowse config naming the data below
-  data/           bgzipped and indexed copies of your inputs
+  data/           bgzipped and indexed copies of your inputs, plus
+                  conflicts.bed — every junction that differs
   img/            one capture per candidate
   jbrowse/        JBrowse itself, with --with-app
 ```
@@ -63,6 +64,48 @@ two-gene fusion, because SERPIND1 sits inside PI4KA's intron. Readthrough genes
 The classifier prefers `exon` features and falls back to `CDS` per model, since
 plenty of annotation files carry only one of the two.
 
+**A gene's junctions are read one isoform at a time and then unioned.** Sorting
+every isoform's exons into one list and joining consecutive pairs is the obvious
+shortcut, and it invents junctions no transcript has: across RANBP1's 13
+isoforms it matched none of Tiberius's five correct junctions. That shortcut was
+what 18 of the 21 structure conflicts first reported on human chr22 turned out
+to be.
+
+## Where the disagreement is
+
+A capture of a structure conflict shows a plausible-looking model over a stack
+of reference isoforms, and nothing says which junction is the one in dispute. So
+the classifier also writes down where it looked:
+
+`data/conflicts.bed` is one BED6 record per place a model and the reference
+actually differ, named `<transcript>:<what disagrees>`:
+
+```
+chr22  21636314  21636431  g13605.t1:donor-1048     0  +
+chr22  23977067  23977386  g13682.t1:acceptor+3025  0  -
+chr22  50012765  50018574  g14001.t1:split          0  -
+```
+
+| name                           | what it marks                                                   |
+| ------------------------------ | --------------------------------------------------------------- |
+| `donor±N`                      | the acceptor matches a reference intron, the donor is N bp off  |
+| `acceptor±N`                   | the donor matches, the acceptor is N bp off                     |
+| `shifted±N`                    | the intron lies inside a reference intron sharing neither end   |
+| `skips-N-exons`                | the intron swallows N whole reference exons                     |
+| `intron-in-exon`               | the intron is cut inside a reference exon                       |
+| `novel-intron`                 | no reference intron nearby at all                               |
+| `split`                        | a merged model's cut point: the gap between the genes it joined |
+| `novel-locus` / `novel-coding` | the model's span, having no reference gene to disagree with     |
+
+The same file rides in every capture and every live link as the
+**Disagreements** track, directly under the prediction, so the picture points at
+the junction rather than leaving a reviewer to find it.
+
+**The BED reaches further than the page does.** Cards exist only for the four
+flagged classes, and a model sharing four junctions out of five is filed as
+`agrees` and never gets one — while the fifth is still a real splice-site edit.
+On chr22 that is 64 models the page cannot show and the BED lists.
+
 ## Test
 
 ```bash
@@ -75,8 +118,15 @@ Offline, about a second.
 
 The fixture deliberately contains a small gene inside a big gene's intron **on
 the same strand**, which is the case that fails if the comparison reverts to
-span overlap. Reverting it is the sabotage this suite is written against — the
-other cases survive it.
+span overlap. Reverting it is one of the two sabotages this suite is written
+against — the other cases survive it.
+
+The second is `TWOFORM`, a gene with two isoforms and a prediction reproducing
+the second one exactly. Flatten the gene's exons into one list and that
+prediction shares none of the junctions the flattening produces, so a correct
+model lands in structure conflict. Every other gene in the fixture has a single
+isoform, where flattening and reading per transcript agree — which is why the
+fixture missed the bug for as long as it did.
 
 ## Flags worth knowing
 

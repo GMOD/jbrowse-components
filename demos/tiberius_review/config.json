@@ -32,6 +32,24 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "conflicts",
+      "name": "Disagreements",
+      "category": ["Review"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/tiberius_review/conflicts.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "conflicts-LinearBasicDisplay",
+          "height": 60
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "reference_annotation",
       "name": "GENCODE 47",
       "category": ["Review"],
@@ -44,7 +62,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "rnaseq_1",
-      "name": "RNA-seq · brain (HBR)",
+      "name": "RNA-seq \u00b7 brain (HBR)",
       "category": ["Evidence"],
       "assemblyNames": ["hg38"],
       "adapter": {
@@ -62,7 +80,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "rnaseq_2",
-      "name": "RNA-seq · universal reference (UHR)",
+      "name": "RNA-seq \u00b7 universal reference (UHR)",
       "category": ["Evidence"],
       "assemblyNames": ["hg38"],
       "adapter": {

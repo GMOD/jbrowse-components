@@ -69,11 +69,77 @@ export function readGff(file, wanted) {
 
 const overlaps = (a, b) => a.start < b.end && b.start < a.end
 
-function junctions(exons) {
+// Introns as pairs rather than as a set of strings, because a card that says a
+// splice site moved is only actionable once it says by how far.
+function introns(exons) {
   const s = [...exons].sort((x, y) => x.start - y.start)
-  const j = new Set()
-  for (let i = 0; i < s.length - 1; i++) {j.add(`${s[i].end}-${s[i + 1].start}`)}
-  return j
+  return s.slice(1).map((e, i) => ({ start: s[i].end, end: e.start }))
+}
+
+const key = j => `${j.start}-${j.end}`
+
+// A gene's junctions are the UNION of its transcripts' introns. Sorting every
+// isoform's exons into one list and joining consecutive pairs is the obvious
+// shortcut and it invents junctions no transcript has: across RANBP1's 13
+// isoforms it matched none of Tiberius's five correct junctions, and 18 of the
+// 21 structure conflicts it reported on chr22 were that arithmetic rather than
+// the prediction.
+const geneJunctions = (txs, exonsByTx) =>
+  new Set(txs.flatMap(t => introns(exonsByTx.get(t) || []).map(key)))
+
+const signed = n => (n > 0 ? `+${n}` : String(n))
+
+const widest = (list, of) =>
+  list.reduce((a, b) => (of(b) > of(a) ? b : a), list[0])
+
+const nearest = (list, of) =>
+  list.reduce((a, b) => (Math.abs(of(b)) < Math.abs(of(a)) ? b : a))
+
+// Which of a handful of disagreements this one is. The class tells a reviewer
+// that a model and the reference differ; this tells them what the edit is, and
+// a splice site that moved 12 bp and an intron cut through the middle of a
+// reference exon are the same class and completely different edits.
+function describe(j, refIntrons, refExons) {
+  // Ahead of the splice-site tests on purpose. An intron that jumps a whole
+  // reference exon lands on two real splice sites, one of them usually a donor
+  // the reference also uses, and asking about the donor first reports an exon
+  // skip as a splice site 900 bp out of place.
+  const skipped = refExons.filter(e => j.start <= e.start && e.end <= j.end)
+  if (skipped.length) {
+    const n = skipped.length
+    return { kind: 'skips', skipped: n, label: `skips-${n}-exon${n > 1 ? 's' : ''}` }
+  }
+  const sameAcceptor = refIntrons.filter(r => r.end === j.end)
+  const sameDonor = refIntrons.filter(r => r.start === j.start)
+  // Both ends are splice sites the reference uses and this pairing of them is
+  // not — an isoform the reference does not carry, rather than a site in the
+  // wrong place.
+  if (sameAcceptor.length && sameDonor.length) {
+    return { kind: 'pairing', label: 'unannotated-pairing' }
+  }
+  if (sameAcceptor.length) {
+    const shift = nearest(sameAcceptor, r => r.start - j.start).start - j.start
+    return { kind: 'donor', shift, label: `donor${signed(shift)}` }
+  }
+  if (sameDonor.length) {
+    const shift = nearest(sameDonor, r => r.end - j.end).end - j.end
+    return { kind: 'acceptor', shift, label: `acceptor${signed(shift)}` }
+  }
+  if (refExons.some(e => e.start < j.start && j.end < e.end)) {
+    return { kind: 'in-exon', label: 'intron-in-exon' }
+  }
+  const over = refIntrons.filter(r => overlaps(r, j))
+  if (over.length) {
+    const r = widest(over, x => Math.min(x.end, j.end) - Math.max(x.start, j.start))
+    const shift = r.start - j.start
+    return {
+      kind: 'shifted',
+      shift,
+      acceptorShift: r.end - j.end,
+      label: `shifted${signed(shift)}`,
+    }
+  }
+  return { kind: 'novel', label: 'novel-intron' }
 }
 
 // Gencode and most reference GFFs put the readable name on gene_name; fall back
@@ -125,14 +191,21 @@ export function classify({ predictionFile, referenceFile, refNames }) {
     if (f.type !== 'mRNA' && f.type !== 'transcript') {continue}
     if (f.attrs.ID) {txToGene.set(f.attrs.ID, f.attrs.Parent)}
   }
-  const exonsByGene = blocksBy(
-    refFeatures,
-    f => {
-      const p = f.attrs.Parent
-      // an exon may hang off the transcript, or straight off the gene
-      return txToGene.get(p) ?? p
-    },
-    keep,
+  // Keyed by TRANSCRIPT, then grouped: an exon may hang off the transcript, or
+  // straight off the gene, and either way a gene's junctions have to be read one
+  // isoform at a time.
+  const exonsByTx = blocksBy(refFeatures, f => f.attrs.Parent, keep)
+  const txsOfGene = new Map()
+  for (const tx of exonsByTx.keys()) {
+    const g = txToGene.get(tx) ?? tx
+    if (!txsOfGene.has(g)) {txsOfGene.set(g, [])}
+    txsOfGene.get(g).push(tx)
+  }
+  const exonsByGene = new Map(
+    [...txsOfGene].map(([g, txs]) => [
+      g,
+      txs.flatMap(t => exonsByTx.get(t) || []),
+    ]),
   )
 
   const geneRecord = new Map()
@@ -182,15 +255,19 @@ export function classify({ predictionFile, referenceFile, refNames }) {
       ),
     ]
 
-    const tj = junctions(exons)
+    const predIntrons = introns(exons)
+    const refJunctions = geneJunctions(
+      sameStrandCoding.flatMap(g => txsOfGene.get(g) || []),
+      exonsByTx,
+    )
+    const shared = predIntrons.filter(j => refJunctions.has(key(j))).length
+
     let cls
     if (touched.length === 0) {cls = 'novel-locus'}
     else if (sameStrandCoding.length === 0) {cls = 'novel-coding'}
     else if (sameStrandCoding.length > 1) {cls = 'merge'}
     else {
-      const gj = junctions(exonsByGene.get(sameStrandCoding[0]) || [])
-      const shared = [...tj].filter(x => gj.has(x)).length
-      cls = tj.size > 0 && shared === 0 ? 'structure-conflict' : 'agrees'
+      cls = predIntrons.length > 0 && shared === 0 ? 'structure-conflict' : 'agrees'
     }
 
     const recs = sameStrandCoding.map(n => geneRecord.get(n)).filter(Boolean)
@@ -202,11 +279,50 @@ export function classify({ predictionFile, referenceFile, refNames }) {
       recs.every((a, i) => recs.every((b, j) => i === j || !overlaps(a, b)))
     if (cls === 'merge' && !disjoint) {cls = 'agrees'}
 
-    let gapBp = null
+    // Where an annotator cuts a merged model: the intergenic space between the
+    // genes it ran together. Not an intron of the model — a merge can put an
+    // exon in the gap, and then no single junction crosses it.
+    const gaps = []
     if (cls === 'merge') {
       const sorted = [...recs].sort((a, b) => a.start - b.start)
-      gapBp = sorted.slice(1).reduce((m, g, i) => Math.max(m, g.start - sorted[i].end), 0)
+      for (let i = 1; i < sorted.length; i++) {
+        const start = sorted[i - 1].end
+        const end = sorted[i].start
+        if (end > start) {gaps.push({ start, end })}
+      }
     }
+    const gapBp = gaps.length ? Math.max(...gaps.map(g => g.end - g.start)) : null
+
+    // Computed for every model with a coding gene to compare against, agreeing
+    // ones included: a model that shares four junctions out of five is filed as
+    // `agrees` and still carries one real splice-site edit, and conflicts.bed is
+    // where that becomes visible. A model with no such gene has nothing to
+    // disagree WITH, so its finding is its span rather than its introns.
+    const refIntrons = sameStrandCoding
+      .flatMap(g => txsOfGene.get(g) || [])
+      .flatMap(tx => introns(exonsByTx.get(tx) || []))
+    const refExons = [
+      ...new Map(
+        sameStrandCoding
+          .flatMap(g => exonsByGene.get(g) || [])
+          .map(e => [key(e), e]),
+      ).values(),
+    ]
+    const conflicts = sameStrandCoding.length
+      ? predIntrons.flatMap((j, i) =>
+          refJunctions.has(key(j))
+            ? []
+            : [
+                {
+                  index: i + 1,
+                  of: predIntrons.length,
+                  start: j.start,
+                  end: j.end,
+                  ...describe(j, refIntrons, refExons),
+                },
+              ],
+        )
+      : []
 
     rows.push({
       id,
@@ -222,10 +338,46 @@ export function classify({ predictionFile, referenceFile, refNames }) {
           ? recs.map(r => r.name)
           : [...new Set(touched.map(geneName))].slice(0, 3),
       gapBp,
+      gaps,
+      sharedJunctions: shared,
+      conflicts,
     })
   }
 
   const tally = {}
   for (const r of rows) {tally[r.cls] = (tally[r.cls] || 0) + 1}
   return { rows, tally, total: rows.length }
+}
+
+// One line per place a model and the reference actually differ. A card can only
+// show the models the portal picked; this is every disagreement on the contig,
+// in a format bedtools and any other browser already read.
+export function conflictBed(rows) {
+  const out = []
+  for (const r of rows) {
+    const add = (start, end, what) =>
+      out.push([r.refName, start, end, `${r.id}:${what}`, 0, r.strand])
+    if (r.cls === 'merge') {
+      // The finding is the cut, not the junctions either side of it
+      for (const g of r.gaps) {add(g.start, g.end, 'split')}
+    } else if (r.cls === 'novel-locus' || r.cls === 'novel-coding') {
+      add(r.start, r.end, r.cls)
+    } else {
+      // An intron of zero or negative length means the model's own exons
+      // overlap, which tabix rejects and which would take the build down with it
+      for (const c of r.conflicts.filter(c => c.end > c.start)) {
+        add(c.start, c.end, c.label)
+      }
+    }
+  }
+  out.sort(
+    (a, b) =>
+      String(a[0]).localeCompare(String(b[0])) || a[1] - b[1] || a[2] - b[2],
+  )
+  const header = [
+    '#chrom\tstart\tend\tname\tscore\tstrand',
+    '# name is <predicted transcript>:<what disagrees>. donor+N / acceptor+N give',
+    '# the bp the reference splice site sits away from the predicted one.',
+  ]
+  return `${[...header, ...out.map(l => l.join('\t'))].join('\n')}\n`
 }

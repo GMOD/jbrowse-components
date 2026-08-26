@@ -58,11 +58,13 @@ function gffGene({
   name,
   strand,
   exons,
+  isoforms,
   type = 'protein_coding',
   src,
 }) {
-  const start = exons[0][0]
-  const end = exons[exons.length - 1][1]
+  const forms = isoforms || [exons]
+  const start = Math.min(...forms.map(f => f[0][0]))
+  const end = Math.max(...forms.map(f => f[f.length - 1][1]))
   rows.push([
     contig,
     src,
@@ -74,41 +76,44 @@ function gffGene({
     '.',
     `ID=${id};Name=${name};gene_name=${name};gene_type=${type}`,
   ])
-  rows.push([
-    contig,
-    src,
-    'mRNA',
-    start,
-    end,
-    '.',
-    strand,
-    '.',
-    `ID=${id}.t1;Parent=${id};Name=${name}.t1;gene_name=${name};gene_type=${type}`,
-  ])
-  for (const [s, e] of exons) {
+  forms.forEach((form, i) => {
+    const tx = `${id}.t${i + 1}`
     rows.push([
       contig,
       src,
-      'exon',
-      s,
-      e,
+      'mRNA',
+      form[0][0],
+      form[form.length - 1][1],
       '.',
       strand,
       '.',
-      `Parent=${id}.t1;gene_name=${name};gene_type=${type}`,
+      `ID=${tx};Parent=${id};Name=${name}.t${i + 1};gene_name=${name};gene_type=${type}`,
     ])
-    rows.push([
-      contig,
-      src,
-      'CDS',
-      s,
-      e,
-      '.',
-      strand,
-      0,
-      `Parent=${id}.t1;gene_name=${name};gene_type=${type}`,
-    ])
-  }
+    for (const [s, e] of form) {
+      rows.push([
+        contig,
+        src,
+        'exon',
+        s,
+        e,
+        '.',
+        strand,
+        '.',
+        `Parent=${tx};gene_name=${name};gene_type=${type}`,
+      ])
+      rows.push([
+        contig,
+        src,
+        'CDS',
+        s,
+        e,
+        '.',
+        strand,
+        0,
+        `Parent=${tx};gene_name=${name};gene_type=${type}`,
+      ])
+    }
+  })
 }
 
 function predTx({ contig, id, strand, exons }) {
@@ -267,6 +272,35 @@ gffGene({
 })
 predTx({ contig: 'ctgA', id: 'g500', strand: '+', exons: outer })
 
+// TWO ISOFORMS, and a prediction that matches the second one exactly. Sorting
+// both isoforms' exons into one list and joining consecutive pairs — the
+// shortcut this case exists to fail — invents junctions neither transcript has
+// and leaves g600.t1 sharing none of them, so it lands in structure conflict
+// while being perfectly correct. Every other gene here has one isoform, which
+// is why the shortcut survived the fixture for as long as it did.
+at = outer[outer.length - 1][1] + 6000
+const isoA = [
+  [at + 1, at + 200],
+  [at + 401, at + 600],
+  [at + 801, at + 1000],
+  [at + 1201, at + 1400],
+]
+const isoB = [
+  [at + 1, at + 300],
+  [at + 701, at + 1100],
+  [at + 1201, at + 1400],
+]
+gffGene({
+  rows: ref,
+  contig: 'ctgA',
+  id: 'REFT1',
+  name: 'TWOFORM',
+  strand: '+',
+  isoforms: [isoA, isoB],
+  src: 'fixture',
+})
+predTx({ contig: 'ctgA', id: 'g600', strand: '+', exons: isoB })
+
 // NOVEL LOCUS: nothing in the reference on ctgB
 predTx({ contig: 'ctgB', id: 'g400', strand: '-', exons: exonsFor(8000, 3) })
 predTx({ contig: 'ctgB', id: 'g401', strand: '+', exons: exonsFor(30000, 2) })
@@ -293,5 +327,5 @@ console.log(
   pred.filter(r => r[2] === 'transcript').length,
 )
 console.log(
-  '  expected: 7 agree, 1 merge, 1 structure-conflict, 1 novel-coding, 2 novel-locus',
+  '  expected: 8 agree, 1 merge, 1 structure-conflict, 1 novel-coding, 2 novel-locus',
 )

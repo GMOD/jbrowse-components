@@ -116,6 +116,9 @@ input[type="search"] { min-width: 190px; }
 .genes { font-weight: 600; }
 .meta { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .why { padding: 12px 18px 0; color: var(--muted); font-size: 14px; max-width: 78ch; }
+.detail { padding: 6px 18px 0; font-size: 13.5px; max-width: 78ch; color: var(--ink); }
+.detail b { color: var(--cls, var(--accent)); font-weight: 600; }
+.detail .j { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
 .shot { display: block; width: 100%; height: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 13px; background: #fff; }
 .missing { margin: 13px 0 0; padding: 26px 18px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface-2); color: var(--muted); font-size: 13.5px; }
 .card-foot { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 13px 18px; }
@@ -170,6 +173,30 @@ footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color:
 
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify({ verdicts: state.verdicts })) } catch (e) {}
+  }
+
+  var num = function (n) { return Math.abs(n).toLocaleString() }
+
+  // What the class alone cannot say: which junction, and by how much. A splice
+  // site 12 bp out and an intron cut through the middle of a reference exon are
+  // the same class and completely different edits.
+  function phrase(c) {
+    if (c.kind === 'donor') return 'intron ' + c.index + ' donor off by ' + num(c.shift) + ' bp'
+    if (c.kind === 'acceptor') return 'intron ' + c.index + ' acceptor off by ' + num(c.shift) + ' bp'
+    if (c.kind === 'skips') return 'intron ' + c.index + ' skips ' + c.skipped + ' reference exon' + (c.skipped > 1 ? 's' : '')
+    if (c.kind === 'in-exon') return 'intron ' + c.index + ' falls inside a reference exon'
+    if (c.kind === 'shifted') return 'intron ' + c.index + ' shifted ' + num(c.shift) + ' bp'
+    return 'intron ' + c.index + ' matches no reference intron'
+  }
+
+  function detail(c) {
+    var list = c.conflicts || []
+    if (!list.length) return ''
+    var shown = list.slice(0, 4).map(phrase)
+    if (list.length > shown.length) shown.push((list.length - shown.length) + ' more')
+    return '<div class="detail"><b>' + list.length + ' of ' + list[0].of +
+      ' junction' + (list[0].of === 1 ? '' : 's') + ' disagree' + (list.length === 1 ? 's' : '') +
+      '</b> — <span class="j">' + esc(shown.join('; ')) + '</span></div>'
   }
 
   function esc(s) {
@@ -294,7 +321,7 @@ footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color:
           '<span class="meta">' + esc(c.loc) + ' · ' + c.nExons + ' exons · ' + c.spanKb + ' kb · ' +
             (c.strand === '-' ? 'minus' : 'plus') + ' strand' + gap + '</span>' +
         '</div>' +
-        '<div class="why">' + esc(meta.why) + '</div>' + pic +
+        '<div class="why">' + esc(meta.why) + '</div>' + detail(c) + pic +
         '<div class="card-foot">' +
           '<div class="verdicts">' +
             VERDICTS.map(function (b) {

@@ -61,15 +61,22 @@ Tiberius predicts 559 models on chr22. Most of them share splice junctions with
 a GENCODE gene and need no attention; the rest disagree in one of four ways, and
 only those reach the portal.
 
+A junction is shared with a gene when it is an intron of one of that gene's
+transcripts. Reading the gene's exons as one list instead — cheaper, and wrong —
+manufactures junctions no transcript has, which is worth stating because it is
+what the first version of this comparison did. Against RANBP1's 13 isoforms it
+matched none of Tiberius's five correct junctions, and 18 of the 21 structure
+conflicts it reported were that arithmetic rather than the prediction.
+
 | Class              | What it means                                                     | On chr22 | What an annotator does   |
 | ------------------ | ----------------------------------------------------------------- | -------- | ------------------------ |
-| Agrees             | shares splice junctions with a reference gene                     | 406      | nothing                  |
+| Agrees             | shares splice junctions with a reference gene                     | 424      | nothing                  |
 | Merged model       | one prediction covers two separate reference genes                | 1        | split into two models    |
-| Structure conflict | covers one gene but shares none of its splice junctions           | 21       | check the exon structure |
+| Structure conflict | covers one gene but shares none of its splice junctions           | 3        | check the exon structure |
 | Novel locus        | predicted where the reference annotates nothing                   | 12       | assess, then create      |
 | Novel coding       | predicted coding where the reference has only non-coding features | 119      | assess coding potential  |
 
-Two rules keep that first row down to one entry. The comparison runs at exon
+Two rules keep merged models down to one entry. The comparison runs at exon
 level against genes on the same strand, and a fusion counts only when the genes
 it joins do not overlap each other.
 
@@ -142,6 +149,37 @@ second link that opens the same window in
 [Apollo](https://github.com/GMOD/Apollo3), the annotation editor, and adds an
 `apollo_url` column to the exported TSV — so a triaged queue hands over as a
 spreadsheet of links.
+
+## Which junction is the one in dispute
+
+A picture of a structure conflict is a plausible-looking model drawn over a
+stack of reference isoforms, and nothing in it says where the two disagree. So
+the classifier writes down where it looked. Every capture and every live link
+carries a **Disagreements** track directly under the prediction, one short box
+per junction that differs, labelled with what moved:
+
+```
+g13605.t1:donor-1048
+```
+
+`g13605.t1` covers _CCDC116_ with two exons. Its acceptor is GENCODE's; its
+donor sits 1,048 bp away from any donor _CCDC116_ has. That is the sentence the
+box makes readable at a glance, and the card repeats it in words.
+
+The track reads `data/conflicts.bed`, which the portal writes alongside the
+captures — plain BED6, so it opens in any browser and intersects with `bedtools`
+without going through the page at all:
+
+```
+chr22  21636314  21636431  g13605.t1:donor-1048     0  +
+chr22  23977067  23977386  g13682.t1:acceptor+3025  0  -
+chr22  50012765  50018574  g14001.t1:split          0  -
+```
+
+**The BED reaches further than the page does.** Cards exist only for the four
+flagged classes, so a model that shares four junctions out of five is filed as
+`agrees` and never gets one — while the fifth is still a real splice-site edit.
+On chr22 that is 64 models the page cannot show and the file lists.
 
 ## Checking the merge against the raw data
 

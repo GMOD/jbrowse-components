@@ -5,17 +5,24 @@ The static review portal the
 links to: Tiberius predictions on chr22 read against GENCODE 47, one card per
 model that disagrees, each with a JBrowse capture and a link back into the app.
 
-Six objects are deployed. `config.json` is here and is the copy to deploy from;
-`portal.png` is the screenshot to link from a PR or an issue, and what it frames
-is deliberate: the page scrolled so the `RANBP1` card sits under the sticky
-filter rail, because that card is where the RNA-seq earns its place — dense
-pileups either side of the junction, sashimi arcs over both lanes, and a
-prediction whose exon structure the reads do not support. The first card on the
-page is the merged model, which spans 61.8 kb and so shows the same evidence as
-a smear. `index.html` is generated and is **not** checked in, because it carries
-its captures inline and runs to about 1.8 MB; regenerate it with the command
-below and deploy it with `DEPLOY_DEMO_ALLOW_UNTRACKED=1`. The other three are
-the two RNA-seq BAMs below and their indexes.
+Eight objects are deployed. `config.json` is here and is the copy to deploy
+from; `conflicts.bed.gz` and its `.tbi` are written by the build and are what
+the **Disagreements** track reads. `portal.png` is the screenshot to link from a
+PR or an issue, and what it frames should be a card where the RNA-seq earns its
+place: dense pileups either side of a junction, sashimi arcs over both lanes,
+and a prediction the reads do not support. The first card on the page is the
+merged model, which spans 61.8 kb and so shows the same evidence as a smear.
+`index.html` is generated and is **not** checked in, because it carries its
+captures inline and runs to about 1.8 MB; regenerate it with the command below
+and deploy it with `DEPLOY_DEMO_ALLOW_UNTRACKED=1`. The last two are the RNA-seq
+BAMs below and their indexes.
+
+**The checked-in `portal.png` is stale, and so is what is deployed.** It frames
+the `RANBP1` card, and `RANBP1` is no longer a candidate: the comparison used to
+read a gene's exons as one flat list, which invents junctions no transcript has,
+and that is what put a model matching all five of RANBP1's junctions in the
+structure-conflict bucket. chr22 now has 3 structure conflicts rather than 21.
+Rebuild, reframe the screenshot on a card that survives, and redeploy.
 
 ```bash
 node demo/tiberius-portal/bin/make-portal.mjs \
@@ -36,6 +43,10 @@ node demo/tiberius-portal/bin/make-portal.mjs \
   --out /tmp/tiberius_review
 
 scripts/deploy-demo.sh demos/tiberius_review/config.json tiberius_review/config.json
+for x in conflicts.bed.gz conflicts.bed.gz.tbi; do
+  DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh \
+    "/tmp/tiberius_review/data/$x" "tiberius_review/$x"
+done
 DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh /tmp/tiberius_review/index.html tiberius_review/index.html
 DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh portal.png tiberius_review/portal.png
 ```

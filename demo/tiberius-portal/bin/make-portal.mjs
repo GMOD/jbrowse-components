@@ -17,13 +17,14 @@ import {
   relativeLink,
   sessionFor,
 } from '../lib/capture.mjs'
-import { classify, CLASSES } from '../lib/classify.mjs'
+import { classify, CLASSES, conflictBed } from '../lib/classify.mjs'
 import {
   buildConfig,
   checkTools,
   fetchRegions,
   isUrl,
   prepareBam,
+  prepareBed,
   prepareFasta,
   prepareGff,
 } from '../lib/prepare.mjs'
@@ -233,27 +234,6 @@ const aliasesRef = opts.aliases
     : copyAlongside(opts.aliases, dataDir)
   : null
 
-const config = buildConfig({
-  assembly,
-  fastaRef,
-  aliasesRef,
-  predictionRef,
-  referenceRef,
-  rnaRefs,
-  rnaNames: opts.rnaseqName,
-  rnaHeight: opts.rnaseqHeight,
-  predictionName:
-    opts.predictionName ||
-    path.basename(opts.prediction).replace(/\.gff3?(\.gz)?$/i, ''),
-  referenceName:
-    opts.referenceName ||
-    (opts.reference
-      ? path.basename(opts.reference).replace(/\.gff3?(\.gz)?$/i, '')
-      : null),
-})
-fs.writeFileSync(path.join(out, 'config.json'), JSON.stringify(config, null, 2))
-const trackIds = config.tracks.map(t => t.trackId)
-
 console.log('classifying')
 if (!opts.reference) {
   console.log('  no --reference given: every model is reported unclassified')
@@ -287,12 +267,53 @@ const { rows, tally, total } = opts.reference
   : { rows: [], tally: {}, total: 0 }
 fs.rmSync(scratch, { recursive: true, force: true })
 
+// The config is written after the classifier because one of its tracks is the
+// classifier's own output.
+const conflictsRef = rows.length
+  ? prepareBed(conflictBed(rows), dataDir, 'conflicts')
+  : null
+
+const config = buildConfig({
+  assembly,
+  fastaRef,
+  aliasesRef,
+  predictionRef,
+  conflictsRef,
+  referenceRef,
+  rnaRefs,
+  rnaNames: opts.rnaseqName,
+  rnaHeight: opts.rnaseqHeight,
+  predictionName:
+    opts.predictionName ||
+    path.basename(opts.prediction).replace(/\.gff3?(\.gz)?$/i, ''),
+  referenceName:
+    opts.referenceName ||
+    (opts.reference
+      ? path.basename(opts.reference).replace(/\.gff3?(\.gz)?$/i, '')
+      : null),
+})
+fs.writeFileSync(path.join(out, 'config.json'), JSON.stringify(config, null, 2))
+const trackIds = config.tracks.map(t => t.trackId)
+
 const agrees = tally.agrees || 0
 const flagged = total - agrees
 console.log(`  ${total} models · ${agrees} agree · ${flagged} flagged`)
 for (const k of CLASS_ORDER) {
   if (tally[k]) {
     console.log(`    ${CLASSES[k].label}: ${tally[k]}`)
+  }
+}
+
+// Counted separately from the classes, because it is the one finding the page
+// itself cannot show: a model sharing four junctions out of five is filed as
+// `agrees` and never reaches a card, and the fifth is still a real edit.
+if (conflictsRef) {
+  const quiet = rows.filter(r => r.cls === 'agrees' && r.conflicts.length)
+  console.log(`  data/conflicts.bed written`)
+  if (quiet.length) {
+    console.log(
+      `    ${quiet.length} agreeing model(s) still disagree on a junction; only the BED lists them`,
+    )
   }
 }
 
@@ -389,6 +410,8 @@ const cards = candidates.map(c => {
     spanKb: Math.round(c.span / 100) / 10,
     genes: c.genes,
     gapBp: c.gapBp,
+    conflicts: c.conflicts,
+    sharedJunctions: c.sharedJunctions,
     img: imgFor(c.id),
     apollo: opts.apollo
       ? apolloLink(
@@ -434,7 +457,9 @@ const data = {
   footer:
     `<div><b>How this page was built.</b> Every picture is a JBrowse view captured headlessly ` +
     `at that locus, and every <b>Open in JBrowse</b> link reopens the same view live. The candidate ` +
-    `list comes from an exon-level comparison of the prediction against the reference annotation.</div>${
+    `list comes from an exon-level comparison of the prediction against the reference annotation. ` +
+    `<b>Disagreements</b> in each view, and <code>data/conflicts.bed</code>, mark every junction ` +
+    `that differs — including the ones on models that agree well enough not to reach a card.</div>${
       opts.apollo
         ? '<div>The triage is the browser’s half. <b>Edit in Apollo</b> opens the same window in ' +
           'the annotation editor, where <b>Split into two models</b> is a real action rather than a note.</div>'
