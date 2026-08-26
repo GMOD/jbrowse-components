@@ -1,3 +1,5 @@
+import { SimpleFeature } from '@jbrowse/core/util'
+
 import { createDisplay } from './testEnv.ts'
 
 // The lane genes and lane links are a SECOND fetch, dependent on the ortholog
@@ -65,4 +67,69 @@ test('the drawing toggles write the slots the display reads back', () => {
   display.setShowLaneTicks(false)
   expect(display.drawCurves).toBe(true)
   expect(display.showLaneTicks).toBe(false)
+})
+
+// `anchorSpans` is one of several producers of a ribbon endpoint pair, and the
+// pair is ORDERED — the anchor's start first — not ascending. `ribbonPath`
+// joins first end to first end, so sorting it here drew every
+// anchor-to-lane-1 ribbon twisted where it should be straight (and straight
+// where it should twist) on any reversed displayed region, which a `[rev]`
+// locstring and a reversed panel of a synteny stack both produce.
+describe('the anchor lane pair stays ordered', () => {
+  function withGroup() {
+    const display = createDisplay()
+    display.setFeatures([
+      new SimpleFeature({
+        uniqueId: 'f1',
+        name: 'gene1',
+        refName: 'ctgA',
+        start: 100,
+        end: 300,
+        strand: 1,
+        mate: {
+          assemblyName: 'volvox_random',
+          refName: 'ctgB',
+          start: 100,
+          end: 300,
+        },
+      }),
+    ])
+    return display
+  }
+
+  function spanOf(display: ReturnType<typeof withGroup>) {
+    const view = display.lgv
+    const group = display.groups[0]!
+    const { refName, start, end } = group.anchor
+    const px = (coord: number) =>
+      view.bpToPx({ refName, coord })!.offsetPx - view.offsetPx
+    return {
+      span: display.anchorSpans.get(group.key)!,
+      atStart: px(start),
+      atEnd: px(end),
+    }
+  }
+
+  test('forward, the anchor start is the left end', () => {
+    const { span, atStart, atEnd } = spanOf(withGroup())
+    expect(span).toEqual([atStart, atEnd])
+    expect(span[0]).toBeLessThan(span[1])
+  })
+
+  test('reversed, the anchor start is the RIGHT end', () => {
+    const display = withGroup()
+    display.lgv.setDisplayedRegions([
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+        reversed: true,
+      },
+    ])
+    const { span, atStart, atEnd } = spanOf(display)
+    expect(span).toEqual([atStart, atEnd])
+    // the pair descends, and that descent is the orientation the ribbon draws
+    expect(span[0]).toBeGreaterThan(span[1])
+  })
 })
