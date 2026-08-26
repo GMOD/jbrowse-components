@@ -67,4 +67,5 @@ doc that carries none. Don't edit between the markers; write the doc's
 
 | Doc | What it is waiting on |
 | --- | --- |
+| [launch-menu-rename-and-reconstruction-limits](launch-menu-rename-and-reconstruction-limits.md) | What is left after the "Launch" rename and the derivative-allele guidelines — the figures and one tour that still show the old label, and two proposals nobody has started, one of which needs a measurement before it can be judged. |
 <!-- END GENERATED HANDOFFS INDEX -->
