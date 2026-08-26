@@ -16,6 +16,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./HeightModeMixin",
   "./LegendMixin",
   "./MultiRegionDisplayMixin",
+  "./RExportFragment",
   "./RegionTooLargeMixin",
   "./TooLargeMessage",
   "./TrackControl",
