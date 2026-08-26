@@ -24,7 +24,7 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 // family refuses region by region" is a statement about the FETCH, and reading
 // it as one about the banner is the mistake this file exists to block. Making
 // the banner per-region is a real change to the chrome, not a change here:
-// agent-docs/todo/per-region-banner-for-a-mixed-region-set.md.
+// agent-docs/ideas/per-region-banner-for-a-mixed-region-set.md.
 
 const ASSEMBLY_END = 10_000_000
 

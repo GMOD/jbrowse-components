@@ -8,7 +8,7 @@ description: The v5.0.0 release list — the fifteen items the release itself tu
 **This file is the v5.0.0 release list**, and the bar for a row is that the
 release ships worse without it: a check owed on code that landed in the v5
 window, something the release itself publishes, a setting the rewrite dropped, or
-a number a release note would quote. Fifteen entries clear that bar.
+a number a release note would quote. Fourteen entries clear that bar.
 
 **A real bug is not automatically a row here.** Thirty-four entries left on
 2026-08-26 — measured picture defects among them, not just proposals — because
@@ -17,7 +17,7 @@ one file each, every one carrying a note at its top saying what moved it. File a
 new find there unless v5.0.0 turns on it; bring it back when the release is out.
 
 Grouped by **what you have to do first**, because that is the thing these
-entries disagree on. Ten are ordinary work someone can pick up. Three are
+entries disagree on. Nine are ordinary work someone can pick up. Three are
 blocked on a visual call that is not the implementer's to make. Two open with an
 instruction to go measure something, because the premise is not established and
 building first would be guessing.
@@ -42,12 +42,11 @@ editorial, but the half that rots is the half it covers.
 ## Ready to take
 
 Ordered. The first four are checks owed on code that landed in the v5 window,
-where a wrong answer means something already shipped broken and two of them run
-the same gate. Then the two things the docs site publishes — one of which may
-already be done — then the ABI baseline
-this major release is the moment for, then the two halves of the
-release-validation exit criterion, which rise to the top of the file the moment a
-date exists.
+where a wrong answer means something already shipped broken, and two of them run
+the same gate. Then the two things the docs site publishes, one of which may
+already be done. Then the ABI baseline's remaining half, which this major
+release is the moment for. Then the two halves of the release-validation exit
+criterion, which rise to the top of the file the moment a date exists.
 
 | Item | Area | First move |
 | --- | --- | --- |

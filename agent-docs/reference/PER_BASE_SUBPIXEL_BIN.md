@@ -141,7 +141,7 @@ own argument for why a point event must stay opaque when a screen holds more
 bases than pixels. Fetch-side object churn elsewhere — Manhattan's per-line
 `Feature` objects, `flatbushItems` / `subfeatureInfos` — is a different thread,
 and
-[todo/stop-rewriting-the-workers-arrays-to-lay-out-features.md](../ideas/stop-rewriting-the-workers-arrays-to-lay-out-features.md)
+[ideas/stop-rewriting-the-workers-arrays-to-lay-out-features.md](../ideas/stop-rewriting-the-workers-arrays-to-lay-out-features.md)
 holds its 365ms clone measurement.
 
 ## What is still open

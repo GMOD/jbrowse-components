@@ -57,4 +57,4 @@ strand, and a display cannot assume an annotation track is loaded.
 re-proposal has to beat.
 
 The thread's one unfinished build item is a figure, not a feature:
-[todo/capture-a-figure-for-the-junction-bed-tutorial-section.md](capture-a-figure-for-the-junction-bed-tutorial-section.md).
+[capture-a-figure-for-the-junction-bed-tutorial-section.md](capture-a-figure-for-the-junction-bed-tutorial-section.md).
