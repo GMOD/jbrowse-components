@@ -203,9 +203,10 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
   // THE CONTROL, and it is a control the data supplies rather than one the page
   // arranges: this duplication is a DUP_gs call, made by genome-STRiP on read
   // depth alone. No pair in the 300x BAM joins its two breakpoints, so the RL
-  // band a tandem duplication would fill is empty across the call while the
-  // coverage band above it doubles and the depth channel is at the top of its
-  // ramp.
+  // band a tandem duplication would fill is empty across the call, and depth is
+  // the whole of what marks it. Depth marks it loosely: the raised block runs
+  // ~23 kb from ~9 kb left of the call's edge, so it does not line up with the
+  // breakpoints the highlight draws. DEMO_DATASETS.md has the measurement.
   //
   // `resolutionBias: 1` on the depth channel: it writes one record per pair of
   // bins, so at 750 bp a 300x library's own coverage noise is drawn at full
@@ -225,7 +226,7 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
           resolutionBias: 1,
         }),
         // A taller coverage band than the inversion's, because the depth step
-        // is this figure's subject and 40 px flattens a doubling into texture.
+        // is this figure's subject and 40 px flattens the step into texture.
         // At 300x every sequencing error paints a sliver on the band, and the
         // figure is about its height rather than its alleles. The legend stays
         // on the inversion figure, where the depth callout would otherwise run
