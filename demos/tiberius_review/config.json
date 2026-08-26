@@ -55,7 +55,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "rnaseq_1-LinearAlignmentsDisplay",
-          "height": 110
+          "height": 280
         }
       ]
     },
@@ -73,7 +73,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "rnaseq_2-LinearAlignmentsDisplay",
-          "height": 110
+          "height": 280
         }
       ]
     }
