@@ -1,0 +1,77 @@
+name: CodeQL
+
+# Advanced setup, replacing GitHub's default setup, which ran a full analysis
+# (js-ts, python, actions) on every push to main. Almost every commit here
+# lands directly to main (this repo's worktree workflow fast-forwards, no PR),
+# so that was ~7 runner-minutes per commit — including bursts of several
+# pushes within minutes of each other, each getting its own fresh scan.
+#
+# CodeQL results don't need commit-level freshness, so this runs nightly
+# instead, plus on PRs when one exists. The nightly job exits early if main
+# had no commits in the last 24h, so a quiet day costs nothing.
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+  # required for actions-language analysis of the workflow files themselves
+  actions: read
+
+jobs:
+  check-commits:
+    name: Check for new commits
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: check
+        run: |
+          since=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          count=$(git log --since="$since" --oneline main | wc -l)
+          echo "should_run=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    needs: [check-commits]
+    if:
+      always() && needs.check-commits.result != 'failure' && (github.event_name
+      != 'schedule' || needs.check-commits.outputs.should_run == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: javascript-typescript
+            build-mode: none
+          - language: python
+            build-mode: none
+          - language: actions
+            build-mode: none
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
+        with:
+          category: /language:${{ matrix.language }}
