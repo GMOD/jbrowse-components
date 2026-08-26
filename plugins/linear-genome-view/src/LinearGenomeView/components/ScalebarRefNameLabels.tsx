@@ -75,12 +75,11 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { classes, cx } = useStyles()
   const [menuState, setMenuState] = useState<MenuState>()
 
-  const prefix = model.scalebarDisplayPrefix
   // `model.scalebarRefNameLabels`, not a getScalebarRefNameLabels call of its
   // own: a host drawing its own region names reads the same getter, so the
   // sticky/dedup/fit rules can't be one thing here and another there. The SVG
   // export still calls the helper directly, deliberately and with no prefix.
-  const { labels, showPrefixFallback } = model.scalebarRefNameLabels
+  const { labels, caption } = model.scalebarRefNameLabels
 
   return (
     <>
@@ -101,18 +100,21 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           }}
         />
       ))}
-      {/* Bare assembly name pinned far-left whenever no sticky label folded it
-      in: the view is scrolled left of its first region (so that label sits out
-      at the region's own edge), or the leftmost region had no room for a label
-      at all. Either way the row still says which assembly it is. */}
-      {showPrefixFallback ? (
+      {/* The row's own caption, pinned far-left: which assembly this row is,
+      and whether it is flipped. The assembly name alone appears here only when
+      no sticky label folded it in — the view is scrolled left of its first
+      region (so that label sits out at the region's own edge), or the leftmost
+      region had no room for a label at all. A flipped row always draws it, and
+      the sticky label starts clear of it, since `[rev]` on a chromosome NAME is
+      how the mixed case says that one region is flipped. */}
+      {caption === undefined ? null : (
         <span
           className={cx(classes.prefixLabel, classes.refLabel)}
           data-testid="refLabel-prefix"
         >
-          {prefix}
+          {caption}
         </span>
-      ) : null}
+      )}
       {menuState ? (
         <RefNameMenu
           model={model}

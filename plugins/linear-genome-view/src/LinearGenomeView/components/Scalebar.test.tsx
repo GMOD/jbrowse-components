@@ -272,4 +272,48 @@ describe('Scalebar genome view component', () => {
     // the next number along is 200px clear of the name and still drawn
     expect(getByText('24,000').parentElement!.style.visibility).toBe('')
   })
+  // horizontallyFlip reverses the order and flips every region at once, so a
+  // flipped row is uniformly reversed and the marker is a fact about the ROW —
+  // said once, in the row's own caption, on no chromosome name. A marker on a
+  // name is how the mixed case says that one region is flipped, and the two
+  // must not render alike. On screen the search box already says [rev]; a
+  // synteny row hides its header and an exported figure has no search box.
+  it('captions a horizontally flipped row once, on no chromosome name', async () => {
+    const session = createTestSession({
+      sessionSnapshot: {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            offsetPx: 0,
+            bpPerPx: 1,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 400 },
+              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 400 },
+            ],
+            tracks: [],
+            configuration: {},
+          },
+        ],
+      },
+    }) as any
+    const model = session.views[0]
+    model.setWidth(800)
+
+    const { getByTestId, queryByTestId, rerender } = render(
+      <Scalebar model={model} />,
+    )
+    await waitFor(() => {
+      expect(getByTestId('refLabel-ctgA').textContent).toBe('ctgA')
+    })
+    expect(queryByTestId('refLabel-prefix')).toBeNull()
+
+    model.horizontallyFlip()
+    rerender(<Scalebar model={model} />)
+    await waitFor(() => {
+      expect(getByTestId('refLabel-prefix').textContent).toBe('[rev]')
+    })
+    // neither name wears it, so neither reads as the flipped one of the two
+    expect(getByTestId('refLabel-ctgA').textContent).toBe('ctgA')
+    expect(getByTestId('refLabel-ctgB').textContent).toBe('ctgB')
+  })
 })

@@ -64,8 +64,16 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
   // showing as ",000" reads as a coordinate, just not the right one. Hide it
   // instead, the same call the run-start reservation makes, and hide rather
   // than drop so the node count this list pools stays put.
-  const sticky = model.scalebarRefNameLabels.labels.find(l => l.sticky)
-  const stickySpan = sticky ? refNameLabelSpanPx(sticky) : undefined
+  //
+  // The row's caption chip is the other one: it sits at x=0, outside the block
+  // frame for the same reason, and now draws on a plain LGV too whenever the
+  // row is flipped.
+  const { labels, caption, captionSpanPx } = model.scalebarRefNameLabels
+  const sticky = labels.find(l => l.sticky)
+  const covered = [
+    ...(sticky ? [refNameLabelSpanPx(sticky)] : []),
+    ...(caption === undefined ? [] : [{ left: 0, right: captionSpanPx }]),
+  ]
 
   return (
     <div
@@ -88,10 +96,11 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
       {scalebarLabels.map(({ x, label }, i) => {
         const halfWidth = tickLabelWidth(label) / 2
         const centerPx = offsetLeft - 1 + x
-        const hidden =
-          stickySpan !== undefined &&
-          centerPx - halfWidth < stickySpan.right &&
-          centerPx + halfWidth > stickySpan.left
+        const hidden = covered.some(
+          span =>
+            centerPx - halfWidth < span.right &&
+            centerPx + halfWidth > span.left,
+        )
         return (
           <div
             // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by label is what the pooling above removes

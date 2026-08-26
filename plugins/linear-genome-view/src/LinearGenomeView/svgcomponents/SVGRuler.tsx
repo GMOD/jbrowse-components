@@ -90,16 +90,37 @@ function Ruler({
 // chromosome interior. No assembly-name prefix here (unlike the on-screen
 // scalebar): the SVG export already draws a standalone assembly-name label
 // above the ruler, so folding it into this one too is redundant.
+//
+// `orientation` is not redundant, and this is the surface that needed it most.
+// A stacked export gives each row SVGRowHeader — assembly name, ruler, refName
+// labels — and no locstring, so a flipped row used to leave the numbers
+// counting down as the only evidence it was flipped. On screen the search box
+// says so; a figure has no search box.
 function SVGRefNameLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const fill = stripAlpha(theme.palette.text.primary)
-  const { labels } = getScalebarRefNameLabels({
+  const { labels, caption } = getScalebarRefNameLabels({
     blocks: model.staticBlocks.blocks,
     offsetPx: model.offsetPx,
     prefix: undefined,
+    orientation: model.displayedRegionsOrientation,
   })
   return (
     <>
+      {/* With no prefix asked for, the caption is here only to say the row is
+      flipped — and it is the whole reason orientation reaches this component.
+      The labels are already inset clear of it. */}
+      {caption === undefined ? null : (
+        <text
+          x={0}
+          y={refNameLabelBaselineY}
+          fontSize={REF_NAME_LABEL_FONT_SIZE}
+          fontWeight="bold"
+          fill={fill}
+        >
+          {caption}
+        </text>
+      )}
       {/* a label is fitted to its run of regions, which usually runs past the
       right edge of the view, so drop the ones SVGRuler's clip would cut — as
       the tick numbers at that same edge are dropped rather than half-drawn */}

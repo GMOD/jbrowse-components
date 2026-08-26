@@ -3497,7 +3497,7 @@ describe('scalebar refName labels', () => {
   // opts its sub-views in
   test('no prefix, so no prefix fallback', () => {
     const model = makeView([{ refName: 'ctgA', end: 100000 }])
-    expect(model.scalebarRefNameLabels.showPrefixFallback).toBe(false)
+    expect(model.scalebarRefNameLabels.caption).toBeUndefined()
   })
 })
 

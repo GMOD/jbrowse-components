@@ -77,6 +77,7 @@ import {
   fitAllRegionsWindow,
   generateLocations,
   getScalebarRefNameLabels,
+  regionsOrientation,
   groupContiguousBlocks,
   labelFitsInBlock,
   makeBlockTicks,
@@ -1201,6 +1202,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Whether the displayed regions read left-to-right, right-to-left, or
+       * some of each. `horizontallyFlip` reverses the order and flips every
+       * region at once, so a flipped row is uniformly `reversed` and `mixed`
+       * takes going out of your way — the scalebar label menu's per-region
+       * "Reverse region". Read off `displayedRegions` rather than off blocks
+       * because blocks cover the window and this is a fact about the row.
+       */
+      get displayedRegionsOrientation() {
+        return regionsOrientation(self.displayedRegions)
+      },
+
+      /**
+       * #getter
        */
       get displayedRegionsTotalPx() {
         return self.bpPerPx === 0 ? 0 : this.totalBp / self.bpPerPx
@@ -2056,7 +2070,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
           const labels: { x: number; label: string; key: string }[] = []
           const runs = groupContiguousBlocks(blocks)
-          const refNameLabelPx = runRefNameLabelPx(runs)
+          const refNameLabelPx = runRefNameLabelPx(
+            runs,
+            self.displayedRegionsOrientation,
+          )
           for (const [i, run] of runs.entries()) {
             const runLeft = run.offsetPx - firstBlockOffset
             const runLabels = []
@@ -2121,17 +2138,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * it has no fixed position in that frame — and for the same reason this
          * getter recomputes on every scroll frame where those three do not.
          *
-         * `showPrefixFallback` accompanies the labels for the assembly-name chip
-         * a container view (synteny) can opt into; a plain LGV never sets a
-         * prefix and always gets `false`. The SVG export deliberately calls
-         * `getScalebarRefNameLabels` itself with no prefix rather than reading
-         * this, since it draws its own assembly name above the ruler.
+         * `caption` accompanies the labels: the chip at the row's left edge,
+         * saying which assembly the row is (a container view — synteny — opts
+         * into that through `scalebarDisplayPrefix`) and whether it is flipped.
+         * A ` [rev]` there is a fact about the ROW; the same marker on a
+         * chromosome name means that one region, which only happens under mixed
+         * orientation. `captionSpanPx` is the width it takes, which the
+         * coordinate numbers stay out from under. The SVG export deliberately
+         * calls `getScalebarRefNameLabels` itself with no prefix rather than
+         * reading this, since it draws its own assembly name above the ruler.
          */
         get scalebarRefNameLabels() {
           return getScalebarRefNameLabels({
             blocks: this.staticBlocks.blocks,
             offsetPx: self.offsetPx,
             prefix: self.scalebarDisplayPrefix,
+            orientation: self.displayedRegionsOrientation,
           })
         },
         /**

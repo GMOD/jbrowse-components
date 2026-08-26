@@ -212,6 +212,7 @@ export function showRefNameLabels<T>(
 interface RefNameRun {
   key: string
   refName: string
+  reversed: boolean
   offsetPx: number
   endPx: number
   firstRegionIndex: number
@@ -228,13 +229,22 @@ function refNameRuns(blocks: BaseBlock[]) {
       block.displayedRegionIndex === undefined
     ) {
       current = undefined
-    } else if (current?.refName === block.refName) {
+    } else if (
+      // orientation is part of a run's identity, not just its refName: one
+      // label carries one direction (a `[rev]` marker under mixed orientation
+      // has to mean the whole of what it sits on), and two regions of one
+      // chromosome laid out in opposite directions are two things to name
+      // anyway, however they are marked
+      current?.refName === block.refName &&
+      current.reversed === !!block.reversed
+    ) {
       current.endPx = block.offsetPx + block.widthPx
       current.lastRegionIndex = block.displayedRegionIndex
     } else {
       current = {
         key: block.key,
         refName: block.refName,
+        reversed: !!block.reversed,
         offsetPx: block.offsetPx,
         endPx: block.offsetPx + block.widthPx,
         firstRegionIndex: block.displayedRegionIndex,
@@ -256,6 +266,35 @@ function stickyRunIndex(runs: RefNameRun[], offsetPx: number) {
   const scrolledOff = runs.findLastIndex(run => run.offsetPx < offsetPx)
   return scrolledOff === -1 ? 0 : scrolledOff
 }
+
+/**
+ * Whether the displayed regions are laid out left-to-right, right-to-left, or
+ * some of each. `horizontallyFlip` reverses the order and flips every region at
+ * once, so a flipped row is uniformly `reversed`; `mixed` takes going out of
+ * your way, through the scalebar label menu's per-region "Reverse region".
+ */
+export type RegionsOrientation = 'forward' | 'reversed' | 'mixed'
+
+export function regionsOrientation(
+  regions: { reversed?: boolean }[],
+): RegionsOrientation {
+  const first = !!regions[0]?.reversed
+  return regions.every(r => !!r.reversed === first)
+    ? first
+      ? 'reversed'
+      : 'forward'
+    : 'mixed'
+}
+
+/**
+ * What a reversed region's label says after its name. `[rev]` rather than a
+ * glyph, and not only because it is the spelling `assembleLocString` already
+ * writes into every locstring the search box shows: `measureText`'s width table
+ * is indexed by char code and covers ASCII only, so an arrow falls through to
+ * the average advance and measures ~6px against a real ~11px. The fit test
+ * upstream is whole-or-nothing, and it would go on believing a glyph fits.
+ */
+const REV_MARKER = ' [rev]'
 
 /** Clearance between the standalone assembly-name chip and a sticky label. */
 const PREFIX_GAP = 4
@@ -296,13 +335,18 @@ function refLabelLayout({
   run,
   offsetPx,
   sticky,
+  // left-edge x a sticky label may not start before, so a caption chip drawn
+  // there keeps the strip to itself. Zero wherever the caption folds into the
+  // label instead (the assembly prefix does)
+  minTransform = 0,
 }: {
   run: RefNameRun
   offsetPx: number
   sticky: boolean
+  minTransform?: number
 }) {
   const transform = sticky
-    ? Math.max(0, -offsetPx)
+    ? Math.max(minTransform, -offsetPx)
     : run.offsetPx - offsetPx - 1
   // block-frame x where the label actually starts. Derived from `transform` (=
   // transform + offsetPx) so the width-to-run-end clip stays in lockstep with
@@ -326,31 +370,71 @@ function refLabelLayout({
  * repeat the name) plus a "sticky" label pinned to the left edge naming the
  * refName under the viewport's left border.
  *
- * `prefix` (an assembly name, synteny only) is always shown at the viewport's
- * left edge, either folded into the sticky label as "prefix:refName" or, when
- * the sticky label sits too far right to collide with it (a view scrolled left
- * of its first region, so the row's data starts mid-viewport) or is missing
- * altogether, standalone — that's what showPrefixFallback asks the caller to
- * draw. Otherwise a row of stacked genomes labels some rows with the assembly
- * name and some without, depending only on how wide their leftmost chromosome
- * happens to be.
+ * `caption` is the row-level chip at the viewport's left edge, and it says two
+ * things: which assembly this row is (`prefix`, an assembly name, synteny only)
+ * and whether the row is flipped. Without it a row of stacked genomes would
+ * label some rows with the assembly name and some without, depending only on
+ * how wide their leftmost chromosome happens to be.
+ *
+ * The assembly name alone folds into the sticky label instead — "prefix:refName"
+ * — whenever the two would collide at the left edge, and stands alone when the
+ * sticky label sits far enough right not to (a view scrolled left of its first
+ * region, so the row's data starts mid-viewport) or when there is no sticky
+ * label at all.
+ *
+ * `orientation` decides the ` [rev]` marker, and it is the row's
+ * (`displayedRegionsOrientation`) rather than anything read off the blocks —
+ * blocks cover the window, and a row is flipped or not whatever part of it you
+ * are looking at. The rule is `assembleLocStrings`': say it where it
+ * distinguishes, once where it does not.
+ *
+ * - `reversed`: the whole row is flipped, which is a fact about the row, so the
+ *   caption carries it and NO name does. The caption cannot fold in this state
+ *   — the sticky label is pushed clear of it instead — because a marker sitting
+ *   on a chromosome name is how the mixed case spells a fact about that one
+ *   region. `chr1 [rev] | chr2` would otherwise mean both "the row is flipped,
+ *   said once" and "chr1 is flipped and chr2 is not", in identical pixels.
+ * - `mixed`: only some regions are flipped — reachable through the label menu's
+ *   per-region "Reverse region" — so every reversed run is marked and the
+ *   forward ones are left alone. Here the marker on a name is the only thing
+ *   telling two labels apart.
+ * - `forward`: no marker.
+ *
+ * Saying it once is the point: a flipped whole-genome row would otherwise
+ * repeat `[rev]` after all 24 chromosomes to say a single thing about the row.
+ *
+ * Under `mixed` the marker never costs a name: a suffixed label that fails the
+ * fit test falls back to the bare name rather than being dropped. Widening the
+ * text moves the region width a name needs from ~30px to ~56px at 11px bold,
+ * and a feature meant to surface information should not be deleting chromosome
+ * names in the narrow half of that gap.
  */
 export function getScalebarRefNameLabels({
   blocks,
   offsetPx,
   prefix,
+  orientation = 'forward',
 }: {
   blocks: BaseBlock[]
   offsetPx: number
   prefix: string | undefined
+  orientation?: RegionsOrientation
 }) {
   const hasPrefix = prefix !== undefined && prefix !== ''
-  // the standalone prefix chip occupies the viewport's left edge, so a sticky
-  // label starting inside that span has to absorb the prefix instead. The gap
-  // is part of the span: a sticky label carries no padding of its own, so one
-  // starting at exactly the chip's right edge abuts it and the two read as a
-  // single word ("volvoxctgA") for the few px of scroll around the threshold
-  const prefixSpanPx = hasPrefix ? refNameLabelWidth(prefix) + PREFIX_GAP : 0
+  const rowIsReversed = orientation === 'reversed'
+  const captionText = rowIsReversed
+    ? `${hasPrefix ? prefix : ''}${REV_MARKER}`.trimStart()
+    : prefix
+  // the caption chip occupies the viewport's left edge, so a sticky label
+  // starting inside that span has to yield: absorb the assembly name, or, where
+  // the caption carries the row's orientation and so cannot fold, start after
+  // it. The gap is part of the span: a sticky label carries no padding of its
+  // own, so one starting at exactly the chip's right edge abuts it and the two
+  // read as a single word ("volvoxctgA") for the few px of scroll around the
+  // threshold
+  const captionSpanPx = captionText
+    ? refNameLabelWidth(captionText) + PREFIX_GAP
+    : 0
   const runs = refNameRuns(blocks)
   const stickyIdx = stickyRunIndex(runs, offsetPx)
   const labels: ScalebarRefNameLabel[] = []
@@ -368,13 +452,28 @@ export function getScalebarRefNameLabels({
     if (!(sticky || runStart)) {
       continue
     }
-    const layout = refLabelLayout({ run, offsetPx, sticky })
-    const withPrefix = sticky && hasPrefix && layout.transform < prefixSpanPx
-    const text = withPrefix ? `${prefix}:${run.refName}` : run.refName
+    const layout = refLabelLayout({
+      run,
+      offsetPx,
+      sticky,
+      minTransform: rowIsReversed ? captionSpanPx : 0,
+    })
+    const withPrefix =
+      !rowIsReversed && sticky && hasPrefix && layout.transform < captionSpanPx
+    const name = withPrefix ? `${prefix}:${run.refName}` : run.refName
     // draw the name whole or not at all: a name clipped mid-glyph reads as a
     // different chromosome ("LG2" cut to "LG"), and measuring it means a short
-    // name gets its label in a region a fixed minimum width would have skipped
-    if (layout.maxWidth < layout.paddingLeft + refNameLabelWidth(text)) {
+    // name gets its label in a region a fixed minimum width would have skipped.
+    // The marker is the one part that degrades instead of dropping the label
+    const text = (
+      orientation === 'mixed' && run.reversed
+        ? [`${name}${REV_MARKER}`, name]
+        : [name]
+    ).find(
+      candidate =>
+        layout.maxWidth >= layout.paddingLeft + refNameLabelWidth(candidate),
+    )
+    if (text === undefined) {
       continue
     }
     stickyHasPrefix ||= withPrefix
@@ -390,7 +489,17 @@ export function getScalebarRefNameLabels({
       text,
     })
   }
-  return { labels, showPrefixFallback: hasPrefix && !stickyHasPrefix }
+  return {
+    labels,
+    // the chip to draw at the left edge, or undefined for none. A caption
+    // carrying the orientation always draws; one carrying only the assembly
+    // name draws when no sticky label folded it in
+    caption:
+      rowIsReversed || (hasPrefix && !stickyHasPrefix)
+        ? captionText
+        : undefined,
+    captionSpanPx,
+  }
 }
 
 /**
@@ -638,12 +747,26 @@ export function groupContiguousBlocks(blocks: BaseBlock[]) {
  * that is off-screen anyway. Where the two disagree the reservation is the
  * conservative side: at worst a coordinate is dropped from a region too narrow
  * to have kept MIN_TICK_LABELS_PER_BLOCK of them.
+ *
+ * `orientation` enters because under `mixed` a reversed run's label carries the
+ * ` [rev]` marker and so is wider than its name. Under a uniformly `reversed`
+ * row only the sticky label is marked, and that one is dodged on screen instead
+ * (`refNameLabelSpanPx`), its x being a function of the scroll rather than of
+ * this frame.
  */
-export function runRefNameLabelPx(runs: BlockRun[]) {
+export function runRefNameLabelPx(
+  runs: BlockRun[],
+  orientation: RegionsOrientation = 'forward',
+) {
   const isRunStart = showRefNameLabels(runs, run => run.refName)
   return runs.map((run, i) =>
     isRunStart[i] && run.isLeftEndOfDisplayedRegion
-      ? REF_NAME_LABEL_PADDING_PX + refNameLabelWidth(run.refName)
+      ? REF_NAME_LABEL_PADDING_PX +
+        refNameLabelWidth(
+          orientation === 'mixed' && run.reversed
+            ? `${run.refName}${REV_MARKER}`
+            : run.refName,
+        )
       : 0,
   )
 }

@@ -9,13 +9,14 @@ import {
   makeOverviewTicks,
   makeTicks,
   regionMoveActions,
+  regionsOrientation,
   tickLabelWidth,
   withRegionMoved,
   withRegionRemoved,
   withRegionReversed,
 } from './util.ts'
 
-import type { BlockRun } from './util.ts'
+import type { BlockRun, RegionsOrientation } from './util.ts'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 // bpPerPx=5000 → chooseGridPitch gives majorPitch=1_000_000
@@ -336,12 +337,13 @@ describe('runRefNameLabelPx', () => {
   const run = (
     refName: string,
     isLeftEndOfDisplayedRegion: boolean,
+    reversed = false,
   ): BlockRun => ({
     offsetPx: 0,
     widthPx: 800,
     start: 0,
     end: 800,
-    reversed: false,
+    reversed,
     refName,
     isLeftEndOfDisplayedRegion,
   })
@@ -370,6 +372,17 @@ describe('runRefNameLabelPx', () => {
     expect(px[1]).toBe(0)
     expect(px[2]).toBeGreaterThan(0)
   })
+
+  // under mixed orientation a reversed run's label carries " [rev]", so the
+  // numbers have that much more to stay clear of. Under a uniformly reversed
+  // row only the pinned label is marked, and that one is dodged on screen
+  // instead — its x is a function of the scroll, not of this frame
+  test('a mixed row reserves the marker too, and only there', () => {
+    const marked = runRefNameLabelPx([run('ctgB', true, true)], 'mixed')
+    const plain = runRefNameLabelPx([run('ctgB', true, true)], 'reversed')
+    expect(plain[0]).toBeCloseTo(30.06, 1)
+    expect(marked[0]! - plain[0]!).toBeGreaterThan(20)
+  })
 })
 
 // scalebar refName labels
@@ -381,6 +394,7 @@ function refBlock({
   offsetPx,
   widthPx,
   isLeftEndOfDisplayedRegion = false,
+  reversed = false,
 }: {
   key: string
   refName: string
@@ -388,6 +402,7 @@ function refBlock({
   offsetPx: number
   widthPx: number
   isLeftEndOfDisplayedRegion?: boolean
+  reversed?: boolean
 }): ContentBlock {
   return {
     type: 'ContentBlock',
@@ -400,6 +415,7 @@ function refBlock({
     widthPx,
     displayedRegionIndex,
     isLeftEndOfDisplayedRegion,
+    reversed,
   }
 }
 
@@ -470,12 +486,12 @@ describe('getScalebarRefNameLabels', () => {
         widthPx: 800,
       }),
     ]
-    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+    const { labels, caption } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
       prefix: '',
     })
-    expect(showPrefixFallback).toBe(false)
+    expect(caption).toBeUndefined()
     expect(labels).toEqual([
       {
         key: 'a',
@@ -502,12 +518,12 @@ describe('getScalebarRefNameLabels', () => {
         isLeftEndOfDisplayedRegion: true,
       }),
     ]
-    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+    const { labels, caption } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
       prefix: 'hg38',
     })
-    expect(showPrefixFallback).toBe(false)
+    expect(caption).toBeUndefined()
     expect(labels[0]!.text).toBe('hg38:chr1')
   })
 
@@ -647,7 +663,7 @@ describe('getScalebarRefNameLabels', () => {
         isLeftEndOfDisplayedRegion: true,
       }),
     ]
-    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+    const { labels, caption } = getScalebarRefNameLabels({
       blocks,
       offsetPx: -300,
       prefix: 'hg38',
@@ -658,7 +674,7 @@ describe('getScalebarRefNameLabels', () => {
     // is, while a neighboring row whose first region starts at 0 would
     expect(labels[0]!.text).toBe('chr1')
     expect(labels[0]!.transform).toBe(300)
-    expect(showPrefixFallback).toBe(true)
+    expect(caption).toBe('hg38')
   })
 
   test('slight left-overscroll: sticky label still absorbs the prefix it would overlap', () => {
@@ -672,13 +688,13 @@ describe('getScalebarRefNameLabels', () => {
         isLeftEndOfDisplayedRegion: true,
       }),
     ]
-    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+    const { labels, caption } = getScalebarRefNameLabels({
       blocks,
       offsetPx: -5,
       prefix: 'hg38',
     })
     expect(labels[0]!.text).toBe('hg38:chr1')
-    expect(showPrefixFallback).toBe(false)
+    expect(caption).toBeUndefined()
   })
 
   test('the sticky label unfolds only once it clears the standalone chip', () => {
@@ -764,13 +780,13 @@ describe('getScalebarRefNameLabels', () => {
         isLeftEndOfDisplayedRegion: true,
       }),
     ]
-    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+    const { labels, caption } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
       prefix: 'hg38',
     })
     expect(labels).toEqual([])
-    expect(showPrefixFallback).toBe(true)
+    expect(caption).toBe('hg38')
   })
 
   test('a label fitted to its region can still overrun the view edge', () => {
@@ -886,6 +902,170 @@ describe('getScalebarRefNameLabels', () => {
       expect(label!.displayedRegionIndex).toBe(0)
       expect(label!.lastDisplayedRegionIndex).toBe(7)
     })
+  })
+})
+
+describe('the [rev] marker', () => {
+  // two chromosomes, each 800px, the second flipped
+  const blocks = (revA: boolean, revB: boolean) => [
+    refBlock({
+      key: 'a',
+      refName: 'chr1',
+      displayedRegionIndex: 0,
+      offsetPx: 0,
+      widthPx: 800,
+      isLeftEndOfDisplayedRegion: true,
+      reversed: revA,
+    }),
+    refBlock({
+      key: 'b',
+      refName: 'chr2',
+      displayedRegionIndex: 1,
+      offsetPx: 800,
+      widthPx: 800,
+      isLeftEndOfDisplayedRegion: true,
+      reversed: revB,
+    }),
+  ]
+  const drawn = (
+    orientation: RegionsOrientation,
+    revA = false,
+    revB = false,
+    prefix?: string,
+  ) => {
+    const { labels, caption } = getScalebarRefNameLabels({
+      blocks: blocks(revA, revB),
+      offsetPx: 0,
+      prefix,
+      orientation,
+    })
+    return { caption, texts: labels.map(l => l.text) }
+  }
+
+  test('a forward row says nothing', () => {
+    expect(drawn('forward')).toEqual({
+      caption: undefined,
+      texts: ['chr1', 'chr2'],
+    })
+  })
+
+  // the whole point of the rule: a flipped whole-genome row would otherwise
+  // repeat [rev] after all 24 chromosomes to say one thing about the row
+  test('a wholly flipped row says it once, and on no chromosome name', () => {
+    expect(drawn('reversed', true, true)).toEqual({
+      caption: '[rev]',
+      texts: ['chr1', 'chr2'],
+    })
+  })
+
+  // the two states must not render alike: the caption is the row, a marker on
+  // a name is that region
+  test('a mixed row marks the flipped region, where it tells them apart', () => {
+    expect(drawn('mixed', false, true)).toEqual({
+      caption: undefined,
+      texts: ['chr1', 'chr2 [rev]'],
+    })
+  })
+
+  test('the caption carries the assembly name with it', () => {
+    expect(drawn('reversed', true, true, 'volvox').caption).toBe('volvox [rev]')
+  })
+
+  test('a flipped row does not fold its assembly name into the sticky label', () => {
+    // folding would put the marker back on a name — "volvox:chr1 [rev]" — which
+    // is how the mixed case spells one region
+    const { texts } = drawn('reversed', true, true, 'volvox')
+    expect(texts[0]).toBe('chr1')
+  })
+
+  test('the pinned label starts clear of the caption it must not overlap', () => {
+    const { labels } = getScalebarRefNameLabels({
+      blocks: blocks(true, true),
+      offsetPx: 0,
+      prefix: undefined,
+      orientation: 'reversed',
+    })
+    const { labels: forward } = getScalebarRefNameLabels({
+      blocks: blocks(false, false),
+      offsetPx: 0,
+      prefix: undefined,
+      orientation: 'forward',
+    })
+    expect(forward[0]!.transform).toBe(0)
+    expect(labels[0]!.transform).toBeGreaterThan(25)
+  })
+
+  // widening the text moves the width a name needs from ~30px to ~56px, and a
+  // marker that deletes chromosome names in that gap surfaces nothing
+  test('a mixed label too narrow for the marker keeps its name and drops it', () => {
+    const narrow = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 40,
+        isLeftEndOfDisplayedRegion: true,
+        reversed: true,
+      }),
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks: narrow,
+      offsetPx: 0,
+      prefix: undefined,
+      orientation: 'mixed',
+    })
+    expect(labels.map(l => l.text)).toEqual(['chr1'])
+  })
+
+  // one label carries one direction, so a marker always means the whole of what
+  // it sits on
+  test('an orientation change splits a run of one refName', () => {
+    const split = [
+      refBlock({
+        key: 'f',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'r',
+        refName: 'chr1',
+        displayedRegionIndex: 1,
+        offsetPx: 800,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+        reversed: true,
+      }),
+    ]
+    expect(
+      getScalebarRefNameLabels({
+        blocks: split,
+        offsetPx: 0,
+        prefix: undefined,
+        orientation: 'mixed',
+      }).labels.map(l => l.text),
+    ).toEqual(['chr1', 'chr1 [rev]'])
+  })
+})
+
+describe('regionsOrientation', () => {
+  test('empty is forward', () => {
+    expect(regionsOrientation([])).toBe('forward')
+  })
+
+  test('every region flipped is reversed, none is forward', () => {
+    expect(regionsOrientation([{ reversed: true }, { reversed: true }])).toBe(
+      'reversed',
+    )
+    expect(regionsOrientation([{}, { reversed: false }])).toBe('forward')
+  })
+
+  test('disagreement is mixed, whichever way round', () => {
+    expect(regionsOrientation([{ reversed: true }, {}])).toBe('mixed')
+    expect(regionsOrientation([{}, { reversed: true }])).toBe('mixed')
   })
 })
 
