@@ -196,7 +196,8 @@ Not salvaged, and why:
   has always asked for the parameter to be narrowed rather than for a second
   checker. The branch's own handoff measured that 103 of its 125 remaining
   entries sit outside any composition chain — branch-only, and against a
-  snapshot of that file, which holds 381 entries here today.
+  snapshot of that file, which lists
+  290<!--m:config-read-type-gaps.all.unchecked--> unchecked reads here today.
 - **`params.ts`, `paramReader.ts` and the converted Manhattan and HiC
   declarations.** The table above.
 

@@ -1,0 +1,49 @@
+{
+  "id": "config-read-gap-populations",
+  "measured": "2026-08-26",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node scripts/audit-config-read-types.ts --write",
+    "notes": "The source-bucket rows of scripts/configReadTypeGaps.txt, grouped by SLOT NAME against the list in POPULATIONS (scripts/audit-config-read-types.ts). Reads are filed under whichever file contains them, so the baseline itself reads as display debt; this is the same set counted by what is actually being read."
+  },
+  "columns": [
+    {
+      "key": "population",
+      "label": "population"
+    },
+    {
+      "key": "slots",
+      "label": "slot names"
+    },
+    {
+      "key": "reads",
+      "label": "unchecked reads",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "population": "track or assembly schema",
+        "slots": "`name`, `assemblyNames`, `trackId`, `adapter`",
+        "reads": 81
+      }
+    },
+    {
+      "values": {
+        "population": "root config",
+        "slots": "`theme`, `extraThemes`, `defaultDriver`, `workerCount`, `shareURL`",
+        "reads": 10
+      }
+    },
+    {
+      "values": {
+        "population": "everything else",
+        "slots": "31 other names",
+        "reads": 44
+      }
+    }
+  ]
+}

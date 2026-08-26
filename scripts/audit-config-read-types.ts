@@ -48,6 +48,28 @@ import ts from 'typescript'
 
 const REPO_ROOT = path.join(import.meta.dirname, '..')
 const BASELINE = path.join(import.meta.dirname, 'configReadTypeGaps.txt')
+const MEASUREMENTS = path.join(REPO_ROOT, 'agent-docs/measurements')
+
+// The slot names each population is counted by, and the whole of the judgement
+// in the second record — a name here is assigned to that population wherever it
+// is read, and every other name falls to the tail row.
+//
+// Named by SLOT rather than by what the read is against, because that is what
+// the audit can see. It is close: a display's own schema does not declare
+// `trackId` or `assemblyNames`, so those two are a track read wherever they
+// appear, and `name`/`adapter` are the same in every entry on today's list. It
+// is not a proof, which is why the doc quoting these counts says the grouping is
+// by name.
+const POPULATIONS: { label: string; slots: string[] }[] = [
+  {
+    label: 'track or assembly schema',
+    slots: ['name', 'assemblyNames', 'trackId', 'adapter'],
+  },
+  {
+    label: 'root config',
+    slots: ['theme', 'extraThemes', 'defaultDriver', 'workerCount', 'shareURL'],
+  },
+]
 
 // Build the program from the root tsconfig rather than importing the api-docs
 // helper: that module lives under a looser tsconfig, and importing it drags it
@@ -118,9 +140,117 @@ function readIsChecked(type: ts.Type) {
   return (type.flags & ts.TypeFlags.Any) === 0
 }
 
+// The two records the docs quote instead of retyping a count. Written on
+// `--write`, beside the baseline, so a re-bank cannot move the file and leave
+// every figure citing it behind — which is what happened four re-banks running.
+function writeMeasurements(gaps: Gap[], calls: Record<Bucket, number>) {
+  const measured = new Date().toISOString().slice(0, 10)
+  const repro = 'node scripts/audit-config-read-types.ts --write'
+  const source = (notes: string) => ({ kind: 'bench' as const, repro, notes })
+  const unchecked = (bucket: Bucket) =>
+    gaps.filter(g => g.bucket === bucket).length
+
+  const totals = {
+    id: 'config-read-type-gaps',
+    measured,
+    published: false,
+    source: source(
+      'Every getConf/resolveConf/readConfObject call in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone.',
+    ),
+    columns: [
+      { key: 'scope', label: 'scope' },
+      { key: 'calls', label: 'accessor calls', format: 'int', align: 'right' },
+      { key: 'unchecked', label: 'unchecked', format: 'int', align: 'right' },
+      {
+        key: 'checked',
+        label: 'checked',
+        format: 'int',
+        align: 'right',
+        derived: 'calls - unchecked',
+      },
+      {
+        key: 'share',
+        label: 'checked share',
+        format: 'percent',
+        // A decimal, because whole percents are what let this figure sit
+        // unchanged in adr-052 across four re-banks: 62% and 61% are one read
+        // apart at this corpus size, so rounding hides exactly the movement the
+        // column exists to show.
+        precision: 1,
+        align: 'right',
+        derived: '100 * (calls - unchecked) / calls',
+      },
+    ],
+    rows: [
+      {
+        values: {
+          scope: 'source',
+          calls: calls.source,
+          unchecked: unchecked('source'),
+        },
+      },
+      {
+        values: {
+          scope: 'tests',
+          calls: calls.test,
+          unchecked: unchecked('test'),
+        },
+      },
+      {
+        values: {
+          scope: 'all',
+          calls: calls.source + calls.test,
+          unchecked: gaps.length,
+        },
+      },
+    ],
+  }
+
+  const sourceGaps = gaps.filter(g => g.bucket === 'source')
+  const claimed = new Set(POPULATIONS.flatMap(p => p.slots))
+  const tail = sourceGaps.filter(g => !claimed.has(g.slot))
+  const populations = {
+    id: 'config-read-gap-populations',
+    measured,
+    published: false,
+    source: source(
+      `The source-bucket rows of ${path.relative(REPO_ROOT, BASELINE)}, grouped by SLOT NAME against the list in POPULATIONS (scripts/audit-config-read-types.ts). Reads are filed under whichever file contains them, so the baseline itself reads as display debt; this is the same set counted by what is actually being read.`,
+    ),
+    columns: [
+      { key: 'population', label: 'population' },
+      { key: 'slots', label: 'slot names' },
+      { key: 'reads', label: 'unchecked reads', format: 'int', align: 'right' },
+    ],
+    rows: [
+      ...POPULATIONS.map(p => ({
+        values: {
+          population: p.label,
+          slots: p.slots.map(s => `\`${s}\``).join(', '),
+          reads: sourceGaps.filter(g => p.slots.includes(g.slot)).length,
+        },
+      })),
+      {
+        values: {
+          population: 'everything else',
+          slots: `${new Set(tail.map(g => g.slot)).size} other names`,
+          reads: tail.length,
+        },
+      },
+    ],
+  }
+
+  for (const record of [totals, populations]) {
+    fs.writeFileSync(
+      path.join(MEASUREMENTS, `${record.id}.json`),
+      `${JSON.stringify(record, null, 2)}\n`,
+    )
+  }
+}
+
 function main() {
   const write = process.argv.includes('--write')
   const gaps: Gap[] = []
+  const calls: Record<Bucket, number> = { source: 0, test: 0 }
   let total = 0
 
   {
@@ -144,6 +274,10 @@ function main() {
             const slot = isLiteralSlot ? slotArg.text : '<dynamic>'
             const { line } = sf.getLineAndCharacterOfPosition(node.getStart())
             const file = path.relative(process.cwd(), sf.fileName)
+            // Per bucket as well as in total: a checked SHARE is only honest
+            // against the calls in its own scope, and the tests' share is a
+            // different claim from the source's.
+            calls[bucketFor(file)]++
 
             // Only the readers carry a signal. `setConf` returns void, so
             // there is nothing to inspect — but it widens with its siblings (the
@@ -230,6 +364,7 @@ function main() {
 
     if (write) {
       fs.writeFileSync(BASELINE, body)
+      writeMeasurements(gaps, calls)
       // both counts, labelled: the gate compares the SOURCE number, so printing a
       // bare source+test total here is what made a 5-site drift read as a 178-site
       // one in the failure message below

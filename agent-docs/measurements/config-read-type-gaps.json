@@ -1,0 +1,66 @@
+{
+  "id": "config-read-type-gaps",
+  "measured": "2026-08-26",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node scripts/audit-config-read-types.ts --write",
+    "notes": "Every getConf/resolveConf/readConfObject call in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone."
+  },
+  "columns": [
+    {
+      "key": "scope",
+      "label": "scope"
+    },
+    {
+      "key": "calls",
+      "label": "accessor calls",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "unchecked",
+      "label": "unchecked",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "checked",
+      "label": "checked",
+      "format": "int",
+      "align": "right",
+      "derived": "calls - unchecked"
+    },
+    {
+      "key": "share",
+      "label": "checked share",
+      "format": "percent",
+      "precision": 1,
+      "align": "right",
+      "derived": "100 * (calls - unchecked) / calls"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scope": "source",
+        "calls": 538,
+        "unchecked": 135
+      }
+    },
+    {
+      "values": {
+        "scope": "tests",
+        "calls": 413,
+        "unchecked": 155
+      }
+    },
+    {
+      "values": {
+        "scope": "all",
+        "calls": 951,
+        "unchecked": 290
+      }
+    }
+  ]
+}

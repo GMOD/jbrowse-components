@@ -30,9 +30,23 @@ widened to `AnyConfigurationSchemaType`, **both halves go at once** —
 degrades to `string`, so the name stops being checked too.
 
 `scripts/audit-config-read-types.ts` measures how much of the surface actually
-reaches the concrete case: **62%**, baselined in `scripts/configReadTypeGaps.txt`.
+reaches the concrete case, baselined in `scripts/configReadTypeGaps.txt` and
+recorded here. It read **62%** across both scopes when this ADR was written
+(2026-08); `--write` refreshes the table, so what it says below is what the tree
+says now, and the gap between the two is the mixin work in the consequences:
 
-The 38% is not a backlog. It is structural, in four distinct ways:
+<!-- BEGIN GENERATED MEASUREMENT config-read-type-gaps -->
+
+| scope  | accessor calls | unchecked | checked | checked share |
+| ------ | -------------: | --------: | ------: | ------------: |
+| source |            538 |       135 |     403 |         74.9% |
+| tests  |            413 |       155 |     258 |         62.5% |
+| all    |            951 |       290 |     661 |         69.5% |
+
+<!-- END GENERATED MEASUREMENT config-read-type-gaps -->
+
+The unchecked remainder is not a backlog. It is structural, in four distinct
+ways:
 
 - **A mixin cannot name the composing display's schema.** It composes *onto* a
   display that declares `configuration`, so its own `self` is not typed with it,
@@ -40,8 +54,10 @@ The 38% is not a backlog. It is structural, in four distinct ways:
   threading does not rescue this: inside a generic body the type variable is
   known only by its constraint, so `ConfigurationSlotName<…>` either hits the
   `IsAny` widen or won't resolve at all. Recorded in
-  `packages/core/src/configuration/CLAUDE.md`; `TrackHeightMixin` still carries
-  a vestigial `TConf` parameter that would not help if a caller passed one.
+  `packages/core/src/configuration/CLAUDE.md`. **Read this one with the
+  consequence below it** — a mixin cannot name the composing schema and does not
+  need to, since it can name the slots it owns; the cast was closed in 2026-08
+  and this bullet is the reasoning that let it stand, not the state of the tree.
 - **A widened `baseConfiguration` poisons the whole schema**, since
   `ConfigurationSlotName` recurses through `GetBase`. A schema taking its base
   from `pluginManager.getDisplayType(…).configSchema` has unchecked reads of its
@@ -102,7 +118,7 @@ The four cases are not symmetric, and seeing them laid out is what settles it:
 | | slot name | value type |
 | --- | --- | --- |
 | **write** | runtime guard (this ADR) | already runtime — MST type-checks the assignment |
-| **read** | compile-time only, ~62% | compile-time only, ~62% |
+| **read** | compile-time only, on `all`'s checked share above | compile-time only, on the same share |
 
 Both write cases are now covered at runtime, on 100% of the surface, regardless
 of whether the schema is widened. The compile-time machinery's unique residual
@@ -153,7 +169,8 @@ Naming a concrete schema in a state model factory
 remains the right lever where it is cheap, and importing a base schema directly
 rather than through the registry is a genuine fix. Both were applied. But
 calibrate: doing this across the nine widened display factories moved the audit
-by **6 reads**, and the overall number barely moved (61% → 62%).
+by **6 reads**, and the overall number barely moved — 61% to 62%, both readings
+taken 2026-08-04 either side of that change.
 
 Two reasons the yield was that low, both worth knowing before estimating similar
 work:
@@ -178,14 +195,21 @@ work:
   was more theoretical than the framing around it suggested. If it ever does
   fire in the wild, that is the signal to revisit how much the read-side
   compile-time guard is worth.
-- **The ~30 unchecked mixin reads are accepted.** Enumerated in
-  `scripts/configReadTypeGaps.txt`, gated in CI, confined to four heavily
-  commented files. A managed risk, not a leak. Don't re-open this by proposing
-  per-display generated mixins — that un-shares `WiggleScoreConfigMixin` /
-  `ScoreScaleMixin`, which `be6d18b4a1` had just consolidated.
-- **The audit script and its baseline stay.** Their value is now diagnostic —
+- **The mixin reads this accepted are gone, and that part of the reasoning was
+  wrong.** ~30 of them were enumerated here as a managed risk, on the argument
+  above that a mixin cannot name a schema. It cannot name the *composing
+  display's* schema — but it can name the slots it owns (`ConfigModelForFields`)
+  or the base schema a base slot lives on, and ten did (`0b6ab6ca3f`,
+  `b54c692d06`). `HostChecksSlotNames` fails the build if one widens back. What
+  genuinely does not work is the type parameter, for the reason in the Context
+  above. Don't read the acceptance as still standing; do still refuse
+  per-display generated mixins, which would un-share `WiggleScoreConfigMixin` /
+  `ScoreScaleMixin` as `be6d18b4a1` had just consolidated them.
+- **The audit script and its baseline stay.** Their value is diagnostic —
   telling you whether narrowing a particular factory would buy anything — rather
-  than a number to drive toward. 62% is close to the ceiling this design allows.
+  than a number to drive toward. The populations that remain are counted in
+  [TODO.md](../TODO.md)'s entry for the baseline, and most of the surface left
+  is reads against a track or assembly config that no display narrowing reaches.
 - **The general principle**: when a compile-time guard is structurally unable to
   cover a surface, and the surface has a single runtime funnel, guard the
   funnel. Extending the compile-time guard by generating code is the more
