@@ -253,6 +253,47 @@ const RibbonLayer = observer(function RibbonLayer({
   )
 })
 
+// The hovered group outlined in every lane that places it, over the glyphs.
+//
+// The ribbons alone carried the hover, and a ribbon joins ADJACENT lanes only —
+// so a group the middle lane does not place lit up nothing at all, and the
+// glyph the reader is actually looking at never moved. Its own observer for the
+// same reason `RibbonLayer` is: the lane layer resolves a jexl color slot per
+// gene and a hover has no business re-running that.
+const GroupHighlightLayer = observer(function GroupHighlightLayer({
+  model,
+  lanes,
+  glyphHeight,
+}: {
+  model: MultiWaySyntenyDisplayModel
+  lanes: Lane[]
+  glyphHeight: number
+}) {
+  const palette = usePalette()
+  const { hoveredGroupKey } = model
+  if (hoveredGroupKey === undefined) {
+    return null
+  }
+  return (
+    <>
+      {lanes.flatMap((lane, row) =>
+        (lane.spans.get(hoveredGroupKey) ?? []).map((span, i) => (
+          <rect
+            key={`hover-${row}-${i}`}
+            x={Math.min(span[0], span[1]) - 1}
+            y={lane.glyphTop - 1}
+            width={Math.max(2, Math.abs(span[1] - span[0]) + 2)}
+            height={glyphHeight + 2}
+            fill="none"
+            stroke={palette.text.primary}
+            pointerEvents="none"
+          />
+        )),
+      )}
+    </>
+  )
+})
+
 const MultiWayRows = observer(function MultiWayRows({
   model,
   exportSVG,
@@ -606,6 +647,12 @@ const MultiWayRows = observer(function MultiWayRows({
             onClick={() => {
               model.selectFeature(group.feature)
             }}
+            onMouseEnter={() => {
+              model.setHoveredGroupKey(group.key)
+            }}
+            onMouseLeave={() => {
+              model.setHoveredGroupKey(undefined)
+            }}
           >
             <title>{group.key}</title>
           </rect>,
@@ -656,6 +703,11 @@ const MultiWayRows = observer(function MultiWayRows({
       {linkRibbons}
       {ticks}
       {glyphs}
+      <GroupHighlightLayer
+        model={model}
+        lanes={lanes}
+        glyphHeight={glyphHeight}
+      />
       {headers}
     </>
   )

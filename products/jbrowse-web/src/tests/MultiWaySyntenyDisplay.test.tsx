@@ -1,6 +1,7 @@
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
+import { renderToString } from 'react-dom/server'
 
 import configSnapshot from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
@@ -273,4 +274,44 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
   click(rowNamed(laneOrder(), 'Reset lane order'))
   expect([...display.rowOrder]).toEqual([])
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
+}, 40000)
+
+// The ribbons alone carried the hover, and a ribbon joins ADJACENT lanes only:
+// `g2` is placed on grape and peach and not on cacao, so hovering it lit one
+// ribbon and moved nothing the reader was looking at. `g1` is on all three.
+test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places it', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: ['multiway_blocks'],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.rowAssemblies).toEqual(['peach', 'cacao'])
+      return d!
+    },
+    { timeout: 30000 },
+  )
+  const outlines = async () =>
+    renderToString(<>{await display.renderSvg()}</>).match(
+      /<rect[^>]*fill="none"/g,
+    )?.length ?? 0
+
+  expect(await outlines()).toBe(0)
+  display.setHoveredGroupKey('g1')
+  expect(await outlines()).toBe(3)
+  display.setHoveredGroupKey('g2')
+  expect(await outlines()).toBe(2)
+  display.setHoveredGroupKey(undefined)
+  expect(await outlines()).toBe(0)
 }, 40000)
