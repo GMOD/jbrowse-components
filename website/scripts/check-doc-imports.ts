@@ -918,10 +918,15 @@ function resolveCitedDoc(ref: string, fromFile: string) {
     }
     return undefined
   }
-  return (
-    walkFiles(agentDocsDir, name => name === ref)[0] ??
-    walkFiles(docsDir, name => name === ref)[0]
-  )
+  // Ambiguity is reported, not resolved by picking one. `hic_track.md` names two
+  // real files — a user guide and a config guide — and taking the first meant
+  // the heading test ran against a doc the author never cited, so a citation of
+  // a heading that exists was reported as naming one that does not.
+  const found = [
+    ...walkFiles(agentDocsDir, name => name === ref),
+    ...walkFiles(docsDir, name => name === ref),
+  ]
+  return found.length > 1 ? found : found[0]
 }
 
 // A slashed citation that resolves nowhere is only OURS to report when it looks
@@ -959,6 +964,14 @@ function scanSectionCites(path: string, lines: string[]): Problem[] {
           specifier: `${ref} §"${title}"`,
           reason,
         })
+      }
+      if (Array.isArray(doc)) {
+        problem(
+          `"${ref}" names ${doc.length} files — qualify it with a directory: ${doc
+            .map(f => docRelative(f))
+            .join(', ')}`,
+        )
+        continue
       }
       const texts = doc && headingTexts(doc)
       if (!texts) {

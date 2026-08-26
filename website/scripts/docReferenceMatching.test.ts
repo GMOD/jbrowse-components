@@ -168,6 +168,14 @@ describe('citationText', () => {
     expect(citationText(lines, 0)).toContain(`${DOC} §"${SECTION}"`)
   })
 
+  // A blockquote marker is a comment marker for this purpose: carried into the
+  // joined text it lands inside the quoted title, where it matches no heading
+  // and names a character no author put there.
+  test('strips a blockquote marker too', () => {
+    const lines = [`> see ${DOC}`, `> §"${SECTION}"`]
+    expect(citationText(lines, 0)).toContain(`${DOC} §"${SECTION}"`)
+  })
+
   test('does not run off the end of the file', () => {
     expect(citationText([`trailing ${DOC}`], 0)).toBe(`trailing ${DOC} `)
   })

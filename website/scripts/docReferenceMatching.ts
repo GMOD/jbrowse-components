@@ -99,9 +99,12 @@ export function repoPathRefs(line: string): string[] {
 export const SECTION_CITE =
   /(?:\[[^\]]*\]\(\s*([\w./-]*\.md)(?:#[^)]*)?\s*\)|([\w./-]*\.md)`?)\s*(?:§|,|['’]s)\s*"([^"]+)"/g
 
-// Strip a leading comment marker, so one path serves prose and comments. A
-// no-op on a prose line.
-const strip = (l: string) => l.replace(/^\s*(\/\/|\*|\/\*\*?)\s?/, '')
+// Strip a leading comment or blockquote marker, so one path serves prose,
+// comments and quoted passages. A no-op on an ordinary prose line. The
+// blockquote joined the list when a citation inside one wrapped and the `>` came
+// with it, making the heading it named unmatchable by a character no author put
+// there.
+const strip = (l: string) => l.replace(/^\s*(\/\/|\*|\/\*\*?|>)\s?/, '')
 
 /**
  * The text a section citation on `lines[i]` should be matched against.
