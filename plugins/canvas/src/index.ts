@@ -128,6 +128,7 @@ export type { FitStage } from './LinearBasicDisplay/fitLadder.ts'
 export type { FitDrops } from './LinearBasicDisplay/fitNotes.ts'
 export type {
   IncrementalLayout,
+  IsoformCountFreeInputs,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
