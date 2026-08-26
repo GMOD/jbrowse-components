@@ -1,10 +1,6 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import {
-  SCROLL_ZOOM_HELP,
-  SCROLL_ZOOM_LABEL,
-} from '@jbrowse/core/ui/scrollZoomLabels'
-import {
   getDialogHost,
   getSession,
   isSessionWithAddSessionTrack,
@@ -24,7 +20,6 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 
 import {
   ExportSvgDialog,
@@ -46,33 +41,6 @@ const TRACK_LABEL_OPTIONS = [
   { value: 'offset', label: 'Offset' },
   { value: 'hidden', label: 'Hidden' },
 ] as const
-
-/**
- * The scroll-to-zoom toggle for the header's zoom menu, where someone already
- * fiddling with zoom will look.
- *
- * The view menu used to carry a copy, on the grounds that it is the one that
- * survives `hideHeader` (MiniControls renders `menuItems()`, not the header's
- * zoom controls). The header now shows the toggle as a button of its own
- * (`ScrollZoomToggle` in `Header.tsx`), and the setting is a session preference
- * reachable from the preferences dialog whatever the header is doing, so the
- * copy bought a row and no reach.
- *
- * Writes a *session* preference, not view state — every wheel-zoom view in the
- * app follows it (see BaseSession's `scrollZoom`).
- */
-export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
-  return {
-    label: SCROLL_ZOOM_LABEL,
-    type: 'checkbox',
-    checked: self.scrollZoom,
-    icon: ZoomInMapIcon,
-    onClick: () => {
-      self.setScrollZoom(!self.scrollZoom)
-    },
-    helpText: SCROLL_ZOOM_HELP,
-  }
-}
 
 /**
  * Zoom all the way out, shared by the view menu and the header's zoom menu —
