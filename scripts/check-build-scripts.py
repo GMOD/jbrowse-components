@@ -5,9 +5,12 @@ validates every embedded quoted heredoc tagged JSON (must be valid JSON) or PY
 (must be syntactically valid Python) — the config.json / session.json blocks and
 the config-patching snippets. It also syntax-checks every standalone helper in
 scripts/*.py (reroot_maf.py, hapibd_to_bed.py, …), which the scripts invoke as
-real pipeline steps. It downloads no data. The one pipeline it runs is
-sv_multihop's, against a synthetic allele it builds itself
-(check_sv_multihop_pipeline.py), and only when samtools and minimap2 are there.
+real pipeline steps. It downloads no data except juicer_tools, which sv_contact_maps' check needs
+because only juicer can write a .hic (cached in $TMPDIR, or point JUICER_JAR at
+a copy). Two pipelines run: sv_multihop's, against a synthetic allele it builds
+itself (check_sv_multihop_pipeline.py) when samtools and minimap2 are there, and
+sv_contact_maps' four channels over a synthetic library when samtools and java
+are.
 
 `scripts/check-shell-pipefail.ts` is the sibling guard for one thing shellcheck
 0.11 does not diagnose: `| head` under `set -o pipefail`, which exits 141 and
@@ -19,6 +22,7 @@ Usage: python3 scripts/check-build-scripts.py
 """
 import ast
 import contextlib
+import collections
 import glob
 import gzip
 import io
@@ -30,6 +34,7 @@ import shutil
 import subprocess
 import tempfile
 import sys
+import urllib.request
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(root)
@@ -1479,6 +1484,262 @@ else:
         failed = True
     pipeline_ran = True
 
+# sv_contact_maps.py: the four Cue channels the sv_contact_maps demo serves as
+# .hic files. Every mistake below draws a picture rather than raising, and the
+# picture is one an SV would plausibly make.
+sv_contact_maps = load("scripts/sv_contact_maps.py", "sv_contact_maps")
+
+
+def sam_flag(*, read1=True, reverse=False, mate_reverse=True, paired=True,
+             mate_unmapped=False, secondary=False, supplementary=False):
+    flag = 0x1 if paired else 0
+    flag |= 0x40 if read1 else 0x80
+    flag |= 0x10 if reverse else 0
+    flag |= 0x20 if mate_reverse else 0
+    flag |= 0x8 if mate_unmapped else 0
+    flag |= 0x100 if secondary else 0
+    flag |= 0x800 if supplementary else 0
+    return flag
+
+
+# A concordant pair is not discordant however it is spelled: the whole map is a
+# picture of what is left after the modal insert is thrown away, and a 300 bp
+# fragment surviving the filter puts the diagonal back and takes the colour ramp
+# with it.
+check("a proper 300 bp pair is in no channel",
+      sv_contact_maps.pair_channels(sam_flag(), 100_000, 100_300, 1000), ())
+check("a 10 kb pair is discordant",
+      sv_contact_maps.pair_channels(sam_flag(), 100_000, 110_000, 1000),
+      ("discordant",))
+check("a same-strand 10 kb pair is discordant and same-strand",
+      sv_contact_maps.pair_channels(
+          sam_flag(reverse=True, mate_reverse=True), 100_000, 110_000, 1000),
+      ("discordant", "same_strand"))
+# Everted: the REVERSE mate is the left one. Classifying from read 1's strand
+# alone (Cue's R2F1 spelling) finds this pair only when read 1 happens to be the
+# forward mate, which is half of them, and a tandem duplication then draws at
+# half the count it has.
+check("an everted pair is outward, read 1 on the right",
+      sv_contact_maps.pair_channels(
+          sam_flag(reverse=False, mate_reverse=True), 110_000, 100_000, 1000),
+      ("discordant", "outward"))
+check("an everted pair is outward, read 1 on the left",
+      sv_contact_maps.pair_channels(
+          sam_flag(reverse=True, mate_reverse=False), 100_000, 110_000, 1000),
+      ("discordant", "outward"))
+check("a pair is emitted from read 1 only",
+      sv_contact_maps.pair_channels(sam_flag(read1=False), 100_000, 110_000,
+                                    1000), ())
+check("a secondary alignment is in no channel",
+      sv_contact_maps.pair_channels(sam_flag(secondary=True), 100_000, 110_000,
+                                    1000), ())
+check("a supplementary alignment is in no channel",
+      sv_contact_maps.pair_channels(sam_flag(supplementary=True), 100_000,
+                                    110_000, 1000), ())
+check("a half-mapped pair is in no channel",
+      sv_contact_maps.pair_channels(sam_flag(mate_unmapped=True), 100_000,
+                                    110_000, 1000), ())
+
+# Split reads. A DUP_gs-style depth call has no junction pair at all, so on a
+# library that writes SA tags the split contact is the only pair-channel
+# evidence there is.
+check("an SA segment on the same contig is a contact",
+      sv_contact_maps.split_contacts(
+          "7", 100_000, sam_flag(), ["NM:i:0", "SA:Z:7,110001,+,50M50S,60,0;"],
+          1000),
+      ["0 7 100000 0 0 7 110000 1"])
+check("an SA segment on another contig is not",
+      sv_contact_maps.split_contacts(
+          "7", 100_000, sam_flag(), ["SA:Z:12,110001,+,50M50S,60,0;"], 1000), [])
+check("an SA segment inside --min-span is not",
+      sv_contact_maps.split_contacts(
+          "7", 100_000, sam_flag(), ["SA:Z:7,100501,+,50M50S,60,0;"], 1000), [])
+check("a reverse-strand SA segment keeps its strand",
+      sv_contact_maps.split_contacts(
+          "7", 100_000, sam_flag(), ["SA:Z:7,110001,-,50M50S,60,0;"], 1000),
+      ["0 7 100000 0 1 7 110000 1"])
+
+check("a contact writes its lower coordinate first",
+      sv_contact_maps.contact("7", 110_000, 1, "7", 100_000, 0),
+      "0 7 100000 0 1 7 110000 1")
+
+# The depth channel bins a read's MIDPOINT, so its span has to come off the
+# CIGAR: soft clips and insertions consume no reference, deletions and skips do.
+check("reference_span counts only the reference-consuming operations",
+      sv_contact_maps.reference_span("10S5M2I3D4N6M2H"), 18)
+check("a read is binned by its midpoint",
+      sv_contact_maps.depth_bin(1000, 148, 750), 1)
+check("a read starting in one bin is binned by where its middle is",
+      sv_contact_maps.depth_bin(700, 148, 750), 1)
+
+# The depth channel writes one record per BIN PAIR, so the position it writes
+# has to name a bin rather than fall somewhere in one. Bin start + 1 does.
+depth = {("7", 10): 30, ("7", 11): 60, ("7", 12): 30}
+check("a depth contact's position is bin start plus one",
+      list(sv_contact_maps.depth_contacts(depth, 750, 400)),
+      ["0 7 7501 0 0 7 8251 1 30", "0 7 8251 0 0 7 9001 1 30"])
+check("a bin pair with equal depth is not written",
+      [line for line in sv_contact_maps.depth_contacts(depth, 750, 400)
+       if line.endswith(" 0")], [])
+stepped = {("7", 10): 30, ("7", 11): 60, ("7", 12): 10}
+check("every bin pair inside --max-bin-span is written",
+      list(sv_contact_maps.depth_contacts(stepped, 750, 400)),
+      ["0 7 7501 0 0 7 8251 1 30", "0 7 7501 0 0 7 9001 1 20",
+       "0 7 8251 0 0 7 9001 1 50"])
+check("--max-bin-span bounds how far apart a written bin pair is",
+      list(sv_contact_maps.depth_contacts(stepped, 750, 1)),
+      ["0 7 7501 0 0 7 8251 1 30", "0 7 8251 0 0 7 9001 1 50"])
+# A bin with no reads is a real zero, not an absence: a homozygous deletion is
+# exactly the bin pair whose difference is the whole of one side's depth.
+check("an empty bin inside the range counts as zero depth",
+      list(sv_contact_maps.depth_contacts({("7", 10): 40, ("7", 12): 40}, 750, 400)),
+      ["0 7 7501 0 0 7 8251 1 40", "0 7 8251 0 0 7 9001 1 40"])
+
+check("chrom_sizes reads @SQ, and only @SQ",
+      sv_contact_maps.chrom_sizes(
+          "@HD\tVN:1.6\tSO:coordinate\n"
+          "@SQ\tSN:7\tLN:159138663\n"
+          "@SQ\tSN:GL000207.1\tLN:4262\n"
+          "@RG\tID:x\tSM:NA12878\n"),
+      [("7", 159138663), ("GL000207.1", 4262)])
+
+
+# Everything above is the classification. What it is classifying FOR is a .hic
+# file, and the two steps between it and one are juicer's: it rounds a position
+# to the nearest bin, and it computes a normalization vector unless told not to.
+# Run the CLI end to end on a synthetic library and read the answer back out.
+sv_maps_tools = ["samtools", "java"]
+sv_maps_missing = [t for t in sv_maps_tools if shutil.which(t) is None]
+if sv_maps_missing:
+    # Loud and counted, like sv_multihop's pipeline above.
+    print(f"note: {', '.join(sv_maps_missing)} not installed, "
+          f"SKIPPING the sv_contact_maps .hic checks")
+    sv_maps_ran = False
+else:
+    # 36 MB, fetched once and cached, since a .hic can only be written by the
+    # tool that defines the format. JUICER_JAR points at a copy you have.
+    jar = os.environ.get("JUICER_JAR") or os.path.join(
+        tempfile.gettempdir(), sv_contact_maps.JUICER_JAR_NAME)
+    if not os.path.exists(jar):
+        print(f"fetching {sv_contact_maps.JUICER_JAR_NAME} for the "
+              f"sv_contact_maps checks")
+        urllib.request.urlretrieve(sv_contact_maps.JUICER_JAR_URL, jar)
+
+    hic_dir = tempfile.mkdtemp()
+    BIN = 750
+    sizes = os.path.join(hic_dir, "chrom.sizes")
+    with open(sizes, "w") as fh:
+        fh.write("7\t1000000\n")
+
+    def dump(hic, resolution=BIN):
+        out = hic + ".dump.txt"
+        subprocess.run(["java", "-Xmx2g", "-jar", jar, "dump", "observed",
+                        "NONE", hic, "7", "7", "BP", str(resolution), out],
+                       capture_output=True, check=True)
+        rows = [line.split() for line in open(out).read().splitlines() if line]
+        return sorted(((int(a), int(b), float(v)) for a, b, v in rows),
+                      key=lambda r: -r[2])
+
+    def one_cell(name, position_of):
+        """Build a one-contact .hic and report which bin pair juicer put it in."""
+        contacts = os.path.join(hic_dir, f"{name}.txt")
+        with open(contacts, "w") as fh:
+            fh.write("0 7 %d 0 0 7 %d 1 7\n"
+                     % (position_of(100), position_of(104)))
+        hic = os.path.join(hic_dir, f"{name}.hic")
+        sv_contact_maps.build_hic(jar, contacts, hic, sizes, [BIN], "2g")
+        return dump(hic)[0][:2]
+
+    # WHICH BIN JUICER PUTS A POSITION IN, measured rather than assumed. 1.22.01
+    # floors, so bin start + 1 and the bin's centre land in the same cell; a
+    # writer that rounded to the nearest bin instead would push the whole depth
+    # channel one bin along and still draw a plausible plaid, and nothing in the
+    # picture would say which had happened. Both offsets are pinned so a jar
+    # bump that changes the rule fails here rather than in a figure.
+    check("a position at bin start + 1 lands in that bin",
+          one_cell("start_plus_one", lambda b: b * BIN + 1),
+          (100 * BIN, 104 * BIN))
+    check("juicer floors a position into its bin, it does not round",
+          one_cell("bin_centre", lambda b: b * BIN + BIN // 2),
+          (100 * BIN, 104 * BIN))
+    check("a position at the last base of a bin is still in that bin",
+          one_cell("bin_end", lambda b: b * BIN + BIN - 1),
+          (100 * BIN, 104 * BIN))
+
+    # An 18 kb inversion at 100,500 x 118,500 carried by same-strand pairs, and
+    # a copy-number step over 150,000-160,000 carried by depth alone -- the two
+    # halves of what the demo shows, and each other's control.
+    INV_LEFT, INV_RIGHT = 100_500, 118_500
+    DUP_LEFT, DUP_RIGHT = 200_500, 210_500
+    READ = 100
+    rows = [
+        ("dup0", sam_flag(reverse=True, mate_reverse=False), DUP_LEFT + 1,
+         DUP_RIGHT + 1),
+        ("dup0m", sam_flag(read1=False, reverse=False, mate_reverse=True),
+         DUP_RIGHT + 1, DUP_LEFT + 1),
+    ]
+    # +1 because these are SAM POS values, and a read written at INV_LEFT itself
+    # is one base short of the bin the name means
+    for i in range(40):
+        rows.append((f"inv{i}", sam_flag(reverse=True, mate_reverse=True),
+                     INV_LEFT + 1 + i, INV_RIGHT + 1 + i))
+        rows.append((f"inv{i}m",
+                     sam_flag(read1=False, reverse=True, mate_reverse=True),
+                     INV_RIGHT + 1 + i, INV_LEFT + 1 + i))
+    for start in range(90_000, 170_000, 200):
+        for c in range(2 if 150_000 <= start < 160_000 else 1):
+            rows.append((f"bg{start}_{c}", sam_flag(), start, start + 300))
+            rows.append((f"bg{start}_{c}m",
+                         sam_flag(read1=False, reverse=True, mate_reverse=False),
+                         start + 300, start))
+    sam = os.path.join(hic_dir, "synthetic.sam")
+    with open(sam, "w") as fh:
+        fh.write("@HD\tVN:1.6\tSO:coordinate\n@SQ\tSN:7\tLN:1000000\n")
+        for name, flag, pos, pnext in sorted(rows, key=lambda r: r[2]):
+            fh.write("%s\t%d\t7\t%d\t60\t%dM\t=\t%d\t0\t%s\t%s\n"
+                     % (name, flag, pos, READ, pnext, "A" * READ, "I" * READ))
+    sv_contact_maps.main([sam, "--out", hic_dir, "--juicer", jar,
+                          "--resolutions", str(BIN), "--bin", str(BIN),
+                          "--min-span", "1000"])
+
+    same_strand = dump(os.path.join(hic_dir, "same_strand.hic"))
+    check("the inversion's cell is the hottest in the same-strand channel",
+          same_strand[0][:2],
+          (INV_LEFT // BIN * BIN, INV_RIGHT // BIN * BIN))
+    check("every same-strand pair reaches it", same_strand[0][2], 40.0)
+    check("the everted pair is the outward channel, and the only thing in it",
+          dump(os.path.join(hic_dir, "outward.hic")),
+          [(DUP_LEFT // BIN * BIN, DUP_RIGHT // BIN * BIN, 1.0)])
+
+    # The depth channel end to end: recount the planted reads here and require
+    # the .hic to hand the difference back exactly. `pre -n` is what makes this
+    # readable at all; with a normalization vector computed, the display picks
+    # it and a sparse channel comes back empty.
+    planted = collections.Counter()
+    for _, _, pos, _ in rows:
+        # SAM POS is 1-based and every coordinate below it is not
+        planted[sv_contact_maps.depth_bin(pos - 1, READ, BIN)] += 1
+    inside, outside = (155_000 + READ // 2) // BIN, (140_000 + READ // 2) // BIN
+    cells = {(a, b): v for a, b, v in
+             dump(os.path.join(hic_dir, "depth_difference.hic"))}
+    check("the depth difference survives the round trip exactly",
+          cells.get((outside * BIN, inside * BIN)),
+          float(abs(planted[inside] - planted[outside])))
+    check("two bins on the same side of the step differ by nothing",
+          cells.get((outside * BIN, (outside + 2) * BIN)), None)
+
+    # A channel with no contacts at all is an answer -- a depth-only call has no
+    # junction pair anywhere -- and juicer `pre` exits 57 on an empty file, at
+    # the end of a run that has already paid for the whole scan.
+    empty_dir = tempfile.mkdtemp()
+    sv_contact_maps.main([sam, "--out", empty_dir, "--juicer", jar,
+                          "--resolutions", str(BIN), "--bin", str(BIN),
+                          "--min-span", "500000"])
+    check("a channel with no contacts writes no .hic instead of failing",
+          sorted(f for f in os.listdir(empty_dir) if f.endswith(".hic")),
+          ["depth_difference.hic"])
+    sv_maps_ran = True
+
 # depmap_to_jbrowse.py: StarFusionAdapter keys off a '#'-prefixed header and
 # finds the breakpoint columns by name, so a plain CSV->TSV dump loads as an
 # empty track rather than failing.
@@ -1906,4 +2167,5 @@ print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, 
       f"{runnable} reader-facing docs run no script out of scripts/, "
       f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}"
       f"{' (real gfatools)' if gfatools_ran else ' (gfa2bed stubbed)'}, "
-      f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}")
+      f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}, "
+      f"sv_contact_maps {'round-trips its channels' if sv_maps_ran else 'SKIPPED'}")
