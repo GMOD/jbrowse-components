@@ -46,13 +46,15 @@ test('emits a coverage panel and a pileup panel, coverage on top', () => {
   expect(pileup!.plotExpr).toContain('pileup_layout(reads)')
 })
 
-test('both panels draw MD-tag mismatches (reference-free SNP coloring)', () => {
+test('both panels draw per-base mismatches, MD tag or reference', () => {
   const [cov, pileup] = alignmentsFragments(base)
   // SNP coverage: per-base mismatch counts stacked over the grey total
   expect(cov!.helpers).toEqual(
     expect.arrayContaining(['bam_mismatches', 'base_colors']),
   )
-  expect(cov!.plotExpr).toContain('bam_mismatches(bam, chrom, start, end)')
+  expect(cov!.plotExpr).toContain(
+    'bam_mismatches(bam, chrom, start, end, .refpath)',
+  )
   expect(cov!.plotExpr).toContain('aggregate(read_index ~ refpos + base')
 
   // pileup: per-base mismatch ticks joined to their row, colored by read base
@@ -361,7 +363,7 @@ test('sortedBy reorders the pileup with sorted_pileup_layout', () => {
   )
 })
 
-test('base sort feeds the MD-tag mismatch base at sort_pos into the layout', () => {
+test('base sort feeds the mismatch base at sort_pos into the layout', () => {
   const [, byBase] = alignmentsFragments({
     ...base,
     sortType: 'base',
@@ -376,7 +378,9 @@ test('base sort feeds the MD-tag mismatch base at sort_pos into the layout', () 
   )
   // feeds both the mismatch base and the CIGAR deletions at sort_pos: JBrowse
   // sorts a deletion as '*', ahead of the ACGT bases
-  expect(byBase!.plotExpr).toContain('bam_mismatches(bam, chrom, start, end)')
+  expect(byBase!.plotExpr).toContain(
+    'bam_mismatches(bam, chrom, start, end, .refpath)',
+  )
   expect(byBase!.plotExpr).toContain('bam_indels(bam, chrom, start, end)')
   // base sort feeds the combined mismatch + indel frames into the layout call
   expect(byBase!.plotExpr).toContain(
@@ -431,7 +435,7 @@ test('the coverage panel applies "Filter by" too, like JBrowse', () => {
   expect(cov!.plotExpr).toContain('bam_coverage(bam, chrom, start, end, keep)')
   // ...and so do the stacked per-base mismatch counts
   expect(cov!.plotExpr).toContain(
-    'mm <- keep_rows(bam_mismatches(bam, chrom, start, end), keep)',
+    'mm <- keep_rows(bam_mismatches(bam, chrom, start, end, .refpath), keep)',
   )
 })
 
@@ -514,7 +518,12 @@ test('low-frequency fade lives on the pileup, not the coverage panel', () => {
 test('both panels share one file-path setup and pure Bioc packages', () => {
   const fragments = alignmentsFragments(base)
   expect(new Set(fragments.map(f => f.setup)).size).toBe(1)
-  expect(fragments[0]!.setup).toBe('aln <- "https://example.com/reads.bam"')
+  // The reference is named even when there isn't one: `bam_mismatches` takes it
+  // for any read with no MD tag, so `NULL` is the explicit "MD-only here" rather
+  // than an undefined variable the script would die on.
+  expect(fragments[0]!.setup).toBe(
+    'aln <- "https://example.com/reads.bam"\naln_ref <- NULL',
+  )
   for (const f of fragments) {
     expect(f.packages).toEqual(['Rsamtools', 'GenomicAlignments', 'ggplot2'])
   }

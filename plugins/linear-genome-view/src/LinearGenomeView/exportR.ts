@@ -212,6 +212,7 @@ const REGION_HELPERS = new Set([
 const HELPER_DEPS: Record<string, string[]> = {
   read_multibigwig: ['read_bigwig'],
   read_bam: ['pair_orientation'],
+  bam_mismatches: ['open_reference'],
   mismatch_fade_alpha: ['snp_freq_threshold'],
   region_ruler: ['region_scale', 'region_dividers', 'region_xlim'],
 }

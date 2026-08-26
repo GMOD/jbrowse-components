@@ -25,16 +25,22 @@ interface AdapterConf {
 
 interface SequenceAdapterConf {
   fastaLocation?: { uri?: string }
+  twoBitLocation?: { uri?: string }
   uri?: string
 }
 
 /**
- * The reference FASTA uri from the display's assembly sequence adapter, so a
- * CRAM track can be decoded (cram_to_bam passes it to `samtools view -T`). The
- * CRAM adapter's own sequenceAdapter is injected at runtime and isn't in its
- * static config, so resolve it via the assembly instead. Empty string when it
- * can't be found (or the sequence isn't a plain/bgzipped FASTA) — cram_to_bam
- * then falls back to the CRAM's UR header / REF_PATH.
+ * The reference sequence uri from the display's assembly sequence adapter. Two
+ * callers now: `cram_to_bam` passes it to `samtools view -T`, and
+ * `bam_mismatches` reads it for any read with no MD tag. The CRAM adapter's own
+ * sequenceAdapter is injected at runtime and isn't in its static config, so
+ * resolve it via the assembly instead.
+ *
+ * 2bit counts, which it did not while this was CRAM-only: `open_reference`
+ * answers `getSeq` off either, and an assembly stored as 2bit is otherwise a
+ * pileup with no SNP ticks on it. Empty string when there is no readable
+ * sequence file — cram_to_bam then falls back to the CRAM's UR header /
+ * REF_PATH, and the mismatch walk is MD-only.
  */
 function referenceFastaUri(self: LinearAlignmentsDisplayModel): string {
   const view = getContainingView(self) as { assemblyNames?: string[] }
@@ -45,7 +51,7 @@ function referenceFastaUri(self: LinearAlignmentsDisplayModel): string {
   const seq = assembly
     ? (getConf(assembly, ['sequence', 'adapter']) as SequenceAdapterConf)
     : undefined
-  return firstUri(seq?.fastaLocation, seq?.uri)
+  return firstUri(seq?.fastaLocation, seq?.twoBitLocation, seq?.uri)
 }
 
 export interface AlignmentsRParams {
@@ -201,9 +207,10 @@ function resolveColorScheme(colorBy: string) {
  * (grey `bam_coverage` total with per-base mismatch counts stacked on top, above
  * a depth-dependent frequency threshold like JBrowse) and a color-by pileup
  * (`read_fill_colors`: normal/strand/mappingQuality/insertSize/pairOrientation) with per-base
- * mismatch ticks — both derived from the MD tag by `bam_mismatches()`
- * (reference-free, the same signal JBrowse's canvas renderer shows). Row layout
- * is the visible, editable `pileup_layout()` helper.
+ * mismatch ticks — both from `bam_mismatches()`, which reads the MD tag where a
+ * read has one and compares against the assembly's reference where it does not,
+ * the same two paths BamAdapter takes. Row layout is the visible, editable
+ * `pileup_layout()` helper.
  *
  * Each region in the view is read separately and placed on one cumulative-bp
  * x-axis (JBrowse's multi-region view). Per-read overlays (mismatches, indels,
@@ -218,17 +225,13 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
   const scheme = resolveColorScheme(p.colorBy)
   const pathVar = safeVarName(p.trackId)
   const refVar = `${pathVar}_ref`
-  const setup = p.isCram
-    ? `${pathVar} <- ${rStr(p.uri)}\n${refVar} <- ${p.reference ? rStr(p.reference) : 'NULL'}`
-    : `${pathVar} <- ${rStr(p.uri)}`
+  const setup = `${pathVar} <- ${rStr(p.uri)}\n${refVar} <- ${p.reference ? rStr(p.reference) : 'NULL'}`
   // Rsamtools can't read CRAM, so a CRAM track decodes each region to a
   // temporary BAM (cram_to_bam) inside the per-region loop; a BAM reads directly.
   // The file path is aliased to a dot-name once before the loop (`.bampath`) so
   // the per-region `reads`/`bam`/... locals can't shadow it even if the track id
   // sanitizes to one of those names (safeVarName never emits a leading dot).
-  const pathAlias = p.isCram
-    ? `  .bampath <- ${pathVar}; .refpath <- ${refVar}`
-    : `  .bampath <- ${pathVar}`
+  const pathAlias = `  .bampath <- ${pathVar}; .refpath <- ${refVar}`
   const bamAssign = p.isCram
     ? `# Rsamtools can't read CRAM: decode this region to a temporary BAM first
     bam <- cram_to_bam(.bampath, chrom, start, end, .refpath)`
@@ -446,7 +449,7 @@ ${filterConsts}${interbaseConsts}${modConsts}
     ${readFilteredReads}
     keep <- reads$keep
     cov0 <- bam_coverage(bam, chrom, start, end, keep)${interbaseRead}
-    mm <- keep_rows(bam_mismatches(bam, chrom, start, end), keep)
+    mm <- keep_rows(bam_mismatches(bam, chrom, start, end, .refpath), keep)
     snp <- NULL
     if (!is.null(mm) && nrow(mm)) {
       mm <- mm[mm$refpos >= start & mm$refpos < end, , drop = FALSE]
@@ -502,7 +505,9 @@ ${filterConsts}${interbaseConsts}${modConsts}
 
     // per-region reads of the overlay frames, gathered inside the loop
     const loopReads = [
-      needsMm ? `    mm <- bam_mismatches(bam, chrom, start, end)` : '',
+      needsMm
+        ? `    mm <- bam_mismatches(bam, chrom, start, end, .refpath)`
+        : '',
       needsCov
         ? // the fade's denominator is the depth of the reads actually drawn, so
           // it reads the same filtered coverage the coverage panel does
@@ -798,6 +803,14 @@ function unreproducedSettings(self: LinearAlignmentsDisplayModel) {
   // moves the coverage panel's stacked mod bars as well as the pileup's ticks —
   // a reader comparing the R figure against the browser would see different
   // methylation levels, not just a different palette.
+  // MD is optional in BAM, and without a reference to fall back on those reads
+  // are drawn as if they matched everywhere. Said here rather than left to the
+  // reader to notice a pileup with no ticks on it.
+  if (!referenceFastaUri(self)) {
+    notes.push(
+      'per-base mismatches for reads with no MD tag — this assembly names no reference sequence file the script can read, so only reads carrying MD contribute SNP ticks',
+    )
+  }
   if (self.colorBy.type === 'bisulfite') {
     notes.push(
       '"Color by" bisulfite — the C→T conversion calls need the reference sequence; the reads are drawn plain and the coverage panel carries no methylation bars',
@@ -842,7 +855,7 @@ export function exportRCode(
     trackName,
     uri,
     isCram,
-    reference: isCram ? referenceFastaUri(self) : '',
+    reference: referenceFastaUri(self),
     showCoverage: self.showCoverage,
     showPileup: self.showPileup,
     showInterbaseIndicators: self.showInterbaseIndicators,
