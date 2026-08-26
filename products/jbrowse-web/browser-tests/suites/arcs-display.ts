@@ -187,6 +187,17 @@ const suite: TestSuite = {
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
             readConnections: 'cloud',
+            // PINNED, and it is what makes this case different from the one
+            // below. `readConnectionsDown` is a promotable slot whose
+            // `promotedBase` is TRUE (configSchema.ts), so leaving it unset
+            // inherits the session-wide default and renders DOWN — the same
+            // thing the next test sets explicitly. It was written when the
+            // ambient default was false; `5556f47257` flipped it, and from
+            // then until this pin the two tests captured byte-identical
+            // goldens (same hash in snapshots.lock) and the band's up mode had
+            // no coverage at all. Up mode anchors the axis at the band's
+            // BOTTOM, which is where a read cloud's parked marks sit.
+            readConnectionsDown: false,
           },
         },
       ],
@@ -203,6 +214,39 @@ const suite: TestSuite = {
             type: 'LinearAlignmentsDisplay',
             readConnections: 'cloud',
             readConnectionsDown: true,
+          },
+        },
+      ],
+      displayTestId: pileup,
+    }),
+    // The window `ARC_FAR_SCREEN_WIDTHS` governs, which no other case here is
+    // inside: volvox_sv's widest pairs span ~32 kb, so at 20 kb they are 1.6
+    // screen widths — wider than the view, and well under the 3 at which the
+    // ellipse gives its segments up and the circle branch takes over.
+    //
+    // What it pins is that such a pair keeps its LEAN. A circle's tangent at
+    // its foot is vertical whatever its radius, and the band shows only the
+    // first `availH` px of the rise, so collapsing to one here drew the 19
+    // pairs of that event as a bundle of verticals with no direction in them.
+    // Every other arc case in this suite sits under one screen width, so the
+    // threshold could move either way without moving a golden.
+    lgvSnapshotTest({
+      name: 'arc mode, pair wider than the view (keeps its lean)',
+      snapshot: 'arcs-wider-than-view',
+      loc: 'ctgA:1-20000',
+      tracks: [
+        {
+          trackId: 'volvox_sv',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            readConnections: 'arc',
+            // A TALL band, because the difference this pins is vertical. At the
+            // default height the whole band is a few px and a leaning arc and a
+            // vertical leg differ by 0.71% of the capture — under the 5% gate,
+            // so the golden passed with the threshold reverted and pinned
+            // nothing. Measured, not guessed: that is what the first version of
+            // this case did.
+            readConnectionsHeight: 160,
           },
         },
       ],
