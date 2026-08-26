@@ -67,9 +67,15 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   (`demos/sv_contact_maps`, `scripts/build_sv_contact_maps.sh`). Cue's encoding
   as four `.hic` files over one GIAB HG001 300x slice. Measured off the BAM, so
   do not re-pick by SV type:
-  - **INV `7:70,420,799-70,438,952`** (het, delly). 605 of the 660 same-strand
-    contacts in the whole chr7 slice land in the one cell at 70,420k x 70,438k.
-    This is the only one of the three with junction pairs at all.
+  - **INV `7:70,420,799-70,438,952`** (het, delly, and `CINV` in the record's
+    own name). 605 of the 660 same-strand pairs in the whole chr7 slice land in
+    a handful of cells that share a bin at 70,438k, and TWO of those hold 411 of
+    them: 70,425,750 x 70,438,500 is the RR class and 70,420,500 x 70,438,500
+    the FF one. So the figure of it carries two cells rather than one. The two
+    left ends sit either side of `7:70,421,000-70,426,000`, which holds zero
+    aligned records in a 300x library, and each class anchors on the side of
+    that hole it can align to. This is the only one of the three loci with
+    junction pairs at all.
   - **DUP `5:175,353,978-175,371,353`** (hom, `DUP_gs`). Depth roughly doubles
     over ~23 kb starting ~9 kb left of the call's edge; inside a 65 kb window on it
     the same-strand channel holds nothing, the outward channel two contacts and
@@ -92,11 +98,12 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   - **`pre` exits 57 on an empty contacts file**, at the end of a run that has
     already paid for the whole scan. A depth-only call legitimately produces an
     empty pair channel, so the helper writes no `.hic` for one and says so.
-  - **A `LinearHicDisplay` whose region comes back with no records never leaves
+  - **A `LinearHicDisplay` whose region comes back with no records never left
     `Loading...`** (240s twice, with two sibling displays over the same window
-    painting in seconds). It is why the control figure runs the discordant and
-    outward channels rather than same-strand, whose chr5 contacts all pair a
-    bin in the slice with one at 177.3 Mb and so leave the window empty.
+    painting in seconds). Fixed in 43b939e301, which paints the empty frame, so
+    the control figure now runs the same-strand channel as its empty triangle;
+    the chr5 same-strand contacts all pair a bin in the slice with one at
+    177.3 Mb and so leave that window empty.
   - **The novoalign GIAB BAMs carry no `SA` tags at all** (0 in 467,940 records
     over the chr7 slice), so the split-read half of the discordant channel
     contributes nothing on this data.
