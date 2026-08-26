@@ -49,7 +49,7 @@ capture, then release validation.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [The graph plugin's typecheck and unpushed commits](todo/the-graph-plugins-25-tsc-errors-and-three-unpushed-commits.md) | graph plugin, out of tree | the errors are fixed (`f1393b4`, 25 to 0) and all three `betabuild.sh` gates are green; what is left is the decision to publish, which is a live change to every config naming the bundle. Until it goes out, `pangenome_ecoli.md`'s last step is the only thing on that page a reader cannot perform |
+| [Bump the graph configs off the old plugin pin](todo/bump-the-graph-figure-configs-off-the-old-plugin-pin.md) | graph plugin, figures | the plugin shipped 2026-08-26 as `8f9efd68f339` and readers have it; the four `test_data/graphgenomeview/` configs still pin the 08-14 build. Bumping them is a figure RE-RENDER, since `3ea526b` caps a row layout's deletion bow — do not move a pin and leave the PNG |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | probably already done — verify before spending the pipeline; three need a review, not a capture |
 | [Verify the shared rect buffer headed](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
 | [Brand the out-of-request refNames](todo/brand-the-out-of-request-refnames.md) | synteny, RPC | type-only; brand BOTH ends or the compare still passes. Take it while the comparisons still agree — that is what makes it type-only, and it stops being true as the tree grows |
