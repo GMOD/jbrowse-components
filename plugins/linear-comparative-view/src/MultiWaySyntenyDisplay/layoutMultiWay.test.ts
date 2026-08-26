@@ -1272,6 +1272,25 @@ test('the lane and the panel launched off it pick the same contig', () => {
   )
 })
 
+// A lane refetches when the region it asks for moves, and the fitted extent
+// moves whenever a group enters or leaves the settled viewport. Taking the
+// quantum off the fetch WINDOW's width tied the two together: that width runs
+// over [span, 2*span), which straddles a power of two, so one ortholog arriving
+// could halve the grid and refetch every lane for a gesture that moved no
+// frame. Off the rung span it cannot.
+test('a lane fetches the same region as its fitted extent wobbles', () => {
+  const frame = (fitMax: number) => ({
+    refName: 'Pp1',
+    min: 0,
+    max: 100000,
+    flipped: false,
+    fitMin: 0,
+    fitMax,
+  })
+  // 131,072 sits between the two window widths these produce
+  expect(laneFetchRegion(frame(68900))).toEqual(laneFetchRegion(frame(69000)))
+})
+
 describe('lane geometry', () => {
   // The bands are what stops the view's gridlines — true on the anchor lane
   // and a lie on every other one — at the anchor. A band covering only its own
