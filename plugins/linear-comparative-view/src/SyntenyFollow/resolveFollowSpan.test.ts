@@ -43,6 +43,7 @@ function step(over: Partial<FollowStep> = {}): FollowStep {
     hasCigar: true,
     windowInsideFeat: true,
     envelope: undefined,
+    wantReversed: undefined,
     ...over,
   }
 }
