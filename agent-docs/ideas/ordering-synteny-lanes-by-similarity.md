@@ -65,7 +65,7 @@ the diagonalization section below.
 falling back to the adapter's `syntenyId` — so two lanes' shared groups are
 computable from data the display already holds, with no pairwise fetch. The
 similarity is the count of shared groups, or better their rank agreement, and
-`readsBackwards` already walks exactly that intersection (`upperX` against a
+`orientationVote` already walks exactly that intersection (`upperX` against a
 lane's placements, `MIN_SHARED_FOR_ORIENTATION = 3`) to decide orientation. The
 matrix is a byproduct of machinery that exists.
 

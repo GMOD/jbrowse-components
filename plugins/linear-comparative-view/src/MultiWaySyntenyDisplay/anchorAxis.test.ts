@@ -47,7 +47,7 @@ test('an interval no displayed region reaches has no span', () => {
 })
 
 // The whole reason the anchor axis has to clip rather than test: a group that
-// loses its anchor span is dropped from the ribbons AND from `anchorSeedX`, the
+// loses its anchor span is dropped from the ribbons AND from `anchorAbsX`, the
 // seed every lane below lines up against — while the mate lanes go on drawing
 // its placement, so the picture states a correspondence with one end missing.
 test('a group straddling the region edge keeps its anchor span and its seed', () => {
@@ -56,5 +56,5 @@ test('a group straddling the region edge keeps its anchor span and its seed', ()
 
   expect(display.groups.map(g => g.key)).toEqual(['g-100', 'g-700'])
   expect([...display.anchorSpans.keys()]).toEqual(['g-100', 'g-700'])
-  expect([...display.anchorSeedX.keys()]).toEqual(['g-100', 'g-700'])
+  expect([...display.anchorAbsX.keys()]).toEqual(['g-100', 'g-700'])
 })

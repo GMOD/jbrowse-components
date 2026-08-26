@@ -1,11 +1,5 @@
 import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 
-import {
-  OUTLIER_REACH,
-  keepNearMedian,
-  weightedMedian,
-} from '../keepNearMedian.ts'
-
 import type { Feature } from '@jbrowse/core/util'
 
 export type Span = readonly [number, number]
@@ -42,7 +36,7 @@ export interface RowFrame {
   flipped: boolean
   // the extent the frame was fitted to, before the ladder rounded its span up.
   // The frame may slide anywhere that still covers this, and that difference is
-  // the freedom `alignRowFrames` works in
+  // the freedom `decideLaneFrames` works in
   fitMin: number
   fitMax: number
 }
@@ -155,43 +149,6 @@ export function rowAssembliesOf(
   return [...pinned, ...present.filter(name => !pinned.includes(name))]
 }
 
-function mid(p: MultiWayPlacement) {
-  return (p.start + p.end) / 2
-}
-
-// The scales a lane's frame is allowed to sit at, as multiples of the anchor's
-// visible span. Fitting a lane exactly to its placements gives it an arbitrary
-// bp/px that also MOVES: one more ortholog entering the window re-fits the
-// frame, so the lane's content slides under its own ribbons on every pan. The
-// first rung is the "never zoom in past the anchor" clamp.
-const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
-
-// The frame's span rounded up to a ladder rung and its center snapped to an
-// eighth of that span, held to the centers that still cover [lo, hi] — a frame
-// that misses its own fit misses it silently, since everything downstream reads
-// the frame as covering the fit. `unitBp` of 0 means the caller has no anchor
-// span to scale against and the fitted frame passes through.
-function snapFrameToLadder(lo: number, hi: number, unitBp: number) {
-  if (unitBp <= 0) {
-    return { min: lo, max: hi }
-  }
-  const wanted = Math.max(hi - lo, unitBp)
-  const rung = SCALE_LADDER.find(multiple => multiple * unitBp >= wanted)
-  const span =
-    rung === undefined ? Math.ceil(wanted / unitBp) * unitBp : rung * unitBp
-  const grid = span / 8
-  const half = span / 2
-  const center = clamp(
-    Math.round((lo + hi) / 2 / grid) * grid,
-    hi - half,
-    lo + half,
-  )
-  // slide the span back inside the contig rather than clamping `min` alone, so
-  // a lane near a contig start keeps the rung it was snapped to
-  const min = Math.max(0, center - half)
-  return { min, max: min + span }
-}
-
 // The one tick interval the whole track draws at, picked off the anchor's
 // visible span so it lands about six ticks across it. Every lane draws ITS
 // ticks at this same bp interval in its own frame, which is what makes the
@@ -209,97 +166,26 @@ export function tickIntervalFor(spanBp: number) {
 // than as a scale, and the header's multiple is the legible statement
 const MAX_LANE_TICKS = 24
 
-// The x positions of the shared tick interval inside one lane's own frame.
+// The x positions of the shared tick interval inside one lane's own frame, and
+// over half a screen either side of it, since the stack is translated rather
+// than relaid between settles.
 export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   const xs: number[] = []
-  if (interval > 0 && (frame.max - frame.min) / interval <= MAX_LANE_TICKS) {
+  const span = frame.max - frame.min
+  if (interval > 0 && span / interval <= MAX_LANE_TICKS) {
+    const margin = span / 2
     for (
-      let bp = Math.ceil(frame.min / interval) * interval;
-      bp <= frame.max;
+      let bp = Math.max(
+        0,
+        Math.ceil((frame.min - margin) / interval) * interval,
+      );
+      bp <= frame.max + margin;
       bp += interval
     ) {
       xs.push(rowFrameX(frame, bp, width))
     }
   }
   return xs
-}
-
-// The row's own coordinate frame: the dominant refName among the visible
-// groups' placements, the padded bp span those placements cover, and whether
-// the row reads back-to-front relative to the anchor's gene order. This is what
-// makes the display non-reference-anchored — each row is laid out in its own
-// frame and only the ribbons carry the correspondence.
-export function computeRowFrame(
-  groups: MultiWayGroup[],
-  assemblyName: string,
-  minSpanBp = 0,
-): RowFrame | undefined {
-  // Each contig weighed by how much of the ANCHOR it explains, not by a count
-  // of placements: a handful of short repeat hits outnumbers the few long
-  // syntenic blocks that are the lane. Anchor-side rather than mate-side
-  // because the reader is looking at the anchor window and the honest question
-  // is which contig covers it — and because that is the vote `resolvePanel`
-  // runs, on the same axis, for the panel this lane launches.
-  const byRef = new Map<string, MultiWayPlacement[]>()
-  const anchorBp = new Map<string, number>()
-  for (const group of groups) {
-    const weight = Math.max(group.anchor.end - group.anchor.start, 1)
-    for (const p of group.mates.get(assemblyName) ?? []) {
-      let bucket = byRef.get(p.refName)
-      if (!bucket) {
-        bucket = []
-        byRef.set(p.refName, bucket)
-      }
-      bucket.push(p)
-      anchorBp.set(p.refName, (anchorBp.get(p.refName) ?? 0) + weight)
-    }
-  }
-  let dominant: string | undefined
-  let dominantBp = 0
-  for (const [refName, bp] of anchorBp) {
-    if (bp > dominantBp) {
-      dominant = refName
-      dominantBp = bp
-    }
-  }
-  if (dominant === undefined) {
-    return undefined
-  }
-  const placements = keepNearMedian(
-    byRef.get(dominant)!,
-    minSpanBp > 0 ? minSpanBp * OUTLIER_REACH : Number.POSITIVE_INFINITY,
-    p => p,
-  )
-  let min = Number.POSITIVE_INFINITY
-  let max = Number.NEGATIVE_INFINITY
-  for (const p of placements) {
-    min = Math.min(min, p.start)
-    max = Math.max(max, p.end)
-  }
-  let orientation = 0
-  let prev: number | undefined
-  for (const group of groups) {
-    const p = group.mates.get(assemblyName)?.find(m => m.refName === dominant)
-    if (p) {
-      const m = mid(p)
-      if (prev !== undefined) {
-        orientation += Math.sign(m - prev)
-      }
-      prev = m
-    }
-  }
-  const pad = Math.max((max - min) * 0.02, 1)
-  const lo = Math.max(0, min - pad)
-  const hi = max + pad
-  const snapped = snapFrameToLadder(lo, hi, minSpanBp)
-  return {
-    refName: dominant,
-    min: snapped.min,
-    max: snapped.max,
-    flipped: orientation < 0,
-    fitMin: lo,
-    fitMax: hi,
-  }
 }
 
 export function rowFrameX(frame: RowFrame, bp: number, width: number) {
@@ -348,7 +234,7 @@ interface PlacementRun {
 //
 // Filtered to the frame, which is what keeps `computeRowFrame`'s outlier rule
 // from being undone here — see `frameSpan`.
-function groupRunsOnRow(
+export function groupRunsOnRow(
   group: MultiWayGroup,
   assemblyName: string,
   frame: RowFrame,
@@ -378,18 +264,6 @@ function groupRunsOnRow(
     max,
     orientation: signed < 0 ? -1 : 1,
   }))
-}
-
-// The whole footprint the group occupies on one row — what the lane-alignment
-// pass lines up against, where a duplicated gene's several copies are one
-// group's worth of evidence rather than several.
-function groupExtentOnRow(
-  group: MultiWayGroup,
-  assemblyName: string,
-  frame: RowFrame,
-) {
-  const runs = groupRunsOnRow(group, assemblyName, frame)
-  return runs.length ? { min: runs[0]!.min, max: runs.at(-1)!.max } : undefined
 }
 
 /**
@@ -426,7 +300,10 @@ export function groupSpansOnRow(
 // independent of both the shift and the viewport width.
 export function laneFetchWindow(frame: RowFrame) {
   const span = frame.max - frame.min
-  return { min: frame.fitMax - span, max: frame.fitMin + span }
+  return {
+    min: Math.min(frame.min, frame.fitMax - span),
+    max: Math.max(frame.max, frame.fitMin + span),
+  }
 }
 
 // The region a lane's dependent fetches ask for: the window the frame can slide
@@ -449,149 +326,4 @@ export function laneFetchRegion(frame: RowFrame) {
     start: Math.max(0, Math.floor(min / grid) * grid),
     end: Math.ceil(max / grid) * grid,
   }
-}
-
-interface LanePlacement {
-  key: string
-  center: number
-  weight: number
-}
-
-// What one lane offers the lane below it to line up against: a bp center and a
-// length per group the frame shows.
-function lanePlacements(
-  groups: MultiWayGroup[],
-  assemblyName: string,
-  frame: RowFrame,
-): LanePlacement[] {
-  const out: LanePlacement[] = []
-  for (const group of groups) {
-    const extent = groupExtentOnRow(group, assemblyName, frame)
-    if (extent) {
-      out.push({
-        key: group.key,
-        center: (extent.min + extent.max) / 2,
-        weight: Math.max(extent.max - extent.min, 1),
-      })
-    }
-  }
-  return out
-}
-
-// how many groups two lanes must share before their shared order is trusted
-// over the anchor-order orientation `computeRowFrame` already worked out
-const MIN_SHARED_FOR_ORIENTATION = 3
-
-// Does this lane read the same direction as the one above it? Walk the shared
-// groups in the UPPER lane's drawn order and sum the direction each consecutive
-// step takes in this one, weighting a pair by its shorter member. Against the
-// lane above rather than the anchor, because that is the pair the ribbons are
-// drawn between.
-//
-// `undefined` IS AN ANSWER, and a balanced vote is one — an inverted duplication
-// puts as much weight each way, and `concordance < 0` read that as forwards and
-// asserted it over `computeRowFrame`'s anchor-order orientation, which is
-// evidence of its own and the thing this defers to when it has none. Too few
-// shared groups and a tie are the same state: this pair says nothing about which
-// way the lane runs.
-function readsBackwards(
-  upperX: Map<string, number>,
-  lane: LanePlacement[],
-): boolean | undefined {
-  const shared = lane
-    .filter(p => upperX.has(p.key))
-    .sort((a, b) => upperX.get(a.key)! - upperX.get(b.key)!)
-  if (shared.length < MIN_SHARED_FOR_ORIENTATION) {
-    return undefined
-  }
-  let concordance = 0
-  for (let i = 1; i < shared.length; i++) {
-    const a = shared[i - 1]!
-    const b = shared[i]!
-    concordance += Math.sign(b.center - a.center) * Math.min(a.weight, b.weight)
-  }
-  return concordance === 0 ? undefined : concordance < 0
-}
-
-// A lane slides in whole multiples of this, so the median moving by a pixel or
-// two as a pan swaps one group for another cannot slide the whole lane
-const SHIFT_QUANTUM_PX = 8
-
-// Where a lane sits horizontally. Splitting a lane's bp->px map into a scale
-// and an offset lets the two be chosen for different reasons — the scale off
-// the ladder, for honesty, and the offset here, for legibility. Minimizing the
-// total ribbon travel `sum |x_upper(g) - x_lane(g)|` over a fixed scale is an L1
-// problem, and because a ribbon only ever joins ADJACENT lanes the objective is
-// a chain: one independent choice per lane, each the weighted median of the
-// displacement to the lane above. Median rather than mean so one stray
-// placement cannot drag a lane.
-//
-// The shift is held to slack that keeps the frame over its own fitted extent
-// AND at or above zero, the floor `snapFrameToLadder` fits to.
-function alignFrameTo(
-  upperX: Map<string, number>,
-  lane: LanePlacement[],
-  frame: RowFrame,
-  width: number,
-): RowFrame {
-  const samples = lane.flatMap(p => {
-    const x = upperX.get(p.key)
-    return x === undefined
-      ? []
-      : [{ value: x - rowFrameX(frame, p.center, width), weight: p.weight }]
-  })
-  if (!samples.length) {
-    return frame
-  }
-  const wanted =
-    Math.round(weightedMedian(samples) / SHIFT_QUANTUM_PX) * SHIFT_QUANTUM_PX
-  const span = frame.max - frame.min
-  const shift = clamp(
-    ((frame.flipped ? 1 : -1) * wanted * span) / width,
-    Math.max(Math.min(0, frame.fitMax - frame.max), -frame.min),
-    Math.max(0, frame.fitMin - frame.min),
-  )
-  return { ...frame, min: frame.min + shift, max: frame.max + shift }
-}
-
-// Every lane's frame, walked top down so each one is oriented and positioned
-// against the lane above it — the pair its ribbons are actually drawn between.
-// A lane with no frame does not break the chain: the next lane still lines up
-// against the last lane that has one.
-//
-// `anchorSeedX` is where the anchor lane actually draws each group, in screen
-// px, off the view's own `bpToPx`. A `RowFrame` cannot stand in for it: a frame
-// is one linear ramp, and the view's mapping is piecewise over displayed
-// regions, with seams, reversed regions and elisions.
-export function alignRowFrames(
-  groups: MultiWayGroup[],
-  assemblyNames: string[],
-  anchorSeedX: Map<string, number> | undefined,
-  minSpanBp: number,
-  width: number,
-) {
-  const frames = new Map<string, RowFrame | undefined>()
-  let upperX = anchorSeedX && width > 0 ? anchorSeedX : undefined
-  for (const assemblyName of assemblyNames) {
-    const fitted = computeRowFrame(groups, assemblyName, minSpanBp)
-    if (fitted === undefined || upperX === undefined) {
-      frames.set(assemblyName, fitted)
-      continue
-    }
-    // one list for both steps: flipping a frame changes which END of the lane a
-    // bp lands on, not which placements the frame shows
-    const placements = lanePlacements(groups, assemblyName, fitted)
-    const backwards = readsBackwards(upperX, placements)
-    const oriented =
-      backwards === undefined ? fitted : { ...fitted, flipped: backwards }
-    const frame = alignFrameTo(upperX, placements, oriented, width)
-    frames.set(assemblyName, frame)
-    upperX = new Map(
-      lanePlacements(groups, assemblyName, frame).map(p => [
-        p.key,
-        rowFrameX(frame, p.center, width),
-      ]),
-    )
-  }
-  return frames
 }

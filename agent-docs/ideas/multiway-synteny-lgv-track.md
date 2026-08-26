@@ -159,15 +159,15 @@ horizontal position was an accident of where its leftmost placement fell.
 And orientation was decided against the anchor rather than against the lane
 the ribbons are actually drawn to.
 
-`alignRowFrames` walks the lanes top down and fixes the second and third.
+`decideLaneFrames` walks the lanes top down and fixes the second and third.
 Splitting a lane's bp→px map into a scale and an offset lets the two be chosen
 for different reasons: the scale off the ladder for honesty, the offset for
 legibility. Minimizing `sum |x_upper(g) - x_lane(g)|` at fixed scale is L1, and
 since a ribbon only joins ADJACENT lanes the objective is a chain — it
 decomposes into one choice per lane and each choice is the weighted median of
 the displacement to the lane above, clamped to the slack the rung left over the
-fitted extent and quantized to 8px so a median that moves as a pan swaps a
-group cannot slide the lane. What it cannot fix is two lanes on different rungs:
+fitted extent — and held, once made, while the frame still shows what it placed
+(the incumbent rule below). What it cannot fix is two lanes on different rungs:
 their spacing genuinely differs by the rung ratio, so the medians align and the
 ends fan, and that fan IS the scale difference.
 
@@ -277,7 +277,7 @@ The anchor lane took a third pass on 2026-08-26 for the same reason and the
 opposite failure. `bpToPx` neither clips nor extrapolates: it answers `undefined`
 for a coord outside every displayed region, so an interval straddling one lost
 BOTH ends and was dropped whole — the group vanished from `anchorSpans` and so
-from `anchorSeedX`, the seed every lane below lines up on, while the mate lanes
+from `anchorAbsX`, the seed every lane below lines up on, while the mate lanes
 went on drawing its placement. That is only visible where `displayedRegions` is
 a slice of a contig rather than the whole thing, which is the shape a launched
 panel, a bookmarked region and a synteny row all have. `axisSpan` is the
@@ -294,58 +294,82 @@ actually moves is the union-of-spans idea plus `spreadDecision`'s coverage and
 `partialShare` gating — the hard-won part, and the reason to build lane-per-
 region on the follow side's concepts rather than a second time here.
 
-**The discrete choices are the unstable ones, and the orientation is the one
-that costs.** Everything continuous about a lane is quantised against exactly
-this — `SCALE_LADDER` for the scale, `SHIFT_QUANTUM_PX` for the offset,
-whole-fetch density for the lane order — because "fitting a lane exactly to its
-placements gives it an arbitrary bp/px that also MOVES". The two DISCRETE
-choices, which contig a lane is and which way it reads, are bare comparisons.
-SyntenyFollow arrived at the opposite arrangement and wrote down why:
-`preferIncumbent` is applied to its discrete choices and to nothing else,
-because a window panned across a fusion junction moves summed overlap from one
-mate contig to the other and the two are equal at the join.
+**Every per-settle choice holds until the evidence clearly moves.** A lane's
+frame was a pure computed until 2026-08-26, re-run on every coarse-block update
+and every scroll pixel: contig, orientation and rung decided from scratch, the
+offset re-fitted and clamped to the rung's slack. So a lane froze under a drag
+while the anchor slid out from under it, lurched by hundreds of px each time
+the settled blocks refreshed, and re-voted everything at settle. `laneDecision.ts`
+makes the decision once per settled block set (`installLaneFrameDecision`)
+carrying the previous one, and every choice has an incumbent: the contig by
+`preferIncumbent`'s switch margin; the cluster the fit is centred on by the same
+rule (`keepNearMedian` takes the incumbent centre — cacao's fit swung between
+1.2 Mb and 4.7 Mb on consecutive steps as the median hopped between two
+paleo-blocks); the rung by a shrink room; the orientation by the follow's 0.9
+deadband over at least five shared groups, carried across a contig change since
+the anchor-order sum a fresh lane falls back on is the noisiest vote there is;
+and the placement by coverage, held while the frame still shows 90% of the
+placed weight.
+
+What a decision states is `{refName, flipped, rung, pivotAnchor, pivotLaneBp}`
+— the lane bp pinned under one anchor coordinate, at a rung of the anchor's
+span. The frame is derived from that against the live view
+(`frameFromDecision`), so a pan translates every lane 1:1 with the anchor and a
+zoom scales it about the pivot: the data × view-transform contract the GPU
+displays draw under, and the shape a GPU backend for this display inherits. On
+the SVG path the stack is laid out against the scroll offset of the last settle
+(`renderOriginPx`) and translated by `dragOffsetPx`, so a pan re-renders one
+attribute rather than every element of six lanes.
 
 Measured on the deployed `demos/grape_peach_cacao` — a 2Mb window walked across
-grape chr1 in 100kb steps, 259 steps, every lane read out of `alignRowFrames`
-itself. A CHANGE IS NOT A FLICKER, so a lane moving from one syntenic block to
-the next and staying is counted apart from one that leaves an answer and comes
-back within a fifth of a window.
+grape chr1 in 100kb steps, 259 steps, every lane read out of `decideLaneFrames`
+itself with the previous step's decision carried in. A CHANGE IS NOT A FLICKER,
+so a lane moving from one syntenic block to the next and staying is counted
+apart from one that leaves an answer and comes back within a fifth of a window.
 
 <!-- BEGIN GENERATED MEASUREMENT multiway-lane-stability -->
 
-| lane        | contigs seen | contig chg | contig osc | drawn flip chg | drawn flip osc | fallback flip chg | fallback flip osc | empty steps |
-| ----------- | -----------: | ---------: | ---------: | -------------: | -------------: | ----------------: | ----------------: | ----------: |
-| peach       |            2 |          3 |          0 |             10 |              2 |                10 |                 2 |          33 |
-| citrus      |            3 |          7 |          0 |             10 |              1 |                11 |                 1 |          33 |
-| cacao       |            1 |          2 |          0 |             15 |              2 |                17 |                 2 |          33 |
-| poplar      |            5 |          8 |          0 |             16 |              3 |                16 |                 4 |          33 |
-| tomato      |            4 |          8 |          0 |             21 |              7 |                18 |                 7 |          33 |
-| arabidopsis |            4 |         12 |          3 |             20 |              7 |                15 |                 5 |          34 |
+| lane        | contigs seen | contig chg | contig osc | drawn flip chg | drawn flip osc | fallback flip chg | fallback flip osc | empty steps | rung chg | rung osc |
+| ----------- | -----------: | ---------: | ---------: | -------------: | -------------: | ----------------: | ----------------: | ----------: | -------: | -------: |
+| peach       |            2 |          3 |          0 |              3 |              0 |                10 |                 2 |          33 |        7 |        0 |
+| citrus      |            3 |          7 |          0 |              4 |              0 |                11 |                 1 |          33 |        3 |        0 |
+| cacao       |            1 |          2 |          0 |              5 |              0 |                17 |                 2 |          33 |       11 |        0 |
+| poplar      |            5 |          8 |          0 |              7 |              0 |                16 |                 4 |          33 |        4 |        0 |
+| tomato      |            4 |          8 |          0 |              8 |              0 |                18 |                 7 |          33 |        7 |        0 |
+| arabidopsis |            4 |          8 |          0 |              6 |              0 |                15 |                 5 |          34 |        2 |        0 |
 
 <!-- END GENERATED MEASUREMENT multiway-lane-stability -->
 
-**The contig vote does not need an incumbent**, which is what the probe was
-written to check and the opposite of what it found: five of six lanes never
-oscillate. Weighting a contig by how much of the ANCHOR it explains — the fix
-above, that made it agree with `resolvePanel` — turns out to be decisive enough
-on real paleopolyploid data that an incumbent would have nothing to hold.
+Every `osc` column is zero. The drawn flip changes that remain (3 to 8 per
+lane) are lanes moving between syntenic blocks and staying; the `fallback`
+columns are what the anchor-order sum alone would do, kept as the control. The
+stateless version of the same walk had 1 to 7 flip oscillations per lane and 10
+to 21 flip changes, and arabidopsis changed contig 12 times with 3 of them
+oscillations. `empty` is windows where the lane places nothing at all, the same
+33 for every lane, and no rule can fill them.
 
-**The orientation does.** Every lane mirrors itself and mirrors back over a pan
-the reader sees as smooth, and a whole-lane mirror is the loudest thing a lane
-can do. Both of its votes move in the same places, so `readsBackwards`
-overriding `computeRowFrame`'s anchor-order sign sum buys nothing here — which
-is consistent with the two being the same measurement at lane 1 and correlated
-below it. Neither carries the deadband the follow puts on this exact decision
-(`NEARLY_ALL`, 0.9, in `wantReversedFor`), and a balanced vote was read as
-"forwards" until 2026-08-26, when it became the `undefined` that defers.
+**What it took, beyond the deadband.** The contig vote was steady before any
+incumbent — weighting a contig by how much of the ANCHOR it explains is
+decisive on paleopolyploid data — and the orientation was not: both of its
+votes moved in the same places, so overriding one with the other bought
+nothing. The deadband alone did not close it either. The last oscillations came
+from a contig change resetting the orientation to the anchor-order fallback,
+which the vote then corrected a step later, and from three reversed genes
+mirroring a whole lane. The rung had an oscillation of its own, since the
+cluster `keepNearMedian` keeps is a discrete choice too.
 
-A deadband alone does not close it, which is why this is parked rather than
-tuned: an ambiguous window has to answer something, and the follow's answer is
-to leave the row as it was — `orientedKey`, applied once per DECISION rather
-than once per settle. `alignRowFrames` is a pure computed feeding the lane fetch
-specs and holds no previous value. So the choice is between a stateless
-tie-break that always answers the same way, which collapses the coin-toss
-windows onto one answer without new state, and carrying the previous frames the
-way `decideSpread` carries `previous`, which is faithful to the follow and puts
-memory into a computed. `multiwayLaneStability.probe.ts` takes the numbers
-again either way.
+Measured on a real drag in the browser (`website/scripts/multiway-drag.probe.ts`,
+the tutorial's own session at 1588 px, headless): before, each mate lane moved
+on 6 of 50 drag frames, in steps of −8 px to −3060 px, every lane slid 50 to
+260 px at settle, and a monotonic 12-step zoom-out re-snapped tomato's rung
+1.5 → 1.0 → 2.0 → 3.0 with two lane-gene refetches. After: every lane moves on
+every frame with a median slip of 0.0 px against the anchor, three of six
+lanes never leave it, five of six hold still at settle, the zoom-out moves
+tomato's rung monotonically (1.5 → 2 → 3 → 5) and refetches nothing, and the
+React flush per scroll frame is 2.0 ms where the per-frame relayout it
+replaces cost 15.0 ms. What is left: when a hold breaks — the lane's content
+has moved to another block, or 10% of it has left the frame — the lane jumps
+to its new alignment in one step (peach −147 then +520 px across one drag,
+tomato −2895 px), and a zoom step still re-renders every element at 35 ms.
+The first wants the re-alignment to slide the least distance that restores
+coverage; the second is the SVG path's ceiling and the GPU backend's job.

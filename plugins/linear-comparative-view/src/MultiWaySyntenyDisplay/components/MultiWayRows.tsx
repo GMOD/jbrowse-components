@@ -6,6 +6,16 @@ import { GroupHighlight, GroupRibbons, LinkRibbons } from './Ribbons.tsx'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 
+const ScrolledStack = observer(function ScrolledStack({
+  model,
+  children,
+}: {
+  model: MultiWaySyntenyDisplayModel
+  children: React.ReactNode
+}) {
+  return <g transform={`translate(${model.dragOffsetPx} 0)`}>{children}</g>
+})
+
 /**
  * The stack, back to front.
  *
@@ -16,6 +26,12 @@ import type { MultiWaySyntenyDisplayModel } from '../model.ts'
  * The bands go down first because they exist to cover the view's gridlines; the
  * hover outline goes over the glyphs it outlines; the headers go last so a
  * ribbon never crosses a label.
+ *
+ * Everything between the bands and the headers is laid out against the
+ * scroll offset of the last settle and translated by however far the view has
+ * scrolled since — so a pan re-renders one attribute, and the six lanes'
+ * elements re-render on a settle, a zoom or new data. The bands and headers
+ * are chrome pinned to the track, not content, and stay put.
  */
 const MultiWayRows = observer(function MultiWayRows({
   model,
@@ -30,11 +46,13 @@ const MultiWayRows = observer(function MultiWayRows({
   const body = (
     <>
       <LaneBands model={model} />
-      <GroupRibbons model={model} />
-      <LinkRibbons model={model} />
-      <LaneTicks model={model} />
-      <LaneGlyphs model={model} exportSVG={exportSVG} />
-      <GroupHighlight model={model} />
+      <ScrolledStack model={model}>
+        <GroupRibbons model={model} />
+        <LinkRibbons model={model} />
+        <LaneTicks model={model} />
+        <LaneGlyphs model={model} exportSVG={exportSVG} />
+        <GroupHighlight model={model} />
+      </ScrolledStack>
       <LaneHeaders model={model} />
     </>
   )

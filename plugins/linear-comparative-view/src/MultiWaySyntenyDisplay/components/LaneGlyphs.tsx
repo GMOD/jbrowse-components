@@ -9,8 +9,14 @@ import type { Span } from '../layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+// half a screen either side of the canvas too: the stack is translated rather
+// than relaid between settles, so what a drag can pull into view before the
+// next one has to be drawn already
 function onCanvas(span: Span, width: number) {
-  return Math.max(span[0], span[1]) >= 0 && Math.min(span[0], span[1]) <= width
+  return (
+    Math.max(span[0], span[1]) >= -width / 2 &&
+    Math.min(span[0], span[1]) <= 1.5 * width
+  )
 }
 
 // One gene drawn as its merged CDS/UTR boxes on an intron midline. All the

@@ -12,6 +12,7 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin, {
   blockKeySignature,
@@ -26,9 +27,9 @@ import {
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { axisSpan } from './anchorAxis.ts'
+import { frameFromDecision } from './laneDecision.ts'
 import { buildLanes } from './laneStack.ts'
 import {
-  alignRowFrames,
   groupFeatures,
   laneFetchRegion,
   rowAssembliesOf,
@@ -37,6 +38,7 @@ import {
 import { laneOrderMenuItem, laneSettingsMenuItems } from './menus.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
+import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
 import type { LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -144,6 +146,22 @@ export function stateModelFactory(
        * highlights, so one hover reads the group across all lanes
        */
       hoveredGroupKey: undefined as string | undefined,
+      /**
+       * #volatile
+       * what the last settle decided per mate lane — contig, orientation,
+       * rung and where the lane is pinned to the anchor. Made once per
+       * settled block set by the installer in afterAttach, holding each
+       * choice until the evidence clearly moves; the frames the lanes draw in
+       * are derived from these against the live view
+       */
+      laneDecisions: new Map<string, LaneDecision | undefined>(),
+      /**
+       * #volatile
+       * the view's scroll offset the stack is laid out against, refreshed with
+       * the decisions. Between refreshes a pan is one translate of the whole
+       * stack (`dragOffsetPx`), not a relayout of every lane
+       */
+      renderOriginPx: 0,
     }))
     .actions(self => ({
       /**
@@ -171,6 +189,16 @@ export function stateModelFactory(
        */
       setHoveredGroupKey(key: string | undefined) {
         self.hoveredGroupKey = key
+      },
+      /**
+       * #action
+       */
+      setLaneFrames(
+        originPx: number,
+        decisions: Map<string, LaneDecision | undefined>,
+      ) {
+        self.renderOriginPx = originPx
+        self.laneDecisions = decisions
       },
       /**
        * #action
@@ -415,6 +443,7 @@ export function stateModelFactory(
             assembly.getCanonicalRefName2(group.anchor.refName),
             group.anchor.start,
             group.anchor.end,
+            self.renderOriginPx,
           )
           if (span) {
             out.set(group.key, span)
@@ -422,32 +451,82 @@ export function stateModelFactory(
         }
         return out
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * the first link of the alignment chain: each group's anchor center in
-       * canvas px, which is what every lane below lines up against
+       * how far the view has scrolled since the stack was laid out: the one
+       * live read a pan makes, applied as a translate over the whole stack
        */
-      get anchorSeedX(): Map<string, number> {
-        return new Map(
-          [...self.anchorSpans].map(([key, [x1, x2]]) => [key, (x1 + x2) / 2]),
-        )
+      get dragOffsetPx() {
+        const view = self.lgv
+        return view.initialized ? self.renderOriginPx - view.offsetPx : 0
+      },
+      /**
+       * #getter
+       * the anchor axis reads right to left: a horizontally flipped view. A
+       * lane's decision is stated against the anchor's order, so this mirrors
+       * every lane with the anchor without a re-decision
+       */
+      get anchorReversed() {
+        return self.lgv.displayedRegionsOrientation === 'reversed'
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * each mate lane's local coordinate frame
+       * the first link of the alignment chain: each visible group's anchor
+       * centre as a canonical coordinate and the view's px for it BEFORE the
+       * scroll offset — so a settle decision reading this does not re-run on
+       * every pan
+       */
+      get anchorAbsX(): Map<string, { coord: AnchorCoord; x: number }> {
+        const view = self.lgv
+        const assembly = self.anchorAssembly
+        const out = new Map<string, { coord: AnchorCoord; x: number }>()
+        if (!view.initialized || !assembly) {
+          return out
+        }
+        for (const group of self.visibleGroups) {
+          const refName = assembly.getCanonicalRefName2(group.anchor.refName)
+          const clipped = clipToDisplayedRegions(view, {
+            refName,
+            start: group.anchor.start,
+            end: group.anchor.end,
+          })
+          if (clipped) {
+            const coord = { refName, coord: (clipped.start + clipped.end) / 2 }
+            const px = view.bpToPx(coord)
+            if (px) {
+              out.set(group.key, { coord, x: px.offsetPx })
+            }
+          }
+        }
+        return out
+      },
+      /**
+       * #getter
+       * each mate lane's local coordinate frame: the settle's decision
+       * against where the view draws its pivot now
        */
       get rowFrames(): Map<string, RowFrame | undefined> {
-        return alignRowFrames(
-          self.visibleGroups,
-          self.rowAssemblies,
-          self.anchorSeedX,
-          self.visibleBpSpan,
-          self.canvasWidth,
-        )
+        const view = self.lgv
+        const out = new Map<string, RowFrame | undefined>()
+        for (const assemblyName of self.rowAssemblies) {
+          const decision = self.laneDecisions.get(assemblyName)
+          const pivot = decision && view.bpToPx(decision.pivotAnchor)
+          out.set(
+            assemblyName,
+            decision && pivot
+              ? frameFromDecision(
+                  decision,
+                  pivot.offsetPx - self.renderOriginPx,
+                  self.visibleBpSpan,
+                  self.canvasWidth,
+                  self.anchorReversed,
+                )
+              : undefined,
+          )
+        }
+        return out
       },
     }))
     .views(self => ({
@@ -555,7 +634,7 @@ export function stateModelFactory(
           laneGenes: self.laneGenes,
           laneGeneAdapters: self.laneGeneAdapters,
           axisSpanOf: (refName, start, end) =>
-            axisSpan(view, refName, start, end),
+            axisSpan(view, refName, start, end, self.renderOriginPx),
           refNameAliasOf: assemblyName => {
             const assembly = assemblyManager.get(assemblyName)
             return (

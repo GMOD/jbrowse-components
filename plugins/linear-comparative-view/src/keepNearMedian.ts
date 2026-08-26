@@ -1,3 +1,5 @@
+import { preferIncumbent } from './SyntenyFollow/pickFollowFeature.ts'
+
 // how far, in multiples of the anchor's window, an item may sit from the
 // length-weighted median and still shape a lane's frame or a launched panel
 export const OUTLIER_REACH = 1.5
@@ -19,6 +21,7 @@ export function keepNearMedian<T>(
   items: T[],
   reachBp: number,
   span: (item: T) => { start: number; end: number },
+  incumbentCenter?: number,
 ): T[] {
   if (items.length < 2 || !Number.isFinite(reachBp)) {
     return items
@@ -31,10 +34,23 @@ export function keepNearMedian<T>(
     const { start, end } = span(item)
     return end - start
   }
-  const center = weightedMedian(
+  const near = (center: number) =>
+    items.filter(item => Math.abs(mid(item) - center) <= reachBp)
+  const weightNear = (center: number) =>
+    near(center).reduce((sum, item) => sum + length(item), 0)
+  const median = weightedMedian(
     items.map(item => ({ value: mid(item), weight: length(item) })),
   )
-  const kept = items.filter(item => Math.abs(mid(item) - center) <= reachBp)
+  // a window whose placements sit in two blocks a reach apart has a median
+  // that hops between them as the window pans; the block kept last time keeps
+  // its place until the other clearly outweighs it
+  const center = preferIncumbent(
+    { center: median, overlap: weightNear(median) },
+    incumbentCenter === undefined
+      ? undefined
+      : { center: incumbentCenter, overlap: weightNear(incumbentCenter) },
+  )!.center
+  const kept = near(center)
   return kept.length ? kept : items
 }
 

@@ -2,8 +2,11 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { resolvePanel } from '../LaunchSyntenyView/resolvePanel.ts'
 import {
-  alignRowFrames,
   computeRowFrame,
+  decideLaneFrames,
+  frameFromDecision,
+} from './laneDecision.ts'
+import {
   frameSpan,
   frameTickXs,
   laneFetchRegion,
@@ -14,6 +17,8 @@ import {
   rowFrameX,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
+
+import type { LaneDecision } from './laneDecision.ts'
 
 function pairFeature({
   uniqueId,
@@ -73,6 +78,65 @@ function anchorSeed(
 
 function anchorSeedX(bp: number, width: number, spanBp = 1000) {
   return (bp / spanBp) * width
+}
+
+// The display's settle over one linear anchor axis, `spanBp` wide — `previous`
+// carries a decision in
+function settleLanes(
+  groups: ReturnType<typeof groupFeatures>,
+  assemblyNames: string[],
+  anchorX: Map<string, number>,
+  spanBp: number,
+  width: number,
+  previous = new Map<string, LaneDecision | undefined>(),
+) {
+  return decideLaneFrames({
+    groups,
+    assemblyNames,
+    anchorX,
+    anchorCoordOf: g => ({
+      refName: g.anchor.refName,
+      coord: (g.anchor.start + g.anchor.end) / 2,
+    }),
+    pxOfAnchor: c => anchorSeedX(c.coord, width, spanBp),
+    unitBp: spanBp,
+    width,
+    previous,
+  })
+}
+
+// the frames a settle draws with no scroll since
+function framesOf(
+  decisions: Map<string, LaneDecision | undefined>,
+  spanBp: number,
+  width: number,
+) {
+  return new Map(
+    [...decisions].map(([name, d]) => [
+      name,
+      d &&
+        frameFromDecision(
+          d,
+          anchorSeedX(d.pivotAnchor.coord, width, spanBp),
+          spanBp,
+          width,
+        ),
+    ]),
+  )
+}
+
+function alignRowFrames(
+  groups: ReturnType<typeof groupFeatures>,
+  assemblyNames: string[],
+  anchorX: Map<string, number>,
+  spanBp: number,
+  width: number,
+) {
+  return framesOf(
+    settleLanes(groups, assemblyNames, anchorX, spanBp, width),
+    spanBp,
+    width,
+  )
 }
 
 const features = [
@@ -228,10 +292,10 @@ test('a lane frame snaps to a multiple of the anchor span', () => {
   expect((frame.max - frame.min) / 1000).toBeCloseTo(1)
 })
 
-// The whole point of the ladder: a pan that does not change which rung a lane
-// sits on leaves the lane's content where it was, instead of sliding it under
-// its own ribbons.
-test('a small change in the placements leaves a snapped frame alone', () => {
+// The whole point of the ladder and the incumbent: a settle that does not
+// change which rung a lane sits on, and moves its fit by a hair, leaves the
+// lane's decision where it was instead of sliding it under its own ribbons.
+test('a small change in the placements leaves a settled lane alone', () => {
   const peachPair = (uniqueId: string, name: string, mateStart: number) =>
     pairFeature({
       uniqueId,
@@ -246,18 +310,38 @@ test('a small change in the placements leaves a snapped frame alone', () => {
         name: 'p1',
       },
     })
-  const before = computeRowFrame(
-    groupFeatures([peachPair('1', 'g1', 1000), peachPair('2', 'g2', 1200)]),
-    'peach',
+  const before = groupFeatures([
+    peachPair('1', 'g1', 1000),
+    peachPair('2', 'g2', 1200),
+  ])
+  const after = groupFeatures([
+    peachPair('1', 'g1', 1007),
+    peachPair('2', 'g2', 1207),
+  ])
+  const first = settleLanes(
+    before,
+    ['peach'],
+    anchorSeed(before, 800),
     1000,
-  )!
-  const after = computeRowFrame(
-    groupFeatures([peachPair('1', 'g1', 1007), peachPair('2', 'g2', 1207)]),
-    'peach',
+    800,
+  )
+  const second = settleLanes(
+    after,
+    ['peach'],
+    anchorSeed(after, 800),
     1000,
-  )!
-  expect(after.min).toBe(before.min)
-  expect(after.max).toBe(before.max)
+    800,
+    first,
+  )
+  const held = second.get('peach')!
+  const was = first.get('peach')!
+  expect(held.rung).toBe(was.rung)
+  expect(held.pivotLaneBp).toBe(was.pivotLaneBp)
+  expect(held.pivotAnchor).toEqual(was.pivotAnchor)
+  const frames = framesOf(second, 1000, 800)
+  const previous = framesOf(first, 1000, 800)
+  expect(frames.get('peach')!.min).toBe(previous.get('peach')!.min)
+  expect(frames.get('peach')!.max).toBe(previous.get('peach')!.max)
 })
 
 test('the shared tick interval is a 1/2/5 step landing a few ticks per span', () => {

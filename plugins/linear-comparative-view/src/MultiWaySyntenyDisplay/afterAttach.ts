@@ -2,8 +2,11 @@ import { dedupe, getSession, isAbortException } from '@jbrowse/core/util'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
+import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
 
 import type { LaneRegion, MultiWaySyntenyDisplayModel } from './model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
@@ -159,7 +162,57 @@ function installLaneFetch<Spec>(
   })
 }
 
+/**
+ * The settle-time lane decision. Reads the settled group set and the view's
+ * scale, never its scroll offset: the px space every lane is aligned in is
+ * anchored at the offset of the moment, read untracked, and the decision
+ * itself is stated in anchor coordinates, so a pan moves the frames without
+ * re-deciding anything.
+ */
+function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        const view = self.lgv
+        if (!view.initialized) {
+          return
+        }
+        const { anchorAbsX, visibleGroups, rowAssemblies } = self
+        const { origin, previous } = untracked(() => ({
+          origin: view.offsetPx,
+          previous: self.laneDecisions,
+        }))
+        const next = decideLaneFrames({
+          groups: visibleGroups,
+          assemblyNames: rowAssemblies,
+          anchorX: new Map(
+            [...anchorAbsX].map(([key, { x }]) => [key, x - origin]),
+          ),
+          anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
+          pxOfAnchor: coord => {
+            const px = view.bpToPx(coord)
+            return px && px.offsetPx - origin
+          },
+          unitBp: self.visibleBpSpan,
+          width: self.canvasWidth,
+          anchorReversed: self.anchorReversed,
+          previous,
+        })
+        if (
+          origin !== untracked(() => self.renderOriginPx) ||
+          !sameDecisions(previous, next)
+        ) {
+          self.setLaneFrames(origin, next)
+        }
+      },
+      { name: 'MultiWayLaneFrames' },
+    ),
+  )
+}
+
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
+  installLaneFrameDecision(self)
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),
     delay: 1000,

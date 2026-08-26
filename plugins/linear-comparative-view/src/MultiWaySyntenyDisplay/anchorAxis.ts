@@ -23,6 +23,7 @@ export function axisSpan(
   refName: string,
   start: number,
   end: number,
+  originPx = view.offsetPx,
 ): Span | undefined {
   const clipped = clipToDisplayedRegions(view, { refName, start, end })
   if (!clipped) {
@@ -32,5 +33,5 @@ export function axisSpan(
   const b = view.bpToPx({ refName, coord: clipped.end })
   return a === undefined || b === undefined
     ? undefined
-    : [a.offsetPx - view.offsetPx, b.offsetPx - view.offsetPx]
+    : [a.offsetPx - originPx, b.offsetPx - originPx]
 }
