@@ -1,4 +1,5 @@
 import { getFeatureAtIndex } from '../LinearSyntenyDisplay/model.ts'
+import { followReverseShare } from './followReverseShare.ts'
 import { followWindowMapping } from './followWindowMapping.ts'
 import { pickFollowFeature, preferIncumbent } from './pickFollowFeature.ts'
 import { windowInsideFeat } from './windowInsideFeat.ts'
@@ -25,6 +26,27 @@ export interface FollowStep {
   // the union of everything under the window, and undefined when the window is
   // inside one alignment, which is the only case that does not read it
   envelope: ResolvedSpan | undefined
+  // Whether the moving row should read right-to-left against the anchor:
+  // inside one alignment that alignment's strand, wider than one only when
+  // nearly everything under the window agrees. `undefined` leaves the row's
+  // orientation alone, which is what a mixed window deserves — the crossing
+  // ribbons ARE the picture of a rearrangement.
+  wantReversed: boolean | undefined
+}
+
+// A vote past this share in either direction orients the row; anything between
+// is a window showing both orientations, and flipping it would hide half.
+const NEARLY_ALL = 0.9
+
+function wantReversedFor(share: number | undefined) {
+  if (share === undefined) {
+    return undefined
+  }
+  return share >= NEARLY_ALL
+    ? true
+    : share <= 1 - NEARLY_ALL
+      ? false
+      : undefined
 }
 
 interface FollowPick extends FollowCandidate {
@@ -112,5 +134,10 @@ export function planFollowStep({
           mateAssembly,
           incumbentTarget,
         }),
+    wantReversed: inside
+      ? feat.strand === -1
+      : wantReversedFor(
+          followReverseShare({ data, window, toMate, mateAssembly }),
+        ),
   }
 }

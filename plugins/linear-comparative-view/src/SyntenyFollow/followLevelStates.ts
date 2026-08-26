@@ -73,6 +73,11 @@ export interface FollowLevelState {
   // same pair can be recognised as a navigation that achieved nothing. Cleared
   // the moment the row arrives — see `navSignature`.
   lastNav?: string
+  // The orientation decision the row was last flipped for — the block or the
+  // vote, and the anchor's own orientation. Applied ONCE per key: a row the
+  // user flips by hand afterwards stays flipped until the decision changes,
+  // which is what keeps the manual flip from needing an anchor take.
+  orientedKey?: string
 }
 
 /**

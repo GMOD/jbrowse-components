@@ -415,6 +415,27 @@ reset and flicker.
 `followUnaligned` is the different answer: nothing covers the window, so the
 rows hold. Without the flag a held row and a dead follow look identical.
 
+## Orientation is matched once per decision, and only when opted in
+
+`followMatchOrientation` (off by default) lets the exact pass turn the moving
+row round so it pans the same way as the anchor: inside one alignment by that
+block's strand, wider than one by `followReverseShare`'s overlap-weighted vote
+and only past `NEARLY_ALL` (90%) either way. A mixed window decides nothing —
+the crossing ribbons are the picture of a rearrangement, and flipping would hide
+half of it. Rung 3 carries no strand and never flips.
+
+**Applied once per key, not once per settle.** `orientedKey` is the block id or
+the vote's target, the wanted orientation, and the anchor's own `reversed`; the
+same key does not flip again. That is what lets a reader flip a followed row by
+hand without the row's Flip item taking the anchor: their flip disagrees with
+the key's answer and stands until the decision changes. The wanted state is
+relative — a reversed anchor inside an inverted block wants a forward mate.
+
+`horizontallyFlip` replaces `displayedRegions` and so wakes the pass; the bp
+window is unchanged, the replan carries the same key, and `alreadyShowing`
+compares bp, so it converges in one wake. The frame pass reads nothing of this:
+`spanBounds` already min/maxes offsets over a reversed row.
+
 ## Block coordinates are `start <= end`, with direction in `strands`
 
 A block is never negative-width. `followWindowMapping` interpolates, so it needs

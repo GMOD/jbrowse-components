@@ -46,8 +46,10 @@ interface NavigationModel {
   linkViews: boolean
   followSynteny: boolean
   followAnchorIndex: number
+  followMatchOrientation: boolean
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
   setFollowAnchorIndex: (idx: number) => void
+  setFollowMatchOrientation: (arg: boolean) => void
 }
 
 // `keepMenuOpen: false` because the click is a zoom, not a setting to sit and
@@ -107,7 +109,13 @@ const ROW_SYNC_MODES = [
  * and nothing about the pan reveals it.
  */
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
-  const { sameScale, linkViews, followSynteny, followAnchorIndex } = model
+  const {
+    sameScale,
+    linkViews,
+    followSynteny,
+    followAnchorIndex,
+    followMatchOrientation,
+  } = model
   return [
     {
       label: 'Square view - average bp per pixel',
@@ -145,6 +153,16 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
                 model.setFollowAnchorIndex(Number(idx))
               },
             ),
+            { type: 'subHeader', label: 'Orientation' },
+            {
+              type: 'checkbox',
+              label:
+                'Flip rows to match the anchor - inside inverted alignments',
+              checked: followMatchOrientation,
+              onClick: () => {
+                model.setFollowMatchOrientation(!followMatchOrientation)
+              },
+            },
           ]
         : [],
     }),

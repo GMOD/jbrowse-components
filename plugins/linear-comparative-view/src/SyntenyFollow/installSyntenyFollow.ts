@@ -60,6 +60,7 @@ export interface FollowPartialReport {
 
 export interface SyntenyFollowHost extends IStateTreeNode {
   followSynteny: boolean
+  followMatchOrientation: boolean
   followPairs: FollowPair[]
   setFollowUnaligned: (arg: boolean) => void
   setFollowApproximate: (arg: boolean) => void
@@ -82,6 +83,10 @@ interface FollowWork {
   // the narrowest window the moving row can show, which is what lets
   // `alreadyShowing` terminate over an answer below it
   movingMinWidthBp: number
+  // each row's orientation as it stands, read here so the flip decision is
+  // relative: a reversed anchor inside a forward block wants a reversed mate
+  anchorReversed: boolean
+  movingReversed: boolean
   seq: number
   generation: number
 }
@@ -159,6 +164,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     step,
     movingWindow,
     movingMinWidthBp,
+    anchorReversed,
+    movingReversed,
     seq,
     generation,
   }: FollowWork) {
@@ -214,6 +221,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         : undefined,
     }
     ensureCigarMap(state, step)
+    orient(state, step, anchorReversed, movingReversed, movingView)
     if (alreadyShowing(movingWindow, span, movingMinWidthBp)) {
       // arrived, so the next disagreement is a fresh one — a row the user
       // nudges away from here has to be navigable back to exactly this span
@@ -274,6 +282,45 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       navToResolvedSpan(movingView, widest).catch((e: unknown) => {
         reportError(level, e)
       })
+    }
+  }
+
+  /**
+   * Turn the moving row round when the alignment placing it runs the other
+   * way, so panning the anchor right moves the row right and the ribbons run
+   * parallel instead of crossing.
+   *
+   * ONCE PER DECISION, not once per settle. The key is the block or the vote
+   * plus the anchor's own orientation; a row the user flips by hand afterwards
+   * disagrees with the key's answer and is left alone until the decision
+   * changes, which is what spares the row's Flip item an anchor take. A mixed
+   * window decides nothing (`wantReversed` undefined) and leaves the row as it
+   * was.
+   *
+   * `horizontallyFlip` keeps the bp window and replaces `displayedRegions`,
+   * which wakes this pass; the replan carries the same key and does not flip
+   * again.
+   */
+  function orient(
+    state: FollowLevelState,
+    step: FollowStep,
+    anchorReversed: boolean,
+    movingReversed: boolean,
+    movingView: LinearGenomeViewModel,
+  ) {
+    if (!self.followMatchOrientation || step.wantReversed === undefined) {
+      return
+    }
+    const decision = step.windowInsideFeat
+      ? step.feat.id
+      : step.envelope?.refName
+    const key = `${decision}|${step.wantReversed}|${anchorReversed}`
+    if (key === state.orientedKey) {
+      return
+    }
+    state.orientedKey = key
+    if (movingReversed !== (anchorReversed !== step.wantReversed)) {
+      movingView.horizontallyFlip()
     }
   }
 
@@ -501,6 +548,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         step,
         movingWindow,
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
+        anchorReversed: !!stayingView.coarseDynamicBlocks[0]?.reversed,
+        movingReversed: !!movingView.coarseDynamicBlocks[0]?.reversed,
         seq,
         generation: levelStates.generation,
       },

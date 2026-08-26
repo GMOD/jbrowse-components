@@ -117,6 +117,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         followAnchorIndex: types.stripDefault(types.number, 0),
         /**
          * #property
+         * While following, flip a row whose placing alignment runs the other
+         * way from the anchor's, so the two pan in the same direction. Off by
+         * default: the crossing ribbons are the picture of an inversion, and
+         * a row turning round under the reader is the loudest thing one can do.
+         */
+        followMatchOrientation: types.stripDefault(types.boolean, false),
+        /**
+         * #property
          * One synteny band per adjacent pair of `views`. Each holds its own
          * track list, which is why the track-selector and add-track widgets
          * address them through `trackContainerFor` — a level is not a view and
@@ -569,6 +577,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setFollowAnchorIndex(idx: number) {
         self.followAnchorIndex = idx
+      },
+      /**
+       * #action
+       */
+      setFollowMatchOrientation(arg: boolean) {
+        self.followMatchOrientation = arg
       },
       /**
        * #action

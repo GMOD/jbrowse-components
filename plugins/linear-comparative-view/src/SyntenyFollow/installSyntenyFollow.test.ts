@@ -38,6 +38,14 @@ const Row = Base1DView.views(self => ({
     return self.dynamicBlocks.contentBlocks
   },
 })).actions(self => ({
+  horizontallyFlip() {
+    self.setDisplayedRegions(
+      [...self.displayedRegions]
+        .reverse()
+        .map(region => ({ ...region, reversed: !region.reversed })),
+    )
+    self.scrollTo(self.displayedRegionsTotalPx - self.offsetPx - self.width)
+  },
   // the one LGV action the settled pass reaches, since the rung below the
   // spread navigates rather than positions
   navTo({
@@ -73,10 +81,20 @@ function row(assemblyName: string) {
   return view
 }
 
+// an MST node, since the frame pass asks `isAlive` of the display it picked
+const Display = types
+  .model('TestSyntenyDisplay', {})
+  .volatile(() => ({ featureData: undefined as unknown }))
+  .actions(self => ({
+    setFeatureData(data: unknown) {
+      self.featureData = data
+    },
+  }))
+
 function display(blocks: FeatureBlock[], hasCigar = false) {
-  return {
-    featureData: packSyntenyFeatureData(blocks, { hasCigar }),
-  } as LinearSyntenyDisplayModel
+  const node = Display.create()
+  node.setFeatureData(packSyntenyFeatureData(blocks, { hasCigar }))
+  return node as unknown as LinearSyntenyDisplayModel
 }
 
 // A whole contig of one row against a whole contig of the next.
@@ -95,6 +113,7 @@ const Host = types
   .model('TestSyntenyFollowHost', {})
   .volatile(() => ({
     followSynteny: true,
+    followMatchOrientation: true,
     followUnaligned: false,
     followApproximate: false,
     followPartial: undefined as
@@ -105,6 +124,9 @@ const Host = types
   .actions(self => ({
     setFollowPairs(pairs: FollowPair[]) {
       self.followPairs = pairs
+    },
+    setFollowMatchOrientation(arg: boolean) {
+      self.followMatchOrientation = arg
     },
     setFollowUnaligned(arg: boolean) {
       self.followUnaligned = arg
@@ -307,5 +329,87 @@ describe('a whole-genome row zoomed by hand', () => {
     // no fetch key in this harness: only a tracked read of the moving row's
     // blocks can wake the pass
     expect(shown(rows[1]!)).toHaveLength(CONTIGS)
+  })
+})
+
+const reversedOf = (view: ReturnType<typeof row>) =>
+  !!view.dynamicBlocks.contentBlocks[0]?.reversed
+
+describe('orientation', () => {
+  const inverted = {
+    refName: 'chr1',
+    start: 300_000,
+    end: 700_000,
+    mateRefName: 'chr1',
+    mateStart: 300_000,
+    mateEnd: 700_000,
+    strand: -1,
+  }
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+
+  test('inside an inverted alignment the row is turned round, once', async () => {
+    const { rows, host } = twoRows([display([inverted])])
+    place(rows[0]!, 400_000, 600_000)
+    installSyntenyFollow(host)
+    await settle()
+    expect(reversedOf(rows[1]!)).toBe(true)
+    // the user's own flip stands until the decision changes
+    rows[1]!.horizontallyFlip()
+    place(rows[0]!, 410_000, 610_000)
+    await settle()
+    expect(reversedOf(rows[1]!)).toBe(false)
+  })
+
+  test('a reversed anchor inside an inverted alignment wants a forward row', async () => {
+    const { rows, host } = twoRows([display([inverted])])
+    rows[0]!.horizontallyFlip()
+    place(rows[0]!, 400_000, 600_000)
+    installSyntenyFollow(host)
+    await settle()
+    expect(reversedOf(rows[1]!)).toBe(false)
+  })
+
+  test('a window over nearly all inverted ribbons is turned round, a mixed one is not', async () => {
+    const ortholog = (start: number, strand: number) => ({
+      refName: 'chr1',
+      start,
+      end: start + 10_000,
+      mateRefName: 'chr1',
+      mateStart: start,
+      mateEnd: start + 10_000,
+      strand,
+    })
+    const mostly = twoRows([
+      display(
+        Array.from({ length: 20 }, (_, i) =>
+          ortholog(i * 40_000, i === 0 ? 1 : -1),
+        ),
+      ),
+    ])
+    place(mostly.rows[0]!, 0, CONTIG)
+    installSyntenyFollow(mostly.host)
+    await settle()
+    expect(reversedOf(mostly.rows[1]!)).toBe(true)
+
+    const mixed = twoRows([
+      display(
+        Array.from({ length: 20 }, (_, i) =>
+          ortholog(i * 40_000, i % 2 ? 1 : -1),
+        ),
+      ),
+    ])
+    place(mixed.rows[0]!, 0, CONTIG)
+    installSyntenyFollow(mixed.host)
+    await settle()
+    expect(reversedOf(mixed.rows[1]!)).toBe(false)
+  })
+
+  test('off, nothing turns', async () => {
+    const { rows, host } = twoRows([display([inverted])])
+    host.setFollowMatchOrientation(false)
+    place(rows[0]!, 400_000, 600_000)
+    installSyntenyFollow(host)
+    await settle()
+    expect(reversedOf(rows[1]!)).toBe(false)
   })
 })
