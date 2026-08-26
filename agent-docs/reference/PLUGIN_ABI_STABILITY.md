@@ -13,14 +13,24 @@ semver/`api-extractor` discipline as premature for an experimental phase; this
 doc captures the thinking so it's ready when there are stable surfaces to
 protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
-## The four surfaces that exist today, and how to remove from them
+## The five surfaces that exist today, and how to remove from them
 
-Whatever the policy ends up being, these four are already checked:
+Whatever the policy ends up being, these five are already checked:
 
 - **`ReExports/modules.ts`** — the `@jbrowse/core/*` modules external plugins
   resolve against, pinned by `abi.test.ts` against `abiBaseline.json`. A removal
   fails there. To drop a name, delete it from the baseline in the same commit
   and say in the message which published plugins you checked.
+- **A plugin's own `exports` object**, which a prebuilt bundle reaches as
+  `pluginManager.getPlugin('LinearGenomeViewPlugin').exports.X`. Four plugins
+  publish one; `products/jbrowse-web/src/pluginExports.test.ts` builds a plugin
+  manager over the full core set and pins their names against
+  `pluginExportsBaseline.json`, the same way and with the same removals-only
+  doctrine. It lives with the product rather than beside `abiBaseline.json`
+  because the plugin list does: `@jbrowse/core` cannot import a product, and
+  making the baseline reachable from core would publish a new subpath. A name
+  whose value is a namespace object (`WigglePlugin.exports.utils`) is pinned as
+  one name, so what is inside it is not checked.
 - **The session, and it fails quieter.** Plugins look members up behind
   `'x' in session`, so removing one throws nothing at all — no compile error, no
   test failure, just a plugin that stops asking. `pluginFacingSessionApi.test.ts`
@@ -43,7 +53,7 @@ Whatever the policy ends up being, these four are already checked:
   `knownRemovals.ts`; to keep the promise with no importer left, add it to
   `preservedExports` in `generateExports.mjs`, which is what that allowlist is
   for.
-- **The accumulating extension points, which fail quietest of the four.**
+- **The accumulating extension points, which fail quietest of the five.**
   `addToExtensionPoint` excludes them in its *type*, so a plugin rebuilt against
   v5 gets a compile error naming `contributeToExtensionPoint`. A prebuilt v4
   bundle carries no types: the call reaches `pushExtensionPointCallback`, joins
@@ -160,13 +170,15 @@ six removals left in v5 with nothing recording them anywhere.
   - `LayoutRecord` — the 4-tuple `[minX, minY, maxX, maxY]` the block layout handed back, exported from the plugin entry and the `BaseLinearDisplay` barrel with no consumer left in the tree. Its 5-tuple `LayoutFeatureMetadata` variant went with the floating-label code, so what was published in v5 was already the narrowed shape. `@jbrowse/plugin-breakpoint-split-view` declares an identical one of its own and still exports it, which is the import to move to
   - `Layout` — the named-rectangle interface beside it (`minX`/`minY`/`maxX`/`maxY`/`name`), declared in the same file and never exported past it or read anywhere
 
-Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, nothing checks these against a published bundle: `abi.test.ts` pins `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters its findings on that same prefix, so a plugin `exports` object is observed by nothing at all and the session only by the members `pluginFacingSessionApi.test.ts` performs. Reading them here is the check.
+Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, none of these is checked against a published bundle: `abi.test.ts` pins `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters its findings on that same prefix, so neither reaches a plugin `exports` object or the session. What each surface has instead is narrower. A plugin `exports` object is pinned by name against `products/jbrowse-web/src/pluginExportsBaseline.json`, so the next removal from one fails a test — but only a removal, and a name that survives with a new signature passes. The session has only the members `pluginFacingSessionApi.test.ts` performs, which is why `getReferring` above is on this list rather than in a baseline. For everything else, reading them here is the check.
 <!-- END GENERATED SESSION AND PLUGIN REMOVALS -->
 
-Whether these two surfaces earn a baseline of their own is open, and it is the
-half that would stop the next six — see `TODO.md`
-§ "Do the session and plugin `exports` surfaces earn a baseline", which carries
-why the plugin one is cheap and what blocks the session one.
+The plugin `exports` half now has the baseline described in the first section,
+which is the half that stops a repeat of the two `LinearGenomeViewPlugin`
+removals above. The session half is still open, and it is blocked rather than
+undecided — see `TODO.md` § "Do the session and plugin `exports` surfaces earn a
+baseline", which carries what the record's home costs core's published `exports`
+map.
 
 ## The symptom
 

@@ -255,12 +255,18 @@ and calling it throws inside the reaching plugin's own `install`.
     exported past it or read anywhere
 
 Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in
-`packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, nothing
-checks these against a published bundle: `abi.test.ts` pins `@jbrowse/core/*`
-module names and `scripts/check-published-plugins.ts` filters its findings on
-that same prefix, so a plugin `exports` object is observed by nothing at all and
-the session only by the members `pluginFacingSessionApi.test.ts` performs.
-Reading them here is the check.
+`packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, none of
+these is checked against a published bundle: `abi.test.ts` pins
+`@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters
+its findings on that same prefix, so neither reaches a plugin `exports` object
+or the session. What each surface has instead is narrower. A plugin `exports`
+object is pinned by name against
+`products/jbrowse-web/src/pluginExportsBaseline.json`, so the next removal from
+one fails a test — but only a removal, and a name that survives with a new
+signature passes. The session has only the members
+`pluginFacingSessionApi.test.ts` performs, which is why `getReferring` above is
+on this list rather than in a baseline. For everything else, reading them here
+is the check.
 <!-- END GENERATED SESSION AND PLUGIN REMOVALS -->
 
 ## Display types collapsed

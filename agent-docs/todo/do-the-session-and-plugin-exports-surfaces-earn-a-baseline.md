@@ -1,6 +1,6 @@
 ---
 name: do-the-session-and-plugin-exports-surfaces-earn-a-baseline
-description: recorded; build the plugin-`exports` baseline, and read the session one's blocker first
+description: the plugin-`exports` baseline is built; what is left is the session one's blocker
 metadata:
   area: plugins, ABI
   category: ready
@@ -16,16 +16,19 @@ split. They could not go in `REMOVAL_GROUPS`: `abiPreviousRelease.test.ts`
 requires every key there to be a `module#name` the previous release served, so a
 session member filed there fails as stale.
 
-What is left is whether either surface earns a baseline of its own, and the
-answer differs by surface:
+Whether either surface earns a baseline of its own was the rest of it, and the
+answer differed by surface. Only the session one is still open:
 
-- **The plugin `exports` object is the cheap one and the one worth building.**
-  It is shaped exactly like `abiBaseline.json`: from a product that loads every
-  plugin, `pluginManager.plugins.map(p => [p.name, Object.keys(p.exports)])`
-  against a committed JSON. Nothing observes that surface today —
-  `check-published-plugins.ts:152` filters on `name.startsWith('@jbrowse/core/')`
-  — and it is what would have caught `LinearGenomeViewPlugin.exports` dropping
-  `BaseLinearDisplay`.
+- **The plugin `exports` object was the cheap one, and it is built.**
+  `products/jbrowse-web/src/pluginExports.test.ts` pins the four plugins that
+  publish one against `pluginExportsBaseline.json` beside it, removals-only, the
+  same doctrine as `abiBaseline.json`. It lives with the product rather than
+  beside that baseline because `@jbrowse/core` cannot import the plugin list and
+  reaching the JSON from core would publish a new subpath — the same cost the
+  session half is stuck on, below. It catches what nothing did before:
+  `check-published-plugins.ts` filters on `name.startsWith('@jbrowse/core/')`, so
+  `LinearGenomeViewPlugin.exports` dropping `BaseLinearDisplay` passed every
+  check in the tree.
 - **A session baseline has a concrete blocker, and one of its three answers got
   cheaper.** The record lives in `packages/core` and `./ReExports/knownRemovals`
   is still not in core's `exports` map (checked 2026-08-26);
@@ -40,7 +43,7 @@ answer differs by surface:
   this map no longer does. A deliberate subpath is now a line someone wrote down
   rather than a side effect of an import. Note it still does not gate a NEW
   subpath, by design, so the decision remains a decision.
-- **Neither baseline would have caught `getReferring`.** A name snapshot says
+- **Neither baseline catches `getReferring`, the one that is built included.** A name snapshot says
   nothing about a signature, and that removal is a signature change that answers
   `[]` in silence. Only `pluginFacingSessionApi.test.ts`'s shape — perform the
   call the way a published bundle spells it — catches that class, and it covers

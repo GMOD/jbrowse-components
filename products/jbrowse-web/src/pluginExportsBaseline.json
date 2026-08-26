@@ -1,0 +1,22 @@
+{
+  "AuthenticationPlugin": [
+    "DropboxOAuthConfigSchema",
+    "DropboxOAuthInternetAccountModelFactory",
+    "ExternalTokenConfigSchema",
+    "ExternalTokenInternetAccountModelFactory",
+    "GoogleDriveOAuthConfigSchema",
+    "GoogleDriveOAuthInternetAccountModelFactory",
+    "HTTPBasicConfigSchema",
+    "HTTPBasicInternetAccountModelFactory",
+    "OAuthConfigSchema",
+    "OAuthInternetAccountModelFactory"
+  ],
+  "DataManagementPlugin": ["AssemblyManager"],
+  "LinearGenomeViewPlugin": [
+    "LinearGenomeView",
+    "SearchBox",
+    "ZoomControls",
+    "baseLinearDisplayConfigSchema"
+  ],
+  "WigglePlugin": ["utils"]
+}
