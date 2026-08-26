@@ -1,4 +1,4 @@
-import { bucketBpPerPx } from '@jbrowse/synteny-core'
+import { bucketBpPerPx, fetchWindowSignature } from '@jbrowse/synteny-core'
 
 import type { Region } from '@jbrowse/core/util'
 import type { LodTier } from '@jbrowse/synteny-core'
@@ -48,8 +48,5 @@ export function dotplotFetchKey(
 ) {
   const axis = (a: AxisFetchInputs) =>
     `${bucketBpPerPx(a.bpPerPx)}#${a.regionSignature}`
-  const window = fetchRegions
-    .map(r => `${r.refName}:${r.start}-${r.end}`)
-    .join(',')
-  return `${lodTier}::${axis(hAxis)}::${axis(vAxis)}::${window}`
+  return `${lodTier}::${axis(hAxis)}::${axis(vAxis)}::${fetchWindowSignature(fetchRegions)}`
 }

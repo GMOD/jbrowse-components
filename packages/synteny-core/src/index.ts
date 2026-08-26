@@ -27,7 +27,7 @@ export {
   syntenyFetchRegions,
   syntenyPanBufferPx,
 } from './syntenyFetchWindow.ts'
-export { regionSignature } from './regionSignature.ts'
+export { fetchWindowSignature, regionSignature } from './regionSignature.ts'
 export { bucketBpPerPx } from './bpPerPxBucket.ts'
 export {
   getCoarseBpPerPxThreshold,

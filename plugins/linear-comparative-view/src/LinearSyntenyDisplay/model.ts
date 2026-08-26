@@ -16,6 +16,7 @@ import {
   comparativeFetchFlags,
   featureAttributes,
   getCoarseBpPerPxThreshold,
+  fetchWindowSignature,
   regionSignature,
   resolveLodTier,
   swappedAssembliesWarning,
@@ -35,7 +36,6 @@ import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMate
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
-import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
@@ -119,10 +119,6 @@ export interface FeatPos {
   // panel used to show while the fetch carried mapping quality, dN/dS and any
   // column the track declared. `featureAttributes` drops the -1 sentinel.
   attributes: Record<string, number>
-}
-
-function windowSignature(regions: Region[]) {
-  return regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(',')
 }
 
 // Exported for the synteny follow, which picks a feature by scanning the packed
@@ -912,7 +908,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         const connected = this.connectedViews
         return connected
           ? [this.fetchRegions, syntenyFetchRegions(connected.v1)]
-              .map(windowSignature)
+              .map(fetchWindowSignature)
               .join('_')
           : undefined
       },
