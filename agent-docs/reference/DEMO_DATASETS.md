@@ -65,8 +65,11 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 
 - **Read-pair SV contact channels → NA12878 at three 1000G phase 3 calls**
   (`demos/sv_contact_maps`, `scripts/build_sv_contact_maps.sh`). Cue's encoding
-  as four `.hic` files over one GIAB HG001 300x slice. Measured off the BAM, so
-  do not re-pick by SV type:
+  over one GIAB HG001 300x slice, twice: `na12878_sv_channels` is one
+  `AlignmentsTrack` with `groupBy: pairOrientation`, arcs colored by
+  orientation, concordant arcs off and the pileup hidden, which is the four
+  channels as coverage-plus-arcs bands; the four `.hic` files are the same
+  channels binned. Measured off the BAM, so do not re-pick by SV type:
   - **INV `7:70,420,799-70,438,952`** (het, delly, and `CINV` in the record's
     own name). 605 of the 660 same-strand pairs in the whole chr7 slice land in
     a handful of cells that share a bin at 70,438k, and TWO of those hold 411 of

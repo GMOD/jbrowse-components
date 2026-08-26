@@ -72,9 +72,52 @@
           "type": "LinearAlignmentsDisplay",
           "displayId": "na12878_300x_reads-LinearAlignmentsDisplay",
           "height": 420,
-          "readConnections": "cloud",
-          "readConnectionsHeight": 150,
+          "readConnections": "arc",
           "readConnectionsDown": true,
+          "readConnectionsHeight": 120,
+          "drawProperPairArcs": false,
+          "colorBy": {
+            "type": "orientation"
+          },
+          "forceLoad": true
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "na12878_sv_channels",
+      "name": "NA12878 SV channels: depth and pairs by orientation",
+      "assemblyNames": ["hg19"],
+      "category": ["Reads"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/sv_contact_maps/NA12878.sv_contact_maps.bam",
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/sv_contact_maps/NA12878.sv_contact_maps.bam.bai"
+          },
+          "indexType": "BAI"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "na12878_sv_channels-LinearAlignmentsDisplay",
+          "height": 600,
+          "showPileup": false,
+          "coverageHeight": 40,
+          "readConnections": "arc",
+          "readConnectionsDown": true,
+          "readConnectionsHeight": 110,
+          "drawProperPairArcs": false,
+          "colorBy": {
+            "type": "orientation"
+          },
+          "groupBy": {
+            "type": "pairOrientation"
+          },
+          "linkedReads": "normal",
+          "showLegend": true,
           "forceLoad": true
         }
       ]
@@ -194,9 +237,8 @@
           "tracks": [
             "ncbi_refseq_hg19",
             "na12878_1000g_sv",
+            "na12878_sv_channels",
             "sv_contacts_same_strand",
-            "sv_contacts_discordant",
-            "sv_contacts_depth_difference",
             "na12878_300x_reads"
           ]
         }
