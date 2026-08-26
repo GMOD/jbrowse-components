@@ -368,3 +368,134 @@ describe('CascadingMenu submenus', () => {
     expect([expanded('colors'), expanded('shapes')]).toEqual(['true', 'false'])
   })
 })
+
+// The pointer's trip from a submenu row to the panel it opened crosses the rows
+// below it, and every one of those rows wants the panel closed. Acting on the
+// first one made the diagonal unwalkable: the panel vanished the instant the
+// pointer strayed off the parent row, which is most of the way to it.
+describe('CascadingMenu submenu hover intent', () => {
+  const items: MenuItem[] = [
+    { label: 'Colors', subMenu: [{ label: 'Red', onClick: () => {} }] },
+    { label: 'Beta', onClick: () => {} },
+    { label: 'Gamma', onClick: () => {} },
+    { label: 'Shapes', subMenu: [{ label: 'Square', onClick: () => {} }] },
+  ]
+
+  // aria-expanded rather than the panel contents: a closing MUI Menu stays
+  // mounted through its exit transition, so its rows outlive the state change
+  const expandedIn =
+    (getByTestId: (id: string) => HTMLElement) => (label: string) =>
+      getByTestId(`cascading-submenu-${label}`).getAttribute('aria-expanded')
+
+  const settle = () => {
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('opens the first panel with no delay', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    fireEvent.mouseOver(getByText('Colors'))
+    expect(expandedIn(getByTestId)('colors')).toBe('true')
+  })
+
+  it('survives a pointer that only passes over a sibling row', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    fireEvent.mouseOver(getByText('Colors'))
+    fireEvent.mouseOver(getByText('Beta'))
+    act(() => {
+      jest.advanceTimersByTime(100)
+    })
+    expect(expandedIn(getByTestId)('colors')).toBe('true')
+  })
+
+  it('closes once the pointer settles on a sibling row', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    fireEvent.mouseOver(getByText('Colors'))
+    fireEvent.mouseOver(getByText('Beta'))
+    settle()
+    expect(expandedIn(getByTestId)('colors')).toBe('false')
+  })
+
+  // The panel is the destination, so arriving there is what proves the rows
+  // crossed on the way were incidental. Its paper carries the hover, not the
+  // click-through root the submenu's Menu spans the viewport with.
+  it('cancels the pending close once the pointer reaches the panel', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    fireEvent.mouseOver(getByText('Colors'))
+    fireEvent.mouseOver(getByText('Beta'))
+    fireEvent.mouseOver(getByText('Red'))
+    settle()
+    expect(expandedIn(getByTestId)('colors')).toBe('true')
+  })
+
+  // What a browser actually sends when the pointer crosses from the list into
+  // the panel: a mouseout on the row it left, naming the panel as relatedTarget.
+  // React derives the enter from THAT, walking the fiber tree to the two nodes'
+  // common ancestor — the mouseover above takes a different branch of the same
+  // plugin, so it alone would not prove the handler is reachable across the
+  // portal boundary.
+  it('cancels it on the event a pointer crossing portals really sends', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    fireEvent.mouseOver(getByText('Colors'))
+    const beta = getByTestId('cascading-menuitem-beta')
+    fireEvent.mouseOver(beta)
+    fireEvent.mouseOut(beta, { relatedTarget: getByText('Red') })
+    settle()
+    expect(expandedIn(getByTestId)('colors')).toBe('true')
+  })
+
+  // The deadline belongs to the pending change, not to the row that asked for
+  // it: restarting the timer per row means a pointer sliding down a long list
+  // never closes the panel at all, which is the naive way to write the delay.
+  it('does not restart the delay on each further row crossed', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    fireEvent.mouseOver(getByText('Colors'))
+    fireEvent.mouseOver(getByText('Beta'))
+    act(() => {
+      jest.advanceTimersByTime(200)
+    })
+    fireEvent.mouseOver(getByText('Gamma'))
+    act(() => {
+      jest.advanceTimersByTime(200)
+    })
+    expect(expandedIn(getByTestId)('colors')).toBe('false')
+  })
+
+  it('waits before letting another submenu row take over', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    const expanded = expandedIn(getByTestId)
+    fireEvent.mouseOver(getByText('Colors'))
+    fireEvent.mouseOver(getByText('Shapes'))
+    expect([expanded('colors'), expanded('shapes')]).toEqual(['true', 'false'])
+    settle()
+    expect([expanded('colors'), expanded('shapes')]).toEqual(['false', 'true'])
+  })
+
+  // A click and an ArrowRight say where the pointer meant to go, so neither
+  // waits to be sure of it.
+  it('switches at once on a click', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    const expanded = expandedIn(getByTestId)
+    fireEvent.mouseOver(getByText('Colors'))
+    fireEvent.click(getByText('Shapes'))
+    expect([expanded('colors'), expanded('shapes')]).toEqual(['false', 'true'])
+  })
+
+  it('switches at once on ArrowRight', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    const expanded = expandedIn(getByTestId)
+    fireEvent.mouseOver(getByText('Colors'))
+    fireEvent.keyDown(getByTestId('cascading-submenu-shapes'), {
+      key: 'ArrowRight',
+    })
+    expect([expanded('colors'), expanded('shapes')]).toEqual(['false', 'true'])
+  })
+})

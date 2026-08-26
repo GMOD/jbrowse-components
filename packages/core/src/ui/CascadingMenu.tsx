@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { createContext, use, useEffect, useRef, useState } from 'react'
 
 import {
   Divider,
@@ -48,25 +48,122 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface CascadingMenuListProps {
-  menuItems: JBMenuItem[]
+/**
+ * What every level of one cascading menu shares. A context rather than props
+ * because a menu nests to any depth: each level threaded all four down to the
+ * next, and a row three levels in needed them only to hand them on again.
+ */
+interface CascadingMenuShared {
+  /** whether clicking a row dismisses the whole menu; see `staysOpenOnClick` */
   closeAfterItemClick: boolean
-  // how a row's onClick is invoked, at every depth — the menu itself never
-  // calls it. A caller whose items expect a context argument supplies it here
-  // (`cb => { cb(session) }`) rather than rewriting the items to close over it
+  /**
+   * How a row's onClick is invoked, at every depth — the menu itself never
+   * calls it. A caller whose items expect a context argument supplies it here
+   * (`cb => { cb(session) }`) rather than rewriting the items to close over it.
+   */
   onMenuItemClick: (callback: MenuItemClickHandler) => void
+  /** dismisses the root menu, from any depth */
   onCloseRoot: () => void
-  // close this menu level and refocus its opener (ArrowLeft); undefined at the
-  // root level where there is nothing to go back to
-  onNavigateBack?: () => void
-  // The root menu's stacking level, carried down to every submenu portal. Each
-  // level is its own MUI Menu, so a submenu left on MUI's default modal z-index
-  // sits UNDER a root that was raised off that scale (ContextMenu clears the
-  // tooltip layer) — and the root's modal spans the viewport, so its backdrop
-  // takes every click and hover the submenu rows never see. Undefined leaves
-  // MUI's default, which is what a menu opened from a button wants.
+  /**
+   * The root menu's stacking level, carried down to every submenu portal. Each
+   * level is its own MUI Menu, so a submenu left on MUI's default modal z-index
+   * sits UNDER a root that was raised off that scale (ContextMenu clears the
+   * tooltip layer) — and the root's modal spans the viewport, so its backdrop
+   * takes every click and hover the submenu rows never see. Undefined leaves
+   * MUI's default, which is what a menu opened from a button wants.
+   */
   zIndex?: React.CSSProperties['zIndex']
 }
+
+const CascadingMenuContext = createContext<CascadingMenuShared | undefined>(
+  undefined,
+)
+
+function useCascadingMenu() {
+  const shared = use(CascadingMenuContext)
+  if (!shared) {
+    throw new Error('menu row rendered outside a CascadingMenu')
+  }
+  return shared
+}
+
+/**
+ * How long a hover waits before it changes which submenu is open.
+ *
+ * A submenu panel opens level with its parent row and extends downward, so
+ * reaching a row inside it means traveling diagonally across the rows below the
+ * parent — and those rows want the panel closed. Acting on the first one
+ * crossed made that diagonal unwalkable: the panel vanished the instant the
+ * pointer strayed off the parent row. Waiting lets a pointer that is merely
+ * passing through reach the panel, whose own hover cancels the pending change,
+ * while one that settles elsewhere still closes it.
+ *
+ * Long enough to cross several rows at a normal pointer speed; short enough
+ * that a deliberate move to another submenu row doesn't read as a hang.
+ */
+const submenuHoverDelayMs = 300
+
+/**
+ * Which submenu of ONE list is open, plus the hover intent that moves it. A
+ * click or ArrowRight is unambiguous and acts at once; a hover schedules.
+ */
+function useSubmenuHover() {
+  const [openSubmenu, setOpenSubmenu] = useState<string | undefined>()
+  const pending = useRef<
+    | { key: string | undefined; timer: ReturnType<typeof setTimeout> }
+    | undefined
+  >(undefined)
+
+  const cancelPending = () => {
+    if (pending.current) {
+      clearTimeout(pending.current.timer)
+      pending.current = undefined
+    }
+  }
+  useEffect(
+    () => () => {
+      if (pending.current) {
+        clearTimeout(pending.current.timer)
+      }
+    },
+    [],
+  )
+
+  const setSubmenu = (key: string | undefined) => {
+    cancelPending()
+    setOpenSubmenu(key)
+  }
+
+  return {
+    openSubmenu,
+    setSubmenu,
+    // the pointer reached the open panel, so whatever was scheduled is stale
+    keepSubmenuOpen: cancelPending,
+    // the pointer arrived at a row wanting `key` open — undefined from a row
+    // with no submenu, i.e. "close whatever is"
+    hoverSubmenu: (key: string | undefined) => {
+      if (key === openSubmenu) {
+        cancelPending()
+      } else if (openSubmenu === undefined) {
+        // nothing to protect, so opening the first panel stays instant
+        setSubmenu(key)
+      } else if (!pending.current || pending.current.key !== key) {
+        // a run of rows all asking for the same change keeps the original
+        // deadline: restarting it on each row crossed means a pointer sliding
+        // down the list never closes the panel at all
+        cancelPending()
+        pending.current = {
+          key,
+          timer: setTimeout(() => {
+            setSubmenu(key)
+          }, submenuHoverDelayMs),
+        }
+      }
+    },
+  }
+}
+
+type SubmenuHover = ReturnType<typeof useSubmenuHover>
 
 // Identity of a submenu row, used both as its React key and to remember which
 // submenu is open. Deliberately not the array index: the items are re-derived on
@@ -158,21 +255,29 @@ function getMenuColumnFlags(menuItems: JBMenuItem[]) {
 // this a slider drag bubbles (via React's synthetic-event tree) into the LGV's
 // click-drag side-scroll, and arrow-key nudging gets stolen by the menu's own
 // arrow navigation.
+//
+// Escape is the exception, and has to be: MUI's Modal reads it off the same
+// React tree, so a row that swallowed every key left the menu with no way out
+// for anyone whose focus was inside the slider.
 function CustomMenuRow({
   item,
-  onCloseRoot,
+  onHover,
 }: {
   item: CustomMenuItem
-  onCloseRoot: () => void
+  onHover: () => void
 }) {
+  const { onCloseRoot } = useCascadingMenu()
   return (
     <li
       style={{ padding: '4px 16px' }}
+      onMouseEnter={onHover}
       onMouseDown={e => {
         e.stopPropagation()
       }}
       onKeyDown={e => {
-        e.stopPropagation()
+        if (e.key !== 'Escape') {
+          e.stopPropagation()
+        }
       }}
     >
       {item.render(onCloseRoot)}
@@ -212,25 +317,24 @@ function DisabledTooltip({
 // clickable rows reserve rather than in a hand-assembled copy of them.
 function CascadingSubmenu({
   item,
+  itemKey,
   inset,
   columns,
-  onMenuItemClick,
-  closeAfterItemClick,
-  onCloseRoot,
+  hover,
   onNavigateBack,
-  zIndex,
-  isOpen,
-  onOpen,
-  onClose,
 }: {
   item: SubMenuItem
+  itemKey: string
   inset: boolean
   columns: MenuColumnFlags
-  isOpen: boolean
-  onOpen: () => void
-  onClose: () => void
-} & Omit<CascadingMenuListProps, 'menuItems'>) {
+  hover: SubmenuHover
+  onNavigateBack?: () => void
+}) {
+  const { zIndex } = useCascadingMenu()
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
+  // a rebuild can disable the row while its panel is up, and a disabled row has
+  // no way left to close it
+  const isOpen = hover.openSubmenu === itemKey && !item.disabled
 
   return (
     <>
@@ -241,15 +345,20 @@ function CascadingSubmenu({
           disabled={item.disabled}
           aria-haspopup="menu"
           aria-expanded={isOpen}
-          onMouseOver={() => {
-            onOpen()
+          // keeps the panel visually attached to the row it hangs off: that
+          // row's own hover highlight is gone the moment the pointer moves
+          // into the panel. Presentational on a `menuitem` — MUI derives
+          // aria-checked from `selected` only for the checkbox/radio roles.
+          selected={isOpen}
+          onMouseEnter={() => {
+            hover.hoverSubmenu(itemKey)
           }}
           onClick={() => {
-            onOpen()
+            hover.setSubmenu(itemKey)
           }}
           onKeyDown={e => {
             if (e.key === 'ArrowRight') {
-              onOpen()
+              hover.setSubmenu(itemKey)
             } else if (e.key === 'ArrowLeft') {
               e.stopPropagation()
               onNavigateBack?.()
@@ -264,19 +373,20 @@ function CascadingSubmenu({
       <HoverMenu
         open={isOpen}
         anchorEl={anchorEl}
-        onClose={onClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         zIndex={zIndex}
+        // the pointer completed the trip, so drop the close a row it crossed on
+        // the way scheduled
+        onMouseEnter={hover.keepSubmenuOpen}
+        onClose={() => {
+          hover.setSubmenu(undefined)
+        }}
       >
         <CascadingMenuList
-          closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={onMenuItemClick}
           menuItems={item.subMenu}
-          onCloseRoot={onCloseRoot}
-          zIndex={zIndex}
           onNavigateBack={() => {
-            onClose()
+            hover.setSubmenu(undefined)
             anchorEl?.focus()
           }}
         />
@@ -290,23 +400,19 @@ function CascadingSubmenu({
 // reserve matching decoration slots so the columns line up down the menu.
 function CascadingMenuItem({
   item,
-  hasIcon,
+  inset,
   columns,
-  closeAfterItemClick,
-  onMenuItemClick,
-  onCloseRoot,
   onNavigateBack,
-  onMouseOver,
+  onHover,
 }: {
   item: ClickableMenuItem
-  hasIcon: boolean
+  inset: boolean
   columns: MenuColumnFlags
-  closeAfterItemClick: boolean
-  onMenuItemClick: (callback: MenuItemClickHandler) => void
-  onCloseRoot: () => void
   onNavigateBack?: () => void
-  onMouseOver: () => void
+  onHover: () => void
 }) {
+  const { closeAfterItemClick, onMenuItemClick, onCloseRoot } =
+    useCascadingMenu()
   return (
     // a disabled row can't open the help popover (pointer-events:none), so
     // disabledHelpText is surfaced as a hover tooltip instead of the icon button
@@ -324,9 +430,7 @@ function CascadingMenuItem({
           }
           onMenuItemClick(item.onClick)
         }}
-        onMouseOver={() => {
-          onMouseOver()
-        }}
+        onMouseEnter={onHover}
         onKeyDown={e => {
           if (e.key === 'ArrowLeft') {
             e.stopPropagation()
@@ -338,7 +442,7 @@ function CascadingMenuItem({
         <ListItemText
           primary={item.label}
           secondary={item.subLabel}
-          inset={hasIcon && !item.icon}
+          inset={inset}
         />
         <MenuItemTrailing item={item} columns={columns} />
       </MenuItem>
@@ -347,17 +451,20 @@ function CascadingMenuItem({
 }
 
 function CascadingMenuList({
-  onMenuItemClick,
-  closeAfterItemClick,
   menuItems,
-  onCloseRoot,
   onNavigateBack,
-  zIndex,
-}: CascadingMenuListProps) {
+}: {
+  menuItems: JBMenuItem[]
+  // close this menu level and refocus its opener (ArrowLeft); undefined at the
+  // root level where there is nothing to go back to
+  onNavigateBack?: () => void
+}) {
   const { classes } = useStyles()
-  const [openSubmenu, setOpenSubmenu] = useState<string | undefined>()
-  const closeSubmenu = () => {
-    setOpenSubmenu(undefined)
+  const hover = useSubmenuHover()
+  // every row a pointer can rest on asks for the open panel to go away; only a
+  // row that owns a submenu, or the panel itself, keeps one up
+  const closeOnHover = () => {
+    hover.hoverSubmenu(undefined)
   }
 
   const { hasIcon, columns } = getMenuColumnFlags(menuItems)
@@ -374,23 +481,12 @@ function CascadingMenuList({
           return (
             <CascadingSubmenu
               key={key}
+              itemKey={key}
               item={item}
               inset={hasIcon && !item.icon}
               columns={columns}
-              onMenuItemClick={onMenuItemClick}
-              closeAfterItemClick={closeAfterItemClick}
-              onCloseRoot={onCloseRoot}
+              hover={hover}
               onNavigateBack={onNavigateBack}
-              zIndex={zIndex}
-              isOpen={openSubmenu === key && !item.disabled}
-              onOpen={() => {
-                if (!item.disabled) {
-                  setOpenSubmenu(key)
-                }
-              }}
-              onClose={() => {
-                closeSubmenu()
-              }}
             />
           )
         }
@@ -403,6 +499,7 @@ function CascadingMenuList({
             <ListSubheader
               key={`subHeader-${item.label}`}
               className={classes.subHeader}
+              onMouseEnter={closeOnHover}
               // a leading subHeader has no rows above it to divide from, so drop
               // the divider rule that would otherwise float at the menu's top edge
               sx={idx === 0 ? { borderTop: 'none', marginTop: 0 } : undefined}
@@ -416,7 +513,7 @@ function CascadingMenuList({
             <CustomMenuRow
               key={`custom-${item.label}`}
               item={item}
-              onCloseRoot={onCloseRoot}
+              onHover={closeOnHover}
             />
           )
         }
@@ -425,15 +522,10 @@ function CascadingMenuList({
           <CascadingMenuItem
             key={`menuitem-${item.label}`}
             item={item}
-            hasIcon={hasIcon}
+            inset={hasIcon && !item.icon}
             columns={columns}
-            closeAfterItemClick={closeAfterItemClick}
-            onMenuItemClick={onMenuItemClick}
-            onCloseRoot={onCloseRoot}
             onNavigateBack={onNavigateBack}
-            onMouseOver={() => {
-              closeSubmenu()
-            }}
+            onHover={closeOnHover}
           />
         )
       })}
@@ -481,13 +573,16 @@ const CascadingMenu = observer(function CascadingMenu({
       anchorPosition={anchorPosition}
       style={style}
     >
-      <CascadingMenuList
-        menuItems={items}
-        closeAfterItemClick={closeAfterItemClick}
-        onMenuItemClick={onMenuItemClick}
-        onCloseRoot={onClose}
-        zIndex={style?.zIndex}
-      />
+      <CascadingMenuContext
+        value={{
+          closeAfterItemClick,
+          onMenuItemClick,
+          onCloseRoot: onClose,
+          zIndex: style?.zIndex,
+        }}
+      >
+        <CascadingMenuList menuItems={items} />
+      </CascadingMenuContext>
     </Menu>
   )
 })
