@@ -9,9 +9,9 @@ tutorial_category: Structural variation
 data: hosted
 ---
 
-**TL;DR:** Cue reads structural variants out of a picture rather than out of a
-caller's rules: every read pair becomes one pixel joining the two places its
-ends landed, sorted into a channel by how the two ends face. That picture is a
+**TL;DR:** Cue turns an alignment into a picture and reads structural variants
+off it: every read pair becomes one pixel joining the two places its ends
+landed, sorted into a channel by how the two ends face. That picture is a
 contact matrix, so `juicer_tools` and the Hi-C track put it in a genome browser
 beside the reads it was computed from.
 
@@ -178,17 +178,12 @@ than toward each other. What the discordant channel does carry here is a scatter
 hugging the diagonal, pairs a kilobase or two longer than the modal insert,
 which is the tail of an ordinary library rather than a junction.
 
-That is the data rather than the pipeline, and it is worth knowing which. The
-call was made on depth, the reads are in the demo, and no pair in them joins
-these two breakpoints. A duplication placed somewhere else in the genome, or one
-whose junction sits inside a repeat long enough to swallow a fragment, produces
-exactly this: a real copy-number change with no junction evidence. The channels
-report what is there.
-
-Every other window in this demo runs the same pair channels, and the inversion
-window shows what one of them looks like when the junction is there, so the
-absence here is a measurement rather than a track that failed to load. That is
-the thing a single-channel picture cannot tell you.
+The call was made on depth, the reads are in the demo, and no pair in them joins
+these two breakpoints. A duplication that landed somewhere else in the genome,
+or one whose junction sits inside a repeat long enough to swallow a fragment,
+leaves the same trace: a copy-number change with no junction under it. The
+inversion window a section ago is the same two pair channels with a junction in
+them.
 
 <Figure src="/img/sv_contact_maps/depth_channel.png" caption="The depth channel alone over the same duplication, framed with flat sequence on both sides. Two bright arms meet over the call, and the wedge directly under it stays pale. The coverage lane below rises between the same two coordinates." links="Open this view=sv_contact_maps/depth_channel" />
 
