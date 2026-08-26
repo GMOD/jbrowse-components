@@ -16,6 +16,7 @@
  */
 import {
   anchorOf,
+  citableTargets,
   citationText,
   repoPathRefs,
   sectionCites,
@@ -225,6 +226,40 @@ describe('sectionCites', () => {
     ).toEqual([
       { ref: DOC, title: 'a' },
       { ref: `../reference/OTHER${MD}`, title: 'b' },
+    ])
+  })
+})
+
+/**
+ * What a citation is allowed to name. The skip here is the widest of the lot: a
+ * doc whose sub-points are bolded leads rather than headings offered the checker
+ * nothing to match, so every citation into it passed by failing to resolve
+ * against a target set that could not contain it.
+ */
+describe('citableTargets', () => {
+  test('takes headings at every level, without their trailing hashes', () => {
+    expect(citableTargets('# One\n### Two ###\ntext')).toEqual(['one', 'two'])
+  })
+
+  test('takes a bolded lead, and the prose that follows it is not the name', () => {
+    expect(
+      citableTargets('**Too few rounds.** At 3 rounds a run measured'),
+    ).toEqual(['too few rounds.'])
+  })
+
+  test('takes a bolded lead opening a list item, which is how entries are written', () => {
+    expect(
+      citableTargets('- **Give an element an `extendsType`**, so a'),
+    ).toEqual(['give an element an extendstype'])
+  })
+
+  test('ignores bold in the middle of a sentence', () => {
+    expect(citableTargets('the rule is **load-bearing** here')).toEqual([])
+  })
+
+  test('normalizes away emphasis, backticks, quotes and case', () => {
+    expect(citableTargets('## The `Foo` *bar*, and "baz"')).toEqual([
+      'the foo bar, and baz',
     ])
   })
 })

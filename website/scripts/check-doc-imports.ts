@@ -57,7 +57,9 @@ import { isFile, reportProblems, walkFiles } from './check-utils.ts'
 import { CODE_FENCE_LANGS, FENCE } from './docFenceRegions.ts'
 import {
   anchorOf,
+  citableTargets,
   citationText,
+  normalizeHeading,
   repoPathRefs,
   sectionCites,
 } from './docReferenceMatching.ts'
@@ -863,37 +865,15 @@ function scanSymbols(path: string, lines: string[]): Problem[] {
 //
 // Numbers in a heading are the common way this happens, which is why the
 // convention is now to keep a count out of any heading a citation can name.
-// A citation may quote a stable prefix of a longer heading (`§"Synteny +
-// dotplot"` for "Synteny + dotplot: window-relative Float32 cumulative-bp"), so
-// prefix — not equality — is the test. Case, backticks and `*` emphasis are all
-// noise: a citation reasonably drops them, as the one naming "The same disease
-// rots the docs" does for a heading that italicizes *docs*. Underscores are
-// left alone — they appear in identifiers, not as emphasis, in these headings.
-//
-// Quote marks go with them, and that one is structural rather than a courtesy:
-// a citation is delimited by double quotes, so a heading containing one cannot
-// be quoted literally at all. Every citation of HISTORICAL.md's `Each display
-// asserted its own "did we paint?"` respells it with single quotes, which is
-// the only spelling available and was not a match.
-function normalizeHeading(s: string) {
-  return s
-    .toLowerCase()
-    .replaceAll(/[`*"'‘’“”]/g, '')
-    .replaceAll(/\s+/g, ' ')
-    .trim()
-}
-
+// What counts as a citable target, and how loosely it is matched, is
+// `citableTargets` / `normalizeHeading` in docReferenceMatching.ts.
 const headingTextCache = new Map<string, string[] | undefined>()
 
 function headingTexts(absPath: string) {
   if (!headingTextCache.has(absPath)) {
     let texts: string[] | undefined
     try {
-      texts = readFileSync(absPath, 'utf8')
-        .split('\n')
-        .map(l => /^#{1,6}\s+(.*?)\s*#*\s*$/.exec(l)?.[1])
-        .filter(t => t !== undefined)
-        .map(normalizeHeading)
+      texts = citableTargets(readFileSync(absPath, 'utf8'))
     } catch {
       texts = undefined // unreadable / missing — reported by the caller
     }

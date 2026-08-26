@@ -156,3 +156,52 @@ export function sectionCites(text: string) {
   }
   return cites
 }
+
+/**
+ * How loosely a cited title is matched against the text it names.
+ *
+ * Case, backticks and `*` emphasis are noise a citation reasonably drops, as the
+ * one naming "The same disease rots the docs" does for a heading that
+ * italicizes *docs*. Underscores are left alone — in these docs they appear in
+ * identifiers, not as emphasis.
+ *
+ * Quote marks go with them, and that one is structural rather than a courtesy: a
+ * citation is delimited by double quotes, so a target containing one cannot be
+ * quoted literally at all, and every citation of the one about a display
+ * asserting its own did-we-paint respells it with single quotes.
+ */
+export function normalizeHeading(s: string) {
+  return s
+    .toLowerCase()
+    .replaceAll(/[`*"'‘’“”]/g, '')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+}
+
+// A `#` heading, and a bolded lead-in opening a paragraph or a list item.
+//
+// The lead runs to its closing `**` and the rest of the line is the paragraph it
+// opens, so only the heading half is anchored at the end.
+const HEADING = /^#{1,6}\s+(.*?)\s*#*\s*$/
+const BOLD_LEAD = /^\s*(?:[-*+]\s+)?\*\*(.+?)\*\*/
+
+/**
+ * Every piece of a doc a citation may name, normalized.
+ *
+ * Headings alone counted, and that put the citations most worth checking out of
+ * reach of the check: REJECTED_IDEAS.md holds 155 entries and not one heading
+ * among them, so the two dozen source comments saying "this was declined, here
+ * is where" named text the checker could never find — and the same went for
+ * every doc marking a sub-point with a bolded lead rather than a fourth-level
+ * heading. Seven live citations resolved the moment the lead-ins joined.
+ *
+ * Matching is by PREFIX at the call site, so a citation may quote a stable
+ * opening of a longer target and drop a trailing period.
+ */
+export function citableTargets(text: string) {
+  return text
+    .split('\n')
+    .map(l => HEADING.exec(l)?.[1] ?? BOLD_LEAD.exec(l)?.[1])
+    .filter(t => t !== undefined)
+    .map(normalizeHeading)
+}
