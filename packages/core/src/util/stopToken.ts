@@ -100,10 +100,17 @@ export function isStopToken(value: unknown): value is StopToken {
 //   as long as it existed (`withProgress`'s kickoff `report(0)` throwing past
 //   `endPhase()` on an already-stopped token, a9e5daba8f). A test suite that
 //   cannot reach the deployment path by default is the wrong way round.
-// - **Electron.** `nodeIntegration: true` puts Node's globals on the renderer,
-//   so jbrowse-desktop constructed one too, off a `file://` page that no
-//   definition of cross-origin isolation covers. Whether that was true was not
-//   knowable from the tree, and this makes it not need to be.
+// - **Electron.** Measured, because the guess went the other way: with
+//   `nodeIntegration: true` and `contextIsolation: false` it looks as though
+//   Node's `SharedArrayBuffer` would reach the renderer off a `file://` page.
+//   It does not — Blink removes the binding and Node integration does not put
+//   it back. On Electron 44, packaged (`file://`) and dev (`http://localhost`),
+//   renderer and worker alike, `typeof SharedArrayBuffer` is `'undefined'` and
+//   `crossOriginIsolated` is false. So jbrowse-desktop was already on the
+//   string path and this changes nothing for it.
+//
+// Which leaves jest as the only realm this moves, and no shipped configuration
+// on the SAB branch at all unless a host isolates itself.
 //
 // What this does NOT change is the one configuration the branch is kept for:
 // an embedding host that sets COOP/COEP is cross-origin isolated, reports so
