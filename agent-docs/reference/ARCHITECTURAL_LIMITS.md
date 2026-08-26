@@ -1282,15 +1282,21 @@ only on a real violation):
   reports which observables it touched, and compare against what `inputs`
   reads — a set that now has a name to compare against.
 
-- **The comparative family's `reload()` is unchecked.** The retry contract check
-  covers the per-region and global foundations; `installComparativeFetchAutorun`
-  installs `assertDisplayContract` but not `makeRetryContractCheck`, and dotplot
-  and synteny both render a banner whose Retry calls the same `reload()`. The
-  blocker is that its gate is `prepare()` returning `undefined`, which conflates
-  "nothing to fetch" with "not ready yet" — the exemption half already exists as
-  `SyntenyFetchStateMixin.fetchInert`. See
-  [DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract" for what each display
-  bails on.
+- **The comparative family's `reload()` gate conflates two declines.**
+  `installComparativeFetchAutorun` passes a `contract`, so it gets BOTH dev-only
+  checks — `installFetch` installs `assertDisplayContract` and
+  `makeRetryContractCheck` together whenever one is named. (This entry used to
+  say the retry check was missing; it never was.) What survives is the gate the
+  check watches: it is `prepare()` returning `undefined`, which conflates
+  "nothing to fetch" with "not ready yet", so a Retry clicked before either view
+  initializes reads as a decline. The exemption half already exists as
+  `SyntenyFetchStateMixin.fetchInert`, and the seam for the other half exists
+  too — `installFetch`'s separate `dataCurrent` option, written for exactly this
+  split ("`prepare` returning `undefined` is *nothing to fetch* ... this is *I
+  have exactly this already*"), which `installComparativeFetchAutorun` does not
+  forward. The multi-way display's two lane fetches are the in-tree precedent
+  for using it. See [DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract"
+  for what each display bails on.
 
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
   `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —

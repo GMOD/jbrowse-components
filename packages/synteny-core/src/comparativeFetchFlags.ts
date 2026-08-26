@@ -40,7 +40,11 @@ export interface ComparativeFetchFlags {
  * [ADR-054](../../../agent-docs/architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md)
  * §4 left them display-local on the grounds that `loading` genuinely differed —
  * synteny subtracted `fetchInert` and the dotplot had no inert state to
- * subtract. The dotplot has one now, so the last term that differed doesn't,
+ * subtract. What closed that is the HOOK, not the state: `fetchInert` reached
+ * `SyntenyFetchStateMixin` with a default of `false`, so both displays spell one
+ * expression while the dotplot's inert term stays constant (it declares no
+ * override, and the mixin's own comment says "Dotplot leaves it"). With the
+ * term spellable in both, the six getters were character-identical in pairs,
  * and a plain function is the shape that ADR prescribes for shared policy at
  * this level.
  *

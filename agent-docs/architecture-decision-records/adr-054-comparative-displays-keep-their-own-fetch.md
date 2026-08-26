@@ -110,9 +110,12 @@ this same pair on this same bar.
 
 **2026-08-23: the three are one function now, and that is this section's own
 conclusion rather than a departure from it.** The reason they stayed local was
-that `loading` differed — "dotplot has no inert state" — and it has one:
-`fetchInert` reached `SyntenyFetchStateMixin` for `displaysSettled`, and the
-dotplot's `loading` subtracts it exactly as synteny's does. With the last
+that `loading` differed — "dotplot has no inert state" — and the term became
+spellable in both: `fetchInert` reached `SyntenyFetchStateMixin` for
+`displaysSettled` with a default of `false`, so the dotplot's `loading`
+subtracts it exactly as synteny's does. The dotplot did not gain an inert
+*state* and still has none — it declares no override, which is why the
+subtraction is a no-op there rather than a behavior change. With the last
 differing term gone the six getters were character-identical in pairs, which is
 duplication with nothing left to parameterize, and the two comments describing
 `loading` had already drifted over whether the `fetchInert` subtraction was
