@@ -31,7 +31,7 @@ interface FiltersModel {
 // between them (they're edited together and their no-op value is the non-zero
 // default, hence the compare against it rather than against 0), plus one per tag
 // filter, one for a read name and one per read category in effect.
-export function activeFilterCount(filterBy: FilterBy) {
+function activeFilterCount(filterBy: FilterBy) {
   const { flagInclude, flagExclude, readName, tagFilters } = filterBy
   return (
     (flagInclude === defaultFilterFlags.flagInclude &&
