@@ -1587,6 +1587,34 @@ Keeping them apart is what lets a display say "the data is fine, it just isn't
 here" without inventing a key value for absence — a key that changed when data
 arrived would be the `rpcProps()` loop in different clothes.
 
+**`isCacheValid` is also a term of `dataCurrent`, which is the export gate and
+not the scrim.** Spatial coverage answers "is the data here", never "is it what
+a fetch now would bring back", so a zoom moving `regionFetchKey` leaves every
+held region covered and stale at once — and an export sampling `svgReady` across
+the 600ms `FetchVisibleRegions` debounce plus the RPC painted wiggle's bins, the
+variant matrix's columns and canvas's amino-acid wall as the previous zoom
+computed them. Reusing the cache predicate rather than minting a second stamp
+compare carries `regionHasData` along with it, so MAF's summary/detail tier flip
+inside a loaded region closes the export gate too, until the other tier's fetch
+lands.
+
+**The `isCacheValid` conjunct does not reach `displayPhase`, deliberately.**
+`MultiRegionDisplayMixin` hands `foundationDisplayPhase` a
+`viewportWithinLoadedData` thunk and reads `dataCurrent` nowhere, so the loading
+scrim still stays down through a zoom inside the buffer. Folding staleness into
+the phase is a different fold and still rejected —
+[reference/REJECTED_IDEAS.md](reference/REJECTED_IDEAS.md) §"Folding content
+staleness into `displayPhase`".
+
+**That conjunct cannot latch, and the reason is structural rather than a case
+list.** `planRegionFetch` refetches a block on
+`!(isBlockCovered && isCacheValid)`, reading `isCacheValid` tracked on every
+block it does not already owe a fetch for. So the key move that closes the
+export gate is the same read, in the same dependency set, that wakes the refetch
+reopening it. The `&&` short-circuits in front of it — a blocked byte gate, an
+uncovered block — drop `isCacheValid`'s observables only where the block reaches
+`fetchNeeded` regardless.
+
 **Four declarations key on zoom:**
 
 - **Wiggle**: BigWig has discrete zoom levels; the worker picks one from
@@ -1653,29 +1681,32 @@ looks most like a key:
 
 **A third hook sits beside those two and is not a cache question at all:
 `dataSuperseded`** (default false). The cache hooks decide whether a region is
-refetched. This one decides whether what is held is still what is on screen,
-which is an export-readiness question: it is the third term of `dataCurrent`
-(`viewportWithinLoadedData`, a non-empty `loadedRegions`, and not superseded),
-and `dataCurrent` is the freshness half of `foundationSvgReady`.
+refetched. This one decides whether a settled fetch-input change is about to
+invalidate what is held, which is an export-readiness question: it is the fourth
+term of `dataCurrent`, beside spatial coverage, a non-empty `loadedRegions` and
+`isCacheValid` per block, and `dataCurrent` is the freshness half of
+`foundationSvgReady`.
 
-The window it covers is invisible on screen, since the clear lands a tick later
-and the loading scrim covers it, which is exactly why it needs stating.
-`awaitSvgReady` samples freshness once, so an export sampling it inside that
-window renders the data that is about to be discarded, or nothing at all once
-the clear lands mid-render.
+The window `dataSuperseded` covers is invisible on screen, since the clear lands
+a tick later and the loading scrim covers it, which is exactly why it needs
+stating. `awaitSvgReady` samples freshness once, so an export sampling it inside
+that window renders the data that is about to be discarded, or nothing at all
+once the clear lands mid-render.
 
 Both overrides in tree are a display invalidating its own load rather than the
 viewport moving off it:
 
 - **GWAS Manhattan**: adopting the top hit as the LD index SNP is an `rpcProps`
   write, so the load that produced the top hit is the load it invalidates.
-- **Alignments**: the per-base bin, where the window is the debounce *plus* the
-  RPC. The mixin's hook says "a fetch input this display has already settled on
-  has moved past it", and this override widens that on purpose to cover the
-  debounce window too, where the settled bin has not moved yet, the clear is
-  inevitable but not yet committed, and the wall on screen is already several octaves
-  coarser than the zoom it is drawn at. That is the half an export lands in,
-  since a reader zooms and then reaches for the menu.
+- **Alignments**: the per-base bin, as one value compare —
+  `perBaseBinBp !== livePerBaseBinBp`. Once the settled bin moves, the stamp
+  stops matching `regionFetchKey` and the foundation's `isCacheValid` term
+  covers it; this display carried that compare privately until the foundation
+  took it. What no key can state is the 500ms `coarseBpPerPx` debounce ahead of
+  it, where the settled bin has not moved yet, the clear is inevitable but not
+  yet committed, and the wall on screen is already several octaves coarser than
+  the zoom it is drawn at. That is the half an export lands in, since a reader
+  zooms and then reaches for the menu.
 
 **It fails hung, not stale**, the same trade `viewSignature` makes: a
 supersession that latches true never lets `dataCurrent` go true again, and every
@@ -1795,11 +1826,13 @@ and 12 lines — and both have since been given the sections they wanted.
   zoom-staleness](#per-region-zoom-staleness), and [the hook
   table](#the-hooks-and-who-is-sitting-on-a-default) for what every other
   unoverridden hook leaves you with.
-- Don't restate `regionFetchKey`'s string vocabulary in a second derivation. A
-  supersession compare states the live-vs-settled half as a **value** compare
-  and leaves the stamps to the key; a second spelling reads `"16|fine"` against
-  a live `"16"` the day the key grows an axis, latches true, and every export of
-  that display waits out `awaitSvgReady`'s backstop instead of failing.
+- Don't restate `regionFetchKey`'s string vocabulary in a second derivation. The
+  foundation compares the stamp against the key already, as `dataCurrent`'s
+  `isCacheValid` term, so a supersession compare states only the live-vs-settled
+  half and states it as a **value** compare; a second spelling reads `"16|fine"`
+  against a live `"16"` the day the key grows an axis, latches true, and every
+  export of that display waits out `awaitSvgReady`'s backstop instead of
+  failing.
   `LinearAlignmentsDisplay`'s `dataSuperseded` is the worked example. See
   [per-region zoom-staleness](#per-region-zoom-staleness).
 

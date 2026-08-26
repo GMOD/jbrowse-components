@@ -2927,36 +2927,27 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `MultiRegionDisplayMixin`'s supersession hook: a region on screen was
-         * fetched under a per-base bin the settled zoom has already moved past,
-         * so `isCacheValid` is about to refetch it.
+         * `MultiRegionDisplayMixin`'s supersession hook: the settled per-base bin
+         * has not moved yet, but the live zoom has already left it, so the clear
+         * is inevitable and not yet committed.
          *
-         * `viewportWithinLoadedData` is spatial only, and a zoom INWARD stays
-         * inside the region it holds — so without this the doomed coarse data
-         * reads as current for the debounce-plus-RPC window, and an SVG export
-         * that samples `svgReady` inside it renders a wall sampled for a zoom
-         * four times coarser than the one it is drawn at.
+         * **Only the debounce half is here.** Once the settled bin moves, the
+         * stamp a region was fetched under stops matching `regionFetchKey` and
+         * the foundation's own `isCacheValid` term in `dataCurrent` covers it —
+         * this display carried that compare privately until the foundation took
+         * it. What no key can state is the window before the debounce catches
+         * up: the stamp IS the settled bin, so the two agree by construction
+         * while the wall on screen is already several octaves coarser than the
+         * zoom it is drawn at. That is the half an export lands in, since a
+         * reader zooms and then reaches for the menu.
          *
-         * Two terms for the two halves of that window. The stamp-vs-key term is
-         * the RPC half, stated in the key's own vocabulary so a future key axis
-         * stays covered by it. The debounce half cannot be stated that way at
-         * all — the stamp IS the settled bin, so the two agree by construction
-         * until the debounce catches up — so it is a value compare of the
-         * settled bin against the live one. Restating the key's string format
-         * on the live side instead would latch this true the day the key grows
-         * a second axis, and a latched supersession is an export that hangs to
-         * `awaitSvgReady`'s timeout rather than one that fails.
+         * A value compare, never a second spelling of the key. Restating the
+         * key's string format on the live side would latch this true the day the
+         * key grows a second axis, and a latched supersession is an export that
+         * hangs to `awaitSvgReady`'s timeout rather than one that fails.
          */
         get dataSuperseded(): boolean {
-          return (
-            self.perBaseBinBp !== self.livePerBaseBinBp ||
-            self.view.visibleRegions.some(block => {
-              const loaded = self.loadedRegions.get(block.displayedRegionIndex)
-              return (
-                loaded !== undefined && loaded.fetchKey !== self.regionFetchKey
-              )
-            })
-          )
+          return self.perBaseBinBp !== self.livePerBaseBinBp
         },
       }))
       .views(self => ({

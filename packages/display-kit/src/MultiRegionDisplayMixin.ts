@@ -125,8 +125,13 @@ export default function MultiRegionDisplayMixin() {
          * true when every visible block lies within an already-fetched region —
          * i.e. the viewport shows data we actually loaded, not the stale fringe
          * left after a zoom-out/pan. Drives the loading overlay through the
-         * pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact
-         * and for the resolution-staleness gap.
+         * pre-refetch debounce.
+         *
+         * **Spatial only, and it stays that way.** Whether the data held for a
+         * block is still what a fetch would bring back is `isCacheValid`, which
+         * `dataCurrent` conjoins for the export gate. The scrim reads this
+         * getter alone: a phase that went `loading` on a moved `regionFetchKey`
+         * would raise the overlay into every zoom.
          */
         get viewportWithinLoadedData() {
           const view = this.host
@@ -255,11 +260,14 @@ export default function MultiRegionDisplayMixin() {
          * reader zooms and then reaches for the menu. What may NOT go in is a
          * change that could still be taken back: this fails hung, not stale.
          *
-         * So state the live-vs-settled half as a **value** compare and leave
-         * key strings to `regionFetchKey`. A second derivation of the key's
-         * vocabulary reads `"16|fine"` against a live `"16"` the day the key
-         * grows an axis, latches this true, and every export of the display
-         * then waits out `awaitSvgReady`'s backstop instead of failing.
+         * So state the live-vs-settled half as a **value** compare and leave key
+         * strings alone. The settled half — the stamp a fetch committed under
+         * against the key a fetch now would use — is the foundation's already,
+         * through the `isCacheValid` term in `dataCurrent`, and an override
+         * restating it buys nothing: a second derivation of the key's vocabulary
+         * reads `"16|fine"` against a live `"16"` the day the key grows an axis,
+         * latches this true, and every export of the display then waits out
+         * `awaitSvgReady`'s backstop instead of failing.
          */
         get dataSuperseded(): boolean {
           return false
@@ -278,6 +286,36 @@ export default function MultiRegionDisplayMixin() {
           return buildRenderBlocks(this.host.visibleRegions)
         },
       }))
+      // A pure read of view/display state, read from the `FetchVisibleRegions`
+      // autorun. It is a **view, not an action**, deliberately: MobX runs an
+      // action inside `untracked`, so as an action its `view.bpPerPx` read
+      // registered no dependency and the caller silently kept a stale answer.
+      // That worked only by accident — the autorun happened to read
+      // `view.visibleRegions`, which moves in lockstep — which made "don't let
+      // this be your only dependency" an unwritten precondition on every
+      // override. `regionFetchKey` and `regionHasData` are views for the same
+      // reason.
+      .views(self => ({
+        /**
+         * #method
+         * Whether the data held for a region still answers the current view.
+         * Not a hook a display fills: a display states its rule as
+         * `regionFetchKey` (what a fetch now would produce) and `regionHasData`
+         * (did the last one store anything), and this compares the key against
+         * the one the region was fetched under. A subclass that changes what it
+         * fetches spells the change in the key, and one that forgets gets a
+         * redundant fetch rather than a cached answer for a zoom the data was
+         * never fetched at.
+         *
+         */
+        isCacheValid(displayedRegionIndex: number): boolean {
+          return (
+            self.regionHasData(displayedRegionIndex) &&
+            self.loadedRegions.get(displayedRegionIndex)?.fetchKey ===
+              self.regionFetchKey
+          )
+        },
+      }))
       // `dataCurrent` and `svgReady` sit in their own blocks, after everything
       // they read, so each reads its siblings off `self` rather than `this`.
       // Same shape as `GlobalFetchMixin`, and for the reason in CLAUDE.md ("a
@@ -290,23 +328,38 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * This family's answer to the shared freshness question every display
          * foundation must answer (`dataCurrent`): the held data corresponds to
-         * what is on screen right now. Here that is spatial — every visible block
-         * lies within a fetched region — plus `loadedRegions.size`, which rules
-         * out the vacuously-true empty viewport. Regions stream in one at a time,
-         * so this (not "the first datum arrived") is what keeps a
-         * multi-region/whole-genome export complete.
+         * what is on screen right now. Four terms — spatial coverage of every
+         * visible block, `loadedRegions.size` to rule out the vacuously-true
+         * empty viewport, `isCacheValid` per block, and the display's own
+         * `dataSuperseded`. Regions stream in one at a time, so this (not "the
+         * first datum arrived") is what keeps a multi-region/whole-genome export
+         * complete.
          *
-         * Distinct from `viewportWithinLoadedData`, which is the raw coverage
-         * predicate the fetch autorun and the loading overlay use.
+         * **`isCacheValid` belongs here and not in the scrim.** Coverage answers
+         * "is the data here", never "is it what a fetch now would bring back", so
+         * a zoom that moves `regionFetchKey` leaves every held region covered and
+         * stale at once — and an export sampling `svgReady` across that window
+         * painted bins the worker computed for the previous zoom. `displayPhase`
+         * still reads `viewportWithinLoadedData` alone: folding staleness into
+         * the phase raises the loading scrim into every zoom, which is the trade
+         * REJECTED_IDEAS.md "Folding content staleness into `displayPhase`"
+         * turned down and this does not take.
          *
-         * `dataSuperseded` is the third term: data that a settled fetch-input
-         * change is about to invalidate answers nothing about what is on screen
-         * a tick from now, so it is not current either.
+         * The term cannot latch, and the reason is structural rather than a case
+         * list: a block reaches `fetchNeeded` unless `planRegionFetch` finds it
+         * ungated, covered AND cache-valid, and it reads that last term tracked.
+         * The `&&` short-circuits ahead of it drop its observables only where the
+         * block is fetched anyway, so the key move that closes this gate is the
+         * same read, in the same dependency set, that wakes the refetch reopening
+         * it.
          */
         get dataCurrent(): boolean {
           return (
             self.viewportWithinLoadedData &&
             self.loadedRegions.size > 0 &&
+            self.host.visibleRegions.every(block =>
+              self.isCacheValid(block.displayedRegionIndex),
+            ) &&
             !self.dataSuperseded
           )
         },
@@ -474,36 +527,6 @@ export default function MultiRegionDisplayMixin() {
          */
         fetchNeeded(_needed: IndexedRegion[]) {
           // no-op base
-        },
-      }))
-      // A pure read of view/display state, read from the `FetchVisibleRegions`
-      // autorun. It is a **view, not an action**, deliberately: MobX runs an
-      // action inside `untracked`, so as an action its `view.bpPerPx` read
-      // registered no dependency and the caller silently kept a stale answer.
-      // That worked only by accident — the autorun happened to read
-      // `view.visibleRegions`, which moves in lockstep — which made "don't let
-      // this be your only dependency" an unwritten precondition on every
-      // override. `regionFetchKey` and `regionHasData` are views for the same
-      // reason.
-      .views(self => ({
-        /**
-         * #method
-         * Whether the data held for a region still answers the current view.
-         * Not a hook a display fills: a display states its rule as
-         * `regionFetchKey` (what a fetch now would produce) and `regionHasData`
-         * (did the last one store anything), and this compares the key against
-         * the one the region was fetched under. A subclass that changes what it
-         * fetches spells the change in the key, and one that forgets gets a
-         * redundant fetch rather than a cached answer for a zoom the data was
-         * never fetched at.
-         *
-         */
-        isCacheValid(displayedRegionIndex: number): boolean {
-          return (
-            self.regionHasData(displayedRegionIndex) &&
-            self.loadedRegions.get(displayedRegionIndex)?.fetchKey ===
-              self.regionFetchKey
-          )
         },
       }))
       .actions(self => {

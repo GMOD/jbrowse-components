@@ -397,6 +397,16 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   **Reopen only** with a scrim that can distinguish "stale but showing data"
   from "nothing to show".
 
+  **The EXPORT-gate fold was taken 2026-08-26, and it is not the fold this entry
+  rejects.** `MultiRegionDisplayMixin` conjoined `isCacheValid` into
+  `dataCurrent`, whose only consumer on this family is `foundationSvgReady`, so
+  an SVG export of a keyed display stops painting the previous zoom's data
+  across the debounce plus the RPC. `displayPhase` still reads
+  `viewportWithinLoadedData` alone — no scrim moved, and
+  `zoomInvalidation.test.ts` and `displayPhaseWiring.test.ts` pin what they
+  always pinned. Read the new conjunct as this entry being reopened and you will
+  delete a fix; the entry stands for the phase.
+
 
 ## Config and MST
 

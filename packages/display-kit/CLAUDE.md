@@ -121,25 +121,40 @@ supplies only `viewportWithinLoadedData`; `computeLoadingTerm` reads every other
 term off the model. Routing it through a display-local getter means
 re-remembering the cancel term — one edit from the dead-Retry bug.
 
-## A fetch input derived from the fetched data needs `dataSuperseded`
+## `dataSuperseded` covers what `regionFetchKey` cannot state
 
-This family answers `dataCurrent` with SPATIAL coverage, so it cannot see a
-settings-driven invalidation coming. The signature-compare families
-(`GlobalFetchMixin`, synteny, dotplot, arc) can: any fetch input is in the
-signature, so writing one makes `dataCurrent` false in the same tick.
+This family answers `dataCurrent` with spatial coverage AND `isCacheValid` per
+visible block, so the foundation owns one staleness compare for every display:
+the key a region was fetched under against the key a fetch now would use. The
+signature-compare families (`GlobalFetchMixin`, synteny, dotplot, arc) get that
+answer from the signature, where every fetch input is a term.
 
-That gap only bites when a fetch input is written from the data it fetched.
-GWAS's LD auto-index is the case in the tree: the autorun adopts the loaded top
-hit as `indexSnp`, which is in `rpcProps`, so the load that produced the value
-is the load the write clears. `dataCurrent` still said "current" for the doomed
-data, `awaitSvgReady` samples once, and the export painted the emptied map — a
-Manhattan lane with the LD legend and no points, exit 0.
+`dataSuperseded` (default `false`) is the remainder — staleness a key is
+structurally blind to. Two shapes in the tree, and both are invisible on screen,
+which is exactly why they need stating.
 
-So a display that derives a fetch input from its own data fills `dataSuperseded`
-(default `false`) with the condition its autorun writes under. Gate it on the
-WRITE, not on whether the feature is visibly doing anything: `colorBy: 'ld'`
-with no `ldAdapter` draws no colours but still writes the index, and gating on
-the visible half left exactly the same empty export behind.
+**A fetch input written from the data it fetched.** GWAS's LD auto-index is the
+case: the autorun adopts the loaded top hit as `indexSnp`, which is in
+`rpcProps`, so the load that produced the value is the load the write clears.
+The key cannot see it coming, nothing having moved yet, so `dataCurrent` said
+"current" for the doomed data, `awaitSvgReady` samples once, and the export
+painted the emptied map — a Manhattan lane with the LD legend and no points,
+exit 0. Fill the hook with the condition the autorun writes under, and gate it
+on the WRITE, not on whether the feature is visibly doing anything:
+`colorBy: 'ld'` with no `ldAdapter` draws no colours but still writes the index,
+and gating on the visible half left exactly the same empty export behind.
+
+**A live window ahead of a debounced key.** Alignments' `perBaseBinBp` reads
+`subPixelBinBp` off the 500ms-debounced `coarseBpPerPx`, and the stamp beside a
+loaded region IS that settled bin — so stamp and key agree by construction for
+the whole debounce, while the wall on screen is already several octaves coarser
+than the zoom it is drawn at. The hook is `perBaseBinBp !== livePerBaseBinBp`.
+
+**A value compare, never a second spelling of the key.** The foundation runs the
+stamp-vs-key compare already, so an override restating it buys nothing: a second
+derivation of the key's vocabulary reads `"16|fine"` against a live `"16"` the
+day the key grows an axis, latches `dataSuperseded` true, and every export of
+that display waits out `awaitSvgReady`'s backstop instead of failing.
 
 ## Fetching
 
