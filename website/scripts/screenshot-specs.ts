@@ -7,6 +7,7 @@ export type {
   CommonSpecFields,
   ComposeSpec,
   EmbeddedSpec,
+  RExportSpec,
   ScreenshotAction,
   ScreenshotSpec,
   ScreenshotStage,
@@ -46,6 +47,7 @@ import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { qcSpecs } from './specs/qc.ts'
 import { qtlSpecs } from './specs/qtl.ts'
+import { rexportSpecs } from './specs/rexport.ts'
 import { scatacSpecs } from './specs/scatac.ts'
 import { scrnaSpecs } from './specs/scrna.ts'
 import { svSpecs } from './specs/sv.ts'
@@ -94,6 +96,7 @@ export const specs: ScreenshotSpec[] = [
   ...embeddedSpecs,
   ...jbrowseImgSpecs,
   ...jbrowseImgComposedSpecs,
+  ...rexportSpecs,
 ]
 
 // jbrowse.org hosts the same test_data/ configs (and the cgiab/hpylori demos)

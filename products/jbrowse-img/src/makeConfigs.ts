@@ -112,6 +112,16 @@ const fileTypes: Record<string, FileType> = {
       index: makeTabixIndex(file, index),
     }),
   },
+  // A plain, unindexed GFF3. Read whole and filtered in memory, so it is for the
+  // small annotation files that come without a tabix index (a virus genome, a
+  // plasmid) — `--gffgz` is what a chromosome-scale file wants.
+  gff: {
+    trackType: 'FeatureTrack',
+    adapter: file => ({
+      type: 'Gff3Adapter',
+      gffLocation: makeLocation(file),
+    }),
+  },
   hic: {
     trackType: 'HicTrack',
     adapter: file => ({ type: 'HicAdapter', hicLocation: makeLocation(file) }),
@@ -295,6 +305,18 @@ export function makeChromSizesAssembly(
 // explicit name), matching the shorthand. An array of subadapter objects (each a
 // BigWigAdapter config carrying its own name/color/group) passes through as
 // `subadapters`, so a curated multi-sample track keeps its per-row metadata.
+// What to call a `--multiwig` track that wasn't given a `name:`. A `.json`
+// sources file names itself, like any other track flag. A comma-separated list
+// is the case with no filename to use: `path.basename` of the whole argument is
+// the basename of the LAST entry, so a four-BigWig track came out called
+// `v4.cram.bw` — a name that is not merely unhelpful but wrong about which files
+// it holds, and one two lists ending in the same filename would share. Say what
+// the track IS instead; `uniqueTrackId` numbers repeats, and `name:` is there
+// for anyone who wants the panel labelled.
+function multiWiggleLabel(file: string) {
+  return file.includes(',') ? 'multiwig' : path.basename(file)
+}
+
 export function makeMultiWiggleTrackConfig(
   sources: unknown[],
   file: string,
@@ -310,8 +332,8 @@ export function makeMultiWiggleTrackConfig(
     : sources
   return {
     type: 'MultiQuantitativeTrack',
-    trackId: path.basename(file),
-    name: name ?? path.basename(file),
+    trackId: multiWiggleLabel(file),
+    name: name ?? multiWiggleLabel(file),
     assemblyNames: [assembly.name],
     adapter: {
       type: 'MultiWiggleAdapter',

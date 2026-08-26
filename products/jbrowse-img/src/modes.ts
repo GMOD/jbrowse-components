@@ -16,8 +16,7 @@ export interface ModeDescriptor {
   // The CLI subcommand token a user types to select this mode. `linear` uses
   // `lgv` (LinearGenomeView) rather than its internal mode name.
   subcommand: string
-  // MST view type, also the session-spec `type` discriminator. Absent for
-  // linear, which is never selected via --spec.
+  // MST view type, also the session-spec `type` discriminator.
   viewType?: string
   // Renders two or more assemblies: accepts --fasta2/--loc2, the comparison
   // track types, and the second-assembly help section.
@@ -25,7 +24,16 @@ export interface ModeDescriptor {
 }
 
 export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
-  linear: { subcommand: 'lgv', comparative: false },
+  // The LGV takes a --spec too. Its session-spec view object is already the
+  // shape of the LGV's own `init` prop (assembly / loc / tracks / highlight, see
+  // LinearGenomeView InitState), so a `&session=spec-` copied out of a jbrowse
+  // URL renders here unchanged — which is how the website's R-export figures
+  // reproduce the exact session their browser counterparts show.
+  linear: {
+    subcommand: 'lgv',
+    viewType: 'LinearGenomeView',
+    comparative: false,
+  },
   dotplot: {
     subcommand: 'dotplot',
     viewType: 'DotplotView',

@@ -49,6 +49,7 @@
     "autogen": "node --experimental-strip-types scripts/autogen.ts",
     "gen:shaders": "node packages/shader-tools/src/build-shaders.ts",
     "check-shader-oracle": "node packages/shader-tools/src/check-oracle.ts",
+    "gen:rhelpers": "node scripts/build-r-helpers.ts",
     "figures": "node website/scripts/figures.ts",
     "figures:pull": "node website/scripts/figures.ts pull",
     "figures:push": "node website/scripts/figures.ts push",

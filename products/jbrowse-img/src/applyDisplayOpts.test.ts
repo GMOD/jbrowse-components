@@ -23,6 +23,9 @@ function fakeView(configured: FilterBySnapshot = {}) {
   const calls: unknown[] = []
   const view = {
     centerLineInfo: undefined,
+    // The track isn't open yet, so the re-open path applyDisplayOpts takes for
+    // an already-open track (a --spec view) is a no-op — these pin filterBy.
+    tracks: [],
     showTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
       return { displays: [display] }
@@ -67,6 +70,7 @@ test('a display with no filterBy says so rather than dropping the option', () =>
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
   const view = {
     centerLineInfo: undefined,
+    tracks: [],
     showTrack: () => ({ displays: [{}] }),
   } as unknown as LinearGenomeViewModel
   applyDisplayOpts(view, 'wiggle_track', 'alignments', ['split:only'])

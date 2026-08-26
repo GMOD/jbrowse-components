@@ -25,6 +25,7 @@ import {
   collapseIntronsMenuItem,
   isGeneLikeType,
 } from './collapseIntronsMenu.ts'
+import { exportRCode } from './exportRCode.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
@@ -36,7 +37,10 @@ import type {
   LinearBasicDisplayConfigModel,
 } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 export type { Region } from '@jbrowse/core/util'
 
@@ -306,6 +310,15 @@ export default function stateModelFactory(
        */
       get colorLegend() {
         return getConf(self, 'legend') as LegendItem[]
+      },
+
+      /**
+       * #method
+       * Build the R ggplot gene-model panel for the view's "Export R script",
+       * regenerating this feature track from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment | undefined {
+        return exportRCode(self as LinearBasicDisplayModel)
       },
     }))
     .views(self => {

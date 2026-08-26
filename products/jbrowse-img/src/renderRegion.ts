@@ -9,6 +9,7 @@ import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-vie
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
 import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
 import {
+  buildRScript,
   fetchResults,
   renderToSvg as renderLinearToSvg,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -29,10 +30,12 @@ import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { initFromSpec, parseSpec, specMode } from './spec.ts'
 import { trackType } from './trackFields.ts'
+import { filterInitTracks, trackSkipper } from './unsupportedTracks.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, Opts, Track } from './types.ts'
+import type { TrackSkipper } from './unsupportedTracks.ts'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type {
   BreakpointSplitViewInitView,
@@ -150,6 +153,9 @@ interface ModeContext {
   opts: Opts
   width: number
   spec?: ViewSpec
+  // Is this a config track no bundled plugin can build? Every "open this track"
+  // path asks before opening, and asking is what reports it (unsupportedTracks.ts).
+  skipTrack: TrackSkipper
 }
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
@@ -194,6 +200,20 @@ function firstRenderError(session: RenderErrorSources): unknown {
 
 function toError(error: unknown) {
   return error instanceof Error ? error : new Error(String(error))
+}
+
+// A track whose data can't be loaded (a 404 / missing file / parse failure) has
+// its error caught by the fetch layer and stored on the display — the render
+// still returns with that track blank. The image path reaches this through
+// renderToSvg, which awaits each display's gate and throws; `--out fig.R` emits
+// no image and so has to read the displays back itself, or a broken track
+// becomes a script that silently draws nothing for it.
+function throwOnDisplayError(tracks: { displays: { error?: unknown }[] }[]) {
+  for (const { error } of tracks.flatMap(t => t.displays)) {
+    if (error) {
+      throw toError(error)
+    }
+  }
 }
 
 function throwOnRenderError(session: RenderErrorSources) {
@@ -335,11 +355,23 @@ const renderLinear: ModeRenderer = async ctx => {
   // before anything below reads the view's position — and before `--loc`, which
   // is an explicit instruction from the command line and so wins over whatever
   // the session's init navigated to.
-  const view = await readyView(
-    (session.views[0] ??
-      session.addView('LinearGenomeView', {})) as LinearGenomeViewModel,
-    ctx,
-  )
+  //
+  // A --spec wins over both, matching the comparative renderers: it describes a
+  // view to construct. Its fields ARE the LGV's `init` snapshot (assembly / loc
+  // / tracks / highlight), so `&session=spec-…` lifted out of a jbrowse URL
+  // renders unchanged — no translation, and nothing here to keep in step with
+  // InitState as it grows.
+  const view = ctx.spec
+    ? await addInitView<LinearGenomeViewModel>(
+        ctx,
+        'LinearGenomeView',
+        initFromSpec(ctx.spec),
+      )
+    : await readyView(
+        (session.views[0] ??
+          session.addView('LinearGenomeView', {})) as LinearGenomeViewModel,
+        ctx,
+      )
 
   if (loc) {
     const { name } = data.assembly
@@ -363,10 +395,10 @@ const renderLinear: ModeRenderer = async ctx => {
         !!data.aggregateTextSearchAdapters?.length,
       )
     }
-  } else if (!sessionParam && !defaultSession) {
+  } else if (!sessionParam && !defaultSession && !ctx.spec) {
     throw new Error(
       'No --loc specified (e.g. --loc chr1:1-10000 or --loc all). ' +
-        'Alternatively pass --session or --defaultSession.',
+        'Alternatively pass --session, --defaultSession or --spec.',
     )
   } else if (!view.displayedRegions.length) {
     // Without --loc the session IS the region, so a session that reaches here
@@ -412,13 +444,29 @@ const renderLinear: ModeRenderer = async ctx => {
     }),
     ...(data.openTracks ?? []),
   ]
-  for (const { trackId, opts } of toOpen) {
+  // A track this build has no plugin for is dropped here rather than at the
+  // resolve above, so `--track cpgisland_ucsc_hg38` still resolves (and a typo
+  // still gets its near-match suggestion); the skip was already announced when
+  // the config was scanned.
+  for (const { trackId, opts } of toOpen.filter(
+    t => !ctx.skipTrack(t.trackId),
+  )) {
     applyDisplayOpts(
       view,
       trackId,
       configTrackCategory(data.tracks, trackId),
       opts,
     )
+  }
+
+  // --out fig.R: the same script the browser's "Export R script" downloads, off
+  // the same fully-loaded view. Checked before renderToSvg because the two are
+  // alternative emitters for one view, not a render plus a side effect —
+  // rasterizing an SVG nobody asked for would just be slow.
+  if (opts.emitR) {
+    const script = await buildRScript(view)
+    throwOnDisplayError(view.tracks)
+    return script
   }
 
   const svg = await renderLinearToSvg(view, {
@@ -464,10 +512,15 @@ const renderSynteny: ModeRenderer = async ctx => {
 // entire render. Ask the question showTrackGeneric asks — does this track type
 // declare a display this view supports — and skip the ones it would reject, so
 // the chords still render. Warns per skipped track so the omission is visible.
-function circularTrackIds(model: Model, tracks: Track[]) {
+function circularTrackIds(model: Model, tracks: Track[], skip: TrackSkipper) {
   const { pluginManager } = getEnv(model)
+  // A track with no plugin behind it reports itself, by name and reason — don't
+  // also claim the circular view is the thing that can't draw it.
   const supported = viewDisplayNames(pluginManager, 'CircularView')
   const compatible = tracks.filter(track => {
+    if (skip(track.trackId)) {
+      return false
+    }
     const type = trackType(track)
     // includes the type this bundle doesn't register at all, which a
     // --hub/--config config can easily carry (a track type from a plugin
@@ -492,7 +545,7 @@ function circularTrackIds(model: Model, tracks: Track[]) {
 function circularInit(ctx: ModeContext): CircularViewInit {
   return {
     assembly: ctx.data.assembly.name,
-    tracks: circularTrackIds(ctx.model, ctx.data.tracks),
+    tracks: circularTrackIds(ctx.model, ctx.data.tracks, ctx.skipTrack),
   }
 }
 
@@ -571,9 +624,17 @@ const renderBreakpoint: ModeRenderer = async ctx => {
 //
 // Breakpoint is the one non-linear mode that DOES read --track: its panels are
 // ordinary LGVs and the tracks on them are the whole picture.
-function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
+export function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
   if (mode === 'linear') {
     return
+  }
+  // Not a warning like the rest: R export is the whole point of the run, and
+  // only the linear view has one. Falling back to SVG would write markup into a
+  // file named .R, which fails later and somewhere else.
+  if (opts.emitR) {
+    throw new Error(
+      `--out *.R exports the linear view's R script; a ${mode} view has no R export`,
+    )
   }
   const ignored = [
     opts.showTracks?.length && mode !== 'breakpoint' ? '--track' : '',
@@ -609,7 +670,16 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
  * caller reusing one across calls has to hand over a copy each time.
  */
 export async function renderRegion(opts: Opts, configObject?: Config) {
+  // Parsed before the config is built: a spec's `sessionTracks` are track
+  // configs the app would add to the session, and the view names them by
+  // trackId, so they have to be in the config the model is created from.
+  // Prepended, the same order the session publishes them in (session tracks
+  // shadow a config track of the same id).
+  const parsed = opts.spec ? parseSpec(opts.spec) : undefined
   const data = readData(opts, configObject ?? (await resolveConfigObject(opts)))
+  if (parsed?.sessionTracks.length) {
+    data.tracks = [...parsed.sessionTracks, ...data.tracks]
+  }
   const model = createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
   // (e.g. gene-description blue) are baked at feature-fetch time from
@@ -619,7 +689,18 @@ export async function renderRegion(opts: Opts, configObject?: Config) {
   if (opts.themeName) {
     model.session.setThemeName(opts.themeName)
   }
-  const spec = opts.spec ? parseSpec(opts.spec) : undefined
+  // Which of the config's tracks this build has no plugin for, asked off the
+  // model's own type registries. Every path below that opens a track asks first,
+  // so an unbuildable one costs its own lane instead of the whole figure.
+  const { pluginManager } = getEnv(model)
+  const skipTrack = trackSkipper(data.tracks, pluginManager)
+  // A --spec names its tracks in the view's `init` snapshot, so the skip has to
+  // reach in there too — dropping them from data.tracks instead would only turn
+  // "invalid configuration" into `Could not resolve identifier`.
+  const spec = parsed?.view
+  if (spec) {
+    spec.tracks = filterInitTracks(spec.tracks, skipTrack)
+  }
   // an explicit subcommand wins; otherwise a --spec selects its mode from the
   // view type, falling back to the default linear view
   const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')
@@ -631,6 +712,7 @@ export async function renderRegion(opts: Opts, configObject?: Config) {
       opts,
       width: opts.width ?? DEFAULT_WIDTH,
       spec,
+      skipTrack,
     })
     // a failure reported to the session during the render (a bad track config,
     // a failed assembly load) means the SVG is incomplete — fail rather than

@@ -38,7 +38,10 @@ const docsSchema = z.object({
 // sidebar builder and the docs validators that have to reproduce it.
 const docsLoader = glob({
   base: docsBase,
-  pattern: ['**/*.md', '!**/CLAUDE.md*'],
+  // `docs/img` and `docs/static` are symlinks into `static/`; skip both so
+  // asset-adjacent READMEs (e.g. the R-export gallery index) aren't loaded as
+  // doc pages.
+  pattern: ['**/*.md', '!**/CLAUDE.md*', '!img/**', '!static/**'],
   generateId: ({ entry, data }) => docId(entry, data.slug),
   // Nothing calls astro:content's render() — pages run entry.body through the
   // richer pipeline in src/lib/markdown.ts — so Astro's own render pass is pure

@@ -89,6 +89,7 @@ import {
 import type { FlightViewport } from './flyTo.ts'
 import type {
   BpOffset,
+  ExportRCodeOptions,
   ExportSvgOptions,
   HighlightType,
   InitState,
@@ -1702,6 +1703,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { saveSvgAsImage } =
           await import('@jbrowse/core/svg/saveSvgAsImage')
         await saveSvgAsImage(html, opts)
+      },
+
+      /**
+       * #method
+       * generates a reproducible R (ggplot2) script for the current view and
+       * saves it using FileSaver
+       */
+      async exportR(opts: ExportRCodeOptions = {}) {
+        const { exportR } = await import('./exportR.ts')
+        await exportR(self as LinearGenomeViewModel, opts)
       },
     }))
     .actions(self => {

@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import CodeIcon from '@mui/icons-material/Code'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -22,6 +23,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
 import {
+  ExportRDialog,
   ExportSvgDialog,
   GetSequenceDialog,
   ReturnToImportFormDialog,
@@ -116,6 +118,19 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       onClick: () => {
         session.queueDialog(handleClose => [
           ExportSvgDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
+      },
+    },
+    {
+      label: 'Export R script',
+      icon: CodeIcon,
+      onClick: () => {
+        session.queueDialog(handleClose => [
+          ExportRDialog,
           {
             model: self,
             handleClose,
