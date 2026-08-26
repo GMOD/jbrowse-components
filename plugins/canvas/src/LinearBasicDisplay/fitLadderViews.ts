@@ -34,10 +34,14 @@ import type {
 export interface FitLadderHost {
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>
   layoutReady: boolean
+  // `expandedGeneIds` is Required, not merely picked: every rung spreads these
+  // inputs, so a host that could omit it is a host whose `full` rung
+  // re-collapses the gene the user opened.
   layoutInputs: Pick<
     LayoutInputs,
     'bpPerPx' | 'reversedRegions' | 'displayMode' | 'pinnedFeatureIds'
-  >
+  > &
+    Required<Pick<LayoutInputs, 'expandedGeneIds'>>
   showLabels: boolean
   effectiveShowDescriptions: boolean
   displayMode: DisplayMode
@@ -45,7 +49,6 @@ export interface FitLadderHost {
   fitHeightToDisplay: boolean
   // grow mode: the track's height IS its content's, so nothing is ever trimmed
   autoHeight: boolean
-  expandedGeneIdSet: ReadonlySet<string>
   fitTargetHeight: number
   incrementalLayout: IncrementalLayout
   incrementalLayoutLabelsOnly: IncrementalLayout
@@ -157,7 +160,6 @@ export function fitLadderViews(self: FitLadderHost) {
         // every isoform goes before any name does, so once the trim has run
         // out of room there is no going back to the full stack to save a name.
         maxIsoformsPerGene: this.fitIsoformCount,
-        expandedGeneIds: self.expandedGeneIdSet,
       }
     },
     /**
@@ -220,7 +222,6 @@ export function fitLadderViews(self: FitLadderHost) {
         showDescriptions: self.fitHeightToDisplay
           ? false
           : self.effectiveShowDescriptions,
-        expandedGeneIds: self.expandedGeneIdSet,
       }
     },
     /**
@@ -368,7 +369,6 @@ export function fitLadderViews(self: FitLadderHost) {
             showLabels: false,
             showDescriptions: false,
             maxIsoformsPerGene: this.fitIsoformCount,
-            expandedGeneIds: self.expandedGeneIdSet,
           })
         : this.fitLabelsOnlyLayout
     },

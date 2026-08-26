@@ -1827,22 +1827,70 @@ describe('the isoform rung across the three height modes', () => {
     expect(display.height).toBeGreaterThan(100)
   })
 
-  // A gene the user opened is exempt from the count, in every mode.
-  it('leaves an expanded gene whole', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setHeightMode('fit')
-    display.toggleExpandedGene('gene2')
-    display.setRpcData(0, ISOFORM_GENES, ctgA)
+  // What the worker ships for a gene the user opened: every isoform, plus the
+  // count the mode's own collapse would have left. That count is the only
+  // record of what the gene was opened FROM, and it is also what makes the
+  // gene trimmable — `planIsoformTrims` takes the tighter of it and the
+  // ladder's count. `packStackedGenes` left it unset, so the fixture the
+  // exemption was pinned with had nothing to be exempt from and passed
+  // whatever the ladder did with `expandedGeneIds`.
+  const EXPANDED_GENES = packStackedGenes([
+    {
+      featureId: 'gene1',
+      name: 'GENE1',
+      startBp: 100,
+      endBp: 500,
+      isoforms: 4,
+    },
+    {
+      featureId: 'gene2',
+      name: 'GENE2',
+      startBp: 450,
+      endBp: 900,
+      isoforms: 10,
+      collapsedIsoformCount: 1,
+    },
+  ])
 
+  const drawnOrdinals = (display: TestDisplay, featureId: string) => {
     const data = [...display.laidOutDataMap.values()][0]!
-    const idx = data.flatbushItems.findIndex(i => i.featureId === 'gene2')
+    const idx = data.flatbushItems.findIndex(i => i.featureId === featureId)
     const ordinals = new Set<number>()
     for (const [i, feature] of data.rectFeatureIndices.entries()) {
       if (feature === idx) {
         ordinals.add(data.rectChildOrdinals[i]!)
       }
     }
-    expect(ordinals.size).toBe(10)
+    return ordinals
+  }
+
+  // A gene the user opened is exempt from the count, in every mode — including
+  // the two whose only rung is `full`, where a re-collapse has no rung below it
+  // to recover from. The badge on such a gene reads "show fewer" and calls
+  // `toggleExpandedGene`, so a gene the ladder re-collapsed to 1 puts a "+9
+  // more" control on screen that closes the gene it offers to open.
+  it.each(['fit', 'fixed', 'grow'] as const)(
+    'leaves an expanded gene whole in %s mode',
+    mode => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      display.setHeightMode(mode)
+      display.toggleExpandedGene('gene2')
+      display.setRpcData(0, EXPANDED_GENES, ctgA)
+
+      expect(drawnOrdinals(display, 'gene2').size).toBe(10)
+      expect(display.geneGlyphTrimmedGenes.has('gene2')).toBe(false)
+    },
+  )
+
+  // The same fixture with the gene left closed, so the exemption above is
+  // shown to be doing the work rather than the count being unreachable.
+  it('still honours the collapse on a gene nobody opened', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    display.setRpcData(0, EXPANDED_GENES, ctgA)
+
+    expect(drawnOrdinals(display, 'gene2').size).toBe(1)
   })
 })

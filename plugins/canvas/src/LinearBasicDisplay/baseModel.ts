@@ -777,7 +777,16 @@ export default function baseStateModelFactory(
          * Layout inputs shared by the base layout and every fit-escalation
          * layout, minus the per-config label/description reservation flags. One
          * source so the candidate layouts can't drift on bpPerPx / orientation /
-         * display mode / pins.
+         * display mode / pins / opened genes.
+         *
+         * `expandedGeneIds` belongs here and not on the rungs that trim, even
+         * though only they consult it: an expanded gene arrives carrying
+         * `collapsedIsoformCount`, so EVERY rung's pack trims it back to what
+         * the mode collapsed it to, and a rung that inherits the layout inputs
+         * without the exemption re-collapses the gene the user just opened.
+         * The three trimming rungs each added it for themselves; `full` and
+         * `labels` did not, which in `grow` — where `full` is the only rung —
+         * left no rung below to recover on.
          *
          * Each region's ref key is NOT here: it rides on the region itself, which
          * is what the layout groups by (see `LayoutRegionData`).
@@ -789,6 +798,7 @@ export default function baseStateModelFactory(
             reversedRegions: self.reversedRegions,
             displayMode: self.displayMode,
             pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
+            expandedGeneIds: self.expandedGeneIdSet,
           }
         },
         /**

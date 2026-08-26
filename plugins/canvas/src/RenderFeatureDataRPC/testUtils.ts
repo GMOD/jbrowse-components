@@ -147,6 +147,10 @@ export interface StackedGeneSpec {
   heightPx?: number
   gapPx?: number
   canonicalTag?: string
+  // What the worker's own collapse left, when it left fewer than the gene has.
+  // A gene the user expanded ships every isoform and this count as the only
+  // record of what it was opened FROM — see `IsoformStack`.
+  collapsedIsoformCount?: number
   // rank per isoform, drawn order; defaults to the drawn order itself
   ranks?: number[]
   // bp span per isoform, defaults to the gene's own
@@ -203,6 +207,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
         isoformStack: {
           isoformCount: spec.isoforms,
           canonicalTag: spec.canonicalTag,
+          collapsedIsoformCount: spec.collapsedIsoformCount,
           gapPx,
           children,
         },
