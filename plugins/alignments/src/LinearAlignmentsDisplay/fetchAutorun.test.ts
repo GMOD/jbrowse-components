@@ -607,7 +607,11 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
-  it('refetches when drawSingletons or drawProperPairs changes (rpcProps fields)', async () => {
+  // The read categories ride `filterBy`, which is already an rpcProps field, so
+  // what this pins is that they reach the worker at all — they are applied
+  // there (`filterChainFeatures`), so a category the fetch does not re-run for
+  // is a filter that silently does nothing until the next unrelated refetch.
+  it('refetches when a read category changes (filterBy rides rpcProps)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -618,7 +622,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setDrawSingletons(false)
+    display.setFilterBy({ ...display.filterBy, singletons: 'exclude' })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
     await waitFor(() => {
@@ -626,7 +630,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore2 = mockRpcCall.mock.calls.length
-    display.setDrawProperPairs(false)
+    display.setFilterBy({ ...display.filterBy, properPairs: 'exclude' })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
     await waitFor(() => {

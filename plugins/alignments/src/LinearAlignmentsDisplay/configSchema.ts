@@ -184,10 +184,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Every read filter, in one object: the flag masks, a read name, tag
+       * filters, and the four read categories.
+       *
        * default filter flags is exclude 1540
        * read unmapped (0x4)
        * read fails platform/vendor quality checks (0x200)
        * read is PCR or optical duplicate (0x400)
+       *
+       * A read category takes `"only"` or `"exclude"`, and is absent when it
+       * isn't filtering — `{ "properPairs": "exclude", "split": "only" }` for
+       * the split reads of discordant pairs. `spliced`, `properPairs`,
+       * `singletons` and `split`; see the `FilterBy` type.
        */
       filterBy: {
         type: 'frozen',
@@ -441,36 +449,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: true,
         description:
           'Draw interbase insertion/clip count bars and indicator triangles',
-      },
-      /**
-       * #slot
-       */
-      drawSingletons: {
-        type: 'boolean',
-        defaultValue: true,
-        // The filter is `filterChainFeatures`, which drops QNAME chains of ONE:
-        // reads whose mate AND whose supplementary segments are all absent from
-        // the view. An unmapped mate (flag 0x8) is a different question and this
-        // slot has never asked it — the menu helpText already said so.
-        description:
-          'Draw reads whose mate and split/supplementary segments are all absent from the view (samtools "singletons")',
-      },
-      /**
-       * #slot
-       */
-      drawProperPairs: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw properly-paired reads',
-      },
-      /**
-       * #slot
-       */
-      showOnlySplitAlignments: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          'Only draw reads that are part of a split/chimeric alignment (have a supplementary segment, SAM flag 0x800)',
       },
       /**
        * #slot

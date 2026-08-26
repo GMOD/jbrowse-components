@@ -36,12 +36,6 @@ function makeModel(overrides?: Partial<{ canCollapseGroupRows: boolean }>) {
     mismatchAlpha: false,
     setMismatchAlpha: jest.fn(),
     mismatchAlphaDisplayTypeDefault: noPin,
-    drawProperPairs: true,
-    setDrawProperPairs: jest.fn(),
-    drawSingletons: true,
-    setDrawSingletons: jest.fn(),
-    showOnlySplitAlignments: false,
-    setShowOnlySplitAlignments: jest.fn(),
     canCollapseGroupRows: false,
     collapseGroupRows: false,
     setCollapseGroupRows: jest.fn(),
@@ -100,10 +94,20 @@ test('the toggles fire against the model', () => {
   const { getByText } = renderRows(subMenuOf(model))
   fireEvent.click(getByText('Show legend'))
   fireEvent.click(getByText('Show mismatches'))
-  fireEvent.click(getByText('Show proper pairs'))
+  fireEvent.click(getByText('Show coverage'))
   expect(model.setShowLegend).toHaveBeenCalledWith(true)
   expect(model.setShowMismatches).toHaveBeenCalledWith(false)
-  expect(model.setDrawProperPairs).toHaveBeenCalledWith(false)
+  expect(model.setShowCoverage).toHaveBeenCalledWith(false)
+})
+
+// This menu switches layers on and off; it does not decide which reads exist.
+// The read categories that used to end it are filters — they drop reads in the
+// worker — and now live under "Filter by..." (menus/filters.ts).
+test('no read-category filter is offered here', () => {
+  const { queryByText } = renderRows(subMenuOf(makeModel()))
+  expect(queryByText('Show proper pairs')).toBeNull()
+  expect(queryByText('Show reads without a mate')).toBeNull()
+  expect(queryByText('Show only split alignments')).toBeNull()
 })
 
 // The row cap is sizing, so it left this menu for "Read height" — where the

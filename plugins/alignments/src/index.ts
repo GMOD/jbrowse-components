@@ -133,8 +133,15 @@ export type {
 export type { CigarHitResult, ResolvedBlock } from './shared/hitTestTypes.ts'
 export type {
   ArcColorByType,
+  CategoryFilter,
   ColorBy,
   FilterBy,
   GroupBy,
   SortedBy,
 } from './shared/types.ts'
+export { READ_CATEGORIES } from './shared/readCategoryFilters.ts'
+export type {
+  ReadCategoryChoice,
+  ReadCategoryKey,
+  ReadCategorySpec,
+} from './shared/readCategoryFilters.ts'

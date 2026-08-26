@@ -2789,9 +2789,6 @@ export default function stateModelFactory(
             // scale — when the band is off. So toggling it refetches. The
             // pileup's low-frequency fade is unaffected (see runCoveragePipeline).
             showCoverage: self.showCoverage,
-            drawSingletons: self.drawSingletons,
-            drawProperPairs: self.drawProperPairs,
-            showOnlySplitAlignments: self.showOnlySplitAlignments,
             linkedReads: self.linkedReads,
             // `readConnections` is deliberately NOT here. It was, briefly, to
             // let the worker skip the per-read SA tag walk with connections
@@ -3531,27 +3528,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setDrawSingletons(flag: boolean) {
-            setConf(self, 'drawSingletons', flag)
-          },
-
-          /**
-           * #action
-           */
-          setDrawProperPairs(flag: boolean) {
-            setConf(self, 'drawProperPairs', flag)
-          },
-
-          /**
-           * #action
-           */
-          setShowOnlySplitAlignments(flag: boolean) {
-            setConf(self, 'showOnlySplitAlignments', flag)
-          },
-
-          /**
-           * #action
-           */
           setShowInterbaseIndicators(show: boolean) {
             setConf(self, 'showInterbaseIndicators', show)
           },
@@ -3933,7 +3909,7 @@ export default function stateModelFactory(
                 ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
                 : 'Turn on "Show pileup" to sort reads',
             }),
-            ...getFiltersMenuItems(self),
+            ...getFiltersMenuItems(self, { readCategories: true }),
             getGroupByMenuItem(self),
             ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, 'read', {

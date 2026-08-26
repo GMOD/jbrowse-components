@@ -27,11 +27,18 @@ export function makeRadioSubMenu<T extends string>(opts: {
   onChange: (value: T) => void
   options: readonly (readonly [T, string])[]
   extraItems?: MenuItem[]
+  /**
+   * Prose for the group, on the row that opens it. One "?" here rather than one
+   * per radio, which is where a group whose options differ by a word each would
+   * otherwise repeat itself three times.
+   */
+  helpText?: string
 }): MenuItem {
   const { label, icon, value, onChange, options, extraItems = [] } = opts
   return {
     label,
     icon,
+    helpText: opts.helpText,
     subMenu: [
       // via radioItems so these keep the menu open like every other
       // setting row — a plot type is usually picked by trying a couple

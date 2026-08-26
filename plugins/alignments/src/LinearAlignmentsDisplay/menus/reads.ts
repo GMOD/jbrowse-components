@@ -29,25 +29,24 @@ interface ReadsModel extends CollapseGroupRowsModel {
   mismatchAlpha: boolean
   setMismatchAlpha: (value: boolean) => void
   mismatchAlphaDisplayTypeDefault: Pin
-  drawProperPairs: boolean
-  setDrawProperPairs: (v: boolean) => void
-  drawSingletons: boolean
-  setDrawSingletons: (v: boolean) => void
-  showOnlySplitAlignments: boolean
-  setShowOnlySplitAlignments: (v: boolean) => void
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
 // in their own menus.
 //
-// **Toggles only, and flat.** This is the longest submenu in the track menu, so
-// it is the one that goes unreadable first — and what makes a long menu hard to
-// scan is rows that aren't the same kind of thing, not the row count. Adding
-// subHeaders to group it was tried and reverted: it bought three groups at the
-// cost of four more rows and two more row kinds, which is the opposite trade.
-// The row cap moved to "Read height" for the same reason — it was the one
-// action among the checkboxes. Anything new here should be a checkbox, or it
-// belongs in another menu.
+// **Layers only.** Which reads exist is "Filter by..." — the three read-category
+// toggles that used to end this menu (proper pairs, singletons, split
+// alignments) drop reads in the worker rather than hiding drawn ones, and now
+// live in `filterBy` with the rest of the filters. What is left is one kind of
+// thing: a switch on something already fetched.
+//
+// **Toggles only, and flat.** What makes a long menu hard to scan is rows that
+// aren't the same kind of thing, not the row count. Adding subHeaders to group
+// it was tried and reverted: it bought three groups at the cost of four more
+// rows and two more row kinds, which is the opposite trade. The row cap moved to
+// "Read height" for the same reason — it was the one action among the
+// checkboxes. Anything new here should be a checkbox, or it belongs in another
+// menu.
 export function getReadsMenuItems(model: ReadsModel) {
   return makeShowSubMenu([
     showLegendCheckboxItem(
@@ -105,50 +104,6 @@ export function getReadsMenuItems(model: ReadsModel) {
           'Mark insertions and clipping, which occupy no reference base, ' +
           'with a between-base tick. Drawn in the coverage band, so it ' +
           'needs "Show coverage" on.',
-      },
-    ),
-    // Which reads populate the pileup. These change what's fetched (they also
-    // thin the coverage histogram), but they read as visibility toggles, so
-    // they live in "Show..." rather than a filter submenu.
-    toggleItem(
-      'Show proper pairs',
-      model.drawProperPairs,
-      model.setDrawProperPairs,
-      {
-        helpText:
-          'Uncheck to hide concordant pairs — those the aligner flagged ' +
-          'properly paired (SAM flag 0x2) AND in normal forward/reverse ' +
-          '(FR) orientation. Discordant pairs (RR/LL/RL orientation, ' +
-          'e.g. inversions or duplications) stay visible even if flagged ' +
-          'proper, so structural-variant signal is not lost.',
-      },
-    ),
-    toggleItem(
-      'Show reads without a mate',
-      model.drawSingletons,
-      model.setDrawSingletons,
-      {
-        helpText:
-          'Uncheck to hide reads whose mate or split/supplementary ' +
-          'segment was not fetched for the same window, so the read stands ' +
-          'alone (samtools calls these "singletons"). Grouped by read name, ' +
-          'so it applies to a plain pileup too. "Window", not "view": each ' +
-          'displayed region is fetched and grouped on its own, so in a ' +
-          'multi-region view (a fusion with one window per partner) a read ' +
-          'whose two alignments land in different windows counts as alone ' +
-          'in both.',
-      },
-    ),
-    toggleItem(
-      'Show only split alignments',
-      model.showOnlySplitAlignments,
-      model.setShowOnlySplitAlignments,
-      {
-        helpText:
-          'Only show reads that are part of a chimeric/split alignment ' +
-          '(the aligner emitted a supplementary segment for the read, ' +
-          'SAM flag 0x800) — chimeric SV/breakpoint evidence. Grouped by ' +
-          'read name, so it applies to a plain pileup too.',
       },
     ),
   ] satisfies MenuItem[])

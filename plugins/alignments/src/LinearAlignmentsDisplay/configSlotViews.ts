@@ -80,18 +80,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, 'showInterbaseIndicators')
     },
     /** #getter */
-    get drawSingletons(): boolean {
-      return getConf(self, 'drawSingletons')
-    },
-    /** #getter */
-    get drawProperPairs(): boolean {
-      return getConf(self, 'drawProperPairs')
-    },
-    /** #getter */
-    get showOnlySplitAlignments(): boolean {
-      return getConf(self, 'showOnlySplitAlignments')
-    },
-    /** #getter */
     get flipStrandLongReadChains(): boolean {
       return getConf(self, 'flipStrandLongReadChains')
     },
@@ -106,7 +94,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      * Whether ordinary concordant pairs get an arc. Same definition of
-     * concordant as `drawProperPairs`, which hides the reads themselves —
+     * concordant as `filterBy.properPairs`, which hides the reads themselves —
      * see `isConcordantPairRead`.
      */
     get drawProperPairArcs(): boolean {

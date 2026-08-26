@@ -5,7 +5,9 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   COMPACTNESS_PRESETS,
+  CategoryFilter,
   LinearAlignmentsDisplayModel,
+  ReadCategoryKey,
 } from '@jbrowse/plugin-alignments'
 import type {
   STRAND_COLOR_JEXL,
@@ -222,16 +224,15 @@ interface DisplaySnapshot {
   minSashimiScore?: number
   sashimiArcsHeight?: number
   arcColorByType?: string
-  drawProperPairs?: boolean
-  showOnlySplitAlignments?: boolean
-  // `{ flagInclude, flagExclude, tagFilters }`. Partial by design — the display
-  // runs every read of it through `normalizeFilterBy`, which fills whichever
-  // masks a hand-written config left out.
+  // The flag masks, tag filters and read categories. Partial by design — the
+  // display runs every read of it through `normalizeFilterBy`, which fills
+  // whichever masks a hand-written config left out, and an absent category is
+  // an unfiltered one.
   filterBy?: {
     flagInclude?: number
     flagExclude?: number
     tagFilters?: { tag: string; value: string }[]
-  }
+  } & Partial<Record<ReadCategoryKey, CategoryFilter>>
   // wiggle / score
   color?: string
   useBicolor?: boolean
@@ -402,6 +403,44 @@ interface Modifier {
     val2: string | undefined,
     category: Category,
   ) => void
+}
+
+// One modifier per read category, so the CLI cannot offer three of the four or
+// spell one of them differently from the track menu. `all` is accepted and
+// stores nothing, which is what makes a category scriptable from a variable
+// that may be empty.
+//
+// The keys are listed rather than imported: this module reaches the display
+// models through `import type` only, and a runtime import of the table would
+// pull the alignments plugin into the CLI's own bundle. `Covers` below is what
+// makes the list equivalent to importing it — a fifth category fails the build
+// here and names itself.
+const READ_CATEGORY_KEYS = [
+  'spliced',
+  'properPairs',
+  'singletons',
+  'split',
+] as const
+export type AssertAllReadCategoriesListed = AssertTrue<
+  Covers<ReadCategoryKey, typeof READ_CATEGORY_KEYS>
+>
+
+function readCategoryModifiers(): Record<string, Modifier> {
+  return Object.fromEntries(
+    READ_CATEGORY_KEYS.map(key => [
+      key,
+      {
+        on: ['alignments'],
+        apply: (r: BuildResult, v: string) => {
+          const choice = parseEnum(key, v, ['all', 'only', 'exclude'] as const)
+          r.snap.filterBy = {
+            ...r.snap.filterBy,
+            ...(choice === 'all' ? {} : { [key]: choice }),
+          }
+        },
+      } satisfies Modifier,
+    ]),
+  )
 }
 
 const modifiers: Record<string, Modifier> = {
@@ -586,26 +625,16 @@ const modifiers: Record<string, Modifier> = {
       ] as const)
     },
   },
-  // The two read-set filters an SV export wants, both of which drop whole
-  // read-name chains rather than individual reads.
+  // The four read-category filters, one flag each and one vocabulary between
+  // them: `only` keeps that category, `exclude` drops it, `all` (the default)
+  // leaves it alone. `properPairs:exclude split:only` is the SV export.
   //
   // They filter BEFORE the coverage pipeline, not just before layout, so
-  // `properPairs:false` on an ordinary sample removes almost every read and the
-  // coverage band goes with them. That is the right behaviour (the band should
-  // describe the reads that are drawn) and it is the thing to know before
-  // reaching for this to tidy up an arc band.
-  properPairs: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.drawProperPairs = parseBool('properPairs', v)
-    },
-  },
-  splitOnly: {
-    on: ['alignments'],
-    apply: (r, v) => {
-      r.snap.showOnlySplitAlignments = parseBool('splitOnly', v)
-    },
-  },
+  // `properPairs:exclude` on an ordinary sample removes almost every read and
+  // the coverage band goes with them. That is the right behaviour (the band
+  // should describe the reads that are drawn) and it is the thing to know
+  // before reaching for one of these to tidy up an arc band.
+  ...readCategoryModifiers(),
   // samtools' own vocabulary, because it is the one a reader of this flag
   // already has: `flags:include:exclude` is `-f` then `-F`. The display's
   // default is include 0 / exclude 1540 (unmapped, duplicate, failed-QC), so

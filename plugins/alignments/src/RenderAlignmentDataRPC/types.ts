@@ -19,9 +19,9 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 // the client already tracks, so no separate `mode` is needed.
 // `sortTag`/`showSoftClipping` are pileup-only — the chain path forces them off
 // below, and the display projects them the same way so the `rpcProps` cache key
-// doesn't refetch for a value this worker will discard. `drawSingletons`/
-// `drawProperPairs`/`showOnlySplitAlignments` (grouped-by-read-name chain
-// filters) apply in both modes.
+// doesn't refetch for a value this worker will discard. Every read filter rides
+// `filterBy`, the grouped-by-read-name chain ones included, and applies in both
+// modes.
 export interface RenderAlignmentDataArgs {
   adapterConfig: Record<string, unknown>
   // supplied by renameRegionsIfNeeded during serialization, never by a caller
@@ -57,9 +57,6 @@ export interface RenderAlignmentDataArgs {
   // not on every zoom step.
   lodMode?: BaseOptions['lodMode']
   linkedReads?: 'off' | 'normal'
-  drawSingletons?: boolean
-  drawProperPairs?: boolean
-  showOnlySplitAlignments?: boolean
   /**
    * `resolvedByteLimit()`. Absent means the gate may not act, and the executor
    * then measures nothing.

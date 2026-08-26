@@ -50,6 +50,7 @@ import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKey } from '../shared/readIdentity.ts'
+import type { CategoryFilter, FilterBy } from '../shared/types.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type { AlignmentGroup, WorkerPileupData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -119,40 +120,46 @@ function dedupeById(features: Feature[]) {
   return out
 }
 
-// Chain mode groups reads into chains by name, then optionally drops
-// singletons (chains of one), proper pairs, and/or non-split chains.
+// Keep the chains a category filter asks for. `'only'` keeps the ones the
+// predicate holds for, `'exclude'` drops them, and absent leaves them alone.
+function keepCategory(
+  chains: Feature[][],
+  filter: CategoryFilter | undefined,
+  predicate: (chain: Feature[]) => boolean,
+) {
+  return filter === undefined
+    ? chains
+    : chains.filter(c => predicate(c) === (filter === 'only'))
+}
+
+// The three read-category filters that need a whole chain to answer, applied
+// after grouping reads by name. `filterBy.spliced` is the fourth and is not
+// here: it is per-record, so the adapters answer it as they parse.
 //
 // PER WORKER CALL, i.e. per displayed region — the RPC takes `regions[0]`. So
 // "chain of one" means "one alignment in THIS window", and in a multi-region
 // view a read whose two alignments land in different windows is a singleton in
-// both. `drawSingletons` defaults on, so this only bites a user who turns it
-// off; the menu's help text names the scope for that reason. `showOnlySplitAlignments`
-// is the one that already routes around it, by reading the SA tag rather than
-// counting what this call happened to fetch (`chainIsSplit`) — the same move is
-// not available for the other two, which are about what is on screen. Making
-// them view-wide means moving the filter to the main thread, where the coverage
-// histogram these also thin is no longer being computed.
-export function filterChainFeatures(
-  features: Feature[],
-  drawSingletons: boolean,
-  drawProperPairs: boolean,
-  showOnlySplitAlignments = false,
-) {
+// both. `singletons` is absent by default, so this only bites a user who sets
+// it; the menu's help text names the scope for that reason. `split` is the one
+// that routes around it, by reading the SA tag rather than counting what this
+// call happened to fetch (`chainIsSplit`) — the same move is not available for
+// the other two, which are about what is on screen. Making them view-wide means
+// moving the filter to the main thread, where the coverage histogram these also
+// thin is no longer being computed.
+export function filterChainFeatures(features: Feature[], filterBy?: FilterBy) {
   const deduped = dedupeById(features)
-  if (drawSingletons && drawProperPairs && !showOnlySplitAlignments) {
+  const { properPairs, singletons, split } = filterBy ?? {}
+  if (
+    properPairs === undefined &&
+    singletons === undefined &&
+    split === undefined
+  ) {
     return deduped
   }
-  const byChain = groupBy(deduped, featureChainKey)
-  let rawChains = Object.values(byChain)
-  if (!drawSingletons) {
-    rawChains = rawChains.filter(c => c.length > 1)
-  }
-  if (!drawProperPairs) {
-    rawChains = rawChains.filter(c => !isProperPairChain(c))
-  }
-  if (showOnlySplitAlignments) {
-    rawChains = rawChains.filter(c => chainIsSplit(c))
-  }
+  let rawChains = Object.values(groupBy(deduped, featureChainKey))
+  rawChains = keepCategory(rawChains, singletons, c => c.length === 1)
+  rawChains = keepCategory(rawChains, properPairs, isProperPairChain)
+  rawChains = keepCategory(rawChains, split, chainIsSplit)
   // same key as the dedupe above, for the same reason: this is identity within
   // one fetch, which is the thing `readKeyOf` is cheap at
   const keptIds = new Set<ReadKey>()
@@ -466,9 +473,6 @@ export async function executeRenderAlignmentData({
     showSoftClipping = false,
     showCoverage = true,
     linkedReads = 'off',
-    drawSingletons = true,
-    drawProperPairs = true,
-    showOnlySplitAlignments = false,
     byteLimit,
     perBaseBinBp = 1,
     statusCallback,
@@ -521,12 +525,7 @@ export async function executeRenderAlignmentData({
   // (computeReadBaseCounts), so they fetch nothing.
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
-  const inputFeatures = filterChainFeatures(
-    featuresArray,
-    drawSingletons,
-    drawProperPairs,
-    showOnlySplitAlignments,
-  )
+  const inputFeatures = filterChainFeatures(featuresArray, filterBy)
   if (!isChain && colorBy?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,

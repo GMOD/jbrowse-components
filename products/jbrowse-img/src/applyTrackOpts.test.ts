@@ -236,11 +236,28 @@ describe('alignments settings a static export cannot reach any other way', () =>
     ).toBe(false)
   })
 
-  test('the read-set filters are plain booleans', () => {
+  // The SV export: the split reads of the pairs the aligner did not call
+  // concordant. Both halves land in one `filterBy`, so they compose with the
+  // flag masks and tag filters below rather than sitting beside them.
+  test('the read categories fold into filterBy', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['properPairs:false', 'splitOnly'])
-        .snap,
-    ).toMatchObject({ drawProperPairs: false, showOnlySplitAlignments: true })
+      buildDisplaySnapshot('alignments', ['properPairs:exclude', 'split:only'])
+        .snap.filterBy,
+    ).toEqual({ properPairs: 'exclude', split: 'only' })
+  })
+
+  // `all` is the absent filter, so it stores nothing — which is what lets a
+  // script pass a category through from a variable that may be empty.
+  test('a category set to all stores nothing', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['singletons:all']).snap.filterBy,
+    ).toEqual({})
+  })
+
+  test('an unknown category value names the three that work', () => {
+    expect(() => buildDisplaySnapshot('alignments', ['spliced:true'])).toThrow(
+      /all, only, exclude/,
+    )
   })
 
   // samtools' -f / -F, in that order

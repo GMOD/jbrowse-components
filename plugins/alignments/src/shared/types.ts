@@ -180,6 +180,15 @@ export interface TagFilter {
   value?: string
 }
 
+/**
+ * A read-category filter: keep only the reads in the category, or drop them.
+ * Absent means the category is not filtered on, which is why every one of these
+ * fields is optional rather than carrying a third `'all'` member — the absent
+ * filter and the inactive filter are the same state, and a stored `'all'` would
+ * be a second spelling of it that `activeFilterCount` would have to know about.
+ */
+export type CategoryFilter = 'only' | 'exclude'
+
 export interface FilterBy {
   flagExclude: number
   flagInclude: number
@@ -188,9 +197,27 @@ export interface FilterBy {
   // independent quick-filters like HP (haplotype) and RG (read group) coexist
   // instead of clobbering each other.
   tagFilters?: TagFilter[]
-  // Spliced means the CIGAR carries a reference skip (`N`). 'only' keeps just
-  // those reads, 'exclude' drops them; absent keeps both.
-  spliced?: 'only' | 'exclude'
+  // The four read categories, one vocabulary (see `CategoryFilter`) because to a
+  // user they are one kind of question — which reads do I want. They apply at
+  // two different points, though, and the split is not arbitrary: `spliced` is
+  // decided per record as the adapter parses it, while the other three are
+  // properties of a read's whole chain (its mate and supplementary segments
+  // grouped by name) and so cannot be answered until the window is fetched.
+  // See `filterSpliced` in the adapters vs `filterChainFeatures` in the worker.
+  //
+  // Spliced means the CIGAR carries a reference skip (`N`).
+  spliced?: CategoryFilter
+  // Concordant: flagged properly paired (SAM flag 0x2) AND in normal FR
+  // orientation. A discordant pair — RR/LL/RL, the inversion and duplication
+  // signal — is not one even when the aligner set the flag.
+  properPairs?: CategoryFilter
+  // A read whose mate and supplementary segments are all absent from this
+  // window, so it stands alone (samtools calls these "singletons").
+  singletons?: CategoryFilter
+  // Part of a chimeric/split alignment: the aligner emitted a supplementary
+  // segment for the read (SAM flag 0x800), read off the SA tag rather than off
+  // what this window happened to fetch.
+  split?: CategoryFilter
 }
 
 // Legacy sessions stored a single `tagFilter`; fold it into `tagFilters` so

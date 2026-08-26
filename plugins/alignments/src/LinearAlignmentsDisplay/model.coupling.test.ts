@@ -10,7 +10,6 @@ import {
   clickMenuItem,
   findMenuItem,
   hasMenuItem,
-  isMenuItemClickable,
   makeEmptyPileupData,
   menuSubItems,
 } from './testUtils.ts'
@@ -561,43 +560,72 @@ describe('cross-region chain connectors', () => {
   })
 })
 
-// Proper-pair / singleton visibility reads as a "Show..." toggle, so it lives in
-// the Show menu (not Read connections, not the filter submenu). "Filter by..."
-// wraps the flag/tag dialog.
-describe('read-category toggles + filter submenu', () => {
-  test('proper-pairs / mate-less toggles are under "Show...", not "Read connections"', () => {
+// The read categories drop reads in the worker, so they are filters and live
+// under "Filter by..." — not "Show...", which is now layers only, and not "Read
+// connections". Their old home is the regression this pins.
+describe('read categories + filter submenu', () => {
+  test('the categories are under "Filter by...", not "Show..."', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
+    const filters = menuSubItems(items, 'Filter by...')
+    for (const noun of [
+      'Proper pairs',
+      'Reads without a mate',
+      'Split alignments',
+      'Spliced reads',
+    ]) {
+      expect(hasMenuItem(filters, noun)).toBe(true)
+    }
+
     const show = menuSubItems(items, 'Show...')
-    expect(hasMenuItem(show, 'Show proper pairs')).toBe(true)
-    expect(hasMenuItem(show, 'Show reads without a mate')).toBe(true)
-
-    const readConnections = menuSubItems(items, 'Read connections')
-    expect(hasMenuItem(readConnections, 'Show proper pairs')).toBe(false)
+    expect(hasMenuItem(show, 'Show proper pairs')).toBe(false)
+    expect(hasMenuItem(show, 'Show only split alignments')).toBe(false)
   })
 
-  test('"Show proper pairs" flips the model slot', () => {
+  test('a category radio writes filterBy', () => {
     const display = createDisplay()
-    display.setDrawProperPairs(true)
-    clickMenuItem(display.trackMenuItems(), 'Show proper pairs')
-    expect(display.drawProperPairs).toBe(false)
-  })
-
-  // One item that opens the dialog directly — no single-child submenu — and its
-  // label is the only place the track chrome admits a filter is hiding reads.
-  test('"Filter by..." opens the dialog directly and counts active filters', () => {
-    const display = createDisplay()
-    expect(isMenuItemClickable(display.trackMenuItems(), 'Filter by...')).toBe(
-      true,
+    // Scoped to the category row rather than the group above it: the group's
+    // label carries the active count, so it is renamed by the very click being
+    // made here. `menuSubItems` recurses, so naming the row is enough.
+    clickMenuItem(
+      menuSubItems(display.trackMenuItems(), 'Proper pairs'),
+      'Hide proper pairs',
     )
+    expect(display.filterBy.properPairs).toBe('exclude')
+
+    // and back to the absent state, not a stored 'all'
+    clickMenuItem(
+      menuSubItems(display.trackMenuItems(), 'Proper pairs — hidden'),
+      'All reads',
+    )
+    expect(display.filterBy.properPairs).toBeUndefined()
+  })
+
+  // The category row says what it is doing without being opened, and the group
+  // above it counts — so a filtered track reads as filtered at the top level.
+  test('an active category shows on its own row and in the count', () => {
+    const display = createDisplay()
+    display.setFilterBy({ ...display.filterBy, properPairs: 'exclude' })
+    const filters = menuSubItems(display.trackMenuItems(), 'Filter by... (1)')
+    expect(hasMenuItem(filters, 'Proper pairs — hidden')).toBe(true)
+  })
+
+  // The label is the only place the track chrome admits a filter is hiding
+  // reads, and a category not counted there was the bug: three of these used to
+  // hide reads while it read "Filter by..." with no number at all.
+  test('the count includes the read categories', () => {
+    const display = createDisplay()
+    expect(findMenuItem(display.trackMenuItems(), 'Filter by...')).toBeDefined()
 
     display.setFilterBy({
       ...display.filterBy,
       readName: 'readA',
       tagFilters: [{ tag: 'HP', value: '1' }],
+      properPairs: 'exclude',
+      split: 'only',
     })
     expect(
-      findMenuItem(display.trackMenuItems(), 'Filter by... (2)'),
+      findMenuItem(display.trackMenuItems(), 'Filter by... (4)'),
     ).toBeDefined()
   })
 })

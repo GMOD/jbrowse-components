@@ -7,10 +7,11 @@ import {
 
 import { filterChainFeatures } from '../RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { isConcordantPairRead } from './buildBaseFeatureData.ts'
+import { defaultFilterFlags } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
-// "Show proper pairs" hides the reads; "Show concordant-pair arcs" hides their
+// "Proper pairs" hides the reads; "Show concordant-pair arcs" hides their
 // arcs. They are two settings in two menus computed on two sides of the worker
 // boundary — one over `Feature`s, one over `readFlags`/`readPairOrientations` —
 // and the only thing making them agree is that both call
@@ -93,15 +94,14 @@ const CASES = [
 ]
 
 describe.each(CASES)('$name', ({ flags, str, num }) => {
-  // What the READ filter does with a lone pair of this kind: `drawProperPairs`
-  // false drops a chain only when the chain is the ordinary case, so an empty
-  // result means "the read filter calls this concordant".
+  // What the READ filter does with a lone pair of this kind: `properPairs:
+  // 'exclude'` drops a chain only when the chain is the ordinary case, so an
+  // empty result means "the read filter calls this concordant".
   const hiddenAsRead =
-    filterChainFeatures(
-      [feature('r', flags, str), feature('r', flags, str)],
-      true,
-      false,
-    ).length === 0
+    filterChainFeatures([feature('r', flags, str), feature('r', flags, str)], {
+      ...defaultFilterFlags,
+      properPairs: 'exclude',
+    }).length === 0
 
   test('the arc predicate agrees with the read filter', () => {
     expect(isConcordantPairRead(flags, num)).toBe(hiddenAsRead)

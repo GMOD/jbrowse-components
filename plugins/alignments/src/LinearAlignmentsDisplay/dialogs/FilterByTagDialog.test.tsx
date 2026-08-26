@@ -126,23 +126,73 @@ test('a whole-number bitmask is applied', () => {
   )
 })
 
-test('the splicing radios store only/exclude and drop the filter for "all"', () => {
+// The grid is four rows of one vocabulary, so every category is addressed the
+// same way: "<row>: <column>".
+test('a category radio stores only/exclude and drops the filter for "All"', () => {
   const { setFilterBy } = renderDialog()
-  fireEvent.click(screen.getByLabelText('Only spliced reads'))
+  fireEvent.click(screen.getByLabelText('Spliced reads: Only'))
+  fireEvent.click(screen.getByLabelText('Proper pairs: Hide'))
   submit()
   expect(setFilterBy).toHaveBeenCalledWith(
-    expect.objectContaining({ spliced: 'only' }),
+    expect.objectContaining({ spliced: 'only', properPairs: 'exclude' }),
   )
 })
 
-test('resetting clears a stored splicing filter', () => {
-  const { setFilterBy } = renderDialog({ spliced: 'exclude' })
+// 'all' is the UI's name for the absent filter; storing it would be a second
+// spelling of the same state for activeFilterCount to get wrong.
+test('a category returned to "All" is stored as absent, not as "all"', () => {
+  const { setFilterBy } = renderDialog({ split: 'only' })
   expect(
-    screen.getByLabelText<HTMLInputElement>('Only unspliced reads').checked,
+    screen.getByLabelText<HTMLInputElement>('Split alignments: Only').checked,
   ).toBe(true)
+  fireEvent.click(screen.getByLabelText('Split alignments: All'))
+  submit()
+  expect(setFilterBy).toHaveBeenCalledWith(
+    expect.objectContaining({ split: undefined }),
+  )
+})
+
+test('every category round-trips from a stored filterBy', () => {
+  renderDialog({
+    properPairs: 'exclude',
+    singletons: 'only',
+    split: 'exclude',
+    spliced: 'only',
+  })
+  for (const label of [
+    'Proper pairs: Hide',
+    'Reads without a mate: Only',
+    'Split alignments: Hide',
+    'Spliced reads: Only',
+  ]) {
+    expect(screen.getByLabelText<HTMLInputElement>(label).checked).toBe(true)
+  }
+})
+
+test('resetting clears every stored category', () => {
+  const { setFilterBy } = renderDialog({
+    spliced: 'exclude',
+    properPairs: 'exclude',
+  })
   fireEvent.click(screen.getByText('Reset defaults'))
   submit()
   expect(setFilterBy).toHaveBeenCalledWith(
-    expect.objectContaining({ spliced: undefined }),
+    expect.objectContaining({ spliced: undefined, properPairs: undefined }),
+  )
+})
+
+// One row per flag with a Require and an Exclude box, so the same flag can be
+// required and excluded — a track that renders empty — and now says so on one
+// line rather than across two twelve-checkbox columns.
+test('the flag grid drives both masks off one row per flag', () => {
+  const { setFilterBy } = renderDialog()
+  fireEvent.click(screen.getByLabelText('Require read paired'))
+  fireEvent.click(screen.getByLabelText('Exclude not primary alignment'))
+  submit()
+  expect(setFilterBy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      flagInclude: defaultFilterFlags.flagInclude | 0x1,
+      flagExclude: defaultFilterFlags.flagExclude | 0x100,
+    }),
   )
 })
