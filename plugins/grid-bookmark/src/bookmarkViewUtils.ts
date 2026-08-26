@@ -52,14 +52,15 @@ export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
   }
 }
 
-// single checkbox for the interactive chip (link icon + context menu) drawn on
-// each band. Disabled while highlights are hidden
+// single checkbox that pins the interactive chip (link icon + context menu) to
+// every band, which a band otherwise reveals only while the pointer is over it.
+// Disabled while highlights are hidden
 export function toggleHighlightChipsMenuItem(
   self: IStateTreeNode & ChipToggleableView,
 ): MenuItem {
   const session = getSession(self)
   return {
-    label: 'Show highlight chips',
+    label: 'Always show highlight chips',
     icon: HighlightIcon,
     type: 'checkbox',
     checked: self.showHighlightChips,

@@ -55,8 +55,6 @@ function createMouseStore(): MouseStore {
   }
 }
 
-const getServerSnapshot = () => undefined
-
 /**
  * Drop the tracked pointer, published by whoever bound the handlers.
  *
@@ -192,15 +190,40 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   }
 }
 
+const identity = (state: MouseState | undefined) => state
+
+const noopSubscribe = () => () => {}
+
+/**
+ * Read something derived from the tracked pointer, re-rendering only when the
+ * derived value changes.
+ *
+ * `useMouseState` renders once per frame the pointer moves, which is what a
+ * thing drawn *at* the cursor wants. A consumer that only asks a question of the
+ * position — "is the pointer inside this band?" — renders once per answer
+ * instead, because `useSyncExternalStore` compares snapshots and a boolean
+ * compares equal to the last one.
+ *
+ * The tracker is optional so a component can sit outside whatever bound the
+ * handlers (a highlight band rendered in a test, say) and read a pointer that is
+ * simply never there.
+ */
+export function useMouseSelector<T>(
+  tracker: MouseTracker | undefined,
+  selector: (state: MouseState | undefined) => T,
+) {
+  return useSyncExternalStore(
+    tracker?.subscribe ?? noopSubscribe,
+    () => selector(tracker?.getSnapshot()),
+    () => selector(undefined),
+  )
+}
+
 /**
  * Read the tracked pointer position. Call this in the component that draws the
  * cursor-following thing, not in the one that bound the handlers — see
  * `useMouseTracking`.
  */
 export function useMouseState(tracker: MouseTracker) {
-  return useSyncExternalStore(
-    tracker.subscribe,
-    tracker.getSnapshot,
-    getServerSnapshot,
-  )
+  return useMouseSelector(tracker, identity)
 }

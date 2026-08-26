@@ -1501,8 +1501,8 @@ export const viewFields: Record<string, FieldRecipe> = {
   showHighlightChips: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'LinearGenomeView'
       ? {
-          path: `View menu → Bookmarks/highlights → Show highlight chips (${value ? 'checked' : 'unchecked'})`,
-          note: 'Greyed out while highlights themselves are hidden — the chip is drawn on a highlight band.',
+          path: `View menu → Bookmarks/highlights → Always show highlight chips (${value ? 'checked' : 'unchecked'})`,
+          note: 'Greyed out while highlights themselves are hidden — the chip is drawn on a highlight band. Leave it off and a band still reveals its chip while the pointer is over it.',
         }
       : undefined,
   showIntraviewLinks: (value, { viewType }) =>

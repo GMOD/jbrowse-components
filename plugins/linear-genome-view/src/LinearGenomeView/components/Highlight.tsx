@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
 import HighlightChip from './HighlightChip.tsx'
+import { useHighlightChip } from './highlightChipReveal.tsx'
 import { getHighlightColor } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
@@ -28,6 +29,10 @@ const Highlight = observer(function Highlight({
   const coords = model.getHighlightCoords(highlight)
   const bandColor = getHighlightColor(highlight, theme)
   const label = model.labelsVisible ? highlight.label : undefined
+  const { chipVisible, setMenuOpen } = useHighlightChip(
+    coords,
+    model.showHighlightChips,
+  )
 
   return coords ? (
     <HighlightBand
@@ -35,11 +40,12 @@ const Highlight = observer(function Highlight({
       background={bandColor.toRgbString()}
       label={label}
     >
-      {model.showHighlightChips && coords.width >= CHIP_MIN_WIDTH ? (
+      {chipVisible && coords.width >= CHIP_MIN_WIDTH ? (
         <HighlightChip
           color={bandColor}
           label={label}
           tooltip={highlight.label ?? 'Highlighted region'}
+          setOpen={setMenuOpen}
           menuItems={[
             {
               label: 'Dismiss highlight',

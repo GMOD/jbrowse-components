@@ -110,6 +110,7 @@ export {
   SVGHighlightBand,
   installLinkedViewSync,
   stateModelFactory as linearGenomeViewStateModelFactory,
+  useHighlightChip,
 } from './LinearGenomeView/index.ts'
 // Deliberately the component itself, and deliberately not the same `SearchBox`
 // the `exports` object above hands runtime plugins — that one is lazy. An
