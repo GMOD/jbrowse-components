@@ -22,8 +22,12 @@ export function featureData(
   // score. Same rule `defaultParser` applies on the plain-BED path.
   const name = l[6] === '.' ? undefined : l[6]
   const score = l[7] && l[7] !== '.' ? +l[7] : undefined
-  const strand1 = parseStrand(l[8])
-  const strand2 = parseStrand(l[9])
+  // Columns 9 and 10 ride with the blocks they describe. Left behind on a
+  // flipped row they anchored the feature at one end and gave it the other
+  // end's orientation, which every consumer reading a junction edge off the
+  // strand then got backwards for that half of the record.
+  const strand1 = parseStrand(l[flip ? 9 : 8])
+  const strand2 = parseStrand(l[flip ? 8 : 9])
   const extra = l.slice(10)
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))

@@ -154,6 +154,47 @@ test('handles different SV types correctly', async () => {
   expect(feature?.get('score')).toBe(70)
 })
 
+// A row is filed under BOTH of its contigs, and the half a query gets back is
+// anchored at whichever end it asked about. The two halves have to be mirror
+// images — same blocks, same strands, swapped — or a consumer reading a junction
+// edge off the strand gets a different answer depending on which end the reader
+// clicked. The strand columns used to stay put while the coordinate columns
+// swapped, so the flipped half was anchored at one end carrying the other end's
+// orientation.
+test.each([
+  { name: 'SV1', refNames: ['chr1', 'chr2'] },
+  { name: 'SV3', refNames: ['chr2', 'chr3'] },
+])('both halves of $name mirror each other', async ({ name, refNames }) => {
+  const adapter = makeAdapter()
+  const halves = await Promise.all(
+    refNames.map(async refName => {
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures({
+            assemblyName: 'volvox',
+            refName,
+            start: 0,
+            end: 10000,
+          })
+          .pipe(toArray()),
+      )
+      const f = features.find(feat => feat.get('name') === name)!
+      return {
+        self: {
+          refName: f.get('refName'),
+          start: f.get('start'),
+          end: f.get('end'),
+          strand: f.get('strand'),
+        },
+        mate: f.get('mate'),
+      }
+    }),
+  )
+
+  expect(halves[1]!.mate).toEqual(halves[0]!.self)
+  expect(halves[0]!.mate).toEqual(halves[1]!.self)
+})
+
 test('returns empty array for non-existent reference', async () => {
   const adapter = makeAdapter()
   const features = await firstValueFrom(

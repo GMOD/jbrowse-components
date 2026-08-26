@@ -226,6 +226,39 @@ export function toCanonicalRefName(assembly: Assembly) {
   return (ref: string) => assembly.getCanonicalRefName2(ref)
 }
 
+interface Footprint {
+  start: number
+  end: number
+  strand?: number
+}
+
+const midpoint = (p: Footprint) => (p.start + p.end) / 2
+
+/**
+ * The junction-facing edge of one footprint, decided by that footprint's OWN
+ * strand — which is what stops the two halves of one record disagreeing.
+ * `BedpeAdapter` files a row under both of its contigs and answers with the half
+ * the query anchored on, so a rule that reads one end's strand for one edge and
+ * the other end's for the other opens two different pairs of panels for the same
+ * row: `chr1 5000 6000 chr1 8000 9000 . . + +` opened 6000+8000 from the left
+ * end and 9000+5000 from the right.
+ *
+ * A stated strand names the edge: `+` is the block's end and `-` its start,
+ * which is what a BEDPE `+ -` row means by "deletion" and `+ +` by "inversion".
+ * A 6-8 column BEDPE states neither — `parseStrand` answers 0 — and a record
+ * with no orientation has its two blocks simply face each other, which is
+ * symmetric in the pair and so order-independent too.
+ */
+function junctionEdge(self: Footprint, other: Footprint) {
+  if (self.strand === 1) {
+    return self.end
+  }
+  if (self.strand === -1) {
+    return self.start
+  }
+  return midpoint(self) <= midpoint(other) ? self.end : self.start
+}
+
 /**
  * #api
  * Resolves the two canonical-refName endpoints a breakend/SV feature spans.
@@ -257,22 +290,21 @@ export function getBreakendCoveringRegions({
       end?: number
       refName: string
     }
-    const strand = feature.get('strand') as number | undefined
-    // The junction-facing edge of each footprint: the same choice
-    // `readTrailingBp`/`readLeadingBp` make in
-    // `@jbrowse/cigar-utils/readEndpoints`, and keyed on `=== -1` for the reason
-    // stated there -- a strandless record reads as forward on both ends, so the
-    // pair cannot disagree about it. Keying on `=== 1` instead put the strand 0
-    // every 6-8 column BEDPE has (`parseStrand` answers 0 with no strand
-    // columns) in the reverse branch on both lines, opening each panel on the
-    // edge facing away from the junction.
-    const pos = strand === -1 ? startPos : feature.get('end')
-    const matePos = mate.strand === -1 ? (mate.end ?? mate.start) : mate.start
+    const here = {
+      start: startPos,
+      end: feature.get('end'),
+      strand: feature.get('strand') as number | undefined,
+    }
+    const there = {
+      start: mate.start,
+      end: mate.end ?? mate.start,
+      strand: mate.strand,
+    }
     return {
-      pos,
+      pos: junctionEdge(here, there),
       refName: f(refName),
       mateRefName: f(mate.refName),
-      matePos,
+      matePos: junctionEdge(there, here),
     }
   } else {
     return {

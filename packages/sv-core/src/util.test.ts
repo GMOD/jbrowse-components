@@ -87,53 +87,73 @@ describe('getBreakendCoveringRegions', () => {
     expect(result.matePos).toBe(200)
   })
 
-  // The junction-facing edge of each footprint, which is the edge the connector
-  // in `PairedFeatures` actually attaches to. A 6-8 column BEDPE has no strand
-  // columns at all, so `parseStrand` answers 0 for both sides, and 0 has to read
-  // as forward here exactly as `readTrailingBp`/`readLeadingBp` read it -- that
-  // pair keys on `=== -1` so a strandless record cannot make the two ends
-  // disagree about which way they face.
+  // The junction-facing edge of each footprint, decided by that footprint's own
+  // strand: `+` is its end and `-` its start, which is what a BEDPE row means by
+  // `+ -` deletion, `- +` duplication and `+ +` / `- -` inversion. A 6-8 column
+  // BEDPE states neither (`parseStrand` answers 0), and a record with no
+  // orientation has its two blocks face each other.
   test.each([
-    { name: 'strandless (a 6-8 column bedpe)', strand: 0, mateStrand: 0 },
-    { name: 'explicitly forward', strand: 1, mateStrand: 1 },
-  ])('faces the junction when $name', ({ strand, mateStrand }) => {
+    {
+      name: 'strandless (a 6-8 column bedpe)',
+      strands: [0, 0],
+      ends: [2000, 50000],
+    },
+    { name: 'a deletion (+ -)', strands: [1, -1], ends: [2000, 50000] },
+    { name: 'a duplication (- +)', strands: [-1, 1], ends: [1000, 51000] },
+    { name: 'an inversion (+ +)', strands: [1, 1], ends: [2000, 51000] },
+    { name: 'an inversion (- -)', strands: [-1, -1], ends: [1000, 50000] },
+  ])('faces the junction on $name', ({ strands, ends }) => {
     const feature = createMockFeature({
       ALT: undefined,
       refName: 'chr1',
       start: 1000,
       end: 2000,
-      strand,
-      mate: { refName: 'chr5', start: 50000, end: 51000, strand: mateStrand },
+      strand: strands[0],
+      mate: { refName: 'chr5', start: 50000, end: 51000, strand: strands[1] },
     })
     const result = getBreakendCoveringRegions({
       feature: feature as any,
       assembly: createMockAssembly(),
     })
 
-    expect({ pos: result.pos, matePos: result.matePos }).toEqual({
-      pos: 2000,
-      matePos: 50000,
-    })
+    expect([result.pos, result.matePos]).toEqual(ends)
   })
 
-  test('a reverse-stranded pair faces the junction from the other edge', () => {
-    const feature = createMockFeature({
-      ALT: undefined,
-      refName: 'chr1',
-      start: 1000,
-      end: 2000,
-      strand: -1,
-      mate: { refName: 'chr5', start: 50000, end: 51000, strand: -1 },
-    })
-    const result = getBreakendCoveringRegions({
-      feature: feature as any,
-      assembly: createMockAssembly(),
-    })
+  // `BedpeAdapter` files a row under BOTH of its contigs and answers with the
+  // half the query anchored on, so one record reaches here twice with its two
+  // ends swapped. The edge rule used to read one end's strand for one edge and
+  // the other end's for the other, which is order-dependent: an INV row opened
+  // 6000+8000 from the left end and 9000+5000 from the right, two panels moving
+  // a kilobase in opposite directions for the same call.
+  test.each([
+    { name: 'strandless', strands: [0, 0] },
+    { name: 'a deletion (+ -)', strands: [1, -1] },
+    { name: 'a duplication (- +)', strands: [-1, 1] },
+    { name: 'an inversion (+ +)', strands: [1, 1] },
+    { name: 'an inversion (- -)', strands: [-1, -1] },
+  ])('both halves of $name open the same two panels', ({ strands }) => {
+    const block1 = { refName: 'chr1', start: 5000, end: 6000 }
+    const block2 = { refName: 'chr1', start: 8000, end: 9000 }
+    const halfOf = (
+      self: typeof block1,
+      selfStrand: number,
+      mate: typeof block1,
+      mateStrand: number,
+    ) =>
+      getBreakendCoveringRegions({
+        feature: createMockFeature({
+          ALT: undefined,
+          ...self,
+          strand: selfStrand,
+          mate: { ...mate, strand: mateStrand },
+        }) as any,
+        assembly: createMockAssembly(),
+      })
 
-    expect({ pos: result.pos, matePos: result.matePos }).toEqual({
-      pos: 1000,
-      matePos: 51000,
-    })
+    const first = halfOf(block1, strands[0]!, block2, strands[1]!)
+    const second = halfOf(block2, strands[1]!, block1, strands[0]!)
+
+    expect([second.matePos, second.pos]).toEqual([first.pos, first.matePos])
   })
 
   test('a mate without an end column still resolves a position', () => {
