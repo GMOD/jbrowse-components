@@ -44,7 +44,13 @@ describe('plugin exports ABI', () => {
     (name, names) => {
       const mod = exportsOf(name)
       expect(mod).toBeDefined()
-      const missing = names.filter(n => !(n in mod!))
+      // The value, not the key. What a consumer meets is `undefined` either
+      // way — the upgrade guide defines the failure that way — and the keys
+      // here are shorthand over imported bindings, three of them `lazy()` in
+      // `lazyPluginExports.tsx`. So a broken import path or a renamed default
+      // leaves the key standing over nothing, and a key-presence check passes
+      // while composing the name throws inside the bundle's `install`.
+      const missing = names.filter(n => mod![n] === undefined)
       expect(missing).toEqual([])
     },
   )
