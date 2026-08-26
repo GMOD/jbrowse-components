@@ -54,11 +54,15 @@ export async function runCommand(args: string | string[]): Promise<{
   warnings: string
   error?: Error
 }> {
+  // `error` means the command FAILED: it threw, or main() caught it and exited
+  // nonzero. Writing to stderr is not by itself a failure — a progress bar goes
+  // there, so treating stderr as an error made text-index tests pass piped and
+  // fail from a terminal, where cli-progress has a TTY to draw on. Assert on
+  // `stderr` directly to pin what a command wrote.
   let stdout = ''
   let stderr = ''
-  // console.warn is kept apart from stderr: a warning is not a failure, and
-  // stderr below gets promoted into `error`. Capturing it at all keeps warnings
-  // assertable instead of leaking to the real console.
+  // console.warn is kept apart from stderr so a warning stays assertable on its
+  // own instead of leaking to the real console.
   let warnings = ''
   let error: Error | undefined
   let outputReceived = false
@@ -86,17 +90,6 @@ export async function runCommand(args: string | string[]): Promise<{
       warnings += format(args)
       outputReceived = true
     })
-
-  // The captured buffers below are strings, not a terminal, so the mocked
-  // streams have to say so: cli-progress draws its bar only when isTTY, and the
-  // spy would otherwise fold that decoration into stderr, which becomes `error`.
-  // Without this a text-index test passes piped and fails from a terminal.
-  const originalIsTTY = {
-    stdout: process.stdout.isTTY,
-    stderr: process.stderr.isTTY,
-  }
-  process.stdout.isTTY = false
-  process.stderr.isTTY = false
 
   // Mock process.stdout.write
   const stdoutWriteSpy = jest
@@ -150,13 +143,6 @@ export async function runCommand(args: string | string[]): Promise<{
     stdoutWriteSpy.mockRestore()
     stderrWriteSpy.mockRestore()
     processExitSpy.mockRestore()
-    process.stdout.isTTY = originalIsTTY.stdout
-    process.stderr.isTTY = originalIsTTY.stderr
-  }
-
-  // If we have stderr but no error, create an error from stderr
-  if (!error && stderr.trim()) {
-    error = new Error(stderr.trim())
   }
 
   // Clean up the error message to remove EXIT_MOCK
