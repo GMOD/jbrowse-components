@@ -54,6 +54,22 @@ function makeDiploidAdapter(
   )
 }
 
+// reciprocal.pif.gz is `jbrowse make-pif` over reciprocal.paf beside it: one
+// homology stated from either end — the E. coli K12/CFT073 pair, with the two chainings STAGGERED rather
+// than nested (4362432-4496063 against 4362436-4496576, 4 bp and 513 bp apart at
+// the two ends) so a block boundary can fall between their starts and another
+// between their ends. That is the shape the per-query dedupe drew twice.
+function makeReciprocalAdapter() {
+  return new Adapter(
+    configSchema.create({
+      pifGzLocation: loc('./test_data/reciprocal.pif.gz'),
+      index: { location: loc('./test_data/reciprocal.pif.gz.tbi') },
+      assemblyNames: ['K12', 'CFT073'],
+      assemblyNameToPanSN: { K12: 'K12#1', CFT073: 'CFT073#1' },
+    }),
+  )
+}
+
 // the same diploid file read as a haplotype-resolved pangenome: each haplotype
 // is its own JBrowse assembly, mapped to a `sample#haplotype` PanSN prefix
 const HAP_ASSEMBLIES = ['grapeHap1', 'grapeHap2', 'peach']
@@ -436,5 +452,45 @@ describe('an assembly the file has never heard of', () => {
         end: 2000,
       }),
     ).rejects.toThrow(/must name the assembly it is anchored on/)
+  })
+})
+
+describe('a reciprocal pair in an indexed all-vs-all file', () => {
+  const region = (start: number, end: number) => ({
+    refName: 'chr',
+    start,
+    end,
+    assemblyName: 'K12',
+  })
+
+  test('draws once over the whole span', async () => {
+    const fa = await feats(
+      makeReciprocalAdapter(),
+      region(4_000_000, 4_600_000),
+    )
+    expect(fa.length).toBe(1)
+    // the longer chaining is the survivor, which is a property of the two rows
+    expect(fa[0]!.get('start')).toBe(4_362_436)
+  })
+
+  // The dedupe ran over the rows ONE region query returned, so it never saw a
+  // restatement partner the block missed: the first block below reaches only the
+  // shorter member and the last only the longer, and both came back drawn. The
+  // display's own `dedupe(r => r.id())` cannot collapse them — they are two file
+  // offsets, two ids — so the ribbon was painted twice.
+  test('stays deduped across block boundaries', async () => {
+    const adapter = makeReciprocalAdapter()
+    const blocks = [
+      [4_000_000, 4_362_434],
+      [4_362_434, 4_496_100],
+      [4_496_100, 4_600_000],
+    ] as const
+    const ids = new Set<string>()
+    for (const [start, end] of blocks) {
+      for (const f of await feats(adapter, region(start, end))) {
+        ids.add(f.id())
+      }
+    }
+    expect(ids.size).toBe(1)
   })
 })

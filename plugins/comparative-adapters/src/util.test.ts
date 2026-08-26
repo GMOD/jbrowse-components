@@ -2,6 +2,7 @@ import {
   markReciprocalDuplicates,
   parseBed,
   resolveCoarseTier,
+  restatementContext,
 } from './util.ts'
 
 describe('parseBed', () => {
@@ -379,5 +380,57 @@ describe('markReciprocalDuplicates', () => {
     const t = performance.now()
     expect(markReciprocalDuplicates(sides).filter(Boolean)).toHaveLength(0)
     expect(performance.now() - t).toBeLessThan(2000)
+  })
+})
+
+// How far past a region query an INDEXED adapter has to read for the pass above
+// to answer the same way it would over the whole file. The bound is what makes
+// the fix affordable: an adapter that widened to the rows' own extent would read
+// a whole chromosome of a pangenome for every block.
+describe('restatementContext', () => {
+  const side = (start: number, end: number) => ({
+    refName: 'K12#1#chr',
+    start,
+    end,
+    mateRefName: 'CFT073#1#chr',
+    mateStart: start,
+    mateEnd: end,
+  })
+
+  test('a query landing inside its rows reads once', () => {
+    expect(restatementContext([side(1000, 11_000)], 5000, 6000)).toEqual({
+      start: 5000,
+      end: 6000,
+    })
+  })
+
+  // A row the query catches by its outer tenth may have a partner covering the
+  // rest of it and nothing the query reaches — one fringe further on reaches a
+  // point that partner has to cover.
+  test('a row caught by its trailing fringe reaches back a tenth of it', () => {
+    expect(restatementContext([side(1000, 11_000)], 10_500, 12_000)).toEqual({
+      start: 10_000,
+      end: 12_000,
+    })
+  })
+
+  test('a row caught by its leading fringe reaches forward a tenth of it', () => {
+    expect(restatementContext([side(1000, 11_000)], 0, 1500)).toEqual({
+      start: 0,
+      end: 2000,
+    })
+  })
+
+  test('an empty answer widens nothing', () => {
+    expect(restatementContext([], 5000, 6000)).toEqual({
+      start: 5000,
+      end: 6000,
+    })
+  })
+
+  // A tenth back from a row's own end is 0.9*end + 0.1*start, so a row on a
+  // contig start cannot reach below it and the answer needs no clamp
+  test('a row at the contig start reaches back inside the contig', () => {
+    expect(restatementContext([side(0, 10_000)], 9500, 10_000).start).toBe(9000)
   })
 })

@@ -804,6 +804,45 @@ function isRestatement(a: AlignedSide, b: AlignedSide) {
 }
 
 /**
+ * The range an INDEXED adapter has to read for {@link markReciprocalDuplicates}
+ * to answer the same way over one region query as it would over the whole file.
+ *
+ * Run over one block's rows alone the pass never saw a row's restatement
+ * partner when the block missed it, and the answer became a function of where
+ * the view cut its blocks: a boundary falling between two near-identical spans
+ * let the shorter member through on one side of it and the longer through on
+ * the other, and the ribbon came back doubled. The in-memory sibling settles
+ * this by deduping the whole file once in `setup`, which is the move an indexed
+ * adapter exists not to make.
+ *
+ * It does not have to. A partner that DROPS a row covers at least
+ * {@link RECIPROCAL_OVERLAP} of it, so it contains everything but that row's
+ * outer fringe — and a row reaching the query deeper than its own fringe
+ * therefore has every such partner in the query's own answer already. What is
+ * left is the rows the query catches by the fringe alone, and one fringe past
+ * the query on that side reaches a point every partner of theirs must cover.
+ *
+ * So the widening is a tenth of the longest alignment the query caught by its
+ * edge, never the file and usually nothing at all: the returned range comes
+ * back unchanged for a query landing inside the alignments it returns, which is
+ * every block but the two at an alignment's ends.
+ */
+export function restatementContext(
+  sides: AlignedSide[],
+  start: number,
+  end: number,
+) {
+  let lo = start
+  let hi = end
+  for (const side of sides) {
+    const fringe = (1 - RECIPROCAL_OVERLAP) * refSpan(side)
+    lo = Math.min(lo, side.end - fringe)
+    hi = Math.max(hi, side.start + fringe)
+  }
+  return { start: Math.floor(lo), end: Math.ceil(hi) }
+}
+
+/**
  * Total order on the sides of one contig pair. Ascending start is what the sweep
  * in {@link markReciprocalDuplicates} needs; the rest only has to be a tiebreak
  * that does not depend on the order the sides arrived in.

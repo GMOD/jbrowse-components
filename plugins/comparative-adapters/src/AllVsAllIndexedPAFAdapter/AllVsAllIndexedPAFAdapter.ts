@@ -14,6 +14,7 @@ import {
   markReciprocalDuplicates,
   panSNInventory,
   resolveAllVsAllQuery,
+  restatementContext,
   resolveCoarseTier,
   resolvePanSNPrefix,
   sideDraws,
@@ -137,37 +138,61 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
       // (seqid, letter) and which lands first varies run to run. fileOffset is a
       // virtual offset into the one file, so it totally orders the rows on its
       // own — the perspective letter is not part of the sort.
-      const rows: { fileOffset: number; line: PifLine; side: AlignedSide }[] =
-        []
-      await Promise.all(
-        seqs.flatMap(seq =>
-          letters.map(letter =>
-            this.pif.readLines({
-              seqid: letter + seq,
-              start,
-              end,
-              statusCallback: slot(),
-              stopTokenCheck,
-              lineCallback: (parsed, fileOffset) => {
-                // One-vs-all draws every mate, including same-sample paralogy:
-                // make-pif's double-emit already keys each locus on its own
-                // contig, so viewing chr1 returns the chr1-anchored row and
-                // viewing chr2 the chr2-anchored row (distinct fileOffsets =
-                // distinct ids).
-                const side = pifSide(parsed)
-                if (sideDraws(side, anchorPrefix, targetPrefix)) {
-                  rows.push({ fileOffset, line: parsed, side })
-                }
-              },
-            }),
+      const readRows = async (from: number, to: number) => {
+        const rows: { fileOffset: number; line: PifLine; side: AlignedSide }[] =
+          []
+        await Promise.all(
+          seqs.flatMap(seq =>
+            letters.map(letter =>
+              this.pif.readLines({
+                seqid: letter + seq,
+                start: from,
+                end: to,
+                statusCallback: slot(),
+                stopTokenCheck,
+                lineCallback: (parsed, fileOffset) => {
+                  // One-vs-all draws every mate, including same-sample
+                  // paralogy: make-pif's double-emit already keys each locus on
+                  // its own contig, so viewing chr1 returns the chr1-anchored
+                  // row and viewing chr2 the chr2-anchored row (distinct
+                  // fileOffsets = distinct ids).
+                  const side = pifSide(parsed)
+                  if (sideDraws(side, anchorPrefix, targetPrefix)) {
+                    rows.push({ fileOffset, line: parsed, side })
+                  }
+                },
+              }),
+            ),
           ),
-        ),
-      )
-      rows.sort((a, b) => a.fileOffset - b.fileOffset)
+        )
+        rows.sort((a, b) => a.fileOffset - b.fileOffset)
+        return rows
+      }
 
-      const duplicate = markReciprocalDuplicates(rows.map(r => r.side))
-      for (const [i, { fileOffset, line }] of rows.entries()) {
-        if (!duplicate[i]) {
+      const rows = await readRows(start, end)
+
+      // The dedupe's answer must not depend on where the view cut its blocks,
+      // and over one block's rows alone it did — `restatementContext` states
+      // why, and how far past the query the pass has to see. Usually not at all:
+      // a query landing inside the alignments it returns gets its own range
+      // back and reads once.
+      const reach = restatementContext(
+        rows.map(r => r.side),
+        start,
+        end,
+      )
+      const context =
+        reach.start < start || reach.end > end
+          ? await readRows(reach.start, reach.end)
+          : rows
+      // What the QUERY reaches, by the identity tabix already gave each row —
+      // re-deriving it as an interval test would be a second spelling of the
+      // index's own inclusion rule.
+      const inQuery = new Set(rows.map(r => r.fileOffset))
+
+      const duplicate = markReciprocalDuplicates(context.map(r => r.side))
+      for (const [i, { fileOffset, line }] of context.entries()) {
+        if (!duplicate[i] && inQuery.has(fileOffset)) {
           observer.next(
             makeIndexedSyntenyFeature({
               line,
