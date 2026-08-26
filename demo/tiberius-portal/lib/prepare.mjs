@@ -1,8 +1,8 @@
+import { execFileSync } from 'node:child_process'
 // Turn the caller's files into a static data directory JBrowse can read over
 // plain HTTP, and write the config.json that names them.
 import fs from 'node:fs'
 import path from 'node:path'
-import { execFileSync } from 'node:child_process'
 
 const run = (cmd, args, opts = {}) =>
   execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], ...opts })
@@ -18,7 +18,9 @@ function have(cmd) {
 
 export function checkTools({ needsBam }) {
   const missing = ['bgzip', 'tabix', 'samtools'].filter(c => !have(c))
-  if (needsBam && !have('samtools')) {missing.push('samtools')}
+  if (needsBam && !have('samtools')) {
+    missing.push('samtools')
+  }
   if (missing.length) {
     throw new Error(
       `missing required tools: ${[...new Set(missing)].join(', ')}. ` +
@@ -69,15 +71,20 @@ export function prepareGff(input, outDir, name) {
   if (isGz(input)) {
     fs.copyFileSync(input, target)
     for (const ext of ['.tbi', '.csi']) {
-      if (fs.existsSync(input + ext)) {fs.copyFileSync(input + ext, target + ext)}
+      if (fs.existsSync(input + ext)) {
+        fs.copyFileSync(input + ext, target + ext)
+      }
     }
   } else {
     const sorted = path.join(outDir, `${name}.sorted.gff`)
     sortGff(input, sorted)
-    run('sh', ['-c', `bgzip -c ${JSON.stringify(sorted)} > ${JSON.stringify(target)}`])
+    run('sh', [
+      '-c',
+      `bgzip -c ${JSON.stringify(sorted)} > ${JSON.stringify(target)}`,
+    ])
     fs.unlinkSync(sorted)
   }
-  if (!fs.existsSync(`${target  }.tbi`) && !fs.existsSync(`${target  }.csi`)) {
+  if (!fs.existsSync(`${target}.tbi`) && !fs.existsSync(`${target}.csi`)) {
     run('tabix', ['-p', 'gff', target])
   }
   return path.basename(target)
@@ -92,13 +99,18 @@ export function prepareFasta(input, outDir, name) {
   if (isGz(input)) {
     fs.copyFileSync(input, target)
     for (const ext of ['.fai', '.gzi']) {
-      if (fs.existsSync(input + ext)) {fs.copyFileSync(input + ext, target + ext)}
+      if (fs.existsSync(input + ext)) {
+        fs.copyFileSync(input + ext, target + ext)
+      }
     }
   } else {
     // bgzip, not gzip: JBrowse needs block compression to seek into it
-    run('sh', ['-c', `bgzip -c ${JSON.stringify(input)} > ${JSON.stringify(target)}`])
+    run('sh', [
+      '-c',
+      `bgzip -c ${JSON.stringify(input)} > ${JSON.stringify(target)}`,
+    ])
   }
-  if (!fs.existsSync(`${target  }.fai`) || !fs.existsSync(`${target  }.gzi`)) {
+  if (!fs.existsSync(`${target}.fai`) || !fs.existsSync(`${target}.gzi`)) {
     run('samtools', ['faidx', target])
   }
   return path.basename(target)
@@ -113,7 +125,10 @@ export function prepareBed(text, outDir, name) {
   const plain = path.join(outDir, `${name}.bed`)
   const target = path.join(outDir, `${name}.bed.gz`)
   fs.writeFileSync(plain, text)
-  run('sh', ['-c', `bgzip -f -c ${JSON.stringify(plain)} > ${JSON.stringify(target)}`])
+  run('sh', [
+    '-c',
+    `bgzip -f -c ${JSON.stringify(plain)} > ${JSON.stringify(target)}`,
+  ])
   run('tabix', ['-f', '-p', 'bed', target])
   return path.basename(target)
 }
@@ -125,13 +140,16 @@ export function prepareBam(input, outDir) {
   fs.mkdirSync(outDir, { recursive: true })
   const target = path.join(outDir, path.basename(input))
   fs.copyFileSync(input, target)
-  const idx = fs.existsSync(`${input  }.bai`)
-    ? `${input  }.bai`
+  const idx = fs.existsSync(`${input}.bai`)
+    ? `${input}.bai`
     : fs.existsSync(input.replace(/\.bam$/, '.bai'))
       ? input.replace(/\.bam$/, '.bai')
       : null
-  if (idx) {fs.copyFileSync(idx, `${target  }.bai`)}
-  else {run('samtools', ['index', target])}
+  if (idx) {
+    fs.copyFileSync(idx, `${target}.bai`)
+  } else {
+    run('samtools', ['index', target])
+  }
   return path.basename(target)
 }
 
@@ -149,7 +167,19 @@ const grownLane = (displayId, growMaxHeight, rest = {}) => [
   },
 ]
 
-export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, conflictsRef, referenceRef, rnaRefs, rnaNames = [], rnaHeight, predictionName, referenceName }) {
+export function buildConfig({
+  assembly,
+  fastaRef,
+  aliasesRef,
+  predictionRef,
+  conflictsRef,
+  referenceRef,
+  rnaRefs,
+  rnaNames = [],
+  rnaHeight,
+  predictionName,
+  referenceName,
+}) {
   const uri = f => (isUrl(f) ? f : `data/${f}`)
   const tracks = [
     {
@@ -198,7 +228,8 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, con
     const track = {
       type: 'AlignmentsTrack',
       trackId,
-      name: rnaNames[i] || (rnaRefs.length > 1 ? `RNA-seq ${i + 1}` : 'RNA-seq'),
+      name:
+        rnaNames[i] || (rnaRefs.length > 1 ? `RNA-seq ${i + 1}` : 'RNA-seq'),
       category: ['Evidence'],
       assemblyNames: [assembly],
       adapter: { type: 'BamAdapter', uri: uri(r) },

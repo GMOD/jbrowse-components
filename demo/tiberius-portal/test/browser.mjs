@@ -48,25 +48,39 @@ execFileSync(
 )
 
 let failures = 0
+// React commits a render after the event that caused it, and an effect can
+// schedule a second pass, so reading the DOM straight after a keypress races
+// it. Poll until the page settles on the answer; a wrong one still fails, one
+// second later.
 async function check(name, produce, expected) {
+  const want = JSON.stringify(expected)
+  const deadline = 1000
   let actual
-  try {
-    actual = await produce()
-  } catch (e) {
-    // a selector that matches nothing throws rather than returning, and a
-    // missing card is the shape most of these regressions take
-    console.log(`FAIL ${name}\n       threw ${e.message.split('\n')[0]}`)
-    failures++
-    return
+  let thrown
+  for (let waited = 0; ; waited += 25) {
+    thrown = null
+    try {
+      actual = await produce()
+      if (JSON.stringify(actual) === want) {
+        console.log(`ok   ${name}`)
+        return
+      }
+    } catch (e) {
+      // a selector that matches nothing throws rather than returning, and a
+      // missing card is the shape most of these regressions take
+      thrown = e
+    }
+    if (waited >= deadline) {
+      break
+    }
+    await new Promise(r => setTimeout(r, 25))
   }
-  const a = JSON.stringify(actual)
-  const e = JSON.stringify(expected)
-  if (a === e) {
-    console.log(`ok   ${name}`)
-  } else {
-    console.log(`FAIL ${name}\n       expected ${e}\n       actual   ${a}`)
-    failures++
-  }
+  console.log(
+    thrown
+      ? `FAIL ${name}\n       threw ${thrown.message.split('\n')[0]}`
+      : `FAIL ${name}\n       expected ${want}\n       actual   ${JSON.stringify(actual)}`,
+  )
+  failures++
 }
 
 const browser = await puppeteer.launch({
@@ -163,20 +177,68 @@ await check(
   () => page.$$eval('.card', e => e.length),
   3,
 )
+const queue = await page.$$eval('.card', els => els.map(e => e.dataset.id))
+await check(
+  'and the cursor, stranded on a card the filter dropped, goes to the top of what is left',
+  current,
+  queue[0],
+)
 await page.keyboard.press('j')
+await check('j takes it to the second in the queue', current, queue[1])
 await page.keyboard.press('2')
 await check(
-  'judging under that filter takes the card out of the list',
+  'judging that one takes it out of the list',
   () => page.$$eval('.card', e => e.length),
   2,
 )
 await check(
-  'and the cursor closes over the gap rather than vanishing',
+  'and the cursor closes over the gap — the card after it, not back to the top',
   current,
-  await page.$$eval('.card', els => els[0].dataset.id),
+  queue[2],
 )
 
+// React keeps its own record of the last value it set, so assigning .value and
+// firing `input` leaves it certain nothing changed and onChange never runs.
+async function typeSearch(text) {
+  await page.$eval(
+    '#q',
+    (el, v) => {
+      Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        'value',
+      ).set.call(el, v)
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+    },
+    text,
+  )
+}
+
 await page.select('#vf', 'all')
+const oneId = ids[0]
+await typeSearch(oneId)
+await check(
+  'the search box filters the list down',
+  () => page.$$eval('.card', e => e.length),
+  1,
+)
+await check(
+  'to the card that matched',
+  () => page.$eval('.card', e => e.dataset.id),
+  oneId,
+)
+await typeSearch('no-model-is-called-this')
+await check(
+  'and says so when nothing matches',
+  () => page.$eval('.empty', e => e.textContent.trim()),
+  'No models match these filters.',
+)
+await typeSearch('')
+await check(
+  'clearing it brings the list back',
+  () => page.$$eval('.card', e => e.length),
+  5,
+)
+
 await page.keyboard.press('/')
 await check(
   '/ focuses the search box',
@@ -195,10 +257,7 @@ await check(
   () => page.evaluate(() => document.activeElement.id),
   '',
 )
-await page.$eval('#q', e => {
-  e.value = ''
-  e.dispatchEvent(new Event('input', { bubbles: true }))
-})
+await typeSearch('')
 
 await check(
   'the key legend starts hidden',
@@ -301,7 +360,36 @@ await check(
   '3 verdicts read in, 1 for models this portal does not carry.',
 )
 
+// Hydration is only clean if the string the generator rendered matches what the
+// browser builds from the same data — a mismatch is a console error, and this
+// is the check that sees one.
 await check('the page logged nothing', () => errors, [])
+
+// The half of this that is not React: the portal is a file, and a file that
+// needs a 200 KB bundle to show its own contents is worse than one that does
+// not. With scripting off the cards, the captures and the prose are all there;
+// only judging them stops working.
+const still = await browser.newPage()
+await still.setJavaScriptEnabled(false)
+await still.goto(`file://${path.join(portal, 'index.html')}`, {
+  waitUntil: 'load',
+})
+await check(
+  'every card is in the HTML with scripting off',
+  () => still.$$eval('.card', els => els.length),
+  ids.length,
+)
+await check(
+  'and so is what each one says',
+  () => still.$eval('.card .why', e => e.textContent.length > 0),
+  true,
+)
+await check(
+  'and the class filters, ready for the script that will bind them',
+  () => still.$$eval('.filters button', els => els.length),
+  5,
+)
+await still.close()
 
 await browser.close()
 fs.rmSync(tmp, { recursive: true, force: true })

@@ -1,578 +1,582 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>__TITLE__</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#129516;</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<style>
-:root {
-  --ground: #f4f6f8; --surface: #fff; --surface-2: #eaeef4;
-  --ink: #131820; --muted: #5a6474; --line: #dde2ea; --line-strong: #c3cbd8;
-  --accent: #34457f; --accent-soft: #e7ebf7;
-  --keep: #2c7a55; --keep-soft: #e2f2ea;
-  --reject: #b04238; --reject-soft: #fbe8e6;
-  --edit: #96681a; --edit-soft: #f9eed8;
-  --on-cls: #fff;
-  --c-merge: #6d28d9; --c-merge-soft: #f3e8ff;
-  --c-structure-conflict: #b45309; --c-structure-conflict-soft: #ffedd5;
-  --c-novel-locus: #0f766e; --c-novel-locus-soft: #ccfbf1;
-  --c-novel-coding: #1d4ed8; --c-novel-coding-soft: #dbeafe;
-  --shadow: 0 1px 2px rgba(19,24,32,.06), 0 8px 24px -12px rgba(19,24,32,.18);
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --ground: #10131a; --surface: #181d26; --surface-2: #212733;
-  --ink: #e6eaf2; --muted: #98a2b3; --line: #2b3240; --line-strong: #3a4356;
-  --accent: #93a6ea; --accent-soft: #222a44;
-  --keep: #62bd91; --keep-soft: #17301f;
-  --reject: #e88b80; --reject-soft: #351c1c;
-  --edit: #d9ad5c; --edit-soft: #32270f;
-  --on-cls: #10131a;
-  --c-merge: #c4b5fd; --c-merge-soft: #2a2148;
-  --c-structure-conflict: #f0b27a; --c-structure-conflict-soft: #3a2a14;
-  --c-novel-locus: #5eead4; --c-novel-locus-soft: #10312e;
-  --c-novel-coding: #93b4fc; --c-novel-coding-soft: #1b2a4d;
-  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
-} }
-:root[data-theme="dark"] {
-  --ground: #10131a; --surface: #181d26; --surface-2: #212733;
-  --ink: #e6eaf2; --muted: #98a2b3; --line: #2b3240; --line-strong: #3a4356;
-  --accent: #93a6ea; --accent-soft: #222a44;
-  --keep: #62bd91; --keep-soft: #17301f;
-  --reject: #e88b80; --reject-soft: #351c1c;
-  --edit: #d9ad5c; --edit-soft: #32270f;
-  --on-cls: #10131a;
-  --c-merge: #c4b5fd; --c-merge-soft: #2a2148;
-  --c-structure-conflict: #f0b27a; --c-structure-conflict-soft: #3a2a14;
-  --c-novel-locus: #5eead4; --c-novel-locus-soft: #10312e;
-  --c-novel-coding: #93b4fc; --c-novel-coding-soft: #1b2a4d;
-  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
-}
-[data-cls="merge"] { --cls: var(--c-merge); --cls-soft: var(--c-merge-soft); }
-[data-cls="structure-conflict"] { --cls: var(--c-structure-conflict); --cls-soft: var(--c-structure-conflict-soft); }
-[data-cls="novel-locus"] { --cls: var(--c-novel-locus); --cls-soft: var(--c-novel-locus-soft); }
-[data-cls="novel-coding"] { --cls: var(--c-novel-coding); --cls-soft: var(--c-novel-coding-soft); }
-* { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--ground); color: var(--ink);
-  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
-}
-.wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; display: flex; flex-direction: column; gap: 24px; }
-h1 { font-family: "Familjen Grotesk", sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin: 0; text-wrap: balance; }
-.eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.lede { max-width: 66ch; color: var(--muted); margin: 0; }
-.lede strong { color: var(--ink); font-weight: 600; }
-.masthead { display: flex; flex-direction: column; gap: 12px; }
-
-.controls {
-  position: sticky; top: 0; z-index: 10; background: var(--surface);
-  border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
-  padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;
-}
-.row1 { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; }
-.stat { display: flex; flex-direction: column; gap: 1px; }
-.stat .n { font-family: "IBM Plex Mono", monospace; font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.stat .k { font-size: 11.5px; color: var(--muted); }
-.stat.agrees .n { color: var(--keep); }
-.stat.flagged .n { color: var(--edit); }
-.rule { width: 1px; align-self: stretch; background: var(--line); }
-.progress { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 5px; }
-.progress .r { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
-.bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; display: flex; }
-.bar span { height: 100%; transition: width .25s ease; }
-.b-keep { background: var(--keep); } .b-edit { background: var(--edit); } .b-reject { background: var(--reject); }
-
-.row2 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.filters { display: flex; flex-wrap: wrap; gap: 6px; }
-.sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
-button, select, input[type="search"] {
-  font: inherit; font-size: 13px; border-radius: 7px;
-  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
-  padding: 6px 11px; transition: background .12s, border-color .12s, color .12s;
-}
-button { cursor: pointer; }
-button:hover { background: var(--surface-2); }
-button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-button[disabled] { opacity: .45; cursor: not-allowed; }
-.filters button { background: var(--cls, var(--accent)); border-color: transparent; color: var(--on-cls); font-weight: 600; }
-.filters button:hover { background: var(--cls, var(--accent)); filter: brightness(1.1); }
-.filters button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--cls, var(--accent)); }
-.filters .count { font-family: "IBM Plex Mono", monospace; opacity: .8; margin-left: 7px; font-variant-numeric: tabular-nums; }
-input[type="search"] { min-width: 190px; }
-.spacer { margin-left: auto; }
-
-.cards { display: flex; flex-direction: column; gap: 20px; }
-.card { background: var(--surface); border: 1px solid var(--verdict, var(--line)); border-left: 5px solid var(--cls, var(--verdict, var(--line))); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
-.card[data-verdict="keep"] { --verdict: var(--keep); }
-.card[data-verdict="reject"] { --verdict: var(--reject); }
-.card[data-verdict="edit"] { --verdict: var(--edit); }
-.card-head { background: var(--cls-soft); display: flex; flex-wrap: wrap; gap: 9px 15px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-.chip { font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; background: var(--cls, var(--accent)); color: var(--on-cls); white-space: nowrap; }
-.model { font-family: "IBM Plex Mono", monospace; font-size: 14px; font-weight: 500; }
-.genes { font-weight: 600; }
-.meta { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.why { padding: 12px 18px 0; color: var(--muted); font-size: 14px; max-width: 78ch; }
-.detail { padding: 6px 18px 0; font-size: 13.5px; max-width: 78ch; color: var(--ink); }
-.detail b { color: var(--cls, var(--accent)); font-weight: 600; }
-.detail .j { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
-.shot { display: block; width: 100%; height: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 13px; background: #fff; }
-.missing { margin: 13px 0 0; padding: 26px 18px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface-2); color: var(--muted); font-size: 13.5px; }
-.card-foot { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 13px 18px; }
-.verdicts { display: flex; gap: 7px; }
-.verdicts button[aria-pressed="true"][data-v="keep"] { background: var(--keep-soft); border-color: var(--keep); color: var(--keep); font-weight: 600; }
-.verdicts button[aria-pressed="true"][data-v="edit"] { background: var(--edit-soft); border-color: var(--edit); color: var(--edit); font-weight: 600; }
-.verdicts button[aria-pressed="true"][data-v="reject"] { background: var(--reject-soft); border-color: var(--reject); color: var(--reject); font-weight: 600; }
-.next { font-size: 13px; color: var(--muted); }
-.next b { color: var(--ink); font-weight: 600; }
-.links { margin-left: auto; display: flex; gap: 8px; }
-a.live { font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); border-radius: 7px; padding: 6px 13px; white-space: nowrap; }
-a.live.apollo { background: var(--accent); color: var(--on-cls); }
-a.live.apollo:hover { filter: brightness(1.15); }
-a.live:hover { background: var(--accent-soft); }
-a.live:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.card[data-current="true"] { outline: 2px solid var(--accent); outline-offset: 3px; }
-.msg { font-size: 12.5px; color: var(--muted); }
-.actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.keys { display: flex; flex-wrap: wrap; gap: 6px 20px; align-items: center; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 11px; }
-.keys kbd { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; margin-right: 4px; }
-.empty { padding: 44px 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line-strong); border-radius: 10px; }
-.note { font-size: 13px; color: var(--muted); background: var(--surface-2); border-radius: 8px; padding: 10px 14px; }
-footer { border-top: 1px solid var(--line); padding-top: 20px; color: var(--muted); font-size: 13.5px; display: flex; flex-direction: column; gap: 7px; max-width: 78ch; }
-footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-@media (max-width: 640px) { h1 { font-size: 27px; } .meta { margin-left: 0; width: 100%; } .links { margin-left: 0; } }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="masthead">
-    <div class="eyebrow" id="eyebrow"></div>
-    <h1 id="title"></h1>
-    <p class="lede" id="lede"></p>
-  </div>
-  <div class="controls" id="controls"></div>
-  <div class="cards" id="cards"></div>
-  <footer id="footer"></footer>
-</div>
-
-<script id="portal-data" type="application/json">__DATA__</script>
-<script>
-(function () {
-  var DATA = JSON.parse(document.getElementById('portal-data').textContent)
-  var KEY = 'gene-review:' + DATA.portalId
-  var VERDICTS = [
-    { v: 'keep', label: 'Keep', key: '1' },
-    { v: 'edit', label: 'Needs editing', key: '2' },
-    { v: 'reject', label: 'Reject', key: '3' },
-  ]
-  var state = { verdicts: {}, cls: 'all', verdictFilter: 'all', q: '', cursor: null, keys: false }
-  var host = document.getElementById('cards')
-  var els = {}
-  var smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches
-  var msgTimer
-
-  try {
-    var saved = JSON.parse(localStorage.getItem(KEY) || '{}')
-    state.verdicts = saved.verdicts || {}
-    state.keys = !!saved.keys
-  } catch (e) { /* private window, or site data blocked */ }
-
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ verdicts: state.verdicts, keys: state.keys })) } catch (e) {}
-  }
-
-  var num = function (n) { return Math.abs(n).toLocaleString() }
-
-  // What the class alone cannot say: which junction, and by how much. A splice
-  // site 12 bp out and an intron cut through the middle of a reference exon are
-  // the same class and completely different edits.
-  function phrase(c) {
-    if (c.kind === 'donor') return 'intron ' + c.index + ' donor off by ' + num(c.shift) + ' bp'
-    if (c.kind === 'acceptor') return 'intron ' + c.index + ' acceptor off by ' + num(c.shift) + ' bp'
-    if (c.kind === 'skips') return 'intron ' + c.index + ' skips ' + c.skipped + ' reference exon' + (c.skipped > 1 ? 's' : '')
-    if (c.kind === 'in-exon') return 'intron ' + c.index + ' falls inside a reference exon'
-    if (c.kind === 'shifted') return 'intron ' + c.index + ' shifted ' + num(c.shift) + ' bp'
-    return 'intron ' + c.index + ' matches no reference intron'
-  }
-
-  function detail(c) {
-    var list = c.conflicts || []
-    if (!list.length) return ''
-    var shown = list.slice(0, 4).map(phrase)
-    if (list.length > shown.length) shown.push((list.length - shown.length) + ' more')
-    return '<div class="detail"><b>' + list.length + ' of ' + list[0].of +
-      ' junction' + (list[0].of === 1 ? '' : 's') + ' disagree' + (list.length === 1 ? 's' : '') +
-      '</b> — <span class="j">' + esc(shown.join('; ')) + '</span></div>'
-  }
-
-  function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
-    })
-  }
-
-  // Only the models this build carries. A rerun with a smaller --max leaves the
-  // earlier verdicts in localStorage, where counting them reads as "16 of 12
-  // judged" over a bar past its own end — and dropping them would throw away a
-  // review the next wider rerun could still use.
-  function counts() {
-    var c = { keep: 0, edit: 0, reject: 0 }
-    DATA.cards.forEach(function (card) {
-      var v = state.verdicts[card.id]
-      if (c[v] !== undefined) c[v]++
-    })
-    return c
-  }
-
-  function visible() {
-    var q = state.q.trim().toLowerCase()
-    return DATA.cards.filter(function (c) {
-      if (state.cls !== 'all' && c.cls !== state.cls) return false
-      var v = state.verdicts[c.id] || ''
-      if (state.verdictFilter === 'unreviewed' && v) return false
-      if (state.verdictFilter !== 'all' && state.verdictFilter !== 'unreviewed' && v !== state.verdictFilter) return false
-      if (q) {
-        var hay = (c.id + ' ' + (c.genes || []).join(' ') + ' ' + c.loc).toLowerCase()
-        if (hay.indexOf(q) === -1) return false
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>__TITLE__</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#129516;</text></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    />
+    <style>
+      :root {
+        --ground: #f4f6f8;
+        --surface: #fff;
+        --surface-2: #eaeef4;
+        --ink: #131820;
+        --muted: #5a6474;
+        --line: #dde2ea;
+        --line-strong: #c3cbd8;
+        --accent: #34457f;
+        --accent-soft: #e7ebf7;
+        --keep: #2c7a55;
+        --keep-soft: #e2f2ea;
+        --reject: #b04238;
+        --reject-soft: #fbe8e6;
+        --edit: #96681a;
+        --edit-soft: #f9eed8;
+        --on-cls: #fff;
+        --c-merge: #6d28d9;
+        --c-merge-soft: #f3e8ff;
+        --c-structure-conflict: #b45309;
+        --c-structure-conflict-soft: #ffedd5;
+        --c-novel-locus: #0f766e;
+        --c-novel-locus-soft: #ccfbf1;
+        --c-novel-coding: #1d4ed8;
+        --c-novel-coding-soft: #dbeafe;
+        --shadow:
+          0 1px 2px rgba(19, 24, 32, 0.06),
+          0 8px 24px -12px rgba(19, 24, 32, 0.18);
       }
-      return true
-    })
-  }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --ground: #10131a;
+          --surface: #181d26;
+          --surface-2: #212733;
+          --ink: #e6eaf2;
+          --muted: #98a2b3;
+          --line: #2b3240;
+          --line-strong: #3a4356;
+          --accent: #93a6ea;
+          --accent-soft: #222a44;
+          --keep: #62bd91;
+          --keep-soft: #17301f;
+          --reject: #e88b80;
+          --reject-soft: #351c1c;
+          --edit: #d9ad5c;
+          --edit-soft: #32270f;
+          --on-cls: #10131a;
+          --c-merge: #c4b5fd;
+          --c-merge-soft: #2a2148;
+          --c-structure-conflict: #f0b27a;
+          --c-structure-conflict-soft: #3a2a14;
+          --c-novel-locus: #5eead4;
+          --c-novel-locus-soft: #10312e;
+          --c-novel-coding: #93b4fc;
+          --c-novel-coding-soft: #1b2a4d;
+          --shadow:
+            0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+        }
+      }
+      :root[data-theme='dark'] {
+        --ground: #10131a;
+        --surface: #181d26;
+        --surface-2: #212733;
+        --ink: #e6eaf2;
+        --muted: #98a2b3;
+        --line: #2b3240;
+        --line-strong: #3a4356;
+        --accent: #93a6ea;
+        --accent-soft: #222a44;
+        --keep: #62bd91;
+        --keep-soft: #17301f;
+        --reject: #e88b80;
+        --reject-soft: #351c1c;
+        --edit: #d9ad5c;
+        --edit-soft: #32270f;
+        --on-cls: #10131a;
+        --c-merge: #c4b5fd;
+        --c-merge-soft: #2a2148;
+        --c-structure-conflict: #f0b27a;
+        --c-structure-conflict-soft: #3a2a14;
+        --c-novel-locus: #5eead4;
+        --c-novel-locus-soft: #10312e;
+        --c-novel-coding: #93b4fc;
+        --c-novel-coding-soft: #1b2a4d;
+        --shadow:
+          0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+      }
+      [data-cls='merge'] {
+        --cls: var(--c-merge);
+        --cls-soft: var(--c-merge-soft);
+      }
+      [data-cls='structure-conflict'] {
+        --cls: var(--c-structure-conflict);
+        --cls-soft: var(--c-structure-conflict-soft);
+      }
+      [data-cls='novel-locus'] {
+        --cls: var(--c-novel-locus);
+        --cls-soft: var(--c-novel-locus-soft);
+      }
+      [data-cls='novel-coding'] {
+        --cls: var(--c-novel-coding);
+        --cls-soft: var(--c-novel-coding-soft);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      h1 {
+        font-family: 'Familjen Grotesk', sans-serif;
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        margin: 0;
+        text-wrap: balance;
+      }
+      .eyebrow {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .lede {
+        max-width: 66ch;
+        color: var(--muted);
+        margin: 0;
+      }
+      .lede strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .masthead {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
 
-  function indexOfId(list, id) {
-    for (var i = 0; i < list.length; i++) { if (list[i].id === id) return i }
-    return -1
-  }
+      .controls {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .row1 {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px 22px;
+      }
+      .stat {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+      .stat .n {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 20px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.1;
+      }
+      .stat .k {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .stat.agrees .n {
+        color: var(--keep);
+      }
+      .stat.flagged .n {
+        color: var(--edit);
+      }
+      .rule {
+        width: 1px;
+        align-self: stretch;
+        background: var(--line);
+      }
+      .progress {
+        flex: 1;
+        min-width: 180px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .progress .r {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .bar {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--surface-2);
+        overflow: hidden;
+        display: flex;
+      }
+      .bar span {
+        height: 100%;
+        transition: width 0.25s ease;
+      }
+      .b-keep {
+        background: var(--keep);
+      }
+      .b-edit {
+        background: var(--edit);
+      }
+      .b-reject {
+        background: var(--reject);
+      }
 
-  function setCursor(id, scroll) {
-    if (state.cursor && els[state.cursor]) els[state.cursor].removeAttribute('data-current')
-    state.cursor = id
-    var el = id && els[id]
-    if (!el) return
-    el.setAttribute('data-current', 'true')
-    if (scroll) el.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' })
-  }
+      .row2 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .sep {
+        width: 1px;
+        height: 22px;
+        background: var(--line);
+        margin: 0 4px;
+      }
+      button,
+      select,
+      input[type='search'] {
+        font: inherit;
+        font-size: 13px;
+        border-radius: 7px;
+        border: 1px solid var(--line-strong);
+        background: var(--surface);
+        color: var(--ink);
+        padding: 6px 11px;
+        transition:
+          background 0.12s,
+          border-color 0.12s,
+          color 0.12s;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:hover {
+        background: var(--surface-2);
+      }
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      button[disabled] {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .filters button {
+        background: var(--cls, var(--accent));
+        border-color: transparent;
+        color: var(--on-cls);
+        font-weight: 600;
+      }
+      .filters button:hover {
+        background: var(--cls, var(--accent));
+        filter: brightness(1.1);
+      }
+      .filters button[aria-pressed='true'] {
+        box-shadow:
+          0 0 0 2px var(--surface),
+          0 0 0 4px var(--cls, var(--accent));
+      }
+      .filters .count {
+        font-family: 'IBM Plex Mono', monospace;
+        opacity: 0.8;
+        margin-left: 7px;
+        font-variant-numeric: tabular-nums;
+      }
+      input[type='search'] {
+        min-width: 190px;
+      }
+      .spacer {
+        margin-left: auto;
+      }
 
-  function moveCursor(step) {
-    var list = visible()
-    if (!list.length) return
-    var i = indexOfId(list, state.cursor)
-    var next = i === -1
-      ? (step > 0 ? 0 : list.length - 1)
-      : Math.min(list.length - 1, Math.max(0, i + step))
-    setCursor(list[next].id, true)
-  }
-
-  function setVerdict(id, val) {
-    var was = indexOfId(visible(), id)
-    if (state.verdicts[id] === val) delete state.verdicts[id]
-    else state.verdicts[id] = val
-    save()
-    renderProgress()
-    // A verdict is what a verdict filter sorts on, so under one the card leaves
-    // the list and the queue closes over it. Under "Any verdict" nothing moves,
-    // and repainting the one card keeps a reviewer forty cards deep where they
-    // are rather than at the top of a rebuilt page.
-    if (state.verdictFilter === 'all') { paintCard(id); return }
-    renderCards()
-    if (!els[state.cursor]) {
-      var list = visible()
-      setCursor(list.length ? list[Math.min(Math.max(was, 0), list.length - 1)].id : null, true)
-    }
-  }
-
-  function paintCard(id) {
-    var el = els[id]
-    if (!el) return
-    var v = state.verdicts[id] || ''
-    el.setAttribute('data-verdict', v)
-    el.querySelectorAll('.verdicts button').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === v))
-    })
-  }
-
-  function msg(text) {
-    var el = document.getElementById('msg')
-    el.textContent = text
-    clearTimeout(msgTimer)
-    msgTimer = setTimeout(function () { el.textContent = '' }, 5000)
-  }
-
-  function renderHead() {
-    document.getElementById('eyebrow').textContent = DATA.eyebrow
-    document.getElementById('title').textContent = DATA.title
-    document.getElementById('lede').innerHTML = DATA.lede
-    document.getElementById('footer').innerHTML = DATA.footer
-  }
-
-  function renderControls() {
-    var n = DATA.cards.length
-    var clsCounts = {}
-    DATA.cards.forEach(function (x) { clsCounts[x.cls] = (clsCounts[x.cls] || 0) + 1 })
-
-    var chips = [{ k: 'all', label: 'All', n: n }].concat(
-      DATA.classOrder.filter(function (k) { return clsCounts[k] }).map(function (k) {
-        return { k: k, label: DATA.classes[k].label, n: clsCounts[k] }
-      }),
-    )
-
-    document.getElementById('controls').innerHTML =
-      '<div class="row1">' +
-        '<div class="stat"><span class="n">' + DATA.total + '</span><span class="k">models predicted</span></div>' +
-        '<div class="rule"></div>' +
-        '<div class="stat agrees"><span class="n">' + DATA.agrees + '</span><span class="k">agree with reference</span></div>' +
-        '<div class="stat flagged"><span class="n">' + DATA.flagged + '</span><span class="k">flagged</span></div>' +
-        '<div class="rule"></div>' +
-        '<div class="progress">' +
-          '<div class="r"><span id="done"></span><span id="tally"></span></div>' +
-          '<div class="bar"><span class="b-keep"></span><span class="b-edit"></span><span class="b-reject"></span></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="row2">' +
-        '<div class="filters">' +
-          chips.map(function (ch) {
-            return '<button data-cls="' + esc(ch.k) + '" aria-pressed="' + (state.cls === ch.k) + '">' +
-              esc(ch.label) + '<span class="count">' + ch.n + '</span></button>'
-          }).join('') +
-        '</div>' +
-        '<span class="sep"></span>' +
-        '<select id="vf" aria-label="Filter by verdict">' +
-          ['all|Any verdict', 'unreviewed|Unreviewed', 'keep|Keep', 'edit|Needs editing', 'reject|Reject']
-            .map(function (o) {
-              var p = o.split('|')
-              return '<option value="' + p[0] + '"' + (state.verdictFilter === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'
-            }).join('') +
-        '</select>' +
-        '<input type="search" id="q" placeholder="Find a model or gene" value="' + esc(state.q) + '">' +
-        '<span id="msg" class="msg" role="status"></span>' +
-        '<span class="spacer"></span>' +
-        '<div class="actions">' +
-          '<button id="keysbtn" aria-expanded="' + state.keys + '">Keys</button>' +
-          '<button id="import">Import</button>' +
-          '<input type="file" id="importfile" accept=".tsv,.txt,text/tab-separated-values" hidden>' +
-          '<button id="export">Export decisions</button>' +
-          '<button id="reset">Reset</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="keys" id="keys"' + (state.keys ? '' : ' hidden') + '>' +
-        '<span><kbd>j</kbd><kbd>k</kbd> move between cards</span>' +
-        '<span><kbd>1</kbd> keep <kbd>2</kbd> needs editing <kbd>3</kbd> reject</span>' +
-        '<span><kbd>o</kbd> open in JBrowse</span>' +
-        '<span><kbd>/</kbd> search</span>' +
-        '<span><kbd>?</kbd> these keys</span>' +
-      '</div>'
-
-    document.querySelectorAll('.filters button').forEach(function (b) {
-      b.addEventListener('click', function () { state.cls = b.getAttribute('data-cls'); renderControls(); renderCards() })
-    })
-    document.getElementById('vf').addEventListener('change', function (e) {
-      state.verdictFilter = e.target.value
-      renderCards()
-    })
-    document.getElementById('q').addEventListener('input', function (e) {
-      state.q = e.target.value
-      renderCards()
-    })
-    document.getElementById('keysbtn').addEventListener('click', toggleKeys)
-    document.getElementById('export').addEventListener('click', exportTsv)
-    document.getElementById('import').addEventListener('click', function () {
-      document.getElementById('importfile').click()
-    })
-    document.getElementById('importfile').addEventListener('change', function (e) {
-      var file = e.target.files && e.target.files[0]
-      if (!file) return
-      var reader = new FileReader()
-      reader.onload = function () { importTsv(String(reader.result)) }
-      reader.readAsText(file)
-      e.target.value = ''
-    })
-    document.getElementById('reset').addEventListener('click', function () {
-      if (!confirm('Clear every verdict on this portal?')) return
-      state.verdicts = {}
-      save()
-      renderProgress()
-      renderCards()
-    })
-    renderProgress()
-  }
-
-  function renderProgress() {
-    var c = counts()
-    var n = DATA.cards.length
-    var done = c.keep + c.edit + c.reject
-    document.getElementById('done').textContent = done + ' of ' + n + ' judged'
-    document.getElementById('tally').textContent = c.keep + ' keep · ' + c.edit + ' edit · ' + c.reject + ' reject'
-    VERDICTS.forEach(function (b) {
-      document.querySelector('.b-' + b.v).style.width = (n ? (c[b.v] / n) * 100 : 0) + '%'
-    })
-    document.getElementById('reset').disabled = !done
-  }
-
-  function toggleKeys() {
-    state.keys = !state.keys
-    save()
-    document.getElementById('keys').hidden = !state.keys
-    document.getElementById('keysbtn').setAttribute('aria-expanded', String(state.keys))
-  }
-
-  function renderCards() {
-    var list = visible()
-    els = {}
-    if (!list.length) {
-      host.innerHTML = '<div class="empty">No models match these filters.</div>'
-      return
-    }
-    host.innerHTML = list.map(function (c) {
-      var meta = DATA.classes[c.cls]
-      var v = state.verdicts[c.id] || ''
-      var genes = c.genes && c.genes.length ? c.genes.join(' + ') : 'no reference gene here'
-      var gap = c.gapBp ? ' · ' + c.gapBp.toLocaleString() + ' bp apart' : ''
-      var pic = c.img
-        ? '<img class="shot" loading="lazy" alt="Genome view of ' + esc(c.id) + '" src="' + esc(c.img) + '">'
-        : '<div class="missing">No capture for this model — the portal was built with --no-capture, or this one failed. The link still opens it live.</div>'
-      return '<article class="card" data-id="' + esc(c.id) + '" data-cls="' + esc(c.cls) + '" data-verdict="' + esc(v) + '">' +
-        '<div class="card-head">' +
-          '<span class="chip">' + esc(meta.label) + '</span>' +
-          '<span class="model">' + esc(c.id) + '</span>' +
-          '<span class="genes">' + esc(genes) + '</span>' +
-          '<span class="meta">' + esc(c.loc) + ' · ' + c.nExons + ' exons · ' + c.spanKb + ' kb · ' +
-            (c.strand === '-' ? 'minus' : 'plus') + ' strand' + gap + '</span>' +
-        '</div>' +
-        '<div class="why">' + esc(meta.why) + '</div>' + detail(c) + pic +
-        '<div class="card-foot">' +
-          '<div class="verdicts">' +
-            VERDICTS.map(function (b) {
-              return '<button data-v="' + b.v + '" aria-pressed="' + (v === b.v) + '">' + b.label + '</button>'
-            }).join('') +
-          '</div>' +
-          '<span class="next">Annotator action: <b>' + esc(meta.action) + '</b></span>' +
-          '<div class="links">' +
-            '<a class="live" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open in JBrowse</a>' +
-            (c.apollo
-              ? '<a class="live apollo" href="' + esc(c.apollo) + '" target="_blank" rel="noopener">Edit in Apollo</a>'
-              : '') +
-          '</div>' +
-        '</div>' +
-      '</article>'
-    }).join('')
-
-    host.querySelectorAll('.card').forEach(function (el) { els[el.getAttribute('data-id')] = el })
-    if (state.cursor && els[state.cursor]) els[state.cursor].setAttribute('data-current', 'true')
-  }
-
-  host.addEventListener('click', function (e) {
-    var card = e.target.closest('.card')
-    if (!card) return
-    var id = card.getAttribute('data-id')
-    var btn = e.target.closest('.verdicts button')
-    if (btn) {
-      setCursor(id, false)
-      setVerdict(id, btn.getAttribute('data-v'))
-      return
-    }
-    if (!e.target.closest('a')) setCursor(id, false)
-  })
-
-  // A queue of a hundred cards is read one at a time, and every verdict on it
-  // is a click on a small button somewhere down the page. j/k and a digit are
-  // what make it a queue rather than a scroll.
-  document.addEventListener('keydown', function (e) {
-    if (e.metaKey || e.ctrlKey || e.altKey) return
-    var t = e.target
-    if (t && /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)) {
-      if (e.key === 'Escape') t.blur()
-      return
-    }
-    if (e.key === '/') {
-      e.preventDefault()
-      var q = document.getElementById('q')
-      q.focus()
-      q.select()
-      return
-    }
-    if (e.key === '?') { toggleKeys(); return }
-    if (e.key === 'j') { e.preventDefault(); moveCursor(1); return }
-    if (e.key === 'k') { e.preventDefault(); moveCursor(-1); return }
-    if (e.key === 'o') {
-      var el = els[state.cursor]
-      var a = el && el.querySelector('a.live')
-      if (a) window.open(a.href, '_blank', 'noopener')
-      return
-    }
-    var hit = VERDICTS.filter(function (b) { return b.key === e.key })[0]
-    if (!hit) return
-    e.preventDefault()
-    if (!els[state.cursor]) moveCursor(1)
-    if (els[state.cursor]) setVerdict(state.cursor, hit.v)
-  })
-
-  function tsv() {
-    // an annotator picking the queue up in Apollo wants the link, not the locus
-    var apollo = DATA.cards.some(function (c) { return c.apollo })
-    var head = ['model_id', 'class', 'locus', 'exons', 'strand', 'reference_genes', 'verdict']
-    if (apollo) { head.push('apollo_url') }
-    var lines = [head.join('\t')]
-    DATA.cards.forEach(function (c) {
-      var row = [c.id, c.cls, c.loc, c.nExons, c.strand, (c.genes || []).join(';'), state.verdicts[c.id] || 'unreviewed']
-      if (apollo) { row.push(c.apollo || '') }
-      lines.push(row.join('\t'))
-    })
-    return lines.join('\n') + '\n'
-  }
-
-  function exportTsv() {
-    var blob = new Blob([tsv()], { type: 'text/tab-separated-values' })
-    var a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = DATA.portalId + '-decisions.tsv'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    setTimeout(function () { URL.revokeObjectURL(a.href) }, 1000)
-  }
-
-  // The other half of Export: verdicts live in one browser's localStorage, so
-  // without this a cleared site setting, a second reviewer or a second machine
-  // starts the queue from nothing.
-  function importTsv(text) {
-    var rows = text.split(/\r?\n/).filter(function (l) { return l.trim() })
-    var head = (rows.shift() || '').split('\t')
-    var idAt = head.indexOf('model_id')
-    var vAt = head.indexOf('verdict')
-    if (idAt === -1 || vAt === -1) {
-      msg('That file has no model_id and verdict columns.')
-      return
-    }
-    var known = {}
-    DATA.cards.forEach(function (c) { known[c.id] = true })
-    var applied = 0
-    var unknown = 0
-    rows.forEach(function (line) {
-      var f = line.split('\t')
-      var id = f[idAt]
-      var v = f[vAt]
-      if (!id) return
-      if (v === 'unreviewed' || v === '') { delete state.verdicts[id] }
-      else if (v === 'keep' || v === 'edit' || v === 'reject') { state.verdicts[id] = v }
-      else return
-      if (known[id]) applied++
-      else unknown++
-    })
-    save()
-    renderProgress()
-    renderCards()
-    msg(applied + ' verdict' + (applied === 1 ? '' : 's') + ' read in' +
-      (unknown ? ', ' + unknown + ' for models this portal does not carry' : '') + '.')
-  }
-
-  renderHead()
-  renderControls()
-  renderCards()
-})()
-</script>
-</body>
+      .cards {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--verdict, var(--line));
+        border-left: 5px solid var(--cls, var(--verdict, var(--line)));
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      .card[data-verdict='keep'] {
+        --verdict: var(--keep);
+      }
+      .card[data-verdict='reject'] {
+        --verdict: var(--reject);
+      }
+      .card[data-verdict='edit'] {
+        --verdict: var(--edit);
+      }
+      .card-head {
+        background: var(--cls-soft);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px 15px;
+        align-items: baseline;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .chip {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 5px;
+        background: var(--cls, var(--accent));
+        color: var(--on-cls);
+        white-space: nowrap;
+      }
+      .model {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .genes {
+        font-weight: 600;
+      }
+      .meta {
+        margin-left: auto;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12.5px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .why {
+        padding: 12px 18px 0;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 78ch;
+      }
+      .detail {
+        padding: 6px 18px 0;
+        font-size: 13.5px;
+        max-width: 78ch;
+        color: var(--ink);
+      }
+      .detail b {
+        color: var(--cls, var(--accent));
+        font-weight: 600;
+      }
+      .detail .j {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12.5px;
+      }
+      .shot {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        margin-top: 13px;
+        background: #fff;
+      }
+      .missing {
+        margin: 13px 0 0;
+        padding: 26px 18px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+        color: var(--muted);
+        font-size: 13.5px;
+      }
+      .card-foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        align-items: center;
+        padding: 13px 18px;
+      }
+      .verdicts {
+        display: flex;
+        gap: 7px;
+      }
+      .verdicts button[aria-pressed='true'][data-v='keep'] {
+        background: var(--keep-soft);
+        border-color: var(--keep);
+        color: var(--keep);
+        font-weight: 600;
+      }
+      .verdicts button[aria-pressed='true'][data-v='edit'] {
+        background: var(--edit-soft);
+        border-color: var(--edit);
+        color: var(--edit);
+        font-weight: 600;
+      }
+      .verdicts button[aria-pressed='true'][data-v='reject'] {
+        background: var(--reject-soft);
+        border-color: var(--reject);
+        color: var(--reject);
+        font-weight: 600;
+      }
+      .next {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .next b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .links {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+      a.live {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--accent);
+        text-decoration: none;
+        border: 1px solid var(--accent);
+        border-radius: 7px;
+        padding: 6px 13px;
+        white-space: nowrap;
+      }
+      a.live.apollo {
+        background: var(--accent);
+        color: var(--on-cls);
+      }
+      a.live.apollo:hover {
+        filter: brightness(1.15);
+      }
+      a.live:hover {
+        background: var(--accent-soft);
+      }
+      a.live:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .card[data-current='true'] {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+      .msg {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 20px;
+        align-items: center;
+        font-size: 12.5px;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+        padding-top: 11px;
+      }
+      .keys kbd {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        color: var(--ink);
+        background: var(--surface-2);
+        border: 1px solid var(--line-strong);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 1px 6px;
+        margin-right: 4px;
+      }
+      .empty {
+        padding: 44px 18px;
+        text-align: center;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px dashed var(--line-strong);
+        border-radius: 10px;
+      }
+      .note {
+        font-size: 13px;
+        color: var(--muted);
+        background: var(--surface-2);
+        border-radius: 8px;
+        padding: 10px 14px;
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        padding-top: 20px;
+        color: var(--muted);
+        font-size: 13.5px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        max-width: 78ch;
+      }
+      footer code {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12.5px;
+        color: var(--ink);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+      @media (max-width: 640px) {
+        h1 {
+          font-size: 27px;
+        }
+        .meta {
+          margin-left: 0;
+          width: 100%;
+        }
+        .links {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">__APP_HTML__</div>
+    <script id="portal-data" type="application/json">
+      __DATA__
+    </script>
+    <script>
+      __APP_JS__
+    </script>
+  </body>
 </html>

@@ -24,6 +24,7 @@ import {
   runTable,
   writeRecords,
 } from '../lib/measurements.mjs'
+import { renderPage } from '../lib/page.mjs'
 import {
   buildConfig,
   checkTools,
@@ -36,7 +37,6 @@ import {
 } from '../lib/prepare.mjs'
 import { serveStatic } from '../lib/serve.mjs'
 
-const HERE = import.meta.dirname
 const DEFAULT_INSTANCE = 'https://jbrowse.org/code/jb2/latest/'
 // release.yml publishes code/jb2/latest, push.yml publishes code/jb2/<ref>, so
 // "latest" is the latest release and main is reachable under its own name.
@@ -569,7 +569,7 @@ const data = {
           'the annotation editor, where <b>Split into two models</b> is a real action rather than a note.</div>'
         : '<div>The triage is the browser’s half. The edit belongs in an annotation editor — ' +
           '<b>Split into two models</b> is not a viewer action.</div>'
-    }<div>Verdicts are stored in this browser only. <b>Export decisions</b> writes them out as TSV.</div>`,
+    }<div>Verdicts are stored in this browser only. <b>Export decisions</b> writes them out as TSV, and <b>Import</b> reads one back.</div>`,
   total,
   agrees,
   flagged,
@@ -579,16 +579,9 @@ const data = {
   cards,
 }
 
-const template = fs.readFileSync(
-  path.join(HERE, '../lib/template.html'),
-  'utf8',
-)
 fs.writeFileSync(
   path.join(out, 'index.html'),
-  template
-    .replace('__TITLE__', title.replaceAll(/[<&]/g, ''))
-    // `</script>` inside the JSON would close the tag it sits in
-    .replace('__DATA__', JSON.stringify(data).replaceAll('</', '<\\/')),
+  await renderPage({ data, title }),
 )
 
 console.log(`\nportal written to ${out}`)

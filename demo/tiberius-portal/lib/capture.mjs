@@ -1,8 +1,8 @@
+import { spawn } from 'node:child_process'
 // One JBrowse capture per candidate, driven against the portal's own static
 // copy of the app so the pictures and the links show the same thing.
 import fs from 'node:fs'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
 
 // In this repo the capture tool is a sibling product rather than a dependency;
 // gene-review-portal, which is where this pipeline lives outside the monorepo,
@@ -19,7 +19,10 @@ export function captureBin() {
 // object here, and at gene scale a read is a tick whichever width you pick, so
 // the context costs the pileup nothing.
 export function sessionFor(candidate, trackIds, assembly, padFraction = 0.4) {
-  const pad = Math.max(2000, Math.round((candidate.end - candidate.start) * padFraction))
+  const pad = Math.max(
+    2000,
+    Math.round((candidate.end - candidate.start) * padFraction),
+  )
   const start = Math.max(1, candidate.start - pad)
   const end = candidate.end + pad
   return {
@@ -87,7 +90,22 @@ function runCapture(args, timeout) {
 // will not draw, and the wrong one for a flake — Chromium drops a "detached
 // Frame" often enough that an unretried build ships a hole. So each candidate
 // gets a second attempt, and only a locus that fails twice is reported.
-export async function captureAll({ candidates, trackIds, assembly, instance, configUrl, outDir, captureBin, width, height, scale, settle, timeout, attempts = 2, onProgress }) {
+export async function captureAll({
+  candidates,
+  trackIds,
+  assembly,
+  instance,
+  configUrl,
+  outDir,
+  captureBin,
+  width,
+  height,
+  scale,
+  settle,
+  timeout,
+  attempts = 2,
+  onProgress,
+}) {
   fs.mkdirSync(outDir, { recursive: true })
   const results = []
   for (const c of candidates) {
@@ -103,22 +121,37 @@ export async function captureAll({ candidates, trackIds, assembly, instance, con
       ;({ ok, err } = await runCapture(
         [
           captureBin,
-          '--instance', instance,
-          '--config', configUrl,
-          '--session', specPath,
-          '--width', String(width),
-          '--height', String(height),
-          '--scale', String(scale),
-          '--settle', String(settle),
-          '--timeout', String(timeout),
-          '-o', out,
+          '--instance',
+          instance,
+          '--config',
+          configUrl,
+          '--session',
+          specPath,
+          '--width',
+          String(width),
+          '--height',
+          String(height),
+          '--scale',
+          String(scale),
+          '--settle',
+          String(settle),
+          '--timeout',
+          String(timeout),
+          '-o',
+          out,
         ],
         timeout,
       ))
     }
     const note = ok ? '' : err.split('\n').slice(-2).join(' ').slice(0, 300)
     fs.unlinkSync(specPath)
-    results.push({ id: c.id, ok, note, tries, file: ok ? path.basename(out) : null })
+    results.push({
+      id: c.id,
+      ok,
+      note,
+      tries,
+      file: ok ? path.basename(out) : null,
+    })
     onProgress?.(c, ok, note, tries)
   }
   return results

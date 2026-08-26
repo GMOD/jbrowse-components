@@ -28,7 +28,9 @@ export function serveStatic(root, port = 0) {
       res.writeHead(403).end()
       return
     }
-    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {file = path.join(file, 'index.html')}
+    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
+      file = path.join(file, 'index.html')
+    }
     if (!fs.existsSync(file)) {
       res.writeHead(404).end('not found')
       return
@@ -64,8 +66,11 @@ export function serveStatic(root, port = 0) {
     }
 
     res.writeHead(200, { ...headers, 'content-length': size })
-    if (req.method === 'HEAD') {res.end()}
-    else {fs.createReadStream(file).pipe(res)}
+    if (req.method === 'HEAD') {
+      res.end()
+    } else {
+      fs.createReadStream(file).pipe(res)
+    }
   })
 
   return new Promise(resolve => {

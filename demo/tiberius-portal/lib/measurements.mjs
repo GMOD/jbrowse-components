@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 // The counts this pipeline reports, written as measurement records rather than
 // typed into a tutorial.
 //
@@ -8,7 +9,6 @@
 // `pnpm autogen` splices them into the table and the sentences.
 import fs from 'node:fs'
 import path from 'node:path'
-import { execFileSync } from 'node:child_process'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -39,8 +39,8 @@ export function classTable({ id, repro, classes, classOrder, tally, region }) {
     published: false,
     notes:
       'One row per class the comparison sorts a predicted model into, and the count of models in it. ' +
-      'The comparison is at exon level against same-strand genes, and a gene\'s junctions are the union of ' +
-      'its transcripts\' introns — reading them off a flat sort of every isoform\'s exons invents junctions ' +
+      "The comparison is at exon level against same-strand genes, and a gene's junctions are the union of " +
+      "its transcripts' introns — reading them off a flat sort of every isoform's exons invents junctions " +
       'no transcript has, which is what first reported 21 structure conflicts here rather than 3.',
     columns: [
       text('class', 'Class'),
@@ -61,7 +61,14 @@ export function classTable({ id, repro, classes, classOrder, tally, region }) {
   })
 }
 
-export function runTable({ id, repro, rows: modelRows, tally, bedRecords, region }) {
+export function runTable({
+  id,
+  repro,
+  rows: modelRows,
+  tally,
+  bedRecords,
+  region,
+}) {
   const total = modelRows.length
   const quiet = modelRows.filter(
     r => r.cls === 'agrees' && r.conflicts.length,
@@ -72,7 +79,10 @@ export function runTable({ id, repro, rows: modelRows, tally, bedRecords, region
     ['Flagged for review', total - (tally.agrees || 0)],
     ['Records in conflicts.bed', bedRecords],
     ['Agreeing models carrying a junction edit', quiet],
-    ['Widest gap inside a merged model, bp', gaps.length ? Math.max(...gaps) : null],
+    [
+      'Widest gap inside a merged model, bp',
+      gaps.length ? Math.max(...gaps) : null,
+    ],
   ]
   return record(id, {
     repro,
@@ -141,7 +151,9 @@ export function evidenceTable({ id, repro, candidates, loci, bams, names }) {
   const columns = [
     text('model', 'Model'),
     text('genes', 'Reference genes'),
-    ...bams.map((_, i) => count(`rnaseq_${i + 1}`, names[i] || `RNA-seq ${i + 1}`)),
+    ...bams.map((_, i) =>
+      count(`rnaseq_${i + 1}`, names[i] || `RNA-seq ${i + 1}`),
+    ),
   ]
   const rows = candidates.map((c, ci) => {
     const values = {

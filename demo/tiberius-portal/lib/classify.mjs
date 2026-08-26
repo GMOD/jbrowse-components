@@ -40,7 +40,9 @@ function attrs(s) {
   const o = {}
   for (const kv of (s || '').split(';')) {
     const i = kv.indexOf('=')
-    if (i > 0) {o[kv.slice(0, i).trim()] = decodeURIComponent(kv.slice(i + 1).trim())}
+    if (i > 0) {
+      o[kv.slice(0, i).trim()] = decodeURIComponent(kv.slice(i + 1).trim())
+    }
   }
   return o
 }
@@ -51,10 +53,16 @@ export function readGff(file, wanted) {
     : fs.readFileSync(file, 'utf8')
   const out = []
   for (const line of raw.split('\n')) {
-    if (!line || line.startsWith('#')) {continue}
+    if (!line || line.startsWith('#')) {
+      continue
+    }
     const f = line.split('\t')
-    if (f.length < 9) {continue}
-    if (wanted && !wanted.has(f[2])) {continue}
+    if (f.length < 9) {
+      continue
+    }
+    if (wanted && !wanted.has(f[2])) {
+      continue
+    }
     out.push({
       refName: f[0],
       type: f[2],
@@ -107,7 +115,11 @@ function describe(j, refIntrons, refExons) {
   const skipped = refExons.filter(e => j.start <= e.start && e.end <= j.end)
   if (skipped.length) {
     const n = skipped.length
-    return { kind: 'skips', skipped: n, label: `skips-${n}-exon${n > 1 ? 's' : ''}` }
+    return {
+      kind: 'skips',
+      skipped: n,
+      label: `skips-${n}-exon${n > 1 ? 's' : ''}`,
+    }
   }
   const sameAcceptor = refIntrons.filter(r => r.end === j.end)
   const sameDonor = refIntrons.filter(r => r.start === j.start)
@@ -130,7 +142,10 @@ function describe(j, refIntrons, refExons) {
   }
   const over = refIntrons.filter(r => overlaps(r, j))
   if (over.length) {
-    const r = widest(over, x => Math.min(x.end, j.end) - Math.max(x.start, j.start))
+    const r = widest(
+      over,
+      x => Math.min(x.end, j.end) - Math.max(x.start, j.start),
+    )
     const shift = r.start - j.start
     return {
       kind: 'shifted',
@@ -144,13 +159,25 @@ function describe(j, refIntrons, refExons) {
 
 // Gencode and most reference GFFs put the readable name on gene_name; fall back
 // through Name and ID so a plain GFF still labels.
-const geneName = f => f.attrs.gene_name || f.attrs.Name || f.attrs.gene_id || f.attrs.ID || 'unnamed'
-const geneType = f => f.attrs.gene_type || f.attrs.biotype || f.attrs.gene_biotype || 'protein_coding'
+const geneName = f =>
+  f.attrs.gene_name ||
+  f.attrs.Name ||
+  f.attrs.gene_id ||
+  f.attrs.ID ||
+  'unnamed'
+const geneType = f =>
+  f.attrs.gene_type ||
+  f.attrs.biotype ||
+  f.attrs.gene_biotype ||
+  'protein_coding'
 
 // A readthrough gene (CHKB-CPT1B) is the reference's own fused model, so a
 // prediction covering it and one of its halves is not a merge.
 const isReadthrough = names =>
-  names.some(n => n.includes('-') && names.some(m => m !== n && n.split('-').includes(m)))
+  names.some(
+    n =>
+      n.includes('-') && names.some(m => m !== n && n.split('-').includes(m)),
+  )
 
 // Plenty of annotation files carry CDS and no exon at all (volvox's test GFF,
 // and some AUGUSTUS/BRAKER output). Prefer exon where a model has them and fall
@@ -159,12 +186,20 @@ function blocksBy(features, keyOf, keep) {
   const exon = new Map()
   const cds = new Map()
   for (const f of features) {
-    if (!keep(f)) {continue}
+    if (!keep(f)) {
+      continue
+    }
     const bucket = f.type === 'exon' ? exon : f.type === 'CDS' ? cds : null
-    if (!bucket) {continue}
+    if (!bucket) {
+      continue
+    }
     const k = keyOf(f)
-    if (k === undefined || k === null) {continue}
-    if (!bucket.has(k)) {bucket.set(k, [])}
+    if (k === undefined || k === null) {
+      continue
+    }
+    if (!bucket.has(k)) {
+      bucket.set(k, [])
+    }
     bucket.get(k).push(f)
   }
   const out = new Map()
@@ -175,8 +210,14 @@ function blocksBy(features, keyOf, keep) {
 }
 
 export function classify({ predictionFile, referenceFile, refNames }) {
-  const refFeatures = readGff(referenceFile, new Set(['gene', 'mRNA', 'transcript', 'exon', 'CDS']))
-  const predFeatures = readGff(predictionFile, new Set(['transcript', 'mRNA', 'exon', 'CDS']))
+  const refFeatures = readGff(
+    referenceFile,
+    new Set(['gene', 'mRNA', 'transcript', 'exon', 'CDS']),
+  )
+  const predFeatures = readGff(
+    predictionFile,
+    new Set(['transcript', 'mRNA', 'exon', 'CDS']),
+  )
 
   const keep = f => !refNames || refNames.has(f.refName)
 
@@ -188,8 +229,12 @@ export function classify({ predictionFile, referenceFile, refNames }) {
   // collapses every exon in a plain GFF3 into one bucket.
   const txToGene = new Map()
   for (const f of refFeatures) {
-    if (f.type !== 'mRNA' && f.type !== 'transcript') {continue}
-    if (f.attrs.ID) {txToGene.set(f.attrs.ID, f.attrs.Parent)}
+    if (f.type !== 'mRNA' && f.type !== 'transcript') {
+      continue
+    }
+    if (f.attrs.ID) {
+      txToGene.set(f.attrs.ID, f.attrs.Parent)
+    }
   }
   // Keyed by TRANSCRIPT, then grouped: an exon may hang off the transcript, or
   // straight off the gene, and either way a gene's junctions have to be read one
@@ -198,7 +243,9 @@ export function classify({ predictionFile, referenceFile, refNames }) {
   const txsOfGene = new Map()
   for (const tx of exonsByTx.keys()) {
     const g = txToGene.get(tx) ?? tx
-    if (!txsOfGene.has(g)) {txsOfGene.set(g, [])}
+    if (!txsOfGene.has(g)) {
+      txsOfGene.set(g, [])
+    }
     txsOfGene.get(g).push(tx)
   }
   const exonsByGene = new Map(
@@ -227,19 +274,27 @@ export function classify({ predictionFile, referenceFile, refNames }) {
 
   const byContig = new Map()
   for (const g of genes) {
-    if (!byContig.has(g.refName)) {byContig.set(g.refName, [])}
+    if (!byContig.has(g.refName)) {
+      byContig.set(g.refName, [])
+    }
     byContig.get(g.refName).push(g)
   }
-  for (const list of byContig.values()) {list.sort((a, b) => a.start - b.start)}
+  for (const list of byContig.values()) {
+    list.sort((a, b) => a.start - b.start)
+  }
 
-  const transcripts = predFeatures.filter(f => (f.type === 'transcript' || f.type === 'mRNA') && keep(f))
+  const transcripts = predFeatures.filter(
+    f => (f.type === 'transcript' || f.type === 'mRNA') && keep(f),
+  )
   const predExons = blocksBy(predFeatures, f => f.attrs.Parent, keep)
 
   const rows = []
   for (const t of transcripts) {
     const id = t.attrs.ID || t.attrs.Name
     const exons = predExons.get(id) || []
-    if (!exons.length) {continue}
+    if (!exons.length) {
+      continue
+    }
 
     const near = (byContig.get(t.refName) || []).filter(g => overlaps(t, g))
     const touched = near.filter(g => {
@@ -250,7 +305,9 @@ export function classify({ predictionFile, referenceFile, refNames }) {
     const sameStrandCoding = [
       ...new Set(
         touched
-          .filter(g => geneType(g) === 'protein_coding' && g.strand === t.strand)
+          .filter(
+            g => geneType(g) === 'protein_coding' && g.strand === t.strand,
+          )
           .map(geneId),
       ),
     ]
@@ -263,11 +320,15 @@ export function classify({ predictionFile, referenceFile, refNames }) {
     const shared = predIntrons.filter(j => refJunctions.has(key(j))).length
 
     let cls
-    if (touched.length === 0) {cls = 'novel-locus'}
-    else if (sameStrandCoding.length === 0) {cls = 'novel-coding'}
-    else if (sameStrandCoding.length > 1) {cls = 'merge'}
-    else {
-      cls = predIntrons.length > 0 && shared === 0 ? 'structure-conflict' : 'agrees'
+    if (touched.length === 0) {
+      cls = 'novel-locus'
+    } else if (sameStrandCoding.length === 0) {
+      cls = 'novel-coding'
+    } else if (sameStrandCoding.length > 1) {
+      cls = 'merge'
+    } else {
+      cls =
+        predIntrons.length > 0 && shared === 0 ? 'structure-conflict' : 'agrees'
     }
 
     const recs = sameStrandCoding.map(n => geneRecord.get(n)).filter(Boolean)
@@ -277,7 +338,9 @@ export function classify({ predictionFile, referenceFile, refNames }) {
       recs.length >= 2 &&
       !isReadthrough(recs.map(r => r.name)) &&
       recs.every((a, i) => recs.every((b, j) => i === j || !overlaps(a, b)))
-    if (cls === 'merge' && !disjoint) {cls = 'agrees'}
+    if (cls === 'merge' && !disjoint) {
+      cls = 'agrees'
+    }
 
     // Where an annotator cuts a merged model: the intergenic space between the
     // genes it ran together. Not an intron of the model — a merge can put an
@@ -288,10 +351,14 @@ export function classify({ predictionFile, referenceFile, refNames }) {
       for (let i = 1; i < sorted.length; i++) {
         const start = sorted[i - 1].end
         const end = sorted[i].start
-        if (end > start) {gaps.push({ start, end })}
+        if (end > start) {
+          gaps.push({ start, end })
+        }
       }
     }
-    const gapBp = gaps.length ? Math.max(...gaps.map(g => g.end - g.start)) : null
+    const gapBp = gaps.length
+      ? Math.max(...gaps.map(g => g.end - g.start))
+      : null
 
     // Computed for every model with a coding gene to compare against, agreeing
     // ones included: a model that shares four junctions out of five is filed as
@@ -345,7 +412,9 @@ export function classify({ predictionFile, referenceFile, refNames }) {
   }
 
   const tally = {}
-  for (const r of rows) {tally[r.cls] = (tally[r.cls] || 0) + 1}
+  for (const r of rows) {
+    tally[r.cls] = (tally[r.cls] || 0) + 1
+  }
   return { rows, tally, total: rows.length }
 }
 
@@ -359,7 +428,9 @@ export function conflictBed(rows) {
       out.push([r.refName, start, end, `${r.id}:${what}`, 0, r.strand])
     if (r.cls === 'merge') {
       // The finding is the cut, not the junctions either side of it
-      for (const g of r.gaps) {add(g.start, g.end, 'split')}
+      for (const g of r.gaps) {
+        add(g.start, g.end, 'split')
+      }
     } else if (r.cls === 'novel-locus' || r.cls === 'novel-coding') {
       add(r.start, r.end, r.cls)
     } else {
