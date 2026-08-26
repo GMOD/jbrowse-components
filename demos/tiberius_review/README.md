@@ -13,19 +13,20 @@ place: dense pileups either side of a junction, sashimi arcs over both lanes,
 and a prediction the reads do not support. `g13516.t1` over `MICAL3` is that
 card. The first card on the page is the merged model, which spans 61.8 kb and so
 shows the same evidence as a smear. `index.html` is generated and is **not**
-checked in, because it carries its captures inline and runs to about 1.8 MB;
+checked in, because it carries its captures inline and runs to about 2.4 MB;
 regenerate it with the command below and deploy it with
 `DEPLOY_DEMO_ALLOW_UNTRACKED=1`. The last two are the RNA-seq BAMs below and
 their indexes.
 
-**What is deployed is stale**, in two ways. The live `portal.png` frames the
-`RANBP1` card, and `RANBP1` is no longer a candidate: the comparison used to
-read a gene's exons as one flat list, which invents junctions no transcript has,
-and that is what put a model matching all five of RANBP1's junctions in the
-structure-conflict bucket. chr22 now has 3 structure conflicts rather than 21.
-The deployed captures also predate the compact layout below, so their evidence
-lanes are the tall ones and the second lane falls off the bottom of the frame.
-Rebuild and redeploy.
+**Deployed 2026-08-26** from the command below, against the classifier and the
+lane layout described here. `portal.png` frames `g13516.t1` over `MICAL3`.
+
+**Invalidate the directory URL, not just the file.**
+`jbrowse.org/demos/tiberius_review/` and `.../index.html` are two CloudFront
+cache keys, and this deploy served a 13-hour-old page to every browser while
+curl on the explicit filename showed the new one. `deploy-demo.sh` invalidates
+both now; a demo deployed with an older copy of the script needs `.../`
+invalidated by hand.
 
 `portal.png` is not checked in either — `frame-card.mjs` writes it from the
 built portal, which is why the line that uploads it needs
