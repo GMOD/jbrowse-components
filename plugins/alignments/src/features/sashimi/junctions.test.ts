@@ -104,6 +104,36 @@ describe('mergeJunctions', () => {
     ])
   })
 
+  // The hide filter tests a property of the JUNCTION, so it has to run on the
+  // merged motif. Applied per copy it dropped the copy that read the motif
+  // before that answer reached the merge, and the junction survived as the
+  // untinted low-count copy of a junction one region had classified
+  // non-canonical.
+  test('hiding non-canonical uses the merged motif, not one region s view', () => {
+    const classified = region('chr1', [
+      [100, 1100, 40, 0, SPLICE_MOTIF_NON_CANONICAL],
+    ])
+    const unread = region('chr1', [[100, 1100, 3, 0, SPLICE_MOTIF_UNKNOWN]])
+    for (const regions of [
+      [classified, unread],
+      [unread, classified],
+    ]) {
+      expect([...mergeJunctions(regions, keep(0, true)).keys()]).toEqual([])
+      // And with the filter off it is one junction carrying both answers.
+      expect([...mergeJunctions(regions, keep(0, false)).values()]).toEqual([
+        {
+          key: 'chr1:100:1100',
+          refName: 'chr1',
+          start: 100,
+          end: 1100,
+          count: 40,
+          strand: 0,
+          motif: SPLICE_MOTIF_NON_CANONICAL,
+        },
+      ])
+    }
+  })
+
   test('a copy that read the motif fills in one that could not', () => {
     // A region whose sequence stops short of the far end reports unknown; the
     // region holding that end reports the motif. Either order.

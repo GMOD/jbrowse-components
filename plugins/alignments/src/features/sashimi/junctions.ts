@@ -103,6 +103,15 @@ export interface RegionJunctions {
 // region (it must not depend on pan), the geometry merges the VISIBLE ones (a
 // junction only an off-screen region reported shouldn't draw at all). Loaded is
 // a superset of visible, so every drawn junction is one the layout also saw.
+//
+// MERGE FIRST, FILTER AFTER, and the order is the whole reason this is two loops.
+// Both filters test a property of the JUNCTION and the merge is what resolves it:
+// the count is the max over the copies, and the motif is whichever copy managed
+// to look it up. Dropping a copy on the way in threw its answer away with it — a
+// junction reported non-canonical/40 by the region whose sequence window covers
+// the intron and unknown/3 by one whose window stops short survived, under
+// "Hide non-canonical junctions", as a 3-read untinted arc. Order-independent,
+// so neither copy arriving first made it visible.
 export function mergeJunctions(
   regions: Iterable<RegionJunctions>,
   filter: JunctionFilter,
@@ -120,12 +129,6 @@ export function mergeJunctions(
     for (let i = 0; i < sashimiX1.length; i++) {
       const count = sashimiCounts[i]!
       const motif = sashimiMotifs[i]!
-      if (
-        count < minSashimiScore ||
-        (hideNonCanonicalJunctions && isNonCanonicalSpliceMotif(motif))
-      ) {
-        continue
-      }
       const start = sashimiX1[i]!
       const end = sashimiX2[i]!
       const key = junctionKey(refName, start, end)
@@ -152,6 +155,14 @@ export function mergeJunctions(
           prev.strand = sashimiStrands[i]!
         }
       }
+    }
+  }
+  for (const [key, j] of out) {
+    if (
+      j.count < minSashimiScore ||
+      (hideNonCanonicalJunctions && isNonCanonicalSpliceMotif(j.motif))
+    ) {
+      out.delete(key)
     }
   }
   return out
