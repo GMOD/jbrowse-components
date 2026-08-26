@@ -240,11 +240,26 @@ navigation of a real LGV panel (bp regions, `moveTo`, CIGAR-exact through
 `cigarMapSpan`), this display as a lane-local affine frame at a fixed viewport.
 The shapes do not unify: a `RowFrame` is one linear ramp over one refName, a
 followed row is a `displayedRegions` layout, and multiway has no navigation to
-perform. One finding did transfer, and it was a bug — `followAnchorWindows`
-weighs a contig by SCREEN PX and `resolvePanel` by aligned bp, while
-`computeRowFrame` counted placements, so a cluster of short repeat hits could
-put a lane on a different contig from the panel launched off the same data. It
-weighs bp now. What would transfer next is rung 3: `followSpreadSpans` and
-`spanBounds` place a row on the UNION of what several contigs map to, which is
-the machinery the parked multi-copy lanes (lane-per-region) need and the reason
-to build that on the follow side's concepts rather than a second time here.
+perform. No function is duplicated between them today. The genuine near-twin in
+this neighborhood pairs SyntenyFollow with the LAUNCH instead —
+`interpolateFollowSpan` and the CIGAR-less branch of `resolvePanel`'s
+`resolveSpans` are the same clamp-to-block interpolation with the same
+reverse-strand walk from `mate.end`.
+
+Two things did cross, and the first was a bug. `followAnchorWindows` weighs a
+contig by SCREEN PX and `resolvePanel` by ANCHOR bp, while `computeRowFrame`
+counted placements — so a cluster of short repeat hits could put a lane on a
+different contig from the panel launched off the same data. It weighs anchor bp
+now, the same axis as `resolvePanel`, and a test over a fixture where the anchor
+and mate axes disagree pins the two to one answer. The second is a discipline:
+`followWindowMapping`'s resolve refuses to extrapolate past its outermost block,
+because "a scale measured elsewhere would invent a correspondence" — which is
+what `rowFrameX` does freely, and why `frameSpan` now clips rather than tests.
+
+What would transfer next is rung 3: `followSpreadSpans` and `spanBounds` place a
+row on the UNION of what several contigs map to, which is the machinery the
+parked multi-copy lanes (lane-per-region) need. `spanBounds` itself is offset
+space over `displayedRegions` and a `RowFrame` lane cannot consume it, so what
+actually moves is the union-of-spans idea plus `spreadDecision`'s coverage and
+`partialShare` gating — the hard-won part, and the reason to build lane-per-
+region on the follow side's concepts rather than a second time here.
