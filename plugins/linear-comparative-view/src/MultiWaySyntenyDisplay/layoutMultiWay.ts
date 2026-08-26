@@ -602,6 +602,13 @@ const MIN_SHARED_FOR_ORIENTATION = 3
 // step takes in this one, weighting a pair by its shorter member. Against the
 // lane above rather than the anchor, because that is the pair the ribbons are
 // drawn between.
+//
+// `undefined` IS AN ANSWER, and a balanced vote is one — an inverted duplication
+// puts as much weight each way, and `concordance < 0` read that as forwards and
+// asserted it over `computeRowFrame`'s anchor-order orientation, which is
+// evidence of its own and the thing this defers to when it has none. Too few
+// shared groups and a tie are the same state: this pair says nothing about which
+// way the lane runs.
 function readsBackwards(
   upperX: Map<string, number>,
   lane: LanePlacement[],
@@ -618,7 +625,7 @@ function readsBackwards(
     const b = shared[i]!
     concordance += Math.sign(b.center - a.center) * Math.min(a.weight, b.weight)
   }
-  return concordance < 0
+  return concordance === 0 ? undefined : concordance < 0
 }
 
 // A lane slides in whole multiples of this, so the median moving by a pixel or

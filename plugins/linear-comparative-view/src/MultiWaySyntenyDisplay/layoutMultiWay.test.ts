@@ -1337,3 +1337,41 @@ describe('lane geometry', () => {
     }
   })
 })
+
+// The lane-above vote and the anchor-order one are separate evidence, and only
+// the first can come out balanced — an inverted duplication puts as much weight
+// each way. Read as forwards it asserted an orientation over the other vote's
+// answer, which is the one thing a lane with no evidence of its own has.
+test('a lane whose shared order votes both ways keeps the anchor-order flip', () => {
+  // the two votes are weighted differently, which is what lets them disagree:
+  // the anchor-order one counts steps, this one weights each by the shorter of
+  // the pair, so one long step balances two short ones it outweighs
+  const mates = [
+    { start: 970, end: 1030 },
+    { start: 770, end: 830 },
+    { start: 540, end: 660 },
+    { start: 840, end: 960 },
+  ]
+  const groups = groupFeatures(
+    [100, 300, 500, 700].map((start, i) =>
+      pairFeature({
+        uniqueId: `${i}`,
+        name: `g${i}`,
+        start,
+        end: start + 60,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          ...mates[i]!,
+          name: `p${i}`,
+        },
+      }),
+    ),
+  )
+  expect(computeRowFrame(groups, 'peach', 1000)!.flipped).toBe(true)
+  expect(
+    alignRowFrames(groups, ['peach'], anchorSeed(groups, 800), 1000, 800).get(
+      'peach',
+    )!.flipped,
+  ).toBe(true)
+})
