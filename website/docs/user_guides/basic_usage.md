@@ -325,7 +325,7 @@ labels** heading in **Show...** in the view's hamburger menu.
 ### Horizontally flip
 
 The view can be horizontally flipped (reverse complemented), reversing the
-coordinate direction, from **Navigation** in the view's hamburger menu.
+coordinate direction, from **Horizontally flip** in the view's hamburger menu.
 Triangles in the overview bar indicate the current orientation.
 
 <Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" links="Normal orientation=horizontally_flip_before,Flipped=horizontally_flip_after" />

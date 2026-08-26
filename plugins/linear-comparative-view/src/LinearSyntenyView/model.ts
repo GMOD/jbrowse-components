@@ -790,8 +790,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * A group in THIS menu names a CHOICE ("Link views") or what varies
          * with row count ("Rows"), never a topic: the "Navigation" group that
          * used to hold the zoom commands was named after what the whole menu is
-         * about, and charged a popup for it. LGV's menu keeps a "Navigation"
-         * whose three items had no other home, which is a different case.
+         * about, and charged a popup for it. LGV's menu had one too, and it
+         * went the same way.
          */
         headerMenuItems(): MenuItem[] {
           return [

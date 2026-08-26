@@ -15,7 +15,6 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ExploreIcon from '@mui/icons-material/Explore'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LaunchIcon from '@mui/icons-material/Launch'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -49,13 +48,15 @@ const TRACK_LABEL_OPTIONS = [
 ] as const
 
 /**
- * The scroll-to-zoom toggle, shared by the view menu and the header's zoom menu
- * so the two can't drift apart in label or wording.
+ * The scroll-to-zoom toggle for the header's zoom menu, where someone already
+ * fiddling with zoom will look.
  *
- * Both places earn it. The zoom menu is where someone already fiddling with
- * zoom will look, and it is where this belongs on the merits; the view menu is
- * the only one of the two that survives `hideHeader`, since MiniControls
- * renders `menuItems()` and not the header's zoom controls.
+ * The view menu used to carry a copy, on the grounds that it is the one that
+ * survives `hideHeader` (MiniControls renders `menuItems()`, not the header's
+ * zoom controls). The header now shows the toggle as a button of its own
+ * (`ScrollZoomToggle` in `Header.tsx`), and the setting is a session preference
+ * reachable from the preferences dialog whatever the header is doing, so the
+ * copy bought a row and no reach.
  *
  * Writes a *session* preference, not view state — every wheel-zoom view in the
  * app follows it (see BaseSession's `scrollZoom`).
@@ -74,10 +75,9 @@ export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
 }
 
 /**
- * Zoom all the way out, shared by the view menu and the header's zoom menu for
- * the same reason `scrollZoomMenuItem` is — one definition so the two cannot
- * drift in label, and the view menu is the only one of the two that survives
- * `hideHeader`.
+ * Zoom all the way out, shared by the view menu and the header's zoom menu —
+ * one definition so the two cannot drift in label, and the view menu is the
+ * only one of the two that survives `hideHeader`.
  *
  * The zoom menu earns it on the merits: this is the bottom of the same "Zoom
  * out 100x" ladder, and it is where someone already zooming looks.
@@ -162,25 +162,16 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
       icon: TrackSelectorIcon,
     },
-    // Not under "Show...", which is visibility toggles: these three are
-    // navigation gestures, and each was previously a top-level row filed by
-    // nothing. "Show all regions in assembly" read as a Show... item by its
-    // first word alone, and scroll-to-zoom's label was the only thing naming it,
-    // so it was findable only by someone who already knew it existed.
+    // Top-level rather than under a "Navigation" group: with scroll-to-zoom
+    // gone from here the group held two rows, and a popup for two is a click
+    // charged for nothing. Not under "Show...", which is visibility toggles.
+    showAllRegionsMenuItem(self),
     {
-      label: 'Navigation',
-      icon: ExploreIcon,
-      subMenu: [
-        showAllRegionsMenuItem(self),
-        {
-          label: 'Horizontally flip',
-          icon: SyncAltIcon,
-          onClick: () => {
-            self.horizontallyFlip()
-          },
-        },
-        scrollZoomMenuItem(self),
-      ],
+      label: 'Horizontally flip',
+      icon: SyncAltIcon,
+      onClick: () => {
+        self.horizontallyFlip()
+      },
     },
     {
       label: 'Color CDS by reading frame',
