@@ -69,10 +69,12 @@ RefSeq All draws each transcript of a gene on its own row and writes the gene
 name under the stack, and TP53 has far more transcripts than a track opens tall
 enough to show. The default keeps as many as the height has rows for and says
 what it left out: the gene name reads **TP53 +20 more**, and the circled chip at
-the bottom right says `Isoforms trimmed`. Clicking **+20 more** opens that one
-gene; clicking the chip opens **Auto / All transcripts / Representative
-transcript**, and picking the last collapses every gene to one transcript, which
-is what the rest of this page uses.
+the bottom right says `Isoforms trimmed`. Two ways to see more:
+
+- Click **+20 more** to open that one gene.
+- Click the chip to open **Auto / All transcripts / Representative transcript**.
+  Picking the last collapses every gene to one transcript, which is what the
+  rest of this page uses.
 
 ## Finding a track
 
@@ -115,10 +117,12 @@ above, and it covers G245, R248 and R249, three of the codons most often mutated
 in human cancer: Arg248 reaches into the DNA itself, and the other two hold the
 loop that carries it.
 
-One more click makes it readable: tick **Reference sequence**, which is off by
-default. Once its menu has been opened the isoform chip shrinks to the icon
-circled below, which stays in that corner and opens the same options. At this
-zoom the default draws the codon row once per transcript.
+One more click makes it readable:
+
+- Tick **Reference sequence**, which is off by default.
+- Once its menu has been opened, the isoform chip shrinks to the icon circled
+  below, which stays in that corner and opens the same options.
+- At this zoom the default draws the codon row once per transcript.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
 
@@ -130,31 +134,42 @@ constraint is on the protein. Hovering a bar reads back its score.
 
 phyloP scores a base by comparing a multiple alignment against the tree, and on
 this config that alignment is a checkbox too. UCSC publishes no bigMaf for the
-100-way, so this section switches to the 470-way pair, both under Comparative
-Genomics: **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)** and
-**Basewise Conservation (phyloP) - 470 phyloP**. Leave the window where it is.
+100-way, so this section switches to the 470-way pair. Leave the window where it
+is, and tick both, under Comparative Genomics:
+
+- **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)**
+- **Basewise Conservation (phyloP) - 470 phyloP**
 
 <Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from. A base is drawn only where it differs from human." />
 
-Most columns are blank, which is what a positive score is made of. Under S240
-nearly every species differs from human, but all carry the **same** base and the
-score stays above the line: one substitution on the human branch, however many
-rows show it. Under T256 and G244 fewer rows differ and those that do disagree
-with each other, and there the score goes red. phyloP counts substitution events
-on the tree.
+Most columns are blank, which is what a positive score is made of. phyloP counts
+substitution events on the tree:
 
-This track only opens at this zoom. A MAF block carries a row per species, so
-the byte estimate crosses the too-much-data limit within a few kb and a
-gene-wide view asks you to confirm before fetching. Zoomed further out it swaps
-to a precomputed summary and draws a conservation bar per species.
+- **Under S240**, nearly every species differs from human, but all carry the
+  **same** base and the score stays above the line: one substitution on the
+  human branch, however many rows show it.
+- **Under T256 and G244**, fewer rows differ and those that do disagree with
+  each other, and there the score goes red.
+
+The track's zoom range has two limits:
+
+- This track only opens at base zoom. A MAF block carries a row per species, so
+  the byte estimate crosses the too-much-data limit within a few kb and a
+  gene-wide view asks you to confirm before fetching.
+- Zoomed further out it swaps to a precomputed summary and draws a conservation
+  bar per species.
 
 ## The regulatory end of the same gene
 
 Conservation is one category of about a dozen, and the others are the same two
-clicks. Zoom out to the whole gene. Five Regulation and Expression tracks put a
-picture over it: **CpG Islands**, **ENCODE cCREs - ENCODE4 cCREs**, **Layered
-H3K4Me3 (hg19)**, **Layered H3K27Ac (hg19)** and **EPDnew Promoters - EPDnew
-v6**.
+clicks. Zoom out to the whole gene, and tick five Regulation and Expression
+tracks to put a picture over it:
+
+- **CpG Islands**
+- **ENCODE cCREs - ENCODE4 cCREs**
+- **Layered H3K4Me3 (hg19)**
+- **Layered H3K27Ac (hg19)**
+- **EPDnew Promoters - EPDnew v6**
 
 The two histone tracks each hold seven cell lines, drawn over one another as
 they open. **Track menu → Plot type → Multi-row → XY plot** gives each cell line
@@ -174,15 +189,18 @@ both is transcribing here. All seven carry both.
 A catalog track over a whole gene is usually more records than a screen can
 separate, and the way through it is the track's own columns. **gnomAD v4.1 -
 gnomAD v4.1 Exomes** under Variation and Repeats opens as several thousand
-records over _TP53_, which is one block of colour. Two of its columns cut that
-into a shape, and **Track menu → Filter by...** takes either: `feature.AF` is
-the allele frequency, `feature.annot` gnomAD's own consequence class (pLoF,
-missense, synonymous or other).
+records over _TP53_, which is one block of colour. **Track menu → Filter by...**
+takes either of its columns:
+
+- `feature.AF` is the allele frequency.
+- `feature.annot` is gnomAD's own consequence class (pLoF, missense, synonymous
+  or other).
 
 The dialog takes one jexl expression per line, and the track redraws with the
-records that pass all of them: `jexl:feature.AF >= 0.001` keeps the variants
-standing in the population, `jexl:feature.annot == 'pLoF'` the predicted
-loss-of-function set.
+records that pass all of them:
+
+- `jexl:feature.AF >= 0.001` keeps the variants standing in the population.
+- `jexl:feature.annot == 'pLoF'` keeps the predicted loss-of-function set.
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class expression typed in." />
 
@@ -192,9 +210,10 @@ colour.
 
 <Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1 Exomes over TP53 and the Add track filters dialog its track menu opens. One consequence-class expression redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
 
-Once a filter is in effect that same menu row opens a submenu: **Edit
-filters...** brings the dialog back with the expression still in it, and **Clear
-all filters** puts every record back.
+Once a filter is in effect that same menu row opens a submenu:
+
+- **Edit filters...** brings the dialog back with the expression still in it.
+- **Clear all filters** puts every record back.
 
 A BigBed's extra fields arrive as fields, so whatever columns the published file
 carries are what there is to filter and colour on, and the same dialog takes
@@ -247,12 +266,14 @@ The BigBeds behind the variant and annotation tracks read the same way.
 
 ## Trying another genome
 
-The GenArk assemblies behave the same way, with two differences: their configs
-carry a smaller track set, and whether a gene symbol resolves is decided by
-which accession you opened. The name index is built from an assembly's NCBI
-RefSeq annotation, so a `GCF_` accession (RefSeq) carries gene tracks and an
-index and searches like hg38 does, while a `GCA_` one (GenBank) generally has
-neither and coordinates are the way in.
+The GenArk assemblies behave the same way, with two differences:
+
+- **Their configs carry a smaller track set.**
+- **Whether a gene symbol resolves depends on which accession you opened.** The
+  name index is built from an assembly's NCBI RefSeq annotation, so a `GCF_`
+  accession (RefSeq) carries gene tracks and an index and searches like hg38
+  does, while a `GCA_` one (GenBank) generally has neither and coordinates are
+  the way in.
 
 An assembly released both ways appears under both accessions, same sequence, and
 only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and

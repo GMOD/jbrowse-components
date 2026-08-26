@@ -65,15 +65,18 @@ XP-EHH, e.g. from [selscan](https://github.com/szpiech/selscan)) capture sweeps
 that Fst misses and, being per-site or per-window scores, load the same way.
 
 This tutorial stacks Fst, π and Tajima's D in one view, each scaled to its own
-data. The panel is the
-[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), 205
-inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6,
-and the two signals it draws are Fst across the `In(2L)t` inversion, which
-suppresses recombination between the two arrangements in a heterozygote
-([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
-and the π landscape, which dips at loci under selection such as the
-insecticide-resistance gene _Cyp6g1_
-([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
+data, over the [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/)
+(DGRP), 205 inbred lines
+([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6. Two signals
+stand out:
+
+- **Fst across the `In(2L)t` inversion.** The inversion suppresses recombination
+  between the two arrangements in a heterozygote
+  ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
+  so Fst tracks the arrangement boundary.
+- **The π landscape.** It dips at loci under selection, such as the
+  insecticide-resistance gene _Cyp6g1_
+  ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 
 ## Building the scans
 

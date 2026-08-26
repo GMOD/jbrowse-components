@@ -53,10 +53,6 @@ followed to the copy of the genome it came from.
 This page uses the phased VCF above, the Kinh-Vietnamese trio HG02024, chr1
 only.
 
-The finished tracks also render inline in a notebook through the
-[Python anywidget interface](/docs/jbrowse_anywidget), or [](/docs/jbrowser) in
-R. This tutorial builds its tracks on the command line.
-
 Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
 "Add track" workflow, both covered in the
 [variant track guide](/docs/config_guides/variant_track).
@@ -74,11 +70,12 @@ columns back to their genomic positions.
 
 ## Enabling the phased mode
 
-The matrix has a "phased" rendering mode under the track menu's "Rendering
-mode". It splits each sample into its two haplotypes, so the three trio members
-become six rows. Phased mode needs genotypes written with the `0|1` separator
-rather than `0/1`. Getting there from unphased calls takes a phasing program
-like SHAPEIT.
+Turn on **Rendering mode → Phased** from the track menu:
+
+- it splits each sample into its two haplotypes, so the three trio members
+  become six rows
+- it needs genotypes written with the `0|1` separator rather than `0/1`; getting
+  there from unphased calls takes a phasing program like SHAPEIT
 
 <Figure caption="The phased rendering mode, and the 'Rendering mode' → 'Phased' menu item that turns it on." src="/img/trio-matrix-phased.png"/>
 
@@ -178,10 +175,13 @@ tabix -p bed trio.hapibd.bed.gz
 sorts the rest under `LC_ALL=C`, so the adapter can read the column names off
 the file and the order does not shift with your locale.
 
-Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`, which
-draws one row per distinct value of `partitionField`, so `parenthap` gives the
-four parental-haplotype rows and `rowOrder` sets their top-to-bottom order. A
-BED carrying `itemRgb` is painted with it automatically.
+Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
+
+- `partitionField` draws one row per distinct value it finds, so `parenthap`
+  gives the four parental-haplotype rows
+- `rowOrder` sets their top-to-bottom order
+- a BED carrying `itemRgb` is painted with it automatically, no extra color
+  config needed
 
 ```json
 {
@@ -205,10 +205,13 @@ BED carrying `itemRgb` is painted with it automatically.
 }
 ```
 
-The BED's `#`-header line names its columns, so the adapter needs no
-`columnNames`, and `parenthap` is the one the display partitions on.
-[`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
-off: the color and the row label carry the same four categories.
+Two things about the config above:
+
+- The BED's `#`-header line names its columns, so the adapter needs no
+  `columnNames`, and `parenthap` is the one the display partitions on.
+- [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
+  off, because the color and the row label already carry the same four
+  categories.
 
 ## Reading the painted crossovers
 
@@ -217,20 +220,16 @@ for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
-Read the two blue rows together as the child's paternal chromosome: exactly one
-of them is filled at any position, and that is which of the father's two copies
-the child got there. Every step between the blue rows is a crossover. The red
-rows work the same way for the maternal chromosome.
+Read the rows in pairs:
+
+- **Blue rows are the child's paternal chromosome.** Exactly one of them is
+  filled at any position, and that is which of the father's two copies the child
+  got there there; every step between the blue rows is a crossover.
+- **Red rows work the same way** for the maternal chromosome.
 
 That rule is the figure's own control: two filled blue rows at a position, or
 neither, means hap-ibd matched one child haplotype to both of the father's
 copies or to neither. The centromere is the blank with no markers to match on.
-
-The same display paints rows by whatever category is in the BED: point
-`partitionField` at a different column and the rows change with it. The
-[local-ancestry tutorial](/docs/tutorials/local_ancestry) partitions by
-haplotype to paint FLARE ancestry calls, and the
-[BXD QTL tutorial](/docs/tutorials/bxd_qtl) partitions by strain.
 
 ## Relating the painting back to the genotypes
 

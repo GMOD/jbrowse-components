@@ -50,13 +50,17 @@ or a data-access agreement.
 
 ## The 2La inversion as one LD block
 
-Inverted and standard arrangements cannot recombine in a heterozygote, so
-wherever both are present the whole segment stays correlated. The 2La inversion
-in _Anopheles gambiae_ spans roughly 22 Mb of chromosome arm 2L, past what can
-be computed live from a VCF, so this LD is precomputed with PLINK and read
-through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter). The sections
-below build that table, load the same inversion genotyped per mosquito, and read
-the two together.
+Two facts set up the page:
+
+- **Inverted and standard arrangements cannot recombine in a heterozygote**, so
+  wherever both are present the whole segment stays correlated.
+- **The 2La inversion in _Anopheles gambiae_ spans roughly 22 Mb** of chromosome
+  arm 2L, past what can be computed live from a VCF, so this LD is precomputed
+  with PLINK and read through
+  [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
+
+The sections below build that table, load the same inversion genotyped per
+mosquito, and read the two together.
 
 ## Precompute the LD with PLINK
 
@@ -126,8 +130,7 @@ The same inversion loads as one `<INV>` record spanning the breakpoints,
 genotyped across every mosquito. The
 [regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail)
 draws each genotype at the call's true span, so a carrier's row begins and ends
-at the breakpoints. [](/docs/tutorials/population_genomics) builds the same
-one-record karyotype track for an 11 Mb Drosophila inversion.
+at the breakpoints.
 
 Those genotypes are what the karyotype lanes in the figure below are: cells
 shaded by allele dosage, each lane sorted into standard, heterozygous and
@@ -163,11 +166,13 @@ with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
 }
 ```
 
-[`groupBy`](/docs/config/linearmultisamplevariantdisplay/#slot-groupby) keeps
-the karyotype classes contiguous, so each class reads as one block.
-[`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
-is on its default, `skip`, which fills the lane with the reference color and
-paints alt cells on top: a solid grey field with the carriers' blocks on it.
+What each setting does:
+
+- [`groupBy`](/docs/config/linearmultisamplevariantdisplay/#slot-groupby) keeps
+  the karyotype classes contiguous, so each class reads as one block.
+- [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
+  is on its default, `skip`, which fills the lane with the reference color and
+  paints alt cells on top: a solid grey field with the carriers' blocks on it.
 
 Rows divide the lane's height between them, so a 300-pixel lane gives each of
 297 mosquitoes about a pixel. The display draws a row for every sample in the
@@ -202,14 +207,17 @@ coordinates from a different file. Across the block, markers at opposite ends
 are about as correlated as neighbouring ones: correlation holds flat with
 distance over a recombination-suppressed span.
 
-The second block, at the low-coordinate end of the arm in both panels, is
-reddest along the diagonal and pales away below it. That block sits on _Vgsc_,
-the sodium channel whose codon-995 substitutions confer pyrethroid resistance
-and which this release was used to survey
-([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)). Gabon shows that
-block too. Across the 2La span in that panel, 64 of its 69 mosquitoes recombine
-freely, and the MAF floor both files carry drops the variants tagging the 5
-heterozygotes, so the span reads flat.
+Two more things stand out beyond the 2La block itself:
+
+- **The second block is _Vgsc_.** At the low-coordinate end of the arm in both
+  panels, it is reddest along the diagonal and pales away below it: the sodium
+  channel whose codon-995 substitutions confer pyrethroid resistance, and which
+  this release was used to survey
+  ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)). Gabon shows that
+  block too.
+- **Gabon's 2La span reads flat.** 64 of its 69 mosquitoes recombine freely
+  across that span, and the MAF floor both files carry drops the variants
+  tagging the 5 heterozygotes.
 
 ## What an LD block depends on
 
@@ -231,14 +239,18 @@ Four things decide how strongly a block reads, and the
 
 ## Metric and allele-frequency floor
 
-D' asks whether recombination has been seen between two markers, so it saturates
-near 1 wherever no recombinant haplotype has turned up. That makes it the read
-on where recombination stops, and the reproduce script uses it to recover the
-breakpoints. r² asks how well one marker predicts the other, which also requires
-the two to be at similar frequency, so it draws the sharper boundary and reads
-on whether a marker can stand in for another. Switch with
-[`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the script prints
-both ratios for every panel.
+Two metrics read the same block differently:
+
+- **D'** asks whether recombination has been seen between two markers, so it
+  saturates near 1 wherever no recombinant haplotype has turned up. That makes
+  it the read on where recombination stops, and the reproduce script uses it to
+  recover the breakpoints.
+- **r²** asks how well one marker predicts the other, which also requires the
+  two to be at similar frequency, so it draws the sharper boundary and reads on
+  whether a marker can stand in for another.
+
+Switch with [`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the
+script prints both ratios for every panel.
 
 Raising the minor allele frequency filter
 ([`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter))
@@ -248,15 +260,24 @@ reaches the tagging variants themselves and the block fades.
 ## Reproduce it end to end
 
 [`build_ag1000g_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ag1000g_ld.sh)
-downloads the phased haplotypes, runs each check above and prints the result,
-builds the tabix-indexed `.vcor.gz` tracks and the per-mosquito karyotype calls,
-and writes a `config.json` opening on the inversion:
+does the whole build for you:
+
+- downloads the phased haplotypes
+- runs each check above and prints the result
+- builds the tabix-indexed `.vcor.gz` tracks and the per-mosquito karyotype
+  calls
+- writes a `config.json` opening on the inversion
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ag1000g_ld.sh
 bash build_ag1000g_ld.sh              # writes ./ag1000g_ld_build/jbrowse2
 npx --yes serve ag1000g_ld_build/jbrowse2
 ```
+
+## The same karyotype track in Drosophila
+
+[](/docs/tutorials/population_genomics) builds the same one-record karyotype
+track for an 11 Mb Drosophila inversion.
 
 ## See also
 
