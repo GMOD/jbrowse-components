@@ -5,7 +5,7 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function arcIsFar(halfWidthPx: number, canvasWidthPx: number): boolean {
-  return ((2.0 * halfWidthPx) > canvasWidthPx)
+  return ((2.0 * halfWidthPx) > (3.0 * canvasWidthPx))
 }
 
 export function arcRadiiPx(halfWidthPx: number, destYPx: number, canvasWidthPx: number): [number, number] {

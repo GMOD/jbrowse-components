@@ -1,5 +1,10 @@
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import {
+  ARC_APEX_FRACTION,
+  ARC_FAR_SCREEN_WIDTHS,
+  ARC_HEIGHT_MARGIN,
+} from '../../shaders/slang/arc.consts.generated.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 
 import type { ArcHitBandOptions } from './arcHitTest.ts'
@@ -112,28 +117,38 @@ test('a lane that reserved no arc band answers nothing', () => {
 // the full canvas width put it on the other side of that test from the paint
 // for every block narrower than the canvas — which is every multi-region view.
 describe('the far/near split is taken against the same width the renderers use', () => {
-  // A 400px block on a 1000px canvas, still 1bp per px. The mate at 1700 is off
-  // the block's right edge, which is exactly the case the projection is built to
-  // extrapolate through — so the pair spans 600px: far against the block's 400,
-  // near against the canvas's 1000.
+  // A 400px block on a 1000px canvas, still 1bp per px. The mate is off the
+  // block's right edge, which is exactly the case the projection is built to
+  // extrapolate through.
+  const BLOCK_W = 400
+  const CANVAS_W = 1000
+  // A span that is FAR against the block and NEAR against the canvas: halfway
+  // between the two thresholds, so it stays on the right side of both wherever
+  // `ARC_FAR_SCREEN_WIDTHS` sits. The claim under test is WHICH WIDTH the split
+  // reads, so writing the span out would pin the constant instead.
+  const SPAN_PX = Math.round((ARC_FAR_SCREEN_WIDTHS * (BLOCK_W + CANVAS_W)) / 2)
+  const HALF = SPAN_PX / 2
   const NARROW = {
-    region: { start: 1000, end: 1400, screenStartPx: 0, screenEndPx: 400 },
+    region: { start: 1000, end: 1400, screenStartPx: 0, screenEndPx: BLOCK_W },
     band: { arcBandTop: 0, arcBandHeight: 100, arcDown: false },
     scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 500 },
     lineWidth: 1,
     arcsYDomainBp: undefined,
-    canvasWidthPx: 1000,
+    canvasWidthPx: CANVAS_W,
   } satisfies ArcHitBandOptions
   const WIDE_PAIR = {
     ...ARCS,
     arcX1: new Uint32Array([1100]),
-    arcX2: new Uint32Array([1700]),
+    arcX2: new Uint32Array([1100 + SPAN_PX]),
   }
+  // 1bp per px with the block's left edge at bp 1000, so the near foot lands at
+  // 100 and the circle's centre a half-span to its right.
+  const MID_X = 100 + HALF
 
-  // What the renderers paint: a circle of radius halfWidth (300) centred on the
-  // span's midpoint at the anchor line, whose apex is 300px above a 100px band —
-  // so only two near-vertical legs are inside it. 20px up the left leg:
-  const LEG = { x: 400 - Math.sqrt(300 * 300 - 20 * 20), y: 100 - 20 }
+  // What the renderers paint: a circle of radius `HALF` centred on the span's
+  // midpoint at the anchor line, whose apex is far above a 100px band — so only
+  // two near-vertical legs are inside it. 20px up the left leg:
+  const LEG = { x: MID_X - Math.sqrt(HALF * HALF - 20 * 20), y: 100 - 20 }
 
   test('a leg of the painted semicircle answers', () => {
     expect(
@@ -142,11 +157,17 @@ describe('the far/near split is taken against the same width the renderers use',
   })
 
   test('and the dome the canvas-width reading would have drawn does not', () => {
-    // Read as a near pair the same arc is an ellipse peaking 30px up at x=400,
+    // Read as a near pair the same arc is an ellipse peaking at the midpoint,
     // which is where the hover used to answer. Nothing is painted there — the
-    // real curve is 200px above the band at that x — so it must miss.
+    // real curve is hundreds of px above the band at that x — so it must miss.
+    const availH = 100 - ARC_HEIGHT_MARGIN
     expect(
-      resolveArcBandHover(400, 100 - 30, WIDE_PAIR, NARROW),
+      resolveArcBandHover(
+        MID_X,
+        100 - ARC_APEX_FRACTION * availH,
+        WIDE_PAIR,
+        NARROW,
+      ),
     ).toBeUndefined()
   })
 })

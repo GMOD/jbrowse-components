@@ -30,6 +30,77 @@ export function regionIndexOf(
   return undefined
 }
 
+// How far outside the fetched data the read cloud will still draw a bar toward,
+// in bp: `CLOUD_OFFSCREEN_REACH` times the span this fetch actually pulled.
+//
+// A bar to a partner the view has no data for is a line to nowhere, which is why
+// the cloud has a reach at all. But the strict test — the partner must be IN a
+// loaded region — throws away the case the band is most worth looking at: a real
+// event just past the edge of the window, whose pairs all agree on one span and
+// so draw one clean row. Those pairs point at something; a mate the aligner
+// dropped at a random spot on the chromosome does not.
+//
+// RELATIVE TO WHAT IS LOADED, so the picture follows the view: zoom out and a
+// farther event comes into reach, exactly as its arc would come back on screen.
+//
+// The multiple is measured, on HG002 300x (`NHGRI_Illumina300X_AJtrio`, hs37d5)
+// over 47 20 kb windows across chr1, 2, 5, 11, 17 and 20 — 5,281 cloud arcs.
+// Sweeping the reach and splitting what each newly admits into clustered
+// evidence (three or more pairs agreeing on the junction within a fragment
+// length) and singletons:
+//
+// ```
+// reach   | newly drawn | of those, clustered | median domain | max domain
+// 8x      |     5       |   0                 |  1 kb         |  238 kb
+// 13x     |     8       |   0                 |  1 kb         |  354 kb
+// 14x     |    55       |  46 (84%)           |  1 kb         |  409 kb
+// 20x     |    58       |  46 (79%)           |  2 kb         |  590 kb
+// 50x     |    63       |  46 (73%)           |  2 kb         |  1.1 Mb
+// 1000x   |   261       | 101 (39%)           | 17.6 Mb       | 29.5 Mb
+// ```
+//
+// Under 14x the reach buys nothing but singletons; past ~50x it starts admitting
+// the uniform mismapping tail and the axis goes with it. Anywhere in between
+// behaves alike, and 20x is inside that band rather than on its lower edge —
+// which is set by a single 409 kb cluster, and sitting on it would be fitting
+// the constant to one event. The cost is bounded by the same table: a worst-case
+// domain of 590 kb against a median of 2 kb.
+//
+// It is often a no-op, which is the point. The 200 kb window at 1:2,000,000 —
+// the one whose 96 screen-wide bars are the mass this whole rule exists for —
+// holds no arc at all between 10 kb and 1 Mb, so nothing there is within reach
+// and the picture is the strict one.
+export const CLOUD_OFFSCREEN_REACH = 20
+
+export function cloudReachBp(loadedRegions: RegionInfo[]) {
+  let loadedBp = 0
+  for (const r of loadedRegions) {
+    loadedBp += r.end - r.start
+  }
+  return CLOUD_OFFSCREEN_REACH * loadedBp
+}
+
+// Whether a foot is close enough to the fetched data for a bar drawn toward it
+// to mean something — `regionIndexOf`'s question, widened by `cloudReachBp`.
+//
+// A boolean rather than an index, and deliberately NOT a widened
+// `regionIndexOf`: the region an arc is PARTITIONED into has to be one that can
+// project the foot, so widening the lookup every caller shares would file a
+// cross-region arc into a per-region buffer. This answers only "is there
+// something over there", which is a different question from "where does this
+// draw".
+export function nearLoadedRegion(
+  regions: RegionInfo[],
+  refName: string,
+  bp: number,
+  reachBp: number,
+) {
+  return regions.some(
+    r =>
+      r.refName === refName && bp >= r.start - reachBp && bp <= r.end + reachBp,
+  )
+}
+
 function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
   const byRef = new Map<string, T[]>()
   for (const item of items) {

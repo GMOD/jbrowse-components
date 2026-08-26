@@ -243,12 +243,17 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   other two questions the three flat shapes are asked: only `ARC_SHAPE_FLAT` has
   a TLEN (`isUnplacedArcShape` is the hover's), and only the two ON the axis may
   size it (`plotsOnInsertSizeAxis`).
-- **The read cloud draws a bar only between two places on screen.** A connection
-  whose partner is outside every LOADED region collapses onto the end the view
-  can place and sits on the zero anchor (`ARC_SHAPE_FLAT_UNPLACED`). It is a
-  placement test and not a span threshold, and `displayedRegions` will not
-  answer it — in an ordinary LGV that is the whole chromosome. ARC_BAND.md has
-  the measurement.
+- **The read cloud draws a bar only toward somewhere it has data.** A connection
+  whose partner is outside every LOADED region — widened by `cloudReachBp`, so a
+  real event just off the edge still gets its bars — collapses onto the end the
+  view can place and sits on the zero anchor (`ARC_SHAPE_FLAT_UNPLACED`). It is
+  a placement test and not a span threshold, and `displayedRegions` will not
+  answer it: in an ordinary LGV that is the whole chromosome. ARC_BAND.md has
+  both measurements.
+- **`ARC_FAR_SCREEN_WIDTHS` is 3, not "both endpoints fit on screen".** A
+  circle's tangent at its foot is vertical whatever its radius, so collapsing a
+  pair to one at 1 screen width threw its direction away; the ellipse keeps
+  leaning. The limit on raising it is tessellation, not geometry — ARC_BAND.md.
 - **`minInterchromSupport` is gated against the number each mark DRAWS with** —
   a cluster's size for an arc, the coalesced total for a tick — and split
   junctions are exempt (`clearsInterchromFloor`). Gating a tick's addends made

@@ -69,11 +69,26 @@ describe('arcRadiiPx replaces strokeArc’s hand-written radius pair', () => {
   // left on the insert-size Y would draw a flat dome instead, and the near
   // branch is the one that carries the insert size at all.
   it('returns a circle when far and the insert-size dome when not', () => {
+    // The boundary is derived from the constant rather than written out, so
+    // moving `ARC_FAR_SCREEN_WIDTHS` moves the case this pins instead of
+    // breaking it — what is being pinned is that the two branches sit either
+    // side of it, not where it currently is.
+    const canvasWidthPx = 640
+    const onThreshold = (ARC_FAR_SCREEN_WIDTHS * canvasWidthPx) / 2
     // Exactly on the threshold is NOT far: the comparison is strict, and both
     // sides spell it that way.
-    expect(arcRadiiPx(320, 40, 640)).toEqual([320, ARC_APEX_FRACTION * 40])
-    expect(arcRadiiPx(320.5, 40, 640)).toEqual([320.5, 320.5])
-    expect(arcRadiiPx(100, 40, 640)).toEqual([100, ARC_APEX_FRACTION * 40])
+    expect(arcRadiiPx(onThreshold, 40, canvasWidthPx)).toEqual([
+      onThreshold,
+      ARC_APEX_FRACTION * 40,
+    ])
+    expect(arcRadiiPx(onThreshold + 0.5, 40, canvasWidthPx)).toEqual([
+      onThreshold + 0.5,
+      onThreshold + 0.5,
+    ])
+    expect(arcRadiiPx(onThreshold / 3, 40, canvasWidthPx)).toEqual([
+      onThreshold / 3,
+      ARC_APEX_FRACTION * 40,
+    ])
   })
 
   // A degenerate pair (both reads at one bp, or a zero insert) is a real input:

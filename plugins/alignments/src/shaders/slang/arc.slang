@@ -84,11 +84,34 @@ static const float PI = 3.14159265359;
 // correspondence with the insert-size scalebar — untouched by the shape change.
 // Mirrored in drawCanvas.ts.
 static const float ARC_APEX_FRACTION = 0.75;
-// Once a pair spans more than this many screen widths — i.e. its endpoints no
-// longer both fit on screen — a paired arc's ellipse becomes a true circle, so
-// the band clips it down to near-vertical lines at each real endpoint. Mirrored
-// in drawCanvas.ts.
-static const float ARC_FAR_SCREEN_WIDTHS = 1.0;
+// How many screen widths a pair may span before its ellipse becomes a true
+// circle, which the band then clips down to near-vertical lines at each real
+// endpoint. Mirrored in drawCanvas.ts.
+//
+// A CIRCLE THROWS THE PAIR'S DIRECTION AWAY, which is why this is not 1.0 — the
+// point where the two endpoints stop both fitting on screen. A circle's tangent
+// at its foot is vertical whatever its radius, and the band only ever shows the
+// first `availH` px of the rise, so the leg leans by `availH^2 / 2r`: 10 px over
+// a 152 px band for a pair 1.6 screens wide, which reads as a bar. The ELLIPSE
+// at the same pair is `rx` wide and `0.75 * destY` tall, so it arcs across the
+// whole view and its lean says which way the mate lies. On volvox-sv at
+// ctgA:1-20,000 the 19 pairs of the 32 kb event draw as a bundle of verticals
+// under 1.0 and as a fan of arcs under this.
+//
+// THE LIMIT IS TESSELLATION, NOT GEOMETRY. An ellipse spends its 64 segments
+// over its whole half, so the share landing on the visible slice near the foot
+// falls as 2/(PI*sqrt(N)) — 24 segments at N=3, 13 at N=10, one at N=1000. A far
+// circle's legs dodge that with `legSweepAngle`, which puts every segment inside
+// the band, and dodge the float32 cancellation that reconstructing a huge
+// `centre + cos(a)*r` runs into. Neither dodge is needed at 3.
+//
+// The hull was the other candidate limit and is not one: reproducing this pass's
+// strip against `sdEllipse` over ry 4-114 and half-widths 0.5-2, the share of
+// inked samples the 64 quads miss is flat from N=1 to N=40 (12.2% to 14.2%,
+// against a same-checker N=1 control), so the aspect ratio a raised threshold
+// creates is not what the tessellation is spent on. `ellipseDistance`'s own note
+// puts the solver past 88:1 already, which a 25px band reaches at N=1.
+static const float ARC_FAR_SCREEN_WIDTHS = 3.0;
 
 // Which distance function the fragment measures with. Ordered so the fragment
 // can compare rather than test equality on an interpolated float.

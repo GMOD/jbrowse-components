@@ -18,7 +18,12 @@ import {
   getArcColorType,
   isConcordantFRPair,
 } from './arcColors.ts'
-import { arcsToRegionMap, regionIndexOf } from './arcRegions.ts'
+import {
+  arcsToRegionMap,
+  cloudReachBp,
+  nearLoadedRegion,
+  regionIndexOf,
+} from './arcRegions.ts'
 import { CLOUD_JITTER_BOUNDS } from './arcTypes.ts'
 import {
   ARC_SHAPE_ARC,
@@ -239,6 +244,9 @@ function resolveArcs(
   regions: ArcRegions,
 ) {
   const { displayed: displayedRegions, loaded: loadedRegions } = regions
+  // How far past the fetched data a bar may still point — see `cloudReachBp`.
+  // Resolved once for the feed: it describes the VIEW, not a connection.
+  const reachBp = cloudReachBp(loadedRegions)
   const {
     colorByType,
     cloud = false,
@@ -642,16 +650,22 @@ function resolveArcs(
     // `displayedRegions` in an ordinary LGV is the WHOLE chromosome, so a mate
     // 214 Mb away resolves to a region and reads as perfectly placeable. The
     // loaded list is the fetch — the blocks on screen plus the half-screen each
-    // side `planRegionFetch` buffers — which is the data a bar could actually
-    // be drawn between.
+    // side `planRegionFetch` buffers.
+    //
+    // Widened by `cloudReachBp`, so the test is "is there something over there"
+    // rather than "did this fetch pull it". A real event just past the window
+    // edge draws its bars — every one of its pairs agreeing on one span, which
+    // is one clean row — where a strict containment test threw them away along
+    // with the mismapping. The reach is a multiple of the loaded span and the
+    // measurement behind it is with the constant.
     //
     // Two discontiguous displayed regions are two loaded regions, so a pair
     // bridging the breakpoints of a long-range event has both feet placed and
-    // keeps its bar however far apart they are. That view is what read
-    // connections exist for, and the span it puts on the axis is the one the
-    // reader asked to see.
-    const p1Placed = regionIndexOf(loadedRegions, p1Ref, p1Bp) !== undefined
-    const p2Placed = regionIndexOf(loadedRegions, p2Ref, p2Bp) !== undefined
+    // keeps its bar however far apart they are — no reach needed. That view is
+    // what read connections exist for, and the span it puts on the axis is the
+    // one the reader asked to see.
+    const p1Placed = nearLoadedRegion(loadedRegions, p1Ref, p1Bp, reachBp)
+    const p2Placed = nearLoadedRegion(loadedRegions, p2Ref, p2Bp, reachBp)
     const shape = computeArcShape({
       cloud,
       arc,

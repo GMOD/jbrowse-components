@@ -3,7 +3,7 @@
 
 export const ARC_HEIGHT_MARGIN = 8
 
-export const ARC_FAR_SCREEN_WIDTHS = 1
+export const ARC_FAR_SCREEN_WIDTHS = 3
 
 export const ARC_APEX_FRACTION = 0.75
 

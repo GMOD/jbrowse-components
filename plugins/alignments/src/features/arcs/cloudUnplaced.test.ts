@@ -20,22 +20,26 @@ import type { RegionInfo } from './arcTypes.ts'
 // to draw to, so the mark collapses onto the end that is on screen and sits on
 // the band's zero anchor.
 //
+// It reaches PAST the fetch by a multiple of the fetched span (`cloudReachBp`),
+// so a real event just off the edge keeps its bars while a mate dropped at a
+// random spot on the chromosome does not.
+//
 // THE RULE IS PLACEMENT, NOT DISTANCE, and these are written so that a span
 // threshold passes half of them and fails the other half: the same 5 Mb pair is
-// parked out of one window and drawn across two, and a 30 kb pair is parked out
-// of a 20 kb window that a 5 Mb pair survives.
+// parked out of one window and drawn across two, and the same 30 kb pair is
+// drawn out of a 20 kb window and parked out of a 1 kb one.
 
 function pairData(overrides: Partial<PileupDataResult>): PileupDataResult {
   const n = (overrides.readPositions?.length ?? 0) / 2
   return { ...basePileupDataResult(n), ...overrides }
 }
 
-// One read at 1000 whose mate the aligner placed `mateBp` away on the same
-// contig. Orientation 2 (RL) keeps it out of the concordant-FR drop whatever
-// band the fixture happens to produce.
-function loneMateAt(mateBp: number, tlen: number) {
+// One read whose mate the aligner placed `mateBp` away on the same contig.
+// Orientation 2 (RL) keeps it out of the concordant-FR drop whatever band the
+// fixture happens to produce.
+function loneMateAt(mateBp: number, tlen: number, readBp = 1000) {
   return pairData({
-    readPositions: new Uint32Array([1000, 1150]),
+    readPositions: new Uint32Array([readBp, readBp + 150]),
     readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
     readStrands: new Int8Array([1]),
     readInsertSizes: new Float32Array([tlen]),
@@ -128,13 +132,46 @@ describe('a connection the view can place only one end of', () => {
     expect(arcs[0]!.p2.bp).toBe(9_000)
   })
 
-  // The converse of the two-region case, against the same threshold sabotage: a
-  // 30 kb pair is UNPLACED in a 20 kb window that a 5 Mb pair survives, so no
-  // ordering of spans reproduces these two results.
-  test('a mate just outside the loaded region is unplaced too', () => {
+  // The reach: a partner OUTSIDE the fetch still gets a bar while it is close
+  // enough to be something rather than nowhere. A strict containment test threw
+  // away the case the band is most worth looking at — a real event just past the
+  // window edge, whose pairs agree on one span and draw one clean row.
+  test('a mate just outside the loaded region still gets its bar', () => {
     const { arcs } = runCloud(loneMateAt(30_000, 29_000), [region(0, 20_000)])
-    expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
-    expect(arcs[0]!.p2.bp).toBe(1000)
+    expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT)
+    expect(arcs[0]!.p2.bp).toBe(30_000)
+  })
+
+  // BOTH SIDES. Every other case here puts the partner to the right of the
+  // window, so a reach applied to one edge only passes all of them — the read
+  // sits at 110 kb inside a region starting at 100 kb, and its mate is 20 kb
+  // BELOW that start.
+  test('the reach runs off the near edge of the region as well', () => {
+    const loaded = [region(1_000_000, 1_020_000)]
+    const near = runCloud(loneMateAt(990_000, 20_000, 1_010_000), loaded)
+    expect(near.arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT)
+    expect(near.arcs[0]!.p2.bp).toBe(990_000)
+
+    // And ends on that side too: 20 x 20 kb of reach reaches back to 600 kb.
+    const far = runCloud(loneMateAt(500_000, 510_000, 1_010_000), loaded)
+    expect(far.arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
+  })
+
+  // THE REACH IS RELATIVE TO WHAT IS LOADED, which is what a constant cannot be:
+  // the same 30 kb pair is drawn out of a 20 kb window and parked out of a 1 kb
+  // one, and no bp threshold produces both answers. The far side of the reach is
+  // pinned beside it so "lenient" does not quietly mean "unbounded".
+  test('the reach scales with the fetch, and ends', () => {
+    const wide = runCloud(loneMateAt(30_000, 29_000), [region(0, 20_000)])
+    expect(wide.arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT)
+
+    const narrow = runCloud(loneMateAt(30_000, 29_000), [region(0, 1_000)])
+    expect(narrow.arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
+
+    // Past the reach out of the same 20 kb window: 20x20 kb is 400 kb.
+    const past = runCloud(loneMateAt(600_000, 599_000), [region(0, 20_000)])
+    expect(past.arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
+    expect(past.arcs[0]!.p2.bp).toBe(1000)
   })
 
   // Every segment of the chain is a read, so the rule is the connection's and

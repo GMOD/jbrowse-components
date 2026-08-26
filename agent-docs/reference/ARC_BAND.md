@@ -43,6 +43,41 @@ own:
   no distance. This is also the one thing a tick's hover was worth more than an
   arc's, so an arc replacing ticks must not lose it.
 
+## A far pair keeps its direction for three screen widths
+
+**`ARC_FAR_SCREEN_WIDTHS` is 3, not the 1 that would mean "both endpoints fit on
+screen".** Past it a paired arc's ellipse becomes a true circle and the band clips
+it to near-vertical legs at each real endpoint — which throws the pair's DIRECTION
+away, because a circle's tangent at its foot is vertical whatever its radius. The
+band only ever shows the first `availH` px of the rise, so the leg leans by
+`availH^2 / 2r`: 10 px over a 152 px band for a pair 1.6 screens wide, which reads
+as a bar. The ellipse at the same pair is `rx` wide and `0.75 * destY` tall, so it
+arcs across the whole view and its lean says which way the mate lies. On
+`volvox-sv` at `ctgA:1-20,000` the 19 pairs of its 32 kb event draw as a bundle of
+verticals at 1 and as a fan of arcs at 3.
+
+**The limit is TESSELLATION, not geometry, and that is what picks the number.** An
+ellipse spends its 64 segments over its whole half, so the share landing on the
+visible slice near the foot falls as `2/(PI*sqrt(N))` — 24 segments at N=3, 13 at
+N=10, one at N=1000. A far circle's legs dodge that with `legSweepAngle`, which
+puts every segment inside the band, and dodge the float32 cancellation that
+reconstructing a huge `centre + cos(a)*r` runs into. Neither dodge is needed at 3.
+
+The hull was the other candidate limit and is not one. Reproducing the pass's
+triangle strip against `sdEllipse` over ry 4-114 and half-widths 0.5-2, the share
+of inked samples the 64 quads miss is flat from N=1 to N=40 — 12.2% to 14.2%,
+against a same-checker N=1 control, so the absolute figure is the checker's and
+only the flatness is the result. The aspect ratio a raised threshold creates is
+not what the tessellation is spent on. `ellipseDistance`'s own note already puts
+the solver past 88:1, which a 25 px band reaches at N=1.
+
+**The two tests that pin this derive their boundary from the constant** rather
+than writing it out (`arcRadiiParity.test.ts`, `arcHitTest.test.ts`), because what
+they are for is that the branches sit either side of the threshold and that the
+split reads the BLOCK's width — not where the threshold currently is. Both broke
+on the move, which is how a fixture built out of `2 * 320 > 640` announces that it
+was pinning the number.
+
 ## Paint order is an interest ranking, not a data order
 
 Stated in two places, for the two things that overlap:
@@ -312,6 +347,23 @@ the half-screen each side `planRegionFetch` buffers), which is the data a bar
 could be drawn between. `cloudUnplaced.test.ts` pins the distinction, and a
 sabotage swapping the lists is the one it catches.
 
+**And it REACHES PAST that list, by `CLOUD_OFFSCREEN_REACH` times the fetched
+span.** Strict containment threw away the case the band is most worth looking at
+along with the mismapping: a real event just off the window edge, whose pairs all
+agree on one span and so draw one clean row. Sweeping the reach over the same 47
+windows and splitting what each newly admits into clustered evidence and
+singletons, nothing but singletons appears below 14x, the clustered evidence is
+all in by 14x, and past ~50x the uniform tail starts coming back with the axis
+behind it — `cloudReachBp` carries the table. 20x sits inside that band rather
+than on its lower edge, which one 409 kb cluster sets.
+
+It is often a no-op, which is the point: the 200 kb window at 1:2,000,000 holds
+no arc at all between 10 kb and 1 Mb, so its picture is the strict one either
+way. What it does buy back everywhere is the EDGE RING — pairs straddling the
+loaded boundary, at ordinary spans, which strict containment parked for having a
+partner a few hundred bp outside the fetch. On the 24 kb window at 1:2,010,000
+that is 5 of the 7 parked marks.
+
 **The collapse is in bp, in `resolveArcs`, before anything is projected**, which
 is what lets all four renderers draw the mark with no geometry of their own:
 `arcMarkFrom` resolves a zero-length bar to `ARC_FLAT_MIN_PX` centred on the foot,
@@ -326,12 +378,6 @@ the distance between them would read as zero-width over a partner megabases away
 if the span still sizes the axis, so `maxFlatArcSpanBp` reads the two shapes that
 plot ON the axis rather than `isFlatArcShape`, which is the right predicate for
 "does this draw as a bar" and admits all three.
-
-**The edge ring is the priced cost.** A pair straddling the loaded region's
-boundary is unplaced too, whatever its span — 5 of 75 arcs in a 24 kb window at
-1:2,000,000 on HG002 300x, at ordinary spans of 139-1,185 bp. They cost nothing to
-look at: the boundary is half a screen outside the visible window, so those reads
-are off screen anyway and their bars ran off the block edge.
 
 ## Questions asked of the band, and of the lanes
 
