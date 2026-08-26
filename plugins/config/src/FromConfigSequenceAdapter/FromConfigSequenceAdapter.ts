@@ -5,8 +5,10 @@ import FromConfigAdapter, {
   mergeFeaturesToRegions,
 } from '../FromConfigAdapter/FromConfigAdapter.ts'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  RegionsAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
