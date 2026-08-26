@@ -140,9 +140,9 @@ why that one is not on the list.
 
 ## See also
 
-- [Capturing a JBrowse view from a script](/docs/agents_capture/)
-- [Supported file types](/docs/config_guides/file_types/)
-- [RNA-seq visualization](/docs/tutorials/rnaseq/)
+- [](/docs/agents_capture)
+- [](/docs/config_guides/file_types)
+- [](/docs/tutorials/rnaseq)
 
 ## References
 
