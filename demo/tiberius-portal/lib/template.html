@@ -125,7 +125,10 @@ input[type="search"] { min-width: 190px; }
 .verdicts button[aria-pressed="true"][data-v="reject"] { background: var(--reject-soft); border-color: var(--reject); color: var(--reject); font-weight: 600; }
 .next { font-size: 13px; color: var(--muted); }
 .next b { color: var(--ink); font-weight: 600; }
-a.live { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); border-radius: 7px; padding: 6px 13px; white-space: nowrap; }
+.links { margin-left: auto; display: flex; gap: 8px; }
+a.live { font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); border-radius: 7px; padding: 6px 13px; white-space: nowrap; }
+a.live.apollo { background: var(--accent); color: var(--on-cls); }
+a.live.apollo:hover { filter: brightness(1.15); }
 a.live:hover { background: var(--accent-soft); }
 a.live:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .empty { padding: 44px 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line-strong); border-radius: 10px; }
@@ -133,7 +136,7 @@ a.live:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 footer { border-top: 1px solid var(--line); padding-top: 20px; color: var(--muted); font-size: 13.5px; display: flex; flex-direction: column; gap: 7px; max-width: 78ch; }
 footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-@media (max-width: 640px) { h1 { font-size: 27px; } .meta { margin-left: 0; width: 100%; } a.live { margin-left: 0; } }
+@media (max-width: 640px) { h1 { font-size: 27px; } .meta { margin-left: 0; width: 100%; } .links { margin-left: 0; } }
 </style>
 </head>
 <body>
@@ -299,7 +302,12 @@ footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color:
             }).join('') +
           '</div>' +
           '<span class="next">Annotator action: <b>' + esc(meta.action) + '</b></span>' +
-          '<a class="live" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open in JBrowse</a>' +
+          '<div class="links">' +
+            '<a class="live" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open in JBrowse</a>' +
+            (c.apollo
+              ? '<a class="live apollo" href="' + esc(c.apollo) + '" target="_blank" rel="noopener">Edit in Apollo</a>'
+              : '') +
+          '</div>' +
         '</div>' +
       '</article>'
     }).join('')
@@ -317,10 +325,15 @@ footer code { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color:
   }
 
   function tsv() {
+    // an annotator picking the queue up in Apollo wants the link, not the locus
+    var apollo = DATA.cards.some(function (c) { return c.apollo })
     var head = ['model_id', 'class', 'locus', 'exons', 'strand', 'reference_genes', 'verdict']
+    if (apollo) { head.push('apollo_url') }
     var lines = [head.join('\t')]
     DATA.cards.forEach(function (c) {
-      lines.push([c.id, c.cls, c.loc, c.nExons, c.strand, (c.genes || []).join(';'), state.verdicts[c.id] || 'unreviewed'].join('\t'))
+      var row = [c.id, c.cls, c.loc, c.nExons, c.strand, (c.genes || []).join(';'), state.verdicts[c.id] || 'unreviewed']
+      if (apollo) { row.push(c.apollo || '') }
+      lines.push(row.join('\t'))
     })
     return lines.join('\n') + '\n'
   }

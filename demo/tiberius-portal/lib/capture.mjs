@@ -4,6 +4,16 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 
+// In this repo the capture tool is a sibling product rather than a dependency;
+// gene-review-portal, which is where this pipeline lives outside the monorepo,
+// resolves the same bin out of @jbrowse/capture instead.
+export function captureBin() {
+  return path.resolve(
+    import.meta.dirname,
+    '../../../products/jbrowse-capture/src/bin.ts',
+  )
+}
+
 export function sessionFor(candidate, trackIds, assembly, padFraction = 0.15) {
   const pad = Math.max(2000, Math.round((candidate.end - candidate.start) * padFraction))
   const start = Math.max(1, candidate.start - pad)
@@ -28,6 +38,17 @@ export function sessionFor(candidate, trackIds, assembly, padFraction = 0.15) {
 export function relativeLink(session, appDir = 'jbrowse') {
   const spec = encodeURIComponent(`spec-${JSON.stringify(session)}`)
   return `${appDir}/?config=../config.json&session=${spec}`
+}
+
+// Apollo is a JBrowse plugin, so an Apollo deployment takes the same session
+// spec — minus the config, which is the Apollo server's own, and minus the
+// tracks: Apollo adds `apollo_track_<assembly>` once its assemblies have loaded
+// and then re-applies its own snapshot, so a spec naming that track is racing
+// the code that creates it.
+export function apolloLink(session, instance) {
+  const spec = encodeURIComponent(`spec-${JSON.stringify(session)}`)
+  const sep = instance.endsWith('/') ? '' : '/'
+  return `${instance}${sep}?session=${spec}`
 }
 
 export function absoluteLink(session, instance, configUrl) {

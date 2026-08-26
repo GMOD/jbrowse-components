@@ -106,7 +106,23 @@ directory to a web server is the whole deployment.
 
 Adding `--rnaseq reads.bam` puts an alignment track under every model, in the
 captures and in the links both, which is what settles a novel locus that no
-reference gene supports.
+reference gene supports: exons with reads across them are a candidate gene, and
+exons without them are a candidate false positive. Repeat the flag for more than
+one, and name each with `--rnaseq-name` — two unlabelled tracks are "RNA-seq 1"
+and "RNA-seq 2", which says nothing about which tissue is which.
+
+The example portal carries two, both from the
+[Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
+Human Brain Reference and Universal Human Reference, a pool of ten cell lines.
+Two, because coverage splits both ways — the merged `IL17REL`/`TTLL8` model has
+1,350 brain reads against 178 UHR, and `RANBP1` has 3,469 UHR against 549 brain.
+A model with reads in neither is the one worth doubting.
+
+Tiberius has an evidence mode of its own — Nextflow, taking proteins, RNA-Seq
+and Iso-Seq — that folds evidence into the prediction. The released human
+annotation read here was made with default weights instead, so these tracks are
+evidence the reviewer judges the call against rather than an input the call was
+made from.
 
 ## Reading it
 
@@ -119,6 +135,13 @@ class, and the verdict buttons record what you decided.
 with the same tracks, so a card that needs more than a picture is one click from
 the real thing. Verdicts stay in your browser, and **Export decisions** writes
 them out as TSV to carry back to whatever produced the models.
+
+The triage ends there, because the fix does not belong in a viewer: splitting a
+merged model is an edit. Building with `--apollo <url>` gives every card a
+second link that opens the same window in
+[Apollo](https://github.com/GMOD/Apollo3), the annotation editor, and adds an
+`apollo_url` column to the exported TSV — so a triaged queue hands over as a
+spreadsheet of links.
 
 ## Checking the merge against the raw data
 

@@ -40,6 +40,28 @@
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz"
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "rnaseq_1",
+      "name": "RNA-seq · brain (HBR)",
+      "category": ["Evidence"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/tiberius_review/HBR_brain_rnaseq_chr22.bam"
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "rnaseq_2",
+      "name": "RNA-seq · universal reference (UHR)",
+      "category": ["Evidence"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam"
+      }
     }
   ],
   "defaultSession": {

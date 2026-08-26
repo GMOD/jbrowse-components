@@ -121,7 +121,7 @@ export function prepareBam(input, outDir) {
   return path.basename(target)
 }
 
-export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, referenceRef, rnaRefs, predictionName, referenceName }) {
+export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, referenceRef, rnaRefs, rnaNames = [], predictionName, referenceName }) {
   const uri = f => (isUrl(f) ? f : `data/${f}`)
   const tracks = [
     {
@@ -147,7 +147,7 @@ export function buildConfig({ assembly, fastaRef, aliasesRef, predictionRef, ref
     tracks.push({
       type: 'AlignmentsTrack',
       trackId: `rnaseq_${i + 1}`,
-      name: rnaRefs.length > 1 ? `RNA-seq ${i + 1}` : 'RNA-seq',
+      name: rnaNames[i] || (rnaRefs.length > 1 ? `RNA-seq ${i + 1}` : 'RNA-seq'),
       category: ['Evidence'],
       assemblyNames: [assembly],
       adapter: { type: 'BamAdapter', uri: uri(r) },

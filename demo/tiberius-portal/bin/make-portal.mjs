@@ -11,7 +11,9 @@ import path from 'node:path'
 
 import {
   absoluteLink,
+  apolloLink,
   captureAll,
+  captureBin,
   relativeLink,
   sessionFor,
 } from '../lib/capture.mjs'
@@ -53,6 +55,10 @@ STRONGLY RECOMMENDED
 OPTIONAL
   --rnaseq <bam>         evidence track, repeatable. Appears in every capture
                          and every live link.
+  --rnaseq-name <s>      label for the evidence track, repeatable and paired
+                         with --rnaseq in order. Two unlabelled tracks are
+                         "RNA-seq 1" and "RNA-seq 2", which says nothing about
+                         which tissue is which.
   --aliases <file|url>   a refName alias table (UCSC style, two columns). Needed
                          whenever the annotations say chr22 and the FASTA says 22,
                          which JBrowse reports as "unknown reference sequence name".
@@ -65,6 +71,18 @@ OPTIONAL
   --with-app             run \`jbrowse create\` so the portal ships its own copy
                          of JBrowse and needs no internet at all
   --instance <url>       drive/link a hosted JBrowse instead (default ${DEFAULT_INSTANCE})
+  --apollo <url>         an Apollo 3 instance. Every card gains an \`Edit in
+                         Apollo\` link that opens the same window there, which is
+                         where the annotator action actually happens.
+  --apollo-assembly <s>  Apollo's name for the assembly, when it differs from
+                         --assembly (Apollo names assemblies from its own server)
+  --apollo-track <id>    open this track in the Apollo link. Its own annotation
+                         track is usually \`apollo_track_<assembly>\`, but only the
+                         ones the Apollo server's config declares resolve from a
+                         link; the rest it adds after the session loads, and a
+                         link naming one of those fails to open. Default: no
+                         track, so the view arrives and the annotator turns
+                         Apollo's own layer on.
   --no-capture           skip the screenshots; links still work
   --inline-images        embed the captures in index.html, so the portal is one
                          file. Needs --region with remote inputs.
@@ -85,6 +103,7 @@ EXAMPLE
 function parseArgs(argv) {
   const o = {
     rnaseq: [],
+    rnaseqName: [],
     region: [],
     max: 12,
     width: 1400,
@@ -103,6 +122,8 @@ function parseArgs(argv) {
       o.fasta = next()
     } else if (a === '--rnaseq') {
       o.rnaseq.push(next())
+    } else if (a === '--rnaseq-name') {
+      o.rnaseqName.push(next())
     } else if (a === '--assembly') {
       o.assembly = next()
     } else if (a === '--region') {
@@ -123,6 +144,12 @@ function parseArgs(argv) {
       o.inlineImages = true
     } else if (a === '--public-config') {
       o.publicConfig = next()
+    } else if (a === '--apollo') {
+      o.apollo = next()
+    } else if (a === '--apollo-assembly') {
+      o.apolloAssembly = next()
+    } else if (a === '--apollo-track') {
+      o.apolloTrack = next()
     } else if (a === '--aliases') {
       o.aliases = next()
     } else if (a === '--prediction-name') {
@@ -206,6 +233,7 @@ const config = buildConfig({
   predictionRef,
   referenceRef,
   rnaRefs,
+  rnaNames: opts.rnaseqName,
   predictionName:
     opts.predictionName ||
     path.basename(opts.prediction).replace(/\.gff3?(\.gz)?$/i, ''),
@@ -302,10 +330,7 @@ if (opts.capture && candidates.length) {
       instance,
       configUrl,
       outDir: imgDir,
-      captureBin: path.resolve(
-        HERE,
-        '../../../products/jbrowse-capture/src/bin.ts',
-      ),
+      captureBin: captureBin(),
       width: opts.width,
       height: opts.height,
       scale: opts.scale,
@@ -338,6 +363,9 @@ const imgFor = id => {
   return `data:image/png;base64,${bytes.toString('base64')}`
 }
 
+const apolloAssembly = opts.apolloAssembly || assembly
+const apolloTracks = opts.apolloTrack ? [opts.apolloTrack] : []
+
 const cards = candidates.map(c => {
   const { loc, session } = sessionFor(c, trackIds, assembly)
   return {
@@ -351,6 +379,12 @@ const cards = candidates.map(c => {
     genes: c.genes,
     gapBp: c.gapBp,
     img: imgFor(c.id),
+    apollo: opts.apollo
+      ? apolloLink(
+          sessionFor(c, apolloTracks, apolloAssembly).session,
+          opts.apollo,
+        )
+      : null,
     url: opts.publicConfig
       ? absoluteLink(
           session,
@@ -390,8 +424,11 @@ const data = {
     '<div><b>How this page was built.</b> Every picture is a JBrowse view captured headlessly ' +
     'at that locus, and every <b>Open in JBrowse</b> link reopens the same view live. The candidate ' +
     'list comes from an exon-level comparison of the prediction against the reference annotation.</div>' +
-    '<div>The triage is the browser’s half. The edit belongs in an annotation editor — ' +
-    '<b>Split into two models</b> is not a viewer action.</div>' +
+    (opts.apollo
+      ? '<div>The triage is the browser’s half. <b>Edit in Apollo</b> opens the same window in ' +
+        'the annotation editor, where <b>Split into two models</b> is a real action rather than a note.</div>'
+      : '<div>The triage is the browser’s half. The edit belongs in an annotation editor — ' +
+        '<b>Split into two models</b> is not a viewer action.</div>') +
     '<div>Verdicts are stored in this browser only. <b>Export decisions</b> writes them out as TSV.</div>',
   total,
   agrees,
