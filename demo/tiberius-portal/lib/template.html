@@ -98,10 +98,10 @@ button { cursor: pointer; }
 button:hover { background: var(--surface-2); }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button[disabled] { opacity: .45; cursor: not-allowed; }
-.filters button { display: inline-flex; align-items: center; gap: 7px; }
-.filters button[data-cls]:not([data-cls="all"])::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--cls); }
-.filters button[aria-pressed="true"] { background: var(--cls-soft, var(--accent-soft)); border-color: var(--cls, var(--accent)); color: var(--cls, var(--accent)); font-weight: 600; }
-.filters .count { font-family: "IBM Plex Mono", monospace; opacity: .75; margin-left: 5px; font-variant-numeric: tabular-nums; }
+.filters button { background: var(--cls, var(--accent)); border-color: transparent; color: var(--on-cls); font-weight: 600; }
+.filters button:hover { background: var(--cls, var(--accent)); filter: brightness(1.1); }
+.filters button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--cls, var(--accent)); }
+.filters .count { font-family: "IBM Plex Mono", monospace; opacity: .8; margin-left: 7px; font-variant-numeric: tabular-nums; }
 input[type="search"] { min-width: 190px; }
 .spacer { margin-left: auto; }
 
