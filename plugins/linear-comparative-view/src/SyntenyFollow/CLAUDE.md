@@ -145,6 +145,22 @@ along. `FollowLevelState.spread` carries it, with a band on the way back up and
 `preferIncumbent` on the window kept — 100% against 49% of the panel is one pan
 from a coin toss.
 
+**And it is measured over a window set, so it dies with one.** `planSpread` runs
+only past two windows, so below that nothing rewrites the decision and a refusal
+outlives the anchor zooming into one contig: `followPartial` went on naming a
+region the anchor no longer spans, ahead of `approximate` in
+`followToggleTitle`, which is to say it was the sentence the reader got.
+`planLevel` clears the decision where the rung is out of reach, which drops the
+stale incumbent and the hysteresis band with it — the band is for a user panning
+along the threshold, and a single-contig window set in between is not that pan.
+
+**The frame pass follows the DECISION, not the contig it names.** Half a second
+of drag can carry the kept contig off screen, and the `find` for it then missed
+and the row stopped following for the rest of the drag. It falls through to the
+widest window — which is what the settle keeps too, since `decideSpread` picks
+`onto` by pixel and an incumbent no window reaches cannot hold it — so the
+decision is still the settle's and only the window carrying it out is current.
+
 **`followPartial` is the third header flag**, on the terms the other two keep:
 written in `planLevel`, read only by the header. A row that is not showing
 everything the anchor aligns to has to say so, or the demotion is a silent loss.
