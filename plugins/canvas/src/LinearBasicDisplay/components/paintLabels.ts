@@ -23,15 +23,27 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  *
  * Owns `ctx.font` rather than taking it set: the isoform badge draws smaller and
  * italic (floatingLabelMore is the DOM half of the same choice), so the pass has
- * two fonts in it and neither caller nor callee can hold just one. Free to
- * reassign per label here — the export's ctx is an SvgCanvas, which stores the
- * shorthand and parses it at serialize time.
+ * two fonts in it and neither caller nor callee can hold just one. Both strings
+ * are built once and assigned only when the kind changes — a badge is rare, so a
+ * screen of names costs one assignment. Reassigning per label is free on the
+ * export's SvgCanvas, which stores the shorthand and parses it at serialize
+ * time, and is not on the canvas a band paints to (paintFeatureBand), where
+ * every assignment re-resolves the face.
  */
 export function paintLabels(
   ctx: Ctx2D,
   labels: ResolvedLabel[],
   fontSize: number,
 ) {
+  const nameFont = `${fontSize}px sans-serif`
+  const badgeFont = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px sans-serif`
+  let curFont = ''
+  const setFont = (font: string) => {
+    if (font !== curFont) {
+      ctx.font = font
+      curFont = font
+    }
+  }
   for (const resolved of labels) {
     const { label, labelX, labelY } = resolved
     if (resolved.kind === 'more') {
@@ -41,9 +53,9 @@ export function paintLabels(
       if (resolved.label.expanded) {
         continue
       }
-      ctx.font = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px sans-serif`
+      setFont(badgeFont)
     } else {
-      ctx.font = `${fontSize}px sans-serif`
+      setFont(nameFont)
       if (resolved.label.isOverlay) {
         ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
         // The baked textWidth is measured at the base font size; scale it to
