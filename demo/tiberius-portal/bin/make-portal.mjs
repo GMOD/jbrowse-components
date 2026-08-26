@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-import { execFileSync } from 'child_process'
+import { execFileSync } from 'node:child_process'
 // Build a static gene-model review portal from a prediction GFF, a reference
 // annotation and a genome.
 //
 // Everything it emits is static: the data, the config, the pictures, the page,
 // and (with --with-app) JBrowse itself. Copy the directory to any web server.
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 import {
   absoluteLink,
@@ -95,28 +95,51 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     const next = () => argv[++i]
-    if (a === '--prediction') o.prediction = next()
-    else if (a === '--reference') o.reference = next()
-    else if (a === '--fasta') o.fasta = next()
-    else if (a === '--rnaseq') o.rnaseq.push(next())
-    else if (a === '--assembly') o.assembly = next()
-    else if (a === '--region') o.region.push(next())
-    else if (a === '--out') o.out = next()
-    else if (a === '--max') o.max = +next()
-    else if (a === '--title') o.title = next()
-    else if (a === '--instance') o.instance = next()
-    else if (a === '--with-app') o.withApp = true
-    else if (a === '--no-capture') o.capture = false
-    else if (a === '--inline-images') o.inlineImages = true
-    else if (a === '--public-config') o.publicConfig = next()
-    else if (a === '--aliases') o.aliases = next()
-    else if (a === '--prediction-name') o.predictionName = next()
-    else if (a === '--reference-name') o.referenceName = next()
-    else if (a === '--width') o.width = +next()
-    else if (a === '--height') o.height = +next()
-    else if (a === '--scale') o.scale = +next()
-    else if (a === '--help' || a === '-h') o.help = true
-    else throw new Error(`unknown flag ${a}`)
+    if (a === '--prediction') {
+      o.prediction = next()
+    } else if (a === '--reference') {
+      o.reference = next()
+    } else if (a === '--fasta') {
+      o.fasta = next()
+    } else if (a === '--rnaseq') {
+      o.rnaseq.push(next())
+    } else if (a === '--assembly') {
+      o.assembly = next()
+    } else if (a === '--region') {
+      o.region.push(next())
+    } else if (a === '--out') {
+      o.out = next()
+    } else if (a === '--max') {
+      o.max = +next()
+    } else if (a === '--title') {
+      o.title = next()
+    } else if (a === '--instance') {
+      o.instance = next()
+    } else if (a === '--with-app') {
+      o.withApp = true
+    } else if (a === '--no-capture') {
+      o.capture = false
+    } else if (a === '--inline-images') {
+      o.inlineImages = true
+    } else if (a === '--public-config') {
+      o.publicConfig = next()
+    } else if (a === '--aliases') {
+      o.aliases = next()
+    } else if (a === '--prediction-name') {
+      o.predictionName = next()
+    } else if (a === '--reference-name') {
+      o.referenceName = next()
+    } else if (a === '--width') {
+      o.width = +next()
+    } else if (a === '--height') {
+      o.height = +next()
+    } else if (a === '--scale') {
+      o.scale = +next()
+    } else if (a === '--help' || a === '-h') {
+      o.help = true
+    } else {
+      throw new Error(`unknown flag ${a}`)
+    }
   }
   return o
 }
@@ -133,7 +156,9 @@ for (const f of [
   opts.aliases,
   ...opts.rnaseq,
 ].filter(Boolean)) {
-  if (isUrl(f)) continue
+  if (isUrl(f)) {
+    continue
+  }
   if (!fs.existsSync(f)) {
     console.error(`no such file: ${f}`)
     process.exit(1)
@@ -147,7 +172,7 @@ const assembly =
   opts.assembly ||
   path.basename(opts.fasta).replace(/\.(fa|fasta)(\.gz)?$/i, '') ||
   'genome'
-const portalId = `${assembly}-${path.basename(opts.prediction).replace(/\W+/g, '_')}`
+const portalId = `${assembly}-${path.basename(opts.prediction).replaceAll(/\W+/g, '_')}`
 
 function copyAlongside(input, dir) {
   fs.mkdirSync(dir, { recursive: true })
@@ -229,8 +254,11 @@ fs.rmSync(scratch, { recursive: true, force: true })
 const agrees = tally.agrees || 0
 const flagged = total - agrees
 console.log(`  ${total} models · ${agrees} agree · ${flagged} flagged`)
-for (const k of CLASS_ORDER)
-  if (tally[k]) console.log(`    ${CLASSES[k].label}: ${tally[k]}`)
+for (const k of CLASS_ORDER) {
+  if (tally[k]) {
+    console.log(`    ${CLASSES[k].label}: ${tally[k]}`)
+  }
+}
 
 const candidates = CLASS_ORDER.flatMap(cls =>
   rows
@@ -285,7 +313,7 @@ if (opts.capture && candidates.length) {
       timeout: 90000,
       onProgress: (c, ok, note) => {
         console.log(
-          `  ${ok ? 'ok  ' : 'FAIL'} ${c.id} ${c.refName}:${c.start + 1}-${c.end}${ok ? '' : ' — ' + note}`,
+          `  ${ok ? 'ok  ' : 'FAIL'} ${c.id} ${c.refName}:${c.start + 1}-${c.end}${ok ? '' : ` — ${note}`}`,
         )
       },
     })
@@ -293,8 +321,9 @@ if (opts.capture && candidates.length) {
     await server.close()
   }
   const failed = captured.filter(c => !c.ok).length
-  if (failed)
+  if (failed) {
     console.log(`  ${failed} capture(s) failed; their cards show the link only`)
+  }
 }
 
 const imgFor = id => {
@@ -352,11 +381,11 @@ const data = {
   lede:
     `The prediction has <strong>${total}</strong> gene models here. ` +
     `<strong>${agrees}</strong> share splice junctions with a reference gene and need no attention. ` +
-    `The other <strong>${flagged}</strong> disagree in one of four ways. ` +
-    (cards.length < flagged
-      ? `The ${opts.max} with the most exons in each class are below, `
-      : 'All of them are below, ') +
-    'with the evidence staged the same way every time.',
+    `The other <strong>${flagged}</strong> disagree in one of four ways. ${
+      cards.length < flagged
+        ? `The ${opts.max} with the most exons in each class are below, `
+        : 'All of them are below, '
+    }with the evidence staged the same way every time.`,
   footer:
     '<div><b>How this page was built.</b> Every picture is a JBrowse view captured headlessly ' +
     'at that locus, and every <b>Open in JBrowse</b> link reopens the same view live. The candidate ' +
@@ -380,9 +409,9 @@ const template = fs.readFileSync(
 fs.writeFileSync(
   path.join(out, 'index.html'),
   template
-    .replace('__TITLE__', title.replace(/[<&]/g, ''))
+    .replace('__TITLE__', title.replaceAll(/[<&]/g, ''))
     // `</script>` inside the JSON would close the tag it sits in
-    .replace('__DATA__', JSON.stringify(data).replace(/<\//g, '<\\/')),
+    .replace('__DATA__', JSON.stringify(data).replaceAll('</', '<\\/')),
 )
 
 console.log(`\nportal written to ${out}`)

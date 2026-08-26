@@ -2,9 +2,9 @@
 // indexed format JBrowse reads (tabix, BAM, bgzip FASTA) fetches byte ranges,
 // and a server that ignores the header returns the whole file with a 200 and
 // the adapter silently reads garbage. `python3 -m http.server` is such a server.
-import fs from 'fs'
-import http from 'http'
-import path from 'path'
+import fs from 'node:fs'
+import http from 'node:http'
+import path from 'node:path'
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -28,7 +28,7 @@ export function serveStatic(root, port = 0) {
       res.writeHead(403).end()
       return
     }
-    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html')
+    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {file = path.join(file, 'index.html')}
     if (!fs.existsSync(file)) {
       res.writeHead(404).end('not found')
       return
@@ -64,8 +64,8 @@ export function serveStatic(root, port = 0) {
     }
 
     res.writeHead(200, { ...headers, 'content-length': size })
-    if (req.method === 'HEAD') res.end()
-    else fs.createReadStream(file).pipe(res)
+    if (req.method === 'HEAD') {res.end()}
+    else {fs.createReadStream(file).pipe(res)}
   })
 
   return new Promise(resolve => {

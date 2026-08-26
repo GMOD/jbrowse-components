@@ -1,8 +1,8 @@
 // One JBrowse capture per candidate, driven against the portal's own static
 // copy of the app so the pictures and the links show the same thing.
-import fs from 'fs'
-import path from 'path'
-import { spawn } from 'child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { spawn } from 'node:child_process'
 
 export function sessionFor(candidate, trackIds, assembly, padFraction = 0.15) {
   const pad = Math.max(2000, Math.round((candidate.end - candidate.start) * padFraction))

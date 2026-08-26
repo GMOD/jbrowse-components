@@ -1,7 +1,7 @@
 // Regenerate the fixture and check the classifier still puts every model in the
 // class the fixture was built to produce. Runs offline in about a second.
-import { execFileSync } from 'child_process'
-import path from 'path'
+import { execFileSync } from 'node:child_process'
+import path from 'node:path'
 
 import { classify } from '../lib/classify.mjs'
 

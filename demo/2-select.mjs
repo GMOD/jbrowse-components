@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 const DIR =
   '/tmp/claude-1001/-home-cdiesh-src-jbrowse-components/262270f7-1cc8-4aa7-87fe-681ca886d010/scratchpad/tib'
@@ -7,8 +7,9 @@ function attrs(s) {
   const o = {}
   for (const kv of s.split(';')) {
     const i = kv.indexOf('=')
-    if (i > 0)
+    if (i > 0) {
       o[kv.slice(0, i).trim()] = decodeURIComponent(kv.slice(i + 1).trim())
+    }
   }
   return o
 }
@@ -17,9 +18,13 @@ const genes = new Map()
 for (const l of fs
   .readFileSync(`${DIR}/gencode_chr22_all.gff`, 'utf8')
   .split('\n')) {
-  if (!l || l.startsWith('#')) continue
+  if (!l || l.startsWith('#')) {
+    continue
+  }
   const f = l.split('\t')
-  if (f[2] !== 'gene') continue
+  if (f[2] !== 'gene') {
+    continue
+  }
   const a = attrs(f[8])
   const n = a.gene_name || a.gene_id
   const rec = {
@@ -31,7 +36,9 @@ for (const l of fs
   }
   // keep the widest record for a name reused across loci
   const prev = genes.get(n)
-  if (!prev || rec.end - rec.start > prev.end - prev.start) genes.set(n, rec)
+  if (!prev || rec.end - rec.start > prev.end - prev.start) {
+    genes.set(n, rec)
+  }
 }
 
 const rows = JSON.parse(fs.readFileSync(`${DIR}/candidates2.json`, 'utf8'))
@@ -94,9 +101,10 @@ const chosen = [
 ]
 
 const tally = {}
-for (const r of rows)
+for (const r of rows) {
   tally[r.cleanMerge ? 'merge (clean)' : r.cls] =
     (tally[r.cleanMerge ? 'merge (clean)' : r.cls] || 0) + 1
+}
 fs.writeFileSync(
   `${DIR}/tally.json`,
   JSON.stringify({ total: rows.length, tally }, null, 1),
@@ -125,5 +133,6 @@ const out = chosen.map(r => {
 
 fs.writeFileSync(`${DIR}/selected.json`, JSON.stringify(out, null, 1))
 console.log('\nselected', out.length)
-for (const c of out)
+for (const c of out) {
   console.log(' ', c.id, c.cls, c.loc, c.mergedGenes.join(' + ') || '-')
+}

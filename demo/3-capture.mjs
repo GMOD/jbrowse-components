@@ -1,5 +1,5 @@
-import { execFileSync } from 'child_process'
-import fs from 'fs'
+import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
 
 const DIR =
   '/tmp/claude-1001/-home-cdiesh-src-jbrowse-components/262270f7-1cc8-4aa7-87fe-681ca886d010/scratchpad/tib'
@@ -39,7 +39,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.mkdirSync(`${DIR}/img`, { recursive: true })
 
   for (const c of selected) {
-    if (only.length && !only.includes(c.id)) continue
+    if (only.length && !only.includes(c.id)) {
+      continue
+    }
     const specPath = `${DIR}/spec_${c.id}.json`
     const out = `${DIR}/img/${c.id}.png`
     fs.writeFileSync(specPath, JSON.stringify(sessionFor(c), null, 1))

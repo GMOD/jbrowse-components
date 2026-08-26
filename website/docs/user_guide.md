@@ -120,6 +120,10 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/rnaseq)
 - [](/docs/tutorials/dtu)
 
+### Genes & annotation
+
+- [](/docs/tutorials/gene_prediction_review)
+
 ### Configuration & embedding
 
 - [](/docs/tutorials/display_settings)

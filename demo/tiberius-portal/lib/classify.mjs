@@ -5,8 +5,8 @@
 // the obvious test and it is wrong: a gene nested in another gene's intron on
 // the opposite strand overlaps its whole span and shares no exon, so a span
 // test reports a perfectly good prediction as a two-gene fusion.
-import fs from 'fs'
-import zlib from 'zlib'
+import fs from 'node:fs'
+import zlib from 'node:zlib'
 
 export const CLASSES = {
   merge: {
@@ -40,7 +40,7 @@ function attrs(s) {
   const o = {}
   for (const kv of (s || '').split(';')) {
     const i = kv.indexOf('=')
-    if (i > 0) o[kv.slice(0, i).trim()] = decodeURIComponent(kv.slice(i + 1).trim())
+    if (i > 0) {o[kv.slice(0, i).trim()] = decodeURIComponent(kv.slice(i + 1).trim())}
   }
   return o
 }
@@ -51,10 +51,10 @@ export function readGff(file, wanted) {
     : fs.readFileSync(file, 'utf8')
   const out = []
   for (const line of raw.split('\n')) {
-    if (!line || line.startsWith('#')) continue
+    if (!line || line.startsWith('#')) {continue}
     const f = line.split('\t')
-    if (f.length < 9) continue
-    if (wanted && !wanted.has(f[2])) continue
+    if (f.length < 9) {continue}
+    if (wanted && !wanted.has(f[2])) {continue}
     out.push({
       refName: f[0],
       type: f[2],
@@ -72,7 +72,7 @@ const overlaps = (a, b) => a.start < b.end && b.start < a.end
 function junctions(exons) {
   const s = [...exons].sort((x, y) => x.start - y.start)
   const j = new Set()
-  for (let i = 0; i < s.length - 1; i++) j.add(`${s[i].end}-${s[i + 1].start}`)
+  for (let i = 0; i < s.length - 1; i++) {j.add(`${s[i].end}-${s[i + 1].start}`)}
   return j
 }
 
@@ -93,12 +93,12 @@ function blocksBy(features, keyOf, keep) {
   const exon = new Map()
   const cds = new Map()
   for (const f of features) {
-    if (!keep(f)) continue
+    if (!keep(f)) {continue}
     const bucket = f.type === 'exon' ? exon : f.type === 'CDS' ? cds : null
-    if (!bucket) continue
+    if (!bucket) {continue}
     const k = keyOf(f)
-    if (k === undefined || k === null) continue
-    if (!bucket.has(k)) bucket.set(k, [])
+    if (k === undefined || k === null) {continue}
+    if (!bucket.has(k)) {bucket.set(k, [])}
     bucket.get(k).push(f)
   }
   const out = new Map()
@@ -122,8 +122,8 @@ export function classify({ predictionFile, referenceFile, refNames }) {
   // collapses every exon in a plain GFF3 into one bucket.
   const txToGene = new Map()
   for (const f of refFeatures) {
-    if (f.type !== 'mRNA' && f.type !== 'transcript') continue
-    if (f.attrs.ID) txToGene.set(f.attrs.ID, f.attrs.Parent)
+    if (f.type !== 'mRNA' && f.type !== 'transcript') {continue}
+    if (f.attrs.ID) {txToGene.set(f.attrs.ID, f.attrs.Parent)}
   }
   const exonsByGene = blocksBy(
     refFeatures,
@@ -154,10 +154,10 @@ export function classify({ predictionFile, referenceFile, refNames }) {
 
   const byContig = new Map()
   for (const g of genes) {
-    if (!byContig.has(g.refName)) byContig.set(g.refName, [])
+    if (!byContig.has(g.refName)) {byContig.set(g.refName, [])}
     byContig.get(g.refName).push(g)
   }
-  for (const list of byContig.values()) list.sort((a, b) => a.start - b.start)
+  for (const list of byContig.values()) {list.sort((a, b) => a.start - b.start)}
 
   const transcripts = predFeatures.filter(f => (f.type === 'transcript' || f.type === 'mRNA') && keep(f))
   const predExons = blocksBy(predFeatures, f => f.attrs.Parent, keep)
@@ -166,7 +166,7 @@ export function classify({ predictionFile, referenceFile, refNames }) {
   for (const t of transcripts) {
     const id = t.attrs.ID || t.attrs.Name
     const exons = predExons.get(id) || []
-    if (!exons.length) continue
+    if (!exons.length) {continue}
 
     const near = (byContig.get(t.refName) || []).filter(g => overlaps(t, g))
     const touched = near.filter(g => {
@@ -184,9 +184,9 @@ export function classify({ predictionFile, referenceFile, refNames }) {
 
     const tj = junctions(exons)
     let cls
-    if (touched.length === 0) cls = 'novel-locus'
-    else if (sameStrandCoding.length === 0) cls = 'novel-coding'
-    else if (sameStrandCoding.length > 1) cls = 'merge'
+    if (touched.length === 0) {cls = 'novel-locus'}
+    else if (sameStrandCoding.length === 0) {cls = 'novel-coding'}
+    else if (sameStrandCoding.length > 1) {cls = 'merge'}
     else {
       const gj = junctions(exonsByGene.get(sameStrandCoding[0]) || [])
       const shared = [...tj].filter(x => gj.has(x)).length
@@ -200,7 +200,7 @@ export function classify({ predictionFile, referenceFile, refNames }) {
       recs.length >= 2 &&
       !isReadthrough(recs.map(r => r.name)) &&
       recs.every((a, i) => recs.every((b, j) => i === j || !overlaps(a, b)))
-    if (cls === 'merge' && !disjoint) cls = 'agrees'
+    if (cls === 'merge' && !disjoint) {cls = 'agrees'}
 
     let gapBp = null
     if (cls === 'merge') {
@@ -226,6 +226,6 @@ export function classify({ predictionFile, referenceFile, refNames }) {
   }
 
   const tally = {}
-  for (const r of rows) tally[r.cls] = (tally[r.cls] || 0) + 1
+  for (const r of rows) {tally[r.cls] = (tally[r.cls] || 0) + 1}
   return { rows, tally, total: rows.length }
 }

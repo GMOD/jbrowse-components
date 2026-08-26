@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 const DIR =
   '/tmp/claude-1001/-home-cdiesh-src-jbrowse-components/262270f7-1cc8-4aa7-87fe-681ca886d010/scratchpad/tib'
@@ -7,8 +7,9 @@ function attrs(s) {
   const o = {}
   for (const kv of s.split(';')) {
     const i = kv.indexOf('=')
-    if (i > 0)
+    if (i > 0) {
       o[kv.slice(0, i).trim()] = decodeURIComponent(kv.slice(i + 1).trim())
+    }
   }
   return o
 }
@@ -40,30 +41,43 @@ const gname = g => g.attrs.gene_name || g.attrs.gene_id
 // exons keyed by their gene, so overlap is measured against exons and not spans
 const gcExonsByGene = new Map()
 for (const e of gencodeAll) {
-  if (e.type !== 'exon') continue
+  if (e.type !== 'exon') {
+    continue
+  }
   const n = e.attrs.gene_name || e.attrs.gene_id
-  if (!gcExonsByGene.has(n)) gcExonsByGene.set(n, [])
+  if (!gcExonsByGene.has(n)) {
+    gcExonsByGene.set(n, [])
+  }
   gcExonsByGene.get(n).push(e)
 }
 
 const geneByName = new Map()
-for (const g of gencodeGenes)
-  if (!geneByName.has(gname(g))) geneByName.set(gname(g), g)
+for (const g of gencodeGenes) {
+  if (!geneByName.has(gname(g))) {
+    geneByName.set(gname(g), g)
+  }
+}
 
 const tibAll = readGff(`${DIR}/tib_chr22_all.gff`)
 const tibTx = tibAll.filter(f => f.type === 'transcript')
 const tibExons = new Map()
 for (const e of tibAll) {
-  if (e.type !== 'exon') continue
+  if (e.type !== 'exon') {
+    continue
+  }
   const p = e.attrs.Parent
-  if (!tibExons.has(p)) tibExons.set(p, [])
+  if (!tibExons.has(p)) {
+    tibExons.set(p, [])
+  }
   tibExons.get(p).push(e)
 }
 
 function junctions(exons) {
   const s = [...exons].sort((x, y) => x.start - y.start)
   const j = []
-  for (let i = 0; i < s.length - 1; i++) j.push(`${s[i].end}-${s[i + 1].start}`)
+  for (let i = 0; i < s.length - 1; i++) {
+    j.push(`${s[i].end}-${s[i + 1].start}`)
+  }
   return new Set(j)
 }
 
@@ -75,9 +89,13 @@ for (const t of tibTx) {
   // gene's intron shares no exon, which is what span overlap got wrong.
   const touched = []
   for (const g of gencodeGenes) {
-    if (!overlaps(t, g)) continue
+    if (!overlaps(t, g)) {
+      continue
+    }
     const ge = gcExonsByGene.get(gname(g)) || []
-    if (exons.some(te => ge.some(e => overlaps(te, e)))) touched.push(g)
+    if (exons.some(te => ge.some(e => overlaps(te, e)))) {
+      touched.push(g)
+    }
   }
 
   // Only a same-strand coding gene can be part of a merged model.
@@ -93,10 +111,13 @@ for (const t of tibTx) {
 
   const tj = junctions(exons)
   let cls
-  if (touched.length === 0) cls = 'novel-locus'
-  else if (sameStrandCoding.length === 0) cls = 'novel-coding'
-  else if (sameStrandCoding.length > 1) cls = 'merge'
-  else {
+  if (touched.length === 0) {
+    cls = 'novel-locus'
+  } else if (sameStrandCoding.length === 0) {
+    cls = 'novel-coding'
+  } else if (sameStrandCoding.length > 1) {
+    cls = 'merge'
+  } else {
     const gj = junctions(gcExonsByGene.get(sameStrandCoding[0]) || [])
     const shared = [...tj].filter(x => gj.has(x)).length
     cls = tj.size > 1 && shared === 0 ? 'structure-conflict' : 'agrees'
@@ -121,7 +142,9 @@ for (const t of tibTx) {
 }
 
 const tally = {}
-for (const r of rows) tally[r.cls] = (tally[r.cls] || 0) + 1
+for (const r of rows) {
+  tally[r.cls] = (tally[r.cls] || 0) + 1
+}
 console.log('chr22 Tiberius transcripts:', rows.length)
 console.log(tally)
 

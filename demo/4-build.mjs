@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 import { liveUrl } from './capture.mjs'
 
@@ -63,4 +63,4 @@ const data = {
 const template = fs.readFileSync(`${DIR}/template.html`, 'utf8')
 fs.mkdirSync(OUT.replace(/\/[^/]+$/, ''), { recursive: true })
 fs.writeFileSync(OUT, template.replace('"__DATA__"', JSON.stringify(data)))
-console.log('wrote', OUT, Math.round(fs.statSync(OUT).size / 1024) + ' KB')
+console.log('wrote', OUT, `${Math.round(fs.statSync(OUT).size / 1024)} KB`)

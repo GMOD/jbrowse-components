@@ -1,8 +1,8 @@
 // A synthetic genome plus a reference annotation and a prediction that
 // deliberately produces one candidate of every class the classifier knows.
 // Deterministic, offline, and small enough to keep in the repo.
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const OUT = process.argv[2] || path.join(import.meta.dirname, 'fixture')
 fs.mkdirSync(OUT, { recursive: true })
@@ -20,17 +20,21 @@ const rand = () =>
 function sequence(len) {
   const bases = 'ACGT'
   let s = ''
-  for (let i = 0; i < len; i++) s += bases[Math.floor(rand() * 4)]
+  for (let i = 0; i < len; i++) {
+    s += bases[Math.floor(rand() * 4)]
+  }
   return s
 }
 
 const fasta = CONTIGS.map(c => {
   const seq = sequence(c.length)
   const lines = []
-  for (let i = 0; i < seq.length; i += 60) lines.push(seq.slice(i, i + 60))
+  for (let i = 0; i < seq.length; i += 60) {
+    lines.push(seq.slice(i, i + 60))
+  }
   return `>${c.name}\n${lines.join('\n')}`
 }).join('\n')
-fs.writeFileSync(path.join(OUT, 'genome.fa'), fasta + '\n')
+fs.writeFileSync(path.join(OUT, 'genome.fa'), `${fasta}\n`)
 
 // --- gene models -----------------------------------------------------------
 
@@ -268,18 +272,16 @@ predTx({ contig: 'ctgB', id: 'g400', strand: '-', exons: exonsFor(8000, 3) })
 predTx({ contig: 'ctgB', id: 'g401', strand: '+', exons: exonsFor(30000, 2) })
 
 const fmt = rows =>
-  '##gff-version 3\n' +
-  CONTIGS.map(c => `##sequence-region ${c.name} 1 ${c.length}`).join('\n') +
-  '\n' +
-  rows
+  `##gff-version 3\n${CONTIGS.map(
+    c => `##sequence-region ${c.name} 1 ${c.length}`,
+  ).join('\n')}\n${rows
     .slice()
     .sort(
       (a, b) =>
         String(a[0]).localeCompare(String(b[0])) || a[3] - b[3] || a[4] - b[4],
     )
     .map(r => r.join('\t'))
-    .join('\n') +
-  '\n'
+    .join('\n')}\n`
 
 fs.writeFileSync(path.join(OUT, 'reference.gff3'), fmt(ref))
 fs.writeFileSync(path.join(OUT, 'prediction.gff3'), fmt(pred))
