@@ -127,12 +127,8 @@ function setModTypeShown(
 // paints every cytosine), which its caption states. The promotion pin on each
 // radio promotes the bare view (no refinements baked in).
 //
-// All three refinements are revealed only once this scheme is the active one,
-// like bisulfite's "Show unmethylated". `patchMods` is the single writer and it
-// always writes `type: 'modifications'`, so a refinement clicked from another
-// scheme both switched the scheme and rebuilt it from `{}` — which silently
-// threw away a `bisulfite` selection (its own cytosine context included) from
-// the row directly beneath.
+// All three are revealed only once this scheme is the active one, like
+// bisulfite's "Show unmethylated" — see `refinements` below for why.
 export function modificationsMenu(
   model: ModificationsMenuModel,
   // The per-value session-default pin factory, absent for a display whose
@@ -148,6 +144,88 @@ export function modificationsMenu(
     : { twoColor: true }
   const types = model.detectedModificationTypes
   const clearView = { twoColor: undefined, fillUnmarked: undefined }
+
+  // The three refinements, revealed together once this is the active scheme and
+  // each present only where it bites. One `isActive` rather than one per row:
+  // they share the reveal, and the divider above them is derived from the list
+  // so it cannot outlive the section it separates (the rule `withSubHeader`
+  // states for a heading).
+  //
+  // `patchMods` is the single writer and it always writes
+  // `type: 'modifications'`, so a refinement clicked from another scheme both
+  // switched the scheme and rebuilt it from `{}` — which silently threw away a
+  // `bisulfite` selection, its own cytosine context included, from the row
+  // directly beneath. That is what the shared reveal is protecting.
+  const refinements: MenuItem[] = isActive
+    ? [
+        ...(types.length > 1
+          ? [
+              {
+                label: 'Modification types',
+                helpText:
+                  'Which modification types are drawn, in the by-type and 2-color views. Every type is drawn until you untick one. Basecallers increasingly emit several types on the same read (5mC, 5hmC, 6mA), so these are independent — untick 5hmC to read gene-body 5mC on a 5mCG_5hmCG model, and keep any combination you like.',
+                subMenu: types.map(t =>
+                  checkboxItem(
+                    getModificationName(t),
+                    isModificationTypeVisible(mods, t),
+                    () => {
+                      setModTypeShown(
+                        model,
+                        t,
+                        !isModificationTypeVisible(mods, t),
+                      )
+                    },
+                  ),
+                ),
+              },
+            ]
+          : []),
+        {
+          label: 'Probability threshold',
+          helpText:
+            'Hides low-confidence calls in the by-type view. The 2-color view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
+          subMenu: [
+            makeSizeMenu({
+              label: 'threshold',
+              title: 'Hide calls under',
+              min: 0,
+              max: 100,
+              step: 1,
+              format: n => `${n}%`,
+              // tier-1: the threshold reaches the worker's extractModifications
+              // via rpcProps, so commit on release, not every intermediate
+              // pixel.
+              commitOnRelease: true,
+              getValue: () => model.modificationThreshold,
+              isDefault:
+                model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD,
+              onChange: v => {
+                patchMods(model, { threshold: v })
+              },
+              onReset: () => {
+                patchMods(model, { threshold: DEFAULT_MODIFICATION_THRESHOLD })
+              },
+            }),
+          ],
+        },
+        ...(hasCytosineMeth(model)
+          ? [
+              {
+                label: 'Cytosine context',
+                helpText:
+                  'Which cytosines the 2-color (methylation) view paints. Plants use CHG/CHH.',
+                subMenu: radioItems<CytosineContext>(
+                  cytosineContextOptions,
+                  mods.cytosineContext ?? 'CG',
+                  next => {
+                    patchMods(model, { cytosineContext: next })
+                  },
+                ),
+              },
+            ]
+          : []),
+      ]
+    : []
 
   return {
     label: 'Modifications',
@@ -176,80 +254,7 @@ export function modificationsMenu(
           modifications: twoColorView,
         }),
       }),
-      ...(isActive ? [DIVIDER] : []),
-      ...(isActive && types.length > 1
-        ? [
-            {
-              label: 'Modification types',
-              helpText:
-                'Which modification types are drawn, in the by-type and 2-color views. Every type is drawn until you untick one. Basecallers increasingly emit several types on the same read (5mC, 5hmC, 6mA), so these are independent — untick 5hmC to read gene-body 5mC on a 5mCG_5hmCG model, and keep any combination you like.',
-              subMenu: types.map(t =>
-                checkboxItem(
-                  getModificationName(t),
-                  isModificationTypeVisible(mods, t),
-                  () => {
-                    setModTypeShown(
-                      model,
-                      t,
-                      !isModificationTypeVisible(mods, t),
-                    )
-                  },
-                ),
-              ),
-            },
-          ]
-        : []),
-      ...(isActive
-        ? [
-            {
-              label: 'Probability threshold',
-              helpText:
-                'Hides low-confidence calls in the by-type view. The 2-color view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
-              subMenu: [
-                makeSizeMenu({
-                  label: 'threshold',
-                  title: 'Hide calls under',
-                  min: 0,
-                  max: 100,
-                  step: 1,
-                  format: n => `${n}%`,
-                  // tier-1: the threshold reaches the worker's
-                  // extractModifications via rpcProps, so commit on release,
-                  // not every intermediate pixel.
-                  commitOnRelease: true,
-                  getValue: () => model.modificationThreshold,
-                  isDefault:
-                    model.modificationThreshold ===
-                    DEFAULT_MODIFICATION_THRESHOLD,
-                  onChange: v => {
-                    patchMods(model, { threshold: v })
-                  },
-                  onReset: () => {
-                    patchMods(model, {
-                      threshold: DEFAULT_MODIFICATION_THRESHOLD,
-                    })
-                  },
-                }),
-              ],
-            },
-          ]
-        : []),
-      ...(isActive && hasCytosineMeth(model)
-        ? [
-            {
-              label: 'Cytosine context',
-              helpText:
-                'Which cytosines the 2-color (methylation) view paints. Plants use CHG/CHH.',
-              subMenu: radioItems<CytosineContext>(
-                cytosineContextOptions,
-                mods.cytosineContext ?? 'CG',
-                next => {
-                  patchMods(model, { cytosineContext: next })
-                },
-              ),
-            },
-          ]
-        : []),
+      ...(refinements.length ? [DIVIDER, ...refinements] : []),
     ],
   }
 }

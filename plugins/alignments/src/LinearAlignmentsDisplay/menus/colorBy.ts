@@ -4,6 +4,7 @@ import {
   promotableRadioItem,
   radioItems,
   toggleItem,
+  withSubHeader,
 } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
@@ -276,12 +277,7 @@ export function getColorByMenuItem(
       ...(includeTagOption ? [tagItem(model, pin)] : []),
       ...(includePairedEnd ? [pairedEndItem(model, pin)] : []),
       ...(mods ? modificationsItems(mods, pin) : []),
-      ...(refinements.length
-        ? [
-            { type: 'subHeader' as const, label: 'Additional coloring' },
-            ...refinements,
-          ]
-        : []),
+      ...withSubHeader('Additional coloring', refinements),
     ] satisfies MenuItem[],
   }
 }
