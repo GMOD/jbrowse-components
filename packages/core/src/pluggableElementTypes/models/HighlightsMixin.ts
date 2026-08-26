@@ -31,10 +31,9 @@ export default function HighlightsMixin() {
       /**
        * #property
        * pins the interactive highlight chip (link icon + context menu) to every
-       * highlight band; off by default. In the LinearGenomeView a band then
-       * reveals its chip while the pointer is in its column, so this is what a
-       * screenshot needs — nothing hovers in one. The DotplotView draws its
-       * chips only when this is on
+       * highlight band; off by default, where a band instead reveals its chip
+       * while the pointer is in it. This is what a screenshot needs, since
+       * nothing hovers in one
        */
       showHighlightChips: types.stripDefault(types.boolean, false),
     })

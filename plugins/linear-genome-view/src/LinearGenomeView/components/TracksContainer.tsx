@@ -1,6 +1,7 @@
 import { Suspense, lazy, useRef } from 'react'
 
 import { PluggableElements } from '@jbrowse/core/ui'
+import { OverlayPointerProvider } from '@jbrowse/core/ui/highlightChipReveal'
 import { useMouseTracking } from '@jbrowse/core/ui/useMouseTracking'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -15,7 +16,6 @@ import RangeSelectOverlay from './RangeSelectOverlay.tsx'
 import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
-import { TracksPointerProvider } from './highlightChipReveal.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 import { useSideScroll } from './useSideScroll.ts'
 import { getHighlightColor, highlightKey } from './util.ts'
@@ -84,7 +84,7 @@ const TracksContainer = observer(function TracksContainer({
       }}
       onMouseUp={mouseUp}
     >
-      <TracksPointerProvider value={mouseTracker}>
+      <OverlayPointerProvider value={mouseTracker}>
         {showGridlines ? (
           <>
             <Gridlines model={model} />
@@ -119,7 +119,7 @@ const TracksContainer = observer(function TracksContainer({
           props={{ model }}
         />
         {children}
-      </TracksPointerProvider>
+      </OverlayPointerProvider>
     </div>
   )
 })

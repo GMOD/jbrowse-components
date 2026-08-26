@@ -1,9 +1,9 @@
+import { useHighlightChip } from '@jbrowse/core/ui/highlightChipReveal'
 import { colord } from '@jbrowse/core/util/colord'
 import { highlightKey } from '@jbrowse/core/util/highlights'
 import {
   HighlightBand,
   HighlightChip,
-  useHighlightChip,
 } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 

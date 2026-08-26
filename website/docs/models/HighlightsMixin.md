@@ -22,7 +22,7 @@ hand-kept copies. Visibility across all views is the session-wide
 | Member | Description |
 | --- | --- |
 | <span id="property-highlight">**highlight**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>highlight: types.stripDefault( types.array(types.frozen&lt;Highlig…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>highlight: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(types.frozen&lt;HighlightType&gt;()),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu |
-| <span id="property-showhighlightchips">**showHighlightChips**</span><br><code>showHighlightChips: types.stripDefault(types.boolean, false)</code> | pins the interactive highlight chip (link icon + context menu) to every highlight band; off by default. In the LinearGenomeView a band then reveals its chip while the pointer is in its column, so this is what a screenshot needs — nothing hovers in one. The DotplotView draws its chips only when this is on |
+| <span id="property-showhighlightchips">**showHighlightChips**</span><br><code>showHighlightChips: types.stripDefault(types.boolean, false)</code> | pins the interactive highlight chip (link icon + context menu) to every highlight band; off by default, where a band instead reveals its chip while the pointer is in it. This is what a screenshot needs, since nothing hovers in one |
 
 ## Actions
 

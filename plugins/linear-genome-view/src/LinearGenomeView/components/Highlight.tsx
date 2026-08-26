@@ -1,3 +1,4 @@
+import { useHighlightChip } from '@jbrowse/core/ui/highlightChipReveal'
 import { getSession } from '@jbrowse/core/util'
 import CloseIcon from '@mui/icons-material/Close'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
@@ -6,7 +7,6 @@ import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
 import HighlightChip from './HighlightChip.tsx'
-import { useHighlightChip } from './highlightChipReveal.tsx'
 import { getHighlightColor } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'

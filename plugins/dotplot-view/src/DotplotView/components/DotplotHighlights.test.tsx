@@ -1,12 +1,14 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { OverlayPointerProvider } from '@jbrowse/core/ui/highlightChipReveal'
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import DotplotHighlightBands from './DotplotHighlightBands.tsx'
 import DotplotHighlightChipOverlay from './DotplotHighlightChipOverlay.tsx'
 import DotplotHighlights from './DotplotHighlights.tsx'
+import { useDotplotInteraction } from './useDotplotInteraction.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -122,4 +124,89 @@ test('a press on a highlight chip never reaches the plot', () => {
 
   fireEvent.click(button)
   expect(screen.getByText('Dismiss highlight')).toBeTruthy()
+})
+
+// The plot's own pointer stream is what a band's chip reveals off, so the
+// harness publishes it the way DotplotView does rather than standing up its own
+// tracker — a copy would pass with the view wired to nothing.
+function Plot({ model }: { model: any }) {
+  const interaction = useDotplotInteraction(model)
+  return (
+    <div data-testid="plot" {...interaction.containerProps}>
+      <OverlayPointerProvider value={interaction.mouseTracker}>
+        <DotplotHighlightChipOverlay model={model} />
+      </OverlayPointerProvider>
+    </div>
+  )
+}
+
+// the tracked position is published in a frame, so give that frame back before
+// asking what the bands drew
+async function movePointerTo(element: Element, x: number, y: number) {
+  await act(async () => {
+    fireEvent.pointerMove(element, { clientX: x, clientY: y })
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        resolve(undefined)
+      })
+    })
+  })
+}
+
+function chips() {
+  return screen.queryAllByTestId('highlight-chip')
+}
+
+test('each axis band reveals its own chip under the pointer', async () => {
+  const model = setup()
+  const highlight = {
+    refName: 'ctgA',
+    start: 100,
+    end: 200,
+    assemblyName: 'volvox',
+  }
+  model.addToHighlights(highlight)
+  // the same region lands on both axes here (self-vs-self), so the two chips
+  // are independent answers rather than one drawn twice
+  const h = model.getHHighlightCoords(highlight)!
+  const v = model.getVHighlightCoords(highlight)!
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <Plot model={model} />
+    </ThemeProvider>,
+  )
+  const plot = screen.getByTestId('plot')
+  expect(chips()).toHaveLength(0)
+
+  // inside the x-axis band's column, clear of the y-axis band's row
+  await movePointerTo(plot, h.left + h.width / 2, v.top + v.height + 50)
+  expect(chips()).toHaveLength(1)
+
+  // inside the y-axis band's row, clear of the x-axis band's column
+  await movePointerTo(plot, h.left + h.width + 50, v.top + v.height / 2)
+  expect(chips()).toHaveLength(1)
+
+  // their intersection is where the drag that made the highlight was: both
+  await movePointerTo(plot, h.left + h.width / 2, v.top + v.height / 2)
+  expect(chips()).toHaveLength(2)
+
+  await movePointerTo(plot, h.left + h.width + 50, v.top + v.height + 50)
+  expect(chips()).toHaveLength(0)
+})
+
+test('showHighlightChips pins both chips with no pointer anywhere near them', () => {
+  const model = setup()
+  model.addToHighlights({
+    refName: 'ctgA',
+    start: 100,
+    end: 200,
+    assemblyName: 'volvox',
+  })
+  model.setShowHighlightChips(true)
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <Plot model={model} />
+    </ThemeProvider>,
+  )
+  expect(chips()).toHaveLength(2)
 })

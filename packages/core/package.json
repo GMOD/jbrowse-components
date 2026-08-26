@@ -123,6 +123,7 @@
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/filterMenuItems": "./src/ui/filterMenuItems.ts",
     "./ui/gpuFallback": "./src/ui/gpuFallback.ts",
+    "./ui/highlightChipReveal": "./src/ui/highlightChipReveal.tsx",
     "./ui/legendSpec": "./src/ui/legendSpec.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/multiTrackMenuItems": "./src/ui/multiTrackMenuItems.ts",
@@ -693,6 +694,10 @@
       "./ui/gpuFallback": {
         "types": "./esm/ui/gpuFallback.d.ts",
         "import": "./esm/ui/gpuFallback.js"
+      },
+      "./ui/highlightChipReveal": {
+        "types": "./esm/ui/highlightChipReveal.d.ts",
+        "import": "./esm/ui/highlightChipReveal.js"
       },
       "./ui/legendSpec": {
         "types": "./esm/ui/legendSpec.d.ts",
@@ -1437,6 +1442,9 @@
         ],
         "ui/gpuFallback": [
           "esm/ui/gpuFallback.d.ts"
+        ],
+        "ui/highlightChipReveal": [
+          "esm/ui/highlightChipReveal.d.ts"
         ],
         "ui/legendSpec": [
           "esm/ui/legendSpec.d.ts"
