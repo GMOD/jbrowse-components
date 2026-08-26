@@ -421,15 +421,15 @@ const data = {
         : 'All of them are below, '
     }with the evidence staged the same way every time.`,
   footer:
-    '<div><b>How this page was built.</b> Every picture is a JBrowse view captured headlessly ' +
-    'at that locus, and every <b>Open in JBrowse</b> link reopens the same view live. The candidate ' +
-    'list comes from an exon-level comparison of the prediction against the reference annotation.</div>' +
-    (opts.apollo
-      ? '<div>The triage is the browser’s half. <b>Edit in Apollo</b> opens the same window in ' +
-        'the annotation editor, where <b>Split into two models</b> is a real action rather than a note.</div>'
-      : '<div>The triage is the browser’s half. The edit belongs in an annotation editor — ' +
-        '<b>Split into two models</b> is not a viewer action.</div>') +
-    '<div>Verdicts are stored in this browser only. <b>Export decisions</b> writes them out as TSV.</div>',
+    `<div><b>How this page was built.</b> Every picture is a JBrowse view captured headlessly ` +
+    `at that locus, and every <b>Open in JBrowse</b> link reopens the same view live. The candidate ` +
+    `list comes from an exon-level comparison of the prediction against the reference annotation.</div>${
+      opts.apollo
+        ? '<div>The triage is the browser’s half. <b>Edit in Apollo</b> opens the same window in ' +
+          'the annotation editor, where <b>Split into two models</b> is a real action rather than a note.</div>'
+        : '<div>The triage is the browser’s half. The edit belongs in an annotation editor — ' +
+          '<b>Split into two models</b> is not a viewer action.</div>'
+    }<div>Verdicts are stored in this browser only. <b>Export decisions</b> writes them out as TSV.</div>`,
   total,
   agrees,
   flagged,
