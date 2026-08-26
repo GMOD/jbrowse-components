@@ -123,7 +123,10 @@ function isStructuredClonePassthrough(thing: object): boolean {
     thing instanceof Blob ||
     thing instanceof ArrayBuffer ||
     // SharedArrayBuffer is not an ArrayBuffer subclass; without this it
-    // collapses to {} and SAB-based stop tokens silently stop working
+    // collapses to {} and SAB-based stop tokens silently stop working. Nothing
+    // we ship mints one (see `stopToken.ts`, "Which path runs where"), so this
+    // arm is correctness for an isolated embedding host and nothing else —
+    // keep it, but it is not a hot path and never was.
     (typeof SharedArrayBuffer !== 'undefined' &&
       thing instanceof SharedArrayBuffer) ||
     ArrayBuffer.isView(thing) ||

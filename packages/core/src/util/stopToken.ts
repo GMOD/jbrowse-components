@@ -42,19 +42,51 @@ import type { TimeGate } from './timeGate.ts'
  * only thing that can stop the work, and which that bench never exercises. Any
  * future attempt to delete this needs a cancel measurement on an
  * await-free workload (LD or multi-sample-variant), not on a pileup.
+ *
+ * ## Which path runs where
+ *
+ * | realm | isolated? | token | what a non-yielding loop can read |
+ * | --- | --- | --- | --- |
+ * | jbrowse-web / jbrowse.org | no, by decision (ADR-056) | string | stopped-id set + blob probe |
+ * | embedded (`@jbrowse/react-*`) | only if the HOST sets COOP/COEP | string | stopped-id set + blob probe |
+ * | jbrowse-desktop, packaged + dev | no — measured, see the gate | string | stopped-id set + blob probe |
+ * | jest | no | string | stopped-id set only |
+ * | an isolated embedding host | yes | SharedArrayBuffer | atomic read |
+ *
+ * The blob probe is the half that needs a worker (`probeBlobUrl` gates on
+ * `isWebWorker()` and a `blob:` id), which is why jest reads the set alone —
+ * and why a cancellation that only a probe could catch has no test covering it.
+ *
+ * **So nothing we ship mints a `SharedArrayBuffer` token.** The last row is the
+ * whole of the SAB branch's reach: a host page that isolates itself gets the
+ * fast path for free, which is why ADR-056 kept the code and why
+ * `website/scripts/coi-probe.ts` exists to prove it still works. Every SAB arm
+ * below is marked, and each one is dead in every configuration we control.
+ *
+ * Two consequences worth stating, because both have bitten:
+ *
+ * - **Judge every cancellation change by the string path.** A bug that "only"
+ *   affects string tokens affects everybody.
+ * - **Don't spend complexity on the SAB arms** — no caching, no fast paths, no
+ *   cleverness. They are correctness-only, and their cost is that every reader
+ *   of a `StopToken` has to know a token might not be a string.
  */
 
+// Two shapes, and in every configuration we ship this is the `string` — see
+// "Which path runs where" above. The union survives for an isolated embedding
+// host, so a reader still cannot assume `===`, `Map` keys or logging.
 export type StopToken = string | SharedArrayBuffer
 
-// Atomic flag values stored in the Int32Array view of the SharedArrayBuffer
+// Atomic flag values stored in the Int32Array view of the SharedArrayBuffer.
+// SAB ARM — unreached unless the host page is cross-origin isolated.
 const ABORT_FLAG_CLEAR = 0
 const ABORT_FLAG_SET = 1
 
-// How often the SAB path performs its (cheap) atomic read.
+// How often the SAB path performs its (cheap) atomic read. SAB ARM.
 const SAB_CHECK_EVERY_N_ITERS = 10
 
-// Minimum ms between a string token's in-loop checks (also the linear-backoff
-// step), and a cap so cancel latency stays bounded on a long-running loop. The
+// THE LIVE PATH's throttle. Minimum ms between a string token's in-loop checks
+// (also the linear-backoff step), and a cap so cancel latency stays bounded on a long-running loop. The
 // gate exists for the synchronous XHR probe, which is far too expensive per
 // item; the free set lookup rides along inside it.
 const STRING_CHECK_INTERVAL_MS = 50
@@ -204,6 +236,10 @@ export function registerStopTokenBroadcaster(fn: StopTokenBroadcaster) {
 // Create / stop
 // ---------------------------------------------------------------------------
 
+/**
+ * Mint a token. **The right-hand branch is the one that runs** — see "Which
+ * path runs where"; `hasSharedArrayBuffer` is false in everything we ship.
+ */
 export function createStopToken(): StopToken {
   // A fresh SharedArrayBuffer is already zeroed, i.e. ABORT_FLAG_CLEAR.
   return hasSharedArrayBuffer ? new SharedArrayBuffer(4) : createStringToken()
@@ -253,6 +289,7 @@ function createStringToken() {
  */
 export function stopStopToken(stopToken?: StopToken) {
   if (stopToken !== undefined) {
+    // SAB ARM — dead in every configuration we ship
     if (isSharedArrayBuffer(stopToken)) {
       const view = sabView(stopToken)
       Atomics.store(view, 0, ABORT_FLAG_SET)
@@ -313,6 +350,7 @@ function probeBlobUrl(stopToken: string) {
  * out cleanly instead of throwing and catching one frame up.
  */
 export function isStopped(stopToken?: StopToken) {
+  // the third arm is the live one; the middle is the SAB one
   return stopToken === undefined
     ? false
     : isSharedArrayBuffer(stopToken)
@@ -400,6 +438,7 @@ export function stopTokenSignal(stopToken?: StopToken): StopTokenSignal {
   if (isStopped(stopToken)) {
     controller.abort(makeAbortError())
   } else if (stopToken !== undefined) {
+    // SAB ARM — dead in every configuration we ship
     if (isSharedArrayBuffer(stopToken)) {
       // waitAsync is specified alongside SharedArrayBuffer, but it postdates it
       // in browsers, so treat it as optional rather than assumed: without it a
@@ -481,6 +520,8 @@ export type SyncStopProbe = (stopToken: string) => boolean
 
 export interface StopTokenChecker {
   stopToken?: StopToken
+  // SAB ARM — always undefined in everything we ship, since nothing mints a
+  // SharedArrayBuffer token there
   sabView?: Int32Array
   // iteration counter for the SAB path's mask only; the string path is
   // time-gated and reads nothing from it
@@ -521,6 +562,9 @@ export function checkStopTokenThrottled(checker?: StopTokenChecker) {
   // on `sabView` alone
   const stopToken = checker?.stopToken
   if (checker !== undefined && stopToken !== undefined) {
+    // THE LIVE PATH. Both halves of it: the set lookup catches a token stopped
+    // through the message path, the probe catches one in a loop that never
+    // yields to receive that message.
     if (typeof stopToken === 'string') {
       if (checker.checkDue(checker.checkInterval)) {
         if (stoppedIds.has(stopToken) || checker.syncProbe(stopToken)) {
@@ -533,9 +577,9 @@ export function checkStopTokenThrottled(checker?: StopTokenChecker) {
           STRING_CHECK_INTERVAL_MAX_MS,
         )
       }
-      // SAB path: a cheap atomic read, gated by a small iteration mask. The
-      // counter is bumped here rather than above the branch because it is the
-      // only reader of it.
+      // SAB ARM, dead in every configuration we ship: a cheap atomic read,
+      // gated by a small iteration mask. The counter is bumped here rather than
+      // above the branch because it is the only reader of it.
     } else if (
       checker.sabView &&
       ++checker.iters % SAB_CHECK_EVERY_N_ITERS === 0 &&

@@ -86,8 +86,8 @@ export default abstract class BaseRpcDriver {
     // driver's first call `LazyWorker.workerP` is undefined until `transport`
     // reaches `getWorker`. The worker never learned the token was stopped and
     // ground the fetch to completion. SharedArrayBuffer tokens see the stop
-    // through shared memory regardless; this is the string-token path, which
-    // without cross-origin isolation is every deployment.
+    // through shared memory regardless; this is the string-token path, which is
+    // every deployment we ship — `stopToken.ts`, "Which path runs where".
     //
     // Callers already treat an abort as the ordinary outcome of a superseded
     // fetch.
