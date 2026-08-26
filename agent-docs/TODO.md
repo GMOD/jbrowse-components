@@ -49,7 +49,7 @@ capture, then release validation.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [The graph plugin's 25 tsc errors](todo/the-graph-plugins-25-tsc-errors-and-three-unpushed-commits.md) | graph plugin, out of tree | fix the two adapters' `config` type — `betabuild.sh` gates on typecheck, so the errors are why the three commits are unpublished and why `pangenome_ecoli.md`'s last step is the only thing on that page a reader cannot perform. The hosted bundle is byte-identical to a 2026-08-14 `dist/` |
+| [The graph plugin's typecheck and unpushed commits](todo/the-graph-plugins-25-tsc-errors-and-three-unpushed-commits.md) | graph plugin, out of tree | the errors are fixed (`f1393b4`, 25 to 0) and all three `betabuild.sh` gates are green; what is left is the decision to publish, which is a live change to every config naming the bundle. Until it goes out, `pangenome_ecoli.md`'s last step is the only thing on that page a reader cannot perform |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | probably already done — verify before spending the pipeline; three need a review, not a capture |
 | [Verify the shared rect buffer headed](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
 | [Brand the out-of-request refNames](todo/brand-the-out-of-request-refnames.md) | synteny, RPC | type-only; brand BOTH ends or the compare still passes. Take it while the comparisons still agree — that is what makes it type-only, and it stops being true as the tree grows |
