@@ -1,6 +1,6 @@
 ---
 name: multiway-synteny-lgv-track
-description: Follow-ups to the multi-way synteny LGV track — per-base alignment lanes, the selection-scan pairing demo, multi-copy and self-comparison lanes, HPRC-scale lane selection and placement providers, and the interaction surface rowOrder still lacks. Read before extending MultiWaySyntenyDisplay or proposing a demo on it.
+description: Follow-ups to the multi-way synteny LGV track — per-base alignment lanes, the selection-scan pairing demo, multi-copy and self-comparison lanes, HPRC-scale lane selection and placement providers, and what the interaction surface still lacks now that lane order has a menu. Read before extending MultiWaySyntenyDisplay or proposing a demo on it.
 ---
 
 # Multi-way synteny LGV track follow-ups
@@ -124,11 +124,17 @@ region)** — the `syntenyRegionMenuItems` dialog seeded from this track alone,
 which is the "lane you want to drive independently" handoff. Lane order is
 densest-first by default (`rowAssembliesOf` counts placements over the fetched
 block set, not the viewport, so it holds still across a pan), which is what the
-tutorial used to tell a reader to hand-author `rowOrder` for. Still missing:
-`rowOrder` has no UI (a track-menu lane editor or drag on the lane labels),
-and the label is the obvious home for per-lane actions — hide a lane, open
-that assembly in its own LGV (`LaunchLinearGenomeView` exists), re-anchor the
-whole track on that lane's assembly.
+tutorial used to tell a reader to hand-author `rowOrder` for.
+
+`rowOrder` has a UI as of 2026-08-26: **Lane order** on the track menu, a row
+per lane with Move up/Move down and a reset, beside toggles for `drawCurves`
+and `showLaneTicks` (`menus.ts`). A move writes back the WHOLE order it is
+looking at rather than the lane that moved — `rowOrder` pins what it names and
+leaves the rest densest-first, so pinning one lane would leave the others free
+to re-sort under it between two moves. Still missing: drag on the lane labels,
+and the label as the home for per-lane actions — hide a lane, open that assembly
+in its own LGV (`LaunchLinearGenomeView` exists), re-anchor the whole track on
+that lane's assembly.
 
 **Lane scale legibility, and what is still open on it.** Every lane sits in its
 own frame, and until 2026-08-24 nothing in the picture said so: the view's
@@ -204,6 +210,17 @@ Deliberately basic: the likely future is a GPU-emitting backend (see per-base
 lanes above), and the parts that transfer are the interval math and the model
 state, not the SVG. Don't invest in the SVG path beyond what a figure needs.
 
+**A lane draws annotation where it has it and the table's box where it does
+not, per GROUP.** The choice was per LANE until 2026-08-26, so one drawn gene
+suppressed every placement box on that lane — and a table naming genes the
+lane's GFF3 does not is the ordinary case rather than a corner, since the two
+are different releases. The demo shows it: `grape.blocks` pairs four genes and
+`grape_genes.gff3` names two, and the other two hung their ribbons off nothing.
+`isAnnotated` tests in PX rather than bp, which is what lets one rule cover both
+kinds of lane — the anchor lane's genes and its group spans both come through
+the view's axis, a mate lane's both come through its frame, and neither pair is
+comparable in bp with the other.
+
 **Launch-side outlier robustness — shipped.** Found filming the grasses launch
 tour: `resolvePanel`'s span union kept every block on the winning contig, so
 one stray same-contig orthogroup hit stretched a launched panel to tens of
@@ -255,6 +272,19 @@ and mate axes disagree pins the two to one answer. The second is a discipline:
 `followWindowMapping`'s resolve refuses to extrapolate past its outermost block,
 because "a scale measured elsewhere would invent a correspondence" — which is
 what `rowFrameX` does freely, and why `frameSpan` now clips rather than tests.
+
+The anchor lane took a third pass on 2026-08-26 for the same reason and the
+opposite failure. `bpToPx` neither clips nor extrapolates: it answers `undefined`
+for a coord outside every displayed region, so an interval straddling one lost
+BOTH ends and was dropped whole — the group vanished from `anchorSpans` and so
+from `anchorSeedX`, the seed every lane below lines up on, while the mate lanes
+went on drawing its placement. That is only visible where `displayedRegions` is
+a slice of a contig rather than the whole thing, which is the shape a launched
+panel, a bookmarked region and a synteny row all have. `axisSpan` is the
+ordered-pair counterpart to `frameSpan`, built on core's
+`clipToDisplayedRegions` — the same primitive `getLayoutHighlightCoords` was
+written off, exported because its own min/width return loses the order a ribbon
+endpoint needs.
 
 What would transfer next is rung 3: `followSpreadSpans` and `spanBounds` place a
 row on the UNION of what several contigs map to, which is the machinery the
