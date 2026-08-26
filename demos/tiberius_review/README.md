@@ -17,12 +17,16 @@ captures inline and runs to about 1.8 MB; regenerate it with the command below
 and deploy it with `DEPLOY_DEMO_ALLOW_UNTRACKED=1`. The last two are the RNA-seq
 BAMs below and their indexes.
 
-**The checked-in `portal.png` is stale, and so is what is deployed.** It frames
-the `RANBP1` card, and `RANBP1` is no longer a candidate: the comparison used to
-read a gene's exons as one flat list, which invents junctions no transcript has,
-and that is what put a model matching all five of RANBP1's junctions in the
+**What is deployed is stale.** The live `portal.png` frames the `RANBP1` card,
+and `RANBP1` is no longer a candidate: the comparison used to read a gene's
+exons as one flat list, which invents junctions no transcript has, and that is
+what put a model matching all five of RANBP1's junctions in the
 structure-conflict bucket. chr22 now has 3 structure conflicts rather than 21.
 Rebuild, reframe the screenshot on a card that survives, and redeploy.
+
+`portal.png` itself is not checked in — it is a local file the last line below
+uploads, which is why that line needs `DEPLOY_DEMO_ALLOW_UNTRACKED=1` like the
+generated `index.html` does.
 
 ```bash
 node demo/tiberius-portal/bin/make-portal.mjs \
