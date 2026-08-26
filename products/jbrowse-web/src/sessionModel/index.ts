@@ -1,16 +1,25 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseWebSessionModel,
   WebSessionManagementMixin,
   finalizeWebSession,
 } from '@jbrowse/web-core'
 
+import {
+  addPermanentPlugin,
+  onPermanentPluginsChanged,
+  readPermanentPlugins,
+  removePermanentPlugin,
+} from '../permanentPlugins.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type {
   SessionWithConfigEditing,
   SessionWithConnectionEditing,
   SessionWithFocusedViewAndDrawerWidgets,
+  SessionWithPermanentPlugins,
   SessionWithSessionPlugins,
 } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -20,7 +29,8 @@ import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
  * #stateModel JBrowseWebSessionModel
  *
  * The full-app web session: the shared web session plus the saved-session
- * database management surface (favorites, recent sessions, activate/delete).
+ * database management surface (favorites, recent sessions, activate/delete) and
+ * the permanent plugin list.
  */
 export default function sessionModelFactory({
   pluginManager,
@@ -31,10 +41,61 @@ export default function sessionModelFactory({
 }) {
   return finalizeWebSession(
     pluginManager,
-    types.compose(
-      BaseWebSessionModel({ pluginManager, assemblyConfigSchema }),
-      WebSessionManagementMixin(pluginManager),
-    ),
+    types
+      .compose(
+        BaseWebSessionModel({ pluginManager, assemblyConfigSchema }),
+        WebSessionManagementMixin(pluginManager),
+      )
+      .volatile(() => ({
+        /**
+         * #volatile
+         * the plugins installed for this config on this browser, mirrored from
+         * localStorage.
+         *
+         * Volatile rather than a view over storage, because a view is a MobX
+         * computed and this one would read no observable: it would compute once
+         * inside the plugin store's `observer` and cache the list forever. And
+         * volatile rather than a property, because the list belongs to the
+         * browser rather than to this session — sharing or exporting a session
+         * must not carry it.
+         */
+        permanentPlugins: readPermanentPlugins(),
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         */
+        syncPermanentPlugins() {
+          self.permanentPlugins = readPermanentPlugins()
+        },
+      }))
+      .actions(self => ({
+        afterAttach() {
+          // every write to the list goes through the module, including the
+          // ones the dialog makes without touching the session, so the mirror
+          // is refreshed from there rather than at each call site
+          addDisposer(
+            self,
+            onPermanentPluginsChanged(() => {
+              self.syncPermanentPlugins()
+            }),
+          )
+        },
+        /**
+         * #action
+         */
+        addPermanentPlugin(plugin: PluginDefinition) {
+          addPermanentPlugin(plugin)
+          self.root.setPluginsUpdated()
+        },
+        /**
+         * #action
+         */
+        removePermanentPlugin(plugin: PluginDefinition) {
+          removePermanentPlugin(plugin)
+          self.root.setPluginsUpdated()
+        },
+      })),
   )
 }
 
@@ -59,4 +120,8 @@ export type _AssertConfigEditing = AssertExtends<
 export type _AssertSessionPlugins = AssertExtends<
   WebSessionModel,
   SessionWithSessionPlugins
+>
+export type _AssertPermanentPlugins = AssertExtends<
+  WebSessionModel,
+  SessionWithPermanentPlugins
 >

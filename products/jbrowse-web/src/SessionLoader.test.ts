@@ -13,6 +13,11 @@ import {
   stripConsumedSessionParams,
 } from './createSessionLoader.ts'
 import {
+  addPermanentPlugin,
+  clearPermanentPlugins,
+  setPermanentPluginDisabled,
+} from './permanentPlugins.ts'
+import {
   loadPluginRecords,
   readSessionFromStorage,
   writeSessionToIDB,
@@ -59,6 +64,7 @@ describe('SessionLoader', () => {
     jest.clearAllMocks()
     sessionStorage.clear()
     forgetTrustedPlugins()
+    clearPermanentPlugins()
     jest.spyOn(console, 'error').mockImplementation(() => {})
     jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
@@ -334,6 +340,57 @@ describe('SessionLoader', () => {
       // and the duplicate never reaches the trust gate either
       expect(jest.mocked(checkPlugins).mock.calls.at(-1)?.[0]).toEqual([
         sessionOnly,
+      ])
+    })
+
+    // The user's own list, kept in this browser against this config, loads with
+    // the config's plugins rather than with the session's: it belongs to every
+    // session on this JBrowse, including the ones that carry no plugins at all.
+    it('loads the permanent plugins beside the config own', async () => {
+      const fromConfig = { name: 'GWAS', umdUrl: 'https://example.com/g.js' }
+      const permanent = { name: 'MsaView', umdUrl: 'https://example.com/m.js' }
+      addPermanentPlugin(permanent)
+
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      await loader.loadConfigAndPlugins({ plugins: [fromConfig] })
+
+      expect(jest.mocked(loadPluginRecords).mock.calls.at(-1)?.[0]).toEqual([
+        fromConfig,
+        permanent,
+      ])
+    })
+
+    // Same rule as the session list: the config's entry is pinned to the
+    // version this deployment was built against, so it is the copy that runs.
+    it('does not load a permanent plugin the config already names', async () => {
+      const fromConfig = { name: 'GWAS', umdUrl: 'https://example.com/g-1.js' }
+      const other = { name: 'MsaView', umdUrl: 'https://example.com/m.js' }
+      addPermanentPlugin({ name: 'GWAS', umdUrl: 'https://example.com/g-2.js' })
+      addPermanentPlugin(other)
+
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      await loader.loadConfigAndPlugins({ plugins: [fromConfig] })
+
+      // the rest of the list is still there, so this pins the drop rather than
+      // merely the absence of the merge
+      expect(jest.mocked(loadPluginRecords).mock.calls.at(-1)?.[0]).toEqual([
+        fromConfig,
+        other,
+      ])
+    })
+
+    it('a switched-off permanent plugin is not loaded', async () => {
+      const off = { name: 'MsaView', umdUrl: 'https://example.com/m.js' }
+      const on = { name: 'GWAS', umdUrl: 'https://example.com/g.js' }
+      addPermanentPlugin(off)
+      addPermanentPlugin(on)
+      setPermanentPluginDisabled(off, true)
+
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      await loader.loadConfigAndPlugins({ plugins: [] })
+
+      expect(jest.mocked(loadPluginRecords).mock.calls.at(-1)?.[0]).toEqual([
+        on,
       ])
     })
   })

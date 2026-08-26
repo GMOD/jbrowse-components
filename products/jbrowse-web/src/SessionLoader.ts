@@ -10,6 +10,7 @@ import { autorun } from 'mobx'
 
 import { clearCrashedSession, readCrashedSession } from './crashedSession.ts'
 import { createPluginManager } from './createPluginManager.ts'
+import { getPermanentPlugins } from './permanentPlugins.ts'
 import { resolveConfigPath } from './resolveConfigPath.ts'
 import {
   buildLgvInit,
@@ -464,9 +465,19 @@ const SessionLoader = types
      */
     async loadConfigAndPlugins(snap: Snap & { plugins?: PluginDefinition[] }) {
       try {
-        const { records, failures } = await loadPluginRecords(
-          snap.plugins ?? [],
-        )
+        // The user's permanent plugins load beside the config's own, and the
+        // config's entry wins a collision — it is pinned to the version this
+        // deployment was built against, matching both the session-plugin dedupe
+        // in loadSession and Desktop's global-plugin merge.
+        //
+        // No trust gate, and that asymmetry is deliberate: a config's plugins
+        // can arrive from another origin by link, while this list is only ever
+        // written by a click inside this app on this config.
+        const configPlugins = snap.plugins ?? []
+        const { records, failures } = await loadPluginRecords([
+          ...configPlugins,
+          ...pluginsNotIn(getPermanentPlugins(), configPlugins),
+        ])
         self.addPluginLoadFailures(failures)
         self.setConfigAndPlugins(snap, records)
       } catch (e) {

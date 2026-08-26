@@ -10,17 +10,27 @@ import {
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LockIcon from '@mui/icons-material/Lock'
+import PushPinIcon from '@mui/icons-material/PushPin'
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
 import UpgradeIcon from '@mui/icons-material/Upgrade'
 import {
   Button,
   IconButton,
   ListItem,
+  ToggleButton,
   Tooltip,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { addPluginTo, pluginHome, removePluginFrom } from './util.ts'
+import {
+  addPluginTo,
+  canInstallPermanently,
+  hasPluginName,
+  pluginHome,
+  removePluginFrom,
+  setPluginPermanent,
+} from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
 import type { PluginHome } from './util.ts'
@@ -87,6 +97,51 @@ const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
       >
         <DeleteIcon />
       </IconButton>
+    </Tooltip>
+  )
+})
+
+// "Keep this plugin here" — the whole permanent list, from the one place a user
+// already looks at what they have installed. A toggle rather than a second
+// install button on the store card, because the plugin is by then installed and
+// the question left is how long it lasts; and it reads back, which a button
+// cannot: filled pin = every visit, outline = this session only.
+const KeepPluginToggle = observer(function KeepPluginToggle({
+  model,
+  definition,
+  permanent,
+}: {
+  model: PluginStoreModel
+  definition: PluginDefinition & { name: string }
+  permanent: boolean
+}) {
+  const { classes } = useStyles()
+  const session = getSession(model)
+  return (
+    <Tooltip
+      className={classes.iconMargin}
+      title={
+        permanent
+          ? 'Loaded on every visit to this JBrowse. Click to keep it in this session only'
+          : 'Keep this plugin on every visit to this JBrowse, in this browser'
+      }
+    >
+      <ToggleButton
+        value="permanent"
+        size="small"
+        color="primary"
+        selected={permanent}
+        data-testid={`keepPlugin-${definition.name}`}
+        onChange={() => {
+          setPluginPermanent(session, definition, !permanent)
+        }}
+      >
+        {permanent ? (
+          <PushPinIcon fontSize="small" />
+        ) : (
+          <PushPinOutlinedIcon fontSize="small" />
+        )}
+      </ToggleButton>
     </Tooltip>
   )
 })
@@ -177,6 +232,18 @@ const InstalledPlugin = observer(function InstalledPlugin({
   // self-declared version is the fallback for a custom or pre-versioning url
   const shownVersion = installedVersion ?? plugin.version
 
+  // only the two lists a keep toggle can move a plugin between, and only where
+  // the product has a permanent list at all — a config-installed plugin is the
+  // admin's to move, and a definition with no name cannot go back into the
+  // session list, which keys on it
+  const keepable =
+    definition &&
+    hasPluginName(definition) &&
+    canInstallPermanently(session) &&
+    (home === 'session' || home === 'permanent')
+      ? definition
+      : undefined
+
   return (
     <ListItem key={plugin.name}>
       {home && definition ? (
@@ -195,6 +262,13 @@ const InstalledPlugin = observer(function InstalledPlugin({
           }
         />
       )}
+      {keepable ? (
+        <KeepPluginToggle
+          model={model}
+          definition={keepable}
+          permanent={home === 'permanent'}
+        />
+      ) : null}
       <Typography className={classes.name}>
         {/* prefer the store's display name (the UMD global, e.g. "GWAS") over
         the runtime Plugin class name (e.g. "GWASPlugin") so it matches the

@@ -137,6 +137,53 @@ test('uninstalls a session plugin through the full UI flow', async () => {
   })
 })
 
+// The keep toggle is the whole permanent-plugin surface for installs: a plugin
+// lands in the session first, and the pin beside it says how long it lasts. It
+// moves rather than copies, because two lists naming one plugin is a duplicate
+// PluginManager refuses by name.
+test('the keep toggle moves a plugin between the session and the permanent list', async () => {
+  const user = userEvent.setup()
+  localStorage.clear()
+  const definition = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+  }
+  class MsaViewPlugin extends Plugin {
+    name = 'MsaView'
+    version = '1.0.0'
+  }
+  const session = createTestSession({
+    sessionSnapshot: { sessionPlugins: [definition] },
+    runtimePlugins: [{ plugin: new MsaViewPlugin(), definition }],
+  })
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // @ts-expect-error
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+
+  const { findByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
+  )
+
+  await user.click(await findByTestId('keepPlugin-MsaView'))
+  await waitFor(() => {
+    expect(session.permanentPlugins).toEqual([definition])
+  })
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
+
+  await user.click(await findByTestId('keepPlugin-MsaView'))
+  await waitFor(() => {
+    expect(session.permanentPlugins).toEqual([])
+  })
+  expect(getSnapshot(session.sessionPlugins)).toEqual([definition])
+  localStorage.clear()
+})
+
 test('plugin store admin - adds a custom plugin correctly', async () => {
   const { user, session, model, reloadPluginManagerMock } = setup({}, true)
   const { findByText, findByLabelText } = render(

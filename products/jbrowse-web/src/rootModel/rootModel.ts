@@ -64,6 +64,9 @@ const PreferencesDialog = lazy(
 const TrustedPluginsDialog = lazy(
   () => import('../components/TrustedPluginsDialog.tsx'),
 )
+const PermanentPluginsDialog = lazy(
+  () => import('../components/PermanentPluginsDialog.tsx'),
+)
 
 interface SessionDbHost {
   sessionDB?: SessionDBHandle
@@ -529,6 +532,15 @@ export default function RootModel({
               redoMenuItem(self.history),
               { type: 'divider' },
               pluginStoreMenuItem(),
+              {
+                label: 'Permanent plugins...',
+                onClick: () => {
+                  self.session?.queueDialog((onClose: () => void) => [
+                    PermanentPluginsDialog,
+                    { onClose },
+                  ])
+                },
+              },
               {
                 label: 'Trusted plugins...',
                 onClick: () => {

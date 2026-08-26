@@ -559,6 +559,28 @@ export function isSessionWithSessionPlugins(
   return isSessionModel(thing) && 'sessionPlugins' in thing
 }
 
+/**
+ * A session whose product keeps a plugin list of its own, outside both the
+ * config and the session — jbrowse-web's permanent plugins, stored in the
+ * browser against the config being viewed, so an install survives a new session
+ * and the next visit.
+ *
+ * The list is not MST state, so `permanentPlugins` re-reads storage on each
+ * call and nothing observes it. That is enough for its two readers, both of
+ * which run in response to a click: adding or removing one asks for the whole-
+ * app reload every plugin change needs anyway.
+ */
+export interface SessionWithPermanentPlugins extends AbstractSessionModel {
+  permanentPlugins: PluginDefinition[]
+  addPermanentPlugin: (plugin: PluginDefinition) => void
+  removePermanentPlugin: (plugin: PluginDefinition) => void
+}
+export function isSessionWithPermanentPlugins(
+  thing: unknown,
+): thing is SessionWithPermanentPlugins {
+  return isSessionModel(thing) && 'permanentPlugins' in thing
+}
+
 /** abstract interface for a session that manages a global selection */
 export interface SelectionContainer extends AbstractSessionModel {
   selection?: unknown

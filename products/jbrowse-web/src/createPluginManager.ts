@@ -10,6 +10,11 @@ import { doAnalytics } from '@jbrowse/core/util/analytics'
 import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
+import {
+  markPermanentPluginLoadSucceeded,
+  permanentPluginSafeMode,
+  permanentPluginSafeModeSuspects,
+} from './permanentPlugins.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
@@ -89,7 +94,35 @@ export function createPluginManager(
   doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
   initSession(rootModel, pluginManager, model)
   notifyPluginLoadFailures(rootModel, model)
+  notifyPermanentPluginSafeMode(rootModel)
+  // Here rather than beside the PluginManager above, so the window the crash
+  // marker covers includes `configure()` — where a plugin registers its menu
+  // items and extension points, and where one that throws takes the app down
+  // just as thoroughly as one that throws while its module is evaluated.
+  markPermanentPluginLoadSucceeded()
   return pluginManager
+}
+
+// Safe mode is silent otherwise: the app comes up looking normal, missing
+// whatever those plugins provide. Said on the session because that is the one
+// surface that exists by now — the fatal error dialog, which is where safe mode
+// is usually entered from, is by definition not on screen if we got this far.
+function notifyPermanentPluginSafeMode(rootModel: WebRootModel) {
+  const reason = permanentPluginSafeMode()
+  if (reason !== 'previousLaunchFailed') {
+    return
+  }
+  const suspects = permanentPluginSafeModeSuspects()
+  rootModel.session?.notify(
+    [
+      'Permanently installed plugins were skipped because the last load of this JBrowse did not finish.',
+      suspects.length ? `Loading: ${suspects.join(', ')}.` : '',
+      'Tools → Permanent plugins to switch one off or turn them back on.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    'warning',
+  )
 }
 
 // A plugin a config named but that couldn't be loaded no longer fails the app
