@@ -218,7 +218,8 @@ const suite: TestSuite = {
 
     // colorBy:'population' + samplesTsvLocation end to end: the sample-metadata
     // TSV must parse, reach the display's sources, and drive the palette so
-    // same-population rows share a color and different populations differ.
+    // same-population rows share a tint and different populations differ. The
+    // tint is `labelColor`, the channel tree-sidebar draws a row label with.
     {
       name: 'colorBy population colors sample rows from samplesTsv metadata',
       fn: async page => {
@@ -229,7 +230,7 @@ const suite: TestSuite = {
           interface Src {
             name: string
             population?: string
-            color?: string
+            labelColor?: string
           }
           const session = (
             window as unknown as {
@@ -246,7 +247,7 @@ const suite: TestSuite = {
             sources: (display.sources ?? []).map(s => ({
               name: s.name,
               population: s.population,
-              color: s.color,
+              labelColor: s.labelColor,
             })),
           }
         })
@@ -258,23 +259,23 @@ const suite: TestSuite = {
         if (info.sources.length === 0) {
           throw new Error('no sample sources loaded from samplesTsv')
         }
-        // every source carries a population attribute and a resolved color
-        const missing = info.sources.filter(s => !s.population || !s.color)
+        // every source carries a population attribute and a resolved tint
+        const missing = info.sources.filter(s => !s.population || !s.labelColor)
         if (missing.length) {
           throw new Error(
-            `sources missing population/color: ${JSON.stringify(missing.slice(0, 3))}`,
+            `sources missing population/labelColor: ${JSON.stringify(missing.slice(0, 3))}`,
           )
         }
         // one color per population: same pop => same color, and >1 distinct color
         const colorByPop = new Map<string, string>()
         for (const s of info.sources) {
           const prev = colorByPop.get(s.population!)
-          if (prev && prev !== s.color) {
+          if (prev && prev !== s.labelColor) {
             throw new Error(
-              `population ${s.population} has two colors: ${prev} vs ${s.color}`,
+              `population ${s.population} has two colors: ${prev} vs ${s.labelColor}`,
             )
           }
-          colorByPop.set(s.population!, s.color!)
+          colorByPop.set(s.population!, s.labelColor!)
         }
         if (new Set(colorByPop.values()).size < 2) {
           throw new Error(
