@@ -505,19 +505,23 @@ function rowTriplet(
  * - `same`   — the two codons are nucleotide-identical
  * - `syn`    — silent: the nucleotides differ but the amino acid is unchanged
  *
- * Returns undefined when either codon has no amino acid (a non-standard triplet,
- * e.g. one containing `N`): syn vs nonsyn is undefined without both residues, so
- * the codon is left unclassified rather than guessed. Shared by the codon overlay
- * (`computeVisibleCodons`) and the hover lookup (`findCodonAt`) so the colored
- * cell and the tooltip can't disagree.
+ * Returns undefined when the species codon has no amino acid (a non-standard
+ * triplet, e.g. one containing `N`): syn vs nonsyn is undefined without both
+ * residues, so the codon is left unclassified rather than guessed. Shared by the
+ * codon overlay (`computeVisibleCodons`) and the hover lookup (`findCodonAt`) so
+ * the colored cell and the tooltip can't disagree.
+ *
+ * `refAa` is passed rather than looked up because both callers resolve it before
+ * they reach a row — one to skip an untranslatable reference codon entirely, the
+ * other to report it — and the overlay calls this once per species per codon.
  */
 function classifyChange(
   rowCodon: string,
   refCodon: string,
+  refAa: string,
 ): { aa: string; change: CodonChange } | undefined {
   const aa = codonTable[rowCodon]
-  const refAa = codonTable[refCodon]
-  if (aa === undefined || refAa === undefined) {
+  if (aa === undefined) {
     return undefined
   }
   const change: CodonChange =
@@ -609,7 +613,8 @@ export function computeVisibleCodons(
     // A reference codon with a gap/`N` has no amino acid to compare against,
     // so no species codon can be classified here (mirrors the conservation
     // band, which skips the same codon) — draw nothing rather than guess.
-    if (refCodon === undefined || codonTable[refCodon] === undefined) {
+    const refAa = refCodon === undefined ? undefined : codonTable[refCodon]
+    if (refCodon === undefined || refAa === undefined) {
       continue
     }
     const cells = located.cells()
@@ -622,7 +627,7 @@ export function computeVisibleCodons(
       if (rowCodon === undefined) {
         continue
       }
-      const cls = classifyChange(rowCodon, refCodon)
+      const cls = classifyChange(rowCodon, refCodon, refAa)
       if (!cls) {
         continue
       }
@@ -769,15 +774,20 @@ export function findCodonAt(params: FindCodonAtParams): CodonHit | undefined {
   let hit: CodonHit | undefined
   if (located) {
     const refCodon = refTriplet(located)
+    const refAa = refCodon === undefined ? undefined : codonTable[refCodon]
     const rowCodon = rowTriplet(located, rowIndex)
-    if (refCodon !== undefined && rowCodon !== undefined) {
-      const cls = classifyChange(rowCodon, refCodon)
+    if (
+      refCodon !== undefined &&
+      refAa !== undefined &&
+      rowCodon !== undefined
+    ) {
+      const cls = classifyChange(rowCodon, refCodon, refAa)
       if (cls) {
         hit = {
           codon: rowCodon,
           aa: cls.aa,
           refCodon,
-          refAa: codonTable[refCodon],
+          refAa,
           change: cls.change,
         }
       }

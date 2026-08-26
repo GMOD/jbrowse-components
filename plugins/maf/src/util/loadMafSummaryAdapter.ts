@@ -11,15 +11,12 @@ import type {
 import type { Region } from '@jbrowse/core/util'
 
 /**
- * The memoization slot the helpers below keep their resolved sub-adapter on.
- * Declared by each MAF adapter as a public field, the same shape `setupP` takes
- * for the primary adapter.
+ * A MAF adapter as its summary readers see it: the `summaryAdapter` slot
+ * already resolved and memoized into a `cachedSetup` field.
  */
-export interface MafSummaryHolder {
-  summaryAdapterP?: Promise<BaseFeatureDataAdapter | undefined>
+export type MafSummarySelf = BaseFeatureDataAdapter & {
+  summaryAdapter: () => Promise<BaseFeatureDataAdapter | undefined>
 }
-
-type MafSummarySelf = BaseFeatureDataAdapter & MafSummaryHolder
 
 /**
  * Resolve the `summaryAdapter` slot to a data adapter, or undefined when the
@@ -28,22 +25,16 @@ type MafSummarySelf = BaseFeatureDataAdapter & MafSummaryHolder
  * points it at a `BigBedAdapter` over UCSC's `bigMafSummary.bb` while a tabix
  * or TAF track points it at a `BedTabixAdapter` over a summary BED.
  *
- * Memoized on failure-clearing terms so a transient error retries rather than
- * caching the rejection for the session.
+ * Each adapter wraps this in a `cachedSetup`, which is what memoizes it and
+ * clears the memo on failure so a transient error retries.
  */
-export async function loadMafSummaryAdapter(self: MafSummarySelf) {
+export async function loadMafSummaryAdapter(self: BaseFeatureDataAdapter) {
   const config = self.getConf('summaryAdapter')
   if (!config || !self.getSubAdapter) {
     return undefined
   }
-  self.summaryAdapterP ??= self
-    .getSubAdapter(config)
-    .then(result => result.dataAdapter as BaseFeatureDataAdapter)
-    .catch((e: unknown) => {
-      self.summaryAdapterP = undefined
-      throw e
-    })
-  return self.summaryAdapterP
+  const { dataAdapter } = await self.getSubAdapter(config)
+  return dataAdapter as BaseFeatureDataAdapter
 }
 
 /**
@@ -69,7 +60,7 @@ export function mafSummaryFeatures(
   opts?: BaseOptions,
 ) {
   return ObservableCreate<MafSummaryRecord>(async observer => {
-    const adapter = await loadMafSummaryAdapter(self)
+    const adapter = await self.summaryAdapter()
     if (adapter) {
       await subscribeToObservable(adapter.getFeatures(query, opts), f => {
         const src = f.get('src')

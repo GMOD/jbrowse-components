@@ -1037,7 +1037,7 @@ describe('BgzipTaffyAdapter RLE detection', () => {
     await expect(adapter.readHeader()).resolves.toBe(false)
     // ...and it got there by reading, not by failing: the same call resolves
     // the whole setup
-    await expect(adapter.setup()).resolves.toEqual(
+    await expect(adapter.configure()).resolves.toEqual(
       expect.objectContaining({ runLengthEncodeBases: false }),
     )
   })
@@ -1048,6 +1048,6 @@ describe('BgzipTaffyAdapter RLE detection', () => {
       locationType: 'LocalPathLocation',
     })
     await expect(adapter.readHeader()).rejects.toThrow()
-    await expect(adapter.setup()).rejects.toThrow()
+    await expect(adapter.configure()).rejects.toThrow()
   })
 })

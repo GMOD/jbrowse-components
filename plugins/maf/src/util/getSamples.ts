@@ -109,6 +109,13 @@ export function resolveSamplesFromTree(
  *
  * Tree/config names carry the haplotype suffix (`Species1.1`) that
  * `matchSampleId` resolves exactly.
+ *
+ * Each adapter holds this in a `cachedSetup` as its `getSamples` field, because
+ * every alignment and summary RPC opens with `loadMafSamplesAdapter` — which
+ * calls `getSamples()` — and `openLocation` builds a fresh `RemoteFile` each
+ * time, so an uncached read re-downloads and re-parses the Newick tree once per
+ * region per navigation. The set is config-derived and cannot change without a
+ * new adapter, so one read per adapter is all it can ever need.
  */
 export async function getSamplesFromConfig(
   nhLocation: FileLocation,
@@ -127,36 +134,4 @@ export async function getSamplesFromConfig(
     : configSamples
 
   return { samples, treeNewick }
-}
-
-export interface SamplesHolder {
-  samplesP?: ReturnType<typeof getSamplesFromConfig>
-}
-
-/**
- * Memoized `getSamplesFromConfig` for the three MAF adapters, whose
- * `getSamples()` bodies are otherwise identical.
- *
- * Worth a slot rather than being called straight through: every alignment and
- * summary RPC opens with `loadMafSamplesAdapter`, which calls `getSamples()`,
- * and `openLocation` builds a fresh `RemoteFile` each time — so an uncached
- * read re-downloaded and re-parsed the Newick tree once per region per
- * navigation. The sample set is config-derived and cannot change without a new
- * adapter, so one read per adapter is all it can ever need.
- *
- * Clears the slot on failure so a transient tree fetch error retries instead of
- * being cached forever — same shape as `lazyInit` and `getSummaryAdapter`.
- */
-export function getSamplesMemoized(
-  holder: SamplesHolder,
-  nhLocation: FileLocation,
-  samplesConfig: SampleConfig,
-) {
-  holder.samplesP ??= getSamplesFromConfig(nhLocation, samplesConfig).catch(
-    (e: unknown) => {
-      holder.samplesP = undefined
-      throw e
-    },
-  )
-  return holder.samplesP
 }

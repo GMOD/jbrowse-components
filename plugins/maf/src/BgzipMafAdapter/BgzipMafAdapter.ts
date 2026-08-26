@@ -1,21 +1,22 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { parseTaiIndex } from '../BgzipTaffyAdapter/taiIndex.ts'
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
-import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
-import { lazyInit } from '../util/loadSubAdapter.ts'
+import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import {
+  loadMafSummaryAdapter,
+  mafSummaryFeatures,
+} from '../util/loadMafSummaryAdapter.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
-import type { IndexData } from '../BgzipTaffyAdapter/types.ts'
 import type { MafAdapterOptions } from '../types.ts'
-import type { SamplesHolder } from '../util/getSamples.ts'
-import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -37,32 +38,25 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * 10 kb locus resolves to a ~924 KB read out of the 53 GB file.
  */
 export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdapterConfig> {
-  public setupP?: Promise<IndexData>
+  private configure = cachedSetup({
+    label: 'Downloading index',
+    setup: () => this.readTaiFile(),
+  })
 
-  public samplesP?: SamplesHolder['samplesP']
+  summaryAdapter = cachedSetup({
+    setup: () => loadMafSummaryAdapter(this),
+  })
 
-  public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
-
-  // true once the index has downloaded (set by lazyInit); gates the status label
-  // so pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
-  public setupReady = false
+  getSamples = cachedSetup({
+    setup: () =>
+      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
+  })
 
   private decoder = new TextDecoder()
 
   async getRefNames() {
-    const index = await this.setup()
+    const index = await this.configure()
     return Object.keys(index)
-  }
-
-  setupPre() {
-    return lazyInit(this, () => this.readTaiFile())
-  }
-
-  setup(opts?: BaseOptions) {
-    const { statusCallback } = opts ?? {}
-    return this.setupReady
-      ? this.setupPre()
-      : updateStatus('Downloading index', statusCallback, () => this.setupPre())
   }
 
   async readTaiFile() {
@@ -75,7 +69,7 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     const { statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const index = await this.setup(opts)
+      const index = await this.configure(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
 
       const slice = await readTaiSlice({
@@ -115,14 +109,6 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
     }, opts?.stopToken)
   }
 
-  async getSamples() {
-    return getSamplesMemoized(
-      this,
-      this.getConf('nhLocation'),
-      this.getConf('samples'),
-    )
-  }
-
   // The zoom-out tier, same slot and same reader as the other three adapters'.
   // The `.tai` is what made this look unnecessary — a read costs the span on
   // screen, not the alignment — and that reasoning misses the depth factor; see
@@ -132,6 +118,6 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
   }
 
   async getRegionByteSize(regions: Region[]) {
-    return taiRegionByteSize(await this.setup(), regions)
+    return taiRegionByteSize(await this.configure(), regions)
   }
 }

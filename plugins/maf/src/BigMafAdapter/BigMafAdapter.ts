@@ -1,17 +1,22 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
-import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
-import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
+import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import {
+  loadMafSummaryAdapter,
+  mafSummaryFeatures,
+} from '../util/loadMafSummaryAdapter.ts'
+import { loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { parseBigMafStanza } from '../util/parseBigMaf.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
-import type { SamplesHolder } from '../util/getSamples.ts'
-import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
+import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
 import type { BigMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -39,31 +44,33 @@ function mafBlockField(feature: Feature) {
 }
 
 export default class BigMafAdapter extends BaseFeatureDataAdapter<BigMafAdapterConfig> {
-  public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
+  private configure: SubAdapterLoader = cachedSetup({
+    label: 'Downloading index',
+    setup: () => loadSubAdapter(this, 'BigBedAdapter'),
+  })
 
-  public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
+  summaryAdapter = cachedSetup({
+    setup: () => loadMafSummaryAdapter(this),
+  })
 
-  public samplesP?: SamplesHolder['samplesP']
-
-  async setupPre(
-    opts?: BaseOptions,
-  ): Promise<{ adapter: BaseFeatureDataAdapter }> {
-    return lazyInit(this, () => loadSubAdapter(this, 'BigBedAdapter', opts))
-  }
+  getSamples = cachedSetup({
+    setup: () =>
+      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
+  })
 
   async getRefNames(opts?: BaseOptions) {
-    const { adapter } = await this.setupPre(opts)
+    const { adapter } = await this.configure(opts)
     return adapter.getRefNames()
   }
 
   async getHeader(opts?: BaseOptions) {
-    const { adapter } = await this.setupPre(opts)
+    const { adapter } = await this.configure(opts)
     return adapter.getHeader()
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     return ObservableCreate<Feature>(async observer => {
-      const { adapter } = await this.setupPre(opts)
+      const { adapter } = await this.configure(opts)
       // bigMaf packs the full MAF stanza (s/i/e/q lines) into one ';'-joined
       // `mafBlock` field; parseBigMafStanza turns it into aligned + empty rows.
       const resolver = makeSourceResolver(buildSampleFilter(opts))
@@ -92,14 +99,6 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter<BigMafAdapterC
     }, opts?.stopToken)
   }
 
-  async getSamples() {
-    return getSamplesMemoized(
-      this,
-      this.getConf('nhLocation'),
-      this.getConf('samples'),
-    )
-  }
-
   // Per-species alignment-block rows for zoom-out rendering, from whatever the
   // `summaryAdapter` slot names — typically a BigBedAdapter over UCSC's
   // bigMafSummary.bb. Shared with the tabix and TAF adapters, which take the
@@ -115,7 +114,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter<BigMafAdapterC
   // exempt like the screen-reduced adapters (BigWig, HiC), which report no
   // estimate at all.
   async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
-    const { adapter } = await this.setupPre(opts)
+    const { adapter } = await this.configure(opts)
     return adapter.getRegionByteSize(regions, opts)
   }
 }

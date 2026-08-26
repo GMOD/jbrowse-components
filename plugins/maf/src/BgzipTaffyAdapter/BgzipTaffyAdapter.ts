@@ -1,13 +1,17 @@
 import { unzip } from '@gmod/bgzf-filehandle'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
-import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
-import { lazyInit } from '../util/loadSubAdapter.ts'
+import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import {
+  loadMafSummaryAdapter,
+  mafSummaryFeatures,
+} from '../util/loadMafSummaryAdapter.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
 import {
@@ -23,8 +27,6 @@ import {
 import { parseTaiIndex } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
-import type { SamplesHolder } from '../util/getSamples.ts'
-import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
@@ -44,21 +46,27 @@ interface SetupData {
  * TAF Format: https://github.com/ComparativeGenomicsToolkit/taffy
  */
 export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffyAdapterConfig> {
-  public setupP?: Promise<SetupData>
+  // Not private: `BgzipTaffyAdapter.test.ts` asserts the header read resolves
+  // the whole setup, and no public method reports `runLengthEncodeBases`.
+  configure = cachedSetup({
+    label: 'Downloading index',
+    setup: () => this.doSetup(),
+  })
 
-  public samplesP?: SamplesHolder['samplesP']
+  summaryAdapter = cachedSetup({
+    setup: () => loadMafSummaryAdapter(this),
+  })
 
-  public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
-
-  // true once the index has downloaded (set by lazyInit); gates the status label
-  // so pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
-  public setupReady = false
+  getSamples = cachedSetup({
+    setup: () =>
+      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
+  })
 
   // utf-8 (default) tends to be faster than 'ascii' in modern engines.
   private decoder = new TextDecoder()
 
   async getRefNames() {
-    const { index } = await this.setup()
+    const { index } = await this.configure()
     return Object.keys(index)
   }
 
@@ -145,20 +153,6 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
     }
   }
 
-  setupPre() {
-    return lazyInit(this, () => this.doSetup())
-  }
-
-  // Show "Downloading index" only while the index is genuinely downloading. Once
-  // loaded, callers await the cached promise silently rather than re-flashing the
-  // label on pan/zoom.
-  setup(opts?: BaseOptions) {
-    const { statusCallback } = opts ?? {}
-    return this.setupReady
-      ? this.setupPre()
-      : updateStatus('Downloading index', statusCallback, () => this.setupPre())
-  }
-
   async doSetup(): Promise<SetupData> {
     const [index, runLengthEncodeBases] = await Promise.all([
       this.readTaiFile(),
@@ -178,7 +172,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
    * base of an RLE file would be silently wrong rather than the track failing.
    * Nothing was gained by absorbing it either — the read is the first 64KB of
    * the same file `getFeatures` reads its blocks from, so anything that breaks
-   * it breaks them too, and `lazyInit` clears the memo so a transient error
+   * it breaks them too, and `cachedSetup` clears the memo so a transient error
    * retries.
    */
   async readHeader(): Promise<boolean> {
@@ -204,7 +198,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     const { statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { index, runLengthEncodeBases } = await this.setup(opts)
+      const { index, runLengthEncodeBases } = await this.configure(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
 
       const slice = await readTaiSlice({
@@ -253,14 +247,6 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
     }, opts?.stopToken)
   }
 
-  async getSamples() {
-    return getSamplesMemoized(
-      this,
-      this.getConf('nhLocation'),
-      this.getConf('samples'),
-    )
-  }
-
   // The zoom-out tier, same slot and same reader as the other three adapters'.
   // See the slot's own comment for why the `.tai` does not remove the need for
   // one.
@@ -269,7 +255,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
   }
 
   async getRegionByteSize(regions: Region[]) {
-    const { index } = await this.setup()
+    const { index } = await this.configure()
     return taiRegionByteSize(index, regions)
   }
 }

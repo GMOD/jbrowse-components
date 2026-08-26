@@ -11,7 +11,7 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafPointerHit } from './mafHitTest.ts'
 import type { MouseState } from '@jbrowse/core/ui'
 
-const MAFTooltip = observer(function ({
+const MAFTooltip = observer(function MAFTooltip({
   model,
   hit,
   mouseState,

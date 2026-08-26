@@ -113,7 +113,9 @@ export function resolveCellColor(
   } else if (category === CellCategory.MismatchOff) {
     color = cfg.mismatchOffColor
   } else {
-    const base = String.fromCharCode(alnByte | LOWER_BIT)
+    // `& 0x7f` as the packed twin does, so a byte outside ASCII resolves to the
+    // same cell in both paths rather than only in the one with a bounded table.
+    const base = String.fromCharCode((alnByte | LOWER_BIT) & 0x7f)
     color = cfg.colorForBase[base] ?? cfg.unknownBaseColor
   }
   return color

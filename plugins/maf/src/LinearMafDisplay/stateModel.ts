@@ -901,7 +901,7 @@ export default function stateModelFactory(
         get defaultCodonSpecies(): string | undefined {
           const refSrc = self.referenceSampleId
           const rows = self.sourcesVolatile
-          return rows.find(s => s.name === refSrc)?.name ?? rows[0]?.name
+          return rows.some(s => s.name === refSrc) ? refSrc : rows[0]?.name
         },
         /**
          * #getter

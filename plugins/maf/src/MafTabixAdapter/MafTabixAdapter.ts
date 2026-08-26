@@ -1,10 +1,16 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
-import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
-import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
+import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import {
+  loadMafSummaryAdapter,
+  mafSummaryFeatures,
+} from '../util/loadMafSummaryAdapter.ts'
+import { loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
   makeSourceResolver,
@@ -13,8 +19,7 @@ import {
 } from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
-import type { SamplesHolder } from '../util/getSamples.ts'
-import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
+import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -46,31 +51,33 @@ function alignmentColumn(feature: Feature) {
 }
 
 export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdapterConfig> {
-  public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
+  private configure: SubAdapterLoader = cachedSetup({
+    label: 'Downloading index',
+    setup: () => loadSubAdapter(this, 'BedTabixAdapter'),
+  })
 
-  public samplesP?: SamplesHolder['samplesP']
+  summaryAdapter = cachedSetup({
+    setup: () => loadMafSummaryAdapter(this),
+  })
 
-  public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
-
-  async setupPre(
-    opts?: BaseOptions,
-  ): Promise<{ adapter: BaseFeatureDataAdapter }> {
-    return lazyInit(this, () => loadSubAdapter(this, 'BedTabixAdapter', opts))
-  }
+  getSamples = cachedSetup({
+    setup: () =>
+      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
+  })
 
   async getRefNames(opts?: BaseOptions) {
-    const { adapter } = await this.setupPre(opts)
+    const { adapter } = await this.configure(opts)
     return adapter.getRefNames()
   }
 
   async getHeader(opts?: BaseOptions) {
-    const { adapter } = await this.setupPre(opts)
+    const { adapter } = await this.configure(opts)
     return adapter.getHeader()
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     return ObservableCreate<Feature>(async observer => {
-      const { adapter } = await this.setupPre(opts)
+      const { adapter } = await this.configure(opts)
       const refAssemblyName = this.getConf('refAssemblyName')
       const resolver = makeSourceResolver(buildSampleFilter(opts))
 
@@ -131,14 +138,6 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
     }, opts?.stopToken)
   }
 
-  async getSamples() {
-    return getSamplesMemoized(
-      this,
-      this.getConf('nhLocation'),
-      this.getConf('samples'),
-    )
-  }
-
   // The zoom-out tier. A tabix MAF is the format that needs one most: every
   // species' bases ride on one BED line, so a wide read downloads the whole
   // alignment and the byte gate blocks it — without a summary this track has no
@@ -152,7 +151,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
   // .bed.gz already contains every species' sequence, so the compressed block
   // size is a faithful download estimate). No feature download.
   async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
-    const { adapter } = await this.setupPre(opts)
+    const { adapter } = await this.configure(opts)
     return adapter.getRegionByteSize(regions, opts)
   }
 }

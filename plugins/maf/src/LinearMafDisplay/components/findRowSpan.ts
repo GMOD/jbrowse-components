@@ -50,7 +50,13 @@ export function findRowSpan(
           const code = aln[i]!
           const isBase = code !== DASH && code !== SPACE
           const bp = block.startBp + genomicOffset
-          if (isBase && bp >= startBp && bp < endBp) {
+          // `bp` only ever increases, so the right edge ends this block's walk.
+          // The track menu builds a target per row (`visibleRowTargets`), so on
+          // a deep alignment this walk is paid once per species.
+          if (bp >= endBp) {
+            break
+          }
+          if (isBase && bp >= startBp) {
             const pos = forwardPos(row, baseOffset)
             if (pos !== undefined) {
               if (chr === undefined) {

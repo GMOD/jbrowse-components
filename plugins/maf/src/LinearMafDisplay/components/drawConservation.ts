@@ -59,6 +59,14 @@ export function conservationTicks(conservationHeight: number): YScaleTicks {
  * costs a little work and never changes the result. Worth having because the
  * buffered region is twice the visible span, so about half of the array was
  * being mapped and then discarded — once per render block, every frame.
+ *
+ * Which is why the two ends round outward — `floor` the low, `ceil` the high.
+ * `bpLo` is routinely fractional: it comes off `paintedBpRange`, whose block is
+ * a *dynamic* block, whose `start` is `regionStart + leftPx * bpPerPx` (the
+ * sibling `bufferedRegions` getter rounds, `visibleRegions` deliberately does
+ * not). A base covers `[bp, bp+1)`, so a fractional `bpLo` still sits inside
+ * the base below it, and rounding that end up dropped the leftmost column's
+ * base from its own pixel.
  */
 export function accumulateConservation(
   sum: Float32Array,
@@ -71,7 +79,7 @@ export function accumulateConservation(
   bpLo = -Infinity,
   bpHi = Infinity,
 ) {
-  const from = Math.max(0, Math.ceil(bpLo - coverageStartPos))
+  const from = Math.max(0, Math.floor(bpLo - coverageStartPos))
   const to = Math.min(identityScores.length, Math.ceil(bpHi - coverageStartPos))
   for (let i = from; i < to; i++) {
     const v = identityScores[i]!

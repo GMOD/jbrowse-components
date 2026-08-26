@@ -61,6 +61,9 @@ export type MafSamplesAdapter = BaseFeatureDataAdapter & {
     region: Region,
     opts?: BaseOptions,
   ) => Observable<MafSummaryRecord>
+  /** the `summaryAdapter` slot resolved, for the gate to measure the file the
+   *  summary tier is about to read */
+  summaryAdapter?: () => Promise<BaseFeatureDataAdapter | undefined>
 }
 
 /**

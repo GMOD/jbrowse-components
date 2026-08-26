@@ -1,7 +1,6 @@
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
-import { loadMafSummaryAdapter } from '../util/loadMafSummaryAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
@@ -78,7 +77,7 @@ export async function executeMafSummaryData({
   // expensive one's cost. It is the same file `byteGateAdapterPath` names while
   // `showSummary` holds, so the banner and the worker agree by construction.
   const summaryAdapter =
-    byteLimit === undefined ? undefined : await loadMafSummaryAdapter(adapter)
+    byteLimit === undefined ? undefined : await adapter.summaryAdapter?.()
   const { bytes, tooLarge } = summaryAdapter
     ? await measureRegionBytes({
         dataAdapter: summaryAdapter,

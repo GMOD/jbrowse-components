@@ -56,6 +56,13 @@ export function drawMafBlocks(
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
   // One buffer for the whole paint, not one per block — see `ColumnMapper`.
   const columnMapper = new ColumnMapper()
+  // One flank index per region for the whole paint, not one per render block.
+  // A region is usually covered by several of those, and each `makeRowFlank`
+  // allocates an array as long as the region's blocks — tens of thousands on the
+  // ce11 26-way shape, discarded and rebuilt on the next render block, every
+  // frame. The sibling walks already build theirs once per region
+  // (`computeVisibleDeletions`) or once per encode (`buildInstanceBuffer`).
+  const rowFlanks = new Map<number, ReturnType<typeof makeRowFlank>>()
 
   forEachClippedBlock(
     ctx,
@@ -72,7 +79,12 @@ export function drawMafBlocks(
         binBp,
       }
 
-      const rowFlank = makeRowFlank(regionData.blocks)
+      const regionIndex = renderBlock.displayedRegionIndex
+      let rowFlank = rowFlanks.get(regionIndex)
+      if (rowFlank === undefined) {
+        rowFlank = makeRowFlank(regionData.blocks)
+        rowFlanks.set(regionIndex, rowFlank)
+      }
       // Blocks the render block can't paint are skipped whole, rather than
       // indexed and walked column by column for the scissor to discard. The
       // fetched region is the buffered one, so on a typical view that is about
