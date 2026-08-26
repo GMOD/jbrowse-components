@@ -33,7 +33,7 @@
 #     whole schema through GetBase and has to be re-plumbed first.
 #
 # 135 unchecked in source, 155 in tests,
-# of 949 total config accessor calls. The gate counts source only.
+# of 951 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/Assemblies/AssembliesMixin.ts  (1)
   166	readConfObject('name')
@@ -199,13 +199,13 @@ plugins/canvas/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
 plugins/canvas/src/LinearBasicDisplay/collapseIntronsMenu.ts  (1)
   123	readConfObject('trackId')
 plugins/canvas/src/LinearBasicDisplay/model.ts  (1)
-  381	getConf('legend')
+  296	getConf('legend')
 plugins/canvas/src/LinearBasicDisplay/searchResultHighlight.ts  (1)
   58	readConfObject('trackId')
 plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (3)
-  296	readConfObject('sampleColorMap')
-  312	readConfObject('rowGroups')
-  521	readConfObject('legend')
+  276	readConfObject('sampleColorMap')
+  292	readConfObject('rowGroups')
+  501	readConfObject('legend')
 plugins/canvas/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
   21	getConf('maxFeatureScreenDensty')
 plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts  (1)
