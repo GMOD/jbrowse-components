@@ -185,6 +185,9 @@ function initialize() {
       notifyError(message: string) {
         console.error(message)
       },
+      // HighlightsMixin's afterAttach reveals the bands whenever the collection
+      // grows, so a view carrying a highlight needs this to exist
+      revealHighlights() {},
     }))
   return { Session, LinearGenomeModel, stubManager }
 }
@@ -311,6 +314,32 @@ test('the drawn figure does not move when the host re-renders', async () => {
   expect(text('offset')).toBe(String(view.offsetPx))
   // ...and the figure did not, so its ruler still describes its own bodies
   expect(svg().innerHTML).toBe(before)
+})
+
+// The `memo` above holds the figure still against a *parent* render, and that is
+// all it holds: an `observer` inside the frozen tree re-renders itself on its own
+// subscription, which no amount of memoization upstream can stop. The highlight
+// layer was one, so the bands panned across track bodies drawn where the
+// snapshot left them — the two clocks again, arriving by the one door the memo
+// does not cover. Unlike the test above this one fails compiled too, so it is
+// the run-agnostic half of the same rule.
+test('a highlight band does not move when the view pans', async () => {
+  const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  view.setHighlight([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 1000, end: 2000 },
+  ])
+  const { svg } = await renderFigure(view)
+  // the band is really drawn, or this passes by drawing nothing
+  const band = () => svg().querySelector('[fill-opacity]')?.getAttribute('x')
+  expect(band()).toBeTruthy()
+  const before = band()
+
+  await act(async () => {
+    view.scrollTo(view.offsetPx + 137)
+    await Promise.resolve()
+  })
+
+  expect(band()).toBe(before)
 })
 
 test('a display with no renderSvg is named, not drawn, and reserves no height', async () => {

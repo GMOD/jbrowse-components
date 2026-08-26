@@ -1,6 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import { observer } from 'mobx-react'
 
 import SashimiArcLabels from './SashimiArcLabels.tsx'
 import { SASHIMI_SIDES, sashimiArcKey, sashimiSideBand } from './sashimiArcs.ts'
@@ -81,7 +80,13 @@ function SashimiSide({
 // `usePalette`: the export resolves its own palette (`resolvePalette` in
 // renderSvg) so the figure matches the theme the user asked to export in, not
 // the live session's.
-const SashimiArcsSvg = observer(function SashimiArcsSvg({
+//
+// Not an observer: this draws into a figure `useViewSvgFigure` freezes with a
+// `memo`, which does not hold an observer still. Subscribing here re-derived
+// `bandScreenTop` from the live scroll while the pileup underneath stayed where
+// the snapshot left it. The file export renders in one synchronous pass and
+// never needed the subscription.
+export default function SashimiArcsSvg({
   model,
   width,
   palette,
@@ -110,6 +115,4 @@ const SashimiArcsSvg = observer(function SashimiArcsSvg({
       )
     }),
   )
-})
-
-export default SashimiArcsSvg
+}
