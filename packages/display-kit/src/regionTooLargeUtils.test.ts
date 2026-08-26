@@ -1,4 +1,9 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
+import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
+import { regionTooLargeConfigSchemaFields } from './regionTooLargeConfigSchemaFields.ts'
 import {
+  BASE_FETCH_SIZE_LIMIT,
   SUB_FLOOR_BYTE_BUDGET_FACTOR,
   TOO_MANY_FEATURES_REASON,
   bytesTooLargeReason,
@@ -51,6 +56,56 @@ describe('resolveByteLimit', () => {
         belowForceLoadFloor: false,
       }),
     ).toBe(30)
+  })
+
+  // The quietest failure this subsystem has: `getConf` answers `undefined` for a
+  // slot the composing display's schema never declared, and an undefined budget
+  // reaches `measureRegionBytes`, which measures nothing and refuses nothing. A
+  // wrongly-tight banner is visible and has an escape on the banner itself; a
+  // wrongly-open gate is a silent multi-GB download.
+  it('falls back to the base budget when no tier declares one', () => {
+    expect(
+      resolveByteLimit({
+        configFetchSizeLimit: undefined,
+        belowForceLoadFloor: false,
+      }),
+    ).toBe(BASE_FETCH_SIZE_LIMIT)
+    expect(
+      resolveByteLimit({
+        configFetchSizeLimit: undefined,
+        belowForceLoadFloor: true,
+      }),
+    ).toBe(BASE_FETCH_SIZE_LIMIT * SUB_FLOOR_BYTE_BUDGET_FACTOR)
+  })
+
+  // A declared adapter limit still outranks the fallback: the display slot going
+  // missing must not tighten an adapter that made its own decision.
+  it('keeps the adapter limit when the display slot is missing', () => {
+    expect(
+      resolveByteLimit({
+        adapterFetchSizeLimit: 5_000_000,
+        configFetchSizeLimit: undefined,
+        belowForceLoadFloor: false,
+      }),
+    ).toBe(5_000_000)
+  })
+
+  // The same "no opinion" reading the adapter tier gets, applied to the display
+  // tier: a schema declaring `fetchSizeLimit: 0` is not a zero-byte budget that
+  // refuses everything.
+  it('treats a non-positive display limit as absent', () => {
+    expect(
+      resolveByteLimit({ configFetchSizeLimit: 0, belowForceLoadFloor: false }),
+    ).toBe(BASE_FETCH_SIZE_LIMIT)
+  })
+
+  // Two sources for one number, because `scripts/gatedBudgets.ts` scans the
+  // field table's source for a numeric literal and the runtime fallback cannot
+  // be one. This is what keeps them the same number.
+  it('falls back to exactly what the field table defaults to', () => {
+    expect(regionTooLargeConfigSchemaFields.fetchSizeLimit.defaultValue).toBe(
+      BASE_FETCH_SIZE_LIMIT,
+    )
   })
 
   // The span tier: below AUTO_FORCE_LOAD_BP the gate keeps asking, but against a
@@ -351,4 +406,48 @@ describe('evaluateRegionTooLarge', () => {
   // axis are NOT this function's business — they live in `gateActive` /
   // `densityGateActive`, pinned per display in each
   // `derivedRegionTooLarge.test.ts`.
+})
+
+// The fallback where it is load-bearing: a display that opted into the gate and
+// whose schema never declared the slot. The mixin composed bare, with the leaf
+// getters overridden the way `gateTruthTable` overrides them, because the
+// failure is a config-schema slip and no schema in this repo has it.
+describe('a gating display whose schema declares no budget', () => {
+  const VIEWPORT = { key: 'ctgA:0-50000|', spanBp: 50_000 }
+
+  const NoBudgetDisplay = types
+    .compose('NoBudgetDisplay', RegionTooLargeMixin(), types.model({}))
+    .views(() => ({
+      get gateEnabled() {
+        return true
+      },
+      /** what `getConf` answers for a slot the schema never declared */
+      get configuredFetchSizeLimit() {
+        return undefined
+      },
+      get adapterFetchSizeLimit() {
+        return undefined
+      },
+      /** the other config read, stubbed out so this host needs no config node */
+      get configForceLoad() {
+        return false
+      },
+      get byteGateAdapterConfig() {
+        return { type: 'StubAdapter' }
+      },
+      get gateViewport() {
+        return VIEWPORT
+      },
+    }))
+
+  it('gates at the base budget rather than not at all', () => {
+    const display = NoBudgetDisplay.create()
+    expect(display.resolvedByteLimit()).toBe(BASE_FETCH_SIZE_LIMIT)
+
+    display.setByteEstimate({
+      bytes: BASE_FETCH_SIZE_LIMIT + 1,
+      viewport: VIEWPORT,
+    })
+    expect(display.regionTooLarge).toBe(true)
+  })
 })

@@ -15,6 +15,16 @@ export const AUTO_FORCE_LOAD_BP = 20_000
  */
 export const SUB_FLOOR_BYTE_BUDGET_FACTOR = 2
 
+/**
+ * The byte budget a gated display resolves when neither its own
+ * `fetchSizeLimit` slot nor the measured adapter's declares one — the tightest
+ * tier in the system, and the same number
+ * `regionTooLargeConfigSchemaFields.fetchSizeLimit` defaults to. That table has
+ * to keep its own literal (`scripts/gatedBudgets.ts` reads the number out of the
+ * source), so `regionTooLargeUtils.test.ts` pins the two together.
+ */
+export const BASE_FETCH_SIZE_LIMIT = 1_000_000
+
 const ZOOM_EVIDENCE_SPAN_RATIO = 0.5
 const ZOOM_EVIDENCE_BYTE_RATIO = 0.9
 
@@ -34,6 +44,12 @@ export interface ByteEstimate {
 /** What a measurement is about, captured before it is requested. */
 export interface GateViewport {
   spanBp: number
+  /**
+   * The measurement's identity: the stretch of genome on screen and the
+   * settings it is asked under, which is what `gateMeasurementStale` compares.
+   * `RegionTooLargeMixin.gateViewport` builds it and says why the settings are
+   * in there.
+   */
   key: string
 }
 
@@ -146,9 +162,18 @@ export function bytesTooLargeReason(bytes: number) {
 
 /**
  * The gate's byte budget: the adapter's declared limit (a non-positive one
- * means no opinion), else the display's, times
- * {@link SUB_FLOOR_BYTE_BUDGET_FACTOR} below the floor. Force-load is not a
- * tier here; it bypasses the comparison.
+ * means no opinion), else the display's, else {@link BASE_FETCH_SIZE_LIMIT},
+ * times {@link SUB_FLOOR_BYTE_BUDGET_FACTOR} below the floor. Force-load is not
+ * a tier here; it bypasses the comparison.
+ *
+ * **A budget nobody declared falls back closed.** `configFetchSizeLimit` comes
+ * from `getConf`, which answers `undefined` for a slot the composing display's
+ * schema never declared — silently, as it always does. An undefined budget
+ * propagates to `measureRegionBytes`, which returns `{}` and measures nothing,
+ * so the gate is off with nothing to see. A wrongly-tight banner is visible,
+ * diagnosable and has an escape on the banner itself; a wrongly-open gate is a
+ * silent multi-GB download. It does not throw, because a schema-authoring slip
+ * should not crash a display and the `undefined` surfaces far from the author.
  */
 export function resolveByteLimit({
   adapterFetchSizeLimit,
@@ -156,10 +181,14 @@ export function resolveByteLimit({
   belowForceLoadFloor,
 }: {
   adapterFetchSizeLimit?: number
-  configFetchSizeLimit: number
+  configFetchSizeLimit: number | undefined
   belowForceLoadFloor: boolean
 }) {
-  const base = adapterByteLimit(adapterFetchSizeLimit, configFetchSizeLimit)
+  const configured = adapterByteLimit(
+    configFetchSizeLimit,
+    BASE_FETCH_SIZE_LIMIT,
+  )
+  const base = adapterByteLimit(adapterFetchSizeLimit, configured)
   return belowForceLoadFloor ? base * SUB_FLOOR_BYTE_BUDGET_FACTOR : base
 }
 

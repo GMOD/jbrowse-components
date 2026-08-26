@@ -868,6 +868,36 @@ describe('derived regionTooLarge', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callCount + 1)
   })
 
+  // Settings are a term of the measurement, not just of the data. The worker's
+  // density probe counts ADMITTED features (`densityGate`'s `admit` — the
+  // parameter exists so a filtered view cannot be refused on a population it
+  // filters away), so a filter is a different question about the same viewport.
+  // While staleness was viewport-only the main thread never went back to ask:
+  // `SettingsInvalidate` cleared the data, `clearAllRpcData` deliberately keeps
+  // `densityStatsPerRegion`, and the banner held at zero RPCs.
+  it('re-measures when a filter changes under the banner', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+    mockRpcCall.mockResolvedValue({ regionTooLarge: true, featureCount: 5000 })
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    expect(display.gateMeasurementStale).toBe(false)
+    const callCount = mockRpcCall.mock.calls.length
+
+    // a filter admitting nothing — the count the worker answers with is the
+    // count under it
+    mockRpcCall.mockResolvedValue(makeFeatureData())
+    setConf(display, 'jexlFilters', ["jexl:get(feature,'type')=='nothing'"])
+    jest.advanceTimersByTime(2000)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callCount + 1)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
   // The two axes disagree about whether zooming helps, and the banner has to
   // ask the one that actually tripped. A dense VCF is the shape that separates
   // them — small on disk and flat across zooms, so the byte estimate stops

@@ -31,6 +31,12 @@ function applyGateEvent(self: GateState, event: GateEvent) {
 /** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
 export interface RegionTooLargeHost {
   configuration: RegionTooLargeConfigModel
+  /**
+   * `FetchMixin`'s serialized `rpcProps()`, which both foundations compose
+   * beside this mixin. A term of the measurement, never of the budget — see
+   * `gateViewport`.
+   */
+  rpcPropsCacheKey: string
 }
 
 function host(self: object) {
@@ -43,7 +49,8 @@ function host(self: object) {
  * measures the index before it downloads and answers a refusal when a region
  * is over budget; the fetch runners commit what it measured, and
  * `regionTooLarge` is derived from that last measurement. While the banner is
- * up the fetch runs once per settled viewport, which is the re-measure.
+ * up the fetch runs once per settled viewport and settings, which is the
+ * re-measure.
  * Composed by `MultiRegionDisplayMixin` and `GlobalFetchMixin`. The rules and
  * the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
  *
@@ -69,8 +76,9 @@ export default function RegionTooLargeMixin() {
       byteEstimate: undefined as ByteEstimate | undefined,
       /**
        * #volatile
-       * The viewport key the gate last asked the adapter about, on either axis.
-       * Separate from `byteEstimate` because a density refusal measures no bytes.
+       * The `gateViewport` key the gate last asked the adapter about, on either
+       * axis — the viewport AND the settings it asked under. Separate from
+       * `byteEstimate` because a density refusal measures no bytes.
        */
       gateMeasuredViewportKey: undefined as string | undefined,
     }))
@@ -103,9 +111,13 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * The display's `fetchSizeLimit` slot, from `regionTooLargeConfigSchemaFields`.
+       * The display's `fetchSizeLimit` slot, from
+       * `regionTooLargeConfigSchemaFields`. `number | undefined`, because
+       * `getConf` answers `undefined` for a slot a composing display's schema
+       * never declared and typing it `number` hid the whole failure —
+       * `resolveByteLimit` falls back closed, and says why.
        */
-      get configuredFetchSizeLimit(): number {
+      get configuredFetchSizeLimit(): number | undefined {
         return getConf(host(self), 'fetchSizeLimit')
       },
       /**
@@ -145,24 +157,36 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * What a measurement taken now would be about: the span on screen and a
-       * key for the stretch of genome it covers. Undefined until the view is
-       * measured, and the mixin's only read of the view. Captured before the
-       * fetch's round trip, never at commit.
+       * What a measurement taken now would be about: the span on screen, and a
+       * key for the stretch of genome it covers **and the settings it would be
+       * taken under**. Undefined until the view is measured, and the mixin's
+       * only read of the view. Captured before the fetch's round trip, never at
+       * commit, so the stamp names the settings the worker actually counted
+       * under.
+       *
+       * The settings term is `rpcPropsCacheKey`, the axis both families already
+       * invalidate data on. It belongs in the measurement because the worker's
+       * density probe counts ADMITTED features (`densityGate`'s `admit`), so a
+       * filter admitting almost nothing is a different measurement of the same
+       * viewport — and while staleness was viewport-only, the main thread never
+       * went back to ask. The byte axis is an index read no `rpcProps` field can
+       * move; the rule is one rule rather than one per axis.
        */
       get gateViewport(): GateViewport | undefined {
         const view = getContainingView(self) as RegionHost
-        return view.initialized
-          ? {
-              spanBp: view.visibleBp,
-              key: view.visibleRegions
-                .map(
-                  r =>
-                    `${r.displayedRegionIndex}:${r.refName}:${Math.floor(r.start)}-${Math.ceil(r.end)}`,
-                )
-                .join(','),
-            }
-          : undefined
+        if (!view.initialized) {
+          return undefined
+        }
+        const regions = view.visibleRegions
+          .map(
+            r =>
+              `${r.displayedRegionIndex}:${r.refName}:${Math.floor(r.start)}-${Math.ceil(r.end)}`,
+          )
+          .join(',')
+        return {
+          spanBp: view.visibleBp,
+          key: `${regions}|${host(self).rpcPropsCacheKey}`,
+        }
       },
     }))
     .views(self => ({
@@ -198,8 +222,11 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Whether the last measurement is about a viewport the user has since
-       * left. True before any measurement.
+       * Whether the last measurement still describes what a fetch issued now
+       * would ask: the viewport on screen, under the settings on screen. True
+       * before any measurement. The triple's third term, the adapter tier, is
+       * not here — a tier swap drops the measurement outright
+       * (`ClearByteEstimateOnNavOrTierSwap`) rather than marking it stale.
        */
       get gateMeasurementStale(): boolean {
         return self.gateMeasuredViewportKey !== self.gateViewport?.key

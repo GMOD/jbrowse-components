@@ -17,9 +17,16 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * Inert today, because all five leave `gateEnabled` false and every read is
  * behind it — the invariant the mixin's own docstrings state. What made it worth
  * closing rather than restating is what happens when that stops being true: a
- * gated display with no `fetchSizeLimit` resolves an `undefined` byte budget,
+ * gated display with no `fetchSizeLimit` resolved an `undefined` byte budget,
  * and an undefined budget is a gate that never fires. A safety gate that
  * silently does not gate is the quietest failure this subsystem has.
+ *
+ * Spreading this table is still how a display declares the slot, but it is no
+ * longer the only thing standing between a schema slip and an ungated download:
+ * `configuredFetchSizeLimit` is typed `number | undefined` and `resolveByteLimit`
+ * falls back to `BASE_FETCH_SIZE_LIMIT`, the same 1 Mb this table defaults to.
+ * That covers the out-of-tree plugins no in-repo scan reaches;
+ * `check-gated-adapter-budgets` covers the ones it does.
  */
 export const regionTooLargeConfigSchemaFields = {
   /**
@@ -28,7 +35,8 @@ export const regionTooLargeConfigSchemaFields = {
   // Conservative 1MB floor for the base display; the byte gate prefers an
   // adapter-declared fetchSizeLimit over this (resolveByteLimit), so it only
   // bites adapters that declare none. LinearBasicDisplay raises it to 5MB for
-  // feature tracks.
+  // feature tracks. The literal stays here — `scripts/gatedBudgets.ts` reads the
+  // number out of this source, and `BASE_FETCH_SIZE_LIMIT` is pinned to it.
   fetchSizeLimit: {
     type: 'number',
     defaultValue: 1_000_000,
