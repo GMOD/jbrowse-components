@@ -89,21 +89,37 @@ export function getReadsMenuItems(model: ReadsModel) {
       },
       pin: model.softClippingDisplayTypeDefault,
     }),
-    // Every interbase mark — the count bars and the fixed-size triangles
-    // alike — draws inside the coverage band (`COVERAGE_LAYERS`, and the
-    // Canvas2D twin), and the hit test spells the same conjunction. So the
-    // dependency is stated here rather than gated on: with coverage off this
-    // toggle is inert, and the same sentence is on LGVSyntenyDisplay's
-    // corresponding row.
+    // Every interbase mark — the count bars and the fixed-size triangles alike
+    // — draws inside the coverage band (`COVERAGE_LAYERS`, and the Canvas2D
+    // twin), and the hit test spells the same conjunction, so with the band
+    // hidden this toggle changes nothing:
+    // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that says so
+    // through the real draw path.
+    //
+    // Greyed rather than hidden, unlike LGVSyntenyDisplay's twin. The two
+    // displays default `showCoverage` opposite ways, and that is the whole
+    // difference: there the row would spend most of its life absent, so hiding
+    // it costs nothing, while here the band is on by default and vanishing the
+    // row would be the surprise. Greying keeps it discoverable and names the
+    // switch — this display's own idiom, shared with the arc-band options.
+    //
+    // Safe to grey because the row carries no pin. A disabled row's pin is
+    // disabled with it (`menuItemAdornment`, deliberately — a live-looking pin
+    // in a `pointer-events: none` row takes no click), so gating a PROMOTABLE
+    // row also takes away its make-this-the-default control. That is why the
+    // rows above, which are promotable, state their dependency and are not
+    // gated on it.
     toggleItem(
       'Show interbase indicators',
       model.showInterbaseIndicators,
       model.setShowInterbaseIndicators,
       {
+        disabled: !model.showCoverage,
+        disabledHelpText:
+          'Interbase marks are drawn in the coverage band — turn on "Show coverage" first',
         helpText:
           'Mark insertions and clipping, which occupy no reference base, ' +
-          'with a between-base tick. Drawn in the coverage band, so it ' +
-          'needs "Show coverage" on.',
+          'with a between-base tick, in the coverage band.',
       },
     ),
   ] satisfies MenuItem[])

@@ -17,7 +17,9 @@ const noPin: Pin = {
 }
 
 // Only the fields "Show..." reads.
-function makeModel(overrides?: Partial<{ canCollapseGroupRows: boolean }>) {
+function makeModel(
+  overrides?: Partial<{ canCollapseGroupRows: boolean; showCoverage: boolean }>,
+) {
   return {
     showLegend: false,
     setShowLegend: jest.fn(),
@@ -115,4 +117,34 @@ test('no read-category filter is offered here', () => {
 test('the row cap is not here', () => {
   const { queryByText } = renderRows(subMenuOf(makeModel()))
   expect(queryByText('Set max layout height...')).toBeNull()
+})
+
+function interbaseRow(showCoverage: boolean) {
+  return subMenuOf(makeModel({ showCoverage })).find(
+    r => 'label' in r && r.label === 'Show interbase indicators',
+  )
+}
+
+// Interbase marks are drawn in the coverage band, so the toggle greys out while
+// the band is hidden rather than sitting there doing nothing.
+// `renderers/interbaseNeedsCoverage.test.ts` is what says the dependency is
+// real; this is what says the menu states it.
+test('the interbase toggle follows the coverage band', () => {
+  expect(interbaseRow(false)).toMatchObject({
+    disabled: true,
+    disabledHelpText: expect.stringContaining('Show coverage'),
+  })
+  expect(interbaseRow(true)).toMatchObject({ disabled: false })
+})
+
+// A disabled row's pin is disabled with it (`menuItemAdornment`), so gating a
+// promotable row would also take away its "default for all tracks of this type"
+// control — which is why the promotable rows here state their dependency in
+// help text instead of greying out. Nothing gated may carry a pin.
+test('no gated row carries a pin', () => {
+  for (const row of subMenuOf(makeModel({ showCoverage: false }))) {
+    if ('disabled' in row && row.disabled) {
+      expect(row).not.toHaveProperty('pin')
+    }
+  }
 })
