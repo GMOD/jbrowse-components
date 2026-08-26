@@ -194,6 +194,37 @@ test('select none leaves the anchor in the stack and disables submit', async () 
   expect(screen.getByText('Submit').closest('button')).toBeEnabled()
 })
 
+// The empty state is about the DATASET, and unchecking is about the launch. Read
+// off the checked list it contradicted the rows still on screen: "Select none"
+// is one click, and it reported that nothing aligned here directly above three
+// panels saying it did.
+test('unchecking every panel does not claim the dataset aligns to nothing', async () => {
+  renderDialog(() =>
+    Promise.resolve(mates('volvox_ins', 'volvox_del', 'volvox_dup')),
+  )
+  fireEvent.click(await screen.findByText('Select none'))
+
+  expect(screen.getByLabelText('volvox_ins')).toBeTruthy()
+  expect(screen.queryByText(/Nothing in/)).toBeNull()
+})
+
+// Same operand, same reason: the note explaining why the list is shorter than
+// the lanes the track draws is a fact about the file, so it survives a reader
+// unchecking the panels it is explaining.
+test('the undeclared-mate note survives unchecking the panels', async () => {
+  renderDialog(() =>
+    Promise.resolve({
+      ...mates('volvox_ins', 'volvox_del', 'volvox_dup'),
+      unconfigured: ['HG002#1'],
+    }),
+  )
+  fireEvent.click(await screen.findByText('Select none'))
+
+  expect(
+    screen.getByText(/HG002#1 also align here, but this track declares no/),
+  ).toBeTruthy()
+})
+
 // One open synteny dataset is not a choice, and a full-width select holding its
 // only value is a control the reader has to try before ruling it out.
 test('a single dataset is stated rather than offered as a select', async () => {

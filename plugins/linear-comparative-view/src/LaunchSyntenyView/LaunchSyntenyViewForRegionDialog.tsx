@@ -140,7 +140,7 @@ function DiscoveryStatus({
   loading,
   error,
   onRetry,
-  mateCount,
+  discoveredMates,
   unconfigured,
   status,
 }: {
@@ -148,7 +148,11 @@ function DiscoveryStatus({
   loading: boolean
   error: unknown
   onRetry: () => void
-  mateCount: number | undefined
+  // How many panels the DISCOVERY found, not how many are still ticked. The
+  // checked list is what launches, and reading it here made unchecking every
+  // panel — one click, since the list offers "Select none" — report that
+  // nothing aligns, directly above the rows saying it does.
+  discoveredMates: number | undefined
   unconfigured: string[]
   status: RpcStatus | undefined
 }) {
@@ -188,7 +192,7 @@ function DiscoveryStatus({
       </>
     )
   }
-  if (mateCount === 0) {
+  if (discoveredMates === 0) {
     return (
       <Typography variant="body2">
         {unconfigured.length > 0
@@ -236,6 +240,11 @@ export default function LaunchSyntenyViewForRegionDialog({
       region,
     })
   const { anchorIndex, mates } = launchOrder(rows ?? [])
+  // What the DISCOVERY found. `mates` above is what is still ticked, which is
+  // what launches — but the two messages below are about the dataset rather
+  // than about the choices made in it, and reading the ticked list for them
+  // meant "Select none" reported that nothing aligned here.
+  const discoveredMates = rows?.filter(row => row.kind === 'mate').length
 
   return (
     <SyntenyLaunchDialog
@@ -283,7 +292,7 @@ export default function LaunchSyntenyViewForRegionDialog({
         status={status}
         error={error}
         onRetry={retry}
-        mateCount={rows && mates.length}
+        discoveredMates={discoveredMates}
         unconfigured={unconfigured}
       />
       {rows ? (
@@ -297,7 +306,7 @@ export default function LaunchSyntenyViewForRegionDialog({
       {/* Why the list is shorter than the lanes drawn in the track this was
        launched from: an all-vs-all file carries every sample it was built with,
        and only the ones the track declares an assembly for can be a panel. */}
-      {unconfigured.length > 0 && mates.length > 0 ? (
+      {unconfigured.length > 0 && !!discoveredMates ? (
         <Typography variant="body2">
           {nameList(unconfigured)} also align here, but this track declares no
           assembly for them, so they get no panel.
