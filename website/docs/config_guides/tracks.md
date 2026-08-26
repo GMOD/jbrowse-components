@@ -4,10 +4,11 @@ description: Configuration options common to all track types
 guide_category: Core configuration
 ---
 
-**TL;DR:** a track is a `trackId` and a `uri`; JBrowse reads the track type and
-adapter off the file's extension. Write `type` and `adapter` out when the
-extension does not say enough, and put appearance settings (`color`, `height`,
-etc.) in a `displayDefaults` object, which JBrowse routes to the right display.
+**TL;DR:** a track is a `trackId`, a `uri` and the `assemblyNames` it sits on;
+JBrowse reads the track type and adapter off the file's extension. Write `type`
+and `adapter` out when the extension does not say enough, and put appearance
+settings (`color`, `height`, etc.) in a `displayDefaults` object, which JBrowse
+routes to the right display.
 
 All tracks can contain:
 
@@ -60,8 +61,9 @@ longhand equivalent here is `"bigBedLocation": { "uri": "..." }`. The track's
 
 ## The shortest track
 
-A track can be just its id and its file. The same config, with the track written
-that way:
+A track is its id, its file and the assembly it sits on — and the config below
+declares one assembly, so the track need not name it. The same config, with the
+track written that way:
 
 ```json
 {

@@ -154,9 +154,9 @@ JBrowse expands these at load time, so you write only what matters:
 - **`{ name, uri }` is a whole assembly.** JBrowse picks the adapter from the
   extension, finds the index siblings, and adds the `ReferenceSequenceTrack`.
   See [`BaseAssembly`](/docs/config/baseassembly).
-- **`{ trackId, uri }` is a whole track.** The extension picks the track type
-  and the adapter as well as the location, `name` comes from the file name, and
-  a config with one assembly needs no `assemblyNames`. See
+- **`{ trackId, uri, assemblyNames }` is a whole track.** The extension picks
+  the track type and the adapter as well as the location, and `name` comes from
+  the file name. In a config with one assembly, `assemblyNames` goes too. See
   [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 - **`displayDefaults`** routes each setting to the display that defines it, so
   you never name a display or write a `displays` array. If you use a key that no

@@ -24,9 +24,9 @@ Auto-generated config schema for the current JBrowse release — see the
 ```
 
 `star-fusion.fusion_predictions.tsv` infers `StarFusionAdapter` and
-`VariantTrack` on its own, so the same track can be written as an id and a uri.
-`name` then defaults to the file name, and `assemblyNames` is implied for a
-config holding one assembly — see
+`VariantTrack` on its own, and `name` defaults to the file name, so the whole
+track is its id, its uri and its assembly. A config declaring one assembly
+supplies that last one too, leaving `{ trackId, uri }` — see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js

@@ -33,8 +33,9 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 
 `assemblies` and `tracks` are the two that carry data, and an entry in either is
 a name and a file: `{ "name": "hg38", "uri": "hg38.fa.gz" }` for an assembly
-(see [assemblies](/docs/config_guides/assemblies)),
-`{ "trackId": "genes", "uri": "genes.gff.gz" }` for a track (see
+(see [assemblies](/docs/config_guides/assemblies)), and for a track
+`{ "trackId": "genes", "uri": "genes.gff.gz", "assemblyNames": ["hg38"] }`,
+whose `assemblyNames` a config with one assembly supplies (see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track)). JBrowse
 reads the adapter, and a track's type, off the extension.
 

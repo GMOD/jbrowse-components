@@ -122,9 +122,10 @@ write into the config — see [](/docs/config_guides/default_session).
 
 ## Where the document comes from
 
-It is a small enough format to write, and to generate — a track can be two keys,
-`{ "trackId", "uri" }`, with the type and adapter read off the file's extension
-(see [the shortest track](/docs/config_guides/tracks#the-shortest-track)), and a
+It is a small enough format to write, and to generate — a track is an id, a uri
+and the assembly it sits on, with the type and adapter read off the file's
+extension, and where the config declares one assembly the track need not name it
+(see [the shortest track](/docs/config_guides/tracks#the-shortest-track)). A
 view is an `init` block. Several things will also write parts of it for you:
 
 - [`@jbrowse/cli`](/docs/cli) writes it. `jbrowse add-assembly` and

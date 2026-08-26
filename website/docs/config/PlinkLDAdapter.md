@@ -24,9 +24,10 @@ plugin.
 }
 ```
 
-`study.ld` infers `PlinkLDAdapter` and `LDTrack` on its own, so the same track
-can be written as an id and a uri. `name` then defaults to the file name, and
-`assemblyNames` is implied for a config holding one assembly — see
+`study.ld` infers `PlinkLDAdapter` and `LDTrack` on its own, and `name` defaults
+to the file name, so the whole track is its id, its uri and its assembly. A
+config declaring one assembly supplies that last one too, leaving
+`{ trackId, uri }` — see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js

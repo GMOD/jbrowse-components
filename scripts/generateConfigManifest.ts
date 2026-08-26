@@ -551,9 +551,10 @@ const lines = [
   '## Track types',
   '',
   'A track pairs one adapter (where the data is) with one or more displays (how it is drawn).',
-  'The shortest track is `{ "trackId", "uri" }` plus `assemblyNames` when the',
-  'config has more than one assembly: the type and adapter come from the',
-  "file's extension, and any key written beside `uri` overrides the inference.",
+  'The shortest track is `{ "trackId", "uri", "assemblyNames" }`, and in a',
+  'config declaring one assembly the last of those goes too: the type and',
+  "adapter come from the file's extension, and any key written beside `uri`",
+  'overrides the inference.',
   '',
   ...Object.entries(schema.tracks).map(
     ([name, entry]: [string, any]) =>

@@ -68,7 +68,7 @@ an example of both forms.
 
 Every format in the tables below is one JBrowse recognizes by its extension, and
 that inference runs on a track config too, not only in the "Add track" dialog. A
-track over such a file is an id and a `uri`:
+track over such a file is an id, a `uri` and the assembly it sits on:
 
 ```json addtrack
 {
@@ -79,10 +79,11 @@ track over such a file is an id and a `uri`:
 ```
 
 The `Track type` column above is what the track becomes, the `Adapter` column is
-what it reads through, and `name` defaults to the file name. `assemblyNames`
-comes from the config when it declares exactly one assembly. Write any of those
-keys yourself to override the guess — an explicit `type` picks a track type the
-extension would not, and an `adapter` block replaces the guessed one outright.
+what it reads through, and `name` defaults to the file name. In a config
+declaring exactly one assembly, `assemblyNames` comes from there as well,
+leaving the id and the uri. Write any of those keys yourself to override the
+guess — an explicit `type` picks a track type the extension would not, and an
+`adapter` block replaces the guessed one outright.
 
 A format the tables do not list needs the full form, and so does a file whose
 extension names one format while it holds another. See
