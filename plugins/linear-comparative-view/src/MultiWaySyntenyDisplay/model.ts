@@ -26,6 +26,7 @@ import {
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { axisSpan } from './anchorAxis.ts'
+import { buildLanes } from './laneStack.ts'
 import {
   alignRowFrames,
   groupFeatures,
@@ -36,6 +37,7 @@ import {
 import { laneOrderMenuItem, laneSettingsMenuItems } from './menus.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
+import type { LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -532,6 +534,37 @@ export function stateModelFactory(
             .join(';'),
           specs,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the stack the picture is drawn from: one `Lane` per assembly, plus the
+       * geometry every layer places against. Every layer — bands, ticks,
+       * ribbons, glyphs, boxes, headers, the hover outline — is a walk over
+       * this, and the on-screen body and the SVG export walk the same one
+       */
+      get laneStack(): LaneStack {
+        const { assemblyManager } = getSession(self)
+        const view = self.lgv
+        return buildLanes({
+          assemblyNames: [self.anchorAssemblyName, ...self.rowAssemblies],
+          groups: self.visibleGroups,
+          anchorSpans: self.anchorSpans,
+          rowFrames: self.rowFrames,
+          laneGenes: self.laneGenes,
+          laneGeneAdapters: self.laneGeneAdapters,
+          axisSpanOf: (refName, start, end) =>
+            axisSpan(view, refName, start, end),
+          refNameAliasOf: assemblyName => {
+            const assembly = assemblyManager.get(assemblyName)
+            return (
+              assembly && (refName => assembly.getCanonicalRefName2(refName))
+            )
+          },
+          width: self.canvasWidth,
+          height: self.height,
+        })
       },
     }))
     .views(self => ({

@@ -35,6 +35,7 @@ Bre = "Bre"           # Bre1, the Drosophila ubiquitin ligase on 3L
 # pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"
+SECONDRY = "SECONDRY"
 ome = "ome"
 Shs = "Shs"
 hom = "hom"

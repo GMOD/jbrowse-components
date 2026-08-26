@@ -73,6 +73,7 @@ test('a format still missing its index cannot be submitted', async () => {
 })
 
 test('a name already open is refused before faidx runs', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
   const { user, onClose } = setup({ existingAssemblyNames: ['hg38'] })
   await enterUrls(user, 'https://example.com/hg38.fa')
   await user.click(submit())
@@ -84,6 +85,7 @@ test('a name already open is refused before faidx runs', async () => {
 
 // the dialog used to open the staged list alone and drop this one on the floor
 test('a half-entered genome below the staged list blocks the open', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
   const { user, onClose } = setup()
   await enterUrls(user, 'https://example.com/hg38.2bit')
   await user.click(screen.getByRole('button', { name: 'Add another genome' }))
@@ -99,6 +101,7 @@ test('a half-entered genome below the staged list blocks the open', async () => 
 })
 
 test('an error clears as soon as the form is edited again', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
   const { user } = setup({ existingAssemblyNames: ['hg38'] })
   await enterUrls(user, 'https://example.com/hg38.fa')
   await user.click(submit())
@@ -140,6 +143,7 @@ test('cancelling mid-index stops the index, not just the dialog', async () => {
 // staging is what clears the inputs, so a name it refuses has to leave them —
 // the dialog used to clear on the click and strand the card over an empty box
 test('a genome refused for its name stays in the form to be renamed', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
   const { user } = setup({ existingAssemblyNames: ['hg38'] })
   await enterUrls(user, 'https://example.com/hg38.2bit')
   await user.click(screen.getByRole('button', { name: 'Add another genome' }))
