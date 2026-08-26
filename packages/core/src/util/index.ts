@@ -469,7 +469,7 @@ export {
 // `installFetch` is deliberately NOT re-exported here: it reaches `getSession`
 // through `fetchContext.ts`, which imports this barrel, so exporting it makes
 // the barrel initialize itself. Import it from `@jbrowse/core/util/installFetch`.
-export { createSharedSetup } from './createSharedSetup.ts'
+export { createSharedSetup } from './cachedSetup.ts'
 export { isDataCurrent } from './isDataCurrent.ts'
 export {
   handleFetchError,
