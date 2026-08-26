@@ -1,5 +1,5 @@
-import { measureText } from '@jbrowse/core/util'
-import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { measuredFont } from '@jbrowse/core/util'
+import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
 
 import type {
   AminoAcidOverlayItem,
@@ -8,7 +8,7 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
-// The face the letters draw in. Named because `measureText` switches to the
+// The face the letters draw in. Named because `measuredFont` switches to the
 // fixed monospace advance on seeing it, and a cell measured in one face and
 // painted in another is exactly the drift this module exists to prevent.
 const PEPTIDE_FONT_FAMILY = 'monospace'
@@ -31,6 +31,10 @@ const PEPTIDE_MIN_FONT_SIZE = 5
 export interface PeptideCell {
   centerPx: number
   fontSize: number
+  // The face `text` was fitted in, ready for `ctx.font`. The painter never
+  // builds the string itself, so it cannot draw in a face the residue-number
+  // budget was measured against a different one of.
+  font: string
   text: string
 }
 
@@ -77,11 +81,23 @@ const BASES_PER_CODON = 3
 // price is that a 200aa gene reaches its numbers at the same zoom titin does,
 // having reserved digits it never uses — a little more zoom on small proteins,
 // in exchange for a view that never disagrees with itself.
-function residueNumbersFit(fontSize: number, codonPx: number) {
-  return (
-    measureText(PEPTIDE_NUMBER_CELL_SAMPLE, fontSize, PEPTIDE_FONT_FAMILY) <=
-    codonPx
-  )
+//
+// Resolved per row rather than per residue: a row's `fontSize` decides both the
+// face and the answer, so one `min(heightPx, cap)` produces one `PeptideRow`
+// that every residue at that height then reads.
+interface PeptideRow {
+  fontSize: number
+  font: string
+  numbered: boolean
+}
+
+function peptideRow(fontSize: number, codonPx: number): PeptideRow {
+  const { css, measure } = measuredFont(fontSize, PEPTIDE_FONT_FAMILY)
+  return {
+    fontSize,
+    font: css,
+    numbered: measure(PEPTIDE_NUMBER_CELL_SAMPLE) <= codonPx,
+  }
 }
 
 // Shared amino-acid cell layout: iterates the on-screen residues in a region and
@@ -103,9 +119,8 @@ export function forEachRenderedPeptide(
   // against — not `px2 - px1`, which for an exon-boundary fragment is a third of
   // that and would drop the number off exactly those residues, putting the ragged
   // edge back at every boundary.
-  const codonPx =
-    (BASES_PER_CODON * Math.abs(vr.screenEndPx - vr.screenStartPx)) /
-    (vr.end - vr.start)
+  const codonPx = BASES_PER_CODON * pxPerBpOf(vr)
+  let row: PeptideRow | undefined
   for (const item of aminoAcidOverlay) {
     if (item.endBp < vr.start || item.startBp > vr.end) {
       continue
@@ -114,17 +129,19 @@ export function forEachRenderedPeptide(
     if (fontSize < PEPTIDE_MIN_FONT_SIZE) {
       continue
     }
+    if (row?.fontSize !== fontSize) {
+      row = peptideRow(fontSize, codonPx)
+    }
     const px1 = toScreen(item.startBp)
     const px2 = toScreen(item.endBp)
     emit(item, {
       centerPx: (px1 + px2) / 2,
       fontSize,
+      font: row.font,
       // The bare letter is drawn whether or not it strictly fits: at one glyph
       // it overhangs by a sliver at worst, and dropping it would leave the
       // codon rect with nothing in it.
-      text: residueNumbersFit(fontSize, codonPx)
-        ? residueLabel(item)
-        : item.aminoAcid,
+      text: row.numbered ? residueLabel(item) : item.aminoAcid,
     })
   }
 }
@@ -141,24 +158,39 @@ export function drawPeptides(
   data: FeatureDataResult,
   vr: BpRegionBounds,
 ) {
+  // The SVG export hands this the layer it has already drawn highlight boxes and
+  // floating labels into, so every field is both set and given back rather than
+  // inherited: `y` below places an ALPHABETIC baseline, and a 'middle' left
+  // behind by another painter slides each letter off the halo drawn under it.
+  ctx.save()
   ctx.textAlign = 'center'
+  ctx.textBaseline = 'alphabetic'
   ctx.strokeStyle = 'white'
   ctx.lineWidth = 1
-  // fontSize is min(heightPx, cap), so it's identical for every residue in a
-  // row — reassigning ctx.font per residue would re-parse the same string
-  // thousands of times in a dense CDS. Only touch it when the size changes.
-  let lastFontSize = -1
-  forEachRenderedPeptide(data, vr, (item, { centerPx, fontSize, text }) => {
-    const y = item.topPx + item.heightPx / 2 + fontSize / 3
-    if (fontSize !== lastFontSize) {
-      ctx.font = `${fontSize}px ${PEPTIDE_FONT_FAMILY}`
-      lastFontSize = fontSize
-    }
-    ctx.strokeText(text, centerPx, y)
-    ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'
-    ctx.fillText(text, centerPx, y)
-  })
-  ctx.textAlign = 'start'
+  // fontSize is min(heightPx, cap), so the font is identical for every residue
+  // in a row — reassigning ctx.font per residue would re-parse the same string
+  // thousands of times in a dense CDS. Only touch it when the row changes.
+  let lastFont = ''
+  let lastFill = ''
+  forEachRenderedPeptide(
+    data,
+    vr,
+    (item, { centerPx, fontSize, font, text }) => {
+      const y = item.topPx + item.heightPx / 2 + fontSize / 3
+      if (font !== lastFont) {
+        ctx.font = font
+        lastFont = font
+      }
+      ctx.strokeText(text, centerPx, y)
+      const fill = item.isStopOrNonTriplet ? 'red' : 'black'
+      if (fill !== lastFill) {
+        ctx.fillStyle = fill
+        lastFill = fill
+      }
+      ctx.fillText(text, centerPx, y)
+    },
+  )
+  ctx.restore()
 }
 
 // Paint every visible region's peptides through drawPeptides. The single entry

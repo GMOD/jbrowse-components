@@ -356,6 +356,41 @@ describe('drawPeptides never collides two labels', () => {
     }
   })
 
+  // The letters are painted into a context a previous painter has already used:
+  // the SVG export hands `drawPeptides` the layer it drew highlight boxes and
+  // floating labels into. Neither what it inherits nor what it leaves behind may
+  // matter — the `y` it computes places an ALPHABETIC baseline, so a 'middle'
+  // left over from another painter would slide every letter off the white halo
+  // drawn under it, and a `textAlign` left as 'center' would re-anchor whatever
+  // paints next.
+  test('paints the same letters whatever state it inherits, and hands it back', () => {
+    const region: BpRegionBounds = { ...FULL_REGION, start: 0, end: 125 }
+    const overlay = [makeItem({ startBp: 0, endBp: 3 })]
+
+    const clean = new SvgCanvas()
+    drawPeptides(clean, makeData(overlay), region)
+
+    const dirty = new SvgCanvas()
+    dirty.textBaseline = 'middle'
+    dirty.textAlign = 'right'
+    dirty.font = '30px serif'
+    dirty.fillStyle = 'magenta'
+    drawPeptides(dirty, makeData(overlay), region)
+
+    expect(dirty.getSerializedSvg()).toBe(clean.getSerializedSvg())
+    expect({
+      textBaseline: dirty.textBaseline,
+      textAlign: dirty.textAlign,
+      font: dirty.font,
+      fillStyle: dirty.fillStyle,
+    }).toEqual({
+      textBaseline: 'middle',
+      textAlign: 'right',
+      font: '30px serif',
+      fillStyle: 'magenta',
+    })
+  })
+
   // Uniformity, at the paint level: a row is all numbered or all bare, never a
   // mix, at every zoom.
   test('a row is never a mix of numbered and bare labels', () => {
