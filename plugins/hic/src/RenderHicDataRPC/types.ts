@@ -31,6 +31,12 @@ export interface HicAxisBlock {
 
 export interface RenderHicDataArgs {
   adapterConfig: Record<string, unknown>
+  /**
+   * The assembly's reference-sequence adapter config, added by
+   * `renameRegions` — `AlignmentsContactAdapter` passes it to a CRAM
+   * subadapter, which decodes reads against the reference.
+   */
+  sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   /** parallel to `regions`; see {@link HicAxisBlock} */
   axisBlocks: HicAxisBlock[]

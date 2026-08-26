@@ -57,6 +57,24 @@ export interface MultiRegionContacts {
   appliedNormalization: string
 }
 
+/**
+ * What `RenderHicData` needs of the adapter behind a `HicTrack`, which is one
+ * method. Structural rather than `HicAdapter` itself because a second adapter
+ * serves the same display from a different source — `AlignmentsContactAdapter`
+ * computes the matrix from a BAM/CRAM rather than reading a `.hic` file.
+ */
+export interface ContactAdapter {
+  getMultiRegionContactRecords: (
+    regions: Region[],
+    opts: HicContactOptions,
+  ) => Promise<MultiRegionContacts>
+  /**
+   * `BaseAdapter`'s, optional here because only an adapter reading alignments
+   * has anything to decode against a reference. The RPC primes it either way.
+   */
+  setSequenceAdapterConfig?: (config?: Record<string, unknown>) => void
+}
+
 interface HicMetadata {
   chromosomes: {
     name: string
@@ -71,7 +89,7 @@ interface Ref {
   end: number
 }
 
-interface HicContactOptions extends BaseOptions {
+export interface HicContactOptions extends BaseOptions {
   // Caller is responsible for picking a binsize from `metadata.resolutions`
   // (the model's `effectiveResolution` getter does this); the adapter trusts
   // that value rather than re-running its own auto-pick.
