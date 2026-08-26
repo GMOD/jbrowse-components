@@ -411,6 +411,11 @@ function renderedLabelWidths(
 // A feature can own several floatingLabelsData entries (its own plus its
 // subfeatures', via parentFeatureId); it must reserve enough for the widest of
 // each kind.
+//
+// Widest across every isoform, including the ones a trim then drops: this runs
+// in the preparation, which is one per pack, while the trim is per probed
+// count. So a trimmed gene holds room for a transcript name it no longer draws
+// — conservative, and identically so in the probe and the commit.
 function widerLabelWidths(a: LabelWidths, b: LabelWidths): LabelWidths {
   return {
     name: Math.max(a.name, b.name),
