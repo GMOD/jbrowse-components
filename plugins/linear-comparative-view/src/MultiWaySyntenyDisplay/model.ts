@@ -24,6 +24,7 @@ import {
   syntenyRegionMenuItems,
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
+import { axisSpan } from './anchorAxis.ts'
 import {
   alignRowFrames,
   groupFeatures,
@@ -372,11 +373,12 @@ export function stateModelFactory(
        * anchor's own direction — start end first, so a horizontally flipped
        * view hands the ribbons the crossed pair it is drawing.
        *
-       * The view's own `bpToPx`, which is the only honest answer: it is
-       * piecewise over the displayed regions and no `RowFrame` can stand in
-       * for it. Read both by the lane-alignment seed and by the anchor lane's
-       * own ribbons, so "the lanes line up against where the anchor actually
-       * draws" holds by construction rather than by two loops agreeing
+       * The view's own `bpToPx` through `axisSpan`, which is the only honest
+       * answer: it is piecewise over the displayed regions and no `RowFrame`
+       * can stand in for it. Read both by the lane-alignment seed and by the
+       * anchor lane's own ribbons, so "the lanes line up against where the
+       * anchor actually draws" holds by construction rather than by two loops
+       * agreeing
        */
       get anchorSpans(): Map<string, Span> {
         const view = self.lgv
@@ -386,14 +388,14 @@ export function stateModelFactory(
           return out
         }
         for (const group of self.visibleGroups) {
-          const refName = assembly.getCanonicalRefName2(group.anchor.refName)
-          const a = view.bpToPx({ refName, coord: group.anchor.start })
-          const b = view.bpToPx({ refName, coord: group.anchor.end })
-          if (a !== undefined && b !== undefined) {
-            out.set(group.key, [
-              a.offsetPx - view.offsetPx,
-              b.offsetPx - view.offsetPx,
-            ])
+          const span = axisSpan(
+            view,
+            assembly.getCanonicalRefName2(group.anchor.refName),
+            group.anchor.start,
+            group.anchor.end,
+          )
+          if (span) {
+            out.set(group.key, span)
           }
         }
         return out

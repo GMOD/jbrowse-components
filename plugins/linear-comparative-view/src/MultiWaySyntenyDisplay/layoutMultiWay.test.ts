@@ -11,6 +11,7 @@ import {
   geneGlyphShape,
   groupFeatures,
   groupSpansOnRow,
+  isAnnotated,
   laneGeneFeatures,
   laneGeometry,
   rowAssembliesOf,
@@ -1183,6 +1184,26 @@ test('lane genes arriving once per static block draw once', () => {
       type: 'gene',
     })
   expect(laneGeneFeatures([gene('g1'), gene('g1'), gene('g2')])).toHaveLength(2)
+})
+
+// The lane draws its annotation where it has one and the table's placement box
+// where it does not, and the choice is per GROUP. Made per lane — one drawn
+// gene anywhere suppressing every box — a table naming genes the lane's GFF3
+// does not left those groups' ribbons hanging off nothing.
+describe('a placement box beside the lane annotation', () => {
+  test('stands where no drawn gene reaches', () => {
+    expect(isAnnotated([[10, 40]], [100, 140])).toBe(false)
+    expect(isAnnotated([], [100, 140])).toBe(false)
+  })
+
+  test('gives way where one does, whichever way round either pair runs', () => {
+    expect(isAnnotated([[10, 40]], [30, 80])).toBe(true)
+    expect(isAnnotated([[40, 10]], [80, 30])).toBe(true)
+  })
+
+  test('is not suppressed by a gene that merely abuts it', () => {
+    expect(isAnnotated([[10, 40]], [40, 80])).toBe(false)
+  })
 })
 
 // A lane's own contig is whichever explains the most of the ANCHOR window, the

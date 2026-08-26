@@ -132,6 +132,10 @@ export function createDisplay() {
       rpcManager: { call: async () => [] },
       assemblyManager: {
         get: () => testAssembly(),
+        // the dependent lane fetches canonicalize their regions through this
+        // before the RPC; without it a test that commits features watches them
+        // fail on a TypeError a lane's own error handling then swallows
+        waitForAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: () => undefined,
       },
       getTrackById: (id: string) =>

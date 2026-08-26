@@ -1,15 +1,16 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { doesIntersect2, getBpDisplayStr, getSession } from '@jbrowse/core/util'
+import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { axisSpan } from '../anchorAxis.ts'
 import {
   frameSpan,
   frameTickXs,
   geneGlyphShape,
   groupSpansOnRow,
+  isAnnotated,
   laneGeometry,
-  rowFrameX,
 } from '../layoutMultiWay.ts'
 
 import type { RowFrame, Span } from '../layoutMultiWay.ts'
@@ -30,8 +31,10 @@ interface RibbonSpec {
 interface Lane {
   assemblyName: string
   assembly: Assembly | undefined
-  // undefined on the anchor lane, which draws on the view's own axis, and on a
-  // mate lane the visible groups place nothing on
+  // the top lane, drawn on the view's own axis rather than in a frame of its own
+  isAnchor: boolean
+  // undefined on the anchor lane, and on a mate lane the visible groups place
+  // nothing on
   frame: RowFrame | undefined
   genes: Feature[] | undefined
   // the visible groups' px spans on this lane, one entry per run of placements
@@ -67,6 +70,10 @@ function wideEnough(s1: Span, s2: Span) {
   )
 }
 
+function onCanvas(span: Span, width: number) {
+  return Math.max(span[0], span[1]) >= 0 && Math.min(span[0], span[1]) <= width
+}
+
 function fmt(n: number) {
   return Math.round(n).toLocaleString('en-US')
 }
@@ -84,32 +91,35 @@ function chevronAt(x: number, mid: number, size: number, dir: number) {
 }
 
 // One gene drawn as its merged CDS/UTR boxes on an intron midline, in whatever
-// px frame `xOf` maps this lane's coordinates through. Direction is resolved
-// in pixel space, so a gene on a flipped lane points the way it reads there.
+// px frame `spanOf` maps this lane's intervals through — the view's axis on the
+// anchor lane, the lane's own frame below it, both already clipped to what
+// their frame reaches. `span` is the whole gene through the same map. Direction
+// is resolved in pixel space, so a gene on a flipped lane points the way it
+// reads there.
 function GeneGlyph({
   feature,
-  xOf,
+  span,
+  spanOf,
   y,
   glyphHeight,
+  canvasWidth,
   color,
   utrColor,
   strokeColor,
   onClick,
 }: {
   feature: Feature
-  xOf: (bp: number) => number | undefined
+  span: Span
+  spanOf: (start: number, end: number) => Span | undefined
   y: number
   glyphHeight: number
+  canvasWidth: number
   color: string
   utrColor: string
   strokeColor: string
   onClick: () => void
 }) {
-  const l = xOf(feature.get('start'))
-  const r = xOf(feature.get('end'))
-  if (l === undefined || r === undefined) {
-    return null
-  }
+  const [l, r] = span
   const strand = feature.get('strand') ?? 0
   const pxDir = strand === 0 ? 0 : l <= r ? strand : -strand
   const [left, right] = l < r ? [l, r] : [r, l]
@@ -117,13 +127,8 @@ function GeneGlyph({
   const { full, thin } = geneGlyphShape(feature)
 
   const toPx = (start: number, end: number): Span | undefined => {
-    const a = xOf(start)
-    const b = xOf(end)
-    return a === undefined || b === undefined
-      ? undefined
-      : a < b
-        ? [a, b]
-        : [b, a]
+    const px = spanOf(start, end)
+    return px === undefined ? undefined : px[0] < px[1] ? px : [px[1], px[0]]
   }
   const fullPx = full.flatMap(([s, e]) => {
     const px = toPx(s, e)
@@ -141,9 +146,19 @@ function GeneGlyph({
     let prevEnd = left
     for (const [blockStart, blockEnd] of blocks) {
       if (blockStart - prevEnd >= MIN_CHEVRON_GAP_PX) {
+        // walked over the CANVAS, not over the intron: a lane's frame reaches
+        // only the canvas but the view's axis runs the whole displayed region,
+        // so an intron on the anchor lane is as wide in px as the zoom makes it
+        // — a 50kb intron at 1bp/px is fifty thousand pixels of off-screen
+        // chevrons in one path string, rebuilt on every pan
+        const to = Math.min(blockStart, canvasWidth + CHEVRON_SPACING_PX)
+        const skipped = Math.max(
+          0,
+          Math.floor((-CHEVRON_SPACING_PX - prevEnd) / CHEVRON_SPACING_PX),
+        )
         for (
-          let x = prevEnd + CHEVRON_SPACING_PX / 2;
-          x <= blockStart - CHEVRON_SPACING_PX / 2;
+          let x = prevEnd + CHEVRON_SPACING_PX * (skipped + 0.5);
+          x <= to - CHEVRON_SPACING_PX / 2;
           x += CHEVRON_SPACING_PX
         ) {
           chevrons += chevronAt(x, mid, chevronSize, pxDir)
@@ -279,12 +294,22 @@ const MultiWayRows = observer(function MultiWayRows({
   const canon = (lane: Lane, refName: string) =>
     lane.assembly?.getCanonicalRefName2(refName) ?? refName
 
-  const anchorX = (refName: string, bp: number) => {
-    const px = view.bpToPx({
-      refName: anchorAssembly.getCanonicalRefName2(refName),
-      coord: bp,
-    })?.offsetPx
-    return px === undefined ? undefined : px - view.offsetPx
+  // How a lane maps one of its own bp intervals to px, or `undefined` for an
+  // interval the lane does not reach: the anchor lane through the view's own
+  // axis, every other lane through its own frame. Both clip rather than test —
+  // see `axisSpan` and `frameSpan` — so a feature straddling the edge draws the
+  // half the lane can place.
+  const laneSpanOf = (lane: Lane) => {
+    const { frame } = lane
+    if (lane.isAnchor) {
+      return (refName: string, start: number, end: number) =>
+        axisSpan(view, canon(lane, refName), start, end)
+    }
+    const frameRefName = frame && canon(lane, frame.refName)
+    return (refName: string, start: number, end: number) =>
+      frame && canon(lane, refName) === frameRefName
+        ? frameSpan(frame, start, end, width)
+        : undefined
   }
 
   const names = [anchorAssemblyName, ...rowAssemblies]
@@ -309,6 +334,7 @@ const MultiWayRows = observer(function MultiWayRows({
     return {
       assemblyName,
       assembly: assemblyManager.get(assemblyName),
+      isAnchor: row === 0,
       frame,
       genes: laneGenes?.get(assemblyName),
       spans,
@@ -409,30 +435,25 @@ const MultiWayRows = observer(function MultiWayRows({
       const lower = lanes[row + 1]!
       const links = laneLinks.get(`${upper.assemblyName}|${lower.assemblyName}`)
       if (upper.frame && lower.frame && links) {
-        const upperRefName = canon(upper, upper.frame.refName)
-        const lowerRefName = canon(lower, lower.frame.refName)
+        const upperX = laneSpanOf(upper)
+        const lowerX = laneSpanOf(lower)
         for (const link of links) {
           const mate = link.get('mate') as {
             refName: string
             start: number
             end: number
           }
-          if (
-            canon(upper, link.get('refName')) !== upperRefName ||
-            canon(lower, mate.refName) !== lowerRefName
-          ) {
-            continue
-          }
-          // clipped to both frames, or the endpoint the frame does not reach
-          // extrapolates to tens of thousands of px and the ribbon sweeps the
-          // page — the fetch window is wider than the frame by construction
-          const s1 = frameSpan(
-            upper.frame,
+          // clipped to both frames — and the refName check is the same call,
+          // since a lane maps nothing off the contig its frame sits on. An
+          // endpoint the frame does not reach would extrapolate to tens of
+          // thousands of px and sweep the ribbon across the page, and the fetch
+          // window is wider than the frame by construction
+          const s1 = upperX(
+            link.get('refName'),
             link.get('start'),
             link.get('end'),
-            width,
           )
-          const s2 = frameSpan(lower.frame, mate.start, mate.end, width)
+          const s2 = lowerX(mate.refName, mate.start, mate.end)
           if (s1 && s2 && wideEnough(s1, s2)) {
             // the alignment record's own strand, which the pairwise renderer
             // reads for the same reason: -1 means the record's two ends
@@ -450,7 +471,11 @@ const MultiWayRows = observer(function MultiWayRows({
                   drawCurves,
                 )}
                 fill={ribbonColor}
-              />,
+              >
+                <title>
+                  {`${upper.assemblyName} ${link.get('refName')}:${fmt(link.get('start'))}-${fmt(link.get('end'))}\n${lower.assemblyName} ${mate.refName}:${fmt(mate.start)}-${fmt(mate.end)}`}
+                </title>
+              </path>,
             )
           }
         }
@@ -482,31 +507,7 @@ const MultiWayRows = observer(function MultiWayRows({
   for (const [row, lane] of lanes.entries()) {
     const { assemblyName, frame, genes } = lane
     const y = lane.glyphTop
-    const frameRefName = frame && canon(lane, frame.refName)
-    // How this lane draws a gene, or `undefined` for a lane that cannot: the
-    // anchor lane maps bp through the view and shows everything the view
-    // fetched, every other lane maps through its own frame and shows what that
-    // frame reaches
-    const geneDrawing =
-      row === 0
-        ? {
-            shows: () => true,
-            xOf: (gene: Feature) => (bp: number) =>
-              anchorX(gene.get('refName'), bp),
-          }
-        : frame === undefined
-          ? undefined
-          : {
-              shows: (gene: Feature) =>
-                canon(lane, gene.get('refName')) === frameRefName &&
-                doesIntersect2(
-                  frame.min,
-                  frame.max,
-                  gene.get('start'),
-                  gene.get('end'),
-                ),
-              xOf: () => (bp: number) => rowFrameX(frame, bp, width),
-            }
+    const spanOf = laneSpanOf(lane)
     glyphs.push(
       <line
         key={`baseline-${assemblyName}`}
@@ -520,80 +521,95 @@ const MultiWayRows = observer(function MultiWayRows({
 
     // the genes this lane can actually draw, not the ones it fetched: the fetch
     // covers the whole window the frame slides in, so a frame over a gene
-    // desert can hold a non-empty list and show none of it — and the lane then
-    // drew neither genes nor the placement boxes below
-    const drawn = geneDrawing
-      ? (genes?.filter(geneDrawing.shows) ?? []).map(gene => ({
-          gene,
-          xOf: geneDrawing.xOf(gene),
-        }))
-      : []
-    if (drawn.length) {
-      for (const { gene, xOf } of drawn) {
-        const selected = selectedFeatureId === gene.id()
-        glyphs.push(
-          <GeneGlyph
-            key={`gene-${assemblyName}-${gene.id()}`}
-            feature={gene}
-            xOf={xOf}
-            y={y}
-            glyphHeight={glyphHeight}
-            strokeColor={palette.text.primary}
-            color={
-              selected
-                ? palette.highlight.main
-                : readConfObject(model.configuration, 'color', {
-                    feature: gene,
-                  })
-            }
-            utrColor={
-              selected
-                ? palette.highlight.main
-                : readConfObject(model.configuration, 'utrColor', {
-                    feature: gene,
-                  })
-            }
-            onClick={() => {
-              model.selectFeature(gene)
-            }}
-          />,
-        )
-      }
-    } else {
-      // A lane with no annotation draws the table's own gene spans, outlined
-      // rather than filled: without that the stack states a placement box and
-      // a real gene model in the same ink, and one flat box across a lane
-      // reads as a single enormous gene.
-      for (const group of visibleGroups) {
-        for (const [i, span] of (lane.spans.get(group.key) ?? []).entries()) {
-          // a box, unlike a ribbon, wants the ends the low-to-high way round
-          const [boxLeft, boxRight] =
-            span[0] <= span[1] ? span : [span[1], span[0]]
-          const selected = selectedFeatureId === group.feature.id()
-          const color = selected
-            ? palette.highlight.main
-            : readConfObject(model.configuration, 'color', {
-                feature: group.feature,
-              })
-          glyphs.push(
-            <rect
-              key={`glyph-${row}-${group.key}-${i}`}
-              x={boxLeft}
-              y={y + 1}
-              width={Math.max(1, boxRight - boxLeft)}
-              height={Math.max(1, glyphHeight - 2)}
-              fill={color}
-              fillOpacity={0.25}
-              stroke={color}
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                model.selectFeature(group.feature)
-              }}
-            >
-              <title>{group.key}</title>
-            </rect>,
-          )
+    // desert can hold a non-empty list and show none of it. Culled to the
+    // canvas on screen, the way the arc display culls, and kept whole on the
+    // export path, which captures the region rather than the viewport: the
+    // anchor lane's fetch spans the static blocks, so a third of what it holds
+    // is off either edge
+    const drawn = (genes ?? []).flatMap(gene => {
+      const span = spanOf(
+        gene.get('refName'),
+        gene.get('start'),
+        gene.get('end'),
+      )
+      return span === undefined || (!exportSVG && !onCanvas(span, width))
+        ? []
+        : [{ gene, span }]
+    })
+    for (const { gene, span } of drawn) {
+      const selected = selectedFeatureId === gene.id()
+      glyphs.push(
+        <GeneGlyph
+          key={`gene-${assemblyName}-${gene.id()}`}
+          feature={gene}
+          span={span}
+          spanOf={(start, end) => spanOf(gene.get('refName'), start, end)}
+          y={y}
+          glyphHeight={glyphHeight}
+          canvasWidth={width}
+          strokeColor={palette.text.primary}
+          color={
+            selected
+              ? palette.highlight.main
+              : readConfObject(model.configuration, 'color', {
+                  feature: gene,
+                })
+          }
+          utrColor={
+            selected
+              ? palette.highlight.main
+              : readConfObject(model.configuration, 'utrColor', {
+                  feature: gene,
+                })
+          }
+          onClick={() => {
+            model.selectFeature(gene)
+          }}
+        />,
+      )
+    }
+
+    // Where the lane has no annotation over a group it places, the table's own
+    // gene span, outlined rather than filled: without that the stack states a
+    // placement box and a real gene model in the same ink, and one flat box
+    // across a lane reads as a single enormous gene.
+    //
+    // Per GROUP rather than per lane. Per lane, one drawn gene anywhere
+    // suppressed every box, so a table pairing genes the lane's GFF3 does not
+    // name left the ribbons for those hanging off nothing at all.
+    const annotated = drawn.map(d => d.span)
+    for (const group of visibleGroups) {
+      for (const [i, span] of (lane.spans.get(group.key) ?? []).entries()) {
+        if (isAnnotated(annotated, span)) {
+          continue
         }
+        // a box, unlike a ribbon, wants the ends the low-to-high way round
+        const [boxLeft, boxRight] =
+          span[0] <= span[1] ? span : [span[1], span[0]]
+        const selected = selectedFeatureId === group.feature.id()
+        const color = selected
+          ? palette.highlight.main
+          : readConfObject(model.configuration, 'color', {
+              feature: group.feature,
+            })
+        glyphs.push(
+          <rect
+            key={`glyph-${row}-${group.key}-${i}`}
+            x={boxLeft}
+            y={y + 1}
+            width={Math.max(1, boxRight - boxLeft)}
+            height={Math.max(1, glyphHeight - 2)}
+            fill={color}
+            fillOpacity={0.25}
+            stroke={color}
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              model.selectFeature(group.feature)
+            }}
+          >
+            <title>{group.key}</title>
+          </rect>,
+        )
       }
     }
 
@@ -601,7 +617,7 @@ const MultiWayRows = observer(function MultiWayRows({
       row === 0
         ? view.coarseVisibleLocStrings || view.visibleLocStrings
         : frame &&
-          `${frameRefName}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
+          `${canon(lane, frame.refName)}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
     // `no annotation` is a claim about the SESSION, so it asks whether a track
     // exists rather than whether this window drew any genes
     headers.push(

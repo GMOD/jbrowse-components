@@ -390,7 +390,11 @@ export function layoutBpToPx(
 // where they are, so a highlight spanning two same-refName regions still bands
 // across both rather than being clipped to the first. Only when one is
 // homeless does the first overlapping region get to clamp it.
-function clipToDisplayedRegions(
+//
+// Exported for a caller that needs the two ends in the interval's OWN order —
+// `getLayoutHighlightCoords` below returns min/width, which a ribbon endpoint
+// cannot use.
+export function clipToDisplayedRegions(
   layout: ViewLayout,
   region: { refName: string; start: number; end: number },
 ) {
