@@ -77,7 +77,7 @@ export async function executeMafSummaryData({
   // expensive one's cost. It is the same file `byteGateAdapterPath` names while
   // `showSummary` holds, so the banner and the worker agree by construction.
   const summaryAdapter =
-    byteLimit === undefined ? undefined : await adapter.summaryAdapter?.()
+    byteLimit === undefined ? undefined : await adapter.summaryAdapter()
   const { bytes, tooLarge } = summaryAdapter
     ? await measureRegionBytes({
         dataAdapter: summaryAdapter,

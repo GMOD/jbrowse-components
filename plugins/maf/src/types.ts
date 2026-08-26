@@ -61,9 +61,18 @@ export type MafSamplesAdapter = BaseFeatureDataAdapter & {
     region: Region,
     opts?: BaseOptions,
   ) => Observable<MafSummaryRecord>
-  /** the `summaryAdapter` slot resolved, for the gate to measure the file the
-   *  summary tier is about to read */
-  summaryAdapter?: () => Promise<BaseFeatureDataAdapter | undefined>
+  /**
+   * The `summaryAdapter` slot resolved, so the gate can measure the file the
+   * summary tier is about to read.
+   *
+   * Required where `getSummaryFeatures` is optional, because it answers a
+   * different question: not "does this track have a summary tier" — an
+   * unconfigured slot resolves `undefined` — but "resolve the slot", which every
+   * adapter can do. Optional, it would let an implementor of this contract drop
+   * the byte gate rather than fail to compile, and a summary read at
+   * whole-genome scale would then proceed unmeasured and silently.
+   */
+  summaryAdapter: () => Promise<BaseFeatureDataAdapter | undefined>
 }
 
 /**

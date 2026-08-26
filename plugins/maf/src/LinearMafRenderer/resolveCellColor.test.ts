@@ -31,20 +31,24 @@ const byte = (c: string) => c.charCodeAt(0)
 // same color — a divergence would show as GPU-vs-Canvas2D pixel mismatches. The
 // shared `classifyCell` cascade is what guarantees this; this test pins it.
 //
-// Swept over the whole 7-bit domain rather than a handful of representative
+// Swept over the whole 8-bit domain rather than a handful of representative
 // bases, because the packed side no longer walks the cascade per cell: it reads
 // a table keyed on `(alnByte, isMatch)` only, and the claim that the reference
 // byte is otherwise irrelevant is exactly what an exhaustive sweep checks.
-// (7-bit, not 8: alignment bytes are always ASCII, and above 127 the packed
-// side's `& 0x7f` folds high bytes onto letters the CSS side calls unknown.)
-test('resolveCellColor and resolveCellPacked agree over every ASCII pair', () => {
+//
+// 8-bit and not 7, even though alignment bytes are always ASCII: the packed
+// side's base lookup masks `& 0x7f` because its table is 128 entries, so a high
+// byte folds onto a letter. The CSS side now masks the same way, and the range
+// where that is the *only* thing keeping them together is the range a 7-bit
+// sweep excludes.
+test('resolveCellColor and resolveCellPacked agree over every byte pair', () => {
   const disagreements: string[] = []
   for (const showAllLetters of [false, true]) {
     for (const mismatchRendering of [false, true]) {
       const c = { ...cfg, showAllLetters, mismatchRendering }
       const packed = packMafCellColorConfig(c)
-      for (let refByte = 0; refByte < 128; refByte++) {
-        for (let alnByte = 0; alnByte < 128; alnByte++) {
+      for (let refByte = 0; refByte < 256; refByte++) {
+        for (let alnByte = 0; alnByte < 256; alnByte++) {
           const css = resolveCellColor(refByte, alnByte, c)
           const int = resolveCellPacked(refByte, alnByte, packed)
           const want =
