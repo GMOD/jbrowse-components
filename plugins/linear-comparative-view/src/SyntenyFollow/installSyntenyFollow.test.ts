@@ -5,11 +5,16 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { followAnchorWindows } from './followAnchorWindow.ts'
 import { installSyntenyFollow } from './installSyntenyFollow.ts'
+import { requestCigarMap } from './requestCigarMap.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
 import type { FollowPair } from './installSyntenyFollow.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+jest.mock('./requestCigarMap.ts', () => ({
+  requestCigarMap: jest.fn(() => new Promise(() => {})),
+}))
 
 // A UNIT HARNESS, where every other follow test that drives both passes is in
 // jbrowse-web. The case needs an assembly with a contig BETWEEN two that map,
@@ -68,9 +73,9 @@ function row(assemblyName: string) {
   return view
 }
 
-function display(blocks: FeatureBlock[]) {
+function display(blocks: FeatureBlock[], hasCigar = false) {
   return {
-    featureData: packSyntenyFeatureData(blocks, { hasCigar: false }),
+    featureData: packSyntenyFeatureData(blocks, { hasCigar }),
   } as LinearSyntenyDisplayModel
 }
 
@@ -237,5 +242,70 @@ describe('a straddle whose answers are far apart', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1', 'chr2'])
     expect(host.followPartial).toBeUndefined()
+  })
+})
+
+function twoRows(displays: LinearSyntenyDisplayModel[]) {
+  const rows = [row('a'), row('b')]
+  const host = Host.create()
+  host.setFollowPairs([
+    {
+      level: { linearSyntenyDisplays: displays },
+      stayingView: rows[0] as unknown as LinearGenomeViewModel,
+      movingView: rows[1] as unknown as LinearGenomeViewModel,
+      toMate: true,
+    },
+  ])
+  return { rows, host }
+}
+
+describe('a window wider than the block it is placed by', () => {
+  test("asks for that block's CIGAR map, so a zoom into it has one", async () => {
+    jest.mocked(requestCigarMap).mockClear()
+    const { rows, host } = twoRows([
+      display(
+        [
+          {
+            refName: 'chr1',
+            start: 300_000,
+            end: 700_000,
+            mateRefName: 'chr1',
+            mateStart: 300_000,
+            mateEnd: 700_000,
+          },
+        ],
+        true,
+      ),
+    ])
+    place(rows[0]!, 0, CONTIG)
+    installSyntenyFollow(host)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(host.followApproximate).toBe(true)
+    expect(requestCigarMap).toHaveBeenCalledTimes(1)
+    expect(jest.mocked(requestCigarMap).mock.calls[0]![0].feat).toMatchObject({
+      refName: 'chr1',
+      start: 300_000,
+      end: 700_000,
+    })
+  })
+})
+
+describe('a whole-genome row zoomed by hand', () => {
+  test('is put back on the next pass rather than on the next fetch', async () => {
+    const { rows, host } = twoRows([
+      display(
+        Array.from({ length: CONTIGS }, (_, i) =>
+          pairing(`chr${i + 1}`, `chr${i + 1}`),
+        ),
+      ),
+    ])
+    place(rows[0]!, 0, CONTIG * CONTIGS)
+    installSyntenyFollow(host)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(shown(rows[1]!)).toHaveLength(CONTIGS)
+    place(rows[1]!, 0, CONTIG)
+    // no fetch key in this harness: only a tracked read of the moving row's
+    // blocks can wake the pass
+    expect(shown(rows[1]!)).toHaveLength(CONTIGS)
   })
 })

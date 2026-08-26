@@ -41,6 +41,10 @@ the mode was built for, a human pair where one block runs for tens of Mb and
 navigating means navigating inside its CIGAR. With the map the settle finds the
 row already there, `alreadyShowing` says yes, and nothing navigates.
 
+**Asked for on an envelope settle too.** The envelope reads no map, but the pick
+is the widest block under the window and a zoom into it mid-drag is placed by
+the affine fit until the next settle unless the map is already in hand.
+
 **Once per BLOCK, where the resolve is once per window.** That is the whole
 difference between the two RPCs and why both exist: the resolve answers _this_
 window and says nothing about the next, the map answers every window inside the
@@ -197,14 +201,13 @@ an alignment this rung has decided does not describe the window. The frame pass
 recomputes rung 3 itself rather than steering by anything cached, which it can
 because the rung chooses no block, holds no strand and needs no transform.
 
-**Rung 3 does not read the moving row**, where the rung below reads it on
-purpose. It still re-asserts over a row zoomed by hand, because the level's
-fetch is keyed on BOTH rows' windows: the hand zoom refetches, the new
-`featureData` wakes this pass, and it places the row back. Measured on
-`volvox_contig_swap` at ~1s, the same order as the debounce the rung below waits
-on. Adding the read would make that immediate at the cost of a re-entry per
-placement — cheap here, since re-placing writes the same numbers and no RPC is
-involved, so it is the fix if this ever reads as slow.
+**Rung 3 reads the moving row like the rung below does**, so a hand zoom
+re-asserts on the next coarse-block debounce. It used not to, and relied on the
+level's fetch being keyed on both rows' windows — the hand zoom refetched, the
+new `featureData` woke the pass — measured at ~1s on `volvox_contig_swap`. The
+read costs one re-entry per placement, which converges: re-placing writes the
+same numbers, `setCoarseDynamicBlocks` compares block keys and does not assign
+an equivalent array, and no RPC is involved.
 
 The overview is a fixed point only **up to the unaligned flanks**: the union
 starts at the first block's mate edge, so a row with unaligned ends settles a

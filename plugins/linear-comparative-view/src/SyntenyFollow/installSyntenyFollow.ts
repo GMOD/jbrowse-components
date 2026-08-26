@@ -289,14 +289,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * `mapPending` rather than a promise, since the only question a second settle
    * inside the same block asks is whether to ask again.
    *
-   * Only where the frame pass would read it: a window wider than the block is
-   * placed by the envelope, which several blocks contribute to and no one map
-   * describes.
+   * ON AN ENVELOPE SETTLE TOO. The envelope itself reads no map, but the pick
+   * is the widest block under the window, and a zoom into it mid-drag is placed
+   * by the affine transform until the next settle unless the map is already
+   * here — the frame pass reads `mapFor(pick.feat.id)` the moment the window is
+   * inside the block, and the map is a property of the block, not the window.
    */
   function ensureCigarMap(state: FollowLevelState, step: FollowStep) {
     const featureId = step.feat.id
     if (
-      !step.windowInsideFeat ||
       !step.hasCigar ||
       state.map?.featureId === featureId ||
       state.mapPending === featureId
@@ -381,9 +382,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         : decideSpread({
             blocks: stayingView.coarseDynamicBlocks,
             stayingRegions: stayingView.displayedRegions,
-            // UNTRACKED, the one read this rung makes of its moving row: the
-            // rung does not otherwise depend on it, and a dependency registered
-            // here would wake the pass on the placement it is about to make
+            // untracked: the tracked read of this row is its blocks, above,
+            // and its region set changes only by a navigation the follow
+            // may not make here
             // eslint-disable-next-line no-restricted-syntax -- self-write: the placement this pass is about to make
             movingRegions: untracked(() => movingView.displayedRegions),
             windows,
@@ -446,6 +447,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       return { unaligned: false, approximate: false }
     }
 
+    // READ BEFORE ANY RUNG, which makes the moving row a dependency of every
+    // one of them: that is what re-asserts the follow over a row nudged by
+    // hand. The multi-contig rung used to skip it and waited on the level's
+    // refetch instead, ~1s on `volvox_contig_swap`; a placement that writes the
+    // same numbers settles the same block keys, so the re-entry converges.
+    const movingWindow = followAnchorWindow(movingView.coarseDynamicBlocks)
+
     // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
     // than one it is the envelope of what lies under the window — and wider
     // than one CONTIG there is no single matching region at all, so the answer
@@ -466,9 +474,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // demoting rather than trimming the union: the block pick, the CIGAR map,
     // the settled resolve and `alreadyShowing` all already work.
     const window = spread?.window ?? widest
-    // reading the moving row makes it a dependency, which is what re-asserts
-    // the follow over a row nudged by hand
-    const movingWindow = followAnchorWindow(movingView.coarseDynamicBlocks)
     const step = planFollowStep({
       displays: level.linearSyntenyDisplays,
       window,
