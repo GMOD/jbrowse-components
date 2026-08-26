@@ -124,9 +124,23 @@ about the alternative. A real limitation stays, as does an outage we hit.
 
 ## Definition of done
 
-Typecheck the touched packages, `pnpm test <path>`, a browser test if UI
+Typecheck the touched packages, **`pnpm test-related`**, a browser test if UI
 behavior changed, `pnpm lint --fix`. Snapshots only after a visually verified
 change. **Then commit.** Don't push or open a PR unless asked.
+
+**`pnpm test <path>` is the wrong scope, and it is the one that keeps failing.**
+It selects by PATH, so it runs the suites that live beside a change and none of
+the ones that exercise it from outside — and the suites that exercise a plugin
+from outside are nearly all in `products/jbrowse-web`. Three of them went red on
+main in one week that way, each broken by a change whose own tests moved with
+it: a config-slot removal staled `ConfigSlotDefaults`, a menu group becoming a
+submenu broke `AlignmentsFilters`, and a new scalebar caption staled
+`ReversedRegionLabels`. `pnpm test plugins/alignments` is green across all three.
+
+`test-related` walks the module GRAPH (`jest --findRelatedTests`) over the files
+this branch changed, so an integration suite that imports the app — and so,
+transitively, the changed file — is included. It names all three above. On this
+plugin it is ~320 suites and about seven minutes, against a full run's ~50.
 
 **Five CI jobs are gated by none of that**: `pnpm check-format`, `pnpm
 check-docs`, `typos`, `pnpm build:esm` and `pnpm lint:eslint`. A validator that

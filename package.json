@@ -44,6 +44,7 @@
     "test-ci-no-react-compiler": "NO_RC=1 NODE_OPTIONS='--max-old-space-size=7000' jest --ci --cacheDirectory node_modules/.cache/jest-no-rc plugins packages",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
+    "test-related": "node --experimental-strip-types scripts/test-related.ts",
     "gendocs": "node website/scripts/api-docs/generate.ts",
     "autogen": "node --experimental-strip-types scripts/autogen.ts",
     "gen:shaders": "node packages/shader-tools/src/build-shaders.ts",

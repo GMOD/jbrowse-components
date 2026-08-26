@@ -77,7 +77,10 @@ survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
 
 ## Tooling
 
-- `pnpm test <directory>`, in your own worktree. Lint `--fix`.
+- **`pnpm test-related`**, in your own worktree. Lint `--fix`.
+  `pnpm test <directory>` scopes by path and so misses the jbrowse-web suites
+  that exercise a plugin from outside — `agent-docs/CLAUDE.md` §"Definition of
+  done" has the three that went red on main that way in one week.
 - **A memoization sabotage that stays green under `pnpm test` proves nothing** —
   React Compiler stands in for the `memo` you deleted.
   `pnpm test-ci-no-react-compiler` is the run that sees it, and the only one
