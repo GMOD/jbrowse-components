@@ -115,9 +115,9 @@ const suite: TestSuite = {
         await delay(500)
 
         // pushLaunchViewMenuItem nests view-launching entries under a
-        // "Launch view" submenu, so open that before looking for the item
-        await assertContextMenuContains(page, 'Launch view')
-        await (await findByText(page, 'Launch view')).hover()
+        // "Launch" submenu, so open that before looking for the item
+        await assertContextMenuContains(page, 'Launch')
+        await (await findByText(page, 'Launch')).hover()
         await delay(500)
         await findByText(page, 'Linear read vs ref')
       },

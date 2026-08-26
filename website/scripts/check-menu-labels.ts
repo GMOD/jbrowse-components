@@ -94,7 +94,6 @@ const STRUCTURAL_MENU_NAMES = new Set([
   'tools',
   'add',
   'launch',
-  'launch view',
   'help',
   // The graph view answers a right-click on a node rather than a menu button,
   // so the docs name the gesture where other pages name a menu.

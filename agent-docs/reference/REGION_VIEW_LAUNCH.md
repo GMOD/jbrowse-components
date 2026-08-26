@@ -73,7 +73,7 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
    `subgraphMenuItems.ts`.
 5. **Never push a launch entry into a menu top level.** In the view and track
    menus, group with `pushLaunchViewMenuItem` (`@jbrowse/core/ui`) so offers
-   collect under one "Launch view" submenu. In the linear view's rubberband
+   collect under one "Launch" submenu. In the linear view's rubberband
    menu, extend **`rubberBandLaunchMenuItems()`** on the model rather than
    `rubberBandMenuItems()`: the view wraps whatever that returns in a "Launch"
    submenu (and omits the group entirely when it comes back empty), so the

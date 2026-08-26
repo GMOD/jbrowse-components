@@ -111,7 +111,7 @@ is left on the button.
 
 **3. `sv/derivative_allele_route` — two pages at once**
 
-`Track menu → Launch view → Reconstruct derivative allele...` → pick a route →
+`Track menu → Launch → Reconstruct derivative allele...` → pick a route →
 `Draw as → Breakpoint split view` → `Replace current view`, ending on one panel
 per segment.
 

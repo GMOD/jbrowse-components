@@ -560,7 +560,7 @@
           "showLabels": false
         }
       ],
-      "description": "The same graph as the segments track with one node per bubble instead of one per GFA segment, so a window far too wide for the fine index is still drawable: the whole 4.64 Mb pangenome is 1,088 nodes. Built from the graph's own vg deconstruct snarl VCF by scripts/snarls_to_bubble_bed.py plus scripts/build_bubble_tier.sh, keeping every bubble whose content is at least 50 bp so single-base alternatives fall into the backbone. Each node states what it collapsed: segments, traversals, and shortest and longest allele. Launch view -> Graph genome view (this region) opens it as a graph."
+      "description": "The same graph as the segments track with one node per bubble instead of one per GFA segment, so a window far too wide for the fine index is still drawable: the whole 4.64 Mb pangenome is 1,088 nodes. Built from the graph's own vg deconstruct snarl VCF by scripts/snarls_to_bubble_bed.py plus scripts/build_bubble_tier.sh, keeping every bubble whose content is at least 50 bp so single-base alternatives fall into the backbone. Each node states what it collapsed: segments, traversals, and shortest and longest allele. Launch -> Graph genome view (this region) opens it as a graph."
     },
     {
       "type": "FeatureTrack",
@@ -707,7 +707,7 @@
           "showLabels": false
         }
       ],
-      "description": "The Minigraph-Cactus graph itself, indexed by locus the same way the pggb segments track is: build_pggb_tabix.sh walks the graph's P and W lines offline and writes the two tabix BEDs RgfaTabixAdapter reads. Launch view -> Graph genome view (this region) cuts the subgraph for whatever window is on screen, so the two builders' graphs can be opened over the same locus."
+      "description": "The Minigraph-Cactus graph itself, indexed by locus the same way the pggb segments track is: build_pggb_tabix.sh walks the graph's P and W lines offline and writes the two tabix BEDs RgfaTabixAdapter reads. Launch -> Graph genome view (this region) cuts the subgraph for whatever window is on screen, so the two builders' graphs can be opened over the same locus."
     },
     {
       "type": "AlignmentsTrack",

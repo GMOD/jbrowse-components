@@ -52,8 +52,8 @@ loads from any config (see [configuring plugins](/docs/config_guides/plugins)):
 Indexing a graph means converting it once into two tabix-indexed BED files,
 `.segs.bed.gz` for the segments and `.links.bed.gz` for the links between them,
 which JBrowse can then query by locus. With that pair in hand: **Add track**
-with `RgfaTabixAdapter` pointing at the shared prefix → **Track menu → Launch
-view → Graph genome view (this region)**.
+with `RgfaTabixAdapter` pointing at the shared prefix → **Track menu → Launch →
+Graph genome view (this region)**.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the pair; skip to
 [Three layouts](#three-layouts) if you just need to know what the buttons do.
 

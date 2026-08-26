@@ -1765,12 +1765,12 @@ export const viewFields: Record<string, FieldRecipe> = {
   // How the view got there at all, which is the step a reader with only the
   // figure is missing: a graph view is launched from a segments track rather
   // than added empty. The item is the plugin's own
-  // 'Graph genome view (this region)' inside core's 'Launch view' submenu
+  // 'Graph genome view (this region)' inside core's 'Launch' submenu
   // (pushLaunchViewMenuItem).
   loadedTrackId: value =>
     typeof value === 'string'
       ? {
-          path: `${TRACK_MENU} (on the graph segments track) → Launch view → Graph genome view (this region)`,
+          path: `${TRACK_MENU} (on the graph segments track) → Launch → Graph genome view (this region)`,
           note: 'Launching from the track is what ties the two panels together: the graph is cut from the same file the lane above it draws.',
           opensView: true,
         }

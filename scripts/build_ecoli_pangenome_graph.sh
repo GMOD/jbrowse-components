@@ -693,7 +693,7 @@ jb add-track-json pav_track.json --update --out "$APP"
 # prefix, and it resolves `.segs.bed.gz`/`.links.bed.gz` and their `.tbi`. The
 # graph's stable names are PanSN (`K12#1#chr`), and the sample prefix already
 # equals the assembly name, so no assemblyNameToPanSN mapping is needed. With
-# the graph genome view plugin installed, the track menu's Launch view opens the
+# the graph genome view plugin installed, the track menu's Launch opens the
 # subgraph for whatever window is on screen. Needs the four files beside
 # config.json, since add-track-json copies nothing.
 cp ecoli_minigraph.segs.bed.gz ecoli_minigraph.segs.bed.gz.tbi \

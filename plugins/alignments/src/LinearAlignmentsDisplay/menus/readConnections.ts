@@ -118,7 +118,7 @@ export function getReadConnectionsMenuItem(
           model.setDrawProperPairArcs,
           {
             helpText:
-              'Uncheck to draw only the arcs that carry a category — abnormal insert size or orientation, and split junctions — leaving out the ordinary pairs. "Concordant" means exactly what it means for "Show proper pairs" under Show...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That setting hides the reads; this one hides their arcs, so you can keep the pileup whole and still read the band. On deep coverage it is the difference between a readable band and a solid mass — at 300x roughly 99 arcs in 100 are the ordinary case.',
+              'Uncheck to draw only the arcs that carry a category — abnormal insert size or orientation, and split junctions — leaving out the ordinary pairs. "Concordant" means exactly what it means for the Proper pairs filter under Filter by...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That setting hides the reads; this one hides their arcs, so you can keep the pileup whole and still read the band. On deep coverage it is the difference between a readable band and a solid mass — at 300x roughly 99 arcs in 100 are the ordinary case.',
           },
         ),
         toggleItem(

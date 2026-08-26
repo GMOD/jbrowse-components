@@ -512,10 +512,10 @@ above wrote.
 }
 ```
 
-The segments then draw as an ordinary track on K12, and **Track menu → Launch
-view → Graph genome view (this region)** cuts a subgraph at whatever is on
-screen. The link under the clip opens the session it starts in, so the same
-route runs on any graph indexed this way.
+The segments then draw as an ordinary track on K12, and **Track menu → Launch →
+Graph genome view (this region)** cuts a subgraph at whatever is on screen. The
+link under the clip opens the session it starts in, so the same route runs on
+any graph indexed this way.
 
 <Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) on the segments lane's own menu." />
 

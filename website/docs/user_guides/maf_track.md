@@ -181,8 +181,8 @@ window, so reaching a species' genome needs no selection.
 
 ## Comparing a species against the reference
 
-The same selection — or the visible window, from the track menu's **Launch
-view** submenu — opens as a two-row
+The same selection — or the visible window, from the track menu's **Launch**
+submenu — opens as a two-row
 [linear synteny view](/docs/user_guides/linear_synteny_view): **Launch synteny
 view, \<ref\> vs...** lists the same species, and picking one opens the
 reference over that species' genome with the alignment drawn between them as

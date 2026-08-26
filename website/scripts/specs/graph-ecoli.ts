@@ -2514,7 +2514,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         actions: [
           {
             type: 'click',
-            selector: '[data-testid="cascading-submenu-launch_view"]',
+            selector: '[data-testid="cascading-submenu-launch"]',
           },
           {
             type: 'waitForSelector',
@@ -2529,7 +2529,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           {
             type: 'box',
             anchor: {
-              selector: '[data-testid="cascading-submenu-launch_view"]',
+              selector: '[data-testid="cascading-submenu-launch"]',
             },
           },
           {

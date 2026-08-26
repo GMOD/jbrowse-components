@@ -509,7 +509,7 @@ jb add-track-json segments_track.json --update --out "$APP"
 # The adapter and the view both come from the graph genome view plugin, which is
 # not bundled in JBrowse Web and has no CLI command, so declare it directly. It
 # is a native ES module loaded at runtime from its own url. Without this the
-# track above loads nothing and its Launch view menu item is absent.
+# track above loads nothing and its Launch menu item is absent.
 python3 - "$APP/config.json" <<'PY'
 import json, sys
 
@@ -566,6 +566,6 @@ echo "Minigraph-Cactus projections (synteny, variants, MAF, depth, per-strain"
 echo "presence), the KTa004 read pileup mapped through the graph, and the graph"
 echo "itself as a segments track. Serve it:"
 echo "  npx serve $(pwd)/$APP"
-echo "Turn on 'MC graph: segments' and use its track menu's Launch view to draw"
+echo "Turn on 'MC graph: segments' and use its track menu's Launch to draw"
 echo "any window as a graph; the config declares the plugin that does it."
 echo "The graph overview raster is ecoli_cactus_graph.png (odgi viz, from --viz)."
