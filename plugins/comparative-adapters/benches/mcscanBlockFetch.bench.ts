@@ -25,7 +25,7 @@
 //
 // SETUP IS HOISTED, INCLUDING THE BUCKET BUILD. The download, the BED parse, the
 // join and the buckets all happen once per adapter: `indexBlockRows` hangs off
-// the same `createSharedSetup` promise the joined rows do, and builds a side on
+// the same `cachedSetup` promise the joined rows do, and builds a side on
 // first use. So a fetch never pays for it, and timing a rebuild per round prices
 // something no caller does — which is not a small distinction. An earlier
 // version of this bench did exactly that and reported the one-locus row at

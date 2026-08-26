@@ -1,4 +1,4 @@
-import { createSharedSetup } from '@jbrowse/core/util'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -204,7 +204,7 @@ function columnPairs(
 // every pair the track declares, which for a legacy 2-entry assemblyNames config
 // is the same single mate it always was.
 export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBlocksAdapterConfig> {
-  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
+  setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
 
   async setupPre(opts: BaseOptions) {
     const blockAssemblies = this.getConf('blockAssemblies')

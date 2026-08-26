@@ -1,4 +1,4 @@
-import { createSharedSetup } from '@jbrowse/core/util'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -22,10 +22,12 @@ export default class PAFAdapter extends PairwiseAdapterBase {
   // whichever of them is currently waiting, plus the per-refName index every
   // query walks. Subclasses (delta, chain, MashMap) override setupPre alone, so
   // they are indexed too.
-  setup = createSharedSetup(async (opts: BaseOptions) => {
-    const records = await this.setupPre(opts)
-    opts.statusCallback?.('Indexing alignments by contig')
-    return { records, byRefName: indexPafRecords(records) }
+  setup = cachedSetup({
+    setup: async (opts: BaseOptions) => {
+      const records = await this.setupPre(opts)
+      opts.statusCallback?.('Indexing alignments by contig')
+      return { records, byRefName: indexPafRecords(records) }
+    },
   })
 
   async setupPre(opts?: BaseOptions): Promise<PAFRecord[]> {

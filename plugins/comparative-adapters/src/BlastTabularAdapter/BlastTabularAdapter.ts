@@ -1,8 +1,5 @@
-import {
-  createSharedSetup,
-  doesIntersect2,
-  fetchAndMaybeUnzip,
-} from '@jbrowse/core/util'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { doesIntersect2, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -229,15 +226,17 @@ export default class BlastTabularAdapter extends PairwiseAdapterBase<BlastTabula
   // Download+parse plus the per-refName index every query walks, for the reason
   // indexRecordsByName documents: a region query used to test every hit in the
   // table, and the callers ask once per visible contig.
-  setup = createSharedSetup(async (opts: BaseOptions) => {
-    const records = await this.setupPre(opts)
-    return {
-      records,
-      byRefName: [
-        indexRecordsByName(records, r => r.qseqid),
-        indexRecordsByName(records, r => r.sseqid),
-      ] as const,
-    }
+  setup = cachedSetup({
+    setup: async (opts: BaseOptions) => {
+      const records = await this.setupPre(opts)
+      return {
+        records,
+        byRefName: [
+          indexRecordsByName(records, r => r.qseqid),
+          indexRecordsByName(records, r => r.sseqid),
+        ] as const,
+      }
+    },
   })
 
   async setupPre(opts?: BaseOptions): Promise<BlastRecord[]> {

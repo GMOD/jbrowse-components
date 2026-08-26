@@ -1,5 +1,8 @@
 import { TwoBitFile } from '@gmod/twobit'
-import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseSequenceAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   downloadPhase,
   fetchAndMaybeUnzipText,
@@ -19,10 +22,8 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConfig> {
-  protected setupP?: Promise<{
-    twobit: TwoBitFile
-    chromSizesData: Record<string, number> | undefined
-  }>
+  // No `label`: `initChromSizes` narrates its own download.
+  setup = cachedSetup({ setup: opts => this.setupPre(opts) })
 
   // @gmod/twobit does its own reads, so the phase can't be handed the URL by
   // the fetch: it comes off the config the filehandle was opened from
@@ -60,14 +61,6 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
       chromSizesData: await this.initChromSizes(opts),
     }
   }
-  async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
-
   public async getRefNames(opts?: BaseOptions) {
     const { chromSizesData, twobit } = await this.setup(opts)
     return chromSizesData

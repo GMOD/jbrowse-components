@@ -1,4 +1,7 @@
-import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseSequenceAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
@@ -36,10 +39,6 @@ function parseSmallFasta(text: string) {
 }
 
 export default class UnindexedFastaAdapter extends BaseSequenceAdapter<UnindexedFastaAdapterConfig> {
-  protected setupP?: Promise<{
-    fasta: ReturnType<typeof parseSmallFasta>
-  }>
-
   public async getRefNames(opts?: BaseOptions) {
     const { fasta } = await this.setup(opts)
     return [...fasta.keys()]
@@ -53,6 +52,9 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
       end: data.sequence.length,
     }))
   }
+
+  // No `label`: `fetchAndMaybeUnzipText` narrates the download from inside.
+  setup = cachedSetup({ setup: opts => this.setupPre(opts) })
 
   public async setupPre(opts?: BaseOptions) {
     const text = await fetchAndMaybeUnzipText(
@@ -77,14 +79,6 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
       this.getConf('metadataLocation'),
       this.pluginManager,
     )
-  }
-
-  public async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
   }
 
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {

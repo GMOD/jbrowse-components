@@ -1,4 +1,4 @@
-import { createSharedSetup } from '@jbrowse/core/util'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -49,7 +49,7 @@ export interface AnchorsSource {
 export abstract class McscanAnchorsAdapterBase<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,
 > extends ComparativeAdapterBase<CONF> {
-  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
+  setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
 
   protected abstract anchorsSource(): AnchorsSource
 

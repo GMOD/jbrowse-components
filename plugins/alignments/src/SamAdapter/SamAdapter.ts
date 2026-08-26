@@ -1,6 +1,7 @@
 import { packReference } from '@gmod/bam'
 import { numericCigarHasSkip } from '@jbrowse/cigar-utils'
-import { createSharedSetup, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   makeFeatureIntervalTreeMap,
@@ -50,62 +51,60 @@ function refNameOf(line: string) {
  */
 export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> {
   // the whole file is resident after one load, so the fetch/parse status comes
-  // from inside the load itself rather than a label wrapped around it — and it
-  // is `createSharedSetup`, not `cachedSetup`, precisely because of that:
-  // cachedSetup memoizes the *first* caller's opts, so once that fetch was
-  // superseded its statusCallback was gated off and the fetch replacing it
-  // awaited a whole-file download and parse behind a blank overlay
-  private loadData = createSharedSetup(async (opts: BaseOptions) => {
-    const samText = this.getConf('samText')
-    const buffer = samText
-      ? new TextEncoder().encode(samText)
-      : await fetchAndMaybeUnzip(
-          openLocation(this.getConf('samLocation'), this.pluginManager),
-          opts,
-        )
+  // from inside the load itself rather than a label wrapped around it
+  private loadData = cachedSetup({
+    setup: async (opts: BaseOptions) => {
+      const samText = this.getConf('samText')
+      const buffer = samText
+        ? new TextEncoder().encode(samText)
+        : await fetchAndMaybeUnzip(
+            openLocation(this.getConf('samLocation'), this.pluginManager),
+            opts,
+          )
 
-    const headerLines: string[] = []
-    const linesByRef: Record<string, string[]> = {}
-    parseLineByLine(
-      buffer,
-      line => {
-        if (line.startsWith('@')) {
-          headerLines.push(line)
-        } else {
-          const refName = refNameOf(line)
-          // an unmapped record (RNAME '*') has no placement to draw
-          if (refName !== '*') {
-            ;(linesByRef[refName] ??= []).push(line)
+      const headerLines: string[] = []
+      const linesByRef: Record<string, string[]> = {}
+      parseLineByLine(
+        buffer,
+        line => {
+          if (line.startsWith('@')) {
+            headerLines.push(line)
+          } else {
+            const refName = refNameOf(line)
+            // an unmapped record (RNAME '*') has no placement to draw
+            if (refName !== '*') {
+              ;(linesByRef[refName] ??= []).push(line)
+            }
           }
-        }
-        return true
-      },
-      opts.statusCallback,
-      // no stopToken: createSharedSetup drops it deliberately, since this parse
-      // is shared and one caller's cancel would reject the caller replacing it
-      { label: 'Parsing SAM' },
-    )
+          return true
+        },
+        opts.statusCallback,
+        // no stopToken: cachedSetup drops it deliberately, since this parse is
+        // shared and one caller's cancel would reject the caller replacing it
+        { label: 'Parsing SAM' },
+      )
 
-    // @SQ lines resolve through the same parser a BAM/CRAM binary header does
-    const { idToName } = parseSamHeader(headerLines.map(parseSamHeaderLine))
-    return {
-      header: headerLines.join('\n'),
-      intervalTreeMap: makeFeatureIntervalTreeMap(
-        linesByRef,
-        (lines, refName) =>
-          lines.map(
-            (line, i) =>
-              new SamRecordFeature(
-                parseSamLine(line),
-                `${this.id}-${refName}-${i}`,
-              ),
-          ),
-        'Parsing SAM',
-      ),
-      // @SQ lines are the authority when present, since they carry the
-      // reference order; a headerless SAM falls back to what the records name
-      refNames: idToName.length ? idToName : Object.keys(linesByRef),
-    }
+      // @SQ lines resolve through the same parser a BAM/CRAM binary header does
+      const { idToName } = parseSamHeader(headerLines.map(parseSamHeaderLine))
+      return {
+        header: headerLines.join('\n'),
+        intervalTreeMap: makeFeatureIntervalTreeMap(
+          linesByRef,
+          (lines, refName) =>
+            lines.map(
+              (line, i) =>
+                new SamRecordFeature(
+                  parseSamLine(line),
+                  `${this.id}-${refName}-${i}`,
+                ),
+            ),
+          'Parsing SAM',
+        ),
+        // @SQ lines are the authority when present, since they carry the
+        // reference order; a headerless SAM falls back to what the records name
+        refNames: idToName.length ? idToName : Object.keys(linesByRef),
+      }
+    },
   })
 
   async getRefNames(opts?: BaseOptions) {

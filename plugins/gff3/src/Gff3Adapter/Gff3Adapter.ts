@@ -1,5 +1,8 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { createSharedSetup, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   groupLinesByRef,
@@ -18,48 +21,46 @@ import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfig> {
   // the whole file is resident after one load, so the fetch/parse status comes
-  // from inside the load itself rather than a label wrapped around it — and it
-  // is `createSharedSetup`, not `cachedSetup`, precisely because of that:
-  // cachedSetup memoizes the *first* caller's opts, so once that fetch was
-  // superseded its statusCallback was gated off and the fetch replacing it
-  // awaited a whole-file download and parse behind a blank overlay
-  private loadData = createSharedSetup(async (opts: BaseOptions) => {
-    const buffer = await fetchAndMaybeUnzip(
-      openLocation(this.getConf('gffLocation'), this.pluginManager),
-      opts,
-    )
+  // from inside the load itself rather than a label wrapped around it
+  private loadData = cachedSetup({
+    setup: async (opts: BaseOptions) => {
+      const buffer = await fetchAndMaybeUnzip(
+        openLocation(this.getConf('gffLocation'), this.pluginManager),
+        opts,
+      )
 
-    const { headerLines, linesByRef } = groupLinesByRef(
-      buffer,
-      opts.statusCallback,
-    )
+      const { headerLines, linesByRef } = groupLinesByRef(
+        buffer,
+        opts.statusCallback,
+      )
 
-    const intervalTreeMap = makeFeatureIntervalTreeMap<IdentifiedGffFeature>(
-      linesByRef,
-      // lines are already split and comment/FASTA-filtered by
-      // groupLinesByRef, so feed them straight to parseLinesLazy rather than
-      // re-joining and re-splitting through parseStringSync.
-      //
-      // Lazy because the whole file stays resident for the session: leaving
-      // column 9 as text rather than an object per attribute is what keeps
-      // that resident set small (8.5x on GENCODE-shaped input), and the
-      // render path reads only a handful of attributes anyway — see
-      // Gff3Feature.
-      (lines, refName) => {
-        const features = parseLinesLazy(lines) as IdentifiedGffFeature[]
-        // stamped in place rather than through `{...feature, uniqueId}`:
-        // these are freshly parsed objects nobody else holds, and the spread
-        // copied every attribute of every top-level feature in the file to
-        // add one key
-        for (let i = 0; i < features.length; i++) {
-          features[i]!.uniqueId = `${this.id}-${refName}-${i}`
-        }
-        return features
-      },
-      'Parsing GFF data',
-    )
+      const intervalTreeMap = makeFeatureIntervalTreeMap<IdentifiedGffFeature>(
+        linesByRef,
+        // lines are already split and comment/FASTA-filtered by
+        // groupLinesByRef, so feed them straight to parseLinesLazy rather than
+        // re-joining and re-splitting through parseStringSync.
+        //
+        // Lazy because the whole file stays resident for the session: leaving
+        // column 9 as text rather than an object per attribute is what keeps
+        // that resident set small (8.5x on GENCODE-shaped input), and the
+        // render path reads only a handful of attributes anyway — see
+        // Gff3Feature.
+        (lines, refName) => {
+          const features = parseLinesLazy(lines) as IdentifiedGffFeature[]
+          // stamped in place rather than through `{...feature, uniqueId}`:
+          // these are freshly parsed objects nobody else holds, and the spread
+          // copied every attribute of every top-level feature in the file to
+          // add one key
+          for (let i = 0; i < features.length; i++) {
+            features[i]!.uniqueId = `${this.id}-${refName}-${i}`
+          }
+          return features
+        },
+        'Parsing GFF data',
+      )
 
-    return { header: headerLines.join('\n'), intervalTreeMap }
+      return { header: headerLines.join('\n'), intervalTreeMap }
+    },
   })
 
   public async getRefNames(opts: BaseOptions = {}) {

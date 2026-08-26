@@ -1,4 +1,4 @@
-import { createSharedSetup } from '@jbrowse/core/util'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -47,11 +47,11 @@ interface IndexedSide extends AlignedSide {
 }
 
 export default class AllVsAllPAFAdapter extends ComparativeAdapterBase<AllVsAllPAFAdapterConfig> {
-  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
+  setup = cachedSetup({ setup: (opts: BaseOptions) => this.setupPre(opts) })
 
   /**
    * Everything that does not depend on the query, done once per file load and
-   * memoized by {@link createSharedSetup}: the oriented sides, the reciprocal-pair
+   * memoized by {@link cachedSetup}: the oriented sides, the reciprocal-pair
    * decision, and the per-(prefix, contig) index a region query walks.
    *
    * All three used to be per-query work. The index was keyed on the bare contig,

@@ -148,7 +148,7 @@ export async function executeSyntenyFeaturesAndPositions({
   //
   // IN PARALLEL, and only the query fetch drives the bar: the two would
   // otherwise fight over one determinate progress bar, and for the in-memory
-  // adapters they share one `createSharedSetup` download anyway, so the second
+  // adapters they share one `cachedSetup` download anyway, so the second
   // is a walk over records the first already parsed.
   const [allFeatures, targetAxisFeatures] = await Promise.all([
     dataAdapter.getFeaturesInMultipleRegionsArray(v1.fetchRegions, {

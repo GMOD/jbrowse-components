@@ -1,4 +1,7 @@
-import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseSequenceAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadPhase, updateStatus } from '@jbrowse/core/util'
 
 import { readOptionalMetadata, refSizesToRegions } from './chromSizesUtils.ts'
@@ -22,17 +25,10 @@ import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 export abstract class FastaAdapterBase<
   CONF extends AnyConfigurationModel,
 > extends BaseSequenceAdapter<CONF> {
-  protected setupP?: Promise<{ fasta: IndexedFasta }>
-
   abstract setupPre(): Promise<{ fasta: IndexedFasta }>
 
-  public async setup() {
-    this.setupP ??= this.setupPre().catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
-  }
+  // No `label`: the concrete readers narrate their own downloads.
+  setup = cachedSetup({ setup: () => this.setupPre() })
 
   // @gmod/indexedfasta does its own reads, so the phase can't be handed the URL
   // by the fetch: it comes off the config the filehandle was opened from. Path

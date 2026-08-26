@@ -1,4 +1,7 @@
-import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  BaseAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
@@ -13,8 +16,9 @@ export default class ChromSizesAdapter
   extends BaseAdapter
   implements RegionsAdapter
 {
-  // the map of refSeq to length
-  protected setupP?: Promise<Record<string, number>>
+  // the map of refSeq to length. No `label`: `fetchAndMaybeUnzipText` narrates
+  // the download from the inside, and phases nest.
+  setup = cachedSetup({ setup: opts => this.setupPre(opts) })
 
   async setupPre(opts?: BaseOptions) {
     const pm = this.pluginManager
@@ -28,14 +32,6 @@ export default class ChromSizesAdapter
       'Downloading chromosome sizes',
     )
     return parseChromSizes(data)
-  }
-
-  async setup(opts?: BaseOptions) {
-    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
-    return this.setupP
   }
 
   public async getRegions(opts?: BaseOptions) {

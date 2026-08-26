@@ -6,8 +6,9 @@ import type { RpcStatus } from './progress.ts'
 // The five below were `createSharedSetup`'s, and are the contract the unified
 // helper had to keep. They run against `cachedSetup` because that is now the
 // implementation; `createSharedSetup` is its alias, covered at the bottom.
-const sharedSetup = <T>(run: (opts: BaseOptions) => Promise<T>) =>
-  cachedSetup({ setup: run })
+function sharedSetup<T>(run: (opts: BaseOptions) => Promise<T>) {
+  return cachedSetup({ setup: run })
+}
 
 describe('cachedSetup', () => {
   it('runs the work once and hands every caller the same result', async () => {
