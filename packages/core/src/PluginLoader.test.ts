@@ -288,6 +288,12 @@ describe('pluginLabel', () => {
       'https://example.com/p.esm.js',
     )
   })
+
+  // a ref carries no url until the manifest supplies one, and often no name
+  // either — labelling it 'unknown url' is a marker that names nothing
+  it('names an unresolved store ref by the entry it asks for', () => {
+    expect(pluginLabel({ storePlugin: 'GWAS' })).toBe('GWAS')
+  })
 })
 
 describe('type guards', () => {

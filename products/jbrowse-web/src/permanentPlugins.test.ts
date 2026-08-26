@@ -95,8 +95,9 @@ test('removing takes out the entry naming that plugin', async () => {
   expect(p.readPermanentPlugins()).toEqual([apollo])
 })
 
-// An entry that names no loader can never load, and samePlugin matches nothing
-// against it — so it could only accumulate as a row nothing can remove.
+// An entry that names neither a url nor a store entry can never load, and
+// samePlugin matches nothing against it — so it could only accumulate as a row
+// nothing can remove.
 test('an entry naming no loader is dropped on read', async () => {
   const p = await importFresh()
   localStorage.setItem(
@@ -104,6 +105,22 @@ test('an entry naming no loader is dropped on read', async () => {
     JSON.stringify([gwas, { name: 'Broken' }, 'nonsense', null]),
   )
   expect(p.readPermanentPlugins()).toEqual([gwas])
+})
+
+// A ref is the form that survives this JBrowse being upgraded under the list:
+// it carries no url of its own, and resolves against the store's manifest for
+// whatever version is running when it next loads.
+test('a bare store ref is kept, and loads', async () => {
+  const p = await importFresh()
+  const ref = { storePlugin: 'MsaView' }
+  p.addPermanentPlugin(ref)
+  expect(p.readPermanentPlugins()).toEqual([ref])
+  expect(p.getPermanentPlugins()).toEqual([ref])
+  expect(
+    JSON.parse(
+      localStorage.getItem(markerKey('http://localhost/volvox/config.json'))!,
+    ),
+  ).toEqual(['MsaView'])
 })
 
 test('a corrupt value reads as an empty list rather than throwing', async () => {

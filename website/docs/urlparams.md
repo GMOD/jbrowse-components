@@ -302,6 +302,23 @@ track comes from the GPU path, see
 JBrowse Desktop takes the same choice as a `--renderer` command-line flag, see
 [](/docs/quickstart_desktop#launching-from-the-command-line).
 
+### &safeMode
+
+`&safeMode`
+
+Loads without the plugins this browser keeps for this configuration, see
+[keeping a plugin for every visit](/docs/user_guides/plugin_store#keeping-a-plugin-for-every-visit).
+The list is left alone — the plugins are skipped for this load only, and the
+next one without the parameter runs them again.
+
+Its own use is a plugin that crashes the app before any menu is on screen. The
+fatal error dialog offers the same thing as a button, and JBrowse turns them off
+by itself after a load that never finished; the parameter is for the case where
+neither has happened and you want to rule them out.
+
+Bare, with no value, is how it is normally written. `&safeMode=1` works too:
+what counts is that the parameter is present.
+
 ### Navigating within the default session
 
 `&extendSession=true` alongside `&loc=` navigates a curated `defaultSession`

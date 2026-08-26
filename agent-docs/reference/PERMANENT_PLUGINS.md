@@ -67,6 +67,21 @@ origin by link, while this list can only have been written by the user, in this
 app, on this config. If a way to write it from a url is ever added, the gate has
 to come with it — the same plugin then runs on every future visit.
 
+## A store ref is the entry that survives an upgrade
+
+The list outlives the JBrowse it was written against, which is what makes a
+pinned url a liability here: a build installed against one version keeps loading
+after the deployment moves on. A definition carrying `storePlugin` — a store
+ref, which names a plugin-store entry rather than a build — does not have that
+problem. `loadPluginRecords` runs `resolveStorePluginRefs` over everything it is
+given, so the entry resolves against the manifest for whatever version is
+running, and falls back to its own pinned url when the store cannot be read.
+
+An install from the plugin store mints a definition carrying both, so the list
+gets that behaviour without asking for it. `readPermanentPlugins` therefore
+keeps an entry that names a store ref and no url at all, where it drops one that
+names neither.
+
 ## The crash marker
 
 `jbrowse-plugin-load-marker:<config url>`, holding the labels of the plugins

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { pluginLabel, pluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { Dialog } from '@jbrowse/core/ui'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
@@ -70,7 +70,7 @@ export default function PermanentPluginsDialog({
             <List>
               {entries.map(entry => (
                 <PermanentPluginRow
-                  key={pluginUrl(entry)}
+                  key={pluginLabel(entry)}
                   entry={entry}
                   onToggle={disabled => {
                     edit(() => {

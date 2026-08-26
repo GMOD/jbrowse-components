@@ -7,6 +7,7 @@ import {
   maybePluginUrl,
   pluginLabel,
   samePlugin,
+  storePluginName,
 } from '@jbrowse/core/pluginDefinitions'
 import {
   localStorageGetItem,
@@ -83,10 +84,13 @@ function markerKey() {
 export type PermanentPluginEntry = PluginDefinition & { disabled?: boolean }
 
 function isEntry(value: unknown): value is PermanentPluginEntry {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  const definition = value as PluginDefinition
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    maybePluginUrl(value as PluginDefinition) !== undefined
+    maybePluginUrl(definition) !== undefined ||
+    storePluginName(definition) !== undefined
   )
 }
 
@@ -94,10 +98,11 @@ function isEntry(value: unknown): value is PermanentPluginEntry {
  * The whole list for this config, including the entries switched off, since
  * this is what the dialog edits.
  *
- * An entry naming no loader is dropped rather than kept: it can never load, and
- * `samePlugin` matches nothing against a definition with no url, so it could
- * only accumulate — a row that cannot be recognized by anything that would
- * remove it.
+ * An entry that names neither a url nor a store entry is dropped rather than
+ * kept: nothing can load it, and `samePlugin` matches nothing against it, so it
+ * could only accumulate as a row nothing is able to remove. A bare store ref is
+ * kept — `resolveStorePluginRefs` turns it into a build at load time, which is
+ * the form that survives this JBrowse being upgraded under the list.
  *
  * Desktop splits this into two read paths, one of which propagates a read
  * failure so an editing surface can't save `[]` over a list it merely failed to

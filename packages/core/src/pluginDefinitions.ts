@@ -268,9 +268,22 @@ export function pluginDefinitionMetadata(definition: PluginDefinition) {
   }
 }
 
+/**
+ * How to name a definition to a person — a crash marker saying what was
+ * loading, a warning listing what a host did not pass in.
+ *
+ * A ref that has not been resolved yet has no url and often no `name`, and
+ * everything here used to fall through to `pluginUrl`'s 'unknown url' for it:
+ * a marker naming nothing, which is the difference between a banner the user
+ * can act on and one that says only that something went wrong.
+ */
 export function pluginLabel(definition: PluginDefinition) {
-  const name = pluginName(definition)
-  return name ? `${name} (${pluginUrl(definition)})` : pluginUrl(definition)
+  const name = pluginName(definition) ?? storePluginName(definition)
+  const url = maybePluginUrl(definition)
+  if (name === undefined) {
+    return pluginUrl(definition)
+  }
+  return url === undefined ? name : `${name} (${url})`
 }
 
 /**
