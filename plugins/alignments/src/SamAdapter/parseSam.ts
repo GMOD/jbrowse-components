@@ -24,11 +24,19 @@ export interface SamRecordData {
   tags: Record<string, string | number>
 }
 
-// A tag reads `TAG:TYPE:VALUE`. i/f are numbers; A/Z/H/B stay strings (a B
-// array is a comma-joined list, which is how it is displayed anyway).
+// A tag reads `TAG:TYPE:VALUE`. i/f are numbers; A/Z/H stay strings.
+//
+// A `B` array opens its value with a subtype letter — `ML:B:C,251,0,128` — and
+// that letter is not data. Consumers read the comma-joined list and coerce each
+// element (`getModProbabilityBytes` names SAM text as one of its two inputs), so
+// a leading `C,` parsed as a NaN element: every ML probability landed one call
+// late and the last was dropped, silently, on every read of a SAM track.
 function parseTag(field: string) {
   const tag = field.slice(0, 2)
   const type = field[3]
+  if (type === 'B') {
+    return { tag, value: field.slice(7) } as const
+  }
   const value = field.slice(5)
   return {
     tag,
