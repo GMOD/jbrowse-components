@@ -1,12 +1,15 @@
 ---
 name: group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is
-description: decide whether the exported callback's order is a contract
-metadata:
-  area: alignments, perf
-  category: ready
+description: `forEachModRefPos` is the third CIGAR walk and still runs once per MM entry, so a combined code pays a read-length pass twice. Grouping it the way the marks path now is changes the callback order — and that callback is exported from `@jbrowse/modifications-utils`, so the first question is whether its order is a contract. Nothing prices this path, and the mode it feeds is off by default.
 ---
 
 # Group the methylation path's CIGAR walk, the way the marks path now is
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. Two things keep it out of the
+backlog: nothing has priced this walk, and the sibling walk that WAS priced came
+in at 1.08x ([walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group](walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group.md)).
+A published callback's ordering is a real cost to spend against an unmeasured
+win on a mode that ships off.
 
 `getModPositions` shares one positions array across the types of an MM group, and
 `forEachMaxProbMod` groups the entries holding it by identity so a `C+mh` read

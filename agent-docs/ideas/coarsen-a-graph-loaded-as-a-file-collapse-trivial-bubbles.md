@@ -1,18 +1,20 @@
 ---
 name: coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles
-description: designed; path lanes are the open question
-metadata:
-  area: pangenome
-  category: ready
+description: A 20-segment E. coli GFA spends 47% of its drawn length on twelve 1 bp alleles carrying 0.8% of the sequence, because `bubbleSpread`'s floor clamps nineteen of the twenty nodes. None of the four shipped spreads fixes it — two were rendered and rejected — so the answer is collapsing the bubble, which is also what lets the floor come off. Designed down to the detection rule; path lanes are the open question, and two findings (chain contraction, BubbleGun's memory) are already paid for.
 ---
 
 # Coarsen a graph loaded as a FILE: collapse trivial bubbles
 
-Designed, not built. The tier route above does not reach this case: a tier is a
-hosted segs/links pair, and a figure like `pangenome/pggb_haplotype_paths` loads
-a GFA through `gfaLocation` because the tabix cut has no P lines and `drawPaths`
-would have nothing to draw. A file has no tier to switch to, so its coarsening
-has to happen in the view.
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. Designed, not built, and the
+design has an open question at its centre — what a collapsed unit's path lanes
+say — so it is a proposal rather than an action item.
+
+Tiering does not reach this case
+([pangenome-graph-view-the-open-queue](pangenome-graph-view-the-open-queue.md)
+item 3): a tier is a hosted segs/links pair, and a figure like
+`pangenome/pggb_haplotype_paths` loads a GFA through `gfaLocation` because the
+tabix cut has no P lines and `drawPaths` would have nothing to draw. A file has
+no tier to switch to, so its coarsening has to happen in the view.
 
 **The complaint is arithmetic, not taste.** `ecoli_pggb_is5.gfa` is 20 segments /
 26 links / 5 paths over 1,414 bp, and twelve of the twenty segments are 1 bp. The

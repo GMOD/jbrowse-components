@@ -7,7 +7,7 @@ audience: internal
 # HPRC release 2 in JBrowse
 
 The alignment/MAF side of the HPRC data. The graph view's own queue is
-[Pangenome graph view queue](../todo/pangenome-graph-view-the-open-queue.md) and
+[Pangenome graph view queue](../ideas/pangenome-graph-view-the-open-queue.md) and
 does not overlap.
 
 ## What HPRC publishes, and what opens today

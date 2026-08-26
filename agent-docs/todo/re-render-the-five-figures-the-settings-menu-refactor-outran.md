@@ -1,6 +1,6 @@
 ---
 name: re-render-the-five-figures-the-settings-menu-refactor-outran
-description: five stale; the lock cannot catch this class
+description: probably already done — verify before spending the pipeline; all five were re-shot after the refactor, and what is left is a review of the three whose verdicts predate the re-shoot
 metadata:
   area: figures, synteny
   category: ready
@@ -8,23 +8,42 @@ metadata:
 
 # Re-render the five figures the settings-menu refactor outran
 
-`figures.lock` was last written partway through that refactor, and two commits
-after it reshaped the menu those figures photograph — a slider became a chevron
-row and the sections were reordered by arity, so every captured menu is a
-picture of a shape that no longer exists. `genomes_synteny/ribbons_default` also
-boxes **CIGAR indels** and **Curved lines** at rows that have since moved, and
-it contradicts the prose committed alongside it ("checkboxes come first, then
-the choices, then the values").
+**Read this before running anything: the re-render this entry asks for appears
+to have happened, and the entry's premise no longer holds.** Checked
+2026-08-26 against `5bc6d419c8`:
 
-Stale, all needing the browser pipeline:
+- `figures.lock` was NOT left partway through the refactor. `d567477154`
+  (2026-08-24) rewrote it wholesale — "221 figures and 60 media files
+  regenerated" — and it is the commit that introduced the current hash of all
+  five. The refactor finished on 2026-08-21 (`c6187c0841`), so every one of the
+  five was re-shot against the post-refactor menu.
+- `genomes_synteny/ribbons_default` does not box rows that have since moved. Its
+  spec was rewritten by the refactor itself (`d2b71b3a48`, 2026-08-20) and its
+  boxes anchor by text — `{ type: 'box', anchor: { text: 'CIGAR indels' } }` —
+  so they follow the row wherever arity put it. The spec's own comment now
+  describes the post-refactor shape ("both rows the section asks the reader to
+  change are in it, one under the other").
+- `hg002_haplotypes_location_markers` has been re-checked, not merely
+  re-rendered: `viewportHeight` is 500 with a comment recording that at 445 the
+  annotation landed 0.42px past the frame.
 
-- `genomes_synteny/ribbons_default`
-- `genomes_synteny/ribbon_settings` — `mode: 'compose'` over the above
-- `hg002_haplotypes_location_markers` — its `viewportHeight: 500` was sized for
-  the taller pre-refactor menu and wants re-checking, not just re-rendering
-- `bigwig/whole_genome_coverage`
-- `tracklabels` — its viewport grew
+What is genuinely left is **a review, not a capture**. Three of the five carry a
+`screenshot-review.json` verdict older than the 08-24 re-shoot, so nobody has
+looked at the current picture:
 
-The first three are the ones the refactor itself invalidated; the last two were
-already known. Nothing in the lock can catch this class — it hashes the bytes in
-S3, not whether the UI still looks like them.
+| figure | reviewed | re-shot |
+| --- | --- | --- |
+| `tracklabels` | 2026-06-15 | 2026-08-24 |
+| `genomes_synteny/ribbons_default` | 2026-07-25 | 2026-08-24 |
+| `hg002_haplotypes_location_markers` | 2026-08-16 | 2026-08-24 |
+| `genomes_synteny/ribbon_settings` | 2026-08-24 | 2026-08-24 |
+| `bigwig/whole_genome_coverage` | 2026-08-24 | 2026-08-24 |
+
+So: open the three, confirm the menu in them is the current one, and either
+record the verdict or re-render just what fails. Close this entry with that.
+
+The one claim worth keeping is the general one — **nothing in the lock can catch
+this class**, because it hashes the bytes in S3 rather than whether the UI still
+looks like them. That is what let this entry sit for four days after the work it
+describes had already been done, and it is why the review dates above are the
+thing to read rather than the lock.

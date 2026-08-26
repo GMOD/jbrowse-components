@@ -1,12 +1,15 @@
 ---
 name: the-config-read-baseline-is-mostly-not-display-debt
-description: most of the unchecked reads are against a track or assembly config, which no display narrowing reaches; read the split off the table before estimating any of it
-metadata:
-  area: config, types
-  category: ready
+description: `scripts/configReadTypeGaps.txt` counts 135 unchecked config reads and the number invites a sweep, but 81 of them are `name`/`assemblyNames`/`trackId`/`adapter` against a track or assembly config that no display narrowing can reach, and the root-config row is blocked behind re-plumbing a schema assembled from the plugin manager at runtime. Read the generated split before estimating any of it. The mixin population that WAS worth closing is closed, and `HostChecksSlotNames` keeps it that way.
 ---
 
 # The config-read baseline is mostly not display debt
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. Read it as a finding, not a
+task: its conclusion is that the sweep the count invites would mostly be the
+wrong work, and the one instruction it leaves — re-baseline in the same commit
+as any improvement — is a rule for whoever touches the number, not a job for
+someone to pick up.
 
 `scripts/configReadTypeGaps.txt` counts the config reads whose slot name and
 value type are unchecked — down from 154 once every cross-cutting mixin named

@@ -1,12 +1,15 @@
 ---
 name: the-comparative-context-menu-sits-behind-no-bring-your-own-seam
-description: fetch status done, tooltip refused; the context menu needs a shape of its own
-metadata:
-  area: synteny, dotplot, embedded
-  category: ready
+description: `SyntenyContextMenu` reaches `@jbrowse/core/ui`'s `ContextMenu` and so `@mui/material` behind no seam, so an embedder who mounted `DisplayUIProvider` to keep Material off the page still gets it from a synteny or dotplot right-click. The fetch status shipped through the seam and needed no new contract; the tooltip was refused on the record. Read before designing a fourth context — and read why a rendered-element census reports 0 Material elements on a page with 105 eager Material imports.
 ---
 
 # The comparative context menu sits behind no bring-your-own seam
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The hole that was measured is
+closed, what is left is latent, and the entry's own history is the argument for
+parking it: the fetch status looked like it needed a contract until someone
+compared the interfaces and found it needed none. Designing one for the context
+menu before anybody has asked for it is the same mistake with a worse ratio.
 
 **`ComparativeFetchStatus` is done and the tooltip was refused — the context menu
 is the whole of what is left.** `SyntenyContextMenu`
@@ -57,11 +60,10 @@ Material as its negative control. A rendered-element census cannot see any of it
 EAGER_BUNDLE.md, whose holder table is the real scope. So this entry buys an
 embedder the look, not the bytes, and nothing here changes that on its own.
 
-**So take this together with
-[Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry).**
-That entry adds exactly those handlers, which is the commit that would put a
-Material `IconButton` back on the page — and it would land green, because
-nothing measures it.
+**Whoever gives the comparative displays a cancel and a retry passes exactly
+those handlers**, which is the commit that puts a Material `IconButton` back on
+the page — and it would land green, because nothing measures it. (That was its
+own backlog entry once and no longer exists; this paragraph is what survived it.)
 
 **The layering objection is gone.** This entry used to weigh three options
 because `DisplayChromeOverlays` and its provider lived in

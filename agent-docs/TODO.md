@@ -6,15 +6,21 @@ description: The backlog — action items to build or fix, grouped by how ready 
 # Backlog
 
 Grouped by **what you have to do first**, because that is the thing most of these
-entries actually disagree on. Roughly two fifths are ordinary build work; a
-quarter carry a design that survived a rejected alternative and needs following
-rather than re-deriving; most of the rest open with an instruction to go measure
-something, because the premise or the cost attribution is not established and
-building first would be guessing. Thirteen are blocked on a visual call
+entries actually disagree on. 29 are ordinary build work, some of them carrying a
+design that survived a rejected alternative and needs following rather than
+re-deriving. 10 open with an instruction to go measure something, because the
+premise or the cost attribution is not established and building first would be
+guessing. Twelve are blocked on a visual call
 that is not the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
 [ideas/](ideas/README.md), one file per proposal.
+
+**An entry earns its place by being worth doing, not by being written down.** A
+triage on 2026-08-26 sent fourteen the other way: an entry whose own text says it
+may close on a measurement rather than a build, and one whose horizon is a
+session of its own that nobody has committed to, are both proposals. Each carries
+a note at its top recording the move and why.
 
 **One file per item, under [todo/](todo/).** Each carries the full entry as its
 own doc, with `name:`/`description:` frontmatter and a `metadata.category`
@@ -41,13 +47,12 @@ the half that rots is the half it covers.
 | [Read the drift the AA ramp conversion predicts](todo/read-the-cross-backend-drift-the-aa-ramp-conversion-predicts.md) | shaders, GPU | all four converted; run the gate with the MSAA sample count held fixed |
 | [Extra large text SVG mode](todo/extra-large-text-svg-mode-for-pub-ready-figures.md) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](todo/alignments--canvas.md) | alignments, canvas | seven independent small items |
-| [Group the methylation path's CIGAR walk](todo/group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is.md) | alignments, perf | decide whether the exported callback's order is a contract |
 | [A same-strand hidden junction is still solid](todo/a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md) | alignments | decide which renderer owns a marked junction; `isNormal` sends it to the straight pass |
 | [Give colorNeutralRead a dark variant](todo/give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr.md) | alignments, palette | decide two neutrals or one before editing either |
 | [Make the capture scroll-invariant](todo/make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu.md) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Shoot the multihop chain as counted arcs](todo/shoot-the-multihop-chain-as-counted-arcs-in-one-lgv.md) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Capture the junction-BED tutorial figure](todo/capture-a-figure-for-the-junction-bed-tutorial-section.md) | figures, rnaseq | build and host the junction BED first; the capture is ordinary once it exists |
-| [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | five stale; the lock cannot catch this class |
+| [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | probably already done — verify before spending the pipeline; three need a review, not a capture |
 | [Rebuild the OrthoFinder demos' chrom.sizes](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all |
 | [Cover a per-base colour mode in the cross-backend gate](todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md) | alignments, browser tests | one scene per mode in the existing gate; pick a zoom where `binBp > 1` |
 | [Brand the out-of-request refNames](todo/brand-the-out-of-request-refnames.md) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
@@ -57,14 +62,8 @@ the half that rots is the half it covers.
 | [Feet on the interchromosomal ticks](todo/give-the-interchromosomal-ticks-breakend-feet-too.md) | alignments | decide what a coalesced tick's direction is, then the shader |
 | [Bound a breakend foot by its region](todo/bound-a-breakend-foot-by-its-displayed-region.md) | alignments | bound it by the REGION; the partner bound is wrong and was reverted |
 | [One mark per interchromosomal cluster](todo/draw-one-mark-per-interchromosomal-cluster.md) | alignments | a figure-changing decision; pick the position rule first |
-| [Bound a cluster's diameter](todo/bound-an-interchromosomal-clusters-diameter.md) | alignments | measure at depth before changing what the floor means |
 | [Re-measure the bicolor split on the main thread](todo/re-measure-the-bicolor-split-on-the-main-thread.md) | wiggle, perf | ADR-016's premise is gone under ADR-078; take the number on a 1000-source multiwiggle |
-| [Linearize the pangenome](todo/linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs.md) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
-| [Pangenome graph view queue](todo/pangenome-graph-view-the-open-queue.md) | pangenome | three items unblock the rest; take the LGV axis first |
-| [Collapse trivial bubbles in a file-loaded graph](todo/coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles.md) | pangenome | designed; path lanes are the open question |
 | [PanSN prefixes in the add-track form](todo/offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form.md) | comparative | the error half shipped; this is the discovery half |
-| [The comparative context menu sits behind no seam](todo/the-comparative-context-menu-sits-behind-no-bring-your-own-seam.md) | synteny, dotplot, embedded | fetch status done, tooltip refused; the context menu needs a shape of its own |
-| [The config-read baseline is mostly not display debt](todo/the-config-read-baseline-is-mostly-not-display-debt.md) | config, types | most of it is track/assembly reads no display narrowing reaches; read the split off the entry's table |
 | [Sample the seven remaining random release-validation units](todo/sample-the-seven-remaining-random-release-validation-units.md) | release validation, tests | read `git status` first — a worktree that ran a sweep is dirty until proven otherwise |
 | [Write the one-page spec for two more concepts](todo/write-the-one-page-spec-for-two-more-cross-cutting-concepts.md) | release validation, architecture | name the two concepts before writing either; the plan never did |
 | [Do the plugin `exports` surfaces earn a baseline](todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md) | plugins, ABI | recorded; build the plugin-`exports` baseline, and read the session one's blocker first |
@@ -84,7 +83,6 @@ the half that rots is the half it covers.
 | [The polyprotein strand arrow centres on the whole stack](todo/the-polyprotein-strand-arrow-sits-at-the-centre-of-the-whole-stack.md) | canvas, glyphs | a visual call; the transcript path one file over says one row, this one says all of them |
 | [Synteny clicked outline in tiled mode](todo/the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode.md) | synteny | get the visual call — hull silhouette or per-tile |
 | [Sub-pixel matrix rows draw 1px on the GPU and thinner on Canvas2D](todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md) | variants, backends | a visual call; the 41% is measured and neither side is obviously wrong |
-| [Fill the hi-C rectangle, not just the triangle](todo/fill-the-whole-display-rectangle-not-just-the-hi-c-triangle.md) | hic, GPU | decide what the y axis means once the apex stops bounding it; the cost is measured |
 | [A mixed region set banners the whole display](todo/per-region-banner-for-a-mixed-region-set.md) | limits, chrome | decide whether a partially-refused display draws at all; the fetch is per-region and the banner is not |
 
 ## Measure first: the premise or the cost attribution is unconfirmed
@@ -92,18 +90,12 @@ the half that rots is the half it covers.
 | Item | Area | First move |
 | --- | --- | --- |
 | [The swapped track resolves to a point](todo/the-swapped-assembly-track-resolves-to-a-point.md) | synteny | the hang is fixed; what is left is the swap, still not isolated |
-| [Observer reactions leak from discarded renders](todo/destroying-an-mst-tree-that-something-still-observes.md) | app-core, drawer | the boundary audit is done and came back clean; weigh preloading a child chunk against the bundle graph |
 | [Cut WebGL2 contexts per display](todo/cut-webgl2-contexts-per-display.md) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
-| [Split the arc band's uniforms off the pileup struct](todo/split-the-arc-bands-uniforms-off-the-pileup-struct.md) | alignments, GPU, limits | the 4 -> 2 MiB was arithmetic on a slot that is not arc-only; it is 4 -> 3, so measure the ring before spending the regen |
 | [Produce and host the HPRC summary tier](todo/produce-and-host-the-hprc-summary-tier.md) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [Cross-region arc count at 300x](todo/read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from.md) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
-| [Does a quality floor still buy anything on the band](todo/does-a-base-quality-floor-still-buy-anything-on-the-coverage-band.md) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
-| [Walk the CIGAR once per MM tag](todo/walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group.md) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
 | [Alignments main-thread repack](todo/alignments-still-repacks-every-row-instanced-pass-on-the-main-thread.md) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](todo/stop-rewriting-the-workers-arrays-to-lay-out-features.md) | canvas | measured: skip the row offset, convert the two object arrays to SoA |
 | [The SV inspector rebuilds its chord track per filter](todo/the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter.md) | SV inspector | time it on a callset in the thousands, not the 44-row table |
-| [One inflate pool and byte cache per session](todo/give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them.md) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
-| [Bench typed columns against the per-base extract](todo/bench-typed-columns-against-the-per-base-extract.md) | alignments, perf | the closest in-tree measurement scores it a LOSS; copy `modExtract.bench.ts` and add an arm |
 | [Watch the per-base refetch on a real BAM](todo/watch-the-per-base-refetch-on-a-real-bam.md) | alignments, RPC | count `RenderAlignmentData` calls over a scripted zoom; don't reason about the throttle |
 | [Time a two-tier PIF to settled](todo/time-a-two-tier-pif-to-settled-in-a-browser.md) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
 

@@ -1,12 +1,13 @@
 ---
 name: linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs
-description: read PANGENOME_GRAPHS.md — four findings constrain the layout
-metadata:
-  area: pangenome
-  category: ready
+description: The graph drawn in a LINEAR view the way plugins/alignments draws reads, as the other half of the 2-D Bandage picture — insertions and deletions both fall out of `links.bed.gz`, and `scripts/build_rgfa_alleles.sh` already emits the CIGAR-shaped record. One lane, not donor rows: rank 1 holds 41 of 78 MHC alleles and its sibling haplotype holds 0, so a donor-row plot reads as an artifact of build order. Read PANGENOME_GRAPHS.md first — four of its findings constrain the layout.
 ---
 
 # Linearize the pangenome: draw graph variation as alignment-style glyphs
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The data side is worked out
+and the design survives its own counter-arguments, but standing up a new lane is
+multi-session work nobody has committed to.
 
 Requested framing: the graph in a *linear* view drawn the way
 `plugins/alignments` draws reads, insertions and deletions included, as the

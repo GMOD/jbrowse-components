@@ -1,12 +1,13 @@
 ---
 name: bench-typed-columns-against-the-per-base-extract
 description: the obvious next step after the sub-pixel bin — write typed columns from the extract and delete the copy pass — is one the closest in-tree measurement scores as a LOSS, so it wants a bench arm before a rewrite
-metadata:
-  area: alignments, perf
-  category: measure-first
 ---
 
 # Bench typed columns against the per-base extract before rewriting it
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The nearest measurement in the
+tree scores the proposed rewrite as a LOSS, so what is committed is a bench arm,
+and the rewrite behind it may never be warranted.
 
 The sub-pixel bin bounds how many entries the per-base extract emits; it does not
 change their shape. At base-level zoom (`binBp === 1`) a deep pileup still builds

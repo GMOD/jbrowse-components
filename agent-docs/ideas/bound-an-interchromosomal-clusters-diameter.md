@@ -1,12 +1,14 @@
 ---
 name: bound-an-interchromosomal-clusters-diameter
-description: measure at depth before changing what the floor means
-metadata:
-  area: alignments
-  category: ready
+description: `clusteredInterchromSupport` is single-linkage, so its window bounds the GAP between neighbours and not the cluster's DIAMETER — 40 pairs one window apart chain into one cluster spanning 39 fragment lengths, while the prose beside it makes a distance claim. Whether that matters turns on how concentrated real mismapping is on the PARTNER side, and the obvious cap reintroduces the arbitrary cut points the current form was adopted to escape.
 ---
 
 # Bound an interchromosomal cluster's diameter
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The measurement that would
+justify a change has not been taken, and the alternative on the table is the
+failure mode the current rule exists to avoid — so it is not established that
+anything here should be built.
 
 `clusteredInterchromSupport` is single-linkage, so the window bounds the GAP
 between neighbours and not the DIAMETER of the cluster: 40 pairs spaced exactly

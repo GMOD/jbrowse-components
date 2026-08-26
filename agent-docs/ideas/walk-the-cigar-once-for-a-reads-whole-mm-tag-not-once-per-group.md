@@ -1,12 +1,14 @@
 ---
 name: walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group
-description: the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only
-metadata:
-  area: alignments, perf
-  category: measure-first
+description: Merging the per-group CIGAR walks in `forEachMaxProbMod` was argued down from "close to a halving" to ~1.1x, twice and from opposite directions — the phase is bound by per-call work, not traversal, so removing an ops pass removes nothing that costs. The same-base half shipped separately at 1.268x and took most of the entry with it; the one-pass sequence walk is now a LOSS below three distinct groups. Read before re-proposing htslib's shape, and read the MM-overrun clamp rule from MODIFICATION_TAGS.md rather than from memory.
 ---
 
 # Walk the CIGAR once for a read's whole MM tag, not once per group
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. Two benches have now argued
+this down from "close to a halving" to ~1.1x on one phase of a Fiber-seq-only
+shape, and the same-base half shipped separately. What is left does not carry
+its own weight as an action item.
 
 `forEachMaxProbMod` groups mod entries by positions-array identity, so entries
 holding the same array share one CIGAR walk — the types of a combined code

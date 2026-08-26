@@ -1,14 +1,16 @@
 ---
 name: give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them
-description: the speed premise is measured out; weigh the wasm memory, or close it
-metadata:
-  area: bgzf, RPC, limits
-  category: measure-first
+description: Twenty inflate workers and five reference downloads for eight tracks, because both the bgzf pool and the byte cache are per JS context. Three of the four reasons to share them have been measured out or fixed upstream; what is left is the wasm memory PEAK while several tracks are being browsed, which nothing has measured. Read before proposing a MessagePort channel through makeWorker.
 ---
 
 # Give the RPC workers one inflate pool and one byte cache between them
 
-**Read the close condition before the design: this entry is more likely to end
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The backlog entry led with its
+own close condition, which is the tell: the open question is whether to build
+anything, not what to build. Same call as
+[test-session-fixture-cost](test-session-fixture-cost.md).
+
+**Read the close condition before the design: this is more likely to end
 in a measurement than in a build.** Three of the four reasons it was opened have
 since been measured out or fixed upstream — the thread count (no arm beat the
 status quo), the sizing worry (unsupported), and the resting memory (reaped

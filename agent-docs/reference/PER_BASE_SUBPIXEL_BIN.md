@@ -154,7 +154,7 @@ holds its 365ms clone measurement.
   That gap is why the bin shipped believing a claim nothing could have failed.
 - **Typed columns instead of entry objects**, which the closest in-tree
   measurement says would be a loss —
-  [todo/bench-typed-columns-against-the-per-base-extract.md](../todo/bench-typed-columns-against-the-per-base-extract.md).
+  [ideas/bench-typed-columns-against-the-per-base-extract.md](../ideas/bench-typed-columns-against-the-per-base-extract.md).
 - **The new refetch traffic** the octave-crossing key introduces, unwatched on a
   real BAM —
   [todo/watch-the-per-base-refetch-on-a-real-bam.md](../todo/watch-the-per-base-refetch-on-a-real-bam.md).

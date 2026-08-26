@@ -1,12 +1,14 @@
 ---
 name: fill-the-whole-display-rectangle-not-just-the-hi-c-triangle
-description: decide what the y axis means once the apex stops bounding it; the cost is measured
-metadata:
-  area: hic, GPU
-  category: visual-call
+description: The hi-C display's two bottom corners want contacts half a visible span past the edge, so filling the box means a 2x fetch window against today's 1.5x — and the cost is already measured at 609,913 vertices against the visible span's 318,024, i.e. 60 fps to ~37 while panning on WebGL2. That makes it the direct opposite of REJECTED_IDEAS' parked *smaller* fetch quantum: whichever is built kills the other. The call underneath is what y means once the apex stops bounding it.
 ---
 
 # Fill the whole display rectangle, not just the hi-C triangle
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. Not a defect and not a
+decided direction: it redefines the display's y axis and its fetch shape, and it
+forecloses a parked idea pointing the other way. That is a product call about
+what the hi-C display IS, so it belongs with the proposals.
 
 The display draws the rotated triangle — canvas x is a pair's midpoint, y its
 separation — so the two bottom corners are the part of the box its edges never
@@ -42,8 +44,3 @@ it, because it decides the fetch shape.
 Two things move with whichever way it goes: that y cull has to become real, and
 `hicTransform`'s inverse is what keeps the hit test honest at the corners, so
 both directions want a case in `hicTransform.test.ts`.
-
-
-Every entry here opens with a measurement because the obvious build would be
-guessing. The instrumentation pattern for the render-path ones is
-[reference/PERF_INSTRUMENTATION.md](../reference/PERF_INSTRUMENTATION.md).

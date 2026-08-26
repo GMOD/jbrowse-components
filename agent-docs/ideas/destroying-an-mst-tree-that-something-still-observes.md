@@ -1,12 +1,15 @@
 ---
 name: destroying-an-mst-tree-that-something-still-observes
-description: the boundaries are already clean; measured, the discarded unit is a whole boundary subtree and the leak is app-wide, not the drawer's four
-metadata:
-  area: app-core, drawer
-  category: measure-first
+description: A `lazy` one level below a Suspense boundary that has not committed yet makes React discard the boundary's whole child subtree, and every `observer()` rendered in that pass keeps a Reaction for the life of the tab — which is why a destroyed session still has observers. Narrowed to a 30-line repro with no JBrowse in it, and StrictMode is the cure, so a production build has it and a developer never sees it. The drawer's Suspense boundaries are already clean and the leak is app-wide, not the four the warning names; the candidate fix is preloading a child chunk, unbuilt and uncosted against the bundle graph. Do NOT file it upstream — mobx-react-lite knows.
 ---
 
 # Destroying an MST tree that something still observes
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The investigation is finished
+and is worth keeping in full; what it lands on is a candidate fix — start a
+child chunk's import when the model that will render it is created — that is
+neither built nor costed against the initial bundle graph. Deciding whether to
+pay that is the open question, so this is a proposal.
 
 The residue of the setSession fix, and the one part of this area still open.
 

@@ -1,12 +1,13 @@
 ---
 name: split-the-arc-bands-uniforms-off-the-pileup-struct
-description: measure-first — the proposal's 4 MiB -> 2 MiB is really 4 -> 3, because one array it counted is not arc-only
-metadata:
-  area: alignments, GPU, limits
-  category: measure-first
+description: The arc band is the last consumer of a memcpy-the-pileup-UBO-and-poke-it pattern, and giving it a declared struct is worth doing on code-quality grounds — but NOT for the memory number it was first proposed on. That 4 MiB -> 2 MiB is really 4 -> 3, because `linkedReadColor[8]` is a pileup layer's, and what would actually cross the 512-byte line is packing `readCategoryColor[23]`. Read before re-proposing either.
 ---
 
 # Split the arc band's uniforms off the pileup struct
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The saving that justified it
+did not survive checking, and what remains is a refactor whose payoff nothing
+has shown a real session is short of.
 
 The coverage band's move to `CoverageBandUniforms` (2026-08) left the arc band as
 the last consumer of the pattern's opposite: `GpuAlignmentsRenderer` memcpys the
@@ -63,7 +64,7 @@ is the thing to check first, and it is a smaller change than either.
 
 ## Where the budget question lives
 
-[cut-webgl2-contexts-per-display](cut-webgl2-contexts-per-display.md) is about
+[cut-webgl2-contexts-per-display](../todo/cut-webgl2-contexts-per-display.md) is about
 CONTEXT count, not bytes, and its measure-first note applies here too: 17 tracks
 x 1 MiB saved is 17 MiB, and nothing has yet shown that the ring is what a real
 session is short of. Measure before spending the regen.

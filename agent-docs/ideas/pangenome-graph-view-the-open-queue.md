@@ -1,12 +1,13 @@
 ---
 name: pangenome-graph-view-the-open-queue
-description: three items unblock the rest; take the LGV axis first
-metadata:
-  area: pangenome
-  category: ready
+description: Nine open items for the graph view, three of which unblock the rest — taking `scaleX`/`translateX` from the connected LGV (which is `hprc_mhc_anchored`'s whole argument), following that view's region so the window is navigable from inside, and picking a tier by `bpPerPx` with expand-on-click. Also why the anisotropy must NOT go in the transform uniform, and why the reference-only index does not kill the 12 s fetch. The view itself lives in the out-of-tree GraphGenomeView plugin.
 ---
 
 # Pangenome graph view: the open queue
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. It is a queue rather than an
+item, and the code it plans lives in another repo — so it reads as a roadmap for
+whoever picks that plugin up, not as work in this backlog.
 
 Read [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) first — the
 files, the measured costs and the decisions that look like bugs are all there.

@@ -1,12 +1,13 @@
 ---
 name: does-a-base-quality-floor-still-buy-anything-on-the-coverage-band
-description: measure the sub-Q20 share that SURVIVES the frequency floor
-metadata:
-  area: alignments
-  category: measure-first
+description: `computeSNPCoverage` weights a Q10 base like a Q40 one, and excluding sub-Q20 bases needs no new payload — but `coverageSnpMinFrequency` may already remove the same reads, so the measurement that decides whether to build this can also close it. Plus why a quality floor costs a refetch where the frequency floor is free.
 ---
 
 # Does a base-quality floor still buy anything on the coverage band
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-26. The entry's own exit is "if
+the answer is almost none, the entry closes" — so what is committed is a
+measurement, and the build behind it may never be warranted.
 
 `mismatchQuals` ships per mismatch and drives the pileup's per-base fade
 (`qualityFade`, `features/mismatch/drawCanvas.ts`); `computeSNPCoverage` ignores

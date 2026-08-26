@@ -699,8 +699,8 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   six-track pan, so there is no queue for a sixth worker to drain. The cost side
   is real and one-directional: each worker holds its own BAM chunk caches and
   its own bgzf pool, so a sixth is a sixth copy of both (see
-  `give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them`, which
-  is where the memory question lives). A reader who wants more workers already
+  `ideas/give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them`,
+  which is where the memory question lives). A reader who wants more workers already
   has the lever — the `workerCount` config slot overrides the hardware default —
   so nothing is owed but the default, and the default is right.
 
