@@ -24,9 +24,8 @@ Auto-generated config schema for the current JBrowse release — see the
 ```
 
 `genes.gff3` infers `Gff3Adapter` and `FeatureTrack` on its own, and `name`
-defaults to the file name, so the whole track is its id, its uri and its
-assembly. A config declaring one assembly supplies that last one too, leaving
-`{ trackId, uri }` — see
+defaults to the file name. In a config declaring one assembly, `assemblyNames`
+comes from there too — see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js

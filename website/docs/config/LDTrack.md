@@ -29,9 +29,8 @@ sibling `<uri>.tbi` index, equivalent to writing out the full
 ```
 
 `plink.ld.gz` infers `PlinkLDTabixAdapter` and `LDTrack` on its own, and `name`
-defaults to the file name, so the whole track is its id, its uri and its
-assembly. A config declaring one assembly supplies that last one too, leaving
-`{ trackId, uri }` — see
+defaults to the file name. In a config declaring one assembly, `assemblyNames`
+comes from there too — see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js

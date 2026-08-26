@@ -567,7 +567,7 @@ export function looseTrackExample(content: string) {
     spec.adapterType === adapterType &&
     trackTypeForAdapter(adapterType, file) === trackType
     ? section(
-        `\`${file}\` infers \`${adapterType}\` and \`${trackType}\` on its own, and \`name\` defaults to the file name, so the whole track is its id, its uri and its assembly. A config declaring one assembly supplies that last one too, leaving \`{ trackId, uri }\` — see [the shortest track](${SHORTEST_TRACK}).`,
+        `\`${file}\` infers \`${adapterType}\` and \`${trackType}\` on its own, and \`name\` defaults to the file name. In a config declaring one assembly, \`assemblyNames\` comes from there too — see [the shortest track](${SHORTEST_TRACK}).`,
         codeBlock(
           '{',
           `  trackId: '${track.trackId}',`,

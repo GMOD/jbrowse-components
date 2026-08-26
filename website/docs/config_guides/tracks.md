@@ -61,9 +61,7 @@ longhand equivalent here is `"bigBedLocation": { "uri": "..." }`. The track's
 
 ## The shortest track
 
-A track is its id, its file and the assembly it sits on — and the config below
-declares one assembly, so the track need not name it. The same config, with the
-track written that way:
+The same config, with the track written short:
 
 ```json
 {

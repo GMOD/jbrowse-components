@@ -196,8 +196,8 @@ added by `&sessionTracks=` can be named here too.
 `FromConfigAdapter` track, specifying features inline as JSON — BLAST hits from
 the URL bar, say.
 
-A track over a data file is three keys, since the type and the adapter come from
-the extension:
+A track over a data file needs no `type` or `adapter` — the extension gives
+both:
 
 ```
 &sessionTracks=[{"trackId":"reads","uri":"https://example.com/sample.bam","assemblyNames":["hg38"]}]

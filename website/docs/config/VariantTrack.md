@@ -25,9 +25,8 @@ plugin.
 ```
 
 `variants.vcf.gz` infers `VcfTabixAdapter` and `VariantTrack` on its own, and
-`name` defaults to the file name, so the whole track is its id, its uri and its
-assembly. A config declaring one assembly supplies that last one too, leaving
-`{ trackId, uri }` — see
+`name` defaults to the file name. In a config declaring one assembly,
+`assemblyNames` comes from there too — see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
