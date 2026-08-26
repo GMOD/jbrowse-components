@@ -59,6 +59,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 - **Display:** [LinearHicDisplay](../linearhicdisplay)
   ([state model](../../models/linearhicdisplay))
+- **Adapter:** [AlignmentsContactAdapter](../alignmentscontactadapter)
 - **Adapter:** [HicAdapter](../hicadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
