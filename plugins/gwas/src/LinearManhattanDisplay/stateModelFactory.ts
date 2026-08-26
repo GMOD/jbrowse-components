@@ -738,21 +738,17 @@ export function stateModelFactory(
            *
            * The hover highlight is a DOM ring positioned from the hit's
            * screenX/screenY, captured when the pointer last moved — so a
-           * viewport change under a stationary cursor leaves it parked on empty
-           * space while the tooltip beside it describes a SNP that has moved.
+           * pan/zoom/scroll under a stationary cursor (none of which fires a
+           * mousemove over a painted canvas) leaves it parked on empty space
+           * while the tooltip beside it describes a SNP that has moved. All
+           * three axes, not just bpPerPx: see
+           * `installClearHoverOnViewportChange`.
            */
           clearHoveredFeature() {
             self.setHoveredFeature(undefined)
           },
 
           afterAttach() {
-            // The hover highlight is a DOM ring positioned from the hit's
-            // screenX/screenY, captured when the pointer last moved — so a
-            // pan/zoom/scroll under a stationary cursor (none of which fires a
-            // mousemove over a painted canvas) leaves it parked on empty space
-            // while the tooltip beside it describes a SNP that has moved. All
-            // three axes, not just bpPerPx: see
-            // installClearHoverOnViewportChange.
             // LocusZoom-style default: while no index SNP is pinned, keep the
             // index anchored on the highest-scoring loaded SNP, re-tracking it as
             // higher-scoring data lands.

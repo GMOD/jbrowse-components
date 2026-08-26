@@ -1,11 +1,10 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import { axisPlotBox } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   svg: {
     position: 'absolute',
-    top: YSCALEBAR_LABEL_OFFSET,
     left: 0,
     pointerEvents: 'none',
   },
@@ -13,6 +12,10 @@ const useStyles = makeStyles()({
 
 // Black ring around the hovered point. Drawn in an SVG overlay so it can sit
 // above the canvas without disturbing GPU re-renders.
+//
+// Both ends of its box come off `axisPlotBox`, the same call that positions the
+// canvas beneath it: the ring is drawn at a `screenY` measured in that canvas'
+// space, so respelling either end here is what would drift it.
 const HoverHighlight = observer(function HoverHighlight({
   screenX,
   screenY,
@@ -27,6 +30,7 @@ const HoverHighlight = observer(function HoverHighlight({
   pointDiameterPx: number
 }) {
   const { classes } = useStyles()
+  const { yTop, plotHeight } = axisPlotBox(height)
   // Ring sits just outside the point with a fixed margin; the floor keeps it
   // visible/grabbable for tiny points and reproduces the historical r=6 at the
   // default 4px diameter.
@@ -34,8 +38,9 @@ const HoverHighlight = observer(function HoverHighlight({
   return (
     <svg
       className={classes.svg}
+      style={{ top: yTop }}
       width={width}
-      height={height - 2 * YSCALEBAR_LABEL_OFFSET}
+      height={plotHeight}
     >
       <circle
         cx={screenX}

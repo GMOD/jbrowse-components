@@ -66,12 +66,14 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
       if (!gwasLocation || !assembly) {
         throw new Error('Please supply a GWAS file and an assembly')
       }
+      // one trim, so the id and the name are derived from the same string
+      const name = trackName.trim()
       addTrackFromWidget({
         model,
         session,
         conf: buildGwasTrackConfig({
-          trackId: makeTrackId({ name: trackName }),
-          trackName: trackName.trim(),
+          trackId: makeTrackId({ name }),
+          trackName: name,
           assembly,
           gwasLocation,
           gwasIndexLocation,

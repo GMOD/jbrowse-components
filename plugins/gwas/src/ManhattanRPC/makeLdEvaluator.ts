@@ -10,11 +10,11 @@ import type { Feature } from '@jbrowse/core/util'
 //   - color: index SNP is purple (ldIndexColor), partners bin by r², absent → grey
 //   - r²:    1 for the index, the looked-up r² for partners, NaN when absent (so
 //            the tooltip omits it rather than showing a fake 0)
-// color derives entirely from the r² state, so both come from a single
-// name/posKey/Map derivation. buildManhattanResult calls evalColor(f) then
-// evalR2(f) back-to-back for the same feature, so memoizing on the last feature
-// runs that derivation once per point instead of twice, with no per-feature
-// allocation.
+// glyph and color both derive entirely from the r² state, so all three come
+// from a single name/posKey/Map derivation. buildManhattanResult calls
+// evalGlyph, evalColor and evalR2 back-to-back for the same feature, so
+// memoizing on the last feature runs that derivation once per point instead of
+// three times, with no per-feature allocation.
 export function makeLdEvaluator(
   ld: LdToIndex,
   indexSnp: string,

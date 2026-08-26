@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
   ScoreRules,
-  YSCALEBAR_LABEL_OFFSET,
   YScaleBarOverlay,
   axisPlotBox,
 } from '@jbrowse/wiggle-core'
@@ -42,19 +42,21 @@ const LinearManhattanDisplayComponent = observer(
     // renderState is always defined; an empty rpcDataMap/flatbush set simply
     // yields no hit, so no separate loading guard is needed. The offsetY passed
     // by the shared handler is measured from the DisplayChrome top, so subtract
-    // the y-axis label band to land in the canvas' coordinate space.
+    // the canvas' own top — off the same `axisPlotBox` that positions it — to
+    // land in its coordinate space.
+    const plotTop = axisPlotBox(height).yTop
     const computeHit = useCallback(
       (offsetX: number, offsetY: number) =>
         findManhattanHit(
           offsetX,
-          offsetY - YSCALEBAR_LABEL_OFFSET,
+          offsetY - plotTop,
           model.renderBlocks,
           model.rpcDataMap,
           model.flatbushes,
           model.renderState,
           model.regionRefNames,
         ),
-      [model],
+      [model, plotTop],
     )
 
     const { onPointerPosition, onClick } = wiggleMouseHandlers(
@@ -63,13 +65,11 @@ const LinearManhattanDisplayComponent = observer(
     )
 
     function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
-      // `currentTarget` is the chrome container — the box the tracker measures
-      // against — so this needs no ref of its own
-      const rect = event.currentTarget.getBoundingClientRect()
-      const hit = computeHit(
-        event.clientX - rect.left,
-        event.clientY - rect.top,
-      )
+      // `eventPoint` measures against `currentTarget` — the chrome container,
+      // which is the box the tracker measures against too, so the right-click
+      // and the hover resolve the same hit
+      const { x, y } = eventPoint(event)
+      const hit = computeHit(x, y)
       if (hit) {
         event.preventDefault()
         // clear the hover tooltip so it doesn't stay stuck behind the menu
@@ -182,7 +182,7 @@ const ManhattanBody = observer(function ManhattanBody({
       ) : null}
       {model.indexSnpMissing ? (
         <LdIndexWarning
-          offsetTop={YSCALEBAR_LABEL_OFFSET}
+          offsetTop={plotBox.yTop}
           offscreen={model.indexSnpOffscreen}
         />
       ) : null}

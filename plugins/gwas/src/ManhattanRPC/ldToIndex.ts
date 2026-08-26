@@ -10,20 +10,18 @@ export function posKey(refName: string, start: number) {
 // True when a feature's SNP id or its chr:bp position key equals the index SNP.
 // Single source of truth for "is this the index" across the color/r² evaluators
 // and the LD-record scan, so they can't drift apart.
+//
+// `key` is undefined for an LD-record side with no position key in the caller's
+// scheme — a trans-LD partner on another contig (see `callerKey`). Such a side
+// can still match by SNP id, which names no contig; it just has no position to
+// match on, which is what an undefined key can never equal (`indexSnp` is a
+// non-empty string wherever LD coloring runs — see `ldColoringRequested`).
 export function matchesIndexSnp(
   name: string | undefined,
-  key: string,
+  key: string | undefined,
   indexSnp: string,
 ) {
   return name === indexSnp || key === indexSnp
-}
-
-// One side of an LD pair against the index. `key` is that side's position key
-// in the caller's scheme, or undefined when it has no such key — a trans-LD
-// partner on another contig (see `callerKey`). Such a side can still
-// match by SNP id, which names no contig; it just has no position to match on.
-function sideMatchesIndex(snp: string, key: string | undefined, index: string) {
-  return key === undefined ? snp === index : matchesIndexSnp(snp, key, index)
 }
 
 export interface LdToIndex {
@@ -114,8 +112,8 @@ export async function buildLdToIndex({
     // that scheme, not against the record's own `chrA`/`chrB`.
     const keyA = callerKey(r.chrA, r.bpA)
     const keyB = callerKey(r.chrB, r.bpB)
-    const aIsIndex = sideMatchesIndex(r.snpA, keyA, indexSnp)
-    const bIsIndex = sideMatchesIndex(r.snpB, keyB, indexSnp)
+    const aIsIndex = matchesIndexSnp(r.snpA, keyA, indexSnp)
+    const bIsIndex = matchesIndexSnp(r.snpB, keyB, indexSnp)
     if (aIsIndex && !bIsIndex) {
       indexFound = true
       r2ByKey.set(r.snpB, r.r2)
