@@ -15,6 +15,13 @@ metadata:
 and the two spec-side workarounds are still carrying it
 (`website/scripts/specs/synteny.ts:2050-2058` and `:2167-2171`).
 
+**The corpus is now internally inconsistent, which is new and sharpens this.**
+`3dcb3691ab` (2026-08-24) added `demos/orthofinder_{drosophila,solanaceae}`
+"built by the pipeline that was already there" — i.e. by the gene-count rule. So
+five OrthoFinder demos sit side by side, two picking their 30 sequences one way
+and three the other, and the two new ones are a worked example of what the
+rebuilt three should look like. Read one of them before rerunning the script.
+
 **The blocks dedupe this entry used to be about is already in the pictures**, so
 what follows is a SECOND re-render of the three OrthoFinder figures rather than
 the first. `85afc7733f` landed on 08-14 and all five `.blocks` figures were

@@ -3,7 +3,7 @@ name: stop-rewriting-the-workers-arrays-to-lay-out-features
 description: the lanes are not the cost — the objects are, on both sides of the hop
 metadata:
   area: canvas
-  category: measure-first
+  category: ready
 ---
 
 # Stop rewriting the worker's arrays to lay out features

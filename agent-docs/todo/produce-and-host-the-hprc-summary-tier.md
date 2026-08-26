@@ -3,7 +3,7 @@ name: produce-and-host-the-hprc-summary-tier
 description: built and hosted; report the overlap collapse upstream, then decide span vs cost
 metadata:
   area: MAF, pangenome
-  category: measure-first
+  category: ready
 ---
 
 # Produce and host the HPRC summary tier
