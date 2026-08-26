@@ -281,10 +281,10 @@ const GroupHighlightLayer = observer(function GroupHighlightLayer({
   }
   return (
     <>
-      {lanes.flatMap((lane, row) =>
-        (lane.spans.get(hoveredGroupKey) ?? []).map((span, i) => (
+      {lanes.flatMap(lane =>
+        (lane.spans.get(hoveredGroupKey) ?? []).map(span => (
           <rect
-            key={`hover-${row}-${i}`}
+            key={`hover-${lane.assemblyName}-${span[0]}-${span[1]}`}
             x={Math.min(span[0], span[1]) - 1}
             y={lane.glyphTop - 1}
             width={Math.max(2, Math.abs(span[1] - span[0]) + 2)}
