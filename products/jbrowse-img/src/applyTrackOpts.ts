@@ -235,10 +235,8 @@ interface DisplaySnapshot {
   minSashimiScore?: number
   sashimiArcsHeight?: number
   arcColorByType?: string
-  // The flag masks, tag filters and read categories. Partial by design — the
-  // display runs every read of it through `normalizeFilterBy`, which fills
-  // whichever masks a hand-written config left out, and an absent category is
-  // an unfiltered one.
+  // Lifted back out by `applyDisplayOpts` rather than passed to showTrack —
+  // see there for why this one slot cannot ride in on the snapshot.
   filterBy?: FilterBySnapshot
   // wiggle / score
   color?: string

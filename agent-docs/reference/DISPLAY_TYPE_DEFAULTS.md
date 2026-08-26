@@ -297,6 +297,23 @@ A subclass turns an inherited promotable slot back into a plain one by stating
 `promotedBase: undefined`; `mergeSchemaDefinition` is a spread, so a stated
 `undefined` overwrites the base's value where an omitted key would inherit it.
 
+**A preset that turns itself OFF must unset a promotable slot, never write what
+it thinks the default is.** The two are indistinguishable when you read the slot
+back and different in every session afterwards: the write pins the track, so a
+session-wide default stops reaching it for good. `SV_CHANNELS_OFF` wrote
+`readConnectionsDown: false` against a `promotedBase` of `true` and flipped
+every track that used it onto the wrong side of the coverage band; it wrote
+`readConnections: 'off'` against a `promotedBase` of `'off'`, which looks like a
+no-op and quietly opted the track out of a promoted `'arc'`.
+
+That also means a preset's write shape is wider than its read shape — the getter
+always resolves, only the setter takes `undefined` — so a preset typed as "the
+settings I compare against" cannot express leaving at all. Split the two
+(`SvChannelsWrite` vs `SvChannelsSettings`) rather than widening the getter.
+And a slot the preset does not READ is one it must not WRITE: writing one the
+active-check ignores is the two halves disagreeing, and the user sees it as a
+setting that reverts itself.
+
 **There was a separate `promotable: true` flag and it is gone.** It carried no
 information `promotedBase` didn't, and keeping the two in agreement cost two
 `ConfigSlot` throws — "promotable with no base", and the mirror mistake of a base

@@ -249,6 +249,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   a placement test and not a span threshold, and `displayedRegions` will not
   answer it: in an ordinary LGV that is the whole chromosome. ARC_BAND.md has
   both measurements.
+- **The collapse is for DRAWING, so the cluster key still takes the true
+  endpoints** (`pushArc`'s `keyFeet`). `arcKey` carries no `spanBp` and an
+  unplaced mark's `yBp` is 0, so keying off the drawn feet asks "same foot, same
+  colour?" — which at any real depth every read on that outer edge answers yes
+  to. They merged into one mark whose width counted them all and whose hover
+  named one of their partners.
 - **`ARC_FAR_SCREEN_WIDTHS` is 3, not "both endpoints fit on screen".** A
   circle's tangent at its foot is vertical whatever its radius, so collapsing a
   pair to one at 1 screen width threw its direction away; the ellipse keeps
