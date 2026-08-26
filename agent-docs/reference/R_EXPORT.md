@@ -147,7 +147,7 @@ multi-sample variant matrix + rows, Hi-C, GWAS. Alignments is the richest: SNP
 coverage (`bam_coverage` carves deletions from depth via `grglist(drop.D.ranges)`
 + `interbase_indicators` breakpoint triangles, both matching JBrowse), color-by
 schemes (insert-size uses JBrowse's robust median±3·1.4826·MAD band over primary
-proper-pairs, not mean±sd), MD-tag mismatches with the depth-dependent
+proper-pairs, not mean±sd), per-base mismatches with the depth-dependent
 low-frequency fade (`mismatch_fade_alpha`, zoom-gated on `bpPerPx>1` like
 `frequencyFade` — the coverage panel shows every fraction, the fade is on the
 pileup ticks), MM/ML modifications, per-base quality, soft/hard clips, CIGAR
@@ -232,11 +232,21 @@ for the sort figure) that builds the script and runs it to
   *clipped* (`pmin(pmax(...))`) so a read straddling the edge draws cut at the
   boundary; a mismatch/indel/clip *position* outside the region just isn't drawn
   (coord clipping only guards the whole-figure edges, not internal dividers).
+- **MD is optional in BAM, so `bam_mismatches` takes two paths** — the MD walk
+  for a read that has the tag, a `sequenceLayer` projection compared against
+  `open_reference(ref)` for one that does not, which is the same split
+  `BamAdapter` makes (`needsReference`, `seqFetchSpan`). An MD-only walk drew a
+  pileup with no SNP ticks on an MD-less file and reported nothing.
+  `exportRMismatchEquivalence.test.ts` is the oracle: strip MD from a BAM that
+  has it and the reference path must reproduce what the MD path found. The
+  reference is a FASTA *or* a 2bit — an assembly stored as 2bit used to resolve
+  to none at all.
 - **GRanges has no `[[`** — read metadata columns via `mcols(g)[[nm]]`.
 - **Model-type cycle** — annotate `exportRCode()`'s return type explicitly.
 - **CRAM** — Rsamtools can't read CRAM (deliberate upstream gap, no dep bump
   fixes it). Each panel decodes the region to a temp BAM via `cram_to_bam`
-  (samtools), which restores MD so `bam_mismatches` still works.
+  (samtools), which restores MD from the reference while decoding, so a CRAM
+  never reaches the MD-less path above.
 - **Shared worktree** — multiple agents edit these files. Stage explicit
   pathspecs when committing; never `git add -A`. (The former `agent-docs/
   R_EXPORT.md` + `R_EXPORT_ADVANCED.md` were deleted by another agent's commit
