@@ -1,0 +1,146 @@
+{
+  "id": "multiway-lane-stability",
+  "measured": "2026-08-26",
+  "published": false,
+  "source": {
+    "kind": "probe",
+    "repro": "pnpm exec esbuild --bundle --platform=node --format=esm --target=node22 --outfile=/tmp/lanestab.mjs plugins/linear-comparative-view/benches/multiwayLaneStability.probe.ts && node /tmp/lanestab.mjs - the deployed demos/grape_peach_cacao MCScan blocks track over the network, grape chr1 (NC_081805.1), a 2Mb window walked in 100kb steps, 259 steps, 1280px.",
+    "notes": "WHICH OF A LANE'S PER-SETTLE CHOICES HOLD STILL WHILE THE ANCHOR PANS. `computeRowFrame` decides three things and quantises only the continuous ones - SCALE_LADDER for the scale, SHIFT_QUANTUM_PX for the offset, whole-fetch density for the lane order. The two DISCRETE ones, which contig the lane is and which way it reads, are bare comparisons. SyntenyFollow reached the opposite arrangement and wrote down why (`preferIncumbent` on its discrete choices and nothing else, because a window panned across a fusion junction moves summed overlap from one mate contig to the other and the two are equal at the join), so the question was whether multiway pays for the difference.\n\nA CHANGE IS NOT A FLICKER, and the two are counted apart: a lane moving from one syntenic block to the next changes once and stays, which is the data; a lane on a near-tie leaves a value and comes back. `osc` counts only the second, within a fifth of a window.\n\nTHE CONTIG VOTE IS NOT THE PROBLEM, which is what this was written to check and is the opposite of what it found. Five of six lanes oscillate zero times in 259 steps and arabidopsis three; weighting each contig by how much of the ANCHOR it explains is decisive enough on real paleopolyploid data that an incumbent would have nothing to hold. That hypothesis is dead.\n\nTHE ORIENTATION IS. Every lane mirrors itself and mirrors back over a pan the reader sees as smooth: 10-21 changes per chromosome traverse with 1-7 of them oscillations, and a whole-lane mirror is the loudest thing a lane can do. Both of its votes are unstable in the same places - `readsBackwards` against the lane above (the `drawn` columns, what a reader sees) tracks `computeRowFrame`'s own anchor-order sign sum (`fallback`) closely, which is consistent with the two being the same measurement at lane 1 and correlated below it. So overriding one with the other buys nothing here, and neither carries the deadband SyntenyFollow puts on exactly this decision (NEARLY_ALL, 0.9, plus `orientedKey` so the answer is applied once per DECISION rather than once per settle).\n\nA deadband alone does not close it: an ambiguous window has to answer something, and the follow's answer is 'leave the row as it was', which needs a previous value. `alignRowFrames` is a pure computed feeding the lane fetch specs and holds none - so the fix is a design choice (a stateless tie-break that always answers the same way, or a carried previous frame the way `decideSpread` carries `previous`) rather than a constant.\n\n`empty` is windows where the lane places nothing at all - a low-synteny stretch of grape chr1, the same 33 for every lane."
+  },
+  "columns": [
+    {
+      "key": "lane",
+      "label": "lane",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "contigs",
+      "label": "contigs seen",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "contigChanges",
+      "label": "contig chg",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "contigOsc",
+      "label": "contig osc",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "drawnFlipChanges",
+      "label": "drawn flip chg",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "drawnFlipOsc",
+      "label": "drawn flip osc",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "fallbackFlipChanges",
+      "label": "fallback flip chg",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "fallbackFlipOsc",
+      "label": "fallback flip osc",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "empty",
+      "label": "empty steps",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "lane": "peach",
+        "contigs": 2,
+        "contigChanges": 3,
+        "contigOsc": 0,
+        "drawnFlipChanges": 10,
+        "drawnFlipOsc": 2,
+        "fallbackFlipChanges": 10,
+        "fallbackFlipOsc": 2,
+        "empty": 33
+      }
+    },
+    {
+      "values": {
+        "lane": "citrus",
+        "contigs": 3,
+        "contigChanges": 7,
+        "contigOsc": 0,
+        "drawnFlipChanges": 10,
+        "drawnFlipOsc": 1,
+        "fallbackFlipChanges": 11,
+        "fallbackFlipOsc": 1,
+        "empty": 33
+      }
+    },
+    {
+      "values": {
+        "lane": "cacao",
+        "contigs": 1,
+        "contigChanges": 2,
+        "contigOsc": 0,
+        "drawnFlipChanges": 15,
+        "drawnFlipOsc": 2,
+        "fallbackFlipChanges": 17,
+        "fallbackFlipOsc": 2,
+        "empty": 33
+      }
+    },
+    {
+      "values": {
+        "lane": "poplar",
+        "contigs": 5,
+        "contigChanges": 8,
+        "contigOsc": 0,
+        "drawnFlipChanges": 16,
+        "drawnFlipOsc": 3,
+        "fallbackFlipChanges": 16,
+        "fallbackFlipOsc": 4,
+        "empty": 33
+      }
+    },
+    {
+      "values": {
+        "lane": "tomato",
+        "contigs": 4,
+        "contigChanges": 8,
+        "contigOsc": 0,
+        "drawnFlipChanges": 21,
+        "drawnFlipOsc": 7,
+        "fallbackFlipChanges": 18,
+        "fallbackFlipOsc": 7,
+        "empty": 33
+      }
+    },
+    {
+      "values": {
+        "lane": "arabidopsis",
+        "contigs": 4,
+        "contigChanges": 12,
+        "contigOsc": 3,
+        "drawnFlipChanges": 20,
+        "drawnFlipOsc": 7,
+        "fallbackFlipChanges": 15,
+        "fallbackFlipOsc": 5,
+        "empty": 34
+      }
+    }
+  ]
+}
