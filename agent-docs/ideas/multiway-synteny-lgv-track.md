@@ -218,3 +218,33 @@ specified in [synteny-comparative](synteny-comparative.md) §"syntenyGroupId for
 cross-row block identity" and should be built there, not here — this display
 becomes its third consumer, after colorBy:group and cross-row hover in the
 synteny view.
+
+**What the phase covers, and the scrim race behind it.** `displayPhase` holds
+at `loading` for the two dependent fetches until they FIRST land, and not for
+any refetch after that. Holding it for every refetch put the striped scrim over
+lanes that were already drawn on any pan that moved a quantized lane window: the
+dependent fetch is debounced 500 ms and the overlay's anti-flash delay is
+250 ms, so the scrim always won that race. Before the first commit there is
+nothing on screen to flash over and a capture would shoot placement boxes, which
+is what the gate is for; after it, the lanes are an enhancement over boxes that
+are already correct, and a refetch says so through the corner progress chip that
+`ready` gates. So `displaySettled` — `[data-display-phase="ready"]`, what every
+figure spec waits on — covers a load-and-shoot and not a pan-then-shoot. Every
+`multiway_synteny/*` spec is the former; a pan-then-shoot one would need a finer
+wait and should add it then.
+
+**What this shares with SyntenyFollow, and what it does not.** Both answer
+"given the pairwise alignments under a window of genome A, where in genome B
+does that window correspond, and which way round" — `SyntenyFollow` as a
+navigation of a real LGV panel (bp regions, `moveTo`, CIGAR-exact through
+`cigarMapSpan`), this display as a lane-local affine frame at a fixed viewport.
+The shapes do not unify: a `RowFrame` is one linear ramp over one refName, a
+followed row is a `displayedRegions` layout, and multiway has no navigation to
+perform. One finding did transfer, and it was a bug — `followAnchorWindows`
+weighs a contig by SCREEN PX and `resolvePanel` by aligned bp, while
+`computeRowFrame` counted placements, so a cluster of short repeat hits could
+put a lane on a different contig from the panel launched off the same data. It
+weighs bp now. What would transfer next is rung 3: `followSpreadSpans` and
+`spanBounds` place a row on the UNION of what several contigs map to, which is
+the machinery the parked multi-copy lanes (lane-per-region) need and the reason
+to build that on the follow side's concepts rather than a second time here.
