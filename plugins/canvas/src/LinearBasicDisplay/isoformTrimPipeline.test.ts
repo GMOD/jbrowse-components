@@ -57,13 +57,16 @@ const GENE = mockFeature({
 // the worker stamping the ordinals itself. The layout-level tests build their
 // regions with `packStackedGenes`, whose ordinals are pre-stamped, so this is
 // the one place a missing stamp on the worker side can fail.
-function layoutAt(maxIsoformsPerGene: number | undefined) {
+function layoutAt(
+  maxIsoformsPerGene: number | undefined,
+  gene: Feature = GENE,
+) {
   const config = mockDisplayConfig({
     subfeatureLabels: 'below',
     labels: { name: "jexl:get(feature,'name')", description: '' },
   } as any)
   const packed = collectRenderData({
-    layouts: [layoutSubfeatures({ feature: GENE, config, jexl })],
+    layouts: [layoutSubfeatures({ feature: gene, config, jexl })],
     regionStart: 0,
     regionEnd: 10_000,
     config,
@@ -139,5 +142,67 @@ describe('the trim through the worker pipeline', () => {
       text: '+2 more',
       hidden: 2,
     })
+  })
+})
+
+// Same shape, except only the KEPT transcript has two exons — so the gene's one
+// intron line is a line the trim drops nothing from, while the isoform that
+// drew it still rises by the height of the isoform dropped above it.
+const SINGLE_INTRON_GENE = mockFeature({
+  type: 'gene',
+  name: 'GENE2',
+  start: 100,
+  end: 3100,
+  subfeatures: ['d', 'e', 'f'].map((name, i) =>
+    mockFeature({
+      type: 'mRNA',
+      name,
+      start: 100 + i * 1000,
+      end: 1000 + i * 1000,
+      subfeatures:
+        name === 'e'
+          ? [
+              mockFeature({
+                type: 'CDS',
+                name: `${name}-cds1`,
+                start: 100 + i * 1000,
+                end: 500 + i * 1000,
+              }),
+              mockFeature({
+                type: 'CDS',
+                name: `${name}-cds2`,
+                start: 700 + i * 1000,
+                end: 950 + i * 1000,
+              }),
+            ]
+          : [
+              mockFeature({
+                type: 'CDS',
+                name: `${name}-cds`,
+                start: 100 + i * 1000,
+                end: 400 + i * 1000,
+              }),
+            ],
+    }),
+  ),
+})
+
+describe('a primitive kind the trim drops nothing from', () => {
+  const full = layoutAt(undefined, SINGLE_INTRON_GENE)
+  const trimmed = layoutAt(1, SINGLE_INTRON_GENE)
+  const kept = trimmed.subfeatureInfos.find(i => i.featureId === 'mRNA-e')!
+
+  it('still shifts the survivor it drew', () => {
+    expect(full.lineYs).toHaveLength(1)
+    expect(trimmed.lineYs).toHaveLength(1)
+    // one arrow per transcript, so this lane IS filtered — and its Y is where
+    // the line's has to land
+    expect(full.arrowYs).toHaveLength(3)
+    expect(trimmed.arrowYs).toHaveLength(1)
+    const lineY = trimmed.lineYs[0]!
+    expect(lineY).not.toBe(full.lineYs[0])
+    expect(lineY).toBe(trimmed.arrowYs[0])
+    expect(lineY).toBeGreaterThanOrEqual(kept.topPx)
+    expect(lineY).toBeLessThanOrEqual(kept.bottomPx)
   })
 })

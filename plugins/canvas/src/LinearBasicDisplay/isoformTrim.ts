@@ -184,7 +184,11 @@ function pick<T extends { length: number; [i: number]: number }>(
   return out
 }
 
-// Which primitives of one kind survive, given the trims in force.
+// Which primitives of one kind survive, given the trims in force, and whether
+// any survivor has moved — dropping none does NOT mean this kind is untouched,
+// because a kept isoform rises by everything dropped above it whatever kind
+// drew that. A single-exon isoform dropped above a multi-exon one that stays
+// leaves the region's only intron line kept, and 23px below the exons it joins.
 //
 // Three ways a region holds something no trim has a say over, answered here so
 // each caller does not repeat them: the ordinal lane is length-zero (this
@@ -197,18 +201,20 @@ function keptPrimitiveIndices(
   trims: ReadonlyMap<string, IsoformTrim>,
 ) {
   const kept: number[] = []
+  let shifted = false
   for (let i = 0; i < featureIndices.length; i++) {
     const ordinal = ordinals.length > 0 ? ordinals[i]! : ROOT_CHILD_ORDINAL
     const trim = trims.get(flatbushItems[featureIndices[i]!]!.featureId)
-    if (
-      ordinal === ROOT_CHILD_ORDINAL ||
-      !trim ||
-      trim.keptOrdinals.has(ordinal)
-    ) {
+    if (ordinal === ROOT_CHILD_ORDINAL || !trim) {
       kept.push(i)
+    } else if (trim.keptOrdinals.has(ordinal)) {
+      kept.push(i)
+      shifted ||=
+        (trim.shiftPxByOrdinal.get(ordinal) ?? 0) !== 0 ||
+        (trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0) !== 0
     }
   }
-  return kept
+  return { kept, shifted }
 }
 
 // Filter and shift one primitive kind's parallel arrays. Every array of the
@@ -222,13 +228,13 @@ function trimPrimitiveKind(
 ) {
   const ordinals = data[`${kind}ChildOrdinals`]
   const featureIndices = data[`${kind}FeatureIndices`]
-  const kept = keptPrimitiveIndices(
+  const { kept, shifted } = keptPrimitiveIndices(
     ordinals,
     featureIndices,
     data.flatbushItems,
     trims,
   )
-  if (kept.length === featureIndices.length) {
+  if (kept.length === featureIndices.length && !shifted) {
     return
   }
 
