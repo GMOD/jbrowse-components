@@ -173,6 +173,29 @@ export function openTabixIndexFilehandle(
     : { tbiFilehandle: filehandle }
 }
 
+/**
+ * A fetch that presents `location`'s credentials — and only for urls that
+ * credential covers.
+ *
+ * An account's own fetcher signs whatever url it is handed: the location it was
+ * built from decides which token to mint, not where the token may go. That is
+ * fine for a caller holding one url, which is what `openLocation` is, and wrong
+ * for one that fetches urls a *server* names. Htsget is the second kind — a
+ * ticket request answers with data-block urls that can point anywhere — and it
+ * had no way to ask whether a given url was still in scope.
+ *
+ * So ask here. Every url other than the one the fetcher was requested for goes
+ * back through the account's `handlesLocation`, which is the same
+ * `uriMatchesDomains` test that chose the account in the first place. Both
+ * directions matter: `domains` entries scope to a path as well as a host
+ * (`data.mylab.org/private`, and the origin-plus-directory form every ephemeral
+ * HTTP Basic account is minted with), and one account routinely spans several
+ * hosts (Dropbox lists seven). An origin comparison is wrong for both.
+ *
+ * Anything out of scope gets a plain fetch rather than `checkAuthNeededFetch`:
+ * a 401 from a url the config never named should not raise a credential prompt
+ * for a host the server picked.
+ */
 export function getFetcher(
   location: FileLocation,
   pluginManager?: PluginManager,
@@ -185,7 +208,20 @@ export function getFetcher(
     const absoluteLocation = resolveUriLocation(location)
     const internetAccount = getInternetAccount(absoluteLocation, pluginManager)
     if (internetAccount) {
-      return internetAccount.getFetcher(absoluteLocation)
+      const authorized = internetAccount.getFetcher(absoluteLocation)
+      return (input, init) => {
+        const url = typeof input === 'string' ? input : input.url
+        // The requested url passes on identity, so a location matched by
+        // something other than `domains` — the same-app-origin exception a
+        // relative uri needs — still authenticates the file it was resolved for
+        return url === absoluteLocation.uri ||
+          internetAccount.handlesLocation({
+            uri: url,
+            locationType: 'UriLocation',
+          })
+          ? authorized(input, init)
+          : fetch(input, init)
+      }
     }
   }
   return checkAuthNeededFetch
