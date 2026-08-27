@@ -54,6 +54,9 @@ function createDisplay() {
     // from a display throws.
     .volatile(() => ({
       rpcManager: { call: jest.fn() },
+      // `setDisplayedRegions` arms the view's reactions, which ask whether
+      // the region's assembly has loaded before they run
+      assemblyManager: { get: () => ({ initialized: true }) },
     }))
     .views(() => ({
       getTrackById(id: string) {
@@ -85,11 +88,11 @@ function createDisplay() {
       ],
     }),
   )
-  return view.tracks[0]!.displays[0]!
+  return { view, display: view.tracks[0]!.displays[0]! }
 }
 
 test('each GC parameter is a cache key, so changing it invalidates the fetch', () => {
-  const display = createDisplay()
+  const { display } = createDisplay()
   const initial = display.rpcPropsCacheKey
 
   display.setGCMode('skew')
@@ -107,7 +110,7 @@ test('each GC parameter is a cache key, so changing it invalidates the fetch', (
 // The step menu caps itself at the current windowSize, but that cap can't see a
 // later shrink of windowSize itself — which the menu offers right above it.
 test('windowDelta never outlives a windowSize shrunk below it', () => {
-  const display = createDisplay()
+  const { display } = createDisplay()
   display.setGCContentParams({ windowSize: 1000, windowDelta: 1000 })
   display.setGCContentParams({ windowSize: 20 })
   expect(display.windowSize).toBe(20)
@@ -115,7 +118,7 @@ test('windowDelta never outlives a windowSize shrunk below it', () => {
 })
 
 test('setting one GC parameter leaves the other alone', () => {
-  const display = createDisplay()
+  const { display } = createDisplay()
   display.setGCContentParams({ windowSize: 500, windowDelta: 25 })
   display.setGCContentParams({ windowSize: 400 })
   expect(display.windowDelta).toBe(25)
@@ -125,7 +128,7 @@ test('setting one GC parameter leaves the other alone', () => {
 // whatever happens to be on screen; skew stays autoscaled because its real
 // values occupy a small part of [-1,1].
 test('content mode pins the score domain to [0,1], skew autoscales', () => {
-  const display = createDisplay()
+  const { display } = createDisplay()
   expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
 
   display.setGCMode('skew')
@@ -136,7 +139,7 @@ test('content mode pins the score domain to [0,1], skew autoscales', () => {
 })
 
 test('an explicit score bound still beats the pinned default', () => {
-  const display = createDisplay()
+  const { display } = createDisplay()
   display.setMaxScore(0.75)
   expect(display.maxScoreBound).toBe(0.75)
   // the end left unset still falls back to the pinned domain
@@ -144,7 +147,7 @@ test('an explicit score bound still beats the pinned default', () => {
 })
 
 test('the GC parameters also reach the adapter config the worker resolves', () => {
-  const display = createDisplay()
+  const { display } = createDisplay()
   display.setGCMode('skew')
   display.setGCContentParams({ windowSize: 50, windowDelta: 10 })
 
@@ -154,4 +157,26 @@ test('the GC parameters also reach the adapter config the worker resolves', () =
     windowSize: 50,
     windowDelta: 10,
   })
+})
+
+// The adapter computes GC from its three parameters alone and the wiggle RPC
+// bins nothing for it, so the strict-bpPerPx key the wiggle base fetches under
+// would only make every zoom inside a loaded region re-download the sequence.
+test('a zoom inside a loaded region keeps the cache valid', () => {
+  const { view, display } = createDisplay()
+  const region = {
+    refName: 'ctgA',
+    start: 0,
+    end: 50_000,
+    assemblyName: 'volvox',
+  }
+  view.setWidth(800)
+  view.setDisplayedRegions([region])
+  display.loadedRegions.set(0, { ...region, fetchKey: display.regionFetchKey })
+  expect(display.isCacheValid(0)).toBe(true)
+
+  const before = view.bpPerPx
+  view.zoomTo(before / 2)
+  expect(view.bpPerPx).not.toBe(before)
+  expect(display.isCacheValid(0)).toBe(true)
 })

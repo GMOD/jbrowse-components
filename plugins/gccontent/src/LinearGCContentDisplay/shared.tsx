@@ -16,6 +16,34 @@ const WINDOW_DELTA_DEFAULT = 100
 const formatBp = (n: number) => `${toLocale(n)} bp`
 
 /**
+ * The `GCContentAdapter` config a GC display fetches through: the track's
+ * adapter when it already is one, otherwise a sequence adapter wrapped in one,
+ * with the display's three GC parameters applied either way.
+ *
+ * Both display types build theirs here. The canonical `GCContentTrack` names a
+ * `GCContentAdapter` (see `LinearGCContentTrackDisplay`), the
+ * `ReferenceSequenceTrack` display always has a bare sequence adapter, and a
+ * `GCContentTrack` can name a bare one too: that was the only shape that worked
+ * before the display stopped wrapping unconditionally, and it shipped in our
+ * own volvox configs long enough to be out in the wild. Left unwrapped, the
+ * sequence adapter's featureless output reaches the wiggle as an empty domain
+ * and the track draws an axis with no data, silently and with no error.
+ */
+export function gcAdapterConfig(
+  self: { windowSize: number; windowDelta: number; gcMode: string },
+  adapter: { type: string },
+) {
+  return {
+    ...(adapter.type === 'GCContentAdapter'
+      ? adapter
+      : { type: 'GCContentAdapter', sequenceAdapter: adapter }),
+    windowSize: self.windowSize,
+    windowDelta: self.windowDelta,
+    gcMode: self.gcMode,
+  }
+}
+
+/**
  * #stateModel SharedGCContentModel
  * #category display
  */
@@ -38,14 +66,32 @@ export default function SharedModelF(
       }),
     )
     .views(self => ({
-      get windowSize() {
+      get windowSize(): number {
         return getConf(self, 'windowSize')
       },
-      get windowDelta() {
+      get windowDelta(): number {
         return getConf(self, 'windowDelta')
       },
-      get gcMode() {
+      get gcMode(): string {
         return getConf(self, 'gcMode')
+      },
+      /**
+       * #getter
+       * Overrides the wiggle base's strict-zoom key: the adapter computes GC
+       * from `windowSize`/`windowDelta`/`gcMode` alone and the worker does no
+       * per-zoom binning, so data fetched at one zoom is right at every other.
+       */
+      get regionFetchKey(): string {
+        return ''
+      },
+      /**
+       * #getter
+       * The parent track's adapter with the display's GC parameters applied,
+       * wrapped in a `GCContentAdapter` where the track names a bare sequence
+       * adapter — see `gcAdapterConfig`.
+       */
+      get adapterConfig() {
+        return gcAdapterConfig(this, getConf(self.parentTrack, 'adapter'))
       },
     }))
     .actions(self => ({
@@ -97,9 +143,9 @@ export default function SharedModelF(
       return {
         /**
          * #method
-         * The three GC parameters are fetch inputs: both subclasses fold them
-         * into the `GCContentAdapter` config their `adapterConfig` getter
-         * builds, so each changes what the worker computes. `adapterConfig` is a
+         * The three GC parameters are fetch inputs: `adapterConfig` folds them
+         * into the `GCContentAdapter` config, so each changes what the worker
+         * computes. `adapterConfig` is a
          * structural arg and deliberately not a cache key, so listing them here
          * is the only thing that invalidates the loaded regions. They ride along
          * in the payload too; the worker ignores them and reads the adapter.

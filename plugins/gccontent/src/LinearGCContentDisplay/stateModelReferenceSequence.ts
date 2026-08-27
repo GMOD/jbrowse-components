@@ -58,6 +58,16 @@ export default function stateModelF(
         type: types.literal('LinearGCContentDisplay'),
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       * The containing view as the LGV it has to be: `addAndShowTrack` needs
+       * `showTrack`, which the duck-typed `host` does not carry.
+       */
+      get view() {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -75,31 +85,13 @@ export default function stateModelF(
             windowSize: self.windowSize,
             windowDelta: self.windowDelta,
           })
-          addAndShowTrack(
-            session,
-            conf,
-            getContainingView(self) as LinearGenomeViewModel,
-          )
+          addAndShowTrack(session, conf, self.view)
         }
       },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
-        /**
-         * #getter
-         * wraps the parent ReferenceSequenceTrack's sequence adapter in a
-         * GCContentAdapter
-         */
-        get adapterConfig() {
-          return {
-            type: 'GCContentAdapter',
-            sequenceAdapter: getConf(self.parentTrack, 'adapter'),
-            windowSize: self.windowSize,
-            windowDelta: self.windowDelta,
-            gcMode: self.gcMode,
-          }
-        },
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
