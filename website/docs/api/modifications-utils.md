@@ -111,6 +111,24 @@ the CIGAR/SEQ/MD reads the pileup actually uses.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getTagAlt.ts)
 
+## isMethylationFillType
+
+The modification types the methylation walk below paints — 5mC and 5hmC, the
+pair that compete for one cytosine.
+
+Stated once because two functions have to agree on it and they are in different
+packages: this walk claims those types, and `extractModifications` has to skip
+exactly them in the fill view so a cytosine gets one mark rather than two. A
+second spelling would either double-paint or, as it did, drop every OTHER type
+the read declares.
+
+```js
+// type signature
+(type: string) => type is "h" | "m"
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
+
 ## matchesCytosineContext
 
 Whether the cytosine at read position `pos` sits in the given context.
@@ -120,6 +138,19 @@ For forward reads the stored sequence IS the template, so we read forward from
 `pos`. getModPositions works reverse-strand reads in stored-sequence space,
 where the template runs backwards and complemented, so we read backwards from
 `pos` and complement each base before matching.
+
+**Char codes, not characters, and that is the whole shape of this function.** It
+reads `seq[pos]?.toLowerCase()` per probe and lower-cased the pattern character
+beside it, which is two string operations per base — and the fill-unmarked
+methylation walk asks this question up to twice for every aligned base of every
+read (getMethBins), while bisulfite asks it at every candidate cytosine. Folding
+case with `& ~0x20` on the code and comparing numbers measured 5.64x on the
+predicate alone over 4M probes, byte-identical.
+
+`charCodeAt` past either end of the string is NaN and `NaN & ~0x20` is 0 — an
+index no pattern base equals and the complement table holds -1 at — so the walk
+runs off the read as a non-match with no bounds test of its own.
+`features/modCoverage/readBaseCounts.ts` folds case the same way and says so.
 
 ```js
 // type signature
