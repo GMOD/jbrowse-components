@@ -266,6 +266,9 @@ JBrowse hides soft-clipped bases by default; turn on **Show soft clipping** from
 the track menu to reveal them. Clusters of soft-clipped bases often mark a
 structural-variant breakpoint.
 
+Some reads carry no `SEQ` field on their record — secondary reads among them —
+so there are no clipped bases to draw and their clip indicators appear black.
+
 <Figure caption="Enabling 'Show soft clipping' (top) and the result (bottom): reads terminating at a deletion breakpoint expose their unaligned bases." src="/img/alignments_soft_clipped_menu.png" />
 
 ## Filtering reads

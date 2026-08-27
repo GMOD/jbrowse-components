@@ -45,6 +45,10 @@ oxfmt over the files in the commit. Skip it with `SKIP_OXFMT=1 git commit` or
 - **Embedded component examples**:
   `cd products/jbrowse-react-linear-genome-view/examples-site && pnpm dev`
 
+The source folders under `products/` drop the trailing `2` that the published
+packages carry: `@jbrowse/react-linear-genome-view2`, `@jbrowse/react-app2`,
+`@jbrowse/react-circular-genome-view2`.
+
 ## Project Structure
 
 - `packages/`: Core libraries.

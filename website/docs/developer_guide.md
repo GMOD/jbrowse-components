@@ -10,6 +10,10 @@ JBrowse 2 is published as products people run and plugins that add to them.
 This page describes both, links working plugins to read, and indexes the guides
 for each kind of pluggable element.
 
+Plugins are written in React and `@jbrowse/mobx-state-tree`; this
+[short orientation guide](https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f)
+covers both if you have not used them.
+
 ## Products and plugins
 
 Two kinds of package are published on their own: products and plugins.
