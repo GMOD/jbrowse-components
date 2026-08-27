@@ -337,7 +337,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
     ],
     // the context menu is the subject and it opens downward from the variant
     // row, so the frame has to cover the menu rather than just the tracks
-    viewportHeight: 700,
+    viewportHeight: 620,
   },
 
   // What a variant prediction gives you: the reference and alternate curves side
