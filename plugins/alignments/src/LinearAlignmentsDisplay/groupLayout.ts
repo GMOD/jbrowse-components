@@ -118,9 +118,9 @@ function overrideCap(rows: number): RowCap {
  * which of the two it turned out to be.
  *
  * The one place those two numbers meet, and the reason a clipped lane can name
- * what clipped it. `groupClippedBy` used to answer that afterwards by comparing a
- * lane's ROW COUNT back against the ceiling — true whenever the two caps differ,
- * and it read as arithmetic rather than as the question it was asking.
+ * what clipped it, rather than reconstructing the answer afterwards by comparing
+ * a lane's ROW COUNT back against the ceiling — true whenever the two caps
+ * differ.
  *
  * A tie is the ceiling, because the expand the `'budget'` answer offers banks an
  * override OF `maxHeight`: where the slice already equals the ceiling, expanding

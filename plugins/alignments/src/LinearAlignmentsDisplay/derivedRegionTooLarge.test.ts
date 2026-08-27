@@ -212,7 +212,12 @@ describe('alignments derived regionTooLarge', () => {
   it('clears the hover when the region becomes too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureIdUnderMouse('read-123')
+    display.setHoverState({
+      overCigarItem: false,
+      featureIdUnderMouse: 'read-123',
+      mouseoverExtraInformation: undefined,
+      highlightedChainReadIds: [],
+    })
     expect(display.featureIdUnderMouse).toBe('read-123')
 
     display.setByteEstimate({
@@ -234,7 +239,12 @@ describe('alignments derived regionTooLarge', () => {
     })
     expect(display.regionTooLarge).toBe(true)
 
-    display.setFeatureIdUnderMouse('read-123')
+    display.setHoverState({
+      overCigarItem: false,
+      featureIdUnderMouse: 'read-123',
+      mouseoverExtraInformation: undefined,
+      highlightedChainReadIds: [],
+    })
     display.setForceLoadTrack(true)
     expect(display.regionTooLarge).toBe(false)
     expect(display.featureIdUnderMouse).toBeUndefined()

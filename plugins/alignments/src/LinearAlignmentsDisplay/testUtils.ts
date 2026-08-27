@@ -23,7 +23,10 @@ import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
+import type {
+  GroupedAlignmentsResult,
+  WorkerPileupData,
+} from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { RenderState } from './renderers/rendererTypes.ts'
@@ -150,6 +153,19 @@ export function makeTestRenderState(
 // place is next to the type.
 export function makeEmptyPileupData(): WorkerPileupData {
   return baseWorkerPileupData(0)
+}
+
+// What the RPC answers for a region that holds no reads, and what the harnesses
+// below hand back by default. `setRpcData` stores whatever the fetch resolved,
+// so a mock resolving `undefined` puts a non-payload in `rpcDataMap` and every
+// reader walking it throws.
+export function makeEmptyAlignmentsResult(
+  bytes?: number,
+): GroupedAlignmentsResult {
+  return {
+    groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
+    bytes,
+  }
 }
 
 /**
@@ -410,7 +426,9 @@ export function createRpcTestEnvironment({
   register?: (pluginManager: PluginManager) => void
 } = {}) {
   const { baseSession, mount } = bootAlignmentsDisplay({ register })
-  const mockRpcCall = jest.fn()
+  const mockRpcCall = jest.fn(() =>
+    Promise.resolve(makeEmptyAlignmentsResult()),
+  )
   const asm = {
     initialized: true,
     regions: [
@@ -497,7 +515,7 @@ export function createTestAlignmentsDisplay() {
   }[] = []
   const Session = baseSession
     .volatile(() => ({
-      rpcManager: { call: () => Promise.resolve(undefined) },
+      rpcManager: { call: () => Promise.resolve(makeEmptyAlignmentsResult()) },
       // `colorPalette` derives from the session's, so without it the harness
       // boots a display that throws the moment a test reads any getter
       // resolving a colour — the cross-region arc geometry being the first.

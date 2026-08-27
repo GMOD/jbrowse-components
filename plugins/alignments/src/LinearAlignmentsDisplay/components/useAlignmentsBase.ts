@@ -1,21 +1,13 @@
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
-import { clamp, getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import { arcColorLegendCategory } from '../../features/arcs/arcColors.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import { readColorCategoryLabel } from '../../shared/legendUtils.ts'
-import { getMismatchContrastMap } from '../../shared/util.ts'
-import {
-  CLICK_SUPPRESS_THRESHOLD_PX,
-  isDragInProgress,
-  startDocumentDrag,
-  useAbortableRef,
-} from './alignmentComponentUtils.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 import {
   openCigarWidget,
@@ -50,6 +42,12 @@ export interface FeatureHit {
   index: number
 }
 
+// The LGV's click-drag pan (`useSideScroll`) publishes its state as attributes
+// on the tracks container: one while the button is down, one once the press
+// has travelled far enough to be a pan rather than a click.
+const PAN_DRAGGING = '[data-pan-dragging]'
+const PAN_MOVED = '[data-pan-moved]'
+
 // Hit-test handlers + palette plumbing for the pileup canvas. Mouse coords come
 // straight off the native event (`offsetX`/`offsetY`, canvas-relative since the
 // canvas is a borderless leaf element), so no canvas ref or rect math is needed.
@@ -63,19 +61,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // reaches `view.width`, which throws before the view is measured.
   const width = view.initialized ? model.canvasWidthPx : undefined
 
-  // Tracks the currently-active pan drag. Starting a new pan aborts the
-  // previous and unmount aborts in-flight. Doubles as the "is dragging"
-  // source of truth via isDragInProgress; no parallel boolean state needed.
-  // Resize handles and scrollbar manage their own drags independently.
-  const dragControllerRef = useAbortableRef()
-  // Suppresses the trailing click that fires when a pan ends inside the canvas.
-  const dragMovedRef = useRef(false)
+  // The canvas the last mousemove came off, for the hover frame to ask whether
+  // a pan started under it after the event was queued.
+  const hoverTargetRef = useRef<Element | null>(null)
+  const isPanning = () => hoverTargetRef.current?.closest(PAN_DRAGGING) != null
 
-  const palette = usePalette()
-  const contrastMap = useMemo(
-    () => getMismatchContrastMap(model.showModifications, palette),
-    [palette, model.showModifications],
-  )
+  const { mismatchContrastMap: contrastMap } = model
 
   const {
     featureHeight,
@@ -253,36 +244,11 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Shared event handlers ---
 
-  function handleMouseDown(e: React.MouseEvent) {
-    // Only the primary button pans. A right/middle press must fall through to
-    // the native context menu / autoscroll rather than starting a document pan
-    // drag (which also flips dragMovedRef and would swallow a later click).
-    if (e.button !== 0) {
-      return
-    }
-    // Shift+drag is the view's rubberband region-select gesture, not a pan.
-    // Don't stopPropagation (startDocumentDrag does that) — let it bubble to
-    // the LGV's TracksContainer, which checks event.shiftKey itself.
-    if (e.shiftKey) {
-      return
-    }
-    dragMovedRef.current = false
-    const startOffsetPx = view.offsetPx
-    startDocumentDrag(e, dragControllerRef, (dx, dy) => {
-      dragMovedRef.current ||=
-        Math.abs(dx) + Math.abs(dy) > CLICK_SUPPRESS_THRESHOLD_PX
-      view.setNewView(
-        view.bpPerPx,
-        clamp(startOffsetPx - dx, view.minOffset, view.maxOffset),
-      )
-    })
-  }
-
   function handleMouseLeave() {
     // drop a hover queued for the next frame, or it would land after the cursor
     // has already gone and re-light the tooltip we are clearing here
     hover.cancel()
-    if (!model.contextMenuAnchor) {
+    if (!model.contextMenuInfo) {
       model.clearMouseoverState()
     }
   }
@@ -300,11 +266,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const target = contextMenuTargetForHit(result, e.nativeEvent.offsetX)
     if (target) {
       e.preventDefault()
+      // a hover frame queued before the click would otherwise land after the
+      // open and undo the pin it takes on the menu's read
+      hover.cancel()
       // One atomic call: anchor + the whole resolved hit, the hover handoff,
       // plus the async read fetch when the hit carries one. A repositioned menu
       // can't inherit the prior read.
       model.openContextMenu({
-        anchor: { clientX: e.clientX, clientY: e.clientY },
+        clientX: e.clientX,
+        clientY: e.clientY,
         ...target,
       })
     }
@@ -335,15 +305,16 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // block, then runs the full `performHitTest` pipeline, which measured 3.3ms of
   // listener time per raw event on a 150px pileup.
   const hover = useCoalescedPointer(([canvasX, canvasY]: [number, number]) => {
-    // re-check the drag: one queued before the press would otherwise land
+    // re-check the pan: one queued before the press would otherwise land
     // mid-pan, which is the case the event-time guard alone can't see
-    if (isAlive(model) && !isDragInProgress(dragControllerRef)) {
+    if (isAlive(model) && !isPanning()) {
       resolveHoverAt(canvasX, canvasY)
     }
   })
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
-    if (isDragInProgress(dragControllerRef)) {
+    hoverTargetRef.current = e.currentTarget
+    if (isPanning()) {
       return
     }
     // read off the event now; it is pooled-adjacent and gone by the next frame
@@ -475,9 +446,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function handleClick(e: React.MouseEvent) {
-    // click fires after mousedown+mouseup regardless of motion in between.
-    if (dragMovedRef.current) {
-      dragMovedRef.current = false
+    // click fires after mousedown+mouseup regardless of motion in between
+    if (e.currentTarget.closest(PAN_MOVED)) {
       return
     }
     const { result } = hitTestEvent(e)
@@ -538,7 +508,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   return {
     width,
     contrastMap,
-    handleMouseDown,
     handleMouseLeave,
     handleContextMenu,
     handleCanvasMouseMove,

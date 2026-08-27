@@ -99,7 +99,12 @@ function setup({ down }: { down: boolean }) {
   })
 
   const { result } = renderHook(() => useAlignmentsBase(display))
+  // The handlers read the LGV pan's state off the tracks container the canvas
+  // sits in, so a synthetic event has to carry a real element.
+  const canvas = document.createElement('canvas')
+  document.createElement('div').append(canvas)
   const event = (x: number, y: number) => ({
+    currentTarget: canvas,
     nativeEvent: { offsetX: x, offsetY: y },
     clientX: x,
     clientY: y,
@@ -180,7 +185,7 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
   t.click(x, y)
   expect(t.openedWidgets).toHaveLength(1)
   expect(t.contextMenu(x, y).preventDefault).toHaveBeenCalled()
-  expect(t.display.contextMenuAnchor).toBeDefined()
+  expect(t.display.contextMenuInfo).toBeDefined()
   expect(t.display.contextMenuHit?.indicatorHit).toBeDefined()
 
   t.display.closeContextMenu()
@@ -195,7 +200,7 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
   // the ONLY such mark — coverage used to fall through beside it and no longer
   // does — so this is the whole of that rule rather than an example of it.
   expect(t.contextMenu(x, y).preventDefault).not.toHaveBeenCalled()
-  expect(t.display.contextMenuAnchor).toBeUndefined()
+  expect(t.display.contextMenuInfo).toBeUndefined()
 })
 
 test('clicking an arc with nothing under it keeps the selection', () => {

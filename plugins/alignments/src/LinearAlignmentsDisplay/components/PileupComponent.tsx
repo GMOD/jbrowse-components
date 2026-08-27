@@ -80,7 +80,6 @@ const PileupBody = observer(function PileupBody({
   const {
     width,
     contrastMap,
-    handleMouseDown,
     handleMouseLeave,
     handleContextMenu,
     handleCanvasMouseMove,
@@ -128,7 +127,6 @@ const PileupBody = observer(function PileupBody({
         canvasRef={canvasRef}
         width={width}
         height={height}
-        handleMouseDown={handleMouseDown}
         handleCanvasMouseMove={handleCanvasMouseMove}
         handleMouseLeave={handleMouseLeave}
         handleClick={handleClick}
@@ -360,7 +358,6 @@ const PileupCanvas = observer(function PileupCanvas({
   canvasRef,
   width,
   height,
-  handleMouseDown,
   handleCanvasMouseMove,
   handleMouseLeave,
   handleClick,
@@ -371,7 +368,6 @@ const PileupCanvas = observer(function PileupCanvas({
   canvasRef: (node: HTMLCanvasElement | null) => void
   width: number
   height: number
-  handleMouseDown: (e: React.MouseEvent) => void
   handleCanvasMouseMove: (e: React.MouseEvent) => void
   handleMouseLeave: () => void
   handleClick: (e: React.MouseEvent) => void
@@ -381,7 +377,7 @@ const PileupCanvas = observer(function PileupCanvas({
     <canvas
       id={canvasId}
       role="img"
-      aria-label="Sequence alignments pileup"
+      aria-label={`Sequence alignments pileup of ${model.featureNoun}s`}
       ref={canvasRef}
       style={{
         display: 'block',
@@ -392,7 +388,6 @@ const PileupCanvas = observer(function PileupCanvas({
             ? 'pointer'
             : 'default',
       }}
-      onMouseDown={handleMouseDown}
       onMouseMove={handleCanvasMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}

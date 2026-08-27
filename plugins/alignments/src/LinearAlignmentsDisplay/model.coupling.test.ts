@@ -10,6 +10,7 @@ import {
   clickMenuItem,
   findMenuItem,
   hasMenuItem,
+  makeEmptyAlignmentsResult,
   makeEmptyPileupData,
   menuSubItems,
 } from './testUtils.ts'
@@ -43,7 +44,9 @@ function createDisplay({ withRegions = false } = {}) {
   const { baseSession, mount } = bootAlignmentsDisplay()
   const Session = baseSession.volatile(() => ({
     // `call` is replaced per test by the cases that drive an RPC.
-    rpcManager: { call: jest.fn() },
+    rpcManager: {
+      call: jest.fn(() => Promise.resolve(makeEmptyAlignmentsResult())),
+    },
     // `colorPalette` (and so `renderState`) derives from the session theme
     theme: createJBrowseTheme(),
     palette: resolvePalette(),
@@ -441,7 +444,8 @@ describe('ordering controls in chain mode', () => {
   test('the context menu drops its position-anchored sorts too', () => {
     const display = createDisplay()
     display.openContextMenu({
-      anchor: { clientX: 0, clientY: 0 },
+      clientX: 0,
+      clientY: 0,
       hit: { block: makeContextMenuBlock(), genomicPos: 50 },
       featureId: 'read1',
     })
@@ -638,14 +642,15 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   test('sets the anchor and the whole hit together', () => {
     const display = createDisplay()
     display.openContextMenu({
-      anchor: { clientX: 10, clientY: 20 },
+      clientX: 10,
+      clientY: 20,
       hit: {
         block: makeContextMenuBlock(),
         genomicPos: 42,
         cigarHit: { type: 'mismatch', index: 0, position: 42, length: 1 },
       },
     })
-    expect(display.contextMenuAnchor).toEqual({ clientX: 10, clientY: 20 })
+    expect(display.contextMenuInfo).toMatchObject({ clientX: 10, clientY: 20 })
     expect(display.contextMenuHit?.genomicPos).toBe(42)
     expect(display.contextMenuHit?.cigarHit).toEqual({
       type: 'mismatch',
@@ -670,7 +675,8 @@ describe('openContextMenu atomic state and stale-read reset', () => {
     expect(display.contextMenuFeature).toBeDefined()
 
     display.openContextMenu({
-      anchor: { clientX: 1, clientY: 2 },
+      clientX: 1,
+      clientY: 2,
       hit: {
         block: makeContextMenuBlock(),
         genomicPos: 5,
@@ -696,7 +702,8 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   test('the read id lands synchronously, unlike the feature', () => {
     const display = createDisplay()
     display.openContextMenu({
-      anchor: { clientX: 1, clientY: 2 },
+      clientX: 1,
+      clientY: 2,
       featureId: 'read1',
     })
     expect(display.contextMenuFeatureId).toBe('read1')
@@ -706,7 +713,8 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   test('closeContextMenu wipes all context-menu state', () => {
     const display = createDisplay()
     display.openContextMenu({
-      anchor: { clientX: 3, clientY: 4 },
+      clientX: 3,
+      clientY: 4,
       hit: {
         block: makeContextMenuBlock(),
         genomicPos: 9,
@@ -715,7 +723,7 @@ describe('openContextMenu atomic state and stale-read reset', () => {
       featureId: 'read1',
     })
     display.closeContextMenu()
-    expect(display.contextMenuAnchor).toBeUndefined()
+    expect(display.contextMenuInfo).toBeUndefined()
     expect(display.contextMenuHit).toBeUndefined()
     expect(display.contextMenuFeature).toBeUndefined()
     expect(display.contextMenuFeatureId).toBeUndefined()
@@ -728,7 +736,8 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   test('closing releases the hover box pinned to the menu target', () => {
     const display = createDisplay()
     display.openContextMenu({
-      anchor: { clientX: 3, clientY: 4 },
+      clientX: 3,
+      clientY: 4,
       featureId: 'read1',
     })
     expect(display.featureIdUnderMouse).toBe('read1')
@@ -1168,8 +1177,8 @@ describe('modification detection follows the loaded regions', () => {
     display.setRpcData(0, withMods('m'))
     display.setRpcData(1, withMods('m', 'h'))
     expect(display.detectedModificationTypes).toEqual(['m', 'h'])
-    // dropping one region takes only what that region alone carried
-    display.setRpcData(1, null)
+    // refetching one region takes only what that region alone carried
+    display.setRpcData(1, withMods())
     expect(display.detectedModificationTypes).toEqual(['m'])
   })
 
@@ -1256,7 +1265,7 @@ describe('per-lane state belongs to one grouping key space', () => {
       { key: '', label: 'HP: none' },
     ])
     display.toggleGroupCollapsed('')
-    expect(display.isGroupCollapsed('')).toBe(true)
+    expect(display.collapsedGroups.has('')).toBe(true)
     return display
   }
 
@@ -1268,7 +1277,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     display.configuration.setSlot('groupBy', undefined)
     seedGroups(display, [{ key: '', label: '' }])
     expect(display.groupBy).toBeUndefined()
-    expect(display.isGroupCollapsed('')).toBe(false)
+    expect(display.collapsedGroups.has('')).toBe(false)
     expect(display.lanes.map((l: { maxY: number }) => l.maxY)).toEqual([1])
     // And why that had no way back: the chevron that undoes a collapse hangs
     // off a group label, which the ungrouped lane does not draw.
@@ -1280,9 +1289,9 @@ describe('per-lane state belongs to one grouping key space', () => {
   test('a height override goes with the collapse', () => {
     const display = collapsedUntaggedLane()
     display.toggleGroupExpanded('')
-    expect(display.hasGroupHeightOverride('')).toBe(true)
+    expect(display.groupHeightOverrides.has('')).toBe(true)
     display.configuration.setSlot('groupBy', undefined)
-    expect(display.hasGroupHeightOverride('')).toBe(false)
+    expect(display.groupHeightOverrides.has('')).toBe(false)
   })
 
   // Grouping FROM ungrouped is the same collision the other way round: the
@@ -1292,7 +1301,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     seedGroups(display, [{ key: '', label: '' }])
     display.toggleGroupCollapsed('')
     display.setGroupBy({ type: 'tag', tag: 'HP' })
-    expect(display.isGroupCollapsed('')).toBe(false)
+    expect(display.collapsedGroups.has('')).toBe(false)
   })
 
   // Chain mode degrades a per-read dimension to ungrouped (`groupByForMode`)
@@ -1305,7 +1314,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     display.toggleGroupCollapsed('0')
     display.setLinkedReads('normal')
     expect(display.effectiveGroupBy).toBeUndefined()
-    expect(display.isGroupCollapsed('0')).toBe(false)
+    expect(display.collapsedGroups.has('0')).toBe(false)
   })
 
   // Switching between two groupings that both hand out digit keys — mapq's
@@ -1317,7 +1326,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
     display.toggleGroupCollapsed('0')
     display.setGroupBy({ type: 'pairOrientation' })
-    expect(display.isGroupCollapsed('0')).toBe(false)
+    expect(display.collapsedGroups.has('0')).toBe(false)
   })
 
   // Re-picking the grouping already in effect changes no key, so nothing is
@@ -1325,6 +1334,6 @@ describe('per-lane state belongs to one grouping key space', () => {
   test('re-setting the same grouping keeps the state', () => {
     const display = collapsedUntaggedLane()
     display.setGroupBy({ type: 'tag', tag: 'HP' })
-    expect(display.isGroupCollapsed('')).toBe(true)
+    expect(display.collapsedGroups.has('')).toBe(true)
   })
 })

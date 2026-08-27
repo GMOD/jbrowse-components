@@ -8,14 +8,10 @@ import {
 } from '../testUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
-// `handleMouseDown` and `handleMouseLeave`, the two handlers that are pure
-// guard: neither does anything visible when it works, so both fail silently.
-//
-// The press decides between three gestures that share one button-down —
-// this display's pan, the LGV's shift+drag rubberband, and the browser's own
-// context menu / autoscroll — and it decides by DECLINING two of them. A
-// decline that stops working looks like the other gesture never firing, which
-// is a bug reported against the LGV rather than against here.
+// The handlers that are pure guard: none does anything visible when it works,
+// so each fails silently. The pan itself is the LGV's (`useSideScroll`); what
+// is this display's is declining to act on top of it — no hover while it runs,
+// no click when it ends — and holding the hover a context menu pinned.
 
 const START = 300
 
@@ -63,30 +59,29 @@ function setup() {
   })
   const { result } = renderHook(() => useAlignmentsBase(display))
 
-  function press({ button = 0, shiftKey = false } = {}) {
-    const stopPropagation = jest.fn()
-    result.current.handleMouseDown({
-      button,
-      shiftKey,
-      clientX: 100,
-      clientY: 50,
-      stopPropagation,
-    } as never)
-    return { stopPropagation }
+  // TracksContainer in miniature: the LGV's pan writes its state as attributes
+  // on the container, and the canvas handlers read them with `closest`.
+  const container = document.createElement('div')
+  const canvas = document.createElement('canvas')
+  container.append(canvas)
+  function panStarts() {
+    container.dataset.panDragging = ''
   }
-  // A real document-level drag, which is where the pan lives: `startDocumentDrag`
-  // listens on `document`, not on the canvas, so a press that declined to start
-  // one is invisible until something moves.
-  function dragTo(clientX: number) {
-    document.dispatchEvent(
-      new MouseEvent('mousemove', { clientX, clientY: 50 }),
-    )
+  function panMoves() {
+    container.dataset.panMoved = ''
   }
-  function release() {
-    document.dispatchEvent(new MouseEvent('mouseup'))
+  function panEnds() {
+    delete container.dataset.panDragging
   }
   function hover() {
     result.current.handleCanvasMouseMove({
+      currentTarget: canvas,
+      nativeEvent: { offsetX: 100, offsetY: 20 },
+    } as never)
+  }
+  function click() {
+    result.current.handleClick({
+      currentTarget: canvas,
       nativeEvent: { offsetX: 100, offsetY: 20 },
     } as never)
   }
@@ -104,84 +99,62 @@ function setup() {
     view,
     display,
     openedWidgets,
-    press,
-    dragTo,
-    release,
+    panStarts,
+    panMoves,
+    panEnds,
     hover,
+    click,
     contextMenu,
     runFrame,
+    queuedFrame: () => frame !== undefined,
     hook: result,
   }
 }
 
-afterEach(() => {
-  // a test that asserts a drag DIDN'T start leaves no listener; one that
-  // asserts it did would leak it into the next case
-  document.dispatchEvent(new MouseEvent('mouseup'))
-})
-
-test('the primary button pans, and the pan is what the other cases are measured against', () => {
-  const { view, press, dragTo } = setup()
-  const { stopPropagation } = press()
-  // taken over from the LGV's own drag handling, which is the difference
-  // between this display panning and the view doing it
-  expect(stopPropagation).toHaveBeenCalled()
-  dragTo(60)
-  expect(view.offsetPx).toBe(START + 40)
-})
-
-test('a right or middle press starts no pan, so the browser menu still gets it', () => {
-  for (const button of [1, 2]) {
-    const { view, press, dragTo } = setup()
-    const { stopPropagation } = press({ button })
-    expect(stopPropagation).not.toHaveBeenCalled()
-    dragTo(60)
-    expect(view.offsetPx).toBe(START)
-  }
-})
-
-test("shift+drag is the view's rubberband, and must reach it", () => {
-  const { view, press, dragTo } = setup()
-  const { stopPropagation } = press({ shiftKey: true })
-  // NOT stopped: it has to bubble to the LGV's TracksContainer, which checks
-  // `event.shiftKey` itself. Swallowing it here is how the region-select
-  // gesture goes dead over this one track and nowhere else.
-  expect(stopPropagation).not.toHaveBeenCalled()
-  dragTo(60)
-  expect(view.offsetPx).toBe(START)
-})
-
 test('a pan swallows the click that ends it, but a small wobble does not', () => {
-  const click = (t: ReturnType<typeof setup>) => {
-    t.hook.current.handleClick({
-      nativeEvent: { offsetX: 100, offsetY: 20 },
-    } as never)
-  }
-
   // The control first: that pixel is a coverage bin, and clicking one opens its
   // widget. Every assertion below is this not happening.
   const plain = setup()
-  click(plain)
+  plain.click()
   expect(plain.openedWidgets).toHaveLength(1)
 
   const panned = setup()
-  panned.press()
-  panned.dragTo(140)
-  panned.release()
-  expect(panned.view.offsetPx).not.toBe(START)
-  click(panned)
+  panned.panStarts()
+  panned.panMoves()
+  panned.panEnds()
+  panned.click()
   expect(panned.openedWidgets).toHaveLength(0)
 
-  // Under CLICK_SUPPRESS_THRESHOLD_PX the press is still a click — otherwise a
-  // hand that wobbles two pixels stops being able to select anything. The view
-  // pans by those two pixels either way; it is only the click that is judged.
+  // A press that never travelled past the threshold sets no `data-pan-moved`,
+  // and is still a click — otherwise a hand that wobbles two pixels stops being
+  // able to select anything.
   const jitter = setup()
-  jitter.press()
-  jitter.dragTo(102)
-  jitter.release()
-  expect(jitter.view.offsetPx).toBe(START - 2)
-  click(jitter)
+  jitter.panStarts()
+  jitter.panEnds()
+  jitter.click()
   expect(jitter.openedWidgets).toHaveLength(1)
+})
+
+test('no hover lands while the view is being panned', () => {
+  const { display, hover, panStarts, panEnds, runFrame, queuedFrame } = setup()
+
+  panStarts()
+  hover()
+  expect(queuedFrame()).toBe(false)
+  expect(display.mouseoverExtraInformation).toBeUndefined()
+
+  // Queued before the press: the frame has to re-ask, since the event-time
+  // guard saw no pan yet.
+  panEnds()
+  hover()
+  panStarts()
+  runFrame()
+  expect(display.mouseoverExtraInformation).toBeUndefined()
+
+  panEnds()
+  hover()
+  runFrame()
+  expect(display.mouseoverExtraInformation).toBeDefined()
 })
 
 // Same pixel the click case above opens a coverage widget from. Right-clicking
@@ -197,6 +170,32 @@ test('right-clicking a coverage bin opens the pileup menu, not the browser one',
       .contextMenuItems()
       .map((i: unknown) => (i as { label?: string }).label),
   ).toContain('Coverage')
+})
+
+// Opening the menu clears the tooltip and pins the hover to the menu's read. A
+// hover frame queued by the mousemove just before the right-click would land
+// after that, on top of the pin: the open cancels the frame, and the model
+// refuses hover writes while the menu is up in case one still arrives.
+test('a hover queued before a right-click does not land on the open menu', () => {
+  const { display, hover, contextMenu, runFrame, queuedFrame } = setup()
+
+  hover()
+  expect(queuedFrame()).toBe(true)
+  contextMenu()
+  expect(queuedFrame()).toBe(false)
+  runFrame()
+  expect(display.mouseoverExtraInformation).toBeUndefined()
+
+  display.closeContextMenu()
+  display.openContextMenu({ clientX: 0, clientY: 0, featureId: 'r0' })
+  display.setHoverState({
+    overCigarItem: false,
+    featureIdUnderMouse: undefined,
+    mouseoverExtraInformation: undefined,
+    highlightedChainReadIds: [],
+    hoverCoverageBand: undefined,
+  })
+  expect(display.featureIdUnderMouse).toBe('r0')
 })
 
 test('leaving the canvas drops the hover, unless a context menu is holding it', () => {
@@ -221,14 +220,7 @@ test('leaving the canvas drops the hover, unless a context menu is holding it', 
   // An open context menu pins the hover to the read it acts on — the cursor is
   // over the MENU, which is outside the canvas, so the leave that opening it
   // produces must not take the highlight with it.
-  display.openContextMenu({ anchor: { clientX: 0, clientY: 0 } })
-  display.setHoverState({
-    overCigarItem: false,
-    featureIdUnderMouse: 'r0',
-    mouseoverExtraInformation: undefined,
-    highlightedChainReadIds: [],
-    hoverCoverageBand: undefined,
-  })
+  display.openContextMenu({ clientX: 0, clientY: 0, featureId: 'r0' })
   hook.current.handleMouseLeave()
   expect(display.featureIdUnderMouse).toBe('r0')
 })

@@ -3,6 +3,7 @@ import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
+  makeEmptyAlignmentsResult,
   makeEmptyPileupData,
   bootAlignmentsDisplay,
   oneReadWithMate as oneRead,
@@ -63,7 +64,9 @@ function createEnv() {
     getCanonicalRefName2: (refName: string) => refName,
   }
   const Session = baseSession.volatile(() => ({
-    rpcManager: { call: jest.fn() },
+    rpcManager: {
+      call: jest.fn(() => Promise.resolve(makeEmptyAlignmentsResult())),
+    },
     assemblyManager: {
       get: (name: string) => (name === 'volvox' ? asm : undefined),
       isValidRefName: () => true,

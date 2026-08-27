@@ -48,7 +48,7 @@ export interface AlignmentLane {
 
 // Whether the label chip's expand can do anything for this lane: two of the
 // caps can be raised out of, and an absent lane has nothing to raise. One
-// function so the chip and `isGroupTruncated` cannot answer it differently.
+// function so every caller answers it the same way.
 export function laneExpandable(lane: AlignmentLane | undefined) {
   return lane?.clippedBy === 'budget' || lane?.clippedBy === 'collapse'
 }

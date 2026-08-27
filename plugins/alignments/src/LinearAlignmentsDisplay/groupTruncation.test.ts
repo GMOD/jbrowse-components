@@ -1,5 +1,10 @@
 import { namesToBlock } from '../shared/readNameBlock.ts'
-import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
+import { laneExpandable } from './lanes.ts'
+import {
+  bootAlignmentsDisplay,
+  makeEmptyAlignmentsResult,
+  makeEmptyPileupData,
+} from './testUtils.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
@@ -19,7 +24,9 @@ function createEnv() {
     getCanonicalRefName2: (refName: string) => refName,
   }
   const Session = baseSession.volatile(() => ({
-    rpcManager: { call: jest.fn() },
+    rpcManager: {
+      call: jest.fn(() => Promise.resolve(makeEmptyAlignmentsResult())),
+    },
     assemblyManager: {
       get: (name: string) => (name === 'volvox' ? asm : undefined),
       isValidRefName: () => true,
@@ -93,6 +100,14 @@ function seed(
 
 const rowsIn = (display: ReturnType<typeof seed>, i: number) =>
   display.sections.sections[i]!.maxY
+const clippedBy = (display: ReturnType<typeof seed>, key: string) =>
+  display.laneFor(key)?.clippedBy
+const expandable = (display: ReturnType<typeof seed>, key: string) =>
+  laneExpandable(display.laneFor(key))
+const ceilingClipped = (display: ReturnType<typeof seed>, key: string) =>
+  display.laneFor(key)?.ceilingClipped ?? false
+const anyCeilingClipped = (display: ReturnType<typeof seed>) =>
+  display.lanes.some(l => l.ceilingClipped)
 
 // A grouping can yield one section (one strand represented, a tag with a single
 // value). That section is labelled and collapsible, but it lays out against the
@@ -106,9 +121,9 @@ test('a lone section clipped at maxHeight offers the banner, not the chip', () =
 
   expect(display.showsGroupLabels).toBe(true)
   expect(display.isGrouped).toBe(false)
-  expect(display.groupClippedBy('1')).toBe('ceiling')
-  expect(display.isGroupTruncated('1')).toBe(false)
-  expect(display.pileupTruncated).toBe(true)
+  expect(clippedBy(display, '1')).toBe('ceiling')
+  expect(expandable(display, '1')).toBe(false)
+  expect(anyCeilingClipped(display)).toBe(true)
 })
 
 // The banner's own action, which is the one that helps here.
@@ -119,7 +134,7 @@ test('raising maxHeight lays out the rows the ceiling was hiding', () => {
 
   display.setMaxHeight(6000)
   expect(rowsIn(display, 0)).toBeGreaterThan(clipped)
-  expect(display.pileupTruncated).toBe(false)
+  expect(anyCeilingClipped(display)).toBe(false)
 })
 
 // Stacked lanes share the viewport, so their cap is a slice of it and expanding
@@ -131,14 +146,14 @@ test('a lane clipped by its viewport slice offers the chip', () => {
   ])
   display.setMaxHeight(400)
   expect(display.isGrouped).toBe(true)
-  expect(display.groupClippedBy('1')).toBe('budget')
+  expect(clippedBy(display, '1')).toBe('budget')
 
   const clipped = rowsIn(display, 0)
   display.toggleGroupExpanded('1')
   expect(rowsIn(display, 0)).toBeGreaterThan(clipped)
   // and the affordance flips to "fit to view" rather than lingering
-  expect(display.isGroupTruncated('1')).toBe(false)
-  expect(display.hasGroupHeightOverride('1')).toBe(true)
+  expect(expandable(display, '1')).toBe(false)
+  expect(display.groupHeightOverrides.has('1')).toBe(true)
 })
 
 // A stacked lane can still hit the display-wide ceiling, where expanding it is
@@ -151,9 +166,9 @@ test('a stacked lane clipped at maxHeight raises the banner', () => {
   ])
   display.setMaxHeight(40)
   expect(display.isGrouped).toBe(true)
-  expect(display.groupClippedBy('1')).toBe('ceiling')
-  expect(display.isGroupTruncated('1')).toBe(false)
-  expect(display.pileupTruncated).toBe(true)
+  expect(clippedBy(display, '1')).toBe('ceiling')
+  expect(expandable(display, '1')).toBe(false)
+  expect(anyCeilingClipped(display)).toBe(true)
 })
 
 // Nothing is drawn for the ceiling to clip on a coverage-only stack, so the
@@ -161,10 +176,10 @@ test('a stacked lane clipped at maxHeight raises the banner', () => {
 test('the truncation banner steps aside with the pileup hidden', () => {
   const display = seed([{ key: '1', label: 'HP: 1', n: 40 }])
   display.setMaxHeight(40)
-  expect(display.pileupTruncated).toBe(true)
+  expect(anyCeilingClipped(display)).toBe(true)
 
   display.setShowPileup(false)
-  expect(display.pileupTruncated).toBe(false)
+  expect(anyCeilingClipped(display)).toBe(false)
 })
 
 // Both height affordances write `groupMaxHeightOverrides`, so they are offered
@@ -201,11 +216,11 @@ test('a lane collapsed to one row names the collapse as its cap', () => {
 
   expect(display.collapseGroupRows).toBe(true)
   expect(rowsIn(display, 0)).toBe(1)
-  expect(display.groupClippedBy('1')).toBe('collapse')
+  expect(clippedBy(display, '1')).toBe('collapse')
   // The chip's expand, because banking an override opts the lane out of the
   // collapse; the banner stays away, since no ceiling did this.
-  expect(display.isGroupTruncated('1')).toBe(true)
-  expect(display.isGroupCeilingClipped('1')).toBe(false)
+  expect(expandable(display, '1')).toBe(true)
+  expect(ceilingClipped(display, '1')).toBe(false)
 })
 
 // A lane the user sized themselves still clips, and neither signal fires: what
@@ -219,15 +234,15 @@ test('a lane clipped by its own override raises nothing', () => {
     { key: '2', label: 'HP: 2', n: 400 },
   ])
   display.setMaxHeight(40)
-  expect(display.groupClippedBy('1')).toBe('ceiling')
+  expect(clippedBy(display, '1')).toBe('ceiling')
 
   display.toggleGroupExpanded('1')
-  expect(display.hasGroupHeightOverride('1')).toBe(true)
-  expect(display.groupClippedBy('1')).toBe('override')
-  expect(display.isGroupTruncated('1')).toBe(false)
-  expect(display.isGroupCeilingClipped('1')).toBe(false)
+  expect(display.groupHeightOverrides.has('1')).toBe(true)
+  expect(clippedBy(display, '1')).toBe('override')
+  expect(expandable(display, '1')).toBe(false)
+  expect(ceilingClipped(display, '1')).toBe(false)
   // and its sibling, still on the shared budget, is unaffected
-  expect(display.groupClippedBy('2')).toBe('ceiling')
+  expect(clippedBy(display, '2')).toBe('ceiling')
 })
 
 // Fit solves one read pitch from every lane's FULL row count, so a lane the
@@ -244,21 +259,21 @@ test('fit ignores a banked height override rather than clipping under it', () =>
   ])
   display.setMaxHeight(4000)
   display.resizeGroupHeight('1', -100)
-  expect(display.groupClippedBy('1')).toBe('override')
+  expect(clippedBy(display, '1')).toBe('override')
 
   // the mode arriving without setHeightMode, which is what leaves the override
   display.configuration.setSlot('heightMode', 'fit')
   expect(display.fitHeightToDisplay).toBe(true)
   expect(display.canSizeGroupHeights).toBe(false)
 
-  expect(display.groupClippedBy('1')).toBe('budget')
-  expect(display.hasGroupHeightOverride('1')).toBe(false)
+  expect(clippedBy(display, '1')).toBe('budget')
+  expect(display.groupHeightOverrides.has('1')).toBe(false)
   // both lanes take the same slice, and the stack fills the display
   expect(rowsIn(display, 0)).toBe(rowsIn(display, 1))
   expect(display.sections.contentHeight).toBe(display.height)
 
   // inert, not dropped — leaving fit hands the lane back its own cap
   display.configuration.setSlot('heightMode', 'fixed')
-  expect(display.groupClippedBy('1')).toBe('override')
-  expect(display.hasGroupHeightOverride('1')).toBe(true)
+  expect(clippedBy(display, '1')).toBe('override')
+  expect(display.groupHeightOverrides.has('1')).toBe(true)
 })

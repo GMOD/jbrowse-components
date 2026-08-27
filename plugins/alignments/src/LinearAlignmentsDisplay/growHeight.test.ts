@@ -2,7 +2,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
 
 import { namesToBlock } from '../shared/readNameBlock.ts'
-import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
+import {
+  bootAlignmentsDisplay,
+  makeEmptyAlignmentsResult,
+  makeEmptyPileupData,
+} from './testUtils.ts'
 
 // Boots a real LinearAlignmentsDisplay with an assemblyManager mock so the
 // containing LGV can actually initialize (measured width + ready assembly) —
@@ -22,7 +26,9 @@ function createEnv() {
     getCanonicalRefName: (refName: string) => refName,
   }
   const Session = baseSession.volatile(() => ({
-    rpcManager: { call: jest.fn() },
+    rpcManager: {
+      call: jest.fn(() => Promise.resolve(makeEmptyAlignmentsResult())),
+    },
     assemblyManager: {
       get: (name: string) => (name === 'volvox' ? asm : undefined),
       isValidRefName: () => true,

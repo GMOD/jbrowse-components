@@ -1,11 +1,12 @@
 import { Suspense } from 'react'
 
-import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
@@ -95,32 +96,12 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
         heightMode={model.heightMode}
         hasOverflow={hasOverflow}
         scrollZoom={view.scrollZoom}
-        noun="read"
+        noun={model.featureNoun}
         onSetHeightMode={mode => {
           model.setHeightMode(mode)
         }}
       />
     </BottomRightIndicators>
-  )
-})
-
-// Same reason, and the one multi-wiggle's own component already spells out:
-// reading `contextMenuAnchor` inline in the render prop attributes it to the
-// chrome's observer, so opening or closing the menu re-rendered the whole chrome
-// subtree.
-const AlignmentsContextMenu = observer(function AlignmentsContextMenu({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  return (
-    <ContextMenu
-      anchor={model.contextMenuAnchor}
-      menuItems={() => model.contextMenuItems()}
-      onClose={() => {
-        model.closeContextMenu()
-      }}
-    />
   )
 })
 
@@ -158,7 +139,7 @@ const AlignmentsDisplayComponent = observer(
             <PileupBody model={model} canvasRef={canvasRef} />
             <AlignmentsCornerControls model={model} />
             <AlignmentsTooltipLayer model={model} mouseTracker={mouseTracker} />
-            <AlignmentsContextMenu model={model} />
+            <DisplayContextMenu model={model} />
           </>
         )}
       </DisplayChrome>

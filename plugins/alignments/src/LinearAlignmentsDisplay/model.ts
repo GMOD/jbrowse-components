@@ -30,6 +30,7 @@ import {
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin, {
   installGrowExitBake,
 } from '@jbrowse/display-kit/HeightModeMixin'
@@ -84,6 +85,7 @@ import {
   DEFAULT_MODIFICATION_THRESHOLD,
   normalizeFilterBy,
 } from '../shared/types.ts'
+import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -233,6 +235,17 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
 const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 
 /**
+ * What a right-click on the pileup resolved: the anchor, the whole hit (block,
+ * column, mark) and the read under it when there was one. `contextMenuFeature`
+ * stays outside — it arrives an RPC later, and the `addDisplayMenuItems`
+ * extension points read it by name.
+ */
+export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
+  hit?: ContextMenuHit
+  featureId?: string
+}
+
+/**
  * #stateModel LinearAlignmentsDisplay
  * #displayFoundation MultiRegionDisplayMixin
  * #category display
@@ -314,6 +327,7 @@ export default function stateModelFactory(
         // wiggle-core score menu / SetMinMaxDialog consume this model directly.
         ScoreScaleMixin(),
         LegendMixin(),
+        ContextMenuMixin<AlignmentsContextMenuInfo>(),
         // Track-menu settings are config slots (read via getConf, written via
         // configuration.setSlot) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
@@ -360,29 +374,6 @@ export default function stateModelFactory(
           contextMenuFeature: undefined as Feature | undefined,
           /**
            * #volatile
-           * The read/feature id under a right-click, known synchronously (the
-           * hit test carries it) unlike `contextMenuFeature`, which only lands
-           * after an RPC. A menu item that can act from the id alone — or fetch
-           * the feature in its own onClick — reads this, so it doesn't blink
-           * into existence a fetch later.
-           */
-          contextMenuFeatureId: undefined as string | undefined,
-          /**
-           * #volatile
-           * Viewport point the right-click menu opens at, and the single
-           * "is the menu open" flag. Undefined = closed.
-           */
-          contextMenuAnchor: undefined as ContextMenuAnchor | undefined,
-          /**
-           * #volatile
-           * Everything the right-click's hit test resolved — the block, the
-           * clicked column, and whichever mark answered — as one value, so a
-           * consumer can't read a block without its hit and closing the menu
-           * can't forget a field. See `ContextMenuHit`.
-           */
-          contextMenuHit: undefined as ContextMenuHit | undefined,
-          /**
-           * #volatile
            */
           // Region index → grouped worker result. Ungrouped fetches store a
           // single group (key ''); grouping (Stage 5) stores N. Every reader
@@ -394,12 +385,6 @@ export default function stateModelFactory(
           // insert and tax every property access (`getObservablePropValue_`) in
           // the layout/draw hot loops for zero benefit.
           rpcDataMap: regionDataMap<GroupedAlignmentsResult>('rpcDataMap'),
-          /**
-           * #volatile
-           * pileup vertical scroll offset in px. Also read by the
-           * BreakpointSplitView overlay to position its SVG curves.
-           */
-          scrollTop: 0,
           /**
            * #volatile
            * Group keys whose pileup is collapsed to just its coverage band
@@ -970,27 +955,6 @@ export default function stateModelFactory(
         },
 
         /**
-         * #method
-         * Whether a stacked group's pileup is collapsed to just its coverage.
-         */
-        isGroupCollapsed(key: string) {
-          return self.collapsedGroups.has(key)
-        },
-
-        /**
-         * #method
-         * Whether a stacked group carries a custom pileup-height override — set
-         * by expanding it (show all reads) or dragging its resize handle (taller
-         * or shorter). Drives the group label's restore-to-fit affordance.
-         *
-         * The overrides IN EFFECT, so it cannot say a lane is sized while the
-         * layout lays it out on the shared budget — see `groupHeightOverrides`.
-         */
-        hasGroupHeightOverride(key: string) {
-          return this.groupHeightOverrides.has(key)
-        },
-
-        /**
          * #getter
          * Whether a single group's pileup height can be set on its own, and so
          * whether the two surfaces that write `groupMaxHeightOverrides` are
@@ -1001,7 +965,7 @@ export default function stateModelFactory(
          * Nothing to size with the pileup hidden, and in fit mode an override is
          * a lane opting out of the fit the mode just computed: the extra rows
          * overflow the display it was sized to fill. The truncation notice
-         * (`isGroupCeilingClipped`) steps aside in fit mode for the same reason.
+         * (`ceilingClipped`) steps aside in fit mode for the same reason.
          */
         get canSizeGroupHeights() {
           return self.showPileup && !self.fitHeightToDisplay
@@ -1020,7 +984,7 @@ export default function stateModelFactory(
          * resolved mode also moves without it (the promotable cascade, a track
          * reset), and there `canSizeGroupHeights` had already taken away both
          * surfaces that could clear one — leaving the lane clipped by a cap
-         * `groupClippedBy` reports as `'override'`, which fires no affordance.
+         * the lane reports as `clippedBy: 'override'`, which fires no affordance.
          * Inert rather than dropped, so returning to fixed restores what the
          * user set.
          */
@@ -1190,6 +1154,19 @@ export default function stateModelFactory(
         // headless SVG export and RPC, where no component mounts to seed it.
         get colorPalette(): ColorPalette {
           return buildColorPaletteFromPalette(getPaletteHost(self).palette)
+        },
+
+        /**
+         * #getter
+         * Contrast colours for the mismatch/softclip/per-base letters, off the
+         * session palette like `colorPalette`. SVG export calls
+         * `getMismatchContrastMap` with its own export palette instead.
+         */
+        get mismatchContrastMap(): Record<string, string> {
+          return getMismatchContrastMap(
+            self.showModifications,
+            getPaletteHost(self).palette,
+          )
         },
 
         /**
@@ -2061,77 +2038,6 @@ export default function stateModelFactory(
         },
 
         /**
-         * #method
-         * Which cap hid reads from a lane's pileup, or `undefined` when nothing
-         * was hidden — including for a key that isn't drawn. A read of what the
-         * layout pass recorded (`RowCapSource` names them), not a
-         * re-derivation: the pass is handed its cap with the policy attached, so
-         * the answer comes back out of the layout instead of being reconstructed
-         * from a row count afterwards.
-         *
-         * Which cap it was decides what may be offered, and only one answer can
-         * be right: expanding a lane banks an override of `maxHeight` px, so a
-         * lane already clipped at that ceiling gets the identical cap back — not
-         * one extra read appears, while the override silences the flag. The
-         * reconstruction this replaced compared a lane's rows against the
-         * ceiling, which is true whenever the two caps merely differ; a
-         * single-section grouping sat wholly in that hole, since one lane takes
-         * the ungrouped cap and never a slice.
-         */
-        groupClippedBy(key: string) {
-          return this.laneFor(key)?.clippedBy
-        },
-
-        /**
-         * #method
-         * True when a lane's pileup was clipped by a cap the per-lane expand can
-         * actually raise — the rule behind the "show all" affordance, which must
-         * not appear where it would do nothing. The chip itself asks
-         * `laneExpandable` off the section it already holds; this is the same
-         * question for the callers that have only a key, like
-         * `isGroupCeilingClipped` beside it.
-         *
-         * Two of the caps qualify: a lane's viewport slice, and the single row
-         * `collapseGroupRows` gives it. Both expand into a true stack, because
-         * banking an override opts the lane out of each.
-         */
-        isGroupTruncated(key: string) {
-          return laneExpandable(this.laneFor(key))
-        },
-
-        /**
-         * #method
-         * True when THIS lane's pileup was clipped by the display-wide
-         * `maxHeight` and its overflow reads were collapsed. Drives the rule
-         * drawn across the bottom of the clipped rows — see
-         * `PileupTruncationRule`, which is per section because the notice marks
-         * the place where the reads stop rather than a state of the whole track.
-         *
-         * A lane field (`ceilingClipped`), so the overlay that walks sections
-         * reads it off the section it already holds; this exists for the callers
-         * that have only a key. The two display-wide suppressions live where the
-         * field is built.
-         */
-        isGroupCeilingClipped(key: string) {
-          return this.laneFor(key)?.ceilingClipped ?? false
-        },
-
-        /**
-         * #getter
-         * True when any pileup hit the display-wide `maxHeight` and overflow
-         * reads were collapsed. Reads every lane, not just an ungrouped one: the
-         * ceiling is display-wide, so a stacked lane clipped by it is exactly as
-         * unreachable as an ungrouped pileup would be, and the per-label
-         * affordance deliberately steps aside for it.
-         *
-         * The display-wide answer; what is DRAWN is the per-section
-         * `isGroupCeilingClipped`, which carries the suppressions this composes.
-         */
-        get pileupTruncated() {
-          return this.lanes.some(l => l.ceilingClipped)
-        },
-
-        /**
          * #getter
          * Single source of all vertical band geometry, one entry per lane.
          * `computeStackedSections` reproduces the prior ungrouped reserved layout
@@ -2330,6 +2236,27 @@ export default function stateModelFactory(
          */
         get featureNoun() {
           return 'read'
+        },
+
+        /**
+         * #getter
+         * Everything the right-click's hit test resolved — the block, the
+         * clicked column, and whichever mark answered — as one value, so a
+         * consumer can't read a block without its hit. See `ContextMenuHit`.
+         */
+        get contextMenuHit() {
+          return self.contextMenuInfo?.hit
+        },
+
+        /**
+         * #getter
+         * The read id under a right-click, known synchronously (the hit test
+         * carries it) unlike `contextMenuFeature`, which lands after an RPC. A
+         * menu item that can act from the id alone reads this, so it doesn't
+         * blink into existence a fetch later.
+         */
+        get contextMenuFeatureId() {
+          return self.contextMenuInfo?.featureId
         },
 
         /**
@@ -2990,6 +2917,7 @@ export default function stateModelFactory(
       .actions(self => {
         const superSetError = self.setError
         const superSetHeightMode = self.setHeightMode
+        const superCloseContextMenu = self.closeContextMenu
         function clearMouseoverState() {
           self.featureIdUnderMouse = undefined
           self.mouseoverExtraInformation = undefined
@@ -3044,13 +2972,9 @@ export default function stateModelFactory(
            */
           setRpcData(
             displayedRegionIndex: number,
-            data: GroupedAlignmentsResult | null,
+            data: GroupedAlignmentsResult,
           ) {
-            if (data) {
-              self.rpcDataMap.set(displayedRegionIndex, data)
-            } else {
-              self.rpcDataMap.delete(displayedRegionIndex)
-            }
+            self.rpcDataMap.set(displayedRegionIndex, data)
           },
 
           /**
@@ -3273,7 +3197,7 @@ export default function stateModelFactory(
            * all its reads), or, if it already carries a height override (from
            * expand or a drag), drop the override to return it to the fit budget.
            * Expanding makes the stack overflow the viewport, which engages the
-           * pileup scroll. Pairs with `hasGroupHeightOverride`.
+           * pileup scroll. Pairs with `groupHeightOverrides`.
            */
           toggleGroupExpanded(key: string) {
             if (self.groupMaxHeightOverrides.has(key)) {
@@ -3290,7 +3214,7 @@ export default function stateModelFactory(
            * (seed once, floor at a row, pin/skip a fully-shown group) lives in the
            * pure `nextGroupHeightOverride`; this action just gathers the group's
            * live state and commits the result (undefined = leave on the fit
-           * budget). Pairs with `hasGroupHeightOverride` / `toggleGroupExpanded`.
+           * budget). Pairs with `groupHeightOverrides` / `toggleGroupExpanded`.
            */
           resizeGroupHeight(key: string, dy: number) {
             // One lookup: a `renderSections` entry is its lane plus its band
@@ -3624,24 +3548,18 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setFeatureIdUnderMouse(feature?: string) {
-            self.featureIdUnderMouse = feature
-          },
-
-          /**
-           * #action
-           */
           setMouseoverExtraInformation(extra?: TooltipPayload) {
             self.mouseoverExtraInformation = extra
           },
 
           /**
            * #action
-           * The whole hover state in one action. Every branch of the pileup's
-           * mousemove handler goes through here — including the plain-read
-           * branch, which used to fire three or four separate setters per move
-           * and was the only one that left `hoverCoverageBand` stale.
-           * `highlightedChainReadIds` is empty outside chain mode.
+           * The whole hover state in one action, so no branch of the pileup's
+           * mousemove handler can leave a field stale. Refused while the
+           * right-click menu is open: `openContextMenu` pins the hover to the
+           * read the menu acts on, and a frame queued before the click would
+           * otherwise land on top of that pin. `highlightedChainReadIds` is
+           * empty outside chain mode.
            */
           setHoverState(state: {
             overCigarItem: boolean
@@ -3654,6 +3572,9 @@ export default function stateModelFactory(
             hoveredArcHighlight?: ArcHighlight
             highlightedChainReadIds: string[]
           }) {
+            if (self.contextMenuInfo) {
+              return
+            }
             self.overCigarItem = state.overCigarItem
             self.featureIdUnderMouse = state.featureIdUnderMouse
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
@@ -3685,17 +3606,14 @@ export default function stateModelFactory(
            * #action
            * Close the right-click menu and release the hover it pinned.
            * `openContextMenu` boxes the read the menu acts on and
-           * `handleMouseLeave` holds that box while the menu is up, so this is
-           * the only place the pin comes off — without it the box outlives the
-           * menu until the cursor next crosses the pileup, which it need not do
-           * at all when the item clicked opened a drawer widget. Mirrors canvas
-           * LinearBasicDisplay.closeContextMenu.
+           * `setHoverState` refuses writes while the menu is up, so this is the
+           * only place the pin comes off — without it the box outlives the menu
+           * until the cursor next crosses the pileup, which it need not do at
+           * all when the item clicked opened a drawer widget.
            */
           closeContextMenu() {
-            self.contextMenuAnchor = undefined
+            superCloseContextMenu()
             self.contextMenuFeature = undefined
-            self.contextMenuFeatureId = undefined
-            self.contextMenuHit = undefined
             clearMouseoverState()
           },
 
@@ -3741,6 +3659,7 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => {
+        const superOpenContextMenu = self.openContextMenu
         // The one place a feature is resolved from an id. Menu items are offered
         // from the id alone (which the hit test knows synchronously) and land
         // here on click; opening the menu pre-warms `contextMenuFeature` through
@@ -3817,24 +3736,17 @@ export default function stateModelFactory(
            * a pin on the menu's own read, and that is a clear-then-re-box order
            * no call site should have to know (or get right in a second one).
            */
-          openContextMenu(args: {
-            anchor: ContextMenuAnchor
-            hit?: ContextMenuHit
-            featureId?: string
-          }) {
+          openContextMenu(info: AlignmentsContextMenuInfo) {
             self.clearMouseoverState()
-            self.contextMenuAnchor = args.anchor
-            self.contextMenuHit = args.hit
+            superOpenContextMenu(info)
             self.contextMenuFeature = undefined
-            self.contextMenuFeatureId = args.featureId
             // Pin the hover to the menu's target read so its highlight box
             // (highlightBoxes, keyed on featureIdUnderMouse) stays on while the
             // menu is open — the clear above dropped the tooltip, so this
             // re-boxes just the read the menu acts on. Undefined for
-            // coverage/indicator hits, which have no read to box. Mirrors canvas
-            // LinearBasicDisplay.openContextMenu.
-            self.featureIdUnderMouse = args.featureId
-            const { featureId } = args
+            // coverage/indicator hits, which have no read to box.
+            self.featureIdUnderMouse = info.featureId
+            const { featureId } = info
             if (featureId !== undefined) {
               void withFeature(
                 featureId,
@@ -3930,7 +3842,7 @@ export default function stateModelFactory(
             ...getFiltersMenuItems(self, { readCategories: true }),
             getGroupByMenuItem(self),
             ...getReadsMenuItems(self),
-            getFeatureHeightMenuItem(self, 'read', {
+            getFeatureHeightMenuItem(self, self.featureNoun, {
               disabled: !self.showPileup,
               disabledHelpText: 'Turn on "Show pileup" to change read height',
             }),
@@ -3949,11 +3861,6 @@ export default function stateModelFactory(
           return getContextMenuItems(self, { sort: self.canSortReads })
         },
       }))
-      // The derived, self-releasing too-large banner is opt-in via
-      // `gateEnabled` above: the fetch RPC measures the region before it
-      // downloads and afterAttach clears the estimate on chromosome nav.
-      // Byte-only — no density axis. The hover is dropped on the flip by
-      // `installClearHoverOnViewportChange`, along with the three viewport axes.
       .actions(self => ({
         /**
          * #action
@@ -4034,13 +3941,6 @@ export default function stateModelFactory(
               { name: 'AlignmentsGroupKeySpaceReset' },
             ),
           )
-
-          // The scroll clamp (the shrink autorun and the bound on setScrollTop)
-          // is TrackHeightMixin's, earned by overriding `scrollableHeight`.
-
-          // Drop a lingering hover tooltip/highlight whenever the content moves
-          // under a stationary cursor. Shared with the canvas display: see
-          // installClearHoverOnViewportChange for why zoom is not the only axis.
         },
       }))
   )

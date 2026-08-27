@@ -128,9 +128,9 @@ with the coverage band off — on every window its file has no records in.
 ## Four row caps, and only two are an affordance
 
 **A layout pass is handed its cap WITH the policy that set it** (`RowCap`), and
-records that label when the cap actually clips. So `groupClippedBy` is a field
-read: `'budget'` (the lane's slice of the viewport), `'ceiling'` (display-wide
-`maxHeight`), `'override'` (a cap the user set) or `'collapse'`
+records that label when the cap actually clips. So a lane's `clippedBy` is a
+field read: `'budget'` (the lane's slice of the viewport), `'ceiling'`
+(display-wide `maxHeight`), `'override'` (a cap the user set) or `'collapse'`
 (`collapseGroupRows`).
 
 - `'budget'` and `'collapse'` offer the chip's expand, which banks an override

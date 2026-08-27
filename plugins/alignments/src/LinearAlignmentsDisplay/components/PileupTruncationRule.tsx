@@ -33,7 +33,7 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 //
 // PER SECTION, not per display: the ceiling is display-wide but the boundary is
 // not, and a stacked grouping can have one lane clipped and the next not. The
-// gate is `isGroupCeilingClipped`, which also carries the fit-mode and
+// gate is the lane's `ceilingClipped`, which also carries the fit-mode and
 // hidden-pileup suppressions.
 // The caption hangs below the rule: this much clear of it, and this tall. Both
 // are read by the cull below as well as by the layout, which is the reason they

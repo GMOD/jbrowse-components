@@ -2,7 +2,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 
-import { bootAlignmentsDisplay } from './testUtils.ts'
+import {
+  bootAlignmentsDisplay,
+  makeEmptyAlignmentsResult,
+} from './testUtils.ts'
 
 // The track-menu sort anchors on the base under the center line. `pxToBp`
 // answers with `offset`, a bp count INTO the region, while `sortedBy.pos` is
@@ -22,7 +25,9 @@ function createDisplay({
   console.warn = jest.fn()
   const { baseSession, mount } = bootAlignmentsDisplay()
   const Session = baseSession.volatile(() => ({
-    rpcManager: { call: jest.fn() },
+    rpcManager: {
+      call: jest.fn(() => Promise.resolve(makeEmptyAlignmentsResult())),
+    },
     theme: createJBrowseTheme(),
     palette: resolvePalette(),
     assemblyManager: {

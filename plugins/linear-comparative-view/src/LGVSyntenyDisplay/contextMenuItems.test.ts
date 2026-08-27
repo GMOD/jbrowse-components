@@ -30,7 +30,8 @@ function rightClick(
   feature?: SimpleFeature,
 ) {
   display.openContextMenu({
-    anchor: { clientX: 1, clientY: 2 },
+    clientX: 1,
+    clientY: 2,
     featureId: 'f1',
     hit: { block: { bpRange: [0, 1000], refName: 'ctgA' }, genomicPos: 500 },
   })
@@ -47,7 +48,8 @@ function rightClick(
 test('the block items are there before the feature fetch lands', () => {
   const display = createDisplay()
   display.openContextMenu({
-    anchor: { clientX: 1, clientY: 2 },
+    clientX: 1,
+    clientY: 2,
     featureId: 'f1',
   })
   expect(display.contextMenuFeature).toBeUndefined()
@@ -64,7 +66,8 @@ test('the block items are there before the feature fetch lands', () => {
 test('a launchable mate appends the synteny item when the feature lands', () => {
   const display = createDisplay()
   display.openContextMenu({
-    anchor: { clientX: 1, clientY: 2 },
+    clientX: 1,
+    clientY: 2,
     featureId: 'f1',
   })
   display.setContextMenuFeature(makeFeature('volvox_random'))
@@ -93,7 +96,8 @@ test('a loaded mate the track does not declare can still be opened on its own', 
 test('a mate outside the track assemblies gets no synteny item', () => {
   const display = createDisplay()
   display.openContextMenu({
-    anchor: { clientX: 1, clientY: 2 },
+    clientX: 1,
+    clientY: 2,
     featureId: 'f1',
   })
   display.setContextMenuFeature(makeFeature('HG002#1'))
@@ -105,7 +109,7 @@ test('a mate outside the track assemblies gets no synteny item', () => {
 
 test('a right-click on no feature offers no feature items', () => {
   const display = createDisplay()
-  display.openContextMenu({ anchor: { clientX: 1, clientY: 2 } })
+  display.openContextMenu({ clientX: 1, clientY: 2 })
   expect(labels(display)).toEqual([])
 })
 

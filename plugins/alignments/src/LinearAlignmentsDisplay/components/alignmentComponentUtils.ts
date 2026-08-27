@@ -1,5 +1,3 @@
-import { useEffect, useRef } from 'react'
-
 import {
   colorFwdStrand,
   colorInterchrom,
@@ -17,7 +15,6 @@ import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type React from 'react'
 
 // `bpToPx` matches a region on refName AND coordinate containment, so disjoint
 // windows on one chromosome (collapsed introns, two loci on one chrom) already
@@ -140,73 +137,4 @@ export function canvasToGenomicCoords({
   const row = Math.floor(adjustedY / rowHeight)
   const yWithinRow = adjustedY - row * rowHeight
   return { bpPerPx, genomicPos, basePos, row, adjustedY, yWithinRow }
-}
-
-// Pan-or-click threshold (|dx|+|dy|, CSS px).
-export const CLICK_SUPPRESS_THRESHOLD_PX = 4
-
-// Ref to a shared AbortController, auto-aborted on unmount so that a
-// removed component leaves no dangling document mousemove/mouseup
-// listeners referencing destroyed models.
-export function useAbortableRef() {
-  const ref = useRef<AbortController | null>(null)
-  useEffect(
-    () => () => {
-      ref.current?.abort()
-    },
-    [],
-  )
-  return ref
-}
-
-// True iff the shared controller has an active drag. Used to suppress
-// canvas hover updates during any drag without a parallel "isDragging"
-// flag — the AbortController IS the source of truth (mouseup aborts it).
-export function isDragInProgress(
-  controllerRef: React.RefObject<AbortController | null>,
-) {
-  const ac = controllerRef.current
-  return ac !== null && !ac.signal.aborted
-}
-
-// Starts a document-level drag: cancels any in-progress drag on the shared
-// controllerRef, listens to document mousemove/mouseup, and forwards each
-// delta from the original mousedown position to `onMove`. The shared ref
-// ensures opening a new drag while one is active cleanly tears down the old
-// listeners — no orphan document handlers, no double-fire. Using document
-// listeners (vs React canvas events) means the drag continues when the
-// cursor leaves the source element, with no "isDragging" flag needed.
-//
-// stopPropagation keeps the mousedown from also reaching the view's own
-// click-drag pan handler (would double-pan). We deliberately do NOT
-// preventDefault the mousedown: that cancels its native focus shift and leaves
-// a focused popup (e.g. the location-search Autocomplete, which only closes on
-// blur) stuck open. Text selection is suppressed per-move instead — the same
-// approach as the LGV's useSideScroll.
-export function startDocumentDrag(
-  e: React.MouseEvent,
-  controllerRef: React.RefObject<AbortController | null>,
-  onMove: (dx: number, dy: number) => void,
-) {
-  e.stopPropagation()
-  controllerRef.current?.abort()
-  const ac = new AbortController()
-  controllerRef.current = ac
-  const startX = e.clientX
-  const startY = e.clientY
-  document.addEventListener(
-    'mousemove',
-    me => {
-      me.preventDefault()
-      onMove(me.clientX - startX, me.clientY - startY)
-    },
-    { signal: ac.signal },
-  )
-  document.addEventListener(
-    'mouseup',
-    () => {
-      ac.abort()
-    },
-    { signal: ac.signal },
-  )
 }

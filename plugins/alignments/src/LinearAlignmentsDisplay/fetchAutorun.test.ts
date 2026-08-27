@@ -2,18 +2,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { waitFor } from '@testing-library/react'
 
-import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
-
-import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts'
-
-// RenderAlignmentData now returns the grouped envelope; ungrouped fetches are a
-// single section with key ''.
-function makeEmptyGroupedData(bytes?: number): GroupedAlignmentsResult {
-  return {
-    groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
-    bytes,
-  }
-}
+import {
+  bootAlignmentsDisplay,
+  makeEmptyAlignmentsResult as makeEmptyGroupedData,
+} from './testUtils.ts'
 
 // The gate rides inside the fetch: `RenderAlignmentData` takes the display's
 // `byteLimit`, reads the index before it downloads anything, and answers a
