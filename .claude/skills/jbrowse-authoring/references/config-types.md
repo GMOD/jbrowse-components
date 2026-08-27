@@ -163,11 +163,11 @@ explicit location slot, and derive the index location from it.
 - [ChainAdapter](https://jbrowse.org/jb2/docs/config/chainadapter.md) —
   shorthands: uri, baseUri
 - [MCScanAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscananchorsadapter.md)
-  — shorthands: uri, baseUri, bed1, bed2, chromSizes, csi, nhUri
+  — shorthands: uri, baseUri, bed1, bed2, chromSizes, csi, htsgetBase, nhUri
 - [MCScanBlocksAdapter](https://jbrowse.org/jb2/docs/config/mcscanblocksadapter.md)
   — shorthands: uri, baseUri
 - [MCScanSimpleAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscansimpleanchorsadapter.md)
-  — shorthands: uri, baseUri, bed1, bed2, chromSizes, csi, nhUri
+  — shorthands: uri, baseUri, bed1, bed2, chromSizes, csi, htsgetBase, nhUri
 - [MashMapAdapter](https://jbrowse.org/jb2/docs/config/mashmapadapter.md) —
   shorthands: uri, baseUri
 - [BlastTabularAdapter](https://jbrowse.org/jb2/docs/config/blasttabularadapter.md)

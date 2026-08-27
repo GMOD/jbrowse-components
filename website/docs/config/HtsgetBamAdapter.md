@@ -19,7 +19,7 @@ plugin.
   assemblyNames: ['hg38'],
   adapter: {
     type: 'HtsgetBamAdapter',
-    htsgetBase: 'https://htsget.example.com/reads/',
+    htsgetBase: 'https://htsget.example.com/reads',
     htsgetTrackId: 'NA12878',
   },
 }
@@ -48,5 +48,5 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-htsgetbase">**htsgetBase**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the base URL to fetch from |
+| <span id="slot-htsgetbase">**htsgetBase**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '', locationType: 'UriLocation' }</code> | The endpoint tickets are requested from. `htsgetTrackId` is appended to it, so a trailing slash produces a doubled one in the request path. |
 | <span id="slot-htsgettrackid">**htsgetTrackId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the trackId, which is appended to the base URL |

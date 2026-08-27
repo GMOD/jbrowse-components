@@ -111,7 +111,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "htsgetBase",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
         },
         {
           "name": "htsgetTrackId",
@@ -1399,6 +1399,7 @@ export const configManifest: ConfigManifest = {
         "bed2",
         "chromSizes",
         "csi",
+        "htsgetBase",
         "nhUri"
       ]
     },
@@ -1464,6 +1465,7 @@ export const configManifest: ConfigManifest = {
         "bed2",
         "chromSizes",
         "csi",
+        "htsgetBase",
         "nhUri"
       ]
     },

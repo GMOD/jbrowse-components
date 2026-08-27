@@ -1,6 +1,7 @@
 import { HtsgetFile } from '@gmod/bam'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getFetcher } from '@jbrowse/core/util/io'
+import { isUriLocation } from '@jbrowse/core/util'
+import { getFetcher, resolveUriLocation } from '@jbrowse/core/util/io'
 
 import BamAdapter from '../BamAdapter/BamAdapter.ts'
 import BamSlightlyLazyFeature from '../BamAdapter/BamSlightlyLazyFeature.ts'
@@ -14,12 +15,16 @@ export default class HtsgetBamAdapter extends BamAdapter {
       // but at runtime it is always HtsgetBamAdapterConfig for this class
       const conf = this.config as unknown as HtsgetBamAdapterConfig
       const htsgetBase = readConfObject(conf, 'htsgetBase')
-      if (!htsgetBase) {
-        throw new Error('HtsgetBamAdapter requires htsgetBase')
+      // isUriLocation rather than a truthy check: it rejects both the schema's
+      // empty default and a localPath, which htsget has no way to request
+      if (!isUriLocation(htsgetBase)) {
+        throw new Error('HtsgetBamAdapter requires an htsgetBase url')
       }
       this.configureResult = {
         bam: new HtsgetFile<BamSlightlyLazyFeature>({
-          baseUrl: htsgetBase,
+          // resolved, because @gmod/bam builds the ticket url by concatenation
+          // and has no baseUri of its own to resolve against
+          baseUrl: resolveUriLocation(htsgetBase).uri,
           trackId: readConfObject(conf, 'htsgetTrackId'),
           recordClass: BamSlightlyLazyFeature,
           // One fetcher serves both halves of an htsget read, and the two are
@@ -30,10 +35,7 @@ export default class HtsgetBamAdapter extends BamAdapter {
           // another, is fetched plain. A block needing authorization of its own
           // carries it in the ticket's `headers`, which @gmod/bam applies on the
           // plain path.
-          fetch: getFetcher(
-            { uri: htsgetBase, locationType: 'UriLocation' },
-            this.pluginManager,
-          ),
+          fetch: getFetcher(htsgetBase, this.pluginManager),
         }),
       }
     }
