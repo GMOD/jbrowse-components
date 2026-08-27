@@ -1,35 +1,18 @@
 ---
 name: launch-menu-rename-and-reconstruction-limits
-description: What is left after the "Launch" rename and the derivative-allele guidelines — the figures and one tour that still show the old label, and two proposals nobody has started, one of which needs a measurement before it can be judged.
+description: Two proposals left over from the derivative-allele guidelines, neither started — one small enough to write today, one that needs a measurement before it can be judged at all.
 ---
 
-# Left over from the Launch rename and the reconstruction guidelines
+# Left over from the reconstruction guidelines
 
 Landed already: the track-menu twins for the three rubberband-only entries
 (consensus, MAF subsequences/species launches, Get sequence), the
-`Launch view` → `Launch` rename across code, docs, specs and tours, and the
-user guide's *What the reconstruction needs* / *Judging what it lists*
-sections plus the tutorial's pointer at them.
+`Launch view` → `Launch` rename across code, docs, specs and tours, the user
+guide's *What the reconstruction needs* / *Judging what it lists* sections plus
+the tutorial's pointer at them, and the recapture the rename left behind — 20
+figures and 5 tours, against the 6 and 3 this file used to list.
 
-## 1. Figures and one tour still show `Launch view`
-
-The specs were renamed, so a **recapture** fixes each of these; nothing else
-does. Nobody has run one.
-
-| what | where | why it shows the label |
-| --- | --- | --- |
-| 4 derivative-allele figures | `cancer_sv` and `sv` pages | `DERIVATIVE_ROUTE_LABEL` is burned into the frame as a caption |
-| 2 graph launch-out figures | `graph-ecoli` specs | `{ type: 'box', anchor: { text: 'Launch' } }` draws a red box around the row |
-| `rgfa_launch_out_menu.png` | `user_guides/graph_genome_view.md` | the open menu is the subject of the figure |
-| the synteny and SV tours | `videos/synteny.ts`, `videos/sv.ts` | the narration **says** the words, so re-filming is the only fix |
-| `pangenome_cactus/subgraph_launch.mp4` | `tutorials/pangenome_cactus.md` | same |
-
-The two `{ type: 'click', text: 'Launch view' }` steps left in `specs/ui.ts` and
-`specs/sv.ts` are **correct**: they click app-core's `ViewLauncher` button,
-which keeps that wording. One label, two unrelated controls — the same trap as
-[[two-real-spellings-of-one-menu-label]] read backwards.
-
-## 2. Say why the candidate list is empty on a short-read track
+## 1. Say why the candidate list is empty on a short-read track
 
 Small, clear, nobody started it. The dialog's empty state currently offers
 "navigate to a breakpoint, and widen the window if the reads are long", which
@@ -41,7 +24,7 @@ about a kilobase can say so in the dialog instead. Keep it to the empty state:
 the ranked list already prints segment sizes, and a second warning over a list
 that has rows is noise.
 
-## 3. Chain in-read deletions, not only SA segments — MEASURE FIRST
+## 2. Chain in-read deletions, not only SA segments — MEASURE FIRST
 
 The study in [SV_MULTIHOP.md](../reference/SV_MULTIHOP.md) says the sub-10 kb
 cliff is a representation, not the grouping: 50 of the 58 missed junctions are
