@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
+  LaneGene,
   geneGlyphGeometry,
   geneGlyphShape,
   isAnnotated,
@@ -13,7 +14,11 @@ const CANVAS = 800
 
 // Two exons with an intron between them, and the whole thing mapped 1:1 from bp
 // to px so a fixture reads as pixels.
-function gene({
+function gene(opts: Parameters<typeof geneFeature>[0]) {
+  return new LaneGene(geneFeature(opts))
+}
+
+function geneFeature({
   start,
   end,
   exons,
@@ -275,10 +280,9 @@ test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => 
     end: 40,
     type: 'pseudogene',
   })
-  expect(laneGeneFeatures([region, gene, pseudo]).map(f => f.id())).toEqual([
-    'g',
-    'p',
-  ])
+  expect(
+    laneGeneFeatures([region, gene, pseudo]).map(g => g.feature.id()),
+  ).toEqual(['g', 'p'])
   const mrna = new SimpleFeature({
     uniqueId: 'm',
     refName: 'chr1',
@@ -286,7 +290,9 @@ test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => 
     end: 40,
     type: 'mRNA',
   })
-  expect(laneGeneFeatures([region, mrna]).map(f => f.id())).toEqual(['m'])
+  expect(laneGeneFeatures([region, mrna]).map(g => g.feature.id())).toEqual([
+    'm',
+  ])
 })
 
 // The anchor lane's genes are fetched over the view's static blocks, so a gene

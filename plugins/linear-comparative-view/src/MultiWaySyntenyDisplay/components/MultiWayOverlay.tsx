@@ -1,13 +1,9 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getBpDisplayStr } from '@jbrowse/core/util'
+import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type { Lane } from '../laneStack.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
-
-function fmt(n: number) {
-  return Math.round(n).toLocaleString('en-US')
-}
 
 /**
  * What a lane's header says on the right: the span, because a range makes the
@@ -45,7 +41,7 @@ const LaneHeaders = observer(function LaneHeaders({
         const where = lane.isAnchor
           ? view.coarseVisibleLocStrings || view.visibleLocStrings
           : lane.frame &&
-            `${lane.canon(lane.frame.refName)}:${fmt(lane.frame.min)}${lane.frame.flipped ? ' [rev]' : ''}`
+            `${lane.canon(lane.frame.refName)}:${toLocale(Math.round(lane.frame.min))}${lane.frame.flipped ? ' [rev]' : ''}`
         return (
           <g key={`header-${lane.assemblyName}`}>
             <text

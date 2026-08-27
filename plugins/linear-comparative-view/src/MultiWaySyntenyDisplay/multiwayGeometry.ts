@@ -1,3 +1,4 @@
+import { toLocale } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
@@ -11,11 +12,12 @@ import { frameTickXs } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { Lane, LaneStack } from './laneStack.ts'
+import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
 import type { Span } from './layoutMultiWay.ts'
 import type {
   GlyphHit,
   LaneGlyphData,
+  MultiWayCell,
   RibbonLayer,
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
@@ -44,11 +46,11 @@ function wideEnough(s1: Span, s2: Span) {
 }
 
 function fmt(n: number) {
-  return Math.round(n).toLocaleString('en-US')
+  return toLocale(Math.round(n))
 }
 
-function* lanePairs(lanes: Lane[], glyphHeight: number, from = 0) {
-  for (let row = from; row + 1 < lanes.length; row++) {
+function* lanePairs(lanes: Lane[], glyphHeight: number) {
+  for (let row = 0; row + 1 < lanes.length; row++) {
     const upper = lanes[row]!
     const lower = lanes[row + 1]!
     yield {
@@ -91,8 +93,8 @@ class RibbonBuilder {
     this.colors.push(color)
   }
 
-  build(): SyntenyInstanceData {
-    return {
+  build(): MultiWayCell {
+    const data: SyntenyInstanceData = {
       bp1: Float32Array.from(this.bp1),
       bp2: Float32Array.from(this.bp2),
       bp3: Float32Array.from(this.bp3),
@@ -105,11 +107,12 @@ class RibbonBuilder {
       instanceCount: this.bp1.length,
       colors: Uint32Array.from(this.colors),
     }
+    return { kind: 'ribbons', data }
   }
 }
 
 export interface RibbonGeometry {
-  cells: Map<string, SyntenyInstanceData>
+  cells: Map<string, MultiWayCell>
   layers: RibbonLayer[]
   /** what a ribbon opens and names; a ribbon's `instanceFeatureIdx` indexes it */
   targets: RibbonTarget[]
@@ -135,7 +138,7 @@ export function buildRibbonGeometry({
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
-  const cells = new Map<string, SyntenyInstanceData>()
+  const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
   const groupTarget = new Map<string, number>()
@@ -203,7 +206,7 @@ export function buildRibbonGeometry({
 }
 
 export interface TickGeometry {
-  cells: Map<string, SyntenyInstanceData>
+  cells: Map<string, MultiWayCell>
   layers: RibbonLayer[]
 }
 
@@ -224,7 +227,7 @@ export function buildTickGeometry({
   color: string
 }): TickGeometry {
   const packed = cssColorToABGR(color)
-  const cells = new Map<string, SyntenyInstanceData>()
+  const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   stack.lanes.forEach((lane, row) => {
     if (!lane.frame) {
@@ -338,33 +341,35 @@ class GlyphBuilder {
 /**
  * An opaque band per mate lane, tiling everything below the anchor so the
  * view's gridlines — true only at the anchor's scale — stop where the anchor
- * does. Unscrolled: a band is chrome pinned to the track.
+ * does. Unscrolled: a band is chrome pinned to the track. Built off the lane
+ * geometry alone, so a pan, a zoom or a settle that moves every other cell
+ * leaves this one's identity, and its upload, where it was.
  */
 export function buildBandCell({
-  stack,
+  bands,
   width,
   paper,
   stripe,
 }: {
-  stack: LaneStack
+  bands: LaneBand[]
   width: number
   paper: string
   stripe: string
 }): LaneGlyphData {
   const paperColor = cssColorToABGR(paper)
   const stripeColor = cssColorToABGR(stripe)
-  const bands = new GlyphBuilder()
-  stack.lanes.forEach((lane, row) => {
+  const glyphs = new GlyphBuilder()
+  bands.forEach((band, row) => {
     if (row === 0) {
       return
     }
-    const height = lane.bandEnd - lane.bandStart
-    bands.rect(0, width, lane.bandStart, height, paperColor)
+    const height = band.bandEnd - band.bandStart
+    glyphs.rect(0, width, band.bandStart, height, paperColor)
     if (row % 2 === 1) {
-      bands.rect(0, width, lane.bandStart, height, stripeColor)
+      glyphs.rect(0, width, band.bandStart, height, stripeColor)
     }
   })
-  return bands.build()
+  return glyphs.build()
 }
 
 export interface LaneGlyphColors {
@@ -409,11 +414,22 @@ export function buildLaneGlyphCell({
     0,
     cssColorToABGR(colors.divider),
   )
+  // a slot answers the same few strings for a whole lane; parse each once
+  const packed = new Map<string, number>()
+  const pack = (css: string) => {
+    let color = packed.get(css)
+    if (color === undefined) {
+      color = cssColorToABGR(css)
+      packed.set(css, color)
+    }
+    return color
+  }
 
   const annotated: Span[] = []
   for (const gene of lane.genes) {
-    const refName = gene.get('refName')
-    const span = lane.spanOf(refName, gene.get('start'), gene.get('end'))
+    const { feature } = gene
+    const refName = feature.get('refName')
+    const span = lane.spanOf(refName, feature.get('start'), feature.get('end'))
     if (span === undefined || !onCanvas(span, width)) {
       continue
     }
@@ -423,8 +439,8 @@ export function buildLaneGlyphCell({
       span,
       (start, end) => lane.spanOf(refName, start, end),
     )
-    const color = cssColorToABGR(colors.colorOf('color', gene))
-    const utrColor = cssColorToABGR(colors.colorOf('utrColor', gene))
+    const color = pack(colors.colorOf('color', feature))
+    const utrColor = pack(colors.colorOf('utrColor', feature))
     glyphs.line(left, right, y, glyphHeight, pxDir, stroke)
     const utrY = y + ((1 - UTR_HEIGHT_FRACTION) / 2) * glyphHeight
     for (const [x1, x2] of thin) {
@@ -448,8 +464,8 @@ export function buildLaneGlyphCell({
       x2: right,
       y1: y,
       y2: y + glyphHeight,
-      feature: gene,
-      label: gene.get('name') ?? gene.id(),
+      feature,
+      label: feature.get('name') ?? feature.id(),
     })
   }
 
@@ -458,7 +474,7 @@ export function buildLaneGlyphCell({
       if (isAnnotated(annotated, span)) {
         continue
       }
-      const color = cssColorToABGR(colors.colorOf('color', group.feature))
+      const color = pack(colors.colorOf('color', group.feature))
       if (glyphs.outlineColor === 0) {
         glyphs.outlineColor = color
       }

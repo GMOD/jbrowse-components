@@ -3,8 +3,9 @@
  * shape each one is in bp, and where that shape lands in px.
  *
  * The two halves are here together because the px side is a projection of the
- * bp side and nothing else — `geneGlyphPx` maps the intervals `geneGlyphShape`
- * merged through whatever px map the lane hands it — and because the px half
+ * bp side and nothing else — `geneGlyphGeometry` maps the intervals
+ * `geneGlyphShape` merged through whatever px map the lane hands it — and
+ * because the px half
  * spent its life inside a React component, where the chevron walk was
  * unbounded and untested. The bp half transfers to a GPU-emitting backend and
  * the px half does not; that is the seam, and it runs through the middle of
@@ -27,12 +28,32 @@ const CONTAINER_TYPES = new Set(['region', 'chromosome', 'contig', 'scaffold'])
 export function laneGeneFeatures(features: Feature[]) {
   const unique = dedupe(features, f => f.id())
   const genes = unique.filter(f => !!f.get('type')?.endsWith('gene'))
-  return genes.length
-    ? genes
-    : unique.filter(f => {
-        const type = f.get('type')
-        return type === undefined || !CONTAINER_TYPES.has(type)
-      })
+  return (
+    genes.length
+      ? genes
+      : unique.filter(f => {
+          const type = f.get('type')
+          return type === undefined || !CONTAINER_TYPES.has(type)
+        })
+  ).map(feature => new LaneGene(feature))
+}
+
+/**
+ * A fetched gene with its bp shape resolved once. The shape is a pure walk of
+ * the feature's subtree and the same at every zoom, while the px projection
+ * changes on every one; measured on the tutorial session it was half of each
+ * zoom step's cell packing, so it is kept for the feature's lifetime — lazily,
+ * since a fetch window is wider than the canvas and most of it never draws.
+ */
+export class LaneGene {
+  private resolved?: GeneGlyphShape
+
+  constructor(readonly feature: Feature) {}
+
+  get shape() {
+    this.resolved ??= geneGlyphShape(this.feature)
+    return this.resolved
+  }
 }
 
 /**
@@ -152,12 +173,12 @@ export interface GeneGlyphGeometry {
  * flipped lane's genes point the way that lane reads.
  */
 export function geneGlyphGeometry(
-  feature: Feature,
+  gene: LaneGene,
   span: Span,
   spanOf: (start: number, end: number) => Span | undefined,
 ): GeneGlyphGeometry {
   const [l, r] = span
-  const strand = feature.get('strand') ?? 0
+  const strand = gene.feature.get('strand') ?? 0
   const pxDir = strand === 0 ? 0 : l <= r ? strand : -strand
   const [left, right] = l < r ? [l, r] : [r, l]
   const toPx = (intervals: [number, number][]) =>
@@ -167,6 +188,6 @@ export function geneGlyphGeometry(
         ? []
         : [px[0] < px[1] ? px : ([px[1], px[0]] as Span)]
     })
-  const { full, thin } = geneGlyphShape(feature)
+  const { full, thin } = gene.shape
   return { left, right, pxDir, full: toPx(full), thin: toPx(thin) }
 }

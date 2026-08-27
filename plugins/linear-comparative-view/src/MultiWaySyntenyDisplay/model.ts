@@ -30,7 +30,7 @@ import {
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { axisSpan } from './anchorAxis.ts'
 import { frameFromDecision } from './laneDecision.ts'
-import { buildLanes } from './laneStack.ts'
+import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   groupFeatures,
   laneFetchRegion,
@@ -49,9 +49,11 @@ import {
 } from './multiwayGeometry.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
+import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
+import type { TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
   MultiWayLayer,
@@ -150,7 +152,7 @@ export function stateModelFactory(
        * per-lane gene models fetched from each assembly's own gene track, so a
        * lane draws real exon structure at that genome's coordinates
        */
-      laneGenes: undefined as Map<string, Feature[]> | undefined,
+      laneGenes: undefined as Map<string, LaneGene[]> | undefined,
       /**
        * #volatile
        */
@@ -205,7 +207,7 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setLaneGenes(key: string, genes: Map<string, Feature[]>) {
+      setLaneGenes(key: string, genes: Map<string, LaneGene[]>) {
         self.laneGenesKey = key
         self.laneGenes = genes
       },
@@ -691,14 +693,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      get ribbonCells() {
-        const out = new Map<string, MultiWayCell>()
-        for (const [key, data] of self.ribbonGeometry.cells) {
-          out.set(key, { kind: 'ribbons', data })
-        }
-        return out
-      },
-      get tickGeometry() {
+      get tickGeometry(): TickGeometry {
         return self.showLaneTicks
           ? buildTickGeometry({
               stack: self.laneStack,
@@ -708,12 +703,19 @@ export function stateModelFactory(
             })
           : { cells: new Map(), layers: [] }
       },
+      /**
+       * #getter
+       * the opaque bands under the mate lanes, off the lane geometry rather
+       * than the stack: the stack moves on every pan and settle, the bands
+       * only when a lane comes or goes, and an unchanged cell uploads nothing
+       */
       get bandCell(): MultiWayCell {
         const { palette } = self
         return {
           kind: 'glyphs',
           data: buildBandCell({
-            stack: self.laneStack,
+            bands: laneGeometry(self.height, 1 + self.rowAssemblies.length)
+              .rows,
             width: self.canvasWidth,
             paper: palette.background.paper,
             stripe: palette.action.hover,
@@ -759,17 +761,12 @@ export function stateModelFactory(
        * keeps its identity across a rebuild of the map and uploads nothing
        */
       get renderCells(): ReadonlyMap<string, MultiWayCell> {
-        const out = new Map<string, MultiWayCell>([[BANDS_KEY, self.bandCell]])
-        for (const [key, cell] of self.ribbonCells) {
-          out.set(key, cell)
-        }
-        for (const [key, data] of self.tickGeometry.cells) {
-          out.set(key, { kind: 'ribbons', data })
-        }
-        for (const [key, cell] of self.laneGlyphCells) {
-          out.set(key, cell)
-        }
-        return out
+        return new Map<string, MultiWayCell>([
+          [BANDS_KEY, self.bandCell],
+          ...self.ribbonGeometry.cells,
+          ...self.tickGeometry.cells,
+          ...self.laneGlyphCells,
+        ])
       },
       /**
        * #getter
@@ -835,6 +832,8 @@ export function stateModelFactory(
           layers: self.renderLayers,
         }
       },
+    }))
+    .views(self => ({
       /**
        * #method
        * what sits under a container-relative point: a lane's glyph or box
@@ -858,7 +857,7 @@ export function stateModelFactory(
         const backend = self.currentRenderingBackend as
           | MultiWayRenderingBackend
           | undefined
-        const pick = backend?.pickRibbon(x, y, this.renderState)
+        const pick = backend?.pickRibbon(x, y, self.renderState)
         const target = pick && self.ribbonGeometry.targets[pick.targetIdx]
         return (
           target && {

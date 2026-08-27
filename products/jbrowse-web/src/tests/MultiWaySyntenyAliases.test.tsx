@@ -112,10 +112,9 @@ test('a lane finds an annotation declared under an alias and draws it', async ()
     },
     { timeout: 30000 },
   )
-  expect(display.laneGenes!.get('peach')!.map(f => f.get('refName'))).toEqual([
-    'CM000001.1',
-    'CM000001.1',
-  ])
+  expect(
+    display.laneGenes!.get('peach')!.map(g => g.feature.get('refName')),
+  ).toEqual(['CM000001.1', 'CM000001.1'])
   expect(display.rowFrames.get('peach')!.refName).toBe('Pp1')
 
   // the drawn side: those genes reach the lane rather than being filtered out

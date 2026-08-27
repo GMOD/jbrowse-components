@@ -71,20 +71,20 @@ async function laneRegions(
  * of a superseded run, and a stale run's failure belongs to whatever replaced
  * it.
  */
-async function fetchEachLane<Spec>(
+async function fetchEachLane<Spec, Result>(
   label: string,
   specs: Spec[],
   ctx: FetchContext,
   fetchOne: (
     spec: Spec,
     ctx: FetchContext,
-  ) => Promise<readonly [string, Feature[]]>,
+  ) => Promise<readonly [string, Result]>,
 ) {
   const perLane = fanOutStatus(ctx, specs.length)
   const settled = await Promise.allSettled(
     specs.map((spec, i) => fetchOne(spec, perLane[i]!)),
   )
-  const entries: (readonly [string, Feature[]])[] = []
+  const entries: (readonly [string, Result])[] = []
   for (const result of settled) {
     if (result.status === 'fulfilled') {
       entries.push(result.value)
@@ -125,7 +125,7 @@ async function fetchEachLane<Spec>(
  *   the error slot the ortholog fetch owns — least of all through the clear it
  *   would do at the start of every run.
  */
-function installLaneFetch<Spec>(
+function installLaneFetch<Spec, Result>(
   self: MultiWaySyntenyDisplayModel,
   {
     name,
@@ -140,8 +140,8 @@ function installLaneFetch<Spec>(
     fetchOne: (
       spec: Spec,
       ctx: FetchContext,
-    ) => Promise<readonly [string, Feature[]]>
-    commit: (key: string, byLane: Map<string, Feature[]>) => void
+    ) => Promise<readonly [string, Result]>
+    commit: (key: string, byLane: Map<string, Result>) => void
   },
 ) {
   installFetch(self, {

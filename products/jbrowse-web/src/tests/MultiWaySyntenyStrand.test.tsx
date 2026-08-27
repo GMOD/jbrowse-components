@@ -69,7 +69,11 @@ function reversePafConfig() {
 function ribbons(display: MultiWaySyntenyDisplayModel) {
   const { cells, layers } = display.ribbonGeometry
   return layers.flatMap(layer => {
-    const data = cells.get(layer.key)!
+    const cell = cells.get(layer.key)!
+    if (cell.kind !== 'ribbons') {
+      throw new Error(`${layer.key} is not a ribbon cell`)
+    }
+    const { data } = cell
     return Array.from({ length: data.instanceCount }, (_, i) => {
       const xs = [data.bp1[i]!, data.bp4[i]!, data.bp3[i]!, data.bp2[i]!]
       return {

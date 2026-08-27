@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { LaneGene } from './geneGlyph.ts'
 import { buildLanes } from './laneStack.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
 import {
@@ -14,10 +15,19 @@ import {
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { RowFrame, Span } from './layoutMultiWay.ts'
+import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const WIDTH = 800
 const HEIGHT = 240
+
+function ribbonData(cells: Map<string, MultiWayCell>, key: string) {
+  const cell = cells.get(key)!
+  if (cell.kind !== 'ribbons') {
+    throw new Error(`${key} is not a ribbon cell`)
+  }
+  return cell.data
+}
 
 function pairFeature(
   name: string,
@@ -67,7 +77,7 @@ function stack({
   assemblyNames = ['grape', 'peach'],
 }: {
   features: Feature[]
-  laneGenes?: Map<string, Feature[]>
+  laneGenes?: Map<string, LaneGene[]>
   assemblyNames?: string[]
 }) {
   const groups = groupFeatures(features)
@@ -114,7 +124,7 @@ describe('the ribbons', () => {
       drawCurves: false,
     })
     expect(layers.map(l => l.key)).toEqual(['ribbons:0'])
-    const data = cells.get('ribbons:0')!
+    const data = ribbonData(cells, 'ribbons:0')
     expect(data.instanceCount).toBe(2)
     // g1: anchor 80..160 px, mate 1100..1200 in a 1000bp frame → 80..160
     expect([data.bp1[0], data.bp2[0], data.bp4[0], data.bp3[0]]).toEqual([
@@ -152,8 +162,8 @@ describe('the ribbons', () => {
       drawCurves: false,
     })
     expect(targets).toHaveLength(1)
-    expect(cells.get('ribbons:0')!.instanceFeatureIdx[0]).toBe(0)
-    expect(cells.get('ribbons:1')!.instanceFeatureIdx[0]).toBe(0)
+    expect(ribbonData(cells, 'ribbons:0').instanceFeatureIdx[0]).toBe(0)
+    expect(ribbonData(cells, 'ribbons:1').instanceFeatureIdx[0]).toBe(0)
   })
 
   test('leave out a pair too thin to read on both ends', () => {
@@ -164,7 +174,7 @@ describe('the ribbons', () => {
       ribbonColor: 'grey',
       drawCurves: false,
     })
-    expect(cells.get('ribbons:0')!.instanceCount).toBe(0)
+    expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(0)
   })
 
   test('draw an alignment-level source’s direct records between mate lanes, from the second gutter', () => {
@@ -190,7 +200,7 @@ describe('the ribbons', () => {
       ribbonColor: 'grey',
       drawCurves: true,
     })
-    const data = cells.get('ribbons:1')!
+    const data = ribbonData(cells, 'ribbons:1')
     expect(data.instanceCount).toBe(2)
     expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual([
       400, 480, 480, 400,
@@ -209,7 +219,7 @@ test('the ticks are zero-width markers in each framed lane’s band', () => {
     color: 'rgba(0,0,0,0.12)',
   })
   expect(layers.map(l => l.key)).toEqual(['ticks:1'])
-  const data = cells.get('ticks:1')!
+  const data = ribbonData(cells, 'ticks:1')
   expect([...data.bp1]).toEqual([
     -320, -160, 0, 160, 320, 480, 640, 800, 960, 1120,
   ])
@@ -228,7 +238,7 @@ test('a band covers each mate lane, striped on alternate rows', () => {
     assemblyNames: ['grape', 'peach', 'cacao'],
   })
   const bands = buildBandCell({
-    stack: s,
+    bands: s.lanes,
     width: WIDTH,
     paper: 'white',
     stripe: 'rgba(0,0,0,0.04)',
@@ -277,7 +287,7 @@ describe('a lane cell', () => {
   test('packs a gene as its baseline, UTR and CDS boxes and an arrowhead the way it reads', () => {
     const s = stack({
       features: [pairFeature('g1', 100, 200)],
-      laneGenes: new Map([['grape', [gene]]]),
+      laneGenes: new Map([['grape', [new LaneGene(gene)]]]),
     })
     const lane = s.lanes[0]!
     const cell = buildLaneGlyphCell({
@@ -314,7 +324,7 @@ describe('a lane cell', () => {
   test('draws the table’s own box, translucent and outlined, where no gene reaches', () => {
     const s = stack({
       features: [pairFeature('g1', 100, 200), pairFeature('g2', 500, 600)],
-      laneGenes: new Map([['grape', [gene]]]),
+      laneGenes: new Map([['grape', [new LaneGene(gene)]]]),
     })
     const cell = buildLaneGlyphCell({
       lane: s.lanes[0]!,

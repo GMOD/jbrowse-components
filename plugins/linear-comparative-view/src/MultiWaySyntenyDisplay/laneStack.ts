@@ -2,8 +2,8 @@ import { clamp } from '@jbrowse/core/util'
 
 import { frameSpan, groupSpansOnRow } from './layoutMultiWay.ts'
 
+import type { LaneGene } from './geneGlyph.ts'
 import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
-import type { Feature } from '@jbrowse/core/util'
 
 const LABEL_HEIGHT = 12
 const MIN_GLYPH_PX = 5
@@ -73,7 +73,7 @@ export interface Lane {
    */
   frame: RowFrame | undefined
   /** this lane's own gene models, empty until the dependent fetch lands */
-  genes: Feature[]
+  genes: LaneGene[]
   /**
    * whether the SESSION holds an annotation track for this lane — a different
    * question from whether `genes` is empty, which this window can answer no to
@@ -133,7 +133,7 @@ export interface BuildLanesOpts {
   /** where the anchor lane draws each group, off the view's own `bpToPx` */
   anchorSpans: Map<string, Span>
   rowFrames: Map<string, RowFrame | undefined>
-  laneGenes: Map<string, Feature[]> | undefined
+  laneGenes: Map<string, LaneGene[]> | undefined
   laneGeneAdapters: Map<string, unknown>
   /** an interval on the anchor lane's axis, clipped — `axisSpan` bound to the view */
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined

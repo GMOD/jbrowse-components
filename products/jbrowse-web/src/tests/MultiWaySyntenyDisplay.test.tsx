@@ -78,8 +78,8 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
   )
   const gene = display
     .laneGenes!.get('grape')!
-    .find(f => f.get('name') === 'g1')!
-  const exons = gene
+    .find(g => g.feature.get('name') === 'g1')!
+  const exons = gene.feature
     .get('subfeatures')![0]!
     .get('subfeatures')!
     .filter(f => f.get('type') === 'exon')
