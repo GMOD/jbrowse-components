@@ -305,7 +305,9 @@ junctions between them, with the matched normals and random loci as controls.
 - **Long reads, from an aligner that emits SA tags** — minimap2 and ngmlr both
   do. A 100 bp Illumina library over the same breakpoints ranks each junction on
   its own and produces no multi-junction route, because no read reaches from one
-  junction to the next.
+  junction to the next. The picker measures the reads on screen, so where a
+  short-read library returns nothing it prints the median aligned length it
+  found rather than sending you to a wider window.
 - **An event above about 10 kb, or interchromosomal.** Across those two
   callsets, 129 of the 130 junctions above 10 kb or between chromosomes are
   recovered; between 1 and 10 kb it is 60% and 65%; below 1 kb, 11% and 10%. The

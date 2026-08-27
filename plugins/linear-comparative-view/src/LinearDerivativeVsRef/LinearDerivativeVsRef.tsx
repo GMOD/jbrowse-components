@@ -161,6 +161,40 @@ function showsOffScreenFlag(candidates: DerivativeCandidate[]) {
   return new Set(candidates.map(c => c.extendsOffScreen)).size > 1
 }
 
+// Median aligned length below which a library cannot express most
+// rearrangements, so an empty list is a fact about the data rather than about
+// the window.
+//
+// Not a tuned number: it sits in the gap between the two things it separates,
+// which are two orders of magnitude apart. A read describes a junction only by
+// carrying aligned pieces on BOTH sides of it, and an aligner needs a few
+// hundred bases per piece to place one uniquely — so Illumina at 100-250 bp has
+// no room for two, while the ONT and PacBio libraries the reconstruction is for
+// run 10-20 kb. Nothing real sits near a kilobase, which is what makes a
+// boundary safe to state here at all.
+const SHORT_READ_SPAN_BP = 1000
+
+// Why the list came back empty, which is three different answers.
+//
+// The short-read one exists because the other two are actively wrong there. A
+// 150 bp library is told to navigate to a breakpoint and widen the window, and
+// it can do both all afternoon: the reads cannot carry a junction at whatever
+// window, so what looks like "not here" is "not in this data". The number is
+// measured and printed rather than described, since it is the whole of the
+// reason.
+function emptyListReason(
+  namesOffScreenSegments: boolean,
+  medianReadSpanBp: number,
+) {
+  if (!namesOffScreenSegments) {
+    return 'Reconstruction chains the blocks on screen, and nothing names a block the view has not fetched: show every side of the junction, one region each.'
+  }
+  if (medianReadSpanBp > 0 && medianReadSpanBp < SHORT_READ_SPAN_BP) {
+    return `These reads align over ${Math.round(medianReadSpanBp)} bp at the median, and reconstruction chains the pieces one read was split into — so a read this short spans a junction only when the breakpoint falls inside it. Widening the window adds reads, not read length.`
+  }
+  return 'Reconstruction reads split alignments, so it needs reads whose SA tag places part of them elsewhere: navigate to a breakpoint, and widen the window if the reads are long.'
+}
+
 // One candidate: what it is, what it looks like, and what backs it. The strip
 // carries the shape and the size list the exact figures, which between them are
 // the evidence the caveat above the list asks a reader to weigh — the path's
@@ -487,9 +521,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
             {minReads > 1
               ? `No rearranged path is supported by more than one ${noun.replace(/s$/, '')} in this window.`
               : `No rearranged path is described by the ${noun} in this window.`}{' '}
-            {namesOffScreenSegments
-              ? 'Reconstruction reads split alignments, so it needs reads whose SA tag places part of them elsewhere: navigate to a breakpoint, and widen the window if the reads are long.'
-              : `Reconstruction chains the blocks on screen, and nothing names a block the view has not fetched: show every side of the junction, one region each.`}
+            {emptyListReason(namesOffScreenSegments, model.medianReadSpanBp)}
           </Typography>
         ) : (
           <>

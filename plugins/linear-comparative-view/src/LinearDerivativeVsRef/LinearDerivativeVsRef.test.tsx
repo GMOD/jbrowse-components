@@ -1,5 +1,5 @@
 import { destroy, types } from '@jbrowse/mobx-state-tree'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import DerivativeVsRefDialog from './LinearDerivativeVsRef.tsx'
 import { derivativePathTestIds } from './buildDerivativeVsRefSpec.ts'
@@ -10,6 +10,10 @@ import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 // what a read pileup is; `LGVSyntenyDisplay` answers this with contigs
 const READS = { noun: 'reads', minReads: 2, namesOffScreenSegments: true }
+
+// A long-read library's median aligned length, so a fixture that is not about
+// the empty state gets the wording every other one gets.
+const ONT_SPAN_BP = 18_000
 
 // The flank a real candidate carries on the path's two outer edges, so anything
 // rendering one of these meets the same gap between drawn and observed that the
@@ -94,6 +98,7 @@ test('a dead track stops the render before the model is read', () => {
       return true
     },
     derivativePathEvidence: READS,
+    medianReadSpanBp: ONT_SPAN_BP,
   }
 
   const { container } = render(
@@ -122,6 +127,7 @@ test('the row sizes what the reads saw, not what the view will open on', () => {
         derivativePathCandidates: [route(2)],
         hasReadsForDerivativePaths: true,
         derivativePathEvidence: READS,
+        medianReadSpanBp: ONT_SPAN_BP,
       }}
       track={makeTrack().track}
       handleClose={() => {}}
@@ -143,6 +149,7 @@ describe('the split drawing above the panel cap', () => {
           derivativePathCandidates: candidates,
           hasReadsForDerivativePaths: true,
           derivativePathEvidence: READS,
+          medianReadSpanBp: ONT_SPAN_BP,
         }}
         track={makeTrack().track}
         handleClose={() => {}}
@@ -267,6 +274,7 @@ test('the segments config rides on the track, reaching no session list', async (
         derivativePathCandidates: [route(2)],
         hasReadsForDerivativePaths: true,
         derivativePathEvidence: READS,
+        medianReadSpanBp: ONT_SPAN_BP,
       }}
       track={Session.view.track as unknown as AbstractTrackModel}
       handleClose={() => {}}
@@ -292,4 +300,76 @@ test('the segments config rides on the track, reaching no session list', async (
   expect(
     (shownConfs[0] as { assemblyNames: string[] }).assemblyNames,
   ).not.toContain('hg38')
+})
+
+// An empty list means one of two opposite things and the dialog used to give
+// only one of them. On a 150 bp library the advice it gave — navigate to a
+// breakpoint, widen the window — is work with no possible result, since the
+// reads cannot carry a junction at any window. The picker is the only place a
+// reader is told that: the ranked list they would otherwise read it off is the
+// thing that is empty.
+describe('the empty list says which kind of empty it is', () => {
+  function openEmpty(medianReadSpanBp: number, evidence = READS) {
+    return render(
+      <DerivativeVsRefDialog
+        model={{
+          derivativePathCandidates: [],
+          hasReadsForDerivativePaths: true,
+          derivativePathEvidence: evidence,
+          medianReadSpanBp,
+        }}
+        track={makeTrack().track}
+        handleClose={() => {}}
+      />,
+    )
+  }
+
+  it('names the measured length on a short-read library', () => {
+    openEmpty(151)
+    expect(screen.getByText(/151 bp at the median/)).toBeTruthy()
+    // ...and drops the advice that sent that reader looking
+    expect(screen.queryByText(/widen the window if the reads are long/)).toBe(
+      null,
+    )
+  })
+
+  it('keeps the where-to-look advice on a long-read library', () => {
+    openEmpty(ONT_SPAN_BP)
+    expect(
+      screen.getByText(/widen the window if the reads are long/),
+    ).toBeTruthy()
+    expect(screen.queryByText(/at the median/)).toBe(null)
+  })
+
+  // The boundary is stated rather than tuned (SHORT_READ_SPAN_BP), so both
+  // sides of it are pinned: one base under is short, the kilobase itself is
+  // not. A test that only checked 150 would pass against a threshold of 200.
+  it('turns over at the stated kilobase', () => {
+    openEmpty(999)
+    expect(screen.getByText(/999 bp at the median/)).toBeTruthy()
+    cleanup()
+    openEmpty(1000)
+    expect(screen.queryByText(/at the median/)).toBe(null)
+  })
+
+  it('leaves a synteny track its own answer, whatever its blocks measure', () => {
+    // A PAF block is not a read and names nothing off screen, so the short-read
+    // sentence would be false about it at any length — the branch is on the
+    // evidence, not on the number.
+    openEmpty(300, {
+      noun: 'contigs',
+      minReads: 1,
+      namesOffScreenSegments: false,
+    })
+    expect(screen.getByText(/one region each/)).toBeTruthy()
+    expect(screen.queryByText(/at the median/)).toBe(null)
+  })
+
+  // The state a `force load` window lands in reads 0, and 0 is not short — it
+  // is unmeasured. It never reaches here (`hasReadsForDerivativePaths` answers
+  // first), and this is what keeps that true if the guard above ever moves.
+  it('does not call an unloaded window short', () => {
+    openEmpty(0)
+    expect(screen.queryByText(/at the median/)).toBe(null)
+  })
 })

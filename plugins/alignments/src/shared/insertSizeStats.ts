@@ -28,6 +28,15 @@ function median(sorted: ArrayLike<number>) {
   return n % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
 }
 
+// The same median for a caller that has an unsorted sample and wants nothing
+// else from it — `medianReadSpan` is the one so far. Exported from here rather
+// than written again next to it: the sort above is comparator-free by
+// construction and the reasoning for that is in `sortedCopy`, which is exactly
+// what a second copy of four lines would lose.
+export function medianOf(values: ArrayLike<number>) {
+  return median(sortedCopy(values))
+}
+
 // Median of |x − med| over an already-sorted array, in O(n) with no second
 // allocation+sort. Walking outward from the median, deviations grow
 // monotonically: the values below med (indices high→low) and those at/above med

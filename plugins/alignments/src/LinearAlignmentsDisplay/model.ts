@@ -79,6 +79,7 @@ import {
   readCategoryLabelOverrides,
   readColorCategoryLabel,
 } from '../shared/legendUtils.ts'
+import { medianReadSpan } from '../shared/readSpans.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
   normalizeFilterBy,
@@ -1830,6 +1831,21 @@ export default function stateModelFactory(
          */
         get hasReadsForDerivativePaths() {
           return self.rpcDataMap.size > 0
+        },
+
+        /**
+         * #getter
+         * Median aligned length of the reads in view, in bp — how much reference
+         * one alignment covers, which is what decides whether a read can carry a
+         * junction at all. The picker's empty state reads it to tell a library
+         * that cannot describe a rearrangement from a window that happens to
+         * hold none.
+         *
+         * Lazy like any computed, so a pileup pays for this scan only while the
+         * picker is open.
+         */
+        get medianReadSpanBp() {
+          return medianReadSpan(this.rawDataByGroup.values())
         },
 
         /**

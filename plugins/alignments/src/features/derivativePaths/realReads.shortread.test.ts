@@ -1,4 +1,5 @@
 import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { medianReadSpan } from '../../shared/readSpans.ts'
 import { computeReadChains } from '../arcs/arcChains.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
@@ -2115,4 +2116,18 @@ describe('paired-end short reads', () => {
       ),
     ).toBeGreaterThan(2000)
   })
+})
+
+// What the picker's EMPTY state says instead of "widen the window", measured on
+// the same records. It is a separate claim from the three above, which are all
+// about a list that has rows: this window happens to produce eight candidates,
+// and a window of the same library that produces none is the one where the old
+// advice sent a reader looking for an event the reads could not have described.
+test('the library measures two orders under the reads the feature is for', () => {
+  const span = medianReadSpan([new Map([[0, pileupDataFromSamRecords(READS)]])])
+  // A piece of a 150 bp read, and the .5 is a real even-sample median rather
+  // than a rounding — the dialog rounds it to 97 for display. Asserted exactly
+  // rather than under a bound: it is the number a reader is shown, so a change
+  // to it is a change to what they are told.
+  expect(span).toBe(96.5)
 })

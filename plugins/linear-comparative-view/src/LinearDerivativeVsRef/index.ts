@@ -19,6 +19,7 @@ export interface DerivativePathHost {
   derivativePathCandidates: DerivativeCandidate[]
   hasReadsForDerivativePaths: boolean
   derivativePathEvidence: DerivativePathEvidence
+  medianReadSpanBp: number
 }
 
 /**
