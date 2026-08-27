@@ -1,9 +1,6 @@
-import RefreshIcon from '@mui/icons-material/Refresh'
-import { IconButton, Tooltip } from '@mui/material'
-
 import { makeStyles } from '../util/tss-react/index.ts'
+import ErrorActions from './ErrorActions.tsx'
 import RedErrorMessageBox from './RedErrorMessageBox.tsx'
-import StackTraceButton from './StackTraceButton.tsx'
 import { parseError } from './parseError.ts'
 
 import type { ReactNode } from 'react'
@@ -28,40 +25,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ErrorButtons({
-  error,
-  onReset,
-  extraAction,
-}: {
-  error: unknown
-  onReset?: () => void
-  extraAction?: ReactNode
-}) {
-  const { classes } = useStyles()
-  const hasStack = typeof error === 'object' && error && 'stack' in error
-  return (
-    <div className={classes.iconFloat}>
-      {extraAction}
-      {hasStack ? <StackTraceButton error={error} color="primary" /> : null}
-      {onReset ? (
-        <Tooltip title="Retry">
-          <IconButton
-            // same marker ErrorBar's retry publishes, so "is a retry offered
-            // here" is one query across both error presentations
-            data-testid="reload_button"
-            onClick={() => {
-              onReset()
-            }}
-            color="primary"
-          >
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
-      ) : null}
-    </div>
-  )
-}
-
 function ErrorBanner({
   error,
   onReset,
@@ -69,10 +32,6 @@ function ErrorBanner({
 }: {
   error: unknown
   onReset?: () => void
-  // Remedy specific to one kind of error, shown left of the shared stack-trace
-  // and retry buttons — the same slot and the same order `ErrorBar` gives it, so
-  // the two error presentations stay recognizable as each other. The GPU
-  // banners' "Use Canvas2D" is the only one.
   extraAction?: ReactNode
 }) {
   const { classes } = useStyles()
@@ -86,7 +45,14 @@ function ErrorBanner({
   return (
     <RedErrorMessageBox>
       {displayText.slice(0, 10000)}
-      <ErrorButtons error={error} onReset={onReset} extraAction={extraAction} />
+      <div className={classes.iconFloat}>
+        <ErrorActions
+          error={error}
+          onRetry={onReset}
+          extraAction={extraAction}
+          color="primary"
+        />
+      </div>
       {snapshotValue !== undefined ? (
         <>
           <div className={classes.message}>{message}</div>

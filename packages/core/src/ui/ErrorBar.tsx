@@ -1,8 +1,7 @@
-import RefreshIcon from '@mui/icons-material/Refresh'
-import { Alert, IconButton, Tooltip } from '@mui/material'
+import { Alert, Tooltip } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
-import StackTraceButton from './StackTraceButton.tsx'
+import ErrorActions from './ErrorActions.tsx'
 
 import type { ReactNode } from 'react'
 
@@ -24,8 +23,6 @@ export default function ErrorBar({
 }: {
   error: unknown
   onRetry: () => void
-  // Remedy specific to one kind of error, shown left of the shared stack-trace
-  // and retry buttons (the GPU overlay's "switch to Canvas2D" is the only one).
   extraAction?: ReactNode
 }) {
   const { classes } = useStyles()
@@ -55,20 +52,11 @@ export default function ErrorBar({
       <Alert
         severity="error"
         action={
-          <>
-            {extraAction}
-            <StackTraceButton error={error} />
-            <Tooltip title="Retry">
-              <IconButton
-                data-testid="reload_button"
-                onClick={() => {
-                  onRetry()
-                }}
-              >
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
-          </>
+          <ErrorActions
+            error={error}
+            onRetry={onRetry}
+            extraAction={extraAction}
+          />
         }
       >
         <Tooltip title={message}>
