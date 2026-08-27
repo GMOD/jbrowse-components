@@ -641,6 +641,15 @@ author who lands on a behavior change can find the sentence that explains it.
   same mistake at 608KB vs 539KB. **Opt-out: `await runDiagonalize(...)`**, which
   awaits the identical function.
 
+- **`detectAssembliesSwapped`, `detectDisplayAssembliesSwapped`,
+  `LEGEND_CHIP_ALPHA_FLOOR` and `blendOverWhite` are no longer exported from
+  `@jbrowse/synteny-core`.** Each is an internal of a function the barrel still
+  serves — `installAssemblySwapCheck` and `legendChipColor` — and their only
+  importers were the package's own tests, which now read the source files.
+  **Opt-out: `installAssemblySwapCheck(self, …)` for the swap check, and
+  `legendChipColor(color, alpha)` for a chip color**, which is the floored
+  blend the two constants composed.
+
 - **`RpcClient.call` no longer takes a transfer list.** Transferables flow only
   worker → main, inside a reply's `rpcResult` wrapper; transferring an *argument*
   would neuter the main thread's own buffer. The option existed for one and

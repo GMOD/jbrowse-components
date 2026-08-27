@@ -1,4 +1,4 @@
-import { detectAssembliesSwapped } from './index.ts'
+import { detectAssembliesSwapped } from './detectSwappedAssemblies.ts'
 
 describe('detectAssembliesSwapped', () => {
   // asmA's real refNames are chrA*, asmB's are chrB*

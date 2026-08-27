@@ -43,11 +43,7 @@ export { isDataCurrent } from '@jbrowse/core/util'
 // view's overlay), and its model is eager, so reaching it through this barrel
 // would have dragged the chunk behind these components onto every page.
 export { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
-export {
-  detectAssembliesSwapped,
-  detectDisplayAssembliesSwapped,
-  installAssemblySwapCheck,
-} from './detectSwappedAssemblies.ts'
+export { installAssemblySwapCheck } from './detectSwappedAssemblies.ts'
 // Promoted to core (depends only on core); re-exported here so the
 // comparative-view consumers keep importing it from @jbrowse/synteny-core.
 export { type ActiveFetch, createStopTokenRotation } from '@jbrowse/core/util'
@@ -73,9 +69,7 @@ export type {
 export { runDiagonalize } from './runDiagonalize.ts'
 export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
-  LEGEND_CHIP_ALPHA_FLOOR,
   attributeColorBy,
-  blendOverWhite,
   coerceColorBy,
   colorByAttributeName,
   legendChipColor,
