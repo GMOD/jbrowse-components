@@ -20,10 +20,11 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   ContextMenuMixin,
@@ -39,7 +40,6 @@ import {
   sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
-import { autorun } from 'mobx'
 
 import {
   getMafCoverageColors,
@@ -261,11 +261,11 @@ export default function stateModelFactory(
         framesDataMap: regionDataMap<MafFrameRecord[]>('framesDataMap'),
         /**
          * #volatile
-         * The last frames fetch declined to read the `annotationAdapter` because
-         * its own byte estimate was over budget (`framesReadOverBudget`). The
-         * overlay is auxiliary and fails soft, so the only thing that happens is
-         * that the strip stops drawing — this is what lets the menu say so
-         * rather than leaving the tick on over nothing.
+         * The last frames fetch declined to read the `annotationAdapter`
+         * because the `byteLimit` it carried refused the region. The overlay is
+         * auxiliary and fails soft, so the only thing that happens is that the
+         * strip stops drawing — this is what lets the menu say so rather than
+         * leaving the tick on over nothing.
          *
          * Volatile and not a config slot: it describes a measurement of the
          * current viewport, not a setting. **Never in `rpcProps()`** — it is
@@ -1135,27 +1135,6 @@ export default function stateModelFactory(
           setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
           setConf(self, 'rowHeight', 0)
           self.scrollTop = 0
-        },
-        /**
-         * #action
-         * Drag-resize the track. In fit-to-height mode the new height flows
-         * straight into `autoRowHeight`, so the rows stretch with the drag. With
-         * a fixed `rowHeight` the rows keep the size the user chose and the
-         * drag reveals more of them — the fixed height used to be scaled by the
-         * same ratio, which kept content and viewport locked together and made
-         * dragging a track taller unable to show a single extra species.
-         *
-         * The `resizing` flag that sits the letter overlay out of the drag is
-         * set on the track by the handle itself (TrackContainer /
-         * `MafBandResizeHandle`), not here — this action sees only individual
-         * deltas and can't tell the last one from the next, which is why it used
-         * to need a settle timer.
-         */
-        resizeHeight(distance: number) {
-          const oldHeight = self.height
-          const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
-          setConf(self, 'height', newHeight)
-          return newHeight - oldHeight
         },
         /**
          * #action
@@ -2369,24 +2348,6 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
-        afterAttach() {
-          // `rowIndexBySrc` is read out here rather than inside the action: an
-          // MST action's own reads are untracked, so the autorun would never
-          // see the row order change. Reading it here also hands the action the
-          // memoized Map instead of a freshly rebuilt one.
-          //
-          // This re-places on any change to `sources`, including a relabel or a
-          // recolor, which move no row. That costs one re-encode of the loaded
-          // regions — the same work a theme or color-setting change already
-          // does on this path — for a rare manual edit, which is cheaper than
-          // carrying a comparison to suppress it.
-          addDisposer(
-            self,
-            autorun(() => {
-              self.placeFetchedRows(self.rowIndexBySrc)
-            }),
-          )
-        },
         fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
@@ -2477,6 +2438,23 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
         // the mixin's fetch autoruns.
         afterAttach() {
+          // `rowIndexBySrc` is read in the autorun body rather than inside the
+          // action: an MST action's own reads are untracked, so the placement
+          // would never see the row order change. Reading it here also hands
+          // the action the memoized Map instead of a freshly rebuilt one.
+          //
+          // This re-places on any change to `sources`, including a relabel or a
+          // recolor, which move no row. That costs one re-encode of the loaded
+          // regions — the same work a theme or color-setting change already
+          // does on this path — for a rare manual edit, which is cheaper than
+          // carrying a comparison to suppress it.
+          namedAutorun(
+            self,
+            () => {
+              self.placeFetchedRows(self.rowIndexBySrc)
+            },
+            { name: 'Maf:placeFetchedRows' },
+          )
           setupTreeSidebarAutoruns(self, {
             name: 'Maf',
             sortRows: (refName, pos) => {

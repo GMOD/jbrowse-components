@@ -123,9 +123,9 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
 //
 // The strip is the one thing here that can be on, and correctly on, and still
 // draw nothing — the frames file is one record per CDS exon *per species*, so
-// its own byte pre-flight declines the read at wide spans on a deep alignment
-// (`framesReadOverBudget`). That failure is deliberately soft, which is exactly
-// why it has to be said here: nothing else on screen changes.
+// the RPC's own byte gate declines the read at wide spans on a deep alignment
+// (`executeMafAnnotationData`). That failure is deliberately soft, which is
+// exactly why it has to be said here: nothing else on screen changes.
 function frameMenuItems(self: MafMenuSelf): MenuItem[] {
   return self.annotationAdapterConfig
     ? [
