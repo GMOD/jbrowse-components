@@ -5,7 +5,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import { dropRowAt, moveLaneTo } from '../laneDrag.ts'
-import { LABEL_FONT_SIZE, laneHeaderRows } from '../laneHeader.ts'
+import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
@@ -148,9 +148,9 @@ const LaneHeaders = observer(function LaneHeaders({
           style={{
             position: 'absolute',
             left: 2,
-            // the box's BOTTOM sits where the SVG baseline did, so the two
-            // presenters put the text on the same line
-            top: row.y - LABEL_FONT_SIZE,
+            // `row.y` is a baseline; this converts it to the box top so the
+            // two presenters put the text on the same line
+            top: labelBoxTop(row.y),
             width: width - 4,
             display: 'flex',
             alignItems: 'center',

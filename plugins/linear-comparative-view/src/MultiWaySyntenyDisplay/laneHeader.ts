@@ -2,11 +2,21 @@ import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
 import type { Lane } from './laneStack.ts'
 
-// Where the header text sits above its lane's glyph row. The SVG half places a
-// baseline here directly; the HTML half places a box's BOTTOM here, which is
-// the same line once `lineHeight: 1` puts the baseline on it.
+// Where the header text sits above its lane's glyph row.
 export const LABEL_FONT_SIZE = 10
 export const LABEL_BASELINE_OFFSET = 3
+
+// `row.y` is a BASELINE, which is what SVG `<text>` takes. An HTML box is
+// placed by its top, and a `line-height: 1` box puts its baseline this far
+// below that — so the HTML half owes the conversion or its labels ride ~2px
+// high against the export's. Same ratio and same reason as the MAF band
+// labels: 0.84 is within a hair of both sans-serif faces in play.
+export const LABEL_BASELINE_RATIO = 0.84
+
+/** the top of a `line-height: 1` box whose baseline lands on `y` */
+export function labelBoxTop(y: number) {
+  return y - LABEL_FONT_SIZE * LABEL_BASELINE_RATIO
+}
 
 export interface LaneHeaderRow {
   assemblyName: string
