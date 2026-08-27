@@ -96,6 +96,12 @@ Both walkthroughs use `MultiRegionDisplayMixin`, the common case. The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
 goes further into why fetch and render are split.
 
+If your display holds onto what the pointer is over, read
+[the hover rules](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_HOVER.md)
+first: a zoom, a side-scroll, an internal scroll and the region-too-large banner
+all move content under a stationary cursor without firing a pointer event, so a
+stored hit goes on naming what used to be there.
+
 ## Cross-cutting mixins
 
 Orthogonal to the foundation — compose any of them on top of whichever one you

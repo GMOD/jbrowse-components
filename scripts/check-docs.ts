@@ -285,6 +285,10 @@ const VALIDATORS: Validator[] = [
     name: 'tutorial build scripts are valid',
     argv: ['python3', 'scripts/check-build-scripts.py'],
   },
+  {
+    name: "ARCHITECTURE.md's rule index points somewhere",
+    argv: web('check-architecture-checklist.ts'),
+  },
 ]
 
 // V8's code cache, shared by every child below. Each of these is a fresh node

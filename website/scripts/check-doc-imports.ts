@@ -553,7 +553,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // built, measured and found not to work. The entry exists to stop the next
   // reader trying it, so the method must stay unwritten.
   'renderSoon',
-  // ARCHITECTURE.md §"A stored hover is a volatile the viewport can invalidate": the per-family name the container used
+  // reference/DISPLAY_HOVER.md: the per-family name the container used
   // to read, quoted to say why a base-declared getter replaced it — three
   // display families spelled it three ways, so the channel carried a third of
   // the hovers and nothing said which. Two source comments telling the same

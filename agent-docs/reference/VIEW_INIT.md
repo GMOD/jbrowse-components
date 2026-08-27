@@ -274,6 +274,17 @@ load shows a spinner, not the import form:
 So: fresh view, no init, no regions → import form. With `init` set →
 `hasSomethingToShow` is true immediately → spinner until the assembly loads.
 
+## A nested view's `bodyMounted` reads true while it is out of the DOM
+
+`ViewContainer`'s effect is the only writer of the raw `bodyMounted` flag, and
+it never reaches a view nested in another view's rows — synteny rows, breakpoint
+panels. There the raw flag reads `true` for a subtree that is not in the DOM,
+and every display inside it waits for a first paint nothing will make.
+
+So readiness asks `effectiveBodyMounted` (`BaseViewModel`), which folds in the
+answer of every view this one is nested inside. `computeLoadingTerm` takes it as
+the `hostMounted` thunk, so a display never spells the walk itself.
+
 ## Cross-view note
 
 Every view type has its own `init` + `LaunchView-<Type>` extension point +
