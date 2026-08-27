@@ -1,5 +1,5 @@
 ---
-title: Complex rearrangements and gene fusions
+title: Complex rearrangements and derivative alleles
 sidebar_label: SVs (complex rearrangements)
 description:
   Search a somatic SV callset for rearrangements that take several junctions to
@@ -9,23 +9,13 @@ tutorial_category: Cancer genomics
 data: pipeline
 ---
 
-**TL;DR:** a gene fusion can take several junctions to make. Part 1 searches a
-somatic SV callset for chains of junctions a single long read could cross,
-rebuilds the derivative allele from the reads that span it, and shows that
-reconstruction against the reference as a synteny view. Part 2 takes a fusion
-everyone knows, in a second cell line, and measures how far the junction a
-fusion caller reports sits from the DNA break that made it.
+**TL;DR:** a rearrangement can take several junctions to make, and the genes it
+brings together say nothing about how many. Search a somatic SV callset for
+chains of junctions a single long read could cross, rebuild the derivative
+allele from the reads that span it, and show that reconstruction against the
+reference as a synteny view.
 
-## Part 1: COLO829, a fusion made of three junctions
-
-COLO829 is a melanoma cell line with a matched normal, COLO829BL, and a
-community reference for somatic structural-variant calling
-([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)). Its
-reads, its somatic calls, its coverage and the reference they were called
-against all come out of one ONT open-data release, so this part needs no data
-from anywhere else.
-
-### Prerequisites
+## Prerequisites
 
 - nothing to read along. Everything below is for rebuilding the data
 - [](/docs/cli)
@@ -44,9 +34,11 @@ comes from [nodejs.org](https://nodejs.org/). `sv_multihop.py` is one file:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/sv_multihop.py
 ```
 
-### Where the data comes from
+## Where the data comes from
 
-All of it is that release's own `wf-somatic-variation` run:
+Every file comes out of one ONT open-data release, from its own
+`wf-somatic-variation` run
+([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)):
 
 - COLO829 tumor reads (ONT R10, haplotagged):
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram
@@ -62,6 +54,13 @@ All of it is that release's own `wf-somatic-variation` run:
   consensus to:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta
 
+## COLO829
+
+COLO829 is a melanoma cell line with a matched normal, COLO829BL, and a
+community reference for somatic structural-variant calling. The tumor is
+sequenced deeply enough on ONT R10 that a read crosses a whole rearrangement,
+which is what the reconstruction below needs.
+
 The coverage lanes beside those reads are the same run's `mosdepth` output in 50
 kb windows, repacked as bigWig:
 
@@ -75,7 +74,7 @@ gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
 bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
 ```
 
-### Multi-hop fusions
+## Multi-hop fusions
 
 Fusion callers generally look for one junction joining two genes. Two genes can
 also be brought together by a series of junctions, and when the reference
@@ -90,7 +89,7 @@ to any somatic SV callset, and
 [`sv_multihop.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/sv_multihop.py)
 runs it.
 
-### Finding the chains
+## Finding the chains
 
 The search needs only the VCF. Two junctions belong to the same chain when an
 endpoint of one lands close enough to an endpoint of the other that a single
@@ -121,7 +120,7 @@ chr10, and _TRHDE_ on chr12.
 `--max-segment` is the longest reference segment one read is assumed to bridge,
 so set it from your own read-length distribution.
 
-### Reads at the breakpoints
+## Reads at the breakpoints
 
 At the chr3 breakpoints the tumor pileup becomes soft-clipped bases, because
 every read crossing the junction has its remainder aligned elsewhere. The
@@ -133,7 +132,7 @@ Soft clipping is off by default. Turn it on from the track menu with **Show soft
 clipping**. These pileups are deep enough that the track asks before downloading
 the window; **Force load** approves it for the rest of the session.
 
-### Following the chain across panels
+## Following the chain across panels
 
 A breakpoint split view, the right half of the figure above, stacks the loci the
 chain visits and draws the reads that leave one panel and arrive in another.
@@ -185,7 +184,7 @@ derivative, it shows the order and orientation of its pieces. The next section
 builds that view from the reads already on screen; the one after it rebuilds the
 allele's sequence, which the base-level checks need.
 
-### Reconstructing the derivative allele in the browser
+## Reconstructing the derivative allele in the browser
 
 A split read is already an ordered, oriented list of reference intervals, which
 is what a derivative allele is. With the tumor reads open at a breakpoint, the
@@ -274,7 +273,7 @@ bases support a junction takes a sequence to align them to, which is the next
 section: `derive` builds the allele's consensus and realigns the spanning reads
 onto it, and a wrong junction shows as clipping and mismatches at that position.
 
-### Reconstructing the allele's sequence
+## Reconstructing the allele's sequence
 
 The candidates above are structure. `derive` builds the allele's **sequence**,
 which is what the base-level checks below need: it pulls the reads spanning
@@ -359,7 +358,7 @@ duplication-type, and parallel an inversion.
 
 <Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from, a read lane under each row, and the junctions drawn once each as arcs over the hg38 lane. Shaded on the allele: the stretch only the rearranged chromosome reaches, where the read lane thins to one allele's worth." src="/img/cancer_sv/derivative_synteny.png" />
 
-### Checking the reconstruction
+## Checking the reconstruction
 
 Zoomed to the kilobase holding the junctions, the two inserts are the same width
 as the arms either side of them. Realigned against the derivative, reads the
@@ -381,158 +380,6 @@ means the read passes through a segment no panel is showing.
 
 <Figure caption="COLO829 tumor ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped; realigned to the derivative (right) they cross at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
-## Part 2: K562, the reported junction and the DNA break
-
-The der(3) allele above carries _RARB_'s first coding exon, then 183 bp of
-_TRHDE_ read backwards. A fusion caller working from RNA reports that as one
-junction between two genes, and the three DNA junctions behind it are nowhere in
-its output. K562 is where the size of that gap can be read off, because both
-halves are published: the RNA junction from one assay, the DNA breakpoints from
-another.
-
-K562 is a chronic myeloid leukemia line carrying the Philadelphia chromosome. It
-covers the transcript side: PacBio Iso-Seq from
-[ENCODE](https://www.encodeproject.org/), plus STAR-Fusion calls and copy-number
-segments from [DepMap](https://depmap.org/portal/), which publishes the same
-pipeline output for roughly 1900 cell lines.
-
-### Prerequisites
-
-Part 1's JBrowse instance carries over. Moving the DNA breakpoints onto hg38
-needs two things Part 1 did not:
-
-- `liftOver` from the
-  [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/)
-- `python3`, for `lift_bnd_vcf.py`
-
-### Where the data comes from
-
-Four Iso-Seq runs, two DepMap tables, and the DNA breakpoints on hg19:
-
-- K562 PacBio Iso-Seq, ENCODE `ENCFF433YKW`:
-  https://www.encodeproject.org/files/ENCFF433YKW/@@download/ENCFF433YKW.bam
-- K562 PacBio Iso-Seq, ENCODE `ENCFF092NLB`:
-  https://www.encodeproject.org/files/ENCFF092NLB/@@download/ENCFF092NLB.bam
-- K562 PacBio Iso-Seq, ENCODE `ENCFF515YRZ`:
-  https://www.encodeproject.org/files/ENCFF515YRZ/@@download/ENCFF515YRZ.bam
-- K562 PacBio Iso-Seq, ENCODE `ENCFF475XQX`:
-  https://www.encodeproject.org/files/ENCFF475XQX/@@download/ENCFF475XQX.bam
-- K562 STAR-Fusion calls (DepMap 24Q4, `OmicsFusionFiltered.csv`):
-  https://ndownloader.figshare.com/files/51065693
-- K562 copy-number segments (DepMap 24Q4 WGS, `OmicsCNSegmentsProfile.csv`):
-  https://ndownloader.figshare.com/files/51065333
-- K562 DNA breakpoints (ENCODE 10X linked-read large-SV calls, hg19, lifted to
-  hg38 by the build script):
-  https://www.encodeproject.org/files/ENCFF863MPP/@@download/ENCFF863MPP.vcf.gz
-- the hg19-to-hg38 chain the lift uses:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz
-
-Those breakpoints arrive on hg19, and lifting a BND callset is the one step here
-that fails quietly. A breakend record carries a second coordinate inside its
-`ALT` string, so a plain `liftOver` of the `POS` column produces a valid VCF
-whose partner coordinates still point at hg19.
-[`lift_bnd_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/lift_bnd_vcf.py)
-moves both:
-
-<!-- from: scripts/build_cancer_sv_demo.sh -->
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/lift_bnd_vcf.py
-python3 lift_bnd_vcf.py calls.hg19.vcf.gz hg19ToHg38.over.chain.gz \
-  ./liftOver calls.hg38.vcf liftwork
-bgzip calls.hg38.vcf && tabix -p vcf calls.hg38.vcf.gz
-```
-
-The script's five arguments are the input VCF, the chain, the `liftOver` binary,
-the output VCF and a scratch directory.
-
-### The fusion calls in the SV inspector
-
-The SV inspector opens DepMap's STAR-Fusion output as a table beside a circular
-view of it, one chord per row. **Add → SV inspector**, then a File Type of
-STAR-Fusion, which the wizard cannot infer from this file's `.tsv` extension.
-Both of those steps are live links under the figure below.
-
-Searching the table narrows both halves, since the circle draws the rows the
-search leaves. `chr9` leaves `BCR--ABL1` and `NUP214--XKR3`, one junction seen
-from both sides, carrying more junction reads than anything else in the file.
-
-Every row carries a menu on its caret, and **Open in linear genome view** takes
-it to its own breakpoint; type the partner's window into the location box after
-it and the view holds both side by side.
-
-Then turn on **Read connections → View as pairs**. That merges each molecule's
-two alignments onto one row across the two regions, so the fusion reads as a
-flat line per molecule. Flip the chr22 region as well (`[rev]`), since _XKR3_ is
-on the minus strand and the flip runs both halves of a molecule the same way.
-
-<Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded green and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
-
-That is the `NUP214--XKR3` side of the pair, and `BCR--ABL1` takes the rest of
-this part in the same layout, off the STAR-Fusion calls the build script adds as
-this track:
-
-```json
-{
-  "type": "VariantTrack",
-  "trackId": "K562_star_fusion",
-  "name": "K562 STAR-Fusion calls (DepMap 24Q4)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "StarFusionAdapter",
-    "starFusionLocation": { "uri": "K562.star-fusion.tsv" }
-  }
-}
-```
-
-### BCR-ABL1 across three regions
-
-The Iso-Seq reads stop and start at the bases STAR-Fusion reported from short
-reads. Putting both partners in one view as displayed regions lays the fusion
-out the way FusionInspector does: type the locations into the location box,
-separated by spaces. The transcript reaches _ABL1_ at more than one place, so
-this view uses three regions, the _BCR_ donor and two acceptor windows.
-
-A read that crosses the junction is one alignment on chr22 and a supplementary
-alignment on chr9. **Read connections → Use curved connectors** draws a curve
-between the two, and with both partners displayed those curves cross from one
-region into the other. **Filter by... → Split alignments → Only split
-alignments** then drops every read that stays on one chromosome, so the pileup
-is the fusion's own support.
-
-Near-identical curves stack into one line, so a curve per molecule cannot show
-how many molecules agree on a junction. **Read connections → Show read arcs**
-adds a band under the coverage where each junction is drawn once, thickened by
-the reads behind it. An arc is drawn when both of its ends are in view, so it
-reaches across a region divider, and each acceptor window receives one. The
-vertical at the _BCR_ donor stands for the molecules whose _ABL1_ alignment
-lands in neither window.
-
-<Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws one counted arc from the BCR donor into each ABL1 window, and only the right-hand window carries a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
-
-### Where the DNA break is
-
-BCR-ABL1 is amplified as well as expressed. Both chr9 breakpoints fall inside a
-segment at roughly seven copies, while the chr22 partners sit at one, so what is
-amplified is the piece of chr9 that the two junctions cut out. DepMap's
-segmentation covers no interval over _BCR_ itself, which is why that window has
-an arc but no copy-number step under it.
-
-A fusion caller only reports junctions that are transcribed, so those arcs land
-on exon boundaries and cannot say where the amplified block begins. The DNA
-answer comes from a different assay: ENCODE's 10X Chromium linked-read run on
-K562 (ENCSR053AXS), whose large-SV calls are on hg19 and are lifted to hg38 by
-the build script. Its chr9 breakpoint for BCR-ABL1 is at 130,731,760, and
-DepMap's copy-number segmentation steps up at 130,731,326. The transcript
-junction is 122 kb to the right of both, inside _ABL1_'s first intron: the
-amplicon boundary is a DNA break, and the transcript is spliced from it to the
-nearest exon.
-
-This is the reasoning SplitThreader applied to the _ERBB2_ amplicon in SK-BR-3:
-copy-number steps and breakpoints that describe the same interval are evidence
-of one event. Here two independent assays put that interval's edge in the same
-place.
-
 ## Reproduce it end to end
 
 [`scripts/build_cancer_sv_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_cancer_sv_demo.sh)
@@ -544,15 +391,13 @@ bash build_cancer_sv_demo.sh    # builds ./cancer_sv_build/jbrowse2
 npx --yes serve cancer_sv_build/jbrowse2
 ```
 
-It fetches the ONT COLO829 somatic SV calls and coverage, runs both
-`sv_multihop.py` steps against the tumor CRAM over HTTP, pulls the ENCODE K562
-Iso-Seq alignments, and converts a DepMap release into a STAR-Fusion TSV and a
-copy-number bigWig. The K562 DNA breakpoints come from ENCODE on hg19, so it
-also downloads UCSC's chain and `liftOver` and runs `lift_bnd_vcf.py`, which
-moves both coordinates of every breakend rather than just the POS column.
+It fetches the ONT COLO829 somatic SV calls and coverage and runs both
+`sv_multihop.py` steps against the tumor CRAM over HTTP. The same script builds
+the K562 half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
 
 ## See also
 
+- [](/docs/tutorials/k562_fusions)
 - [](/docs/tutorials/sv_callset_review)
 - [](/docs/tutorials/hic_structural_variants)
 - [](/docs/user_guides/sv_visualization)

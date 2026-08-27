@@ -20,6 +20,10 @@ The following formats are supported:
 - BED, BEDPE
 - STAR-fusion result file
 
+The import form cannot infer STAR-Fusion from a `.tsv` extension, so that one
+needs its File Type set by hand; [](/docs/tutorials/k562_fusions) walks a
+caller's output through the inspector and out to the reads behind each call.
+
 ## Record types and compatible callers
 
 The SV inspector is best for long-range SV records: VCF entries with
@@ -77,5 +81,6 @@ automatically.
 - [](/docs/user_guides/spreadsheet_view)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/tutorials/k562_fusions)
 - [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples)
 - [Gallery: structural variant examples](/gallery/#sv)

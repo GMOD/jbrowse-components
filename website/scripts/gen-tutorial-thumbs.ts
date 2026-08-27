@@ -238,6 +238,16 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'cancer_sv/derivative_inserts.png',
     band: [0.427, 0.781],
   },
+  k562_fusions: {
+    // The two loci with the molecules crossing between them, framed off the
+    // divider: the arc fan above and the pileup converging on it below. The
+    // xband drops the read-colors legend on the right, and the band clears
+    // both callouts, which sit above the coverage and over the pileup.
+    src: 'cancer_sv/k562_fusion_inspector_reads.png',
+    band: [0.33, 0.63],
+    xband: [0.28, 0.72],
+    position: 'center',
+  },
   sv_visualization_cgiab: {
     // depth over BAF genome-wide; the translocation split view is the gallery
     // card, so the tutorial card takes the other half of the tutorial

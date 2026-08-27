@@ -8,7 +8,9 @@ audience: internal
 
 The `cancer_sv` tutorial teaches multi-hop somatic rearrangements: a gene fusion
 formed by a chain of junctions rather than one breakpoint, reconstructed as a
-derivative allele and checked against the reads. `scripts/sv_multihop.py` is the
+derivative allele and checked against the reads. It ran on both cell lines until
+2026-08-27; K562 could carry none of that method, having only RNA, so it is
+`k562_fusions` now, off the same build script and the same spec file. `scripts/sv_multihop.py` is the
 tool behind it and is meant to be reusable against any somatic SV callset.
 Shipped 2026-08-02 in `6c8a7b4708`..`8f15a3be06`; the forward-looking dataset
 ideas that used to sit at the bottom of this file are in
@@ -22,8 +24,9 @@ ideas that used to sit at the bottom of this file are in
 | `scripts/depmap_to_jbrowse.py` | DepMap Omics release to STAR-Fusion TSV / CN bedGraph |
 | `scripts/build_cancer_sv_demo.sh` | end-to-end rebuild of the hosted demo |
 | `website/scripts/upload-cancer-sv-demo.sh` | upload guard, `EXPECTED` manifest, `copy` not `sync` |
-| `website/docs/tutorials/cancer_sv.md` | the tutorial, 8 figures |
-| `website/scripts/specs/cancer_sv.ts` | the figure specs |
+| `website/docs/tutorials/cancer_sv.md` | the COLO829 tutorial, 7 figures |
+| `website/docs/tutorials/k562_fusions.md` | the K562 tutorial, 2 figures over 5 images |
+| `website/scripts/specs/cancer_sv.ts` | the figure specs for both |
 | `https://jbrowse.org/demos/cancer_sv/` | hosted data, 2.3 GB, 18 files |
 
 Behavior checks for both python helpers live in `scripts/check-build-scripts.py`,

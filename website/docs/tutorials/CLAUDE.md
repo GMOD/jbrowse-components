@@ -160,8 +160,10 @@ one. A Zarr store is a directory of chunks and 404s at its root, which is worth
 saying in the bullet since the string is still what an adapter takes.
 
 **A list past about ten bullets splits into labelled groups**, a bold lead line
-and its own bullets each, rather than running as one column. `cancer_sv` is two
-cell lines out of two releases, and read as one list it was a wall.
+and its own bullets each, rather than running as one column. What produces one
+that long is usually a page carrying a dataset it cannot connect to its own:
+`cancer_sv` listed two cell lines out of two releases until the second became
+`k562_fusions`, and the wall went with it.
 
 Frontmatter carries `data: hosted | download | pipeline` — what it takes to end
 up with what the page shows, **not** whether the figures can be read with
@@ -193,7 +195,8 @@ Moving a figure off a page means moving its card's crop source in
 ## Existing datasets — read before adding a locus
 
 - `agent-docs/reference/DOG10K_DATASETS.md`
-- `agent-docs/reference/SV_MULTIHOP.md` — COLO829/K562 behind `cancer_sv`
+- `agent-docs/reference/SV_MULTIHOP.md` — COLO829 behind `cancer_sv`, K562
+  behind `k562_fusions`
 - `agent-docs/reference/PANGENOME_GRAPHS.md`
 - `agent-docs/ideas/tutorial-ideas-audit.md`, and the dead ends in
   `agent-docs/ideas/cancer-sv-datasets-unshot.md`

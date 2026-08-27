@@ -11,7 +11,8 @@ import { DER3_GENES_TRACK } from './cancer_sv_der3_genes.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Figures for the somatic structural variation tutorial (cancer_sv.md).
+// Figures for two tutorials that share one demo: cancer_sv.md takes the COLO829
+// figures, k562_fusions.md takes the k562_* ones.
 //
 // Two datasets, both hosted under demos/cancer_sv:
 //   COLO829 / COLO829BL  melanoma tumour + matched normal, ONT R10 genomic long
