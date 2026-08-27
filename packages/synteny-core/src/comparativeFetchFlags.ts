@@ -1,10 +1,10 @@
+import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { isDataCurrent } from '@jbrowse/core/util'
 
 /**
- * What a comparative display's own fetch state looks like: the four terms the
- * flags below are built from, plus the two fetch keys the freshness compare
- * reads. Named the same on both displays, which is what lets one function serve
- * them.
+ * What a comparative display's own fetch state looks like: the terms the flags
+ * below are built from, plus the two fetch keys the freshness compare reads.
+ * Named the same on both displays, which is what lets one function serve them.
  */
 export interface ComparativeFetchInputs {
   /**
@@ -13,26 +13,36 @@ export interface ComparativeFetchInputs {
    * plot spins its overlay forever.
    */
   ready: boolean
+  /**
+   * The display holds something an SVG export can draw. Synteny answers with
+   * `ready`; the dotplot answers with `instanceData` rather than its `geometry`
+   * computed, because `svgReady` is polled outside any reactive context and a
+   * `geometry` read there recolors every segment per poll.
+   */
+  hasDrawable: boolean
   /** an RPC is in flight */
   fetching: boolean
   error: unknown
   /** `SyntenyFetchStateMixin`'s hook, and the display's override of it */
   fetchInert: boolean
+  /** `SyntenyFetchStateMixin`'s durable Cancel flag */
+  fetchCanceled: boolean
   /** the key the data on screen was fetched for */
   loadedFetchKey: string | undefined
   /** the key a fetch issued right now would use */
   currentFetchKey: string
 }
 
-/** The three flags every consumer of a comparative display reads. */
+/** The four flags every consumer of a comparative display reads. */
 export interface ComparativeFetchFlags {
   loading: boolean
   refetching: boolean
   dataCurrent: boolean
+  svgReady: boolean
 }
 
 /**
- * The three fetch flags a comparative display publishes, from its own fetch
+ * The four fetch flags a comparative display publishes, from its own fetch
  * state.
  *
  * `LinearSyntenyDisplay` and `DotplotDisplay` had these as six one-line
@@ -60,13 +70,31 @@ export interface ComparativeFetchFlags {
  *   Goes false the instant a zoom or reorder changes them, *before* the
  *   debounced refetch begins, which is the gap `refetching` alone cannot see
  *   and the reason a done-gate can't be written off the other two.
+ * - `svgReady` — the off-screen export gate, the shared `computeSvgReady`
+ *   policy every display runs. Neither display has a `regionTooLarge` state
+ *   (LOD gates the fetch, not region size). `fetchInert` is the extra
+ *   terminal, so an export can't hang on data the autorun will never fetch,
+ *   and `fetchCanceled` is terminal for the same reason: durable until Retry,
+ *   and an export presses nothing. The data half waits out an in-flight
+ *   same-key retry (`!refetching`) and a stale plot (`dataCurrent`).
  */
 export function comparativeFetchFlags(
   self: ComparativeFetchInputs,
 ): ComparativeFetchFlags {
+  const refetching = self.fetching && self.ready && !self.error
+  const dataCurrent = isDataCurrent(self.loadedFetchKey, self.currentFetchKey)
   return {
     loading: !self.ready && !self.error && !self.fetchInert,
-    refetching: self.fetching && self.ready && !self.error,
-    dataCurrent: isDataCurrent(self.loadedFetchKey, self.currentFetchKey),
+    refetching,
+    dataCurrent,
+    svgReady: computeSvgReady(
+      {
+        error: self.error,
+        regionTooLarge: false,
+        extraTerminal: self.fetchInert,
+        fetchCanceled: self.fetchCanceled,
+      },
+      () => self.hasDrawable && !refetching && dataCurrent,
+    ),
   }
 }

@@ -16,7 +16,9 @@ const RPC_DEBOUNCE_MS = 500
 // flags, refName reconciliation and the latest-wins staleness discipline — is
 // `installComparativeFetchAutorun` (shared with dotplot-view's fetch); only the
 // synteny-specific gate, tracked deps, RPC args and result handling live here.
-export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+export function doAfterAttach(
+  self: Omit<LinearSyntenyDisplayModel, 'afterAttach' | 'beforeDestroy'>,
+) {
   installComparativeFetchAutorun(self, {
     name: 'SyntenyFetch',
     delay: RPC_DEBOUNCE_MS,

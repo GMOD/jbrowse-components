@@ -1,6 +1,5 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -330,16 +329,14 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         }
         return { path, color: abgrToCssRgba(colors[start]!) }
       },
-      // The three flags below, built once from this display's fetch state.
-      // Shared with `LinearSyntenyDisplay`, which publishes the same three off
-      // the same terms — see `comparativeFetchFlags` for what each means and
-      // for the ADR-054 note on why a plain function is the shape.
       get fetchFlags() {
         return comparativeFetchFlags({
           ready: this.ready,
+          hasDrawable: !!self.instanceData,
           fetching: self.fetching,
           error: self.error,
           fetchInert: self.fetchInert,
+          fetchCanceled: self.fetchCanceled,
           loadedFetchKey: self.loadedFetchKey,
           currentFetchKey: this.currentFetchKey,
         })
@@ -470,35 +467,14 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       /**
        * #getter
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
-       * (see the [SVG export guide](/docs/developer_guides/svg_export)).
-       * Runs the same shared `computeSvgReady` policy every other display does
-       * and awaits it via the shared `awaitSvgReady` — no inlined `when()`. A
-       * failed track fails the export rather than drawing itself into the plot;
-       * every display paints that one rect, so `SVGDotplotView` fans them out
-       * through `awaitSvgRenders` and names all of them at once. No
-       * `regionTooLarge` state: the fetch is gated by LOD, not region size.
-       * Stale-safe via `dataCurrent`: an export fired right after a
-       * zoom/diagonalize reorder waits for geometry rebuilt from the fresh
-       * fetch instead of exporting the stale plot.
+       * (see the [SVG export guide](/docs/developer_guides/svg_export)) via the
+       * shared `awaitSvgReady`. A failed track fails the export rather than
+       * drawing itself into the plot; every display paints that one rect, so
+       * `SVGDotplotView` fans them out through `awaitSvgRenders` and names all
+       * of them at once. The terms are in `comparativeFetchFlags`.
        */
       get svgReady() {
-        return computeSvgReady(
-          {
-            error: self.error,
-            regionTooLarge: false,
-            // the mixin default is false today; passing it keeps this gate
-            // structurally identical to synteny's, so a dotplot inert state
-            // added later can't hang the export by being forgotten here
-            extraTerminal: self.fetchInert,
-            fetchCanceled: self.fetchCanceled,
-          },
-          // instanceData, not geometry: this getter is read outside any
-          // reactive context (the export await polls it), where reading the
-          // `geometry` computed would recompute every segment's color per poll.
-          // `!refetching` covers the in-flight RPC the way synteny's does, so
-          // an export fired during a same-key retry waits for the fresh result
-          () => !!self.instanceData && !this.refetching && this.dataCurrent,
-        )
+        return this.fetchFlags.svgReady
       },
     }))
     .views(self => ({

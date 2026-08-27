@@ -1,6 +1,5 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   findParentThatIs,
   getContainingView,
@@ -315,31 +314,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The track's adapter config verbatim. The **body and return type are now
-       * identical to `BaseDisplayModel.adapterConfig`** — this override survives
-       * only to hold the note below where someone would go to re-add a key.
-       *
-       * Byte-identical is the point: the worker's adapter cache keys on the
-       * config object, so a key the adapter never reads still forks the cache.
-       * The two decorative keys this used to add — `name`, duplicating the
-       * adapter's own `type`, and `assemblyNames`, read off the display's
-       * config schema, which declares no such slot and so always answered
-       * `undefined` — bought a second parse of the same file: one adapter for
-       * the ribbons and another for everything reading the track plainly
-       * (LGVSyntenyDisplay, the region launch's mate discovery). Both keys were
-       * inert at the adapter, which is exactly why nothing caught it. A
-       * worker-side value that doesn't belong to the adapter goes as a sibling
-       * RPC arg, the way `sequenceAdapter` does.
-       */
-      get adapterConfig(): Record<string, unknown> {
-        // Body and annotation are both identical to `BaseDisplay`'s now that the
-        // base is annotated too, so this override survives only to hold the note
-        // above at the spot someone would edit. `DotplotDisplay` had the same
-        // override for the annotation alone, and it is gone.
-        return getConf(self.parentTrack, 'adapter')
-      },
-      /**
-       * #getter
        */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0
@@ -479,16 +453,14 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       get fetchInert() {
         return self.isMinimized || !this.connectedViews
       },
-      // The three flags below, built once from this display's fetch state.
-      // Shared with `DotplotDisplay`, which publishes the same three off the
-      // same terms — see `comparativeFetchFlags` for what each means and for
-      // the ADR-054 note on why a plain function is the shape.
       get fetchFlags() {
         return comparativeFetchFlags({
           ready: this.ready,
+          hasDrawable: this.ready,
           fetching: self.fetching,
           error: self.error,
           fetchInert: this.fetchInert,
+          fetchCanceled: self.fetchCanceled,
           loadedFetchKey: self.loadedFetchKey,
           currentFetchKey: this.currentFetchKey,
         })
@@ -585,31 +557,11 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
-       * (see the [SVG export guide](/docs/developer_guides/svg_export)). Synteny
-       * is not an LGV display — it composes only `BaseDisplay` with its own
-       * fetch — so it gets no mixin `svgReady`, but it runs the same shared
-       * `computeSvgReady` policy so the two can't drift. Stale-safe on both
-       * axes: `dataCurrent` closes the pre-refetch debounce gap (stale window
-       * before `fetching` flips) and `!refetching` covers the in-flight RPC, so
-       * an export fired right after a zoom/pan waits for fresh ribbons instead
-       * of capturing stale ones. No `regionTooLarge` state (synteny never gates
-       * on region size).
-       *
-       * `extraTerminal` is `fetchInert` — the states where the fetch autorun
-       * deliberately never runs — so a data-only gate can't hang the export
-       * forever on data that is never coming. `fetchCanceled` is terminal for
-       * the same reason: durable until Retry, and an export presses nothing.
+       * (see the [SVG export guide](/docs/developer_guides/svg_export)) via the
+       * shared `awaitSvgReady`. The terms are in `comparativeFetchFlags`.
        */
       get svgReady() {
-        return computeSvgReady(
-          {
-            error: self.error,
-            regionTooLarge: false,
-            extraTerminal: this.fetchInert,
-            fetchCanceled: self.fetchCanceled,
-          },
-          () => this.ready && !this.refetching && this.dataCurrent,
-        )
+        return this.fetchFlags.svgReady
       },
       /**
        * #getter
@@ -961,7 +913,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self as typeof self & { afterAttach(): void })
+            doAfterAttach(self)
           } catch (e) {
             console.error(e)
             self.setError(e)

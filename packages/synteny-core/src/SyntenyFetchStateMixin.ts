@@ -12,28 +12,21 @@ import { types } from '@jbrowse/mobx-state-tree'
  *
  * Composed rather than duplicated so the two displays can't drift on what
  * "loading" versus "refetching" means — the difference decides whether the user
- * gets a full overlay or a corner spinner. What is computed FROM these pieces —
- * each display's `displayPhase` and each view's `settled` gate — lives in
- * `comparativeReadiness.ts`, as functions rather than as members here, for the
- * `error` reason below.
+ * gets a full overlay or a corner spinner. What is computed FROM these pieces
+ * lives in plain functions rather than as members here: the four flags
+ * (`loading`, `refetching`, `dataCurrent`, `svgReady`) in
+ * `comparativeFetchFlags`, and each display's `displayPhase` and each view's
+ * `settled` gate in `comparativeReadiness.ts`. Each display calls the function
+ * from its own one-line getters.
  *
- * `loading`/`refetching`/`dataCurrent`/`svgReady` themselves stay on each
- * display, and the reason is **`error`**, not the inputs you would guess.
- * `ready` (each display holds its data in a different field) and
- * `currentFetchKey` (view-specific inputs) could both be default-false hooks
- * here, exactly as `fetchInert` is. `error` could not: it is a `BaseDisplay`
- * volatile, and three of those four getters read it. Declaring it here to make
+ * Functions rather than members because of **`error`**: it is a `BaseDisplay`
+ * volatile that three of the four flags read, and declaring it here to make
  * them type-check would put a second `error` in the compose chain, where one
  * set silently wins by argument order — the hazard `FetchMixin` documents
  * against ADR-041 and the thing this mixin exists to avoid, not reproduce.
- *
- * Note what is *not* the reason, since an earlier version of this comment said
- * it was: none of the four is genuinely different between the two displays.
- * Both `loading`s subtract `fetchInert` and both `svgReady`s pass it as
- * `extraTerminal` (with `fetchCanceled` beside it), so the pairs differ only
- * in which field holds the data (`ready` vs `instanceData`) and in the
- * view-specific fetch key. If `error` ever becomes visible here, all four move
- * up together.
+ * `ready` (each display holds its data in a different field) and
+ * `currentFetchKey` (view-specific inputs) could both be default-false hooks
+ * here, exactly as `fetchInert` is; `error` is the only reason they are not.
  */
 export function SyntenyFetchStateMixin() {
   return types
