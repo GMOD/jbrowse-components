@@ -86,7 +86,18 @@ async function setup() {
   for (const v of view.views) {
     v.showTrack('tk1')
   }
-  await when(() => fetched.length > 0, { timeout: 20000 })
+  // Both rows blocked out AND fetched at those blocks, which is the state both
+  // tests start from. Waiting on `fetched.length > 0` instead catches the first
+  // overlay fetch, and that one rides the leading edge the moment a track
+  // matches across the rows — before either row has blocks, with an empty
+  // region list, which is still a call.
+  await when(
+    () =>
+      view.views.every(
+        v => blockDesc(v) !== '' && fetched.includes(blockDesc(v)),
+      ),
+    { timeout: 20000 },
+  )
   return { view, fetched }
 }
 

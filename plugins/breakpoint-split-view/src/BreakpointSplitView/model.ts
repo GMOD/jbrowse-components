@@ -342,8 +342,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * Same name and same meaning as `FetchMixin.fetchInert`, on a view rather
        * than a display: with nothing matched across the rows there is nothing
-       * for the overlay fetch to ask for, so the dev-only retry check the fetch
-       * skeleton installs must not call that decline a dead Retry.
+       * for the overlay fetch to ask for, so `prepare` declines instead of
+       * running an empty fetch and commit on every pan.
        */
       get fetchInert(): boolean {
         return this.matchedTracks.length === 0
@@ -776,6 +776,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // observable, so the body re-runs the moment it flips.
           gate: () => self.views.every(view => view.initialized),
           prepare: () => {
+            if (self.fetchInert) {
+              return undefined
+            }
             // Skipped per track, not for the whole view: where the banner has
             // replaced the features there is nothing to match against, but that
             // says nothing about the other matched tracks, and dropping the key
