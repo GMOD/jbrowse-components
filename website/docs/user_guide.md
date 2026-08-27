@@ -63,6 +63,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/repeatmasker_classes)
+- [](/docs/tutorials/genomes_pangenome)
 
 ### Synteny & comparative genomics
 
