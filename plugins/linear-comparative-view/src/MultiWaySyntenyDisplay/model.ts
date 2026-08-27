@@ -140,6 +140,12 @@ export function stateModelFactory(
          * a config defaultSession
          */
         rowOrder: types.array(types.string),
+        /**
+         * #property
+         * mate lanes taken out of the stack, so a genome that places nothing
+         * in the region of interest stops holding a slot between two that do
+         */
+        hiddenLanes: types.array(types.string),
       }),
     )
     .volatile(() => ({
@@ -233,6 +239,18 @@ export function stateModelFactory(
       /**
        * #action
        */
+      setHiddenLanes(names: string[]) {
+        self.hiddenLanes.replace(names)
+      },
+      /**
+       * #action
+       */
+      setBridgeSkippedLanes(flag: boolean) {
+        setConf(self, 'bridgeSkippedLanes', flag)
+      },
+      /**
+       * #action
+       */
       setDrawCurves(flag: boolean) {
         setConf(self, 'drawCurves', flag)
       },
@@ -307,6 +325,12 @@ export function stateModelFactory(
       /**
        * #getter
        */
+      get bridgeSkippedLanes(): boolean {
+        return getConf(self, 'bridgeSkippedLanes')
+      },
+      /**
+       * #getter
+       */
       get showLaneTicks(): boolean {
         return getConf(self, 'showLaneTicks')
       },
@@ -352,7 +376,9 @@ export function stateModelFactory(
           [...self.rowOrder],
           sameName,
         ).filter(
-          assemblyName => !sameName(assemblyName, self.anchorAssemblyName),
+          assemblyName =>
+            !sameName(assemblyName, self.anchorAssemblyName) &&
+            !self.hiddenLanes.some(hidden => sameName(hidden, assemblyName)),
         )
       },
       /**
@@ -675,6 +701,7 @@ export function stateModelFactory(
           laneLinks: self.laneLinks,
           ribbonColor: self.ribbonColor,
           drawCurves: self.drawCurves,
+          bridgeSkippedLanes: self.bridgeSkippedLanes,
         })
       },
     }))

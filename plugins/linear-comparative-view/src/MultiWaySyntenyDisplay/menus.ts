@@ -6,11 +6,15 @@ export interface LaneOrderModel {
   rowAssemblies: string[]
   rowOrder: readonly string[]
   setRowOrder: (order: string[]) => void
+  hiddenLanes: readonly string[]
+  setHiddenLanes: (names: string[]) => void
 }
 
 export interface LaneSettingsModel {
   drawCurves: boolean
   setDrawCurves: (flag: boolean) => void
+  bridgeSkippedLanes: boolean
+  setBridgeSkippedLanes: (flag: boolean) => void
   showLaneTicks: boolean
   setShowLaneTicks: (flag: boolean) => void
 }
@@ -29,7 +33,8 @@ export function moveLane(order: string[], name: string, delta: number) {
 }
 
 /**
- * Reorder the mate lanes, or nothing while there is only one to order.
+ * Reorder or hide the mate lanes, or nothing while there is one lane and
+ * nothing hidden.
  *
  * Worth a row per lane because a ribbon joins ADJACENT lanes only: moving a
  * near-empty lane out from mid-stack reconnects the chains it was cutting
@@ -44,12 +49,13 @@ export function moveLane(order: string[], name: string, delta: number) {
  */
 export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
   const lanes = model.rowAssemblies
-  if (lanes.length < 2) {
+  const hidden = model.hiddenLanes
+  if (lanes.length < 2 && hidden.length === 0) {
     return []
   }
   return [
     {
-      label: 'Lane order',
+      label: 'Lanes',
       subMenu: [
         ...lanes.map((name, i) => ({
           label: name,
@@ -68,7 +74,19 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
                 model.setRowOrder(moveLane(lanes, name, 1))
               },
             },
+            {
+              label: 'Hide lane',
+              onClick: () => {
+                model.setHiddenLanes([...hidden, name])
+              },
+            },
           ],
+        })),
+        ...hidden.map(name => ({
+          label: `Show ${name}`,
+          onClick: () => {
+            model.setHiddenLanes(hidden.filter(h => h !== name))
+          },
         })),
         { type: 'divider' },
         {
@@ -94,6 +112,15 @@ export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
       helpText:
         "Bezier curves rather than straight chords. Straight is the default: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
     }),
+    toggleItem(
+      'Bridge lanes that place nothing',
+      model.bridgeSkippedLanes,
+      model.setBridgeSkippedLanes,
+      {
+        helpText:
+          'Where a lane places nothing for a group, join it across that lane to the next one down that does, at half opacity. Off, a ribbon joins adjacent lanes only and a sparse lane mid-stack cuts every chain running through it.',
+      },
+    ),
     toggleItem('Show lane ticks', model.showLaneTicks, model.setShowLaneTicks, {
       helpText:
         "Each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out.",

@@ -32,6 +32,8 @@ test('moving one lane pins every lane, in the order now shown', () => {
     setRowOrder: order => {
       written.push(order)
     },
+    hiddenLanes: [],
+    setHiddenLanes: () => {},
   })
   const lanes = subMenuOf(items[0])
   expect(labelsOf(lanes)).toEqual([
@@ -43,7 +45,7 @@ test('moving one lane pins every lane, in the order now shown', () => {
   ])
 
   const cacao = subMenuOf(lanes[1])
-  expect(labelsOf(cacao)).toEqual(['Move up', 'Move down'])
+  expect(labelsOf(cacao)).toEqual(['Move up', 'Move down', 'Hide lane'])
   ;(cacao[0] as { onClick: () => void }).onClick()
   expect(written).toEqual([['cacao', 'peach', 'grape']])
 })
@@ -53,6 +55,8 @@ test('the ends of the stack cannot move past themselves, and reset is dead with 
     rowAssemblies: ['peach', 'cacao'],
     rowOrder: [],
     setRowOrder: () => {},
+    hiddenLanes: [],
+    setHiddenLanes: () => {},
   })
   const lanes = subMenuOf(items[0])
   const disabled = (item: MenuItem | undefined) =>
@@ -68,6 +72,48 @@ test('one lane has no order to edit', () => {
       rowAssemblies: ['peach'],
       rowOrder: [],
       setRowOrder: () => {},
+      hiddenLanes: [],
+      setHiddenLanes: () => {},
     }),
   ).toEqual([])
+})
+
+test('a lane hides from its own row and comes back from a row of its own', () => {
+  const written: string[][] = []
+  const model = {
+    rowAssemblies: ['peach', 'cacao'],
+    rowOrder: [],
+    setRowOrder: () => {},
+    hiddenLanes: ['grape'],
+    setHiddenLanes: (names: string[]) => {
+      written.push(names)
+    },
+  }
+  const lanes = subMenuOf(laneOrderMenuItem(model)[0])
+  expect(labelsOf(lanes)).toEqual([
+    'peach',
+    'cacao',
+    'Show grape',
+    '—',
+    'Reset lane order',
+  ])
+  expect(labelsOf(subMenuOf(lanes[0]))).toEqual([
+    'Move up',
+    'Move down',
+    'Hide lane',
+  ])
+  ;(subMenuOf(lanes[0])[2] as { onClick: () => void }).onClick()
+  ;(lanes[2] as { onClick: () => void }).onClick()
+  expect(written).toEqual([['grape', 'peach'], []])
+})
+
+test('one lane still has a menu while another is hidden', () => {
+  const items = laneOrderMenuItem({
+    rowAssemblies: ['peach'],
+    rowOrder: [],
+    setRowOrder: () => {},
+    hiddenLanes: ['cacao'],
+    setHiddenLanes: () => {},
+  })
+  expect(labelsOf(subMenuOf(items[0]))).toContain('Show cacao')
 })

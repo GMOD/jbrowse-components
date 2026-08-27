@@ -85,6 +85,15 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      bridgeSkippedLanes: {
+        type: 'boolean',
+        description:
+          'join a group across a lane that places nothing for it, to the next lane down that does, at half the ribbon opacity. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it',
+        defaultValue: true,
+      },
+      /**
+       * #slot
+       */
       showLaneTicks: {
         type: 'boolean',
         description:

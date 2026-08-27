@@ -122,6 +122,7 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.3)',
       drawCurves: false,
+      bridgeSkippedLanes: false,
     })
     expect(layers.map(l => l.key)).toEqual(['ribbons:0'])
     const data = ribbonData(cells, 'ribbons:0')
@@ -160,10 +161,51 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
+      bridgeSkippedLanes: false,
     })
     expect(targets).toHaveLength(1)
     expect(ribbonData(cells, 'ribbons:0').instanceFeatureIdx[0]).toBe(0)
     expect(ribbonData(cells, 'ribbons:1').instanceFeatureIdx[0]).toBe(0)
+  })
+
+  // g1 is on grape and cacao and not on peach, so the chain through the
+  // stack broke at peach: bridging joins grape to cacao across peach's band,
+  // at half opacity so it reads as passing through a lane it is not part of
+  test('bridge a group across a lane that places nothing for it', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200, { mate: 'cacao', mateRef: 'Tc1' }),
+        pairFeature('g2', 300, 400),
+      ],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    })
+    const build = (bridgeSkippedLanes: boolean) =>
+      buildRibbonGeometry({
+        stack: s,
+        laneLinks: undefined,
+        ribbonColor: 'rgba(130,130,130,0.4)',
+        drawCurves: false,
+        bridgeSkippedLanes,
+      })
+    const off = build(false)
+    expect(off.layers.map(l => l.key)).toEqual(['ribbons:0', 'ribbons:1'])
+    expect(ribbonData(off.cells, 'ribbons:0').instanceCount).toBe(1)
+    expect(ribbonData(off.cells, 'ribbons:1').instanceCount).toBe(0)
+
+    const { cells, layers, groupTarget } = build(true)
+    expect(layers.map(l => l.key)).toEqual([
+      'ribbons:0',
+      'ribbons:0>2',
+      'ribbons:1',
+    ])
+    expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(1)
+    const bridge = ribbonData(cells, 'ribbons:0>2')
+    expect(bridge.instanceCount).toBe(1)
+    expect(bridge.instanceFeatureIdx[0]).toBe(groupTarget.get('g1'))
+    expect(abgrAlpha(bridge.colors[0]!)).toBe(Math.round(0.4 * 255 * 0.5))
+    const layer = layers.find(l => l.key === 'ribbons:0>2')!
+    expect(layer.yTop).toBe(s.lanes[0]!.glyphTop + s.glyphHeight)
+    expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
   })
 
   test('leave out a pair too thin to read on both ends', () => {
@@ -173,6 +215,7 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
+      bridgeSkippedLanes: false,
     })
     expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(0)
   })
@@ -199,6 +242,7 @@ describe('the ribbons', () => {
       laneLinks: new Map([['peach|cacao', [link]]]),
       ribbonColor: 'grey',
       drawCurves: true,
+      bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
     expect(data.instanceCount).toBe(2)

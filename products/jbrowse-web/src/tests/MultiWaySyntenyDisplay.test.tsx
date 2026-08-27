@@ -1,8 +1,9 @@
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
-import { waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 import { renderToString } from 'react-dom/server'
 
+import MultiWayOverlay from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/MultiWayOverlay.tsx'
 import configSnapshot from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
@@ -264,8 +265,7 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
   }
   const subMenuOf = (item: MenuItem) =>
     'subMenu' in item ? item.subMenu : ([] as MenuItem[])
-  const laneOrder = () =>
-    subMenuOf(rowNamed(display.trackMenuItems(), 'Lane order'))
+  const laneOrder = () => subMenuOf(rowNamed(display.trackMenuItems(), 'Lanes'))
   const click = (item: MenuItem) => {
     ;(item as { onClick: () => void }).onClick()
   }
@@ -276,6 +276,15 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
 
   click(rowNamed(laneOrder(), 'Reset lane order'))
   expect([...display.rowOrder]).toEqual([])
+  expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
+
+  click(rowNamed(subMenuOf(rowNamed(laneOrder(), 'peach')), 'Hide lane'))
+  expect(display.rowAssemblies).toEqual(['cacao'])
+  expect(display.laneStack.lanes.map(l => l.assemblyName)).toEqual([
+    'grape',
+    'cacao',
+  ])
+  click(rowNamed(laneOrder(), 'Show peach'))
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
 }, 40000)
 
@@ -317,4 +326,55 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   expect(await outlines()).toBe(2)
   display.setHoveredGroupKey(undefined)
   expect(await outlines()).toBe(0)
+}, 40000)
+
+// The menu's Move up/down is two clicks away from the picture; the label is
+// on it. jsdom's rects are all zero, so the y the drag reads is clientY
+// itself, which the lanes' band extents are stated in
+test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: ['multiway_blocks'],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.rowAssemblies).toEqual(['peach', 'cacao'])
+      return d!
+    },
+    { timeout: 30000 },
+  )
+  const { findByTestId, queryByTestId } = render(
+    <MultiWayOverlay model={display} />,
+  )
+  const [anchor, peach] = display.laneStack.lanes
+  fireEvent.mouseDown(await findByTestId('multiway-lane-label-cacao'), {
+    clientY: 1,
+  })
+  fireEvent.mouseMove(window, { clientY: peach!.bandStart + 1 })
+  expect(queryByTestId('multiway-lane-drop')).toBeTruthy()
+  fireEvent.mouseUp(window, { clientY: peach!.bandStart + 1 })
+  expect(queryByTestId('multiway-lane-drop')).toBeNull()
+  expect([...display.rowOrder]).toEqual(['cacao', 'peach'])
+  expect(display.rowAssemblies).toEqual(['cacao', 'peach'])
+
+  // a drop on the anchor's band is the top of the mate lanes
+  fireEvent.mouseDown(await findByTestId('multiway-lane-label-peach'), {
+    clientY: 1,
+  })
+  fireEvent.mouseUp(window, { clientY: anchor!.bandStart + 1 })
+  expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
+
+  // the anchor lane is the view's own axis and has nowhere to go
+  expect(queryByTestId('multiway-lane-label-grape')!.style.cursor).toBe('')
 }, 40000)

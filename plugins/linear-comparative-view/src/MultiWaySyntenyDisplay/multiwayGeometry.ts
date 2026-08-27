@@ -27,9 +27,12 @@ import type { Feature } from '@jbrowse/core/util'
 // density; the boxes they connect are still drawn in the lanes
 const MIN_RIBBON_PX = 2
 const BOX_ALPHA = 64
+// a ribbon bridging a lane that places nothing draws at half the pair
+// ribbons' opacity: it crosses a lane it does not belong to
+const BRIDGE_ALPHA_SCALE = 0.5
 
-export function ribbonsKey(row: number) {
-  return `ribbons:${row}`
+export function ribbonsKey(row: number, toRow = row + 1) {
+  return toRow === row + 1 ? `ribbons:${row}` : `ribbons:${row}>${toRow}`
 }
 export function ticksKey(row: number) {
   return `ticks:${row}`
@@ -130,14 +133,24 @@ export function buildRibbonGeometry({
   laneLinks,
   ribbonColor,
   drawCurves,
+  bridgeSkippedLanes,
 }: {
   stack: LaneStack
   laneLinks: Map<string, Feature[]> | undefined
   ribbonColor: string
   drawCurves: boolean
+  /**
+   * join a group across a lane that does not place it, to the next lane down
+   * that does; off, the chain breaks at every lane the group is missing from
+   */
+  bridgeSkippedLanes: boolean
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
+  const bridgeColor = withAbgrAlpha(
+    color,
+    Math.round((color >>> 24) * BRIDGE_ALPHA_SCALE),
+  )
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
@@ -153,16 +166,31 @@ export function buildRibbonGeometry({
   }
   for (const { row, upper, lower, y1, y2 } of lanePairs(lanes, glyphHeight)) {
     const ribbons = new RibbonBuilder()
+    const bridges = new Map<number, RibbonBuilder>()
     for (const [key, { group, spans }] of upper.placements) {
+      let toRow = row + 1
+      let far = lower.placements.get(key)
+      while (!far && bridgeSkippedLanes && toRow + 1 < lanes.length) {
+        far = lanes[++toRow]!.placements.get(key)
+      }
+      if (!far) {
+        continue
+      }
+      const bridged = toRow !== row + 1
+      let builder = ribbons
+      if (bridged) {
+        builder = bridges.get(toRow) ?? new RibbonBuilder()
+        bridges.set(toRow, builder)
+      }
       for (const s1 of spans) {
-        for (const s2 of lower.placements.get(key)?.spans ?? []) {
+        for (const s2 of far.spans) {
           if (wideEnough(s1, s2)) {
-            ribbons.add(
+            builder.add(
               s1,
               s2,
               KIND_BASE,
               targetOfGroup(key, group.feature),
-              color,
+              bridged ? bridgeColor : color,
             )
           }
         }
@@ -201,6 +229,17 @@ export function buildRibbonGeometry({
       height: y2 - y1,
       curves: drawCurves,
     })
+    for (const [toRow, builder] of bridges) {
+      const bridgeKey = ribbonsKey(row, toRow)
+      cells.set(bridgeKey, builder.build())
+      layers.push({
+        kind: 'ribbons',
+        key: bridgeKey,
+        yTop: y1,
+        height: lanes[toRow]!.glyphTop - y1,
+        curves: drawCurves,
+      })
+    }
   }
   return { cells, layers, targets, groupTarget }
 }

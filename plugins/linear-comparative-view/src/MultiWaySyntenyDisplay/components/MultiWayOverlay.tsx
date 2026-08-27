@@ -1,6 +1,10 @@
+import { useState } from 'react'
+
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
+import { dropRowAt, moveLaneTo } from '../laneDrag.ts'
 
 import type { Lane } from '../laneStack.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
@@ -26,6 +30,18 @@ function scaleLabelOf(lane: Lane, visibleBpSpan: number) {
     : getBpDisplayStr(laneSpan)
 }
 
+interface LaneDrag {
+  assemblyName: string
+  y: number
+}
+
+/**
+ * The lane headers, and the drag that reorders them: press a mate lane's
+ * label, move it over another lane, release. The row under the pointer is
+ * read off the lanes' band extents, and the drop writes the whole order back
+ * the way the menu's Move up/down does, so the lanes the drag did not touch
+ * stay where the reader saw them.
+ */
 const LaneHeaders = observer(function LaneHeaders({
   model,
 }: {
@@ -35,8 +51,47 @@ const LaneHeaders = observer(function LaneHeaders({
   const view = model.lgv
   const { lanes } = model.laneStack
   const { visibleBpSpan, canvasWidth: width } = model
+  const [drag, setDrag] = useState<LaneDrag>()
+  const dropRow = drag ? dropRowAt(lanes, drag.y) : undefined
+  const dropLane = dropRow === undefined ? undefined : lanes[dropRow]
+  const startDrag = (assemblyName: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    event.preventDefault()
+    const svg = event.currentTarget.closest('svg')
+    const top = svg?.getBoundingClientRect().top ?? 0
+    const yOf = (e: MouseEvent) => e.clientY - top
+    setDrag({ assemblyName, y: event.clientY - top })
+    const move = (e: MouseEvent) => {
+      setDrag({ assemblyName, y: yOf(e) })
+    }
+    const up = (e: MouseEvent) => {
+      window.removeEventListener('mousemove', move)
+      window.removeEventListener('mouseup', up)
+      setDrag(undefined)
+      const row = dropRowAt(model.laneStack.lanes, yOf(e))
+      if (row !== undefined) {
+        model.setRowOrder(
+          moveLaneTo(model.rowAssemblies, assemblyName, row - 1),
+        )
+      }
+    }
+    window.addEventListener('mousemove', move)
+    window.addEventListener('mouseup', up)
+  }
   return (
     <>
+      {dropLane &&
+      !dropLane.isAnchor &&
+      dropLane.assemblyName !== drag?.assemblyName ? (
+        <rect
+          data-testid="multiway-lane-drop"
+          x={0}
+          y={dropLane.bandStart}
+          width={width}
+          height={dropLane.bandEnd - dropLane.bandStart}
+          fill={palette.action.hover}
+        />
+      ) : null}
       {lanes.map(lane => {
         const where = lane.isAnchor
           ? view.coarseVisibleLocStrings || view.visibleLocStrings
@@ -49,6 +104,23 @@ const LaneHeaders = observer(function LaneHeaders({
               y={lane.glyphTop - 3}
               fontSize={10}
               fill={palette.text.primary}
+              data-testid={`multiway-lane-label-${lane.assemblyName}`}
+              style={
+                lane.isAnchor
+                  ? undefined
+                  : {
+                      pointerEvents: 'all',
+                      cursor: drag ? 'grabbing' : 'grab',
+                      userSelect: 'none',
+                    }
+              }
+              onMouseDown={
+                lane.isAnchor
+                  ? undefined
+                  : event => {
+                      startDrag(lane.assemblyName, event)
+                    }
+              }
             >
               {/* `no annotation` is a claim about the SESSION, so it asks
                   whether a track exists rather than whether this window drew

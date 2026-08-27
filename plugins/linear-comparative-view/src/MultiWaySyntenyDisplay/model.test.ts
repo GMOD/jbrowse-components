@@ -47,6 +47,7 @@ test('the stacked-synteny launcher is on the track menu, over the inherited rows
     'Launch stacked synteny view (visible region)',
     undefined,
     'Draw curved ribbons',
+    'Bridge lanes that place nothing',
     'Show lane ticks',
   ])
 })
