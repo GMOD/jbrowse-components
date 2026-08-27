@@ -27,14 +27,13 @@ export default class HtsgetBamAdapter extends BamAdapter {
           baseUrl: resolveUriLocation(htsgetBase).uri,
           trackId: readConfObject(conf, 'htsgetTrackId'),
           recordClass: BamSlightlyLazyFeature,
-          // One fetcher serves both halves of an htsget read, and the two are
-          // not equally trusted: the ticket request goes to the configured
-          // endpoint, and the data-block urls it answers with can name any
-          // host. getFetcher scopes the credential to the matched account's own
-          // `domains` for exactly this — a block outside them, on this origin or
-          // another, is fetched plain. A block needing authorization of its own
-          // carries it in the ticket's `headers`, which @gmod/bam applies on the
-          // plain path.
+          // The ticket request only. The data-block urls a ticket answers with
+          // can name any host, and the spec forbids sending the endpoint's
+          // credential to them ("HTTPS data block URLs" rule 6) — @gmod/bam 9
+          // fetches those itself, applying whatever the ticket's `headers` says
+          // that block needs. getFetcher is scoped to the matched account's
+          // `domains` besides, so this stays right against a bam-js that hands
+          // it a block url anyway.
           fetch: getFetcher(htsgetBase, this.pluginManager),
         }),
       }
