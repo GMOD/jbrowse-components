@@ -198,6 +198,13 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
+       * Asked of the display's OWN adapter, which for the GC display is the
+       * synthesized GCContentAdapter rather than the track's raw sequence
+       * adapter — the two diverged when the adapter config moved onto the
+       * shared model. It answers the same today, since only BigWigAdapter and
+       * MultiWiggleAdapter declare the capability, and the display's adapter is
+       * the honest subject: the resolution slot it gates is passed to whatever
+       * this display fetches from.
        */
       get hasResolution() {
         return getEnv(self)

@@ -69,13 +69,13 @@ How to drive JBrowse once it is running. New here? Start with the
 ### Synteny & comparative genomics
 
 - [](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/selection_pressure)
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
 - [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/orthofinder_synteny)
