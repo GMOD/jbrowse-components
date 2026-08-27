@@ -1158,19 +1158,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Contrast colours for the mismatch/softclip/per-base letters, off the
-         * session palette like `colorPalette`. SVG export calls
-         * `getMismatchContrastMap` with its own export palette instead.
-         */
-        get mismatchContrastMap(): Record<string, string> {
-          return getMismatchContrastMap(
-            self.showModifications,
-            getPaletteHost(self).palette,
-          )
-        },
-
-        /**
-         * #getter
          * The arc color slots actually plotted, mapped to legend buckets —
          * curved paired-end arcs and the read cloud's flat lines and endpoint
          * squares alike, since both paint from `arcColorByType`. Its own
@@ -1903,6 +1890,19 @@ export default function stateModelFactory(
          */
         get showModifications() {
           return isModificationScheme(self.colorBy.type)
+        },
+
+        /**
+         * #getter
+         * Contrast colours for the mismatch/softclip/per-base letters, off the
+         * session palette like `colorPalette`. SVG export calls
+         * `getMismatchContrastMap` with its own export palette instead.
+         */
+        get mismatchContrastMap(): Record<string, string> {
+          return getMismatchContrastMap(
+            this.showModifications,
+            getPaletteHost(self).palette,
+          )
         },
 
         /**

@@ -72,7 +72,7 @@ export default function SharedModelF(
       get windowDelta(): number {
         return getConf(self, 'windowDelta')
       },
-      get gcMode(): string {
+      get gcMode(): 'content' | 'skew' {
         return getConf(self, 'gcMode')
       },
       /**

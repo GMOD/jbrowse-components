@@ -342,7 +342,7 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
   display.toggleGroupCollapsed(firstKey)
 
   await waitFor(() => {
-    expect(display.isGroupCollapsed(firstKey)).toBe(true)
+    expect(display.laneFor(firstKey)?.collapsed).toBe(true)
     // collapsed section's pileup band is 0; coverage band remains.
     const sec = display.sections.sections[0]!
     expect(sec.pileupHeight).toBe(0)
