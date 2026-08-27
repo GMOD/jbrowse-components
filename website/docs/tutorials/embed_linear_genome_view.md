@@ -19,17 +19,14 @@ tutorial_category: Configuration & embedding
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
-The full JBrowse app is the [web quickstart](/docs/quickstart_web). For other
-view types (synteny, dotplot, circular), a different bundler, or working demo
-repos, see [](/docs/embedded_components). The
-[LGV storybook](https://jbrowse.org/storybook/lgv/) has live, copy-pasteable
-examples for everything beyond a basic view: themes, per-feature colors, text
-search, drawer widgets, reacting to view state, web-worker rendering.
+For other view types, a different bundler, or working demo repos, see
+[](/docs/embedded_components). The
+[LGV storybook](https://jbrowse.org/storybook/lgv/) has copy-pasteable examples
+for everything beyond a basic view.
 
 ## Quick start
 
-Save as `index.html`, then run `npx serve -S` in the folder and open the URL it
-prints:
+Save as `index.html`:
 
 ```html title="index.html"
 <!doctype html>
@@ -58,14 +55,9 @@ prints:
 
       const tracks = [
         {
-          type: 'FeatureTrack',
           trackId: 'ncbi_genes',
           name: 'NCBI RefSeq Genes',
-          assemblyNames: ['hg38'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-          },
+          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
         },
       ]
 
@@ -85,18 +77,22 @@ prints:
 </html>
 ```
 
-The unpkg URL always fetches the latest release; pin a version for production
-(e.g. `@jbrowse/react-linear-genome-view2@4.3.0/dist/...`) or download the
-bundle and serve it yourself.
+A `tracks` entry's shortest form is `{ trackId, uri }`: type and adapter come
+from the file's extension, `assemblyNames` from the one `assembly` above (see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track)).
 
-To serve your own data, get each file into the indexed, compressed form JBrowse
-reads (bgzip and index a FASTA, sort/bgzip/tabix a GFF3, and so on) using the
-recipes in the [web quickstart](/docs/quickstart_web#adding-tracks).
+```bash
+npx serve -S .
+```
 
-For more tracks, more track types (alignments, variants, quantitative), or name
-search, see the <a href="#more-complete-example">complete example</a> below,
-[](/docs/embedded_components), and the
-[LGV storybook](https://jbrowse.org/storybook/lgv/).
+Open the URL it prints. Pin a version for production
+(`@jbrowse/react-linear-genome-view2@4.3.0/dist/...`) rather than always
+fetching latest from unpkg.
+
+Prep your own data files with the
+[web quickstart](/docs/quickstart_web#adding-tracks) recipes. For more tracks,
+more track types, or name search, see the
+<a href="#more-complete-example">complete example</a> below.
 
 ## Using the component in a React app
 
@@ -110,10 +106,9 @@ function GenomeBrowser() {
 }
 ```
 
-Props are read once on mount, so a parent re-render doesn't reset the browser.
-To reach the view engine imperatively from outside (navigate, show a track),
-take a `ref` (see the [LGV storybook](https://jbrowse.org/storybook/lgv/)) or
-use `useCreateViewState`, which builds the same view state as a hook:
+Props are read once on mount. To reach the view engine imperatively (navigate,
+show a track), take a `ref` or use `useCreateViewState`, which builds the same
+view state as a hook:
 
 ```js
 import {
@@ -147,15 +142,10 @@ const assembly = {
 
 const tracks = [
   {
-    type: 'FeatureTrack',
     trackId: 'ncbi_genes',
     name: 'NCBI RefSeq Genes',
-    assemblyNames: ['hg38'],
     category: ['Genes'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-    },
+    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
     textSearching: {
       textSearchAdapter: {
         type: 'TrixTextSearchAdapter',
@@ -166,48 +156,28 @@ const tracks = [
     },
   },
   {
-    type: 'FeatureTrack',
     trackId: 'repeats_hg38',
     name: 'Repeats',
-    assemblyNames: ['hg38'],
     category: ['Annotation'],
-    adapter: {
-      type: 'BigBedAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
-    },
+    uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
   },
   {
-    type: 'AlignmentsTrack',
     trackId: 'NA12878_exome',
     name: 'NA12878 Exome',
-    assemblyNames: ['hg38'],
     category: ['1000 Genomes', 'Alignments'],
-    adapter: {
-      type: 'CramAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-    },
+    uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
   },
   {
-    type: 'VariantTrack',
     trackId: '1000g_vcf',
     name: '1000 Genomes Variant Calls',
-    assemblyNames: ['hg38'],
     category: ['1000 Genomes', 'Variants'],
-    adapter: {
-      type: 'VcfTabixAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
-    },
+    uri: 'https://jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
   },
   {
-    type: 'QuantitativeTrack',
     trackId: 'phyloP100way',
     name: 'hg38.100way.phyloP100way',
     category: ['Conservation'],
-    assemblyNames: ['hg38'],
-    adapter: {
-      type: 'BigWigAdapter',
-      uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-    },
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
 ]
 
@@ -217,22 +187,15 @@ const init = {
 }
 ```
 
-Drop these into the same `index.html` from [Quick start](#quick-start) in place
-of the smaller `assembly`/`tracks`/`init`. This is the config that produced the
-screenshot at the top of this page.
+Drop these into the `index.html` from [Quick start](#quick-start) in place of
+the smaller `assembly`/`tracks`/`init`.
 
-Notes:
-
-- CRAM tracks need the assembly's sequence to decode reads, and JBrowse supplies
-  it from the enclosing assembly (the same applies to BAM tracks that lack an MD
-  tag, e.g. from `samtools calmd`). See the
+- CRAM needs the assembly's sequence to decode reads, supplied automatically
+  from the enclosing assembly. See the
   [alignments track config guide](/docs/config_guides/alignments_track).
-- These configs use the `uri` shorthand, which assumes each index sits next to
-  its data file (e.g. `file.cram.crai`). To place an index elsewhere, use the
-  full adapter form (see the
-  [auto-generated config reference](/docs/config_guide)).
-- The `textSearching` block on `ncbi_genes` is what powers name search; build
-  the index for your own data with
+- The index is assumed to sit next to the data file; add `index` or `type`
+  beside `uri` to override the guess.
+- `textSearching` on `ncbi_genes` powers name search; build your own index with
   [`jbrowse text-index`](/docs/quickstart_web#indexing-feature-names-for-searching).
 
 </details>

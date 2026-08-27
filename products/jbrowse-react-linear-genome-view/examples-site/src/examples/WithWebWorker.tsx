@@ -15,14 +15,9 @@ export default function WithWebWorker() {
     },
     tracks: [
       {
-        type: 'FeatureTrack',
         trackId: 'volvox_gff3',
         name: 'Volvox genes',
-        assemblyNames: ['volvox'],
-        adapter: {
-          type: 'Gff3TabixAdapter',
-          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-        },
+        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
       },
     ],
     init: { loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] },
