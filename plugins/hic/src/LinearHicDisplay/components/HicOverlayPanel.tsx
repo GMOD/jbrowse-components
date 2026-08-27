@@ -112,9 +112,12 @@ const ResolutionRow = observer(function ResolutionRow({
   )
 })
 
-// Where the legend starts when the resolution box holds the corner: that box's
-// 4px inset, its 4px padding either side of a ~20px row, its 1px border either
-// side, and 4px of gap.
+// Where the legend starts when the resolution box holds the corner. Deliberately
+// a clearance rather than a sum: the row's height is the `<select>`'s, which is
+// the UA's at `fontSize: 10` and moves with the theme's font family — measured
+// in Chrome at 15px under the default Roboto stack (box bottom 29, legend 33)
+// and 18px under `system-ui` (box bottom 32, legend 36). 38 clears both with
+// room, and erring high costs a few px of gap while erring low overlaps the box.
 const RESOLUTION_ROW_CLEARANCE = 38
 
 // The color key rides the shared `FloatingLegend` — its box, its title, its `×`
