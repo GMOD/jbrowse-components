@@ -25,9 +25,11 @@
   "exports": {
     "./BlockMsg": "./src/BlockMsg.tsx",
     "./BottomRightIndicators": "./src/BottomRightIndicators.tsx",
+    "./ContextMenuMixin": "./src/ContextMenuMixin.ts",
     "./DisplayBackgroundProgress": "./src/DisplayBackgroundProgress.tsx",
     "./DisplayChrome": "./src/DisplayChrome.tsx",
     "./DisplayChromeBase": "./src/DisplayChromeBase.tsx",
+    "./DisplayContextMenu": "./src/DisplayContextMenu.tsx",
     "./DisplayErrorBar": "./src/DisplayErrorBar.tsx",
     "./DisplayLoadingOverlay": "./src/DisplayLoadingOverlay.tsx",
     "./DisplayRenderErrorOverlay": "./src/DisplayRenderErrorOverlay.tsx",
@@ -97,9 +99,11 @@
     "exports": {
       "./BlockMsg": "./esm/BlockMsg.js",
       "./BottomRightIndicators": "./esm/BottomRightIndicators.js",
+      "./ContextMenuMixin": "./esm/ContextMenuMixin.js",
       "./DisplayBackgroundProgress": "./esm/DisplayBackgroundProgress.js",
       "./DisplayChrome": "./esm/DisplayChrome.js",
       "./DisplayChromeBase": "./esm/DisplayChromeBase.js",
+      "./DisplayContextMenu": "./esm/DisplayContextMenu.js",
       "./DisplayErrorBar": "./esm/DisplayErrorBar.js",
       "./DisplayLoadingOverlay": "./esm/DisplayLoadingOverlay.js",
       "./DisplayRenderErrorOverlay": "./esm/DisplayRenderErrorOverlay.js",

@@ -75,8 +75,11 @@ export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
-export { ContextMenuMixin } from './ContextMenuMixin.ts'
-export { DisplayContextMenu } from './DisplayContextMenu.tsx'
+// Moved to display-kit on 2026-08-27 — right-click state is a display concern
+// every plugin has, not a tree one. Re-exported so nothing importing the old
+// name breaks; new code names the display-kit subpath.
+export { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+export { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 export {
   TREE_SIDEBAR_LABEL,
   clearSubtreeFilterMenuItems,

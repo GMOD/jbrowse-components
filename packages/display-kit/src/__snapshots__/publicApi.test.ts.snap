@@ -4,9 +4,11 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
 [
   "./BlockMsg",
   "./BottomRightIndicators",
+  "./ContextMenuMixin",
   "./DisplayBackgroundProgress",
   "./DisplayChrome",
   "./DisplayChromeBase",
+  "./DisplayContextMenu",
   "./DisplayErrorBar",
   "./DisplayLoadingOverlay",
   "./DisplayRenderErrorOverlay",
