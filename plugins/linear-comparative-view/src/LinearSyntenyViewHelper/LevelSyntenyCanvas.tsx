@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { ErrorBanner, GpuFallbackButton } from '@jbrowse/core/ui'
+import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
@@ -119,22 +120,26 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     hoveredContig?.bandTransformKey === bandTransformKey
       ? hoveredContig
       : undefined
-  // Coalesces hover picks to one per frame. A pick is under 0.1ms on collinear
-  // data but ~12.5ms on an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse
-  // reporting faster than the display would otherwise queue a pick per event
-  // and spend the whole frame budget on hovers nothing draws.
-  const hoverRef = useRef<
-    { frame: number; at: CanvasPoint | undefined } | undefined
-  >(undefined)
-  const cancelHover = useCallback(() => {
-    if (hoverRef.current) {
-      cancelAnimationFrame(hoverRef.current.frame)
-      hoverRef.current = undefined
-    }
-  }, [])
-  // a level can unmount mid-gesture (a row removed, a return to the import
-  // form); pointer capture releases itself, the pending frame does not
-  useEffect(() => cancelHover, [cancelHover])
+  // One pick per frame: a pick is under 0.1ms on collinear data but ~12.5ms on
+  // an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse reporting faster
+  // than the display would otherwise spend the whole frame budget on hovers
+  // nothing draws.
+  const { queue: queueHover, cancel: cancelHover } =
+    useCoalescedPointer<CanvasPoint>(at => {
+      const mate = offscreenMateHit(model, at.x, at.y)
+      setHoveredContig(
+        mate && {
+          refName: mate.refName,
+          side: mate.side,
+          clientX: at.clientX,
+          clientY: at.clientY,
+          bandTransformKey: model.bandTransformKey,
+        },
+      )
+      // a mark hovered is not a ribbon hovered, and leaving the old one lit
+      // says the pointer is somewhere it is not
+      model.setHoveredFeature(mate ? undefined : pickAt(at))
+    })
 
   const {
     canvas,
@@ -209,32 +214,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!coords) {
       return
     }
-    if (hoverRef.current) {
-      hoverRef.current.at = coords
-      return
-    }
-    hoverRef.current = {
-      at: coords,
-      frame: requestAnimationFrame(() => {
-        const at = hoverRef.current?.at
-        hoverRef.current = undefined
-        if (at) {
-          const mate = offscreenMateHit(model, at.x, at.y)
-          setHoveredContig(
-            mate && {
-              refName: mate.refName,
-              side: mate.side,
-              clientX: at.clientX,
-              clientY: at.clientY,
-              bandTransformKey: model.bandTransformKey,
-            },
-          )
-          // a mark hovered is not a ribbon hovered, and leaving the old one lit
-          // says the pointer is somewhere it is not
-          model.setHoveredFeature(mate ? undefined : pickAt(at))
-        }
-      }),
-    }
+    queueHover(coords)
   }
 
   // Only the hover: a drag survives leaving the band (pointer capture follows it

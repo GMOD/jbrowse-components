@@ -13,6 +13,19 @@ import type React from 'react'
 // The hook reaches the axes through the model's one `scrollXY` action rather
 // than scrolling each itself, so that is what these assert on — two writes
 // unbatched drew a frame against a moved h axis and a stale v one.
+// Hover picks and the wheel body both land on a frame; run them inline so a
+// dispatched event's effect is observable right after `act`.
+beforeEach(() => {
+  jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+    cb(0)
+    return 0
+  })
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
 function setup(cursorMode: 'move' | 'crosshair') {
   const scrollXY = jest.fn()
   const zoomAt = jest.fn()
@@ -39,9 +52,9 @@ function setup(cursorMode: 'move' | 'crosshair') {
   }
 }
 
-// Attach the container ref and run the wheel listener's rAF body inline, which
-// is the only way to observe it — React attaches wheel passively, so the hook
-// registers it by hand on the element rather than through containerProps.
+// Attach the container ref and dispatch on it — React attaches wheel
+// passively, so the hook registers it by hand on the element rather than
+// through containerProps.
 function wheel(
   result: { current: ReturnType<typeof useDotplotInteraction> },
   init: WheelEventInit,
@@ -50,16 +63,9 @@ function wheel(
   act(() => {
     result.current.containerProps.ref(el)
   })
-  const raf = jest
-    .spyOn(window, 'requestAnimationFrame')
-    .mockImplementation(cb => {
-      cb(0)
-      return 0
-    })
   act(() => {
     el.dispatchEvent(new WheelEvent('wheel', init))
   })
-  raf.mockRestore()
 }
 
 // getBoundingClientRect is stubbed at the origin so component-relative x/y are

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { useMouseTracking } from '@jbrowse/core/ui/useMouseTracking'
 import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
 
@@ -106,6 +107,16 @@ export function useDotplotInteraction(
   // Nothing reads `curr` during a pan either: the tooltip and the drag rect are
   // behind `validSelect`, which a pan has false by definition.
   const lastRef = useRef<PointerSample>(undefined)
+
+  // One hover pick and one re-render per frame. A pan stays synchronous: its
+  // scroll is a MobX write the canvas already observes at frame rate.
+  const { queue: queueHover, cancel: cancelHover } =
+    useCoalescedPointer<PointerSample>(s => {
+      setCurr(s)
+      if (!down) {
+        model.setHoveredFeature(model.pickFeatureAt(s.x, s.y))
+      }
+    })
 
   // ctrl inverts the cursor mode: it turns pan into select and select into pan.
   // Once a drag starts the modifier is whatever it was at pointerdown, so
@@ -236,10 +247,7 @@ export function useDotplotInteraction(
             model.scrollXY(last.clientX - s.clientX, s.clientY - last.clientY)
           }
         } else {
-          setCurr(s)
-          if (!down) {
-            model.setHoveredFeature(model.pickFeatureAt(s.x, s.y))
-          }
+          queueHover(s)
         }
       },
       onPointerUp: event => {
@@ -264,6 +272,7 @@ export function useDotplotInteraction(
       // every later pointermove over the plot still reads as `down && !up` and
       // pans it. Dropping the anchor is the same thing a click does.
       onPointerCancel: () => {
+        cancelHover()
         handleMouseLeave()
         lastRef.current = undefined
         clear()
@@ -273,6 +282,7 @@ export function useDotplotInteraction(
       // existing. Dropping only the first left a tooltip printing the position
       // the pointer had when it crossed the edge.
       onPointerLeave: () => {
+        cancelHover()
         handleMouseLeave()
         setCurr(undefined)
         model.setHoveredFeature(undefined)
