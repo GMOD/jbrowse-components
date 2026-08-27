@@ -72,5 +72,4 @@ it.
 
 | Doc | What it is waiting on |
 | --- | --- |
-| [launch-menu-rename-and-reconstruction-limits](launch-menu-rename-and-reconstruction-limits.md) | Two proposals left over from the derivative-allele guidelines, neither started — one small enough to write today, one that needs a measurement before it can be judged at all. |
 <!-- END GENERATED HANDOFFS INDEX -->
