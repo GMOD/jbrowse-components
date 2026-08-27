@@ -244,9 +244,24 @@ chevrons, a downstream arrowhead, direction resolved in pixel space so flipped
 lanes point the way they read — through that track's own rect, line, chevron
 and arrow passes and its Canvas2D painters, exported from `@jbrowse/plugin-canvas`
 for exactly this. `geneGlyphGeometry` is the interval math; `multiwayGeometry.ts`
-packs each lane into one cell in the stack's px, offset into the passes'
+packs each lane into two cells in the stack's px, offset into the passes'
 unsigned coordinate by `PX_ORIGIN`, so a lane's `bpRangeX` uniform is a px
 range and the drag is the only per-frame input.
+
+**Don't restate that track's rules — take them, and let the test say so.**
+`geneGlyphParity.test.ts` runs one gene through `buildFeatureRenderData` and
+through `buildLaneCells` and compares; it is insensitive to what the shared
+constants ARE and fails the moment either side keeps a copy of one. It exists
+because the hand-matched version drifted in four places at once while every
+expected value in the directory stayed green: `line`/`arrow` take a box CENTRE
+where `rect` takes its top, the connector is one line per intron gap (the
+chevron pass spaces marks along each line it is handed), `outlineColor` is a
+per-CELL uniform — which is why the placement boxes get a `boxes:<row>` cell of
+their own and the gene cell carries no outline, the feature track's own default
+— and the subpart tests are `isCDS`/`isExon`/`isUTR` rather than `type ===`.
+What the lanes still own is the merge across transcripts: the feature track is
+per-transcript everywhere and its container glyph emits nothing of its own, so
+there is no counterpart to lift.
 
 **A lane draws annotation where it has it and the table's box where it does
 not, per GROUP.** The choice was per LANE until 2026-08-26, so one drawn gene
