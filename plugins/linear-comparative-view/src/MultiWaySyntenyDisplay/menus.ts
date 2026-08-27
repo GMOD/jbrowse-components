@@ -126,7 +126,7 @@ export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
       onChange: model.setRibbonColorBy,
       options: RIBBON_COLOR_MODES,
       helpText:
-        "Default is the ribbon color. Strand colors a crossed ribbon — an inversion relative to the lane above — in the synteny view's reverse color and the rest in its forward color. Identity paints each pair's identity attribute on the same viridis ramp as the synteny view, grey where the pair has none.",
+        "Default is the ribbon color. Strand colors a crossed ribbon — an inversion relative to the lane above — in the synteny view's reverse color and the rest in its forward color. Identity paints each pair's identity attribute on the same viridis ramp as the synteny view, and leaves a pair without one at the ribbon color.",
     }),
     toggleItem('Draw curved ribbons', model.drawCurves, model.setDrawCurves, {
       helpText:

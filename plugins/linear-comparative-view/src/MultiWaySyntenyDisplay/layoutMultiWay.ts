@@ -281,17 +281,31 @@ export function groupRunsOnRow(
  *
  * A caller drawing a BOX wants the two ends the other way round; sort there.
  */
+export function groupRunSpansOnRow(
+  group: MultiWayGroup,
+  assemblyName: string,
+  frame: RowFrame,
+  width: number,
+): { span: Span; orientation: number }[] {
+  // every run holds a placement the frame shows, so `frameSpan` always answers
+  return groupRunsOnRow(group, assemblyName, frame).map(run => {
+    const [a, b] = frameSpan(frame, run.min, run.max, width)!
+    return {
+      span: run.orientation < 0 ? ([b, a] as const) : ([a, b] as const),
+      orientation: run.orientation,
+    }
+  })
+}
+
 export function groupSpansOnRow(
   group: MultiWayGroup,
   assemblyName: string,
   frame: RowFrame,
   width: number,
 ): Span[] {
-  // every run holds a placement the frame shows, so `frameSpan` always answers
-  return groupRunsOnRow(group, assemblyName, frame).map(run => {
-    const [a, b] = frameSpan(frame, run.min, run.max, width)!
-    return run.orientation < 0 ? ([b, a] as const) : ([a, b] as const)
-  })
+  return groupRunSpansOnRow(group, assemblyName, frame, width).map(
+    run => run.span,
+  )
 }
 
 // Every bp position a lane's frame can occupy. The frame always covers

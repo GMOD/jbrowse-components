@@ -1,7 +1,6 @@
 import { toLocale } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import {
-  MISSING_VALUE_COLOR,
   colorSchemes,
   continuousRampConfig,
   makeContinuousColorFunction,
@@ -120,14 +119,15 @@ class RibbonBuilder {
 export type MultiWayRibbonColorBy = 'default' | 'strand' | 'identity'
 
 /**
- * A ribbon's color from what it joins. `strand` reads the drawn twist rather
- * than any record's strand: the spans are ORDERED pairs, so a crossed ribbon
- * — the lower placement running the other way from the upper one — is an
- * inversion relative to the lane above, and two lanes both reversed against
- * the anchor come out straight between themselves, which is the reading a
- * per-record strand would get wrong. `identity` is the pair feature's own
- * attribute on the synteny view's ramp, grey where it has none. Every mode
- * keeps the slot color's alpha, since the modes' colors are opaque.
+ * A ribbon's color from what it joins. `strand` is the two runs' strands
+ * against the anchor multiplied out — the record's strand, as the synteny
+ * view means it — and not the drawn twist: a lane whose every placement is
+ * inverted is drawn flipped, so its ribbons run straight while every one of
+ * them is an inversion. `identity` is the pair feature's own attribute on the
+ * synteny view's ramp, and a pair without one keeps the slot color — the
+ * synteny view paints missing data in its match red, which on a grey-ribbon
+ * stack would read as a value. Every mode keeps the slot color's alpha, since
+ * the modes' colors are opaque.
  */
 function ribbonColorer(mode: MultiWayRibbonColorBy, slotColor: number) {
   const alpha = slotColor >>> 24
@@ -140,19 +140,17 @@ function ribbonColorer(mode: MultiWayRibbonColorBy, slotColor: number) {
       cssColorToABGR(colorSchemes.strand.negColor),
       alpha,
     )
-    return (s1: Span, s2: Span) =>
-      (s1[1] - s1[0]) * (s2[1] - s2[0]) < 0 ? neg : pos
+    return (strand: number) => (strand < 0 ? neg : pos)
   }
   if (mode === 'identity') {
     const value = new Float32Array(1)
     const ramp = makeContinuousColorFunction(continuousRampConfig.identity, {
       identity: value,
     })
-    const missing = withAbgrAlpha(MISSING_VALUE_COLOR, alpha)
-    return (_s1: Span, _s2: Span, feature: Feature) => {
+    return (_strand: number, feature: Feature) => {
       const identity = feature.get('identity')
       if (typeof identity !== 'number') {
-        return missing
+        return slotColor
       }
       value[0] = identity
       return withAbgrAlpha(ramp(0), alpha)
@@ -213,7 +211,7 @@ export function buildRibbonGeometry({
   for (const { row, upper, lower, y1, y2 } of lanePairs(lanes, glyphHeight)) {
     const ribbons = new RibbonBuilder()
     const bridges = new Map<number, RibbonBuilder>()
-    for (const [key, { group, spans }] of upper.placements) {
+    for (const [key, { group, spans, orientations }] of upper.placements) {
       let toRow = row + 1
       let far = lower.placements.get(key)
       while (!far && bridgeSkippedLanes && toRow + 1 < lanes.length) {
@@ -228,19 +226,19 @@ export function buildRibbonGeometry({
         builder = bridges.get(toRow) ?? new RibbonBuilder()
         bridges.set(toRow, builder)
       }
-      for (const s1 of spans) {
-        for (const s2 of far.spans) {
+      spans.forEach((s1, i) => {
+        far.spans.forEach((s2, j) => {
           if (wideEnough(s1, s2)) {
             builder.add(
               s1,
               s2,
               KIND_BASE,
               targetOfGroup(key, group.feature),
-              colorOf(s1, s2, group.feature),
+              colorOf(orientations[i]! * far.orientations[j]!, group.feature),
             )
           }
-        }
-      }
+        })
+      })
     }
     for (const link of row > 0
       ? (laneLinks?.get(`${upper.assemblyName}|${lower.assemblyName}`) ?? [])
@@ -263,7 +261,13 @@ export function buildRibbonGeometry({
           feature: link,
           label: `${upper.assemblyName} ${link.get('refName')}:${fmt(link.get('start'))}-${fmt(link.get('end'))}\n${lower.assemblyName} ${mate.refName}:${fmt(mate.start)}-${fmt(mate.end)}`,
         })
-        ribbons.add(s1, ordered, KIND_BASE, idx, colorOf(s1, ordered, link))
+        ribbons.add(
+          s1,
+          ordered,
+          KIND_BASE,
+          idx,
+          colorOf(link.get('strand') === -1 ? -1 : 1, link),
+        )
       }
     }
     const key = ribbonsKey(row)

@@ -4,7 +4,6 @@ import {
   cssColorToABGR,
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
-import { MISSING_VALUE_COLOR } from '@jbrowse/synteny-core'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { LaneGene } from './geneGlyph.ts'
@@ -216,9 +215,9 @@ describe('the ribbons', () => {
     expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
   })
 
-  // strand is the drawn twist: g2's lower span is handed reversed, so its
-  // ribbon crosses and takes the reverse color; g1 runs straight
-  test('color by strand reads the twist, at the slot color’s alpha', () => {
+  // g2's record is reverse against the anchor, so its ribbon takes the reverse
+  // color; g1 the forward one
+  test('color by strand reads the record’s strand, at the slot color’s alpha', () => {
     const s = stack({
       features: [
         pairFeature('g1', 100, 200),
@@ -239,7 +238,7 @@ describe('the ribbons', () => {
     expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('#00f'), alpha))
   })
 
-  test('color by identity ramps the pair’s attribute and greys a pair without one', () => {
+  test('color by identity ramps the pair’s attribute and leaves a pair without one at the slot color', () => {
     const s = stack({
       features: [
         new SimpleFeature({
@@ -260,8 +259,7 @@ describe('the ribbons', () => {
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
     expect(abgrAlpha(data.colors[0]!)).toBe(alpha)
-    expect(data.colors[0] & 0xffffff).not.toBe(MISSING_VALUE_COLOR & 0xffffff)
-    expect(data.colors[1]).toBe(withAbgrAlpha(MISSING_VALUE_COLOR, alpha))
+    expect(data.colors[1]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
     expect(data.colors[0]).not.toBe(data.colors[1])
   })
 

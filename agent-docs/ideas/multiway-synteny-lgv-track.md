@@ -225,7 +225,7 @@ scheme and ramp, no refetch. Strand reads the DRAWN twist rather than a
 record's strand — the spans are ordered pairs, so a crossed ribbon is an
 inversion relative to the lane above and two lanes both reversed against the
 anchor come out straight between themselves, which a per-record strand would
-get wrong. Identity reads the group feature's `identity`, which on an
+get wrong. Identity reads the group feature's `identity` (a pair without one keeps the slot color — the synteny view's missing-value red would read as a value here), which on an
 N-genome MCScan table is the row's (`attributeColumns`) and so one value per
 group; an all-vs-all PAF's is per pair only on the direct-record ribbons, since
 a group keeps its first pairwise feature. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the

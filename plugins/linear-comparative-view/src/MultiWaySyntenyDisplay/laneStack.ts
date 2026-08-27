@@ -1,6 +1,6 @@
 import { clamp } from '@jbrowse/core/util'
 
-import { frameSpan, groupSpansOnRow } from './layoutMultiWay.ts'
+import { frameSpan, groupRunSpansOnRow } from './layoutMultiWay.ts'
 
 import type { LaneGene } from './geneGlyph.ts'
 import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
@@ -118,6 +118,13 @@ export interface Lane {
 export interface LaneGroup {
   group: MultiWayGroup
   spans: Span[]
+  /**
+   * per span, how that run reads against the ANCHOR: 1 on the anchor lane,
+   * and on a mate lane the run's length-weighted strand vote. Kept beside the
+   * span rather than re-derived from its px order, because a lane drawn
+   * flipped has already straightened the span of an inverted run
+   */
+  orientations: number[]
 }
 
 export interface LaneStack {
@@ -195,15 +202,19 @@ export function buildLanes({
       const placements = new Map<string, LaneGroup>()
       for (const group of groups) {
         const anchorSpan = anchorSpans.get(group.key)
-        const spans = isAnchor
+        const runs = isAnchor
           ? anchorSpan
-            ? [anchorSpan]
+            ? [{ span: anchorSpan, orientation: 1 }]
             : []
           : frame
-            ? groupSpansOnRow(group, assemblyName, frame, width)
+            ? groupRunSpansOnRow(group, assemblyName, frame, width)
             : []
-        if (spans.length) {
-          placements.set(group.key, { group, spans })
+        if (runs.length) {
+          placements.set(group.key, {
+            group,
+            spans: runs.map(run => run.span),
+            orientations: runs.map(run => run.orientation),
+          })
         }
       }
 
