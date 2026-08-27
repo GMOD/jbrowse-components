@@ -66,8 +66,19 @@ const LIBRARY_SRC = (name: string, ...rest: string[]) =>
 // to — so this maps a page to every checkout its labels live in, and a page is
 // checked against the union.
 const EXTERNAL_PLUGIN_PAGES = new Map([
-  ['tutorials/alphagenome.md', [PLUGIN_SRC('alphagenome')]],
+  // Not PLUGIN_SRC: the AlphaGenome plugin is a package inside the repo that
+  // also serves jbrowse.org/demos/jb2alphagenome, so it is checked out beside
+  // this one under its own name and its source sits a directory down. The two
+  // `jb2plugins/jbrowse-plugin-alphagenome*` clones are a different repo
+  // holding the code this one superseded, and PLUGIN_SRC resolved to one of
+  // them -- which yields labels, so the assertion below passed while reading a
+  // menu item this project has not shipped since the extraction.
+  [
+    'tutorials/alphagenome.md',
+    [LIBRARY_SRC('alphagenome_browser', 'plugin', 'src')],
+  ],
   ['user_guides/graph_genome_view.md', [PLUGIN_SRC('graphgenomeview')]],
+  ['tutorials/genomes_pangenome.md', [PLUGIN_SRC('graphgenomeview')]],
   ['tutorials/pangenome_ecoli.md', [PLUGIN_SRC('graphgenomeview')]],
   ['tutorials/pangenome_hprc.md', [PLUGIN_SRC('graphgenomeview')]],
   ['tutorials/pangenome_cactus.md', [PLUGIN_SRC('graphgenomeview')]],
