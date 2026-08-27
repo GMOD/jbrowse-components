@@ -152,7 +152,9 @@ const click = (item: MenuItem | undefined) => {
   ;(item as { onClick: () => void }).onClick()
 }
 const disabledOf = (items: MenuItem[]) =>
-  items.map(item => ('label' in item ? !!item.disabled : undefined))
+  items.map(item =>
+    'label' in item ? !!(item as { disabled?: boolean }).disabled : undefined,
+  )
 
 test('the track submenu and the header menu share one row per lane', () => {
   const { model, calls } = headerModel()

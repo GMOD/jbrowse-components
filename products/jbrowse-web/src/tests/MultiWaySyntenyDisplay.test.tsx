@@ -521,9 +521,12 @@ test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track alon
     () => {
       expect(opened.initialized).toBe(true)
       expect(opened.assemblyNames).toEqual(['peach'])
-      expect(opened.tracks.map(t => t.configuration.trackId)).toEqual([
-        'multiway_blocks',
-      ])
+      expect(
+        opened.tracks.map(
+          (t: { configuration: { trackId: string } }) =>
+            t.configuration.trackId,
+        ),
+      ).toEqual(['multiway_blocks'])
     },
     { timeout: 30000 },
   )
