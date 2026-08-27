@@ -160,6 +160,10 @@ export type {
 // tarballs don't ship and consumers can't resolve. check-declaration-leaks
 // guards this; see issue #4678.
 export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
+// Same reason, for the `displayedRegionsOrientation` getter: the breakpoint
+// split view, the two synteny displays and the react-linear-genome-view model
+// all serialize it.
+export type { RegionsOrientation } from './LinearGenomeView/util.ts'
 // The scalebar's grid, published because it is a contract other views draw
 // against rather than an internal of this one: the synteny view's location
 // markers continue this ruler down through the ribbons, and pin their pitch AND
