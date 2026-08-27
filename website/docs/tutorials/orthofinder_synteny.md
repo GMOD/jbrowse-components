@@ -39,23 +39,24 @@ the [Apptainer](https://apptainer.org/) version.
 
 ## Where the data comes from
 
-Five OrthoFinder sets built from Ensembl proteomes and annotations: five
-vertebrates (Ensembl release 113), five grasses, six genomes of the wheat
-lineage and five nightshade-family genomes (Ensembl Plants release 63), and five
-_Drosophila_ species (Ensembl Metazoa release 63).
+Five OrthoFinder sets, one per section below, each built from one Ensembl
+division's protein FASTA and GFF3 per genome.
 
-- vertebrates (human, chicken, frog, gar, zebrafish) protein FASTA and GFF3 per
-  genome: https://ftp.ensembl.org/pub/release-113/
-- grasses (rice, sorghum, maize, brachypodium, setaria), the wheat lineage
-  (_Aegilops tauschii_, bread wheat, durum, wild emmer, _Triticum urartu_, _T.
-  timopheevii_) and the nightshades (tomato, potato, pepper, _Nicotiana
-  attenuata_, with coffee as the outgroup) protein FASTA and GFF3 per genome:
+- **`vertebrates`**: human, chicken, frog, gar, zebrafish, Ensembl release 113:
+  https://ftp.ensembl.org/pub/release-113/
+- **`wheat`**: _Aegilops tauschii_, bread wheat, durum, wild emmer, _Triticum
+  urartu_, _T. timopheevii_, Ensembl Plants release 63:
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
-- flies (_Drosophila melanogaster_, _D. simulans_, _D. yakuba_, _D.
-  pseudoobscura_, _D. virilis_) protein FASTA and GFF3 per genome:
+- **`drosophila`**: _Drosophila melanogaster_, _D. simulans_, _D. yakuba_, _D.
+  pseudoobscura_, _D. virilis_, Ensembl Metazoa release 63:
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-63/
-- the six assemblies whose refName aliases are read from an NCBI sequence
-  report, which the datasets CLI fetches by accession rather than by URL: _T.
+- **`solanaceae`**: tomato, potato, pepper and _Nicotiana attenuata_, with
+  coffee as the outgroup, Ensembl Plants release 63:
+  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
+- **`grasses`**: rice, sorghum, maize, brachypodium, setaria, Ensembl Plants
+  release 63: https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
+- **Sequence reports** for the six assemblies whose refName aliases are read
+  from NCBI rather than a URL, which the datasets CLI fetches by accession: _T.
   timopheevii_ GCA_963921465.1, tomato GCA_000188115.5, and the four flies other
   than _D. melanogaster_, GCA_016746395.2, GCA_016746365.2, GCA_009870125.2 and
   GCA_030788295.1: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/
@@ -72,11 +73,16 @@ past which they return nothing.
 Nothing in an orthogroup asserts synteny, so any collinearity in the ribbons is
 a property of the genomes.
 
-The first set is five vertebrate genomes. Human, chicken, frog, spotted gar and
-zebrafish share a common ancestor a few hundred million years back, and their
-orthologs still fall into chromosome-scale blocks. The teleost genome
-duplication shows up as counting: a human chromosome answers to one or two
-chicken chromosomes, and to more zebrafish ones.
+Five sets follow, a section each, and then the second half of the page builds
+one of them, `wheat`, starting from `Orthogroups.tsv`.
+
+## Vertebrates: blocks that survive out to zebrafish {#vertebrates}
+
+The `vertebrates` set is human, chicken, frog, spotted gar and zebrafish, whose
+common ancestor is a few hundred million years back and whose orthologs still
+fall into chromosome-scale blocks. The teleost genome duplication shows up as
+counting: a human chromosome answers to one or two chicken chromosomes, and to
+more zebrafish ones.
 
 <Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
@@ -84,11 +90,9 @@ Every band draws one line per ortholog, so it resolves into wedges only where a
 chromosome's orthologs mostly land on one chromosome of the row below; the build
 script prints that share for each adjacent pair.
 
-## Stacking the wheat lineage
+## Wheat: six genomes of one polyploid history {#wheat}
 
-The rest of this page follows one set, which the
-[script](#reproduce-it-end-to-end) builds under the name `wheat`: wheat's own
-polyploidy history.
+The `wheat` set is six genomes of wheat's own polyploidy history:
 
 - **Aegilops tauschii**, the diploid D-genome donor
 - **bread wheat**, hexaploid, genomes A+B+D
@@ -112,7 +116,7 @@ frame.
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
-## Reading one chromosome out of the stack
+### Reading one chromosome out of the stack
 
 The track lists every genome in the set, so any pair of them opens as a two-row
 view with no second file. This one puts Aegilops tauschii's seven chromosomes
@@ -132,7 +136,7 @@ shared across the three subgenomes, so the 5D and 7D bundles in the frame are
 the D-genome counterparts of the 5A and 7B they refer to. The input is
 orthogroup membership and each gene's position.
 
-## Bread wheat 4A against Triticum urartu
+### Bread wheat 4A against Triticum urartu
 
 Bread wheat 4A is an A-genome chromosome, and the row over it so far has been
 Aegilops tauschii, the D-genome donor. Triticum urartu, the A-genome donor, is
@@ -144,7 +148,7 @@ Urartu's chromosome 4 covers both of the first two blocks, and the distal block
 is on its chromosome 7. Any of the other four assemblies in the track opens the
 same way.
 
-## Chromosome arms that outlast gene order
+## Drosophila: chromosome arms that outlast gene order {#drosophila}
 
 The `drosophila` set is five fly genomes. _D. simulans_ and _D. yakuba_ sit
 beside _D. melanogaster_; _D. pseudoobscura_ and _D. virilis_ are roughly 25 and
@@ -221,7 +225,7 @@ a lane fitted to this window's orthologs sits at 59.8 Mb on a chromosome the
 assembly calls X. Nothing in the table knows that; the lane header is naming the
 chromosome its own placements landed on.
 
-## The same genes over four times the DNA
+## Nightshades: the same genes over four times the DNA {#nightshades}
 
 The `solanaceae` set is tomato, potato and pepper, _Nicotiana attenuata_ as a
 fourth nightshade, and coffee as the outgroup. Their gene counts are within a
@@ -291,7 +295,23 @@ Every lane's genes stay in the anchor's order, so what changed between them is
 the spacing rather than the arrangement. The coffee lane is `[rev]`, the whole
 block inverted in the outgroup.
 
+## Grasses: a whole-genome duplication only maize has {#grasses}
+
+The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet.
+Maize carries a whole-genome duplication the other four do not, and the two
+bands it sits between draw visibly more ribbons per gene than the rest of the
+stack.
+
+<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. Maize's whole-genome duplication shows up as visibly more ribbons per gene in its two bands than in the non-duplicated pairs." src="/img/orthofinder_synteny/grasses.png" />
+
+The ribbon count is a conversion setting rather than a property of the genomes,
+and [what to do with a duplicated gene](#what-to-do-with-a-duplicated-gene) is
+where the build picks it.
+
 ## Producing the blocks table
+
+The commands from here on build the `wheat` set; the other four differ only in
+which proteomes go into the directory.
 
 OrthoFinder takes a directory of proteomes, one FASTA per genome, and `-og`
 stops it after the orthogroups, which is all this table needs:
@@ -335,11 +355,9 @@ column is an error.
 
 A cell holds every gene of that genome in the orthogroup, and a synteny link
 runs from one gene to one gene, so a cell holding two genes has no single
-correct answer. The five-grass set is where this decides the picture: maize
-carries a whole-genome duplication the other four do not, so a rice gene
-commonly has two maize orthologs.
-
-<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. Maize's whole-genome duplication shows up as visibly more ribbons per gene in its two bands than in the non-duplicated pairs." src="/img/orthofinder_synteny/grasses.png" />
+correct answer. [The grasses](#grasses) are where this decides the picture: a
+rice gene commonly has two maize orthologs, one per copy of the duplication
+maize carries.
 
 Three treatments:
 

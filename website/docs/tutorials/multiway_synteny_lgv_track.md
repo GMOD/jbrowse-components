@@ -163,7 +163,7 @@ arrows, so the lane stack that said which genomes matter becomes the view that
 lets each of them be navigated.
 
 The five-grass OrthoFinder table behind
-[Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny#what-to-do-with-a-duplicated-gene)
+[Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny#grasses)
 is a case both halves of that serve. As lanes, a rice window reads across
 sorghum, brachypodium, setaria and maize in one track under rice's own genes,
 with the maize lane on the better-populated of the two copies its whole-genome
