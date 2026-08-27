@@ -33,9 +33,9 @@ function slug(heading: string) {
   return heading
     .toLowerCase()
     .replaceAll('`', '')
-    .replace(/[^\w\s-]/g, '')
+    .replaceAll(/[^\w\s-]/g, '')
     .trim()
-    .replace(/\s/g, '-')
+    .replaceAll(/\s/g, '-')
 }
 
 function headingSlugs(markdown: string) {
