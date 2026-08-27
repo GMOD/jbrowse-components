@@ -27,6 +27,7 @@ import {
   SimpleFeature,
   withFeatureDetails,
 } from '@jbrowse/core/util'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import HeightModeMixin, {
@@ -3098,14 +3099,19 @@ export default function stateModelFactory(
           setSortedBy(type: string, tag?: string) {
             const view = self.view
             const { centerLineInfo } = view
-            // basePair / insertion / softclip / hardclip / tag use sortPos
-            // to pick which reads to sort first; position / strand ignore
-            // it and produce a sensible layout without a center line.
-            const needsPos = type !== 'position' && type !== 'strand'
-            if (centerLineInfo && centerLineInfo.offset >= 0) {
+            // Every type routed here needs the position. `partitionBySort`
+            // ranks by membership at `sortPos` whatever the type is, and
+            // `sortOverlappingByIndex` only ever orders the reads that ranked
+            // — strand included. There is no sort this action can reach that
+            // lays out sensibly without a center line.
+            if (centerLineInfo && !centerLineInfo.oob) {
               this.setSortSlot({
                 type,
-                pos: Math.round(centerLineInfo.offset),
+                // `offset` counts bp INTO the region; the worker compares this
+                // against absolute `readPositions`, and on a reversed region
+                // the base drawn here is mirrored. `basePaintedAt` is the pivot
+                // the context-menu sort already goes through.
+                pos: basePaintedAt(centerLineInfo, centerLineInfo.offset),
                 refName: centerLineInfo.refName,
                 assemblyName: centerLineInfo.assemblyName,
                 tag,
@@ -3113,7 +3119,7 @@ export default function stateModelFactory(
               // The sort anchors on the column under the center line, so reveal
               // it — the user sees exactly where the pileup is being ordered.
               view.setShowCenterLine(true)
-            } else if (needsPos) {
+            } else {
               // Reveal the center line the warning asks the user to reposition —
               // it's the thing they need to see to comply.
               view.setShowCenterLine(true)
@@ -3121,17 +3127,6 @@ export default function stateModelFactory(
                 'Cannot sort: the view center line is not over a valid position. Scroll so the center line is within a region and try again.',
                 'warning',
               )
-            } else {
-              const assemblyName = view.assemblyNames[0]
-              if (assemblyName) {
-                this.setSortSlot({
-                  type,
-                  pos: -1,
-                  refName: '',
-                  assemblyName,
-                  tag,
-                })
-              }
             }
           },
 
