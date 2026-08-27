@@ -186,6 +186,7 @@ the whole surface.
 | <span id="action-sethoveredgroupkey">**setHoveredGroupKey**</span><br><code>(key: string &#124; undefined) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlaneframes">**setLaneFrames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefined&gt;) =&gt; void</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |
 | <span id="action-setroworder">**setRowOrder**</span><br><code>(order: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-resetroworder">**resetRowOrder**</span><br><code>() =&gt; void</code> | back to densest-first. Its own action rather than `setRowOrder([])`, which now means "here is the order of the lanes I can see" and would keep every lane the caller could not | MultiWaySyntenyDisplay |
 | <span id="action-sethiddenlanes">**setHiddenLanes**</span><br><code>(names: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setribboncolorby">**setRibbonColorBy**</span><br><code>(mode: MultiWayRibbonColorBy) =&gt; void</code> |  | MultiWaySyntenyDisplay |
