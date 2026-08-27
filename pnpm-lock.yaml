@@ -1468,6 +1468,9 @@ importers:
       '@gmod/nclist':
         specifier: ^3.0.14
         version: 3.0.14
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

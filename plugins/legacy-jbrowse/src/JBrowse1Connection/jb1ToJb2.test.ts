@@ -171,6 +171,55 @@ describe('convertTrackConfig', () => {
     expect(result.name).toContain('old_vcf')
   })
 
+  it.each([
+    ['IndexedFasta', 'IndexedFastaAdapter'],
+    ['BgzipIndexedFasta', 'BgzipFastaAdapter'],
+    ['TwoBit', 'TwoBitAdapter'],
+    ['UnindexedFasta', 'UnindexedFastaAdapter'],
+  ])('converts a %s track to a ReferenceSequenceTrack', (store, adapter) => {
+    const result = convertTrackConfig(
+      track({
+        label: 'seq',
+        urlTemplate: 'genome.fa',
+        storeClass: `JBrowse/Store/SeqFeature/${store}`,
+      }),
+      dataRoot,
+    )
+    expect(result.adapter?.type).toBe(adapter)
+    expect(result.type).toBe('ReferenceSequenceTrack')
+  })
+
+  it('converts a plain BED track', () => {
+    const result = convertTrackConfig(
+      track({
+        label: 'features',
+        urlTemplate: 'features.bed',
+        storeClass: 'JBrowse/Store/SeqFeature/BED',
+      }),
+      dataRoot,
+    )
+    expect(result.adapter?.type).toBe('BedAdapter')
+    expect(result.type).toBe('FeatureTrack')
+  })
+
+  it('gives a track with no storeClass the type its guessed adapter draws', () => {
+    const result = convertTrackConfig(
+      track({ label: 'signal', urlTemplate: 'signal.bw' }),
+      dataRoot,
+    )
+    expect(result.adapter?.type).toBe('BigWigAdapter')
+    expect(result.type).toBe('QuantitativeTrack')
+  })
+
+  it('leaves a track whose filename says nothing as an unknown conf', () => {
+    const result = convertTrackConfig(
+      track({ label: 'mystery', urlTemplate: 'data.xyz' }),
+      dataRoot,
+    )
+    expect(result.adapter?.type).toBeUndefined()
+    expect(result.name).toContain('mystery')
+  })
+
   it('converts FromConfig track without urlTemplate', () => {
     const result = convertTrackConfig(
       track({
