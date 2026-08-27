@@ -24,8 +24,8 @@ down to the next. The lane stack is one ordinary track display, a
   all-vs-all PAF
 - one BED per genome, placing the gene ids the table names
 - every genome loaded as an assembly in the same session
-- a GFF3 feature track per assembly, without which that genome's lane outlines
-  the table's gene spans instead of drawing gene models
+- a GFF3 feature track per assembly, or that genome's lane outlines the table's
+  gene spans and says `no annotation`
 - [Synteny from an ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao)
   builds the grape table this page opens, end to end
 
@@ -97,7 +97,7 @@ The same thing as a `defaultSession`, which the live link below opens directly:
 
 <Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes carry their own gene models from those genomes' gene tracks, the lanes without one carry the table's gene spans as boxes, and a ribbon chain stops at the first lane missing the ortholog." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
-## Reading a lane header
+## Reading a lane's scale
 
 Each lane has its own scale, so each lane states it:
 
@@ -105,19 +105,21 @@ Each lane has its own scale, so each lane states it:
   against the anchor's.
 - **Right**: the lane's span, and the multiple of the anchor's span where that
   is not one.
-- **Ticks** fall at one interval, named in the anchor's header, so two lanes at
-  the same spacing are at the same bp-per-pixel.
+- **Ticks** fall at one interval shared by every mate lane, so two lanes at the
+  same spacing are at the same bp-per-pixel. A lane zoomed far enough out that
+  its ticks would read as hatching draws none, and its multiple is the scale
+  statement instead.
 - **The view's own gridlines stop at the anchor lane**, the only lane they are
   true for.
-- **A lane with no GFF3 track for its assembly** outlines the table's gene spans
-  and says `no annotation`.
 
 ## Ordering the lanes
 
 - `rowOrder` pins the lanes it names to the top; the rest follow densest-first
   over the whole fetched table, so the order holds still across a pan.
-- That is what keeps the chains long, since a near-empty lane placed mid-stack
-  cuts the chain of every denser lane below it.
+- A ribbon joins adjacent lanes, bridging past a lane that places nothing for
+  the group. Turn **Bridge lanes that place nothing** off and a sparse lane
+  mid-stack cuts every chain running through it, which is what densest-first
+  guards against.
 
 ## Zooming to genes
 
@@ -131,15 +133,6 @@ Cut the window to a few genes and each ribbon connects one gene to one ortholog:
 <Figure caption="The same lanes cut to a few genes, close enough to read exon structure in the annotated lanes. Each ribbon links one gene to its ortholog in the lane below, and the lanes that kept a single gene here show it at the anchor's scale." src="/img/multiway_synteny/lgv_track_zoom.png" />
 
 <Video src="/media/synteny/multiway_zoom_out.mp4" caption="The grape lanes from gene scale back out to the block: a hovered ribbon reads one ortholog group down the stack, and each zoom-out re-fits every lane's own frame to the anchor's widening window." />
-
-## What the lanes say
-
-Three readings in the one picture:
-
-- **Down a column**: which genomes kept the gene.
-- **Along a chain**: one ortholog group through every genome that kept it.
-- **Within a lane**: local gene order and spacing, so an expansion in one genome
-  crowds its own lane.
 
 ## From lanes to a full stack
 
@@ -169,7 +162,7 @@ HPRC release 2 annotates every haplotype assembly with CAT, which projects the
 GENCODE gene set onto each assembly's own contigs under the same gene names, so
 joining the annotations by name is the whole pipeline.
 [`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
-does that for the CFHR3/CFHR1 deletion:
+does that for the _CFHR3_/_CFHR1_ deletion:
 
 <!-- from: scripts/build_hprc_cfhr_synteny.sh -->
 
@@ -221,7 +214,7 @@ gutters carry the direct alignments the file holds for that pair.
 ### Deep-time orthologs
 
 The lanes hold up past the range whole-genome alignment reaches: the
-five-vertebrate OrthoFinder table draws the human HOXD cluster with a lane per
+five-vertebrate OrthoFinder table draws the human _HOXD_ cluster with a lane per
 genome.
 
 <Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. The cluster's block stays syntenic in every lane, each lane names its own chromosome and orientation, and the ribbon chains thin outside it where the orthogroups scatter." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
@@ -231,7 +224,8 @@ Two more orthogroup sets read as lanes beside their stacked views:
 - [five Drosophila genomes](/docs/tutorials/orthofinder_synteny#one-locus-one-lane-per-fly),
   where the block survives out to _D. virilis_ and its orientation does not.
 - [five nightshade genomes](/docs/tutorials/orthofinder_synteny#one-locus-five-lanes-five-scales),
-  where the same genes need three times the DNA in pepper as in tomato.
+  where the same genes span a different amount of DNA in each genome and every
+  lane's header says how much.
 
 ## See also
 
