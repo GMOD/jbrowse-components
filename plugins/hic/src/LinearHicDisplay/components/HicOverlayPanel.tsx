@@ -1,7 +1,6 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TrackOverlayPortal } from '@jbrowse/display-ui'
-import CloseIcon from '@mui/icons-material/Close'
+import { FloatingLegend, TrackOverlayPortal } from '@jbrowse/display-ui'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -46,9 +45,6 @@ const useStyles = makeStyles()(theme => ({
     color: 'inherit',
     background: 'transparent',
     border: `1px solid ${theme.palette.divider}`,
-  },
-  spacer: {
-    flex: 1,
   },
   // reserve the reset button's slot so the row doesn't reflow when it appears
   resetSlot: {
@@ -116,6 +112,16 @@ const ResolutionRow = observer(function ResolutionRow({
   )
 })
 
+// Where the legend starts when the resolution box holds the corner: that box's
+// 4px inset, its 4px padding either side of a ~20px row, its 1px border either
+// side, and 4px of gap.
+const RESOLUTION_ROW_CLEARANCE = 38
+
+// The color key rides the shared `FloatingLegend` — its box, its title, its `×`
+// and its gesture ownership — and supplies the one thing a row list cannot say:
+// a continuous gradient. The `×` is then the same glyph `HicSVGColorLegend`
+// draws, so the exported figure and the screen agree. Only the resolution
+// dropdown stays bespoke, in its own portal above it.
 const HicOverlayPanel = observer(function HicOverlayPanel({
   model,
 }: {
@@ -132,54 +138,46 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
   } = model
 
   const showResArea = showResolutionControls && hasResolutions
-  if (!showLegendArea && !showResArea) {
-    return null
-  }
-
   const { minLabel, maxLabel } = getHicScaleLabels(colorMaxScore, useLogScale)
-  // portal above the inter-region padding masks so the panel isn't buried at
-  // whole-genome / multi-region scale (see TrackOverlayPortal)
   return (
-    <TrackOverlayPortal>
-      <div
-        className={classes.panel}
-        // same reason as FloatingLegend: a panel that takes pointer events must
-        // claim the press, or dragging its text pans the view underneath
-        data-gesture-owner="true"
-      >
-        {showResArea ? <ResolutionRow model={model} /> : null}
-        {showLegendArea ? (
-          <>
-            <div className={classes.row}>
-              <span>Contacts</span>
-              <span className={classes.spacer} />
-              <Tooltip title="Hide legend">
-                <IconButton
-                  className={classes.iconBtn}
-                  size="small"
-                  onClick={() => {
-                    model.setShowLegend(false)
-                  }}
-                >
-                  <CloseIcon className={classes.icon} />
-                </IconButton>
-              </Tooltip>
-            </div>
-            <div
-              className={classes.gradientBar}
-              // backgroundImage (longhand), not the `background` shorthand: the
-              // shorthand resets background-clip back to border-box, undoing the
-              // padding-box clip and re-introducing the dark-red sliver at 0
-              style={{ backgroundImage: getLegendCssGradient(colorScheme) }}
-            />
-            <div className={classes.labels}>
-              <span>{minLabel}</span>
-              <span>{maxLabel}</span>
-            </div>
-          </>
-        ) : null}
-      </div>
-    </TrackOverlayPortal>
+    <>
+      {showResArea ? (
+        // portal above the inter-region padding masks so the box isn't buried
+        // at whole-genome / multi-region scale (see TrackOverlayPortal)
+        <TrackOverlayPortal>
+          <div
+            className={classes.panel}
+            // same reason as FloatingLegend: a panel that takes pointer events
+            // must claim the press, or dragging its text pans the view
+            // underneath
+            data-gesture-owner="true"
+          >
+            <ResolutionRow model={model} />
+          </div>
+        </TrackOverlayPortal>
+      ) : null}
+      {showLegendArea ? (
+        <FloatingLegend
+          title="Contacts"
+          top={showResArea ? RESOLUTION_ROW_CLEARANCE : undefined}
+          onDismiss={() => {
+            model.setShowLegend(false)
+          }}
+        >
+          <div
+            className={classes.gradientBar}
+            // backgroundImage (longhand), not the `background` shorthand: the
+            // shorthand resets background-clip back to border-box, undoing the
+            // padding-box clip and re-introducing the dark-red sliver at 0
+            style={{ backgroundImage: getLegendCssGradient(colorScheme) }}
+          />
+          <div className={classes.labels}>
+            <span>{minLabel}</span>
+            <span>{maxLabel}</span>
+          </div>
+        </FloatingLegend>
+      ) : null}
+    </>
   )
 })
 
