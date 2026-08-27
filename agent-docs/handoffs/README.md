@@ -72,4 +72,5 @@ it.
 
 | Doc | What it is waiting on |
 | --- | --- |
+| [r-export-handoff](R_EXPORT_HANDOFF.md) | The state of the LGV "Export R script" exporter after its second pass — what was fixed (wiggle coordinates, sort-by-base under --spec, gene filters, discontiguous Hi-C), the unsupported-track skip, and the codegen bugs the gallery renders found. |
 <!-- END GENERATED HANDOFFS INDEX -->
