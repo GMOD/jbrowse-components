@@ -31,13 +31,15 @@ function makeModel({
   setOffsets = jest.fn(),
   scalebarRefNameClickPending = false,
   setScalebarRefNameClickPending = jest.fn(),
+  isScalebarRefNameMenuOpen = false,
 }: {
   setOffsets?: jest.Mock
   scalebarRefNameClickPending?: boolean
   setScalebarRefNameClickPending?: jest.Mock
+  isScalebarRefNameMenuOpen?: boolean
 } = {}) {
   return {
-    isScalebarRefNameMenuOpen: false,
+    isScalebarRefNameMenuOpen,
     scalebarRefNameClickPending,
     setScalebarRefNameClickPending,
     setOffsets,
@@ -172,6 +174,42 @@ describe('useRangeSelect (LGV)', () => {
     // flag cleared here (not left for the label's onClick), so it can't get
     // stuck and swallow the next scalebar click if mouseup drifts off the label
     expect(setScalebarRefNameClickPending).toHaveBeenCalledWith(false)
+  })
+
+  it('a click begun on a refName label clears the hover guide', () => {
+    render(
+      <TestRubberband
+        model={makeModel({ scalebarRefNameClickPending: true })}
+      />,
+    )
+    const el = screen.getByTestId('rubberband')
+
+    fireEvent.mouseMove(el, { clientX: 50, clientY: 0 })
+    expect(screen.getByTestId('guideX').textContent).toBe('50')
+
+    fireEvent.mouseDown(el, { clientX: 50, clientY: 0 })
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 51, clientY: 0 }),
+      )
+    })
+
+    // the label's menu hides the guide while it is open; leaving it set here
+    // stranded the line on the scalebar once the menu closed
+    expect(screen.getByTestId('guideX').textContent).toBe('none')
+  })
+
+  it('a press with the refName menu open clears the hover guide', () => {
+    render(
+      <TestRubberband model={makeModel({ isScalebarRefNameMenuOpen: true })} />,
+    )
+    const el = screen.getByTestId('rubberband')
+
+    fireEvent.mouseMove(el, { clientX: 50, clientY: 0 })
+    expect(screen.getByTestId('guideX').textContent).toBe('50')
+
+    fireEvent.mouseDown(el, { clientX: 50, clientY: 0 })
+    expect(screen.getByTestId('guideX').textContent).toBe('none')
   })
 
   it('a drag begun on a refName label still commits and clears the pending flag', () => {

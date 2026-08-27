@@ -66,10 +66,14 @@ export function useRangeSelect(
       }
 
       // A click that began on a scalebar refname label is handled by that
-      // label's onClick (opens its menu), not by the rubberband menu here
+      // label's onClick (opens its menu), not by the rubberband menu here.
+      // Drop the hover guide too: the label's menu covers it while it is open,
+      // and nothing else clears it, so picking an item like "Focus on X" left a
+      // red line stranded on the scalebar with the pointer nowhere near it
       if (isClick && startedOnRefLabel) {
         setStartX(undefined)
         setCurrentX(undefined)
+        setGuideX(undefined)
         return
       }
 
@@ -106,7 +110,10 @@ export function useRangeSelect(
     if (shiftOnly && !event.shiftKey) {
       return
     }
+    // a press with the refName menu already open reopens it on the label under
+    // the pointer; same stranded-guide reasoning as the mouseup path above
     if (model.isScalebarRefNameMenuOpen) {
+      setGuideX(undefined)
       return
     }
 
