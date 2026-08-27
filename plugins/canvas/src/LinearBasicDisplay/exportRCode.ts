@@ -115,6 +115,16 @@ export interface GeneRParams {
    * as a gene's isoforms; else undefined (draw every transcript).
    */
   collapseIsoforms?: string[]
+  /**
+   * The attribute a curated "this transcript represents the gene" tag lives in
+   * (`canonicalTranscriptField`, `tag` in NCBI's and GENCODE's GFF3) and the
+   * values of it that count (`canonicalTranscriptTags`). A tagged isoform
+   * outranks every measurement, so without these the collapse falls back to
+   * protein length and picks a different transcript than the browser did on any
+   * annotation that tags one. GFF only — no BED or BigBed carries them.
+   */
+  canonicalField?: string
+  canonicalTags?: string[]
 }
 
 // Rows the y-scale always covers, however few the packing needs. A glyph is
@@ -167,9 +177,25 @@ export function geneFragment(p: GeneRParams): RTrackFragment {
   const rules = p.filters ?? []
   const filtersVar = `${pathVar}_filters`
   const typesVar = `${pathVar}_types`
-  // only the attributes a rule reads are pulled out of the GFF; an unreferenced
-  // one would just be an unused all-NA column
-  const attrs = [...new Set(rules.map(r => r.attr))]
+  // The curated-tag attribute is read only where it can be: a BED or BigBed
+  // carries no GFF attributes, and read_bed takes no `attrs` at all.
+  const canonical =
+    p.collapseIsoforms &&
+    p.canonicalField &&
+    p.canonicalTags?.length &&
+    reader === 'read_gff'
+      ? { field: p.canonicalField, tags: p.canonicalTags }
+      : undefined
+  const canonicalVar = `${pathVar}_canonical_tags`
+  // only the attributes a rule reads are pulled out of the GFF, plus the tag
+  // attribute when the collapse ranks on it; an unreferenced one would just be
+  // an unused all-NA column
+  const attrs = [
+    ...new Set([
+      ...rules.map(r => r.attr),
+      ...(canonical ? [canonical.field] : []),
+    ]),
+  ]
   const attrsArg = attrs.length
     ? `, c(${attrs.map(a => rStr(a)).join(', ')})`
     : ''
@@ -180,7 +206,9 @@ export function geneFragment(p: GeneRParams): RTrackFragment {
   // after would leave the dropped transcripts' rows reserved.
   const isoformVar = `${pathVar}_transcript_types`
   const shown = p.collapseIsoforms
-    ? `collapse_isoforms(${admitted}, ${isoformVar})`
+    ? `collapse_isoforms(${admitted}, ${isoformVar}${
+        canonical ? `, ${rStr(canonical.field)}, ${canonicalVar}` : ''
+      })`
     : admitted
   const dataExpr = `gene_layout(${shown})`
   const plotVariable = `p_${pathVar}`
@@ -215,6 +243,15 @@ export function geneFragment(p: GeneRParams): RTrackFragment {
           `# count as isoforms to choose among. Delete the collapse_isoforms()`,
           `# call in the panel below to draw every transcript instead.`,
           `${isoformVar} <- c(${p.collapseIsoforms.map(t => rStr(t)).join(', ')})`,
+        ]
+      : []),
+    ...(canonical
+      ? [
+          `# The annotation's own "this transcript represents the gene" tags`,
+          `# (canonicalTranscriptTags), in priority order. One of these outranks`,
+          `# every isoform measurement; empty the list to rank on protein length`,
+          `# alone.`,
+          `${canonicalVar} <- c(${canonical.tags.map(t => rStr(t)).join(', ')})`,
         ]
       : []),
   ].join('\n')
@@ -322,5 +359,7 @@ export function exportRCode(
     untranslatedFilters: untranslated,
     geneTypes: self.showOnlyGenes ? geneLikeTypes(self) : undefined,
     collapseIsoforms,
+    canonicalField: getConf(self, 'canonicalTranscriptField'),
+    canonicalTags: getConf(self, 'canonicalTranscriptTags'),
   })
 }
