@@ -20,8 +20,6 @@ const ANNOTATION_ADAPTER_RANK = [
 
 /** lower is better; `undefined` for a type that is not gene annotation */
 export function annotationRank(type: string | undefined) {
-  const rank = ANNOTATION_ADAPTER_RANK.findIndex(tier =>
-    tier.some(name => name === type),
-  )
+  const rank = ANNOTATION_ADAPTER_RANK.findIndex(tier => tier.includes(type))
   return rank < 0 ? undefined : rank
 }
