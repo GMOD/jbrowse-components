@@ -83,14 +83,22 @@ const LaneHeaders = observer(function LaneHeaders({
       {dropLane &&
       !dropLane.isAnchor &&
       dropLane.assemblyName !== drag?.assemblyName ? (
-        <rect
-          data-testid="multiway-lane-drop"
-          x={0}
-          y={dropLane.bandStart}
-          width={width}
-          height={dropLane.bandEnd - dropLane.bandStart}
-          fill={palette.action.hover}
-        />
+        <g data-testid="multiway-lane-drop">
+          <rect
+            x={0}
+            y={dropLane.bandStart}
+            width={width}
+            height={dropLane.bandEnd - dropLane.bandStart}
+            fill={palette.action.hover}
+          />
+          <rect
+            x={0}
+            y={dropLane.bandStart}
+            width={width}
+            height={2}
+            fill={palette.primary.main}
+          />
+        </g>
       ) : null}
       {lanes.map(lane => {
         const where = lane.isAnchor

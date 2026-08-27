@@ -27,9 +27,6 @@ import type { Feature } from '@jbrowse/core/util'
 // density; the boxes they connect are still drawn in the lanes
 const MIN_RIBBON_PX = 2
 const BOX_ALPHA = 64
-// a ribbon bridging a lane that places nothing draws at half the pair
-// ribbons' opacity: it crosses a lane it does not belong to
-const BRIDGE_ALPHA_SCALE = 0.5
 
 export function ribbonsKey(row: number, toRow = row + 1) {
   return toRow === row + 1 ? `ribbons:${row}` : `ribbons:${row}>${toRow}`
@@ -147,10 +144,6 @@ export function buildRibbonGeometry({
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
-  const bridgeColor = withAbgrAlpha(
-    color,
-    Math.round((color >>> 24) * BRIDGE_ALPHA_SCALE),
-  )
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
@@ -190,7 +183,7 @@ export function buildRibbonGeometry({
               s2,
               KIND_BASE,
               targetOfGroup(key, group.feature),
-              bridged ? bridgeColor : color,
+              color,
             )
           }
         }

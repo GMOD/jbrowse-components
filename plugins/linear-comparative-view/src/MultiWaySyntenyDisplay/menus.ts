@@ -118,7 +118,7 @@ export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
       model.setBridgeSkippedLanes,
       {
         helpText:
-          'Where a lane places nothing for a group, join it across that lane to the next one down that does, at half opacity. Off, a ribbon joins adjacent lanes only and a sparse lane mid-stack cuts every chain running through it.',
+          'Where a lane places nothing for a group, join it across that lane to the next one down that does. Off, a ribbon joins adjacent lanes only and a sparse lane mid-stack cuts every chain running through it.',
       },
     ),
     toggleItem('Show lane ticks', model.showLaneTicks, model.setShowLaneTicks, {

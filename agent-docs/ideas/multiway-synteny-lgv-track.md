@@ -149,10 +149,11 @@ lanes only, so a group the middle lane's table did not name broke the chain
 there, and the reader saw two disconnected halves for what the data says is one
 group. `buildRibbonGeometry` now walks down from the upper lane to the next
 lane that places the group and draws that pair in its own layer
-(`ribbons:<row>><toRow>`, spanning the skipped bands) at half the ribbon
-opacity, so it reads as passing through a lane it does not belong to. It is a
-separate cell and layer rather than a longer ribbon in the pair's cell because
-the pick engine reads a ribbon's y extent off its layer. Hiding the sparse lane
+(`ribbons:<row>><toRow>`, spanning the skipped bands). It is a separate cell
+and layer rather than a longer ribbon in the pair's cell because the pick
+engine reads a ribbon's y extent off its layer. Half opacity was tried first
+and dropped: over the 0.3 base it was invisible against the band, and a ribbon
+crossing a band with no glyph at either edge already reads as passing through. Hiding the sparse lane
 is the other answer to the same picture, and the two compose. The stacked
 `LinearSyntenyView` has the same gap and no such fix: a level is defined as the
 gap between `views[level]` and `views[level + 1]` in ten files, so a track that

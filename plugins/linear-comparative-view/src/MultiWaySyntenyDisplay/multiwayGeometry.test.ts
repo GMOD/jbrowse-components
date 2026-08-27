@@ -170,7 +170,10 @@ describe('the ribbons', () => {
 
   // g1 is on grape and cacao and not on peach, so the chain through the
   // stack broke at peach: bridging joins grape to cacao across peach's band,
-  // at half opacity so it reads as passing through a lane it is not part of
+  // in a layer of its own since the pick reads a ribbon's y extent off its
+  // layer. Same color as a pair ribbon: half opacity over a 0.3 base was
+  // invisible against the band, and a ribbon crossing a band with no glyph
+  // at either edge of it already reads as passing through
   test('bridge a group across a lane that places nothing for it', () => {
     const s = stack({
       features: [
@@ -202,7 +205,7 @@ describe('the ribbons', () => {
     const bridge = ribbonData(cells, 'ribbons:0>2')
     expect(bridge.instanceCount).toBe(1)
     expect(bridge.instanceFeatureIdx[0]).toBe(groupTarget.get('g1'))
-    expect(abgrAlpha(bridge.colors[0]!)).toBe(Math.round(0.4 * 255 * 0.5))
+    expect(abgrAlpha(bridge.colors[0]!)).toBe(Math.round(0.4 * 255))
     const layer = layers.find(l => l.key === 'ribbons:0>2')!
     expect(layer.yTop).toBe(s.lanes[0]!.glyphTop + s.glyphHeight)
     expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
