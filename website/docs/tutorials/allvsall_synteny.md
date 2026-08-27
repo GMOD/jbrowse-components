@@ -374,6 +374,53 @@ pangenome, index it first with [make-pif](#large-files-index-with-make-pif):
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
+### Each strain's lane in its own coordinates
+
+Every lane above is drawn on K-12's axis, so a strain leaving the backbone is a
+white gap and nothing else: the lane cannot say what that strain carries there
+instead. **Display types → Multi-way synteny display** redraws the same track
+with each strain's lane in that strain's own coordinates, the reading
+[the ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+walks through on gene names. An alignment file names none, and the display reads
+that as a different kind of source:
+
+- Each PAF record is its own ribbon, since the display keys a group by gene name
+  and falls back to the adapter's `syntenyId` where a source carries none.
+- The track also fetches each **adjacent** pair's own records from the same
+  file, so the gutters carry the direct alignments the PAF holds for that pair.
+
+Above the lanes here sits the pggb graph-depth wiggle the
+[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory)
+builds from these same five strains, on the same K-12 axis.
+
+```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
+{
+  "defaultSession": {
+    "name": "E. coli all-vs-all multi-way track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "K12",
+          "loc": "chr:1,443,000-1,466,000",
+          "tracks": [
+            { "trackId": "ecoli_pggb_depth", "height": 60 },
+            {
+              "trackId": "ecoli_ava",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": ["NCTC86", "CFT073", "Sakai", "IAI39"],
+              "height": 340
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="The paa operon island on K-12, read twice: the pangenome graph-depth wiggle steps down where fewer genomes carry the sequence, and the all-vs-all lanes below name them. K-12 and NCTC86 carry the island, and the white wedges in the ribbon bands are the strains whose alignment skips it." src="/img/multiway_synteny/ecoli_island_lanes.png" />
+
 ### The gap in the graph genome view {#the-same-gap-drawn-as-a-graph}
 
 Sequence absent from the alignment is absent from the PAF, so what the strains

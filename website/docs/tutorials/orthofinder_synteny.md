@@ -94,6 +94,49 @@ Every band draws one line per ortholog, so it resolves into wedges only where a
 chromosome's orthologs mostly land on one chromosome of the row below; the build
 script prints that share for each adjacent pair.
 
+### One locus, one lane per vertebrate
+
+The stack answers at chromosome scale. For one locus, a
+[multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+draws the same table as a lane per genome inside a single linear view, each lane
+in that genome's own coordinates.
+
+```json session config=https://jbrowse.org/demos/orthofinder_vertebrates/config.json
+{
+  "defaultSession": {
+    "name": "Vertebrate multi-way synteny track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "human",
+          "loc": "2:176,090,000-176,290,000",
+          "tracks": [
+            {
+              "trackId": "human_genes",
+              "type": "LinearBasicDisplay",
+              "showOnlyGenes": true,
+              "displayMode": "compact"
+            },
+            {
+              "trackId": "vertebrates_orthogroups",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": ["chicken", "frog", "gar", "zebrafish"],
+              "height": 320
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+The human _HOXD_ cluster is one block every one of the four keeps, so the lanes
+hold up past the range whole-genome alignment reaches.
+
+<Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. The cluster's block stays syntenic in every lane, each lane names its own chromosome and orientation, and the ribbon chains thin outside it where the orthogroups scatter." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
+
 ## Wheat: six genomes of one polyploid history {#wheat}
 
 The `wheat` set is six genomes of wheat's own polyploidy history:
@@ -181,9 +224,9 @@ row, on a chromosome whose name changes as the lineages rename their own.
 ### One locus, one lane per fly
 
 The gene-order half needs a window, and a
-[multi-way synteny track](/docs/user_guides/multiway_synteny_track) draws it in
-a single linear view: a lane per fly, each in its own coordinates, with the
-lane's header naming the chromosome that fly keeps these orthologs on.
+[multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+draws it in a single linear view: a lane per fly, each in its own coordinates,
+with the lane's header naming the chromosome that fly keeps these orthologs on.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
 {
@@ -251,10 +294,10 @@ the row draws the share that fell on those.
 ### One locus, five lanes, five scales
 
 The same table in a
-[multi-way synteny track](/docs/user_guides/multiway_synteny_track) makes the
-size difference per-gene rather than per-genome. Each lane is fitted to the
-orthologs of the window in that genome's own coordinates and then says what
-scale that took.
+[multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+makes the size difference per-gene rather than per-genome. Each lane is fitted
+to the orthologs of the window in that genome's own coordinates and then says
+what scale that took.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_solanaceae/config.json
 {
@@ -311,6 +354,56 @@ stack.
 The ribbon count is a conversion setting rather than a property of the genomes,
 and [what to do with a duplicated gene](#what-to-do-with-a-duplicated-gene) is
 where the build picks it.
+
+### One rice window, one lane per grass
+
+The stack above says maize has the duplication. To see one window of it, read
+the same table as a
+[multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates):
+a lane per grass, under rice's own gene track.
+
+```json session config=https://jbrowse.org/demos/orthofinder_grasses/config.json
+{
+  "defaultSession": {
+    "name": "Grasses multi-way synteny track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "rice",
+          "loc": "3:31,590,000-31,775,000",
+          "tracks": [
+            {
+              "trackId": "rice_genes",
+              "type": "LinearBasicDisplay",
+              "showOnlyGenes": true,
+              "displayMode": "compact"
+            },
+            {
+              "trackId": "grasses_orthogroups",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": ["sorghum", "brachypodium", "setaria", "maize"],
+              "height": 320
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+A lane carries one refName, so the maize lane fits itself to one of the two
+copies the duplication left rather than showing both.
+
+<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows the better-kept of maize's two duplicated copies." src="/img/multiway_synteny/grasses_rice_lanes.png" />
+
+Reading both maize copies at once needs a row you can drive, which is the
+stacked view again. **Launch stacked synteny view (visible region)** in the lane
+track's menu opens the launch dialog cut from this track over the visible
+window, offering a full row per grass.
+
+<Video src="/media/synteny/multiway_launch_stack.mp4" caption="The handoff from the grasses lane track: the track menu's launch entry, the dialog printing where each grass's row would open and offering a checkbox per row, and Replace current view swapping the lane view for the stack." />
 
 ## Producing the blocks table
 

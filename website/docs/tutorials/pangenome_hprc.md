@@ -1111,10 +1111,10 @@ files.
 The alignment above is anchored: each haplotype is drawn on GRCh38's axis, which
 is what makes hundreds of rows comparable at all, and what leaves each
 assembly's own coordinates out of the picture. A
-[multi-way synteny track](/docs/user_guides/multiway_synteny_track) is the other
-reading. One lane per haplotype, each in that assembly's own contig coordinates
-and carrying that assembly's own CAT gene models, with ribbons connecting a gene
-to its copy in the lane below.
+[multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+is the other reading. One lane per haplotype, each in that assembly's own contig
+coordinates and carrying that assembly's own CAT gene models, with ribbons
+connecting a gene to its copy in the lane below.
 
 No aligner is in the loop. CAT projects the GENCODE gene set onto every release
 2 assembly, so a gene keeps its name on every haplotype, and joining the
@@ -1148,6 +1148,24 @@ That last check is the one that costs: a CAT annotation is ~110 MB, whole
 genome, and ships no index, so the shortlist is fetched concurrently
 (`CAT_JOBS`, 6 by default) and each slice is kept, which is what makes a re-run
 that only wants the table cheap.
+
+Each kept haplotype's slice then reduces to one plain BED of its gene rows,
+keyed on the CAT `Name` that every assembly shares:
+
+<!-- from: scripts/build_hprc_cfhr_synteny.sh -->
+
+```bash
+# one plain BED per genome, from the gene rows of its own annotation
+gzip -dc hprc_cfhr_HG00099.1.genes.gff3.gz \
+  | awk -F'\t' -v OFS='\t' '$3=="gene" {
+      match($9, /Name=[^;]*/)
+      print $1, $4 - 1, $5, substr($9, RSTART+5, RLENGTH-5), 0, $7
+    }' > hprc_cfhr_HG00099.1.bed
+```
+
+Joining those BEDs on that fourth column gives the table the track loads: one
+row per GRCh38 gene in the window, one column per haplotype, `.` where an
+annotation has no copy.
 
 ### Reading it
 
@@ -1195,8 +1213,10 @@ lane per haplotype:
 ```
 
 `rowOrder` puts every non-carrier above every carrier, and that ordering is what
-makes the deletion readable: a ribbon connects **adjacent** lanes only, so a
-chain can only run as far as the first lane missing the gene.
+makes the deletion readable. A ribbon joins adjacent lanes and bridges past one
+that places nothing for the group, down to the next lane that does, so a chain
+stops only where no lane below it kept the gene. With every carrier at the
+bottom, that is the first carrier lane.
 
 <Figure caption="The CFH cluster on chr1 as one multi-way synteny track: hg38 genes over a lane per HPRC haplotype, each on its own contig and carrying its own CAT gene models. The CFHR3 and CFHR1 chains run through the non-carrier lanes and stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/pangenome/hprc_cfhr_lane_stack.png" />
 
@@ -1205,6 +1225,11 @@ the headers say, and the flanking genes still line up down the stack because a
 lane is fitted to the orthologs rather than projected onto GRCh38. The two
 chains that stop are _CFHR3_ and _CFHR1_: the carriers' own annotations have
 neither gene, so there is nothing in those lanes for a ribbon to reach.
+
+The same eight lanes over 500 kb bring in more flanking genes, which are the
+control on that reading.
+
+<Figure caption="The complement factor H cluster on chr1 over 500 kb: hg38 genes over a lane per HPRC haplotype, the ones homozygous reference at the CFHR3/CFHR1 site above the ones homozygous for the deletion, each carrying its own CAT gene models on its own contig. The CFHR3 and CFHR1 chains stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/multiway_synteny/hprc_cfhr_lanes.png" />
 
 ## Comparing the graph with the callset
 

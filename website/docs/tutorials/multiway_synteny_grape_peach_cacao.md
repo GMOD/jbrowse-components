@@ -9,7 +9,9 @@ data: pipeline
 
 **TL;DR:** jcvi's MCScan lines up orthologous genes across more than two genomes
 at once, into one wide table with a column per species. We load that table
-directly and draw grape, peach and cacao as rows of a single synteny view.
+directly, draw grape, peach and cacao as rows of a single synteny view, and then
+read one grape locus across all seven plant genomes without leaving grape's own
+view.
 
 ## Prerequisites
 
@@ -465,23 +467,139 @@ and turn on each genome's gene track with **Show only genes**.
 
 <Figure caption="Gene-level view of the same block: ten consecutive orthologs run in the same order across grape, peach, and cacao, so each synteny ribbon links one gene to its ortholog in the row above and below." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
-## Restacking around a locus
+## One locus against all seven genomes
 
-The stack is fixed at load time. To reorder it, drag-select a locus in the scale
-bar of a view that has the track open and pick **Launch → Linear synteny view**.
-The launch offers the synteny the launching view is drawing, and this track
-declares all three genomes, so the dialog opens a row per genome with arrows to
-order them: moving grape between peach and cacao is the reference-in-the-middle
-arrangement from [Direct vs transitive pairs](#direct-vs-transitive-pairs),
-where both bands are direct.
+The stacked view draws three rows because only grape, peach and cacao were set
+up as assemblies, and `grape.blocks` carries seven columns. The other four are
+reachable from a plain linear genome view on grape, where the same track draws
+every mate at once:
 
-<Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus, from the lane reading below: a scale-bar selection raises Launch, the dialog lists a panel per genome and names the mates it can draw a lane for but not a panel, and one arrow moves the reference into the middle of the launched stack." />
-
-The same track in a plain linear genome view (as an `LGVSyntenyDisplay`) draws
-every pair at once, and **Group by... → Mate assembly** splits them into a lane
-per genome. Adding a genome adds a lane.
+- Navigate to `11:778,000-866,000` and turn on the grape gene track.
+- Turn on the ortholog track **Grape vs peach, cacao, arabidopsis, poplar,
+  tomato, citrus (MCScan blocks)**, which in a plain view renders as an
+  `LGVSyntenyDisplay`: every mate in one pileup.
+- Pick **Group by... → Mate assembly** to split that pileup into a lane per
+  genome. Adding a column to the table adds a lane.
 
 <Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, arabidopsis a scattered few, and tomato, the one asterid, a single gene." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+
+## Each genome in its own coordinates
+
+Every lane above is drawn on grape's axis, so it reads as presence and absence
+down a column and nothing else: it cannot say where in peach's own genome those
+genes sit, or how much peach DNA they take. **Display types → Multi-way synteny
+display** on the same track redraws the lanes in each genome's own coordinates:
+
+- **Each lane is fitted to its own genome**, spanning the orthologs the visible
+  window brings in, so a local expansion takes more of its own lane.
+- **One grey ribbon per ortholog group**, joining adjacent lanes and bridging
+  past a lane that places nothing for the group, down to the next that does.
+- **Any track whose features carry a `mate` per other assembly** feeds the same
+  lanes, so an
+  [OrthoFinder orthogroup table](/docs/tutorials/orthofinder_synteny) or an
+  [all-vs-all PAF](/docs/tutorials/allvsall_synteny) draws them too.
+
+The same thing as a `defaultSession`, which the live link below opens directly:
+
+```json session config=https://jbrowse.org/demos/grape_peach_cacao/config.json
+{
+  "defaultSession": {
+    "name": "Grape multi-way synteny track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "grape",
+          "loc": "11:778,000-866,000",
+          "tracks": [
+            {
+              "trackId": "grape_genes",
+              "type": "LinearBasicDisplay",
+              "showOnlyGenes": true,
+              "displayMode": "compact"
+            },
+            {
+              "trackId": "grape_peach_cacao_blocks",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": [
+                "peach",
+                "cacao",
+                "poplar",
+                "citrus",
+                "arabidopsis",
+                "tomato"
+              ],
+              "height": 340
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes carry their own gene models from those genomes' gene tracks, the lanes without one carry the table's gene spans as boxes, and a ribbon chain stops at the first lane missing the ortholog." src="/img/multiway_synteny/lgv_track_lanes.png" />
+
+### What a lane header says
+
+Each lane has its own scale, so each lane states it:
+
+- **Left**: where the lane starts, with `[rev]` where its gene order runs
+  against grape's.
+- **Right**: the lane's span, and the multiple of grape's span where that is not
+  one. A span snaps to a short ladder of those multiples, so a pan that leaves a
+  lane on its rung leaves the lane's content where it was.
+- **Ticks** fall at one interval shared by every mate lane, so two lanes at the
+  same spacing are at the same bp-per-pixel. A lane zoomed far enough out that
+  its ticks would read as hatching draws none, and its multiple is the scale
+  statement instead.
+- **The view's own gridlines stop at the grape lane**, the only lane they are
+  true for.
+- **A lane with no GFF3 track for its assembly** outlines the table's gene spans
+  and says `no annotation`. Only grape, peach and cacao were loaded as
+  assemblies here, so the four `BLOCKS_ONLY_SPECIES` lanes are boxes.
+
+### Ordering the lanes
+
+- `rowOrder` pins the lanes it names to the top; the rest follow densest-first
+  over the whole fetched table, so the order holds still across a pan.
+- Densest-first is a guard rather than a requirement, since a ribbon bridges
+  past a lane that places nothing. Turn **Bridge lanes that place nothing** off
+  and a sparse lane mid-stack cuts every chain running through it, which is what
+  the ordering protects.
+
+### Zooming to genes
+
+Cut the window to a few genes and each ribbon connects one gene to one ortholog:
+
+- A copy-number difference fans one gene into several.
+- A lone ortholog draws at gene size, centered in its lane, since the shortest
+  rung on the ladder of lane spans is grape's own.
+- Hovering a ribbon names its ortholog group and highlights it down every lane
+  that kept the gene; clicking a glyph opens the feature detail panel.
+
+<Figure caption="The same lanes cut to a few genes, close enough to read exon structure in the annotated lanes. Each ribbon links one gene to its ortholog in the lane below, and the lanes that kept a single gene here show it at the anchor's scale." src="/img/multiway_synteny/lgv_track_zoom.png" />
+
+<Video src="/media/synteny/multiway_zoom_out.mp4" caption="The grape lanes from gene scale back out to the block: a hovered ribbon reads one ortholog group down the stack, and each zoom-out re-fits every lane's own frame to the anchor's widening window." />
+
+## Restacking around a locus
+
+A lane you want to drive around on its own is the stacked view's job again, and
+two routes reach it from the reading above:
+
+- **From the lane track**, choose **Launch stacked synteny view (visible
+  region)** in its track menu. The dialog opens cut from this track's dataset
+  over the visible window, offering a full row to every genome aligning there.
+- **From the scale bar**, drag-select a locus in any view that has the track
+  open and pick **Launch → Linear synteny view**. The launch offers the synteny
+  the launching view is drawing, and this track declares all three assemblies,
+  so the dialog opens a row per genome with arrows to order them: moving grape
+  between peach and cacao is the reference-in-the-middle arrangement from
+  [Direct vs transitive pairs](#direct-vs-transitive-pairs), where both bands
+  are direct.
+
+<Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus, from the lane reading above: a scale-bar selection raises Launch, the dialog lists a panel per genome and names the mates it can draw a lane for but not a panel, and one arrow moves the reference into the middle of the launched stack." />
 
 ## Reproduce it end to end
 
@@ -504,9 +622,11 @@ It needs everything under [Prerequisites](#prerequisites) on your `PATH`.
 ## See also
 
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/orthofinder_synteny)
 - [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/config_guides/synteny_track)
 - [](/docs/config/mcscanblocksadapter)
+- [](/docs/config/multiwaysyntenydisplay)
