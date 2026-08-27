@@ -136,7 +136,27 @@ describe('convertTrackConfig', () => {
       dataRoot,
     )
     expect(result.type).toBe('QuantitativeTrack')
-    expect(result.defaultRendering).toBe('xyplot')
+    // on the display, not the track — a track-level slot is ignored
+    expect(result.displays).toEqual([
+      {
+        type: 'LinearWiggleDisplay',
+        displayId: `${result.trackId}-LinearWiggleDisplay`,
+        defaultRendering: 'xyplot',
+      },
+    ])
+  })
+
+  it('converts BigWig Density track', () => {
+    const result = convertTrackConfig(
+      track({
+        label: 'my_bw',
+        urlTemplate: 'signal.bw',
+        type: 'JBrowse/View/Track/Wiggle/Density',
+        storeClass: 'JBrowse/Store/SeqFeature/BigWig',
+      }),
+      dataRoot,
+    )
+    expect(result.displays?.[0]?.defaultRendering).toBe('density')
   })
 
   it('returns unsupported conf for VCFTribble', () => {

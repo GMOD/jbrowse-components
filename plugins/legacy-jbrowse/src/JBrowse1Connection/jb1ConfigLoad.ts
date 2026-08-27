@@ -1,338 +1,96 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { parseJB1Conf, parseJB1Json, regularizeConf } from './jb1ConfigParse.ts'
-import { deepUpdate, fillTemplate } from './util.ts'
+import { parseJb1 } from './jb1ConfigParse.ts'
+import { fillTemplate, isTrack } from './util.ts'
 
-import type {
-  Config,
-  Include,
-  LocalPathLocation,
-  Track,
-  UriLocation,
-} from './types.ts'
+import type { Config, ProtoTrack, Track } from './types.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-// `dataRoot`/`baseConfigRoot` arrive from a `fileLocation` config slot, i.e. the
-// core `FileLocation` union — wider than JB1's own Uri/LocalPath pair. These
-// guards only read `.uri`/`.localPath`, so they accept the wider input and
-// narrow to the JB1-local shapes this loader constructs and passes on.
-function isUriLocation(location: FileLocation): location is UriLocation {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return (location as UriLocation).uri !== undefined
+// JBrowse 1 kept a data directory's track list in either or both of these, so
+// a missing one is normal rather than an error
+const TRACK_LISTS = ['trackList.json', 'tracks.conf']
+
+/**
+ * Read the track list out of a JBrowse 1 data directory. Only the tracks and
+ * the data root survive: the rest of a JBrowse 1 config — display defaults,
+ * `refSeqs`, `nameUrl`, the synthesized `stores` — describes the JBrowse 1
+ * browser, which is not the thing being configured here.
+ */
+export async function fetchJb1(dataDir: FileLocation): Promise<Config> {
+  const dataRoot = locationPath(dataDir).replace(/\/$/, '')
+  const tracks: Track[] = []
+  const seen = new Set<string>()
+
+  async function read(path: string) {
+    if (seen.has(path)) {
+      return
+    }
+    seen.add(path)
+    const config = await readConfig(dataDir, path)
+    if (!config) {
+      return
+    }
+    tracks.push(...regularizeTracks(config.tracks, { dataRoot }))
+    const dir = path.replace(/\/[^/]*$/, '')
+    for (const include of [config.include ?? []].flat()) {
+      await read(/^\w[\w+.-]*:/.test(include) ? include : `${dir}/${include}`)
+    }
+  }
+
+  for (const name of TRACK_LISTS) {
+    await read(`${dataRoot}/${name}`)
+  }
+
+  return { dataRoot, tracks }
 }
 
-function isLocalPathLocation(
-  location: FileLocation,
-): location is LocalPathLocation {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return (location as LocalPathLocation).localPath !== undefined
-}
-
-export async function fetchJb1(
-  dataRoot: FileLocation = { uri: '', locationType: 'UriLocation' },
-  baseConfig: Config = {
-    include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
-  },
-  baseConfigRoot: FileLocation = { uri: '', locationType: 'UriLocation' },
-): Promise<Config> {
-  let dataRootLocation = isUriLocation(dataRoot)
-    ? dataRoot.uri
-    : isLocalPathLocation(dataRoot)
-      ? dataRoot.localPath
+function locationPath(location: FileLocation) {
+  return 'uri' in location
+    ? location.uri
+    : 'localPath' in location
+      ? location.localPath
       : ''
-  if (dataRootLocation.endsWith('/')) {
-    dataRootLocation = dataRootLocation.slice(0, -1)
-  }
-
-  let baseConfigLocation = isUriLocation(baseConfigRoot)
-    ? baseConfigRoot.uri
-    : isLocalPathLocation(baseConfigRoot)
-      ? baseConfigRoot.localPath
-      : ''
-  if (baseConfigLocation.endsWith('/')) {
-    baseConfigLocation = baseConfigLocation.slice(0, -1)
-  }
-
-  if (baseConfigLocation) {
-    let newConfig: Config = {}
-    for (const conf of ['jbrowse.conf', 'jbrowse_conf.json']) {
-      let fetchedConfig = null
-      try {
-        fetchedConfig = await fetchConfigFile(
-          isUriLocation(baseConfigRoot)
-            ? {
-                uri: `${baseConfigLocation}/${conf}`,
-                locationType: 'UriLocation',
-              }
-            : {
-                localPath: `${baseConfigLocation}/${conf}`,
-                locationType: 'LocalPathLocation',
-              },
-        )
-      } catch (error) {
-        console.error(
-          `tried to access ${baseConfigLocation}/${conf}, but failed`,
-        )
-      }
-      newConfig = mergeConfigs(newConfig, fetchedConfig) ?? newConfig
-    }
-    if (dataRootLocation) {
-      newConfig.dataRoot = dataRootLocation
-    }
-    return createFinalConfig(newConfig)
-  }
-  const newConfig = regularizeConf(baseConfig, window.location.href)
-  if (dataRootLocation) {
-    newConfig.dataRoot = dataRootLocation
-  }
-  return createFinalConfig(newConfig)
 }
 
-async function createFinalConfig(
-  baseConfig: Config,
-  defaults = configDefaults,
-): Promise<Config> {
-  const configWithDefaults = deepUpdate(structuredClone(defaults), baseConfig)
-  let finalConfig = await loadIncludes(configWithDefaults)
-  finalConfig = mergeConfigs(finalConfig, baseConfig) ?? finalConfig
-  fillTemplates(finalConfig, finalConfig)
-  validateConfig(finalConfig)
-  return finalConfig
-}
-
-async function fetchConfigFile(location: FileLocation): Promise<Config> {
-  const result = await openLocation(location).readFile('utf8')
-  if (isUriLocation(location)) {
-    return parseJb1(result, location.uri)
+async function readConfig(dataDir: FileLocation, path: string) {
+  const location: FileLocation =
+    'localPath' in dataDir
+      ? { localPath: path, locationType: 'LocalPathLocation' }
+      : { uri: path, locationType: 'UriLocation' }
+  let text: string
+  try {
+    text = await openLocation(location).readFile('utf8')
+  } catch {
+    return undefined
   }
-  if (isLocalPathLocation(location)) {
-    return parseJb1(result, location.localPath)
-  }
-  return parseJb1(result)
-}
-
-function parseJb1(config: string, url = ''): Config {
-  if (config.trimStart().startsWith('{')) {
-    return parseJB1Json(config, url)
-  }
-  return parseJB1Conf(config, url)
+  return parseJb1(text, path)
 }
 
 /**
- * Merges config object b into a. Properties in b override those in a.
+ * JBrowse 1 accepted `tracks` as an array, as a single track, or as an object
+ * keyed by label; let a track hold its settings in a `config` subobject; and
+ * let any string value interpolate `{dataRoot}`.
  */
-function mergeConfigs(a: Config | null, b: Config | null): Config | null {
-  if (b === null) {
-    return null
-  }
+function regularizeTracks(
+  tracks: Config['tracks'],
+  fillWith: { dataRoot: string },
+): Track[] {
+  const list = Array.isArray(tracks)
+    ? tracks
+    : !tracks
+      ? []
+      : isTrack(tracks)
+        ? [tracks]
+        : Object.entries(tracks).map(([label, track]) => ({ label, ...track }))
 
-  a ??= {}
-
-  for (const prop of Object.keys(b)) {
-    if (prop === 'tracks' && prop in a) {
-      const aTracks = a[prop] ?? []
-      const bTracks = b[prop] ?? []
-
-      if (Array.isArray(aTracks) && Array.isArray(bTracks)) {
-        a[prop] = mergeTrackConfigs(aTracks, bTracks)
-      } else {
-        throw new Error(
-          `Track config has not been properly regularized: ${aTracks} ${bTracks}`,
-        )
-      }
-    } else if (
-      !noRecursiveMerge(prop) &&
-      prop in a &&
-      typeof b[prop] === 'object' &&
-      typeof a[prop] === 'object'
-    ) {
-      a[prop] = deepUpdate(
-        a[prop] as Record<string, unknown>,
-        b[prop] as Record<string, unknown>,
-      )
-    } else if (prop === 'dataRoot') {
-      if (
-        a[prop] === undefined ||
-        (a[prop] === 'data' && b[prop] !== undefined)
-      ) {
-        a[prop] = b[prop]
-      }
-    } else if (a[prop] === undefined || b[prop] !== undefined) {
-      a[prop] = b[prop]
-    }
-  }
-  return a
-}
-
-/**
- * Special-case merging of two `tracks` configuration arrays.
- */
-function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
-  if (!b.length) {
-    return a
-  }
-
-  // index the tracks in `a` by track label
-  const aTracks: Record<string, Track> = {}
-  for (const [i, t] of a.entries()) {
-    t.index = i
-    aTracks[t.label] = t
-  }
-
-  for (const bT of b) {
-    const aT = aTracks[bT.label]
-    if (aT) {
-      mergeConfigs(aT, bT)
-    } else {
-      a.push(bT)
-    }
-  }
-
-  return a
-}
-
-/**
- * Recursively fetch, parse, and merge all the includes in the given config
- * object.  Calls the callback with the resulting configuration when finished.
- * @param inputConfig - Config to load includes into
- */
-async function loadIncludes(inputConfig: Config): Promise<Config> {
-  inputConfig = structuredClone(inputConfig)
-
-  async function loadRecur(
-    config: Config,
-    upstreamConf: Config,
-  ): Promise<Config> {
-    const sourceUrl = config.sourceUrl || config.baseUrl
-    if (!sourceUrl) {
-      throw new Error(
-        `Could not determine source URL: ${JSON.stringify(config)}`,
-      )
-    }
-    const newUpstreamConf = mergeConfigs(structuredClone(upstreamConf), config)
-    if (!newUpstreamConf) {
-      throw new Error('Problem merging configs')
-    }
-    const includes = fillTemplates(
-      regularizeIncludes(config.include ?? []),
-      newUpstreamConf,
+  return (list as Track[]).map(track => {
+    const { config, ...rest } = track as ProtoTrack
+    const flat = { ...config, ...rest }
+    return Object.fromEntries(
+      Object.entries(flat).map(([key, value]) => [
+        key,
+        typeof value === 'string' ? fillTemplate(value, fillWith) : value,
+      ]),
     )
-    config.include = undefined
-
-    const loads = includes.map(async (include): Promise<Config> => {
-      include.cacheBuster = inputConfig.cacheBuster
-      const includedData = await fetchConfigFile({
-        uri: new URL(include.url, sourceUrl).href,
-        locationType: 'UriLocation',
-      })
-      return loadRecur(includedData, newUpstreamConf)
-    })
-    const includedDataObjects = await Promise.all(loads)
-    for (const includedData of includedDataObjects) {
-      config = mergeConfigs(config, includedData) ?? config
-    }
-    return config
-  }
-
-  return loadRecur(inputConfig, {})
-}
-
-function regularizeIncludes(
-  includes: Include | string | (Include | string)[] | null,
-): Include[] {
-  if (!includes) {
-    return []
-  }
-
-  // coerce include to an array
-  if (!Array.isArray(includes)) {
-    includes = [includes]
-  }
-
-  return includes.map((include): Include => {
-    // coerce bare strings in the includes to URLs
-    if (typeof include === 'string') {
-      include = { url: include }
-    }
-
-    // set defaults for format and version
-    if (!('format' in include)) {
-      include.format = include.url.endsWith('.conf') ? 'conf' : 'JB_json'
-    }
-    if (include.format === 'JB_json' && !('version' in include)) {
-      include.version = 1
-    }
-    return include
-  })
-}
-
-function fillTemplates<T>(subconfig: T, config: Config): T {
-  if (!subconfig) {
-    return subconfig
-  }
-  if (Array.isArray(subconfig)) {
-    for (let i = 0; i < subconfig.length; i += 1) {
-      subconfig[i] = fillTemplates(subconfig[i], config)
-    }
-  } else if (typeof subconfig === 'object') {
-    const sub = subconfig as Record<string, any>
-    for (const name of Object.keys(sub)) {
-      sub[name] = fillTemplates(sub[name], config)
-    }
-  } else if (typeof subconfig === 'string') {
-    return fillTemplate(subconfig, config) as T
-  }
-
-  return subconfig
-}
-
-/**
- * list of config properties that should not be recursively merged
- * @param propName - name of config property
- */
-function noRecursiveMerge(propName: string): boolean {
-  return propName === 'datasets'
-}
-
-const configDefaults = {
-  tracks: [],
-
-  containerID: 'GenomeBrowser',
-  dataRoot: 'data',
-  show_tracklist: true,
-  show_nav: true,
-  show_menu: true,
-  show_overview: true,
-  show_fullviewlink: true,
-  update_browser_title: true,
-  updateBrowserURL: true,
-
-  refSeqs: '{dataRoot}/seq/refSeqs.json',
-  include: ['jbrowse.conf', 'jbrowse_conf.json'],
-  nameUrl: '{dataRoot}/names/root.json',
-
-  datasets: {
-    _DEFAULT_EXAMPLES: true,
-    volvox: { url: '?data=sample_data/json/volvox', name: 'Volvox Example' },
-    modencode: {
-      url: '?data=sample_data/json/modencode',
-      name: 'MODEncode Example',
-    },
-    yeast: { url: '?data=sample_data/json/yeast', name: 'Yeast Example' },
-  },
-
-  highlightSearchedRegions: false,
-  highResolutionMode: 'auto',
-}
-
-/**
- * Examine the loaded and merged configuration for errors.  Throws
- * exceptions if it finds anything amiss.
- * @returns nothing meaningful
- */
-function validateConfig(config: Config): void {
-  config.tracks ??= []
-  if (!config.baseUrl) {
-    throw new Error('Must provide a `baseUrl` in configuration')
-  }
+  }) as Track[]
 }

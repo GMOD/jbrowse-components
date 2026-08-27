@@ -4,7 +4,6 @@ import { getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './configSchema.ts'
-import { isTrack } from './util.ts'
 
 import type { Track } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -37,17 +36,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')
           }
-          const rawTracks = config.tracks
-          const jb1Tracks: Track[] = Array.isArray(rawTracks)
-            ? rawTracks
-            : rawTracks === undefined
-              ? []
-              : isTrack(rawTracks)
-                ? [rawTracks]
-                : Object.entries(rawTracks).map(([label, track]) =>
-                    isTrack(track) ? track : { label, ...track },
-                  )
-          const jb2Tracks = jb1Tracks.map(jb1Track => ({
+          const jb2Tracks = (config.tracks as Track[]).map(jb1Track => ({
             ...convertTrackConfig(jb1Track, config.dataRoot || ''),
             assemblyNames: [assemblyName],
           }))

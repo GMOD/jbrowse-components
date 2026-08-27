@@ -17,7 +17,7 @@ interface Jb2Track {
   category?: string[]
   adapter?: Jb2Adapter
   type?: string
-  defaultRendering?: string
+  displays?: { type: string; displayId: string; defaultRendering: string }[]
 }
 
 interface Jb2Adapter {
@@ -81,6 +81,27 @@ function resolveIndex(
       locationType: 'UriLocation',
     },
   }
+}
+
+/**
+ * `defaultRendering` is a slot on LinearWiggleDisplay, not on the track — a
+ * track-level one is a key JBrowse does not declare, and is ignored.
+ */
+function wiggleDisplays(jb1TrackConfig: Track, jb2TrackConfig: Jb2Track) {
+  const rendering = jb1TrackConfig.type?.endsWith('Density')
+    ? 'density'
+    : jb1TrackConfig.type?.endsWith('XYPlot')
+      ? 'xyplot'
+      : undefined
+  return rendering
+    ? [
+        {
+          type: 'LinearWiggleDisplay',
+          displayId: `${jb2TrackConfig.trackId}-LinearWiggleDisplay`,
+          defaultRendering: rendering,
+        },
+      ]
+    : undefined
 }
 
 export function convertTrackConfig(
@@ -176,11 +197,7 @@ export function convertTrackConfig(
       storeClass === 'JBrowse/Store/SeqFeature/BigWig' ||
       storeClass === 'JBrowse/Store/BigWig'
     ) {
-      if (jb1TrackConfig.type?.endsWith('XYPlot')) {
-        jb2TrackConfig.defaultRendering = 'xyplot'
-      } else if (jb1TrackConfig.type?.endsWith('Density')) {
-        jb2TrackConfig.defaultRendering = 'density'
-      }
+      jb2TrackConfig.displays = wiggleDisplays(jb1TrackConfig, jb2TrackConfig)
       return {
         ...jb2TrackConfig,
         type: 'QuantitativeTrack',
@@ -385,11 +402,7 @@ export function convertTrackConfig(
   jb2TrackConfig.type = guessTrackType(jb2TrackConfig.adapter.type)
 
   if (jb2TrackConfig.type === 'QuantitativeTrack') {
-    if (jb1TrackConfig.type?.endsWith('XYPlot')) {
-      jb2TrackConfig.defaultRendering = 'xyplot'
-    } else if (jb1TrackConfig.type?.endsWith('Density')) {
-      jb2TrackConfig.defaultRendering = 'density'
-    }
+    jb2TrackConfig.displays = wiggleDisplays(jb1TrackConfig, jb2TrackConfig)
   }
 
   return jb2TrackConfig
