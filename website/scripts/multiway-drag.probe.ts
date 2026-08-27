@@ -543,7 +543,7 @@ async function laneMotion(page: Page, x0: number, y: number) {
     let contigs = 0
     let empties = 0
     const rungs: string[] = []
-    let prev: LaneSample | null = last.lanes[name]
+    let prev: LaneSample | null = last.lanes[name] ?? null
     let prevBpPerPx = last.bpPerPx
     for (const z of [...zoomTrace.map(z => z.s), afterZoom]) {
       const cur = z.lanes[name]
@@ -565,7 +565,7 @@ async function laneMotion(page: Page, x0: number, y: number) {
           contigs++
         }
       }
-      prev = cur
+      prev = cur ?? null
       prevBpPerPx = z.bpPerPx
     }
     console.log(
@@ -591,7 +591,7 @@ const browser = await launch({
 try {
   const page = await browser.newPage()
   page.on('pageerror', e => {
-    console.error('pageerror', e.message)
+    console.error('pageerror', e instanceof Error ? e.message : e)
   })
   if (process.env.CONTROL) {
     await runArm(page, 'control: LGV + grape gene track only', false)
