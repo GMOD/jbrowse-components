@@ -91,7 +91,7 @@ function traceMapFor(url: string) {
   if (map === undefined) {
     map = null
     if (url.startsWith(origin)) {
-      const file = path.join(buildPath, new URL(url).pathname) + '.map'
+      const file = `${path.join(buildPath, new URL(url).pathname)}.map`
       if (fs.existsSync(file)) {
         map = new TraceMap(fs.readFileSync(file, 'utf8'))
       }
@@ -188,10 +188,10 @@ function stats(xs: number[]) {
 }
 
 async function runArm(page: Page, label: string, withMultiway: boolean) {
-  const url =
-    origin +
-    '/' +
-    sessionSpecQuery({ config: CONFIG, session: session(withMultiway) })
+  const url = `${origin}/${sessionSpecQuery({
+    config: CONFIG,
+    session: session(withMultiway),
+  })}`
   await page.goto(url, { waitUntil: 'domcontentloaded' })
   await waitForJBrowseReady(page, {
     assembly: 'grape',
@@ -472,16 +472,21 @@ async function laneMotion(page: Page, x0: number, y: number) {
     if (!a || !b) {
       notes.push(`${a ? 'lane' : 'empty'} -> ${b ? 'lane' : 'empty'}`)
     } else {
-      if (a.refName !== b.refName)
+      if (a.refName !== b.refName) {
         notes.push(`contig ${a.refName} -> ${b.refName}`)
-      if (a.flipped !== b.flipped) notes.push(`MIRRORED`)
+      }
+      if (a.flipped !== b.flipped) {
+        notes.push(`MIRRORED`)
+      }
       const ra = (a.max - a.min) / (last.bpPerPx * width)
       const rb = (b.max - b.min) / (final.bpPerPx * width)
-      if (Math.abs(ra - rb) > 0.01)
+      if (Math.abs(ra - rb) > 0.01) {
         notes.push(`rung ${ra.toFixed(1)}x -> ${rb.toFixed(1)}x`)
+      }
       const shift = laneShiftPx(last, final, name, width)
-      if (shift !== undefined && Math.abs(shift) >= 1)
+      if (shift !== undefined && Math.abs(shift) >= 1) {
         notes.push(`slid ${shift.toFixed(0)}px`)
+      }
     }
     console.log(
       `${name.padEnd(12)} ${notes.length ? notes.join(', ') : 'held still'}`,
@@ -543,14 +548,22 @@ async function laneMotion(page: Page, x0: number, y: number) {
     for (const z of [...zoomTrace.map(z => z.s), afterZoom]) {
       const cur = z.lanes[name]
       if (!cur || !prev) {
-        if (!cur) empties++
+        if (!cur) {
+          empties++
+        }
       } else {
         const ra = (prev.max - prev.min) / (prevBpPerPx * width)
         const rb = (cur.max - cur.min) / (z.bpPerPx * width)
-        if (Math.abs(ra - rb) > 0.01) rungChanges++
+        if (Math.abs(ra - rb) > 0.01) {
+          rungChanges++
+        }
         rungs.push(rb.toFixed(1))
-        if (cur.flipped !== prev.flipped) flips++
-        if (cur.refName !== prev.refName) contigs++
+        if (cur.flipped !== prev.flipped) {
+          flips++
+        }
+        if (cur.refName !== prev.refName) {
+          contigs++
+        }
       }
       prev = cur
       prevBpPerPx = z.bpPerPx

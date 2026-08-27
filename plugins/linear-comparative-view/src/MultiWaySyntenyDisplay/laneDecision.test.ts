@@ -150,11 +150,11 @@ describe('the ladder rung', () => {
     expect(pickRung(1.6, 1.5)).toBe(2)
   })
   test('holds a rung the fit still nearly fills', () => {
-    expect(pickRung(1.0, 1.5)).toBe(1.5)
+    expect(pickRung(1, 1.5)).toBe(1.5)
     expect(pickRung(1.4, 2)).toBe(2)
   })
   test('drops only once a lower rung has clear room', () => {
-    expect(pickRung(1.0, 2)).toBe(1)
+    expect(pickRung(1, 2)).toBe(1)
     expect(pickRung(1.3, 3)).toBe(1.5)
   })
 })
