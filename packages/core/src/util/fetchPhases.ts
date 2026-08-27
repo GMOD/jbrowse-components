@@ -38,7 +38,7 @@ export interface FetchPhases<TArgs, TResult, TCtx> {
    *
    * **Comparing that key against what is already committed does not belong
    * here.** This gate is "is there anything to fetch", which a retry must not
-   * override; "do I already have exactly this" is `installFetch`'s `dataCurrent`,
+   * override; "do I already have exactly this" is `installFetch`'s `fetchKey` gate,
    * which a retry must. Writing the second one into this one is how a display
    * gets a dead Retry button — see there.
    *

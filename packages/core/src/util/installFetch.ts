@@ -331,11 +331,12 @@ export function installFetch<TArgs, TResult>(
         noteFetchAutorunRun?.('declined')
         return false
       }
-      // The freshness gate, and the reload that overrides it. Stamped at ISSUE
-      // rather than at commit: a fetch that fails leaves nothing current, so
-      // this gate is open anyway on the next run and consuming the retry here
-      // costs nothing — while a reload landing mid-flight is answered by the
-      // re-run the counter read above already guarantees.
+      // The freshness gate, and the reload that overrides it. The epoch is
+      // stamped at ISSUE where the key is stamped at commit: a fetch that fails
+      // leaves nothing current, so this gate is open anyway on the next run and
+      // consuming the retry here costs nothing — while a reload landing
+      // mid-flight is answered by the re-run the counter read above already
+      // guarantees.
       if (
         fetchKey !== undefined &&
         isDataCurrent(heldKey(), fetchKey(args)) &&

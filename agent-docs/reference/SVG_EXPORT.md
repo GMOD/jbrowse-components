@@ -282,11 +282,12 @@ content hung the whole view's export and sat under a scrim that never lifted.
 <!-- BEGIN GENERATED FRESHNESS_SIGNATURE_CENSUS -->
 
 
-2 models across 2 packages answer `dataCurrent` by comparing the signature their data was loaded for against the one the live view calls for. A display joins by calling `isDataCurrent` and leaves by not calling it.
+3 models across 3 packages answer `dataCurrent` by comparing the signature their data was loaded for against the one the live view calls for. A display joins by calling `isDataCurrent` and leaves by not calling it.
 
 <!-- prettier-ignore -->
 | Model | Loaded signature | Live signature |
 | --- | --- | --- |
+| `packages/core/src/util/installFetch.ts` | `heldKey()` | `fetchKey(args)` |
 | `packages/display-kit/src/GlobalFetchMixin.ts` | `self.loadedFetchSignature` | `self.fetchSignature` |
 | `packages/synteny-core/src/comparativeFetchFlags.ts` | `self.loadedFetchKey` | `self.currentFetchKey` |
 <!-- END GENERATED FRESHNESS_SIGNATURE_CENSUS -->

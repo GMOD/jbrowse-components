@@ -41,9 +41,7 @@ the whole surface.
 | --- | --- | --- |
 | <span id="volatile-features">**features**</span><br><code>features: undefined as Feature[] &#124; undefined</code> |  | MultiWaySyntenyDisplay |
 | <span id="volatile-lanegenes">**laneGenes**</span><br><code>laneGenes: undefined as Map&lt;string, LaneGene[]&gt; &#124; undefined</code> | per-lane gene models fetched from each assembly's own gene track, so a lane draws real exon structure at that genome's coordinates | MultiWaySyntenyDisplay |
-| <span id="volatile-lanegeneskey">**laneGenesKey**</span><br><code>laneGenesKey: ''</code> |  | MultiWaySyntenyDisplay |
 | <span id="volatile-lanelinks">**laneLinks**</span><br><code>laneLinks: undefined as Map&lt;string, Feature[]&gt; &#124; undefined</code> | alignments between ADJACENT mate lanes, fetched per pair from the same track when the source is an all-vs-all alignment file — the direct records the file holds for that pair, at the lanes' own coordinates | MultiWaySyntenyDisplay |
-| <span id="volatile-lanelinkskey">**laneLinksKey**</span><br><code>laneLinksKey: ''</code> |  | MultiWaySyntenyDisplay |
 | <span id="volatile-hoveredgroupkey">**hoveredGroupKey**</span><br><code>hoveredGroupKey: undefined as string &#124; undefined</code> | the ortholog group under the pointer; every ribbon of that group highlights, so one hover reads the group across all lanes | MultiWaySyntenyDisplay |
 | <span id="volatile-hovertarget">**hoverTarget**</span><br><code>hoverTarget: undefined as HoverTarget &#124; undefined</code> | the glyph, box or ribbon under the pointer — what a click opens and the tooltip names | MultiWaySyntenyDisplay |
 | <span id="volatile-lanedecisions">**laneDecisions**</span><br><code>laneDecisions: new Map&lt;string, LaneDecision &#124; undefined&gt;()</code> | what the last settle decided per mate lane — contig, orientation, rung and where the lane is pinned to the anchor. Made once per settled block set by the installer in afterAttach, holding each choice until the evidence clearly moves; the frames the lanes draw in are derived from these against the live view | MultiWaySyntenyDisplay |
@@ -174,8 +172,8 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(f: Feature[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
-| <span id="action-setlanegenes">**setLaneGenes**</span><br><code>(key: string, genes: Map&lt;string, LaneGene[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
-| <span id="action-setlanelinks">**setLaneLinks**</span><br><code>(key: string, links: Map&lt;string, Feature[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setlanegenes">**setLaneGenes**</span><br><code>(genes: Map&lt;string, LaneGene[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setlanelinks">**setLaneLinks**</span><br><code>(links: Map&lt;string, Feature[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-sethoveredgroupkey">**setHoveredGroupKey**</span><br><code>(key: string &#124; undefined) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlaneframes">**setLaneFrames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefined&gt;) =&gt; void</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |
 | <span id="action-setroworder">**setRowOrder**</span><br><code>(order: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |

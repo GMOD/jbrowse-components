@@ -156,7 +156,7 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-20 registered displays declare 185 config slots, 41 MST properties and 60 volatiles between them — counting what each display's own directory declares.
+20 registered displays declare 185 config slots, 41 MST properties and 58 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
@@ -171,7 +171,7 @@ track-menu setting is a slot.
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
 | `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
 | `LinearWiggleDisplay` | `plugins/wiggle` | 6 | 2 | 0 |
-| `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 9 |
+| `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 7 |
 | `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 0 |
 | `MultiLinearWiggleDisplay` | `plugins/wiggle` | 5 | 0 | 0 |
 | `ChordVariantDisplay` | `plugins/circular-view` | 4 | 3 | 3 |
@@ -672,14 +672,21 @@ each carried their own copy of that override before the mixin owned it, and the
 copies were the reason the rule had to be remembered.
 
 **The shared skeleton owns the same pairing, for the fetches no check covers.**
-A gate on committed state goes in `installFetch`'s `dataCurrent`, not in
-`prepare`: the skeleton declines on it, and a run whose `reloadCounter` has
+A gate on committed state is `installFetch`'s `fetchKey`, not a compare in
+`prepare`: the skeleton stamps the key at commit and declines on it, and a run whose `reloadCounter` has
 advanced since the run that last *issued* a fetch ignores it, so a reload
 refetches with nothing to clear. The split matters because only one of the two
 declines can strand a display — `prepare` returning `undefined` is "nothing to
 fetch" (an empty viewport, no annotation track configured), a legitimate decline
-forever that no retry should change, while `dataCurrent` is "I have exactly
-this", which a retry must override. This exists because a **secondary** fetch
+forever that no retry should change, while the key gate is "I have exactly
+this", which a retry must override. The stamp is observable — the skeleton's
+own `observable.box`, or the host's `loadedFetchKey` where the comparative
+mixin already keeps one — because a commit landing after the inputs moved back
+is what has to wake the declined run; a closure variable leaves the late
+commit's data under the earlier viewport. The comparative wrapper folds the
+adapter config into the key, since neither display's `currentFetchKey`
+carries one and an adapter edit would otherwise wake the autorun into a
+decline. This exists because a **secondary** fetch
 passes no `contract` and so installs no `makeRetryContractCheck` (one ledger per
 node, one `lastCounter` per check — two would each demand a fetch from one
 bump), and the multi-way synteny display's two dependent fetches shipped the

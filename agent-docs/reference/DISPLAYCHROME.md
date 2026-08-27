@@ -376,7 +376,7 @@ button is present, looks live, and does nothing. Two shapes have failed it:
   unless the loaded signature is dropped too — which is why
   `GlobalFetchMixin.reload()` does both in one action rather than each display
   overriding it. The shared skeleton makes the same pairing for everything else:
-  a gate on committed state is declared as `installFetch`'s `dataCurrent`, and a
+  a gate on committed state is declared as `installFetch`'s `fetchKey`, and a
   run whose reload counter has advanced since the last issued fetch ignores it.
   **That is the one shape this check cannot report**, because a secondary fetch
   installs no check at all — it passes no `contract`, since the ledger is one per

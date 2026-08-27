@@ -1291,11 +1291,10 @@ only on a real violation):
   "nothing to fetch" with "not ready yet", so a Retry clicked before either view
   initializes reads as a decline. The exemption half already exists as
   `SyntenyFetchStateMixin.fetchInert`, and the seam for the other half exists
-  too — `installFetch`'s separate `dataCurrent` option, written for exactly this
+  too — `installFetch`'s separate `fetchKey` gate, written for exactly this
   split ("`prepare` returning `undefined` is *nothing to fetch* ... this is *I
-  have exactly this already*"), which `installComparativeFetchAutorun` does not
-  forward. The multi-way display's two lane fetches are the in-tree precedent
-  for using it. See [DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract"
+  have exactly this already*"), which `installComparativeFetchAutorun` forwards
+  against `loadedFetchKey`. See [DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract"
   for what each display bails on.
 
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
