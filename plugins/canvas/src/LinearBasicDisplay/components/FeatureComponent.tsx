@@ -357,6 +357,10 @@ const FeatureBody = observer(function FeatureBody({
       // The subfeature rides along so the menu can target the exact transcript
       // under the cursor, not just its gene.
       e.preventDefault()
+      // and a hover frame queued before the click is dropped, or it lands after
+      // openContextMenu's clearHover and rewrites the hover the menu was opened
+      // over — the same cancel the pileup takes on this gesture
+      hover.cancel()
       model.openContextMenu({
         item: result.feature,
         displayedRegionIndex: result.displayedRegionIndex,

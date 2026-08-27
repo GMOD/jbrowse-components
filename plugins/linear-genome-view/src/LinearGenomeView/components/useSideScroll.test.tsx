@@ -95,6 +95,48 @@ test('the container says while a pan runs, and whether the press travelled', () 
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
 })
 
+// ...and it is cleared by a press that starts NO pan, which is the half the
+// test above cannot see: the next press there is an ordinary left-click on the
+// canvas. A shift-press, a right-press and a press on a button all return early,
+// and each used to leave the marker from the pan before it standing.
+test.each([
+  ['a shift-press', { button: 0, shiftKey: true }],
+  ['a right-press', { button: 2 }],
+])('%s clears the marker the pan before it left', (_name, press) => {
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+  const canvas = getByTestId('canvas')
+  const container = canvas.parentElement!
+
+  dragFrom(canvas)
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
+
+  act(() => {
+    fireEvent.mouseDown(canvas, { clientX: 60, ...press })
+  })
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
+})
+
+test('a press on a button clears it too', () => {
+  const model = fakeView()
+  const { getByTestId } = render(
+    <Harness model={model}>
+      <button type="button" data-testid="chip-menu">
+        menu
+      </button>
+    </Harness>,
+  )
+  const container = getByTestId('canvas').parentElement!
+
+  dragFrom(getByTestId('canvas'))
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
+
+  act(() => {
+    fireEvent.mouseDown(getByTestId('chip-menu'), { button: 0, clientX: 60 })
+  })
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
+})
+
 // The legend's own marker, on the path where it is the only thing there is:
 // with no TrackOverlayContext, FloatingLegend renders inline rather than into
 // the overlay node, so it is not covered by the node's marker.

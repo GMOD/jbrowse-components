@@ -95,6 +95,14 @@ export function useSideScroll(model: LinearGenomeViewModel) {
   }, [model, mouseDragging])
 
   function mouseDown(event: React.MouseEvent) {
+    // Cleared for EVERY press, ahead of the returns below, because the marker
+    // outlives the gesture that set it: a pan, then a shift-press or a press on
+    // a button, used to leave `data-pan-moved` standing on the container. The
+    // one reader today re-enters through a press that reaches the bottom of
+    // this function, so nothing was wrong — but these attributes are a DOM
+    // contract other displays read with `closest`, and a stale true is what the
+    // next reader would inherit.
+    event.currentTarget.removeAttribute(PAN_MOVED_ATTR)
     if (event.shiftKey) {
       return
     }
@@ -116,7 +124,6 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     // otherwise do click and drag scroll
     if (event.button === 0) {
       hostRef.current = event.currentTarget
-      event.currentTarget.removeAttribute(PAN_MOVED_ATTR)
       event.currentTarget.setAttribute(PAN_DRAGGING_ATTR, '')
       startXRef.current = event.clientX
       prevXRef.current = event.clientX
