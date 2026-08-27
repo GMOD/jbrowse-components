@@ -40,7 +40,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="volatile-features">**features**</span><br><code>features: undefined as Feature[] &#124; undefined</code> |  | MultiWaySyntenyDisplay |
-| <span id="volatile-lanegenes">**laneGenes**</span><br><code>laneGenes: undefined as Map&lt;string, Feature[]&gt; &#124; undefined</code> | per-lane gene models fetched from each assembly's own gene track, so a lane draws real exon structure at that genome's coordinates | MultiWaySyntenyDisplay |
+| <span id="volatile-lanegenes">**laneGenes**</span><br><code>laneGenes: undefined as Map&lt;string, LaneGene[]&gt; &#124; undefined</code> | per-lane gene models fetched from each assembly's own gene track, so a lane draws real exon structure at that genome's coordinates | MultiWaySyntenyDisplay |
 | <span id="volatile-lanegeneskey">**laneGenesKey**</span><br><code>laneGenesKey: ''</code> |  | MultiWaySyntenyDisplay |
 | <span id="volatile-lanelinks">**laneLinks**</span><br><code>laneLinks: undefined as Map&lt;string, Feature[]&gt; &#124; undefined</code> | alignments between ADJACENT mate lanes, fetched per pair from the same track when the source is an all-vs-all alignment file — the direct records the file holds for that pair, at the lanes' own coordinates | MultiWaySyntenyDisplay |
 | <span id="volatile-lanelinkskey">**laneLinksKey**</span><br><code>laneLinksKey: ''</code> |  | MultiWaySyntenyDisplay |
@@ -99,9 +99,8 @@ the whole surface.
 | <span id="getter-lanestack">**laneStack**</span><br><code>LaneStack</code> | the stack the picture is drawn from: one `Lane` per assembly, plus the geometry every layer places against. Every layer — bands, ticks, ribbons, glyphs, boxes, headers, the hover outline — is a walk over this, and the on-screen body and the SVG export walk the same one | MultiWaySyntenyDisplay |
 | <span id="getter-palette">**palette**</span><br><code>JBrowsePalette</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-ribbongeometry">**ribbonGeometry**</span><br><code>RibbonGeometry</code> | the ribbons between each adjacent lane pair as the synteny passes' instance data, in the stack's own px, plus what each ribbon opens | MultiWaySyntenyDisplay |
-| <span id="getter-ribboncells">**ribbonCells**</span><br><code>Map&lt;string, MultiWayCell&gt;</code> |  | MultiWaySyntenyDisplay |
-| <span id="getter-tickgeometry">**tickGeometry**</span><br><code>TickGeometry &#124; { cells: Map&lt;any, any&gt;; layers: never[]; }</code> |  | MultiWaySyntenyDisplay |
-| <span id="getter-bandcell">**bandCell**</span><br><code>MultiWayCell</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-tickgeometry">**tickGeometry**</span><br><code>TickGeometry</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-bandcell">**bandCell**</span><br><code>MultiWayCell</code> | the opaque bands under the mate lanes, off the lane geometry rather than the stack: the stack moves on every pan and settle, the bands only when a lane comes or goes, and an unchanged cell uploads nothing | MultiWaySyntenyDisplay |
 | <span id="getter-laneglyphcells">**laneGlyphCells**</span><br><code>Map&lt;string, MultiWayCell&gt;</code> | one cell per lane: its gene models, its placement boxes and its baseline. The one place a jexl color slot is resolved per glyph, so the hover — a render parameter — never re-runs it | MultiWaySyntenyDisplay |
 | <span id="getter-rendercells">**renderCells**</span><br><code>ReadonlyMap&lt;string, MultiWayCell&gt;</code> | everything the backend holds bytes for, keyed so an unchanged cell keeps its identity across a rebuild of the map and uploads nothing | MultiWaySyntenyDisplay |
 | <span id="getter-renderlayers">**renderLayers**</span><br><code>MultiWayLayer[]</code> | the stack back to front: bands under everything, since they exist to cover the view's gridlines; ribbons; each lane's ticks; each lane's glyphs over its own ribbons | MultiWaySyntenyDisplay |
@@ -174,7 +173,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(f: Feature[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
-| <span id="action-setlanegenes">**setLaneGenes**</span><br><code>(key: string, genes: Map&lt;string, Feature[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setlanegenes">**setLaneGenes**</span><br><code>(key: string, genes: Map&lt;string, LaneGene[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlanelinks">**setLaneLinks**</span><br><code>(key: string, links: Map&lt;string, Feature[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-sethoveredgroupkey">**setHoveredGroupKey**</span><br><code>(key: string &#124; undefined) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlaneframes">**setLaneFrames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefined&gt;) =&gt; void</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |

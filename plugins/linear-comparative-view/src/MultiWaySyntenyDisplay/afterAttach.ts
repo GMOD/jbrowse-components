@@ -179,6 +179,7 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
           return
         }
         const { anchorAbsX, visibleGroups, rowAssemblies } = self
+        // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE for the decisions this body writes back; EFFECT INPUT for the offset, which every px below is relative to and which cancels out of the decision — it only stamps the space the frames are laid out against, and tracking it would re-decide on every pan
         const { origin, previous } = untracked(() => ({
           origin: view.offsetPx,
           previous: self.laneDecisions,
@@ -200,6 +201,7 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
           previous,
         })
         if (
+          // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE: setLaneFrames writes it
           origin !== untracked(() => self.renderOriginPx) ||
           !sameDecisions(previous, next)
         ) {
