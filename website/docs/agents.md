@@ -217,8 +217,8 @@ naming its first chromosome `1` shows nothing on an assembly that calls it
 The third has to come back `206 Partial Content` with an
 `Access-Control-Allow-Origin` the browser will accept. A `200` carrying the
 whole file is a server ignoring the range, which turns every read into a full
-download with no error shown. The FAQ covers the same two for someone with the
-app in front of them:
+download with no error shown. The troubleshooting and data-serving guides cover
+the same two for someone with the app in front of them:
 [an empty track](/docs/troubleshooting#my-track-loads-but-shows-no-features) and
 [a CORS error](/docs/config_guides/serving_data#cors-errors-on-remote-files).
 

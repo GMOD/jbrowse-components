@@ -88,6 +88,10 @@ const ABSENT_ON_PURPOSE = new Map([
     "GPU_RENDERING names the warning WebGPUHal's deferred destroy replaced",
   ],
   ['cacheIdleTimeoutMs', 'an upstream option deliberately not plumbed'],
+  [
+    'useOverlayState',
+    'COMPILER_TERNARY_FINDING names the hook whose inlining removed the hazard',
+  ],
   ['Client', 'BAM_STACK_INTEGRATION names @gmod/bam types'],
   ['DiagonalizeRpcBase', 'a base class that left the plugin ABI'],
   ['filterPaf', 'DEMO_DATASETS names a step in SVbyEye'],

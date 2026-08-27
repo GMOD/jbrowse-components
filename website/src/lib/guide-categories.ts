@@ -151,7 +151,7 @@ export const TUTORIAL_ORDER = [
   'quickstart_web',
   'quickstart_desktop',
   'synteny_visualization',
-  'multiway_synteny',
+  'multiway_synteny_grape_peach_cacao',
   'allvsall_synteny',
   'hg002_haplotypes',
   'pangenome_ecoli',

@@ -100,6 +100,13 @@ const VALIDATORS: Validator[] = [
     argv: web('check-sidebar.ts'),
   },
   {
+    // The reverse of check-sidebar: a page nothing lists is unreachable, and a
+    // list naming no page ranks nothing. The second is the silent one — the
+    // section just falls back to alphabetical.
+    name: 'curated order slugs name a page',
+    argv: web('check-guide-order.ts'),
+  },
+  {
     // `sync-measurements` gates the measurement TABLES on a public page; this
     // is the prose around them, which is where most of the figures are. An
     // existence check, so it pins a distinctive figure and not a round one —
