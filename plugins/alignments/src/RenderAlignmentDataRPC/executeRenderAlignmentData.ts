@@ -51,7 +51,10 @@ import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKey } from '../shared/readIdentity.ts'
 import type { CategoryFilter, FilterBy } from '../shared/types.ts'
-import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
+import type {
+  ChainFeatureData,
+  ModificationEntry,
+} from '../shared/webglRpcTypes.ts'
 import type { AlignmentGroup, WorkerPileupData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -268,6 +271,20 @@ interface GroupContext {
   stopTokenCheck: StopTokenChecker
 }
 
+// The distinct columns carrying a modification call, which is what the
+// read-base pileup tallies at. Built by walking the marks rather than as
+// `new Set(modifications.map(m => m.position))`: the map's array is one entry
+// per CALL — 0.84M of them on the `200x.longread.mod.bam` window the mod benches
+// use — allocated whole and thrown away for a set of the tens of thousands of
+// distinct positions inside it.
+function modifiedPositions(modifications: ModificationEntry[]) {
+  const positions = new Set<number>()
+  for (const m of modifications) {
+    positions.add(m.position)
+  }
+  return positions
+}
+
 // The shared spine for one group's reads: per-read/gap/mismatch arrays,
 // coverage pipeline, result assembly. Identical for grouped and ungrouped
 // fetches — ungrouped is just the one-group case.
@@ -366,10 +383,7 @@ async function buildGroupResult(
   // computeBisulfiteCoverage), so it skips this pileup entirely.
   const modBaseCounts =
     trackStrands && !bisulfite
-      ? computeReadBaseCounts(
-          rawFeatures,
-          new Set(modifications.map(m => m.position)),
-        )
+      ? computeReadBaseCounts(rawFeatures, modifiedPositions(modifications))
       : new Map<number, StrandBaseCounts>()
 
   const pipeline = await runCoveragePipeline({

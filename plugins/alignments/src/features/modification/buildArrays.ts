@@ -9,39 +9,55 @@ export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
 ) {
-  const filtered = modifications.filter(m => m.position >= regionStart)
-  const modificationPositions = new Uint32Array(filtered.length)
+  // Counted, not `modifications.filter(...)`. This is the densest array the
+  // display produces — one mark per CpG per read on a nanopore pileup — and the
+  // filter allocated a second full-length array of pointers to walk once and
+  // drop. Two passes over the same array cost a compare each; the copy cost a
+  // machine word per mark.
+  const n = modifications.length
+  let kept = 0
+  for (let i = 0; i < n; i++) {
+    if (modifications[i]!.position >= regionStart) {
+      kept++
+    }
+  }
+  const modificationPositions = new Uint32Array(kept)
   // Pre-pack each modification's RGB + probability-as-alpha into ABGR u32 so
   // both the GPU vertex buffer and the Canvas2D shader path can read one
   // slot instead of four shifted bytes.
-  const modificationColors = new Uint32Array(filtered.length)
-  const modificationProbabilities = new Uint8Array(filtered.length)
-  const modificationReadIndices = new Uint32Array(filtered.length)
-  const modificationTypeIndices = new Uint8Array(filtered.length)
+  const modificationColors = new Uint32Array(kept)
+  const modificationProbabilities = new Uint8Array(kept)
+  const modificationReadIndices = new Uint32Array(kept)
+  const modificationTypeIndices = new Uint8Array(kept)
   // The no-mod bucket flag (1 = this call says the base is UNmodified). Carried
   // alongside the type index because `modType` stays the canonical mod code for
   // both buckets, so type alone can't tell them apart — without this the hit
   // test labeled a blue unmodified mark with the mod's own name.
-  const modificationNoMod = new Uint8Array(filtered.length)
+  const modificationNoMod = new Uint8Array(kept)
   const modificationTypes: string[] = []
   const modTypeToIdx = new Map<string, number>()
-  for (let i = 0; i < filtered.length; i++) {
-    const m = filtered[i]!
-    modificationPositions[i] = m.position
+  let w = 0
+  for (let i = 0; i < n; i++) {
+    const m = modifications[i]!
+    if (m.position < regionStart) {
+      continue
+    }
+    modificationPositions[w] = m.position
     // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
     // high-prob mods are strongly opaque (matches main branch alphaColor).
     const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
-    modificationColors[i] = withAbgrAlpha(m.color, a)
-    modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
-    modificationReadIndices[i] = m.readIndex
+    modificationColors[w] = withAbgrAlpha(m.color, a)
+    modificationProbabilities[w] = Math.round(m.prob * 255) & 0xff
+    modificationReadIndices[w] = m.readIndex
     let typeIdx = modTypeToIdx.get(m.modType)
     if (typeIdx === undefined) {
       typeIdx = modificationTypes.length
       modTypeToIdx.set(m.modType, typeIdx)
       modificationTypes.push(m.modType)
     }
-    modificationTypeIndices[i] = typeIdx
-    modificationNoMod[i] = m.noMod ? 1 : 0
+    modificationTypeIndices[w] = typeIdx
+    modificationNoMod[w] = m.noMod ? 1 : 0
+    w++
   }
   return {
     modificationPositions,
