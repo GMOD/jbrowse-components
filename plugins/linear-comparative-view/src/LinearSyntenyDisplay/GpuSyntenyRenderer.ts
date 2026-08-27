@@ -264,37 +264,55 @@ export class GpuSyntenyRenderer
     data: SyntenyInstanceData,
   ) {
     const dpr = getDpr()
-    const u = this.uniformF32
-    u[U.resolution] = this.canvas.width / dpr
-    u[U.resolution + 1] = this.canvas.height / dpr
-    // Floored here rather than in each shader — see the Uniforms.height note in
-    // syntenyTypes.slang. A zero-height ribbon would divide by it.
-    u[U.height] = Math.max(p.height, 1)
-    // panPx = (base - offsetPx*bpPerPx)/bpPerPx: how far the current view has
-    // panned from the fetch-time base, in px. Computed float64 from a SMALL
-    // numerator (base ≈ the fetch-time viewport start), so no genome-scale
-    // magnitude is multiplied by the rounded inv — that's what lets a single
-    // Float32 corner stay sub-pixel. Shared with the CPU draw + pick paths
-    // (computeTransform) so the two cannot drift; the shader consumes exactly
-    // these four numbers in computeCorners (syntenyTypes.slang).
-    const t = computeTransform(p, data)
-    u[U.panPx0] = t.panPx0
-    u[U.bpPerPxInv0] = t.bpPerPxInv0
-    u[U.panPx1] = t.panPx1
-    u[U.bpPerPxInv1] = t.bpPerPxInv1
-    u[U.overdrawPx] = overdrawPx
-    u[U.minAlignmentLength] = p.minAlignmentLength
-    u[U.alpha] = p.alpha
-    u[U.hoveredFeatureId] = p.hoveredFeatureId
-    u[U.clickedFeatureId] = p.clickedFeatureId
-    u[U.yTop] = p.yTop
-    u[U.fadeThinAlignments] = p.fadeThinAlignments ? 1 : 0
-    // The shaders measure in CSS px but rasterize on the device-px grid, so
-    // they need the ratio to size their AA ramps at one output pixel. Must be
-    // the same getDpr() the resolution above is derived from.
-    u[U.devicePixelRatio] = dpr
+    writeSyntenyUniforms(this.uniformF32, p, overdrawPx, data, {
+      width: this.canvas.width / dpr,
+      height: this.canvas.height / dpr,
+      dpr,
+    })
     this.hal.writeUniforms(this.uniformData)
   }
+}
+
+/**
+ * The synteny passes' uniform block for one track, from its render params.
+ * Shared with the multi-way display, whose GPU backend draws its ribbons and
+ * ticks through the same four passes.
+ */
+export function writeSyntenyUniforms(
+  u: Float32Array,
+  p: SyntenyTrackRenderParams,
+  overdrawPx: number,
+  data: { base0: number; base1: number },
+  canvas: { width: number; height: number; dpr: number },
+) {
+  u[U.resolution] = canvas.width
+  u[U.resolution + 1] = canvas.height
+  // Floored here rather than in each shader — see the Uniforms.height note in
+  // syntenyTypes.slang. A zero-height ribbon would divide by it.
+  u[U.height] = Math.max(p.height, 1)
+  // panPx = (base - offsetPx*bpPerPx)/bpPerPx: how far the current view has
+  // panned from the fetch-time base, in px. Computed float64 from a SMALL
+  // numerator (base ≈ the fetch-time viewport start), so no genome-scale
+  // magnitude is multiplied by the rounded inv — that's what lets a single
+  // Float32 corner stay sub-pixel. Shared with the CPU draw + pick paths
+  // (computeTransform) so the two cannot drift; the shader consumes exactly
+  // these four numbers in computeCorners (syntenyTypes.slang).
+  const t = computeTransform(p, data)
+  u[U.panPx0] = t.panPx0
+  u[U.bpPerPxInv0] = t.bpPerPxInv0
+  u[U.panPx1] = t.panPx1
+  u[U.bpPerPxInv1] = t.bpPerPxInv1
+  u[U.overdrawPx] = overdrawPx
+  u[U.minAlignmentLength] = p.minAlignmentLength
+  u[U.alpha] = p.alpha
+  u[U.hoveredFeatureId] = p.hoveredFeatureId
+  u[U.clickedFeatureId] = p.clickedFeatureId
+  u[U.yTop] = p.yTop
+  u[U.fadeThinAlignments] = p.fadeThinAlignments ? 1 : 0
+  // The shaders measure in CSS px but rasterize on the device-px grid, so
+  // they need the ratio to size their AA ramps at one output pixel. Must be
+  // the same getDpr() the resolution above is derived from.
+  u[U.devicePixelRatio] = canvas.dpr
 }
 
 export { UNIFORMS_SIZE_BYTES as SYNTENY_UNIFORM_BYTE_SIZE }

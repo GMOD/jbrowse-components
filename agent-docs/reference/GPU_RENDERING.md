@@ -13,8 +13,7 @@ the point where the model has data and needs to draw it.
 
 Everything here applies to displays that draw to a canvas. A display that paints
 JSX SVG on both the on-screen and export paths composes none of it — the arc
-classes and `MultiWaySyntenyDisplay` today; see ARCHITECTURE.md
-§"Display stacks".
+classes today; see ARCHITECTURE.md §"Display stacks".
 
 ## Package layout
 

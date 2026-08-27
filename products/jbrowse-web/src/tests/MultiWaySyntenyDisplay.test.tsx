@@ -68,7 +68,7 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
   expect(g1.mates.get('cacao')).toHaveLength(1)
   const g2 = display.groups[1]!
   expect(g2.mates.has('cacao')).toBe(false)
-  expect(display.painted).toBe(true)
+  expect(display.features).toHaveLength(6)
 
   await waitFor(
     () => {
@@ -307,7 +307,7 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   )
   const outlines = async () =>
     renderToString(<>{await display.renderSvg()}</>).match(
-      /<rect[^>]*fill="none"/g,
+      /data-testid="multiway-hover-outline"/g,
     )?.length ?? 0
 
   expect(await outlines()).toBe(0)

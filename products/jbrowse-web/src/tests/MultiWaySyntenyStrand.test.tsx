@@ -1,6 +1,5 @@
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
-import { renderToString } from 'react-dom/server'
 
 import baseConfig from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
@@ -64,26 +63,22 @@ function reversePafConfig() {
 // `ribbonPath` writes a parallelogram as `M x1 y1 L x2 y2 L x3 y2 L x4 y1 Z`:
 // the upper edge runs x1..x4 and the lower edge x2..x3, with the sides joining
 // x1-x2 and x4-x3. The two edges running opposite ways is the ribbon crossing.
-function ribbons(svg: string) {
-  return [
-    ...svg.matchAll(
-      /M (-?[\d.]+) (-?[\d.]+) L (-?[\d.]+) (-?[\d.]+) L (-?[\d.]+) [\d.-]+ L (-?[\d.]+) [\d.-]+ Z/g,
-    ),
-  ].map(m => {
-    const [x1, y1, x2, y2, x3, x4] = m.slice(1).map(Number) as [
-      number,
-      number,
-      number,
-      number,
-      number,
-      number,
-    ]
-    return {
-      y1,
-      y2,
-      xs: [x1, x2, x3, x4],
-      crossed: Math.sign(x4 - x1) !== Math.sign(x3 - x2),
-    }
+// The ribbon corners as the synteny passes read them, per gutter: `bp1`→`bp4`
+// is one edge and `bp2`→`bp3` the other, so a ribbon is crossed when its two
+// edges run opposite ways.
+function ribbons(display: MultiWaySyntenyDisplayModel) {
+  const { cells, layers } = display.ribbonGeometry
+  return layers.flatMap(layer => {
+    const data = cells.get(layer.key)!
+    return Array.from({ length: data.instanceCount }, (_, i) => {
+      const xs = [data.bp1[i]!, data.bp4[i]!, data.bp3[i]!, data.bp2[i]!]
+      return {
+        y1: layer.yTop,
+        y2: layer.yTop + layer.height,
+        xs,
+        crossed: Math.sign(xs[3]! - xs[0]!) !== Math.sign(xs[2]! - xs[1]!),
+      }
+    })
   })
 }
 
@@ -125,7 +120,7 @@ test('a reverse-strand link between two mate lanes draws a crossed ribbon', asyn
   )
   expect(display.laneLinks!.get('peach|cacao')![0]!.get('strand')).toBe(-1)
 
-  const drawn = ribbons(renderToString(<>{await display.renderSvg()}</>))
+  const drawn = ribbons(display)
   // one group ribbon from the anchor lane down, and the link ribbon between
   // the two mate lanes — which sits lower, and is the only reverse record
   expect(drawn.length).toBeGreaterThanOrEqual(2)
@@ -213,7 +208,7 @@ test('a link record outside a lane frame draws no ribbon off the canvas', async 
   expect(far.get('start')).toBeLessThan(frame.min)
   expect(far.get('end')).toBeGreaterThan(frame.min)
 
-  const drawn = ribbons(renderToString(<>{await display.renderSvg()}</>))
+  const drawn = ribbons(display)
   expect(drawn.length).toBeGreaterThan(0)
   for (const { xs } of drawn) {
     for (const x of xs) {
@@ -259,7 +254,7 @@ test('flipping the view horizontally does not twist the ribbons', async () => {
   )
 
   const twists = async () => {
-    const drawn = ribbons(renderToString(<>{await display.renderSvg()}</>))
+    const drawn = ribbons(display)
     const top = Math.min(...drawn.map(r => r.y1))
     return drawn
       .filter(r => r.y1 === top)

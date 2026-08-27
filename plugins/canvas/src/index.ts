@@ -142,9 +142,33 @@ export type {
   FeatureDataResult,
   FlatbushItem,
   LabelItem,
+  RegionRenderData,
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
+
+// The feature glyph passes and their Canvas2D painters, for a display outside
+// this plugin that draws gene glyphs under its own axis: a rect, line, chevron
+// or arrow instance is positioned in whatever unit the layer's `bpRangeX`
+// uniform is stated in, so a lane laid out in px hands the passes px.
+export {
+  ArrowPass,
+  ARROW_PASS,
+  CHEVRON_PASS,
+  FEATURE_GLYPH_UNIFORM_BYTE_SIZE,
+  LINE_PASS,
+  LinePass,
+  RECT_PASS,
+  RectPass,
+  makeChevronPass,
+  packArrows,
+  packLines,
+  packRects,
+  rectShader as featureGlyphShader,
+} from './LinearBasicDisplay/passes/index.ts'
+export { CANVAS_GLYPH_DRAW } from './LinearBasicDisplay/components/Canvas2DFeatureRenderer.ts'
+export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
+export type { RenderState as FeatureGlyphRenderState } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
 
 // The feature band, as pure functions, so a display outside this plugin can draw
 // this plugin's data instead of growing its own layout, hit test and labels.

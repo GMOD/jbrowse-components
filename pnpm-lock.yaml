@@ -1504,6 +1504,9 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
+      '@jbrowse/plugin-canvas':
+        specifier: workspace:^
+        version: link:../canvas
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view

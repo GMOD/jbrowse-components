@@ -8,6 +8,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   doesIntersect2,
   getContainingView,
+  getPaletteHost,
   getSession,
   isFeature,
   openFeatureWidget,
@@ -18,8 +19,9 @@ import GlobalFetchMixin, {
   blockKeySignature,
 } from '@jbrowse/display-kit/GlobalFetchMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { foundationDisplayStatusPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
+import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import {
@@ -36,18 +38,41 @@ import {
   tickIntervalFor,
 } from './layoutMultiWay.ts'
 import { laneOrderMenuItem, laneSettingsMenuItems } from './menus.ts'
+import {
+  BANDS_KEY,
+  buildBandCell,
+  buildLaneGlyphCell,
+  buildRibbonGeometry,
+  buildTickGeometry,
+  glyphHitAt,
+  glyphsKey,
+} from './multiwayGeometry.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
-import type { LaneStack } from './laneStack.ts'
+import type { Lane, LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type {
+  MultiWayCell,
+  MultiWayLayer,
+  MultiWayRenderState,
+  MultiWayRenderingBackend,
+} from './multiwayRenderTypes.ts'
+import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type React from 'react'
+
+/** what the pointer is over: a gene, a placement box or a ribbon */
+export interface HoverTarget {
+  label: string
+  feature: Feature
+  groupKey?: string
+  targetIdx?: number
+}
 
 export interface LaneRegion {
   assemblyName: string
@@ -82,8 +107,9 @@ function regionKey(r: LaneRegion) {
  * assembly at genomic coordinates; every other lane is laid out in its own
  * local coordinate frame fitted to the viewport — non-anchored, the same move
  * the multi-sample variant matrix makes — with ribbons connecting each gene's
- * placements between adjacent lanes. Rendered as main-thread SVG like the arc
- * displays.
+ * placements between adjacent lanes. The ribbons ride the pairwise synteny
+ * display's GPU passes and the lanes the feature track's, with Canvas2D and
+ * the SVG export drawing the same cells.
  */
 export function stateModelFactory(
   configSchema: MultiWaySyntenyDisplayConfigModel,
@@ -146,6 +172,12 @@ export function stateModelFactory(
        * highlights, so one hover reads the group across all lanes
        */
       hoveredGroupKey: undefined as string | undefined,
+      /**
+       * #volatile
+       * the glyph, box or ribbon under the pointer — what a click opens and
+       * the tooltip names
+       */
+      hoverTarget: undefined as HoverTarget | undefined,
       /**
        * #volatile
        * what the last settle decided per mate lane — contig, orientation,
@@ -247,12 +279,6 @@ export function stateModelFactory(
         return view.initialized
           ? blockKeySignature(view.staticBlocks.contentBlocks)
           : undefined
-      },
-      /**
-       * #getter
-       */
-      get painted(): boolean {
-        return self.features !== undefined || !!self.error
       },
       /**
        * #getter
@@ -647,6 +673,204 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      get palette() {
+        return getPaletteHost(self).palette
+      },
+      /**
+       * #getter
+       * the ribbons between each adjacent lane pair as the synteny passes'
+       * instance data, in the stack's own px, plus what each ribbon opens
+       */
+      get ribbonGeometry() {
+        return buildRibbonGeometry({
+          stack: self.laneStack,
+          laneLinks: self.laneLinks,
+          ribbonColor: self.ribbonColor,
+          drawCurves: self.drawCurves,
+        })
+      },
+    }))
+    .views(self => ({
+      get ribbonCells() {
+        const out = new Map<string, MultiWayCell>()
+        for (const [key, data] of self.ribbonGeometry.cells) {
+          out.set(key, { kind: 'ribbons', data })
+        }
+        return out
+      },
+      get tickGeometry() {
+        return self.showLaneTicks
+          ? buildTickGeometry({
+              stack: self.laneStack,
+              tickIntervalBp: self.tickIntervalBp,
+              width: self.canvasWidth,
+              color: self.palette.gridlineMinor,
+            })
+          : { cells: new Map(), layers: [] }
+      },
+      get bandCell(): MultiWayCell {
+        const { palette } = self
+        return {
+          kind: 'glyphs',
+          data: buildBandCell({
+            stack: self.laneStack,
+            width: self.canvasWidth,
+            paper: palette.background.paper,
+            stripe: palette.action.hover,
+          }),
+        }
+      },
+      /**
+       * #getter
+       * one cell per lane: its gene models, its placement boxes and its
+       * baseline. The one place a jexl color slot is resolved per glyph, so
+       * the hover — a render parameter — never re-runs it
+       */
+      get laneGlyphCells() {
+        const { palette, selectedFeatureId } = self
+        const { lanes, glyphHeight } = self.laneStack
+        const colorOf = (slot: 'color' | 'utrColor', feature: Feature) =>
+          selectedFeatureId === feature.id()
+            ? palette.highlight.main
+            : readConfObject(self.configuration, slot, { feature })
+        const out = new Map<string, MultiWayCell>()
+        lanes.forEach((lane, row) => {
+          out.set(glyphsKey(row), {
+            kind: 'glyphs',
+            data: buildLaneGlyphCell({
+              lane,
+              glyphHeight,
+              width: self.canvasWidth,
+              colors: {
+                colorOf,
+                stroke: palette.text.primary,
+                divider: palette.divider,
+              },
+            }),
+          })
+        })
+        return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * everything the backend holds bytes for, keyed so an unchanged cell
+       * keeps its identity across a rebuild of the map and uploads nothing
+       */
+      get renderCells(): ReadonlyMap<string, MultiWayCell> {
+        const out = new Map<string, MultiWayCell>([[BANDS_KEY, self.bandCell]])
+        for (const [key, cell] of self.ribbonCells) {
+          out.set(key, cell)
+        }
+        for (const [key, data] of self.tickGeometry.cells) {
+          out.set(key, { kind: 'ribbons', data })
+        }
+        for (const [key, cell] of self.laneGlyphCells) {
+          out.set(key, cell)
+        }
+        return out
+      },
+      /**
+       * #getter
+       * the stack back to front: bands under everything, since they exist to
+       * cover the view's gridlines; ribbons; each lane's ticks; each lane's
+       * glyphs over its own ribbons
+       */
+      get renderLayers(): MultiWayLayer[] {
+        const { lanes } = self.laneStack
+        return [
+          { kind: 'glyphs', key: BANDS_KEY, scrolled: false },
+          ...self.ribbonGeometry.layers,
+          ...self.tickGeometry.layers,
+          ...lanes.map((_lane, row): MultiWayLayer => ({
+            kind: 'glyphs',
+            key: glyphsKey(row),
+            scrolled: true,
+          })),
+        ]
+      },
+      /**
+       * #getter
+       * the ribbon feature id the passes highlight: every ribbon of the
+       * hovered group shares one, so a hover over any gutter lights the group
+       * in all of them
+       */
+      get hoveredFeatureId() {
+        const { hoveredGroupKey, hoverTarget } = self
+        const idx =
+          hoveredGroupKey !== undefined
+            ? self.ribbonGeometry.groupTarget.get(hoveredGroupKey)
+            : hoverTarget?.targetIdx
+        return idx === undefined ? 0 : idx + 1
+      },
+      /**
+       * #getter
+       * the hovered group's placement in every lane that places it
+       */
+      get hoveredGroupOutlines(): { lane: Lane; span: Span }[] {
+        const { hoveredGroupKey } = self
+        if (hoveredGroupKey === undefined) {
+          return []
+        }
+        return self.laneStack.lanes.flatMap(lane =>
+          (lane.placements.get(hoveredGroupKey)?.spans ?? []).map(span => ({
+            lane,
+            span,
+          })),
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * what a frame draws with: the cells' layout and the one live transform
+       */
+      get renderState(): MultiWayRenderState {
+        return {
+          width: self.canvasWidth,
+          height: self.height,
+          dragOffsetPx: self.dragOffsetPx,
+          hoveredFeatureId: self.hoveredFeatureId,
+          layers: self.renderLayers,
+        }
+      },
+      /**
+       * #method
+       * what sits under a container-relative point: a lane's glyph or box
+       * first, since they draw over the ribbons, then a ribbon through the
+       * backend's pick
+       */
+      hitTest(x: number, y: number): HoverTarget | undefined {
+        const ox = x - self.dragOffsetPx
+        for (const cell of self.laneGlyphCells.values()) {
+          if (cell.kind === 'glyphs') {
+            const hit = glyphHitAt(cell.data.hits, ox, y)
+            if (hit) {
+              return {
+                label: hit.label,
+                feature: hit.feature,
+                groupKey: hit.groupKey,
+              }
+            }
+          }
+        }
+        const backend = self.currentRenderingBackend as
+          | MultiWayRenderingBackend
+          | undefined
+        const pick = backend?.pickRibbon(x, y, this.renderState)
+        const target = pick && self.ribbonGeometry.targets[pick.targetIdx]
+        return (
+          target && {
+            label: target.label,
+            feature: target.feature,
+            groupKey: target.groupKey,
+            targetIdx: pick.targetIdx,
+          }
+        )
+      },
+    }))
+    .views(self => ({
       /**
        * #getter
        * the dependent fetches are part of loading until they FIRST land, so an
@@ -656,8 +880,12 @@ export function stateModelFactory(
        * puts the striped scrim over them. A failed lane fetch commits an empty
        * result rather than hanging this at loading (see afterAttach)
        */
-      get displayPhase(): DisplayStatusPhase {
-        const base = foundationDisplayStatusPhase(self, () => true)
+      get displayPhase(): DisplayPhase {
+        const base = foundationDisplayPhase(
+          self,
+          () => true,
+          () => self.host.effectiveBodyMounted,
+        )
         const firstFetchPending =
           (self.laneGenes === undefined &&
             self.laneGenesFetchSpecs.specs.length > 0) ||
@@ -704,6 +932,44 @@ export function stateModelFactory(
       selectFeature(feature: Feature) {
         openFeatureWidget(self, feature.toJSON(), { feature })
       },
+      /**
+       * #action
+       */
+      setHoverTarget(target: HoverTarget | undefined) {
+        self.hoverTarget = target
+        self.hoveredGroupKey = target?.groupKey
+      },
+      /**
+       * #action
+       * the backend's cells and frame, through the one installer: a cell
+       * re-uploads when its identity changes and a frame redraws on anything
+       * the render state reads, which on a pan is the drag offset alone
+       */
+      startRenderingBackend(backend: MultiWayRenderingBackend) {
+        installUpload(self, backend, {
+          cells: () => self.renderCells,
+          render: b => {
+            b.render(self.renderState)
+            return self.features !== undefined
+          },
+        })
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setPointer(state?: MouseState) {
+        self.setHoverTarget(state ? self.hitTest(state.x, state.y) : undefined)
+      },
+      /**
+       * #action
+       */
+      selectHovered() {
+        if (self.hoverTarget) {
+          self.selectFeature(self.hoverTarget.feature)
+        }
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -722,10 +988,10 @@ export function stateModelFactory(
        * #action
        */
       async renderSvg(
-        _opts?: ExportSvgDisplayOptions,
+        opts?: ExportSvgDisplayOptions,
       ): Promise<React.ReactNode> {
         const { renderMultiWaySvg } = await import('./renderSvg.tsx')
-        return renderMultiWaySvg(self as MultiWaySyntenyDisplayModel)
+        return renderMultiWaySvg(self as MultiWaySyntenyDisplayModel, opts)
       },
     }))
 }

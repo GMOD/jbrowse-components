@@ -8,6 +8,7 @@
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../../packages/synteny-core/tsconfig.build.esm.json" },
     { "path": "../alignments/tsconfig.build.esm.json" },
+    { "path": "../canvas/tsconfig.build.esm.json" },
     { "path": "../linear-genome-view/tsconfig.build.esm.json" }
   ]
 }

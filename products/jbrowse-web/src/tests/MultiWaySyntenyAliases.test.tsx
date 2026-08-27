@@ -1,6 +1,5 @@
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
-import { renderToString } from 'react-dom/server'
 
 import baseConfig from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
@@ -121,9 +120,11 @@ test('a lane finds an annotation declared under an alias and draws it', async ()
 
   // the drawn side: those genes reach the lane rather than being filtered out
   // by a refName comparison across two files
-  const svg = renderToString(<>{await display.renderSvg()}</>)
-  expect(svg).toContain('<title>p1</title>')
-  expect(svg).toContain('<title>p2</title>')
+  const drawn = [...display.laneGlyphCells.values()].flatMap(cell =>
+    cell.kind === 'glyphs' ? cell.data.hits.map(h => h.label) : [],
+  )
+  expect(drawn).toContain('p1')
+  expect(drawn).toContain('p2')
 }, 40000)
 
 // A blocks table is free to name one genome in two columns (the wheat

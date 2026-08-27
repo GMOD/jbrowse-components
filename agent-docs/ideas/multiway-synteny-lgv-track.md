@@ -18,8 +18,9 @@ records. The tutorial is `multiway_synteny_lgv_track.md`. What follows is what
 was deliberately NOT built, with the reasoning that shaped each cut.
 
 **Per-base alignment lanes (CIGAR in row-local frames).** The most-wanted
-extension and the wrong one to bolt onto this display. The SVG path draws
-tens-to-hundreds of glyphs; per-base mismatch rendering at LGVSyntenyDisplay
+extension and the wrong one to bolt onto this display. The backend draws
+tens-to-hundreds of glyphs packed on the main thread; per-base mismatch
+rendering at LGVSyntenyDisplay
 density is worker-emitted GPU geometry, and every existing emitter
 (`buildSyntenyGeometry`, the alignments packers) emits into reference-anchored
 or view-pair frames. Row-local lanes need the worker to emit into each mate's
@@ -202,13 +203,15 @@ refetch. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the
 anchor's viewport by design, and the launch above is the route to a lane you
 drive yourself.
 
-**Gene glyph rendering.** The lanes draw the canvas gene track's geometry
-(merged CDS full height, exon-minus-CDS thinner in `utrDefaultColor`, intron
+**Gene glyph rendering.** The lanes draw the canvas gene track's geometry —
+merged CDS full height, exon-minus-CDS thinner in `utrDefaultColor`, intron
 chevrons, a downstream arrowhead, direction resolved in pixel space so flipped
-lanes point the way they read) as main-thread SVG through `geneGlyphShape`.
-Deliberately basic: the likely future is a GPU-emitting backend (see per-base
-lanes above), and the parts that transfer are the interval math and the model
-state, not the SVG. Don't invest in the SVG path beyond what a figure needs.
+lanes point the way they read — through that track's own rect, line, chevron
+and arrow passes and its Canvas2D painters, exported from `@jbrowse/plugin-canvas`
+for exactly this. `geneGlyphGeometry` is the interval math; `multiwayGeometry.ts`
+packs each lane into one cell in the stack's px, offset into the passes'
+unsigned coordinate by `PX_ORIGIN`, so a lane's `bpRangeX` uniform is a px
+range and the drag is the only per-frame input.
 
 **A lane draws annotation where it has it and the table's box where it does
 not, per GROUP.** The choice was per LANE until 2026-08-26, so one drawn gene
@@ -316,10 +319,9 @@ What a decision states is `{refName, flipped, rung, pivotAnchor, pivotLaneBp}`
 span. The frame is derived from that against the live view
 (`frameFromDecision`), so a pan translates every lane 1:1 with the anchor and a
 zoom scales it about the pivot: the data × view-transform contract the GPU
-displays draw under, and the shape a GPU backend for this display inherits. On
-the SVG path the stack is laid out against the scroll offset of the last settle
-(`renderOriginPx`) and translated by `dragOffsetPx`, so a pan re-renders one
-attribute rather than every element of six lanes.
+displays draw under. The stack is laid out against the scroll offset of the
+last settle (`renderOriginPx`) and translated by `dragOffsetPx`, which is the
+one live number in `renderState`: a pan uploads nothing and redraws one frame.
 
 Measured on the deployed `demos/grape_peach_cacao` — a 2Mb window walked across
 grape chr1 in 100kb steps, 259 steps, every lane read out of `decideLaneFrames`
@@ -367,9 +369,19 @@ every frame with a median slip of 0.0 px against the anchor, three of six
 lanes never leave it, five of six hold still at settle, the zoom-out moves
 tomato's rung monotonically (1.5 → 2 → 3 → 5) and refetches nothing, and the
 React flush per scroll frame is 2.0 ms where the per-frame relayout it
-replaces cost 15.0 ms. What is left: when a hold breaks — the lane's content
-has moved to another block, or 10% of it has left the frame — the lane jumps
-to its new alignment in one step (peach −147 then +520 px across one drag,
-tomato −2895 px), and a zoom step still re-renders every element at 35 ms.
-The first wants the re-alignment to slide the least distance that restores
-coverage; the second is the SVG path's ceiling and the GPU backend's job.
+replaces cost 15.0 ms.
+
+**The backend landed 2026-08-27** — ribbons and ticks on the pairwise synteny
+passes, lanes and bands on the feature track's glyph passes, Canvas2D and the
+SVG export off the same cells (`multiwayRenderTypes.ts`, `multiwayGeometry.ts`,
+`GpuMultiWayRenderer.ts`, `Canvas2DMultiWayRenderer.ts`). The same probe on
+the same session, 1588 px, headless: the display's DOM is 22 nodes (the
+headers) where it was 774; React per scroll frame 1.1 ms (was 2.0, and 4.8
+before the model change); a zoom step is 2.0 ms of React where it re-rendered
+every SVG element at 35 ms, with 12.7 ms of MobX per step packing the cells —
+the next lever, if one is wanted, is that rebuild rather than the frame.
+
+What is left is model-side: when a hold breaks — the lane's content has moved
+to another block, or 10% of it has left the frame — the lane jumps to its new
+alignment in one step (peach +388 px, tomato −2859 px across one drag). The
+re-alignment should slide the least distance that restores coverage.

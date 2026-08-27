@@ -19,6 +19,8 @@ import { createDisplay } from './testEnv.ts'
 // would shoot placement boxes, which is what the gate is for.
 test('the lane fetch is part of loading only until it first lands', () => {
   const display = createDisplay()
+  // the harness mounts no canvas; the paint half of loading is the mixin's
+  display.markCanvasDrawn()
   const { key } = display.laneGenesFetchSpecs
   expect(key).not.toBe('')
   expect(display.displayPhase).toBe('loading')

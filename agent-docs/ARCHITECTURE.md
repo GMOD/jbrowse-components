@@ -64,10 +64,9 @@ main:    model.rpcDataMap              (MST node, observable)
 Every canvas-drawing display **must** provide a Canvas2D draw function; the GPU
 shader path is an optional accelerator layered on top. Because SVG export runs
 the Canvas2D path, on-screen and exported pixels can't drift. Drawing to a
-canvas is itself a choice, though: the arc classes and
-`MultiWaySyntenyDisplay` paint JSX `<path>` elements on both paths and touch no
-canvas at all (circular view's `ChordVariantDisplay` does the same off this axis
-entirely); see [Display stacks](#display-stacks).
+canvas is itself a choice, though: the arc classes paint JSX `<path>` elements
+on both paths and touch no canvas at all (circular view's `ChordVariantDisplay`
+does the same off this axis entirely); see [Display stacks](#display-stacks).
 
 ## Vocabulary
 
@@ -157,7 +156,7 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-20 registered displays declare 185 config slots, 41 MST properties and 59 volatiles between them — counting what each display's own directory declares.
+20 registered displays declare 185 config slots, 41 MST properties and 60 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
@@ -172,7 +171,7 @@ track-menu setting is a slot.
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
 | `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
 | `LinearWiggleDisplay` | `plugins/wiggle` | 6 | 2 | 0 |
-| `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 8 |
+| `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 9 |
 | `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 0 |
 | `MultiLinearWiggleDisplay` | `plugins/wiggle` | 5 | 0 | 0 |
 | `ChordVariantDisplay` | `plugins/circular-view` | 4 | 3 | 3 |
@@ -619,9 +618,10 @@ subclass is a question the tag table can't answer for you (see "Per-region
 zoom-staleness").
 
 The arc classes draw **neither** GPU canvas nor Canvas2D: their components emit
-JSX `<path>` elements, on screen and in SVG export alike.
-`MultiWaySyntenyDisplay` is built the same way, and `renderMultiWaySvg` renders
-the on-screen `MultiWayRows` with `exportSVG` rather than a paint layer. So arc
+JSX `<path>` elements, on screen and in SVG export alike. (`MultiWaySyntenyDisplay`
+was built the same way until 2026-08-27; it now draws its ribbons through the
+pairwise synteny passes and its lanes through the feature track's glyph passes,
+with `DisplayChrome` and a paint layer like any canvas display.) So arc
 composes no `RenderLifecycleMixin`, and instead of `DisplayChrome` it renders
 `DisplayStatusChrome` — the backend-free half `DisplayChrome` itself delegates
 to, so its chrome is not merely identical to a GPU display's but the same
