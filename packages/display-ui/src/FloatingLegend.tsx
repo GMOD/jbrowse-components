@@ -16,6 +16,7 @@ import Tooltip from './tooltip/Tooltip.tsx'
 import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
 import type { LegendItem, LegendSection } from '@jbrowse/core/ui/legendSpec'
+import type { ReactNode } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   legend: {
@@ -278,10 +279,16 @@ const FloatingLegend = observer(function FloatingLegend({
   maxItems = DEFAULT_MAX_ITEMS,
   maxWidth = DEFAULT_MAX_WIDTH,
   top = 10,
+  children,
 }: {
   items?: LegendItem[]
   sections?: LegendSection[]
   title?: string
+  // A key whose vocabulary is not a row list — Hi-C's continuous gradient bar —
+  // draws itself here and leaves `items`/`sections` empty. It still gets the
+  // box, the title, the `×` and the gesture ownership, which is the whole point
+  // of not hand-rolling a second panel.
+  children?: ReactNode
   onDismiss?: () => void
   onDismissSection?: (id: string) => void
   onItemClick?: (item: LegendItem, section: LegendSection) => void
@@ -303,7 +310,7 @@ const FloatingLegend = observer(function FloatingLegend({
   const { classes } = useStyles()
 
   const nonEmpty = nonEmptyLegendSections({ items, sections })
-  if (nonEmpty.length === 0) {
+  if (nonEmpty.length === 0 && !children) {
     return null
   }
 
@@ -346,6 +353,7 @@ const FloatingLegend = observer(function FloatingLegend({
           </Tooltip>
         ) : null}
         {title ? <div className={classes.topTitle}>{title}</div> : null}
+        {children}
         {nonEmpty.map(section => (
           <div key={section.id} className={classes.section}>
             {multiSection && section.title ? (
