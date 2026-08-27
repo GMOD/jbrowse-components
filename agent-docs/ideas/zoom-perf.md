@@ -1,4 +1,9 @@
-Zoom is worse than pan, and labels are not the reason
+---
+name: zoom-perf
+description: Why zoom is the worse of the two gestures on the GPU path, and what it is actually bound by. Covers the label A/B that looked like a win and was a measurement artifact, and the two targets left: createObjectURL on the stop-token path, and the per-frame component count.
+---
+
+# Zoom is worse than pan, and labels are not the reason
 
 Wheel-driven zoom on the GPU path, 4 tracks:
 
