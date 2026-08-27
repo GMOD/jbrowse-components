@@ -3,7 +3,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 import { renderToString } from 'react-dom/server'
 
-import MultiWayOverlay from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/MultiWayOverlay.tsx'
+import LaneHeaders from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/LaneHeaders.tsx'
 import configSnapshot from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
@@ -332,6 +332,17 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   // lane DRAWS g1 as a gene model, so its box is suppressed, and the hit that
   // replaced it carried no group. `hitTest` is the whole path a hover takes.
   const lane = display.laneStack.lanes[0]!
+  // The export is the CAPTION half of the headers: the menu affordance, the
+  // grab cursors and the interaction testids are controls, and a saved figure
+  // has none of them. They rode along for as long as one component served
+  // both, which is also why the affordance had to be placed by a
+  // character-count estimate rather than by layout.
+  const svg = renderToString(<>{await display.renderSvg()}</>)
+  expect(svg).toContain('grape')
+  expect(svg).not.toContain('⋮')
+  expect(svg).not.toContain('cursor')
+  expect(svg).not.toContain('multiway-lane-menu')
+
   const geneHit = display.hitTest(
     (display.anchorSpans.get('g1')![0] + display.anchorSpans.get('g1')![1]) / 2,
     lane.glyphTop + 1,
@@ -368,7 +379,7 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
     { timeout: 30000 },
   )
   const { findByTestId, queryByTestId } = render(
-    <MultiWayOverlay model={display} />,
+    <LaneHeaders model={display} />,
   )
   const [anchor, peach] = display.laneStack.lanes
   fireEvent.mouseDown(await findByTestId('multiway-lane-label-cacao'), {
@@ -418,7 +429,7 @@ test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
     { timeout: 30000 },
   )
   const { findByTestId, findByText, queryByText } = render(
-    <MultiWayOverlay model={display} />,
+    <LaneHeaders model={display} />,
   )
   fireEvent.contextMenu(await findByTestId('multiway-lane-label-peach'))
   for (const label of [
@@ -468,9 +479,7 @@ test('MultiWaySyntenyDisplay re-anchors on a mate lane from its label menu', asy
     },
     { timeout: 30000 },
   )
-  const { findByTestId, findByText } = render(
-    <MultiWayOverlay model={display} />,
-  )
+  const { findByTestId, findByText } = render(<LaneHeaders model={display} />)
   fireEvent.contextMenu(await findByTestId('multiway-lane-label-peach'))
   fireEvent.click(await findByText('Re-anchor on peach'))
 
@@ -516,9 +525,7 @@ test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track alon
     },
     { timeout: 30000 },
   )
-  const { findByTestId, findByText } = render(
-    <MultiWayOverlay model={display} />,
-  )
+  const { findByTestId, findByText } = render(<LaneHeaders model={display} />)
   fireEvent.contextMenu(await findByTestId('multiway-lane-label-peach'))
   fireEvent.click(await findByText('Open peach in a new view'))
 

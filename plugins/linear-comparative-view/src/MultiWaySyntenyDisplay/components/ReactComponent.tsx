@@ -6,6 +6,7 @@ import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { observer } from 'mobx-react'
 
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
+import LaneHeaders from './LaneHeaders.tsx'
 import MultiWayOverlay from './MultiWayOverlay.tsx'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
@@ -31,6 +32,7 @@ const MultiWayBody = observer(function MultiWayBody({
         style={{ width, height, position: 'absolute', left: 0, top: 0 }}
       />
       <MultiWayOverlay model={model} />
+      <LaneHeaders model={model} />
       {mouse && hoverTarget ? (
         <BaseTooltip clientPoint={{ x: mouse.clientX, y: mouse.clientY }}>
           <div style={{ whiteSpace: 'pre' }}>{hoverTarget.label}</div>
