@@ -233,7 +233,7 @@ export default function baseStateModelFactory(
            * Feature ids the user pinned to the top of the layout via the feature
            * right-click menu. Pinned features are inserted first into the greedy
            * row-packer, so they hold the topmost rows in their bp range across
-           * zoom re-packs (see packRef in layout.ts). stripDefault so a display
+           * zoom re-packs (see packPreparedRef in layout.ts). stripDefault so a display
            * with nothing pinned omits the empty array from its snapshot.
            *
            * Persisted by uniqueId, which resolves back to the same feature after

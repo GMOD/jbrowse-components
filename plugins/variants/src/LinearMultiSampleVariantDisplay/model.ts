@@ -514,6 +514,12 @@ export function stateModelFactory(
             reversedRegions,
             displayMode: LANE_DISPLAY_MODE,
             pinnedFeatureIds: NO_PINNED_FEATURES,
+            // The band is a fixed 40px holding a whole callset, so its records
+            // are meant to share pixels rather than each claim a row: stacking
+            // them honestly needs 68px, which costs the band every name through
+            // the fit ladder. Names survive because this flattens the rows
+            // without `displayMode: 'collapsed'`'s label suppression.
+            flattenRows: true,
           }
         },
       }))

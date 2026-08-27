@@ -488,6 +488,27 @@ test('collapsed mode fades the same elements once a third lands on them', () => 
   expect([...r.rectDensityFade].every(v => v === 1)).toBe(true)
 })
 
+test('collapsed mode leaves three overlapping wide boxes opaque', () => {
+  // The fade is for sub-pixel marks, whose ~2px box IS its own overlap. A wide
+  // box overlaps its neighbour over PART of its length, and one instance alpha
+  // would ghost it end to end to report a collision at one end. Three of them
+  // cover a point PILEUP_FADE_DEPTH deep, so only the sub-pixel test holds the
+  // fade off — and collapsed mode, where every box shares row 0, is where that
+  // can happen.
+  const data = makeFeatureData({
+    features: [0, 1, 2].map(i => ({
+      featureId: `wide${i}`,
+      startBp: 100 + i * 10,
+      endBp: 400 + i * 10,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  const r = collapsedModeLayout(data, 1)
+  expect(r.flatbushItems.every(it => it.topPx === 0)).toBe(true)
+  expect([...r.rectDensityFade].every(v => v === 0)).toBe(true)
+})
+
 test('collapsed mode does not fade a wide feature it overlaps another with', () => {
   // A ~2px mark is its own overlap, so one instance alpha reads as the pileup's
   // depth. A gene overlaps its neighbour over part of its length, and fading the
@@ -1216,21 +1237,21 @@ test('incremental memo busts when the pinned set reference changes', () => {
   expect(topOf(after, 'B')).toBe(0)
 })
 
-test('a collapsed mark does not outrank an arriving gene for the top row', () => {
+test('a collapsed pile does not outrank an arriving gene for the top row', () => {
   // The memo seeds each re-pack with the previous layout's rows so features near
   // the top keep them. A collapsed mark never competed for a row — it skips the
   // stacker — so its y=0 must not enter that seed: here a wide gene arrives over
-  // a 1bp mark that had collapsed, which stops the mark collapsing (it would
-  // paint on top of the gene) and sends it through the packer. Seeded with the
-  // mark's y=0 it was inserted first and took row 0, leaving the gene stacked
-  // under a feature 1/2000th its width.
-  const mark = {
-    featureId: 'snp',
-    startBp: 5000,
-    endBp: 5001,
+  // a pile that had collapsed, which stops the pile collapsing (its marks now
+  // overlap a visible feature) and sends every mark through the packer. Seeded
+  // with their y=0 they are inserted first and take row 0, leaving the gene
+  // stacked under features a thousandth its width.
+  const marks = Array.from({ length: 25 }, (_, i) => ({
+    featureId: `snp${i}`,
+    startBp: 5000 + i,
+    endBp: 5001 + i,
     height: 10,
     densityFade: true,
-  }
+  }))
   const gene = {
     featureId: 'gene',
     startBp: 4000,
@@ -1242,56 +1263,227 @@ test('a collapsed mark does not outrank an arriving gene for the top row', () =>
   const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
     r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
 
-  // zoomed out, nothing else on screen: the mark collapses to row 0
+  // zoomed out, nothing else on screen: the pile collapses to row 0
   const before = memo(
-    new Map([[0, makeFeatureData({ features: [mark] })]]),
-    incInputs(100),
+    new Map([[0, makeFeatureData({ features: marks })]]),
+    incInputs(20),
   )
-  expect(topOf(before, 'snp')).toBe(0)
+  expect(topOf(before, 'snp0')).toBe(0)
 
   // the gene's fetch lands
   const after = memo(
-    new Map([[0, makeFeatureData({ features: [gene, mark] })]]),
-    incInputs(100),
+    new Map([[0, makeFeatureData({ features: [gene, ...marks] })]]),
+    incInputs(20),
   )
   expect(topOf(after, 'gene')).toBe(0)
-  expect(topOf(after, 'snp')).toBeGreaterThan(0)
+  expect(topOf(after, 'snp0')).toBeGreaterThan(0)
 })
 
-test('density-fade boxes collapse onto row 0 only when sub-pixel', () => {
-  // Two abutting boxes at bpPerPx=1; the 1px inter-feature padding makes them
-  // collide, so first-fit stacks the second onto its own row unless collapsed.
-  const rows = (spanBp: number, densityFade: boolean) => {
-    const data = makeFeatureData({
-      features: [
-        {
-          featureId: 'a',
-          startBp: 100,
-          endBp: 100 + spanBp,
-          height: 10,
-          densityFade,
-        },
-        {
-          featureId: 'b',
-          startBp: 100 + spanBp,
-          endBp: 100 + 2 * spanBp,
-          height: 10,
-          densityFade,
-        },
-      ],
-    })
-    const out = layout(new Map([[0, data]]), 1, false)
-    const top = (id: string) =>
-      out.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
-    return [top('a'), top('b')]
-  }
+// 25 1bp variants inside 25bp at 20 bp/px: each paints the 2px minimum, so they
+// all cover one point and the pile is DENSITY_COLLAPSE_DEPTH deep. The packer
+// reserves what it paints, so left alone they claim 25 separate rows.
+const pileRows = (spanBp: number, densityFade: boolean) => {
+  const data = makeFeatureData({
+    features: Array.from({ length: 25 }, (_, i) => ({
+      featureId: `f${i}`,
+      startBp: 100 + i,
+      endBp: 100 + i + spanBp,
+      height: 10,
+      densityFade,
+    })),
+  })
+  const out = layout(new Map([[0, data]]), 20, false)
+  return Array.from(
+    { length: 25 },
+    (_, i) =>
+      out.get(0)!.flatbushItems.find(it => it.featureId === `f${i}`)!.topPx,
+  )
+}
 
-  // sub-pixel (1px < the 2px clamp) + fade → both collapse onto the shared row
-  expect(rows(1, true)).toEqual([0, 0])
+test('a pile deeper than a track collapses onto row 0, but only when sub-pixel', () => {
+  // sub-pixel (0.05px < the 2px clamp) + fade → the whole pile shares row 0
+  expect(pileRows(1, true).every(t => t === 0)).toBe(true)
   // same geometry, not a fade box (e.g. gene subfeature rects) → still stacks
-  expect(rows(1, false)[1]).toBeGreaterThan(0)
-  // fade box but wide (20px > clamp) → a real box, stacks normally
-  expect(rows(20, true)[1]).toBeGreaterThan(0)
+  expect(Math.max(...pileRows(1, false))).toBeGreaterThan(0)
+  // fade box but wide (5px > clamp) → a real box, stacks normally
+  expect(Math.max(...pileRows(100, true))).toBeGreaterThan(0)
+})
+
+test('a pile one short of the bar keeps its rows', () => {
+  // The bar is a track height, so it has to bite from below too: 24 of the same
+  // marks stack, and every allele stays on its own row and stays hoverable.
+  const data = makeFeatureData({
+    features: Array.from({ length: 24 }, (_, i) => ({
+      featureId: `f${i}`,
+      startBp: 100 + i,
+      endBp: 101 + i,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  const out = layout(new Map([[0, data]]), 20, false)
+  const tops = out.get(0)!.flatbushItems.map(it => it.topPx)
+  expect(new Set(tops).size).toBe(24)
+})
+
+test('a pair of sub-pixel fade boxes stacks instead of collapsing', () => {
+  // Sub-pixel is not on its own a reason to give up a row. Two abutting SNVs
+  // overlap once each is clamped to 2px, and pinning both to row 0 for that drew
+  // the second on top of the first with no cue it was there — a track reading as
+  // one row with a couple of variants loaded. A pair is not a pile: both stack,
+  // both render, both opaque.
+  const data = makeFeatureData({
+    features: [100, 101].map((startBp, i) => ({
+      featureId: `f${i}`,
+      startBp,
+      endBp: startBp + 1,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  const r = layout(new Map([[0, data]]), 1, false).get(0)!
+  const top = (id: string) =>
+    r.flatbushItems.find(it => it.featureId === id)!.topPx
+  expect(top('f0')).toBe(0)
+  expect(top('f1')).toBeGreaterThan(0)
+  expect([...r.rectDensityFade].every(v => v === 0)).toBe(true)
+})
+
+test('a pile books row 0, so a neighbour stacks above it instead of into it', () => {
+  // A collapsed mark is pinned to row 0 without an `addRect` of its own, so the
+  // greedy stacker reads that row as clear. `edge` overlaps the pile's tail and
+  // covers no point deep enough to collapse itself: handed row 0 it would paint
+  // into the pile. The pile's span is booked out of the row, so it stacks above.
+  const data = makeFeatureData({
+    features: [
+      ...Array.from({ length: 25 }, (_, i) => ({
+        featureId: `f${i}`,
+        startBp: 100 + i,
+        endBp: 101 + i,
+      })),
+      { featureId: 'edge', startBp: 160, endBp: 161 },
+    ].map(f => ({ ...f, height: 10, densityFade: true })),
+  })
+  const r = layout(new Map([[0, data]]), 20, false).get(0)!
+  const top = (id: string) =>
+    r.flatbushItems.find(it => it.featureId === id)!.topPx
+  expect(top('f0')).toBe(0)
+  expect(top('edge')).toBeGreaterThan(0)
+})
+
+test('a hotspot does not drag the marks chained to it onto row 0', () => {
+  // The collapse is per mark, not per connected run. A run chains through every
+  // mark that lands inside a neighbour's clamped box, so at 1.5px spacing one
+  // 25-deep hotspot reaches the whole view — and collapsing all of it put 600
+  // SNVs the density gate admits onto one row, overlapping pairwise, too shallow
+  // to fade. Exactly the defect the min-width reservation exists to stop.
+  const spread = Array.from({ length: 60 }, (_, i) => ({
+    featureId: `s${i}`,
+    startBp: 10000 + i * 75,
+  }))
+  const hotspot = Array.from({ length: 25 }, (_, i) => ({
+    featureId: `h${i}`,
+    startBp: 10000 + 30 * 75,
+  }))
+  const r = layout(
+    new Map([
+      [
+        0,
+        makeFeatureData({
+          features: [...spread, ...hotspot].map(f => ({
+            ...f,
+            endBp: f.startBp + 1,
+            height: 10,
+            densityFade: true,
+          })),
+        }),
+      ],
+    ]),
+    50,
+    false,
+  ).get(0)!
+  const spreadTops = r.flatbushItems
+    .filter(it => it.featureId.startsWith('s'))
+    .map(it => it.topPx)
+  expect(new Set(spreadTops).size).toBeGreaterThan(1)
+  expect(spreadTops.filter(t => t > 0).length).toBeGreaterThan(20)
+})
+
+test('flattenRows packs a density band onto one row without dropping names', () => {
+  // What a fixed-height band asks for: every record shares row 0 the way
+  // `displayMode: 'collapsed'` packs, but the labels the mode suppresses stay on.
+  const features = Array.from({ length: 12 }, (_, i) => ({
+    featureId: `f${i}`,
+    startBp: 100 + i * 3,
+    endBp: 101 + i * 3,
+    height: 10,
+  }))
+  const data = labeledFeatureData(features)
+  const flat = computeLaidOutData(new Map([[0, data]]), {
+    bpPerPx: 20,
+    showLabels: true,
+    showDescriptions: false,
+    reversedRegions: new Set<number>(),
+    displayMode: 'normal',
+    pinnedFeatureIds: new Set<string>(),
+    flattenRows: true,
+  }).get(0)!
+  expect(flat.flatbushItems.every(it => it.topPx === 0)).toBe(true)
+  expect(flat.floatingLabelsData.size).toBe(12)
+  // and without it the same marks claim rows
+  const stacked = layout(new Map([[0, data]]), 20).get(0)!
+  expect(
+    new Set(stacked.flatbushItems.map(it => it.topPx)).size,
+  ).toBeGreaterThan(1)
+})
+
+test('two piles whose painted spans merely touch stay two piles', () => {
+  // Ends sort before starts at equal px, so half-open spans that abut share no
+  // point. Two 13-deep piles exactly one clamped box apart must not read as one
+  // 26-deep pile and collapse.
+  const pile = (n: number, at: number) =>
+    Array.from({ length: 13 }, (_, i) => ({
+      featureId: `p${n}_${i}`,
+      startBp: at,
+      endBp: at + 1,
+      height: 10,
+      densityFade: true,
+    }))
+  const data = makeFeatureData({
+    features: [...pile(0, 1000), ...pile(1, 1000 + 2 * 20)],
+  })
+  const r = layout(new Map([[0, data]]), 20, false).get(0)!
+  expect(new Set(r.flatbushItems.map(it => it.topPx)).size).toBeGreaterThan(1)
+})
+
+test('a shallow run beside a deep one keeps its rows, on either side', () => {
+  // Two disjoint runs in one layout, so the sweep has to reset both what it has
+  // accumulated and how deep it got when a run closes. The sweep visits them in
+  // COORDINATE order, so the pair has to sit once before the pile and once after:
+  // a leaked run array strands the pair that opened first, a leaked depth strands
+  // the one that opens second, and each order sees only its own.
+  const pile = Array.from({ length: 25 }, (_, i) => ({
+    featureId: `f${i}`,
+    startBp: 100 + i,
+    endBp: 101 + i,
+  }))
+  for (const at of [20, 4000]) {
+    const features = [
+      ...pile,
+      { featureId: 'p0', startBp: at, endBp: at + 1 },
+      { featureId: 'p1', startBp: at + 10, endBp: at + 11 },
+    ].map(f => ({ ...f, height: 10, densityFade: true }))
+    const r = layout(
+      new Map([[0, makeFeatureData({ features })]]),
+      20,
+      false,
+    ).get(0)!
+    const top = (id: string) =>
+      r.flatbushItems.find(it => it.featureId === id)!.topPx
+    expect(top('f0')).toBe(0)
+    expect(top('p0')).toBe(0)
+    expect(top('p1')).toBeGreaterThan(0)
+  }
 })
 
 test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () => {
@@ -1530,12 +1722,11 @@ test('collapsed marks with clear space around them render opaque, not faded', ()
   expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
 })
 
-test('a handful of collapsed marks on one pixel fade rather than hide each other', () => {
-  // Five variants within 5bp at 26 bp/px: every one collapses to row 0 and the
-  // min-width clamp puts all five marks on the same 2px column. Opaque, that is
-  // one visible mark and four features silently gone — the count-based rule this
-  // replaced called five "sparse" and drew exactly that. Faded, the src-alpha
-  // blend accumulates and the column reads as several stacked variants.
+test('a handful of sub-pixel marks take rows rather than needing a fade', () => {
+  // Five variants within 5bp at 26 bp/px. The packer reserves the 2px each one
+  // paints, so all five collide and all five get a row — nothing is drawn over,
+  // so nothing needs fading to admit it is there. The old layout reserved the raw
+  // 0.04px instead, put all five on row 0, and drew one mark for five features.
   const data = makeFeatureData({
     features: Array.from({ length: 5 }, (_, i) => ({
       featureId: `snp${i}`,
@@ -1546,30 +1737,32 @@ test('a handful of collapsed marks on one pixel fade rather than hide each other
     })),
   })
   const out = layout(new Map([[0, data]]), 26, false)
-  expect([...out.get(0)!.rectDensityFade].every(v => v === 1)).toBe(true)
+  const tops = out.get(0)!.flatbushItems.map(it => it.topPx)
+  expect(new Set(tops).size).toBe(5)
+  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
 })
 
-test('marks in a pile fade without fading an isolated neighbour', () => {
-  // The decision is per mark, not per region: `pile*` are three alleles called at
-  // one position, so all three paint the same 2px column and fade, while `lone`
-  // sits 500px clear of them and stays solid. A region-wide verdict (the old
-  // count) could only ever answer this one way for all four.
+test('a collapsed pile fades without fading an isolated neighbour', () => {
+  // The decision is per mark, not per region: the pile shares row 0 and every
+  // mark on it is drawn over, so it fades; `lone` sits far clear, keeps a row to
+  // itself and stays solid. A region-wide verdict (the old count) could only ever
+  // answer this one way for all of them.
   const data = makeFeatureData({
     features: [
-      { featureId: 'pileA', startBp: 100, endBp: 101, height: 10 },
-      { featureId: 'pileB', startBp: 100, endBp: 101, height: 10 },
-      { featureId: 'pileC', startBp: 100, endBp: 101, height: 10 },
-      { featureId: 'lone', startBp: 600, endBp: 601, height: 10 },
-    ].map(f => ({ ...f, densityFade: true })),
+      ...Array.from({ length: 25 }, (_, i) => ({
+        featureId: `f${i}`,
+        startBp: 100 + i,
+        endBp: 101 + i,
+      })),
+      { featureId: 'lone', startBp: 12000, endBp: 12001 },
+    ].map(f => ({ ...f, height: 10, densityFade: true })),
   })
-  const out = layout(new Map([[0, data]]), 1, false)
+  const out = layout(new Map([[0, data]]), 20, false)
   const items = out.get(0)!.flatbushItems
   const fadeOf = (id: string) =>
     out.get(0)!.rectDensityFade[items.findIndex(f => f.featureId === id)]
-  expect(items.every(it => it.topPx === 0)).toBe(true)
-  expect(fadeOf('pileA')).toBe(1)
-  expect(fadeOf('pileB')).toBe(1)
-  expect(fadeOf('pileC')).toBe(1)
+  expect(fadeOf('f0')).toBe(1)
+  expect(fadeOf('f24')).toBe(1)
   expect(fadeOf('lone')).toBe(0)
 })
 

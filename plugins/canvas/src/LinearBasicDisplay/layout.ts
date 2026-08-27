@@ -262,7 +262,7 @@ export interface LayoutInputs {
   reversedRegions: ReadonlySet<number>
   displayMode: DisplayMode
   // Feature ids the user pinned to the top: inserted first into the greedy
-  // packer so they claim the lowest rows in their bp range (see packRef). Also
+  // packer so they claim the lowest rows in their bp range (see packPreparedRef). Also
   // the always-keep set for `fitWidth` label decimation (never hide a name the
   // user pinned or searched for).
   pinnedFeatureIds: ReadonlySet<string>
@@ -280,6 +280,16 @@ export interface LayoutInputs {
   // Genes the user opened from their own badge. Never trimmed, whatever the
   // count says.
   expandedGeneIds?: ReadonlySet<string>
+  // The pile depth at which a sub-pixel mark gives up its row and shares row 0,
+  // defaulting to DENSITY_COLLAPSE_DEPTH.
+  collapseDepth?: number
+  // Pack every feature onto row 0, the way `displayMode: 'collapsed'` does, but
+  // without that mode's label suppression — a caller drawing a fixed-height
+  // DENSITY BAND asks for this. The multi-sample variant lane is 40px holding a
+  // whole callset: its records are meant to share pixels rather than each claim a
+  // row, and stacking them honestly needs 68px, which costs the band every name
+  // through the fit ladder.
+  flattenRows?: boolean
 }
 
 // Whether a feature keeps its name under the active decimation policy. `all`
@@ -565,17 +575,20 @@ export function computeLaidOutData(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LayoutInputs,
   // Feature id -> y (px) from the previous layout, used only to order insertion
-  // so top features keep their rows across a re-pack (see packRef).
+  // so top features keep their rows across a re-pack (see packPreparedRef).
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ): Map<number, FeatureDataResult> {
   return layoutRefGroups(rpcDataMap, inputs, prevYByFeatureId).out
 }
 
-// `computeLaidOutData` plus the ids the density collapse pinned to row 0, which
-// the incremental wrapper needs and no other caller does — those marks must not
-// seed the next re-pack's row priority (see `seedRowsFrom`). Kept as the shared
-// body rather than widening `computeLaidOutData`'s return, so the pure entry
-// point every test and probe uses still answers with just the layout.
+// `computeLaidOutData` plus the ids the collapse pinned to row 0, which the
+// incremental wrapper needs and no other caller does (see `seedRowsFrom`). Kept
+// as the shared body rather than widening `computeLaidOutData`'s return, so the
+// pure entry point every test and probe uses still answers with just the layout.
+//
+// The pileup fade runs here and not in the pack: the fit solve's height probes
+// pack a ref-group ~10 times and read nothing but the rows, so the sweep belongs
+// in the committed layout, where its answer is the one that renders.
 function layoutRefGroups(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LayoutInputs,
@@ -585,17 +598,17 @@ function layoutRefGroups(
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
   for (const [, regions] of groupRawByRef(rpcDataMap)) {
-    const { layoutMap, layoutHeights, droppedLabelIds, collapsed, trimPlan } =
-      packPreparedRef(
-        prepareRefPack(regions, inputs, metrics),
-        inputs,
-        metrics,
-        prevYByFeatureId,
-      )
-    for (const mark of collapsed) {
-      collapsedIds.add(mark.id)
+    const prep = prepareRefPack(regions, inputs, metrics)
+    for (const id of prep.collapsedFeatureIds) {
+      collapsedIds.add(id)
     }
-    const densityFadeIds = pileupFadeIds(collapsed)
+    const { layoutMap, layoutHeights, droppedLabelIds, trimPlan } =
+      packPreparedRef(prep, inputs, metrics, prevYByFeatureId)
+    const densityFadeIds = pileupFadeIds(
+      prep.features,
+      layoutMap,
+      inputs.bpPerPx,
+    )
     // Clone only now that the packing is decided: cloneMutableFields dominates
     // this function's cost (~4/5 of it at 4k features), so the height probes the
     // fit solve runs skip it entirely (see packedContentHeight) and only the
@@ -753,7 +766,7 @@ export function packedContentHeight(
   )(inputs.labelRoomFactor ?? 1)
 }
 
-// Group the non-empty raw regions by `assembly:refName`, the unit `packRef` lays
+// Group the non-empty raw regions by `assembly:refName`, the unit `packPreparedRef` lays
 // out (regions on different chromosomes never affect each other's rows). Shared
 // by the committed layout and the height probe so both pack exactly the same
 // groups from exactly the same objects.
@@ -780,6 +793,8 @@ interface GroupCache {
   labelRoomFactor: number
   maxIsoformsPerGene: number | undefined
   expandedGeneIds: ReadonlySet<string> | undefined
+  collapseDepth: number | undefined
+  flattenRows: boolean | undefined
   displayMode: DisplayMode
   // The MobX-computed pinned set; a stable reference until pins change, so a
   // reference compare in groupUnchanged detects a pin toggle.
@@ -790,8 +805,8 @@ interface GroupCache {
   reversed: Set<number>
   // idx -> laid-out result, reused verbatim when the group is unchanged
   output: Map<number, FeatureDataResult>
-  // ids the density collapse pinned to row 0 in `output`, excluded when this
-  // layout seeds the next one's insertion order (see `seedRowsFrom`)
+  // ids the collapse pinned to row 0 in `output`, excluded when this layout seeds
+  // the next one's insertion order (see `seedRowsFrom`)
   collapsedIds: ReadonlySet<string>
 }
 
@@ -811,6 +826,8 @@ function groupUnchanged(
     labelRoomFactor = 1,
     maxIsoformsPerGene,
     expandedGeneIds,
+    collapseDepth,
+    flattenRows,
   } = inputs
   const paramsSame =
     prev.bpPerPx === bpPerPx &&
@@ -820,6 +837,8 @@ function groupUnchanged(
     prev.labelRoomFactor === labelRoomFactor &&
     prev.maxIsoformsPerGene === maxIsoformsPerGene &&
     prev.expandedGeneIds === expandedGeneIds &&
+    prev.collapseDepth === collapseDepth &&
+    prev.flattenRows === flattenRows &&
     prev.displayMode === displayMode &&
     prev.pinnedFeatureIds === pinnedFeatureIds &&
     prev.members.size === members.size
@@ -833,17 +852,13 @@ function groupUnchanged(
   )
 }
 
-// The rows a cached group offers the next re-pack as its insertion priority.
-//
-// Every feature the packer placed, MINUS the sub-pixel marks the density
-// collapse pinned to row 0. Those never competed for a row — they skip the
-// stacker entirely — so carrying their y=0 into the sort would rank thousands of
-// them alongside the features that genuinely won the top row, and ahead of every
-// feature on a lower one. On the zoom step where they stop collapsing (the box
-// crosses the min-width clamp and each one starts claiming a real row) they
-// would then take the low rows across the whole span and shove the genes that
-// held them downward — the exact churn the seeding exists to prevent. Dropped
-// here they rank as new (PRIOR_ROW_NONE) and fill gaps instead.
+// The rows a cached group offers the next re-pack as its insertion priority:
+// every feature the packer placed, MINUS the marks the collapse pinned to row 0.
+// Those never competed for a row, so carrying their y=0 into the sort would rank
+// a whole pile alongside the features that genuinely won the top row and ahead of
+// every feature below it — and on the zoom step where the pile thins out and each
+// mark starts claiming a real row, they would take the low rows across the span
+// and shove the genes down.
 //
 // The morph reads `captureFeatureTops` unfiltered, and should: a mark that WAS
 // drawn at y=0 animates from y=0. This is only about who gets first pick.
@@ -872,7 +887,7 @@ export type IncrementalLayout = ReturnType<typeof createIncrementalLayout>
 
 export function createIncrementalLayout({
   // Whether a re-packed group is seeded with its previous layout's rows, so a
-  // feature near the top keeps that row across a zoom (see packRef's sort).
+  // feature near the top keeps that row across a zoom (see packPreparedRef's sort).
   //
   // Off for the fit ladder's `decimated` rung, whose whitespace factor is chosen
   // by MEASURING candidate packs: a self-seeded pack makes the committed height a
@@ -923,7 +938,7 @@ export function createIncrementalLayout({
         // group; passing the full `reversedRegions` is fine since it only reads
         // the entries for regions present in `members`.
         // Order this group's re-pack by each feature's row in the prior output
-        // so top features keep their rows across a zoom (see packRef), unless
+        // so top features keep their rows across a zoom (see packPreparedRef), unless
         // this instance packs measured candidates (see seedPriorRows).
         const { out: output, collapsedIds } = layoutRefGroups(
           members,
@@ -947,6 +962,8 @@ export function createIncrementalLayout({
           labelRoomFactor: inputs.labelRoomFactor ?? 1,
           maxIsoformsPerGene: inputs.maxIsoformsPerGene,
           expandedGeneIds: inputs.expandedGeneIds,
+          collapseDepth: inputs.collapseDepth,
+          flattenRows: inputs.flattenRows,
           displayMode: inputs.displayMode,
           pinnedFeatureIds: inputs.pinnedFeatureIds,
           members: new Map(members),
@@ -1219,15 +1236,15 @@ interface PackPrep {
   // Per-side whitespace a label may overhang into. Only measured for the
   // `fitWidth` decimation; the default `all` policy keeps every name and never asks.
   overhangRoom: ReturnType<typeof labelOverhangRoomPx> | undefined
-  // Box px-spans of every feature guaranteed to occupy a real row. A sub-pixel
-  // fade box may collapse onto row 0 only where it doesn't overlap one of these,
-  // else it must stack, or it renders on top of the other feature (a 1bp SNP
-  // sitting inside a wide gene box is the canonical case).
-  solidSpansPx: readonly Span[]
-  // Features that draw at least one label under the current flags. Pre-decimation
-  // on purpose: it gates the density-collapse path, which asks "does anything
-  // render here", not "did the name survive".
-  labeledFeatureIds: Set<string>
+  // Features the density collapse pins to row 0 rather than letting them stack.
+  // Decided here because every input to it — geometry, labels, pile depth — is
+  // invariant to `labelRoomFactor`, so the fit solve's ~10 height probes share one
+  // decision and each measures the rows the commit will draw.
+  collapsedFeatureIds: ReadonlySet<string>
+  // The px those marks paint, merged. The packer books this out of row 0 before
+  // it stacks anything, so a feature overlapping a pile is stacked above it
+  // rather than handed the row the pile is sitting in unreserved.
+  collapsedSpansPx: readonly Span[]
 }
 
 // Gather the factor-invariant half of a pack. Reads the RAW (un-cloned,
@@ -1320,35 +1337,48 @@ function prepareRefPack(
     }
   }
 
-  // Whether the collapse can fire at all here. `solidSpansPx` below is queried by
-  // nothing else, so without a candidate to test against it — every feature wide
-  // enough to draw (any zoom past the min-width clamp), every feature labeled, or
-  // collapsed mode, where there is no stacking to opt out of — building it is a
-  // per-feature allocation and an O(n log n) sort thrown away on every re-pack.
-  let anyCollapseCandidate = false
+  // Sub-pixel unlabeled boxes: everything the collapse could claim, before the
+  // overlap and depth tests narrow it. Empty at any zoom past the min-width clamp,
+  // for a fully labeled group, and in collapsed mode where there is no stacking to
+  // opt out of — and everything below is then skipped, being all per-feature
+  // allocation and an O(n log n) sort thrown away on every re-pack.
+  const eligible: [string, FeatureGeometry][] = []
   if (!metrics.singleRow) {
     for (const [id, geom] of features) {
       if (isSubPixelFade(geom, bpPerPx) && !labeledFeatureIds.has(id)) {
-        anyCollapseCandidate = true
-        break
+        eligible.push([id, geom])
       }
     }
   }
 
-  // Everything that will hold a real row, which is the collapse test below minus
-  // its own overlap clause: a wide feature, OR a sub-pixel one held out of the
-  // collapse because it carries a label. Counting the labeled sub-pixel features
-  // here is what stops an unlabeled neighbor from pinning to row 0 on top of one
-  // (a partially-rs-ID'd VCF at sub-pixel zoom: the named variant stacks, so the
-  // unnamed one must see it).
+  // Everything that will hold a real row, which is `eligible` minus the overlap
+  // clause: a wide feature, OR a sub-pixel one held out of the collapse because it
+  // carries a label. Counting the labeled sub-pixel features here is what stops an
+  // unlabeled neighbor from pinning to row 0 on top of one (a partially-rs-ID'd VCF
+  // at sub-pixel zoom: the named variant stacks, so the unnamed one must see it).
   const solidSpansPx: Span[] = []
-  if (anyCollapseCandidate) {
+  if (eligible.length > 0) {
     for (const [id, geom] of features) {
       if (!isSubPixelFade(geom, bpPerPx) || labeledFeatureIds.has(id)) {
         solidSpansPx.push(renderedSpanPx(geom, bpPerPx))
       }
     }
   }
+  // Merged so each overlap query is a single binary search (intersectsMerged);
+  // touching spans join, so two abutting solid features read as one stretch.
+  const solid = mergeSpans(solidSpansPx)
+  const candidates: PaintedMark[] = []
+  for (const [id, geom] of eligible) {
+    const [startPx, endPx] = renderedSpanPx(geom, bpPerPx)
+    if (!intersectsMerged(startPx, endPx, solid)) {
+      candidates.push({ id, startPx, endPx })
+    }
+  }
+
+  const collapsedFeatureIds = deeplyPiledIds(
+    candidates,
+    inputs.collapseDepth ?? DENSITY_COLLAPSE_DEPTH,
+  )
 
   const stacks: [string, IsoformStack][] = []
   for (const [id, geom] of features) {
@@ -1365,11 +1395,12 @@ function prepareRefPack(
       labelDecimation === 'fitWidth'
         ? labelOverhangRoomPx(features, bpPerPx)
         : undefined,
-    // Merged so the per-feature overlap query below is a single binary search
-    // (intersectsMerged); touching spans join, so two abutting solid features
-    // read as one stretch.
-    solidSpansPx: mergeSpans(solidSpansPx),
-    labeledFeatureIds,
+    collapsedFeatureIds,
+    collapsedSpansPx: mergeSpans(
+      candidates
+        .filter(mark => collapsedFeatureIds.has(mark.id))
+        .map(mark => [mark.startPx, mark.endPx] as Span),
+    ),
   }
 }
 
@@ -1534,8 +1565,9 @@ function packPreparedRef(
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const { bpPerPx, pinnedFeatureIds } = inputs
-  const { heightMultiplier, singleRow } = metrics
-  const { features, solidSpansPx, labeledFeatureIds } = prep
+  const { heightMultiplier } = metrics
+  const singleRow = metrics.singleRow || !!inputs.flattenRows
+  const { features, collapsedFeatureIds, collapsedSpansPx } = prep
   const { packed, droppedLabelIds, trimPlan } = decideLabelReservations(
     prep,
     inputs,
@@ -1544,40 +1576,18 @@ function packPreparedRef(
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
 
-  // Collapsed mode: every feature shares row 0, by the mode rather than by the
-  // sub-pixel test below. No greedy stacking and no row to contend for, so
-  // nothing after this point has anything to decide. Taken as a whole-function
-  // early-out rather than a branch inside the loop because everything it skips
-  // is dead here and none of it is cheap: the row grid, the priority sort, and
-  // the collapse tests, in the mode picked precisely because the track is too
-  // big to stack.
-  //
-  // The pileup fade still applies, and for the reason it exists everywhere else:
-  // row 0 is the only row, so marks piled on the same pixels are drawn over each
-  // other and the ones underneath are gone. This mode is where that is
-  // guaranteed rather than incidental — a collapsed dbSNP track drew as one
-  // opaque bar conveying nothing about its depth. It is also the mode a lane
-  // read for COVERAGE picks, which is why the fade waits for a real pile rather
-  // than for a pair (see PILEUP_FADE_DEPTH).
-  //
-  // Candidacy is the same sub-pixel test, deliberately, so a wide feature stays
-  // opaque. A ~2px mark IS its own overlap, which is what makes a per-instance
-  // alpha read as the pileup's depth; a gene overlaps its neighbour over part of
-  // its length, and one instance alpha would ghost it end to end to report a
-  // collision at one end. The solid-overlap clause has no meaning here — nothing
-  // is held out of a collapse that the mode already applied to everything.
+  // Collapsed mode: every feature shares row 0 by the mode. No greedy stacking
+  // and no row to contend for, so nothing after this point has anything to
+  // decide — a whole-function early-out rather than a branch inside the loop
+  // because the row grid and the priority sort are both dead here and neither is
+  // cheap. The pileup fade is unaffected: it reads the rows this assigns, and row
+  // 0 being the only row is exactly where marks occlude each other.
   if (singleRow) {
-    const collapsed: CollapsedMark[] = []
     for (const [id, ext] of packed) {
       layoutMap.set(id, 0)
       layoutHeights.set(id, ext.height)
-      const geom = features.get(id)!
-      if (isSubPixelFade(geom, bpPerPx)) {
-        const [startPx, endPx] = renderedSpanPx(geom, bpPerPx)
-        collapsed.push({ id, startPx, endPx })
-      }
     }
-    return { layoutMap, layoutHeights, droppedLabelIds, collapsed, trimPlan }
+    return { layoutMap, layoutHeights, droppedLabelIds, trimPlan }
   }
 
   // GranularRectLayout quantizes rows to pitchY (default 10px), so tops snap to
@@ -1594,11 +1604,21 @@ function packPreparedRef(
     pitchX: 1,
     pitchY: Math.max(1, Math.round(10 * heightMultiplier)),
   })
-  // Every feature pinned to row 0 by the density-collapse path below, with the
-  // px span it paints — the input to `pileupFadeIds`, which decides which of
-  // them fade.
-  const collapsed: CollapsedMark[] = []
-
+  // Book the pile out of row 0 before anything stacks. A collapsed mark is pinned
+  // there without an `addRect` of its own — that is what makes it free of the row
+  // limit and of the track height — so without this the greedy stacker reads row 0
+  // as clear and hands it to the next feature overlapping the pile, which then
+  // paints into it. One rect per merged span, tall enough to cover the marks
+  // sitting in it, and never entered in `layoutMap`: it reserves, it does not
+  // render.
+  for (const [startPx, endPx] of collapsedSpansPx) {
+    layout.addRect(
+      `${PILE_RESERVATION_ID}${startPx}`,
+      startPx,
+      endPx,
+      pileHeightPx(packed, collapsedFeatureIds),
+    )
+  }
   // Insertion order = priority for the low rows in greedy first-fit. Features
   // that sat near the top of the previous layout are inserted first so they
   // keep those low rows across a zoom re-pack (when label overhang shifts the
@@ -1625,62 +1645,108 @@ function packPreparedRef(
 
   for (const [id, ext] of sorted) {
     const geom = features.get(id)!
-    // A sub-pixel density-fade box collapses into the shared density texture
-    // (rect.slang densityAlpha), so pin it to row 0 and skip the greedy stacker:
-    // it reserves no vertical space and never overflows maxHeight. This keeps a
-    // dense variant pileup (all ~1px boxes) on one row instead of stacking onto
-    // extra rows under pixel-precise pitchX:1 packing. But only collapse where
-    // the box doesn't overlap a visible feature — its clamped render would
-    // otherwise land on top of that feature. Both extents come from
-    // renderedSpanPx so a mark abutting another feature stacks rather than
-    // overprinting it.
-    const [boxStartPx, boxEndPx] = renderedSpanPx(geom, bpPerPx)
-    // A collapsed box reserves no horizontal label space, so a labeled sub-pixel
-    // feature (e.g. a miRNA gene at whole-arm zoom) must NOT collapse: its label
-    // still renders at the feature's left edge, and piling several onto row 0
-    // paints their names on top of each other. Send it through addRect so its
-    // label width is reserved and it stacks like every other labeled feature.
-    const collapses =
-      isSubPixelFade(geom, bpPerPx) &&
-      !labeledFeatureIds.has(id) &&
-      !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
-    if (collapses) {
+    // A pile the collapse claimed skips the greedy stacker and shares row 0: it
+    // reserves no vertical space, so a pileup deeper than a track will ever show
+    // costs one row rather than DENSITY_COLLAPSE_DEPTH-plus of them.
+    if (collapsedFeatureIds.has(id)) {
       layoutMap.set(id, 0)
-      collapsed.push({ id, startPx: boxStartPx, endPx: boxEndPx })
-    } else {
-      const { left: arrowLeft, right: arrowRight } = strandArrowPadding(
-        geom,
-        bpPerPx,
-      )
-      const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
-      const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
-      // A null top means the stack passed GranularRectLayout's own row limit —
-      // its `maxHeight` option, which we leave at the 10000px default, NOT the
-      // display's `maxHeight` config slot (that clamps the reported content
-      // height, and is a tenth the size). Expected on a genuinely deep stack: the
-      // feature gets OFFSCREEN_Y so it's filtered out, and `countTruncatedFeatures`
-      // is how the display owns up to it.
-      const top = layout.addRect(id, leftPx, rightPx, ext.height)
-      layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
+      layoutHeights.set(id, ext.height)
+      continue
     }
+    const { left: arrowLeft, right: arrowRight } = strandArrowPadding(
+      geom,
+      bpPerPx,
+    )
+    const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
+    const rightPx = Math.max(
+      ext.layoutEndBp / bpPerPx + arrowRight,
+      leftPx + MIN_RECT_WIDTH_PX,
+    )
+    // A null top means the stack passed GranularRectLayout's own row limit — its
+    // `maxHeight` option, which we leave at the 10000px default, NOT the
+    // display's `maxHeight` config slot (that clamps the reported content height,
+    // and is a tenth the size). Expected on a genuinely deep stack: the feature
+    // gets OFFSCREEN_Y so it's filtered out, and `countTruncatedFeatures` is how
+    // the display owns up to it.
+    const top = layout.addRect(id, leftPx, rightPx, ext.height)
+    layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
     layoutHeights.set(id, ext.height)
   }
 
-  // `collapsed` rather than the fade set it implies: the fit solve's height
-  // probes pack a ref-group ~10 times and read only the rows, so the sweep runs
-  // once, in the committed layout, where its answer is actually rendered.
-  return { layoutMap, layoutHeights, droppedLabelIds, collapsed, trimPlan }
+  return { layoutMap, layoutHeights, droppedLabelIds, trimPlan }
 }
 
-// A sub-pixel mark drawn on row 0 — pinned there by the density collapse, or by
-// collapsed display mode putting everything there — and the px span it paints.
-interface CollapsedMark {
+// The id a pile's row-0 reservation is stored under. Prefixed with a character no
+// feature id can contain so it cannot collide with one, and never written to
+// `layoutMap`, so nothing downstream can mistake it for a feature.
+const PILE_RESERVATION_ID = '\u0000pile@'
+
+// The tallest row a pile occupies, which is what its reservation has to cover:
+// the marks share row 0, so the space they take is the tallest one among them.
+function pileHeightPx(
+  packed: ReadonlyMap<string, PackedExtent>,
+  collapsedFeatureIds: ReadonlySet<string>,
+) {
+  let tallest = 0
+  for (const id of collapsedFeatureIds) {
+    tallest = Math.max(tallest, packed.get(id)?.height ?? 0)
+  }
+  return tallest
+}
+
+// A mark on some row, and the px span it paints. Sub-pixel boxes are widened to
+// the renderer's min-draw clamp, which is what makes two of them overlap at all.
+interface PaintedMark {
   id: string
   startPx: number
   endPx: number
 }
 
-// How many collapsed marks have to cover one point before they read as a pileup
+// How deep a pile has to get before the layout stops giving each mark a row and
+// shares one. Rows are pile depth exactly — the packer reserves the box the
+// renderer paints, min-width clamp included — so this is a track height in
+// disguise: 25 rows is ~500px in normal mode, past any default track height and
+// half the autogrow ceiling.
+//
+// Set past what a real callset reaches at the density gate's own limit, so an
+// ordinary variant track stacks in full and every allele stays visible and
+// hoverable, and what collapses is a column no stack could have shown. ADR-037
+// carries the measurements and why the bar is not the fade's.
+const DENSITY_COLLAPSE_DEPTH = 25
+
+// Which candidate marks the collapse claims: every one covering a point
+// `minDepth` marks deep. Per mark and not per connected run of overlapping boxes,
+// which was tried and reverted: a run chains through every mark within a clamped
+// box of its neighbour, so one 25-deep hotspot dragged 600 SNVs spread across a
+// whole view onto row 0 with only the hotspot faded — the very defect the
+// reservation above exists to stop, re-created at a density the gate admits.
+//
+// What the run rule was really compensating for is that a collapsed mark calls no
+// `addRect`, so row 0 stayed free for the stacker to hand to an overlapping
+// neighbour, which then painted into the pile. `collapsedSpansPx` books that row
+// instead, which is both narrower and exact.
+function deeplyPiledIds(
+  candidates: PaintedMark[],
+  minDepth: number,
+): ReadonlySet<string> {
+  const piled = new Set<string>()
+  addDeeplyPiledIds(candidates, piled, minDepth)
+  return piled
+}
+
+// Sorted open/close events for an interval sweep over marks. Ends sort before
+// starts at equal px, so half-open spans that merely touch neither share a point
+// nor join a run.
+function pileupEvents(marks: PaintedMark[]) {
+  const events = marks.flatMap(mark => [
+    { px: mark.startPx, delta: 1, id: mark.id },
+    { px: mark.endPx, delta: -1, id: mark.id },
+  ])
+  events.sort((a, b) => a.px - b.px || a.delta - b.delta)
+  return events
+}
+
+// How many marks have to cover one point of one row before they read as a pileup
 // rather than as neighbours. Below it every mark draws opaque, so the lane
 // answers "is this interval covered"; at or above it they draw at
 // MIN_DENSITY_ALPHA and accumulate through the standard src-alpha blend, so a
@@ -1713,12 +1779,20 @@ interface CollapsedMark {
 // buffer, off screen, which is the decision staying local doing its job.
 const PILEUP_FADE_DEPTH = 3
 
-// Which collapsed marks sit under a pileup that deep. This is the whole reason
-// the fade exists: on row 0 nothing stacks, so marks over the same pixels are
-// drawn one on top of another, and at full opacity the ones underneath are not
-// merely hard to read but *gone*, with no cue that they are there.
+// Which sub-pixel marks are drawn over by their neighbours, which is the whole
+// reason the fade exists: marks sharing a row and a pixel column are painted one
+// on top of another, and at full opacity the ones underneath are not merely hard
+// to read but *gone*, with no cue that they are there.
 //
-// This replaced a count: fade every collapsed mark once a ref-group held >= 1000
+// Per ROW, off the layout the packer committed. Occlusion is what the fade
+// reports and occlusion is per row — two marks the stacker put on different rows
+// are both fully visible however close their columns, and asking the question any
+// other way answers about something that is not on screen. It also means no
+// separate notion of a "collapsed" mark has to exist for the fade to have an
+// input: whatever ends up sharing row 0 gets swept, whether the mode put it there
+// (`singleRow`) or the packer did.
+//
+// This replaced a count: fade every sub-pixel mark once a ref-group held >= 1000
 // of them, else none. Three things were wrong with measuring it that way, and
 // they are all the same mistake — occlusion is *local* and the count was not.
 // Marks piled on one pixel occlude each other whether or not 998 more exist
@@ -1732,24 +1806,52 @@ const PILEUP_FADE_DEPTH = 3
 // A lone mark with clear space around it still renders opaque, which is what the
 // count was protecting and is preserved here exactly.
 //
+// Only sub-pixel boxes are candidates, deliberately, so a wide feature stays
+// opaque. A ~2px mark IS its own overlap, which is what makes a per-instance
+// alpha read as the pileup's depth; a gene overlaps its neighbour over part of
+// its length, and one instance alpha would ghost it end to end to report a
+// collision at one end.
+function pileupFadeIds(
+  features: ReadonlyMap<string, FeatureGeometry>,
+  layoutMap: ReadonlyMap<string, number>,
+  bpPerPx: number,
+): ReadonlySet<string> {
+  const byRow = new Map<number, PaintedMark[]>()
+  for (const [id, top] of layoutMap) {
+    const geom = features.get(id)
+    if (!geom || !isPlacedRow(top) || !isSubPixelFade(geom, bpPerPx)) {
+      continue
+    }
+    const [startPx, endPx] = renderedSpanPx(geom, bpPerPx)
+    let row = byRow.get(top)
+    if (!row) {
+      row = []
+      byRow.set(top, row)
+    }
+    row.push({ id, startPx, endPx })
+  }
+
+  const fade = new Set<string>()
+  for (const marks of byRow.values()) {
+    addDeeplyPiledIds(marks, fade, PILEUP_FADE_DEPTH)
+  }
+  return fade
+}
+
 // An interval sweep, because "how many marks cover this point" is not answerable
-// from a running max end. Ends sort before starts at equal px so half-open spans
-// that merely touch don't count as sharing a point. `open` holds the marks that
+// from a running max end. `open` holds the marks that
 // are covering the current point and not yet flagged: the moment `depth` reaches
 // the threshold every one of them is under a pileup that deep, so they all fade
 // and leave the set — `depth` goes on counting them, and any mark that opens
 // while it stays at or above the threshold is flagged as it arrives.
-function pileupFadeIds(collapsed: CollapsedMark[]): ReadonlySet<string> {
-  const events = collapsed.flatMap(mark => [
-    { px: mark.startPx, delta: 1, id: mark.id },
-    { px: mark.endPx, delta: -1, id: mark.id },
-  ])
-  events.sort((a, b) => a.px - b.px || a.delta - b.delta)
-
-  const fade = new Set<string>()
+function addDeeplyPiledIds(
+  marks: PaintedMark[],
+  piled: Set<string>,
+  minDepth: number,
+) {
   const open = new Set<string>()
   let depth = 0
-  for (const { delta, id } of events) {
+  for (const { delta, id } of pileupEvents(marks)) {
     if (delta === -1) {
       depth--
       open.delete(id)
@@ -1757,14 +1859,13 @@ function pileupFadeIds(collapsed: CollapsedMark[]): ReadonlySet<string> {
     }
     depth++
     open.add(id)
-    if (depth >= PILEUP_FADE_DEPTH) {
+    if (depth >= minDepth) {
       for (const openId of open) {
-        fade.add(openId)
+        piled.add(openId)
       }
       open.clear()
     }
   }
-  return fade
 }
 
 // Mutates the cloned region in place. Raw data has topPx=0 everywhere, so we
@@ -1777,10 +1878,9 @@ function applyLayoutToRegion(
   // Feature ids whose name was decimated away: their floatingLabelsData entry is
   // deleted below so no renderer/hit-test draws a name the packer didn't reserve.
   droppedLabelIds: ReadonlySet<string>,
-  // Feature ids whose collapsed box sits under a pileup PILEUP_FADE_DEPTH marks
-  // deep. Only these keep the fade flag; every other box — stacked, or a
-  // collapsed mark with no more than a neighbour or two over it — is rewritten
-  // to 0 and drawn opaque.
+  // Feature ids drawn over by PILEUP_FADE_DEPTH marks sharing their row. Only
+  // these keep the fade flag the worker set; every other box is rewritten to 0
+  // and drawn opaque.
   densityFadeIds: ReadonlySet<string>,
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
