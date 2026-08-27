@@ -91,12 +91,15 @@ Each opens in Colab and runs top-to-bottom.
 | [Interactive controls](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/09_interactive_controls.ipynb)              | An `ipywidgets` slider re-runs the analysis and repaints the track                                |
 | [Region-reactive](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/10_region_reactive.ipynb)                        | Recompute pysam coverage only over the window in view, adapting to zoom                           |
 | [Compare genomes (synteny)](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/11_synteny_ecoli.ipynb)                | Four _E. coli_ strains in a linear synteny view from one all-vs-all PAF                           |
+| [Large results](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/12_large_data.ipynb)                               | Where `add_features` stops being the right door, and writing a file starts                        |
+| [Large signal](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/13_large_wiggle.ipynb)                              | Three routes for a quantitative track, which is the data type that gets big fastest               |
 
 Notebooks 05–07 are the core loop: **run an analysis in Python, load the result
 onto the genome**, using the tools scientists already reach for (pysam,
 bioframe, scipy/statsmodels) on real data. Notebooks 09–10 close the loop the
 other way: a widget control or a pan in the view drives Python to **recompute
-and repaint** live.
+and repaint** live. Notebooks 12–13 are where a result outgrows that loop, since
+`add_features` carries every row in the widget's own state.
 
 ## See also
 
