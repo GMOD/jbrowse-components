@@ -388,6 +388,26 @@ describe('FetchVisibleRegions autorun', () => {
         expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
       })
     })
+
+    // The worker fetches peptides only under `showAminoAcids` as well, so with
+    // the overlay off the crossing produces identical output and a variant or
+    // BED track used to refetch every region at base zoom for nothing.
+    it('does not refetch on a crossing zoom with amino acids off', async () => {
+      const { display, view, mockRpcCall } = await loadedAboveTheThreshold()
+      // a settings change of its own, so let its refetch settle first
+      view.setShowAminoAcids(false)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+      const callsBefore = mockRpcCall.mock.calls.length
+
+      view.zoomTo(0.5)
+      expect(display.viewportWithinLoadedData).toBe(true)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      expect(display.regionFetchKey).toBe('false')
+      expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    })
   })
 
   it('re-fetches a region pruned off-screen when it scrolls back into view', async () => {

@@ -21,13 +21,9 @@ function emptyRegionData(): MultiRowRegionData {
   }
 }
 
-// CanvasFeatureGateMixin contributes `gateEnabled`, and `types.compose`
-// resolves a member collision to the LATER argument — so the gate is on only
-// while the mixin is composed after `MultiRegionDisplayMixin`. Swapping the two
-// lines hands the opt-in back to the base's `false` and turns the whole
-// byte/density gate off silently; `no-restricted-syntax` fails that order, and
-// this is the runtime pin under it.
-test('the gate opt-in survives the display composition order', () => {
+// The display declares the byte-gate opt-in itself; `RegionTooLargeMixin`
+// defaults it off, and losing the override turns the whole gate off silently.
+test('the display opts into the byte gate', () => {
   const { display } = createTestEnvironment().createDisplay()
   expect(display.gateEnabled).toBe(true)
 })
@@ -212,10 +208,8 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(true)
 
     // MultiRegionDisplayMixin's DisplayedRegionsChange autorun drops the
-    // estimate; the gate mixin drops the per-region density stats on the same
-    // trigger.
+    // estimate
     display.clearByteEstimate()
-    display.clearGateMeasurements()
     expect(display.byteEstimate).toBeUndefined()
     expect(display.regionTooLarge).toBe(false)
   })
@@ -280,19 +274,8 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
 
     const unlabelled = { viewport: undefined, gated: true, tierKey: undefined }
     display.commitFetchBytes([8_000_000], unlabelled)
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000 },
-          result: { bytes: 8_000_000, featureCount: 12 },
-        },
-      ],
-      unlabelled,
-    )
     expect(display.gateMeasurementStale).toBe(true)
     expect(display.byteEstimate).toBeUndefined()
-    expect(display.densityStatsPerRegion.size).toBe(0)
   })
 
   // decided by the gate at ISSUE, not at commit: force-load can move between
@@ -328,31 +311,6 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.gateMeasurementStale).toBe(true)
   })
 
-  // The density stats are the deliberate exception: they are committed whatever
-  // the budget was, which is what lets zooming back out re-gate from the live
-  // main-thread verdict rather than waiting on a fresh worker rejection.
-  it('still records density stats for a force-loaded fetch', () => {
-    const { display, view } = createTestEnvironment().createDisplay()
-    view.zoomTo(100)
-    display.setForceLoadTrack(true)
-
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000 },
-          result: { featureCount: 12 },
-        },
-      ],
-      display.gateFetchState(),
-    )
-
-    expect(display.densityStatsPerRegion.get(0)).toEqual({
-      featureCount: 12,
-      regionWidthBp: 10_000,
-    })
-  })
-
   it('keeps force-load across region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
@@ -364,7 +322,6 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
 
     // track-wide approval, so the nav clears survive it
     display.clearByteEstimate()
-    display.clearGateMeasurements()
     expect(display.forceLoadTrack).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -446,52 +403,5 @@ describe('multi-region estimates over a shrinking region set', () => {
     expect(display.regionTooLarge).toBe(false)
     // ...and the sum is what the other path would have compared, which is over
     expect(perRegion * 2).toBeGreaterThan(display.resolvedByteLimit()!)
-  })
-})
-
-describe('multi-row derived regionTooLarge (density axis)', () => {
-  // Density is a live max over visible regions at coarseBpPerPx, so settle the
-  // debounced coarse blocks the gate reads after each zoom.
-  function settle(view: { dynamicBlocks: unknown; bpPerPx: number }) {
-    ;(
-      view as unknown as {
-        setCoarseDynamicBlocks: (b: unknown, bp: number) => void
-      }
-    ).setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  }
-
-  // Multi-row disables the density axis (densityGateEnabled): it paints features
-  // into fixed lanes, so a high total feature count is not a per-glyph render
-  // cost — only the byte/download budget gates it. The "Too many features"
-  // banner must never show here regardless of density.
-  it('never trips on density even at an extreme feature count', () => {
-    const { display, view } = createTestEnvironment().createDisplay()
-    view.zoomTo(100)
-    settle(view)
-    // a dense region that would trip the default maxFeatureScreenDensity of 1
-    display.setDensityStats(0, {
-      featureCount: 500_000,
-      regionWidthBp: 10_000_000,
-    })
-    expect(display.maxFeatureDensity).toBeUndefined()
-    expect(display.densityTooLarge).toBe(false)
-    expect(display.regionTooLarge).toBe(false)
-  })
-
-  // The axis is on where something measures it. `RegionTooLargeMixin` defaults
-  // it off, `CanvasFeatureGateMixin` contributes the `true`, and this display
-  // takes it back off in its own `.views` — which is what makes the override
-  // independent of mixin order. Nothing else pins the per-display default:
-  // `gateTruthTable` overrides the hook to enumerate it, so it cannot see which
-  // way the base points.
-  it('turns the contributed density axis back off, in compose order', () => {
-    const { display, view } = createTestEnvironment().createDisplay()
-    view.zoomTo(100)
-    settle(view)
-    expect(display.gateActive).toBe(true)
-    expect(display.aboveForceLoadFloor).toBe(true)
-    // ...so the only term left holding the axis off is this display's own
-    expect(display.densityGateEnabled).toBe(false)
-    expect(display.densityGateActive).toBe(false)
   })
 })

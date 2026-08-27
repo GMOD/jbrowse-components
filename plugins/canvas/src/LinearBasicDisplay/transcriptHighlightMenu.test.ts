@@ -206,15 +206,15 @@ describe('transcript highlight context menu', () => {
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1'])
   })
 
-  it('boxes the clicked isoform on hover while the menu is open', () => {
+  it('boxes the clicked isoform while the menu is open', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     loadGene(display, [eden1, eden2, eden3])
 
     rightClick(display, gene, eden1)
 
-    expect(display.subfeatureIdUnderMouse).toBe('EDEN.1')
-    expect(display.featureIdUnderMouse).toBe('EDEN')
+    expect(display.hoverBoxSubfeature?.featureId).toBe('EDEN.1')
+    expect(display.hoverBoxFeature?.featureId).toBe('EDEN')
   })
 
   it('leaves the text-search highlight path matching fuzzily', () => {

@@ -169,7 +169,7 @@ export function collectNonLiteralGateOverrides(): string[] {
  * above can name its subject because an adapter lives in a directory called
  * after it; a display's opt-in routinely does not. Two of these are shared
  * mixins serving several displays each (`arc/shared`, `variants/shared`), and
- * canvas's covers three displays from a file named for none of them — so a
+ * canvas's covers two displays from a file named for neither — so a
  * directory-name heuristic yields a row called `shared` and silently omits
  * `LinearBasicDisplay`. That is the "looks complete and is short" failure a
  * generated table is supposed to make impossible, so this reports what it can
@@ -258,8 +258,9 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
     'BamAdapter/CramAdapter declare 5 Mb, which outranks any display value',
   'plugins/arc/src/shared/ArcFetchModel.ts':
     'baseLinearDisplayConfigSchema: arc reads paired-feature adapters, which report no estimate, so the byte axis is inert unless pointed at a gated one',
-  'plugins/canvas/src/shared/CanvasFeatureGateMixin.ts':
-    'LinearBasicDisplay and LinearMultiRowFeatureDisplay',
+  'plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts':
+    'LinearMultiRowFeatureDisplay',
+  'plugins/canvas/src/shared/CanvasFeatureGateMixin.ts': 'LinearBasicDisplay',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts': 'LinearMafDisplay',
   'plugins/variants/src/LDDisplay/shared.ts':
     'VcfTabixAdapter declares 5 Mb; the PlinkLD adapters report no estimate',

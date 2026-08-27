@@ -90,8 +90,9 @@ interface HighlightBoxesModel {
   // baked widths are measured at the base size (see renderedTextWidth)
   labelFontSize: number
   selectedFeatureId: string | undefined
-  hoveredFeature: FlatbushItem | null
-  hoveredSubfeature: SubfeatureInfo | null
+  // the open context menu's target, else the hover — see the model's getters
+  hoverBoxFeature: FlatbushItem | null
+  hoverBoxSubfeature: SubfeatureInfo | null
   featureItemMap: Map<string, FeatureItemEntry>
   // Y a feature's glyph is currently drawn off its laid-out row by, mid Y-morph.
   // featureItemMap holds the destination rows (hit targets), so every box adds
@@ -616,7 +617,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
 })
 
 // Hover / selection / solo / search highlight boxes. Split from the labels
-// because this reads hoveredFeature/hoveredSubfeature, which change on every
+// because this reads hoverBoxFeature/hoverBoxSubfeature, which change on every
 // mouse move — its own observer means a hover tick re-renders just these few
 // boxes, not the whole floating-label build.
 export const HighlightLayer = observer(function HighlightLayer({
@@ -627,8 +628,8 @@ export const HighlightLayer = observer(function HighlightLayer({
   view: LGV
 }) {
   const {
-    hoveredFeature,
-    hoveredSubfeature,
+    hoverBoxFeature,
+    hoverBoxSubfeature,
     selectedFeatureId,
     highlightedFeatureIdSet,
     soloFeatureIdSet,
@@ -749,7 +750,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     }
   }
 
-  const hoverItem = hoveredSubfeature ?? hoveredFeature
+  const hoverItem = hoverBoxSubfeature ?? hoverBoxFeature
   if (hoverItem) {
     const entry = featureItemMap.get(hoverItem.featureId)
     if (entry) {
@@ -757,7 +758,7 @@ export const HighlightLayer = observer(function HighlightLayer({
       // (buildFeatureFlatbushIndex); a subfeature's is neither
       // (buildSubfeatureFlatbushIndex), so its shading must mirror that exact,
       // unpadded box rather than overhang it.
-      const subfeatureHover = !!hoveredSubfeature
+      const subfeatureHover = !!hoverBoxSubfeature
       addOverlay({
         item: hoverItem,
         source: entry.vr,

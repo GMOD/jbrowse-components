@@ -1,6 +1,5 @@
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 
-import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 
 const mockRpcCall = jest.fn()
@@ -33,10 +32,8 @@ function makeSelf() {
   // what `fetchEachRegion` marked loaded: a region the worker refused is
   // deliberately absent, so `loadedRegions` never claims a span nothing stored
   const loadedIndices: number[] = []
-  const committed: RegionGateMeasurement[][] = []
   return {
     reported,
-    committed,
     loadedIndices,
     self: {
       adapterConfig: {},
@@ -82,10 +79,7 @@ function makeSelf() {
         viewport: { spanBp: 10_000, key: 'k' },
         gated: true,
       }),
-      commitGateMeasurements: (m: RegionGateMeasurement[]) => {
-        committed.push(m)
-      },
-      // the byte half, which the fan-out helper commits for every display
+      // the byte axis, which the fan-out helper commits for every display
       commitFetchBytes: () => {},
     },
   }
@@ -134,30 +128,6 @@ describe('fetchMultiRowFeatures', () => {
     for (const call of mockRpcCall.mock.calls) {
       expect(call[2]).toMatchObject(self.rpcProps())
     }
-  })
-
-  test('commits each region measurement against its own span', async () => {
-    const { self, committed } = makeSelf()
-    await fetchMultiRowFeatures(self as any, NEEDED)
-
-    // each region pairs with its own result by construction (both come from
-    // `needed`), which is what retired the `?? 0` fallback that silently
-    // reported a zero-width region — and so an infinite density — on a lookup
-    // miss. The span arithmetic itself lives in the gate, not here.
-    expect(committed).toEqual([
-      [
-        {
-          displayedRegionIndex: 0,
-          region: NEEDED[0]!.region,
-          result: { bytes: 42, featureCount: 7 },
-        },
-        {
-          displayedRegionIndex: 3,
-          region: NEEDED[1]!.region,
-          result: { bytes: 42, featureCount: 7 },
-        },
-      ],
-    ])
   })
 
   // A refused region stores nothing, so it must not be marked loaded: with the

@@ -10,9 +10,6 @@ import {
   assembleLocString,
   getContainingView,
   getSession,
-  notifyFeatureDetailsMiss,
-  openFeatureWidget,
-  withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
@@ -47,8 +44,8 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
+import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { blockScreenRect } from './rendering/blockScreenRect.ts'
 import {
@@ -130,7 +127,6 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      CanvasFeatureGateMixin(),
       LegendMixin(),
       RowHeightMixin(),
       TreeSidebarMixin<MultiRowSource>(),
@@ -199,14 +195,14 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Multi-row paints features into fixed lanes, so a high total feature count
-       * (e.g. a whole-chromosome haplotype painting with many segments per row)
-       * is not a per-glyph render cost — only the byte/download budget should
-       * gate it. Disable the density axis of CanvasFeatureGateMixin so the
-       * "too many features" banner never shows here.
+       * The byte-gate opt-in. Multi-row paints features into fixed lanes, so a
+       * high total feature count (a whole-chromosome haplotype painting with
+       * many segments per row) is not a per-glyph render cost; only the
+       * byte/download budget gates it, and the density axis stays at
+       * `RegionTooLargeMixin`'s off.
        */
-      get densityGateEnabled() {
-        return false
+      get gateEnabled() {
+        return true
       },
       /**
        * #getter
@@ -929,231 +925,229 @@ export default function stateModelFactory(
           : undefined
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setShowRowSeparators(f: boolean) {
-        setConf(self, 'showRowSeparators', f)
-      },
-      /**
-       * #action
-       */
-      setColorRowLabels(f: boolean) {
-        setConf(self, 'colorRowLabels', f)
-      },
-      /**
-       * #action
-       * Show/hide a legend category by label (render-time, no refetch).
-       */
-      toggleCategory(label: string) {
-        const next = self.hiddenCategories.includes(label)
-          ? self.hiddenCategories.filter(l => l !== label)
-          : [...self.hiddenCategories, label]
-        self.hiddenCategories.replace(next)
-      },
-      /**
-       * #action
-       */
-      setHiddenCategories(labels: string[]) {
-        self.hiddenCategories.replace(labels)
-      },
-      /**
-       * #action
-       * Repartition: which feature attribute assigns a feature to a row.
-       *
-       * A fetch input, so writing the slot refetches on its own — nothing here
-       * has to ask for one. What it DOES have to do is drop the state keyed on
-       * the old rows: `layout` names rows by value, so under a new partition its
-       * entries name rows that no longer exist, and `getSources` appends a row a
-       * layout omits rather than dropping it — the old row set would have come
-       * back beside the new one, empty, with a saved color each. Same for the
-       * hidden categories, whose labels are the old values.
-       *
-       * `clearLayout`, not `setLayout([])`, because the subtree filter is keyed
-       * on row names too. It is otherwise independent of the tree and of the
-       * order — `filterRowsBySubtree` matches on `name` and needs neither, so
-       * `setLayout` deliberately keeps a focused clade across a reorder — but
-       * this is the one action here that renames the rows out from under it.
-       * Left set, it matched nothing and `sources` came back empty: a blank
-       * canvas with no row labels, recoverable only by finding "Clear subtree
-       * filter" in the track menu. `setPhasedMode` is the same action on the
-       * multi-sample variant displays and clears it for the same reason.
-       */
-      setPartitionField(field: string) {
-        // Against the EFFECTIVE field, not the slot: with the slot at its empty
-        // auto default the menu checks whatever auto picked, and picking that
-        // same radio would otherwise pin it — a full refetch to produce the
-        // painting already on screen, and an opt-out of auto nobody asked for.
-        if (field === self.effectivePartitionField) {
-          return
-        }
-        setConf(self, 'partitionField', field)
-        self.clearLayout()
-        self.hiddenCategories.clear()
-      },
-      /**
-       * #action
-       * Reorder the rows by the value each carries at (refName, pos) — the
-       * feature covering that position on each row. Reads the already-loaded
-       * region data (no refetch/RPC) and writes the new order via `layout`.
-       *
-       * Declines with fewer than two rows to order, because the empty result is
-       * not a harmless no-op: `setLayout` clears the cluster tree whenever the
-       * row set changes, so writing it discards both the saved arrangement and
-       * the dendrogram a clustering run produced. The rows are DISCOVERED from
-       * `rpcDataMap` (see `sourcesWithoutLayout`), which empties whenever the
-       * display is panned off its data or blanked by the density gate — so
-       * "sorting" a track that is merely not loaded right now used to wipe it.
-       * `sortRowsBy`, the declarative twin, meets the same condition by waiting
-       * for the region instead (see setupRowSortAutorun); a click has nothing to
-       * wait for, so it declines.
-       *
-       * Declines again when no loaded region covers the column, which is the
-       * gate `setupRowSortAutorun` and multi-wiggle's twin already applied and
-       * this did not: it filtered the regions by refName alone, so a position
-       * past the end of the loaded window gave every row "no value" and wrote
-       * back the order it already had. `loadedRegionIndexAt` is the one
-       * predicate all three now ask, and resolving to a single region is also
-       * what stops two loaded windows on one contig from both answering.
-       */
-      sortRowsByValueAt(refName: string, pos: number) {
-        const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
-        const region =
-          index === undefined ? undefined : self.rpcDataMap.get(index)
-        if (!region || self.editableSources.length < 2) {
-          return
-        }
-        // editableSources, not `sources`: layout-merged (so a user's colors
-        // survive the reorder) and unfiltered by the subtree, so a focused
-        // clade doesn't persist itself as the whole row order and drop
-        // everything it was hiding.
-        self.setLayout(rowOrderByValueAt(self.editableSources, region, pos))
-      },
-      /**
-       * #action
-       * Writes only when the hovered block actually changes, so a mouse moving
-       * within one block (blocks are many px wide) doesn't invalidate the
-       * observers watching this.
-       */
-      setHoveredFeature(arg?: MultiRowHit) {
-        const cur = self.hoveredMultiRowFeature
-        if (arg?.id !== cur?.id || arg?.regionIndex !== cur?.regionIndex) {
-          self.hoveredMultiRowFeature = arg
-        }
-      },
-      /**
-       * #action
-       * Re-fetch the full clicked feature by id and open it in the feature
-       * details widget. The painting ships only the slim render arrays, so the
-       * complete feature is fetched on demand (GetCanvasFeatureDetails).
-       */
-      selectFeatureById(featureId: string, displayedRegionIndex: number) {
-        const region = self.loadedRegions.get(displayedRegionIndex)
-        if (!region) {
-          // The click landed on a region whose data has already gone, which is
-          // the same nothing-to-open the lookup itself reports below.
-          notifyFeatureDetailsMiss(self)
-          return
-        }
-        void withFeatureDetails(
-          self,
-          () =>
-            fetchCanvasFeatureDetails(
-              getSession(self),
-              getRpcSessionId(self),
-              self.adapterConfig,
-              featureId,
-              region,
-            ),
-          feature => {
-            openFeatureWidget(self, feature.toJSON(), { feature })
-          },
-        )
-      },
-      /**
-       * #action
-       */
-      setRpcData(regionIndex: number, data: MultiRowRegionData) {
-        self.rpcDataMap.set(regionIndex, data)
-      },
-      /**
-       * #action
-       */
-      clearDisplaySpecificData() {
-        self.rpcDataMap.clear()
-      },
-      /**
-       * #action
-       * Set the track height. In auto-fit mode the rows restretch to it; in fixed
-       * mode it's distributed across the current rows as a fixed row height.
-       */
-      // Both branches floor the TRACK at MIN_DISPLAY_HEIGHT, never the row.
-      // Flooring the row instead (`Math.max(1, newHeight / nrow)`) got both ends
-      // wrong at once: on a 1,987-row painting it stalled a shrink drag at 1,987
-      // px — a height auto-fit reaches freely, since `autoRowHeight` is
-      // deliberately not floored and `rowBand` widens a sub-pixel row to
-      // MIN_DRAWN_ROW_PX for drawing — while on a 3-row one it let the same drag
-      // collapse the track to 3 px, past the point where its own resize handle
-      // can be grabbed again. A sub-pixel row is legitimate here (see
-      // `autoRowHeight` and `resolveRowHeight`, which passes one through and
-      // floors only a non-positive); a sub-MIN_DISPLAY_HEIGHT track is not, in
-      // either mode.
-      setHeight(newHeight: number) {
-        const clamped = Math.max(newHeight, MIN_DISPLAY_HEIGHT)
-        if (self.rowHeight === 0) {
-          setConf(self, 'height', clamped)
-        } else {
-          setConf(self, 'rowHeight', clamped / self.nrow)
-        }
-        return self.height
-      },
-      /**
-       * #action
-       * Drag-resize. Defers to `setHeight`, which restretches rows in auto-fit
-       * mode and re-pins the row height in fixed mode.
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        self.setHeight(self.height + distance)
-        return self.height - oldHeight
-      },
-      /**
-       * #action
-       * Switch to auto-fit: seed the `height` config slot from the current
-       * content height (so toggling on doesn't jump), then `rowHeight = 0`
-       * makes `effectiveRowHeight` derive from it.
-       */
-      setFitToHeight() {
-        setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
-        setConf(self, 'rowHeight', 0)
-      },
-      /**
-       * #action
-       */
-      startRenderingBackend(backend: MultiRowRenderingBackend) {
-        installUpload(self, backend, {
-          cells: () => self.rpcDataMap,
-          // `featurePaintInputs`, never `renderState`: the instance buffer holds
-          // {startBp,endBp,rowIndex,color} and no geometry — the row height and
-          // canvas box reach the shader as uniforms, and both move on every
-          // frame of a track-height drag. Declaring the narrow one is what keeps
-          // a reorder / recolor / category toggle re-encoding without an RPC
-          // roundtrip while a resize re-encodes nothing.
-          inputs: () => self.featurePaintInputs,
-          encode: (regionData, paintInputs) => ({
-            instanceBuffer: buildMultiRowInstanceBuffer(regionData, paintInputs)
-              .buffer,
-          }),
-          render: b =>
-            b.renderBlocks(
-              self.renderBlocks,
-              self.rpcDataMap,
-              self.renderState,
-            ),
-        })
-      },
-    }))
+    .actions(self => {
+      const openDetails = createCanvasFeatureDetailsOpener(self)
+      return {
+        /**
+         * #action
+         */
+        setShowRowSeparators(f: boolean) {
+          setConf(self, 'showRowSeparators', f)
+        },
+        /**
+         * #action
+         */
+        setColorRowLabels(f: boolean) {
+          setConf(self, 'colorRowLabels', f)
+        },
+        /**
+         * #action
+         * Show/hide a legend category by label (render-time, no refetch).
+         */
+        toggleCategory(label: string) {
+          const next = self.hiddenCategories.includes(label)
+            ? self.hiddenCategories.filter(l => l !== label)
+            : [...self.hiddenCategories, label]
+          self.hiddenCategories.replace(next)
+        },
+        /**
+         * #action
+         */
+        setHiddenCategories(labels: string[]) {
+          self.hiddenCategories.replace(labels)
+        },
+        /**
+         * #action
+         * Repartition: which feature attribute assigns a feature to a row.
+         *
+         * A fetch input, so writing the slot refetches on its own — nothing here
+         * has to ask for one. What it DOES have to do is drop the state keyed on
+         * the old rows: `layout` names rows by value, so under a new partition its
+         * entries name rows that no longer exist, and `getSources` appends a row a
+         * layout omits rather than dropping it — the old row set would have come
+         * back beside the new one, empty, with a saved color each. Same for the
+         * hidden categories, whose labels are the old values.
+         *
+         * `clearLayout`, not `setLayout([])`, because the subtree filter is keyed
+         * on row names too. It is otherwise independent of the tree and of the
+         * order — `filterRowsBySubtree` matches on `name` and needs neither, so
+         * `setLayout` deliberately keeps a focused clade across a reorder — but
+         * this is the one action here that renames the rows out from under it.
+         * Left set, it matched nothing and `sources` came back empty: a blank
+         * canvas with no row labels, recoverable only by finding "Clear subtree
+         * filter" in the track menu. `setPhasedMode` is the same action on the
+         * multi-sample variant displays and clears it for the same reason.
+         */
+        setPartitionField(field: string) {
+          // Against the EFFECTIVE field, not the slot: with the slot at its empty
+          // auto default the menu checks whatever auto picked, and picking that
+          // same radio would otherwise pin it — a full refetch to produce the
+          // painting already on screen, and an opt-out of auto nobody asked for.
+          if (field === self.effectivePartitionField) {
+            return
+          }
+          setConf(self, 'partitionField', field)
+          self.clearLayout()
+          self.hiddenCategories.clear()
+        },
+        /**
+         * #action
+         * Reorder the rows by the value each carries at (refName, pos) — the
+         * feature covering that position on each row. Reads the already-loaded
+         * region data (no refetch/RPC) and writes the new order via `layout`.
+         *
+         * Declines with fewer than two rows to order, because the empty result is
+         * not a harmless no-op: `setLayout` clears the cluster tree whenever the
+         * row set changes, so writing it discards both the saved arrangement and
+         * the dendrogram a clustering run produced. The rows are DISCOVERED from
+         * `rpcDataMap` (see `sourcesWithoutLayout`), which empties whenever the
+         * display is panned off its data or blanked by the density gate — so
+         * "sorting" a track that is merely not loaded right now used to wipe it.
+         * `sortRowsBy`, the declarative twin, meets the same condition by waiting
+         * for the region instead (see setupRowSortAutorun); a click has nothing to
+         * wait for, so it declines.
+         *
+         * Declines again when no loaded region covers the column, which is the
+         * gate `setupRowSortAutorun` and multi-wiggle's twin already applied and
+         * this did not: it filtered the regions by refName alone, so a position
+         * past the end of the loaded window gave every row "no value" and wrote
+         * back the order it already had. `loadedRegionIndexAt` is the one
+         * predicate all three now ask, and resolving to a single region is also
+         * what stops two loaded windows on one contig from both answering.
+         */
+        sortRowsByValueAt(refName: string, pos: number) {
+          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+          const region =
+            index === undefined ? undefined : self.rpcDataMap.get(index)
+          if (!region || self.editableSources.length < 2) {
+            return
+          }
+          // editableSources, not `sources`: layout-merged (so a user's colors
+          // survive the reorder) and unfiltered by the subtree, so a focused
+          // clade doesn't persist itself as the whole row order and drop
+          // everything it was hiding.
+          self.setLayout(rowOrderByValueAt(self.editableSources, region, pos))
+        },
+        /**
+         * #action
+         * Writes only when the hovered block actually changes, so a mouse moving
+         * within one block (blocks are many px wide) doesn't invalidate the
+         * observers watching this.
+         */
+        setHoveredFeature(arg?: MultiRowHit) {
+          const cur = self.hoveredMultiRowFeature
+          if (arg?.id !== cur?.id || arg?.regionIndex !== cur?.regionIndex) {
+            self.hoveredMultiRowFeature = arg
+          }
+        },
+        /**
+         * #action
+         * Re-fetch the full clicked feature by id and open it in the feature
+         * details widget. The painting ships only the slim render arrays, so the
+         * complete feature is fetched on demand (GetCanvasFeatureDetails). A
+         * region whose data has already gone is the same nothing-to-open as a
+         * lookup miss.
+         */
+        selectFeatureById(featureId: string, displayedRegionIndex: number) {
+          void openDetails(async () => {
+            const region = self.loadedRegions.get(displayedRegionIndex)
+            return region
+              ? fetchCanvasFeatureDetails(
+                  getSession(self),
+                  getRpcSessionId(self),
+                  self.adapterConfig,
+                  featureId,
+                  region,
+                )
+              : undefined
+          })
+        },
+        /**
+         * #action
+         */
+        setRpcData(regionIndex: number, data: MultiRowRegionData) {
+          self.rpcDataMap.set(regionIndex, data)
+        },
+        /**
+         * #action
+         */
+        clearDisplaySpecificData() {
+          self.rpcDataMap.clear()
+        },
+        /**
+         * #action
+         * Set the track height. In auto-fit mode the rows restretch to it; in fixed
+         * mode it's distributed across the current rows as a fixed row height.
+         */
+        // Both branches floor the TRACK at MIN_DISPLAY_HEIGHT, never the row.
+        // Flooring the row instead (`Math.max(1, newHeight / nrow)`) got both ends
+        // wrong at once: on a 1,987-row painting it stalled a shrink drag at 1,987
+        // px — a height auto-fit reaches freely, since `autoRowHeight` is
+        // deliberately not floored and `rowBand` widens a sub-pixel row to
+        // MIN_DRAWN_ROW_PX for drawing — while on a 3-row one it let the same drag
+        // collapse the track to 3 px, past the point where its own resize handle
+        // can be grabbed again. A sub-pixel row is legitimate here (see
+        // `autoRowHeight` and `resolveRowHeight`, which passes one through and
+        // floors only a non-positive); a sub-MIN_DISPLAY_HEIGHT track is not, in
+        // either mode.
+        setHeight(newHeight: number) {
+          const clamped = Math.max(newHeight, MIN_DISPLAY_HEIGHT)
+          if (self.rowHeight === 0) {
+            setConf(self, 'height', clamped)
+          } else {
+            setConf(self, 'rowHeight', clamped / self.nrow)
+          }
+          return self.height
+        },
+        /**
+         * #action
+         * Drag-resize. Defers to `setHeight`, which restretches rows in auto-fit
+         * mode and re-pins the row height in fixed mode.
+         */
+        resizeHeight(distance: number) {
+          const oldHeight = self.height
+          self.setHeight(self.height + distance)
+          return self.height - oldHeight
+        },
+        /**
+         * #action
+         * Switch to auto-fit: seed the `height` config slot from the current
+         * content height (so toggling on doesn't jump), then `rowHeight = 0`
+         * makes `effectiveRowHeight` derive from it.
+         */
+        setFitToHeight() {
+          setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
+          setConf(self, 'rowHeight', 0)
+        },
+        /**
+         * #action
+         */
+        startRenderingBackend(backend: MultiRowRenderingBackend) {
+          installUpload(self, backend, {
+            cells: () => self.rpcDataMap,
+            // `featurePaintInputs`, never `renderState`: the instance buffer holds
+            // {startBp,endBp,rowIndex,color} and no geometry — the row height and
+            // canvas box reach the shader as uniforms, and both move on every
+            // frame of a track-height drag. Declaring the narrow one is what keeps
+            // a reorder / recolor / category toggle re-encoding without an RPC
+            // roundtrip while a resize re-encodes nothing.
+            inputs: () => self.featurePaintInputs,
+            encode: (regionData, paintInputs) => ({
+              instanceBuffer: buildMultiRowInstanceBuffer(
+                regionData,
+                paintInputs,
+              ).buffer,
+            }),
+            render: b =>
+              b.renderBlocks(
+                self.renderBlocks,
+                self.rpcDataMap,
+                self.renderState,
+              ),
+          })
+        },
+      }
+    })
     .views(self => ({
       /**
        * #method
@@ -1209,17 +1203,6 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
-          // The byte/density gate clears its own stale per-region stats on
-          // chromosome nav (CanvasFeatureGateMixin.afterAttach) — nothing to
-          // wire up here.
-
-          // Clear hover when the viewport moves under a stationary cursor. The
-          // painting is a sticky canvas, so a pan or zoom fires no mousemove
-          // and no mouseleave and `hoveredFeature` keeps naming whatever used
-          // to be under the pointer — the tooltip and `MultiRowHoverHighlight`
-          // then describe a block that has scrolled away. The component's
-          // handlers cover only the cases where the *pointer* moves.
-
           setupTreeSidebarAutoruns(self, {
             name: 'MultiRowFeature',
             sortRows: (refName, pos) => {

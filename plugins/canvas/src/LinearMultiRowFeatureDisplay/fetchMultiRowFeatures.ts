@@ -1,11 +1,9 @@
-import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
+import { fetchEachRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
-import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { FetchEachRegionModel } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 
 interface FetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
@@ -15,11 +13,6 @@ interface FetchSelf extends FetchEachRegionModel {
   >
   resolvedByteLimit: () => number | undefined
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
-  gateFetchState: () => GateFetchState
-  commitGateMeasurements: (
-    measurements: RegionGateMeasurement[],
-    issued: GateFetchState,
-  ) => void
 }
 
 export function fetchMultiRowFeatures(
@@ -27,7 +20,7 @@ export function fetchMultiRowFeatures(
   needed: { region: Region; displayedRegionIndex: number }[],
 ) {
   const byteLimit = self.resolvedByteLimit()
-  return fetchGatedRegions(self, needed, {
+  return fetchEachRegion(self, needed, {
     call: (region, ctx) =>
       ctx.callRpc('MultiRowGetFeatures', {
         adapterConfig: self.adapterConfig,

@@ -778,9 +778,9 @@ display opts in with `gateEnabled` and by passing `byteLimit` in its call, plus
 `byteGateAdapterPath` / `densityTooLarge` where a tier or a density axis
 applies (`configuredFetchSizeLimit` / `configForceLoad` are plain slot reads,
 not part of the overridable hook surface). Canvas adds the density axis via
-`CanvasFeatureGateMixin` (`plugins/canvas/src/shared/`), which both canvas
-feature displays compose and which `no-restricted-syntax` requires after
-`MultiRegionDisplayMixin()`; the shared verdict/threshold/banner-text
+`CanvasFeatureGateMixin` (`plugins/canvas/src/shared/`), which the base canvas
+display composes — the multi-row display runs on the byte axis alone — and which
+`no-restricted-syntax` requires after `MultiRegionDisplayMixin()`; the shared verdict/threshold/banner-text
 primitives live in `packages/display-kit/src/regionTooLargeUtils.ts`.
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the

@@ -6,7 +6,6 @@ import {
   warnUnresolvedHighlights,
 } from './featureHighlight.ts'
 
-import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type {
   FeatureHighlight,
   FeatureHighlightModel,
@@ -30,12 +29,11 @@ export interface FeatureHighlightHost extends IStateTreeNode {
   pinnedFeatureIdSet: ReadonlySet<string>
 }
 
-/** The hover pin the context menu holds, and the tooltip beside it. */
+/** The hover and the tooltip beside it. */
 export interface FeatureHoverHost {
   featureIdUnderMouse: string | null
   subfeatureIdUnderMouse: string | null
   mouseoverExtraInformation: string[] | undefined
-  contextMenuInfo: FeatureContextMenuInfo | undefined
   resolvedHighlights: ResolvedHighlights
   featureHighlights: IMSTArray<typeof FeatureHighlightModel>
 }
@@ -144,84 +142,36 @@ export function featureHighlightViews(self: FeatureHighlightHost) {
 }
 
 /**
- * The highlight set's edits, and the hover pin that keeps a highlight box on
- * whatever the open context menu is acting on. One layer because they are one
- * invariant: the box the user sees and the thing the menu names.
+ * The highlight set's edits and the hover writes beside them.
  */
 export function featureHighlightActions(self: FeatureHoverHost) {
   return {
     /**
      * #action
      */
-    // Inert while a context menu is open: openContextMenu pins the hover to
-    // the menu's target so the highlight box always frames what the menu acts
-    // on, and that pin has to survive the cursor drifting onto a neighbouring
-    // feature's label (the label layer keeps emitting mousemove over its own
-    // divs). Enforced here rather than at each call site because this model
-    // owns both halves of the invariant — contextMenuInfo and the hover — so a
-    // new hover source can't reintroduce the bug. closeContextMenu releases it.
     setHover(
       featureId: string | null,
       subfeatureId: string | null,
       tooltip: string[] | undefined,
     ) {
-      if (!self.contextMenuInfo) {
-        self.featureIdUnderMouse = featureId
-        self.subfeatureIdUnderMouse = subfeatureId
-        // The two ids above are primitives, so MobX already drops a rewrite
-        // with the same value; the tooltip is a fresh array on every hit and
-        // needs the comparison spelled out. Without it a cursor resting on one
-        // feature re-rendered `FeatureTooltip` on every raw mousemove — the
-        // rows were identical each time, and only the array's identity moved.
-        if (!sameOptionalStrings(self.mouseoverExtraInformation, tooltip)) {
-          self.mouseoverExtraInformation = tooltip
-        }
+      self.featureIdUnderMouse = featureId
+      self.subfeatureIdUnderMouse = subfeatureId
+      // The two ids are primitives, so MobX already drops a rewrite with the
+      // same value; the tooltip is a fresh array on every hit, and without the
+      // comparison a cursor resting on one feature re-rendered `FeatureTooltip`
+      // on every raw mousemove with identical rows.
+      if (!sameOptionalStrings(self.mouseoverExtraInformation, tooltip)) {
+        self.mouseoverExtraInformation = tooltip
       }
     },
 
     /**
      * #action
      */
-    // Holds the same pin as setHover, so the box can't be dropped out from
-    // under an open menu — by a viewport shift (the clear-on-viewport-change
-    // autorun), or by the cursor leaving the canvas for the menu itself.
-    // closeContextMenu clears contextMenuInfo first, so its own call lands.
     clearHover() {
-      if (!self.contextMenuInfo) {
-        self.featureIdUnderMouse = null
-        self.subfeatureIdUnderMouse = null
-        self.mouseoverExtraInformation = undefined
-      }
-    },
-
-    /**
-     * #action
-     */
-    // One object rather than positional args: every new hit-derived
-    // field the menu wants would otherwise widen this signature and the
-    // two call sites' prop types too (same idiom as
-    // LinearMultiRowFeatureDisplay's openContextMenu).
-    openContextMenu(info: FeatureContextMenuInfo) {
-      self.contextMenuInfo = info
-      // Pin the hover to the menu's target so its highlight box always
-      // matches what the menu acts on — for every entry point (canvas or
-      // label right-click), and even when no mousemove preceded this
-      // open. When the click landed on a transcript, keep the box on that
-      // transcript: the menu names it, so the box must agree. Drop the
-      // tooltip so it doesn't overlap the menu. closeContextMenu clears
-      // all of this again.
-      self.featureIdUnderMouse = info.item.featureId
-      self.subfeatureIdUnderMouse = info.subfeature?.featureId ?? null
+      self.featureIdUnderMouse = null
+      self.subfeatureIdUnderMouse = null
       self.mouseoverExtraInformation = undefined
-    },
-
-    /**
-     * #action
-     */
-    // Close the feature context menu and drop the hover it was pinned to.
-    closeContextMenu() {
-      self.contextMenuInfo = undefined
-      this.clearHover()
     },
 
     /**

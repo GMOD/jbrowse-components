@@ -44,54 +44,47 @@ function setup() {
   return { display, menuTarget: items[0]!, other: items[2]! }
 }
 
-describe('context menu hover pin', () => {
-  it('pins the hover box to the right-clicked feature', () => {
+// The highlight box is derived from the open menu's target rather than pinned
+// into the hover: the box the user sees and the thing the menu names are one
+// value, so no hover source can re-point one without the other. Same rule as
+// the multi-row display's `highlightedBlockRect`.
+describe('the highlight box follows the context menu target', () => {
+  it('boxes the right-clicked feature', () => {
     const { display, menuTarget } = setup()
     rightClick(display, menuTarget)
     expect(display.contextMenuInfo!.item.featureId).toBe(menuTarget.featureId)
-    expect(display.featureIdUnderMouse).toBe(menuTarget.featureId)
+    expect(display.hoverBoxFeature?.featureId).toBe(menuTarget.featureId)
   })
 
-  // Regression: the label layer emits mousemove over its own label divs with no
-  // knowledge of the open menu, so it called setHover for whatever label the
-  // cursor drifted onto — re-pointing the highlight box at a feature the menu
-  // would not act on. setHover itself now holds the pin.
-  it('ignores a hover from any source while the menu is open', () => {
+  it('drops the hover and its tooltip when the menu opens', () => {
     const { display, menuTarget, other } = setup()
-    rightClick(display, menuTarget)
-
     display.setHover(other.featureId, null, [other.tooltip])
 
-    expect(display.featureIdUnderMouse).toBe(menuTarget.featureId)
-    expect(display.subfeatureIdUnderMouse).toBeNull()
+    rightClick(display, menuTarget)
+
+    expect(display.hoveredFeature).toBeNull()
     expect(display.mouseoverExtraInformation).toBeUndefined()
   })
 
-  // The clear-on-viewport-change autorun and the canvas mouseleave both call
-  // clearHover with no knowledge of the menu; the pin lives in the action.
-  it('ignores a hover clear while the menu is open', () => {
-    const { display, menuTarget } = setup()
+  it('keeps boxing the target whatever the hover does while the menu is open', () => {
+    const { display, menuTarget, other } = setup()
     rightClick(display, menuTarget)
 
-    display.clearHover()
+    display.setHover(other.featureId, null, [other.tooltip])
+    expect(display.hoverBoxFeature?.featureId).toBe(menuTarget.featureId)
 
-    expect(display.featureIdUnderMouse).toBe(menuTarget.featureId)
+    display.clearHover()
+    expect(display.hoverBoxFeature?.featureId).toBe(menuTarget.featureId)
   })
 
-  it('releases the pin when the menu closes', () => {
+  it('follows the hover again once the menu closes', () => {
     const { display, menuTarget, other } = setup()
     rightClick(display, menuTarget)
     display.closeContextMenu()
-    expect(display.featureIdUnderMouse).toBeNull()
+    expect(display.hoverBoxFeature).toBeNull()
 
     display.setHover(other.featureId, null, [other.tooltip])
-    expect(display.featureIdUnderMouse).toBe(other.featureId)
+    expect(display.hoverBoxFeature?.featureId).toBe(other.featureId)
     expect(display.mouseoverExtraInformation).toEqual([other.tooltip])
-  })
-
-  it('hovers normally when no menu is open', () => {
-    const { display, other } = setup()
-    display.setHover(other.featureId, null, [other.tooltip])
-    expect(display.featureIdUnderMouse).toBe(other.featureId)
   })
 })

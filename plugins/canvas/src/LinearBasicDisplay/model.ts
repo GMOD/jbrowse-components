@@ -31,7 +31,10 @@ import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
+import type {
+  LinearBasicDisplayConfig,
+  LinearBasicDisplayConfigModel,
+} from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
@@ -93,6 +96,15 @@ export default function stateModelFactory(
       geneGlyphNoticeDismissed: false,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The config typed off this display's own schema, reclaiming its slots
+       * for direct reads the way `configuration` above does for `getConf`.
+       */
+      get conf(): LinearBasicDisplayConfig {
+        return self.configuration
+      },
+
       // Promotable sentinel enum (see baseConfigSchema.ts): getConf walks
       // the cascade (pinned track value -> session default -> base 'none') and
       // always yields a real mode, never the unset sentinel.

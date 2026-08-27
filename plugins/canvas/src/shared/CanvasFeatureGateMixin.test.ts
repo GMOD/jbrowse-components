@@ -23,9 +23,8 @@ test('the host type checks the slot name the gate reads through it', () => {
   expect([gatePin, read]).toHaveLength(2)
 })
 
-// LinearBasicDisplay, because it is the composing display that leaves the
-// density axis ON — multi-row overrides `densityGateEnabled` back to false, so
-// its harness can see the stored counts but never the verdict they feed.
+// LinearBasicDisplay, because it is the one display composing this mixin —
+// multi-row runs on the byte axis alone and has no counts to store at all.
 function gatedDisplay() {
   const env = createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 })
   const { display, view, track } = env.createDisplay()

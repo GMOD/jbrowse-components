@@ -17,10 +17,10 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
 }))
 
 // The shared display harness wired for the multi-row display. Exercises the
-// CanvasFeatureGateMixin gate (byte + density) through the real state model
-// without a worker: drive setByteEstimate / setDensityStats and read the derived
-// regionTooLarge. `createDisplay()` takes the displayed regions, so a test can
-// load one contig out of the two the assembly declares.
+// byte gate through the real state model without a worker: drive
+// setByteEstimate and read the derived regionTooLarge. `createDisplay()` takes
+// the displayed regions, so a test can load one contig out of the two the
+// assembly declares.
 export function createTestEnvironment(opts?: {
   adapterFetchSizeLimit?: number
   // Display config slots, which the harness writes into the track config's own

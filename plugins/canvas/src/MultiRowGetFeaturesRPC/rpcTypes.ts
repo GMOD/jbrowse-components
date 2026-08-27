@@ -15,10 +15,10 @@ export interface MultiRowGetFeaturesArgs {
   //
   // Byte-only on purpose: multi-row paints into fixed lanes, so a high feature
   // count is a download cost, not a per-glyph render cost, and the display
-  // turns the gate mixin's density axis off (`densityGateEnabled`). There is
-  // deliberately no `maxFeatureDensity` here — re-enabling that axis has to
-  // fail at this call site rather than silently pass an argument the worker
-  // ignores. See agent-docs/reference/REGION_TOO_LARGE.md.
+  // composes no density axis (`CanvasFeatureGateMixin` is the base canvas
+  // display's alone). There is deliberately no `maxFeatureDensity` here —
+  // adding that axis has to fail at this call site rather than silently pass
+  // an argument the worker ignores. See agent-docs/reference/REGION_TOO_LARGE.md.
   byteLimit?: number
   // feature attribute whose value assigns each feature to a row. Empty is the
   // auto sentinel — the worker picks one off the columns the data turns out to
@@ -92,10 +92,9 @@ export interface MultiRowGetFeaturesResult extends MultiRowRegionData {
   // The main-thread gate takes the per-region max of these.
   //
   // No `featureCount` beside it, for the same reason there is no
-  // `maxFeatureDensity` in the args: this display turns the density axis off, so
-  // a count would only be stored in `densityStatsPerRegion` and never read. The
-  // omission is what makes re-enabling that axis a compile error on both sides
-  // rather than a silently dead round trip.
+  // `maxFeatureDensity` in the args: this display has no density axis, so a
+  // count would have nowhere to go. The omission is what makes adding that axis
+  // a compile error on both sides rather than a silently dead round trip.
   bytes?: number
 }
 

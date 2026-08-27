@@ -1206,8 +1206,9 @@ only on a real violation):
   opt-in back and reported if the base's `false` had won. **What a sibling
   selector cannot see is an order assembled across two files** — a gate mixin
   composed ahead of a base *model* that carries the foundation — where the
-  attach-time read could. Nothing in tree composes that way (both canvas
-  displays name both mixins in one `types.compose`), and out of tree neither
+  attach-time read could. Nothing in tree composes that way (the one display
+  that composes the gate mixin names both in one `types.compose`), and out of
+  tree neither
   form reaches at all.
 
 - **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, whose `height`

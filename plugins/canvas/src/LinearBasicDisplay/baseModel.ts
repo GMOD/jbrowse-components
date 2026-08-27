@@ -13,13 +13,10 @@ import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
   getContainingView,
   getDialogHost,
-  getNotificationSink,
   getPaletteHost,
   getSession,
   isFeature,
-  openFeatureWidget,
   pluralize,
-  withFeatureDetails,
 } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
@@ -28,6 +25,7 @@ import {
 } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin, {
   installGrowExitBake,
 } from '@jbrowse/display-kit/HeightModeMixin'
@@ -59,6 +57,7 @@ import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThres
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
+import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
 import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
 import {
   buildFeatureFlatbushIndex,
@@ -114,7 +113,6 @@ import type {
   FlatbushRegionIndexes,
   VisibleRegion,
 } from './components/hitTesting.ts'
-import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
@@ -212,9 +210,9 @@ export default function baseStateModelFactory(
         // override and the worker's `maxFeatureDensity` budget, plus the
         // commit/clear helpers — folded into the feature fetch below. The byte
         // axis and its `resolvedByteLimit()` budget are RegionTooLargeMixin's,
-        // reached through MultiRegionDisplayMixin above. Same instance the
-        // multi-row display composes.
+        // reached through MultiRegionDisplayMixin above.
         CanvasFeatureGateMixin(),
+        ContextMenuMixin<FeatureContextMenuInfo>(),
         types.model({
           /**
            * #property
@@ -331,12 +329,6 @@ export default function baseStateModelFactory(
          * from this display, read by the LGV crosshair overlay
          */
         sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
-        /**
-         * #volatile
-         */
-        // Everything the right-click resolved — see FeatureContextMenuInfo for
-        // what each field means and which entry points supply it.
-        contextMenuInfo: undefined as FeatureContextMenuInfo | undefined,
       }))
       .volatile(fitLadderVolatiles)
       .volatile(yMorphVolatiles)
@@ -347,7 +339,7 @@ export default function baseStateModelFactory(
          * erases `self.configuration` to `any`, so direct reads route through
          * this to stay typed (same move as `BaseAdapter<CONF>`).
          */
-        get conf(): LinearBasicDisplayConfig {
+        get conf(): Instance<LinearCanvasBaseDisplayConfigModel> {
           return self.configuration
         },
 
@@ -1187,6 +1179,28 @@ export default function baseStateModelFactory(
       }))
       .views(self => ({
         /**
+         * #getter
+         * The feature the hover box frames: the open context menu's target
+         * while one is open, so the box always agrees with what the menu acts
+         * on, else the feature under the cursor. Same rule as the multi-row
+         * display's `highlightedBlockRect`.
+         */
+        get hoverBoxFeature() {
+          const info = self.contextMenuInfo
+          return info ? info.item : self.hoveredFeature
+        },
+        /**
+         * #getter
+         * The transcript the hover box frames instead of its gene, by the rule
+         * of `hoverBoxFeature`.
+         */
+        get hoverBoxSubfeature() {
+          const info = self.contextMenuInfo
+          return info ? (info.subfeature ?? null) : self.hoveredSubfeature
+        },
+      }))
+      .views(self => ({
+        /**
          * #method
          */
         searchFeatureByID(id: string) {
@@ -1372,49 +1386,38 @@ export default function baseStateModelFactory(
       .actions(featureSetActions)
       .actions(featureHighlightActions)
       .actions(self => {
-        // cache the header-metadata round-trip so repeated feature clicks reuse
-        // one fetch; cleared on failure so a later click retries
-        let metadataPromise: Promise<unknown> | undefined
+        const superOpenContextMenu = self.openContextMenu
         return {
           /**
            * #action
-           * Open the feature-details widget. The adapter's header metadata
-           * (VCF INFO/FORMAT descriptions, etc.) is fetched first and passed as
-           * `descriptions` so the widget can label attribute rows and — for the
-           * variant widget — resolve the ANN/CSQ column names; without it that
-           * table renders headerless. CoreGetMetadata returns null for adapters
-           * that expose none, so this is a no-op for those tracks.
+           * Drops the hover first, so its tooltip does not sit under the menu;
+           * the highlight box stays on the target through `hoverBoxFeature`.
+           */
+          openContextMenu(info: FeatureContextMenuInfo) {
+            self.clearHover()
+            superOpenContextMenu(info)
+          },
+        }
+      })
+      .actions(self => {
+        const openDetails = createCanvasFeatureDetailsOpener(self)
+        return {
+          /**
+           * #action
+           * Open the feature-details widget on what `fetch` resolves to, with
+           * the adapter's header metadata beside it; a lookup that resolves to
+           * nothing is reported as a miss.
+           */
+          openFeatureDetails(fetch: () => Promise<Feature | undefined>) {
+            void openDetails(fetch)
+          },
+
+          /**
+           * #action
+           * Open the feature-details widget on a feature already in hand.
            */
           selectFeature(feature: Feature) {
-            if (!metadataPromise) {
-              metadataPromise = getSession(self)
-                // A header block already parsed by the fetch that put the
-                // feature on screen, memoized here so repeated clicks reuse one
-                // round trip. Nothing to narrate, and nothing a cancel could
-                // save — the widget opens on the result.
-                // eslint-disable-next-line no-restricted-syntax
-                .rpcManager.call(getRpcSessionId(self), 'CoreGetMetadata', {
-                  adapterConfig: self.adapterConfig,
-                })
-                .catch((e: unknown) => {
-                  metadataPromise = undefined
-                  throw e
-                })
-            }
-            metadataPromise
-              .then(descriptions => {
-                if (isAlive(self)) {
-                  openFeatureWidget(self, feature.toJSON(), {
-                    widget: self.featureWidgetType,
-                    extra: { descriptions },
-                    feature,
-                  })
-                }
-              })
-              .catch((e: unknown) => {
-                console.error(e)
-                getNotificationSink(self).notifyError(`${e}`, e)
-              })
+            void openDetails(async () => feature)
           },
 
           /**
@@ -1679,14 +1682,18 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // The only bpPerPx-dependent worker decision is the amino-acid overlay
-        // (gated by shouldRenderPeptideBackground), so the key is that discrete
-        // threshold rather than the zoom itself — every other zoom change reuses
-        // the cached features.
+        // The only bpPerPx-dependent worker decision is the amino-acid overlay,
+        // fetched under `showAminoAcids && shouldRenderPeptideBackground`
+        // (executeRenderFeatureData), so the key is that gate rather than the
+        // zoom itself — every other zoom change reuses the cached features, and
+        // a track with the overlay off never refetches on zoom at all.
         //
         // A getter, not an action: an action would untrack the view.bpPerPx read.
         get regionFetchKey(): string {
-          return String(shouldRenderPeptideBackground(getView(self).bpPerPx))
+          return String(
+            self.showAminoAcids &&
+              shouldRenderPeptideBackground(getView(self).bpPerPx),
+          )
         },
         /**
          * #method
@@ -1725,19 +1732,16 @@ export default function baseStateModelFactory(
           subfeatureInfo: SubfeatureInfo | undefined,
           displayedRegionIndex: number,
         ) {
-          void withFeatureDetails(
-            self,
-            () => self.fetchFullFeature(featureId, displayedRegionIndex),
-            parentFeature => {
-              const target = subfeatureInfo
-                ? (findSubfeatureById(
-                    parentFeature,
-                    subfeatureInfo.featureId,
-                  ) ?? parentFeature)
-                : parentFeature
-              self.selectFeature(target)
-            },
-          )
+          self.openFeatureDetails(async () => {
+            const parentFeature = await self.fetchFullFeature(
+              featureId,
+              displayedRegionIndex,
+            )
+            return parentFeature && subfeatureInfo
+              ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
+                  parentFeature)
+              : parentFeature
+          })
         },
       }))
       .actions(self => {
@@ -1892,10 +1896,6 @@ export default function baseStateModelFactory(
               },
               { name: 'CanvasHitIndexes' },
             )
-
-            // Clear hover when the viewport moves under a stationary cursor
-            // (pan, zoom, internal vertical scroll). Shared with the alignments
-            // display; see installClearHoverOnViewportChange.
 
             installYMorphAutorun(self)
           },

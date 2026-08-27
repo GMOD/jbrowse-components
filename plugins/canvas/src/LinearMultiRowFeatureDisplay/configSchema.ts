@@ -355,9 +355,8 @@ export default function configSchemaF() {
        * that is not actually large.
        *
        * It matters more here than there. The byte axis is the *only* gate this
-       * display has: multi-row paints into fixed lanes, so it turns the density
-       * axis off (`densityGateEnabled`) and has no second backstop to fall
-       * through to.
+       * display has: multi-row paints into fixed lanes, so it composes no
+       * density axis and has no second backstop to fall through to.
        */
       fetchSizeLimit: {
         type: 'number',

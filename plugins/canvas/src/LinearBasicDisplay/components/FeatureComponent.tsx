@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useId, useState } from 'react'
 
 import {
-  ContextMenu,
   ScrollEdgeShadow,
   VerticalScrollbar,
   useMouseState,
@@ -15,6 +14,7 @@ import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
@@ -219,12 +219,6 @@ const FeatureBody = observer(function FeatureBody({
   const width = view.initialized ? model.canvasWidthPx : undefined
   const height = model.height
 
-  // model.openContextMenu (a stable MST action) is passed straight to the
-  // overlays and called from handleContextMenu — no wrapper needed. It sets
-  // contextMenuInfo synchronously (featureId/startBp/endBp/type + click
-  // position); each item that needs the full feature re-fetches on click, so
-  // the menu opens immediately without an RPC round-trip.
-
   // The model owns the upload/render autorun and the GPU backend lifecycle —
   // see startRenderingBackend / stopRenderingBackend / renderNow on the base
   // canvas display model. scrollTop lives on the model (TrackHeightMixin) and
@@ -327,23 +321,18 @@ const FeatureBody = observer(function FeatureBody({
   })
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    // The early return skips the hit test as well as the write, which is the
-    // half `setHover`'s own open-menu guard cannot do.
-    if (model.contextMenuInfo) {
-      return
-    }
     // read the coordinates now; `currentTarget` is gone by the frame
     const { x, y } = eventPoint(e)
     hover.queue([x, y])
   }
 
   // Both handlers hit-test at the event coordinates rather than reading
-  // model.hoveredFeature. Hover is suppressed while a context menu is open (see
-  // handleMouseMove) and cleared when it closes (closeContextMenu), so a
-  // click/right-click on a still-stationary cursor right after dismissing a
-  // menu would otherwise find no hover — deselecting, or falling through to the
-  // native browser menu — instead of acting on the feature under the cursor.
-  // When hover is current these resolve to the identical feature.
+  // model.hoveredFeature. Opening a context menu drops the hover, and the
+  // menu's backdrop takes the pointer until it closes, so a click/right-click
+  // on a still-stationary cursor right after dismissing a menu would otherwise
+  // find no hover — deselecting, or falling through to the native browser menu
+  // — instead of acting on the feature under the cursor. When hover is current
+  // these resolve to the identical feature.
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const result = hitTestAtEvent(e)
     // Ctrl/Cmd+click builds the "show only these features" collection instead
@@ -365,8 +354,7 @@ const FeatureBody = observer(function FeatureBody({
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const result = hitTestAtEvent(e)
     if (isHitFeature(result)) {
-      // openContextMenu pins the hover box to what the menu acts on. The
-      // subfeature rides along so the menu can target the exact transcript
+      // The subfeature rides along so the menu can target the exact transcript
       // under the cursor, not just its gene.
       e.preventDefault()
       model.openContextMenu({
@@ -388,8 +376,7 @@ const FeatureBody = observer(function FeatureBody({
   // Shared by the canvas and the label layer (see FloatingLabelsLayer): whichever
   // of the two the cursor was last over, exiting it drops the hover. Stable
   // identity so a hover tick — which re-renders FeatureBody for the cursor
-  // style — doesn't force the label layer to rebuild every label. clearHover
-  // itself holds the open-menu pin, so no guard here.
+  // style — doesn't force the label layer to rebuild every label.
   //
   // The cancel comes first: a hover queued just before the pointer left lands
   // after it has gone and re-lights what this is clearing.
@@ -398,9 +385,6 @@ const FeatureBody = observer(function FeatureBody({
     model.clearHover()
   })
 
-  // setHover itself is inert while a context menu is open (it pins the hover to
-  // the menu's target), so this needs no guard of its own — unlike
-  // handleMouseMove, whose early return also skips the hit test.
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem) => {
       model.setHover(item.featureId, null, [item.tooltip])
@@ -491,13 +475,7 @@ const FeatureBody = observer(function FeatureBody({
         />
       </BottomRightIndicators>
 
-      <ContextMenu
-        anchor={model.contextMenuInfo}
-        menuItems={() => model.contextMenuItems()}
-        onClose={() => {
-          model.closeContextMenu()
-        }}
-      />
+      <DisplayContextMenu model={model} />
     </>
   )
 })

@@ -77,8 +77,8 @@ export function callEachRegion<R>(
  * region's own status slot, so the parallel per-region fetches aggregate into
  * one bar instead of clobbering each other.
  * A display with a batch-wide step after the regions land keeps it in
- * `onComplete`, which runs once and under the same guard — canvas's two feature
- * displays commit their gate measurements there. That is the whole of what used
+ * `onComplete`, which runs once and under the same guard — the base canvas
+ * display commits its gate measurements there. That is the whole of what used
  * to justify a hand-rolled `Promise.all`: the per-region commits and the
  * atomic one are different granularities, not different loops.
  */
