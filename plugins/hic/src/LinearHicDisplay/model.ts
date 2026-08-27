@@ -317,7 +317,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * agree except when scrolled past an end.
        */
       get canvasWidth() {
-        return self.view.totalWidthPx
+        return self.host.totalWidthPx
       },
     }))
     .views(self => ({
@@ -385,10 +385,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * mismatch converges in one fetch.
        */
       get viewSignature(): string | undefined {
-        const view = self.view
+        const { host } = self
         const resolution = self.effectiveResolution
-        return view.initialized && resolution !== undefined
-          ? `${blockKeySignature(view.staticBlocks.contentBlocks)}|res:${resolution}`
+        return host.initialized && resolution !== undefined
+          ? `${blockKeySignature(host.staticBlocks.contentBlocks)}|res:${resolution}`
           : undefined
       },
       /**
@@ -725,7 +725,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           // the same tracked read.
           prepare: () => {
             const resolution = self.effectiveResolution
-            const blocks = self.view.staticBlocks.contentBlocks
+            const blocks = self.host.staticBlocks.contentBlocks
             if (resolution === undefined || !blocks.length) {
               return undefined
             }
