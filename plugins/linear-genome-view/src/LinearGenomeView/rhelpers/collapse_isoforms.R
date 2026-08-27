@@ -67,7 +67,7 @@ collapse_isoforms <- function(f, transcript_types, canonical_field = NULL,
     coding <- vapply(subtrees, coding_bp, numeric(1))
     size <- ifelse(coding > 0, coding, f$end[iso] - f$start[iso])
     rank <- if (is.null(tags)) rep(Inf, length(iso)) else canonical_rank(iso)
-    winner <- order(-(coding > 0), -size, -seq_along(iso))[1]
+    winner <- order(rank, -(coding > 0), -size, -seq_along(iso))[1]
     drop <- c(drop, unlist(subtrees[-winner]))
   }
   if (length(drop)) f[-drop, , drop = FALSE] else f
