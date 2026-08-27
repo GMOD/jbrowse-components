@@ -218,10 +218,17 @@ scrolling. The fix is a fixed lane pitch plus `scrollableHeight`, which drags in
 them — or `HeightModeMixin`'s grow mode, whose `growTargetHeight` hook is
 exactly `rowCount * pitch`, with the caveat that
 `heightModeConfigSchemaFields` pins `promotedBase: 'fixed'` so grow is a menu
-choice rather than this display type's default. Ribbon color modes (strand for
-inversions, identity from the PAF's `de:f:`) fit the existing `ribbonColor`
-slot as a colorBy the way `syntenyColors.ts` does it — main-thread recolor, no
-refetch. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the
+choice rather than this display type's default. Ribbon color modes shipped
+2026-08-27 as `ribbonColorBy` (`default`/`strand`/`identity`, **Color ribbons
+by** on the track menu): a main-thread recolor off the synteny view's own
+scheme and ramp, no refetch. Strand reads the DRAWN twist rather than a
+record's strand — the spans are ordered pairs, so a crossed ribbon is an
+inversion relative to the lane above and two lanes both reversed against the
+anchor come out straight between themselves, which a per-record strand would
+get wrong. Identity reads the group feature's `identity`, which on an
+N-genome MCScan table is the row's (`attributeColumns`) and so one value per
+group; an all-vs-all PAF's is per pair only on the direct-record ribbons, since
+a group keeps its first pairwise feature. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the
 anchor's viewport by design, and the launch above is the route to a lane you
 drive yourself.
 

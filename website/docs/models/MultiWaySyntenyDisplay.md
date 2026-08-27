@@ -78,6 +78,7 @@ the whole surface.
 | <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> | anchor-sorted gene groups reconstructed from the pairwise features | MultiWaySyntenyDisplay |
 | <span id="getter-featuresarenameless">**featuresAreNameless**</span><br><code>boolean</code> | a gene-level source names its features and groups chain on the names; an alignment-level source (all-vs-all PAF) names nothing, which is what makes the per-pair link fetch worth issuing | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-ribboncolorby">**ribbonColorBy**</span><br><code>MultiWayRibbonColorBy</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
@@ -181,6 +182,7 @@ the whole surface.
 | <span id="action-setroworder">**setRowOrder**</span><br><code>(order: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-sethiddenlanes">**setHiddenLanes**</span><br><code>(names: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setribboncolorby">**setRibbonColorBy**</span><br><code>(mode: MultiWayRibbonColorBy) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | MultiWaySyntenyDisplay |

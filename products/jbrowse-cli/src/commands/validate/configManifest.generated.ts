@@ -3587,6 +3587,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "ribbonColorBy",
+          "type": "(JexlString | ribbonColorBy)"
+        },
+        {
           "name": "drawCurves",
           "type": "(JexlString | boolean)"
         },
