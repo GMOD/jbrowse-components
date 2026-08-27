@@ -258,6 +258,30 @@ test('geneGlyphShape draws a CDS-only annotation full height', () => {
   })
 })
 
+test('geneGlyphShape implies a CDS-only annotation’s UTRs from its own bounds', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene6',
+    refName: 'chr1',
+    start: 80,
+    end: 240,
+    subfeatures: [
+      { uniqueId: 'c1', refName: 'chr1', start: 100, end: 150, type: 'CDS' },
+      { uniqueId: 'c2', refName: 'chr1', start: 170, end: 200, type: 'CDS' },
+    ],
+  })
+  // the ends only — 150..170 is an intron between two CDS pieces, not UTR
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [
+      [100, 150],
+      [170, 200],
+    ],
+    thin: [
+      [80, 100],
+      [200, 240],
+    ],
+  })
+})
+
 // The subpart rules are the feature track's own (`isCDS`/`isExon`/`isUTR`),
 // which is what these two cover: matching `type === 'CDS'` exactly drew the
 // first as one flat full-height box, and a transcript naming its UTRs rather

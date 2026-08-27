@@ -159,12 +159,30 @@ export function geneGlyphShape(feature: Feature): GeneGlyphShape {
       thin: [],
     }
   }
-  return {
-    full: mergedCds,
-    thin: utrs.length
-      ? mergeSpans(utrs)
-      : subtractIntervals(mergeSpans(exons), mergedCds),
+  if (utrs.length) {
+    return { full: mergedCds, thin: mergeSpans(utrs) }
   }
+  if (exons.length) {
+    return {
+      full: mergedCds,
+      thin: subtractIntervals(mergeSpans(exons), mergedCds),
+    }
+  }
+  // A CDS-only annotation, where the feature's own bounds are the only evidence
+  // of coding overhang — `makeUTRs`' rule for the same case, and only at the
+  // ends: the gaps BETWEEN the CDS pieces are introns, not untranslated exon
+  const start = feature.get('start')
+  const end = feature.get('end')
+  const codeStart = mergedCds[0]![0]
+  const codeEnd = mergedCds.at(-1)![1]
+  const thin: [number, number][] = []
+  if (start < codeStart) {
+    thin.push([start, codeStart])
+  }
+  if (end > codeEnd) {
+    thin.push([codeEnd, end])
+  }
+  return { full: mergedCds, thin }
 }
 
 export interface GeneGlyphGeometry {
