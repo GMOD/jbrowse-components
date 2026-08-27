@@ -4,26 +4,106 @@
   "measured": "2026-08-27",
   "source": {
     "kind": "bench",
-    "repro": "products/jbrowse-web, after `pnpm --filter @jbrowse/web build`: node browser-tests/runner.ts --filter='Alignments Color Schemes' --test=per-base --backend=all --skip-webgpu --gate-only --drift-report, once with --swiftshader and once with --real-gpu. The three control rows and the two 3.2 bp/px rows come from a scratch suite of the same shape at ctgA:1..1,000 and ctgA:1..4,000, not committed. Every row is the TARGETED pair (the pileup display's own canvas); the fullpage pairs of the same scenes move 0.3-0.6pp between rasterizers because the app chrome around them does, and say nothing extra.",
-    "notes": "The rasterizer column is the test, not a second opinion: an antialiasing difference cannot survive swapping SwiftShader for a real GPU, and every targeted pair here is identical to two decimals. So the two backends draw different pixels. Two asymmetries produce it, both deliberate and both in the code today. `pileupCellX` (alignmentsUniforms.slang) snaps a cell's left edge to a pixel column and extends to a 1 CSS px minimum from that anchor; `makePileupCellMapper` (rendererTypes.ts) leaves the left edge fractional and draws `max(1, 1/bpPerPx) + 0.5`, the half-pixel PILEUP_CELL_SEAM_FUDGE_PX that closes Canvas2D's AA hairlines. Above 1 bp/px the snap dominates — adjacent bases land in one column and the GPU keeps one, leaving 10,553 one-pixel columns white that Canvas2D paints, the same pixel set in both colour modes. Below it the fudge dominates, drawing a 1.77px cell where the GPU draws 1.27px. Lettering shows both because its four base hues are far apart: Canvas2D's overlapping cells average to exact two-colour means (249,108,27 where the GPU writes red 244,67,54; 53,162,162 where it writes blue 33,150,243). perBaseQuality's narrow ramp hides the same geometry, which is why it stays under the gate's threshold until the bin widens the composite."
+    "repro": "The scenes this was taken from are NOT in the tree \u2014 they were added on 2026-08-27, measured, and removed the same day (agent-docs/reference/CROSS_BACKEND_GATE.md, \"The per-base wall\"). To take it again: add `lgvSnapshotTest` scenes on `volvox_alignments` with `displaySnapshot.colorBy.type` of perBaseLetter / perBaseQuality at ctgA:1..48,000 (37.9 bp/px), ctgA:1..4,000 (3.2) and ctgA:1..1,000 (0.8), plus a colorBy `normal` control at the widest, to any suite; build jbrowse-web; then from products/jbrowse-web run `node browser-tests/runner.ts --filter=<suite> --backend=all --skip-webgpu --gate-only --drift-report` once with --swiftshader and once with --real-gpu. Every row is the TARGETED pair (the pileup display's own canvas); the fullpage pairs move 0.3-0.6pp between rasterizers because the app chrome around them does, and say nothing extra.",
+    "notes": "The rasterizer column is the test, not a second opinion: an antialiasing difference cannot survive swapping SwiftShader for a real GPU, and every targeted pair here is identical to two decimals. So the two backends draw different pixels. Two asymmetries produce it, both deliberate and both in the code today. `pileupCellX` (alignmentsUniforms.slang) snaps a cell's left edge to a pixel column and extends to a 1 CSS px minimum from that anchor; `makePileupCellMapper` (rendererTypes.ts) leaves the left edge fractional and draws `max(1, 1/bpPerPx) + 0.5`, the half-pixel PILEUP_CELL_SEAM_FUDGE_PX that closes Canvas2D's AA hairlines. Above 1 bp/px the snap dominates \u2014 adjacent bases land in one column and the GPU keeps one, leaving 10,553 one-pixel columns white that Canvas2D paints, the same pixel set in both colour modes. Below it the fudge dominates, drawing a 1.77px cell where the GPU draws 1.27px. Lettering shows both because its four base hues are far apart: Canvas2D's overlapping cells average to exact two-colour means (249,108,27 where the GPU writes red 244,67,54; 53,162,162 where it writes blue 33,150,243). perBaseQuality's narrow ramp hides the same geometry, which is why it stays under the gate's threshold until the bin widens the composite."
   },
   "columns": [
-    { "key": "scene", "label": "scene" },
-    { "key": "bpPerPx", "label": "bp/px", "format": "float", "align": "right" },
-    { "key": "binBp", "label": "binBp", "format": "int", "align": "right" },
-    { "key": "swiftshader", "label": "drift, swiftshader", "format": "ratio", "align": "right" },
-    { "key": "realGpu", "label": "real GPU", "format": "ratio", "align": "right" }
+    {
+      "key": "scene",
+      "label": "scene"
+    },
+    {
+      "key": "bpPerPx",
+      "label": "bp/px",
+      "format": "float",
+      "align": "right"
+    },
+    {
+      "key": "binBp",
+      "label": "binBp",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "swiftshader",
+      "label": "drift, swiftshader",
+      "format": "ratio",
+      "align": "right"
+    },
+    {
+      "key": "realGpu",
+      "label": "real GPU",
+      "format": "ratio",
+      "align": "right"
+    }
   ],
   "rows": [
     {
-      "values": { "scene": "perBaseLetter", "bpPerPx": 37.9, "binBp": 16, "swiftshader": 16.39, "realGpu": 16.4 },
-      "emphasize": ["swiftshader", "realGpu"]
+      "values": {
+        "scene": "perBaseLetter",
+        "bpPerPx": 37.9,
+        "binBp": 16,
+        "swiftshader": 16.39,
+        "realGpu": 16.4
+      },
+      "emphasize": [
+        "swiftshader",
+        "realGpu"
+      ]
     },
-    { "values": { "scene": "perBaseLetter", "bpPerPx": 3.2, "binBp": 1, "swiftshader": 15.63, "realGpu": 15.63 } },
-    { "values": { "scene": "perBaseLetter", "bpPerPx": 0.8, "binBp": 1, "swiftshader": 3.4, "realGpu": 3.4 } },
-    { "values": { "scene": "perBaseQuality", "bpPerPx": 37.9, "binBp": 16, "swiftshader": 1.76, "realGpu": 1.76 } },
-    { "values": { "scene": "perBaseQuality", "bpPerPx": 3.2, "binBp": 1, "swiftshader": 0.42, "realGpu": 0.42 } },
-    { "values": { "scene": "perBaseQuality", "bpPerPx": 0.8, "binBp": 1, "swiftshader": 0.14, "realGpu": 0.14 } },
-    { "values": { "scene": "colour-by normal (control)", "bpPerPx": 37.9, "binBp": 1, "swiftshader": 0.36, "realGpu": 0.35 } }
+    {
+      "values": {
+        "scene": "perBaseLetter",
+        "bpPerPx": 3.2,
+        "binBp": 1,
+        "swiftshader": 15.63,
+        "realGpu": 15.63
+      }
+    },
+    {
+      "values": {
+        "scene": "perBaseLetter",
+        "bpPerPx": 0.8,
+        "binBp": 1,
+        "swiftshader": 3.4,
+        "realGpu": 3.4
+      }
+    },
+    {
+      "values": {
+        "scene": "perBaseQuality",
+        "bpPerPx": 37.9,
+        "binBp": 16,
+        "swiftshader": 1.76,
+        "realGpu": 1.76
+      }
+    },
+    {
+      "values": {
+        "scene": "perBaseQuality",
+        "bpPerPx": 3.2,
+        "binBp": 1,
+        "swiftshader": 0.42,
+        "realGpu": 0.42
+      }
+    },
+    {
+      "values": {
+        "scene": "perBaseQuality",
+        "bpPerPx": 0.8,
+        "binBp": 1,
+        "swiftshader": 0.14,
+        "realGpu": 0.14
+      }
+    },
+    {
+      "values": {
+        "scene": "colour-by normal (control)",
+        "bpPerPx": 37.9,
+        "binBp": 1,
+        "swiftshader": 0.36,
+        "realGpu": 0.35
+      }
+    }
   ]
 }

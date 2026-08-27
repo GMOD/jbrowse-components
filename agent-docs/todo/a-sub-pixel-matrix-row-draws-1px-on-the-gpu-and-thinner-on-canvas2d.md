@@ -35,11 +35,21 @@ The hit test is already settled and is not waiting on this: `matrixHitTest.ts`
 walks the GPU's 1px band, which is a superset of the Canvas2D extent, and
 `nearest` is the same row either way.
 
-**The same call exists one display over, on the other axis, with its own number.**
-The alignments per-base wall has the GPU snapping each cell to a pixel COLUMN
-(`pileupCellX`) while Canvas2D draws a fractional-x cell plus a half-pixel seam
-fudge — measured 2026-08-27 at **16.39%** on `perBaseLetter`, identical on a real
-GPU, and it drops one 1px column per read where this entry's GPU keeps a row the
-Canvas2D side thins. Whoever settles which side is right will probably want to
-settle both at once: [reference/CROSS_BACKEND_GATE.md](../reference/CROSS_BACKEND_GATE.md)
-§"The per-base wall".
+**The same call exists one display over, on the other axis — and it was declined
+there.** The alignments per-base wall has the GPU snapping each cell to a pixel
+COLUMN (`pileupCellX`) while Canvas2D draws a fractional-x cell plus a half-pixel
+seam fudge: measured 2026-08-27 at **16.39%** on `perBaseLetter`, identical on a
+real GPU, dropping one 1px column per read where this entry's GPU keeps a row the
+Canvas2D side thins. That one closed as not worth fixing, on the grounds that
+per-base colouring is an uncommon setting
+([reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md), and
+[reference/CROSS_BACKEND_GATE.md](../reference/CROSS_BACKEND_GATE.md) §"The
+per-base wall" for the mechanism).
+
+**That is not an argument for closing this one, and the difference is the point.**
+The matrix is a display someone opens to read, its 41% is on the default view
+rather than an opt-in mode, and its SVG export disagrees with the screen it came
+from. What the alignments verdict does buy you is the mechanism already worked
+out and a second worked example of what the snap-versus-fractional split does to
+a picture — so this call can be taken on its own merits without re-deriving any
+of that.

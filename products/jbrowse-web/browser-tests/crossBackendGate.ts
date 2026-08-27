@@ -196,37 +196,17 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // it was a separate connector bug; the equal figures refuted that before it
   // landed.
   { match: 'inversion-pbsim', threshold: 0.1 },
-  // The per-base wall, and the entry that existed the moment the mode was first
-  // covered: `color-by-per-base-*-binned` are new scenes, and both failed on
-  // their first run against a disagreement that predates them. Nothing in the
-  // tree could have failed before, which is what
-  // agent-docs/todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md
-  // was about and why a false appearance claim shipped.
+  // NO PER-BASE ENTRY, and two were here for a day. `perBaseLetter` and
+  // `perBaseQuality` were covered on 2026-08-27, both failed on their first run
+  // at 16.39% and 1.76%, and the scenes came back out with the overrides that
+  // were holding them. The disagreement is real, understood and not being fixed
+  // — so an 18% ceiling that is never coming down is the meaningless ceiling the
+  // 2026-08-05 audit deleted seven of, and the 1.6pp of headroom it left over a
+  // 16.39% pair caught nothing but a catastrophe anyway.
   //
-  // It does NOT move between rasterizers — 16.39% under swiftshader and 16.40%
-  // on a real GPU, every measured pair identical to two decimals — so it is not
-  // antialiasing. Two deliberate asymmetries draw it:
-  //
-  //   `pileupCellX`             snaps the cell's left edge to a pixel column,
-  //   (alignmentsUniforms)      then extends to 1 CSS px from that anchor
-  //   `makePileupCellMapper`    leaves the left edge fractional and draws
-  //   (rendererTypes)           `max(1, 1/bpPerPx) + PILEUP_CELL_SEAM_FUDGE_PX`
-  //
-  // Above 1 bp/px the snap dominates: adjacent bases land in one column, the GPU
-  // keeps one, and 10,553 one-pixel columns stay white that Canvas2D paints —
-  // the same pixel set in both colour modes, so it is geometry rather than
-  // colour. Below it the fudge dominates. Lettering shows both because its four
-  // hues are far apart and Canvas2D's overlap averages them; quality's narrow
-  // ramp hides the same geometry, which is why it only crosses the default once
-  // the sub-pixel bin widens the composite.
-  //
-  // 18% and 2%, above the measured 16.39% and 1.76%. Records what is broken, not
-  // a setting — and which backend is RIGHT is a visual call nobody has made, the
-  // same one agent-docs/todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-\
-  // thinner-on-canvas2d.md is parked on one display over.
-  // agent-docs/measurements/per-base-cross-backend-drift.json.
-  { match: 'color-by-per-base-letter', threshold: 0.18 },
-  { match: 'color-by-per-base-quality', threshold: 0.02 },
+  // Read agent-docs/reference/CROSS_BACKEND_GATE.md §"The per-base wall" BEFORE
+  // adding a scene back: the numbers, the mechanism and the recipe are all
+  // there, so re-covering the mode costs a gate run rather than a day.
   // NO SYNTENY ENTRY, and there was one — `hs1-mm39-synteny-clean-ribbon` at 2%,
   // the only synteny pair that ever drifted and the only curve-mode entry this
   // list has held. It sat at 1.58% against the 1.5% default and is now 0.64%

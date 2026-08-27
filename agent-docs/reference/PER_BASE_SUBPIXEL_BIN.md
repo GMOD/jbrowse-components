@@ -177,10 +177,11 @@ holds its 365ms clone measurement.
 - **What a per-base wall should look like at wide zoom**, and the one octave of
   headroom the 1bp cell leaves — four candidates and three fixes, none built:
   [ideas/per-base-wall-at-wide-zoom.md](../ideas/per-base-wall-at-wide-zoom.md).
-- ~~**No cross-backend test covers a per-base mode at any zoom.**~~ Two scenes do
-  since 2026-08-27, and **both failed on their first run** — against a
-  disagreement that predates the bin, not one it caused. The gate finding, its
-  mechanism and the numbers are in
+- ~~**No cross-backend test covers a per-base mode at any zoom.**~~ Answered on
+  2026-08-27 and **closed rather than fixed**: two scenes were added, both failed
+  on their first run against a disagreement that predates the bin, and the scenes
+  came out again because nobody intends to fix it. Still uncovered, now
+  deliberately — the numbers, the mechanism and the recipe to re-take it are in
   [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) §"The per-base wall". What it
   means for this doc is below.
 - **Typed columns instead of entry objects**, which the closest in-tree

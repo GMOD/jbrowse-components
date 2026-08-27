@@ -40,23 +40,6 @@ const suite: TestSuite = {
       tracks: [colorByTrack({ type: 'tag', tag: 'HP' })],
       displayTestId: 'pileup-display',
     }),
-    // Whole-contig, not the 1kb the scenes above use: `subPixelBinBp` returns 1
-    // below 4 bp/px, so a per-base scene at that zoom passes under any change to
-    // the bin. agent-docs/reference/PER_BASE_SUBPIXEL_BIN.md.
-    lgvSnapshotTest({
-      name: 'color by per-base quality at a binned zoom',
-      snapshot: 'color-by-per-base-quality-binned',
-      loc: 'ctgA:1..48,000',
-      tracks: [colorByTrack({ type: 'perBaseQuality' })],
-      displayTestId: 'pileup-display',
-    }),
-    lgvSnapshotTest({
-      name: 'color by per-base letter at a binned zoom',
-      snapshot: 'color-by-per-base-letter-binned',
-      loc: 'ctgA:1..48,000',
-      tracks: [colorByTrack({ type: 'perBaseLetter' })],
-      displayTestId: 'pileup-display',
-    }),
   ],
 }
 

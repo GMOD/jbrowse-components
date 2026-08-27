@@ -4,27 +4,89 @@
   "measured": "2026-08-27",
   "source": {
     "kind": "hand",
-    "repro": "products/jbrowse-web, after `pnpm --filter @jbrowse/web build`: capture perBaseLetter on volvox_alignments at ctgA:1..1,000 / 1..4,000 / 1..48,000 under --backend=all --skip-webgpu --swiftshader -u, then histogram each targeted capture's pixels. `pure palette` is the share of inked pixels within 2 per channel of one of the five base colours the mode draws (Material red/blue/green/orange/grey); `distinct` counts every distinct RGB triple in the capture, inked or not. Scratch suite and script, not committed.",
-    "notes": "The purity column is the test of a mechanism claim, not a quality score. PER_BASE_SUBPIXEL_BIN.md explains the sub-pixel bin's visible effect by saying both backends floor a cell to 1 CSS px and blend what overlaps, so a pixel under N cells reports roughly their mean. Canvas2D does that. The GPU does not: it holds 160-269 distinct colours and stays majority-pure at every zoom measured, because `pileupCellX` snaps each cell to a whole pixel column and the winning cell covers it outright. Its impurity is edge antialiasing at cell boundaries, which is why it is WORST at 0.8 bp/px where cells are ~1.27px and land mid-column, rather than at the widest zoom where the most cells compete. No before-the-bin arm was captured, so this does not touch the bin's own before/after appearance measurement — it bounds the mechanism sentence attached to it."
+    "repro": "Capture perBaseLetter on volvox_alignments at ctgA:1..1,000 / 1..4,000 / 1..48,000 under `--backend=all --skip-webgpu --swiftshader -u` from products/jbrowse-web, then histogram each targeted capture. `pure palette` is the share of inked pixels within 2 per channel of one of the five base colours the mode draws (Material red/blue/green/orange/grey); `distinct` counts every distinct RGB triple. The scenes are not in the tree \u2014 see the repro on per-base-cross-backend-drift for how to stand them up.",
+    "notes": "The purity column is the test of a mechanism claim, not a quality score. PER_BASE_SUBPIXEL_BIN.md explains the sub-pixel bin's visible effect by saying both backends floor a cell to 1 CSS px and blend what overlaps, so a pixel under N cells reports roughly their mean. Canvas2D does that. The GPU does not: it holds 160-269 distinct colours and stays majority-pure at every zoom measured, because `pileupCellX` snaps each cell to a whole pixel column and the winning cell covers it outright. Its impurity is edge antialiasing at cell boundaries, which is why it is WORST at 0.8 bp/px where cells are ~1.27px and land mid-column, rather than at the widest zoom where the most cells compete. No before-the-bin arm was captured, so this does not touch the bin's own before/after appearance measurement \u2014 it bounds the mechanism sentence attached to it."
   },
   "columns": [
-    { "key": "zoom", "label": "bp/px", "format": "float", "align": "right" },
-    { "key": "backend", "label": "backend" },
-    { "key": "distinct", "label": "distinct colours", "format": "int", "align": "right" },
-    { "key": "pure", "label": "inked px on a pure base colour", "format": "ratio", "align": "right" }
-  ],
-  "rows": [
-    { "values": { "zoom": 0.8, "backend": "canvas2d", "distinct": 2002, "pure": 22.6 } },
-    { "values": { "zoom": 0.8, "backend": "webgl", "distinct": 160, "pure": 63.6 } },
-    { "values": { "zoom": 3.2, "backend": "canvas2d", "distinct": 5965, "pure": 2.2 } },
-    { "values": { "zoom": 3.2, "backend": "webgl", "distinct": 193, "pure": 64.8 } },
     {
-      "values": { "zoom": 37.9, "backend": "canvas2d", "distinct": 10041, "pure": 9.2 },
-      "emphasize": ["distinct", "pure"]
+      "key": "zoom",
+      "label": "bp/px",
+      "format": "float",
+      "align": "right"
     },
     {
-      "values": { "zoom": 37.9, "backend": "webgl", "distinct": 269, "pure": 74.9 },
-      "emphasize": ["distinct", "pure"]
+      "key": "backend",
+      "label": "backend"
+    },
+    {
+      "key": "distinct",
+      "label": "distinct colours",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "pure",
+      "label": "inked px on a pure base colour",
+      "format": "ratio",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "zoom": 0.8,
+        "backend": "canvas2d",
+        "distinct": 2002,
+        "pure": 22.6
+      }
+    },
+    {
+      "values": {
+        "zoom": 0.8,
+        "backend": "webgl",
+        "distinct": 160,
+        "pure": 63.6
+      }
+    },
+    {
+      "values": {
+        "zoom": 3.2,
+        "backend": "canvas2d",
+        "distinct": 5965,
+        "pure": 2.2
+      }
+    },
+    {
+      "values": {
+        "zoom": 3.2,
+        "backend": "webgl",
+        "distinct": 193,
+        "pure": 64.8
+      }
+    },
+    {
+      "values": {
+        "zoom": 37.9,
+        "backend": "canvas2d",
+        "distinct": 10041,
+        "pure": 9.2
+      },
+      "emphasize": [
+        "distinct",
+        "pure"
+      ]
+    },
+    {
+      "values": {
+        "zoom": 37.9,
+        "backend": "webgl",
+        "distinct": 269,
+        "pure": 74.9
+      },
+      "emphasize": [
+        "distinct",
+        "pure"
+      ]
     }
   ]
 }

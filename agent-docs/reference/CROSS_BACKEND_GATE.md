@@ -358,9 +358,10 @@ antialiasing claim the audit has ever *confirmed* rather than refuted. Splitting
 `inversion-pbsim-linked` out also stopped the 10% coverage ceiling silently
 covering a second, unrelated bug.
 
-**It is four again, by a different route.** Both `-linked` entries went when the
-read outline was fixed on both sides, leaving two; the two per-base entries below
-arrived with the scenes that first covered that mode.
+**It is two now.** Both `-linked` entries went when the read outline was fixed on
+both sides. Two per-base entries arrived and left again inside a day, which is
+its own worked example of the rule at the top of this section — see "The
+per-base wall" below.
 
 **Order matters now, and did not before.** `thresholdFor` takes the first
 substring match, so `inversion-pbsim-linked` has to sit above `inversion-pbsim`
@@ -442,14 +443,23 @@ that — the sweep is a point-in-time measurement, not a gate. It was not made o
 for the same reason the override list is kept short: a check whose findings are
 all "no" teaches people to skip it.
 
-## The per-base wall: covered on 2026-08-27, and it failed on the first run
+## The per-base wall: measured, and deliberately not gated
 
 `perBaseQuality` and `perBaseLetter` draw a cell per aligned base of every read —
-the densest thing the pileup paints — and until 2026-08-27 no cross-backend check
-covered either at any zoom. Two scenes in `Alignments Color Schemes` do now
-(`color-by-per-base-{quality,letter}-binned`, whole-contig ctgA so the sub-pixel
-bin is engaged), and both were over the default the first time they ran, against
-a disagreement older than the scenes.
+the densest thing the pileup paints — and no cross-backend check covered either
+at any zoom. Two scenes were added on 2026-08-27 to close that, and **both failed
+on their first run** against a disagreement older than the scenes.
+
+**They are not in the tree.** The scenes and the two overrides holding them came
+back out the same day, on the decision that the disagreement is not worth fixing:
+neither mode is a common setting, and an override is supposed to be a record of
+something someone intends to fix. An 18% ceiling that is never coming down is the
+meaningless ceiling this file's own audit deleted seven of, and the 1.6pp of
+headroom it left over a 16.39% pair was catching nothing short of a catastrophe.
+Better to keep the finding and drop the apparatus.
+
+So this section is the record. **Read it before adding a scene back** — the work
+is done, and re-covering the mode costs a gate run rather than a day.
 
 <!-- BEGIN GENERATED MEASUREMENT per-base-cross-backend-drift -->
 
@@ -470,8 +480,8 @@ two decimals under SwiftShader and on a real GPU, which antialiasing cannot do �
 so the two backends are drawing different pixels, the way `inversion-pbsim` does
 and unlike `inversion-paired-coverage`.
 
-Two deliberate asymmetries produce it, both in the tree today and both
-documented where they live:
+Two deliberate asymmetries produce it, both still in the tree and both documented
+where they live:
 
 - **`pileupCellX`** (`alignmentsUniforms.slang`) snaps a cell's left edge to a
   pixel column, then extends to a 1 CSS px minimum from that anchor.
@@ -481,9 +491,9 @@ documented where they live:
 
 Above 1 bp/px the snap dominates: adjacent bases land in one column, the GPU
 keeps one of them, and **10,553 one-pixel columns stay white that Canvas2D
-paints**. That set is *identical* in both colour modes, which is what makes it
-geometry rather than colour — about one dropped column per read. Below 1 bp/px
-the fudge dominates instead, drawing a 1.77px cell where the GPU draws 1.27px.
+paints** — about one per read. That set is *identical* in both colour modes,
+which is what makes it geometry rather than colour. Below 1 bp/px the fudge
+dominates instead, drawing a 1.77px cell where the GPU draws 1.27px.
 
 **Lettering is where it shows, and quality is why nobody saw it.** Decoding the
 pixels rather than the percentage: Canvas2D's overlapping cells average to exact
@@ -492,14 +502,31 @@ two-colour means — `249,108,27` where the GPU writes red `244,67,54`, and
 make that legible; `perBaseQuality`'s narrow ramp reports roughly the same value
 either way, which is why it stays under the default until the bin widens the
 composite and then only reaches 1.76%. The same asymmetry, one palette apart.
+The colour-purity half of that is in
+[PER_BASE_SUBPIXEL_BIN.md](PER_BASE_SUBPIXEL_BIN.md), where it also bounds that
+doc's own account of the mechanism.
 
-**Which backend is right is a visual call, and nobody has made it.** The GPU
-drops bases; Canvas2D shows a blend of bases that is not any base's colour. It is
-the argument in
-[todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md](../todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md),
-one display over. Until it is made the two override entries hold the numbers, and
-they are a record of what is broken rather than a setting — the same standing as
-`inversion-pbsim`'s 10%.
+### To see it again
+
+Two `lgvSnapshotTest` scenes on `volvox_alignments` at `ctgA:1..48,000` with
+`displaySnapshot.colorBy.type` of `perBaseLetter` and `perBaseQuality`, in any
+suite; then
+
+```sh
+node browser-tests/runner.ts --filter=<suite> --backend=all \
+  --skip-webgpu --swiftshader --gate-only --drift-report
+```
+
+Pick the zoom deliberately. `subPixelBinBp` returns 1 below 4 bp/px, so a scene
+under that zoom says nothing about the bin — though as the table shows it still
+fails, because the bin was never what caused this.
+
+**What would reopen it:** either per-base becoming a mode people leave on, or
+someone taking the visual call it shares with
+[todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md](../todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md).
+Note the SVG export takes the Canvas2D path, so an exported figure is the other
+backend's answer than the screen it was exported from — the same complaint that
+entry carries, one display over.
 
 ## Synteny's one drifting pair is the sub-pixel fade, and it is curve-only
 
