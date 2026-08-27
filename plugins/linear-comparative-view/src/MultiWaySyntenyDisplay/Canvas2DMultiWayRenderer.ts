@@ -90,11 +90,9 @@ export function drawMultiWay(
   }
 }
 
-/**
- * The ribbon layers as the pick engine reads them: a numeric key per layer,
- * topmost last, so a point over two gutters answers the one drawn over.
- */
-export function ribbonPickState(
+// the ribbon layers as the pick engine reads them: a numeric key per layer,
+// topmost last, so a point over two gutters answers the one drawn over
+function ribbonPickState(
   state: MultiWayRenderState,
   keyOf: (key: string) => number,
 ): SyntenyRenderState {
@@ -108,14 +106,22 @@ export function ribbonPickState(
 }
 
 /**
- * Stable numeric ids for the string cell keys, which the HAL, the pick engine
- * and the geometry cache all key on.
+ * The ribbon cells as both backends hold them for the synteny pick engine —
+ * under the stable numeric id the HAL, the engine and the geometry cache all
+ * key on — and the pick itself. The GPU backend uploads through the same ids,
+ * so a glyph cell and a ribbon cell never collide on one region.
  */
-export class CellIds {
+export class RibbonPickCells {
+  readonly geometry = new SyntenyGeometryCache()
   private ids = new Map<string, number>()
   private names = new Map<number, string>()
+  private pickCtx: PickCanvasLike | undefined
 
-  of(key: string) {
+  constructor(
+    private makeCtx: () => PickCanvasLike | undefined = makePickCtx,
+  ) {}
+
+  idOf(key: string) {
     let id = this.ids.get(key)
     if (id === undefined) {
       id = this.ids.size + 1
@@ -125,28 +131,47 @@ export class CellIds {
     return id
   }
 
-  name(id: number) {
-    return this.names.get(id)
+  set(key: string, data: SyntenyInstanceData) {
+    this.geometry.set(this.idOf(key), data)
   }
-}
 
-export function ribbonPickResult(
-  hit: { key: number; instanceIndex: number } | undefined,
-  ids: CellIds,
-  regions: Map<number, SyntenyInstanceData>,
-): MultiWayRibbonPick | undefined {
-  if (!hit) {
-    return undefined
+  delete(key: string) {
+    this.geometry.delete(this.idOf(key))
   }
-  const key = ids.name(hit.key)
-  const data = regions.get(hit.key)
-  return key === undefined || !data
-    ? undefined
-    : {
-        key,
-        instanceIndex: hit.instanceIndex,
-        targetIdx: data.instanceFeatureIdx[hit.instanceIndex]!,
-      }
+
+  clear() {
+    this.geometry.clear()
+  }
+
+  pick(
+    x: number,
+    y: number,
+    state: MultiWayRenderState,
+    canvasLogicalWidth: number,
+  ): MultiWayRibbonPick | undefined {
+    this.pickCtx ??= this.makeCtx()
+    if (!this.pickCtx) {
+      return undefined
+    }
+    const hit = pickFeatureAtPoint({
+      ctx: this.pickCtx,
+      state: ribbonPickState(state, key => this.idOf(key)),
+      regions: this.geometry.regions,
+      pickIndices: this.geometry.pickIndices,
+      canvasLogicalWidth,
+      x,
+      y,
+    })
+    const key = hit && this.names.get(hit.key)
+    const data = hit && this.geometry.regions.get(hit.key)
+    return hit && key !== undefined && data
+      ? {
+          key,
+          instanceIndex: hit.instanceIndex,
+          targetIdx: data.instanceFeatureIdx[hit.instanceIndex]!,
+        }
+      : undefined
+  }
 }
 
 export class Canvas2DMultiWayRenderer
@@ -154,9 +179,7 @@ export class Canvas2DMultiWayRenderer
   implements MultiWayRenderingBackend
 {
   private cells = new Map<string, MultiWayCell>()
-  private ids = new CellIds()
-  private ribbons = new SyntenyGeometryCache()
-  private pickCtx: PickCanvasLike | undefined
+  private ribbons = new RibbonPickCells()
 
   resize(width: number, height: number) {
     prepareCanvas(this.canvas, this.ctx, width, height)
@@ -165,13 +188,13 @@ export class Canvas2DMultiWayRenderer
   upload(key: string, cell: MultiWayCell) {
     this.cells.set(key, cell)
     if (cell.kind === 'ribbons') {
-      this.ribbons.set(this.ids.of(key), cell.data)
+      this.ribbons.set(key, cell.data)
     }
   }
 
   release(key: string) {
     this.cells.delete(key)
-    this.ribbons.delete(this.ids.of(key))
+    this.ribbons.delete(key)
   }
 
   render(state: MultiWayRenderState) {
@@ -181,24 +204,7 @@ export class Canvas2DMultiWayRenderer
   }
 
   pickRibbon(x: number, y: number, state: MultiWayRenderState) {
-    this.pickCtx ??= makePickCtx()
-    const ctx = this.pickCtx
-    if (!ctx) {
-      return undefined
-    }
-    return ribbonPickResult(
-      pickFeatureAtPoint({
-        ctx,
-        state: ribbonPickState(state, key => this.ids.of(key)),
-        regions: this.ribbons.regions,
-        pickIndices: this.ribbons.pickIndices,
-        canvasLogicalWidth: this.canvas.width / getDpr(),
-        x,
-        y,
-      }),
-      this.ids,
-      this.ribbons.regions,
-    )
+    return this.ribbons.pick(x, y, state, this.canvas.width / getDpr())
   }
 
   dispose() {

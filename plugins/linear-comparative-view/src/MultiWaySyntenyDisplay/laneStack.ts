@@ -179,7 +179,17 @@ export function buildLanes({
       const isAnchor = row === 0
       const frame = isAnchor ? undefined : rowFrames.get(assemblyName)
       const alias = refNameAliasOf(assemblyName)
-      const canon = (refName: string) => alias?.(refName) ?? refName
+      // asked once per exon interval of every gene, and the alias table is a
+      // live assembly read — a lane's genes name one or two sequences
+      const canonical = new Map<string, string>()
+      const canon = (refName: string) => {
+        let name = canonical.get(refName)
+        if (name === undefined) {
+          name = alias?.(refName) ?? refName
+          canonical.set(refName, name)
+        }
+        return name
+      }
       const frameRefName = frame && canon(frame.refName)
 
       const placements = new Map<string, LaneGroup>()

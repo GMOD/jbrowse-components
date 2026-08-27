@@ -13,7 +13,6 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin, {
   blockKeySignature,
@@ -28,7 +27,7 @@ import {
   syntenyRegionMenuItems,
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
-import { axisSpan } from './anchorAxis.ts'
+import { axisPlacement, axisSpan } from './anchorAxis.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
@@ -48,6 +47,7 @@ import {
   glyphsKey,
 } from './multiwayGeometry.ts'
 
+import type { AxisPlacement } from './anchorAxis.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
@@ -447,34 +447,35 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * where the anchor lane draws each visible group, in canvas px, in the
-       * anchor's own direction — start end first, so a horizontally flipped
-       * view hands the ribbons the crossed pair it is drawing.
+       * where the view draws each visible group's anchor interval, in the
+       * view's px before the scroll offset and in the anchor's own direction —
+       * start end first, so a horizontally flipped view hands the ribbons the
+       * crossed pair it is drawing — with the clipped interval's centre as the
+       * coordinate a lane decision can pin to.
        *
-       * The view's own `bpToPx` through `axisSpan`, which is the only honest
-       * answer: it is piecewise over the displayed regions and no `RowFrame`
-       * can stand in for it. Read both by the lane-alignment seed and by the
-       * anchor lane's own ribbons, so "the lanes line up against where the
-       * anchor actually draws" holds by construction rather than by two loops
-       * agreeing
+       * The view's own `bpToPx` through `axisPlacement`, which is the only
+       * honest answer: it is piecewise over the displayed regions and no
+       * `RowFrame` can stand in for it. Read both by the lane-alignment seed
+       * and by the anchor lane's own ribbons, so "the lanes line up against
+       * where the anchor actually draws" holds by construction rather than by
+       * two loops agreeing
        */
-      get anchorSpans(): Map<string, Span> {
+      get anchorPlacements(): Map<string, AxisPlacement> {
         const view = self.lgv
         const assembly = self.anchorAssembly
-        const out = new Map<string, Span>()
+        const out = new Map<string, AxisPlacement>()
         if (!view.initialized || !assembly) {
           return out
         }
         for (const group of self.visibleGroups) {
-          const span = axisSpan(
+          const placement = axisPlacement(
             view,
             assembly.getCanonicalRefName2(group.anchor.refName),
             group.anchor.start,
             group.anchor.end,
-            self.renderOriginPx,
           )
-          if (span) {
-            out.set(group.key, span)
+          if (placement) {
+            out.set(group.key, placement)
           }
         }
         return out
@@ -501,32 +502,27 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the anchor placements in the stack's own px: what the anchor lane
+       * draws and what every ribbon out of it starts from
+       */
+      get anchorSpans(): Map<string, Span> {
+        const origin = self.renderOriginPx
+        const out = new Map<string, Span>()
+        for (const [key, { x1, x2 }] of self.anchorPlacements) {
+          out.set(key, [x1 - origin, x2 - origin])
+        }
+        return out
+      },
+      /**
+       * #getter
        * the first link of the alignment chain: each visible group's anchor
-       * centre as a canonical coordinate and the view's px for it BEFORE the
-       * scroll offset — so a settle decision reading this does not re-run on
-       * every pan
+       * centre and the view's px for it BEFORE the scroll offset, so a settle
+       * decision reading this does not re-run on every pan
        */
       get anchorAbsX(): Map<string, { coord: AnchorCoord; x: number }> {
-        const view = self.lgv
-        const assembly = self.anchorAssembly
         const out = new Map<string, { coord: AnchorCoord; x: number }>()
-        if (!view.initialized || !assembly) {
-          return out
-        }
-        for (const group of self.visibleGroups) {
-          const refName = assembly.getCanonicalRefName2(group.anchor.refName)
-          const clipped = clipToDisplayedRegions(view, {
-            refName,
-            start: group.anchor.start,
-            end: group.anchor.end,
-          })
-          if (clipped) {
-            const coord = { refName, coord: (clipped.start + clipped.end) / 2 }
-            const px = view.bpToPx(coord)
-            if (px) {
-              out.set(group.key, { coord, x: px.offsetPx })
-            }
-          }
+        for (const [key, { centre, x1, x2 }] of self.anchorPlacements) {
+          out.set(key, { coord: centre, x: (x1 + x2) / 2 })
         }
         return out
       },

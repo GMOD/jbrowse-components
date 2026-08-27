@@ -1,14 +1,8 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { UNIFORM_OFFSET_F32 as SYNTENY_U } from '../LinearSyntenyDisplay/shaders/syntenyFillStraight.generated.ts'
-import { pickFeatureAtPoint } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
-import {
-  CellIds,
-  drawMultiWay,
-  ribbonPickResult,
-  ribbonPickState,
-} from './Canvas2DMultiWayRenderer.ts'
+import { RibbonPickCells, drawMultiWay } from './Canvas2DMultiWayRenderer.ts'
 import { GpuMultiWayRenderer, MULTIWAY_PASSES } from './GpuMultiWayRenderer.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
@@ -217,22 +211,9 @@ function polygonPickCtx(): PickCanvasLike {
 }
 
 test('a pick over the drawn ribbon answers its target through the same transform', () => {
-  const ids = new CellIds()
-  const regions = new Map([[ids.of('ribbons:0'), ribbon]])
-  const pick = (x: number, y: number) =>
-    ribbonPickResult(
-      pickFeatureAtPoint({
-        ctx: polygonPickCtx(),
-        state: ribbonPickState(state, key => ids.of(key)),
-        regions,
-        pickIndices: new Map(),
-        canvasLogicalWidth: WIDTH,
-        x,
-        y,
-      }),
-      ids,
-      regions,
-    )
+  const cells = new RibbonPickCells(polygonPickCtx)
+  cells.set('ribbons:0', ribbon)
+  const pick = (x: number, y: number) => cells.pick(x, y, state, WIDTH)
   // at mid-height the ribbon spans 200..300 before the drag carries it right
   expect(pick(250 + DRAG, 70)).toEqual({
     key: 'ribbons:0',

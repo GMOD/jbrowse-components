@@ -26,19 +26,9 @@ import {
   writeSyntenyUniforms,
 } from '../LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
 import { SYNTENY_INSTANCE_CACHE } from '../LinearSyntenyDisplay/instanceInterleave.ts'
-import { SyntenyGeometryCache } from '../LinearSyntenyDisplay/syntenyGeometryCache.ts'
-import {
-  makePickCtx,
-  pickFeatureAtPoint,
-} from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
-import {
-  CellIds,
-  ribbonPickResult,
-  ribbonPickState,
-} from './Canvas2DMultiWayRenderer.ts'
+import { RibbonPickCells } from './Canvas2DMultiWayRenderer.ts'
 import { glyphRangeStart, ribbonParams } from './multiwayRenderTypes.ts'
 
-import type { PickCanvasLike } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import type {
   GlyphLayer,
   LaneGlyphData,
@@ -123,14 +113,12 @@ export class GpuMultiWayRenderer
   private canvas: HTMLCanvasElement
   private uniformF32: Float32Array
   private cells = new Map<string, MultiWayCell>()
-  private ids = new CellIds()
-  private ribbons = new SyntenyGeometryCache()
+  private ribbons = new RibbonPickCells()
   // Which fill pass each ribbon cell is uploaded against: only the mode a
   // layer draws in lives on the GPU, and a drawCurves toggle re-uploads on the
   // next frame from the packed bytes the interleave cache still holds.
   private uploadedPass = new Map<number, string>()
   private interleaveCache = createInstanceCache(SYNTENY_INSTANCE_CACHE)
-  private pickCtx: PickCanvasLike | undefined
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
     super(hal, MULTIWAY_UNIFORM_BYTE_SIZE)
@@ -143,12 +131,12 @@ export class GpuMultiWayRenderer
   }
 
   upload(key: string, cell: MultiWayCell) {
-    const id = this.ids.of(key)
+    const id = this.ribbons.idOf(key)
     this.cells.set(key, cell)
     this.hal.deleteRegion(id)
     this.uploadedPass.delete(id)
     if (cell.kind === 'ribbons') {
-      this.ribbons.set(id, cell.data)
+      this.ribbons.set(key, cell.data)
     } else {
       for (const pass of GLYPH_PASSES) {
         uploadPass(this.hal, id, pass, cell.data)
@@ -157,9 +145,9 @@ export class GpuMultiWayRenderer
   }
 
   release(key: string) {
-    const id = this.ids.of(key)
+    const id = this.ribbons.idOf(key)
     this.cells.delete(key)
-    this.ribbons.delete(id)
+    this.ribbons.delete(key)
     this.uploadedPass.delete(id)
     this.interleaveCache.delete(id)
     this.hal.deleteRegion(id)
@@ -184,8 +172,8 @@ export class GpuMultiWayRenderer
   }
 
   private drawRibbons(layer: RibbonLayer, state: MultiWayRenderState) {
-    const id = this.ids.of(layer.key)
-    const data = this.ribbons.regions.get(id)
+    const id = this.ribbons.idOf(layer.key)
+    const data = this.ribbons.geometry.regions.get(id)
     if (!data || data.instanceCount === 0) {
       return
     }
@@ -218,7 +206,7 @@ export class GpuMultiWayRenderer
     data: LaneGlyphData,
     state: MultiWayRenderState,
   ) {
-    const id = this.ids.of(layer.key)
+    const id = this.ribbons.idOf(layer.key)
     const [hi, lo] = splitPositionWithFrac(glyphRangeStart(layer, state))
     featureGlyphShader.writeUniforms(this.uniformData, {
       bpRangeX: [hi, lo, state.width],
@@ -240,24 +228,7 @@ export class GpuMultiWayRenderer
   }
 
   pickRibbon(x: number, y: number, state: MultiWayRenderState) {
-    this.pickCtx ??= makePickCtx()
-    const ctx = this.pickCtx
-    if (!ctx) {
-      return undefined
-    }
-    return ribbonPickResult(
-      pickFeatureAtPoint({
-        ctx,
-        state: ribbonPickState(state, key => this.ids.of(key)),
-        regions: this.ribbons.regions,
-        pickIndices: this.ribbons.pickIndices,
-        canvasLogicalWidth: this.canvas.width / getDpr(),
-        x,
-        y,
-      }),
-      this.ids,
-      this.ribbons.regions,
-    )
+    return this.ribbons.pick(x, y, state, this.canvas.width / getDpr())
   }
 
   override dispose() {
