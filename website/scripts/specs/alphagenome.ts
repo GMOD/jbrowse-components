@@ -318,7 +318,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
   // measured against.
   {
     ...common,
-    name: 'alphagenome/send_variant_menu',
+    name: 'alphagenome/predict_variant_menu',
     actions: [
       ...readIsoformNotice(),
       {

@@ -235,7 +235,7 @@ its chip names the position and the two alleles, and the Predict button renames
 itself to match. Run it, and the same window comes back twice — once for the
 reference sequence and once with the insertion in place.
 
-<Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The last row of the menu is the plugin's, and it opens the query panel with the variant under the cursor already loaded." src="/img/alphagenome/send_variant_menu.png" />
+<Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The last row of the menu is the plugin's, and it opens the query panel with the variant under the cursor already loaded." src="/img/alphagenome/predict_variant_menu.png" />
 
 The recorded prediction this page reads is for the **Jurkat** insertion,
 `chr1:47239297 C>CCGTTTCCTAACC`, which sits in the same stack of patient
