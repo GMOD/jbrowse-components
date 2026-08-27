@@ -60,3 +60,37 @@ describe('matchesCytosineContext reverse strand', () => {
     expect(matchesCytosineContext('CG', 0, true, 'CG')).toBe(false) // no base before pos 0
   })
 })
+
+// Both callers hand this a different case: `getMethBins` passes the read's SEQ,
+// which BAM stores upper-case, while `extractBisulfite` passes the LOWER-cased
+// reference. Every case above is upper-case, so the mixed-case rule was
+// unpinned — and the predicate now folds case arithmetically rather than
+// through `toLowerCase`.
+describe('matchesCytosineContext case folding', () => {
+  test('lower-case sequence matches exactly as upper-case does', () => {
+    expect(matchesCytosineContext('cg', 0, false, 'CG')).toBe(true)
+    expect(matchesCytosineContext('ca', 0, false, 'CG')).toBe(false)
+    expect(matchesCytosineContext('cag', 0, false, 'CHG')).toBe(true)
+    expect(matchesCytosineContext('cat', 0, false, 'CHH')).toBe(true)
+    expect(matchesCytosineContext('cg', 1, true, 'CG')).toBe(true)
+    expect(matchesCytosineContext('cag', 2, true, 'CHG')).toBe(true)
+  })
+
+  test('mixed case matches', () => {
+    expect(matchesCytosineContext('cG', 0, false, 'CG')).toBe(true)
+    expect(matchesCytosineContext('Cg', 0, false, 'CG')).toBe(true)
+  })
+})
+
+// N is a base the reference and the read both carry, and it complements to
+// nothing — so it matches neither the cytosine nor an H, on either strand.
+describe('matchesCytosineContext ambiguous bases', () => {
+  test('N never satisfies a pattern position', () => {
+    expect(matchesCytosineContext('NG', 0, false, 'CG')).toBe(false)
+    expect(matchesCytosineContext('CN', 0, false, 'CG')).toBe(false)
+    expect(matchesCytosineContext('CNG', 0, false, 'CHG')).toBe(false)
+    expect(matchesCytosineContext('nn', 0, false, 'all')).toBe(false)
+    expect(matchesCytosineContext('CN', 1, true, 'CG')).toBe(false)
+    expect(matchesCytosineContext('NG', 1, true, 'CG')).toBe(false)
+  })
+})
