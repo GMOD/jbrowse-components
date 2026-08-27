@@ -219,31 +219,32 @@ unmodified" and "says nothing". The `pmax(0, 1 - m - h)` floor mirrors JBrowse's
   halves. Nothing to do here.
 - ~~**`geneGlyphMode` is not translated**~~ — it is. `collapse_isoforms.R`
   exists and `exportRCode` derives it from `effectiveGeneGlyphMode`, resolving
-  `auto` rather than reading the slot. **What it gets wrong is WHICH isoform
-  wins**, and that is the next thing to close:
+  `auto` rather than reading the slot, and **WHICH isoform wins now matches**.
 
   JBrowse ranks isoforms by (curated tag, coding before non-coding, protein
   length, later index) — `rankIsoforms` in
   `plugins/canvas/src/RenderFeatureDataRPC/glyphs/subfeatures.ts`. A tag the
   annotation carries outranks every measurement, because it is the choice a
-  human made. `collapse_isoforms` implements only the FALLBACK, so on any
-  NCBI/GENCODE annotation — `rexport/modifications`' own RefSeq lane,
-  `sv_cgiab/methylation_cdkn2b`, `cancer_sv/foldback_reconstruction` — the R
-  panel draws a different transcript than the browser beside it.
+  human made. `collapse_isoforms` took `canonical_field`/`canonical_tags` and
+  ranks on them first, so the R panel and the browser beside it pick the same
+  transcript on an NCBI or GENCODE annotation — `rexport/modifications`' own
+  RefSeq lane, `sv_cgiab/methylation_cdkn2b`,
+  `cancer_sv/foldback_reconstruction`.
 
-  `test_data/volvox/volvox.canonical_tags.gff3` is already built for exactly
-  this: four genes covering NCBI's `tag=MANE Select`, GENCODE's comma list with
-  `MANE_Select` in it, an `Ensembl_canonical` with no MANE beside it, and one
-  with no tag at all — and **every tagged transcript is the SHORTER protein**,
-  so a collapse that keeps it can only have read the tag. Today's helper picks
-  the longer one in three of the four.
+  `exportRRun.test.ts` pins it against
+  `test_data/volvox/volvox.canonical_tags.gff3`: four genes covering NCBI's
+  `tag=MANE Select`, GENCODE's comma list with `MANE_Select` in it, an
+  `Ensembl_canonical` with no MANE beside it, and one with no tag at all — and
+  **every tagged transcript is the SHORTER protein**, so a collapse that keeps
+  it can only have read the tag.
 
-  `read_gff` has to grow the attribute first, and its `attrs` path is broken for
+  `read_gff` grew the attribute to get there. Its `attrs` path could not carry
   this shape: rtracklayer surfaces a comma-list GFF attribute as a
   `CompressedCharacterList`, and `as.character()` on one **errors outright**
   ("coercing an AtomicList object to an atomic vector is supported only for
-  objects with top-level elements of length <= 1") rather than flattening. Only
-  single-valued attributes (`gbkey`) go through today, so nothing has hit it.
+  objects with top-level elements of length <= 1") rather than flattening, so a
+  `List` value is now joined back to the spelling the file used. Only
+  single-valued attributes (`gbkey`) went through before.
 - **`rexport/genes_sarscov2` is a weak figure** — the caption promises ORF1ab's
   mature peptide products and the panel shows one bar. Predates this pass.
 - ~~`pnpm figures:push` and commit `figures.lock`~~ — done. All 19
