@@ -73,8 +73,19 @@ export interface AlignmentsRParams {
   // (JBrowse only fades past 1 bp/px, the sub-pixel regime). 1 = no fade.
   bpPerPx: number
   // minimum MM/ML modification-call probability drawn in the modifications
-  // scheme (0..1); JBrowse's default is 0.1 (a 10% threshold slider)
+  // scheme (0..1); JBrowse's default is 0.1 (a 10% threshold slider). The two
+  // sub-modes below both ignore it, as JBrowse does.
   modificationThreshold: number
+  // JBrowse's unmarked-base fill: every cytosine in `modificationContext` the
+  // read covers is drawn, the ones no MM call named as implicitly unmodified,
+  // and each one takes the single most-likely of 5mC / 5hmC / unmodified
+  modificationFillUnmarked?: boolean
+  // JBrowse's two-color view: draw every call, the ones under even odds in the
+  // unmodified color at their unmodified confidence
+  modificationTwoColor?: boolean
+  // cytosine context the fill walks (colorBy.modifications.cytosineContext);
+  // CpG unless a plant methylation view asked for CHG/CHH
+  modificationContext?: string
   // JBrowse linkedReads === 'normal': group mates + supplementary segments by
   // read name onto one row with connector lines (link_reads) instead of the flat
   // per-read pileup (pileup_layout)
@@ -237,6 +248,24 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
     bam <- cram_to_bam(.bampath, chrom, start, end, .refpath)`
     : `bam <- .bampath`
   const cramHelpers = p.isCram ? ['cram_to_bam'] : []
+  // The modification sub-mode, spelled once for both panels. Named only when it
+  // is not the default, so a threshold view emits the same call it always has
+  // and the sub-modes cost the common script nothing to read. `fillUnmarked`
+  // wins over `twoColor` where a config sets both, which is the precedence in
+  // extractModifications — the fill skips the MM-tag paint entirely.
+  //
+  // The fill also swaps in the theme's methylation palette, whose 5hmC is pink
+  // where the modification-type palette's is magenta.
+  //
+  // A legacy `colorBy: methylation` reaches here as the fill: `normalizeColorBy`
+  // rewrites it in the model's own `colorBy` getter, so what this reads is
+  // already `modifications` with `fillUnmarked` set.
+  const modArgs = p.modificationFillUnmarked
+    ? `, fill_unmarked = TRUE, context = ${rStr(p.modificationContext ?? 'CG')}`
+    : p.modificationTwoColor
+      ? ', two_color = TRUE'
+      : ''
+  const methPalette = p.modificationFillUnmarked ? 'TRUE' : 'FALSE'
   const packages = ['Rsamtools', 'GenomicAlignments', 'ggplot2']
   const fragments: RTrackFragment[] = []
 
@@ -271,7 +300,7 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
     const modRead = covMods
       ? `
     # base modifications (MM/ML) over the filtered reads, clipped to the region
-    modsraw <- bam_modifications(bam, chrom, start, end, min_prob)
+    modsraw <- bam_modifications(bam, chrom, start, end, min_prob${modArgs})
     mmstr <- attr(modsraw, "mm_strands")
     mods <- keep_rows(modsraw, keep)
     # a read overlapping the region carries its whole MM tag, so most of a long
@@ -307,7 +336,7 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
   # segment's alpha is the mean call likelihood, baked into the fill hex so one
   # scale_fill_identity() still covers the area, the SNP bars and these.
   if (!is.null(modcov) && nrow(modcov)) {
-    modcov$fill <- paste0(mod_colors(modcov$modtype),
+    modcov$fill <- paste0(mod_colors(modcov$modtype, modcov$nomod, ${methPalette}),
       sprintf("%02X", pmin(255L, as.integer(round(modcov$prob * 255)))))
     p <- p + geom_rect(data = modcov,
       aes(xmin = pos, xmax = pos + 1, ymin = ybase * depth, ymax = ytop * depth,
@@ -515,7 +544,7 @@ ${filterConsts}${interbaseConsts}${modConsts}
     cov0$pos <- cov0$pos + shift; cov0$.region <- ri`
         : '',
       isMods
-        ? `    mods <- bam_modifications(bam, chrom, start, end, min_prob)`
+        ? `    mods <- bam_modifications(bam, chrom, start, end, min_prob${modArgs})`
         : '',
       isQual ? `    bq <- bam_base_quality(bam, chrom, start, end)` : '',
     ]
@@ -605,10 +634,18 @@ ${filterConsts}${interbaseConsts}${modConsts}
     }
   }`
     const modsOverlay = `  # per-base modification ticks (MM/ML), joined to their pileup row and colored
-  # by modification type; raise min_prob to hide low-confidence calls like JBrowse
+  # by modification type${
+    p.modificationFillUnmarked
+      ? `, or in blue where the most likely state is unmodified.
+  # bam_modifications' fill mode ignores min_prob, like JBrowse's own fill`
+      : p.modificationTwoColor
+        ? `, or in blue where the call is under even odds.
+  # bam_modifications' two-color mode ignores min_prob, like JBrowse's own`
+        : `; raise min_prob to hide low-confidence calls like JBrowse`
+  }
   if (!is.null(mods) && nrow(mods)) {
     mods$row <- reads$row[mods$read_index]
-    mods$fill <- mod_colors(mods$modtype)
+    mods$fill <- mod_colors(mods$modtype, mods$nomod, ${methPalette})
     p <- p + geom_rect(data = mods,
       aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
   }`
@@ -799,10 +836,6 @@ function unreproducedSettings(self: LinearAlignmentsDisplayModel) {
   if (sorted !== undefined && resolveSortType(sorted) === undefined) {
     notes.push(`"Sort by" ${sorted} — the pileup is drawn unsorted`)
   }
-  // Modification sub-modes. Each of these changes WHICH calls are counted, so it
-  // moves the coverage panel's stacked mod bars as well as the pileup's ticks —
-  // a reader comparing the R figure against the browser would see different
-  // methylation levels, not just a different palette.
   // MD is optional in BAM, and without a reference to fall back on those reads
   // are drawn as if they matched everywhere. Said here rather than left to the
   // reader to notice a pileup with no ticks on it.
@@ -816,17 +849,11 @@ function unreproducedSettings(self: LinearAlignmentsDisplayModel) {
       '"Color by" bisulfite — the C→T conversion calls need the reference sequence; the reads are drawn plain and the coverage panel carries no methylation bars',
     )
   }
+  // The remaining modification sub-mode. It changes WHICH calls are counted, so
+  // it moves the coverage panel's stacked mod bars as well as the pileup's ticks
+  // — a reader comparing the R figure against the browser would see different
+  // methylation levels, not just a different palette.
   const mods = self.colorBy.modifications
-  if (mods?.fillUnmarked) {
-    notes.push(
-      '"Color by" modifications with the unmarked-base fill — only the MM/ML calls at or above the threshold are drawn, not the implicit unmodified (blue) cytosines JBrowse fills in',
-    )
-  }
-  if (mods?.twoColor) {
-    notes.push(
-      '"Color by" modifications in two-color mode — the low-probability half of each call is dropped rather than drawn in the unmodified (blue) color',
-    )
-  }
   if (
     mods?.shownModifications !== undefined ||
     mods?.hiddenModifications?.length
@@ -876,5 +903,8 @@ export function exportRCode(
     modificationThreshold:
       (self.colorBy.modifications?.threshold ??
         DEFAULT_MODIFICATION_THRESHOLD) / 100,
+    modificationFillUnmarked: !!self.colorBy.modifications?.fillUnmarked,
+    modificationTwoColor: !!self.colorBy.modifications?.twoColor,
+    modificationContext: self.colorBy.modifications?.cytosineContext,
   })
 }

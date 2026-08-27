@@ -20,18 +20,30 @@
 # segments can't swap between draws, and each bin carries the mean call
 # likelihood for the panel to bake into the segment's alpha.
 #
-# Returns data.frame(pos, modtype, ybase, ytop, prob, depth), where ybase/ytop are
-# fractions of that column's own depth bar. Empty frame when nothing is drawable.
+# A bin is a (column, type, MODIFIED-OR-NOT) triple, not a (column, type) pair:
+# the methylation fill and the two-color view both draw an unmodified call in
+# blue alongside the modified ones on the same type, and JBrowse counts the two
+# separately (groupByPosition keys on modType AND noMod). The unmodified bucket
+# sits at the TOP of the column, above every modification, which is
+# compareModEntries' rule - so e.g. red 5mC always sits under blue unmodified.
+#
+# Returns data.frame(pos, modtype, nomod, ybase, ytop, prob, depth), where
+# ybase/ytop are fractions of that column's own depth bar. Empty frame when
+# nothing is drawable.
 mod_coverage <- function(mods, counts, cov, simplex = character(0)) {
-  empty <- data.frame(pos = integer(0), modtype = character(0), ybase = numeric(0),
-                      ytop = numeric(0), prob = numeric(0), depth = numeric(0),
-                      stringsAsFactors = FALSE)
+  empty <- data.frame(pos = integer(0), modtype = character(0), nomod = logical(0),
+                      ybase = numeric(0), ytop = numeric(0), prob = numeric(0),
+                      depth = numeric(0), stringsAsFactors = FALSE)
   if (is.null(mods) || !nrow(mods) || is.null(counts) || !nrow(counts)) return(empty)
-  # one bin per (column, type): how many reads called it, and how confidently
-  n <- aggregate(prob ~ refpos + modtype + base, data = mods, FUN = length)
+  # bam_modifications always writes the column; a hand-built frame may not
+  if (is.null(mods$nomod)) mods$nomod <- FALSE
+  # one bin per (column, type, modified-or-not): how many reads called it, and
+  # how confidently
+  by <- c("refpos", "modtype", "base", "nomod")
+  n <- aggregate(prob ~ refpos + modtype + base + nomod, data = mods, FUN = length)
   names(n)[names(n) == "prob"] <- "calls"
-  m <- aggregate(prob ~ refpos + modtype + base, data = mods, FUN = mean)
-  bins <- merge(n, m, by = c("refpos", "modtype", "base"))
+  m <- aggregate(prob ~ refpos + modtype + base + nomod, data = mods, FUN = mean)
+  bins <- merge(n, m, by = by)
   bins$depth <- cov$depth[match(bins$refpos, cov$pos)]
   bins <- bins[!is.na(bins$depth) & bins$depth > 0, , drop = FALSE]
   if (!nrow(bins)) return(empty)
@@ -59,13 +71,13 @@ mod_coverage <- function(mods, counts, cov, simplex = character(0)) {
   # fallback rank - are ordered too
   type_rank <- c(m = 0, h = 1, f = 2, c = 3, C = 4, g = 5, e = 6, b = 7, a = 8, o = 9)
   r <- unname(type_rank[bins$modtype]); r[is.na(r)] <- 99
-  o <- order(bins$refpos, r, bins$modtype)
+  o <- order(bins$refpos, bins$nomod, r, bins$modtype)
   bins <- bins[o, , drop = FALSE]; h <- h[o]
   drawn <- h > 0
   bins <- bins[drawn, , drop = FALSE]; h <- h[drawn]
   if (!nrow(bins)) return(empty)
   ytop <- ave(h, bins$refpos, FUN = cumsum)
-  data.frame(pos = bins$refpos, modtype = bins$modtype, ybase = ytop - h,
-             ytop = ytop, prob = bins$prob, depth = bins$depth,
+  data.frame(pos = bins$refpos, modtype = bins$modtype, nomod = bins$nomod,
+             ybase = ytop - h, ytop = ytop, prob = bins$prob, depth = bins$depth,
              stringsAsFactors = FALSE)
 }

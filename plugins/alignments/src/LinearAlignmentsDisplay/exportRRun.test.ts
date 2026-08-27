@@ -639,23 +639,89 @@ cat(paste(attr(mods, "mm_strands"), collapse = ","),
   120000,
 )
 
+// The fill view end to end: the pileup and the coverage panel both switch
+// helper, palette and threshold rule together, so the thing worth running is the
+// assembled script rather than the helper. `exportRModificationEquivalence` is
+// what checks the numbers against getMethBins; this checks that what the
+// exporter emits around them parses, resolves and draws.
+maybe(
+  'the unmarked-base fill runs end to end and paints unmodified cytosines',
+  () => {
+    const bam = resolve(process.cwd(), MOD_COV_BAM)
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'ONT modBAM',
+      uri: bam,
+      showCoverage: true,
+      showPileup: true,
+      colorBy: 'modifications',
+      modificationThreshold: 0.5,
+      modificationFillUnmarked: true,
+    })
+    const script = assembleRScript(
+      { refName: '20', start: 0, end: 12000 },
+      fragments,
+    )
+    // the fill ignores the threshold, so emitting min_prob as the gate would be
+    // the silent version of this bug
+    expect(script).toContain('fill_unmarked = TRUE, context = "CG"')
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-modfill-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // and that the fill actually fired: a threshold view of this file draws only
+    // its 'C+m' calls, where the fill draws every CpG the reads cover, most of
+    // them unmodified and in blue
+    const out = runR(
+      'jb-rexport-modfill-probe-',
+      `${script.split('# Data sources')[0]!}
+bam <- ${JSON.stringify(bam)}
+plain <- bam_modifications(bam, "20", 0, 12000, 0.5)
+filled <- bam_modifications(bam, "20", 0, 12000, 0.5, fill_unmarked = TRUE)
+cat(nrow(plain), nrow(filled), sum(filled$nomod), sum(!filled$nomod),
+    length(unique(mod_colors(filled$modtype, filled$nomod, TRUE))), "\\n")
+`,
+    )
+    const [plain, filled, unmodified, modified, colors] = out
+      .trim()
+      .split(/\s+/)
+      .map(Number)
+    expect(filled).toBeGreaterThan(plain!)
+    expect(unmodified).toBeGreaterThan(0)
+    expect(modified).toBeGreaterThan(0)
+    // red 5mC and blue unmodified, and nothing else on a 5mC-only file
+    expect(colors).toBe(2)
+  },
+  120000,
+)
+
 // mod_coverage against the browser's own computeModificationCoverage, on one
-// hand-built frame covering all three things the R rewrite could get wrong: the
-// simplex denominator, the fixed stack order, and the mean-likelihood alpha.
+// hand-built frame covering all four things the R rewrite could get wrong: the
+// simplex denominator, the fixed stack order, the mean-likelihood alpha, and the
+// unmodified bucket — which the fill and two-color views both draw, which is a
+// SEPARATE bin from its own type's modified calls (groupByPosition keys on
+// modType and noMod), and which sits above every modification in the column.
 maybe(
   'mod_coverage reproduces computeModificationCoverage exactly',
   () => {
     // (position, modType, base, probability) — 5mC and 5hmC competing at one
     // column plus a 6mA on a different base, so the stack has to order them
-    const calls: [number, string, string, number][] = [
-      [100, 'm', 'C', 0.9],
-      [100, 'm', 'C', 0.8],
-      [100, 'm', 'C', 0.7],
-      [100, 'h', 'C', 0.6],
-      [100, 'a', 'A', 0.95],
-      [101, 'm', 'C', 0.55],
-      [101, 'm', 'C', 0.65],
-      [102, 'm', 'C', 0.5],
+    const calls: [number, string, string, number, boolean][] = [
+      [100, 'm', 'C', 0.9, false],
+      [100, 'm', 'C', 0.8, false],
+      [100, 'm', 'C', 0.7, false],
+      [100, 'h', 'C', 0.6, false],
+      [100, 'a', 'A', 0.95, false],
+      // the unmodified half of the same column: its own bin on type 'm', drawn
+      // above the red one however confident either is
+      [100, 'm', 'C', 0.99, true],
+      [100, 'm', 'C', 0.75, true],
+      [101, 'm', 'C', 0.55, false],
+      [101, 'm', 'C', 0.65, false],
+      [101, 'm', 'C', 0.6, true],
+      [102, 'm', 'C', 0.5, false],
     ]
     const baseCounts: Record<number, StrandBaseCounts> = {
       100: {
@@ -673,15 +739,17 @@ maybe(
 
     const browserCoverage = (simplexTypes: string[]) =>
       computeModificationCoverage(
-        calls.map(([position, modType, base, prob], readIndex) => ({
+        calls.map(([position, modType, base, prob, noMod], readIndex) => ({
           readIndex,
           position,
           base,
           modType,
           strand: 1 as const,
-          color: 0,
+          // the packed alpha is what this asserts on, so the RGB may be flat —
+          // but the two buckets must not merge, and only noMod separates them
+          color: noMod ? 1 : 0,
           prob,
-          noMod: false,
+          noMod,
         })),
         new Map(Object.entries(baseCounts).map(([k, v]) => [Number(k), v])),
         100,
@@ -698,8 +766,15 @@ maybe(
       alpha: (packed.colors[i]! >>> 24) & 0xff,
     }))
 
+    // TRUE/FALSE go through unquoted: R has no string that is a logical
     const rVec = (xs: (string | number)[]) =>
-      `c(${xs.map(x => (typeof x === 'string' ? JSON.stringify(x) : x)).join(', ')})`
+      `c(${xs
+        .map(x =>
+          typeof x !== 'string' || x === 'TRUE' || x === 'FALSE'
+            ? x
+            : JSON.stringify(x),
+        )
+        .join(', ')})`
     const bcRows = Object.entries(baseCounts).flatMap(([pos, sc]) =>
       Object.entries(sc).map(([b, c]) => ({ pos: +pos, base: b, ...c })),
     )
@@ -709,6 +784,7 @@ maybe(
 mods <- data.frame(read_index = ${rVec(calls.map((_, i) => i + 1))},
   refpos = ${rVec(calls.map(c => c[0]))}, modtype = ${rVec(calls.map(c => c[1]))},
   base = ${rVec(calls.map(c => c[2]))}, prob = ${rVec(calls.map(c => c[3]))},
+  nomod = ${rVec(calls.map(c => (c[4] ? 'TRUE' : 'FALSE')))},
   stringsAsFactors = FALSE)
 counts <- data.frame(pos = ${rVec(bcRows.map(r => r.pos))}, base = ${rVec(bcRows.map(r => r.base))},
   fwd = ${rVec(bcRows.map(r => r.fwd))}, rev = ${rVec(bcRows.map(r => r.rev))},
@@ -741,6 +817,9 @@ for (i in seq_len(nrow(mc))) cat(mc$pos[i], sprintf("%.9f", mc$ybase[i]),
     expect(rows[0]!.ytop).toBeGreaterThan(
       browserCoverage([]).heights[0] ?? Infinity,
     )
+    // and that the frame this ran on really does stack an unmodified bin on top
+    // of a modified one at column 100, which is what makes the order assertable
+    expect(rows.filter(r => r.pos === 100).length).toBeGreaterThan(3)
   },
   120000,
 )

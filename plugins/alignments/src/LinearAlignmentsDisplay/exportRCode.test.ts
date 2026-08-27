@@ -179,7 +179,9 @@ test('modifications scheme overlays MM/ML mod ticks instead of mismatches', () =
   expect(pileup!.plotExpr).toContain(
     'bam_modifications(bam, chrom, start, end, min_prob)',
   )
-  expect(pileup!.plotExpr).toContain('mod_colors(mods$modtype)')
+  expect(pileup!.plotExpr).toContain(
+    'mod_colors(mods$modtype, mods$nomod, FALSE)',
+  )
   expect(pileup!.plotExpr).toContain('reads$row[mods$read_index]')
   // the probability threshold is emitted as an editable var (JBrowse default 0.1)
   expect(pileup!.plotExpr).toContain('min_prob <- 0.1')
@@ -188,6 +190,67 @@ test('modifications scheme overlays MM/ML mod ticks instead of mismatches', () =
   expect(
     alignmentsFragments({ ...base, colorBy: 'methylation' })[1]!.helpers,
   ).toContain('bam_modifications')
+})
+
+// The three ways JBrowse draws one MM tag. Each names WHICH calls are counted,
+// so each moves the coverage panel's stacked bars as well as the pileup's ticks
+// — and the fill draws in the theme's methylation palette, whose 5hmC differs
+// from the modification-type palette's.
+test('the modification sub-modes reach both panels', () => {
+  const mods = { ...base, colorBy: 'modifications' }
+  const fill = alignmentsFragments({ ...mods, modificationFillUnmarked: true })
+  for (const fragment of fill) {
+    expect(fragment.plotExpr).toContain(
+      'bam_modifications(bam, chrom, start, end, min_prob, fill_unmarked = TRUE, context = "CG")',
+    )
+    expect(fragment.plotExpr).toMatch(
+      /mod_colors\((mods|modcov)\$modtype, \1\$nomod, TRUE\)/,
+    )
+  }
+
+  expect(
+    alignmentsFragments({
+      ...mods,
+      modificationFillUnmarked: true,
+      modificationContext: 'CHH',
+    })[1]!.plotExpr,
+  ).toContain('context = "CHH"')
+
+  for (const fragment of alignmentsFragments({
+    ...mods,
+    modificationTwoColor: true,
+  })) {
+    expect(fragment.plotExpr).toContain(
+      'bam_modifications(bam, chrom, start, end, min_prob, two_color = TRUE)',
+    )
+    // the type palette, not the methylation one — only the fill swaps it
+    expect(fragment.plotExpr).toMatch(
+      /mod_colors\((mods|modcov)\$modtype, \1\$nomod, FALSE\)/,
+    )
+  }
+
+  // the default view says none of it, so the common script reads as it always has
+  for (const fragment of alignmentsFragments(mods)) {
+    expect(fragment.plotExpr).toContain(
+      'bam_modifications(bam, chrom, start, end, min_prob)',
+    )
+  }
+})
+
+// Both sub-modes are drawn now, so neither belongs in the script's "could not
+// reproduce" header — a note there sends a reader looking for a difference that
+// is not in the figure.
+test('a drawn sub-mode is not reported as unreproduced', () => {
+  for (const fragment of alignmentsFragments({
+    ...base,
+    colorBy: 'modifications',
+    modificationFillUnmarked: true,
+    modificationTwoColor: true,
+    unreproduced: [],
+  })) {
+    expect(fragment.plotExpr).not.toContain('unmarked-base fill')
+    expect(fragment.plotExpr).not.toContain('two-color')
+  }
 })
 
 test('modifications scheme stacks mod counts on the coverage panel too', () => {

@@ -174,7 +174,12 @@ covers `getInsertSizeStats`/`classifyInsertSize` and
 `computeMismatchFrequencies`/`applyDepthDependentThreshold`;
 `exportRSortEquivalence.test.ts` drives JBrowse's real `computeSortedLayout`
 (via the shared `sortLayout.fixture.ts`) against the emitted
-`sorted_pileup_layout` for base/insertion/softclip/tag. Reads there all span the
+`sorted_pileup_layout` for base/insertion/softclip/tag;
+`exportRModificationEquivalence.test.ts` drives both of the browser's
+modification readings against `bam_modifications`, over every modBAM in
+`test_data` — `forEachMaxProbMod` against its threshold and two-color modes, and
+`getMethBins` plus `extractMethylation`'s winner selection against its fill mode,
+in all four cytosine contexts. Reads there all span the
 sort column so each takes its own row and the row assignment *is* the sort
 order — which also sidesteps the one intended layout difference (JBrowse's
 `placeRect` leaves a 2bp gap between reads sharing a row; the R helper packs on
@@ -193,14 +198,19 @@ separately.
 
 ## Next steps (prioritized)
 
-Checked against the tree after the rebase onto main. Two of the four were
-already implemented and are struck through; strike an item when you close it,
-rather than leaving the next reader to re-derive which ones are still real.
+Checked against the tree. An item that has since been implemented is struck
+through rather than deleted; strike one when you close it, rather than leaving
+the next reader to re-derive which ones are still real.
 
-- **Bisulfite / 5mC-5hmC methylation.** `bam_modifications` handles MM/ML modBAM
-  but not reference-dependent bisulfite C→T (no MM tag), the 5mC/5hmC
-  winner-take-all collapse, or `shownModifications`/`hiddenModifications` per-type
-  filtering (all types currently render).
+- **Bisulfite.** `bam_modifications` reads MM/ML modBAM in all three modes
+  JBrowse draws from one tag — the threshold view, the two-color view, and the
+  unmarked-base fill, which paints every cytosine in context and collapses
+  5mC/5hmC/unmodified to the most likely. Reference-dependent bisulfite C→T has
+  no MM tag to read at all, so it needs the reference sequence and its own walk
+  (`extractBisulfite` / `computeBisulfiteCoverage`).
+- **Per-type modification filtering.** `shownModifications` /
+  `hiddenModifications` are not applied, so every type present in the reads
+  renders. The emitted script's header says so.
 - ~~**Gene-label declutter**~~ — done, and without a `ggrepel` dep:
   `label_room.R` is the R counterpart of JBrowse's `fitWidth` decimation, and
   drops a name where it would collide with the next on the same packed row.

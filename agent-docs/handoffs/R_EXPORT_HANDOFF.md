@@ -158,20 +158,56 @@ frame (simplex + duplex bins in one column, all three stack ranks, alpha), and
 `read_base_counts` is `all.equal` to `Rsamtools::pileup()` at the 92 modified
 columns of `methylation_clip.bam`.
 
-### Still missing from the modification family
+### The modification family, after the fill pass
 
-- **`fillUnmarked` is not translated** and the gallery's `rexport/modifications`
-  figure uses it (`methylation/hg002_snrpn_ungrouped` sets
-  `modifications: {fillUnmarked: true}`). JBrowse then ignores the threshold and
-  paints the most-likely state at *every* CpG in context — including the blue
-  unmodified ones, which stack over the red in the coverage bar. The R twin draws
-  only the above-threshold calls. It now says so in the script header rather than
-  contradicting its source, but the honest fix is `getMethBins`' context walk +
-  implicit-unmodified fill, which changes the pileup overlay too.
-- `twoColor`, `bisulfite` and the per-type filter are noted, not drawn, for the
-  same reason.
-- The gallery PNG still shows the old coverage lane — the figures are not
-  regenerated on this machine (`NOT IN THE FIGURE STORE`).
+**`fillUnmarked` and `twoColor` are drawn now**, so neither is a header note any
+more. One MM tag has three JBrowse readings and `bam_modifications` takes a mode
+per reading:
+
+- default — every call at or above the threshold, in its modification's color.
+- `two_color = TRUE` — every call, the ones under even odds flipped into the
+  unmodified blue at their unmodified confidence. The threshold is not applied,
+  which is JBrowse's rule: a low-probability call is information about the base
+  being *unmodified*, not an absent call.
+- `fill_unmarked = TRUE` — the methylation view. Only `m`/`h` calls on a cytosine
+  in context count, every other context cytosine the read covers is filled in as
+  an implicit unmodified call, and each cytosine then draws the single most
+  likely of 5mC / 5hmC / unmodified. `cytosine_context.R` is the new helper
+  (`matchesCytosineContext`, both strands, CG/CHG/CHH/all).
+
+Two things had to come with it. `mod_coverage` bins on (column, type,
+**modified-or-not**) rather than (column, type), because the unmodified calls are
+their own bar segment and sit above every modification in the column —
+`groupByPosition` keys on `noMod` and `compareModEntries` orders on it. And
+`mod_colors` grew the blue plus the theme's methylation palette, whose 5hmC is
+pink where the modification-type palette's is magenta; the fill draws in the
+former, everything else in the latter.
+
+**And the default view was over-drawing, which the same test caught.** JBrowse
+paints ONE call per reference column — the most likely over every MM group on the
+read (`forEachMaxProbMod`), an earlier group holding a tie. `bam_modifications`
+emitted a row per type, so a combined code like `C+mh` drew twice at every
+cytosine it called: 30174 marks against the browser's 25154 on
+`test_data/arabidopsis_methylation`, with the coverage panel's stacked bars
+carrying the surplus. This predates the fill work and is unrelated to it; it
+surfaced because the fill's oracle sits next to it.
+
+Pinned by `exportRModificationEquivalence.test.ts`, which runs both of the
+browser's readings over the same reads through `@gmod/bam` — `forEachMaxProbMod`
+against the threshold and two-color modes, `getMethBins` plus
+`extractMethylation`'s winner selection against the fill. Every modBAM in
+`test_data`, all four contexts, and a samtools-rewritten copy of the arabidopsis
+file whose `C+m.` group becomes `C+m?` — the `?` skip flag being the one input no
+fixture in the tree carries and the difference between "skipped because
+unmodified" and "says nothing". The `pmax(0, 1 - m - h)` floor mirrors JBrowse's
+`Math.max(0, …)` and no fixture makes it fire.
+
+- `bisulfite` and the per-type filter are still noted, not drawn. Bisulfite has
+  no MM tag at all, so it needs the reference sequence and its own walk.
+- **The gallery PNG is stale** — `rexport/modifications` renders
+  `methylation/hg002_snrpn_ungrouped`, which sets `fillUnmarked`, so the figure
+  in the store predates the fill and now shows fewer marks than the script it is
+  supposed to be the output of. Re-render and `figures:push` it.
 
 ## Still open
 
@@ -182,7 +218,8 @@ columns of `methylation_clip.bam`.
   spec on review. The comment in `website/scripts/specs/rexport.ts` has both
   halves. Nothing to do here.
 - **`geneGlyphMode` is not translated.** `cancer_sv/foldback_reconstruction` sets
-  `longestCoding`; the R panel draws every transcript. Same family as the above.
+  `longestCoding`; the R panel draws every transcript. `rexport/modifications`'s
+  own RefSeq lane sets it too, so this is the next one to close.
 - **`rexport/genes_sarscov2` is a weak figure** — the caption promises ORF1ab's
   mature peptide products and the panel shows one bar. Predates this pass.
 - ~~`pnpm figures:push` and commit `figures.lock`~~ — done. All 19
