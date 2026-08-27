@@ -60,6 +60,41 @@ test('a drag on the track pans the view', () => {
   expect(model.horizontalScroll.mock.calls).toEqual([[40]])
 })
 
+// A track's own pointer handlers read the pan off the container: no hover
+// while the button is down, and no click for a press that travelled. The
+// moved marker outlives the mouseup, since the click it answers for fires
+// after it, and the next press clears it.
+test('the container says while a pan runs, and whether the press travelled', () => {
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+  const canvas = getByTestId('canvas')
+  const container = canvas.parentElement!
+
+  act(() => {
+    fireEvent.mouseDown(canvas, { button: 0, clientX: 100 })
+  })
+  expect(Object.hasOwn(container.dataset, 'panDragging')).toBe(true)
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
+  act(() => {
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 98 }))
+  })
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
+  act(() => {
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 60 }))
+  })
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
+  act(() => {
+    window.dispatchEvent(new MouseEvent('mouseup', { clientX: 60 }))
+  })
+  expect(Object.hasOwn(container.dataset, 'panDragging')).toBe(false)
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
+
+  act(() => {
+    fireEvent.mouseDown(canvas, { button: 0, clientX: 60 })
+  })
+  expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
+})
+
 // The legend's own marker, on the path where it is the only thing there is:
 // with no TrackOverlayContext, FloatingLegend renders inline rather than into
 // the overlay node, so it is not covered by the node's marker.
