@@ -357,7 +357,7 @@ const READ_SAMPLE = `(() => {
   for (const [name, f] of display.rowFrames) {
     lanes[name] = f ? { refName: f.refName, min: f.min, max: f.max, flipped: f.flipped } : null
   }
-  return { offsetPx: view.offsetPx, bpPerPx: view.bpPerPx, drag: display.dragOffsetPx ?? 0, lanes, laneGenesKey: display.laneGenesKey, isLoading: display.isLoading }
+  return { offsetPx: view.offsetPx, bpPerPx: view.bpPerPx, drag: display.dragOffsetPx ?? 0, lanes, laneGenesKey: display.laneGenesFetchSpecs.key, isLoading: display.isLoading }
 })`
 
 function lanePx(s: LaneSample, bp: number, width: number) {

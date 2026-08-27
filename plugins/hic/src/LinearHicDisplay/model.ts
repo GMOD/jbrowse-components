@@ -675,8 +675,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           report: { statusWindow: self.statusWindow },
           gate: () => !self.isMinimized,
           // tracked, because an adapter edited in the config editor has to
-          // re-read the header — `run`'s own reads are untracked by contract
+          // re-read the header — `run`'s own reads are untracked by contract.
+          // Keyed on it too, so an un-minimize over the same file re-walks
+          // nothing.
           prepare: () => ({ adapterConfig: self.adapterConfig }),
+          fetchKey: ({ adapterConfig }) => JSON.stringify(adapterConfig),
           run: async ({ adapterConfig }, ctx) =>
             (await ctx.callRpc('CoreGetInfo', { adapterConfig })) as {
               norms?: string[]

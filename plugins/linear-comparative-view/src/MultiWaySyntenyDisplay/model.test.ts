@@ -4,12 +4,12 @@ import { createDisplay } from './testEnv.ts'
 // fetch that draws the placement boxes.
 //
 // The retry rule those two used to break is NOT here any more, and that is the
-// point: `laneGenesKey` was compared by hand in `prepare` with no `reload()`
+// point: the committed key was compared by hand in `prepare` with no `reload()`
 // override to match, so Retry re-ran both bodies into the same decline forever.
-// It is `installFetch`'s `dataCurrent` now — the skeleton owns the gate and the
-// reload that overrides it — so what pins it is `installFetch.test.ts`, once,
-// for every fetch rather than for this display. What is left here is what stays
-// this display's own.
+// It is `installFetch`'s key gate now — the skeleton stamps the key at commit,
+// owns the compare and the reload that overrides it — so what pins it is
+// `installFetch.test.ts`, once, for every fetch rather than for this display.
+// What is left here is what stays this display's own.
 
 // A dependent fetch that holds `displayPhase` at `loading` for every refetch
 // puts the striped scrim over lanes that are already drawn: the fetch is
@@ -21,17 +21,14 @@ test('the lane fetch is part of loading only until it first lands', () => {
   const display = createDisplay()
   // the harness mounts no canvas; the paint half of loading is the mixin's
   display.markCanvasDrawn()
-  const { key } = display.laneGenesFetchSpecs
-  expect(key).not.toBe('')
+  expect(display.laneGenesFetchSpecs.specs.length).toBeGreaterThan(0)
   expect(display.displayPhase).toBe('loading')
 
-  display.setLaneGenes(key, new Map())
+  display.setLaneGenes(new Map())
   expect(display.displayPhase).toBe('ready')
 
-  // the pan: the specs move off the committed key, so the lanes are stale and
-  // a refetch is due — but they are drawn, and the phase says so
-  display.setLaneGenes('a-key-the-specs-have-moved-off', new Map())
-  expect(display.laneGenesFetchSpecs.key).not.toBe(display.laneGenesKey)
+  // the pan's refetch: the lanes are already drawn, and the phase says so
+  display.setLaneGenes(new Map())
   expect(display.displayPhase).toBe('ready')
 })
 

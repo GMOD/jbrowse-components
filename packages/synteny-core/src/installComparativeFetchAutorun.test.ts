@@ -48,6 +48,7 @@ const TestDisplayBase = types
     // read inside `untracked` by prepare below, so it must NOT refire anything
     geometry: 0,
     gated: false,
+    adapterType: 'TestAdapter',
   }))
   .actions(self => ({
     setError(error?: unknown) {
@@ -65,6 +66,9 @@ const TestDisplayBase = types
     setGated(flag: boolean) {
       self.gated = flag
     },
+    setAdapterType(type: string) {
+      self.adapterType = type
+    },
   }))
 
 // The real `SyntenyFetchStateMixin`, composed in the order both displays
@@ -78,7 +82,7 @@ const TestDisplay = types
   .compose('TestDisplay', TestDisplayBase, SyntenyFetchStateMixin())
   .views(self => ({
     get adapterConfig() {
-      return { type: 'TestAdapter' }
+      return { type: self.adapterType }
     },
     // overrides the mixin's default-false hook, which the retry check the
     // skeleton installs reads. `gated` is a state this display deliberately
@@ -86,6 +90,13 @@ const TestDisplay = types
     // there is not the dead Retry the check hunts for.
     get fetchInert() {
       return self.gated
+    },
+  }))
+  .actions(self => ({
+    // the stamp both displays' `setRpcData` write, which the skeleton's key
+    // gate compares against
+    setLoadedFetchKey(key: string) {
+      self.loadedFetchKey = key
     },
   }))
 
@@ -129,23 +140,25 @@ async function setup({
 }) {
   const root = TestRoot.create({ session: { display: {} } })
   const { display } = root.session
+  // the args of every run that reached a fetch. Not every `prepare` call: a
+  // commit stamps `loadedFetchKey`, which the key gate reads, so each commit
+  // wakes one body run that declines
   const prepared: Args[] = []
   const committed: { result: string; args: Args }[] = []
   installComparativeFetchAutorun(display, {
     name: 'TestComparativeFetch',
     delay: DELAY,
-    prepare: () => {
-      const args = prepare
+    prepare: () =>
+      prepare
         ? prepare(display)
-        : { fetchKey: display.fetchKey, geometry: display.geometry }
-      if (args) {
-        prepared.push(args)
-      }
-      return args
+        : { fetchKey: display.fetchKey, geometry: display.geometry },
+    run: (args, ctx) => {
+      prepared.push(args)
+      return run(args, ctx)
     },
-    run: (args, ctx) => run(args, ctx),
     commit: (result, args) => {
       committed.push({ result, args })
+      display.setLoadedFetchKey(args.fetchKey)
     },
   })
   await Promise.resolve()
@@ -348,6 +361,45 @@ describe('installComparativeFetchAutorun', () => {
     expect(display.error).toBeUndefined()
     spy.mockRestore()
   })
+})
+
+// The key gate. `fetchInert` flips on minimize→expand, and every input the
+// fetch depends on is unchanged across it, so re-running
+// `SyntenyGetFeaturesAndPositions` there is a redundant round trip on the most
+// expensive fetch in the product — with the corner spinner over data that is
+// already right. The compare is against the mixin's `loadedFetchKey`, the stamp
+// `comparativeFetchFlags.dataCurrent` reads, so the two gates cannot disagree.
+test('a gate flip over unchanged inputs re-runs nothing', async () => {
+  const { display, prepared, committed } = await setup({
+    run: () => Promise.resolve('r1'),
+    prepare: d => (d.gated ? undefined : { fetchKey: d.fetchKey, geometry: 0 }),
+  })
+  await settle()
+  expect(committed).toHaveLength(1)
+
+  display.setGated(true)
+  await settle()
+  display.setGated(false)
+  await settle()
+  expect(prepared).toHaveLength(1)
+  expect(committed).toHaveLength(1)
+})
+
+// Neither display's `currentFetchKey` carries an adapter term, so the wrapper
+// folds one in. Gate on the display's key alone and an adapter edited in the
+// config editor wakes the autorun straight into a decline: the editor silently
+// stops refetching.
+test('an adapter edit refetches over an unchanged display key', async () => {
+  const { display, committed } = await setup({
+    run: () => Promise.resolve('r1'),
+  })
+  await settle()
+  expect(committed).toHaveLength(1)
+
+  display.setAdapterType('EditedAdapter')
+  await settle()
+  expect(committed).toHaveLength(2)
+  expect(display.loadedFetchKey).toBe('k1')
 })
 
 // The retry contract for the comparative displays. After an error every fetch

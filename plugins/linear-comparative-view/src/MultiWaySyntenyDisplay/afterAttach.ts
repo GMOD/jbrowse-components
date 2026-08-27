@@ -114,10 +114,11 @@ async function fetchEachLane<Spec, Result>(
  *   `displayPhase` is `ready` and this reports through the corner progress chip
  *   instead of the scrim.
  * - **`prepare` answers only "is there anything to fetch".** Whether the
- *   committed result already answers these specs is `dataCurrent`, which the
- *   skeleton overrides on a reload — so neither pair needs a `reload()` of its
- *   own. Spelling that comparison in `prepare` instead is the dead Retry this
- *   display shipped once and `installFetch` exists to make unspellable.
+ *   committed result already answers these specs is the skeleton's key gate,
+ *   stamped at commit and overridden on a reload — so neither pair needs a
+ *   `reload()` of its own. Spelling that comparison in `prepare` instead is the
+ *   dead Retry this display shipped once and `installFetch` exists to make
+ *   unspellable.
  * - **No `contract`**: both are second fetches on a display whose global
  *   foundation already installed the two dev-only contract checks.
  * - **`setError` is a noop.** A lane's extra records are an enhancement over
@@ -130,18 +131,16 @@ function installLaneFetch<Spec, Result>(
   {
     name,
     fetchSpecs,
-    committedKey,
     fetchOne,
     commit,
   }: {
     name: string
     fetchSpecs: () => { key: string; specs: Spec[] }
-    committedKey: () => string
     fetchOne: (
       spec: Spec,
       ctx: FetchContext,
     ) => Promise<readonly [string, Result]>
-    commit: (key: string, byLane: Map<string, Result>) => void
+    commit: (byLane: Map<string, Result>) => void
   },
 ) {
   installFetch(self, {
@@ -153,11 +152,9 @@ function installLaneFetch<Spec, Result>(
       const { key, specs } = fetchSpecs()
       return specs.length > 0 ? { key, specs } : undefined
     },
-    dataCurrent: ({ key }) => key === committedKey(),
+    fetchKey: ({ key }) => key,
     run: ({ specs }, ctx) => fetchEachLane(name, specs, ctx, fetchOne),
-    commit: (byLane, { key }) => {
-      commit(key, byLane)
-    },
+    commit,
     setError: () => {},
   })
 }
@@ -226,7 +223,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
-    committedKey: () => self.laneGenesKey,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: spec.adapterConfig,
@@ -238,8 +234,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       })
       return [spec.assemblyName, laneGeneFeatures(features)] as const
     },
-    commit: (key, genes) => {
-      self.setLaneGenes(key, genes)
+    commit: genes => {
+      self.setLaneGenes(genes)
     },
   })
 
@@ -249,7 +245,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,
-    committedKey: () => self.laneLinksKey,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: self.adapterConfig,
@@ -260,8 +255,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       })
       return [`${spec.upperAssembly}|${spec.lowerAssembly}`, features] as const
     },
-    commit: (key, links) => {
-      self.setLaneLinks(key, links)
+    commit: links => {
+      self.setLaneLinks(links)
     },
   })
 }

@@ -1,6 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { observable, runInAction } from 'mobx'
 
 import { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 
@@ -27,6 +28,12 @@ interface ComparativeFetchHost extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   /** `SyntenyFetchStateMixin`'s retry counter — the skeleton reads it */
   reloadCounter: number
+  /**
+   * `SyntenyFetchStateMixin`'s: the key the display's own `commit` stamps, and
+   * what the skeleton's freshness gate compares a run's key against. The same
+   * stamp `comparativeFetchFlags.dataCurrent` reads, so the two never disagree.
+   */
+  loadedFetchKey: string | undefined
   /** `SyntenyFetchStateMixin`'s durable user-cancel flag — the skeleton gates on it */
   fetchCanceled: boolean
   /**
@@ -81,7 +88,12 @@ interface ComparativeArgs<TArgs> {
  * `adapterConfig` is captured in `prepare` rather than read inside `run`,
  * because an adapter edited in the config editor has to refetch and `run`'s
  * reads are untracked by contract. It is read only on a run that reaches a
- * fetch, which is the dependency-set position it has always had.
+ * fetch, which is the dependency-set position it has always had. **It is also
+ * an axis of the freshness key**, folded in here rather than into each
+ * display's `fetchKey`: neither display's key carries an adapter term, so a
+ * gate on `loadedFetchKey` alone would wake on the edit and decline against
+ * it — the config editor silently stops refetching. The committed adapter is
+ * this installer's own observable stamp; the key half is the mixin's.
  *
  * This family's cancel is durable until Retry, where the two LGV families' also
  * lapse on a viewport change: their viewport is an observable separate from the
@@ -89,7 +101,10 @@ interface ComparativeArgs<TArgs> {
  * un-cancel on every trigger — which is the durability this consolidation
  * rejected.
  */
-export function installComparativeFetchAutorun<TArgs, TResult>(
+export function installComparativeFetchAutorun<
+  TArgs extends { fetchKey: string },
+  TResult,
+>(
   self: ComparativeFetchHost,
   {
     name,
@@ -102,11 +117,18 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     delay: number
   },
 ) {
+  const committedAdapter = observable.box<string | undefined>()
   const cancel = installFetch<ComparativeArgs<TArgs>, TResult>(self, {
     name,
     delay,
     report: self,
     contract: `${name}'s installComparativeFetchAutorun`,
+    fetchKey: ({ args, adapterConfig }) =>
+      `${args.fetchKey}\n${JSON.stringify(adapterConfig)}`,
+    committedKey: () =>
+      self.loadedFetchKey === undefined
+        ? undefined
+        : `${self.loadedFetchKey}\n${committedAdapter.get()}`,
     prepare: () => {
       const args = prepare()
       return args === undefined
@@ -129,8 +151,11 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
           }),
       })
     },
-    commit: (result, { args }) => {
-      commit(result, args)
+    commit: (result, { args, adapterConfig }) => {
+      runInAction(() => {
+        commit(result, args)
+        committedAdapter.set(JSON.stringify(adapterConfig))
+      })
     },
     setError: error => {
       self.setError(error)

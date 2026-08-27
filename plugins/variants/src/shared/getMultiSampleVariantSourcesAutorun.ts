@@ -37,8 +37,10 @@ export function getMultiSampleVariantSourcesAutorun(
       !self.isMinimized &&
       (getContainingView(self) as LinearGenomeViewModel).initialized,
     // tracked, because an adapter edited in the config editor has to rescan —
-    // `run`'s own reads are untracked by contract
+    // `run`'s own reads are untracked by contract. Keyed on it too, so an
+    // un-minimize over the same file rescans nothing.
     prepare: () => ({ adapterConfig: self.adapterConfig }),
+    fetchKey: ({ adapterConfig }) => JSON.stringify(adapterConfig),
     run: (args, ctx) =>
       ctx.callRpc('MultiSampleVariantGetSources', {
         adapterConfig: args.adapterConfig,

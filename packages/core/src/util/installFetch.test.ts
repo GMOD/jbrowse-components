@@ -64,9 +64,8 @@ function makeHost(opts?: { enabled?: boolean; keyed?: boolean }) {
       reloadCounter: 0,
       fetchInert: false,
       enabled: opts?.enabled ?? true,
-      /** `keyed` mode: what `prepare` asks for, and what `commit` has stamped */
+      /** `keyed` mode: what `prepare` asks for */
       key: 'a',
-      heldKey: undefined as string | undefined,
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
       statusWindow: createStatusWindow(writeStatus(self)),
@@ -103,11 +102,6 @@ function makeHost(opts?: { enabled?: boolean; keyed?: boolean }) {
       setKey(v: string) {
         self.key = v
       },
-      // an action, because `commit` is a plain closure the skeleton calls and a
-      // bare volatile write from there is the one MST protects against
-      setHeldKey(v: string) {
-        self.heldKey = v
-      },
       reload() {
         self.reloadCounter += 1
       },
@@ -129,22 +123,16 @@ function makeHost(opts?: { enabled?: boolean; keyed?: boolean }) {
           // `undefined` is reserved for the decline
           prepare: () => (opts?.keyed ? { key: self.key } : {}),
           // declared only in `keyed` mode, so every other test drives the
-          // skeleton with no freshness gate at all — which is the shape all but
-          // one fetch in the tree is in
-          dataCurrent: opts?.keyed
-            ? ({ key }) => key === self.heldKey
-            : undefined,
+          // skeleton with no freshness gate at all
+          fetchKey: opts?.keyed ? ({ key }) => key : undefined,
           run: (_args, ctx) => {
             const d = deferred()
             self.runs.push(d)
             self.contexts.push(ctx)
             return d.promise
           },
-          commit: (value, args) => {
+          commit: value => {
             self.committed.push(value)
-            if (args.key !== undefined) {
-              self.setHeldKey(args.key)
-            }
           },
           setError: e => {
             self.setError(e)
@@ -430,6 +418,31 @@ test('a reload refetches through a freshness gate that is still satisfied', asyn
   host.setEnabled(true)
   await settleDebounce(() => host.probe.bodyRuns > before)
   expect(host.runs).toHaveLength(2)
+})
+
+// The stamp is observable, and this is the race that needs it. Zoom A→B issues
+// a fetch for B; zoom back to A before B lands, and that re-run rightly declines
+// — the data on screen is A's. B then commits over it, and the only thing that
+// can wake the autorun to fetch A again is the stamp's own write. A closure
+// variable leaves data B under viewport A until the next input moves.
+test('a commit that lands after the args moved back wakes the refetch', async () => {
+  const host = makeHost({ keyed: true })
+  await flush()
+  host.runs[0]!.resolve('a-data')
+  await settleDebounce(() => host.committed.length > 0)
+
+  host.setKey('b')
+  await settleDebounce(() => host.runs.length > 1)
+  expect(host.runs).toHaveLength(2)
+
+  host.setKey('a')
+  await settleDebounce(() => host.probe.bodyRuns > 2)
+  expect(host.runs).toHaveLength(2)
+
+  host.runs[1]!.resolve('b-data')
+  await settleDebounce(() => host.runs.length > 2)
+  expect(host.committed).toEqual(['a-data', 'b-data'])
+  expect(host.runs).toHaveLength(3)
 })
 
 // A retry is not spent on a fetch that failed: nothing was committed, so the

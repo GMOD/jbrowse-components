@@ -155,19 +155,11 @@ export function stateModelFactory(
       laneGenes: undefined as Map<string, LaneGene[]> | undefined,
       /**
        * #volatile
-       */
-      laneGenesKey: '',
-      /**
-       * #volatile
        * alignments between ADJACENT mate lanes, fetched per pair from the same
        * track when the source is an all-vs-all alignment file — the direct
        * records the file holds for that pair, at the lanes' own coordinates
        */
       laneLinks: undefined as Map<string, Feature[]> | undefined,
-      /**
-       * #volatile
-       */
-      laneLinksKey: '',
       /**
        * #volatile
        * the ortholog group under the pointer; every ribbon of that group
@@ -207,15 +199,13 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setLaneGenes(key: string, genes: Map<string, LaneGene[]>) {
-        self.laneGenesKey = key
+      setLaneGenes(genes: Map<string, LaneGene[]>) {
         self.laneGenes = genes
       },
       /**
        * #action
        */
-      setLaneLinks(key: string, links: Map<string, Feature[]>) {
-        self.laneLinksKey = key
+      setLaneLinks(links: Map<string, Feature[]>) {
         self.laneLinks = links
       },
       /**

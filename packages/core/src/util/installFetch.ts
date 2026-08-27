@@ -1,5 +1,5 @@
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { untracked } from 'mobx'
+import { observable, runInAction, untracked } from 'mobx'
 
 import {
   assertDisplayContract,
@@ -8,6 +8,7 @@ import {
 import { handleFetchError } from './aborting.ts'
 import { createStopTokenRotation } from './createStopTokenRotation.ts'
 import { makeFetchContext } from './fetchContext.ts'
+import { isDataCurrent } from './isDataCurrent.ts'
 import { leadingEdgeAutorun } from './leadingEdgeAutorun.ts'
 
 import type { ActiveFetch, StatusReporter } from './createStopTokenRotation.ts'
@@ -183,16 +184,18 @@ export interface InstallFetchOptions<TArgs, TResult>
    */
   gate?: () => boolean
   /**
-   * Whether the data already held answers these args — the freshness gate,
-   * declared here rather than folded into `prepare` because **the skeleton owns
-   * the half of it that keeps being got wrong.**
+   * The freshness signature of a run's args — the freshness gate, declared here
+   * rather than folded into `prepare` because **the skeleton owns the half of it
+   * that keeps being got wrong.**
    *
-   * The law is ARCHITECTURE.md's: a gate on a freshness signal must also be
-   * invalidated by `reload()`, or Retry re-runs the body straight into the same
-   * decline and the button is dead. Every layer that has one made that pairing
-   * structural in the end — the global family after arc shipped the bug
-   * (`GlobalFetchMixin.reload` drops `loadedFetchSignature` in the same action
-   * as the bump) — and this is that move for the skeleton: a run whose
+   * A run whose key equals the committed one declines, so a gate flip
+   * (minimize→expand, a view initializing) re-runs nothing against unchanged
+   * inputs. The law is ARCHITECTURE.md's: a gate on a freshness signal must
+   * also be invalidated by `reload()`, or Retry re-runs the body straight into
+   * the same decline and the button is dead. Every layer that has one made
+   * that pairing structural in the end — the global family after arc shipped
+   * the bug (`GlobalFetchMixin.reload` drops `loadedFetchSignature` in the same
+   * action as the bump) — and this is that move for the skeleton: a run whose
    * `reloadCounter` has advanced since the run that last ISSUED a fetch ignores
    * this gate, so nothing has to remember to clear anything. The multi-way
    * synteny display's two dependent fetches shipped the same dead Retry from
@@ -203,14 +206,25 @@ export interface InstallFetchOptions<TArgs, TResult>
    * of them can strand a display: `prepare` returning `undefined` is "nothing to
    * fetch" (an empty viewport, no gene track configured), which is a legitimate
    * decline forever and no amount of retrying should change it. This is "I have
-   * exactly this already", which a retry must be able to override. Read
-   * synchronously in the autorun body like `prepare`, so what it reads is
-   * tracked and a commit re-wakes the run that declined.
+   * exactly this already", which a retry must be able to override.
    *
    * Omit it where the fetch holds no committed state to compare against — most
    * of them, whose `prepare` returns args unconditionally.
    */
-  dataCurrent?: (args: TArgs) => boolean
+  fetchKey?: (args: TArgs) => string
+  /**
+   * The key of the data already committed, when the host keeps one — the
+   * comparative displays stamp `loadedFetchKey`, which their `dataCurrent`
+   * flag reads too, so a second stamp would be one more thing to disagree with
+   * it. Omitted, the skeleton stamps its own at commit.
+   *
+   * **Either way the stamp is observable**, and the read is tracked. Zoom A→B
+   * issues a fetch for B; zoom back to A before B commits and the re-run
+   * declines against the still-A stamp; B then commits and stamps B, and that
+   * write is what wakes the autorun to fetch A again. A closure variable would
+   * leave data B under viewport A until the next input moved.
+   */
+  committedKey?: () => string | undefined
   /**
    * Install the two dev-only display-contract checks under this name. Omitted
    * by a **secondary** fetch on a host whose primary foundation already
@@ -261,7 +275,8 @@ export function installFetch<TArgs, TResult>(
     report,
     gate,
     contract,
-    dataCurrent,
+    fetchKey,
+    committedKey,
     prepare,
     run,
     commit,
@@ -278,6 +293,16 @@ export function installFetch<TArgs, TResult>(
   // own — and a closure rather than model state, because nothing outside reads
   // it and a volatile would be one more thing a host has to declare.
   let issuedEpoch: number | undefined
+  const stamp = committedKey ? undefined : observable.box<string | undefined>()
+  const heldKey = committedKey ?? (() => stamp!.get())
+  const commitAndStamp = stamp
+    ? (result: TResult, args: TArgs) => {
+        runInAction(() => {
+          commit(result, args)
+          stamp.set(fetchKey?.(args))
+        })
+      }
+    : commit
   addDisposer(self, () => {
     rotation.dispose()
   })
@@ -311,7 +336,11 @@ export function installFetch<TArgs, TResult>(
       // this gate is open anyway on the next run and consuming the retry here
       // costs nothing — while a reload landing mid-flight is answered by the
       // re-run the counter read above already guarantees.
-      if (dataCurrent?.(args) === true && reloadEpoch === issuedEpoch) {
+      if (
+        fetchKey !== undefined &&
+        isDataCurrent(heldKey(), fetchKey(args)) &&
+        reloadEpoch === issuedEpoch
+      ) {
         noteFetchAutorunRun?.('declined')
         return false
       }
@@ -325,7 +354,7 @@ export function installFetch<TArgs, TResult>(
       untracked(() => {
         void runFetchOnce(self, rotation.begin(), args, {
           run,
-          commit,
+          commit: commitAndStamp,
           setError,
           onBegin,
           onEnd,
