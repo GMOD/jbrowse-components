@@ -29,11 +29,15 @@ tutorial's clothes."
   page, a catalogue of four independent input routes plus a BED recipe, sitting
   between "Producing the data" and "Setting up the assemblies". Two of the four
   duplicate pages it links.
-- **`orthofinder_synteny.md`** — visits three datasets *and* puts its results
-  before the pipeline that makes them. It declares its own one-dataset rule at
-  `:66-68` and breaks it 40 lines later. Sections 1-4 interpret finished figures
-  that `## The conversion` only later explains how to build: the dependency
-  arrow runs backwards through half the page.
+- **`orthofinder_synteny.md`** — puts its results before the pipeline that
+  makes them: five sections read finished figures that `## Producing the blocks
+  table` (once `## The conversion`) only later explains how to build, so the
+  dependency arrow runs backwards through half the page. Inverting it puts ~150
+  lines of bash and JSON ahead of the first figure, which is an editorial call
+  against the house show-rather-than-tell order rather than a fix. The dataset
+  half of this entry is done and not worth re-proposing: the page visits five
+  sets, and each owns one `##` that leads with its organisms and names its set
+  id.
 - **`scatac_pseudobulk.md`** — three of six sections are self-declared
   alternatives, and `:92-93` says so: "Every route ends the same way ... the rest
   of this page does not care which produced them."
