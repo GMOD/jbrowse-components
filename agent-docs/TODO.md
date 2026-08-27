@@ -46,19 +46,22 @@ was renamed, which is how the hand-maintained version drifted twice.
 
 **Each table is in the order to take it**, and a short paragraph above each says
 what that order is by — so the top row is a real recommendation rather than
-whichever entry was filed first. `order` is editorial and nothing checks that it
-still matches the reason above the table; re-number when it stops.
+whichever entry was filed first. Two entries in one table cannot share an
+`order`, and a closed entry is welcome to leave a gap. Whether the sequence
+still matches the reason above the table is editorial, and nothing checks it;
+re-number when it stops.
 
 ## Ready to take
 
-Ordered. The first three are checks owed on code that landed in the v5 window,
-where a wrong answer means something already shipped broken, and two of them run
-the same gate. A fourth closed on 2026-08-27 — covering a per-base colour mode —
-and the scenes it added failed on their first run, which is the argument for the
-three still here. Then the two things the docs site publishes, one of which may
-already be done. Then the ABI baseline's remaining half, which this major
-release is the moment for. Then the two halves of the release-validation exit
-criterion, which rise to the top of the file the moment a date exists.
+Ordered. Checks owed on code that landed in the v5 window come first, where a
+wrong answer means something already shipped broken, and the cross-backend gate
+carries more than one of them. One of that group closed on 2026-08-27 —
+covering a per-base colour mode — and the scenes it added failed on their first
+run, which is the argument for the ones still open. Then what the docs site
+publishes, some of which may already be done. Then the ABI baseline's remaining
+half, which this major release is the moment for. Then the release-validation
+exit criterion, whose two halves rise to the top of the file the moment a date
+exists.
 
 <!-- BEGIN GENERATED TODO READY INDEX -->
 
@@ -76,13 +79,13 @@ criterion, which rise to the top of the file the moment a date exists.
 
 ## Blocked on a visual call
 
-Three entries waiting on one person, which is the argument for taking them in one
-sitting. All three draw something misleading today — a control nobody can read, a
-bar eating its neighbour's space, and two backends disagreeing by 41% on a
+Every entry here waits on the same person, which is the argument for taking them
+in one sitting. Each draws something misleading today: a control nobody can
+read, a bar eating its neighbour's space, two backends disagreeing by 41% on a
 display whose SVG export then disagrees with the screen it came from. The nine
 open questions about what a mark should MEAN went to
-[ideas/](ideas/README.md) on 2026-08-26; these three are wrong pictures rather
-than unsettled ones.
+[ideas/](ideas/README.md) on 2026-08-26; what is left here is wrong pictures
+rather than unsettled ones.
 
 <!-- BEGIN GENERATED TODO VISUAL-CALL INDEX -->
 
@@ -95,11 +98,10 @@ than unsettled ones.
 
 ## Measure first: the premise or the cost attribution is unconfirmed
 
-Two, both cheap, and both about something v5 itself changed. The first watches
-traffic a v5 feature introduced in a mode that had none; the second is the half a
-stopwatch answers of a claim a release note would make. Everything else that was
-here gated a build nobody has committed to, which is a proposal — those went to
-[ideas/](ideas/README.md) on 2026-08-26.
+Cheap, and about something v5 itself changed: traffic a v5 feature introduced in
+a mode that had none, and the half a stopwatch answers of a claim a release note
+would make. Everything else that was here gated a build nobody has committed to,
+which is a proposal — those went to [ideas/](ideas/README.md) on 2026-08-26.
 
 <!-- BEGIN GENERATED TODO MEASURE-FIRST INDEX -->
 

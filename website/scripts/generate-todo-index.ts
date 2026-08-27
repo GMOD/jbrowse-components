@@ -13,9 +13,8 @@
 // two files, and a row cannot drift from the doc it points at.
 //
 // `order` is the position within the entry's table, and it stays editorial —
-// each table's prose says what its order is by. Ties break on filename, so a
-// batch of new entries sharing one number lands alphabetically rather than
-// arbitrarily.
+// each table's prose says what its order is by. Two entries in one table cannot
+// share a number; gaps are fine, since a closed entry leaves one.
 //
 // The row label is the entry's own `# ` heading, so an entry is spelled one way
 // in the file and in the index.
@@ -168,6 +167,22 @@ const entries = readdirSync(todoDir)
 
 const byCategory = (category: string) =>
   entries.filter(e => e.category === category)
+
+// A tie sorts by filename, which renders a plausible table in an order nobody
+// chose — the one way `order` can be wrong without looking wrong. Gaps stay
+// legal: a closed entry leaves one, and renumbering the survivors is churn.
+for (const { category } of TABLES) {
+  const seen = new Map<number, string>()
+  for (const entry of byCategory(category)) {
+    const other = seen.get(entry.order)
+    if (other) {
+      throw new Error(
+        `agent-docs/todo/${entry.file} and ${other} both declare \`order: ${entry.order}\` in the ${category} table, so which one comes first is the filenames rather than a decision. Give one of them another number.`,
+      )
+    }
+    seen.set(entry.order, entry.file)
+  }
+}
 
 let content = readFileSync(todoPath, 'utf8')
 
