@@ -20,6 +20,7 @@ import {
   getModProbabilities,
   getModProbabilityBytes,
   getModTypes,
+  isMethylationFillType,
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
 
@@ -32,7 +33,7 @@ import { getFlags } from '../../shared/util.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 import { packedCigarOps } from '../alignedBaseWalk.ts'
 
-import type { ColorBy } from '../../shared/types.ts'
+import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type {
@@ -129,16 +130,31 @@ export function extractModifications(
   const modifications = getModPositions(mmTag, seq, strand)
   const fillUnmarked = !!colorBy.modifications?.fillUnmarked
 
-  // fillUnmarked hands cytosine painting to extractMethylation (the getMethBins
-  // context walk paints every cytosine, called or not), so skip the MM-tag paint
+  // fillUnmarked hands 5mC/5hmC to extractMethylation (the getMethBins context
+  // walk paints every cytosine, called or not), so those two types are dropped
   // here to avoid double marks — matching the old standalone methylation scheme.
-  if (!fillUnmarked) {
+  //
+  // **It drops those two types, NOT the read's other ones.** getMethBins is
+  // cytosine-only, so skipping the whole paint left a Fiber-seq read's 6mA with
+  // nothing to draw it: picking the 2-color view on `C+m?;A+a` data silently
+  // painted 2 marks where the by-type view painted 5, and the menu offered a
+  // 6mA checkbox over a channel that was gone. The remainder is drawn 2-color,
+  // which is what this view IS and what its help text already promises — "for
+  // other modifications the called positions are drawn, blue where the call is
+  // more likely negative".
+  //
+  // A read declaring nothing but 5mC/5hmC — the ordinary methylation modBAM —
+  // filters to an empty list and skips the walk, exactly as it did before.
+  const drawn = fillUnmarked
+    ? modifications.filter(m => !isMethylationFillType(m.type))
+    : modifications
+  if (drawn.length > 0) {
     const modStrand = strand === -1 ? -1 : 1
     const modThreshold =
       (colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
-    const twoColor = colorBy.modifications?.twoColor ?? false
+    const twoColor = fillUnmarked || (colorBy.modifications?.twoColor ?? false)
     forEachMaxProbMod(
-      modifications,
+      drawn,
       getModProbabilityBytes(feature),
       cigarOps,
       strand,
@@ -183,6 +199,26 @@ export function extractModifications(
   }
 }
 
+/**
+ * The fill view's marks: one per cytosine in context, called or not.
+ *
+ * Takes the whole `modifications` slot rather than just its cytosine context,
+ * because the winner selection below also has to know which types the type
+ * filter left ticked. It did not, and that made the "Modification types"
+ * checkboxes inert in this view while the LEGEND read the same predicate and
+ * dropped the swatch — so unticking 5hmC removed its key and left its magenta
+ * marks on screen, off a box whose whole claim is that it names every colour
+ * drawn.
+ *
+ * **A hidden type is excluded from the competition, not from the output.** The
+ * fill paints the most likely state among the ticked types plus unmodified, so
+ * unticking 5hmC leaves each cytosine reading 5mC-or-not rather than punching a
+ * hole wherever 5hmC happened to win — which is what the menu's own help text
+ * asks for ("untick 5hmC to read gene-body 5mC on a 5mCG_5hmCG model").
+ * Dropping a hidden type's probability from the no-mod sum falls out of the
+ * same rule and is the honest reading of it: with only 5mC ticked, blue is
+ * `1 - P(5mC)`, the confidence the base is not 5mC.
+ */
 export function extractMethylation(
   readIndex: number,
   featureStart: number,
@@ -190,18 +226,25 @@ export function extractMethylation(
   region: Region,
   modData: ParsedModData,
   modificationsData: ModificationEntry[],
-  context: CytosineContext,
+  mods: ModificationColorBy | undefined,
 ) {
+  const showMeth = isModificationTypeVisible(mods, 'm')
+  const showHydroxy = isModificationTypeVisible(mods, 'h')
+  if (!showMeth && !showHydroxy) {
+    return
+  }
   const { start: regionStart, end: regionEnd } = region
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(modData, context)
+    getMethBins(modData, mods?.cytosineContext)
 
   const methStrand = strand === -1 ? -1 : 1
   const iStart = Math.max(0, regionStart - featureStart)
   const iEnd = Math.min(modData.flen, regionEnd - featureStart)
 
   for (let i = iStart; i < iEnd; i++) {
-    if (!methBins[i] && !hydroxyMethBins[i]) {
+    const hasMeth = showMeth && methBins[i]
+    const hasHydroxy = showHydroxy && hydroxyMethBins[i]
+    if (!hasMeth && !hasHydroxy) {
       continue
     }
     // 5mC and 5hmC are competing modifications of the same cytosine, so their
@@ -211,8 +254,8 @@ export function extractMethylation(
     // unmethylated mark therefore painted an "unmethylated 5hmC" mark at nearly
     // every CpG, flooding the view. Instead pick the single most-likely state
     // per cytosine — 5mC, 5hmC, or unmodified — mirroring IGV's no-mod logic.
-    const mProb = methBins[i] ? (methProbs[i] ?? 0) : 0
-    const hProb = hydroxyMethBins[i] ? (hydroxyMethProbs[i] ?? 0) : 0
+    const mProb = hasMeth ? (methProbs[i] ?? 0) : 0
+    const hProb = hasHydroxy ? (hydroxyMethProbs[i] ?? 0) : 0
     const noModProb = Math.max(0, 1 - mProb - hProb)
 
     // Winner selection, allocation-free: pick 5hmC, then 5mC, else the no-mod

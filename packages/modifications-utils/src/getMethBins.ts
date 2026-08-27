@@ -25,6 +25,21 @@ export interface ParsedModData {
 
 /**
  * #api
+ * The modification types the methylation walk below paints — 5mC and 5hmC, the
+ * pair that compete for one cytosine.
+ *
+ * Stated once because two functions have to agree on it and they are in
+ * different packages: this walk claims those types, and
+ * `extractModifications` has to skip exactly them in the fill view so a
+ * cytosine gets one mark rather than two. A second spelling would either
+ * double-paint or, as it did, drop every OTHER type the read declares.
+ */
+export function isMethylationFillType(type: string) {
+  return type === 'm' || type === 'h'
+}
+
+/**
+ * #api
  * Bins per-read base modifications and their probabilities onto reference
  * positions, returning typed arrays for methylated/unmethylated calls. Only
  * cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
@@ -45,7 +60,7 @@ export function getMethBins(
     cigarOps,
     isReverse,
     ({ type, strand, positions }, ref, idx, prob) => {
-      const isMeth = type === 'm' || type === 'h'
+      const isMeth = isMethylationFillType(type)
       if (
         isMeth &&
         ref >= 0 &&
