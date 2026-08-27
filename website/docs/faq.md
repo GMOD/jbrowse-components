@@ -145,15 +145,27 @@ display, and an SV inspector.
 
 ### How do I convert my JBrowse 1 configuration to JBrowse 2
 
-There is no official migration tool - the config formats differ enough that you
-generally set the tracks up fresh with the CLI or the GUI. A community script
-like
-[this gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
-can extract track definitions from a JBrowse 1 config to work from.
+Point a **JBrowse 1 connection** at the data directory and its tracks are
+translated on connect, leaving the data files where they are:
 
-As a temporary bridge, the built-in **JBrowse 1 connection** reads a running
-JBrowse 1 data directory's `trackList.json`, so you can browse those tracks
-without migrating. It is limited in what it supports.
+```bash
+jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19
+```
+
+The connection reads `trackList.json` and `tracks.conf`, follows their
+`include`s, and covers the alignment, variant, annotation, quantitative and
+sequence stores a JBrowse 1 instance usually holds; the exact set is one table
+in
+[`jb1ToJb2.ts`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ToJb2.ts).
+A `storeClass` it does not recognize is matched on the filename instead, and the
+few stores with no JBrowse 2 equivalent arrive as placeholder tracks naming the
+format.
+
+A connection keeps reading the JBrowse 1 directory, which suits a site running
+both. Writing the tracks into `config.json` cuts that tie, and
+[this gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
+is a standalone script along the same lines to adapt. Check either result with
+`jbrowse validate config.json`.
 
 ### How do I cite JBrowse 2
 

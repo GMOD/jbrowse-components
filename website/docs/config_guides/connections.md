@@ -69,8 +69,10 @@ connection's track list. See [](/docs/config/jb2trackhubconnection).
 
 ### JBrowse 1 data directory
 
-Points at a legacy JBrowse 1 data directory containing `trackList.json`. A
-JBrowse 1 connection requires `assemblyNames`. See
+Points at a legacy JBrowse 1 data directory — the one holding `trackList.json`
+and `tracks.conf`, either of which may be absent. Its tracks are translated to
+JBrowse 2 equivalents on connect. A JBrowse 1 connection serves one assembly, so
+`assemblyNames` is required and holds a single entry. See
 [](/docs/config/jbrowse1connection).
 
 ```json
