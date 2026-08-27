@@ -214,6 +214,72 @@ To get the raw JSON of a track you configured in the app:
 Either way the result pastes into `config.json` or into a
 [generation script](/docs/config_guides/deploying/#generating-configjson-from-a-script).
 
+## The "Zoom in to see more features" limits
+
+Two limits guard the region, and either one shows the message: how many bytes
+the fetch would download, and how many features would land on screen.
+
+The message itself is "Zoom in to see features or force load (may be slow)",
+usually with the estimated size that tripped it, and the banner's **Force load**
+button downloads the region anyway.
+
+On alignments and MAF tracks the message can appear at any zoom, and there it
+offers only **Force load**. Those two formats cost bytes per reference base
+times something zooming does not reduce — read depth, and the number of aligned
+species — so a gene-sized window over a deep pileup or a 470-way alignment is
+still tens of megabytes. Other tracks stop being guarded below about 20 kb,
+where a small region is a small download.
+
+### Raising the feature limit
+
+[`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity)
+is **features per pixel of track width**, and it defaults to `1`. So the feature
+count a track will draw is roughly the width of your browser window in pixels:
+about 1,500 features on a 1,500px-wide window. Doubling the slot to `2` allows
+about 3,000, and so on. It is a density because the same region drawn in a wider
+window has more room, so the budget grows with the window.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "dense_genes",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "displayDefaults": { "maxFeatureScreenDensity": 5 }
+}
+```
+
+If you only want the region loaded once, the **Force load** button does that
+without touching the config. To force it without a click (an embedded view, a
+notebook, a screenshot, where nobody can press the button), set
+[`forceLoad`](/docs/config/baselineardisplay/#slot-forceload) on the display.
+
+### Raising the byte limit
+
+[`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) is a
+plain byte count. Regions under 20kb are never held back, and adapters that
+summarize at screen resolution (bigWig, Hi-C, MultiWiggle, sequence) are never
+too large, so neither limit applies to them.
+
+The BAM, CRAM and VCF adapters have their own `fetchSizeLimit`, and an adapter's
+limit takes priority over the display's, so for those formats set it on the
+adapter:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "volvox_cram",
+  "name": "volvox CRAM (small fetch size limit)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "CramAdapter",
+    "uri": "volvox-sorted.cram",
+    "fetchSizeLimit": 1000
+  }
+}
+```
+
 ## Finding every option for a track or adapter type
 
 The config guides cover common settings. Every slot for every track, display,

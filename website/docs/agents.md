@@ -116,7 +116,7 @@ error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defin
 `--json` gives machine-readable output, and a non-zero exit means errors, so an
 agent can loop on it. Errors are things JBrowse accepts and silently gets wrong;
 warnings are things it will complain about itself. Full description in
-[](/docs/faq#my-track-loads-but-my-setting-has-no-effect).
+[](/docs/config_guides/intro#checking-a-config-with-jbrowse-validate).
 
 An agent that has read every page can still invent a slot name; one that can
 check its work recovers from having done so.
@@ -219,8 +219,8 @@ The third has to come back `206 Partial Content` with an
 whole file is a server ignoring the range, which turns every read into a full
 download with no error shown. The FAQ covers the same two for someone with the
 app in front of them:
-[an empty track](/docs/faq#my-track-loads-but-shows-no-features) and
-[a CORS error](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
+[an empty track](/docs/troubleshooting#my-track-loads-but-shows-no-features) and
+[a CORS error](/docs/config_guides/serving_data#cors-errors-on-remote-files).
 
 ## Handing the result back
 

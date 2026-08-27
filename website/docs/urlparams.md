@@ -298,7 +298,7 @@ console warning naming the ones that work.
 
 It is a debugging aid: trying each in turn says whether a blank or wrong-looking
 track comes from the GPU path, see
-[my tracks are blank or render incorrectly](/docs/faq#my-tracks-are-blank-or-render-incorrectly).
+[my tracks are blank or render incorrectly](/docs/troubleshooting#my-tracks-are-blank-or-render-incorrectly).
 JBrowse Desktop takes the same choice as a `--renderer` command-line flag, see
 [](/docs/quickstart_desktop#launching-from-the-command-line).
 
@@ -1614,8 +1614,36 @@ link" that you can give to other users
 
 https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
-See
-[this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web)
+The Share button generates a random encryption key on the client, encrypts the
+session, and uploads the encrypted blob — without the key — to an AWS DynamoDB
+database. The `password` is never transmitted to the server: the recipient
+downloads the DynamoDB entry and decodes it with the key embedded in the URL, so
+the DynamoDB contents cannot be decrypted even by JBrowse administrators.
+
+Behind a firewall that cannot reach the shortener, the gear icon in the Share
+dialog switches to "Long URL" mode, which needs no central server. To run your
+own shortener instead, set `shareURL` in config.json.
+
+#### Are share links reproducible
+
+It depends which of the gear icon's three formats you pick.
+
+The short link (`&session=share-<ID>&password=<KEY>`) is _not_. Each click of
+Share mints a new random key and uploads a new encrypted blob, so the same view
+gives a new `<ID>`/`<KEY>` pair every time. The link is by design just a key
+into our hosted store.
+
+**Long URL** and **Plaintext JSON** _are_. Both carry the whole session in the
+link itself - compressed for the first, readable JSON for the second - with no
+server round-trip and no minted password, so the same view and config produce
+the same link, and it survives rebuilding or moving your instance. Being long,
+both go [into the URL fragment](#query-string-or-hash-fragment) rather than the
+query string.
+
+Your **config** can still break reproducibility. A restored session references
+tracks by `trackId`, so a redeploy that regenerates `config.json` with different
+`trackId`s leaves the link unable to find those tracks. See
+[keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links).
 
 ### Loading a plugin from a URL
 

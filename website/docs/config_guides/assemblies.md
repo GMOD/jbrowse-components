@@ -81,9 +81,21 @@ cover the ones that need more than a slot description.
 
 ## Configuring reference name aliasing
 
-Maps chromosomes named differently across files to the same sequence (e.g.
-`chr1` ↔ `1`). `refNameAliases` points at a tab-separated file, one row per
-sequence, primary name first:
+A track that turns on without any error but stays empty where you expect data is
+usually a reference name mismatch: the file names its chromosomes differently
+than the assembly (e.g. `chr1` vs `1`, or `NC_000001.11` vs `chr1`). JBrowse
+matches features by exact reference name, so `chr1` data won't show up on a
+region the assembly calls `1`.
+
+To check, open the track menu and click "About track" for the reference names
+the file actually contains. The other side of the comparison is that same dialog
+on the **reference sequence track**: its "Assembly" section lists every name the
+assembly knows and the aliases already mapped onto each one, which is where you
+see whether an alias file applied.
+
+Aliasing maps chromosomes named differently across files to the same sequence
+(e.g. `chr1` ↔ `1`). `refNameAliases` points at a tab-separated file, one row
+per sequence, primary name first:
 
 ```
 1	chr1

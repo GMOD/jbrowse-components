@@ -99,6 +99,7 @@
     "cli",
     "jbrowse-img",
     "jbrowse-capture",
-    "faq"
+    "faq",
+    "troubleshooting"
   ]
 }

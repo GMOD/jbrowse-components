@@ -122,10 +122,14 @@ run. Fix with `--force` to overwrite them:
 jbrowse text-index --force
 ```
 
-If indexing fails because `/tmp` is low on disk space, override the temp
-directory. See
-[Why am I running out of disk space while trix is running](/docs/faq#why-am-i-running-out-of-disk-space-while-trix-is-running)
-in the FAQ.
+### Running out of disk space while indexing
+
+`jbrowse text-index` writes temporary data to `/tmp`. If that filesystem is low
+on space, override the directory with:
+
+```bash
+TMPDIR=~/alt_tmp_dir jbrowse text-index
+```
 
 ### Only some genes are searchable
 
@@ -138,6 +142,37 @@ jbrowse text-index --attributes=Name,ID,symbol,gene_name
 
 Also check that the feature type carrying the name is not in
 [`--exclude`](/docs/cli#jbrowse-text-index).
+
+## The trix index format
+
+`jbrowse text-index` creates text search indexes using `trix`. The trix format
+follows the [UCSC trix spec](https://genome.ucsc.edu/goldenPath/help/trix.html),
+but is re-implemented in the JBrowse CLI so you don't need UCSC tools.
+
+Given input like:
+
+```
+GENEID001  Wnt signalling
+GENEID002  ey  Pax6
+```
+
+It generates an `.ix` file, sorted alphabetically:
+
+```
+ey  GENEID002
+Pax6  GENEID002
+signalling  GENEID001
+Wnt  GENEID001
+```
+
+A second file, `.ixx`, records the byte offset of each line, e.g.:
+
+```
+signa000000435
+```
+
+JBrowse also extends the standard trix format: the `.ix` file includes each
+feature's name and genomic location in an encoded format.
 
 ## See also
 

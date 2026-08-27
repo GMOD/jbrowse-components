@@ -77,7 +77,7 @@ In rough order of simplicity:
   access-control system.
 
 Any setup where the data is on a different origin than the app also needs
-[CORS](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files), including
+[CORS](/docs/config_guides/serving_data#cors-errors-on-remote-files), including
 the auth header in `Access-Control-Allow-Headers`.
 
 ## Internet accounts
@@ -430,7 +430,7 @@ Bucket CORS then has to allow the headers the signature covers (`Authorization`,
 `Range`, `x-amz-date`, `x-amz-content-sha256`). Exposing `Content-Range` is
 worth doing but is not required: reads walk the file by range and detect its end
 from a short response, so a track loads either way. See
-[the CORS FAQ](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
+[](/docs/config_guides/serving_data).
 
 CloudFront signed cookies are the one route that needs no JBrowse code and
 refreshes without it, since your app renews the cookie and the browser attaches
@@ -455,11 +455,10 @@ Authenticated requests are still cross-origin requests, so the data server must
 send the CORS headers that allow them, including the `Authorization` header (or
 whatever `authHeader` names) in `Access-Control-Allow-Headers`, and it must
 allow credentials rather than responding with a wildcard origin. See
-[the CORS FAQ](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
+[](/docs/config_guides/serving_data).
 
 ## See also
 
 - [](/docs/config_guides/intro)
 - [BaseInternetAccount config docs](/docs/config/baseinternetaccount)
 - [Configuring tracks](/docs/config_guides/tracks)
-- [FAQ: how do I put my data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login)

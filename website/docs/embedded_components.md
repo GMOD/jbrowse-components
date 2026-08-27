@@ -48,6 +48,34 @@ already-mounted component at a different `assembly`, or a different plugin list,
 does nothing. Give the element a React `key` that changes with the assembly and
 React remounts it on a fresh engine.
 
+### Embedded views versus the full app
+
+Embedded views are designed for genome browsing within an existing webpage. For
+a standalone browser, run [JBrowse Web](/docs/quickstart_web) instead.
+`@jbrowse/react-app2` sits between the two: the whole JBrowse app as a React
+component.
+
+|                | Single-view components (LGV, CGV) | `@jbrowse/react-app2`                      | JBrowse Web                                                      |
+| -------------- | --------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| View types     | One only                          | All of them, plugins included              | All of them, plugins included                                    |
+| Feature detail | Opens in a dialog                 | Opens in a drawer                          | Opens in a left/right oriented drawer                            |
+| Sessions       | No built-in saving or loading     | Held in your app's state, yours to persist | Save, import, export, plus local autosave                        |
+| URLs           | The page owns the URL             | The page owns the URL                      | Reads [URL params](/docs/urlparams) like `&loc=` and `&session=` |
+
+**All of them can:**
+
+- enable/disable tracks through the Track interface
+- change the track's assembly based on what is available in the configuration
+- manipulate the views with zoom, horizontal flip, view all regions, track label
+  positioning, etc.
+- change track display options
+- export the view as an SVG
+
+Embedded components are designed for web developers to build custom systems
+around, so features like sessions and track manipulation can be implemented by
+the embedding application. If your app is Python or R rather than JavaScript,
+[](/docs/jbrowse_anywidget) and [](/docs/jbrowser) wrap the same views.
+
 ## Driving the view from your own code
 
 When you want to read or change the view after launch, hold the engine yourself:
@@ -416,8 +444,8 @@ that guesses to some other track type reports that no compatible display exists.
 For the plain `<script>` tag build, see the
 [embedding tutorial](/docs/tutorials/embed_linear_genome_view).
 
-Not sure if you want an embedded view or the full app? See the
-[FAQ entry](/docs/faq#embedded-views-versus-full-jbrowse-app).
+Not sure if you want an embedded view or the full app? See
+[embedded views versus the full app](#embedded-views-versus-the-full-app).
 
 ## Bundler examples
 
@@ -440,4 +468,3 @@ Not sure if you want an embedded view or the full app? See the
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/jbrowse_anywidget): Python equivalent
 - [](/docs/jbrowser): R/Shiny equivalent
-- [FAQ: embedded views vs. full app](/docs/faq#embedded-views-versus-full-jbrowse-app)

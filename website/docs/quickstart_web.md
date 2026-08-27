@@ -291,20 +291,19 @@ Two properties decide whether a host works, and both fail quietly:
   with `206 Partial Content`. A host that returns the whole file with `200`
   instead is the usual reason a track that works locally shows nothing in
   production. See
-  [indexed binary files do not work on my server](/docs/faq#bam-or-other-indexed-binary-files-do-not-work-on-my-server).
+  [](/docs/config_guides/serving_data#indexed-binary-files-do-not-work-on-my-server).
 - **No re-compression of compressed files.** Serving a `.bam` or `.bgz` through
   gzip corrupts the byte offsets the index depends on. See
-  [gzip on your web server](/docs/faq#should-i-configure-gzip-on-my-web-server).
+  [](/docs/config_guides/serving_data#configure-gzip-for-text-never-for-bgzf).
 
 Object storage satisfies both out of the box, which is why S3 and GCS are common
 homes for the data even when the app itself is served elsewhere. Data on a
 different domain than the app needs a
-[CORS policy](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files) as
+[CORS policy](/docs/config_guides/serving_data#cors-errors-on-remote-files) as
 well.
 
 For data that cannot be public, JBrowse authenticates per file host. See
-[](/docs/config_guides/authentication) and
-[putting data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login).
+[](/docs/config_guides/authentication).
 
 ## Indexing feature names for searching
 
@@ -320,7 +319,9 @@ plain. Every other track is skipped, and a bare `text-index` run skips silently
 complete, names can be typed directly into the location search box. See
 [](/docs/config_guides/text_searching) for which attributes are indexed and how
 to narrow the set, the [text-index docs](/docs/cli#jbrowse-text-index) for the
-flags, and [](/docs/faq#text-searching) for how the trix files work.
+flags, and
+[the trix index format](/docs/config_guides/text_searching#the-trix-index-format)
+for how the index files work.
 
 ## Tutorials
 
@@ -339,7 +340,7 @@ flags, and [](/docs/faq#text-searching) for how the trix files work.
 - [](/docs/config_guide)
 - [CLI reference](/docs/cli)
 - [](/docs/faq)
-- [CORS errors](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files)
+- [CORS errors](/docs/config_guides/serving_data#cors-errors-on-remote-files)
 
 ## Tips
 

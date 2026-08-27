@@ -7,10 +7,10 @@ interface Props {
 
 const { toc } = Astro.props
 
-// Long pages start with the rail open: faq has 57 headings and quickstart_web
-// 17, where the TOC is the only practical way to see the page's shape, while the
-// median doc page has 3 and gains nothing. 12 is the knee of the distribution
-// (25 of 355 pages), so this stays the exception rather than the default.
+// Long pages start with the rail open: faq and urlparams have 36 headings each
+// and quickstart_web 19, where the TOC is the only practical way to see the
+// page's shape, while the median doc page has 3 and gains nothing. 12 is the
+// knee of the distribution, so this stays the exception rather than the default.
 const defaultShow = toc.length >= 12
 ---
 

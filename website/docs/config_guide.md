@@ -50,3 +50,4 @@ recipes, see the [](/docs/cookbook).
 - [](/docs/config_guides/avoiding_stale_config)
 - [](/docs/config_guides/deploying)
 - [](/docs/config_guides/disable_analytics)
+- [](/docs/config_guides/serving_data)

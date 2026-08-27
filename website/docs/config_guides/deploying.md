@@ -8,7 +8,7 @@ guide_category: Deployment
 
 **TL;DR:** JBrowse Web is a static site (HTML/JS/CSS plus `config.json`), served
 from any static host. Script the config generation so `trackId`s stay stable and
-share links stay [reproducible](/docs/faq/#are-my-share-links-reproducible)
+share links stay [reproducible](/docs/urlparams#are-share-links-reproducible)
 across rebuilds.
 
 JBrowse Web is a **static web application**, a folder of HTML, JS, and CSS plus
@@ -16,8 +16,7 @@ your `config.json`. Any static file host (Nginx, Apache, S3, GitHub Pages, a
 Docker image behind an ingress) can serve it. Data files (BAM, BigWig, VCF, ...)
 are read directly from wherever they live via HTTP range requests, so the only
 server-side requirement is that your data host supports range requests and CORS
-(see
-[the CORS FAQ](/docs/faq/#why-do-i-get-a-cors-error-when-loading-remote-files)).
+(see [](/docs/config_guides/serving_data)).
 
 ## The minimal deployment
 
@@ -92,8 +91,10 @@ If your pipeline regenerates `config.json` with **different** `trackId`s each
 build (an ID embedding a timestamp or random suffix), previously shared links
 fail to restore those tracks. Derive each `trackId` deterministically from
 stable inputs, as in the script above, where the ID comes from the assembly and
-sample name. See
-[why a saved session fails to load](/docs/faq/#why-does-my-saved-session-fail-to-load).
+sample name.
+
+Changing or deleting a track's ID breaks any saved session that references it,
+and the whole session fails to load rather than just that track.
 
 ## Cache-busting in index.html
 

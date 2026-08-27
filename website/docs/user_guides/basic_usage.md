@@ -151,6 +151,10 @@ If you are an administrator, you can add tracks with the
 You can undo any action via Tools → Undo/Redo, or with the keyboard shortcuts
 `ctrl+z`/`cmd+z` (undo) and `ctrl+shift+z`/`ctrl+y`/`cmd+shift+z` (redo).
 
+Undo is app-wide rather than per-view, so it reaches things like reopening a
+view you just closed, and it works anywhere in JBrowse Web and JBrowse Desktop.
+The [embedded components](/docs/embedded_components) do not include it.
+
 ## Sharing sessions
 
 On JBrowse Web, the "Share" button in the main menu bar generates a URL you can

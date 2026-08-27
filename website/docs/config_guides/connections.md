@@ -87,6 +87,30 @@ JBrowse 2 equivalents on connect. A JBrowse 1 connection serves one assembly, so
 }
 ```
 
+#### Migrating a JBrowse 1 instance
+
+A JBrowse 1 connection is also the shortest path off JBrowse 1, since it leaves
+the data files where they are:
+
+```bash
+jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19
+```
+
+The connection reads `trackList.json` and `tracks.conf`, follows their
+`include`s, and covers the alignment, variant, annotation, quantitative and
+sequence stores a JBrowse 1 instance usually holds; the exact set is one table
+in
+[`jb1ToJb2.ts`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ToJb2.ts).
+A `storeClass` it does not recognize is matched on the filename instead, and the
+few stores with no JBrowse 2 equivalent arrive as placeholder tracks naming the
+format.
+
+A connection keeps reading the JBrowse 1 directory, which suits a site running
+both. Writing the tracks into `config.json` cuts that tie, and
+[this gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
+is a standalone script along the same lines to adapt. Check either result with
+`jbrowse validate config.json`.
+
 ## Adding a connection with the CLI
 
 ```bash

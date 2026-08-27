@@ -51,6 +51,33 @@ See the [visualization gallery](/gallery/), or hosted genomes at
 - [State model reference](/docs/models)
 - [](/docs/api)
 
+## Prior art and credit
+
+JBrowse 2 stands on the shoulders of many great scientists that came before us.
+Points of reference:
+
+- Savant genome browser: genome arcs
+- Gap5 genome browser: the read cloud, a cousin of genome arcs
+- [Mummerplots](https://jmonlong.github.io/Hippocamplus/2017/09/19/mummerplots-with-ggplot2/):
+  auto-diagonalization routines for better synteny figures
+- minimap2 and the PAF format: the basis our synteny visualizations are built on
+- samtools and the hts-specs community: a continued substrate for complex
+  bioinformatics formats like BAM, CRAM and VCF
+- pggb, cactus and the other pangenome tool developers: for proving pangenomics
+  works
+- chain2paf, paftools.js and the rest of the ecosystem that grew around PAF
+- jcvi/MCScan: the easy protein-alignment synteny workflow we standardized
+  around, whose `.anchors` and `.blocks` formats other programs (the OrthoFinder
+  workflow among them) use to this day
+- ReactJS, TypeScript, mobx-state-tree and the JavaScript community: building a
+  bioinformatics ecosystem on the web is hard when most of the field works in
+  other languages
+- IGV and igv.js: much of the alignments track, particularly read pairing and
+  modBAM color schemes, view as pairs, and link supplementary alignments
+- D-GENIES: for establishing a very high quality, easy to use dotplot viewer
+- GenomeSpy and HiGlass/Gosling: for proving WebGL powered browsers
+- [Every other genome visualization developer](https://cmdcolin.github.io/awesome-genome-visualization/?latest=true)
+
 ## Contact
 
 Ask questions on the
