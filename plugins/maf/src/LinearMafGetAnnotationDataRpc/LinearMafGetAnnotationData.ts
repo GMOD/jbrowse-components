@@ -5,12 +5,13 @@ import type {
   LinearMafGetAnnotationDataResult,
 } from './executeMafAnnotationData.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     LinearMafGetAnnotationData: {
       args: LinearMafGetAnnotationDataArgs
-      return: LinearMafGetAnnotationDataResult
+      return: LinearMafGetAnnotationDataResult | RegionTooLargeResult
     }
   }
 }

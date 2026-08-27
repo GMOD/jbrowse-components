@@ -1,22 +1,20 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
-import type { MafFrameRecord } from '../types.ts'
+import type { BaseMafRpcArgs, MafFrameRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { Region } from '@jbrowse/core/util'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 /**
- * Unlike the alignment/summary RPCs (whose `adapterConfig` is the track's MAF
- * adapter config model), the annotation adapter is a separate frozen config
- * snapshot read off the display config, so this carries it as a plain object —
- * `getAdapter` accepts a snapshot directly.
+ * The same three args as the other two tiers, `byteLimit` included. What
+ * differs is the value, not the shape: the annotation adapter is a separate
+ * frozen config snapshot read off the display config rather than the track's
+ * MAF adapter config model, and `getAdapter` accepts a snapshot directly.
  */
-export interface LinearMafGetAnnotationDataArgs {
-  adapterConfig: Record<string, unknown>
-  regions: Region[]
-}
+export type LinearMafGetAnnotationDataArgs = BaseMafRpcArgs
 
 export interface LinearMafGetAnnotationDataResult {
   records: MafFrameRecord[]
@@ -30,6 +28,13 @@ export interface LinearMafGetAnnotationDataResult {
  * for the display to draw a frame-colored CDS box on that species' row. It is a
  * generic feature adapter loaded straight through `getAdapter`, a sibling of the
  * `summaryAdapter` sub-adapter.
+ *
+ * Gated like the other two tiers, against the frames file itself: one record
+ * per CDS exon **per species**, so on a deep alignment the read grows with the
+ * span times the species count exactly as the alignment does, and the summary
+ * tier carries it out to whole-genome spans. The refusal is silent — no `bytes`
+ * to quote — because the display's banner is about the alignment it measured,
+ * and this is a private bound on an auxiliary overlay that simply declines.
  */
 export async function executeMafAnnotationData({
   pluginManager,
@@ -37,14 +42,24 @@ export async function executeMafAnnotationData({
 }: {
   pluginManager: PluginManager
   args: RpcExecuteArgs<'LinearMafGetAnnotationData'>
-}): Promise<LinearMafGetAnnotationDataResult> {
-  const { regions, adapterConfig, sessionId, stopToken } = args
+}): Promise<LinearMafGetAnnotationDataResult | RegionTooLargeResult> {
+  const { regions, adapterConfig, byteLimit, sessionId, stopToken } = args
   const region = regions[0]!
   const adapter = await getFeatureAdapterOrThrow({
     pluginManager,
     sessionId,
     adapterConfig,
   })
+
+  const { tooLarge } = await measureRegionBytes({
+    dataAdapter: adapter,
+    regions: [region],
+    byteLimit,
+    stopToken,
+  })
+  if (tooLarge) {
+    return { regionTooLarge: true }
+  }
 
   const records: MafFrameRecord[] = []
   await subscribeToObservable(adapter.getFeatures(region, { stopToken }), f => {

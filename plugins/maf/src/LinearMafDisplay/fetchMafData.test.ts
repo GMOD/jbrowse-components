@@ -275,7 +275,9 @@ describe('summary/detail data swap', () => {
 // is not small by nature: one record per CDS exon *per species*, over the
 // buffered region, at every zoom the summary tier reaches. That is the premise
 // `gateEnabled`'s own docstring rejects — "off means nothing is watching, and
-// 'this tier is cheap' is a premise, not a bound".
+// 'this tier is cheap' is a premise, not a bound". It carries a `byteLimit`
+// like the other two, so the worker measures the frames file before it reads
+// it — no probe on the critical path.
 describe('the CDS-frame read is measured against its own file', () => {
   function framesSelf(over: Record<string, unknown> = {}) {
     const made = makeSelf()
@@ -287,13 +289,14 @@ describe('the CDS-frame read is measured against its own file', () => {
     return made
   }
 
-  // The frames RPC returns `{records}` and the two main ones return their own
-  // shapes; one resolver serves all three, with the estimate switched per test.
-  function respondWith(bytes: number | undefined) {
+  // The frames RPC answers records or a refusal, exactly as the two main ones
+  // do; the other methods keep their own shapes. `refuse` switches which of the
+  // two the frames call gives back.
+  function respondWith(refuse: boolean) {
     mockRpcCall.mockImplementation((_s: string, method: string) =>
       Promise.resolve(
-        method === 'CoreGetRegionByteEstimate'
-          ? bytes
+        method === 'LinearMafGetAnnotationData' && refuse
+          ? { regionTooLarge: true }
           : {
               samples: [],
               treeNewick: undefined,
@@ -308,24 +311,26 @@ describe('the CDS-frame read is measured against its own file', () => {
   const callsTo = (method: string) =>
     mockRpcCall.mock.calls.filter(c => c[1] === method)
 
-  test('measures the annotation adapter, not the one the banner is about', async () => {
+  // The budget travels with the read rather than ahead of it: the worker
+  // measures the annotation adapter itself and refuses in the same round trip,
+  // so nothing on the critical path waits on a separate probe.
+  test('sends the budget with the read, and no pre-flight probe', async () => {
     const { self } = framesSelf()
-    respondWith(500)
+    respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
 
-    const estimates = callsTo('CoreGetRegionByteEstimate')
-    expect(estimates).toHaveLength(1)
-    expect(estimates[0]![2].adapterConfig).toEqual({ type: 'BigBedAdapter' })
-    // one measurement for the batch, quoting every region the read covers
-    expect(estimates[0]![2].regions).toHaveLength(NEEDED.length)
+    expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
+    const frames = callsTo('LinearMafGetAnnotationData')
+    expect(frames).toHaveLength(NEEDED.length)
+    expect(frames[0]![2].adapterConfig).toEqual({ type: 'BigBedAdapter' })
+    expect(frames[0]![2].byteLimit).toBe(1_000_000)
   })
 
-  test('reads the frames when the estimate is under the limit', async () => {
+  test('reads the frames when the region is under the limit', async () => {
     const { self, framesFetched, framesBlocked } = framesSelf()
-    respondWith(500)
+    respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
 
-    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(2)
     expect(framesFetched).toEqual([0, 3])
     expect(framesBlocked).toEqual([false])
   })
@@ -335,10 +340,9 @@ describe('the CDS-frame read is measured against its own file', () => {
   // has to be reported rather than silent.
   test('declines an over-budget read and says so, without failing the fetch', async () => {
     const { self, framesFetched, framesBlocked } = framesSelf()
-    respondWith(50_000_000)
+    respondWith(true)
     await fetchMafAlignmentData(self as any, NEEDED)
 
-    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(0)
     expect(framesFetched).toEqual([])
     expect(framesBlocked).toEqual([true])
     // the main fetch is untouched
@@ -349,42 +353,58 @@ describe('the CDS-frame read is measured against its own file', () => {
   // covers this read too, rather than leaving the overlay mysteriously off
   // after the banner is gone. It reaches here as an undefined
   // `resolvedByteLimit()`, which is the whole "may anything gate right now"
-  // question rather than force-load alone.
-  test('force-load lifts it, and skips the measurement entirely', async () => {
+  // question rather than force-load alone, and an absent `byteLimit` is what
+  // makes the worker measure nothing.
+  test('force-load lifts it, and the worker then measures nothing', async () => {
     const { self, framesFetched } = framesSelf({
       resolvedByteLimit: () => undefined,
     })
-    respondWith(50_000_000)
+    respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
-    expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
+    expect(
+      callsTo('LinearMafGetAnnotationData')[0]![2].byteLimit,
+    ).toBeUndefined()
     expect(framesFetched).toEqual([0, 3])
   })
 
-  // An adapter quoting no index estimate is "unmeasurable", not "too large" —
-  // the same reading `CoreGetRegionByteEstimate` documents for its undefined,
-  // and the same one the main gate takes.
-  test('reads the frames when the adapter cannot be measured', async () => {
-    const { self, framesFetched } = framesSelf()
-    respondWith(undefined)
+  // The strip spans the viewport, so drawing it over only the regions that fit
+  // would read as "these exons are all there are".
+  test('one refused region refuses the overlay', async () => {
+    const { self, framesFetched, framesBlocked } = framesSelf()
+    mockRpcCall.mockImplementation((_s: string, method: string, args: any) =>
+      Promise.resolve(
+        method === 'LinearMafGetAnnotationData' &&
+          args.regions[0].refName === 'ctgB'
+          ? { regionTooLarge: true }
+          : {
+              samples: [],
+              treeNewick: undefined,
+              samplesCanonical: false,
+              regionData: { blocks: [] },
+              records: [],
+            },
+      ),
+    )
     await fetchMafAlignmentData(self as any, NEEDED)
-    expect(framesFetched).toEqual([0, 3])
+    expect(framesFetched).toEqual([])
+    expect(framesBlocked).toEqual([true])
   })
 
   // The summary tier is where the span gets large enough for this to matter, so
   // it has to be gated on that path too — not only on the alignment's.
   test('applies on the summary tier as well', async () => {
     const { self, framesFetched, framesBlocked } = framesSelf()
-    respondWith(50_000_000)
+    respondWith(true)
     await fetchMafSummaryData(self as any, NEEDED)
     expect(framesFetched).toEqual([])
     expect(framesBlocked).toEqual([true])
   })
 
   // A track with the overlay off pays for none of this.
-  test('measures nothing when no consumer wants the frames', async () => {
+  test('reads nothing when no consumer wants the frames', async () => {
     const { self } = framesSelf({ annotationDataActive: false })
-    respondWith(500)
+    respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
-    expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
+    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(0)
   })
 })
