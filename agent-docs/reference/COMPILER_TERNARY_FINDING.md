@@ -64,6 +64,17 @@ alignment, not a guarantee.
 - `DisplayChromeBaseInner` carries `'use no memo'` — the only compiled
   `observer` in the codebase. Its early-`return` terminal branches are now a style choice, not
   a correctness requirement; `DisplayChrome.test.tsx` guards the behavior.
+- The breakpoint-split-view overlay shipped a real bug from this rule and no
+  longer can. `useOverlayState` wrapped `getTrackOverlayData()`, and being
+  `use`-prefixed it got compiled even though every caller was an inline
+  observer: the offsetPx/scrollTop/height snapshot froze at first-render values
+  while the `getX` closure it returned kept reading `bpPerPx` live, so panning
+  froze the connectors and zooming threw them millions of px off-screen.
+  `'use no memo'` fixed it; 583e0665d2 then inlined the hook into its one
+  caller, which removes the hazard at the source — an inline
+  `observer(function(){})` is left alone. The regression guard stays a browser
+  test (`browser-tests/suites/breakpoint-split-view.ts`, "overlay connectors
+  track pan and zoom") because catching it needs a real pan and zoom.
 - The variant displays' `model.contextMenuItems()` no longer runs during
   render at all: `DisplayContextMenu` passes it as the thunk
   `menuItems={() => model.contextMenuItems()}` and calls it when the menu opens,
