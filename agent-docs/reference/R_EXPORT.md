@@ -1,5 +1,6 @@
 ---
 name: r-export
+audience: internal
 description: The LGV "Export R script" exporter — exportR.ts HELPERS/assembleRScript/RTrackFragment architecture, the add-a-track recipe, prioritized next steps, the Rscript verification technique, and the read_index/NA-row gotcha. Read when extending the R script exporter.
 ---
 
@@ -65,11 +66,14 @@ record* lives elsewhere and is not duplicated here:
     several; consecutive tiles of one region merge).
   - `collectFragments` iterates every track's `display.exportRCode` and attaches
     each track's canonical→file-name `refNameMap`.
-- `plugins/linear-genome-view/src/LinearGenomeView/rexportShared.ts`: shared
-  codegen primitives — `rStr` (R string literal), `rName` (backtick name),
-  `safeVarName`, `firstUri`, `getTrackRMeta` (the per-display preamble reading
-  trackId/trackName/adapter).
-- `RTrackFragment` (`types.ts`, re-exported): one stacked panel =
+- `packages/display-kit/src/RExportFragment.ts`: what a display contributes —
+  the `RTrackFragment` type plus the codegen primitives `rStr` (R string
+  literal), `rName` (backtick name), `safeVarName`, `firstUri`, `getTrackRMeta`
+  (the per-display preamble reading trackId/trackName/adapter). In display-kit
+  beside `ExportSvgDisplayOptions`, since `exportRCode()` and `renderSvg()` are
+  two methods of one display contract; the LGV plugin re-exports both because
+  published plugins resolve them there.
+- `RTrackFragment`: one stacked panel =
   `{ trackId, trackName, packages, helpers, setup, plotVariable, plotExpr,
   heightWeight?, cumulativeAxis?, refNameMap? }`. `plotExpr` references
   `regions` (a data.frame with `chrom`/`start`/`end` + the cumulative-layout
