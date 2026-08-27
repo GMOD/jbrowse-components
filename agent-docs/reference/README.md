@@ -5,16 +5,19 @@ description: Index of every doc in reference/, with the question each one answer
 
 # Reference index
 
+> **Generated — don't hand-edit the table.** `pnpm autogen` rewrites it from
+> each doc's `description:` frontmatter
+> ([`website/scripts/generate-doc-indexes.ts`](../../website/scripts/generate-doc-indexes.ts)),
+> so fix the doc a row is wrong about, not the row. `pnpm autogen --check` fails
+> CI on a stale table or a doc carrying no frontmatter.
+
 Everything settled: how a subsystem works, how to operate it, and the datasets
 behind the figures. Start from [ARCHITECTURE.md](../ARCHITECTURE.md) for how a
 track renders; come here for the depth on one piece of it.
 
-The table is generated from each doc's `description:` frontmatter by
-`website/scripts/generate-doc-indexes.ts`, so a new doc joins it by carrying
-the frontmatter every doc here already needs — and `pnpm autogen --check` fails
-on one that doesn't. Don't edit between the markers; write the doc's
-`description:` instead, since that line is also what a reader sees when they
-`ls` and grep the directory.
+A new doc joins the table by carrying the frontmatter every doc here already
+needs. Its `description:` is also what a reader sees when they `ls` and grep the
+directory, so write it as the question the doc answers.
 
 <!-- BEGIN GENERATED REFERENCE INDEX -->
 

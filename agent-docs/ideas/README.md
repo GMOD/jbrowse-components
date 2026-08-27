@@ -5,6 +5,12 @@ description: Index of every parked proposal in ideas/, with the hook each one is
 
 # Ideas index
 
+> **Generated — don't hand-edit the table.** `pnpm autogen` rewrites it from
+> each doc's `description:` frontmatter
+> ([`website/scripts/generate-doc-indexes.ts`](../../website/scripts/generate-doc-indexes.ts)),
+> so fix the entry a row is wrong about, not the row. `pnpm autogen --check`
+> fails CI on a stale table or a doc carrying no frontmatter.
+
 Exploratory concepts and folded proposals — not committed work. Concrete action
 items live in [TODO.md](../TODO.md); the split between them is commitment, not
 size.
@@ -16,12 +22,9 @@ session. A fair number were written precisely so the next session doesn't
 re-derive them.
 
 One file per proposal, so a heavy one can be taken off the shelf and worked
-without reading its neighbours. The table below is generated from each doc's
-`description:` frontmatter by `website/scripts/generate-doc-indexes.ts`, and
-`pnpm autogen --check` fails on a doc that carries none. Don't edit between the
-markers; write the doc's `description:` instead — that line is both the index
-entry and what a reader sees when they grep the directory, so write it as the
-hook someone picks the idea up by, not as a summary.
+without reading its neighbours. A proposal's `description:` is both its row here
+and what a reader sees when they grep the directory, so write it as the hook
+someone picks the idea up by, not as a summary.
 
 These were one file (`OTHER_IDEAS.md`) until 2026-08-13, and other docs and a
 couple of source comments cite entries **by filename** now rather than by

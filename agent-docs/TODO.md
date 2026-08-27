@@ -5,6 +5,14 @@ description: The v5.0.0 release list — the items the release itself turns on, 
 
 # Backlog
 
+> **Generated — don't hand-edit the tables.** `pnpm autogen` rewrites every
+> block between the `<!-- BEGIN GENERATED … -->` markers below from the entries
+> under [todo/](todo/), so an edit made here is gone on the next run. Change the
+> entry's own frontmatter instead;
+> [`website/scripts/generate-todo-index.ts`](../website/scripts/generate-todo-index.ts)
+> says which field is which column, and `pnpm autogen --check` fails CI on a
+> stale table.
+
 **This file is the v5.0.0 release list**, and the bar for a row is that the
 release ships worse without it: a check owed on code that landed in the v5
 window, something the release itself publishes, a setting the rewrite dropped, or

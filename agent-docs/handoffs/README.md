@@ -5,6 +5,12 @@ description: Index of every live thread in handoffs/, with what each one is stil
 
 # Handoffs index
 
+> **Generated — don't hand-edit the table.** `pnpm autogen` rewrites it from
+> each doc's `description:` frontmatter
+> ([`website/scripts/generate-doc-indexes.ts`](../../website/scripts/generate-doc-indexes.ts)),
+> so fix the handoff a row is wrong about, not the row. `pnpm autogen --check`
+> fails CI on a stale table or a doc carrying no frontmatter.
+
 A handoff is the live state of an **unfinished** thread — most often a review or
 an audit whose findings nobody has committed to yet. It holds pointers, not
 content, and it gets **deleted** when the thread lands.
@@ -58,10 +64,9 @@ and the state it carried was a coverage count its own text says to re-run rather
 than read. Check what a handoff duplicates before writing anything: the pointers
 it was built from usually absorbed its content while it sat.
 
-The table below is generated from each doc's `description:` frontmatter by
-`website/scripts/generate-doc-indexes.ts`, and `pnpm autogen --check` fails on a
-doc that carries none. Don't edit between the markers; write the doc's
-`description:` instead.
+A handoff's `description:` is its row here, and what it is still waiting on is
+the thing to write there — a reader picks a thread up by what is unresolved in
+it.
 
 <!-- BEGIN GENERATED HANDOFFS INDEX -->
 

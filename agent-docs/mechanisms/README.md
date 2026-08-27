@@ -5,6 +5,13 @@ description: Index of every doc in mechanisms/, with the transferable idea each 
 
 # Mechanisms index
 
+> **Generated — don't hand-edit the table.** `pnpm autogen` rewrites it from
+> each doc's `description:` frontmatter
+> ([`website/scripts/generate-doc-indexes.ts`](../../website/scripts/generate-doc-indexes.ts)),
+> so fix the doc a row is wrong about, not the row. `pnpm autogen --check` fails
+> CI on a stale table, a doc carrying no frontmatter, or a filename that is not
+> its `name:` slug.
+
 A **mechanism** is a technique this repo settled on, stated so that a reader
 with no genomics could adopt it. The JBrowse code is the evidence; the idea is
 the subject. That is the whole difference from `reference/`, where a subsystem
@@ -77,9 +84,9 @@ plugin happens to demonstrate at scale.
   spelling and a reader it reaches. This directory is where that name lives;
   the publishing plan stays over there.
 
-The table is generated from each doc's `description:` frontmatter by
-`website/scripts/generate-doc-indexes.ts`. Don't edit between the markers;
-write the doc's `description:` instead.
+A mechanism's `description:` is its row here, and it is read by someone who may
+not know which subsystem demonstrates the idea — so name the idea, not the
+plugin it came out of.
 
 <!-- BEGIN GENERATED MECHANISMS INDEX -->
 
