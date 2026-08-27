@@ -3,9 +3,11 @@ import {
   makeRetryContractCheck,
 } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { autorunOnReadyView } from './displayAutoruns.ts'
+import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { GateFetchState } from './regionTooLargeUtils.ts'
@@ -44,9 +46,10 @@ export interface GlobalFetchHost extends IStateTreeNode {
   isMinimized: boolean
   // The freshness trio `GlobalFetchMixin` owns: the resolved signature captured
   // at issue and stamped at commit, and the derived gate that declines a fetch
-  // the held data already answers.
+  // the held data already answers. The gate, not `dataCurrent`: that one also
+  // carries `dataSuperseded`, which holds the export and must not refetch.
   fetchSignature: string | undefined
-  dataCurrent: boolean
+  signatureCurrent: boolean
   commitFetchResult: (commit: () => void, signature: string) => void
   // `RegionTooLargeMixin`'s byte-gate commit pair: the gate as it stood when
   // this fetch was issued, and where the bytes its result reports go. A display
@@ -79,12 +82,19 @@ export interface GlobalFetchAutorunHost extends GlobalFetchHost {
   // two terms are not listed separately: this helper reads only the combined
   // one, and naming the parts here would invite the expression back.
   gateSkipsMeasuredViewport: boolean
+  // The stored-hover clear's inputs — `regionTooLarge` is the fourth axis it
+  // watches, `clearHoveredFeature` is `BaseDisplay`'s no-op default a storer
+  // overrides. Installed here for the reason the per-region foundation installs
+  // it: a display that forgets keeps naming what used to be under the cursor.
+  regionTooLarge: boolean
+  scrollTop?: number
+  clearHoveredFeature: () => void
 }
 
 /**
  * One fetch through the phases, with the family's shared gates around them:
  * decline while minimized, while the signature is not yet computable (a
- * prerequisite pending), or while `dataCurrent` says the held data already
+ * prerequisite pending), or while `signatureCurrent` says the held data already
  * answers; then the display's `run` under `FetchMixin.runFetch` (which owns
  * cancellation, the error and the loading flag), the byte measurement its
  * result carried, and a commit that stamps the signature the fetch was *issued*
@@ -94,7 +104,7 @@ export interface GlobalFetchAutorunHost extends GlobalFetchHost {
  * HiC's signature missed the settings axis, a reload had to remember its own
  * invalidation).
  *
- * **A refused result commits its bytes and nothing else.** `dataCurrent`
+ * **A refused result commits its bytes and nothing else.** `signatureCurrent`
  * therefore stays false, and what stops the autorun spinning on that is
  * `gateSkipsMeasuredViewport` one level up: the commit stamped the viewport the
  * measurement was taken at, so the next run has nothing left to learn until the
@@ -109,7 +119,7 @@ export function runGlobalFetch<TArgs, TResult>(
   { prepare, run, commit }: GlobalFetchPhases<TArgs, TResult>,
 ): Promise<void> | undefined {
   const signature = self.fetchSignature
-  if (self.isMinimized || signature === undefined || self.dataCurrent) {
+  if (self.isMinimized || signature === undefined || self.signatureCurrent) {
     return undefined
   }
   const args = prepare()
@@ -270,4 +280,11 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     },
     { name: 'ClearCancelOnViewportChange' },
   )
+
+  // The per-region foundation's twin, so a global display that stores a hover
+  // owes only the `clearHoveredFeature` override. Until 2026-08-27 only that
+  // family installed it, and the one global display storing a hover
+  // (`MultiWaySyntenyDisplay`) clicked through a zoom onto the gene that used
+  // to be under the cursor.
+  addDisposer(self, installClearHoverOnViewportChange(self))
 }

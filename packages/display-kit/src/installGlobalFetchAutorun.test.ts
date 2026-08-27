@@ -104,7 +104,7 @@ const TestDisplay = types
     get fetchSignature(): string | undefined {
       return 'sig'
     },
-    get dataCurrent() {
+    get signatureCurrent() {
       return false
     },
     // `FetchMixin`'s hook, which this fixture composes by hand — the check reads
@@ -123,6 +123,8 @@ const TestDisplay = types
     },
   }))
   .actions(self => ({
+    // `BaseDisplay`'s no-op default, which the installer's hover clear calls
+    clearHoveredFeature() {},
     // `FetchMixin.runFetch`, cut down to what the skeleton uses of it: it runs
     // the work and hands it a context. Cancellation and error capture are that
     // mixin's own tests' business, not this file's.

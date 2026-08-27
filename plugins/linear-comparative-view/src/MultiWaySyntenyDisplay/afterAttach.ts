@@ -132,6 +132,7 @@ function installLaneFetch<Spec, Result>(
     name,
     fetchSpecs,
     fetchOne,
+    committedKey,
     commit,
   }: {
     name: string
@@ -140,7 +141,8 @@ function installLaneFetch<Spec, Result>(
       spec: Spec,
       ctx: FetchContext,
     ) => Promise<readonly [string, Result]>
-    commit: (byLane: Map<string, Result>) => void
+    committedKey: () => string | undefined
+    commit: (byLane: Map<string, Result>, key: string) => void
   },
 ) {
   installFetch(self, {
@@ -153,8 +155,13 @@ function installLaneFetch<Spec, Result>(
       return specs.length > 0 ? { key, specs } : undefined
     },
     fetchKey: ({ key }) => key,
+    // the display's own stamp rather than the skeleton's, so `dataSuperseded`
+    // reads the same key the gate compares
+    committedKey,
     run: ({ specs }, ctx) => fetchEachLane(name, specs, ctx, fetchOne),
-    commit,
+    commit: (byLane, { key }) => {
+      commit(byLane, key)
+    },
     setError: () => {},
   })
 }
@@ -223,6 +230,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
+    committedKey: () => self.laneGenesKey,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: spec.adapterConfig,
@@ -234,8 +242,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       })
       return [spec.assemblyName, laneGeneFeatures(features)] as const
     },
-    commit: genes => {
-      self.setLaneGenes(genes)
+    commit: (genes, key) => {
+      self.setLaneGenes(genes, key)
     },
   })
 
@@ -245,6 +253,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,
+    committedKey: () => self.laneLinksKey,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: self.adapterConfig,
@@ -255,8 +264,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       })
       return [`${spec.upperAssembly}|${spec.lowerAssembly}`, features] as const
     },
-    commit: links => {
-      self.setLaneLinks(links)
+    commit: (links, key) => {
+      self.setLaneLinks(links, key)
     },
   })
 }

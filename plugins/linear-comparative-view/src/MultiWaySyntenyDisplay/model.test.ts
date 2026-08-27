@@ -24,11 +24,11 @@ test('the lane fetch is part of loading only until it first lands', () => {
   expect(display.laneGenesFetchSpecs.specs.length).toBeGreaterThan(0)
   expect(display.displayPhase).toBe('loading')
 
-  display.setLaneGenes(new Map())
+  display.setLaneGenes(new Map(), display.laneGenesFetchSpecs.key)
   expect(display.displayPhase).toBe('ready')
 
   // the pan's refetch: the lanes are already drawn, and the phase says so
-  display.setLaneGenes(new Map())
+  display.setLaneGenes(new Map(), 'a-later-window')
   expect(display.displayPhase).toBe('ready')
 })
 

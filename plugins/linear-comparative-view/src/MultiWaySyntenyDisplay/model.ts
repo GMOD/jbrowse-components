@@ -162,11 +162,23 @@ export function stateModelFactory(
       laneGenes: undefined as Map<string, LaneGene[]> | undefined,
       /**
        * #volatile
+       * the `laneGenesFetchSpecs.key` the held lane genes were fetched under —
+       * the lane fetch's committed stamp, which its skeleton gate compares and
+       * `dataSuperseded` reads
+       */
+      laneGenesKey: undefined as string | undefined,
+      /**
+       * #volatile
        * alignments between ADJACENT mate lanes, fetched per pair from the same
        * track when the source is an all-vs-all alignment file — the direct
        * records the file holds for that pair, at the lanes' own coordinates
        */
       laneLinks: undefined as Map<string, Feature[]> | undefined,
+      /**
+       * #volatile
+       * the `laneLinksFetchSpecs.key` the held lane links were fetched under
+       */
+      laneLinksKey: undefined as string | undefined,
       /**
        * #volatile
        * the ortholog group under the pointer; every ribbon of that group
@@ -206,14 +218,16 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setLaneGenes(genes: Map<string, LaneGene[]>) {
+      setLaneGenes(genes: Map<string, LaneGene[]>, key: string) {
         self.laneGenes = genes
+        self.laneGenesKey = key
       },
       /**
        * #action
        */
-      setLaneLinks(links: Map<string, Feature[]>) {
+      setLaneLinks(links: Map<string, Feature[]>, key: string) {
         self.laneLinks = links
+        self.laneLinksKey = key
       },
       /**
        * #action
@@ -938,6 +952,30 @@ export function stateModelFactory(
             self.laneLinksFetchSpecs.specs.length > 0)
         return base === 'ready' && firstFetchPending ? 'loading' : base
       },
+      /**
+       * #getter
+       * `GlobalFetchMixin`'s hook: a lane fetch is out, or holds lanes fetched
+       * under a key the frames have moved past, so the ortholog data the
+       * signature calls current is about to be redrawn over. Holds the export,
+       * where the phase above holds only the first landing's scrim. A lane
+       * fetch always commits — one failed lane drops out of an otherwise
+       * committed map (see afterAttach) — so this cannot latch
+       */
+      get dataSuperseded(): boolean {
+        const genes = self.laneGenesFetchSpecs
+        const links = self.laneLinksFetchSpecs
+        return (
+          (genes.specs.length > 0 && self.laneGenesKey !== genes.key) ||
+          (links.specs.length > 0 && self.laneLinksKey !== links.key)
+        )
+      },
+      /**
+       * #getter
+       * `BaseDisplay`'s hook, what the view publishes to `session.hovered`
+       */
+      get hoveredFeature() {
+        return self.hoverTarget?.feature
+      },
     }))
     .views(self => {
       const superMenuItems = self.trackMenuItems
@@ -1015,6 +1053,16 @@ export function stateModelFactory(
       setHoverTarget(target: HoverTarget | undefined) {
         self.hoverTarget = target
         self.hoveredGroupKey = target?.groupKey
+      },
+      /**
+       * #action
+       * `BaseDisplay`'s hook, called by the foundation's viewport-change clear:
+       * the lanes relaid out under a stationary cursor, so the stored hit
+       * names a glyph that is no longer there
+       */
+      clearHoveredFeature() {
+        self.hoverTarget = undefined
+        self.hoveredGroupKey = undefined
       },
       /**
        * #action

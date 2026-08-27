@@ -140,14 +140,45 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * The shared freshness answer, now derived rather than a hook: data has
-       * been committed (`loadedFetchSignature` is only ever written beside it)
-       * and it was fetched for the current view and settings. A pan inside the
-       * loaded blocks stays current; a block entering, a tier step, a settings
-       * change or a `reload()` moves one side of the compare and refetches.
+       * The fetch gate: data has been committed (`loadedFetchSignature` is only
+       * ever written beside it) and it was fetched for the current view and
+       * settings. A pan inside the loaded blocks stays current; a block
+       * entering, a tier step, a settings change or a `reload()` moves one side
+       * of the compare and `runGlobalFetch` refetches. The per-region twin is
+       * `isCacheValid`: what decides a refetch, and deliberately not the whole
+       * freshness answer below.
+       */
+      get signatureCurrent(): boolean {
+        return isDataCurrent(self.loadedFetchSignature, self.fetchSignature)
+      },
+      /**
+       * #getter
+       * Overridable hook (default false): the held data answers the signature,
+       * but this display knows it is not what the screen will settle on — a
+       * dependent fetch of its own is still out, or a fetch input it writes
+       * itself has moved. The same hook `MultiRegionDisplayMixin` declares,
+       * for the same reason: the signature compare is structurally blind to
+       * anything the display fetches outside `runGlobalFetch`, and an export
+       * sampling `svgReady` in that window paints the half-filled frame.
+       *
+       * Folded into `dataCurrent` and NOT into `signatureCurrent`, so it holds
+       * the export and never re-runs the primary fetch. It fails hung, not
+       * stale: a value that latches true parks `awaitSvgReady` on its backstop,
+       * so state only what a later commit is guaranteed to clear.
+       */
+      get dataSuperseded(): boolean {
+        return false
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The shared freshness answer every foundation gives (`dataCurrent`):
+       * the fetch gate above, minus the display's own supersession. What the
+       * export gate reads; never what the fetch gate reads.
        */
       get dataCurrent(): boolean {
-        return isDataCurrent(self.loadedFetchSignature, self.fetchSignature)
+        return self.signatureCurrent && !self.dataSuperseded
       },
     }))
     .views(self => ({
