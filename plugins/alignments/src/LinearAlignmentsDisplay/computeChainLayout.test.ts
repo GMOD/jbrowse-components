@@ -30,7 +30,6 @@ function makeChainData(opts: {
   const chainAbsMaxEnds = new Uint32Array(numChains)
   const chainDistances = new Uint32Array(numChains)
   const chainNames: string[] = []
-  const chainHasMultiple = new Uint8Array(numChains)
   const chainFirstReadIndices = new Uint32Array(numChains)
   const readChainIndices = new Uint32Array(numReads)
 
@@ -41,7 +40,6 @@ function makeChainData(opts: {
     chainAbsMaxEnds[ci] = chain.maxEnd
     chainDistances[ci] = chain.distance
     chainNames.push(chain.name)
-    chainHasMultiple[ci] = n >= 2 ? 1 : 0
     chainFirstReadIndices[ci] = readIdx
     for (let r = 0; r < n; r++) {
       readChainIndices[readIdx++] = ci
@@ -59,7 +57,6 @@ function makeChainData(opts: {
     chainAbsMinStarts,
     chainAbsMaxEnds,
     chainDistances,
-    chainHasMultiple,
     chainFirstReadIndices,
     maxY: 0,
     readKeys,

@@ -196,7 +196,6 @@ function buildChainResultFields(
     chainMate0SplitKind,
     chainMate1SplitKind,
     chainPairOrientations,
-    chainHasMultiple,
     chainFirstReadIndices,
     featureIdToChainIdx,
   } = buildChainMetadata(features)
@@ -237,7 +236,6 @@ function buildChainResultFields(
     chainAbsMaxEnds,
     chainDistances,
     chainNames,
-    chainHasMultiple,
     chainFirstReadIndices,
   }
 }

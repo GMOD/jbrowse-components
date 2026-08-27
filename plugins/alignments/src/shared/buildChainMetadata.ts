@@ -198,7 +198,6 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   // primary read, so supplementary segments can inherit the pair's orientation
   // rather than the divergent one their own strand-flipped record computes.
   const chainPairOrientations = new Uint8Array(numChains)
-  const chainHasMultiple = new Uint8Array(numChains)
   const chainFirstReadIndices = new Uint32Array(numChains)
 
   const featureIdToChainIdx = new Map<ReadKey, number>()
@@ -220,7 +219,6 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     chainMate0SplitKind[chainIdx] = mate0SplitKind
     chainMate1SplitKind[chainIdx] = mate1SplitKind
     chainPairOrientations[chainIdx] = summary.primaryPairOrientation
-    chainHasMultiple[chainIdx] = chain.length >= 2 ? 1 : 0
   }
 
   return {
@@ -232,7 +230,6 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     chainMate0SplitKind,
     chainMate1SplitKind,
     chainPairOrientations,
-    chainHasMultiple,
     chainFirstReadIndices,
     featureIdToChainIdx,
   }

@@ -97,8 +97,8 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
  *   connection the GPU line pass doesn't own (`isBezierArcPair`).
  * - `crossRegion` — chain mode with that box unticked. Chain layout puts a
  *   chain's alignments on ONE row across displayed regions (`mergeChains`) but
- *   its connecting-line pass is per region and gated on a per-worker-call
- *   `chainHasMultiple`, so a chain holding one alignment in each of two regions
+ *   its connecting-line pass is per region and counts a chain's reads in that
+ *   region alone, so a chain holding one alignment in each of two regions
  *   gets no line from either and the mode silently drops the link it exists to
  *   show. Everything inside a single region is already drawn by that pass, so
  *   this scope adds only the pairs that straddle a boundary.

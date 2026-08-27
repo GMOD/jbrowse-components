@@ -305,7 +305,6 @@ export interface WorkerPileupData {
   chainDistances?: Uint32Array // chain distance: templateLength or span
   chainNames?: string[] // chain identity key: QNAME, or a unique synthetic key
   // for secondary alignments (see chainGroupingKey); for cross-region dedup
-  chainHasMultiple?: Uint8Array // 1 if chain has ≥2 reads (draw connecting line)
   chainFirstReadIndices?: Uint32Array // maps chain index → its first read index
 
   // The short/normal/long |TLEN| thresholds for insert-size coloring: robust
@@ -477,7 +476,6 @@ export type ChainFields = Required<
     | 'chainAbsMaxEnds'
     | 'chainDistances'
     | 'chainNames'
-    | 'chainHasMultiple'
     | 'chainFirstReadIndices'
   >
 >

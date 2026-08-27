@@ -318,13 +318,13 @@ function groupMultiReadChains(
 // marks them. Reads are grouped per-region because rendering is per-region; a
 // chain's mates in other regions live in their own WorkerPileupData and never
 // visually overlap these.
-function buildChainOverlaps(data: WorkerPileupData, readYs: Uint16Array) {
-  if (!isChainData(data)) {
-    return emptyOverlapsUploadData()
-  }
+function buildChainOverlaps(
+  data: ChainPileupData,
+  readYs: Uint16Array,
+  multiReadChains: Map<number, number[]>,
+) {
   const {
     readChainIndices,
-    chainNames,
     segmentPositions,
     segmentReadIndices,
     numSegments,
@@ -332,10 +332,6 @@ function buildChainOverlaps(data: WorkerPileupData, readYs: Uint16Array) {
 
   const positions: number[] = []
   const ys: number[] = []
-  const multiReadChains = groupMultiReadChains(
-    readChainIndices,
-    chainNames.length,
-  )
   // Exon spans, not read extents: a spliced read does not cover its own
   // introns, so `readPositions` claimed an overlap across an intron the mate
   // was alone in. One pass over the segments, bucketed straight to the chain,
@@ -370,8 +366,8 @@ function buildChainOverlaps(data: WorkerPileupData, readYs: Uint16Array) {
  * Flatbush spatial index for hit testing. Returns empty-arrays/undefined when
  * the input has no chain metadata.
  *
- * Per REGION, which bounds what the line can join. `chainHasMultiple` counts a
- * chain's reads in this region alone, so a chain holding one alignment in each
+ * Per REGION, which bounds what the line can join. A chain draws a line when
+ * two or more of its reads sit in this region, so a chain holding one alignment in each
  * of two displayed regions emits no line here — and could not usefully, since
  * each block clips to its own bp range and would project the far end off its
  * edge as a hairline. The SVG overlay resolves each end through its own region
@@ -391,19 +387,14 @@ export function buildChainConnectingData(
   }
 
   const {
+    readChainIndices,
     chainFirstReadIndices,
-    chainHasMultiple,
     chainAbsMinStarts,
     chainAbsMaxEnds,
   } = data
   const numChains = chainFirstReadIndices.length
-
-  let numLines = 0
-  for (let i = 0; i < numChains; i++) {
-    if (chainHasMultiple[i]) {
-      numLines++
-    }
-  }
+  const multiReadChains = groupMultiReadChains(readChainIndices, numChains)
+  const numLines = multiReadChains.size
 
   const connectingLinePositions = new Uint32Array(numLines * 2)
   const connectingLineYs = new Uint16Array(numLines)
@@ -413,7 +404,7 @@ export function buildChainConnectingData(
     const minStart = chainAbsMinStarts[i]!
     const maxEnd = chainAbsMaxEnds[i]!
     const y = readYs[chainFirstReadIndices[i]!]!
-    if (chainHasMultiple[i]) {
+    if (multiReadChains.has(i)) {
       connectingLinePositions[lineIdx * 2] = minStart
       connectingLinePositions[lineIdx * 2 + 1] = maxEnd
       connectingLineYs[lineIdx] = y
@@ -426,7 +417,7 @@ export function buildChainConnectingData(
   return {
     connectingLinePositions,
     connectingLineYs,
-    ...buildChainOverlaps(data, readYs),
+    ...buildChainOverlaps(data, readYs, multiReadChains),
     chainFlatbush,
   }
 }

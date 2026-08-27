@@ -34,16 +34,15 @@ function feat(
 }
 
 test('mates sharing a QNAME form one chain', () => {
-  const { chainNames, chainHasMultiple } = buildChainMetadata([
+  const { chainNames } = buildChainMetadata([
     feat({ id: 'r1.1', name: 'r1', start: 0, end: 100 }),
     feat({ id: 'r1.2', name: 'r1', start: 400, end: 500 }),
   ])
   expect(chainNames).toEqual(['r1'])
-  expect([...chainHasMultiple]).toEqual([1])
 })
 
 test('a supplementary alignment chains with its primary', () => {
-  const { chainNames, chainHasMultiple, chainSuppTypes } = buildChainMetadata([
+  const { chainNames, chainSuppTypes } = buildChainMetadata([
     feat({ id: 'r1.1', name: 'r1', start: 0, end: 100 }),
     feat({
       id: 'r1.supp',
@@ -54,7 +53,6 @@ test('a supplementary alignment chains with its primary', () => {
     }),
   ])
   expect(chainNames).toEqual(['r1'])
-  expect([...chainHasMultiple]).toEqual([1])
   // primary strand forward + has supplementary: the present bit, no frame bit
   expect([...chainSuppTypes]).toEqual([CHAIN_SUPP_PRESENT])
 })
@@ -198,7 +196,7 @@ test('an unpaired long-read inverted split does not set a mate kind', () => {
 test('a secondary alignment does NOT chain with its primary', () => {
   // A competing mapping of the same read to another locus. It must render
   // standalone, not share the primary's row / connecting line.
-  const { chainNames, chainHasMultiple } = buildChainMetadata([
+  const { chainNames } = buildChainMetadata([
     feat({ id: 'r1.1', name: 'r1', start: 0, end: 100 }),
     feat({
       id: 'r1.sec',
@@ -213,8 +211,6 @@ test('a secondary alignment does NOT chain with its primary', () => {
   expect(chainNames).toHaveLength(2)
   expect(chainNames).toContain('r1')
   expect(chainNames.filter(n => n === 'r1')).toHaveLength(1)
-  // neither chain draws a connecting line (each is a singleton)
-  expect([...chainHasMultiple]).toEqual([0, 0])
 })
 
 test('secondary on the reverse strand still stands alone', () => {
@@ -235,14 +231,14 @@ test('secondary on the reverse strand still stands alone', () => {
 // the empty name they became ONE chain: every block in the region on one row, a
 // connecting line across the whole view, and an overlap tint over the lot.
 test('nameless features (PAF/synteny blocks) each stand alone', () => {
-  const { chainNames, chainHasMultiple, chainAbsMinStarts, chainAbsMaxEnds } =
-    buildChainMetadata([
+  const { chainNames, chainAbsMinStarts, chainAbsMaxEnds } = buildChainMetadata(
+    [
       feat({ id: 'block-a', name: '', start: 0, end: 100 }),
       feat({ id: 'block-b', name: '', start: 5000, end: 5100 }),
       feat({ id: 'block-c', name: '', start: 900_000, end: 900_100 }),
-    ])
+    ],
+  )
   expect(chainNames).toHaveLength(3)
-  expect([...chainHasMultiple]).toEqual([0, 0, 0])
   // and no chain spans the gap between two unrelated blocks
   expect([...chainAbsMinStarts]).toEqual([0, 5000, 900_000])
   expect([...chainAbsMaxEnds]).toEqual([100, 5100, 900_100])
