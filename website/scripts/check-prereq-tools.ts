@@ -1,6 +1,12 @@
 // Every tool a tutorial's `## Prerequisites` names has to be a tool the page
 // shows you running.
 //
+// A multipart tutorial gives each part its own `### Prerequisites`, so the
+// reader installs what a part needs when they reach it rather than paying for
+// the whole page up front. Every such list on a page is read, and one list
+// naming a tool no fence anywhere on the page runs is still the failure — which
+// part shows it is not something this check judges.
+//
 // The rule is in docs/tutorials/CLAUDE.md — "the command that produces the
 // page's subject file goes in the prose, in a form a reader runs on their own
 // equivalent data", and the line right under it, "watch for a tool in
@@ -120,10 +126,17 @@ const tutorials = join(docsDir, 'tutorials')
 
 // The `code` spans and link texts of a Prerequisites section, which is where a
 // tool gets named either way.
-function namesIn(prerequisites: string) {
+// Fences come out first: a section's own ```bash block contributes no code
+// span, and its delimiters would otherwise pair with the real spans around it
+// and swallow them. That misreads a whole list once a page has more than one
+// Prerequisites section to read.
+function namesIn(sections: string[]) {
+  const prose = sections
+    .map(s => s.replaceAll(/```[\s\S]*?```/g, ''))
+    .join('\n')
   return new Set([
-    ...[...prerequisites.matchAll(/`([^`]+)`/g)].map(m => m[1]!),
-    ...[...prerequisites.matchAll(/\[([^\]]+)\]\(http/g)].map(m => m[1]!),
+    ...[...prose.matchAll(/`([^`]+)`/g)].map(m => m[1]!),
+    ...[...prose.matchAll(/\[([^\]]+)\]\(http/g)].map(m => m[1]!),
   ])
 }
 
@@ -160,8 +173,10 @@ for (const file of readdirSync(tutorials).sort()) {
     continue
   }
   const src = readFileSync(join(tutorials, file), 'utf8')
-  const section = /\n## Prerequisites\n([\s\S]*?)\n## /.exec(src)
-  if (!section) {
+  const sections = [
+    ...src.matchAll(/\n(#{2,3}) Prerequisites\n([\s\S]*?)(?=\n#{1,3} |$)/g),
+  ]
+  if (!sections.length) {
     continue
   }
   pages++
@@ -180,7 +195,7 @@ for (const file of readdirSync(tutorials).sort()) {
       m[1]!.split(',').map(n => n.trim().replaceAll('"', '')),
     ),
   )
-  for (const name of namesIn(section[1]!)) {
+  for (const name of namesIn(sections.map(m => m[2]!))) {
     if (!isTool(name, assemblies, configTypes)) {
       continue
     }
