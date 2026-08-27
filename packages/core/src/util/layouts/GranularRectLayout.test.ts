@@ -156,3 +156,17 @@ test('tests adding a gigantic feature that fills entire row with another smaller
   // @ts-expect-error
   expect(l.rectangles.size).toBe(2)
 })
+
+test('a very wide feature leaves its rows free where it does not reach', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  expect(l.addRect('wide', 11_307_000, 11_391_000, 150)).toBe(0)
+  expect(l.addRect('clear', 11_420_000, 11_421_000, 30)).toBe(0)
+})
+
+test('a very wide feature still stacks the features it does reach', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  expect(l.addRect('wide', 11_307_000, 11_391_000, 150)).toBe(0)
+  expect(l.addRect('under', 11_350_000, 11_351_000, 30)).toBe(150)
+})

@@ -603,6 +603,35 @@ test('non-overlapping features on same chromosome share the first row', () => {
   expect(r.flatbushItems[1]!.topPx).toBe(0)
 })
 
+test('a wide feature offscreen leaves the visible row free', () => {
+  // The shape a zoom-in produces: the fetch that covered the zoomed-out view is
+  // still what the packer sees, so a 1.1Mb gene ending 400kb to the left of the
+  // viewport is in the pack. At 13.6 bpPerPx it is 84,000px wide, past the pitch
+  // width GranularRectLayout used to read as "fills every row it is on".
+  const data = makeFeatureData({
+    features: [
+      {
+        featureId: 'offscreen',
+        startBp: 153_748_132,
+        endBp: 154_894_285,
+        height: 150,
+      },
+      {
+        featureId: 'onscreen',
+        startBp: 155_288_595,
+        endBp: 155_298_980,
+        height: 30,
+      },
+    ],
+  })
+  const out = layout(new Map([[0, data]]), 13.6)
+  const top = (id: string) =>
+    out.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
+
+  expect(top('offscreen')).toBe(0)
+  expect(top('onscreen')).toBe(0)
+})
+
 test('same inputs produce identical output (deterministic)', () => {
   const mk = () =>
     makeFeatureData({

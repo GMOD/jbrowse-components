@@ -16,17 +16,10 @@ import type {
  * alternative algorithms and benchmark information
  */
 
-// a feature wider than this many pitch units is treated as filling its whole
-// row(s), so layout doesn't track per-pixel intervals for it (see addRectToBitmap)
-const maxFeaturePitchWidth = 20000
-
 // Optimized row class using flat interval array. Holds only interval extents
 // and feature ids, so it does not need the layout's data generic.
 class LayoutRow {
   private padding = 1
-
-  // The id of the feature filling the entire row (set for very wide features)
-  public allFilled?: string
 
   // Flat array: [start1, end1, start2, end2, ...]
   // Kept sorted by start position for binary search
@@ -35,19 +28,11 @@ class LayoutRow {
   // Parallel array storing the feature id for each interval
   private data: string[] = []
 
-  setAllFilled(data: string): void {
-    this.allFilled = data
-  }
-
   getIntervals(): number[] {
     return this.intervals
   }
 
   getItemAt(x: number): string | undefined {
-    if (this.allFilled) {
-      return this.allFilled
-    }
-
     const intervals = this.intervals
     const len = intervals.length
 
@@ -87,7 +72,7 @@ class LayoutRow {
   }
 
   isRangeClear(left: number, right: number): boolean {
-    return !this.allFilled && isRangeClearIntervals(this.intervals, left, right)
+    return isRangeClearIntervals(this.intervals, left, right)
   }
 
   addRect(rect: { l: number; r: number }, data: string): void {
@@ -108,10 +93,6 @@ class LayoutRow {
   }
 
   discardRange(left: number, right: number): void {
-    if (this.allFilled) {
-      return
-    }
-
     const intervals = this.intervals
     const data = this.data
     const oldLen = intervals.length
@@ -274,12 +255,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         if (!row) {
           continue
         }
-
-        // Fast path: row is all filled
-        if (row.allFilled) {
-          continue outer
-        }
-
         // Fully inlined isRangeClear for maximum performance
         const intervals = row.getIntervals()
         const len = intervals.length
@@ -360,19 +335,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const data = rect.id
     const yEnd = rect.top + rect.h
 
-    // A rect very big in relation to the view size just pretends, for the
-    // purposes of layout, that it extends infinitely. This causes weird layout
-    // if a user scrolls manually for a very, very long time along the genome at
-    // the same zoom level, but most users will not do that. hopefully.
-    const fillsRow = rect.r - rect.l > maxFeaturePitchWidth
-
     for (let y = rect.top; y < yEnd; y += 1) {
-      const row = this.getOrCreateRow(y)
-      if (fillsRow) {
-        row.setAllFilled(data)
-      } else {
-        row.addRect(rect, data)
-      }
+      this.getOrCreateRow(y).addRect(rect, data)
     }
   }
 
