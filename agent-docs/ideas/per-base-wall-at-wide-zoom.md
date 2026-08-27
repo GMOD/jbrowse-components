@@ -101,5 +101,8 @@ passing through.
 `grep perBase` over `products/jbrowse-web/browser-tests/` finds only the probe:
 **no cross-backend test covers a per-base mode at any zoom**. Whichever way
 these two go, that gap is why the bin shipped believing a claim nothing could
-have failed —
-[todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md](../todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md).
+have failed. Closing it with two gate scenes was built, measured and declined
+the same day — on the cost of carrying an 18% override, not on the finding —
+so the gap stands deliberately:
+[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) §"Gate the two per-base
+colour modes against the other backend".

@@ -258,6 +258,31 @@ describe('the fill view honours the modification-type filter', () => {
     expect(cpg2.prob).toBeCloseTo(1 - 20.5 / 256, 5)
   })
 
+  // The limit of "excluded from the competition, not from the output". A
+  // cytosine reaches the walk through a ticked type's bins, and on an m-only
+  // modBAM the h channel has none — so unticking 5mC empties the view rather
+  // than turning every cytosine blue. There is nothing left to read
+  // 5hmC-or-not against, and the docstring says so.
+  test('unticking the only type a read declares empties the channel', () => {
+    const mOnly = new SimpleFeature({
+      uniqueId: 'meth-m-only',
+      refName: 'ctgA',
+      start: 100,
+      end: 108,
+      strand: 1,
+      CIGAR: '8M',
+      seq: 'CGCGCGCG',
+      tags: { MM: 'C+m?,0,0,0,0;', ML: [230, 10, 20, 200] },
+    })
+    const fill = (shownModifications: string[]) =>
+      runFill(mOnly, {
+        type: 'modifications',
+        modifications: { fillUnmarked: true, shownModifications },
+      })
+    expect(fill(['m']).map(m => m.position)).toEqual([100, 102, 104, 106])
+    expect(fill(['h'])).toEqual([])
+  })
+
   test('unticking every type draws nothing', () => {
     const out = runFill(makeMethFeature(), {
       type: 'modifications',

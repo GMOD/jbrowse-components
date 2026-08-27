@@ -210,14 +210,22 @@ export function extractModifications(
  * marks on screen, off a box whose whole claim is that it names every colour
  * drawn.
  *
- * **A hidden type is excluded from the competition, not from the output.** The
- * fill paints the most likely state among the ticked types plus unmodified, so
- * unticking 5hmC leaves each cytosine reading 5mC-or-not rather than punching a
- * hole wherever 5hmC happened to win — which is what the menu's own help text
- * asks for ("untick 5hmC to read gene-body 5mC on a 5mCG_5hmCG model").
- * Dropping a hidden type's probability from the no-mod sum falls out of the
- * same rule and is the honest reading of it: with only 5mC ticked, blue is
- * `1 - P(5mC)`, the confidence the base is not 5mC.
+ * **A hidden type is excluded from the competition, not from the output**, at
+ * every cytosine a ticked type still reports. The fill paints the most likely
+ * state among the ticked types plus unmodified, so unticking 5hmC leaves each
+ * cytosine reading 5mC-or-not rather than punching a hole wherever 5hmC
+ * happened to win — which is what the menu's own help text asks for ("untick
+ * 5hmC to read gene-body 5mC on a 5mCG_5hmCG model"). Dropping a hidden type's
+ * probability from the no-mod sum falls out of the same rule and is the honest
+ * reading of it: with only 5mC ticked, blue is `1 - P(5mC)`, the confidence the
+ * base is not 5mC.
+ *
+ * The qualifier is load-bearing where the read declares ONE of the pair. A
+ * cytosine reaches the loop through a ticked type's bins, and `methBins` is
+ * also what carries getMethBins' implicitly-unmethylated fill — so on an
+ * ordinary `C+m` modBAM, unticking 5mC leaves nothing marking the cytosines at
+ * all and the channel goes blank rather than turning uniformly blue. Nothing is
+ * left to read 5hmC-or-not against.
  */
 export function extractMethylation(
   readIndex: number,

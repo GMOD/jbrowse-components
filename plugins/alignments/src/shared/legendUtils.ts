@@ -9,6 +9,7 @@ import {
   methylated5mC,
   unmethylated5mC,
 } from '@jbrowse/core/ui/palette'
+import { isMethylationFillType } from '@jbrowse/modifications-utils'
 
 import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import {
@@ -772,13 +773,22 @@ function modificationLegend(
         color,
         label: getModificationName(type),
       }))
+  // "Unmethylated" only where every blue mark IS an unmethylated cytosine. The
+  // fill view draws the non-cytosine remainder two-color (extract.ts), so a
+  // Fiber-seq read's low-probability 6mA calls are painted the same blue over
+  // adenines, and naming the swatch for the cytosine walk labels those wrong.
+  // Bisulfite keys nothing here and is cytosine by construction.
+  const onlyCytosineIsBlue = [...keyed.keys()].every(isMethylationFillType)
   return [
     ...items,
     ...(paintsUnmodifiedState(colorBy)
       ? [
           {
             color: unmethylated5mC,
-            label: isMethylation ? 'Unmethylated' : 'Unmodified',
+            label:
+              isMethylation && onlyCytosineIsBlue
+                ? 'Unmethylated'
+                : 'Unmodified',
           },
         ]
       : []),

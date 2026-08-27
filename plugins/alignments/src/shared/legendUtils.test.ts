@@ -938,11 +938,35 @@ describe('the fill view keys the types drawn beside the methylation states', () 
     expect(items.map(i => i.label)).toEqual([
       '5mC methylated',
       '6mA',
-      'Unmethylated',
+      'Unmodified',
     ])
     // the mark's own colour: extractModifications packs a 6mA call through
     // getColorForModification, which is where this swatch comes from too
     expect(items.find(i => i.label === '6mA')?.color).toBe('rgb(51,0,111)')
+  })
+
+  // The blue swatch covers both walks in this mode, so it cannot be named for
+  // the cytosine one: extract.ts draws the non-cytosine remainder two-color, and
+  // a 6mA call under the threshold is painted the same blue over an ADENINE.
+  // "Unmethylated" over those is a wrong statement about a drawn colour.
+  test('the blue swatch is Unmodified once a non-cytosine type is drawn', () => {
+    const labels = (detected: Map<string, string>) =>
+      legendFor(
+        { type: 'modifications', modifications: { fillUnmarked: true } },
+        [],
+        { detectedModifications: detected },
+      ).map(i => i.label)
+    expect(labels(fiberseq).at(-1)).toBe('Unmodified')
+    // an ordinary methylation modBAM keeps the cytosine wording
+    expect(labels(new Map([['m', 'rgb(255,0,0)']])).at(-1)).toBe('Unmethylated')
+    expect(
+      labels(
+        new Map([
+          ['m', 'rgb(255,0,0)'],
+          ['h', 'rgb(255,0,255)'],
+        ]),
+      ).at(-1),
+    ).toBe('Unmethylated')
   })
 
   test('the type filter still removes it', () => {

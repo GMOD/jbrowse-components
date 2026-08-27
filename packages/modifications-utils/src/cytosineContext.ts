@@ -36,12 +36,13 @@ COMPLEMENT_CODE[G] = C
  * `pos` and complement each base before matching.
  *
  * **Char codes, not characters, and that is the whole shape of this function.**
- * It reads `seq[pos]?.toLowerCase()` per probe and lower-cased the pattern
- * character beside it, which is two string operations per base — and the
- * fill-unmarked methylation walk asks this question up to twice for every
- * aligned base of every read (getMethBins), while bisulfite asks it at every
- * candidate cytosine. Folding case with `& ~0x20` on the code and comparing
- * numbers measured 5.64x on the predicate alone over 4M probes, byte-identical.
+ * Folding case with `& ~0x20` on the code and comparing numbers keeps a probe
+ * to arithmetic, where lower-casing the character and the pattern base beside
+ * it is two string operations per base. It is asked at that volume: the
+ * fill-unmarked methylation walk asks up to twice for every aligned base of
+ * every read (getMethBins), and bisulfite asks at every candidate cytosine.
+ * What it is worth in the phase it sits in — which is not what it is worth on
+ * its own — is `plugins/alignments/benches/modFillView.bench.ts`.
  *
  * `charCodeAt` past either end of the string is NaN and `NaN & ~0x20` is 0 — an
  * index no pattern base equals and the complement table holds -1 at — so the

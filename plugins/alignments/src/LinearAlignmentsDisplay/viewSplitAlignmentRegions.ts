@@ -105,10 +105,14 @@ export function viewSplitAlignmentRegionsInCurrentView({
   if (!wasLinked) {
     display.setLinkedReads('normal')
   }
-  const shown = `Showing ${regions.length} aligned ${pluralize(regions.length, 'segment')} of this read`
+  // Counted after the merge, which is what the view ends up showing: two
+  // segments landing close together on one contig are one window there, and
+  // announcing the pre-merge number named a region a reader could not find.
+  const merged = gatherOverlaps(regions, 0)
+  const shown = `Showing ${merged.length} aligned ${pluralize(merged.length, 'segment')} of this read`
   showRegionsWithUndo({
     view,
-    regions: gatherOverlaps(regions, 0),
+    regions: merged,
     message: dropped.length
       ? `${shown} — ${dropped.length} ${pluralize(dropped.length, 'segment')} past the end of ${dropped.map(s => s.refName).join(', ')} left out`
       : shown,

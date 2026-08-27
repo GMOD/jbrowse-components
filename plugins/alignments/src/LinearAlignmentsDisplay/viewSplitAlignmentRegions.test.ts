@@ -168,6 +168,23 @@ test('enters chain layout and Undo leaves it again', () => {
   expect(view.displayedRegions).toEqual([])
 })
 
+// The count is the view's, not the segment list's. Two segments a few hundred
+// bases apart on one contig pad into windows that touch, and gatherOverlaps
+// makes them one region — announcing 2 named a window nobody could find.
+test('counts the regions the view shows, after touching ones merge', () => {
+  const near = makeFeature({
+    refName: 'chr22',
+    start: 10_000,
+    end: 10_500,
+    strand: 1,
+    CIGAR: '500M300S',
+    tags: { SA: 'chr22,10601,+,500S300M,60,0;' },
+  })
+  const { regions, notifications } = run(near)
+  expect(regions).toHaveLength(1)
+  expect(notifications).toEqual(['Showing 1 aligned segment of this read'])
+})
+
 test('leaves chain layout alone when it was already on', () => {
   const { modes, undos } = run(fusion, 'normal')
   expect(modes).toEqual([])

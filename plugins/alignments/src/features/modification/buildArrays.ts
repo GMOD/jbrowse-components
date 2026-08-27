@@ -26,23 +26,23 @@ export function buildModificationArrays(
   const modificationNoMod = new Uint8Array(kept)
   const modificationTypes: string[] = []
   const modTypeToIdx = new Map<string, number>()
-  for (let w = 0; w < kept; w++) {
-    const m = filtered[w]!
-    modificationPositions[w] = m.position
+  for (let i = 0; i < kept; i++) {
+    const m = filtered[i]!
+    modificationPositions[i] = m.position
     // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
     // high-prob mods are strongly opaque (matches main branch alphaColor).
     const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
-    modificationColors[w] = withAbgrAlpha(m.color, a)
-    modificationProbabilities[w] = Math.round(m.prob * 255) & 0xff
-    modificationReadIndices[w] = m.readIndex
+    modificationColors[i] = withAbgrAlpha(m.color, a)
+    modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
+    modificationReadIndices[i] = m.readIndex
     let typeIdx = modTypeToIdx.get(m.modType)
     if (typeIdx === undefined) {
       typeIdx = modificationTypes.length
       modTypeToIdx.set(m.modType, typeIdx)
       modificationTypes.push(m.modType)
     }
-    modificationTypeIndices[w] = typeIdx
-    modificationNoMod[w] = m.noMod ? 1 : 0
+    modificationTypeIndices[i] = typeIdx
+    modificationNoMod[i] = m.noMod ? 1 : 0
   }
   return {
     modificationPositions,
