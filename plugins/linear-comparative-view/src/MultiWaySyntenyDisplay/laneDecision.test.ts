@@ -283,6 +283,37 @@ describe('the placement', () => {
     expect(rowFrameX(frame, 500_000 + 530 + 700, WIDTH)).toBeCloseTo(px(530))
   })
 
+  test('a zoom that changes the rung keeps the pivot while the frame still shows the content', () => {
+    // ten collinear genes: at a 900 bp window the fit needs rung 1.5, and
+    // the frame pinned at the old pivot still covers every one of them
+    const dense = groupFeatures(
+      Array.from({ length: 10 }, (_, i) =>
+        pair(`${i}`, `g${i}`, 50 + 100 * i, { start: 500_050 + 100 * i }),
+      ),
+    )
+    const wide = settle(dense)
+    const zoomedPx = (bp: number) => (bp / 900) * WIDTH
+    const zoomed = decideLaneFrames({
+      groups: dense,
+      assemblyNames: ['peach'],
+      anchorX: new Map(
+        dense.map(g => [g.key, zoomedPx((g.anchor.start + g.anchor.end) / 2)]),
+      ),
+      anchorCoordOf: g => ({
+        refName: g.anchor.refName,
+        coord: (g.anchor.start + g.anchor.end) / 2,
+      }),
+      pxOfAnchor: c => zoomedPx(c.coord),
+      unitBp: 900,
+      width: WIDTH,
+      previous: new Map([['peach', wide]]),
+    }).get('peach')!
+    expect(wide.rung).toBe(1)
+    expect(zoomed.rung).toBe(1.5)
+    expect(zoomed.pivotAnchor).toEqual(wide.pivotAnchor)
+    expect(zoomed.pivotLaneBp).toBe(wide.pivotLaneBp)
+  })
+
   test('a settle that changes nothing returns the same decision', () => {
     expect(settle(collinear, previous)).toBe(first)
   })

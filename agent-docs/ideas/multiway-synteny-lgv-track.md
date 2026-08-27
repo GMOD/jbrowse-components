@@ -331,14 +331,14 @@ apart from one that leaves an answer and comes back within a fifth of a window.
 
 <!-- BEGIN GENERATED MEASUREMENT multiway-lane-stability -->
 
-| lane        | contigs seen | contig chg | contig osc | drawn flip chg | drawn flip osc | fallback flip chg | fallback flip osc | empty steps | rung chg | rung osc |
-| ----------- | -----------: | ---------: | ---------: | -------------: | -------------: | ----------------: | ----------------: | ----------: | -------: | -------: |
-| peach       |            2 |          3 |          0 |              3 |              0 |                10 |                 2 |          33 |        7 |        0 |
-| citrus      |            3 |          7 |          0 |              4 |              0 |                11 |                 1 |          33 |        3 |        0 |
-| cacao       |            1 |          2 |          0 |              5 |              0 |                17 |                 2 |          33 |       11 |        0 |
-| poplar      |            5 |          8 |          0 |              7 |              0 |                16 |                 4 |          33 |        4 |        0 |
-| tomato      |            4 |          8 |          0 |              8 |              0 |                18 |                 7 |          33 |        7 |        0 |
-| arabidopsis |            4 |          8 |          0 |              6 |              0 |                15 |                 5 |          34 |        2 |        0 |
+| lane        | contigs seen | contig chg | contig osc | drawn flip chg | drawn flip osc | fallback flip chg | fallback flip osc | empty steps | rung chg | rung osc | slip steps | median slip px | max slip px |
+| ----------- | -----------: | ---------: | ---------: | -------------: | -------------: | ----------------: | ----------------: | ----------: | -------: | -------: | ---------: | -------------: | ----------: |
+| peach       |            2 |          3 |          0 |              3 |              0 |                10 |                 2 |          33 |        7 |        0 |         29 |            261 |       4,705 |
+| citrus      |            3 |          7 |          0 |              4 |              0 |                11 |                 1 |          33 |        3 |        0 |         26 |            351 |         901 |
+| cacao       |            1 |          2 |          0 |              5 |              0 |                17 |                 2 |          33 |       11 |        0 |         95 |             85 |      24,382 |
+| poplar      |            5 |          8 |          0 |              7 |              0 |                16 |                 4 |          33 |        4 |        0 |         54 |            128 |       3,596 |
+| tomato      |            4 |          8 |          0 |              8 |              0 |                18 |                 7 |          33 |        7 |        0 |         56 |             71 |       4,280 |
+| arabidopsis |            4 |          8 |          0 |              6 |              0 |                15 |                 5 |          34 |        2 |        0 |         60 |             72 |         710 |
 
 <!-- END GENERATED MEASUREMENT multiway-lane-stability -->
 
@@ -348,7 +348,12 @@ columns are what the anchor-order sum alone would do, kept as the control. The
 stateless version of the same walk had 1 to 7 flip oscillations per lane and 10
 to 21 flip changes, and arabidopsis changed contig 12 times with 3 of them
 oscillations. `empty` is windows where the lane places nothing at all, the same
-33 for every lane, and no rule can fill them.
+33 for every lane, and no rule can fill them. `slip` is how far a lane's content
+moved on screen beyond the anchor's own pan, counted only on one contig,
+orientation and rung: a held lane slips 0, and each re-alignment is one slip.
+The medians are the ordinary re-alignment (71 to 351 px); the maxima are the
+kept cluster hopping to another paleo-block on the same contig, which is a
+relocation the way a contig change is.
 
 **What it took, beyond the deadband.** The contig vote was steady before any
 incumbent — weighting a contig by how much of the ANCHOR it explains is
@@ -381,7 +386,19 @@ before the model change); a zoom step is 2.0 ms of React where it re-rendered
 every SVG element at 35 ms, with 12.7 ms of MobX per step packing the cells —
 the next lever, if one is wanted, is that rebuild rather than the frame.
 
-What is left is model-side: when a hold breaks — the lane's content has moved
-to another block, or 10% of it has left the frame — the lane jumps to its new
-alignment in one step (peach +388 px, tomato −2859 px across one drag). The
-re-alignment should slide the least distance that restores coverage.
+**A broken hold re-aligns, and sliding the least distance instead was tried
+and measured out (2026-08-26).** When a hold breaks — the lane's content has
+moved to another block, or 10% of it has left the frame — the lane jumps to its
+re-alignment in one step (peach +388 px, tomato −2859 px across one drag), and
+the obvious fix is to slide only as far as restores coverage. Built and walked
+across grape chr1 with the stability probe, the least slide leaves a placement's
+centre exactly on the frame edge; the next pan pushes it out by the pan step and
+the least slide brings it back by exactly that step, so the lane pins to that
+placement and stops panning with the anchor — the slip histogram's median was
+the pan step itself, on 145 of 226 steps against 29 for re-alignment, and the
+two rules travelled the same total distance (peach 14,714 px against 14,829).
+The travel is fixed by the data; the rule only chooses between rare
+re-alignments and pinned creeping, and re-alignment stays. What did land from
+that pass is the pivot carrying across a rung change: a zoom is a scale about
+the pivot and not a relocation, so a rung change re-aligns only when the
+rescaled frame no longer shows the content.

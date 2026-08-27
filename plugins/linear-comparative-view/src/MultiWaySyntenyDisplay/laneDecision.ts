@@ -312,6 +312,18 @@ function alignFrameTo(
   return { ...frame, min: frame.min + shift, max: frame.max + shift }
 }
 
+function coverageOf(placements: LanePlacement[], min: number, max: number) {
+  let inside = 0
+  let total = 0
+  for (const p of placements) {
+    total += p.weight
+    if (p.center >= min && p.center <= max) {
+      inside += p.weight
+    }
+  }
+  return total > 0 ? inside / total : 0
+}
+
 function laneBpAt(frame: RowFrame, px: number, width: number) {
   const bpPerPx = (frame.max - frame.min) / width
   return frame.flipped
@@ -384,8 +396,10 @@ function sameDecision(a: LaneDecision, b: LaneDecision) {
  * lane above and each holding what it decided last time unless the evidence
  * clearly moved: the contig by the follow's switch margin, the orientation by
  * its deadband, the rung by the shrink room, and the placement by what its
- * frame still covers. A lane that held returns its previous object, so a
- * caller can tell a re-decision that changed nothing from one that did.
+ * frame still covers — the pivot across a rung change too, since a zoom is a
+ * scale about it and not a relocation. A lane that held returns its previous
+ * object, so a caller can tell a re-decision that changed nothing from one
+ * that did.
  */
 export function decideLaneFrames({
   groups,
@@ -428,35 +442,33 @@ export function decideLaneFrames({
     const aligned = alignFrameTo(upperX, placements, oriented, width)
 
     let decision: LaneDecision | undefined
+    // the pivot carries across a rung change too: a zoom scales the lane
+    // about it, and only the content leaving the frame re-aligns the lane
     const held =
       prev &&
       prev.refName === aligned.refName &&
-      prev.flipped === relativeFlipped &&
-      prev.rung === rung
+      prev.flipped === relativeFlipped
         ? prev
         : undefined
     const heldPx = held && pxOfAnchor(held.pivotAnchor)
     if (held && heldPx !== undefined) {
+      const carried = {
+        ...held,
+        rung,
+        fitMin: aligned.fitMin,
+        fitMax: aligned.fitMax,
+      }
       const heldFrame = frameFromDecision(
-        held,
+        carried,
         heldPx,
         unitBp,
         width,
         anchorReversed,
       )
-      let inside = 0
-      let total = 0
-      for (const p of placements) {
-        total += p.weight
-        if (p.center >= heldFrame.min && p.center <= heldFrame.max) {
-          inside += p.weight
-        }
-      }
-      if (total > 0 && inside / total >= HOLD_COVERAGE) {
-        decision =
-          held.fitMin === aligned.fitMin && held.fitMax === aligned.fitMax
-            ? held
-            : { ...held, fitMin: aligned.fitMin, fitMax: aligned.fitMax }
+      if (
+        coverageOf(placements, heldFrame.min, heldFrame.max) >= HOLD_COVERAGE
+      ) {
+        decision = sameDecision(held, carried) ? held : carried
       }
     }
     if (!decision) {

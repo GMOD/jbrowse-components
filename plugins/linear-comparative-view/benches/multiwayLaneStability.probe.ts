@@ -47,13 +47,16 @@ import configSchema from '../../comparative-adapters/src/MCScanBlocksAdapter/con
 import {
   computeRowFrame,
   decideLaneFrames,
+  frameFromDecision,
 } from '../src/MultiWaySyntenyDisplay/laneDecision.ts'
 import {
   groupFeatures,
   rowAssembliesOf,
+  rowFrameX,
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
 
 import type { LaneDecision } from '../src/MultiWaySyntenyDisplay/laneDecision.ts'
+import type { RowFrame } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 class BlocksOnly extends Plugin {
@@ -177,6 +180,9 @@ interface LaneRun {
   // incumbent have had their say
   drawnFlip: (boolean | undefined)[]
   rungs: (number | undefined)[]
+  // how far the lane's content moved on screen beyond the anchor's own pan,
+  // per step on one contig, orientation and rung: 0 is a lane riding the pan
+  slipsPx: number[]
 }
 
 // How many times a series leaves a value and comes back to it within `reach`
@@ -221,12 +227,17 @@ console.log(
 const WIDTH = 1280
 
 const runs = new Map<string, LaneRun>(
-  lanes.map(a => [a, { refNames: [], fitFlip: [], drawnFlip: [], rungs: [] }]),
+  lanes.map(a => [
+    a,
+    { refNames: [], fitFlip: [], drawnFlip: [], rungs: [], slipsPx: [] },
+  ]),
 )
 let steps = 0
 // carried from step to step, the way the display carries it from settle to
 // settle — what the incumbent rule has to hold on to
 let previous = new Map<string, LaneDecision | undefined>()
+const previousFrames = new Map<string, RowFrame>()
+const PAN_PX = (STEP_BP / WINDOW_BP) * WIDTH
 for (let start = 0; start + WINDOW_BP <= ANCHOR_BP; start += STEP_BP) {
   const visible = inWindow(groups, start, start + WINDOW_BP)
   steps++
@@ -254,6 +265,32 @@ for (let start = 0; start + WINDOW_BP <= ANCHOR_BP; start += STEP_BP) {
     run.fitFlip.push(computeRowFrame(visible, assemblyName, WINDOW_BP)?.flipped)
     run.drawnFlip.push(decision?.flipped)
     run.rungs.push(decision?.rung)
+    const frame =
+      decision &&
+      frameFromDecision(
+        decision,
+        ((decision.pivotAnchor.coord - start) / WINDOW_BP) * WIDTH,
+        WINDOW_BP,
+        WIDTH,
+      )
+    const before = previousFrames.get(assemblyName)
+    if (
+      frame &&
+      before &&
+      frame.refName === before.refName &&
+      frame.flipped === before.flipped &&
+      run.rungs.at(-1) === run.rungs.at(-2)
+    ) {
+      const bp = (before.min + before.max) / 2
+      run.slipsPx.push(
+        rowFrameX(frame, bp, WIDTH) - rowFrameX(before, bp, WIDTH) + PAN_PX,
+      )
+    }
+    if (frame) {
+      previousFrames.set(assemblyName, frame)
+    } else {
+      previousFrames.delete(assemblyName)
+    }
   }
 }
 
@@ -265,15 +302,19 @@ console.log(
   `\n${steps} steps of ${STEP_BP / 1000}kb across a ${WINDOW_BP / 1e6}Mb window on ${ANCHOR_REF}\n`,
 )
 console.log(
-  '                 contig            drawn flip        fallback flip      rung',
+  '                 contig            drawn flip        fallback flip      rung           slip px',
 )
 console.log(
-  'lane            n  chg  osc     chg  osc         chg  osc   empty   chg  osc',
+  'lane            n  chg  osc     chg  osc         chg  osc   empty   chg  osc   steps median    max',
 )
 const rows: Record<string, string | number>[] = []
 for (const [assemblyName, run] of runs) {
   const seen = new Set(run.refNames.filter(r => r !== undefined))
   const empty = run.refNames.filter(r => r === undefined).length
+  const moving = run.slipsPx
+    .map(Math.abs)
+    .filter(px => px > 1)
+    .sort((a, b) => a - b)
   const values = {
     lane: assemblyName,
     contigs: seen.size,
@@ -286,6 +327,9 @@ for (const [assemblyName, run] of runs) {
     empty,
     rungChanges: changes(run.rungs),
     rungOsc: oscillations(run.rungs, REACH),
+    slipSteps: moving.length,
+    medianSlipPx: Math.round(moving[Math.floor((moving.length - 1) / 2)] ?? 0),
+    maxSlipPx: Math.round(moving.at(-1) ?? 0),
   }
   rows.push(values)
   console.log(
@@ -301,6 +345,9 @@ for (const [assemblyName, run] of runs) {
       String(empty).padStart(8),
       String(values.rungChanges).padStart(6),
       String(values.rungOsc).padStart(5),
+      String(values.slipSteps).padStart(8),
+      String(values.medianSlipPx).padStart(7),
+      String(values.maxSlipPx).padStart(7),
     ].join(''),
   )
 }
@@ -314,6 +361,14 @@ const existing = JSON.parse(fs.readFileSync(record, 'utf8')) as {
 const rungColumns = [
   { key: 'rungChanges', label: 'rung chg', format: 'int', align: 'right' },
   { key: 'rungOsc', label: 'rung osc', format: 'int', align: 'right' },
+  { key: 'slipSteps', label: 'slip steps', format: 'int', align: 'right' },
+  {
+    key: 'medianSlipPx',
+    label: 'median slip px',
+    format: 'int',
+    align: 'right',
+  },
+  { key: 'maxSlipPx', label: 'max slip px', format: 'int', align: 'right' },
 ]
 existing.columns = [
   ...existing.columns.filter(c => !rungColumns.some(r => r.key === c.key)),
@@ -326,5 +381,7 @@ console.log(
   '\nchg: consecutive steps whose answer differs. osc: those that go back within\n' +
     'a fifth of a window, which is the near-tie rather than the data. "drawn" is\n' +
     '`alignRowFrames`, which is what a reader sees; "fallback" is the lane\'s own\n' +
-    'anchor-order vote, which only decides where the drawn one abstains.',
+    'anchor-order vote, which only decides where the drawn one abstains. slip is\n' +
+    "how far a lane's content moved on screen beyond the pan, on one contig,\n" +
+    'orientation and rung: a held lane slips 0, a re-alignment is one slip.',
 )
