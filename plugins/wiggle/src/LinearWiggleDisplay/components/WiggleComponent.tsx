@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { Crosshairs, useMouseState } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
   CrossHatches,
@@ -20,9 +19,6 @@ import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 const WiggleComponent = observer(function WiggleComponent({
   model,
@@ -33,14 +29,13 @@ const WiggleComponent = observer(function WiggleComponent({
   // see startRenderingBackend / stopRenderingBackend / renderNow on the
   // LinearWiggleDisplay model. This component is just a thin bridge that
   // plugs the canvas and the backend into those model actions.
-  const view = getContainingView(model) as LGV
   const width = model.canvasWidthPx
   const height = model.height
 
   const computeHit = useCallback(
     (offsetX: number) => {
       const { rpcDataMap, effectiveSummaryScoreMode } = model
-      const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
+      const hit = hitTestMouse(model.host.visibleRegions, rpcDataMap, offsetX)
       const source = hit?.data.sources[0]
       return source
         ? findSourceHit(
@@ -51,7 +46,7 @@ const WiggleComponent = observer(function WiggleComponent({
           )
         : undefined
     },
-    [model, view],
+    [model],
   )
 
   const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
@@ -104,8 +99,7 @@ const WiggleBody = observer(function WiggleBody({
   // it `useRenderingBackend`, the status container's fresh inline style and the
   // overlay portal) for the whole of every drag. Multi-wiggle already reads it
   // in its body for this reason; this was the last copy that didn't.
-  const view = getContainingView(model) as LGV
-  const legendWidth = legendRightEdgePx(view.visibleRegions, width)
+  const legendWidth = legendRightEdgePx(model.host.visibleRegions, width)
   return (
     <>
       <canvas

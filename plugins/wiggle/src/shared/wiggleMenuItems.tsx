@@ -83,22 +83,24 @@ function sizeSubMenu(
   return applies ? [{ label, icon, subMenu: [row()] }] : []
 }
 
-export function makePointSizeMenuItems(
-  self: {
-    renderingType: string
-    scatterPointSize: number
-    setScatterPointSize: (n?: number) => void
-  } & ResolvableDisplay,
+export function makePointSizeSubMenu(
+  self: Parameters<typeof makeScatterPointSizeMenuItem>[0],
+  { label, applies }: { label: string; applies: boolean },
 ): MenuItem[] {
-  return sizeSubMenu(
+  return sizeSubMenu(applies, label, ScatterPlotIcon, () =>
+    makeScatterPointSizeMenuItem(self, { label }),
+  )
+}
+
+export function makePointSizeMenuItems(
+  self: { renderingType: string } & Parameters<typeof makePointSizeSubMenu>[0],
+): MenuItem[] {
+  return makePointSizeSubMenu(self, {
+    label: 'Scatter point size',
     // the rendering-type table both backends branch on, not a substring test:
     // whether a plot draws points is the same question the encoder asks
-    isScatterMode(self.renderingType),
-    'Scatter point size',
-    ScatterPlotIcon,
-    // shared with the GWAS Manhattan point-size row, so the two can't drift
-    () => makeScatterPointSizeMenuItem(self, { label: 'Scatter point size' }),
-  )
+    applies: isScatterMode(self.renderingType),
+  })
 }
 
 export function makeLineWidthMenuItems(

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useMouseState } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
@@ -27,12 +26,9 @@ import { findMultiWiggleContextHit, findMultiWiggleHit } from './findHit.ts'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 export type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
-
-type LGV = LinearGenomeViewModel
 
 // FloatingLegend's own default inset from the display's top-right corner, which
 // the score legend's reserved band is added to rather than replacing.
@@ -48,14 +44,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   // the MultiLinearWiggleDisplay model. Sources changes are picked up because
   // installUpload's encode step reads `self.gpuProps()`, so a
   // gpuProps change re-fires every per-region autorun and re-uploads.
-  const view = getContainingView(model) as LGV
   const totalWidth = model.canvasWidthPx
   const height = model.height
 
   const computeHit = useCallback(
     (offsetX: number, offsetY: number) =>
-      findMultiWiggleHit(model, view.visibleRegions, offsetX, offsetY),
-    [model, view],
+      findMultiWiggleHit(model, model.host.visibleRegions, offsetX, offsetY),
+    [model],
   )
 
   const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
@@ -65,7 +60,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   function onContextMenu(event: React.MouseEvent) {
     const hit = findMultiWiggleContextHit(
       model,
-      view.visibleRegions,
+      model.host.visibleRegions,
       eventPoint(event).x,
     )
     if (!hit) {
@@ -143,8 +138,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
 
   // Pin the right-aligned legends to the content's right edge, not the full
   // track width (see legendRightEdgePx).
-  const view = getContainingView(model) as LGV
-  const legendWidth = legendRightEdgePx(view.visibleRegions, totalWidth)
+  const legendWidth = legendRightEdgePx(model.host.visibleRegions, totalWidth)
 
   return (
     <>

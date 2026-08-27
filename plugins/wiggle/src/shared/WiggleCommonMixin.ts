@@ -1,10 +1,5 @@
 import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getContainingView,
-  getEnv,
-  openFeatureWidget,
-} from '@jbrowse/core/util'
+import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
@@ -28,7 +23,7 @@ import type {
   ConfigModelForFields,
   ResolvableDisplay,
 } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
@@ -60,6 +55,10 @@ type WiggleCommonConfigModel = ConfigModelForFields<
 export type WiggleCommonHost = ResolvableDisplay<WiggleCommonConfigModel>
 
 const confNode = (self: object) => self as WiggleCommonHost
+
+const regionHost = (self: object) => (self as { host: RegionHost }).host
+const ownAdapterConfig = (self: object) =>
+  (self as { adapterConfig: { type: string } }).adapterConfig
 
 /**
  * #stateModel WiggleCommonMixin
@@ -119,9 +118,7 @@ export function WiggleCommonMixin() {
        * for the score axis while fetching untransformed SNPs.
        */
       get regionFetchKey(): string {
-        return String(
-          (getContainingView(self) as LinearGenomeViewModel).bpPerPx,
-        )
+        return String(regionHost(self).bpPerPx)
       },
       /**
        * #getter
@@ -203,12 +200,8 @@ export function WiggleCommonMixin() {
        * #getter
        */
       get hasResolution() {
-        const { pluginManager } = getEnv(self)
-        const adapterConfig = getConf(getContainingTrack(self), 'adapter') as {
-          type: string
-        }
-        return pluginManager
-          .getAdapterType(adapterConfig.type)
+        return getEnv(self)
+          .pluginManager.getAdapterType(ownAdapterConfig(self).type)
           .adapterCapabilities.includes('hasResolution')
       },
       /**
@@ -262,7 +255,7 @@ export function WiggleCommonMixin() {
         const names = self.autoscaleSourceNames
         return visibleStatsDomain({
           active: true,
-          view: getContainingView(self) as LinearGenomeViewModel,
+          view: regionHost(self),
           payloadFor: index => self.rpcDataMap.get(index),
           itemsFor: regionData =>
             regionData.sources.filter(

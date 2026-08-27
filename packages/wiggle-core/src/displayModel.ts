@@ -1,6 +1,7 @@
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
 import type { YScaleTicks } from './yScaleTicks.ts'
+import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 
@@ -13,6 +14,9 @@ export interface WiggleGpuDisplayModel<
   TData = WiggleDataResult,
 > extends RenderLifecycleModel<TRenderingBackend> {
   rpcDataMap: ReadonlyMap<number, TData>
+  // the containing view as `MultiRegionDisplayMixin` types it, so a component
+  // reads `model.host.visibleRegions` instead of casting `getContainingView`
+  host: RegionHost
   ticks?: YScaleTicks
   canvasDrawn: boolean
   // `painted` is `canvasDrawn` widened by `rendersCanvas` — what `DisplayChrome`
@@ -32,7 +36,6 @@ export interface WiggleGpuDisplayModel<
   // and DisplayChrome's error bar. Declaring `Error | null` here was a lie the
   // model never satisfied — nothing in this contract's consumers narrows it.
   error: unknown
-  isLoading: boolean
   displayPhase: DisplayPhase
   statusMessage?: string
   reload: () => void

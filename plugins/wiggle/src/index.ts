@@ -107,5 +107,6 @@ export type {
   WiggleFamilySvgLayout,
 } from './shared/WiggleFamilySvg.tsx'
 export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
+export { makePointSizeSubMenu } from './shared/wiggleMenuItems.tsx'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
 export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'
