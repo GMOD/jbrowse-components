@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react'
 
+// the package specifier, not a relative path: `jest.config.js` mocks this by
+// that exact string. See the note in `util/hooks.ts`.
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
-import useMeasure from '../util/useMeasure.ts'
 
 import type { TypographyProps } from '@mui/material'
 import type { Ref } from 'react'

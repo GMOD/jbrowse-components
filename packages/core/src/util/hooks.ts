@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 
+// The package names itself here on purpose, and this import must not be made
+// relative: `jest.config.js` maps `@jbrowse/core/util/useMeasure` to a mock,
+// and `moduleNameMapper` matches the request string rather than the file it
+// resolves to. jsdom has no layout, so the real hook reports 0×0 — a relative
+// path reaches the same file, misses the mock, and every view then measures
+// zero and never initializes. Which fails as a suite of timeouts nowhere near
+// this line. The three plugins importing it do so for the same reason.
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { isAlive } from '@jbrowse/mobx-state-tree'
