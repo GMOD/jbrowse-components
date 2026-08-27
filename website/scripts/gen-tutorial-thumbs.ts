@@ -348,14 +348,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.152, 0.86],
   },
   orthofinder_synteny: {
-    // Left third only, same reason as the grape/peach/cacao card below: the
-    // per-row "No tracks active / Open track selector" chip is horizontally
-    // centered, so a left frame keeps the ribbons and genome labels without it.
-    // Taller band than that one (five rows here, not three) to carry two ribbon
-    // fans.
+    // Almost the whole figure: five genomes and four ribbon fans is the card's
+    // point, not any one band of it. The source is already close to 5:3, so
+    // dropping just the app chrome top and bottom gets there at full width.
     src: 'orthofinder_synteny/vertebrates.png',
-    band: [0.13, 0.6],
-    xband: [0, 0.36],
+    band: [0.05, 0.95],
   },
   allvsall_synteny: {
     // The five-strain stack, past the app chrome. collapseEmptyRows on this
