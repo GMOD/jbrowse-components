@@ -10,19 +10,18 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import {
-  getContainingView,
-  getSession,
-  openFeatureWidget,
-  toLocale,
-} from '@jbrowse/core/util'
+import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import MultiRegionDisplayMixin, {
   fetchEachRegion,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
+import {
+  WiggleScoreConfigMixin,
+  makePointSizeSubMenu,
+} from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
@@ -30,7 +29,6 @@ import {
   axisPlotBox,
   computeYTicks,
   makeCrossHatchItem,
-  makeScatterPointSizeMenuItem,
   makeScoreNormalizer,
   makeScoreSubMenu,
   resolveRenderState,
@@ -40,13 +38,15 @@ import {
 } from '@jbrowse/wiggle-core'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun } from 'mobx'
 
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
+import type {
+  ManhattanContextMenuInfo,
+  ManhattanDisplayModel,
+} from './components/manhattanDisplayTypes.ts'
 import type {
   LinearManhattanDisplayConfig,
   LinearManhattanDisplayConfigModel,
@@ -61,7 +61,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { VisibleEntry } from '@jbrowse/wiggle-core'
 
 // The Manhattan walker: the worker ships each region's score extremes already
@@ -107,6 +106,7 @@ export function stateModelFactory(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         WiggleScoreConfigMixin(),
+        ContextMenuMixin<ManhattanContextMenuInfo>(),
         types.model({
           type: types.literal('LinearManhattanDisplay'),
           /**
@@ -276,7 +276,7 @@ export function stateModelFactory(
           const line = this.significanceLine
           return visibleStatsDomain({
             active: true,
-            view: getContainingView(self) as LinearGenomeViewModel,
+            view: self.host,
             payloadFor: index => self.rpcDataMap.get(index),
             itemsFor: data => (data.numFeatures === 0 ? [] : [data]),
             accumulate: shippedExtremes,
@@ -584,13 +584,10 @@ export function stateModelFactory(
             // regions with the manual bounds applied on top. Set min/max score
             // is the one score control that does anything here.
             makeScoreSubMenu(self, { scaleType: false, autoscale: false }),
-            {
+            ...makePointSizeSubMenu(self, {
               label: 'Point size',
-              icon: ScatterPlotIcon,
-              subMenu: [
-                makeScatterPointSizeMenuItem(self, { label: 'Point size' }),
-              ],
-            },
+              applies: true,
+            }),
             {
               // The score is shown in the label when one is set, the same way
               // the min/max row above does it: a horizontal line on a plot with
@@ -601,7 +598,7 @@ export function stateModelFactory(
                   : `Set significance line (${self.significanceLine})...`,
               icon: HorizontalRuleIcon,
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
+                getDialogHost(self).queueDialog(handleClose => [
                   SetSignificanceLineDialog,
                   { display: self, handleClose },
                 ])
@@ -651,10 +648,15 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * right-click menu for a clicked point: feature details plus, when an LD
-         * adapter is configured, a shortcut to recolor by LD to that SNP
+         * right-click menu for the point in `contextMenuInfo`: feature details
+         * plus, when an LD adapter is configured, a shortcut to recolor by LD
+         * to that SNP
          */
-        contextMenuItems(hit: ManhattanHit): MenuItem[] {
+        contextMenuItems(): MenuItem[] {
+          const hit = self.contextMenuInfo?.hit
+          if (!hit) {
+            return []
+          }
           return [
             {
               label: 'Open feature details',

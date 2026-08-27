@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
-import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
@@ -19,16 +20,8 @@ import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
-import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
-import type { ContextMenuAnchor, MouseTracker } from '@jbrowse/core/ui'
-
-// The right-clicked point and the SNP it resolved to, held together so the menu
-// can't be anchored without a hit to build it from.
-interface ManhattanContextMenu {
-  anchor: ContextMenuAnchor
-  hit: ManhattanHit
-}
+import type { MouseTracker } from '@jbrowse/core/ui'
 
 const LinearManhattanDisplayComponent = observer(
   function LinearManhattanDisplayComponent({
@@ -37,7 +30,6 @@ const LinearManhattanDisplayComponent = observer(
     model: ManhattanDisplayModel
   }) {
     const { height, canvasWidthPx: width } = model
-    const [contextMenu, setContextMenu] = useState<ManhattanContextMenu>()
 
     // renderState is always defined; an empty rpcDataMap/flatbush set simply
     // yields no hit, so no separate loading guard is needed. The offsetY passed
@@ -73,9 +65,10 @@ const LinearManhattanDisplayComponent = observer(
       if (hit) {
         event.preventDefault()
         // clear the hover tooltip so it doesn't stay stuck behind the menu
-        model.setHoveredFeature(undefined)
-        setContextMenu({
-          anchor: { clientX: event.clientX, clientY: event.clientY },
+        model.clearHoveredFeature()
+        model.openContextMenu({
+          clientX: event.clientX,
+          clientY: event.clientY,
           hit,
         })
       }
@@ -101,8 +94,6 @@ const LinearManhattanDisplayComponent = observer(
             width={width}
             height={height}
             mouseTracker={mouseTracker}
-            contextMenu={contextMenu}
-            setContextMenu={setContextMenu}
           />
         )}
       </DisplayChrome>
@@ -116,16 +107,12 @@ const ManhattanBody = observer(function ManhattanBody({
   width,
   height,
   mouseTracker,
-  contextMenu,
-  setContextMenu,
 }: {
   model: ManhattanDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   width: number
   height: number
   mouseTracker: MouseTracker
-  contextMenu?: ManhattanContextMenu
-  setContextMenu: (v?: ManhattanContextMenu) => void
 }) {
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
@@ -187,15 +174,7 @@ const ManhattanBody = observer(function ManhattanBody({
         />
       ) : null}
       <TooltipComponent model={model} mouseState={mouseState} />
-      <ContextMenu
-        anchor={contextMenu?.anchor}
-        menuItems={() =>
-          contextMenu ? model.contextMenuItems(contextMenu.hit) : []
-        }
-        onClose={() => {
-          setContextMenu(undefined)
-        }}
-      />
+      <DisplayContextMenu model={model} />
     </>
   )
 })

@@ -4,11 +4,13 @@ import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
 } from '../manhattanRenderingBackendTypes.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
-import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
+
+/** The right-clicked point and the SNP it resolved to, held as one value. */
+export type ManhattanContextMenuInfo = ContextMenuAnchor & { hit: ManhattanHit }
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled because
 // `renderSvg.tsx` intersects this with the wiggle-family SVG contract and
@@ -21,7 +23,6 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
-  host: RegionHost
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>
@@ -35,7 +36,11 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   // the significance threshold as a score rule, [] when unset or off-domain
   scoreRuleMarks: ScoreRuleMark[]
   setHoveredFeature: (hit: ManhattanHit | undefined) => void
+  clearHoveredFeature: () => void
   selectFeature: (hit: ManhattanHit) => void
-  contextMenuItems: (hit: ManhattanHit) => MenuItem[]
+  contextMenuInfo?: ManhattanContextMenuInfo
+  openContextMenu: (info: ManhattanContextMenuInfo) => void
+  closeContextMenu: () => void
+  contextMenuItems: () => MenuItem[]
   setShowLdLegend: (val: boolean) => void
 }
