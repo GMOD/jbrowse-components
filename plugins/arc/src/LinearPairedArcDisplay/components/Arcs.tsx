@@ -1,9 +1,8 @@
-import { Suspense, lazy, useState } from 'react'
-
 import { getStrokeProps } from '@jbrowse/core/util'
 import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
+import ArcGlyph from '../../shared/ArcGlyph.tsx'
 import ArcsContainer from '../../shared/ArcsContainer.tsx'
 import { makeSummary } from './util.ts'
 
@@ -11,10 +10,11 @@ import type { LinearPairedArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const ArcTooltip = lazy(() => import('../../ArcTooltip.tsx'))
-
 type LGV = LinearGenomeViewModel
 type ArcStyle = NonNullable<LinearPairedArcDisplayModel['arcStyles']>[number]
+
+// mate-direction ticks extend 20px past each endpoint
+const TICK_PX = 20
 
 const Arc = observer(function Arc({
   model,
@@ -33,7 +33,6 @@ const Arc = observer(function Arc({
   hoverColor: string
   exportSVG?: boolean
 }) {
-  const [mouseOvered, setMouseOvered] = useState(false)
   const { feature, alt, color, k1, k2 } = style
   const ra1 = assembly.getCanonicalRefName2(k1.refName)
   const ra2 = assembly.getCanonicalRefName2(k2.refName)
@@ -55,67 +54,56 @@ const Arc = observer(function Arc({
   if (absrad <= 1) {
     return null
   }
-  // mate-direction ticks extend 20px past each endpoint
-  if (
-    !exportSVG &&
-    (Math.max(left, right) < -20 || Math.min(left, right) > view.width + 20)
-  ) {
-    return null
-  }
-
   const destY = Math.min(model.height, absrad)
-  const col = mouseOvered ? hoverColor : color
-  const events = {
-    style: { cursor: 'pointer' },
-    onMouseLeave: () => {
-      setMouseOvered(false)
-    },
-    onMouseOver: () => {
-      setMouseOvered(true)
-    },
-    onClick: () => {
-      model.selectFeature(feature)
-    },
-  }
 
   return (
-    <>
-      <path
-        d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
-        {...getStrokeProps(col)}
-        strokeWidth={lineWidth}
-        {...events}
-        fill="none"
-        pointerEvents="stroke"
-      />
-      {k1.mateDirection ? (
-        <line
-          {...getStrokeProps(col)}
-          strokeWidth={lineWidth}
-          {...events}
-          x1={left}
-          x2={breakendTickPx(left, k1.mateDirection, rev1)}
-          y1={1.5}
-          y2={1.5}
-        />
-      ) : null}
-      {k2.mateDirection ? (
-        <line
-          {...getStrokeProps(col)}
-          strokeWidth={lineWidth}
-          {...events}
-          x1={right}
-          x2={breakendTickPx(right, k2.mateDirection, rev2)}
-          y1={1.5}
-          y2={1.5}
-        />
-      ) : null}
-      {mouseOvered ? (
-        <Suspense fallback={null}>
-          <ArcTooltip contents={makeSummary(feature, alt)} />
-        </Suspense>
-      ) : null}
-    </>
+    <ArcGlyph
+      model={model}
+      feature={feature}
+      left={left}
+      right={right}
+      viewWidth={view.width}
+      cullMargin={TICK_PX}
+      tooltip={makeSummary(feature, alt)}
+      exportSVG={exportSVG}
+    >
+      {(hovered, events) => {
+        const stroke = getStrokeProps(hovered ? hoverColor : color)
+        return (
+          <>
+            <path
+              d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
+              {...stroke}
+              strokeWidth={lineWidth}
+              {...events}
+              fill="none"
+            />
+            {k1.mateDirection ? (
+              <line
+                {...stroke}
+                strokeWidth={lineWidth}
+                {...events}
+                x1={left}
+                x2={breakendTickPx(left, k1.mateDirection, rev1)}
+                y1={1.5}
+                y2={1.5}
+              />
+            ) : null}
+            {k2.mateDirection ? (
+              <line
+                {...stroke}
+                strokeWidth={lineWidth}
+                {...events}
+                x1={right}
+                x2={breakendTickPx(right, k2.mateDirection, rev2)}
+                y1={1.5}
+                y2={1.5}
+              />
+            ) : null}
+          </>
+        )
+      }}
+    </ArcGlyph>
   )
 })
 

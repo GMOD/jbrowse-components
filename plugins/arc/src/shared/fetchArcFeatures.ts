@@ -36,7 +36,7 @@ export function arcFetchPhases(
 ): GlobalFetchPhases<ArcFetchArgs, ArcFetchResult> {
   return {
     prepare: () => {
-      const regions = self.view.staticBlocks.contentBlocks
+      const regions = self.host.staticBlocks.contentBlocks
       return regions.length ? { regions } : undefined
     },
     run: async ({ regions }, ctx) => {

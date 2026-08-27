@@ -1,15 +1,12 @@
-import { Suspense, lazy, useState } from 'react'
-
 import { getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import ArcGlyph from '../../shared/ArcGlyph.tsx'
 import ArcsContainer from '../../shared/ArcsContainer.tsx'
 
 import type { LinearArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-const ArcTooltip = lazy(() => import('../../ArcTooltip.tsx'))
 
 type LGV = LinearGenomeViewModel
 type ArcStyle = NonNullable<LinearArcDisplayModel['arcStyles']>[number]
@@ -52,7 +49,6 @@ const Arc = observer(function Arc({
   hoverColor: string
   exportSVG?: boolean
 }) {
-  const [mouseOvered, setMouseOvered] = useState(false)
   const { feature, color, thickness, label, caption, arcHeight } = style
   const refName = feature.get('refName')
   const ra = assembly.getCanonicalRefName2(refName)
@@ -65,18 +61,6 @@ const Arc = observer(function Arc({
 
   const left = l - view.offsetPx
   const right = r - view.offsetPx
-  // on-screen arcs are clipped by the container; skip ones entirely off-screen.
-  // min/max (not left/right directly) so a reversed region — where `left` lands
-  // past `right` — isn't wrongly culled. export keeps everything so the full
-  // region is captured.
-  if (
-    !exportSVG &&
-    (Math.max(left, right) < 0 || Math.min(left, right) > view.width)
-  ) {
-    return null
-  }
-
-  const stroke = selected ? 'red' : mouseOvered ? hoverColor : color
   const textStroke = selected ? 'red' : 'black'
   const centerX = (left + right) / 2
   const { d, textYCoord } = semicircle
@@ -84,36 +68,38 @@ const Arc = observer(function Arc({
     : getBezierPath(left, right, arcHeight)
 
   return (
-    <g>
-      <path
-        {...getStrokeProps(stroke)}
-        d={d}
-        strokeWidth={thickness}
-        fill="transparent"
-        style={{ cursor: 'pointer' }}
-        onClick={() => {
-          model.selectFeature(feature)
-        }}
-        onMouseOver={() => {
-          setMouseOvered(true)
-        }}
-        onMouseLeave={() => {
-          setMouseOvered(false)
-        }}
-        pointerEvents="stroke"
-      />
-      {mouseOvered ? (
-        <Suspense fallback={null}>
-          <ArcTooltip contents={caption} />
-        </Suspense>
-      ) : null}
-      <text x={centerX} y={textYCoord + 3} stroke="white" strokeWidth="0.6em">
-        {label}
-      </text>
-      <text x={centerX} y={textYCoord + 3} stroke={textStroke}>
-        {label}
-      </text>
-    </g>
+    <ArcGlyph
+      model={model}
+      feature={feature}
+      left={left}
+      right={right}
+      viewWidth={view.width}
+      tooltip={caption}
+      exportSVG={exportSVG}
+    >
+      {(hovered, events) => (
+        <g>
+          <path
+            {...getStrokeProps(selected ? 'red' : hovered ? hoverColor : color)}
+            d={d}
+            strokeWidth={thickness}
+            fill="transparent"
+            {...events}
+          />
+          <text
+            x={centerX}
+            y={textYCoord + 3}
+            stroke="white"
+            strokeWidth="0.6em"
+          >
+            {label}
+          </text>
+          <text x={centerX} y={textYCoord + 3} stroke={textStroke}>
+            {label}
+          </text>
+        </g>
+      )}
+    </ArcGlyph>
   )
 })
 

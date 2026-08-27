@@ -29,9 +29,9 @@ display except this one.
   `features` deliberately survives, so stale arcs stay under the loading overlay
   instead of blanking.
 - **Two readiness flags, don't conflate**: `svgReady` is the SVG-export terminal
-  gate and goes false on a pan past a block boundary; `data-display-drawn` uses
-  the looser `drawn`, which stays true across a refetch so the testid doesn't
-  churn on pan.
+  gate and goes false on a pan past a block boundary; `data-display-drawn` gets
+  the looser `painted`, which stays true across a refetch so the testid doesn't
+  churn on pan, and counts `paintInert` so an empty viewport settles.
 - Byte-gated only, and the gate is inside the fetch: `ArcGetFeatures` measures
   the index before it downloads and answers a `RegionTooLargeResult` instead of
   features. Arc's opt-in is the `gateEnabled` override plus the `byteLimit` its

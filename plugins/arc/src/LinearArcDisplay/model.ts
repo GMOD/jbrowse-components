@@ -11,11 +11,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
-import {
-  featureScoreRange,
-  filterByScore,
-  makeScoreFilterMenuItem,
-} from '../shared/scoreFilter.ts'
+import { filterByScore } from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
 
 import type {
@@ -24,9 +20,7 @@ import type {
 } from './configSchema.ts'
 import type { ArcDisplayMode } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type React from 'react'
 
 /**
  * #stateModel LinearArcDisplay
@@ -71,10 +65,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       'LinearArcDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      // shared arc fetch/gating: cancel-safe runFetch, DERIVED regionTooLarge,
-      // reload/svgReady contract — identical structure to LD, so arc has no
-      // special fetch or region-too-large behavior
-      ArcFetchModel(),
+      ArcFetchModel(() => import('./renderSvg.tsx')),
       types.model({
         /**
          * #property
@@ -99,29 +90,13 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       },
       /**
        * #getter
-       * arcs whose feature scores below this are not drawn; 0 (the default)
-       * draws every arc, as does any feature carrying no score
-       */
-      get minScore(): number {
-        return getConf(self, 'minScore')
-      },
-      /**
-       * #getter
-       * the score span the filter slider is laid out over, `undefined` when the
-       * loaded features give it nothing to filter on
-       */
-      get scoreRange() {
-        return self.features && featureScoreRange(self.features)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        */
       get displayMode(): ArcDisplayMode {
         return getConf(self, 'displayMode')
       },
       // #endregion
+    }))
+    .views(self => ({
       /**
        * #getter
        * per-feature arc styling, evaluated once when features/config change.
@@ -175,42 +150,6 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       setDisplayMode(mode: ArcDisplayMode) {
         setConf(self, 'displayMode', mode)
       },
-      /**
-       * #action
-       */
-      setMinScore(score: number) {
-        setConf(self, 'minScore', score)
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('../shared/afterAttach.ts')
-            doAfterAttach(self as LinearArcDisplayModel)
-          } catch (e) {
-            console.error(e)
-            self.setError(e)
-          }
-        })()
-      },
-      /**
-       * #action
-       */
-      // opts is accepted (the export framework calls every display's renderSvg
-      // with it) but unused: arc paints vector JSX, not a paintLayer.
-      //
-      // One `import()`, and `renderSvg.tsx` is the edge behind it — it pairs the
-      // shared export body with this display's `<Arcs>` using ordinary static
-      // imports, so the whole export path is a single chunk. Don't inline it
-      // into two dynamic imports here; see that file.
-      async renderSvg(
-        _opts?: ExportSvgDisplayOptions,
-      ): Promise<React.ReactNode> {
-        const { renderArcSvg } = await import('./renderSvg.tsx')
-        return renderArcSvg(self as LinearArcDisplayModel)
-      },
     }))
     .views(self => {
       const superMenuItems = self.trackMenuItems
@@ -219,7 +158,6 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
          * #method
          */
         trackMenuItems() {
-          const { scoreRange } = self
           return [
             ...superMenuItems(),
             makeRadioSubMenu({
@@ -230,9 +168,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
               },
               options: ARC_DISPLAY_MODE_OPTIONS,
             }),
-            // left out entirely when the data has no score span to filter on,
-            // rather than shown as a slider whose ends mean the same thing
-            ...(scoreRange ? [makeScoreFilterMenuItem(self, scoreRange)] : []),
+            ...self.scoreFilterMenuItems(),
           ]
         },
       }

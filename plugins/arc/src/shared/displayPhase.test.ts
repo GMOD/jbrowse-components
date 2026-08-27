@@ -1,5 +1,7 @@
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { Region } from '@jbrowse/core/util'
+
 // Arc has no rendering backend, so its phase is the `Status` variant — every
 // phase except `renderError`. These pin that it is otherwise the same state
 // machine every GPU display runs, because arc's chrome is now literally the
@@ -46,5 +48,43 @@ describe('arc displayPhase', () => {
     display.reload()
 
     expect(display.fetchCanceled).toBe(false)
+  })
+})
+
+// A scaffold-level assembly, the one way into `viewportEmpty`: 400 regions of
+// 100bp each elide under `minimumBlockWidth` once the whole set is on screen,
+// so the view holds no content block.
+const SCAFFOLDS: Region[] = Array.from({ length: 400 }, (_, i) => ({
+  assemblyName: 'volvox',
+  refName: 'ctgA',
+  start: i * 1000,
+  end: i * 1000 + 100,
+}))
+
+function offContentDisplay() {
+  const { view, display } = createTestEnvironment().createDisplay({
+    displayedRegions: SCAFFOLDS,
+  })
+  view.zoomTo(50)
+  return { view, display }
+}
+
+// `painted` feeds `data-display-drawn`, which the screenshot and browser
+// harnesses wait on. Nothing ever fetches on an empty viewport, so a `painted`
+// reading only `features`/`error` leaves the attribute at "false" for the life
+// of the display and `waitForDisplaysDone` burns its timeout in silence.
+describe('arc painted', () => {
+  it('reports finished on a viewport holding no content', () => {
+    const { view, display } = offContentDisplay()
+    expect(view.hasVisibleContent).toBe(false)
+    expect(display.features).toBeUndefined()
+    expect(display.error).toBeUndefined()
+    expect(display.painted).toBe(true)
+  })
+
+  it('waits for data on a viewport that does hold content', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    expect(display.viewportEmpty).toBe(false)
+    expect(display.painted).toBe(false)
   })
 })
