@@ -81,6 +81,50 @@ has no usable hg38 WGS (`ideas/cancer-sv-datasets-unshot.md`). HCC1395
 (SEQC2, Revio HiFi at `downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/`)
 is the third driver once the first two work: six CNV callers to adjudicate.
 
+## Callers people actually run
+
+HG008's benchmark is a curated VCF; the portal has to take what a pipeline
+emits on someone's own data. Surveyed 2026-08-27 from the callers' docs and
+the live HG008/COLO829 output files:
+
+| Caller | Translocation record | Groups junctions? |
+| --- | --- | --- |
+| Sniffles2 | one record, bracket ALT + `CHR2` | no |
+| cuteSV | one record, bracket ALT | no |
+| nanomonsv (COLO829's `wf-somatic-variation` file) | BND pairs, `MATEID` | no |
+| SAVANA | BND pairs, `MATEID` | no |
+| DELLY | one `<BND>` record, `CHR2`/`POS2` | no |
+| SvABA | BND pairs, `MATEID` | `EVENT` = the two mates only |
+| Manta, DRAGEN SV | BND pairs, `MATEID` | `EVENT`, at most 2 junctions |
+| GRIDSS / GRIPSS | BND pairs, `MATEID` | pairwise `BEID`, `LOCAL_LINKED_BY` |
+| Severus (`wf-somatic-variation` ≥ 1.2) | BND pairs, `MATE_ID` | `CLUSTERID`, a breakpoint-graph component |
+| Dysgu | one record, `CHR2`/`CHR2_POS` | `GRP`, a graph component |
+| LINX (on PURPLE's VCF) | inherits | `clusters.tsv`, `links.tsv` chains |
+| VCF 4.4 / HG008 V0.5 | BND pairs | `EVENT`, `EVENTTYPE` |
+
+So three sources of a chain:
+
+1. **The finder, from geometry alone** — the only source for the first five
+   rows, which are the long-read callers a reader runs. `parse_junctions`
+   takes BND mates and symbolic DEL/DUP/INV via `END`; it needs a reader for
+   the one-record shapes (`CHR2` + `POS2`/`CHR2_POS`, and `<TRA>`) before
+   Sniffles2, DELLY and Dysgu output feeds it. Half a day, and it is what
+   makes "run it on your own VCF" true.
+2. **A caller's own cluster** — Severus `CLUSTERID`, Dysgu `GRP`, LINX
+   `clusterId`/`chainId` (`ideas/linx-chains-in-the-breakend-walk.md` already
+   parks `links.tsv` as a chain source), and the benchmark's `EVENT`. Read as
+   labels: the card shows the caller's group beside the finder's chain, and a
+   disagreement between the two is the row the reviewer opens first.
+3. **Two-junction links** — Manta/DRAGEN `EVENT`, GRIDSS `BEID`, GRIPSS
+   `LOCAL_LINKED_BY`. Too small to be a chain on their own, but they are
+   evidence that two of the finder's junctions belong together, so a chain
+   that splits one gets flagged.
+
+The concordance the portal reports per callset is therefore chain-vs-group
+(hit / over-merged / under-merged / unmatched), and HG008 runs it against
+five callsets at once: the benchmark, Severus, DRAGEN, NYGC's Manta+GRIDSS
+BEDPE and minda.
+
 ## Pieces
 
 Python finds chains and rebuilds alleles; Node renders and builds the page.
