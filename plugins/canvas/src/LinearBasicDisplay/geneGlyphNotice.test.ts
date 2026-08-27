@@ -162,6 +162,31 @@ describe('gene-glyph collapse notice', () => {
     expect(display.geneGlyphCollapsed).toBe(true)
   })
 
+  // "All transcripts" is a promise in those words, so the height that trims
+  // under `auto` must take nothing under `all` — the surplus scrolls. Same
+  // gene, same 60px, so the only difference is the mode.
+  it('never trims under All transcripts, however short the track', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.configuration.setSlot('height', 60)
+    display.setRpcData(
+      0,
+      packStackedGenes([
+        { featureId: 'gene1', startBp: 0, endBp: 5000, isoforms: 12 },
+      ]),
+      region,
+    )
+
+    display.setGeneGlyphMode('auto')
+    expect(display.geneGlyphIsoformCap).toBeLessThan(12)
+
+    display.setGeneGlyphMode('all')
+    expect(display.showsEveryIsoform).toBe(true)
+    expect(display.geneGlyphIsoformCap).toBeUndefined()
+    expect(display.geneGlyphCollapsed).toBe(false)
+    expect(display.geneGlyphTrimmedGenes.size).toBe(0)
+  })
+
   // Zooming out past `auto`'s threshold puts every multi-isoform gene through
   // the worker's `longestCoding` collapse, which reports a pick per gene. The
   // ladder trimmed none of them, so the chip must not claim a count.

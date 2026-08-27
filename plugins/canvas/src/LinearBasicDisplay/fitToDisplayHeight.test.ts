@@ -1893,4 +1893,25 @@ describe('the isoform rung across the three height modes', () => {
 
     expect(drawnOrdinals(display, 'gene2').size).toBe(1)
   })
+
+  // "All transcripts" withholds the rung, in the two modes that have one. The
+  // 196px stack still has to reach a 100px track, so the ladder spends the
+  // reductions below it instead — the names go, which is the trade the mode's
+  // own name asks for. Same fixture as the fit case above, where the rung kept
+  // both names by taking six transcripts.
+  it.each(['fit', 'fixed'] as const)(
+    'All transcripts withholds the rung in %s mode',
+    mode => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      display.setHeightMode(mode)
+      display.setGeneGlyphMode('all')
+      display.setRpcData(0, ISOFORM_GENES, ctgA)
+
+      expect(display.fitStage.maxIsoforms).toBeUndefined()
+      expect(display.fitStage.level).not.toBe('isoforms')
+      expect(drawnOrdinals(display, 'gene2').size).toBe(10)
+      expect(display.geneGlyphTrimmedGenes.size).toBe(0)
+    },
+  )
 })

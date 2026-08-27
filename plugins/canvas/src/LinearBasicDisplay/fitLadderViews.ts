@@ -16,7 +16,7 @@ import {
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FitStage } from './fitLadder.ts'
+import type { FitRung, FitStage } from './fitLadder.ts'
 import type {
   IncrementalLayout,
   IsoformCountFreeInputs,
@@ -49,6 +49,9 @@ export interface FitLadderHost {
   fitHeightToDisplay: boolean
   // grow mode: the track's height IS its content's, so nothing is ever trimmed
   autoHeight: boolean
+  // "All transcripts": the setting names every isoform, so the rung that would
+  // drop one is withheld and the surplus scrolls
+  showsEveryIsoform: boolean
   fitTargetHeight: number
   incrementalLayout: IncrementalLayout
   incrementalLayoutLabelsOnly: IncrementalLayout
@@ -260,10 +263,15 @@ export function fitLadderViews(self: FitLadderHost) {
      * `bodies` rungs below then inherit.
      *
      * Never in `grow`, whose height is its own content's — trimming there would
-     * shrink the track it was measured against.
+     * shrink the track it was measured against. Never under "All transcripts"
+     * either: that setting is a promise the menu makes in those words, so the
+     * rung is withheld and the stack scrolls rather than losing a transcript.
+     * The rungs below it then inherit `undefined` and pack the full stack, so
+     * the ladder gives up descriptions and names — the reductions the reader
+     * asked for by naming the transcripts first.
      */
     get fitIsoformCount(): number | undefined {
-      return self.layoutReady && !self.autoHeight
+      return self.layoutReady && !self.autoHeight && !self.showsEveryIsoform
         ? solveIsoformCount(
             this.isoformsHeightProbe,
             self.fitTargetHeight,
@@ -481,16 +489,27 @@ export function fitLadderViews(self: FitLadderHost) {
       // drift apart.
       // A thunk: the solve packs, and a stack that fits at `full` never asks.
       const trimmed = () => this.fitIsoformCount
+      const full: FitRung = { level: 'full', layout: () => base }
+      // "All transcripts" leaves the ladder no isoform rung at all, rather than
+      // one that solves to `undefined` and trims nothing: kept, it is the LAST
+      // rung of the fixed-height ladder, which is always the one resolved, so
+      // the stage would report `level: 'isoforms'` over a stack every transcript
+      // survived.
+      const isoformRung: FitRung[] = self.showsEveryIsoform
+        ? []
+        : [
+            {
+              level: 'isoforms',
+              layout: () => this.fitIsoformsSolved,
+              maxIsoforms: trimmed,
+            },
+          ]
       return resolveFitLadder(
         fit
           ? [
-              { level: 'full', layout: () => base },
+              full,
               { level: 'labels', layout: () => this.fitLabelsOnlyLayout },
-              {
-                level: 'isoforms',
-                layout: () => this.fitIsoformsSolved,
-                maxIsoforms: trimmed,
-              },
+              ...isoformRung,
               {
                 level: 'decimated',
                 layout: () => this.fitDecimatedSolved,
@@ -504,19 +523,12 @@ export function fitLadderViews(self: FitLadderHost) {
             ]
           : self.autoHeight
             ? // Grow's height IS its content's, so it gives nothing up.
-              [{ level: 'full', layout: () => base }]
+              [full]
             : // Fixed height scrolls rather than degrading, but it trims: a
               // gene with 28 transcripts in a 100px lane draws all 28 inside
               // the lane's own scrollbar, which is the case the worker's cap
               // was built for and the one `grow` deliberately keeps.
-              [
-                { level: 'full', layout: () => base },
-                {
-                  level: 'isoforms',
-                  layout: () => this.fitIsoformsSolved,
-                  maxIsoforms: trimmed,
-                },
-              ],
+              [full, ...isoformRung],
         self.fitTargetHeight,
         fit ? this.fitMinScale : 1,
         fit ? this.fitMaxScale : 1,

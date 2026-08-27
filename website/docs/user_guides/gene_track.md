@@ -22,7 +22,10 @@ glyph** option in the track menu controls how a gene's transcripts are drawn:
   each gene to a single transcript when you are zoomed out, so dense regions
   stay legible. Zoomed in it also keeps only as many isoforms per gene as the
   track's height has rows for.
-- All transcripts - always draws every transcript on its own row.
+- All transcripts - draws every transcript on its own row, whatever the zoom and
+  whatever the track's height. Nothing is trimmed to fit: a stack taller than
+  the track scrolls, and where the track sizing is set to fit feature height to
+  track height, the labels are given up before any transcript is.
 - Representative transcript - collapses each gene to one isoform.
 
 Which isoform that is comes from the annotation where it says: a transcript

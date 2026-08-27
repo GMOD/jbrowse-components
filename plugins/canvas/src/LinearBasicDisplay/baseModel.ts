@@ -841,6 +841,21 @@ export default function baseStateModelFactory(
         get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
           return self.fitHeightToDisplay ? this.onScreenFeatureIds : undefined
         },
+        /**
+         * #getter
+         * Overridable hook (default false): the display's transcript setting
+         * names every isoform, so the fit ladder's `isoforms` rung may not trim
+         * — the surplus scrolls instead. `LinearBasicDisplay` answers it off
+         * `geneGlyphMode`; a display with no such setting never withholds the
+         * rung.
+         *
+         * A hook rather than a `geneGlyphMode` read here for the reason
+         * `geneGlyphNotice` is one: the variant display shares this base and has
+         * no gene glyphs to name a mode for.
+         */
+        get showsEveryIsoform() {
+          return false
+        },
       }))
       .views(fitLadderViews)
       .views(self => ({

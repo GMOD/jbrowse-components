@@ -142,6 +142,15 @@ export default function stateModelFactory(
         return this.geneGlyphMode
       },
 
+      // The base's hook for the fit ladder's isoform rung. Read off the RAW
+      // mode, not `effectiveGeneGlyphMode`: `auto` resolves to `all` at every
+      // zoom under 100bp/px, and that is the mode whose whole job is to fit the
+      // track — only the user picking "All transcripts" themselves withholds
+      // the trim.
+      get showsEveryIsoform() {
+        return this.geneGlyphMode === 'all'
+      },
+
       // Gate for the bottom-right isoform-collapse control: the loaded data has
       // a multi-isoform gene, so switching modes is meaningful. Shown in every
       // mode (not just when collapsed) so picking "All transcripts" from the

@@ -61,6 +61,24 @@ k = 1 overflows the solve answers 1 and the rungs below inherit it: every
 isoform goes before any name does. A gene the user expanded from its own badge
 is never trimmed, in any mode.
 
+**"All transcripts" withholds the rung** (`showsEveryIsoform`, a
+`LinearCanvasBaseDisplay` hook the basic display answers off the RAW
+`geneGlyphMode` — `auto` resolves to `all` under 100bp/px and that mode's whole
+job is to fit the track). Withheld, not solved to `undefined`: it is the last
+rung of the fixed-height ladder, which is always the one resolved, so a no-op
+rung left in place would report `level: 'isoforms'` over a stack every
+transcript survived. The two ladders lose it and nothing else:
+
+```
+all/fit:    full → labels → decimated → bodies → squeeze
+all/fixed:  full → scroll
+```
+
+The menu makes that promise in those words, and the corner tooltip has been
+telling readers "All transcripts shows more" since the rung shipped. So the
+policy inverts for the one mode that asks it to: names go before transcripts do
+under `auto`, and transcripts outlast names under `all`.
+
 `k` rides on `FitStage`, so the corner chip, its tooltip and
 `isoformPicks.byCap` read the solve rather than a flag the worker set.
 

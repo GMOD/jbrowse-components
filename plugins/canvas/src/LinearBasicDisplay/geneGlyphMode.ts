@@ -1,10 +1,14 @@
 // Single source of truth for the geneGlyphMode display setting.
 //
-// 'auto' switches based on zoom, 'all' shows every transcript, 'longestCoding'
-// shows one transcript per gene. The value name is historical and stays for
-// config compatibility: since the isoform ranking learned to read RefSeq
-// Select / MANE Select, coding length is what it falls back to rather than
-// what it does, so the label says "representative".
+// 'auto' switches on zoom and trims what the track height cannot hold, 'all'
+// shows every transcript and is exempt from that trim (`showsEveryIsoform`
+// withholds the fit ladder's isoform rung, so the surplus scrolls),
+// 'longestCoding' shows one transcript per gene.
+//
+// The 'longestCoding' value name is historical and stays for config
+// compatibility: since the isoform ranking learned to read RefSeq Select / MANE
+// Select, coding length is what it falls back to rather than what it does, so
+// the label says "representative".
 export const GENE_GLYPH_MODES = ['auto', 'all', 'longestCoding'] as const
 
 export type GeneGlyphMode = (typeof GENE_GLYPH_MODES)[number]
