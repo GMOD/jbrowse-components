@@ -195,18 +195,25 @@ export const syntenyVideos: VideoSpec[] = [
   //
   // No reorder clicks: the restack tour is the film of the arrows, and here
   // the anchor-on-top order the dialog opens in is the one the launched stack
-  // wants. What this dialog gets instead is its CHECKBOXES: the span column
-  // prints where each panel would open, and brachypodium's block union is
-  // stretched to tens of megabases by a stray same-contig hit (the lane
-  // display's median fit filters that; the launch's span union does not — see
-  // the ideas doc), so its row is out of scale with the rest and the tour
-  // unticks it on camera, off the number the dialog itself shows. It ends on
-  // Replace current view for the same reason both launch tours do — the
-  // genome rows do not share a window with the lane view they came from.
+  // wants. What the dialog gets instead is READING TIME on its span column,
+  // which prints where each panel would open before the reader commits to it.
+  //
+  // NO UNTICK. The tour used to drop brachypodium on camera, because a stray
+  // same-contig hit stretched its block union to tens of megabases while the
+  // lane display's median fit filtered the same hit out. `resolvePanel` shares
+  // that filter now (`keepNearMedian`), and the dialog prints brachypodium at
+  // 176Kbp against rice's 170, sorghum's 178 and setaria's 166 — so the step
+  // dropped a perfectly good panel while narrating that it was out of scale.
+  // Maize is the wide row now at 454Kbp, and it is NOT the replacement: this
+  // demo exists partly to show maize's whole-genome duplication, so teaching
+  // the reader to untick it teaches them to discard the finding.
+  //
+  // It ends on Replace current view for the same reason both launch tours do —
+  // the genome rows do not share a window with the lane view they came from.
   {
     name: 'synteny/multiway_launch_stack',
     description:
-      "From the grasses lane track to the stacked view: the track menu's Launch stacked synteny view entry, the dialog offering a row per grass with each panel's span printed beside it, one out-of-scale row unticked, and Replace current view putting the stack in the lane view's place",
+      "From the grasses lane track to the stacked view: the track menu's Launch stacked synteny view entry, the dialog offering a row per grass with each panel's span printed beside it, and Replace current view putting the stack in the lane view's place",
     url: grassesLanes,
     // Sized to the LAUNCHED STACK, the tallest of the three states and the
     // frame the poster comes from: the run measured the app at 665 on the
@@ -250,15 +257,9 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       // long enough to read the order the dialog opens in and the span the
-      // dialog prints beside each row
-      { type: 'delay', ms: 3000, say: 'One panel per grass' },
-      // the row whose span the dialog shows out of scale with the rest
-      {
-        type: 'click',
-        selector: '::-p-aria([name="brachypodium"][role="checkbox"])',
-        say: 'Untick brachypodium',
-        hold: 2200,
-      },
+      // dialog prints beside each row, which is now the whole of what this
+      // state has to say — it carries the beat the untick click used to
+      { type: 'delay', ms: 5200, say: 'One panel per grass' },
       {
         type: 'click',
         text: 'Replace current view',

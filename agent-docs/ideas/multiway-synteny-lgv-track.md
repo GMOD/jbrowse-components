@@ -281,8 +281,12 @@ megabases (brachypodium came back `1:5,237,628..54,451,482` for a 185 kb rice
 window whose lane frame was 185 kb). `computeRowFrame`'s length-weighted-median
 filter is now `keepNearMedian`, shared with `resolvePanel`, which applies it
 on the winning contig with the region of interest as the unit. The grasses
-launch tour (`multiway_launch_stack`) films a row being unticked for exactly
-that span and wants re-filming. The display groups on gene name with `syntenyId` as
+launch tour (`multiway_launch_stack`) filmed that row being unticked, and no
+longer does: the dialog prints brachypodium at 176 kb against rice's 170,
+sorghum's 178 and setaria's 166, so the step dropped a good panel while saying
+it was out of scale. Maize is the wide row now at 454 kb and is deliberately
+NOT the replacement — the set exists partly to show maize's WGD, so unticking
+it would teach the reader to discard the finding. The display groups on gene name with `syntenyId` as
 the nameless fallback; the first-class `syntenyGroupId` this approximates is
 specified in [synteny-comparative](synteny-comparative.md) §"syntenyGroupId for
 cross-row block identity" and should be built there, not here — this display
