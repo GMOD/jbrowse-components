@@ -36,10 +36,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')
           }
-          const jb2Tracks = (config.tracks as Track[]).map(jb1Track => ({
-            ...convertTrackConfig(jb1Track, config.dataRoot || ''),
-            assemblyNames: [assemblyName],
-          }))
+          // a JBrowse 1 sequence store describes the assembly, which the
+          // connection is given rather than supplying. Its ReferenceSequenceTrack
+          // schema declares neither assemblyNames nor category, so passing one
+          // through would stamp two slots JBrowse ignores onto a second copy of
+          // a sequence the assembly already has
+          const jb2Tracks = (config.tracks as Track[])
+            .map(jb1Track =>
+              convertTrackConfig(jb1Track, config.dataRoot || ''),
+            )
+            .filter(conf => conf.type !== 'ReferenceSequenceTrack')
+            .map(conf => ({ ...conf, assemblyNames: [assemblyName] }))
 
           // the node can be destroyed during the awaits above (e.g. a React
           // StrictMode double-mount disposes the first rootModel)
