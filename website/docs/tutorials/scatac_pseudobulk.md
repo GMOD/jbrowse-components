@@ -33,8 +33,8 @@ clustered and cell-type-labeled by that tool's own pipeline.
 - the annotated `AnnData` that `snap.datasets.pbmc5k(type="annotated_h5ad")`
   downloads and caches:
   https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html
-- CATlas' published hg38 per-cell-type accessibility BigWigs, the atlas bucket
-  the [published-atlas example](#published-atlas-bigwigs) reads from:
+- CATlas' published hg38 per-cell-type accessibility BigWigs, which
+  [](#via-config-json) points a track at without building anything:
   https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/
 
 ## Pooling cells into rows
@@ -224,6 +224,13 @@ a plain array of URLs and derives each row's label from its filename:
 }
 ```
 
+A `uri` reaches anywhere, so a published atlas needs no pipeline at all:
+[CATlas](https://www.catlas.org/) serves hg38 coverage from
+`https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one file
+per cell type, and naming the ones you want is the whole track. Percent-encode
+the `+` in a cell-type name — `T_lymphocyte_2_CD4%2B.bw` — which is the one way
+those URLs go wrong quietly.
+
 The display is a `MultiLinearWiggleDisplay`, and how the rows are drawn is one
 slot:
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
@@ -235,61 +242,6 @@ lists every mode, and the track menu switches between them live. `multirowxy`
 Loaded, the twelve rows put the marker check in one frame:
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
-
-## Published atlas BigWigs
-
-Published atlases distribute their per-cell-type pileups as BigWigs, the same
-set of files this page has been building, so they load through the same adapter
-with nothing to run. [CATlas](https://www.catlas.org/) publishes hg38 coverage
-under `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one
-file per cell type, so naming the ones you want is the whole track:
-
-```json
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "catlas_immune",
-  "name": "CATlas accessibility, immune cell types",
-  "category": ["Single cell", "Chromatin accessibility"],
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "subadapters": [
-      {
-        "type": "BigWigAdapter",
-        "name": "CD4 T cell",
-        "group": "Immune",
-        "color": "#4682b4",
-        "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/T_lymphocyte_2_CD4%2B.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "CD8 T cell",
-        "group": "Immune",
-        "color": "#4363d8",
-        "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/T_Lymphocyte_1_CD8%2B.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "Plasma B cell",
-        "group": "Immune",
-        "color": "#2166ac",
-        "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Plasma_B.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "Macrophage",
-        "group": "Immune",
-        "color": "#1f78b4",
-        "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Macrophage_General.bw"
-      }
-    ]
-  }
-}
-```
-
-The `%2B` is a literal `+` in the cell-type name, percent-encoded in the URL. An
-atlas set loads beside your own `export_coverage` output, so a lineage in your
-data has a much larger reference to read against.
 
 ## Reproduce it end to end
 
@@ -351,5 +303,5 @@ Reference datasets:
   the 10x Genomics experiment this page pseudobulks, in its clustered and
   cell-type-annotated form
 - [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
-  · [resource portal](https://www.catlas.org/), the atlas the per-cell-type
-  BigWigs above come from
+  · [resource portal](https://www.catlas.org/), the published atlas a track
+  reads without building anything
