@@ -9,6 +9,7 @@ import type {
 } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
+import type { LinkedReadsMode } from '../constants.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 type SortCall = [type: string, pos: number, refName: string]
@@ -111,6 +112,8 @@ function makeModel(
     selectFeature(feature: Feature) {
       selected.push(feature)
     },
+    linkedReads: 'off' as LinkedReadsMode,
+    setLinkedReads(_mode: LinkedReadsMode) {},
     // Stands in for the RPC, resolving to a feature the assertions can tell
     // apart from one the menu already had in hand.
     withFeatureById(_featureId: string, onFeat: (feat: Feature) => void) {
@@ -636,6 +639,42 @@ test('copy submenu includes 1-based location when the feature has a refName', ()
     'Copy location',
     'Copy feature info as JSON',
   ])
+})
+
+function labels(items: unknown[]) {
+  return items.map(i => (i as { label: string }).label)
+}
+
+test('a split read offers to show its segments side by side', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({
+      name: 'readABC',
+      refName: 'chr22',
+      start: 10_000,
+      end: 10_500,
+      strand: 1,
+      CIGAR: '500M300S',
+      tags: { SA: 'chr9,20001,+,500S300M,60,0;' },
+    }),
+  })
+  expect(labels(run(model))).toContain(
+    'Split current view to show split alignments',
+  )
+})
+
+test('a read with no SA tag is not offered the split-alignment view', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({
+      name: 'readABC',
+      refName: 'chr22',
+      start: 10_000,
+      end: 10_500,
+      CIGAR: '500M',
+    }),
+  })
+  expect(labels(run(model))).not.toContain(
+    'Split current view to show split alignments',
+  )
 })
 
 // LGVSyntenyDisplay reuses the hit items but curates the sort out (its own

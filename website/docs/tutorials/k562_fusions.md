@@ -141,9 +141,11 @@ this track:
 
 The Iso-Seq reads stop and start at the bases STAR-Fusion reported from short
 reads. Putting both partners in one view as displayed regions lays the fusion
-out the way FusionInspector does: type the locations into the location box,
-separated by spaces. The transcript reaches _ABL1_ at more than one place, so
-this view uses three regions, the _BCR_ donor and two acceptor windows.
+out the way FusionInspector does: right-click a read that crosses the junction
+and choose **Split current view to show split alignments**, or type the
+locations into the location box, separated by spaces. The transcript reaches
+_ABL1_ at more than one place, so this view uses three regions, the _BCR_ donor
+and two acceptor windows.
 
 A read that crosses the junction is one alignment on chr22 and a supplementary
 alignment on chr9. **Read connections → Use curved connectors** draws a curve

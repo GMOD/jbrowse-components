@@ -11,6 +11,7 @@ import {
   hasBreakpointSplitView,
   launchBreakpointSplitView,
 } from '@jbrowse/sv-core'
+import CallSplitIcon from '@mui/icons-material/CallSplit'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
@@ -31,10 +32,15 @@ import {
   openModificationWidget,
 } from '../components/detailWidgets.ts'
 import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
+import {
+  splitAlignmentSegments,
+  viewSplitAlignmentRegionsInCurrentView,
+} from '../viewSplitAlignmentRegions.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
+import type { LinkedReadsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -90,6 +96,10 @@ interface ContextMenuModel
   // point and the track menu's "Tag..." open with the same field filled.
   sortedBy?: { type: string; tag?: string }
   selectFeature: (feature: Feature) => void
+  // Read by "Split current view to show split alignments", which enters chain
+  // layout so the segments it lays side by side get their connector.
+  linkedReads: LinkedReadsMode
+  setLinkedReads: (mode: LinkedReadsMode) => void
 }
 
 // Act on the read the menu was opened over. `feat` is the fetched feature as
@@ -567,6 +577,20 @@ export function getContextMenuItems(
               ]
             : []),
         ],
+      })
+    }
+    const segments = splitAlignmentSegments(feat)
+    if (segments.length > 1) {
+      items.push({
+        label: 'Split current view to show split alignments',
+        icon: CallSplitIcon,
+        onClick: () => {
+          viewSplitAlignmentRegionsInCurrentView({
+            view: getContainingView(self) as LGV,
+            display: self,
+            segments,
+          })
+        },
       })
     }
     const filterSubMenu = getFilterSubMenu(self, feat)

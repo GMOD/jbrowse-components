@@ -1,0 +1,121 @@
+import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
+import {
+  clampToContig,
+  gatherOverlaps,
+  getSession,
+  notEmpty,
+  pluralize,
+} from '@jbrowse/core/util'
+import { showRegionsWithUndo } from '@jbrowse/plugin-linear-genome-view'
+
+import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
+import { getStrand } from '../shared/util.ts'
+
+import type { LinkedReadsMode } from './constants.ts'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+export interface AlignedSegment {
+  refName: string
+  start: number
+  end: number
+  clip: number
+}
+
+/**
+ * Every locus a split read aligns to — the record's own plus each one its SA
+ * tag names — ordered along the read by clip-at-start, so a fusion lists its
+ * donor before its acceptor. Empty for a read with no SA tag, so a caller can
+ * gate on the length. A truncated SA record parses to an empty span and is
+ * dropped rather than sent to the view as a region.
+ */
+export function splitAlignmentSegments(feature: Feature): AlignedSegment[] {
+  const records = splitSA(extractFeatureTagValue(feature, 'SA'))
+  if (records.length === 0) {
+    return []
+  }
+  const cigar = (feature.get('CIGAR') as string | undefined) ?? ''
+  const own: AlignedSegment = {
+    refName: feature.get('refName'),
+    start: feature.get('start'),
+    end: feature.get('end'),
+    clip: getClip(cigar, getStrand(feature)),
+  }
+  const others = featurizeSAEntries(records, feature.id(), undefined, undefined)
+    .filter(s => Number.isFinite(s.start) && s.end > s.start)
+    .map(s => ({
+      refName: s.refName,
+      start: s.start,
+      end: s.end,
+      clip: s.clipLengthAtStartOfRead,
+    }))
+  return [own, ...others].sort((a, b) => a.clip - b.clip)
+}
+
+interface LinkedReadsDisplay {
+  linkedReads: LinkedReadsMode
+  setLinkedReads: (mode: LinkedReadsMode) => void
+}
+
+/**
+ * Replace the view's displayed regions with one window per segment of a split
+ * read, in read order, so the whole molecule is on screen side by side. Each
+ * window is padded by its segment's own length and windows that touch on one
+ * refName merge, the same framing `viewMateRegionInCurrentView` gives a mate.
+ *
+ * The view is switched into chain layout when it isn't already, since the point
+ * of putting the segments side by side is the connector between them, and Undo
+ * puts the layout back with the regions.
+ */
+export function viewSplitAlignmentRegionsInCurrentView({
+  view,
+  display,
+  segments,
+}: {
+  view: LinearGenomeViewModel
+  display: LinkedReadsDisplay
+  segments: AlignedSegment[]
+}) {
+  const session = getSession(view)
+  const assemblyName = view.assemblyNames[0]
+  const assembly = assemblyName
+    ? session.assemblyManager.get(assemblyName)
+    : undefined
+  if (!assembly) {
+    return
+  }
+  const loci = segments.map(({ refName, start, end }) => {
+    const pad = Math.max(end - start, 100)
+    return clampToContig(assembly, {
+      refName,
+      start: start - pad,
+      end: end + pad,
+    })
+  })
+  const regions = loci.filter(notEmpty)
+  if (regions.length === 0) {
+    session.notify(
+      `None of this read's ${segments.length} aligned segments lands inside a contig of ${assembly.name}`,
+      'warning',
+    )
+    return
+  }
+  const dropped = segments.filter((_, i) => loci[i] === undefined)
+  const wasLinked = display.linkedReads !== 'off'
+  if (!wasLinked) {
+    display.setLinkedReads('normal')
+  }
+  const shown = `Showing ${regions.length} aligned ${pluralize(regions.length, 'segment')} of this read`
+  showRegionsWithUndo({
+    view,
+    regions: gatherOverlaps(regions, 0),
+    message: dropped.length
+      ? `${shown} — ${dropped.length} ${pluralize(dropped.length, 'segment')} past the end of ${dropped.map(s => s.refName).join(', ')} left out`
+      : shown,
+    alsoUndo: wasLinked
+      ? undefined
+      : () => {
+          display.setLinkedReads('off')
+        },
+  })
+}

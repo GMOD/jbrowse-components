@@ -387,6 +387,10 @@ Right-click a read and open the **View mate** submenu:
 
 The submenu appears only for a read whose mate is mapped.
 
+For a split read, **Split current view to show split alignments** does the same
+with one region per segment of its `SA` tag, in read order, and turns on **View
+as pairs / link supplementary alignments**; **Undo** restores both.
+
 ## One read against the reference
 
 A long read that crosses a structural variant aligns in pieces: the aligner
