@@ -89,6 +89,8 @@ hsa = "hsa"
 alls = "alls"
 Hieght = "Hieght"
 planed = "planed"
+alo = "alo"           # a's lo bound, paired with ahi in coveringGene
+ahi = "ahi"           # a's hi bound, paired with alo in coveringGene
 
 [files]
 extend-exclude = [

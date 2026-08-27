@@ -118,6 +118,7 @@ export type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,
 } from './LinearBasicDisplay/configSchema.ts'
+export type { LinearCanvasBaseDisplayConfigModel } from './LinearBasicDisplay/baseConfigSchema.ts'
 export type { FeatureContextMenuInfo } from './LinearBasicDisplay/featureContextMenu.ts'
 export type {
   FeatureHighlight,

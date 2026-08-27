@@ -40,7 +40,10 @@ export type {
   AlignmentLane,
   LaneSection,
 } from './LinearAlignmentsDisplay/lanes.ts'
-export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
+export type {
+  AlignmentsContextMenuInfo,
+  LinearAlignmentsDisplayModel,
+} from './LinearAlignmentsDisplay/model.ts'
 export type { ReadHit } from './LinearAlignmentsDisplay/readLookup.ts'
 // The fixed read-height presets, exported so a caller that writes `featureHeight`
 // without going through the menu can use the same three numbers. @jbrowse/img
