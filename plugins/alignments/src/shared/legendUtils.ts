@@ -487,9 +487,25 @@ function methylationLegend(
   if (colorBy.type === 'bisulfite') {
     return [{ color: methylated5mC, label: '5mC methylated' }]
   }
-  return METHYLATION_STATES.filter(({ type }) => keyed.has(type)).map(
-    ({ color, label }) => ({ color, label }),
-  )
+  return [
+    ...METHYLATION_STATES.filter(({ type }) => keyed.has(type)).map(
+      ({ color, label }) => ({ color, label }),
+    ),
+    // The fill view is not cytosine-only, and this used to assume it was. The
+    // cytosine walk claims 5mC/5hmC; every OTHER type the read declares is
+    // drawn here too, by the MM/ML paint in its by-type palette colour (a
+    // Fiber-seq read's 6mA — see extractModifications). Keying only the two
+    // states above left those marks unexplained, which is the same defect this
+    // family already fixed once for two-color's blue.
+    //
+    // The colour comes from `keyed`, which resolves it through
+    // `getColorForModification` — the function the extractor packs the mark
+    // with — so the swatch is the drawn colour by construction rather than by a
+    // second table.
+    ...[...keyed]
+      .filter(([type]) => !METHYLATION_STATES.some(s => s.type === type))
+      .map(([type, color]) => ({ color, label: getModificationName(type) })),
+  ]
 }
 
 // Rank of one modification code in `modificationData`. Numeric-looking ChEBI

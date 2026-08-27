@@ -919,3 +919,52 @@ describe('the overlap row', () => {
     expect(items('chain')).toHaveLength(items().length + 1)
   })
 })
+
+// The fill view draws a read's non-cytosine types too — the cytosine walk claims
+// 5mC/5hmC and the MM/ML paint draws the rest, so a Fiber-seq read shows 6mA
+// marks here. Keying only the two methylation states left those unexplained.
+describe('the fill view keys the types drawn beside the methylation states', () => {
+  const fiberseq = new Map([
+    ['m', 'rgb(255,0,0)'],
+    ['a', 'rgb(51,0,111)'],
+  ])
+
+  test('a non-cytosine type is keyed after them, in its by-type colour', () => {
+    const items = legendFor(
+      { type: 'modifications', modifications: { fillUnmarked: true } },
+      [],
+      { detectedModifications: fiberseq },
+    )
+    expect(items.map(i => i.label)).toEqual([
+      '5mC methylated',
+      '6mA',
+      'Unmethylated',
+    ])
+    // the mark's own colour: extractModifications packs a 6mA call through
+    // getColorForModification, which is where this swatch comes from too
+    expect(items.find(i => i.label === '6mA')?.color).toBe('rgb(51,0,111)')
+  })
+
+  test('the type filter still removes it', () => {
+    expect(
+      legendFor(
+        {
+          type: 'modifications',
+          modifications: { fillUnmarked: true, shownModifications: ['m'] },
+        },
+        [],
+        { detectedModifications: fiberseq },
+      ).map(i => i.label),
+    ).toEqual(['5mC methylated', 'Unmethylated'])
+  })
+
+  // Bisulfite parses no tags at all, so it has no such remainder to key and
+  // answers before this branch.
+  test('bisulfite is unaffected', () => {
+    expect(
+      legendFor({ type: 'bisulfite' }, [], {
+        detectedModifications: new Map([['a', 'rgb(51,0,111)']]),
+      }).map(i => i.label),
+    ).toEqual(['5mC methylated'])
+  })
+})
