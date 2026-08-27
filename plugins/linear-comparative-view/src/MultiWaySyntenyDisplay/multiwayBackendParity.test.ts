@@ -34,25 +34,32 @@ const ribbon: SyntenyInstanceData = {
   colors: Uint32Array.of(0xff808080),
 }
 
-// one CDS box at px 500..560, y 120, in a scrolled lane
+// One lane's glyph cell: a CDS box at px 500..560 with its top at y 120, plus
+// the intron line and arrowhead that ride the box's CENTRE at y 129. The two
+// y families differ by design — see `centeredRowVisible` in the feature track's
+// Canvas2D renderer — so a fixture carrying only rects cannot see a backend
+// reading one of them the other way.
+const GLYPH_TOP = 120
+const GLYPH_H = 18
+const GLYPH_CENTRE = GLYPH_TOP + GLYPH_H / 2
 const glyphs: LaneGlyphData = {
   rectPositions: Uint32Array.of(PX_ORIGIN + 500, PX_ORIGIN + 560),
-  rectYs: Float32Array.of(120),
-  rectHeights: Float32Array.of(18),
+  rectYs: Float32Array.of(GLYPH_TOP),
+  rectHeights: Float32Array.of(GLYPH_H),
   rectColors: Uint32Array.of(0xff2020da),
   rectStrands: Float32Array.of(0),
   rectDensityFade: Uint32Array.of(0),
-  linePositions: new Uint32Array(0),
-  lineYs: new Float32Array(0),
-  lineHeights: new Float32Array(0),
-  lineColors: new Uint32Array(0),
-  lineDirections: new Int8Array(0),
-  arrowXs: new Uint32Array(0),
-  arrowYs: new Float32Array(0),
-  arrowHeights: new Float32Array(0),
-  arrowWidthsBp: new Uint32Array(0),
-  arrowDirections: new Int8Array(0),
-  arrowColors: new Uint32Array(0),
+  linePositions: Uint32Array.of(PX_ORIGIN + 400, PX_ORIGIN + 500),
+  lineYs: Float32Array.of(GLYPH_CENTRE),
+  lineHeights: Float32Array.of(GLYPH_H),
+  lineColors: Uint32Array.of(0xff333333),
+  lineDirections: Int8Array.of(1),
+  arrowXs: Uint32Array.of(PX_ORIGIN + 560),
+  arrowYs: Float32Array.of(GLYPH_CENTRE),
+  arrowHeights: Float32Array.of(GLYPH_H),
+  arrowWidthsBp: Uint32Array.of(160),
+  arrowDirections: Int8Array.of(1),
+  arrowColors: Uint32Array.of(0xff333333),
   outlineColor: 0,
   hits: [],
 }
@@ -114,6 +121,15 @@ test('a glyph lands at the same px on both backends: the drag rides the layer tr
   expect(fill.args[0]).toBe(500 + DRAG)
   expect(fill.args[1]).toBe(120)
 
+  // the intron line and the arrowhead ride the box's centre, and Canvas2D
+  // snaps that to a crisp half-pixel — so they land a half glyph BELOW the
+  // rect's top rather than on it
+  const stroke = ctx.calls.find(
+    c => c.method === 'moveTo' && Math.abs(c.args[1]! - GLYPH_CENTRE) <= 1,
+  )!
+  expect(stroke.args[0]).toBe(400 + DRAG)
+  expect(stroke.args[1]).toBeGreaterThan(fill.args[1]!)
+
   const { hal } = gpuFrame()
   const rectDraw = hal.draws().find(d => d.passId === 'rect')!
   const u = hal.uniformsOf(rectDraw)!
@@ -122,6 +138,12 @@ test('a glyph lands at the same px on both backends: the drag rides the layer tr
   const rangeStart = u[0]! + u[1]!
   expect(PX_ORIGIN + 500 - rangeStart).toBe(500 + DRAG)
   expect(u[2]).toBe(WIDTH)
+  // both y families reach the GPU as the cell states them; the passes are the
+  // feature track's own and each reads its own convention
+  const lineDraw = hal.draws().find(d => d.passId === 'line')!
+  expect(hal.uniformsOf(lineDraw)![0]! + hal.uniformsOf(lineDraw)![1]!).toBe(
+    rangeStart,
+  )
 })
 
 test('a ribbon projects through the same pan on both backends', () => {

@@ -26,7 +26,7 @@ import type {
 } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-const UTR_HEIGHT_FRACTION = 0.65
+export const UTR_HEIGHT_FRACTION = 0.65
 
 // Shrink a rect to `fraction` of its row height, keeping it vertically centered.
 // Shared by UTRs and retrotransposon bodies so the geometry can't drift.

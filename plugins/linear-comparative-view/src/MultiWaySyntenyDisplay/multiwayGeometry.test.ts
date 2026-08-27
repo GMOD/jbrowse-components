@@ -11,7 +11,7 @@ import { buildLanes } from './laneStack.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
 import {
   buildBandCell,
-  buildLaneGlyphCell,
+  buildLaneCells,
   buildRibbonGeometry,
   buildTickGeometry,
   glyphHitAt,
@@ -389,7 +389,7 @@ describe('a lane cell', () => {
       laneGenes: new Map([['grape', [new LaneGene(gene)]]]),
     })
     const lane = s.lanes[0]!
-    const cell = buildLaneGlyphCell({
+    const { glyphs: cell } = buildLaneCells({
       lane,
       glyphHeight: s.glyphHeight,
       width: WIDTH,
@@ -397,9 +397,22 @@ describe('a lane cell', () => {
     })
     // the lane's divider, then the gene's own line reading backwards
     expect([...cell.lineDirections]).toEqual([0, -1])
+    // rect takes the box top and line/arrow its CENTRE — the feature track's
+    // own split. Passing the top to all three drew every intron line and
+    // arrowhead half a glyph high
+    const centre = lane.glyphTop + s.glyphHeight / 2
+    expect([...cell.lineYs]).toEqual([centre, centre])
+    expect([...cell.arrowYs]).toEqual([centre])
+    expect(cell.rectYs[2]).toBe(lane.glyphTop)
+    // the feature track outlines a box only where its own slot asks; this cell
+    // holds gene glyphs, so it never does
+    expect(cell.outlineColor).toBe(0)
+    // one line per GAP, the way the feature track emits them — the exons cover
+    // 80..112 and 144..160, so the connector is the 112..144 between them.
+    // Spanning the whole gene instead marches the chevron pass over the exons
     expect([...cell.linePositions].slice(2)).toEqual([
-      PX_ORIGIN + 80,
-      PX_ORIGIN + 160,
+      PX_ORIGIN + 112,
+      PX_ORIGIN + 144,
     ])
     // exon-minus-CDS thin: 100-120 and 180-200; CDS full: 120-140
     expect([...cell.rectPositions]).toEqual([
@@ -425,21 +438,24 @@ describe('a lane cell', () => {
       features: [pairFeature('g1', 100, 200), pairFeature('g2', 500, 600)],
       laneGenes: new Map([['grape', [new LaneGene(gene)]]]),
     })
-    const cell = buildLaneGlyphCell({
+    const { glyphs, boxes } = buildLaneCells({
       lane: s.lanes[0]!,
       glyphHeight: s.glyphHeight,
       width: WIDTH,
       colors,
     })
-    const box = cell.hits.find(h => h.groupKey === 'g2')!
+    const box = boxes.hits.find(h => h.groupKey === 'g2')!
     expect(box.x1).toBe(400)
     expect(box.x2).toBe(480)
-    const boxRect = cell.rectYs.length - 1
-    expect(abgrAlpha(cell.rectColors[boxRect]!)).toBe(64)
-    expect(cell.outlineColor).not.toBe(0)
-    // the box draws over the gene, so it is the hit where both would answer
-    expect(glyphHitAt(cell.hits, 440, s.lanes[0]!.glyphTop + 1)?.groupKey).toBe(
-      'g2',
-    )
+    expect(abgrAlpha(boxes.rectColors[0]!)).toBe(64)
+    expect(boxes.outlineColor).not.toBe(0)
+    // `outlineColor` is a per-CELL uniform the rect pass applies to every rect
+    // it holds, so a box sharing a cell with the gene models handed each of
+    // them its own fill as a border
+    expect(glyphs.outlineColor).toBe(0)
+    expect(glyphs.hits.some(h => h.groupKey === 'g2')).toBe(false)
+    expect(
+      glyphHitAt(boxes.hits, 440, s.lanes[0]!.glyphTop + 1)?.groupKey,
+    ).toBe('g2')
   })
 })

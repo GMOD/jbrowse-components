@@ -46,7 +46,7 @@ import {
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import {
   buildBandCell,
-  buildLaneGlyphCell,
+  buildLaneCells,
   buildRibbonGeometry,
   buildTickGeometry,
 } from '../src/MultiWaySyntenyDisplay/multiwayGeometry.ts'
@@ -294,7 +294,7 @@ for (let step = 0; step < 12; step++, span *= 1.35) {
   let onCanvasCount = 0
   const tGlyphs = minOf(() => {
     for (const lane of stack.lanes) {
-      buildLaneGlyphCell({
+      buildLaneCells({
         lane,
         glyphHeight: stack.glyphHeight,
         width: WIDTH,

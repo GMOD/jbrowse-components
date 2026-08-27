@@ -258,6 +258,63 @@ test('geneGlyphShape draws a CDS-only annotation full height', () => {
   })
 })
 
+// The subpart rules are the feature track's own (`isCDS`/`isExon`/`isUTR`),
+// which is what these two cover: matching `type === 'CDS'` exactly drew the
+// first as one flat full-height box, and a transcript naming its UTRs rather
+// than its exons lost them entirely in the second.
+test('geneGlyphShape reads a lowercase cds the way the feature track does', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene4',
+    refName: 'chr1',
+    start: 100,
+    end: 200,
+    subfeatures: [
+      { uniqueId: 'e1', refName: 'chr1', start: 100, end: 200, type: 'Exon' },
+      { uniqueId: 'c1', refName: 'chr1', start: 140, end: 180, type: 'cds' },
+    ],
+  })
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [[140, 180]],
+    thin: [
+      [100, 140],
+      [180, 200],
+    ],
+  })
+})
+
+test('geneGlyphShape draws explicit UTR rows where a transcript names no exons', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene5',
+    refName: 'chr1',
+    start: 100,
+    end: 200,
+    subfeatures: [
+      {
+        uniqueId: 'u1',
+        refName: 'chr1',
+        start: 100,
+        end: 130,
+        type: 'five_prime_UTR',
+      },
+      { uniqueId: 'c1', refName: 'chr1', start: 130, end: 175, type: 'CDS' },
+      {
+        uniqueId: 'u2',
+        refName: 'chr1',
+        start: 175,
+        end: 200,
+        type: 'three_prime_UTR',
+      },
+    ],
+  })
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [[130, 175]],
+    thin: [
+      [100, 130],
+      [175, 200],
+    ],
+  })
+})
+
 test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => {
   const region = new SimpleFeature({
     uniqueId: 'r',

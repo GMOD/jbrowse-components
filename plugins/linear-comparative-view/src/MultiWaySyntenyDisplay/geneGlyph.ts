@@ -12,9 +12,18 @@
  * this file rather than between two.
  */
 import { dedupe, doesIntersect2 } from '@jbrowse/core/util'
+import {
+  featureType,
+  getSubfeatures,
+  isCDS,
+  isExon,
+  isUTR,
+  mergeSpans,
+} from '@jbrowse/plugin-canvas'
 
 import type { Span } from './layoutMultiWay.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { GlyphSpan } from '@jbrowse/plugin-canvas'
 
 // What a lane draws from a gene track's top-level features. An NCBI-style GFF3
 // also carries a `region` row spanning the whole sequence, which would paint
@@ -27,14 +36,14 @@ const CONTAINER_TYPES = new Set(['region', 'chromosome', 'contig', 'scaffold'])
 
 export function laneGeneFeatures(features: Feature[]) {
   const unique = dedupe(features, f => f.id())
-  const genes = unique.filter(f => !!f.get('type')?.endsWith('gene'))
+  // lowercased, the way the feature track admits its own top-level features:
+  // a GFF3 spelling `Gene` is otherwise not a gene here and not a container
+  // either, so it falls through to the branch meant for transcript-topped
+  // annotations
+  const typeOf = (f: Feature) => featureType(f).toLowerCase()
+  const genes = unique.filter(f => typeOf(f).endsWith('gene'))
   return (
-    genes.length
-      ? genes
-      : unique.filter(f => {
-          const type = f.get('type')
-          return type === undefined || !CONTAINER_TYPES.has(type)
-        })
+    genes.length ? genes : unique.filter(f => !CONTAINER_TYPES.has(typeOf(f)))
   ).map(feature => new LaneGene(feature))
 }
 
@@ -79,20 +88,6 @@ export function isAnnotated(annotated: Span[], span: Span) {
   )
 }
 
-function mergeIntervals(intervals: [number, number][]) {
-  intervals.sort((a, b) => a[0] - b[0])
-  const merged: [number, number][] = []
-  for (const [start, end] of intervals) {
-    const last = merged[merged.length - 1]
-    if (last && start <= last[1]) {
-      last[1] = Math.max(last[1], end)
-    } else {
-      merged.push([start, end])
-    }
-  }
-  return merged
-}
-
 function subtractIntervals(base: [number, number][], cut: [number, number][]) {
   const out: [number, number][] = []
   for (const [start, end] of base) {
@@ -122,40 +117,55 @@ export interface GeneGlyphShape {
   thin: [number, number][]
 }
 
-// A gene's drawable shape, merged across its transcripts: exon and CDS
-// intervals collected from the whole subtree, the CDS full-height and the
-// exon-minus-CDS remainder as UTR.
+/**
+ * A gene's drawable shape, merged across its transcripts: the CDS full height
+ * and the untranslated remainder thin.
+ *
+ * Merging across transcripts is this display's own operation — the feature
+ * track always draws one row per transcript and has nothing to reuse here (its
+ * container glyph emits no primitives of its own). What IS taken from it is
+ * every leaf rule: `isCDS`/`isExon` match case-insensitively, because a
+ * lowercase `cds` is ordinary in real files and matching one case-sensitively
+ * derives UTRs from only some exons; `isUTR` reads the three spellings a GFF3
+ * uses, so a transcript that names its UTRs rather than its exons draws them
+ * instead of coming out as bare CDS; and `mergeSpans` joins abutting pieces,
+ * which the CDS and UTR halves of one exon always are.
+ */
 export function geneGlyphShape(feature: Feature): GeneGlyphShape {
-  const exons: [number, number][] = []
-  const cds: [number, number][] = []
+  const exons: GlyphSpan[] = []
+  const cds: GlyphSpan[] = []
+  const utrs: GlyphSpan[] = []
   const walk = (f: Feature) => {
-    for (const sub of f.get('subfeatures') ?? []) {
-      const type = sub.get('type')
-      if (type === 'exon') {
-        exons.push([sub.get('start'), sub.get('end')])
-      } else if (type === 'CDS') {
-        cds.push([sub.get('start'), sub.get('end')])
+    for (const sub of getSubfeatures(f)) {
+      const span: GlyphSpan = [sub.get('start'), sub.get('end')]
+      if (isCDS(sub)) {
+        cds.push(span)
+      } else if (isUTR(sub)) {
+        utrs.push(span)
+      } else if (isExon(sub)) {
+        exons.push(span)
       }
       walk(sub)
     }
   }
   walk(feature)
-  const mergedCds = mergeIntervals(cds)
-  const mergedExons = exons.length
-    ? mergeIntervals(exons)
-    : mergedCds.length
-      ? mergedCds
-      : [[feature.get('start'), feature.get('end')] as [number, number]]
-  return exons.length && mergedCds.length
-    ? { full: mergedCds, thin: subtractIntervals(mergedExons, mergedCds) }
-    : { full: mergedExons, thin: [] }
+  const mergedCds = mergeSpans(cds)
+  if (!mergedCds.length) {
+    const merged = mergeSpans(exons.length ? exons : utrs)
+    return {
+      full: merged.length
+        ? merged
+        : [[feature.get('start'), feature.get('end')]],
+      thin: [],
+    }
+  }
+  return {
+    full: mergedCds,
+    thin: utrs.length
+      ? mergeSpans(utrs)
+      : subtractIntervals(mergeSpans(exons), mergedCds),
+  }
 }
-
-// Gene glyph geometry matching the canvas gene track's: UTRs thinner and
-// vertically centered, intron lines carrying direction chevrons, an arrowhead
-// past the downstream end.
-export const UTR_HEIGHT_FRACTION = 0.65
-export const MIN_ARROW_GLYPH_PX = 4
 
 export interface GeneGlyphGeometry {
   left: number
@@ -165,6 +175,11 @@ export interface GeneGlyphGeometry {
   pxDir: number
   full: Span[]
   thin: Span[]
+  // the gaps between the drawn boxes, which is where the connector line goes.
+  // The feature track emits one line per gap rather than one across the whole
+  // feature, and the chevron pass spaces its marks along each line it is given
+  // — so a single span puts chevrons over the exons instead of between them
+  introns: Span[]
 }
 
 /**
@@ -189,5 +204,20 @@ export function geneGlyphGeometry(
         : [px[0] < px[1] ? px : ([px[1], px[0]] as Span)]
     })
   const { full, thin } = gene.shape
-  return { left, right, pxDir, full: toPx(full), thin: toPx(thin) }
+  const fullPx = toPx(full)
+  const thinPx = toPx(thin)
+  const introns: Span[] = []
+  let cursor = left
+  for (const [start, end] of mergeSpans(
+    [...fullPx, ...thinPx].map(([a, b]): GlyphSpan => [a, b]),
+  )) {
+    if (start > cursor) {
+      introns.push([cursor, start])
+    }
+    cursor = Math.max(cursor, end)
+  }
+  if (cursor < right) {
+    introns.push([cursor, right])
+  }
+  return { left, right, pxDir, full: fullPx, thin: thinPx, introns }
 }

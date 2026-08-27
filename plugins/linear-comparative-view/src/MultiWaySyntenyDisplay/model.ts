@@ -40,8 +40,9 @@ import {
 import { laneOrderMenuItem, laneSettingsMenuItems } from './menus.ts'
 import {
   BANDS_KEY,
+  boxesKey,
   buildBandCell,
-  buildLaneGlyphCell,
+  buildLaneCells,
   buildRibbonGeometry,
   buildTickGeometry,
   glyphHitAt,
@@ -784,9 +785,11 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * one cell per lane: its gene models, its placement boxes and its
-       * baseline. The one place a jexl color slot is resolved per glyph, so
-       * the hover — a render parameter — never re-runs it
+       * two cells per lane — its gene models and baseline, and its placement
+       * boxes — since only the boxes carry an outline. Boxes first, so a hit
+       * test walking these in order answers the box over the gene the way the
+       * draw order does. The one place a jexl color slot is resolved per
+       * glyph, so the hover — a render parameter — never re-runs it
        */
       get laneGlyphCells() {
         const { palette, selectedFeatureId } = self
@@ -797,19 +800,18 @@ export function stateModelFactory(
             : readConfObject(self.configuration, slot, { feature })
         const out = new Map<string, MultiWayCell>()
         lanes.forEach((lane, row) => {
-          out.set(glyphsKey(row), {
-            kind: 'glyphs',
-            data: buildLaneGlyphCell({
-              lane,
-              glyphHeight,
-              width: self.canvasWidth,
-              colors: {
-                colorOf,
-                stroke: palette.text.primary,
-                divider: palette.divider,
-              },
-            }),
+          const { glyphs, boxes } = buildLaneCells({
+            lane,
+            glyphHeight,
+            width: self.canvasWidth,
+            colors: {
+              colorOf,
+              stroke: palette.text.primary,
+              divider: palette.divider,
+            },
           })
+          out.set(boxesKey(row), { kind: 'glyphs', data: boxes })
+          out.set(glyphsKey(row), { kind: 'glyphs', data: glyphs })
         })
         return out
       },
@@ -840,11 +842,10 @@ export function stateModelFactory(
           { kind: 'glyphs', key: BANDS_KEY, scrolled: false },
           ...self.ribbonGeometry.layers,
           ...self.tickGeometry.layers,
-          ...lanes.map((_lane, row): MultiWayLayer => ({
-            kind: 'glyphs',
-            key: glyphsKey(row),
-            scrolled: true,
-          })),
+          ...lanes.flatMap((_lane, row): MultiWayLayer[] => [
+            { kind: 'glyphs', key: glyphsKey(row), scrolled: true },
+            { kind: 'glyphs', key: boxesKey(row), scrolled: true },
+          ]),
         ]
       },
       /**

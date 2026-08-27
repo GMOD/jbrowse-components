@@ -1,5 +1,6 @@
 import { toLocale } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
+import { UTR_HEIGHT_FRACTION, centerShrink } from '@jbrowse/plugin-canvas'
 import {
   colorSchemes,
   continuousRampConfig,
@@ -7,12 +8,7 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
-import {
-  MIN_ARROW_GLYPH_PX,
-  UTR_HEIGHT_FRACTION,
-  geneGlyphGeometry,
-  isAnnotated,
-} from './geneGlyph.ts'
+import { geneGlyphGeometry, isAnnotated } from './geneGlyph.ts'
 import { frameTickXs } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
@@ -41,6 +37,9 @@ export function ticksKey(row: number) {
 }
 export function glyphsKey(row: number) {
   return `glyphs:${row}`
+}
+export function boxesKey(row: number) {
+  return `boxes:${row}`
 }
 export const BANDS_KEY = 'bands'
 
@@ -474,14 +473,26 @@ function onCanvas(span: Span, width: number) {
   )
 }
 
+export interface LaneCells {
+  glyphs: LaneGlyphData
+  boxes: LaneGlyphData
+}
+
 /**
  * What one lane draws on its baseline: its gene models where it has an
  * annotation, and the table's own placement box, outlined rather than filled,
  * where it does not — per GROUP, since a table pairing genes the lane's GFF3
  * does not name is the ordinary case. Culled to half a screen either side,
  * which is as far as a pan can carry the stack before it re-lays out.
+ *
+ * TWO cells, because `outlineColor` is a per-cell uniform that the rect pass
+ * applies to every rect it holds. The boxes want an outline — it is what makes
+ * a box read as a box rather than a washed-out gene — and a gene wants none,
+ * which is the feature track's own default (`outlineColor` defaults to `''`
+ * in its base config schema). One cell gave the whole lane the first box's
+ * fill as a border, and the gene glyphs it drew were not the feature track's.
  */
-export function buildLaneGlyphCell({
+export function buildLaneCells({
   lane,
   glyphHeight,
   width,
@@ -491,14 +502,19 @@ export function buildLaneGlyphCell({
   glyphHeight: number
   width: number
   colors: LaneGlyphColors
-}): LaneGlyphData {
+}): LaneCells {
   const glyphs = new GlyphBuilder()
+  const boxes = new GlyphBuilder()
   const y = lane.glyphTop
+  // rect takes the box top, line and arrow take its centre — the feature
+  // track's own split, stated at Canvas2DFeatureRenderer's `centeredRowVisible`
+  // and in line.slang/arrow.slang's `snapBoxCenterY`
+  const centerY = y + glyphHeight / 2
   const stroke = cssColorToABGR(colors.stroke)
   glyphs.line(
     -width,
     2 * width,
-    y,
+    centerY,
     glyphHeight,
     0,
     cssColorToABGR(colors.divider),
@@ -523,26 +539,31 @@ export function buildLaneGlyphCell({
       continue
     }
     annotated.push(span)
-    const { left, right, pxDir, full, thin } = geneGlyphGeometry(
+    const { left, right, pxDir, full, thin, introns } = geneGlyphGeometry(
       gene,
       span,
       (start, end) => lane.spanOf(refName, start, end),
     )
     const color = pack(colors.colorOf('color', feature))
     const utrColor = pack(colors.colorOf('utrColor', feature))
-    glyphs.line(left, right, y, glyphHeight, pxDir, stroke)
-    const utrY = y + ((1 - UTR_HEIGHT_FRACTION) / 2) * glyphHeight
+    for (const [x1, x2] of introns) {
+      glyphs.line(x1, x2, centerY, glyphHeight, pxDir, stroke)
+    }
+    const [utrY, utrHeight] = centerShrink(y, glyphHeight, UTR_HEIGHT_FRACTION)
     for (const [x1, x2] of thin) {
-      glyphs.rect(x1, x2, utrY, glyphHeight * UTR_HEIGHT_FRACTION, utrColor)
+      glyphs.rect(x1, x2, utrY, utrHeight, utrColor)
     }
     for (const [x1, x2] of full) {
       glyphs.rect(x1, x2, y, glyphHeight, color)
     }
-    if (pxDir !== 0 && right - left >= MIN_ARROW_GLYPH_PX) {
+    // no width gate here: the passes cull an arrow narrower than
+    // ARROW_MIN_FEATURE_WIDTH_PX themselves, in px, and these cells are packed
+    // at one px per bp so that gate reads the drawn width directly
+    if (pxDir !== 0) {
       glyphs.arrow(
         pxDir === 1 ? right : left,
         right - left,
-        y,
+        centerY,
         glyphHeight,
         pxDir,
         stroke,
@@ -564,18 +585,18 @@ export function buildLaneGlyphCell({
         continue
       }
       const color = pack(colors.colorOf('color', group.feature))
-      if (glyphs.outlineColor === 0) {
-        glyphs.outlineColor = color
+      if (boxes.outlineColor === 0) {
+        boxes.outlineColor = color
       }
       const [boxLeft, boxRight] = span[0] <= span[1] ? span : [span[1], span[0]]
-      glyphs.rect(
+      boxes.rect(
         boxLeft,
         Math.max(boxLeft + 1, boxRight),
         y + 1,
         Math.max(1, glyphHeight - 2),
         withAbgrAlpha(color, BOX_ALPHA),
       )
-      glyphs.hits.push({
+      boxes.hits.push({
         x1: boxLeft,
         x2: Math.max(boxLeft + 1, boxRight),
         y1: y,
@@ -586,7 +607,7 @@ export function buildLaneGlyphCell({
       })
     }
   }
-  return glyphs.build()
+  return { glyphs: glyphs.build(), boxes: boxes.build() }
 }
 
 /** the glyph hit under a render-origin px point, topmost first: boxes draw over genes */

@@ -168,6 +168,23 @@ export {
 } from './LinearBasicDisplay/passes/index.ts'
 export { CANVAS_GLYPH_DRAW } from './LinearBasicDisplay/components/Canvas2DFeatureRenderer.ts'
 export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
+// The gene glyph's own shape rules, for a display outside this plugin that
+// draws this plugin's glyphs through the passes above. `isCDS`/`isExon` are
+// case-insensitive and `isUTR` knows the three spellings, which is the whole
+// reason to take them rather than to test `type ===` again.
+export {
+  UTR_HEIGHT_FRACTION,
+  centerShrink,
+} from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
+export {
+  featureType,
+  getSubfeatures,
+  isCDS,
+  isExon,
+  isUTR,
+} from './RenderFeatureDataRPC/util.ts'
+export { mergeSpans } from './shared/mergeSpans.ts'
+export type { Span as GlyphSpan } from './shared/mergeSpans.ts'
 export type { RenderState as FeatureGlyphRenderState } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
 
 // The feature band, as pure functions, so a display outside this plugin can draw
