@@ -153,6 +153,27 @@ list, so they are bundled into the plugin, which is what happens to any
 dependency that isn't — `d3-scale`, say. The build configs read
 `ReExports/list.ts` directly, so you do not maintain this set yourself.
 
+### What your tsconfig needs
+
+`@jbrowse/core` addresses its subpaths through an `exports` map, which
+TypeScript reads under `moduleResolution` `bundler`, `node16` or `nodenext`.
+Under the older `"node"` setting it reads no `exports` map at all, so every
+subpath import fails with `TS2307: Cannot find module '@jbrowse/core/util'` and
+a note naming the resolution setting. The published package is intact; the one
+line to change is in your own tsconfig:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  }
+}
+```
+
+Both [plugin templates](/docs/developer_guides/simple_plugin) already set it, so
+a plugin started from one never meets this. TypeScript 6 deprecates the `"node"`
+setting and TypeScript 7 removes it.
+
 ### No-build plugins
 
 A [no-build plugin](/docs/developer_guides/no_build_plugin) has no bundler to
