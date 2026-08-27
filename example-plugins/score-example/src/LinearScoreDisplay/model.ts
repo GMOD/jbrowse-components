@@ -9,7 +9,7 @@ import MultiRegionDisplayMixin, {
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { observable } from 'mobx'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 // #endregion
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
@@ -66,8 +66,10 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
     )
     .volatile(() => ({
       // fetched data keyed by displayedRegionIndex; the render lifecycle
-      // uploads/draws one region at a time from this map
-      rpcDataMap: observable.map<number, ScoreRegionData>(),
+      // uploads/draws one region at a time from this map. `regionDataMap`, not
+      // a bare `observable.map`: an entry is replaced, never mutated, so the
+      // shallow map is the right one
+      rpcDataMap: regionDataMap<ScoreRegionData>('rpcDataMap'),
     }))
     .views(self => ({
       get view() {
