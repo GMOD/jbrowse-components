@@ -229,12 +229,13 @@ in a lineage where it should be silent. One of the ways that happens is a small
 insertion upstream of the gene that creates a binding site, and one of those is
 in the variant track already on screen.
 
-Right-click it and the menu offers to send it to AlphaGenome, naming the variant
-it would send. The panel picks it up as the variant to score, and the button
-changes to say so. Run it, and the same window comes back twice: once for the
+Right-click it and the last row of the menu reads **Predict variant effect with
+AlphaGenome**. That row opens the query panel with the variant already loaded:
+its chip names the position and the two alleles, and the Predict button renames
+itself to match. Run it, and the same window comes back twice — once for the
 reference sequence and once with the insertion in place.
 
-<Figure caption="Right-clicking a variant in the track. The last row of the menu names the variant it would send, which is the only thing on screen that says the feature under the cursor is the one that would be scored." src="/img/alphagenome/send_variant_menu.png" />
+<Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The last row of the menu is the plugin's, and it opens the query panel with the variant under the cursor already loaded." src="/img/alphagenome/send_variant_menu.png" />
 
 The recorded prediction this page reads is for the **Jurkat** insertion,
 `chr1:47239297 C>CCGTTTCCTAACC`, which sits in the same stack of patient

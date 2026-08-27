@@ -59,14 +59,17 @@ const JURKAT_INSERTION = 'chr1:47239297 C>CCGTTTCCTAACC'
 // right-click. `new 3' enhancer 1` starts two bases before `new 3' enhancer 2`,
 // which at this zoom is inside one pixel, so the two pack into two rows and
 // nothing else is near them. `fracY` picks the first of those rows — a fraction
-// of the band rather than a pixel, so it survives a track that changes height,
-// and the spec asserts the menu row's own id right afterwards, so landing on the
-// wrong variant fails by name instead of quietly producing a figure of the other
-// one.
+// of the band rather than a pixel, so it survives a track that changes height.
+//
+// WHICH of the two the click lands on no longer changes the figure, and the id
+// no longer says: the row names the action rather than the variant, so it is
+// the same string whatever is under the cursor. What the assertion still pins
+// is that the click hit a variant at all — the row is contributed by the
+// plugin and a miss opens the display's own menu without it.
 const ENHANCER_1_LOCUS = 'chr1:47,212,073'
 const TOP_ROW = 0.1
-const SEND_ENHANCER_1 =
-  '[data-testid="cascading-menuitem-send_new_3\'_enhancer_1_to_alphagenome"]'
+const PREDICT_VARIANT_EFFECT =
+  '[data-testid="cascading-menuitem-predict_variant_effect_with_alphagenome"]'
 
 // The biosample box is DISABLED until the ~5,900-track catalog arrives, and a
 // disabled input silently swallows a click and the typing after it. Gating on
@@ -300,14 +303,14 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
     viewportHeight: 820,
   },
 
-  // The gesture nobody finds by accident, and the reason the row names the
-  // variant rather than saying "send this one": a menu reading "Send new 3'
-  // enhancer 1 to AlphaGenome" is the only thing on screen that says the feature
-  // under the cursor is what would be scored.
+  // The gesture nobody finds by accident, and the figure is what makes it
+  // findable: the row reads `Predict variant effect with AlphaGenome`, which is
+  // the whole action, and clicking it opens the panel with that variant already
+  // loaded rather than queueing it somewhere the reader then has to go looking.
   //
-  // Its id is JBrowse's own label-derived `cascading-menuitem-<slug>`, so it
-  // carries the variant's name — which is the subject of the figure, and also
-  // the one thing here that would have to change if the demo BED's names did.
+  // Its id is JBrowse's own label-derived `cascading-menuitem-<slug>`, so the
+  // selector tracks the label — which is now a constant, where it used to carry
+  // whatever the demo BED called the feature under the cursor.
   //
   // The canvas variant display has no DOM node per feature, so the right-click
   // is anchored to the locus (scripts/locusAnchor.ts) rather than to a measured
@@ -326,7 +329,11 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
           fracY: TOP_ROW,
         },
       },
-      { type: 'waitForSelector', selector: SEND_ENHANCER_1, timeout: 30000 },
+      {
+        type: 'waitForSelector',
+        selector: PREDICT_VARIANT_EFFECT,
+        timeout: 30000,
+      },
     ],
     // the context menu is the subject and it opens downward from the variant
     // row, so the frame has to cover the menu rather than just the tracks
