@@ -122,9 +122,10 @@ function makeHost(opts?: { enabled?: boolean; keyed?: boolean }) {
           // this fetch's inputs are the host's alone, so its args are empty —
           // `undefined` is reserved for the decline
           prepare: () => (opts?.keyed ? { key: self.key } : {}),
-          // declared only in `keyed` mode, so every other test drives the
-          // skeleton with no freshness gate at all
-          fetchKey: opts?.keyed ? ({ key }) => key : undefined,
+          // declared only in `keyed` mode, which is the same flag that makes
+          // `prepare` return a key — so every other test drives the skeleton
+          // with no freshness gate at all, and here the key is always set
+          fetchKey: opts?.keyed ? ({ key }) => key! : undefined,
           run: (_args, ctx) => {
             const d = deferred()
             self.runs.push(d)
