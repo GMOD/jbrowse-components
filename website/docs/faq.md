@@ -8,16 +8,8 @@ description:
 
 ### How can I start the JBrowse 2 app as a developer
 
-We recommend that you have the following:
-
-- A stable and recent version of [node](https://nodejs.org/en/)
-- Git
-- [pnpm](https://pnpm.io/installation)
-
-Then you can follow the steps from our
-[README](https://github.com/gmod/jbrowse-components).
-
-Steps:
+You need a recent [node](https://nodejs.org/en/), git, and
+[pnpm](https://pnpm.io/installation).
 
 ```bash
 git clone https://github.com/GMOD/jbrowse-components
@@ -27,20 +19,14 @@ cd products/jbrowse-web
 pnpm start
 ```
 
-This will boot up a development instance of `jbrowse-web` on port `3000`.
+The dev server comes up on port 3000, and `PORT=8080 pnpm start` picks another.
+JBrowse Desktop is the same sequence from `products/jbrowse-desktop`.
 
-You can use `PORT=8080 pnpm start` to manually specify a different port.
-
-Alternatively, to boot up JBrowse Desktop, you can go to the
-`products/jbrowse-desktop` directory.
-
-For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
-run `pnpm dev` in the `examples-site` subfolder (e.g.
-`products/jbrowse-react-linear-genome-view/examples-site`) instead of
-`pnpm start`. (Note: the source folder names in `products/` do not include the
-trailing `2`, but the published npm packages do:
+For an embedded component, run `pnpm dev` in its `examples-site` subfolder (e.g.
+`products/jbrowse-react-linear-genome-view/examples-site`). The source folders
+under `products/` drop the trailing `2` that the published packages carry:
 `@jbrowse/react-linear-genome-view2`, `@jbrowse/react-app2`,
-`@jbrowse/react-circular-genome-view2`.)
+`@jbrowse/react-circular-genome-view2`.
 
 ### Do you have any tips for learning React and @jbrowse/mobx-state-tree
 
@@ -136,11 +122,9 @@ to SVG or PNG from the command line.
 
 ### How do I automatically create screenshots
 
-If all you need is the rendered view, [@jbrowse/img](/docs/jbrowse-img) produces
-SVG, PNG or PDF from the command line with no browser involved.
-
-For a screenshot of the running app - an open menu, a hover popover, a track
-after some interaction - drive JBrowse Web with puppeteer or Playwright:
+[@jbrowse/img](/docs/jbrowse-img) covers the rendered view, with no browser
+involved. For a screenshot of the running app - an open menu, a hover popover, a
+track after some interaction - drive JBrowse Web with puppeteer or Playwright:
 navigate to a URL that already carries the state you want (see
 [URL parameters](/docs/urlparams)), wait for it to settle, then capture.
 [](/docs/automating#headless--puppeteer) has a worked example along with the two
@@ -151,7 +135,7 @@ taken before the displays report done comes out blank.
 Nearly every figure on this site is generated that way, from a declarative spec
 per image in
 [`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts),
-so the specs double as a large set of worked examples.
+so the specs double as worked examples.
 
 ### What are new features in JBrowse 2
 
@@ -161,18 +145,15 @@ display, and an SV inspector.
 
 ### How do I convert my JBrowse 1 configuration to JBrowse 2
 
-There is no official migration tool. The config formats differ significantly, so
-you will generally need to set up tracks fresh in JBrowse 2 using the CLI or
-GUI.
-
-For reference, community scripts like
+There is no official migration tool - the config formats differ enough that you
+generally set the tracks up fresh with the CLI or the GUI. A community script
+like
 [this gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
-can help extract track definitions from a JBrowse 1 config.
+can extract track definitions from a JBrowse 1 config to work from.
 
-JBrowse 2 also has a built-in **JBrowse 1 connection** feature that can connect
-directly to a running JBrowse 1 data directory and read its `trackList.json`,
-letting you browse your existing JBrowse 1 tracks without a full migration. It
-is limited in functionality and mainly useful as a temporary bridge.
+As a temporary bridge, the built-in **JBrowse 1 connection** reads a running
+JBrowse 1 data directory's `trackList.json`, so you can browse those tracks
+without migrating. It is limited in what it supports.
 
 ### How do I cite JBrowse 2
 
@@ -210,19 +191,13 @@ into your web directory, and edit `config.json` in a text editor. See
 [cookbook](/docs/cookbook) for a complete minimal config to start from, and the
 [config guide](/docs/config_guide) for everything you can put in it.
 
-Questions of any kind are welcome on the
-[discussions board](https://github.com/GMOD/jbrowse-components/discussions), or
-feel free to [contact us](/contact) directly.
-
 ### How do I install or update the @jbrowse/cli tool
 
-Install with `npm install -g @jbrowse/cli`. Re-running the same command updates
-it.
-
-This adds a `jbrowse` command to your PATH (assuming a standard Node.js
-installation via nodesource or nvm). Note: the CLI only prepares your
-config.json. It **does not run server-side code**. Every command and flag is
-listed in the [CLI reference](/docs/cli).
+Install with `npm install -g @jbrowse/cli`; re-running the same command updates
+it. That adds a `jbrowse` command to your PATH (assuming a standard Node.js
+install via nodesource or nvm). The CLI only prepares your config.json, it
+**does not run server-side code**. Every command and flag is in the
+[CLI reference](/docs/cli).
 
 ### What web server do I need to run JBrowse 2
 
@@ -258,7 +233,7 @@ gzip on;
 gzip_types application/json text/plain text/html text/css text/javascript application/javascript;
 ```
 
-To enable compression in Apache, use the `mod_deflate` module:
+For Apache, enable `mod_deflate`:
 
 ```bash
 sudo a2enmod deflate
@@ -282,13 +257,13 @@ This applies to text only. Never gzip BGZF binary files, see
 Almost always: the server is sending `Content-Encoding: gzip` on a
 BGZF-compressed file (BAM, VCF.gz, GFF.gz, BED.gz, .fa.gz, etc.).
 
-BGZF looks like gzip to the server, so content-sniffers like Apache's
-`mod_mime_magic`, PHP's `mime_content_type`, and some CDN auto-rules add the
-header. The browser then silently decompresses the file before JavaScript sees
-it. JBrowse needs the raw bytes. It does its own BGZF decompression and seeks
-into the file using offsets from `.bai`/`.tbi`/`.csi`/`.gzi`, so reads fail with
-truncated data, "invalid BGZF block", or random gaps. Byte range requests break
-for the same reason.
+BGZF looks like gzip to the server, so content sniffers - Apache's
+`mod_mime_magic`, PHP's `mime_content_type`, some CDN auto-rules - add the
+header, and the browser then decompresses the file before JavaScript sees it.
+JBrowse needs the raw bytes: it does its own BGZF decompression and seeks into
+the file using offsets from `.bai`/`.tbi`/`.csi`/`.gzi`. What you get instead is
+truncated data, "invalid BGZF block", or random gaps, and byte range requests
+break the same way.
 
 **The fix:** don't set `Content-Encoding` on these files. Serve them as opaque
 binary.
@@ -314,8 +289,8 @@ binary.
 To check, open dev tools' Network tab, request the file, and confirm no
 `Content-Encoding: gzip` header on the response.
 
-Compressing `config.json` with `Content-Encoding: gzip` is fine, that's just a
-text file. The rule applies to the BGZF binary files above. See also
+The rule covers the BGZF binary files above only. Compressing `config.json` is
+fine, see
 [Should I configure gzip on my web server?](#should-i-configure-gzip-on-my-web-server).
 
 ### How do I put my data behind a login
@@ -365,33 +340,22 @@ config.json by hand.
 
 ### How do I load a track into JBrowse 2
 
-With the JBrowse CLI tools, you can easily add tracks with the `add-track`
-command, e.g.:
+The CLI's `add-track` writes the config entry for you. Run it from wherever you
+keep your config.json (e.g. /var/www/html/jbrowse2 - you can have several):
 
 ```bash
 jbrowse add-track myfile.bw -a hg19
-```
-
-This will set up a bigwig track on the hg19 assembly in your config.json.
-
-Run the command from your jbrowse2 folder (e.g. /var/www/html/jbrowse2), or
-wherever you keep your config.json (you can have multiple configs).
-
-You can also use remote URLs:
-
-```bash
 jbrowse add-track http://yourremote/myfile.bam
 ```
 
-`add-track` infers the track type from the file extension and the index filename
-(e.g. `myfile.bam.bai`).
+`-a` names the assembly, and the track type comes from the file extension and
+the index filename (e.g. `myfile.bam.bai`).
 
-You can also manually edit your config file, or add a track from inside the app
-(where it lives in the current session unless the config is writable).
-
-The [cookbook](/docs/cookbook) has a copy-paste track config for each common
-type, and [supported file types](/docs/config_guides/file_types) lists which
-adapter goes with which format.
+You can also edit config.json by hand, or add a track from inside the app (where
+it stays in the current session unless the config is writable). The
+[cookbook](/docs/cookbook) has a copy-paste config for each common track type,
+and [supported file types](/docs/config_guides/file_types) lists which adapter
+goes with which format.
 
 ### Can I open files from my own computer
 
@@ -464,22 +428,16 @@ reference, and [more ways to set color](/docs/cookbook#more-ways-to-set-color)
 in the cookbook for worked examples (score thresholds, attribute lookups,
 filtering features out).
 
-### My jexl is too complicated, how can I simplify it
-
-You can create a small plugin that adds a new function to the jexl language.
-
-See [here](/docs/config_guides/customizing_feature_colors/) for an example of
-making a color callback.
+When an expression gets unwieldy, a small plugin can add a function of your own
+to the jexl language for it to call. See
+[customizing feature colors](/docs/config_guides/customizing_feature_colors/).
 
 ### How do I get (more) categories to filter on in the faceted track selector
 
-The faceted track selector displays all the different adapters, categories, and
-all the metadata. Categories are also used to group tracks in the track
-selector. New categories can be added with the `--category` option from
-`jbrowse add-track`.
-
-Alternatively, you can add a metadata key to a track, which will be used in the
-faceted track selector:
+The faceted selector facets on adapter type, category, and every metadata key.
+`jbrowse add-track --category` adds a category (which also groups tracks in the
+hierarchical selector), and any `metadata` key on a track becomes a facet of its
+own:
 
 ```
 {
@@ -529,10 +487,9 @@ error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defin
 3 error(s), 0 warning(s) in myconfig.json
 ```
 
-It checks against the config-slot definitions read out of JBrowse itself, so it
-knows every track, display, and adapter type and the slots each one accepts. It
-does not open your data files, so it works before anything is uploaded. Two
-levels:
+It checks against config-slot definitions read out of JBrowse itself, so it
+knows every track, display and adapter type and the slots each accepts, and it
+never opens your data files, so it runs before anything is uploaded. Two levels:
 
 - **error** — JBrowse accepts it and silently does the wrong thing: an unknown
   slot, a track pointing at an assembly the config never defines, a
@@ -738,24 +695,21 @@ The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 It depends which link you mean. The gear icon in the Share dialog offers three
 formats:
 
-- The short link (`&session=share-<ID>&password=<KEY>`) is _not_ reproducible.
-  Each click of the Share button mints a new random encryption key and uploads a
-  new encrypted blob, so you get a new `<ID>`/`<KEY>` pair every time, even for
-  the exact same view. This is by design: the short link is just a key into our
-  hosted store.
+- The short link (`&session=share-<ID>&password=<KEY>`) is _not_. Each click of
+  Share mints a new random key and uploads a new encrypted blob, so the same
+  view gives a new `<ID>`/`<KEY>` pair every time. The link is by design just a
+  key into our hosted store.
 
-- **Long URL** and **Plaintext JSON** _are_ reproducible. Both carry the whole
-  session in the link itself, compressed for the first and as readable JSON for
-  the second, with no server round-trip and no minted password. The same view
-  produces the same link (given the same config), and it keeps working even if
-  you rebuild or move your JBrowse instance. Being long, both are written
-  [into the URL fragment](/docs/urlparams#query-string-or-hash-fragment) rather
-  than the query string.
+- **Long URL** and **Plaintext JSON** _are_. Both carry the whole session in the
+  link itself - compressed for the first, readable JSON for the second - with no
+  server round-trip and no minted password, so the same view and config produce
+  the same link, and it survives rebuilding or moving your instance. Being long,
+  both go [into the URL fragment](/docs/urlparams#query-string-or-hash-fragment)
+  rather than the query string.
 
-Reproducibility can still break through your **config**. A restored session
-references tracks by `trackId`, so if a redeploy regenerates `config.json` with
-different `trackId`s, the link can no longer find those tracks. Keep `trackId`s
-deterministic across builds and shared links stay stable. See
+Your **config** can still break reproducibility. A restored session references
+tracks by `trackId`, so a redeploy that regenerates `config.json` with different
+`trackId`s leaves the link unable to find those tracks. See
 [keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)
 and
 [why a saved session fails to load](#why-does-my-saved-session-fail-to-load).
@@ -777,16 +731,14 @@ differently than your assembly (e.g. `chr1` vs `1`, or `NC_000001.11` vs
 `chr1`). JBrowse matches features by exact reference name, so `chr1` data won't
 show up on a region the assembly calls `1`.
 
-To check, open the track menu and click "About track" to see the reference names
-the file actually contains. Compare those against your assembly's names, the
-name in the location box, or the sequence names in your FASTA/`.fai`. The other
-side of the comparison is in the same dialog opened on the **reference sequence
-track**: its "Assembly" section lists every name the assembly knows and the
-aliases already mapped onto each one, which is where you see whether an alias
-file applied. If they don't match, add
+To check, open the track menu and click "About track" for the reference names
+the file actually contains. The other side of the comparison is that same dialog
+on the **reference sequence track**: its "Assembly" section lists every name the
+assembly knows and the aliases already mapped onto each one, which is where you
+see whether an alias file applied. If the two don't match, add
 [reference name aliasing](/docs/config_guides/assemblies#configuring-reference-name-aliasing)
 to the assembly to map the two naming schemes together. The
-[RefName aliasing guide](/docs/developer_guides/refname_aliasing) has the full
+[RefName aliasing guide](/docs/developer_guides/refname_aliasing) has the
 details.
 
 A few other things worth checking:
@@ -861,12 +813,11 @@ At minimum the data server must:
 - honor byte-range requests: respond `206 Partial Content` with the requested
   bytes (not `200` with the whole file).
 
-You do **not** need to expose `Content-Range`. JBrowse detects end-of-file from
-short/`416` range responses, so range reads work even when `Content-Range` is
-hidden by CORS. Exposing it is optional polish (it lets JBrowse report the true
-file size in a few places like the spreadsheet importer). `Content-Length` is a
-CORS-safelisted response header and is always readable, so download progress
-works regardless.
+You do **not** need to expose `Content-Range`: JBrowse detects end-of-file from
+short/`416` range responses, so range reads work even when CORS hides it.
+Exposing it is optional polish, letting JBrowse report the true file size in a
+few places like the spreadsheet importer. `Content-Length` is CORS-safelisted
+and always readable, so download progress works either way.
 
 For local development only, launching Chrome with `--disable-web-security` is a
 temporary workaround.
@@ -895,8 +846,7 @@ aws s3api put-bucket-cors --bucket YOUR_BUCKET --cors-configuration \
   '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["Range"],"ExposeHeaders":["Content-Range","Content-Length","Accept-Ranges"]}]}'
 ```
 
-`ExposeHeaders` above is optional for range reads (see above). To verify, open
-dev tools' Network tab and confirm the file request returns
+To verify, open dev tools' Network tab and confirm the file request returns
 `206 Partial Content` with an `Access-Control-Allow-Origin` header.
 
 For **MinIO**, per-bucket CORS (`mc cors set` / the `put-bucket-cors` S3 API) is
@@ -959,29 +909,24 @@ the embedding application. If your app is Python or R rather than JavaScript,
 JBrowse 2 stands on the shoulders of many great scientists that came before us.
 Points of reference:
 
-- Savant genome browser: inspired genome arcs
-- Gap5 genome browser: inspired the read cloud, similar to genome arcs
-- Mummerplots: inspired auto-diagonalization routines for improved synteny
-  figures
-  https://jmonlong.github.io/Hippocamplus/2017/09/19/mummerplots-with-ggplot2/
-- minimap2, and the PAF format: Laid the basis with which we were able to
-  implement synteny visualizations
-- samtools and the hts-specs community: Creates a continued substrate for
-  bioinformatics complex data formats like BAM, CRAM, VCF, and more.
-- Pangenome tool developers, pggb and cactus: For proving pangenomics works!
-- chain2paf, paftools.js, etc. Created an ecosystem around PAF to help our
-  system
-- jcvi/MCScan: Created an easy to use protein alignment based synteny workflow
-  that we standardized around using .anchors and .blocks formats. This has
-  continued to this day, with other programs like OrthoFinder workflow using
-  this system as well
-- ReactJS, TypeScript, mobx-state-tree, and javascript developers and community:
-  it is difficult in some ways to create a bioinformatics ecosystem on the web,
-  since most work is done in other languages.
-- IGV and igv.js: many alignments tracks features are inspired by IGV,
-  particularly their notions of read pairing color schemes, modBAM color
-  schemes, and view as pairs/link supplementary alignments notions.
-- D-GENIES: for establishing a very high quality easy to use Dotplot viewer.
-- GenomeSpy and HiGlass/Gosling for proving WebGL powered browsers
-- All the other genome visualization developers:
-  https://cmdcolin.github.io/awesome-genome-visualization/?latest=true
+- Savant genome browser: genome arcs
+- Gap5 genome browser: the read cloud, a cousin of genome arcs
+- [Mummerplots](https://jmonlong.github.io/Hippocamplus/2017/09/19/mummerplots-with-ggplot2/):
+  auto-diagonalization routines for better synteny figures
+- minimap2 and the PAF format: the basis our synteny visualizations are built on
+- samtools and the hts-specs community: a continued substrate for complex
+  bioinformatics formats like BAM, CRAM and VCF
+- pggb, cactus and the other pangenome tool developers: for proving pangenomics
+  works
+- chain2paf, paftools.js and the rest of the ecosystem that grew around PAF
+- jcvi/MCScan: the easy protein-alignment synteny workflow we standardized
+  around, whose `.anchors` and `.blocks` formats other programs (the OrthoFinder
+  workflow among them) use to this day
+- ReactJS, TypeScript, mobx-state-tree and the JavaScript community: building a
+  bioinformatics ecosystem on the web is hard when most of the field works in
+  other languages
+- IGV and igv.js: much of the alignments track, particularly read pairing and
+  modBAM color schemes, view as pairs, and link supplementary alignments
+- D-GENIES: for establishing a very high quality, easy to use dotplot viewer
+- GenomeSpy and HiGlass/Gosling: for proving WebGL powered browsers
+- [Every other genome visualization developer](https://cmdcolin.github.io/awesome-genome-visualization/?latest=true)
