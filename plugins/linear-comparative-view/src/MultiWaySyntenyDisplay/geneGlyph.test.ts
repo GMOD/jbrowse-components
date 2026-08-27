@@ -4,7 +4,7 @@ import {
   LaneGene,
   geneGlyphGeometry,
   geneGlyphShape,
-  isAnnotated,
+  coveringGene,
   laneGeneFeatures,
 } from './geneGlyph.ts'
 
@@ -397,16 +397,31 @@ test('lane genes arriving once per static block draw once', () => {
 // does not left those groups' ribbons hanging off nothing.
 describe('a placement box beside the lane annotation', () => {
   test('stands where no drawn gene reaches', () => {
-    expect(isAnnotated([[10, 40]], [100, 140])).toBe(false)
-    expect(isAnnotated([], [100, 140])).toBe(false)
+    expect(coveringGene([[10, 40]], [100, 140])).toBeUndefined()
+    expect(coveringGene([], [100, 140])).toBeUndefined()
   })
 
   test('gives way where one does, whichever way round either pair runs', () => {
-    expect(isAnnotated([[10, 40]], [30, 80])).toBe(true)
-    expect(isAnnotated([[40, 10]], [80, 30])).toBe(true)
+    expect(coveringGene([[10, 40]], [30, 80])?.index).toBe(0)
+    expect(coveringGene([[40, 10]], [80, 30])?.index).toBe(0)
   })
 
   test('is not suppressed by a gene that merely abuts it', () => {
-    expect(isAnnotated([[10, 40]], [40, 80])).toBe(false)
+    expect(coveringGene([[10, 40]], [40, 80])).toBeUndefined()
+  })
+
+  // which gene, not whether one exists: the covering gene inherits the group
+  // key the box would have carried, so two genes over one placement have to
+  // resolve to one of them rather than to `true`
+  test('names the gene the placement is mostly under', () => {
+    const wide = coveringGene(
+      [
+        [0, 45],
+        [40, 200],
+      ],
+      [40, 100],
+    )
+    expect(wide?.index).toBe(1)
+    expect(wide?.overlap).toBe(60)
   })
 })

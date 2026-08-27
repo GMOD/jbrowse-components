@@ -66,7 +66,8 @@ export class LaneGene {
 }
 
 /**
- * Does a lane's own annotation already draw over this span?
+ * Which of a lane's own genes already draws over this span, if any — the widest
+ * overlap where several do.
  *
  * A lane draws gene models where it has them and the table's placement boxes
  * where it does not, and the choice is per GROUP rather than per lane. Made per
@@ -75,17 +76,36 @@ export class LaneGene {
  * table and the GFF3 are different releases: the demo's blocks file pairs four
  * grape genes and the grape GFF3 names two.
  *
+ * It answers WHICH gene rather than whether one exists, so the gene can take
+ * the group key the box it replaced would have carried. One predicate decides
+ * both — a placement is either a box holding its key, or covered by a gene
+ * holding it, never neither. Answering the two questions with two tests is how
+ * the hole opened: the better annotated a lane was, the more of the group
+ * highlight it lost.
+ *
  * Px rather than bp so one rule covers both kinds of lane: the anchor lane's
  * genes and its group spans both come through the view's axis, a mate lane's
  * both come through its frame, and neither pair is comparable in bp with the
  * other.
  */
-export function isAnnotated(annotated: Span[], span: Span) {
+export function coveringGene(annotated: Span[], span: Span) {
   const lo = Math.min(span[0], span[1])
   const hi = Math.max(span[0], span[1])
-  return annotated.some(a =>
-    doesIntersect2(Math.min(a[0], a[1]), Math.max(a[0], a[1]), lo, hi),
-  )
+  let best: { index: number; overlap: number } | undefined
+  for (const [index, a] of annotated.entries()) {
+    const alo = Math.min(a[0], a[1])
+    const ahi = Math.max(a[0], a[1])
+    // the same test as before, kept as a predicate so a box the gene merely
+    // abuts is still drawn — reading the width only to arbitrate between two
+    // genes over one placement
+    if (doesIntersect2(alo, ahi, lo, hi)) {
+      const overlap = Math.min(ahi, hi) - Math.max(alo, lo)
+      if (best === undefined || overlap > best.overlap) {
+        best = { index, overlap }
+      }
+    }
+  }
+  return best
 }
 
 function subtractIntervals(base: [number, number][], cut: [number, number][]) {

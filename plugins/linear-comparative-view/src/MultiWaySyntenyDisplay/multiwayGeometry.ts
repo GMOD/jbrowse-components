@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
-import { geneGlyphGeometry, isAnnotated } from './geneGlyph.ts'
+import { coveringGene, geneGlyphGeometry } from './geneGlyph.ts'
 import { frameTickXs } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
@@ -579,9 +579,18 @@ export function buildLaneCells({
     })
   }
 
+  // per covered gene, the widest placement that claimed it: two groups under
+  // one gene is a tandem array or a clipped edge, and the reader wants the one
+  // the gene is mostly made of
+  const claimed = new Map<number, number>()
   for (const [key, { group, spans }] of lane.placements) {
     for (const span of spans) {
-      if (isAnnotated(annotated, span)) {
+      const cover = coveringGene(annotated, span)
+      if (cover) {
+        if (cover.overlap > (claimed.get(cover.index) ?? 0)) {
+          claimed.set(cover.index, cover.overlap)
+          glyphs.hits[cover.index]!.groupKey = key
+        }
         continue
       }
       const color = pack(colors.colorOf('color', group.feature))

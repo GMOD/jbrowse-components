@@ -326,6 +326,19 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   expect(await outlines()).toBe(2)
   display.setHoveredGroupKey(undefined)
   expect(await outlines()).toBe(0)
+
+  // ...and the pointer reaches that state on its own. The assertions above set
+  // the key by hand, which is how the gene case shipped broken: the anchor
+  // lane DRAWS g1 as a gene model, so its box is suppressed, and the hit that
+  // replaced it carried no group. `hitTest` is the whole path a hover takes.
+  const lane = display.laneStack.lanes[0]!
+  const geneHit = display.hitTest(
+    (display.anchorSpans.get('g1')![0] + display.anchorSpans.get('g1')![1]) / 2,
+    lane.glyphTop + 1,
+  )
+  expect(geneHit?.groupKey).toBe('g1')
+  display.setHoverTarget(geneHit)
+  expect(await outlines()).toBe(3)
 }, 40000)
 
 // The menu's Move up/down is two clicks away from the picture; the label is

@@ -453,9 +453,16 @@ describe('a lane cell', () => {
     // it holds, so a box sharing a cell with the gene models handed each of
     // them its own fill as a border
     expect(glyphs.outlineColor).toBe(0)
-    expect(glyphs.hits.some(h => h.groupKey === 'g2')).toBe(false)
+    // g1 has no box — the gene covers it — so the GENE carries its key, and a
+    // hover over the drawn gene lights the same group the box would have. g2
+    // reaches no gene, so it stays a box and its key rides that
+    expect(glyphs.hits.map(h => h.groupKey)).toEqual(['g1'])
+    expect(boxes.hits.map(h => h.groupKey)).toEqual(['g2'])
     expect(
       glyphHitAt(boxes.hits, 440, s.lanes[0]!.glyphTop + 1)?.groupKey,
     ).toBe('g2')
+    expect(
+      glyphHitAt(glyphs.hits, 100, s.lanes[0]!.glyphTop + 1)?.groupKey,
+    ).toBe('g1')
   })
 })
