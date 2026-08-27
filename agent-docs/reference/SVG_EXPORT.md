@@ -563,6 +563,17 @@ rasterize, drifts from on-screen output, and locks in vector output.
   raster-friendly fill path (the matrix itself) **must** still go through
   `PaintLayer`; only the overlays stay JSX.
 
+  **The overlay has to be PASSIVE to share.** Every one named above is; the
+  multiway synteny lane headers were, and then grew a drag and a context menu,
+  at which point one component was serving a control and a caption at once and
+  could be neither. SVG has no layout, so the menu affordance was placed by a
+  character-count estimate — unfixable on the export side, where there is no
+  live node to measure against — and it had no keyboard route, while the
+  affordance, the grab cursors and the interaction testids were serialized into
+  every figure. They split (`LaneHeaders` HTML on screen, `SvgLaneHeaders` for
+  export, `laneHeaderRows` the derivation both read), which is this rule
+  applying rather than an exception to it: a control is not chrome.
+
 Everything else — fills, glyphs, mismatches, coverage bins, score bars, ribbons,
 dot lines, sequence text — goes through `<PaintLayer width height opts paint={ctx
 => drawXxx{Blocks,ToCtx}(ctx, …)} />`. This kills the older "SVG-only
