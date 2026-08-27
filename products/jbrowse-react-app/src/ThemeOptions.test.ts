@@ -102,3 +102,16 @@ test('getActiveThemeOptions resolves to the palette the screen is drawing', () =
     ).toEqual(session.palette)
   }
 })
+
+// A name arriving from outside goes stale the same way the stored one does — an
+// admin drops the `extraThemes` entry it names, or the export dialog's
+// localStorage key (unscoped, so another JBrowse on this origin writes it)
+// outlives the theme. Unresolved it fell past the `!== 'default'` branch as
+// `undefined`, so the figure came out with no theme rather than the config's.
+test('getActiveThemeOptions falls back for a name no theme answers to', () => {
+  const session = makeSession(customTheme)
+
+  expect(session.getActiveThemeOptions('themeThatWasRemoved')).toEqual(
+    session.getActiveThemeOptions('default'),
+  )
+})

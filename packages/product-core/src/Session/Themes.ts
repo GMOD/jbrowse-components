@@ -16,6 +16,17 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
 /**
+ * What `name` actually resolves to — `default` for one `themes` no longer
+ * holds. Every theme name is either stored or handed in from outside, and both
+ * go stale the same way: `sessionThemeName` outlives an `extraThemes` entry an
+ * admin drops, and so does a name an export dialog persisted or a saved figure
+ * spec carries.
+ */
+function resolveThemeName(themes: ThemeMap, name: string) {
+  return themes[name] ? name : 'default'
+}
+
+/**
  * #stateModel ThemeManagerSessionMixin
  */
 export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
@@ -38,9 +49,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * #getter
          */
         get themeName() {
-          const { sessionThemeName } = self
-          const all = this.allThemes()
-          return all[sessionThemeName] ? sessionThemeName : 'default'
+          return resolveThemeName(this.allThemes(), self.sessionThemeName)
         },
         /**
          * #getter
@@ -107,8 +116,9 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * the distinction this ternary keeps.
          */
         getActiveThemeOptions(name?: string) {
-          const themeName = name ?? this.themeName
-          const theme = this.allThemes()[themeName]
+          const all = this.allThemes()
+          const themeName = resolveThemeName(all, name ?? this.themeName)
+          const theme = all[themeName]
           if (themeName !== 'default') {
             return theme
           }

@@ -69,10 +69,19 @@ export default observer(function BaseExportSvgDialog({
     'svg',
   )
   const [filename, setFilename] = useExportSvgPreference('file', 'jbrowse.svg')
-  const [themeName, setThemeName] = useExportSvgPreference(
+  const [themePreference, setThemeName] = useExportSvgPreference(
     'theme',
     session.themeName || 'default',
   )
+  // A stored name outlives the theme it names: an admin drops an `extraThemes`
+  // entry, or another JBrowse on this origin writes `svg-theme`, which has no
+  // instance scope. Unguarded it draws a blank Select and makes
+  // `getActiveThemeOptions` answer undefined, so the export comes out stock.
+  // `session.themeName` guards the name it stores the same way.
+  const allThemes = session.allThemes?.()
+  const themeName = allThemes?.[themePreference]
+    ? themePreference
+    : session.themeName || 'default'
   const [fontFamily, setFontFamily] = useExportSvgPreference(
     'fontfamily',
     DEFAULT_FONT,
@@ -143,7 +152,7 @@ export default observer(function BaseExportSvgDialog({
           </ToggleButtonGroup>
         </div>
         {children}
-        {session.allThemes ? (
+        {allThemes ? (
           <TextField
             select
             label="Theme"
@@ -154,7 +163,7 @@ export default observer(function BaseExportSvgDialog({
               setThemeName(event.target.value)
             }}
           >
-            {Object.entries(session.allThemes()).map(([key, val]) => (
+            {Object.entries(allThemes).map(([key, val]) => (
               <MenuItem key={key} value={key}>
                 {val.name || '(Unknown name)'}
               </MenuItem>
