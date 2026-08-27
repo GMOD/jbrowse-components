@@ -101,6 +101,15 @@ const HOOKS: Hook[] = [
       'overlays are dropped rather than pinned to a stale layout',
   },
   {
+    name: 'dataSuperseded',
+    owner: [
+      'packages/display-kit/src/MultiRegionDisplayMixin.ts',
+      'packages/display-kit/src/GlobalFetchMixin.ts',
+    ],
+    ifNotOverridden:
+      'false — `dataCurrent` is the foundation’s own compare alone (spatial coverage plus `isCacheValid` per block, or the signature), which is blind to a load the display invalidates itself: a fetch input it writes from the data it fetched, a debounced key the live view has already moved past, a dependent fetch of its own still out. An export sampling `svgReady` in that window paints the frame that is about to be replaced',
+  },
+  {
     name: 'fetchInert',
     owner: [
       'packages/display-kit/src/FetchMixin.ts',

@@ -632,11 +632,14 @@ function modelChainBases(
 }
 
 /**
- * A module for an imported binding: the file itself for a relative import, and
- * for a `@jbrowse/plugin-*` one the file that actually declares the name, since
- * a plugin entry point re-exports through a display's barrel and the barrel is
- * not where the model lives. Returns undefined for anything else — `@jbrowse/core`
- * and the `*-core` packages export helpers, never a display model.
+ * A module for an imported binding: the file itself for a relative import, for
+ * a `@jbrowse/plugin-*` one the file that actually declares the name (a plugin
+ * entry point re-exports through a display's barrel, and the barrel is not
+ * where the model lives), and for a workspace package subpath
+ * (`@jbrowse/display-kit/renderDisplaySvg`) the source file its `exports` map
+ * names — which is how every `renderSvg.tsx` reaches the export chrome.
+ * Undefined for a bare package barrel: `@jbrowse/core` exports helpers, never
+ * a display model.
  */
 function moduleForName(
   name: string,
@@ -650,7 +653,30 @@ function moduleForName(
   if (spec?.startsWith('@jbrowse/plugin-')) {
     return findPluginExport(spec, name)
   }
+  if (spec?.startsWith('@jbrowse/')) {
+    return workspaceSubpathModule(spec)
+  }
   return undefined
+}
+
+/**
+ * The source file behind `@jbrowse/<package>/<subpath>`, off the package's own
+ * `exports` map. Undefined for a barrel import or an unknown subpath.
+ */
+function workspaceSubpathModule(spec: string): string | undefined {
+  const [, pkg, ...rest] = spec.split('/')
+  if (!pkg || rest.length === 0) {
+    return undefined
+  }
+  const manifest = join(repoRoot, 'packages', pkg, 'package.json')
+  if (!isFile(manifest)) {
+    return undefined
+  }
+  const { exports } = JSON.parse(readFileSync(manifest, 'utf8')) as {
+    exports?: Record<string, string>
+  }
+  const target = exports?.[`./${rest.join('/')}`]
+  return target ? join(repoRoot, 'packages', pkg, target) : undefined
 }
 
 function rel(file: string) {

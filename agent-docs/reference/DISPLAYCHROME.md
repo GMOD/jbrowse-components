@@ -257,30 +257,30 @@ rule lives here and each display states its own answer beside its state.
 
 <!-- BEGIN GENERATED DISPLAY_CHROME_ADOPTION -->
 
-20 display types are registered for `LinearGenomeView`: 18 on `DisplayChrome`, 2 on `DisplayStatusChrome`. On export, 0 of 20 reach `SvgChrome`.
+20 display types are registered for `LinearGenomeView`: 18 on `DisplayChrome`, 2 on `DisplayStatusChrome`. On export, all 20 reach `SvgChrome`.
 
 | Display type | Chrome | Component | SVG chrome | renderSvg |
 | --- | --- | --- | --- | --- |
-| LDDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` | — | `plugins/variants/src/LDDisplay/renderSvg.tsx` |
-| LDTrackDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` | — | `plugins/variants/src/LDDisplay/renderSvg.tsx` |
-| LGVSyntenyDisplay | `DisplayChrome` | borrows LinearAlignmentsDisplay | — | inherits `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` |
-| LinearAlignmentsDisplay | `DisplayChrome` | `plugins/alignments/src/LinearAlignmentsDisplay/components/AlignmentsDisplayComponent.tsx` | — | `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` |
-| LinearArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearArcDisplay/components/ReactComponent.tsx` | — | `plugins/arc/src/LinearArcDisplay/renderSvg.tsx` |
-| LinearBasicDisplay | `DisplayChrome` | `plugins/canvas/src/LinearBasicDisplay/components/FeatureComponent.tsx` | — | `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` |
-| LinearGCContentDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` | — | inherits `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
-| LinearGCContentTrackDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` | — | inherits `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
-| LinearHicDisplay | `DisplayChrome` | `plugins/hic/src/LinearHicDisplay/components/ReactComponent.tsx` | — | `plugins/hic/src/LinearHicDisplay/renderSvg.tsx` |
-| LinearMafDisplay | `DisplayChrome` | `plugins/maf/src/LinearMafDisplay/components/LinearMafDisplayComponent.tsx` | — | `plugins/maf/src/LinearMafDisplay/renderSvg.tsx` |
-| LinearManhattanDisplay | `DisplayChrome` | `plugins/gwas/src/LinearManhattanDisplay/components/LinearManhattanDisplayComponent.tsx` | — | `plugins/gwas/src/LinearManhattanDisplay/renderSvg.tsx` |
-| LinearMultiRowFeatureDisplay | `DisplayChrome` | `plugins/canvas/src/LinearMultiRowFeatureDisplay/components/LinearMultiRowFeatureDisplayComponent.tsx` | — | `plugins/canvas/src/LinearMultiRowFeatureDisplay/renderSvg.tsx` |
-| LinearMultiSampleVariantDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantDisplay/components/VariantDisplayComponent.tsx` | — | `plugins/variants/src/LinearMultiSampleVariantDisplay/renderSvg.tsx` |
-| LinearMultiSampleVariantMatrixDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixDisplayComponent.tsx` | — | `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/renderSvg.tsx` |
-| LinearPairedArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearPairedArcDisplay/components/ReactComponent.tsx` | — | `plugins/arc/src/LinearPairedArcDisplay/renderSvg.tsx` |
-| LinearReferenceSequenceDisplay | `DisplayChrome` | `plugins/sequence/src/LinearReferenceSequenceDisplay/components/SequenceDisplayComponent.tsx` | — | `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` |
-| LinearVariantDisplay | `DisplayChrome` | borrows LinearBasicDisplay | — | inherits `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` |
-| LinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/LinearWiggleDisplay/components/WiggleComponent.tsx` | — | `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
-| MultiLinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/MultiLinearWiggleDisplay/components/MultiWiggleComponent.tsx` | — | `plugins/wiggle/src/MultiLinearWiggleDisplay/renderSvg.tsx` |
-| MultiWaySyntenyDisplay | `DisplayChrome` | `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/ReactComponent.tsx` | — | `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/renderSvg.tsx` |
+| LDDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LDDisplay/renderSvg.tsx` |
+| LDTrackDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LDDisplay/renderSvg.tsx` |
+| LGVSyntenyDisplay | `DisplayChrome` | borrows LinearAlignmentsDisplay | `SvgChrome` | inherits `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` |
+| LinearAlignmentsDisplay | `DisplayChrome` | `plugins/alignments/src/LinearAlignmentsDisplay/components/AlignmentsDisplayComponent.tsx` | `SvgChrome` | `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` |
+| LinearArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearArcDisplay/components/ReactComponent.tsx` | `SvgChrome` | `plugins/arc/src/LinearArcDisplay/renderSvg.tsx` |
+| LinearBasicDisplay | `DisplayChrome` | `plugins/canvas/src/LinearBasicDisplay/components/FeatureComponent.tsx` | `SvgChrome` | `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` |
+| LinearGCContentDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` | `SvgChrome` | inherits `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
+| LinearGCContentTrackDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` | `SvgChrome` | inherits `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
+| LinearHicDisplay | `DisplayChrome` | `plugins/hic/src/LinearHicDisplay/components/ReactComponent.tsx` | `SvgChrome` | `plugins/hic/src/LinearHicDisplay/renderSvg.tsx` |
+| LinearMafDisplay | `DisplayChrome` | `plugins/maf/src/LinearMafDisplay/components/LinearMafDisplayComponent.tsx` | `SvgChrome` | `plugins/maf/src/LinearMafDisplay/renderSvg.tsx` |
+| LinearManhattanDisplay | `DisplayChrome` | `plugins/gwas/src/LinearManhattanDisplay/components/LinearManhattanDisplayComponent.tsx` | `SvgChrome` | `plugins/gwas/src/LinearManhattanDisplay/renderSvg.tsx` |
+| LinearMultiRowFeatureDisplay | `DisplayChrome` | `plugins/canvas/src/LinearMultiRowFeatureDisplay/components/LinearMultiRowFeatureDisplayComponent.tsx` | `SvgChrome` | `plugins/canvas/src/LinearMultiRowFeatureDisplay/renderSvg.tsx` |
+| LinearMultiSampleVariantDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantDisplay/components/VariantDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LinearMultiSampleVariantDisplay/renderSvg.tsx` |
+| LinearMultiSampleVariantMatrixDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/renderSvg.tsx` |
+| LinearPairedArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearPairedArcDisplay/components/ReactComponent.tsx` | `SvgChrome` | `plugins/arc/src/LinearPairedArcDisplay/renderSvg.tsx` |
+| LinearReferenceSequenceDisplay | `DisplayChrome` | `plugins/sequence/src/LinearReferenceSequenceDisplay/components/SequenceDisplayComponent.tsx` | `SvgChrome` | `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` |
+| LinearVariantDisplay | `DisplayChrome` | borrows LinearBasicDisplay | `SvgChrome` | inherits `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` |
+| LinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/LinearWiggleDisplay/components/WiggleComponent.tsx` | `SvgChrome` | `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
+| MultiLinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/MultiLinearWiggleDisplay/components/MultiWiggleComponent.tsx` | `SvgChrome` | `plugins/wiggle/src/MultiLinearWiggleDisplay/renderSvg.tsx` |
+| MultiWaySyntenyDisplay | `DisplayChrome` | `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/ReactComponent.tsx` | `SvgChrome` | `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/renderSvg.tsx` |
 <!-- END GENERATED DISPLAY_CHROME_ADOPTION -->
 
 Generated by `website/scripts/generate-display-chrome-adoption.ts` from the
