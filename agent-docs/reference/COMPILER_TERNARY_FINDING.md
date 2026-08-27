@@ -64,11 +64,6 @@ alignment, not a guarantee.
 - `DisplayChromeBaseInner` carries `'use no memo'` — the only compiled
   `observer` in the codebase. Its early-`return` terminal branches are now a style choice, not
   a correctness requirement; `DisplayChrome.test.tsx` guards the behavior.
-- `useOverlayState` → `getTrackOverlayData()` (breakpoint-split-view) shipped a
-  real bug from this — panning froze the overlay connectors, zooming threw them
-  millions of px off-screen. Fixed with `'use no memo'`; the regression guard is
-  a browser test (`browser-tests/suites/breakpoint-split-view.ts`, "overlay
-  connectors track pan and zoom") because catching it needs a real pan/zoom.
 - `useVariantCanvasInteraction` → `model.contextMenuItems()` no longer runs
   during render at all: it is passed to `ContextMenu` as the thunk
   `menuItems={() => model.contextMenuItems()}` and called when the menu opens,

@@ -33,8 +33,7 @@ clustered and cell-type-labeled by that tool's own pipeline.
 - the annotated `AnnData` that `snap.datasets.pbmc5k(type="annotated_h5ad")`
   downloads and caches:
   https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html
-- CATlas' published hg38 per-cell-type accessibility BigWigs, which
-  [](#via-config-json) points a track at without building anything:
+- CATlas' published hg38 per-cell-type accessibility BigWigs from:
   https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/
 
 ## Pooling cells into rows

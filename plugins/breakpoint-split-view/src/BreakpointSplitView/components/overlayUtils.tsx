@@ -46,61 +46,6 @@ export interface OverlayProps {
   domYOffsets?: (number | undefined)[]
 }
 
-// Shared setup for every overlay renderer: the session, the view's hover
-// narrowed to this track, the matched features, and the per-render coordinate
-// closures. Keeping this in one place stops the callers drifting (e.g. one
-// forgetting to thread domYOffsets through).
-//
-// 'use no memo' is load-bearing. The callers are inline observers, which the
-// react compiler leaves alone, but a `use`-prefixed function is a hook and does
-// get compiled — and getTrackOverlayData's mobx reads are invisible to it, so
-// it memoizes the result on (model, trackId, yOffsetsOverride, domYOffsets).
-// None of those change when a view pans or zooms: `model` is an MST node
-// mutated in place, and domYOffsets only moves on vertical layout changes. The
-// snapshot the call returns (offsetPx/scrollTop/height per level) would then
-// stay frozen at first-render values while the getX closure it hands back keeps
-// reading bpPerPx live — panning froze the overlay in place and zooming threw
-// it millions of px off-screen. See agent-docs/reference/COMPILER_TERNARY_FINDING.md.
-export function useOverlayState({
-  model,
-  trackId,
-  yOffsetsOverride,
-  domYOffsets,
-}: OverlayProps) {
-  // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this
-  // directive is unused, but the babel plugin (@1.0.0, the real build) DOES
-  // compile this hook — version skew, same as DisplayChromeBaseInner. Keep it.
-  // eslint-disable-next-line react-compiler/react-compiler
-  'use no memo'
-  const session = getSession(model)
-  // The hover is the view's, since the overlay is one SVG over every row and
-  // only one of its curves can be under the pointer. Narrowed to this track
-  // here so a renderer compares plain ids.
-  //
-  // An export reads none of it. `yOffsetsOverride` is what says this render is
-  // one, the same signal getTrackOverlayData zeroes scrollTop on: a hover is a
-  // live-pointer notion, its boxes would bake a highlight into the file, and
-  // BreakpointTooltip portals — which renderToStaticMarkup throws on. Holding
-  // the hover in React state per overlay used to make that unreachable by
-  // construction, since an export mounted fresh components.
-  const { hoveredOverlay } = model
-  const match = model.overlayMatches.get(trackId)
-  const overlayData = model.getTrackOverlayData(
-    trackId,
-    yOffsetsOverride,
-    domYOffsets,
-  )
-  return {
-    session,
-    hoveredId:
-      yOffsetsOverride === undefined && hoveredOverlay?.trackId === trackId
-        ? hoveredOverlay.id
-        : undefined,
-    match,
-    overlayData,
-  }
-}
-
 // One place the overlay opens a feature widget: the two kinds differ only in
 // which widget takes the click and what it is handed.
 function openFeatureWidget(
@@ -352,12 +297,19 @@ export const OverlayPaths = observer(function OverlayPaths({
 }: OverlayPathsProps) {
   const { interactiveOverlay, views, assemblies } = model
   const theme = useTheme()
-  const { session, hoveredId, match, overlayData } = useOverlayState({
-    model,
+  const session = getSession(model)
+  const { hoveredOverlay } = model
+  const match = model.overlayMatches.get(trackId)
+  const overlayData = model.getTrackOverlayData(
     trackId,
     yOffsetsOverride,
     domYOffsets,
-  })
+  )
+  const hoveredId =
+    yOffsetsOverride === undefined && hoveredOverlay?.trackId === trackId
+      ? hoveredOverlay.id
+      : undefined
+
   if (!match) {
     return null
   }
