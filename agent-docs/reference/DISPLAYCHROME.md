@@ -126,7 +126,7 @@ Two things follow, and each has cost something:
   duration.
 - **Put components in the render prop, nothing else.** Alignments had five
   inline reads there — never per-frame, so never hot, but the same shape. They
-  are `AlignmentsCornerControls` and `AlignmentsContextMenu` now.
+  are `AlignmentsCornerControls` and the shared `DisplayContextMenu` now.
 
 The quick check when adding a display: if the render prop contains anything but
 JSX elements and the destructured handle, the chrome is tracking it.

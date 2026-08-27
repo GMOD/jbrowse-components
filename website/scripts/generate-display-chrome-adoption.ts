@@ -768,6 +768,12 @@ interface SvgRoute {
   model: string
   /** The module that declaration hands the export to. */
   body: string
+  /**
+   * The display supplied that body itself, at its own call to the factory
+   * declaring `renderSvg`. It composes a shared action, not another display's
+   * export, so the row is not an `inherits`.
+   */
+  own?: boolean
 }
 
 /** Module-scope function declarations and `const f = () => ...` bindings. */
@@ -876,6 +882,44 @@ function delegateOf(
 }
 
 /**
+ * The export edge a composing module hands a mixin factory, for the shape where
+ * the lazy `import()` is an argument rather than a statement in the body —
+ * `ArcFetchModel(() => import('./renderSvg.tsx'))`. The two arc displays share
+ * one `renderSvg` and differ only in which edge module they pair it with, so
+ * the route is at the call site, not in the model that declares the action.
+ */
+function edgeFromFactoryCall(caller: string, factory: string) {
+  const src = parse(caller)
+  let edge: string | undefined
+  const visit = (n: ts.Node) => {
+    if (
+      ts.isCallExpression(n) &&
+      ts.isIdentifier(n.expression) &&
+      n.expression.text === factory
+    ) {
+      const inner = (m: ts.Node) => {
+        if (
+          ts.isCallExpression(m) &&
+          m.expression.kind === ts.SyntaxKind.ImportKeyword
+        ) {
+          const spec = literal(m.arguments[0])
+          if (spec?.startsWith('.')) {
+            edge ??= moduleFrom(caller, spec)
+          }
+        }
+        ts.forEachChild(m, inner)
+      }
+      for (const a of n.arguments) {
+        inner(a)
+      }
+    }
+    ts.forEachChild(n, visit)
+  }
+  ts.forEachChild(src, visit)
+  return edge
+}
+
+/**
  * Where a display's SVG export is implemented: the model module declaring
  * `renderSvg`, and the module that declaration delegates to. Undefined when no
  * model in the composition chain declares one — a real answer, and the row that
@@ -889,6 +933,7 @@ function delegateOf(
 function renderSvgRouteOf(
   module: string,
   seen = new Set<string>(),
+  composedBy?: { module: string; factory: string },
 ): SvgRoute | undefined {
   if (seen.has(module)) {
     return undefined
@@ -898,20 +943,24 @@ function renderSvgRouteOf(
   const imports = importMap(src)
   const method = renderSvgMethod(src)
   if (method) {
-    const body = delegateOf(method, module, imports)
+    const declared = delegateOf(method, module, imports)
+    const supplied =
+      declared ??
+      (composedBy && edgeFromFactoryCall(composedBy.module, composedBy.factory))
     // Same doctrine as an unresolvable registration: a `renderSvg` whose body
     // this cannot follow would otherwise be reported as no chrome at all, which
     // is a false accusation rather than a missing row.
-    if (!body) {
+    if (!supplied) {
       throw new Error(
-        `${rel(module)}: \`renderSvg\` delegates to nothing this generator can follow — neither a relative \`await import('...')\` nor a call to an imported function. Teach it the idiom rather than letting the row claim the export is off the chrome.`,
+        `${rel(module)}: \`renderSvg\` delegates to nothing this generator can follow — no relative \`await import('...')\` no call to an imported function, and no lazy edge passed to the factory at its call site. Teach it the idiom rather than letting the row claim the export is off the chrome.`,
       )
     }
-    return { model: module, body }
+    return { model: module, body: supplied, own: !declared }
   }
   for (const name of factoryBases(src)) {
     const next = moduleForName(name, module, imports)
-    const route = next && renderSvgRouteOf(next, seen)
+    const route =
+      next && renderSvgRouteOf(next, seen, { module, factory: name })
     if (route) {
       return route
     }
@@ -1142,7 +1191,8 @@ function collectAdoption(): Row[] {
     // ones all reach across a plugin boundary. Either way the export body is
     // named rather than the lending model, since the body is the file the
     // chrome is reached from.
-    const inherited = !!route && dirname(route.model) !== dirname(r.model)
+    const inherited =
+      !!route && !route.own && dirname(route.model) !== dirname(r.model)
     return {
       ...resolve(r),
       svgChrome: !!route && svgChromeOf(route.body),

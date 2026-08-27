@@ -88,6 +88,8 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       get conf(): LinearArcDisplayConfig {
         return self.configuration
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
@@ -95,8 +97,6 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
         return getConf(self, 'displayMode')
       },
       // #endregion
-    }))
-    .views(self => ({
       /**
        * #getter
        * per-feature arc styling, evaluated once when features/config change.
