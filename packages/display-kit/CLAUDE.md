@@ -3,7 +3,7 @@
 The display integration layer: the fetch foundations, the byte gate, the display
 chrome, SVG export, and the `RegionHost` contract. No barrel; the `exports` map
 is the API, pinned by `src/publicApi.test.ts`. The tests that need a real linear
-genome view (`perRegionTestEnv.ts` and its five suites) live in
+genome view (`perRegionTestEnv.ts` and its six suites) live in
 `plugins/linear-genome-view/src/displayKitTests/`, since this package sits below
 that plugin.
 
@@ -123,15 +123,17 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
 
 ## `dataSuperseded` covers what `regionFetchKey` cannot state
 
-This family answers `dataCurrent` with spatial coverage AND `isCacheValid` per
-visible block, so the foundation owns one staleness compare for every display:
-the key a region was fetched under against the key a fetch now would use. The
-signature-compare families (`GlobalFetchMixin`, synteny, dotplot, arc) get that
-answer from the signature, where every fetch input is a term.
+The per-region family answers `dataCurrent` with spatial coverage AND
+`isCacheValid` per visible block, so the foundation owns one staleness compare
+for every display: the key a region was fetched under against the key a fetch
+now would use. The global family gets that answer from the signature, where
+every fetch input is a term (`signatureCurrent`, which is also its fetch gate);
+synteny and dotplot from theirs.
 
-`dataSuperseded` (default `false`) is the remainder — staleness a key is
-structurally blind to. Two shapes in the tree, and both are invisible on screen,
-which is exactly why they need stating.
+`dataSuperseded` (default `false`, declared on both LGV foundations and folded
+into `dataCurrent` and never into the fetch gate) is the remainder — staleness a
+key is structurally blind to. Three shapes in the tree, and all are invisible on
+screen, which is exactly why they need stating.
 
 **A fetch input written from the data it fetched.** GWAS's LD auto-index is the
 case: the autorun adopts the loaded top hit as `indexSnp`, which is in
@@ -143,6 +145,13 @@ exit 0. Fill the hook with the condition the autorun writes under, and gate it
 on the WRITE, not on whether the feature is visibly doing anything:
 `colorBy: 'ld'` with no `ldAdapter` draws no colours but still writes the index,
 and gating on the visible half left exactly the same empty export behind.
+
+**A dependent fetch of the display's own.** Multi-way synteny fetches lane genes
+and lane links off the lane frames its ortholog fetch produced, so the signature
+is current the moment the ortholog data commits while the lanes are still empty.
+Each lane fetch stamps its key on the display (`committedKey`), and the hook is
+"specs exist and the stamp is not the current key" — which a lane fetch always
+clears, since one failed lane drops out of an otherwise committed map.
 
 **A live window ahead of a debounced key.** Alignments' `perBaseBinBp` reads
 `subPixelBinBp` off the 500ms-debounced `coarseBpPerPx`, and the stamp beside a
@@ -187,8 +196,8 @@ that display waits out `awaitSvgReady`'s backstop instead of failing.
   `RegionTooLargeResult` in place of its payload when the region is over.
   `fetchEachRegion` / `fetchAllRegions` / `fetchRegionsBatched` commit that
   measurement (`commitFetchBytes`) and skip the store and `loadedRegions` for a
-  refused region; `runGlobalFetch` does the same for the global family. There is
-  no pre-flight estimate RPC and no display-side commit.
+  refused region; `runGlobalFetch` does the same for the global family. No
+  display issues a pre-flight estimate RPC, and there is no display-side commit.
 - The foundation's own tests come in two halves, and a change usually belongs in
   one of them rather than in a plugin's suite. `planRegionFetch.test.ts` is the
   **decision** — given these inputs, fetch this region set — and needs no tree.

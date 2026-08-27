@@ -66,8 +66,8 @@ its own box — part of the overlay-set contract in `chromeOverlays.ts`.
 
 **The loading term is single-sourced in `computeLoadingTerm`, and so is the
 mapping onto it**, in `foundationDisplayPhase` — the twin of `foundationSvgReady`.
-All three foundations call it and supply exactly one argument, their staleness
-predicate: per-region its spatial one, global and arc `() => true`. Arc goes
+Both foundations call it and supply exactly one argument, their staleness
+predicate: per-region its spatial one, global `() => true`. Arc goes
 through `foundationDisplayStatusPhase`, the same mapping returning the narrower
 phase and supplying the two canvas terms it has no canvas for. Customize it
 through `fetchInert` / `rendersCanvas`, **never by overriding
@@ -410,9 +410,9 @@ The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can leave that state. Cancel is one of them.
 
 **The first of those three shapes reports itself.** `makeRetryContractCheck`
-(`assertDisplayContract.ts`) runs inside **both** fetch foundations —
-`installGlobalFetchAutorun`, `installComparativeFetchAutorun` and
-`MultiRegionDisplayMixin`'s `afterAttach` — so
+(`assertDisplayContract.ts`) runs inside every fetch installer —
+`installGlobalFetchAutorun`, `installComparativeFetchAutorun`,
+`MultiRegionDisplayMixin`'s `afterAttach` and the shared `installFetch` — so
 every fetching display gets it with no per-display test: a run that follows a
 `reloadCounter` bump and declines to fetch *is* the dead button, and it says so
 through the same `console.error` channel as the rest of the contract checks,
@@ -485,7 +485,7 @@ own empty-region return — the autorun calls it only with a non-empty `needed`,
 which means the view has visible regions, so that branch is unreachable from
 there.
 
-**Both flags live on `FetchMixin`**, the one mixin all three foundations
+**Both flags live on `FetchMixin`**, the one mixin both LGV foundations
 compose, and the check reads them off the node. That is the same argument the
 `fetchInert` docstring makes about its own home, and `awaitingPrerequisite`
 briefly ignored it: it shipped as an `installGlobalFetchAutorun` option on one

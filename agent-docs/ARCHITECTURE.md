@@ -23,9 +23,9 @@ collected under [See also](#see-also) at the end.
 - Two fetch foundations cover every **LGV** display: `MultiRegionDisplayMixin`
   (per region, its own autoruns) and `GlobalFetchMixin` (one dataset, display
   installs its own autorun). The non-LGV views (synteny, dotplot) compose
-  neither: they run a bare fetch autorun over shared parts —
-  `SyntenyFetchStateMixin`, `createStopTokenRotation`, `leadingEdgeAutorun`,
-  `isDataCurrent`.
+  neither: they own their fetch through `installComparativeFetchAutorun`, a
+  wrapper over the shared `installFetch` skeleton, with the flags on
+  `SyntenyFetchStateMixin`.
 - Every display answers one `displayPhase` getter naming its terminal state —
   `loading` / `error` / `tooLarge` / `ready`, plus `renderError` where there is a
   rendering backend to fail (`DisplayPhase` = that one case on top of
@@ -231,9 +231,9 @@ the JEXL callbacks along the way — is
 Four things move or remove content under a stationary cursor with no pointer
 event to show for it — zoom, `offsetPx`, the display's own `scrollTop`, and the
 `regionTooLarge` banner replacing the subtree — so a hit held in a volatile goes
-on naming what used to be there. `MultiRegionDisplayMixin` installs the clear
-(`installClearHoverOnViewportChange`) for its family, and a storer outside that
-family owes its own (`installClearHoverOnSurfaceMove`, `@jbrowse/core/util`).
+on naming what used to be there. Both LGV foundations install the clear
+(`installClearHoverOnViewportChange`) for their families, and a storer outside
+them owes its own (`installClearHoverOnSurfaceMove`, `@jbrowse/core/util`).
 Deriving the hit from the live pointer instead, as MAF does, needs none of it.
 Whichever way, publish it as `hoveredFeature` — `BaseDisplay`'s hook, and what
 `LinearGenomeViewContainer` reads to feed `session.hovered`.
@@ -339,10 +339,10 @@ and rejected in
 [ADR-054](architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md),
 which is the thing to read before re-proposing it. Both comparative displays
 (`LinearSyntenyDisplay`, `DotplotDisplay`) compose `BaseDisplay` +
-`SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their fetch in a bare
-autorun, assembled from shared parts — `createStopTokenRotation`,
-`leadingEdgeAutorun`, `isDataCurrent`, `syntenyFetchRegions` — that
-`installComparativeFetchAutorun` welds into one skeleton. And both put their
+`SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their fetch through
+`installComparativeFetchAutorun`, a wrapper over the shared `installFetch`
+skeleton that adds this family's `fetching` flag and the richer context a `run`
+here is handed. And both put their
 `RenderLifecycleMixin` *above* the display, so one canvas is shared by several
 displays and is laid out by the model that owns it.
 
@@ -516,7 +516,8 @@ wrapper, `rpcProps`, cancellation, byte gate).
 family — the [foundation table](#display-stacks)'s first row, not every LGV
 display, since arc, HiC, LD and multi-way synteny are LGV displays on
 `GlobalFetchMixin`. Its `afterAttach` is one call to
-`installPerRegionFetchAutoruns`, which installs these:
+`installPerRegionFetchAutoruns`, which installs these, plus the stored-hover
+clear reaction both LGV foundations install:
 
 <!-- FETCH_AUTORUNS START -->
 
@@ -579,7 +580,7 @@ Every fetch installer schedules through `leadingEdgeAutorun`
 autorun. MobX's own `autorun(fn, { delay })` is trailing-edge only — it schedules
 the *first* run through `setTimeout` too — so a cold open spent the whole delay
 waiting for no interaction to coalesce, and that latency landed on first paint.
-The per-region family was the last one still on it, which is the nine
+The per-region family was the last one still on it, which is the fourteen
 display types that cover the common case: display creation to first
 `fetchNeeded` measured **683 ms** under `{ delay: 600 }` and **112 ms** after.
 
@@ -636,8 +637,9 @@ order; it owes its first run to a microtask.**
 ### The global-fetch trigger list must be read unconditionally
 
 `installGlobalFetchAutorun` reads the viewport, `isMinimized`, the
-`rpcProps()` cache key (a `computed`, for the reason in "the cache key is the
-return value, not the reads") and `reloadCounter` at the top of its body,
+`rpcProps()` cache key (`FetchMixin.rpcPropsCacheKey`, for the reason in "the
+cache key is the return value, not the reads") and `reloadCounter` at the top of
+its body,
 *before* the display's `prepare()`, and that ordering is load-bearing. MobX
 rebuilds the dependency set on every run, so a read placed inside the gate drops
 out of it on any run that decides not to fetch — and can then never wake the
@@ -1075,7 +1077,7 @@ live precedent.
 
 | Method | Consumer | Invalidation route |
 | --- | --- | --- |
-| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | The **serialized** payload, in both families — per-region `SettingsInvalidate` reads `self.rpcPropsCacheKey` → `clearAllRpcData` → refetch; global `installGlobalFetchAutorun` reads a computed over the same function → refetch. See "the cache key is the return value" below |
+| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | The **serialized** payload, in both families — per-region `SettingsInvalidate` reads `FetchMixin.rpcPropsCacheKey` → `clearAllRpcData` → refetch; global `installGlobalFetchAutorun` reads the same getter in its trigger list → refetch. See "the cache key is the return value" below |
 | `gpuProps()` | `buildSourceRenderData(data, self.gpuProps())` — encoder input | Upload callback reads it — MobX re-uploads without an RPC roundtrip |
 | Derived region map | Upload callback iterates it in place of raw `rpcDataMap` | Upload autorun reads it — MobX re-uploads without an RPC roundtrip |
 | `renderState` | `backend.render(state)` per frame | Render callback reads it — re-fires when deps shift |
@@ -1095,8 +1097,9 @@ rpcManager.call(sessionId, 'RenderXxxData', {
 ```
 
 `sessionId` belongs in the **first** argument only — `RpcManager.call` injects
-it into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
-reason. Passing it again in the object is redundant; no call site does anymore.
+it into the payload, and `AssertNoCallLevelFields` fails a registry entry that
+declares it in its args. Passing it again in the object is redundant; no call
+site does anymore.
 
 `adapterConfig` is provided by `BaseDisplayModel` (via
 `getConf(this.parentTrack, 'adapter')`) — and is a **structural** arg, so it is
@@ -1152,10 +1155,9 @@ per-region display with no settings-driven refetch (e.g.
 ### The cache key is the return value, not the reads
 
 Both families invalidate on the **serialized** payload — never on the raw call —
-and `serializeRpcProps` is the one implementation of that. The per-region family
-exposes it as the `rpcPropsCacheKey` getter (watched by `SettingsInvalidate`);
-`installGlobalFetchAutorun` wraps the same function in a `computed` for its
-trigger list.
+and `serializeRpcProps` is the one implementation of that, reached through one
+getter, `FetchMixin.rpcPropsCacheKey` — watched by `SettingsInvalidate`
+per-region and read in `installGlobalFetchAutorun`'s trigger list globally.
 
 The reason is that **building the payload reads far more observables than it
 returns**, so tracking the call tracks all of them:
@@ -1264,9 +1266,8 @@ Derived region maps apply when upload needs whole fresh per-region payloads, not
 just encoder parameters. Alignments' `laidOutByGroup` returns, per group, shallow
 clones of that group's `rpcDataMap` entries with freshly-allocated Y arrays from
 main-thread layout (+ connecting-line / Flatbush in chain mode); `sourceSections`
-pairs each with its arc feed and is what the upload callback iterates.
-(`laidOutPileupMap` is now just the first group of that map, kept for the
-single-section consumers.) Raw `rpcDataMap` is never mutated. Use derived maps
+pairs each with its arc feed and is what the upload callback iterates. Raw
+`rpcDataMap` is never mutated. Use derived maps
 when settings change the shape/contents of per-region data; use `gpuProps()` for
 scalars fed to an encoder.
 
@@ -1282,8 +1283,9 @@ Every per-region volatile in tree goes through the helper; writing
 `observable.map<number, …>()` by hand is the thing to notice in review.
 
 **A derived map is a tier, so keep its cheap half out of its expensive half.**
-Alignments splits the one above in two: `laidOutByGroupUncolored` does row
-placement, and `laidOutByGroup` bakes the per-read color arrays over it. Nothing
+Alignments splits the one above in three: `laidOutByGroupUncolored` does row
+placement, `laidOutByGroupFramed` applies the chain strand frames, and
+`laidOutByGroup` bakes the per-read color arrays over it. Nothing
 in the color half can move a read's row, so folding the color settings into the
 layout computed — which is what `groupLayoutContext` used to do — made a recolor
 re-run placement, every per-feature Y remap and the modification Flatbush to
@@ -1299,17 +1301,18 @@ layout computed's dependency set on the ungrouped path.
 ### Theme-derived render inputs are session getters, not pushed volatiles
 
 Color palettes are a pure function of the active theme, so derive them in a model
-getter — `<plugin builder>(getSession(self).palette)` — that `gpuProps()` /
+getter — `<plugin builder>(getPaletteHost(self).palette)` — that `gpuProps()` /
 `renderState` read directly. Do **not** stage them in a volatile that a React
 `useEffect` pushes in via a `setColorPalette` action: the effect runs only on
 mount, so SVG export and RPC — neither of which has a component — see a null
 palette and render blank. As a getter the value is always present and MobX
 recomputes it only when the theme changes: same re-encode invalidation, no mount
-dependency. Four builders in tree read that one session input:
+dependency. Every palette builder in tree reads that one session input —
 `buildColorPaletteFromPalette` (alignments), `getMafColorPalette` (MAF),
-`buildColorPalette` (reference sequence), and `treeStroke` / `treeHoverColors`
-(tree-sidebar, whose consumer is a drawing autorun rather than `gpuProps()` —
-same rule, since an autorun has no component either).
+`buildColorPalette` (reference sequence), canvas's `themedColorTable`, the
+multi-sample variant and multi-way synteny palettes, and `treeStroke` /
+`treeHoverColors` (tree-sidebar, whose consumer is a drawing autorun rather
+than `gpuProps()` — same rule, since an autorun has no component either).
 
 **Read `session.palette`, not `session.theme`.** Both are required on
 `AbstractSessionModel` and both resolve from the same `resolvePalette` call, so
@@ -1450,7 +1453,11 @@ refetched. This one decides whether a settled fetch-input change is about to
 invalidate what is held, which is an export-readiness question: it is the fourth
 term of `dataCurrent`, beside spatial coverage, a non-empty `loadedRegions` and
 `isCacheValid` per block, and `dataCurrent` is the freshness half of
-`foundationSvgReady`.
+`foundationSvgReady`. `GlobalFetchMixin` declares the same hook over its
+signature compare — `dataCurrent` there is `signatureCurrent && !dataSuperseded`,
+and only the first term gates the fetch — so a display with a dependent fetch
+of its own (multi-way synteny's lane genes) holds the export without re-running
+its primary fetch.
 
 The window `dataSuperseded` covers is invisible on screen, since the clear lands
 a tick later and the loading scrim covers it, which is exactly why it needs
@@ -1458,7 +1465,7 @@ stating. `awaitSvgReady` samples freshness once, so an export sampling it inside
 that window renders the data that is about to be discarded, or nothing at all
 once the clear lands mid-render.
 
-Both overrides in tree are a display invalidating its own load rather than the
+Every override in tree is a display invalidating its own load rather than the
 viewport moving off it:
 
 - **GWAS Manhattan**: adopting the top hit as the LD index SNP is an `rpcProps`
@@ -1587,11 +1594,12 @@ wanted.
   ground](#untracked-names-its-ground).
 - Don't measure bytes anywhere but in the feature RPC. `gateEnabled` is the
   one opt-in and `byteLimit` in the call is the whole display-side contract;
-  a separate estimate round trip is the pre-flight path that was deleted. See
+  a separate estimate round trip is the pre-flight path no display issues
+  (`CoreGetRegionByteEstimate` survives for track export alone). See
   [the gate summary](#the-region-too-large-gate-summary).
 - Don't pass `sessionId` twice. `RpcManager.call` injects the first argument
-  into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
-  reason. See [the pattern](#rpcprops--gpuprops-pattern).
+  into the payload, and `AssertNoCallLevelFields` fails a registry entry that
+  declares it. See [the pattern](#rpcprops--gpuprops-pattern).
 - Don't ship a `rpcProps()` field whose distinct states serialize identically.
   `JSON.stringify` *is* the comparison, so a class without `toJSON` flattens to
   `{}` and an `undefined` drops its key — a silently dead cache axis that raises

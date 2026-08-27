@@ -143,13 +143,10 @@ export interface ActiveFetch {
  * see {@link ActiveFetch.end} for the two things it does together.
  *
  * Owns the token mechanics and the status channel; the caller keeps its own
- * loading/error/commit side-effects in its autorun. Used by any bare-autorun
- * fetch: the comparative-view displays (dotplot, synteny, through
- * `installComparativeFetchAutorun`, which wraps this with their shared
- * debounce/flags/commit skeleton), the multi-sample-variant sources fetch, the
- * breakpoint split view's overlay-feature fetch, the circular view's chord
- * fetch, and the synteny diagonalize progress wrapper
- * (`withDiagonalizeProgress`).
+ * loading/error/commit side-effects. Three holders: `FetchMixin` as a member
+ * (so `cancelFetch` can reach it), `installFetch` one per installation (every
+ * other fetch in the tree runs on that skeleton), and the synteny diagonalize
+ * progress wrapper (`withDiagonalizeProgress`) directly.
  *
  * `report` is passed rather than read off `self`, so where the status lands is
  * the caller's decision and not a shape this imposes. A display passes itself —
