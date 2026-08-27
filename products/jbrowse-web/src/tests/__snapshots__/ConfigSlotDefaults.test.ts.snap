@@ -177,7 +177,7 @@ exports[`every registered schema slot default 1`] = `
     "hicLocation": "fileLocation = {"uri":"/path/to/my.hic","locationType":"UriLocation"}",
   },
   "adapter: HtsgetBamAdapter": {
-    "htsgetBase": "string = """,
+    "htsgetBase": "fileLocation = {"uri":"","locationType":"UriLocation"}",
     "htsgetTrackId": "string = """,
   },
   "adapter: IndexedFastaAdapter": {
