@@ -23,9 +23,9 @@ welcome your [feedback](/contact).
 ## Prerequisites
 
 - nothing at all, to open what this page builds: the
-  [HPRC page on genomes.jbrowse.org](genomes_pangenome) launches every graph
-  below on a typed region or a whole chromosome. This page is the route for
-  loading the files into your own JBrowse, or rebuilding them
+  [HPRC page on genomes.jbrowse.org](/docs/tutorials/genomes_pangenome) launches
+  every graph below on a typed region or a whole chromosome. This page is the
+  route for loading the files into your own JBrowse, or rebuilding them
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin), for the tracks that
   use `RgfaTabixAdapter` and `MinigraphBubbleAdapter`; every other track here is
   a URL you can paste

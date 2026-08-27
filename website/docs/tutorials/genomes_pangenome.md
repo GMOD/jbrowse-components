@@ -12,8 +12,9 @@ data: hosted
 **TL;DR:** genomes.jbrowse.org's HPRC page launches the Minigraph-Cactus graph
 as a graph, on any GRCh38 region you type, beside a linear view of the same
 window. A row of chromosome buttons draws each whole chromosome off a bubble
-tier. Nothing is built by hand; the [HPRC pangenome tutorial](pangenome_hprc) is
-where the files come from.
+tier. Nothing is built by hand; the
+[HPRC pangenome tutorial](/docs/tutorials/pangenome_hprc) is where the files
+come from.
 
 :::caution Experimental
 
@@ -29,8 +30,8 @@ hosts. We welcome your [feedback](/contact).
 - nothing to install: this is a click-path through a hosted page and the
   sessions it launches
 - to build the graph indexes yourself, or to add the same tracks to your own
-  JBrowse, take the [HPRC pangenome tutorial](pangenome_hprc) instead; every
-  launch below opens a config it describes
+  JBrowse, take the [HPRC pangenome tutorial](/docs/tutorials/pangenome_hprc)
+  instead; every launch below opens a config it describes
 
 ## Where the data comes from
 
@@ -128,8 +129,8 @@ because both are on GRCh38.
 
 Every launch above opens https://jbrowse.org/pangenome/hprc-grch38/config.json,
 which is a plain JBrowse config you can read. The
-[HPRC pangenome tutorial](pangenome_hprc) walks each of its tracks, from the
-plugin declaration through the rGFA indexes to the tier, and the same
-session-spec URLs the page builds can be written by hand: a `LinearGenomeView`
-with an `id`, and a `GraphGenomeView` carrying `loadedTrackId`, `loadedRegion`
-and `connectedViewId` naming that id.
+[HPRC pangenome tutorial](/docs/tutorials/pangenome_hprc) walks each of its
+tracks, from the plugin declaration through the rGFA indexes to the tier, and
+the same session-spec URLs the page builds can be written by hand: a
+`LinearGenomeView` with an `id`, and a `GraphGenomeView` carrying
+`loadedTrackId`, `loadedRegion` and `connectedViewId` naming that id.

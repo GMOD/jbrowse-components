@@ -375,6 +375,19 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.29, 1],
     position: 'left',
   },
+  genomes_pangenome: {
+    // chr21 whole as a graph, which is the page's own headline: the linear
+    // tracks and the anchored bubble tier under them, on one card. The MHC
+    // figure is the better picture and carries a hand-added "1.5 kb deletion"
+    // callout, which a gallery surface should not.
+    src: 'pangenome/genomes_hprc_chr21_tier.png',
+    // below the app header, down to the last graph row — the bottom fifth of
+    // the graph panel is empty canvas
+    band: [0.05, 0.94],
+    // the track labels and the start of the chromosome; the crop takes its
+    // width off the far end, which is the tail of the same three tracks
+    position: 'left',
+  },
   genomes_synteny: {
     // curved ribbons with transparent indels: the blue reverse-strand sweep
     // crossing the pink forward-strand, indels dropped to white
