@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -72,6 +73,20 @@ export function configSchemaFactory() {
         type: 'color',
         description: 'the color of the ribbons connecting adjacent lanes',
         defaultValue: 'rgba(130,130,130,0.3)',
+      },
+      /**
+       * #slot
+       */
+      ribbonColorBy: {
+        type: 'stringEnum',
+        model: types.enumeration('ribbonColorBy', [
+          'default',
+          'strand',
+          'identity',
+        ]),
+        description:
+          "what colors a ribbon: `default` is ribbonColor; `strand` reads whether the ribbon is crossed — the lower placement runs the other way from the upper one — so an inversion relative to the lane above stands out, in the synteny view's strand colors; `identity` reads the pair's `identity` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one draws in the missing-value grey. Every mode keeps ribbonColor's opacity",
+        defaultValue: 'default',
       },
       /**
        * #slot

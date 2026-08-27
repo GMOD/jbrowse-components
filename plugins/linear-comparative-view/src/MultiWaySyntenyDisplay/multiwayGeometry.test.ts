@@ -1,5 +1,10 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { abgrAlpha } from '@jbrowse/core/util/colorBits'
+import {
+  abgrAlpha,
+  cssColorToABGR,
+  withAbgrAlpha,
+} from '@jbrowse/core/util/colorBits'
+import { MISSING_VALUE_COLOR } from '@jbrowse/synteny-core'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { LaneGene } from './geneGlyph.ts'
@@ -209,6 +214,55 @@ describe('the ribbons', () => {
     const layer = layers.find(l => l.key === 'ribbons:0>2')!
     expect(layer.yTop).toBe(s.lanes[0]!.glyphTop + s.glyphHeight)
     expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
+  })
+
+  // strand is the drawn twist: g2's lower span is handed reversed, so its
+  // ribbon crosses and takes the reverse color; g1 runs straight
+  test('color by strand reads the twist, at the slot color’s alpha', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g2', 300, 400, { strand: -1 }),
+      ],
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColorBy: 'strand',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const data = ribbonData(cells, 'ribbons:0')
+    const alpha = Math.round(0.4 * 255)
+    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR('#f00'), alpha))
+    expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('#00f'), alpha))
+  })
+
+  test('color by identity ramps the pair’s attribute and greys a pair without one', () => {
+    const s = stack({
+      features: [
+        new SimpleFeature({
+          ...pairFeature('g1', 100, 200).toJSON(),
+          identity: 1,
+        }),
+        pairFeature('g2', 300, 400),
+      ],
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColorBy: 'identity',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const data = ribbonData(cells, 'ribbons:0')
+    const alpha = Math.round(0.4 * 255)
+    expect(abgrAlpha(data.colors[0]!)).toBe(alpha)
+    expect(data.colors[0] & 0xffffff).not.toBe(MISSING_VALUE_COLOR & 0xffffff)
+    expect(data.colors[1]).toBe(withAbgrAlpha(MISSING_VALUE_COLOR, alpha))
+    expect(data.colors[0]).not.toBe(data.colors[1])
   })
 
   test('leave out a pair too thin to read on both ends', () => {

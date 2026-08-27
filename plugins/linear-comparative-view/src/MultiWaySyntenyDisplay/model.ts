@@ -53,7 +53,7 @@ import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
-import type { TickGeometry } from './multiwayGeometry.ts'
+import type { MultiWayRibbonColorBy, TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
   MultiWayLayer,
@@ -251,6 +251,12 @@ export function stateModelFactory(
       /**
        * #action
        */
+      setRibbonColorBy(mode: MultiWayRibbonColorBy) {
+        setConf(self, 'ribbonColorBy', mode)
+      },
+      /**
+       * #action
+       */
       setDrawCurves(flag: boolean) {
         setConf(self, 'drawCurves', flag)
       },
@@ -315,6 +321,12 @@ export function stateModelFactory(
        */
       get ribbonColor(): string {
         return getConf(self, 'ribbonColor')
+      },
+      /**
+       * #getter
+       */
+      get ribbonColorBy(): MultiWayRibbonColorBy {
+        return getConf(self, 'ribbonColorBy')
       },
       /**
        * #getter
@@ -700,6 +712,7 @@ export function stateModelFactory(
           stack: self.laneStack,
           laneLinks: self.laneLinks,
           ribbonColor: self.ribbonColor,
+          ribbonColorBy: self.ribbonColorBy,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
         })

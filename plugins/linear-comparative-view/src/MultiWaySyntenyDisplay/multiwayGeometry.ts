@@ -1,5 +1,11 @@
 import { toLocale } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
+import {
+  MISSING_VALUE_COLOR,
+  colorSchemes,
+  continuousRampConfig,
+  makeContinuousColorFunction,
+} from '@jbrowse/synteny-core'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import {
@@ -111,6 +117,50 @@ class RibbonBuilder {
   }
 }
 
+export type MultiWayRibbonColorBy = 'default' | 'strand' | 'identity'
+
+/**
+ * A ribbon's color from what it joins. `strand` reads the drawn twist rather
+ * than any record's strand: the spans are ORDERED pairs, so a crossed ribbon
+ * — the lower placement running the other way from the upper one — is an
+ * inversion relative to the lane above, and two lanes both reversed against
+ * the anchor come out straight between themselves, which is the reading a
+ * per-record strand would get wrong. `identity` is the pair feature's own
+ * attribute on the synteny view's ramp, grey where it has none. Every mode
+ * keeps the slot color's alpha, since the modes' colors are opaque.
+ */
+function ribbonColorer(mode: MultiWayRibbonColorBy, slotColor: number) {
+  const alpha = slotColor >>> 24
+  if (mode === 'strand') {
+    const pos = withAbgrAlpha(
+      cssColorToABGR(colorSchemes.strand.posColor),
+      alpha,
+    )
+    const neg = withAbgrAlpha(
+      cssColorToABGR(colorSchemes.strand.negColor),
+      alpha,
+    )
+    return (s1: Span, s2: Span) =>
+      (s1[1] - s1[0]) * (s2[1] - s2[0]) < 0 ? neg : pos
+  }
+  if (mode === 'identity') {
+    const value = new Float32Array(1)
+    const ramp = makeContinuousColorFunction(continuousRampConfig.identity, {
+      identity: value,
+    })
+    const missing = withAbgrAlpha(MISSING_VALUE_COLOR, alpha)
+    return (_s1: Span, _s2: Span, feature: Feature) => {
+      const identity = feature.get('identity')
+      if (typeof identity !== 'number') {
+        return missing
+      }
+      value[0] = identity
+      return withAbgrAlpha(ramp(0), alpha)
+    }
+  }
+  return () => slotColor
+}
+
 export interface RibbonGeometry {
   cells: Map<string, MultiWayCell>
   layers: RibbonLayer[]
@@ -129,12 +179,14 @@ export function buildRibbonGeometry({
   stack,
   laneLinks,
   ribbonColor,
+  ribbonColorBy = 'default',
   drawCurves,
   bridgeSkippedLanes,
 }: {
   stack: LaneStack
   laneLinks: Map<string, Feature[]> | undefined
   ribbonColor: string
+  ribbonColorBy?: MultiWayRibbonColorBy
   drawCurves: boolean
   /**
    * join a group across a lane that does not place it, to the next lane down
@@ -144,6 +196,7 @@ export function buildRibbonGeometry({
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
+  const colorOf = ribbonColorer(ribbonColorBy, color)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
@@ -183,7 +236,7 @@ export function buildRibbonGeometry({
               s2,
               KIND_BASE,
               targetOfGroup(key, group.feature),
-              color,
+              colorOf(s1, s2, group.feature),
             )
           }
         }
@@ -210,7 +263,7 @@ export function buildRibbonGeometry({
           feature: link,
           label: `${upper.assemblyName} ${link.get('refName')}:${fmt(link.get('start'))}-${fmt(link.get('end'))}\n${lower.assemblyName} ${mate.refName}:${fmt(mate.start)}-${fmt(mate.end)}`,
         })
-        ribbons.add(s1, ordered, KIND_BASE, idx, color)
+        ribbons.add(s1, ordered, KIND_BASE, idx, colorOf(s1, ordered, link))
       }
     }
     const key = ribbonsKey(row)

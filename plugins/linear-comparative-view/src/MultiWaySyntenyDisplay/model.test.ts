@@ -46,6 +46,7 @@ test('the stacked-synteny launcher is on the track menu, over the inherited rows
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Launch stacked synteny view (visible region)',
     undefined,
+    'Color ribbons by',
     'Draw curved ribbons',
     'Bridge lanes that place nothing',
     'Show lane ticks',

@@ -1,5 +1,6 @@
-import { toggleItem } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 
+import type { MultiWayRibbonColorBy } from './multiwayGeometry.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export interface LaneOrderModel {
@@ -11,6 +12,8 @@ export interface LaneOrderModel {
 }
 
 export interface LaneSettingsModel {
+  ribbonColorBy: MultiWayRibbonColorBy
+  setRibbonColorBy: (mode: MultiWayRibbonColorBy) => void
   drawCurves: boolean
   setDrawCurves: (flag: boolean) => void
   bridgeSkippedLanes: boolean
@@ -106,8 +109,25 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
  * the ticks help or crowd is making that call in front of the picture, and
  * config is the wrong distance from it.
  */
+export const RIBBON_COLOR_MODES: readonly (readonly [
+  MultiWayRibbonColorBy,
+  string,
+])[] = [
+  ['default', 'Default'],
+  ['strand', 'Strand'],
+  ['identity', 'Identity'],
+]
+
 export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
   return [
+    makeRadioSubMenu({
+      label: 'Color ribbons by',
+      value: model.ribbonColorBy,
+      onChange: model.setRibbonColorBy,
+      options: RIBBON_COLOR_MODES,
+      helpText:
+        "Default is the ribbon color. Strand colors a crossed ribbon — an inversion relative to the lane above — in the synteny view's reverse color and the rest in its forward color. Identity paints each pair's identity attribute on the same viridis ramp as the synteny view, grey where the pair has none.",
+    }),
     toggleItem('Draw curved ribbons', model.drawCurves, model.setDrawCurves, {
       helpText:
         "Bezier curves rather than straight chords. Straight is the default: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
