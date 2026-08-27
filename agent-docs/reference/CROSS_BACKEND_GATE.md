@@ -350,13 +350,17 @@ seven deleted ones measuring 0.00–2.22% against ceilings of 5–10%. **The aud
 method is at the top of `THRESHOLD_OVERRIDES`; re-run it after any change to a
 shared draw path, and never add an entry without a measured number.**
 
-It is **four** since 2026-08-11, and the three additions are what tightening the
-default to 1.5% exposed rather than a loosening: two `-linked` entries recording
-the line-width bug above (3.96% and 1.99%, neither moving between rasterizers),
-and `inversion-paired-coverage` at 2.40%/2.31% — the first entry in this list
-whose antialiasing claim the audit has ever *confirmed* rather than refuted.
-Splitting `inversion-pbsim-linked` out also stopped the 10% coverage ceiling
-silently covering a second, unrelated bug.
+It rose to **four** on 2026-08-11 as tightening the default to 1.5% exposed
+entries rather than loosening any: two `-linked` entries recording the line-width
+bug above (3.96% and 1.99%, neither moving between rasterizers), and
+`inversion-paired-coverage` at 2.40%/2.31% — the first entry in this list whose
+antialiasing claim the audit has ever *confirmed* rather than refuted. Splitting
+`inversion-pbsim-linked` out also stopped the 10% coverage ceiling silently
+covering a second, unrelated bug.
+
+**It is four again, by a different route.** Both `-linked` entries went when the
+read outline was fixed on both sides, leaving two; the two per-base entries below
+arrived with the scenes that first covered that mode.
 
 **Order matters now, and did not before.** `thresholdFor` takes the first
 substring match, so `inversion-pbsim-linked` has to sit above `inversion-pbsim`
@@ -437,6 +441,65 @@ The residue is a hand-paired snap someone writes tomorrow, and nothing checks fo
 that — the sweep is a point-in-time measurement, not a gate. It was not made one
 for the same reason the override list is kept short: a check whose findings are
 all "no" teaches people to skip it.
+
+## The per-base wall: covered on 2026-08-27, and it failed on the first run
+
+`perBaseQuality` and `perBaseLetter` draw a cell per aligned base of every read —
+the densest thing the pileup paints — and until 2026-08-27 no cross-backend check
+covered either at any zoom. Two scenes in `Alignments Color Schemes` do now
+(`color-by-per-base-{quality,letter}-binned`, whole-contig ctgA so the sub-pixel
+bin is engaged), and both were over the default the first time they ran, against
+a disagreement older than the scenes.
+
+<!-- BEGIN GENERATED MEASUREMENT per-base-cross-backend-drift -->
+
+| scene                      | bp/px | binBp | drift, swiftshader |  real GPU |
+| -------------------------- | ----: | ----: | -----------------: | --------: |
+| perBaseLetter              |  37.9 |    16 |          **16.39** | **16.40** |
+| perBaseLetter              |   3.2 |     1 |              15.63 |     15.63 |
+| perBaseLetter              |   0.8 |     1 |               3.40 |      3.40 |
+| perBaseQuality             |  37.9 |    16 |               1.76 |      1.76 |
+| perBaseQuality             |   3.2 |     1 |               0.42 |      0.42 |
+| perBaseQuality             |   0.8 |     1 |               0.14 |      0.14 |
+| colour-by normal (control) |  37.9 |     1 |               0.36 |      0.35 |
+
+<!-- END GENERATED MEASUREMENT per-base-cross-backend-drift -->
+
+**The rasterizer column is the verdict.** Every targeted pair reads the same to
+two decimals under SwiftShader and on a real GPU, which antialiasing cannot do —
+so the two backends are drawing different pixels, the way `inversion-pbsim` does
+and unlike `inversion-paired-coverage`.
+
+Two deliberate asymmetries produce it, both in the tree today and both
+documented where they live:
+
+- **`pileupCellX`** (`alignmentsUniforms.slang`) snaps a cell's left edge to a
+  pixel column, then extends to a 1 CSS px minimum from that anchor.
+- **`makePileupCellMapper`** (`rendererTypes.ts`) leaves the left edge fractional
+  and draws `max(1, 1/bpPerPx) + PILEUP_CELL_SEAM_FUDGE_PX`, the half pixel that
+  closes Canvas2D's AA hairlines between abutting cells.
+
+Above 1 bp/px the snap dominates: adjacent bases land in one column, the GPU
+keeps one of them, and **10,553 one-pixel columns stay white that Canvas2D
+paints**. That set is *identical* in both colour modes, which is what makes it
+geometry rather than colour — about one dropped column per read. Below 1 bp/px
+the fudge dominates instead, drawing a 1.77px cell where the GPU draws 1.27px.
+
+**Lettering is where it shows, and quality is why nobody saw it.** Decoding the
+pixels rather than the percentage: Canvas2D's overlapping cells average to exact
+two-colour means — `249,108,27` where the GPU writes red `244,67,54`, and
+`53,162,162` where it writes blue `33,150,243`. Four widely separated base hues
+make that legible; `perBaseQuality`'s narrow ramp reports roughly the same value
+either way, which is why it stays under the default until the bin widens the
+composite and then only reaches 1.76%. The same asymmetry, one palette apart.
+
+**Which backend is right is a visual call, and nobody has made it.** The GPU
+drops bases; Canvas2D shows a blend of bases that is not any base's colour. It is
+the argument in
+[todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md](../todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md),
+one display over. Until it is made the two override entries hold the numbers, and
+they are a record of what is broken rather than a setting — the same standing as
+`inversion-pbsim`'s 10%.
 
 ## Synteny's one drifting pair is the sub-pixel fade, and it is curve-only
 

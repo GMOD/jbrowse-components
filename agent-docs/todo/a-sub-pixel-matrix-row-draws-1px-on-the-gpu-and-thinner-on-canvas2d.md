@@ -32,3 +32,12 @@ themselves stale repo-wide, so they are not a tiebreak.
 The hit test is already settled and is not waiting on this: `matrixHitTest.ts`
 walks the GPU's 1px band, which is a superset of the Canvas2D extent, and
 `nearest` is the same row either way.
+
+**The same call exists one display over, on the other axis, with its own number.**
+The alignments per-base wall has the GPU snapping each cell to a pixel COLUMN
+(`pileupCellX`) while Canvas2D draws a fractional-x cell plus a half-pixel seam
+fudge — measured 2026-08-27 at **16.39%** on `perBaseLetter`, identical on a real
+GPU, and it drops one 1px column per read where this entry's GPU keeps a row the
+Canvas2D side thins. Whoever settles which side is right will probably want to
+settle both at once: [reference/CROSS_BACKEND_GATE.md](../reference/CROSS_BACKEND_GATE.md)
+§"The per-base wall".

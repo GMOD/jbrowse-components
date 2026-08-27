@@ -120,6 +120,34 @@ their mean. `perBaseQuality`'s colours are a narrow ramp, so a single draw is
 close to the mean and the change is invisible; base letters are four widely
 separated hues, so 38 of them average to mud and 2 of them do not.
 
+> **"Both backends blend" is Canvas2D's mechanism, not the GPU's.** Measured
+> 2026-08-27 across three zooms, no before-arm: Canvas2D holds 2,002–10,041
+> distinct colours and 2–23% of its inked pixels on a pure base colour, while
+> webgl holds 160–269 and stays 64–75% pure. `pileupCellX` snaps each cell to a
+> whole pixel column and the winner covers it outright, so the GPU largely
+> overwrites where Canvas2D averages; its residue is edge antialiasing, worst at
+> 0.8 bp/px where a 1.27px cell lands mid-column rather than at the widest zoom
+> where the most cells compete.
+>
+> The paragraph above still describes what the bin changed — the arms it rests on
+> were captured on one backend and are untouched by this. What it does not
+> support is a claim about the two backends together, and pointing the gate at
+> this mode found them disagreeing by 16.39%:
+> [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) §"The per-base wall".
+
+<!-- BEGIN GENERATED MEASUREMENT per-base-cell-colour-purity -->
+
+| bp/px | backend  | distinct colours | inked px on a pure base colour |
+| ----: | -------- | ---------------: | -----------------------------: |
+|   0.8 | canvas2d |            2,002 |                          22.60 |
+|   0.8 | webgl    |              160 |                          63.60 |
+|   3.2 | canvas2d |            5,965 |                           2.20 |
+|   3.2 | webgl    |              193 |                          64.80 |
+|  37.9 | canvas2d |       **10,041** |                       **9.20** |
+|  37.9 | webgl    |          **269** |                      **74.90** |
+
+<!-- END GENERATED MEASUREMENT per-base-cell-colour-purity -->
+
 That falsifies the sentence the design rested on — that the skipped bases had
 already lost the sub-pixel race, so the survivor was arbitrary either way. True
 under last-writer-wins, false under blending, and both backends blend.
@@ -149,9 +177,12 @@ holds its 365ms clone measurement.
 - **What a per-base wall should look like at wide zoom**, and the one octave of
   headroom the 1bp cell leaves — four candidates and three fixes, none built:
   [ideas/per-base-wall-at-wide-zoom.md](../ideas/per-base-wall-at-wide-zoom.md).
-- **No cross-backend test covers a per-base mode at any zoom** —
-  [todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md](../todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md).
-  That gap is why the bin shipped believing a claim nothing could have failed.
+- ~~**No cross-backend test covers a per-base mode at any zoom.**~~ Two scenes do
+  since 2026-08-27, and **both failed on their first run** — against a
+  disagreement that predates the bin, not one it caused. The gate finding, its
+  mechanism and the numbers are in
+  [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) §"The per-base wall". What it
+  means for this doc is below.
 - **Typed columns instead of entry objects**, which the closest in-tree
   measurement says would be a loss —
   [ideas/bench-typed-columns-against-the-per-base-extract.md](../ideas/bench-typed-columns-against-the-per-base-extract.md).

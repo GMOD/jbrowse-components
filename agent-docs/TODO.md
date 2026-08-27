@@ -1,6 +1,6 @@
 ---
 name: todo
-description: The v5.0.0 release list — the fifteen items the release itself turns on, grouped by what you have to do first: take it, get a visual call, or measure. Everything else that used to be here is in ideas/. Read when picking up work, and before filing anything new here.
+description: The v5.0.0 release list — the thirteen items the release itself turns on, grouped by what you have to do first: take it, get a visual call, or measure. Everything else that used to be here is in ideas/. Read when picking up work, and before filing anything new here.
 ---
 
 # Backlog
@@ -8,7 +8,7 @@ description: The v5.0.0 release list — the fifteen items the release itself tu
 **This file is the v5.0.0 release list**, and the bar for a row is that the
 release ships worse without it: a check owed on code that landed in the v5
 window, something the release itself publishes, a setting the rewrite dropped, or
-a number a release note would quote. Fourteen entries clear that bar.
+a number a release note would quote. Thirteen entries clear that bar.
 
 **A real bug is not automatically a row here.** Thirty-four entries left on
 2026-08-26 — measured picture defects among them, not just proposals — because
@@ -17,7 +17,7 @@ one file each, every one carrying a note at its top saying what moved it. File a
 new find there unless v5.0.0 turns on it; bring it back when the release is out.
 
 Grouped by **what you have to do first**, because that is the thing these
-entries disagree on. Nine are ordinary work someone can pick up. Three are
+entries disagree on. Eight are ordinary work someone can pick up. Three are
 blocked on a visual call that is not the implementer's to make. Two open with an
 instruction to go measure something, because the premise is not established and
 building first would be guessing.
@@ -41,9 +41,11 @@ editorial, but the half that rots is the half it covers.
 
 ## Ready to take
 
-Ordered. The first four are checks owed on code that landed in the v5 window,
+Ordered. The first three are checks owed on code that landed in the v5 window,
 where a wrong answer means something already shipped broken, and two of them run
-the same gate. Then the two things the docs site publishes, one of which may
+the same gate. A fourth closed on 2026-08-27 — covering a per-base colour mode —
+and the scenes it added failed on their first run, which is the argument for the
+three still here. Then the two things the docs site publishes, one of which may
 already be done. Then the ABI baseline's remaining half, which this major
 release is the moment for. Then the two halves of the release-validation exit
 criterion, which rise to the top of the file the moment a date exists.
@@ -53,7 +55,6 @@ criterion, which rise to the top of the file the moment a date exists.
 | [Verify the shared rect buffer headed](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed, and no unit test on the Canvas2D path can see a wrong attribute offset |
 | [Read the drift the AA ramp conversion predicts](todo/read-the-cross-backend-drift-the-aa-ramp-conversion-predicts.md) | shaders, GPU | all four converted; run the gate with the MSAA sample count held fixed, on a worktree with no second `runner.ts` in it |
 | [Render webgpu in the blocking gate job](todo/render-webgpu-in-the-blocking-cross-backend-gate-job.md) | browser tests, CI | the drift half landed — the capture no longer scrolls and the eight alignments pairs came back on their own, so `test:browser:gate` renders webgpu. `:gate:ci` cannot: the runner has no Firefox Nightly and no display, so webgpu still ships ungated |
-| [Cover a per-base colour mode in the cross-backend gate](todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md) | alignments, browser tests | one scene per mode in the existing gate; pick a zoom where `binBp > 1`. Same gate as the row above, and this is the hole that already let a false appearance claim ship |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | probably already done — verify before spending the pipeline; three need a review, not a capture |
 | [Rebuild the OrthoFinder demos' chrom.sizes](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all. `demos/orthofinder_*` is still at `ffa68a2e84` and the two spec-side workarounds are still carrying it |
 | [Do the plugin `exports` surfaces earn a baseline](todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md) | plugins, ABI | the plugin-`exports` baseline is built (`products/jbrowse-web/src/pluginExportsBaseline.json`); what is left is the session one, blocked on where its record lives. A major release is the moment to take one |
