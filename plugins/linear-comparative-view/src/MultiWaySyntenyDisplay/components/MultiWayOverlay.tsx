@@ -1,13 +1,16 @@
 import { useState } from 'react'
 
+import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { dropRowAt, moveLaneTo } from '../laneDrag.ts'
+import { laneHeaderMenuItems } from '../menus.ts'
 
 import type { Lane } from '../laneStack.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
+import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 
 /**
  * What a lane's header says on the right: the span, because a range makes the
@@ -35,12 +38,21 @@ interface LaneDrag {
   y: number
 }
 
+interface LaneMenu {
+  assemblyName: string
+  anchor: ContextMenuAnchor
+}
+
+const LABEL_FONT_SIZE = 10
+const LABEL_CHAR_PX = 5.6
+
 /**
- * The lane headers, and the drag that reorders them: press a mate lane's
- * label, move it over another lane, release. The row under the pointer is
- * read off the lanes' band extents, and the drop writes the whole order back
- * the way the menu's Move up/down does, so the lanes the drag did not touch
- * stay where the reader saw them.
+ * The lane headers, the drag that reorders them and the menu each raises.
+ * Press a mate lane's label, move it over another lane, release: the row
+ * under the pointer is read off the lanes' band extents, and the drop writes
+ * the whole order back the way the menu's Move up/down does, so the lanes the
+ * drag did not touch stay where the reader saw them. A right-click on the
+ * label, or a left-click on the glyph at its end, opens `laneHeaderMenuItems`.
  */
 const LaneHeaders = observer(function LaneHeaders({
   model,
@@ -52,6 +64,18 @@ const LaneHeaders = observer(function LaneHeaders({
   const { lanes } = model.laneStack
   const { visibleBpSpan, canvasWidth: width } = model
   const [drag, setDrag] = useState<LaneDrag>()
+  const [menu, setMenu] = useState<LaneMenu>()
+  const menuLane = menu
+    ? lanes.find(lane => lane.assemblyName === menu.assemblyName)
+    : undefined
+  const openMenu = (assemblyName: string, event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setMenu({
+      assemblyName,
+      anchor: { clientX: event.clientX, clientY: event.clientY },
+    })
+  }
   const dropRow = drag ? dropRowAt(lanes, drag.y) : undefined
   const dropLane = dropRow === undefined ? undefined : lanes[dropRow]
   const startDrag = (assemblyName: string, event: React.MouseEvent) => {
@@ -105,46 +129,62 @@ const LaneHeaders = observer(function LaneHeaders({
           ? view.coarseVisibleLocStrings || view.visibleLocStrings
           : lane.frame &&
             `${lane.canon(lane.frame.refName)}:${toLocale(Math.round(lane.frame.min))}${lane.frame.flipped ? ' [rev]' : ''}`
+        const label = [
+          lane.assemblyName,
+          where,
+          lane.hasAnnotation ? undefined : '· no annotation',
+        ]
+          .filter(part => !!part)
+          .join('  ')
+        const y = lane.glyphTop - 3
         return (
           <g key={`header-${lane.assemblyName}`}>
             <text
               x={2}
-              y={lane.glyphTop - 3}
-              fontSize={10}
+              y={y}
+              fontSize={LABEL_FONT_SIZE}
               fill={palette.text.primary}
               data-testid={`multiway-lane-label-${lane.assemblyName}`}
-              style={
-                lane.isAnchor
-                  ? undefined
-                  : {
-                      pointerEvents: 'all',
-                      cursor: drag ? 'grabbing' : 'grab',
-                      userSelect: 'none',
-                    }
-              }
+              style={{
+                pointerEvents: 'all',
+                cursor: lane.isAnchor ? undefined : drag ? 'grabbing' : 'grab',
+                userSelect: 'none',
+              }}
               onMouseDown={
                 lane.isAnchor
                   ? undefined
                   : event => {
-                      startDrag(lane.assemblyName, event)
+                      if (event.button === 0) {
+                        startDrag(lane.assemblyName, event)
+                      }
                     }
               }
+              onContextMenu={event => {
+                openMenu(lane.assemblyName, event)
+              }}
             >
-              {/* `no annotation` is a claim about the SESSION, so it asks
-                  whether a track exists rather than whether this window drew
-                  any genes */}
-              {[
-                lane.assemblyName,
-                where,
-                lane.hasAnnotation ? undefined : '· no annotation',
-              ]
-                .filter(part => !!part)
-                .join('  ')}
+              {label}
+            </text>
+            <text
+              x={2 + label.length * LABEL_CHAR_PX + 6}
+              y={y}
+              fontSize={LABEL_FONT_SIZE}
+              fill={palette.text.secondary}
+              data-testid={`multiway-lane-menu-${lane.assemblyName}`}
+              style={{ pointerEvents: 'all', cursor: 'pointer' }}
+              onMouseDown={event => {
+                event.stopPropagation()
+              }}
+              onClick={event => {
+                openMenu(lane.assemblyName, event)
+              }}
+            >
+              ⋮
             </text>
             <text
               x={width - 2}
-              y={lane.glyphTop - 3}
-              fontSize={10}
+              y={y}
+              fontSize={LABEL_FONT_SIZE}
               textAnchor="end"
               fill={palette.text.secondary}
             >
@@ -153,6 +193,15 @@ const LaneHeaders = observer(function LaneHeaders({
           </g>
         )
       })}
+      {menuLane ? (
+        <ContextMenu
+          anchor={menu?.anchor}
+          menuItems={() => laneHeaderMenuItems(model, menuLane)}
+          onClose={() => {
+            setMenu(undefined)
+          }}
+        />
+      ) : null}
     </>
   )
 })

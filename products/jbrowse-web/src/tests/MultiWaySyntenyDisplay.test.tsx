@@ -378,3 +378,155 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
   // the anchor lane is the view's own axis and has nowhere to go
   expect(queryByTestId('multiway-lane-label-grape')!.style.cursor).toBe('')
 }, 40000)
+
+// The label's left-click is the drag, so the menu hangs off a right-click and
+// off the glyph at the label's end; both raise the same items
+test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: ['multiway_blocks'],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.laneStack.lanes[1]?.frame).toBeDefined()
+      return d!
+    },
+    { timeout: 30000 },
+  )
+  const { findByTestId, findByText, queryByText } = render(
+    <MultiWayOverlay model={display} />,
+  )
+  fireEvent.contextMenu(await findByTestId('multiway-lane-label-peach'))
+  for (const label of [
+    'Move up',
+    'Move down',
+    'Hide lane',
+    'Open peach in a new view',
+    'Re-anchor on peach',
+  ]) {
+    expect(await findByText(label)).toBeTruthy()
+  }
+  fireEvent.click(await findByText('Hide lane'))
+  expect(display.rowAssemblies).toEqual(['cacao'])
+  await waitFor(() => {
+    expect(queryByText('Hide lane')).toBeNull()
+  })
+
+  fireEvent.click(await findByTestId('multiway-lane-menu-grape'))
+  expect(await findByText('Open grape in a new view')).toBeTruthy()
+  expect(queryByText('Re-anchor on grape')).toBeNull()
+  expect(queryByText('Move up')).toBeNull()
+}, 40000)
+
+// Re-anchoring is a navigation of the HOSTING view: the anchor lane reads
+// off the view's first assembly, so the stack follows on its own and the old
+// anchor drops into a mate lane
+test('MultiWaySyntenyDisplay re-anchors on a mate lane from its label menu', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: ['multiway_blocks'],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.laneStack.lanes[1]?.frame).toBeDefined()
+      return d!
+    },
+    { timeout: 30000 },
+  )
+  const { findByTestId, findByText } = render(
+    <MultiWayOverlay model={display} />,
+  )
+  fireEvent.contextMenu(await findByTestId('multiway-lane-label-peach'))
+  fireEvent.click(await findByText('Re-anchor on peach'))
+
+  await waitFor(
+    () => {
+      expect(view.assemblyNames).toEqual(['peach'])
+      expect(display.anchorAssemblyName).toBe('peach')
+      expect(display.rowAssemblies.sort()).toEqual(['cacao', 'grape'])
+    },
+    { timeout: 30000 },
+  )
+  expect(view.displayedRegions[0]!.refName).toBe('Pp1')
+  expect(view.tracks.length).toBe(1)
+  await waitFor(
+    () => {
+      expect(display.laneStack.lanes.map(l => l.assemblyName)[0]).toBe('peach')
+      expect(display.groups.length).toBeGreaterThan(0)
+    },
+    { timeout: 30000 },
+  )
+}, 40000)
+
+test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track along', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: ['multiway_blocks'],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.laneStack.lanes[1]?.frame).toBeDefined()
+      return d!
+    },
+    { timeout: 30000 },
+  )
+  const { findByTestId, findByText } = render(
+    <MultiWayOverlay model={display} />,
+  )
+  fireEvent.contextMenu(await findByTestId('multiway-lane-label-peach'))
+  fireEvent.click(await findByText('Open peach in a new view'))
+
+  const opened = await waitFor(
+    () => {
+      expect(session.views.length).toBe(2)
+      return session.views[1]
+    },
+    { timeout: 30000 },
+  )
+  opened.setWidth(800)
+  await waitFor(
+    () => {
+      expect(opened.initialized).toBe(true)
+      expect(opened.assemblyNames).toEqual(['peach'])
+      expect(opened.tracks.map(t => t.configuration.trackId)).toEqual([
+        'multiway_blocks',
+      ])
+    },
+    { timeout: 30000 },
+  )
+  expect(opened.displayedRegions[0]!.refName).toBe('Pp1')
+  expect(view.assemblyNames).toEqual(['grape'])
+}, 40000)

@@ -1,5 +1,7 @@
 import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { toLocale } from '@jbrowse/core/util'
 
+import type { Lane } from './laneStack.ts'
 import type { MultiWayRibbonColorBy } from './multiwayGeometry.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -10,6 +12,18 @@ export interface LaneOrderModel {
   hiddenLanes: readonly string[]
   setHiddenLanes: (names: string[]) => void
 }
+
+export interface LaneHeaderModel extends LaneOrderModel {
+  anchorLocString: string
+  holdsAssembly: (assemblyName: string) => boolean
+  openInNewView: (assemblyName: string, loc: string) => void
+  reanchor: (assemblyName: string, loc: string) => void
+}
+
+export type HeaderLane = Pick<
+  Lane,
+  'assemblyName' | 'isAnchor' | 'frame' | 'canon'
+>
 
 export interface LaneSettingsModel {
   ribbonColorBy: MultiWayRibbonColorBy
@@ -33,6 +47,95 @@ export function moveLane(order: string[], name: string, delta: number) {
   out.splice(from, 1)
   out.splice(to, 0, name)
   return out
+}
+
+/** Move up / Move down / Hide lane for one mate lane, off the order it is in now */
+export function laneRowMenuItems(
+  model: LaneOrderModel,
+  name: string,
+): MenuItem[] {
+  const lanes = model.rowAssemblies
+  const hidden = model.hiddenLanes
+  const i = lanes.indexOf(name)
+  return [
+    {
+      label: 'Move up',
+      disabled: i <= 0,
+      onClick: () => {
+        model.setRowOrder(moveLane(lanes, name, -1))
+      },
+    },
+    {
+      label: 'Move down',
+      disabled: i < 0 || i === lanes.length - 1,
+      onClick: () => {
+        model.setRowOrder(moveLane(lanes, name, 1))
+      },
+    },
+    {
+      label: 'Hide lane',
+      onClick: () => {
+        model.setHiddenLanes([...hidden, name])
+      },
+    },
+  ]
+}
+
+/** the mate lane's frame as a locstring the lane's own assembly resolves */
+export function laneLocString(lane: HeaderLane) {
+  const { frame } = lane
+  if (!frame) {
+    return undefined
+  }
+  const min = Math.max(0, Math.round(frame.min))
+  const max = Math.max(min + 1, Math.round(frame.max))
+  return `${lane.canon(frame.refName)}:${toLocale(min)}-${toLocale(max)}`
+}
+
+/**
+ * The menu a lane's header raises. A mate lane gets the track menu's own row
+ * plus the two hops off it: its assembly in a new view at the frame the lane
+ * is drawing, and the whole track re-anchored on it, which the hosting view
+ * does by navigating there — the anchor lane reads off the view's first
+ * assembly, so the old anchor drops into a mate lane on its own. Either hop is
+ * dead while the lane places nothing, and re-anchoring also while the session
+ * does not hold the genome
+ */
+export function laneHeaderMenuItems(
+  model: LaneHeaderModel,
+  lane: HeaderLane,
+): MenuItem[] {
+  const name = lane.assemblyName
+  if (lane.isAnchor) {
+    return [
+      {
+        label: `Open ${name} in a new view`,
+        onClick: () => {
+          model.openInNewView(name, model.anchorLocString)
+        },
+      },
+    ]
+  }
+  const loc = laneLocString(lane)
+  const held = model.holdsAssembly(name)
+  return [
+    ...laneRowMenuItems(model, name),
+    { type: 'divider' },
+    {
+      label: `Open ${name} in a new view`,
+      disabled: loc === undefined || !held,
+      onClick: () => {
+        model.openInNewView(name, loc!)
+      },
+    },
+    {
+      label: `Re-anchor on ${name}`,
+      disabled: loc === undefined || !held,
+      onClick: () => {
+        model.reanchor(name, loc!)
+      },
+    },
+  ]
 }
 
 /**
@@ -60,30 +163,9 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
     {
       label: 'Lanes',
       subMenu: [
-        ...lanes.map((name, i) => ({
+        ...lanes.map(name => ({
           label: name,
-          subMenu: [
-            {
-              label: 'Move up',
-              disabled: i === 0,
-              onClick: () => {
-                model.setRowOrder(moveLane(lanes, name, -1))
-              },
-            },
-            {
-              label: 'Move down',
-              disabled: i === lanes.length - 1,
-              onClick: () => {
-                model.setRowOrder(moveLane(lanes, name, 1))
-              },
-            },
-            {
-              label: 'Hide lane',
-              onClick: () => {
-                model.setHiddenLanes([...hidden, name])
-              },
-            },
-          ],
+          subMenu: laneRowMenuItems(model, name),
         })),
         ...hidden.map(name => ({
           label: `Show ${name}`,

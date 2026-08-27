@@ -139,9 +139,15 @@ pointer is the drop row, the drop writes the whole order back the way the menu
 does, and a drop on the anchor's band lands the lane first below it. Hidden
 lanes are `hiddenLanes`, a declared property beside `rowOrder`, and
 `rowAssemblies` filters them out so every layer and fetch forgets the lane at
-once. Still missing on the label: open that assembly in its own LGV
-(`LaunchLinearGenomeView` exists) and re-anchor the whole track on that lane's
-assembly.
+once. The label also carries a menu (right-click, or the ⋮ at its end;
+`laneHeaderMenuItems` in `menus.ts`): the track menu's own Move up/Move
+down/Hide lane row, **Open ⟨assembly⟩ in a new view** — `LaunchView-LinearGenomeView`
+on the lane's frame with this track along — and **Re-anchor on ⟨assembly⟩**,
+which is `navToLocString` on the HOSTING view with the lane's assembly, since
+the anchor lane reads off `lgv.assemblyNames[0]` and the old anchor drops into
+a mate lane on its own. Both hops are dead while the lane places nothing or the
+session does not hold the genome; the anchor lane's menu is the open-in-new-view
+copy of the view region alone.
 
 **A ribbon bridges a lane that places nothing for its group**
 (`bridgeSkippedLanes`, on by default, 2026-08-27). A ribbon joined ADJACENT

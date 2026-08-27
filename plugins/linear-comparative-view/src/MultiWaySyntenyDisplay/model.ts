@@ -8,6 +8,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   doesIntersect2,
   getContainingView,
+  getEnv,
   getPaletteHost,
   getSession,
   isFeature,
@@ -371,6 +372,25 @@ export function stateModelFactory(
        */
       get anchorAssembly() {
         return getSession(self).assemblyManager.get(self.anchorAssemblyName)
+      },
+      /**
+       * #getter
+       */
+      get anchorLocString() {
+        return self.lgv.visibleLocStrings
+      },
+      /**
+       * #method
+       * whether the session holds a lane's genome under any spelling, which
+       * is what a navigation onto it needs and a lane drawn from a blocks
+       * table does not
+       */
+      holdsAssembly(assemblyName: string) {
+        const { assemblyManager } = getSession(self)
+        return assemblyManager.has(
+          assemblyManager.getCanonicalAssemblyName(assemblyName) ??
+            assemblyName,
+        )
       },
       /**
        * #getter
@@ -956,6 +976,38 @@ export function stateModelFactory(
        */
       selectFeature(feature: Feature) {
         openFeatureWidget(self, feature.toJSON(), { feature })
+      },
+      /**
+       * #action
+       * a lane's assembly in a linear genome view of its own, at `loc`, with
+       * this track along so the new view is the same stack anchored there
+       */
+      openInNewView(assemblyName: string, loc: string) {
+        const session = getSession(self)
+        getEnv(self)
+          .pluginManager.evaluateAsyncExtensionPointStrict(
+            'LaunchView-LinearGenomeView',
+            {
+              session,
+              assembly: assemblyName,
+              loc,
+              tracks: [self.parentTrack.configuration.trackId as string],
+            },
+          )
+          .catch((e: unknown) => {
+            session.notifyError(`${e}`, e)
+          })
+      },
+      /**
+       * #action
+       * the hosting view onto `assemblyName` at `loc`; the anchor lane reads
+       * off the view's first assembly, so the stack re-anchors on its own
+       */
+      reanchor(assemblyName: string, loc: string) {
+        const session = getSession(self)
+        self.lgv.navToLocString(loc, assemblyName).catch((e: unknown) => {
+          session.notifyError(`${e}`, e)
+        })
       },
       /**
        * #action
