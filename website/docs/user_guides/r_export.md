@@ -4,7 +4,13 @@ description: Redraw the current view as an editable ggplot2 figure
 guide_category: General usage
 ---
 
-The linear genome view's **Export R script** option (in the view's three-dot
+**TL;DR:** the linear genome view's **Export R script** writes a standalone `.R`
+file that redraws what is on screen by re-reading the same data files, in
+Bioconductor readers and ggplot2 geoms with nothing from JBrowse in it. The
+script defines `plot_region(chrom, start, end)` rather than a single picture,
+which is what lets you re-run the same figure over other regions.
+
+The linear genome view's **Export R script** option (in the view's hamburger
 menu) downloads a self-contained `.R` file that redraws the current view from
 the same data sources, using plain
 [`rtracklayer`](https://bioconductor.org/packages/rtracklayer/) and
@@ -113,7 +119,7 @@ BAM-only), which the script decodes to a temporary BAM automatically.
 ## Gallery
 
 Every track type, drawn by the real exported script, is on its own page:
-**[Export R script gallery](/docs/user_guides/r_export_gallery)**.
+**[](/docs/user_guides/r_export_gallery)**.
 
 ## Filtering
 
