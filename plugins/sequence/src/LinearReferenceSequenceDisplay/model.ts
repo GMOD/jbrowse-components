@@ -432,118 +432,124 @@ export function modelFactory(
         })
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       * Resolve the genomic position, reference base, and codon/amino-acid under
-       * a cursor at track-relative pixel `(offsetX, offsetY)`. Drives the hover
-       * tooltip; returns undefined when no sequence is painted, off a fetched
-       * region, or between rows.
-       */
-      hoverAt(offsetX: number, offsetY: number): SequenceHover | undefined {
-        // nothing painted, nothing under the cursor — and this is also what
-        // makes the `rowHeight` division below safe, since `rendersCanvas`
-        // false is exactly the zoomed-out and zero-row cases
-        const bp = self.rendersCanvas ? self.view.pxToBp(offsetX) : undefined
-        if (bp && !bp.oob) {
-          // basePaintedAt, not bp.coord0: this indexes the fetched sequence, so
-          // it has to name the base drawn under the cursor. Reversed, coord0
-          // names the one to its right — and on the region's first column names
-          // a base past its end, which read as "no hover here" rather than as a
-          // wrong letter. Safe to ask here because oob is already ruled out.
-          const base = basePaintedAt(bp, bp.offset)
-          const data = self.sequenceData.get(bp.index)
-          const idx = data ? base - data.start : -1
-          if (data && idx >= 0 && idx < data.seq.length) {
-            const row = rowLayout(self.rowVisibility, !!bp.reversed)[
-              Math.floor(offsetY / self.rowHeight)
-            ]
-            return {
-              refName: bp.refName,
-              // 1-based display form of the base actually under the cursor
-              coord: base + 1,
-              detail: row
-                ? hoverDetailForRow(
-                    row,
-                    data.seq,
-                    data.start,
-                    base,
-                    !!bp.reversed,
-                    getGeneticCode(data.geneticCodeId).codonTable,
-                  )
-                : undefined,
+    .views(self => {
+      const superTrackMenuItems = self.trackMenuItems
+      return {
+        /**
+         * #method
+         * Resolve the genomic position, reference base, and codon/amino-acid under
+         * a cursor at track-relative pixel `(offsetX, offsetY)`. Drives the hover
+         * tooltip; returns undefined when no sequence is painted, off a fetched
+         * region, or between rows.
+         */
+        hoverAt(offsetX: number, offsetY: number): SequenceHover | undefined {
+          // nothing painted, nothing under the cursor — and this is also what
+          // makes the `rowHeight` division below safe, since `rendersCanvas`
+          // false is exactly the zoomed-out and zero-row cases
+          const bp = self.rendersCanvas ? self.view.pxToBp(offsetX) : undefined
+          if (bp && !bp.oob) {
+            // basePaintedAt, not bp.coord0: this indexes the fetched sequence, so
+            // it has to name the base drawn under the cursor. Reversed, coord0
+            // names the one to its right — and on the region's first column names
+            // a base past its end, which read as "no hover here" rather than as a
+            // wrong letter. Safe to ask here because oob is already ruled out.
+            const base = basePaintedAt(bp, bp.offset)
+            const data = self.sequenceData.get(bp.index)
+            const idx = data ? base - data.start : -1
+            if (data && idx >= 0 && idx < data.seq.length) {
+              const row = rowLayout(self.rowVisibility, !!bp.reversed)[
+                Math.floor(offsetY / self.rowHeight)
+              ]
+              return {
+                refName: bp.refName,
+                // 1-based display form of the base actually under the cursor
+                coord: base + 1,
+                detail: row
+                  ? hoverDetailForRow(
+                      row,
+                      data.seq,
+                      data.start,
+                      base,
+                      !!bp.reversed,
+                      getGeneticCode(data.geneticCodeId).codonTable,
+                    )
+                  : undefined,
+              }
             }
           }
-        }
-        return undefined
-      },
-      async renderSvg(opts?: ExportSvgDisplayOptions) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
-      },
-      /**
-       * #method
-       */
-      trackMenuItems() {
-        return [
-          // "Get sequence" otherwise lives only inside the menu a rubberband
-          // opens, so it is found by people who already know it is there. The
-          // visible window is the selection a reader who navigated to a locus
-          // has already made.
-          {
-            label: LAUNCH_LABEL,
-            type: 'subMenu' as const,
-            subMenu: [
-              {
-                label: 'Get sequence (visible region)',
-                onClick: () => {
-                  const view = getContainingView(self) as LinearGenomeViewModel
-                  // Whole-base: a fractional span reaches `fetchSequence` and
-                  // comes back the wrong length, which the dialog reports as
-                  // "returned N bases, but should have returned M".
-                  const regions = view.visibleWholeBaseRegions
-                  if (!regions.length) {
-                    return
-                  }
-                  getDialogHost(self).queueDialog(handleClose => [
-                    GetSequenceDialog,
-                    { model: view, regions, handleClose },
-                  ])
-                },
-              },
-            ],
-          },
-          ...(self.isDna
-            ? ([
+          return undefined
+        },
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
+        },
+        /**
+         * #method
+         */
+        trackMenuItems() {
+          return [
+            ...superTrackMenuItems(),
+            // "Get sequence" otherwise lives only inside the menu a rubberband
+            // opens, so it is found by people who already know it is there. The
+            // visible window is the selection a reader who navigated to a locus
+            // has already made.
+            {
+              label: LAUNCH_LABEL,
+              type: 'subMenu' as const,
+              subMenu: [
                 {
-                  label: 'Show forward',
-                  type: 'checkbox',
-                  checked: self.showForward,
+                  label: 'Get sequence (visible region)',
                   onClick: () => {
-                    self.toggleShowForward()
+                    const view = getContainingView(
+                      self,
+                    ) as LinearGenomeViewModel
+                    // Whole-base: a fractional span reaches `fetchSequence` and
+                    // comes back the wrong length, which the dialog reports as
+                    // "returned N bases, but should have returned M".
+                    const regions = view.visibleWholeBaseRegions
+                    if (!regions.length) {
+                      return
+                    }
+                    getDialogHost(self).queueDialog(handleClose => [
+                      GetSequenceDialog,
+                      { model: view, regions, handleClose },
+                    ])
                   },
                 },
-                {
-                  label: 'Show reverse',
-                  type: 'checkbox',
-                  checked: self.showReverse,
-                  onClick: () => {
-                    self.toggleShowReverse()
+              ],
+            },
+            ...(self.isDna
+              ? ([
+                  {
+                    label: 'Show forward',
+                    type: 'checkbox',
+                    checked: self.showForward,
+                    onClick: () => {
+                      self.toggleShowForward()
+                    },
                   },
-                },
-                {
-                  label: 'Show translation',
-                  type: 'checkbox',
-                  checked: self.showTranslation,
-                  onClick: () => {
-                    self.toggleShowTranslation()
+                  {
+                    label: 'Show reverse',
+                    type: 'checkbox',
+                    checked: self.showReverse,
+                    onClick: () => {
+                      self.toggleShowReverse()
+                    },
                   },
-                },
-              ] satisfies MenuItem[])
-            : []),
-        ]
-      },
-    }))
+                  {
+                    label: 'Show translation',
+                    type: 'checkbox',
+                    checked: self.showTranslation,
+                    onClick: () => {
+                      self.toggleShowTranslation()
+                    },
+                  },
+                ] satisfies MenuItem[])
+              : []),
+          ]
+        },
+      }
+    })
 }
 
 export type LinearReferenceSequenceDisplayStateModel = ReturnType<
