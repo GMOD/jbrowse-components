@@ -9,18 +9,8 @@ export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
 ) {
-  // Counted, not `modifications.filter(...)`. This is the densest array the
-  // display produces — one mark per CpG per read on a nanopore pileup — and the
-  // filter allocated a second full-length array of pointers to walk once and
-  // drop. Two passes over the same array cost a compare each; the copy cost a
-  // machine word per mark.
-  const n = modifications.length
-  let kept = 0
-  for (let i = 0; i < n; i++) {
-    if (modifications[i]!.position >= regionStart) {
-      kept++
-    }
-  }
+  const filtered = modifications.filter(m => m.position >= regionStart)
+  const kept = filtered.length
   const modificationPositions = new Uint32Array(kept)
   // Pre-pack each modification's RGB + probability-as-alpha into ABGR u32 so
   // both the GPU vertex buffer and the Canvas2D shader path can read one
@@ -36,12 +26,8 @@ export function buildModificationArrays(
   const modificationNoMod = new Uint8Array(kept)
   const modificationTypes: string[] = []
   const modTypeToIdx = new Map<string, number>()
-  let w = 0
-  for (let i = 0; i < n; i++) {
-    const m = modifications[i]!
-    if (m.position < regionStart) {
-      continue
-    }
+  for (let w = 0; w < kept; w++) {
+    const m = filtered[w]!
     modificationPositions[w] = m.position
     // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
     // high-prob mods are strongly opaque (matches main branch alphaColor).
@@ -57,7 +43,6 @@ export function buildModificationArrays(
     }
     modificationTypeIndices[w] = typeIdx
     modificationNoMod[w] = m.noMod ? 1 : 0
-    w++
   }
   return {
     modificationPositions,
