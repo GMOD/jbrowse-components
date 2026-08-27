@@ -107,11 +107,14 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * This display's answer to the base's `colorLegend` chrome hook: the rows
+       * for whichever preset color key is active (impact tiers or SV classes),
+       * or none. SV-type shows the fixed class key; copy-number and
+       * unrecognized tokens aren't listed (the pure jexl has no present-set).
+       * The shared canvas body draws the key, so this display needs no
+       * component of its own.
        */
-      // Legend rows for whichever preset color key is active (impact tiers or SV
-      // classes), or none. SV-type shows the fixed class key; copy-number and
-      // unrecognized tokens aren't listed (the pure jexl has no present-set).
-      get colorLegendItems(): LegendItem[] {
+      get colorLegend(): LegendItem[] {
         if (this.colorsByConsequenceImpact) {
           return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
         }
@@ -124,16 +127,6 @@ export default function stateModelFactory(
         return []
       },
       // #endregion
-
-      /**
-       * #getter
-       * This display's answer to the base's `colorLegend` chrome hook: the shared
-       * canvas body draws the key, so this display needs no component of its own
-       * (its `ReactComponent` is the one LinearBasicDisplay registers).
-       */
-      get colorLegend() {
-        return this.colorLegendItems
-      },
     }))
     .views(self => ({
       /**
