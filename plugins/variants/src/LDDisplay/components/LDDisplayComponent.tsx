@@ -250,7 +250,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
     canvasWidth: width,
     canvasHeight,
     effectiveLineZoneHeight,
-    isLoading,
+    isLoadingOrCanceled,
   } = model
   const containerHeight = canvasHeight + effectiveLineZoneHeight
 
@@ -278,7 +278,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
         // fills and the box the tracker measures against — the same rect a ref
         // would give, without needing one.
         const rect = event.currentTarget.getBoundingClientRect()
-        if (showLDTriangle && !isLoading) {
+        if (showLDTriangle && !isLoadingOrCanceled) {
           const item = model.hitTest(
             event.clientX - rect.left,
             event.clientY - rect.top,
