@@ -127,15 +127,36 @@ densest-first by default (`rowAssembliesOf` counts placements over the fetched
 block set, not the viewport, so it holds still across a pan), which is what the
 tutorial used to tell a reader to hand-author `rowOrder` for.
 
-`rowOrder` has a UI as of 2026-08-26: **Lane order** on the track menu, a row
-per lane with Move up/Move down and a reset, beside toggles for `drawCurves`
-and `showLaneTicks` (`menus.ts`). A move writes back the WHOLE order it is
-looking at rather than the lane that moved — `rowOrder` pins what it names and
-leaves the rest densest-first, so pinning one lane would leave the others free
-to re-sort under it between two moves. Still missing: drag on the lane labels,
-and the label as the home for per-lane actions — hide a lane, open that assembly
-in its own LGV (`LaunchLinearGenomeView` exists), re-anchor the whole track on
-that lane's assembly.
+`rowOrder` has a UI as of 2026-08-26: **Lanes** on the track menu, a row per
+lane with Move up/Move down/Hide lane, a Show row per hidden lane and a reset,
+beside toggles for `drawCurves`, `bridgeSkippedLanes` and `showLaneTicks`
+(`menus.ts`). A move writes back the WHOLE order it is looking at rather than
+the lane that moved — `rowOrder` pins what it names and leaves the rest
+densest-first, so pinning one lane would leave the others free to re-sort under
+it between two moves. Since 2026-08-27 a mate lane's label drags too
+(`laneDrag.ts`, the headers in `MultiWayOverlay.tsx`): the band under the
+pointer is the drop row, the drop writes the whole order back the way the menu
+does, and a drop on the anchor's band lands the lane first below it. Hidden
+lanes are `hiddenLanes`, a declared property beside `rowOrder`, and
+`rowAssemblies` filters them out so every layer and fetch forgets the lane at
+once. Still missing on the label: open that assembly in its own LGV
+(`LaunchLinearGenomeView` exists) and re-anchor the whole track on that lane's
+assembly.
+
+**A ribbon bridges a lane that places nothing for its group**
+(`bridgeSkippedLanes`, on by default, 2026-08-27). A ribbon joined ADJACENT
+lanes only, so a group the middle lane's table did not name broke the chain
+there, and the reader saw two disconnected halves for what the data says is one
+group. `buildRibbonGeometry` now walks down from the upper lane to the next
+lane that places the group and draws that pair in its own layer
+(`ribbons:<row>><toRow>`, spanning the skipped bands) at half the ribbon
+opacity, so it reads as passing through a lane it does not belong to. It is a
+separate cell and layer rather than a longer ribbon in the pair's cell because
+the pick engine reads a ribbon's y extent off its layer. Hiding the sparse lane
+is the other answer to the same picture, and the two compose. The stacked
+`LinearSyntenyView` has the same gap and no such fix: a level is defined as the
+gap between `views[level]` and `views[level + 1]` in ten files, so a track that
+joins row 0 to row 2 across row 1 is a level with a span, not a setting.
 
 **Lane scale legibility, and what is still open on it.** Every lane sits in its
 own frame, and until 2026-08-24 nothing in the picture said so: the view's
