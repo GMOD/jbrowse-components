@@ -38,6 +38,11 @@ test('isCacheValid re-evaluates for callers when bpPerPx changes', () => {
   view.setDisplayedRegions([region])
   view.zoomTo(10)
   display.setLoadedRegion(0, region)
+  // a loaded region is cache-valid only with a payload behind it
+  display.setCellData(
+    { mode: 'matrix' } as unknown as Parameters<typeof display.setCellData>[0],
+    [0],
+  )
 
   const seen: boolean[] = []
   const stop = autorun(() => {

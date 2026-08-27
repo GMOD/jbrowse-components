@@ -10,17 +10,17 @@ import {
   getContainingTrack,
   getContainingView,
   getNotificationSink,
-  getSession,
   openFeatureWidget,
   SimpleFeature,
 } from '@jbrowse/core/util'
+import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   activeJexlFilters,
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin, {
   fetchRegionsBatched,
@@ -62,7 +62,7 @@ import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
 import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -115,6 +115,14 @@ function warnMissingAttribute(
 }
 
 type SetSlotFn = (slotName: string, value: unknown) => void
+
+/**
+ * What a right-click on a genotype cell or a lane mark resolved to: the record
+ * under it, already a `Feature`, plus where the menu opens.
+ */
+export interface VariantContextMenuInfo extends ContextMenuAnchor {
+  feature: Feature
+}
 
 // Config slots ported onto the *other* variant display's config when the
 // user switches display type via the track menu (see getPortableSettings).
@@ -388,6 +396,7 @@ export default function MultiSampleVariantBaseModelF(
         LegendMixin(),
         RowHeightMixin(),
         TreeSidebarMixin<Source>(),
+        ContextMenuMixin<VariantContextMenuInfo>(),
         types.model({
           type: types.string,
           configuration: ConfigurationReference(configSchema),
@@ -451,10 +460,6 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #volatile
          */
-        contextMenuFeature: undefined as Feature | undefined,
-        /**
-         * #volatile
-         */
         sourcesVolatile: undefined as Source[] | undefined,
         /**
          * #volatile
@@ -465,23 +470,48 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #volatile
          *
-         * Single source of truth for fetched per-display data. hasPhased,
-         * sampleInfo, and featuresVolatile are derived from this via getters
-         * — fetchNeeded only needs to call setCellData(result).
+         * Single source of truth for fetched per-display data. sampleInfo,
+         * featuresVolatile and the summary flags are derived from this via
+         * getters — fetchNeeded only needs to call setCellData(result).
          */
         cellData: undefined as CellDataResult | undefined,
+        /**
+         * #volatile
+         * The displayed regions the current `cellData` was fetched for. The
+         * payload itself cannot say: a region with no variants gets no
+         * `perRegionCellData` entry, and the matrix payload is flat.
+         */
+        cellDataRegionIndices: new Set<number>() as ReadonlySet<number>,
       }))
       .actions(self => ({
-        setCellData(data: CellDataResult | undefined) {
+        /**
+         * #action
+         * Store a payload and the regions it covers. One payload serves every
+         * region of a fetch and replaces the last one whole, so this is also
+         * where the previous batch's regions stop having data behind them.
+         */
+        setCellData(
+          data: CellDataResult | undefined,
+          displayedRegionIndices: Iterable<number> = [],
+        ) {
           self.cellData = data
-        },
-        setContextMenuFeature(feature?: Feature) {
-          self.contextMenuFeature = feature
+          self.cellDataRegionIndices = new Set(displayedRegionIndices)
         },
       }))
       .views(self => ({
         get view() {
           return getContainingView(self) as LinearGenomeViewModel
+        },
+        /**
+         * #method
+         * Whether the held payload was fetched for this region. A batched
+         * fetch marks only the regions it issued as loaded, but replaces the
+         * whole payload — so a region an earlier batch loaded keeps its
+         * `loadedRegions` entry with nothing behind it, and without this
+         * check reads as cache-valid and draws blank.
+         */
+        regionHasData(displayedRegionIndex: number): boolean {
+          return self.cellDataRegionIndices.has(displayedRegionIndex)
         },
         /**
          * #method
@@ -502,7 +532,7 @@ export default function MultiSampleVariantBaseModelF(
          * These carry ONLY positional fields (id/start/end/refName/name) — not
          * ALT or genotypes. Don't re-derive feature-level facts from them
          * (`.get('ALT')` etc. returns undefined); summary facts are computed in
-         * the worker and exposed as scalars (hasPhased/hasSecondaryAlt/
+         * the worker and exposed as scalars (hasPhasedOrHaploid/hasSecondaryAlt/
          * hasUnphased), and per-feature genotype info lives in the cell-data
          * featureGenotypeMap/featureData.
          */
@@ -513,19 +543,13 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         */
-        get hasPhased() {
-          return self.cellData?.hasPhased ?? false
-        },
-        /**
-         * #getter
          * Whether any called genotype is phased or haploid, which is what gates
-         * the "Phased" rendering mode. Wider than `hasPhased` on purpose: the
-         * painter's rule is `isPhasedOrHaploid` (no `/`), because a pangenome
-         * callset is haploid per assembly path and `vg deconstruct` writes bare
-         * `0`/`1`/`23` — a file with no `|` anywhere that phased mode renders
-         * correctly. Gating the menu on `hasPhased` left that rendering
-         * reachable only from the config slot.
+         * the "Phased" rendering mode. Wider than the payload's `hasPhased` on
+         * purpose: the painter's rule is `isPhasedOrHaploid` (no `/`), because
+         * a pangenome callset is haploid per assembly path and `vg deconstruct`
+         * writes bare `0`/`1`/`23` — a file with no `|` anywhere that phased
+         * mode renders correctly. Gating the menu on `hasPhased` left that
+         * rendering reachable only from the config slot.
          */
         get hasPhasedOrHaploid() {
           return self.cellData?.hasPhasedOrHaploid ?? false
@@ -722,37 +746,8 @@ export default function MultiSampleVariantBaseModelF(
       // before it downloads, and afterAttach clears the estimate on chromosome
       // nav. Byte-only — no density axis.
       .actions(self => {
-        // VCF-header field descriptions (INFO/FORMAT) are static per adapter, so
-        // fetch once and reuse the promise — every feature-widget open otherwise
-        // round-trips the worker just to re-read the same header. Cleared on
-        // failure so a later click retries.
-        let metadataPromise: Promise<unknown> | undefined
-        return {
-          /**
-           * #action
-           */
-          fetchMetadataDescriptions() {
-            if (!metadataPromise) {
-              metadataPromise = getSession(self)
-                // The VCF header, already parsed by the fetch that put the
-                // variant on screen and memoized here so repeated clicks reuse
-                // one round trip. Nothing to narrate, and nothing a cancel
-                // could save — the widget opens on the result.
-                // eslint-disable-next-line no-restricted-syntax
-                .rpcManager.call(getRpcSessionId(self), 'CoreGetMetadata', {
-                  adapterConfig: self.adapterConfig,
-                })
-                .catch((e: unknown) => {
-                  metadataPromise = undefined
-                  throw e
-                })
-            }
-            return metadataPromise
-          },
-        }
-      })
-      .actions(self => {
         const { setShowLegend: superSetShowLegend } = self
+        const fetchMetadata = createAdapterMetadataFetch(self)
         return {
           /**
            * #action
@@ -783,8 +778,7 @@ export default function MultiSampleVariantBaseModelF(
            * #action
            */
           selectFeature(feature: Feature) {
-            self
-              .fetchMetadataDescriptions()
+            fetchMetadata()
               .then(descriptions => {
                 if (isAlive(self)) {
                   openFeatureWidget(self, feature.toJSON(), {
@@ -894,7 +888,6 @@ export default function MultiSampleVariantBaseModelF(
            */
           setFitToHeight() {
             setConf(self, 'rowHeight', 0)
-            self.scrollTop = 0
           },
           /**
            * #action
@@ -1541,6 +1534,11 @@ export default function MultiSampleVariantBaseModelF(
               ...variantTrackMenuItems(self as MultiSampleVariantBaseModel),
             ]
           },
+          /**
+           * #method
+           * Items for the right-click menu, built from the record
+           * `contextMenuInfo` carries.
+           */
           contextMenuItems(): MenuItem[] {
             return variantContextMenuItems(self as MultiSampleVariantBaseModel)
           },
@@ -1718,9 +1716,7 @@ export default function MultiSampleVariantBaseModelF(
         // overflow container to self-correct a stranded offset.
 
         clearDisplaySpecificData() {
-          // hasPhased / sampleInfo / featuresVolatile are derived from cellData
-          // via getters, so clearing cellData clears all of them.
-          self.cellData = undefined
+          self.setCellData(undefined)
         },
 
         // Ignores `needed` and refetches all visible regions because the
@@ -1731,7 +1727,7 @@ export default function MultiSampleVariantBaseModelF(
         async fetchNeeded(
           _needed: { region: Region; displayedRegionIndex: number }[],
         ) {
-          if (self.isMinimized || !self.sourcesBase) {
+          if (!self.sourcesBase) {
             return
           }
           const view = self.host
@@ -1762,7 +1758,10 @@ export default function MultiSampleVariantBaseModelF(
                 mode: cellDataMode,
               }),
             commit: result => {
-              self.setCellData(result)
+              self.setCellData(
+                result,
+                regions.map(r => r.displayedRegionIndex),
+              )
             },
           })
         },
@@ -1777,23 +1776,14 @@ export default function MultiSampleVariantBaseModelF(
          * wheel-scroll fires no mousemove and no mouseleave, and
          * `hoveredGenotype` goes on naming a cell that has moved out from under
          * the pointer — the tooltip then reports another sample's genotype at
-         * the cursor. `useVariantCanvasInteraction` only covers the cases where
-         * the *pointer* moves.
+         * the cursor. The chrome's `onPointerPosition` only covers the cases
+         * where the *pointer* moves.
          */
         clearHoveredFeature() {
           self.setHoveredGenotype(undefined)
         },
 
         afterAttach() {
-          // Clear the hovered cell when the viewport moves under a stationary
-          // cursor. The matrix is a sticky canvas, so a pan, a zoom or an
-          // internal wheel-scroll fires no mousemove and no mouseleave, and
-          // `hoveredGenotype` goes on naming a cell that has moved out from
-          // under the pointer — the tooltip then reports another sample's
-          // genotype at the cursor. `useVariantCanvasInteraction` only covers
-          // the cases where the *pointer* moves, and `scrollTop` is the axis
-          // where this shows worst, since the highlight derived from the hover
-          // does follow the row and visibly separates from the tooltip.
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {

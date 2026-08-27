@@ -31,7 +31,7 @@ interface BreakendLaunchSelf extends IStateTreeNode {
  * differ only in how they get hold of the feature: `LinearVariantDisplay` ships
  * slim render arrays and has to re-fetch it (`breakendMenuItems` wraps this with
  * that fetch), while the multi-sample displays' context menu is built from a
- * `contextMenuFeature` that is already a `Feature`. Factoring on *that* line —
+ * `contextMenuInfo` whose feature is already a `Feature`. Factoring on *that* line —
  * "here is the record" — is what lets the second one reuse this without
  * growing a `fetchFullFeature` it has no use for.
  *

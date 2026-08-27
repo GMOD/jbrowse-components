@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { hoverBoxStyle } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
@@ -12,9 +10,10 @@ import { observer } from 'mobx-react'
 
 import { buildVariantLaneHit } from '../../shared/buildVariantHit.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
-import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
+import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
+import type { VariantSurface } from '../../shared/variantSurface.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 import type { HitFeatureResult } from '@jbrowse/plugin-canvas'
 
@@ -38,16 +37,15 @@ interface VariantLaneHit {
  */
 function getHoveredLaneMark(
   model: LinearMultiSampleVariantDisplayModel,
-  rect: DOMRect,
-  eventClientX: number,
-  eventClientY: number,
+  mouseX: number,
+  mouseY: number,
 ): VariantLaneHit | undefined {
   const result = performMultiRegionHitDetection(
     model.laneLaidOutDataMap,
     model.laneFlatbushIndexes,
     model.visibleRegions,
-    eventClientX - rect.left,
-    eventClientY - rect.top,
+    mouseX,
+    mouseY,
   )
   if (!isHitFeature(result)) {
     return undefined
@@ -64,13 +62,45 @@ function getHoveredLaneMark(
     : undefined
 }
 
+/**
+ * The lane as a pointer surface. Everything the genotype rows do — hover with
+ * key dedup, click opens the feature widget, right-click opens the record menu
+ * — so a mark in the lane and a cell in the column under it respond to the
+ * same three gestures the same way.
+ */
+export function variantLaneSurface(
+  model: LinearMultiSampleVariantDisplayModel,
+): VariantSurface<VariantLaneHit> {
+  return {
+    getHit: (x, y) => getHoveredLaneMark(model, x, y),
+    getTooltip: hit => hit.fields,
+    // No third argument: a lane click names a record, not a sample, so the
+    // widget opens without the "Sample:" card a cell click adds.
+    enrich: hit => {
+      const { featureId } = hit.fields
+      const baseFeature = model.featuresVolatile?.find(
+        f => f.id() === featureId,
+      )
+      return baseFeature
+        ? enrichFeatureFromClick(baseFeature, model.laneFeatureInfo(featureId))
+        : undefined
+    },
+    onHover: hit => {
+      model.setHoveredLaneMark(hit?.hit)
+      model.setHoveredCell(undefined)
+    },
+  }
+}
+
 const HoveredMarkHighlight = observer(function HoveredMarkHighlight({
-  hit,
   model,
 }: {
-  hit: HitFeatureResult
   model: LinearMultiSampleVariantDisplayModel
 }) {
+  const hit = model.hoveredLaneMark
+  if (!hit) {
+    return null
+  }
   const region = model.visibleRegions.find(
     r => r.displayedRegionIndex === hit.displayedRegionIndex,
   )
@@ -106,51 +136,24 @@ const HoveredMarkHighlight = observer(function HoveredMarkHighlight({
 })
 
 /**
- * The lane's gestures, on a transparent layer over its canvas.
+ * The lane's click targets, on a transparent layer over its canvas.
  *
  * A div rather than handlers on the canvas: `OverlayCanvas` is
  * `pointerEvents: 'none'` by construction, so a paint layer can never eat a
- * gesture meant for what is under it. Everything else is the genotype rows'
- * (`useVariantCanvasInteraction`) — hover with key dedup, click opens the
- * feature widget, right-click opens the record menu — so a mark in the lane and
- * a cell in the column under it respond to the same three gestures the same way.
+ * gesture meant for what is under it. The hover itself comes from the chrome's
+ * pointer measurement (see `VariantDisplayComponent`), not from here.
  *
- * Its own component, and the one holding the hover state, so a mousemove
+ * Its own component, and the one reading the hover, so a hover change
  * re-renders this and not `VariantLaneOverlay`: the overlay's `draw` closure
  * identity is what makes `OverlayCanvas` repaint, so a hover tick landing there
- * would redraw the whole band per pointer event.
+ * would redraw the whole band.
  */
 const VariantLaneInteraction = observer(function VariantLaneInteraction({
   model,
 }: {
   model: LinearMultiSampleVariantDisplayModel
 }) {
-  const [hovered, setHovered] = useState<HitFeatureResult>()
   const { canvasWidthPx, topBands } = model
-  const { canvasHandlers, contextMenuNode } =
-    useVariantCanvasInteraction<VariantLaneHit>({
-      model,
-      getHit: (rect, x, y) => getHoveredLaneMark(model, rect, x, y),
-      getKey: hit => hit.fields.featureId,
-      getTooltip: hit => hit.fields,
-      // No third argument: a lane click names a record, not a sample, so the
-      // widget opens without the "Sample:" card a cell click adds.
-      enrich: hit => {
-        const { featureId } = hit.fields
-        const baseFeature = model.featuresVolatile?.find(
-          f => f.id() === featureId,
-        )
-        return baseFeature
-          ? enrichFeatureFromClick(
-              baseFeature,
-              model.laneFeatureInfo(featureId),
-            )
-          : undefined
-      },
-      onHoverChange: hit => {
-        setHovered(hit?.hit)
-      },
-    })
   return (
     <>
       <div
@@ -161,12 +164,11 @@ const VariantLaneInteraction = observer(function VariantLaneInteraction({
           left: 0,
           width: canvasWidthPx,
           height: topBands.laneHeight,
-          cursor: hovered ? 'pointer' : undefined,
+          cursor: model.hoveredLaneMark ? 'pointer' : undefined,
         }}
-        {...canvasHandlers}
+        {...variantSurfaceHandlers(model, variantLaneSurface(model))}
       />
-      {hovered ? <HoveredMarkHighlight hit={hovered} model={model} /> : null}
-      {contextMenuNode}
+      <HoveredMarkHighlight model={model} />
     </>
   )
 })

@@ -164,9 +164,10 @@ displays — and the band cannot drift from the display it stands in for.
   (`wantsName` / `wantsDescription`). What is drawn is `laneRenderedLabels`.
 - **What is still ours** is what plugin-canvas has no opinion on: the record
   tooltip table (`buildVariantLaneHit`, sample fields left empty so one
-  `hoveredGenotype` slot serves both bands), the gestures
-  (`useVariantCanvasInteraction`, on a div because `OverlayCanvas` is
-  `pointerEvents: none`), and `breakendSplitViewMenuItem`.
+  `hoveredGenotype` slot serves both bands), the gestures (`variantSurface.ts` —
+  hover off the chrome's `onPointerPosition`, click and right-click on a div
+  because `OverlayCanvas` is `pointerEvents: none`), and
+  `breakendSplitViewMenuItem`.
 
 ## How wide a cell draws: `variantCellSpanPx`
 

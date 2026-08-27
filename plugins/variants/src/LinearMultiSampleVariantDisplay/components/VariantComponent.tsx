@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { hoverBoxStyle } from '@jbrowse/core/ui'
 import {
   makeBpMapper,
@@ -8,15 +6,12 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import {
-  buildVariantHit,
-  variantTooltipKey,
-} from '../../shared/buildVariantHit.ts'
+import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import VariantInsertionGlyphOverlay from './VariantInsertionGlyphOverlay.tsx'
 import { pickVariantCell } from './pickVariantCell.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
@@ -25,9 +20,10 @@ import { computeVariantHitQuery } from './variantHitTest.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
+import type { VariantSurface } from '../../shared/variantSurface.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
-interface HoveredCell {
+export interface HoveredCell {
   rowIndex: number
   genomicStart: number
   genomicEnd: number
@@ -44,18 +40,17 @@ interface VariantHit {
   cell: HoveredCell
 }
 
+// `mouseX`/`mouseY` are relative to the rows canvas, which sits at
+// `rowsTopOffset` inside the display — the caller has already subtracted it.
 function getHoveredFeature(
   model: LinearMultiSampleVariantDisplayModel,
-  rect: DOMRect,
-  eventClientX: number,
-  eventClientY: number,
+  mouseX: number,
+  mouseY: number,
 ): VariantHit | undefined {
   const { cellData } = model
   if (!cellData) {
     return undefined
   }
-  const mouseX = eventClientX - rect.left
-  const mouseY = eventClientY - rect.top
 
   const region = regionAtPixel(model.visibleRegions, mouseX)
   if (!region) {
@@ -153,13 +148,41 @@ function getHoveredFeature(
   }
 }
 
+/**
+ * The genotype rows as a pointer surface: hover, click and right-click all
+ * resolve through `getHoveredFeature`, so the tooltip, the widget and the menu
+ * cannot name different cells.
+ */
+export function variantRowsSurface(
+  model: LinearMultiSampleVariantDisplayModel,
+): VariantSurface<VariantHit> {
+  return {
+    getHit: (x, y) => getHoveredFeature(model, x, y),
+    getTooltip: hit => hit.fields,
+    enrich: hit => {
+      const baseFeature = model.featuresVolatile?.find(
+        f => f.id() === hit.fields.featureId,
+      )
+      return baseFeature
+        ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
+        : undefined
+    },
+    onHover: hit => {
+      model.setHoveredCell(hit?.cell)
+      model.setHoveredLaneMark(undefined)
+    },
+  }
+}
+
 const HoveredCellHighlight = observer(function HoveredCellHighlight({
-  cell,
   model,
 }: {
-  cell: HoveredCell
   model: LinearMultiSampleVariantDisplayModel
 }) {
+  const cell = model.hoveredCell
+  if (!cell) {
+    return null
+  }
   const region = model.visibleRegions.find(
     r => r.displayedRegionIndex === cell.displayedRegionIndex,
   )
@@ -208,12 +231,13 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   )
 })
 
-// The per-sample variant canvas + hit-test wiring. DisplayChrome (owned by the
-// outer VariantDisplayComponent) owns the GPU backend and the terminal states,
-// handing the live canvas down here. Scroll is virtual (fixed canvas +
-// VerticalScrollbar overlay, everything positioned from model.scrollTop) — no
-// native overflow container, so the GPU cells and the DOM hover highlight share
-// one scroll source and can never tear apart.
+// The per-sample variant canvas + its click targets. DisplayChrome (owned by
+// the outer VariantDisplayComponent) owns the GPU backend, the terminal states
+// and the pointer measurement the hover comes from, handing the live canvas
+// down here. Scroll is virtual (fixed canvas + VerticalScrollbar overlay,
+// everything positioned from model.scrollTop) — no native overflow container,
+// so the GPU cells and the DOM hover highlight share one scroll source and can
+// never tear apart.
 //
 // The scroll affordances themselves are NOT here: they hang off the display's
 // own box, one level up. `canvasId` is therefore made up there too and passed
@@ -229,8 +253,6 @@ const VariantBody = observer(function VariantBody({
   canvas: HTMLCanvasElement | null
   canvasId: string
 }) {
-  const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
-
   // `canvasWidthPx`, not a second `view.trackWidthPx` read: it is the width
   // `renderState.canvasWidth` carries, so the canvas below and every overlay
   // beside it sit in the box the cells were actually mapped into. The getter
@@ -239,25 +261,6 @@ const VariantBody = observer(function VariantBody({
   const width = model.canvasWidthPx
 
   useVariantVirtualScroll(canvas, model)
-
-  const { canvasHandlers, contextMenuNode } =
-    useVariantCanvasInteraction<VariantHit>({
-      model,
-      getHit: (rect, x, y) => getHoveredFeature(model, rect, x, y),
-      getKey: hit => variantTooltipKey(hit.fields),
-      getTooltip: hit => hit.fields,
-      enrich: hit => {
-        const baseFeature = model.featuresVolatile?.find(
-          f => f.id() === hit.fields.featureId,
-        )
-        return baseFeature
-          ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
-          : undefined
-      },
-      onHoverChange: hit => {
-        setHoveredCell(hit?.cell)
-      },
-    })
 
   return (
     <>
@@ -276,13 +279,10 @@ const VariantBody = observer(function VariantBody({
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
         }}
-        {...canvasHandlers}
+        {...variantSurfaceHandlers(model, variantRowsSurface(model))}
       />
       <VariantInsertionGlyphOverlay model={model} />
-      {hoveredCell ? (
-        <HoveredCellHighlight cell={hoveredCell} model={model} />
-      ) : null}
-      {contextMenuNode}
+      <HoveredCellHighlight model={model} />
     </>
   )
 })

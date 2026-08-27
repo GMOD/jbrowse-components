@@ -1,15 +1,19 @@
 import { useId } from 'react'
 
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
+import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
+import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
-import VariantMatrixBody from './VariantMatrixComponent.tsx'
+import VariantMatrixBody, {
+  variantMatrixSurface,
+} from './VariantMatrixComponent.tsx'
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
@@ -64,6 +68,27 @@ const VariantMatrixDisplayComponent = observer(
         factory={VariantMatrixRenderer}
         testid="variant-matrix-display"
         style={{ height }}
+        // One pointer source for the whole display: the hover, the tooltip,
+        // the crosshairs and the highlighted connector all come off the
+        // chrome's single measurement, in one frame. `columnGeometry.left` is
+        // read inside the handler rather than during render, so a pan moves the
+        // column origin without re-rendering the chrome.
+        onPointerPosition={state => {
+          if (
+            state &&
+            state.y > rowsTopOffset &&
+            state.x >= treeSidebarRightEdge(model)
+          ) {
+            hoverVariantSurface(
+              model,
+              variantMatrixSurface(model),
+              state.x - model.columnGeometry.left,
+              state.y - rowsTopOffset,
+            )
+          } else {
+            model.clearHoveredFeature()
+          }
+        }}
       >
         {({ canvasRef, canvas, mouseTracker }) => (
           <>
@@ -115,6 +140,7 @@ const VariantMatrixDisplayComponent = observer(
                 ) : null
               }
             </PointerLayer>
+            <DisplayContextMenu model={model} />
           </>
         )}
       </DisplayChrome>

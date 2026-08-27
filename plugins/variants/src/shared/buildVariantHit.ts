@@ -26,11 +26,16 @@ export interface VariantTooltipFields {
 }
 
 // Hover-dedup identity for a hovered cell — same feature+sample+genotype means
-// the same tooltip, so the hook skips redundant setHoveredGenotype calls. Shared
-// so both displays key hovers identically. A variant-lane hover names no sample
-// and carries no genotype, so its key is the record's id alone, which is exactly
-// the identity that lane needs.
-export function variantTooltipKey(f: VariantTooltipFields) {
+// the same tooltip, so `hoverVariantSurface` skips redundant setHoveredGenotype
+// calls. Shared so both displays key hovers identically, and typed wider than
+// the fields so the model's own hover slot can be keyed too. A variant-lane
+// hover names no sample and carries no genotype, so its key is the record's id
+// alone, which is exactly the identity that lane needs.
+export function variantTooltipKey(f: {
+  name: string
+  genotype: string
+  featureId?: unknown
+}) {
   return `${f.name}:${f.genotype}:${f.featureId}`
 }
 

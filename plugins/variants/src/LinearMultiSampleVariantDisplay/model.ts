@@ -40,6 +40,7 @@ import { buildLaneRenderData } from './laneRenderData.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
 import type { Placed } from '../shared/placeVariantRows.ts'
+import type { HoveredCell } from './components/VariantComponent.tsx'
 import type { VariantRenderingBackend } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -49,6 +50,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   FeatureDataResult,
   FlatbushRegionIndexes,
+  HitFeatureResult,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
@@ -110,6 +112,48 @@ export function stateModelFactory(
           ? { ...snap, type: 'LinearMultiSampleVariantDisplay' }
           : snap,
       )
+      .volatile(() => ({
+        /**
+         * #volatile
+         * The genotype cell under the pointer, as the highlight box draws it.
+         * Beside the base's `hoveredGenotype` (the tooltip) rather than folded
+         * into it: the tooltip is the shared cross-display slot, and the box
+         * needs the cell's placed geometry that slot has no reason to carry.
+         */
+        hoveredCell: undefined as HoveredCell | undefined,
+        /**
+         * #volatile
+         * The lane mark under the pointer — plugin-canvas's own hit, so the
+         * highlight lands on the box the lane painted.
+         */
+        hoveredLaneMark: undefined as HitFeatureResult | undefined,
+      }))
+      .actions(self => {
+        const { clearHoveredFeature: superClearHoveredFeature } = self
+        return {
+          /**
+           * #action
+           */
+          setHoveredCell(cell?: HoveredCell) {
+            self.hoveredCell = cell
+          },
+          /**
+           * #action
+           */
+          setHoveredLaneMark(mark?: HitFeatureResult) {
+            self.hoveredLaneMark = mark
+          },
+          /**
+           * #action
+           * The base clears the tooltip; the two highlight boxes go with it.
+           */
+          clearHoveredFeature() {
+            superClearHoveredFeature()
+            self.hoveredCell = undefined
+            self.hoveredLaneMark = undefined
+          },
+        }
+      })
       .actions(self => ({
         /**
          * #action
@@ -344,19 +388,6 @@ export function stateModelFactory(
          */
         get insertionGlyphRegions() {
           return self.showInsertionGlyphs ? self.perRegionCellMap : undefined
-        },
-        /**
-         * #getter
-         * Per-region data for the variant lane, or undefined when the band is
-         * off. The same `perRegionCellMap` the canvas and the glyph overlay
-         * read, so the lane cannot see a different region set — or a different
-         * row placement — than the cells under it. The lane itself only touches
-         * the per-*feature* arrays in there.
-         */
-        get variantLaneRegions() {
-          return self.topBands.laneHeight > 0
-            ? self.perRegionCellMap
-            : undefined
         },
         /**
          * #getter

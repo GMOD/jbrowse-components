@@ -2,10 +2,10 @@ import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEn
 
 // The genotype matrix is a sticky canvas, so when the content moves and the
 // pointer doesn't there is no `mousemove` and no `mouseleave` to fire.
-// `useVariantCanvasInteraction` clears the hover on the axis where the *pointer*
-// moved and on nothing else, so a stored `hoveredGenotype` outlives a pan, a
-// zoom and an internal scroll — and the tooltip then reports one sample's
-// genotype while the cursor sits over another's.
+// The chrome's pointer measurement clears the hover on the axis where the
+// *pointer* moved and on nothing else, so a stored `hoveredGenotype` outlives a
+// pan, a zoom and an internal scroll — and the tooltip then reports one
+// sample's genotype while the cursor sits over another's.
 //
 // `scrollTop` is the worst of the three here: the rows move but the tooltip is
 // placed from the pointer, so the two visibly separate. Tested on the base

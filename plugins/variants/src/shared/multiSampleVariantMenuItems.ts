@@ -365,7 +365,7 @@ export function variantTrackMenuItems(
 export function variantContextMenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
-  const feat = self.contextMenuFeature
+  const feat = self.contextMenuInfo?.feature
   return feat
     ? [
         {
