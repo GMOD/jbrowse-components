@@ -29,6 +29,7 @@ import {
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { axisPlacement, axisSpan } from './anchorAxis.ts'
+import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
@@ -487,32 +488,44 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * per lane, the session's own gene track for that assembly: the first
-       * GFF3 feature track declared for it alone. The real pipelines this
-       * display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs
+       * per lane, the session's own gene track for that assembly: the
+       * best-ranked feature track declared for it alone. The real pipelines
+       * this display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs
        * from exactly these annotations, so the lane's exon structure comes
-       * from the file the table was built from
+       * from the file the table was built from.
+       *
+       * RANKED, not a set. GFF3 only was too narrow — a lane annotated by a
+       * GTF or a BigBed read as `· no annotation`, which is the header
+       * asserting something false about a track sitting in the same session,
+       * with no error to debug from. But a flat widening picks by declaration
+       * order, and the config shape this display meets (`hg38-genes` beside
+       * `hg38-rmsk`) has the repeats in BED and the genes in GFF3 — so
+       * "anything with features" would newly prefer the repeats. Rank instead,
+       * and the old behaviour is what the top rank already gives.
        */
       get laneGeneAdapters() {
         const session = getSession(self)
         const { assemblyManager } = session
         const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
         const out = new Map<string, Record<string, unknown>>()
+        const ranked = new Map<string, number>()
         for (const track of session.tracks) {
           const names = readConfObject(track, 'assemblyNames') as string[]
           const adapter = readConfObject(track, 'adapter') as {
             type?: string
           } | null
-          if (names.length !== 1 || !adapter?.type?.startsWith('Gff3')) {
+          const rank = annotationRank(adapter?.type)
+          if (names.length !== 1 || rank === undefined) {
             continue
           }
           // every lane the track answers for, not the first: two mates can
           // spell one assembly two ways and both lanes draw from the one track
           for (const lane of lanes) {
             if (
-              !out.has(lane) &&
+              rank < (ranked.get(lane) ?? Number.POSITIVE_INFINITY) &&
               isSameAssemblyName(names[0], lane, assemblyManager)
             ) {
+              ranked.set(lane, rank)
               out.set(lane, adapter as Record<string, unknown>)
             }
           }

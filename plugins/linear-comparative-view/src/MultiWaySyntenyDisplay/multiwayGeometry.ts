@@ -14,7 +14,7 @@ import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
-import type { Span } from './layoutMultiWay.ts'
+import type { MultiWayGroup, Span } from './layoutMultiWay.ts'
 import type {
   GlyphHit,
   LaneGlyphData,
@@ -198,11 +198,24 @@ export function buildRibbonGeometry({
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
   const groupTarget = new Map<string, number>()
-  const targetOfGroup = (key: string, feature: Feature) => {
+  // One target per group, shared by every gutter — which is what lets one
+  // hover light the whole chain, and also what stops the label naming a lane
+  // PAIR. What it can name is the group's identity: its key and where the
+  // anchor puts it. A bare key left the reader a gene name and nothing to
+  // locate it by, where a direct-link ribbon has printed both loci all along
+  const anchor = lanes[0]
+  const targetOfGroup = (key: string, group: MultiWayGroup) => {
     let idx = groupTarget.get(key)
     if (idx === undefined) {
       idx = targets.length
-      targets.push({ feature, groupKey: key, label: key })
+      const { refName, start, end } = group.anchor
+      targets.push({
+        feature: group.feature,
+        groupKey: key,
+        label: anchor
+          ? `${key}\n${anchor.assemblyName} ${anchor.canon(refName)}:${fmt(start)}-${fmt(end)}`
+          : key,
+      })
       groupTarget.set(key, idx)
     }
     return idx
@@ -232,7 +245,7 @@ export function buildRibbonGeometry({
               s1,
               s2,
               KIND_BASE,
-              targetOfGroup(key, group.feature),
+              targetOfGroup(key, group),
               colorOf(orientations[i]! * far.orientations[j]!, group.feature),
             )
           }

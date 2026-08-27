@@ -143,6 +143,10 @@ describe('the ribbons', () => {
     expect(data.base0).toBe(0)
     expect(abgrAlpha(data.colors[0]!)).toBe(Math.round(0.3 * 255))
     expect(targets.map(t => t.groupKey)).toEqual(['g1', 'g2'])
+    // one target per group is shared by every gutter, so the label names the
+    // group's identity rather than a lane pair: the key and where the anchor
+    // puts it. A bare key gave the reader nothing to locate it by
+    expect(targets[0]!.label).toBe('g1\ngrape chr1:100-200')
     expect([...data.instanceFeatureIdx]).toEqual([
       groupTarget.get('g1'),
       groupTarget.get('g2'),
