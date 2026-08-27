@@ -24,6 +24,7 @@ interface ReadsModel extends CollapseGroupRowsModel {
   showSoftClipping: boolean
   setShowSoftClipping: (show: boolean) => void
   softClippingDisplayTypeDefault: Pin
+  isChainMode: boolean
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
@@ -47,6 +48,25 @@ interface ReadsModel extends CollapseGroupRowsModel {
 // "Read height" for the same reason — it was the one action among the
 // checkboxes. Anything new here should be a checkbox, or it belongs in another
 // menu.
+function softClippingItem(model: ReadsModel) {
+  const label = 'Show soft clipping'
+  const onToggle = () => {
+    model.setShowSoftClipping(!model.showSoftClipping)
+  }
+  return model.isChainMode
+    ? toggleItem(label, model.showSoftClipping, onToggle, {
+        disabled: true,
+        disabledHelpText:
+          'Chain layout does not expand soft clips — uncheck "View as pairs / link supplementary alignments" first',
+      })
+    : promotableToggleItem({
+        label,
+        checked: model.showSoftClipping,
+        onToggle,
+        pin: model.softClippingDisplayTypeDefault,
+      })
+}
+
 export function getReadsMenuItems(model: ReadsModel) {
   return makeShowSubMenu([
     showLegendCheckboxItem(
@@ -81,14 +101,12 @@ export function getReadsMenuItems(model: ReadsModel) {
       },
       pin: model.mismatchAlphaDisplayTypeDefault,
     }),
-    promotableToggleItem({
-      label: 'Show soft clipping',
-      checked: model.showSoftClipping,
-      onToggle: () => {
-        model.setShowSoftClipping(!model.showSoftClipping)
-      },
-      pin: model.softClippingDisplayTypeDefault,
-    }),
+    // The worker forces soft clipping off in chain mode
+    // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
+    // out there rather than taking a click that draws nothing. It sheds its pin
+    // while gated: a disabled row's pin is disabled with it (see the interbase
+    // row below), and a live-looking pin that takes no click is worse than none.
+    softClippingItem(model),
     // Every interbase mark — the count bars and the fixed-size triangles alike
     // — draws inside the coverage band (`COVERAGE_LAYERS`, and the Canvas2D
     // twin), and the hit test spells the same conjunction, so with the band
@@ -108,7 +126,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     // in a `pointer-events: none` row takes no click), so gating a PROMOTABLE
     // row also takes away its make-this-the-default control. That is why the
     // rows above, which are promotable, state their dependency and are not
-    // gated on it.
+    // gated on it — except soft clipping, which drops the pin for the gate.
     toggleItem(
       'Show interbase indicators',
       model.showInterbaseIndicators,

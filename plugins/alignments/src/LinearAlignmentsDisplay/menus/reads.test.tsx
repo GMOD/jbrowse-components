@@ -18,7 +18,11 @@ const noPin: Pin = {
 
 // Only the fields "Show..." reads.
 function makeModel(
-  overrides?: Partial<{ canCollapseGroupRows: boolean; showCoverage: boolean }>,
+  overrides?: Partial<{
+    canCollapseGroupRows: boolean
+    showCoverage: boolean
+    isChainMode: boolean
+  }>,
 ) {
   return {
     showLegend: false,
@@ -33,6 +37,7 @@ function makeModel(
     showSoftClipping: false,
     setShowSoftClipping: jest.fn(),
     softClippingDisplayTypeDefault: noPin,
+    isChainMode: false,
     showInterbaseIndicators: true,
     setShowInterbaseIndicators: jest.fn(),
     mismatchAlpha: false,
@@ -137,12 +142,33 @@ test('the interbase toggle follows the coverage band', () => {
   expect(interbaseRow(true)).toMatchObject({ disabled: false })
 })
 
+function softClipRow(isChainMode: boolean) {
+  return subMenuOf(makeModel({ isChainMode })).find(
+    r => 'label' in r && r.label === 'Show soft clipping',
+  )
+}
+
+// The worker forces soft clipping off in chain mode
+// (`executeRenderAlignmentData`), so the row says so instead of taking a click
+// that draws nothing. Gated, it carries no pin (next test).
+test('the soft clipping toggle greys out in chain mode', () => {
+  expect(softClipRow(true)).toMatchObject({
+    disabled: true,
+    disabledHelpText: expect.stringContaining('Chain layout'),
+  })
+  expect(softClipRow(true)).not.toHaveProperty('pin')
+  expect(softClipRow(false)).not.toHaveProperty('disabled')
+  expect(softClipRow(false)).toHaveProperty('pin')
+})
+
 // A disabled row's pin is disabled with it (`menuItemAdornment`), so gating a
 // promotable row would also take away its "default for all tracks of this type"
 // control — which is why the promotable rows here state their dependency in
 // help text instead of greying out. Nothing gated may carry a pin.
 test('no gated row carries a pin', () => {
-  for (const row of subMenuOf(makeModel({ showCoverage: false }))) {
+  for (const row of subMenuOf(
+    makeModel({ showCoverage: false, isChainMode: true }),
+  )) {
     if ('disabled' in row && row.disabled) {
       expect(row).not.toHaveProperty('pin')
     }
