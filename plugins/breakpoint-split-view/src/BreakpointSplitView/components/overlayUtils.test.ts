@@ -5,29 +5,12 @@ import {
   chainHighlightRects,
   isDrawnByPileup,
   resolvedPairs,
-  strandToSign,
 } from './overlayUtils.tsx'
 
 import type { LayoutMatch, LayoutRecord, OverlayLevel } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-
-describe('strandToSign', () => {
-  test('returns 1 for positive strand', () => {
-    expect(strandToSign('+')).toBe(1)
-  })
-
-  test('returns -1 for negative strand', () => {
-    expect(strandToSign('-')).toBe(-1)
-  })
-
-  test('returns 0 for unknown strand', () => {
-    expect(strandToSign('.')).toBe(0)
-    expect(strandToSign('')).toBe(0)
-    expect(strandToSign('?')).toBe(0)
-  })
-})
 
 describe('buildSimplePath', () => {
   test('builds straight line when y values differ', () => {

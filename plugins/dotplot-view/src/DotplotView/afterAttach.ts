@@ -491,6 +491,9 @@ function setupAspectLockAutorun(self: DotplotViewModel) {
 function setupClearHoverOnPlotMove(self: DotplotViewModel) {
   installClearHoverOnSurfaceMove(self, {
     transform: () => self.plotTransform,
+    clear: () => {
+      self.setHoveredFeature(undefined)
+    },
     name: 'DotplotClearHoverOnPlotMove',
   })
 }

@@ -55,6 +55,18 @@ export interface LayoutMatch {
   hiddenSegmentsBefore?: string[]
 }
 
+/**
+ * The one overlay curve the pointer is on. Held by the VIEW, not by each
+ * overlay: the overlay is one SVG spanning every row, so only one of its curves
+ * can be under the pointer at a time, and a copy per track let two of them draw
+ * a hover at once.
+ */
+export interface OverlayHover {
+  trackId: string
+  /** the PathSpec id — a feature id, or a junction's pair of them */
+  id: string
+}
+
 // The discriminant Overlay.tsx dispatches on. 'alignment' comes from an
 // AlignmentsTrack, the rest from a VariantTrack (see classifyVariantFeatures).
 export type OverlayKind = 'alignment' | 'translocation' | 'paired' | 'breakend'

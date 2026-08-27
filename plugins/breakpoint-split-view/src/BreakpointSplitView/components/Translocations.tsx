@@ -9,6 +9,7 @@ import {
   buildPairTooltip,
   isLevelPairMinimized,
   tickAtPx,
+  variantWidgetOpener,
 } from './overlayUtils.tsx'
 
 import type { LayoutRecord } from '../types.ts'
@@ -21,7 +22,16 @@ export default function Translocations(props: OverlayProps) {
   return (
     <VariantOverlay
       {...props}
-      render={({ match, views, tracks, layouts, getX, getY, assemblies }) => {
+      render={({
+        session,
+        match,
+        views,
+        tracks,
+        layouts,
+        getX,
+        getY,
+        assemblies,
+      }) => {
         if (views.length < 2) {
           return []
         }
@@ -101,6 +111,7 @@ export default function Translocations(props: OverlayProps) {
                         end: matePos + 1,
                       }),
                     ),
+                  openWidget: variantWidgetOpener(session, f1),
                 },
               ]
             },

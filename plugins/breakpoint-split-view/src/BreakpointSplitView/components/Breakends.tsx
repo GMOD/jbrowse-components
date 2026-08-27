@@ -18,7 +18,7 @@ export default function Breakends(props: OverlayProps) {
       render={ctx => {
         const { layouts } = ctx
         return [...canonicalPairs(ctx)].flatMap<PathSpec>(
-          ({ f1, f2, level1, level2, x1, y1, x2, y2, tooltip }) => {
+          ({ f1, f2, level1, level2, x1, y1, x2, y2, tooltip, openWidget }) => {
             const relevantAlt = findMatchingAlt(f1, f2)
             if (!relevantAlt) {
               return []
@@ -32,6 +32,7 @@ export default function Breakends(props: OverlayProps) {
                 id: f1.id(),
                 path: buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick),
                 tooltip,
+                openWidget,
               },
             ]
           },

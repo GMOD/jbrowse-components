@@ -565,6 +565,9 @@ export function linearSyntenyViewHelperModelFactory(
         // zoom inside the log2 bucket commits nothing.
         installClearHoverOnSurfaceMove(self, {
           transform: () => self.bandTransformKey,
+          clear: () => {
+            self.setHoveredFeature(undefined)
+          },
           name: 'SyntenyClearHoverOnBandMove',
         })
       },

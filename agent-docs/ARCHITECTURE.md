@@ -233,7 +233,7 @@ event to show for it — zoom, `offsetPx`, the display's own `scrollTop`, and th
 `regionTooLarge` banner replacing the subtree — so a hit held in a volatile goes
 on naming what used to be there. `MultiRegionDisplayMixin` installs the clear
 (`installClearHoverOnViewportChange`) for its family, and a storer outside that
-family owes its own (`installClearHoverOnSurfaceMove`, `@jbrowse/synteny-core`).
+family owes its own (`installClearHoverOnSurfaceMove`, `@jbrowse/core/util`).
 Deriving the hit from the live pointer instead, as MAF does, needs none of it.
 Whichever way, publish it as `hoveredFeature` — `BaseDisplay`'s hook, and what
 `LinearGenomeViewContainer` reads to feed `session.hovered`.
@@ -1739,8 +1739,8 @@ wanted.
   installs the reaction and that one action is all a storer owes it. Outside
   that family nothing installs it, so a display or view that stores a hover owes
   the whole reaction — `installClearHoverOnSurfaceMove`
-  (`@jbrowse/synteny-core`), which both comparative views call with their own
-  transform key. See
+  (`@jbrowse/core/util`), which the two comparative views and the breakpoint
+  split view each call with their own transform key. See
   [reference/DISPLAY_HOVER.md](reference/DISPLAY_HOVER.md).
 
 ### Backends and generated code

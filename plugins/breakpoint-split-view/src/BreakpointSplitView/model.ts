@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/core/util'
 import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
+import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
@@ -48,6 +49,7 @@ import type {
   LayoutRecord,
   MatchedChunks,
   OverlayLevel,
+  OverlayHover,
   OverlayMatch,
 } from './types.ts'
 import type { OverlayTrack } from './util.ts'
@@ -139,6 +141,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       matchedTrackFeatures: Record<string, Feature[][]>
       reloadCounter: number
       fetchStatus: StatusChannel
+      hoveredOverlay: OverlayHover | undefined
     }>(() => ({
       /**
        * #volatile
@@ -166,6 +169,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * other use for.
        */
       fetchStatus: createStatusChannel(),
+      /**
+       * #volatile
+       * Which overlay curve the pointer is on, and the reason it lives here
+       * rather than in each overlay's React state: a hover the viewport can
+       * invalidate needs one place to be cleared from, which is what
+       * `overlayTransformKey` and the `afterAttach` reaction give it.
+       */
+      hoveredOverlay: undefined,
     }))
     .views(self => ({
       /**
@@ -336,6 +347,40 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get fetchInert(): boolean {
         return this.matchedTracks.length === 0
+      },
+
+      /**
+       * #getter
+       * Every number that moves the overlay under a stationary cursor, in one
+       * value — what `installClearHoverOnSurfaceMove` watches.
+       *
+       * Per row, `offsetPx` and `bpPerPx`, which covers a pan or a zoom from
+       * any entry point: the wheel, the header buttons, a locstring search, or
+       * a `linkViews` echo of the row next to it. Per matched track and per
+       * row, the body's `scrollTop` and `height`, since a pileup scrolls and a
+       * track resizes under a pointer that never moved, plus `regionTooLarge`,
+       * whose flip swaps the body for the banner and back.
+       *
+       * Scoped to the matched tracks rather than every track in the view: an
+       * unrelated track finishing its first render resizes nothing the overlay
+       * draws on, and clearing the hover for it would read as a flicker.
+       */
+      get overlayTransformKey() {
+        const parts: (number | boolean)[] = []
+        for (const view of self.views) {
+          parts.push(view.offsetPx, view.bpPerPx)
+        }
+        for (const { configuration } of this.matchedTracks) {
+          for (const track of this.getMatchedTracks(configuration.trackId)) {
+            const d = track.displays[0]
+            parts.push(
+              d?.scrollTop ?? 0,
+              d?.height ?? 0,
+              d?.regionTooLarge ?? false,
+            )
+          }
+        }
+        return parts.join(' ')
       },
 
       /**
@@ -576,6 +621,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * `undefined` when the pointer leaves a curve, and when the picture moves
+       * out from under it — see `overlayTransformKey`.
+       */
+      setHoveredOverlay(arg: OverlayHover | undefined) {
+        self.hoveredOverlay = arg
+      },
+
+      /**
+       * #action
        */
       setInteractiveOverlay(arg: boolean) {
         self.interactiveOverlay = arg
@@ -666,6 +720,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
+        // The overlay is one SVG over every row, so the view owns the hover
+        // and the view answers for invalidating it. The pointer handlers cover
+        // the pointer moving; this covers the picture moving instead, which
+        // fires no pointer event at all. It replaced a `window` wheel listener
+        // per overlay track, which caught the one axis its author had in hand
+        // and left a header zoom, a locstring search, a pileup scroll and the
+        // too-large banner naming a junction the cursor was no longer on.
+        installClearHoverOnSurfaceMove(self, {
+          transform: () => self.overlayTransformKey,
+          clear: () => {
+            self.setHoveredOverlay(undefined)
+          },
+          name: 'BreakpointSplitViewClearHoverOnOverlayMove',
+        })
         installLinkedViewSync(self, [
           'horizontalScroll',
           'zoomTo',

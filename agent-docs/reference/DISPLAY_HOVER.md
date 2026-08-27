@@ -35,16 +35,31 @@ overrides one action and a display that derives one does nothing. Six displays
 used to pass their own closure to the installer, which is six chances to omit
 the call, and omitting it is invisible until someone pans.
 
-**Only that foundation installs it, so a storer outside it owes its own.** Both
-comparative views store a hover and both had to answer this separately, which is
-what makes it a rule rather than one mixin's habit. The answer is
-`installClearHoverOnSurfaceMove` (`@jbrowse/synteny-core`): a `reaction` on the
-*model that owns the surface* — the view or level, since one action fans a pick
-hit out across every display on the shared canvas — over one value carrying
-every number that moves the picture. Dotplot passes `plotTransform`; synteny's
-level passes `bandTransformKey`, each row's `offsetPx` and `bpPerPx`, and the
-band height. Both leave out the two axes a shared canvas does not have: no
-per-display scroll, no too-large banner.
+**Only that foundation installs it, so a storer outside it owes its own.** Three
+views store a hover over a surface of their own and each had to answer this
+separately, which is what makes it a rule rather than one mixin's habit. The
+answer is `installClearHoverOnSurfaceMove` (`@jbrowse/core/util`): a `reaction`
+on the *model that owns the surface* — the view or level, since one action fans
+a hit out across every display drawing on it — over one value carrying every
+number that moves the picture, plus the `clear` that drops the hit. Dotplot
+passes `plotTransform`; synteny's level passes `bandTransformKey`, each row's
+`offsetPx` and `bpPerPx`, and the band height. Both leave out the two axes a
+shared canvas does not have: no per-display scroll, no too-large banner.
+
+The breakpoint split view is the third, and its surface is an SVG rather than a
+canvas: one overlay spanning every stacked row, so the *view* holds the hovered
+curve and `overlayTransformKey` carries both rows' `offsetPx`/`bpPerPx` and —
+unlike the comparative pair — each matched track's `scrollTop`, `height` and
+`regionTooLarge`, because the rows it draws over are ordinary LGV panels that
+scroll, resize and hit the banner. It reached the rule late: the hover was React
+state per overlay track with a `window` wheel listener for a clear, which caught
+the one axis its author had in hand and left a header zoom, a locstring search,
+a pileup scroll and the banner naming a junction the cursor had left.
+
+`clear` is a callback rather than a duck-typed `setHoveredFeature`, because the
+three owners store three different things — a synteny pick hit, a dotplot
+feature index, an overlay curve id. The omission the per-display installer
+guards against cannot happen here: a surface owner writes the call itself.
 
 Synteny is what the rule cost before anyone wrote it down. Its stored hit had
 one clear outside the pointer handlers — a fetch commit — and its fetch key is

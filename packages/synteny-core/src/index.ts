@@ -18,7 +18,6 @@ export {
   syntenyTypes,
 } from './syntenyTypes.ts'
 export { clampBlockToRegions } from './clampBlockToRegions.ts'
-export { installClearHoverOnSurfaceMove } from './installClearHoverOnSurfaceMove.ts'
 export type { ClampedBlock } from './clampBlockToRegions.ts'
 export { makeStringDict } from './stringDict.ts'
 export type { StringDict } from './stringDict.ts'
@@ -40,6 +39,10 @@ export { extractAlignmentData } from './extractAlignmentData.ts'
 // Promoted to core (a pure signature compare, no synteny deps); re-exported here
 // so the comparative-view consumers keep importing it from @jbrowse/synteny-core.
 export { isDataCurrent } from '@jbrowse/core/util'
+// Promoted to core: a third surface owner needed it (the breakpoint split
+// view's overlay), and its model is eager, so reaching it through this barrel
+// would have dragged the chunk behind these components onto every page.
+export { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 export {
   detectAssembliesSwapped,
   detectDisplayAssembliesSwapped,

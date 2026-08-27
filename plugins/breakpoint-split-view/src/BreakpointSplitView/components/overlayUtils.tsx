@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
-
 import {
   assembleLocString,
   getSession,
+  getStrokeProps,
   truncateMiddle,
 } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
@@ -47,24 +46,9 @@ export interface OverlayProps {
   domYOffsets?: (number | undefined)[]
 }
 
-function useMouseoverElt() {
-  const [mouseoverElt, setMouseoverElt] = useState<string>()
-  useEffect(() => {
-    function clear() {
-      setMouseoverElt(undefined)
-    }
-    window.addEventListener('wheel', clear, { passive: true })
-    return () => {
-      window.removeEventListener('wheel', clear)
-    }
-  }, [])
-  return [mouseoverElt, setMouseoverElt] as const
-}
-
-// Shared setup for every overlay renderer: the session, hover state, the
-// matched features for this track, and the per-render coordinate closures.
-// Both VariantOverlay and AlignmentConnections read the same four things off
-// the model, so keeping this in one place stops them drifting (e.g. one
+// Shared setup for every overlay renderer: the session, the view's hover
+// narrowed to this track, the matched features, and the per-render coordinate
+// closures. Keeping this in one place stops the callers drifting (e.g. one
 // forgetting to thread domYOffsets through).
 //
 // 'use no memo' is load-bearing. The callers are inline observers, which the
@@ -89,68 +73,76 @@ export function useOverlayState({
   // eslint-disable-next-line react-compiler/react-compiler
   'use no memo'
   const session = getSession(model)
-  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
+  // The hover is the view's, since the overlay is one SVG over every row and
+  // only one of its curves can be under the pointer. Narrowed to this track
+  // here so a renderer compares plain ids.
+  //
+  // An export reads none of it. `yOffsetsOverride` is what says this render is
+  // one, the same signal getTrackOverlayData zeroes scrollTop on: a hover is a
+  // live-pointer notion, its boxes would bake a highlight into the file, and
+  // BreakpointTooltip portals — which renderToStaticMarkup throws on. Holding
+  // the hover in React state per overlay used to make that unreachable by
+  // construction, since an export mounted fresh components.
+  const { hoveredOverlay } = model
   const match = model.overlayMatches.get(trackId)
   const overlayData = model.getTrackOverlayData(
     trackId,
     yOffsetsOverride,
     domYOffsets,
   )
-  return { session, mouseoverElt, setMouseoverElt, match, overlayData }
-}
-
-function hoverHandlers(
-  id: string,
-  setMouseoverElt: (id: string | undefined) => void,
-) {
   return {
-    onMouseOver: () => {
-      setMouseoverElt(id)
-    },
-    onMouseOut: () => {
-      setMouseoverElt(undefined)
-    },
+    session,
+    hoveredId:
+      yOffsetsOverride === undefined && hoveredOverlay?.trackId === trackId
+        ? hoveredOverlay.id
+        : undefined,
+    match,
+    overlayData,
   }
 }
 
-// `getFeatureData` is resolved at click time, not per render: it serializes a
-// feature to JSON, and every overlay path in the view would otherwise pay for
-// that on every pan/zoom frame to fill in a widget nobody has opened.
-function createVariantMouseHandlers(
-  id: string,
-  setMouseoverElt: (id: string | undefined) => void,
+// One place the overlay opens a feature widget: the two kinds differ only in
+// which widget takes the click and what it is handed.
+function openFeatureWidget(
   session: ReturnType<typeof getSession>,
-  getFeatureData: () => unknown,
+  widgetType: string,
+  widgetId: string,
+  featureData: unknown,
 ) {
-  return {
-    onClick: () => {
-      const featureWidget = session.addWidget?.(
-        'VariantFeatureWidget',
-        'variantFeature',
-        { featureData: getFeatureData() },
-      )
-      session.showWidget?.(featureWidget)
-    },
-    ...hoverHandlers(id, setMouseoverElt),
+  session.showWidget?.(
+    session.addWidget?.(widgetType, widgetId, { featureData }),
+  )
+}
+
+// Both openers serialize their features at click time, not per render: every
+// overlay path in the view would otherwise pay for a `toJSON` on every pan/zoom
+// frame to fill in a widget nobody has opened.
+export function variantWidgetOpener(
+  session: ReturnType<typeof getSession>,
+  feature: Feature,
+) {
+  return () => {
+    openFeatureWidget(
+      session,
+      'VariantFeatureWidget',
+      'variantFeature',
+      feature.toJSON(),
+    )
   }
 }
 
-export function createAlignmentMouseHandlers(
-  id: string,
-  setMouseoverElt: (id: string | undefined) => void,
+export function alignmentWidgetOpener(
   session: ReturnType<typeof getSession>,
-  getFeatureData: () => { feature1: unknown; feature2: unknown },
+  f1: Feature,
+  f2: Feature,
 ) {
-  return {
-    onClick: () => {
-      const featureWidget = session.addWidget?.(
-        'BreakpointAlignmentsWidget',
-        'breakpointAlignments',
-        { featureData: getFeatureData() },
-      )
-      session.showWidget?.(featureWidget)
-    },
-    ...hoverHandlers(id, setMouseoverElt),
+  return () => {
+    openFeatureWidget(
+      session,
+      'BreakpointAlignmentsWidget',
+      'breakpointAlignments',
+      { feature1: f1.toJSON(), feature2: f2.toJSON() },
+    )
   }
 }
 
@@ -217,10 +209,6 @@ export function getCanonicalRefPair(
     return undefined
   }
   return { f1ref, f2ref }
-}
-
-export function strandToSign(s: string) {
-  return s === '+' ? 1 : s === '-' ? -1 : 0
 }
 
 // A view level is horizontally flipped when its px→bp maps to a reversed
@@ -303,69 +291,138 @@ export function buildPairTooltip(
 export interface PathSpec {
   id: string
   path: string
-  // Lazy: only the hovered spec's tooltip is ever rendered, and building one
-  // walks both endpoints' fields, so it's resolved on hover rather than for all
-  // N every frame. Same rule AlignmentConnections follows.
+  /**
+   * Lazy, and for one reason: only the hovered spec's tooltip and boxes are
+   * ever built, and each walks the features behind the curve, so they resolve
+   * on hover rather than for all N every frame.
+   */
   tooltip?: () => string
+  highlights?: () => HighlightRect[]
+  /** Resolved at click time, for the reason `variantWidgetOpener` gives. */
+  openWidget?: () => void
+  /**
+   * Every spec sharing this reads as hovered together — for an alignments
+   * track that is the read chain, so a hover on one junction emphasizes the
+   * rest of the read's route. Defaults to the spec's own id, which is one
+   * curve emphasizing only itself.
+   */
+  emphasisGroup?: string
+  stroke?: string
+  strokeDasharray?: string
 }
 
-export interface VariantOverlayContext {
+export interface OverlayContext {
+  session: ReturnType<typeof getSession>
   match: OverlayMatch
   assemblies: RowAssemblies
   views: BreakpointViewModel['views']
   tracks: ReturnType<BreakpointViewModel['getTrackOverlayData']>['tracks']
+  levels: ReturnType<BreakpointViewModel['getTrackOverlayData']>['levels']
   layouts: ReturnType<BreakpointViewModel['getTrackOverlayData']>['layouts']
   getX: ReturnType<BreakpointViewModel['getTrackOverlayData']>['getX']
   getY: ReturnType<BreakpointViewModel['getTrackOverlayData']>['getY']
 }
 
-interface VariantOverlayProps extends OverlayProps {
+interface OverlayPathsProps extends OverlayProps {
   pathTestId?: string
-  render: (ctx: VariantOverlayContext) => PathSpec[]
+  /** stroke width at rest, and the one an emphasized path takes */
+  strokeWidth: number
+  hoverStrokeWidth: number
+  /** group stroke, for a kind whose specs do not each name their own */
+  stroke?: string
+  render: (ctx: OverlayContext) => PathSpec[]
 }
 
-export const VariantOverlay = observer(function VariantOverlay({
+// Every overlay kind draws the same thing: a set of hoverable curves, the boxes
+// the hovered one asks for, and its tooltip. Only what goes into a PathSpec
+// differs, which is what `render` supplies — the alignments and the variant
+// half each carried their own copy of the walk from hover state to <g>, so a
+// fix to one of them (the chain emphasis, the lazy tooltip) had to be made
+// twice.
+export const OverlayPaths = observer(function OverlayPaths({
   model,
   trackId,
   yOffsetsOverride,
   domYOffsets,
   pathTestId,
+  strokeWidth,
+  hoverStrokeWidth,
+  stroke,
   render,
-}: VariantOverlayProps) {
+}: OverlayPathsProps) {
   const { interactiveOverlay, views, assemblies } = model
   const theme = useTheme()
-  const { session, mouseoverElt, setMouseoverElt, match, overlayData } =
-    useOverlayState({ model, trackId, yOffsetsOverride, domYOffsets })
+  const { session, hoveredId, match, overlayData } = useOverlayState({
+    model,
+    trackId,
+    yOffsetsOverride,
+    domYOffsets,
+  })
   if (!match) {
     return null
   }
-  const specs = render({ match, assemblies, views, ...overlayData })
-  const hoveredSpec = specs.find(spec => spec.id === mouseoverElt)
+  const specs = render({ session, match, assemblies, views, ...overlayData })
+  const hovered = specs.find(spec => spec.id === hoveredId)
+  const emphasis = hovered && (hovered.emphasisGroup ?? hovered.id)
   return (
     <g
-      stroke={theme.palette.success.main}
-      strokeWidth={5}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
       fill="none"
       data-testid={getTestId(trackId, match.layoutMatches.length > 0)}
     >
-      {specs.map(({ id, path }) => (
-        <path
-          d={path}
-          data-testid={pathTestId}
-          key={id}
-          pointerEvents={interactiveOverlay ? 'auto' : undefined}
-          strokeWidth={id === mouseoverElt ? 10 : 5}
-          {...createVariantMouseHandlers(id, setMouseoverElt, session, () =>
-            match.allFeatures.get(id)?.toJSON(),
-          )}
+      {hovered?.highlights?.().map(({ key, ...rect }) => (
+        <rect
+          key={key}
+          data-testid="chain-highlight"
+          {...rect}
+          fill={theme.palette.featureHoverStrong}
         />
       ))}
-      {hoveredSpec?.tooltip ? (
-        <BreakpointTooltip contents={hoveredSpec.tooltip()} />
+      {specs.map(spec => (
+        <path
+          key={spec.id}
+          d={spec.path}
+          data-testid={pathTestId}
+          pointerEvents={interactiveOverlay ? 'auto' : undefined}
+          strokeWidth={
+            (spec.emphasisGroup ?? spec.id) === emphasis
+              ? hoverStrokeWidth
+              : strokeWidth
+          }
+          strokeDasharray={spec.strokeDasharray}
+          {...(spec.stroke ? getStrokeProps(spec.stroke) : undefined)}
+          onClick={spec.openWidget}
+          onMouseOver={() => {
+            model.setHoveredOverlay({ trackId, id: spec.id })
+          }}
+          onMouseOut={() => {
+            model.setHoveredOverlay(undefined)
+          }}
+        />
+      ))}
+      {hovered?.tooltip ? (
+        <BreakpointTooltip contents={hovered.tooltip()} />
       ) : null}
     </g>
   )
 })
+
+// The look the three variant kinds share: one success-green curve per feature,
+// emphasizing only itself.
+export function VariantOverlay(
+  props: Omit<OverlayPathsProps, 'stroke' | 'strokeWidth' | 'hoverStrokeWidth'>,
+) {
+  const theme = useTheme()
+  return (
+    <OverlayPaths
+      {...props}
+      stroke={theme.palette.success.main}
+      strokeWidth={5}
+      hoverStrokeWidth={10}
+    />
+  )
+}
 
 // Only `minimized` is needed, so that's all this asks for — a caller with any
 // track-ish thing (including a test double) can use it.
@@ -504,8 +561,8 @@ export function chainHighlightRects({
 
 // LEFT-edge screen coords for simple variant overlays (paired/breakend), also
 // dropping off-view coordinates so callers only describe the path they draw.
-export function* canonicalPairs(ctx: VariantOverlayContext) {
-  const { getX, getY, layouts } = ctx
+export function* canonicalPairs(ctx: OverlayContext) {
+  const { getX, getY, layouts, session } = ctx
   for (const { f1, f2, level1, level2, c1, c2, f1ref, f2ref } of resolvedPairs(
     ctx,
   )) {
@@ -525,6 +582,7 @@ export function* canonicalPairs(ctx: VariantOverlayContext) {
       y1: getY(level1, c1),
       y2: getY(level2, c2),
       tooltip: () => buildPairTooltip(f1, f2),
+      openWidget: variantWidgetOpener(session, f1),
     }
   }
 }
