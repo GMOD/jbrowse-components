@@ -3,6 +3,7 @@ import {
   laneLocString,
   laneOrderMenuItem,
   laneRowMenuItems,
+  mergeRowOrder,
   moveLane,
 } from './menus.ts'
 
@@ -15,6 +16,23 @@ function labelsOf(items: MenuItem[]) {
 function subMenuOf(item: MenuItem | undefined) {
   return item && 'subMenu' in item ? item.subMenu : []
 }
+
+// A move writes back `rowAssemblies`, which holds neither a hidden lane nor
+// one the fetched window does not reach — so without the merge the next move
+// on any other lane silently deleted it from `rowOrder`, and it came back
+// densest-first at the bottom rather than where the reader left it.
+test('a reorder keeps the pinned lanes it could not see, at their own index', () => {
+  // cacao hidden, so the caller only names peach and poplar
+  expect(
+    mergeRowOrder(['peach', 'cacao', 'poplar'], ['poplar', 'peach']),
+  ).toEqual(['poplar', 'cacao', 'peach'])
+  // nothing dropped: the incoming order wins outright
+  expect(mergeRowOrder(['a', 'b'], ['b', 'a'])).toEqual(['b', 'a'])
+  // a first-time order has nothing to keep
+  expect(mergeRowOrder([], ['a', 'b'])).toEqual(['a', 'b'])
+  // an absent lane pinned first stays first
+  expect(mergeRowOrder(['gone', 'a'], ['a'])).toEqual(['gone', 'a'])
+})
 
 test('a lane moves one place and the others keep their order', () => {
   expect(moveLane(['a', 'b', 'c'], 'c', -1)).toEqual(['a', 'c', 'b'])
@@ -38,6 +56,7 @@ test('moving one lane pins every lane, in the order now shown', () => {
     setRowOrder: order => {
       written.push(order)
     },
+    resetRowOrder: () => {},
     hiddenLanes: [],
     setHiddenLanes: () => {},
   })
@@ -47,6 +66,7 @@ test('moving one lane pins every lane, in the order now shown', () => {
     'cacao',
     'grape',
     '—',
+    'Show all lanes',
     'Reset lane order',
   ])
 
@@ -61,6 +81,7 @@ test('the ends of the stack cannot move past themselves, and reset is dead with 
     rowAssemblies: ['peach', 'cacao'],
     rowOrder: [],
     setRowOrder: () => {},
+    resetRowOrder: () => {},
     hiddenLanes: [],
     setHiddenLanes: () => {},
   })
@@ -78,6 +99,7 @@ test('one lane has no order to edit', () => {
       rowAssemblies: ['peach'],
       rowOrder: [],
       setRowOrder: () => {},
+      resetRowOrder: () => {},
       hiddenLanes: [],
       setHiddenLanes: () => {},
     }),
@@ -90,6 +112,7 @@ test('a lane hides from its own row and comes back from a row of its own', () =>
     rowAssemblies: ['peach', 'cacao'],
     rowOrder: [],
     setRowOrder: () => {},
+    resetRowOrder: () => {},
     hiddenLanes: ['grape'],
     setHiddenLanes: (names: string[]) => {
       written.push(names)
@@ -101,6 +124,7 @@ test('a lane hides from its own row and comes back from a row of its own', () =>
     'cacao',
     'Show grape',
     '—',
+    'Show all lanes',
     'Reset lane order',
   ])
   expect(labelsOf(subMenuOf(lanes[0]))).toEqual([
@@ -118,6 +142,7 @@ test('one lane still has a menu while another is hidden', () => {
     rowAssemblies: ['peach'],
     rowOrder: [],
     setRowOrder: () => {},
+    resetRowOrder: () => {},
     hiddenLanes: ['cacao'],
     setHiddenLanes: () => {},
   })
@@ -131,6 +156,9 @@ function headerModel(held = true) {
     rowOrder: [],
     setRowOrder: (order: string[]) => {
       calls.push(`order ${order.join(',')}`)
+    },
+    resetRowOrder: () => {
+      calls.push('reset')
     },
     hiddenLanes: [],
     setHiddenLanes: (names: string[]) => {

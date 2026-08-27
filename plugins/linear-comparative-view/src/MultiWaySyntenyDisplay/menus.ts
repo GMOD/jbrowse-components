@@ -9,6 +9,7 @@ export interface LaneOrderModel {
   rowAssemblies: string[]
   rowOrder: readonly string[]
   setRowOrder: (order: string[]) => void
+  resetRowOrder: () => void
   hiddenLanes: readonly string[]
   setHiddenLanes: (names: string[]) => void
 }
@@ -36,6 +37,27 @@ export interface LaneSettingsModel {
   setShowLaneTicks: (flag: boolean) => void
 }
 
+/**
+ * The lanes a reorder names, plus the pinned lanes it could not see.
+ *
+ * A move writes back the whole order it is looking at, which is
+ * `rowAssemblies` — the lanes present in the fetched window and not hidden. So
+ * a lane the reader hid, or panned away from, was dropped out of `rowOrder`
+ * entirely by the next move on any other lane, and came back densest-first at
+ * the bottom rather than where they left it. Each one is spliced back at the
+ * index it held, so the order the reader authored survives a lane being away.
+ */
+export function mergeRowOrder(previous: string[], next: string[]) {
+  const named = new Set(next)
+  const out = [...next]
+  previous.forEach((name, i) => {
+    if (!named.has(name)) {
+      out.splice(Math.min(i, out.length), 0, name)
+    }
+  })
+  return out
+}
+
 /** `order` with `name` moved `delta` places, or unchanged where it cannot go. */
 export function moveLane(order: string[], name: string, delta: number) {
   const from = order.indexOf(name)
@@ -57,10 +79,15 @@ export function laneRowMenuItems(
   const lanes = model.rowAssemblies
   const hidden = model.hiddenLanes
   const i = lanes.indexOf(name)
+  // `keepMenuOpen`, because moving a lane two places is two clicks and the
+  // default dismisses an action row: reordering by menu was a fresh trip
+  // through the track menu per place moved. The rows' own disabled marks
+  // update live, since the menu re-reads this
   return [
     {
       label: 'Move up',
       disabled: i <= 0,
+      keepMenuOpen: true,
       onClick: () => {
         model.setRowOrder(moveLane(lanes, name, -1))
       },
@@ -68,12 +95,14 @@ export function laneRowMenuItems(
     {
       label: 'Move down',
       disabled: i < 0 || i === lanes.length - 1,
+      keepMenuOpen: true,
       onClick: () => {
         model.setRowOrder(moveLane(lanes, name, 1))
       },
     },
     {
       label: 'Hide lane',
+      keepMenuOpen: true,
       onClick: () => {
         model.setHiddenLanes([...hidden, name])
       },
@@ -169,16 +198,27 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
         })),
         ...hidden.map(name => ({
           label: `Show ${name}`,
+          keepMenuOpen: true,
           onClick: () => {
             model.setHiddenLanes(hidden.filter(h => h !== name))
           },
         })),
         { type: 'divider' },
+        // A reader who hid four lanes had four trips through this menu to get
+        // them back, and no reset covered them: `Reset lane order` clears the
+        // order and leaves every hidden lane hidden
+        {
+          label: 'Show all lanes',
+          disabled: hidden.length === 0,
+          onClick: () => {
+            model.setHiddenLanes([])
+          },
+        },
         {
           label: 'Reset lane order',
           disabled: model.rowOrder.length === 0,
           onClick: () => {
-            model.setRowOrder([])
+            model.resetRowOrder()
           },
         },
       ],

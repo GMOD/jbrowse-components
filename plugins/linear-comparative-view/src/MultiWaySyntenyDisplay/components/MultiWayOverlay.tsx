@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
@@ -33,9 +33,13 @@ function scaleLabelOf(lane: Lane, visibleBpSpan: number) {
     : getBpDisplayStr(laneSpan)
 }
 
+// The lane being dragged and the origin its ys are measured from — fixed for
+// the whole gesture, so the listener effect can depend on it honestly. The
+// moving y is its own state: it changes on every mousemove and re-binding
+// window listeners that often is what the split avoids.
 interface LaneDrag {
   assemblyName: string
-  y: number
+  top: number
 }
 
 interface LaneMenu {
@@ -64,6 +68,7 @@ const LaneHeaders = observer(function LaneHeaders({
   const { lanes } = model.laneStack
   const { visibleBpSpan, canvasWidth: width } = model
   const [drag, setDrag] = useState<LaneDrag>()
+  const [dragY, setDragY] = useState<number>()
   const [menu, setMenu] = useState<LaneMenu>()
   const menuLane = menu
     ? lanes.find(lane => lane.assemblyName === menu.assemblyName)
@@ -76,22 +81,30 @@ const LaneHeaders = observer(function LaneHeaders({
       anchor: { clientX: event.clientX, clientY: event.clientY },
     })
   }
-  const dropRow = drag ? dropRowAt(lanes, drag.y) : undefined
-  const dropLane = dropRow === undefined ? undefined : lanes[dropRow]
-  const startDrag = (assemblyName: string, event: React.MouseEvent) => {
-    event.stopPropagation()
-    event.preventDefault()
-    const svg = event.currentTarget.closest('svg')
-    const top = svg?.getBoundingClientRect().top ?? 0
+  const dropRow = dragY === undefined ? undefined : dropRowAt(lanes, dragY)
+  // A drop on the ANCHOR's band lands the lane first below it — "above the
+  // anchor" cannot be granted — so the bar goes on the first mate lane. The
+  // indicator was suppressed entirely there, which left the most reachable
+  // drop in the stack with no feedback at all
+  const dropLane =
+    dropRow === undefined ? undefined : lanes[Math.max(1, dropRow)]
+  // The listeners are window-level because a drag leaves the label the moment
+  // it starts, and they live in an effect so a display that unmounts UNDER a
+  // held button — the track closed, the phase flipped to an error banner —
+  // takes them with it. Bound outside one, `mouseup` still fired into a dead
+  // component and wrote the order through a destroyed node.
+  useEffect(() => {
+    if (!drag) {
+      return
+    }
+    const { assemblyName, top } = drag
     const yOf = (e: MouseEvent) => e.clientY - top
-    setDrag({ assemblyName, y: event.clientY - top })
     const move = (e: MouseEvent) => {
-      setDrag({ assemblyName, y: yOf(e) })
+      setDragY(yOf(e))
     }
     const up = (e: MouseEvent) => {
-      window.removeEventListener('mousemove', move)
-      window.removeEventListener('mouseup', up)
       setDrag(undefined)
+      setDragY(undefined)
       const row = dropRowAt(model.laneStack.lanes, yOf(e))
       if (row !== undefined) {
         model.setRowOrder(
@@ -101,12 +114,23 @@ const LaneHeaders = observer(function LaneHeaders({
     }
     window.addEventListener('mousemove', move)
     window.addEventListener('mouseup', up)
+    return () => {
+      window.removeEventListener('mousemove', move)
+      window.removeEventListener('mouseup', up)
+    }
+  }, [drag, model])
+
+  const startDrag = (assemblyName: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    event.preventDefault()
+    const svg = event.currentTarget.closest('svg')
+    const top = svg?.getBoundingClientRect().top ?? 0
+    setDrag({ assemblyName, top })
+    setDragY(event.clientY - top)
   }
   return (
     <>
-      {dropLane &&
-      !dropLane.isAnchor &&
-      dropLane.assemblyName !== drag?.assemblyName ? (
+      {dropLane && dropLane.assemblyName !== drag?.assemblyName ? (
         <g data-testid="multiway-lane-drop">
           <rect
             x={0}

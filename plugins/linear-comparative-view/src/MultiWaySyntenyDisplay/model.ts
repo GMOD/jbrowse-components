@@ -37,7 +37,11 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
-import { laneOrderMenuItem, laneSettingsMenuItems } from './menus.ts'
+import {
+  laneOrderMenuItem,
+  laneSettingsMenuItems,
+  mergeRowOrder,
+} from './menus.ts'
 import {
   BANDS_KEY,
   boxesKey,
@@ -250,7 +254,16 @@ export function stateModelFactory(
        * #action
        */
       setRowOrder(order: string[]) {
-        self.rowOrder.replace(order)
+        self.rowOrder.replace(mergeRowOrder([...self.rowOrder], order))
+      },
+      /**
+       * #action
+       * back to densest-first. Its own action rather than `setRowOrder([])`,
+       * which now means "here is the order of the lanes I can see" and would
+       * keep every lane the caller could not
+       */
+      resetRowOrder() {
+        self.rowOrder.clear()
       },
       /**
        * #action
