@@ -64,15 +64,15 @@ alignment, not a guarantee.
 - `DisplayChromeBaseInner` carries `'use no memo'` — the only compiled
   `observer` in the codebase. Its early-`return` terminal branches are now a style choice, not
   a correctness requirement; `DisplayChrome.test.tsx` guards the behavior.
-- `useVariantCanvasInteraction` → `model.contextMenuItems()` no longer runs
-  during render at all: it is passed to `ContextMenu` as the thunk
-  `menuItems={() => model.contextMenuItems()}` and called when the menu opens,
-  so there is no render-time read left to coarsen. What the hook does hold is
-  `contextMenuAnchor`, a `{ clientX, clientY }` object (`ContextMenuAnchor`)
-  built fresh on each right-click, with `undefined` as the closed state. Were
-  the call ever inlined into JSX again, that freshness is what would keep it
-  from staling — and it would stop protecting anything the moment the anchor
-  became a stable value.
+- The variant displays' `model.contextMenuItems()` no longer runs during
+  render at all: `DisplayContextMenu` passes it as the thunk
+  `menuItems={() => model.contextMenuItems()}` and calls it when the menu opens,
+  so there is no render-time read left to coarsen. What `ContextMenuMixin` holds
+  is `contextMenuInfo`, an object extending `{ clientX, clientY }`
+  (`ContextMenuAnchor`) built fresh on each right-click, with `undefined` as the
+  closed state. Were the call ever inlined into JSX again, that freshness is what
+  would keep it from staling — and it would stop protecting anything the moment
+  the info became a stable value.
 - A repo-wide observer opt-out and a custom ESLint rule were both rejected: an
   audit compiling all 431 tracked `observer` `.tsx` files found 14 coarsened
   reads, all benign (props/locals recreated on change, or non-observables like

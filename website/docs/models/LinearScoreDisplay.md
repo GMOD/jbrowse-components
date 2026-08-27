@@ -57,7 +57,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: observable.map&lt;number, ScoreRegionData&gt;()</code> |  | LinearScoreDisplay |
+| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;ScoreRegionData&gt;('rpcDataMap')</code> |  | LinearScoreDisplay |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
 | <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
 | <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |

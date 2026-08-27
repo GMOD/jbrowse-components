@@ -173,7 +173,7 @@ arcs drawn                 9204
   slot 5 pairRR               1
 interchromosomal ticks        0      <- all filtered, minInterchromSupport 2
 rows laid out               431
-rows the cap allows         750      <- so pileupTruncated is FALSE at this depth
+rows the cap allows         750      <- so no lane is ceilingClipped at this depth
 ```
 
 The 138:1 ratio is why category-first paint order is load-bearing: 66 arcs

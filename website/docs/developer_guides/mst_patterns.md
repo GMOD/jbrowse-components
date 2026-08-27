@@ -207,22 +207,6 @@ across files obscures the composition order and which views depend on which.
   get conf(): LinearArcDisplayConfig {
     return self.configuration
   },
-  /**
-   * #getter
-   * arcs whose feature scores below this are not drawn; 0 (the default)
-   * draws every arc, as does any feature carrying no score
-   */
-  get minScore(): number {
-    return getConf(self, 'minScore')
-  },
-  /**
-   * #getter
-   * the score span the filter slider is laid out over, `undefined` when the
-   * loaded features give it nothing to filter on
-   */
-  get scoreRange() {
-    return self.features && featureScoreRange(self.features)
-  },
 }))
 .views(self => ({
   /**
@@ -367,11 +351,14 @@ get colorsBySvType() {
 },
 /**
  * #getter
+ * This display's answer to the base's `colorLegend` chrome hook: the rows
+ * for whichever preset color key is active (impact tiers or SV classes),
+ * or none. SV-type shows the fixed class key; copy-number and
+ * unrecognized tokens aren't listed (the pure jexl has no present-set).
+ * The shared canvas body draws the key, so this display needs no
+ * component of its own.
  */
-// Legend rows for whichever preset color key is active (impact tiers or SV
-// classes), or none. SV-type shows the fixed class key; copy-number and
-// unrecognized tokens aren't listed (the pure jexl has no present-set).
-get colorLegendItems(): LegendItem[] {
+get colorLegend(): LegendItem[] {
   if (this.colorsByConsequenceImpact) {
     return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
   }
@@ -385,7 +372,7 @@ get colorLegendItems(): LegendItem[] {
 },
 ```
 
-Note `colorLegendItems`' explicit `: LegendItem[]` return type. A getter read
+Note `colorLegend`'s explicit `: LegendItem[]` return type. A getter read
 through `this` has to be annotated — without it TypeScript has to infer the
 literal's type from a member that refers to the literal, and gives up with a
 circular-reference error. That annotation is the cost of a same-block `this`

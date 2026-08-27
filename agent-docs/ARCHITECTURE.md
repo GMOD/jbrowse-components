@@ -156,23 +156,23 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-20 registered displays declare 187 config slots, 42 MST properties and 58 volatiles between them — counting what each display's own directory declares.
+20 registered displays declare 187 config slots, 42 MST properties and 57 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
 | --- | --- | --- | --- | --- |
-| `LinearAlignmentsDisplay` | `plugins/alignments` | 46 | 2 | 17 |
-| `LinearBasicDisplay` | `plugins/canvas` | 26 | 8 | 13 |
+| `LinearAlignmentsDisplay` | `plugins/alignments` | 46 | 2 | 13 |
+| `LinearBasicDisplay` | `plugins/canvas` | 26 | 8 | 12 |
 | `LinearMafDisplay` | `plugins/maf` | 18 | 2 | 8 |
 | `LDDisplay` | `plugins/variants` | 17 | 1 | 2 |
 | `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 12 | 3 | 1 |
 | `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 3 |
-| `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 8 | 4 | 7 |
+| `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 8 | 4 | 9 |
 | `LinearArcDisplay` | `plugins/arc` | 7 | 2 | 0 |
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
 | `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
 | `LinearWiggleDisplay` | `plugins/wiggle` | 6 | 2 | 0 |
-| `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 0 |
+| `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 2 |
 | `MultiLinearWiggleDisplay` | `plugins/wiggle` | 5 | 0 | 0 |
 | `ChordVariantDisplay` | `plugins/circular-view` | 4 | 3 | 3 |
 | `LinearReferenceSequenceDisplay` | `plugins/sequence` | 4 | 2 | 0 |
@@ -391,9 +391,9 @@ column reports what actually composes what.
 | Mixin | The display supplies | Composed by |
 | --- | --- | --- |
 | `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
+| `ContextMenuMixin()` | The right-click state of a display whose menu acts on a | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
 | `LegendMixin()` | A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
 | `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
-| `ContextMenuMixin()` | The right-click state of a display whose menu acts on a | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay` |
 | `RowHeightMixin()` | The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiSampleVariantBaseModel` |
 | `HeightModeMixin()` | Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay` |
 | `ScoreScaleMixin()` | Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume | `LinearAlignmentsDisplay`, `WiggleScoreConfigMixin` |
@@ -440,8 +440,8 @@ nothing declares — `undefined`, read as a boolean, in silence.
 <!-- prettier-ignore -->
 | Hook | Sitting on the default | Declared by |
 | --- | --- | --- |
-| `regionFetchKey` | the empty key, so loaded regions never go stale on zoom — correct unless the worker output is zoom-dependent. A subclass that changes what it fetches and forgets the key gets a redundant fetch, not a cached answer for a zoom the data was never fetched at | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `variants/shared`, `wiggle/shared` |
-| `regionHasData` | true — nothing checks that a region marked loaded has data behind it, so a display whose commit sites drift from its stores reads the viewport as covered against data nobody holds, and never asks again | `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `maf/LinearMafDisplay` |
+| `regionFetchKey` | the empty key, so loaded regions never go stale on zoom — correct unless the worker output is zoom-dependent. A subclass that changes what it fetches and forgets the key gets a redundant fetch, not a cached answer for a zoom the data was never fetched at | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `gccontent/LinearGCContentDisplay`, `variants/shared`, `wiggle/shared` |
+| `regionHasData` | true — nothing checks that a region marked loaded has data behind it, so a display whose commit sites drift from its stores reads the viewport as covered against data nobody holds, and never asks again | `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
 | `rpcProps` | no `SettingsInvalidate` autorun at all, so no user setting ever refetches (correct for `LinearReferenceSequenceDisplay`, indistinguishable from an omission for anyone else) | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gccontent/LinearGCContentDisplay`, `gwas/LinearManhattanDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/LinearMultiSampleVariantDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
 | `fetchNeeded` | nothing is ever fetched | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
 | `viewSignature` | undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census) | `arc/shared`, `hic/LinearHicDisplay`, `linear-comparative-view/MultiWaySyntenyDisplay`, `variants/LDDisplay` |
@@ -451,9 +451,9 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `awaitingPrerequisite` | every decline is judged on the spot by the dev-only retry check, which is right for a display whose fetch answers off its own state — a two-stage one (HiC waits on `CoreGetInfo`, variants on `sourcesBase`) is reported as a dead Retry it does not have, since the run that will fetch is the one after the prerequisite lands. Overriding it DEFERS that verdict, never waives it, so the override has to be strictly narrower than the gate it explains | `hic/LinearHicDisplay`, `variants/shared` |
 | `rendersCanvas` | `painted` waits on a canvas that is never mounted, so `data-display-drawn` stays false for the display’s whole life and every `waitForDisplaysDone` on the page burns its timeout | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
 | `paintInert` | same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own | `display-kit` |
-| `gateEnabled` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `canvas/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
+| `gateEnabled` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `canvas/LinearMultiRowFeatureDisplay`, `canvas/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
 | `densityTooLarge` | byte-only gating, no feature-density axis | `canvas/shared` |
-| `densityGateEnabled` | no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off | `canvas/LinearMultiRowFeatureDisplay`, `canvas/shared` |
+| `densityGateEnabled` | no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off | `canvas/shared` |
 | `byteGateAdapterPath` | the estimate and the budget both describe the track’s own `adapter` — wrong for a display that reads a different file at different zooms, and the one hook such a display overrides, since `byteGateAdapterConfig` is the config at this path | `maf/LinearMafDisplay` |
 | `byteGateAdapterConfig` | the config sitting at `byteGateAdapterPath`, which a tier swap already moves — so this one is for a display whose adapter config is SYNTHESIZED rather than read off the track (GC content folds `windowSize` / `gcMode` in), where no path names what it fetches | — |
 | `scrollableHeight` | `Infinity` — the display does not scroll internally | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
@@ -780,8 +780,9 @@ applies (`configuredFetchSizeLimit` / `configForceLoad` are plain slot reads,
 not part of the overridable hook surface). Canvas adds the density axis via
 `CanvasFeatureGateMixin` (`plugins/canvas/src/shared/`), which the base canvas
 display composes — the multi-row display runs on the byte axis alone — and which
-`no-restricted-syntax` requires after `MultiRegionDisplayMixin()`; the shared verdict/threshold/banner-text
-primitives live in `packages/display-kit/src/regionTooLargeUtils.ts`.
+`no-restricted-syntax` requires after `MultiRegionDisplayMixin()`; the shared
+verdict/threshold/banner-text primitives live in
+`packages/display-kit/src/regionTooLargeUtils.ts`.
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
 shared decision primitives: [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).

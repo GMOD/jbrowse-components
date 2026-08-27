@@ -1208,8 +1208,7 @@ only on a real violation):
   composed ahead of a base *model* that carries the foundation — where the
   attach-time read could. Nothing in tree composes that way (the one display
   that composes the gate mixin names both in one `types.compose`), and out of
-  tree neither
-  form reaches at all.
+  tree neither form reaches at all.
 
 - **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, whose `height`
   and `resizeHeight` it overrides, so the wrong order silently leaves grow mode

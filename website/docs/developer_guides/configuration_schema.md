@@ -355,22 +355,6 @@ getter:
   get conf(): LinearArcDisplayConfig {
     return self.configuration
   },
-  /**
-   * #getter
-   * arcs whose feature scores below this are not drawn; 0 (the default)
-   * draws every arc, as does any feature carrying no score
-   */
-  get minScore(): number {
-    return getConf(self, 'minScore')
-  },
-  /**
-   * #getter
-   * the score span the filter slider is laid out over, `undefined` when the
-   * loaded features give it nothing to filter on
-   */
-  get scoreRange() {
-    return self.features && featureScoreRange(self.features)
-  },
 }))
 .views(self => ({
   /**

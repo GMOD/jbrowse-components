@@ -178,7 +178,7 @@ them; `no-restricted-syntax` fails the other order.
 **The budget.** `resolveByteLimit` prefers the adapter's declared
 `fetchSizeLimit`, read off the live track config at `byteGateAdapterPath`,
 over the display's slot, and doubles it below the floor. Every consumer —
-the worker, the banner, MAF's `framesReadOverBudget` — reads
+the worker, the banner, the `byteLimit` MAF passes its frames RPC — reads
 `resolvedByteLimit()`. An adapter that implements `getRegionByteSize` and
 declares no limit inherits its display's:
 
@@ -226,5 +226,6 @@ never opts in, by decision: its case is a genome-wide summary-stats view.
 `LGVSyntenyDisplay` inherits alignments' opt-in but no comparative adapter
 implements the estimate, so its gate is inert
 ([ideas/synteny-byte-gate.md](../ideas/synteny-byte-gate.md)). MAF's
-`mafFrames` overlay is bounded privately by `framesReadOverBudget` and never
-banners.
+`mafFrames` overlay is bounded inside `LinearMafGetAnnotationData`, which
+measures before it reads and refuses with a `RegionTooLargeResult`; the display
+maps that to `framesGateBlocked` and never banners.

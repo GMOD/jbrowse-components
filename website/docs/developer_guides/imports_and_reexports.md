@@ -141,7 +141,7 @@ import MultiRegionDisplayMixin, {
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { observable } from 'mobx'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 ```
 
 The [plugin templates](/docs/developer_guides/simple_plugin) mark the re-export
