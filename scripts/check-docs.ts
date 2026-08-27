@@ -265,14 +265,6 @@ const VALIDATORS: Validator[] = [
     argv: web('check-release-drafts.ts'),
   },
   {
-    // agent-docs/TODO.md indexes its own headings by hand, which is the
-    // sentence-plus-stale-table shape agent-docs/CLAUDE.md warns about. It
-    // cannot be generated (two of its three columns are editorial), so the
-    // derivable half is checked instead.
-    name: 'the backlog index matches the backlog',
-    argv: web('check-todo-index.ts'),
-  },
-  {
     // The reference docs a site page should point at, against the ones it
     // should not. Ratcheted, because the uncited set predates the check and
     // several of its entries want an editorial pass rather than a link; what

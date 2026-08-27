@@ -15,9 +15,11 @@ is filed:
   findings nobody has committed to. **Pointers, not content.** Delete when the
   thread lands.
 - Tried and declined → `reference/REJECTED_IDEAS.md`.
-- Work **v5.0.0 turns on** → `TODO.md`, in the order to take it. Work someone
-  intends to do after it — including a measured defect — → `ideas/`, and move
-  it back once the release is out.
+- Work **v5.0.0 turns on** → a file in `todo/`, which `TODO.md`'s tables are
+  generated from: write the doc with `metadata.category`, `area`, `first_move`
+  and `order`, then `pnpm autogen`. Work someone intends to do after it —
+  including a measured defect — → `ideas/`, and move it back once the release is
+  out.
 - What a session did and which commits → **git already holds it.**
 
 That last one applies to `CLAUDE.md` files too and is the rule they break most.
@@ -104,11 +106,11 @@ sat at a pre-ADR-0010 value there while `cram-js` had moved on.
   [mechanisms/README.md](mechanisms/README.md),
   [ideas/README.md](ideas/README.md) and
   [handoffs/README.md](handoffs/README.md), not `ls`.
-- Those indexes and every `<!-- NAME START/END -->` block are generated; don't
-  hand-edit between the markers.
+- Those indexes, `TODO.md`'s three tables and every `<!-- NAME START/END -->`
+  block are generated; don't hand-edit between the markers.
 - **If a sentence tells the reader to go look at a file, generate the table
   under it from that file.**
-- Docs and source cite `TODO.md` sections by title, and `ideas/` and
+- Docs and source cite `TODO.md` sections by title, and `todo/`, `ideas/` and
   `mechanisms/` by filename — grep before renaming.
 - **A diagram is a `.dot` in a `diagrams/` directory with its `.svg` committed
   beside it** — `pnpm diagrams` renders it, `pnpm diagrams:check` fails on a

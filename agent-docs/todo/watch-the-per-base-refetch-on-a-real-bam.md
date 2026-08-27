@@ -4,6 +4,8 @@ description: the sub-pixel bin gave the per-base modes new fetch traffic — the
 metadata:
   area: alignments, RPC
   category: measure-first
+  order: 1
+  first_move: "count `RenderAlignmentData` calls over a scripted zoom; don't reason about the throttle. New traffic in a mode that had none, and nobody has watched it"
 ---
 
 # Watch the per-base refetch on a real BAM

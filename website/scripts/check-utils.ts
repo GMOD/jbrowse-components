@@ -391,3 +391,40 @@ export function reportProblems(errorLines: string[], ok: string) {
     console.log(ok)
   }
 }
+
+// The nested `metadata:` block of a doc's frontmatter, flattened to one level.
+// `parseFrontmatter` is deliberately line-oriented and treats every indented
+// line as a continuation of the key above it, so `metadata.area` reaches it as
+// part of one run-together `metadata` string — readable enough for a regex
+// against a single-word value, useless for the prose ones. This reads the block
+// properly: a `  key: value` line at two spaces starts a value, anything
+// indented deeper continues it.
+export function parseMetadata(content: string): Record<string, string> {
+  const lines = /^---\n([\s\S]*?)\n---/.exec(content)?.[1]?.split('\n')
+  const result: Record<string, string> = {}
+  if (!lines) {
+    return result
+  }
+  let key: string | undefined
+  let inBlock = false
+  for (const line of lines) {
+    if (/^metadata:\s*$/.test(line)) {
+      inBlock = true
+      continue
+    }
+    if (!inBlock) {
+      continue
+    }
+    if (!/^\s/.test(line) && line.trim()) {
+      break
+    }
+    const kv = /^ {2}([A-Za-z_][\w-]*):(.*)$/.exec(line)
+    if (kv) {
+      key = kv[1]!
+      result[key] = unquote(kv[2]!.trim())
+    } else if (key !== undefined && line.trim()) {
+      result[key] = unquote(`${result[key]} ${line.trim()}`)
+    }
+  }
+  return result
+}

@@ -4,6 +4,8 @@ description: the release-validation estimate is made of eight random draws and o
 metadata:
   area: release validation, tests
   category: ready
+  order: 7
+  first_move: "read `git status` first — a worktree that ran a sweep is dirty until proven otherwise. Seven of the estimate's eight draws are outstanding, and the estimate is what says the release is safe"
 ---
 
 # Sample the seven remaining random release-validation units

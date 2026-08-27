@@ -4,6 +4,8 @@ description: a visual call; the overflow is measured, no fix is chosen
 metadata:
   area: alignments
   category: visual-call
+  order: 2
+  first_move: "a visual call; the overflow is measured, no fix is chosen — and it eats 50% of the coverage bars at exactly the locus someone navigates to"
 ---
 
 # The interbase stack overruns its half-band at a split-read breakpoint

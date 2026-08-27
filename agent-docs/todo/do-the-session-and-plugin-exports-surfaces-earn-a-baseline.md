@@ -4,6 +4,8 @@ description: the plugin-`exports` baseline is built; what is left is the session
 metadata:
   area: plugins, ABI
   category: ready
+  order: 6
+  first_move: "the plugin-`exports` baseline is built (`products/jbrowse-web/src/pluginExportsBaseline.json`); what is left is the session one, blocked on where its record lives. A major release is the moment to take one"
 ---
 
 # Do the session and plugin `exports` surfaces earn a baseline

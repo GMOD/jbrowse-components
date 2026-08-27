@@ -4,6 +4,8 @@ description: rerun the script into `demos/`, then re-render three; raise alpha o
 metadata:
   area: figures, synteny
   category: ready
+  order: 5
+  first_move: "rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all. `demos/orthofinder_*` is still at `ffa68a2e84` and the two spec-side workarounds are still carrying it"
 ---
 
 # Rebuild the three OrthoFinder demos' `chrom.sizes`

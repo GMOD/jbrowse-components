@@ -4,6 +4,8 @@ description: all four converted; run the gate with the MSAA sample count held fi
 metadata:
   area: shaders, GPU
   category: ready
+  order: 2
+  first_move: "all four converted; run the gate with the MSAA sample count held fixed, on a worktree with no second `runner.ts` in it"
 ---
 
 # Read the cross-backend drift the AA ramp conversion predicts

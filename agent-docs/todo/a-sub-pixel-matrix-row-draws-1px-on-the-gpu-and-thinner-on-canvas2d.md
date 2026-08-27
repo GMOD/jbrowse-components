@@ -4,6 +4,8 @@ description: a visual call; the 41% is measured and neither side is obviously wr
 metadata:
   area: variants, backends
   category: visual-call
+  order: 3
+  first_move: "a visual call; the 41% is measured and neither side is obviously wrong"
 ---
 
 # A sub-pixel matrix row draws 1px on the GPU and thinner on Canvas2D

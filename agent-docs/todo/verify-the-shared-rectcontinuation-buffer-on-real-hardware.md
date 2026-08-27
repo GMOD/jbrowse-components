@@ -4,6 +4,8 @@ description: code landed; only the headed WebGL2/WebGPU check is owed
 metadata:
   area: GPU canvas
   category: ready
+  order: 1
+  first_move: "code landed; only the headed WebGL2/WebGPU check is owed, and no unit test on the Canvas2D path can see a wrong attribute offset"
 ---
 
 # Verify the shared rect/continuation buffer on real hardware

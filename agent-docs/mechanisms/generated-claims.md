@@ -127,21 +127,23 @@ the failure this whole page is about.
 
 ## What cannot be generated is checked, and only the half that rots
 
-`TODO.md` opens with an index of its own entries, and it is deliberately **not**
-generated. Two of its columns — the area, and the first move on work nobody has
-started — are editorial judgements a generator would have to invent or drop, and
-the first move is the most useful column there. So `check-todo-index.ts` checks
-the half that rots (every entry has a row, every row points somewhere real) and
-leaves the half that cannot be derived alone. It had drifted twice before anyone
-looked.
-
-The same split covers prose. `check-quoted-figures.ts` pulls every
-`<number><unit>` out of a measurement page and requires that figure to appear in
-something the page **cites** — an internal doc it links, or the JSDoc of a symbol
-it names. That is a much weaker claim than "this number is right", and it is the
+`check-quoted-figures.ts` pulls every `<number><unit>` out of a measurement page
+and requires that figure to appear in something the page **cites** — an internal
+doc it links, or the JSDoc of a symbol it names. That is a much weaker claim than "this number is right", and it is the
 strongest one available cheaply, because it catches the two failures that
 actually happen: a figure fat-fingered on the way in, and a figure left behind
 when its source moved.
+
+**An editorial column is not by itself a reason to hand-maintain a table** —
+ask where the judgement lives before concluding the table cannot be generated.
+`TODO.md`'s index carried two columns no generator could invent, the area and
+the first move on work nobody has started, so it was written by hand and
+`check-todo-index.ts` guarded the half that rots. It drifted twice anyway. Those
+two judgements moved into each entry's own frontmatter, beside the `category` it
+already carried, and the whole table became derivable: `generate-todo-index.ts`
+renders it, the counts sentence in the preamble with it, and the checker is
+gone. A generator cannot invent a judgement, but it can read one an entry
+carries.
 
 **The scoping is the whole trick, and it is worth measuring rather than
 asserting.** Searching all of source instead of what the page cites admitted 73

@@ -4,6 +4,8 @@ description: pick one of three; never re-tint a single component
 metadata:
   area: palette, theme
   category: visual-call
+  order: 1
+  first_move: "pick one of three; never re-tint a single component. 1.18 contrast on every primary element of the stock dark theme, and the set the two `styleOverrides` hatches miss grows with each component that leaves MUI"
 ---
 
 # Midnight primary is invisible on the dark-stock ground

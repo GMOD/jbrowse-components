@@ -4,6 +4,8 @@ description: bytes are measured; what is left wants the app and the ready gate
 metadata:
   area: synteny, PIF
   category: measure-first
+  order: 2
+  first_move: "bytes are measured; what is left wants the app and the ready gate — and the zoomed-in case, where a release note claiming a win needs the case in which there isn't one"
 ---
 
 # Time a two-tier PIF to settled, in a browser

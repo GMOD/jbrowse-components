@@ -151,6 +151,14 @@ const GENERATORS: Generator[] = [
     argv: web('generate-doc-indexes.ts'),
   },
   {
+    // agent-docs/TODO.md's three tables, from the entries under agent-docs/todo/.
+    // Hand-maintained until 2026-08-27, guarded by a checker because two of the
+    // columns are editorial — but an entry carries those judgements in its own
+    // frontmatter now, so the table is derived and the checker is gone.
+    name: 'backlog index',
+    argv: web('generate-todo-index.ts'),
+  },
+  {
     // DISPLAYCHROME.md's adoption map, read off the DisplayType registrations.
     // The hand-maintained version was already short by one (LDTrackDisplay),
     // which is the same way the display-foundations table drifted before it

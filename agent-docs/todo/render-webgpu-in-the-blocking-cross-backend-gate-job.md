@@ -4,6 +4,8 @@ description: the drift half is done and the hand gate renders webgpu; the CI job
 metadata:
   area: browser tests, CI
   category: ready
+  order: 3
+  first_move: "the drift half landed — the capture no longer scrolls and the eight alignments pairs came back on their own, so `test:browser:gate` renders webgpu. `:gate:ci` cannot: the runner has no Firefox Nightly and no display, so webgpu still ships ungated"
 ---
 
 # Render webgpu in the blocking cross-backend gate job

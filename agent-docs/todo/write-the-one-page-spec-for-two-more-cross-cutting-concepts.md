@@ -4,6 +4,8 @@ description: the only part of release validation that asks whether the shape is 
 metadata:
   area: release validation, architecture
   category: ready
+  order: 8
+  first_move: "name the two concepts before writing either; the plan never did. Named in the exit criterion beside the sampling above"
 ---
 
 # Write the one-page spec for two more cross-cutting concepts

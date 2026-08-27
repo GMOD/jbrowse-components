@@ -4,6 +4,8 @@ description: probably already done — verify before spending the pipeline; all 
 metadata:
   area: figures, synteny
   category: ready
+  order: 4
+  first_move: "probably already done — verify before spending the pipeline; three need a review, not a capture"
 ---
 
 # Re-render the five figures the settings-menu refactor outran
