@@ -69,8 +69,8 @@ guards (teardown fires the parent atom the gate reads; the RPC resolves long
 after a view can be closed), each invisible until a user closes a view mid-load.
 
 They also answer the shared `dataCurrent` freshness question and run the shared
-`computeSvgReady` policy, just via a signature compare (`isDataCurrent` over
-`dotplotFetchKey` / synteny's `currentFetchKey`) rather than spatial coverage —
+`computeSvgReady` policy, just via a signature compare (`isDataCurrent` over each
+display's `currentFetchKey`) rather than spatial coverage —
 which is where the stale-capture bugs lived
 ([SVG_EXPORT.md](SVG_EXPORT.md) §"On-screen capture gate").
 
