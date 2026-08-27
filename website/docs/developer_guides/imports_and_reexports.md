@@ -171,8 +171,11 @@ line to change is in your own tsconfig:
 ```
 
 Both [plugin templates](/docs/developer_guides/simple_plugin) already set it, so
-a plugin started from one never meets this. TypeScript 6 deprecates the `"node"`
-setting and TypeScript 7 removes it.
+a plugin started from one never meets this. Leaving `moduleResolution` out
+entirely also works, because TypeScript now defaults to `bundler`. The error
+reaches you only from a tsconfig naming `"node"` explicitly, which was the
+default years ago and is what an older plugin still carries. TypeScript 6
+deprecates that setting and TypeScript 7 removes it.
 
 ### No-build plugins
 
