@@ -23,7 +23,7 @@ can no longer leave the figure citing it behind:
 
 | population               | slot names                                                         | unchecked reads |
 | ------------------------ | ------------------------------------------------------------------ | --------------: |
-| track or assembly schema | `name`, `assemblyNames`, `trackId`, `adapter`                      |              81 |
+| track or assembly schema | `name`, `assemblyNames`, `trackId`, `adapter`                      |              77 |
 | root config              | `theme`, `extraThemes`, `defaultDriver`, `workerCount`, `shareURL` |              10 |
 | everything else          | 31 other names                                                     |              44 |
 

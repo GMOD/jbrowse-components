@@ -197,7 +197,7 @@ Not salvaged, and why:
   checker. The branch's own handoff measured that 103 of its 125 remaining
   entries sit outside any composition chain — branch-only, and against a
   snapshot of that file, which lists
-  290<!--m:config-read-type-gaps.all.unchecked--> unchecked reads here today.
+  286<!--m:config-read-type-gaps.all.unchecked--> unchecked reads here today.
 - **`params.ts`, `paramReader.ts` and the converted Manhattan and HiC
   declarations.** The table above.
 

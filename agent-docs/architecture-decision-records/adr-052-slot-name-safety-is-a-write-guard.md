@@ -39,9 +39,9 @@ says now, and the gap between the two is the mixin work in the consequences:
 
 | scope  | accessor calls | unchecked | checked | checked share |
 | ------ | -------------: | --------: | ------: | ------------: |
-| source |            538 |       135 |     403 |         74.9% |
-| tests  |            413 |       155 |     258 |         62.5% |
-| all    |            951 |       290 |     661 |         69.5% |
+| source |            532 |       131 |     401 |         75.4% |
+| tests  |            417 |       155 |     262 |         62.8% |
+| all    |            949 |       286 |     663 |         69.9% |
 
 <!-- END GENERATED MEASUREMENT config-read-type-gaps -->
 
