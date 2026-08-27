@@ -313,12 +313,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'mcscan_anchors.png',
     band: [0.12, 0.95],
   },
-  multiway_synteny_lgv_track: {
-    // The lane stack alone, below the reference gene track and the ruler: the
-    // card is the one-lane-per-genome shape, not the browser around it.
-    src: 'multiway_synteny/lgv_track_lanes.png',
-    band: [0.44, 1],
-  },
   multiway_synteny_grape_peach_cacao: {
     // Left third only: the per-row "No tracks active / Open track selector"
     // blocks are horizontally centered, so a left frame gets the ribbons and the

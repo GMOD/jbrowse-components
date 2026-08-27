@@ -177,8 +177,8 @@ row, on a chromosome whose name changes as the lineages rename their own.
 ### One locus, one lane per fly
 
 The gene-order half needs a window, and a
-[multi-way synteny track](/docs/tutorials/multiway_synteny_lgv_track) draws it
-in a single linear view: a lane per fly, each in its own coordinates, with the
+[multi-way synteny track](/docs/user_guides/multiway_synteny_track) draws it in
+a single linear view: a lane per fly, each in its own coordinates, with the
 lane's header naming the chromosome that fly keeps these orthologs on.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
@@ -247,7 +247,7 @@ the row draws the share that fell on those.
 ### One locus, five lanes, five scales
 
 The same table in a
-[multi-way synteny track](/docs/tutorials/multiway_synteny_lgv_track) makes the
+[multi-way synteny track](/docs/user_guides/multiway_synteny_track) makes the
 size difference per-gene rather than per-genome. Each lane is fitted to the
 orthologs of the window in that genome's own coordinates and then says what
 scale that took.

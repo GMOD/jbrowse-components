@@ -1109,10 +1109,10 @@ files.
 The alignment above is anchored: each haplotype is drawn on GRCh38's axis, which
 is what makes hundreds of rows comparable at all, and what leaves each
 assembly's own coordinates out of the picture. A
-[multi-way synteny track](/docs/tutorials/multiway_synteny_lgv_track) is the
-other reading. One lane per haplotype, each in that assembly's own contig
-coordinates and carrying that assembly's own CAT gene models, with ribbons
-connecting a gene to its copy in the lane below.
+[multi-way synteny track](/docs/user_guides/multiway_synteny_track) is the other
+reading. One lane per haplotype, each in that assembly's own contig coordinates
+and carrying that assembly's own CAT gene models, with ribbons connecting a gene
+to its copy in the lane below.
 
 No aligner is in the loop. CAT projects the GENCODE gene set onto every release
 2 assembly, so a gene keeps its name on every haplotype, and joining the

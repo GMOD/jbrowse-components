@@ -1,12 +1,9 @@
 ---
-title: Multi-way synteny in one track
-sidebar_label: Synteny (multi-way track)
+title: Multi-way synteny track
 description:
-  Draw an N-genome ortholog table as lanes and ribbons in a single linear genome
-  view track
-guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
-data: hosted
+  One lane per genome from an N-genome ortholog table, inside a single linear
+  genome view track
+guide_category: Track types
 ---
 
 **TL;DR:** we read one grape locus across seven plant genomes without leaving

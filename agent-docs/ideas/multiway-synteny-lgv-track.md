@@ -14,7 +14,7 @@ projected: the ribbons carry the correspondence. Sources are anything whose
 features carry a `mate` per other assembly (MCScan blocks tables, all-vs-all
 PAF); lanes draw gene models from each assembly's own GFF3 track; an
 alignment-level source additionally fetches each adjacent lane pair's direct
-records. The tutorial is `multiway_synteny_lgv_track.md`. What follows is what
+records. The user guide is `user_guides/multiway_synteny_track.md`. What follows is what
 was deliberately NOT built, with the reasoning that shaped each cut.
 
 **Per-base alignment lanes (CIGAR in row-local frames).** The most-wanted
