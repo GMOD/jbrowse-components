@@ -4,13 +4,13 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
-  createStatusFanOut,
   getContainingView,
   getDialogHost,
   getEnv,
   getSession,
   isFeature,
 } from '@jbrowse/core/util'
+import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import {
   getRpcSessionId,
@@ -235,7 +235,6 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
          */
         setFeatures(features: Feature[] | undefined) {
           self.features = features
-          self.error = undefined
         },
 
         /**
@@ -285,30 +284,27 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
                   adapterConfig: structuredClone(self.adapterConfig),
                   regions: structuredClone(view.displayedRegions),
                   assemblyName: getTrackAssemblyNames(self.parentTrack)[0]!,
-                  adapter: getConf(self.parentTrack, 'adapter'),
                 }
               : undefined
           },
           // The two halves run concurrently and would otherwise fight over the
           // one status field, so each gets its own fan-out slot.
           run: async (
-            { sessionId, adapterConfig, regions, assemblyName, adapter },
+            { sessionId, adapterConfig, regions, assemblyName },
             ctx,
           ) => {
-            const { rpcManager, assemblyManager } = getSession(self)
-            const slot = createStatusFanOut(ctx.statusCallback)
+            const [featCtx, mapCtx] = fanOutStatus(ctx, 2)
             const [features, refNameMap] = await Promise.all([
-              rpcManager.call(sessionId, 'CoreGetFeatures', {
+              featCtx!.callRpc('CoreGetFeatures', { adapterConfig, regions }),
+              getSession(self).assemblyManager.getRefNameMapForAdapter(
                 adapterConfig,
-                regions,
-                stopToken: ctx.stopToken,
-                statusCallback: slot(),
-              }),
-              assemblyManager.getRefNameMapForAdapter(adapter, assemblyName, {
-                stopToken: ctx.stopToken,
-                sessionId,
-                statusCallback: slot(),
-              }),
+                assemblyName,
+                {
+                  stopToken: mapCtx!.stopToken,
+                  sessionId,
+                  statusCallback: mapCtx!.statusCallback,
+                },
+              ),
             ])
             return { features, refNameMap }
           },
