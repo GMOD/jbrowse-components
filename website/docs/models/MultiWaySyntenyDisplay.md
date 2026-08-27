@@ -32,6 +32,7 @@ the whole surface.
 | <span id="property-type">**type**</span><br><code>type: types.literal('MultiWaySyntenyDisplay')</code> |  | MultiWaySyntenyDisplay |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | MultiWaySyntenyDisplay |
 | <span id="property-roworder">**rowOrder**</span><br><code>rowOrder: types.array(types.string)</code> | lanes to pin to the top, in order; lanes it does not name follow densest-first, so the chain a ribbon draws through adjacent lanes is cut as late as possible and most stacks need no order authored at all. A declared property, so it is authorable from a session spec or a config defaultSession | MultiWaySyntenyDisplay |
+| <span id="property-hiddenlanes">**hiddenLanes**</span><br><code>hiddenLanes: types.array(types.string)</code> | mate lanes taken out of the stack, so a genome that places nothing in the region of interest stops holding a slot between two that do | MultiWaySyntenyDisplay |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 
 ## Volatiles
@@ -78,6 +79,7 @@ the whole surface.
 | <span id="getter-featuresarenameless">**featuresAreNameless**</span><br><code>boolean</code> | a gene-level source names its features and groups chain on the names; an alignment-level source (all-vs-all PAF) names nothing, which is what makes the per-pair link fetch worth issuing | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-anchorassemblyname">**anchorAssemblyName**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
@@ -177,6 +179,8 @@ the whole surface.
 | <span id="action-sethoveredgroupkey">**setHoveredGroupKey**</span><br><code>(key: string &#124; undefined) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlaneframes">**setLaneFrames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefined&gt;) =&gt; void</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |
 | <span id="action-setroworder">**setRowOrder**</span><br><code>(order: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-sethiddenlanes">**setHiddenLanes**</span><br><code>(names: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | MultiWaySyntenyDisplay |

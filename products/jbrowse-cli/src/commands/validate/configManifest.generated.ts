@@ -3591,6 +3591,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "bridgeSkippedLanes",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "showLaneTicks",
           "type": "(JexlString | boolean)"
         }
@@ -3599,7 +3603,8 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "rowOrder"
+        "rowOrder",
+        "hiddenLanes"
       ]
     },
     "LinearReferenceSequenceDisplay": {
