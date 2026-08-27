@@ -24,5 +24,5 @@ const { entryCount, problems } = checkArchitectureDoc({
 
 reportProblems(
   problems,
-  `${entryCount} "What not to do" entries all name a destination, and every link in ARCHITECTURE.md resolves`,
+  `${entryCount} "What not to do" entries all name a destination, every link in ARCHITECTURE.md resolves, and every section is indexed or declared to carry no rule`,
 )

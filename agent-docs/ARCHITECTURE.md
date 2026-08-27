@@ -1482,10 +1482,12 @@ than a closure value (`perRegionTestEnv.ts`).
 
 ## What not to do
 
-The index of this doc's rules, meant to be complete: a rule stated anywhere above
-gets a line here, so scanning this section is scanning the spec. Nearly all of
-them fail *silently* — that is what makes them worth listing rather than trusting
-to review.
+The index of this doc's rules, and complete rather than meant to be: a rule
+stated anywhere above gets a line here, so scanning this section is scanning the
+spec. Nearly all of them fail *silently* — that is what makes them worth listing
+rather than trusting to review. A section this index never points at has to say
+it carries no rule, in `STATES_NO_RULES`; six do. Three real rules sat unindexed
+while that was prose.
 
 **Every entry is stated flat and argued elsewhere**, so every entry links the
 section or reference doc that argues it —
@@ -1510,6 +1512,11 @@ wanted.
   legacy value first and the hook never fires; adding, removing or renaming a
   slot needs none of this. See [where a display's state
   lives](#where-a-displays-state-lives).
+- Don't canonicalize a refName worker-side. `renameRegionsIfNeeded` renamed
+  `regions[]` before the call, so a second pass renames a name already in the
+  adapter's namespace; main-thread text goes through `getCanonicalRefName`, and
+  alignments layout looks worker-side and is not. See [coordinate
+  system](#coordinate-system).
 - Don't give a plugin a dependency on a product. A plugin is a library a third
   party installs and a product is a whole application, so a runtime edge there
   puts an app in the plugin's dependency closure — the one workspace rule with
@@ -1564,6 +1571,12 @@ wanted.
   empty-versus-stale distinction is where it bites — an empty block list is not
   a stale domain but the fallback one. `settledDynamicBlocks` is the in-tree
   fix. See [the leading edge](#every-fetch-autorun-runs-on-the-leading-edge).
+- Don't read something `untracked` because tracking it looks expensive. The
+  test is whether the decision branches on it: if it does, it is tracked
+  whatever the idle-run cost, and the only three grounds are a self-write, an
+  effect input and a dev-only check. `no-restricted-syntax` fails a bare
+  `untracked(` and each site names its ground. See [`untracked` names its
+  ground](#untracked-names-its-ground).
 - Don't measure bytes anywhere but in the feature RPC. `gateEnabled` is the
   one opt-in and `byteLimit` in the call is the whole display-side contract;
   a separate estimate round trip is the pre-flight path that was deleted. See
@@ -1684,6 +1697,13 @@ wanted.
   DOM, and every display in it then waits for a first paint nothing will make.
   See [VIEW_INIT.md § a nested view's
   `bodyMounted`](reference/VIEW_INIT.md#a-nested-views-bodymounted-reads-true-while-it-is-out-of-the-dom).
+- Don't let a container unmount its own subtree while holding a pointer
+  measurement. `mouseleave` cannot fire on an element unmounted under the
+  cursor, so the tracker goes on publishing the position the pointer had when
+  the banner went up, and the body reads it on its first render after Force load
+  or Retry — a crosshair where the cursor is not. `DisplayChromeBaseInner` runs
+  `handleMouseLeave()` on the transition. See [terminal
+  states](#terminal-states-early-return-their-own-root).
 - Don't derive the export's terminal set separately from the loading overlay's.
   They are the same states, plus two readers outside the display
   (`displaysSettled`, the retry check), which is why `fetchInert` is one mixin
