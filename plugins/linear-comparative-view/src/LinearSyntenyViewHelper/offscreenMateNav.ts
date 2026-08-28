@@ -42,38 +42,6 @@ export function navLocString(refName: string, locus?: OffscreenMateLocus) {
   return refName
 }
 
-/**
- * The bp a scrolling mark's click centres on: the middle of where its
- * alignments are DRAWN on this row, or undefined if that is not a place this
- * row can show.
- *
- * `OffscreenMateSpan.mateCumBp` is why the drawn span rather than the block's
- * own extent, and it arrives in the row's cumBp — so this is `pxToBp` on the
- * pixel that cumBp sits at, which is the row's own inverse and therefore
- * handles a reversed region and a contig displayed several times over.
- *
- * `coord0`, NOT `coord`: `centerAt` and `flyToCenter` both resolve through
- * `bpToOffset`/`bpToPx`, which take a 0-based coord, while `coord` is the
- * 1-based one for display. On a forward region the difference is a base; on a
- * REVERSED one `regionBase0` counts down from `region.end`, so the 1-based
- * sibling lands a base the other way and the two never agree.
- *
- * Undefined on `oob` rather than clamped: a cumBp outside every displayed
- * region is geometry from before this row was navigated, and the caller has a
- * destination of its own for that.
- */
-export function mateCenter(
-  view: LinearGenomeViewModel,
-  mateCumBp: OffscreenMateLocus | undefined,
-) {
-  if (!mateCumBp || view.displayedRegions.length === 0) {
-    return undefined
-  }
-  const centerCumBp = (mateCumBp.start + mateCumBp.end) / 2
-  const at = view.pxToBp(centerCumBp / view.bpPerPx - view.offsetPx)
-  return at.oob ? undefined : at
-}
-
 // The view-wide follow state a mark's navigation borrows. A state tree node
 // because `release` has to know THIS is still alive — it is what gets written.
 export interface FollowAnchorHost extends IStateTreeNode {

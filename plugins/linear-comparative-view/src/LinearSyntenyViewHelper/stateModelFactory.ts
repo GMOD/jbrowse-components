@@ -17,7 +17,6 @@ import { runInAction } from 'mobx'
 
 import {
   captureStackViewports,
-  mateCenter,
   mateFlightAllowed,
   navLocString,
   takeFollowAnchor,
@@ -425,16 +424,11 @@ export function linearSyntenyViewHelperModelFactory(
       showOffscreenMateContig(
         refName: string,
         row: number,
-        // ONE ARGUMENT, because `displayed` without a locus is the state that
-        // sends the scroll class down the region-replacing branch — see
-        // `OffscreenMateSpan`. Nested, the pair cannot come apart: no mate is
-        // the whole contig, which is what a click did before there were
-        // coordinates. `OffscreenMateNavHit` is one of these.
-        mate?: {
-          locus: OffscreenMateLocus
-          displayed?: boolean
-          mateCumBp?: OffscreenMateLocus
-        },
+        // ONE ARGUMENT, so the two coordinates cannot come apart from each
+        // other or from the class they decide — see `OffscreenMateSpan`. No
+        // mate is the whole contig, which is what a click did before there were
+        // coordinates at all. `OffscreenMateNavHit` is one of these.
+        mate?: { locus: OffscreenMateLocus; mateCumBp?: OffscreenMateLocus },
       ) {
         const { parentView } = self
         const view = parentView.views[row]
@@ -448,16 +442,29 @@ export function linearSyntenyViewHelperModelFactory(
           // that produces these marks in the first place — would answer "your
           // mate is over there" by throwing away every other chromosome of the
           // row it was pointing at.
-          if (mate?.displayed) {
+          const drawn = mate?.mateCumBp
+          if (drawn && view.displayedRegions.length > 0) {
             // WHERE THE RIBBONS ARE, which for a clipped block is not where the
-            // blocks are — `mateCumBp` says why. Through `pxToBp` because the
-            // drawn span is the facing row's cumBp: it is the inverse the row
-            // itself uses, so a reversed region and a contig displayed in
-            // several regions both come back right.
-            const drawn = mateCenter(view, mate.mateCumBp)
-            const center =
-              drawn?.coord0 ??
-              Math.round((mate.locus.start + mate.locus.end) / 2)
+            // blocks are — `OffscreenMateSpan.mateCumBp` says why. Through
+            // `pxToBp` because the drawn span is the facing row's cumBp and
+            // that is the row's own inverse, so a reversed region and a contig
+            // displayed several times over both come back right.
+            //
+            // `coord0`, NOT `coord`: both destinations below resolve through
+            // `bpToOffset`/`bpToPx`, which take a 0-based coord, while `coord`
+            // is the 1-based one for display. On a forward region that is one
+            // base; on a REVERSED one `regionBase0` counts down from
+            // `region.end`, so the two never agree.
+            //
+            // A cumBp this row cannot place — stale geometry from before it was
+            // navigated — comes back as a coord outside every region, which
+            // both destinations already answer by holding. There is nothing to
+            // fall back TO: `locus` is the coordinate this branch exists to
+            // stop using.
+            const centerCumBp = (drawn.start + drawn.end) / 2
+            const { coord0: center } = view.pxToBp(
+              centerCumBp / view.bpPerPx - view.offsetPx,
+            )
             // FLOWN, not jumped, when the reader wants motion. The scroll class
             // arises where a row displays whole assemblies, so this is a jump of
             // a chromosome or more: landed instantly, the reader is somewhere

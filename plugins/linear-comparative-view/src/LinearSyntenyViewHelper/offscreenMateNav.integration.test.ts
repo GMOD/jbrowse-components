@@ -267,7 +267,7 @@ test('a contig the row already displays is scrolled to, not navigated to', async
 
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 200_000, end: 201_000 },
-    displayed: true,
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
   })
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
@@ -295,7 +295,6 @@ test('a scrolling click goes to the drawn span, not the block extent', async () 
 
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 0, end: BP },
-    displayed: true,
     mateCumBp: { start: DRAWN_CENTER_BP - 500, end: DRAWN_CENTER_BP + 500 },
   })
   await when(
@@ -307,22 +306,23 @@ test('a scrolling click goes to the drawn span, not the block extent', async () 
   expect(row.windowWidthBp).toBe(40_000)
 })
 
-// A drawn span outside every displayed region is geometry from before the row
-// was navigated. There is no pixel on this row for it, so the click falls back
-// to what it had rather than clamping to an edge nothing is at.
-test('a drawn span this row cannot show falls back to the block extent', async () => {
+// A drawn span outside every displayed region is geometry from before this row
+// was navigated. The row HOLDS: there is nothing to fall back TO, since the
+// block's own extent is the coordinate this branch exists to stop using, and a
+// stale mark is not evidence of anywhere else to go.
+test('a drawn span this row cannot show moves nothing', async () => {
   const { level, row } = await scrollableSetup()
+  const before = row.windowStartBp
 
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 200_000, end: 201_000 },
-    displayed: true,
     mateCumBp: { start: 5_000_000, end: 5_001_000 },
   })
-  await when(
-    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
-    { timeout: 5000 },
-  )
+  await new Promise(resolve => {
+    setTimeout(resolve, 500)
+  })
 
+  expect(row.windowStartBp).toBe(before)
   expect(row.windowWidthBp).toBe(40_000)
 })
 
@@ -334,7 +334,7 @@ test('the row travels to it rather than appearing there', async () => {
 
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 200_000, end: 201_000 },
-    displayed: true,
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
   })
   await when(() => row.windowWidthBp > 40_000, { timeout: 5000 })
   await when(
@@ -353,7 +353,7 @@ test('with animation off the row is simply placed there', async () => {
 
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 200_000, end: 201_000 },
-    displayed: true,
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
   })
 
   expect(row.windowStartBp).toBe(MATE_CENTER_BP - 40_000 / 2)
@@ -371,7 +371,7 @@ test('the flight survives the follow it just became the anchor of', async () => 
 
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 200_000, end: 201_000 },
-    displayed: true,
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
   })
   await when(
     () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
@@ -391,7 +391,7 @@ test('the undo wins against a flight still in the air', async () => {
 
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 200_000, end: 201_000 },
-    displayed: true,
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
   })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   await when(() => row.windowStartBp !== 0, { timeout: 5000 })

@@ -855,7 +855,7 @@ test('a click answers the mate locus, not just the contig', () => {
   expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
     refName: 'ctgB',
     locus: { start: 4000, end: 4400 },
-    displayed: false,
+    mateCumBp: undefined,
   })
 })
 
@@ -884,7 +884,7 @@ test('...unioned over every alignment stacked under the pointer', () => {
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgB',
     locus: { start: 4000, end: 9100 },
-    displayed: false,
+    mateCumBp: undefined,
   })
 })
 
@@ -914,7 +914,7 @@ test('...but never across the contigs sharing that column', () => {
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgC',
     locus: { start: 4000, end: 4100 },
-    displayed: false,
+    mateCumBp: undefined,
   })
 })
 
@@ -938,7 +938,7 @@ test('a mark whose mate span collapses resolves to the point, not the contig', (
   }
   expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
     refName: 'ctgB',
-    displayed: false,
+    mateCumBp: undefined,
     locus: { start: 0, end: 0 },
   })
 })
@@ -1026,7 +1026,7 @@ test('a click on one says the contig is displayed', () => {
   }
   expect(offscreenMateSpanAt(layout, 20, 3)).toMatchObject({
     refName: 'other',
-    displayed: true,
+    mateCumBp: { start: 90_000, end: 90_300 },
   })
 })
 
@@ -1044,7 +1044,6 @@ test('a click on a placed mark carries where it is drawn, not the block extent',
   }
   expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
     refName: 'other',
-    displayed: true,
     locus: { start: 100, end: 400 },
     mateCumBp: { start: 90_000, end: 90_300 },
   })
@@ -1088,7 +1087,6 @@ test('...and never unioned with a lane that has no drawn position', () => {
   }
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgB',
-    displayed: true,
     locus: { start: 100, end: 4100 },
     mateCumBp: { start: 90_000, end: 90_100 },
   })

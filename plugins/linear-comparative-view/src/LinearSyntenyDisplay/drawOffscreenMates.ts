@@ -595,42 +595,49 @@ export interface OffscreenMateLocus {
 }
 
 /**
- * What a CLICK on a mark resolves to.
+ * What a CLICK on a mark resolves to: which contig, and the two coordinates the
+ * caller's two branches take.
  *
- * BOTH FIELDS ALWAYS, which is what keeps the caller's two branches from
- * crossing. `displayed` says the facing row already has this contig and has
- * merely scrolled off it, so the click SCROLLS; false says the only way to show
- * it is to replace what that row is displaying. A `displayed` mark with no locus
- * has nowhere to scroll to and falls into the replacement — which is the one
- * thing that branch exists to prevent — so the pair is stated as a pair rather
- * than as two optionals, the same reason `MateAxisPlacement` is one object.
+ * `mateCumBp` PRESENT IS THE SCROLL CLASS — the facing row already has this
+ * contig and has merely scrolled off it, and this is where to scroll. Absent is
+ * the other one, where the only way to show the contig is to replace what that
+ * row displays, and `locus` frames it.
  *
- * Every lane carries mate coordinates (`OffscreenMateDataset` requires them), so
- * there is nothing left for the optional to describe.
+ * A separate `displayed` boolean stated the same fact and could disagree with
+ * the coordinate beside it, which is how the click came to navigate somewhere
+ * the mark was never about. Carrying the destination itself makes "displayed
+ * with nowhere to scroll to" — the state that branch exists to prevent —
+ * unrepresentable rather than merely documented.
  */
 export interface OffscreenMateSpan {
   refName: string
+  // The contig's own bp: the BLOCKS' extent, untrimmed, which is what the
+  // region-replacing navigation frames and what a label can name.
   locus: OffscreenMateLocus
-  displayed: boolean
   /**
    * Where the alignments under the mark are DRAWN on the facing axis, in that
-   * row's cumBp — present exactly when `displayed` is, since `mateAxis` is what
-   * decides both.
+   * row's cumBp — and, by being present at all, that the row displays this
+   * contig and the click may SCROLL rather than replace what it shows.
    *
-   * THE MARK IS DECIDED FROM THIS AND THE CLICK USED `locus`, which are two
-   * coordinates for one alignment and agree only while the block is unclipped.
-   * `clipLargeBlockToWindow` re-anchors a chain to its visible slice, and
-   * `locus` is deliberately the UNTRIMMED extent (the detail panel's) — so on a
-   * whole-chromosome chain the click's midpoint was the midpoint of the
-   * CHROMOSOME. Observed on chimp chr19 vs hg38 chr17: a mark whose ribbon is
-   * drawn at chr17:42.6-43.3Mb navigated to chr17:41,645,617, the centre of
-   * `chr17:60,000-83,231,233`, which is nowhere the row could see it — and
-   * since the destination does not depend on where the row is, clicking again
-   * moved nothing.
+   * ONE FIELD FOR ONE FACT. This was a `displayed` boolean beside `locus`, and
+   * the two came apart on exactly the alignments the marks are about: the mark
+   * is decided from `mateAxis` while the click read `locus`, which is
+   * deliberately the untrimmed extent (the detail panel's), and
+   * `clipLargeBlockToWindow` re-anchors a chain to its visible slice. On chimp
+   * chr19 vs hg38 chr17 a mark whose ribbons are drawn at chr17:42.6-43.3Mb
+   * navigated to chr17:41,645,617 — the centre of `chr17:60,000-83,231,233`,
+   * which is to say the centre of the chromosome. The destination did not
+   * depend on where the row was, so clicking again moved nothing at all.
+   *
+   * ANY placed dataset under the pointer gives the mark one, not the last one
+   * scanned: a contig can be in a worker lane and a culled lane at once, and if
+   * ANY of the alignments stacked there has a place on the facing row then
+   * scrolling to it is the answer that does not throw away the rest of what
+   * that row is showing.
    *
    * cumBp rather than the contig's own bp because that is what `mateAxis`
-   * holds: it is taken off the emitted instances, and the region a coordinate
-   * belongs to is the facing view's question. `pxToBp` is the caller's inverse.
+   * holds — it is taken off the emitted instances, and which region a
+   * coordinate falls in is the facing view's question, not this one's.
    */
   mateCumBp?: OffscreenMateLocus
 }
@@ -677,7 +684,6 @@ export function offscreenMateSpanAt(
   // different spaces, so one map would union a contig bp with a cumBp.
   const drawn = new Map<string, OffscreenMateLocus>()
   let top: string | undefined
-  let displayed = false
   for (const data of layout.datasets) {
     const { mateAxis } = data
     for (let i = 0; i < data.starts.length; i++) {
@@ -685,7 +691,6 @@ export function offscreenMateSpanAt(
       if (rect && pointerOnMark(rect, x)) {
         const refName = offscreenMateRefName(data, i)
         top = refName
-        displayed = mateAxis !== undefined
         extendSpan(spans, refName, data.mateStarts[i]!, data.mateEnds[i]!)
         if (mateAxis) {
           extendSpan(drawn, refName, mateAxis.starts[i]!, mateAxis.ends[i]!)
@@ -701,12 +706,7 @@ export function offscreenMateSpanAt(
   // to stop — and on a `displayed` mark the fallback is the region-replacing
   // navigation that class must never take. `OFFSCREEN_MATE_NAV_MIN_BP` frames a
   // zero-width locus the same way it frames a 500bp one.
-  return {
-    refName: top,
-    locus: spans.get(top)!,
-    displayed,
-    mateCumBp: displayed ? drawn.get(top) : undefined,
-  }
+  return { refName: top, locus: spans.get(top)!, mateCumBp: drawn.get(top) }
 }
 
 function extendSpan(
