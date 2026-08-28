@@ -64,6 +64,11 @@ export async function run(args?: string[]) {
         'Comma separated list of feature types to exclude from indexing',
       default: 'CDS,exon',
     },
+    include: {
+      type: 'string',
+      description:
+        'Comma separated list of feature types to index, dropping every other type. Unset by default, which indexes every type --exclude does not name. GFF3 only',
+    },
     prefixSize: {
       type: 'string',
       description:
@@ -104,7 +109,19 @@ export async function run(args?: string[]) {
     `Only tracks with an indexable adapter type (${Object.keys(indexableAdapters).sort().join(', ')}) are indexed; ` +
     'tracks with other adapter types are skipped automatically.\n\n' +
     'GTF has no Name/ID attributes, so the default --attributes also match ' +
-    'their GTF spellings (gene_name, transcript_name, gene_id, transcript_id).'
+    'their GTF spellings (gene_name, transcript_name, gene_id, transcript_id).' +
+    '\n\n' +
+    '--exclude names types not to index; --include names the only types to ' +
+    'index. Reach for --include when the file draws from a vocabulary you do ' +
+    'not control: an NCBI RefSeq GFF3 uses 115 feature types, 80 of them leaf ' +
+    'records with no name to search (a match is labelled with a bare UUID, a ' +
+    'cDNA_match with an MD5, every biological_region with the string ' +
+    '"biological region"), so a deny list leaks whichever type is added next ' +
+    'while the allow list — gene, pseudogene and the transcript types — does ' +
+    'not grow. Both may be given: --include admits, --exclude then narrows. ' +
+    'Either can also be set per track in config.json as ' +
+    'textSearching.indexingFeatureTypesToInclude / ' +
+    'indexingFeatureTypesToExclude, which takes precedence over the flag.'
 
   const examples = [
     "# indexes all tracks that it can find in the current directory's config.json",

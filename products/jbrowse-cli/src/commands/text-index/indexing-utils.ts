@@ -61,6 +61,7 @@ export async function indexDriver({
   name,
   quiet,
   typesToExclude,
+  typesToInclude,
   assemblyNames,
   prefixSize,
 }: {
@@ -70,6 +71,7 @@ export async function indexDriver({
   name: string
   quiet: boolean
   typesToExclude: string[]
+  typesToInclude?: string[]
   assemblyNames: string[]
   prefixSize?: number
 }): Promise<void> {
@@ -80,6 +82,7 @@ export async function indexDriver({
       attributesToIndex: attributes,
       outDir: outLocation,
       featureTypesToExclude: typesToExclude,
+      featureTypesToInclude: typesToInclude,
       makeProgress: quiet
         ? undefined
         : trackId => {
@@ -120,6 +123,7 @@ export async function indexDriver({
     outDir: outLocation,
     name,
     featureTypesToExclude: typesToExclude,
+    featureTypesToInclude: typesToInclude,
     assemblyNames,
   })
 }

@@ -25,12 +25,18 @@ function validatePrefixSize(value?: string | number): number | undefined {
 export function prepareIndexDriverFlags(flags: {
   attributes: string
   exclude: string
+  include?: string
   quiet?: boolean
   prefixSize?: string | number
 }) {
   return {
     attributes: parseCommaSeparatedString(flags.attributes),
     typesToExclude: parseCommaSeparatedString(flags.exclude),
+    // undefined rather than [] when the flag is absent, because an empty allow
+    // list has to mean "no allow list" and not "index nothing"
+    typesToInclude: flags.include
+      ? parseCommaSeparatedString(flags.include)
+      : undefined,
     quiet: flags.quiet ?? false,
     prefixSize: validatePrefixSize(flags.prefixSize),
   }

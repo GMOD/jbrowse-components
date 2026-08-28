@@ -220,6 +220,7 @@ export function generateMeta({
   outDir,
   name,
   featureTypesToExclude,
+  featureTypesToInclude,
   assemblyNames,
 }: {
   configs: Track[]
@@ -227,6 +228,7 @@ export function generateMeta({
   outDir: string
   name: string
   featureTypesToExclude: string[]
+  featureTypesToInclude?: string[]
   assemblyNames: string[]
 }) {
   fs.writeFileSync(
@@ -243,6 +245,9 @@ export function generateMeta({
             excludedTypes:
               textSearching?.indexingFeatureTypesToExclude ??
               featureTypesToExclude,
+            includedTypes:
+              textSearching?.indexingFeatureTypesToInclude ??
+              featureTypesToInclude,
             adapterConf: adapter,
           }
         }),

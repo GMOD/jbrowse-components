@@ -30,12 +30,14 @@ const noop = () => {}
 
 // shared generator that streams index records for a set of tracks. Dispatches
 // to the gff3/vcf indexers based on adapter type; per-track attribute and
-// exclude overrides from textSearching take precedence over the defaults.
+// exclude/include overrides from textSearching take precedence over the
+// defaults.
 export async function* indexFiles({
   tracks,
   attributesToIndex,
   outDir,
   featureTypesToExclude,
+  featureTypesToInclude,
   makeProgress,
   checkAbort,
 }: {
@@ -43,6 +45,7 @@ export async function* indexFiles({
   attributesToIndex: string[]
   outDir: string
   featureTypesToExclude: string[]
+  featureTypesToInclude?: string[]
   makeProgress?: (trackId: string) => TrackIndexProgress
   checkAbort?: () => void
 }) {
@@ -71,6 +74,9 @@ export async function* indexFiles({
           featureTypesToExclude:
             textSearching?.indexingFeatureTypesToExclude ??
             featureTypesToExclude,
+          featureTypesToInclude:
+            textSearching?.indexingFeatureTypesToInclude ??
+            featureTypesToInclude,
         })
       } else if (indexable.format === 'gtf') {
         yield* indexGtf(common)

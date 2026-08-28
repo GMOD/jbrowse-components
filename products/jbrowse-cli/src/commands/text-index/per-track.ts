@@ -26,6 +26,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     quiet,
     force,
     exclude,
+    include,
     prefixSize,
     dryrun,
   } = flags
@@ -65,7 +66,13 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
       outLocation,
       name: trackId,
       assemblyNames,
-      ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
+      ...prepareIndexDriverFlags({
+        attributes,
+        exclude,
+        include,
+        quiet,
+        prefixSize,
+      }),
     })
     indexed.push(trackConfig)
   }

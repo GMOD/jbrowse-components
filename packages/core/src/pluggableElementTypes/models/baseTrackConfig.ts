@@ -216,6 +216,29 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           description: 'list of feature types to exclude in text search index',
           defaultValue: ['CDS', 'exon'],
         },
+        /**
+         * #slot textSearching.indexingFeatureTypesToInclude
+         * The only feature types to index, dropping every other type the file
+         * carries. Empty (the default) means no allow list, i.e. index
+         * everything `indexingFeatureTypesToExclude` does not name.
+         *
+         * Use this instead of the exclude list when the file draws from a
+         * vocabulary you do not control. An NCBI RefSeq GFF3 uses 115 feature
+         * types, 80 of them leaf records with nothing to search for — a `match`
+         * is labelled with a bare UUID, a `cDNA_match` with an MD5, every
+         * `biological_region` with the literal string "biological region" — so
+         * a deny list leaks whichever type is added next, while the allow list
+         * (gene, pseudogene, and the transcript types) does not grow. Both may
+         * be set: this one admits, the exclude list then narrows.
+         *
+         * GFF3 only; the GTF and VCF indexers do not filter by type.
+         */
+        indexingFeatureTypesToInclude: {
+          type: 'stringArray',
+          description:
+            'the only feature types to index; empty means index every type not excluded',
+          defaultValue: [],
+        },
 
         /**
          * #slot textSearching.textSearchAdapter

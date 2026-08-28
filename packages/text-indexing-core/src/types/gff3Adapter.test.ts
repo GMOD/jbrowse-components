@@ -21,6 +21,66 @@ const testDataDir = path.join(
   'data',
 )
 
+describe('indexGff3 type gates', () => {
+  const gff = path.join(testDataDir, 'volvox.sort.gff3.gz')
+
+  async function types(opts: {
+    featureTypesToExclude: string[]
+    featureTypesToInclude?: string[]
+  }) {
+    const seen = new Set<string>()
+    for await (const record of indexGff3({
+      config: { trackId: 't' },
+      attributesToIndex: ['ID', 'Name'],
+      inLocation: gff,
+      outDir: testDataDir,
+      onStart: () => {},
+      onUpdate: () => {},
+      ...opts,
+    })) {
+      seen.add(record)
+    }
+    return seen
+  }
+
+  test('an allow list drops every type it does not name', async () => {
+    const all = await types({ featureTypesToExclude: [] })
+    const genesOnly = await types({
+      featureTypesToExclude: [],
+      featureTypesToInclude: ['gene'],
+    })
+    expect(genesOnly.size).toBeGreaterThan(0)
+    expect(genesOnly.size).toBeLessThan(all.size)
+    for (const record of genesOnly) {
+      expect(all.has(record)).toBe(true)
+    }
+  })
+
+  // The failure this guards is silent: a caller reading the list out of a config
+  // gets [] when the slot is unset, and indexing zero features looks exactly
+  // like a successful run.
+  test('an empty allow list means no allow list, not nothing', async () => {
+    expect(
+      await types({ featureTypesToExclude: [], featureTypesToInclude: [] }),
+    ).toEqual(await types({ featureTypesToExclude: [] }))
+  })
+
+  test('both gates apply — include admits, exclude narrows', async () => {
+    const included = await types({
+      featureTypesToExclude: [],
+      featureTypesToInclude: ['gene', 'mRNA'],
+    })
+    const narrowed = await types({
+      featureTypesToExclude: ['mRNA'],
+      featureTypesToInclude: ['gene', 'mRNA'],
+    })
+    expect(narrowed.size).toBeLessThan(included.size)
+    for (const record of narrowed) {
+      expect(included.has(record)).toBe(true)
+    }
+  })
+})
+
 describe('indexGff3', () => {
   test('indexes a local non-gz gff3 file', async () => {
     const results: string[] = []

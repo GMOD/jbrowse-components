@@ -1630,6 +1630,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string[])"
             },
             {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
               "name": "textSearchAdapter",
               "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
             }
@@ -1729,6 +1733,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string[])"
             },
             {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
               "name": "textSearchAdapter",
               "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
             }
@@ -1823,6 +1831,10 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToInclude",
               "type": "(JexlString | string[])"
             },
             {
@@ -1980,6 +1992,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string[])"
             },
             {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
               "name": "textSearchAdapter",
               "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
             }
@@ -2082,6 +2098,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string[])"
             },
             {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
               "name": "textSearchAdapter",
               "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
             }
@@ -2176,6 +2196,10 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToInclude",
               "type": "(JexlString | string[])"
             },
             {
@@ -2276,6 +2300,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string[])"
             },
             {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
               "name": "textSearchAdapter",
               "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
             }
@@ -2370,6 +2398,10 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToInclude",
               "type": "(JexlString | string[])"
             },
             {
@@ -2470,6 +2502,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string[])"
             },
             {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
               "name": "textSearchAdapter",
               "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
             }
@@ -2567,6 +2603,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string[])"
             },
             {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
               "name": "textSearchAdapter",
               "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
             }
@@ -2661,6 +2701,10 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToInclude",
               "type": "(JexlString | string[])"
             },
             {

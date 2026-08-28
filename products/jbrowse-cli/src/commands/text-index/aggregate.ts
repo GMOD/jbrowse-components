@@ -23,6 +23,7 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
     quiet,
     force,
     exclude,
+    include,
     dryrun,
     prefixSize,
   } = flags
@@ -70,7 +71,13 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
       outLocation,
       name: asm,
       assemblyNames: [asm],
-      ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
+      ...prepareIndexDriverFlags({
+        attributes,
+        exclude,
+        include,
+        quiet,
+        prefixSize,
+      }),
     })
     written.push(trixConf)
   }

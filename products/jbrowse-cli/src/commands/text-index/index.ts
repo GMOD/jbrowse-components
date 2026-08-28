@@ -15,6 +15,7 @@ export interface TextIndexFlags {
   attributes: string
   quiet?: boolean
   exclude: string
+  include?: string
   prefixSize?: string | number
   force?: boolean
   dryrun?: boolean

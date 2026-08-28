@@ -40,6 +40,7 @@ export interface Track {
   adapter?: { type: string; [key: string]: unknown }
   textSearching?: {
     indexingFeatureTypesToExclude?: string[]
+    indexingFeatureTypesToInclude?: string[]
     indexingAttributes?: string[]
     [key: string]: unknown
   }
@@ -94,6 +95,10 @@ export interface IndexerOptions {
 
 export interface Gff3IndexerOptions extends IndexerOptions {
   featureTypesToExclude: string[]
+  // When non-empty, ONLY these feature types are indexed, and
+  // featureTypesToExclude narrows that set further. See indexGff3 for why an
+  // allow list is not the same question as the deny list.
+  featureTypesToInclude?: string[]
 }
 
 export function decodeURIComponentNoThrow(uri: string) {

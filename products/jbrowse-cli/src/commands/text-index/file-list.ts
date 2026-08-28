@@ -19,6 +19,7 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
     attributes,
     quiet,
     exclude,
+    include,
     prefixSize,
     dryrun,
   } = flags
@@ -44,7 +45,13 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
       outLocation,
       name,
       assemblyNames: [],
-      ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
+      ...prepareIndexDriverFlags({
+        attributes,
+        exclude,
+        include,
+        quiet,
+        prefixSize,
+      }),
     })
 
     console.log(
