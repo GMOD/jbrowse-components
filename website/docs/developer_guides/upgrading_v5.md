@@ -262,12 +262,12 @@ these is checked against a published bundle: `abi.test.ts` pins
 its findings on that same prefix, so neither reaches a plugin `exports` object
 or the session. What each surface has instead is narrower. A plugin `exports`
 object is pinned by name against
-`products/jbrowse-web/src/pluginExportsBaseline.json`, so the next removal from
-one fails a test — but only a removal, and a name that survives with a new
-signature passes. The session has only the members
-`pluginFacingSessionApi.test.ts` performs, which is why `getReferring` above is
-on this list rather than in a baseline. For everything else, reading them here
-is the check.
+`products/jbrowse-web/src/pluginExportsBaseline.json`, and the session against
+`products/jbrowse-web/src/sessionExportsBaseline.json`, so the next removal from
+either fails a test — but only a removal, and a name that survives with a new
+signature passes, which is why `getReferring` is on this list rather than caught
+by that baseline: `pluginFacingSessionApi.test.ts` is what performs it the way a
+published bundle calls it. For everything else, reading them here is the check.
 <!-- END GENERATED SESSION AND PLUGIN REMOVALS -->
 
 ## Display types collapsed

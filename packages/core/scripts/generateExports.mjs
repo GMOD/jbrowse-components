@@ -46,6 +46,15 @@ const preservedExports = [
   // moved to util/tabix's header reader — but an external plugin decompressing
   // a bgzf file has no other entry point, so usage is not the test here.
   '@jbrowse/core/util/unzip',
+  // A data module, not API: the removal record `generate-abi-removals.ts`
+  // renders into PLUGIN_ABI_STABILITY.md and the upgrade guide. Nothing
+  // in-repo imports it by subpath — the generator reaches it by relative path
+  // from website/scripts. `products/jbrowse-web/src/sessionExports.test.ts`
+  // imports it by subpath to check that a session member the record marks
+  // gone stays gone, which is the same reason a session baseline needed this
+  // entry rather than being able to build itself the way pluginExports.test.ts
+  // does (that one names no core module at all).
+  '@jbrowse/core/ReExports/knownRemovals',
 ]
 
 // The directories whose import sites decide what @jbrowse/core publishes.
