@@ -42,6 +42,7 @@ export default class ViewType extends PluggableElementBase {
     extendedName?: string
     viewMetadata?: ViewMetadata
     ReactComponent: ViewComponentType
+    aliases?: string[]
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent

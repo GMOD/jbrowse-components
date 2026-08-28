@@ -35,16 +35,6 @@ export default class DisplayType extends PluggableElementBase {
    */
   helpText?: string
 
-  /**
-   * Older display type names that should be remapped to this one when loading
-   * sessions/configs. Each entry is the legacy `type` value previously used.
-   * Per-display `preProcessSnapshot` hooks then handle any property migrations
-   * within the renamed type. For migrations that rewrite the value of an
-   * existing constrained slot (enum rename, type narrow), use
-   * `addDisplayConfigMigration` instead — see that helper for why.
-   */
-  aliases?: string[]
-
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType
@@ -65,6 +55,5 @@ export default class DisplayType extends PluggableElementBase {
     this.trackType = stuff.trackType
     this.viewType = stuff.viewType
     this.helpText = stuff.helpText
-    this.aliases = stuff.aliases
   }
 }

@@ -16,6 +16,7 @@ export default class TrackType extends PluggableElementBase {
     stateModel: IAnyModelType
     displayName?: string
     configSchema: AnyConfigurationSchemaType
+    aliases?: string[]
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel

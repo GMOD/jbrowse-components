@@ -8,6 +8,7 @@ import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
 import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
+import type { HeldNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -102,6 +103,23 @@ export function BaseSessionModel<
        * highlights and bookmark overlays)
        */
       highlightsVisible: types.stripDefault(types.boolean, true),
+      /**
+       * #property
+       * views, tracks, displays and widgets `pruneUnbuildableNodes` took out of
+       * the tree because this build has no plugin for their type, each with the
+       * anchor that puts it back. Opaque here on purpose — nothing in the
+       * session reads it, and the shape belongs to that module.
+       *
+       * It is a **declared property** rather than data riding along in the
+       * snapshot because MST silently drops an undeclared key: without this
+       * line the held nodes survive the prune and then vanish the moment
+       * `setSession` builds the tree, and every unit test of the prune still
+       * passes. `heldNodesSurviveTheSession.test.ts` is the canary.
+       */
+      heldForMissingPlugins: types.stripDefault(
+        types.frozen<HeldNode[] | undefined>(),
+        undefined,
+      ),
     })
     .volatile(() => ({
       /**
