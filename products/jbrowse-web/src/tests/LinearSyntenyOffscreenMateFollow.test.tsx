@@ -36,7 +36,10 @@ interface SyntenyView {
     showOffscreenMateContig: (
       refName: string,
       row: number,
-      mate?: { locus: { start: number; end: number }; displayed?: boolean },
+      mate?: {
+        locus: { start: number; end: number }
+        mateCumBp?: { start: number; end: number }
+      },
     ) => void
   }[]
   setWidth: (n: number) => void
@@ -81,6 +84,23 @@ function regionsOf(lgv: LinearGenomeViewModel) {
   return lgv.displayedRegions.map(r => r.refName)
 }
 
+// Every mark here names a contig the facing row is NOT displaying, which is the
+// class that asks before it replaces that row's regions. Confirming is what the
+// dialog's button does.
+function confirmMateDialog(node: LinearGenomeViewModel) {
+  const session = getSession(node) as unknown as {
+    queueOfDialogs: [unknown, Record<string, unknown>][]
+  }
+  const props = session.queueOfDialogs[0]?.[1] as
+    | { onConfirm: () => void; handleClose: () => void }
+    | undefined
+  if (!props) {
+    throw new Error('the click queued no dialog')
+  }
+  props.onConfirm()
+  props.handleClose()
+}
+
 // Long enough to cover the coarse-blocks debounce the exact pass waits on, so
 // an assertion after it is "the follow has had its say", not "it has not spoken
 // yet" — which is the difference between this test and one that passes for the
@@ -110,6 +130,7 @@ test('a mark on a followed row shows its contig, and is not undone by the follow
   view.levels[0]!.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 0, end: 6079 },
   })
+  confirmMateDialog(row1)
   await settle()
 
   expect(regionsOf(row1)).toEqual(['ctgB'])
@@ -129,6 +150,7 @@ test('...and the undo puts the anchor back with the regions', async () => {
   view.levels[0]!.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 0, end: 6079 },
   })
+  confirmMateDialog(row1)
   await waitFor(() => {
     expect(session.snackbarMessages.length).toBeGreaterThan(0)
   }, timeout)
@@ -152,6 +174,7 @@ test('a mark on the anchor row leaves the anchor alone', async () => {
   view.levels[0]!.showOffscreenMateContig('ctgA', 0, {
     locus: { start: 0, end: 6079 },
   })
+  confirmMateDialog(row0)
   await waitFor(() => {
     expect(session.snackbarMessages.length).toBeGreaterThan(0)
   }, timeout)

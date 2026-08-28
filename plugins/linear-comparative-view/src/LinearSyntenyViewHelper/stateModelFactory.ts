@@ -1,4 +1,8 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getDialogHost,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -15,6 +19,7 @@ import {
 } from '@jbrowse/synteny-core'
 import { runInAction } from 'mobx'
 
+import ShowOffscreenMateDialog from './ShowOffscreenMateDialog.tsx'
 import {
   captureStackViewports,
   mateFlightAllowed,
@@ -433,17 +438,22 @@ export function linearSyntenyViewHelperModelFactory(
         const { parentView } = self
         const view = parentView.views[row]
         if (view) {
-          // before the take, which already re-places the other rows
-          const restoreStack = captureStackViewports([...parentView.views])
-          const anchor = takeFollowAnchor(parentView, row)
           // A CONTIG THE ROW ALREADY HAS scrolls, and must not go through
           // `navToLocString`: that REPLACES the row's displayed regions, so a
           // click on a mark in a stack of whole assemblies — the arrangement
           // that produces these marks in the first place — would answer "your
           // mate is over there" by throwing away every other chromosome of the
           // row it was pointing at.
+          //
+          // NOTHING IS TAKEN UNTIL A BRANCH COMMITS. The other one asks before
+          // it acts, and a capture or an anchor held across a modal is state
+          // the click has not earned — `takeFollowAnchor`'s own rule, that only
+          // a LANDED navigation keeps it.
           const drawn = mate?.mateCumBp
           if (drawn && view.displayedRegions.length > 0) {
+            // before the take, which already re-places the other rows
+            const restoreStack = captureStackViewports([...parentView.views])
+            const anchor = takeFollowAnchor(parentView, row)
             // WHERE THE RIBBONS ARE, which for a clipped block is not where the
             // blocks are — `OffscreenMateSpan.mateCumBp` says why. Through
             // `pxToBp` because the drawn span is the facing row's cumBp and
@@ -511,7 +521,45 @@ export function linearSyntenyViewHelperModelFactory(
             )
             return
           }
+          // THE DESTRUCTIVE CLASS ASKS FIRST. Everything below replaces the
+          // row's displayed regions, and the reader cannot see the cost of that
+          // from the mark: the Undo the navigation posts is offered AFTER the
+          // list is gone, and a snackbar is missed, dismissed, or read once the
+          // row it would restore is no longer what is on screen.
+          //
           const loc = navLocString(refName, mate?.locus)
+          getDialogHost(self).queueDialog(handleClose => [
+            ShowOffscreenMateDialog,
+            {
+              model: self,
+              refName,
+              side: row > self.level ? ('top' as const) : ('bottom' as const),
+              loc,
+              replacing: view.displayedRegions.map(r => r.refName),
+              handleClose,
+              onConfirm: () => {
+                this.replaceRowRegions(refName, row, loc)
+              },
+            },
+          ])
+        }
+      },
+      /**
+       * #action
+       * The half of `showOffscreenMateContig` that REPLACES a row's displayed
+       * regions, split out so the dialog in front of it is the only way in.
+       *
+       * Its own action rather than a closure, because the capture and the
+       * anchor take belong to the moment the reader CONFIRMS: a modal can sit
+       * open across a pan, and an Undo restoring where the row was before the
+       * dialog opened would move it somewhere the reader never asked about.
+       */
+      replaceRowRegions(refName: string, row: number, loc: string) {
+        const { parentView } = self
+        const view = parentView.views[row]
+        if (view) {
+          const restoreStack = captureStackViewports([...parentView.views])
+          const anchor = takeFollowAnchor(parentView, row)
           view
             .navToLocString(loc)
             .then(landed => {

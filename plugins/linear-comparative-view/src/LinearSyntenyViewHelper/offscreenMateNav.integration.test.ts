@@ -63,10 +63,25 @@ function refNames(view: LinearSyntenyViewModel, row: number) {
   return view.views[row]!.displayedRegions.map(r => r.refName)
 }
 
+// The region-replacing class ASKS before it acts, so every test of that half
+// goes through the dialog the click queues. `onSubmit` is what the button does:
+// confirm, then close.
+function confirmMateDialog(session: any) {
+  const props = session.queueOfDialogs[0]?.[1] as
+    | { onConfirm: () => void; handleClose: () => void }
+    | undefined
+  if (!props) {
+    throw new Error('the click queued no dialog')
+  }
+  props.onConfirm()
+  props.handleClose()
+}
+
 test('a query-axis mark shows its contig on the row below the level', async () => {
-  const { view, level } = await setup()
+  const { session, view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level + 1)
+  confirmMateDialog(session)
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   // and only that row: the query row is where the marks were measured, so
@@ -74,13 +89,78 @@ test('a query-axis mark shows its contig on the row below the level', async () =
   expect(refNames(view, 0)).toEqual(['ctgA'])
 }, 20000)
 
+// FRICTION PROPORTIONAL TO CONSEQUENCE. This class replaces the row's
+// displayed regions, and the reader cannot see that cost from the mark — the
+// Undo the navigation posts is offered after the list is already gone.
+test('the region-replacing click asks before it acts', async () => {
+  const { session, view, level } = await setup()
+
+  level.showOffscreenMateContig('ctgB', level.level + 1)
+
+  expect(session.queueOfDialogs).toHaveLength(1)
+  expect(refNames(view, 1)).toEqual(['ctgA'])
+})
+
+// ...and what it asks with is the COST, which nothing else in the feature
+// states: the tooltip names the destination, and the destination was never the
+// surprising half.
+test('...naming the contig, the destination and what is replaced', async () => {
+  const { session, level } = await setup()
+
+  level.showOffscreenMateContig('ctgB', level.level + 1, {
+    locus: { start: 200_000, end: 201_000 },
+  })
+
+  const props = session.queueOfDialogs[0]![1]
+  expect(props.refName).toBe('ctgB')
+  expect(props.loc).toMatch(/^ctgB:/)
+  expect(props.replacing).toEqual(['ctgA'])
+})
+
+// Declining leaves the row exactly as it was — and, because nothing is taken
+// until a branch commits, leaves the follow anchor alone too. A take held
+// across a modal re-points the follow at a row nothing has navigated.
+test('declining changes nothing, including the anchor', async () => {
+  const { session, view, level } = await setup()
+  view.setRowSyncMode('follow')
+  const anchorBefore = view.followAnchorIndex
+
+  level.showOffscreenMateContig('ctgB', level.level + 1)
+  const props = session.queueOfDialogs[0]![1] as { handleClose: () => void }
+  props.handleClose()
+
+  expect(refNames(view, 1)).toEqual(['ctgA'])
+  expect(view.followAnchorIndex).toBe(anchorBefore)
+  expect(session.snackbarMessages).toEqual([])
+})
+
+// The SCROLL class does not ask. It is reversible by scrolling and already
+// carries an Undo, so a modal in front of it is friction with nothing to buy —
+// and it is the common one, since these marks arise where a row displays whole
+// assemblies.
+test('the scrolling click does not ask', async () => {
+  const { session, level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+  })
+  await when(
+    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  expect(session.queueOfDialogs).toEqual([])
+})
+
 // The mirror, which is why the row is an argument rather than `level + 1`: a
 // mark on the target axis names a contig the row ABOVE is not displaying, and
 // navigating the row below for it would move the wrong genome.
 test('a target-axis mark shows its contig on the row above the level', async () => {
-  const { view, level } = await setup()
+  const { session, view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level)
+  confirmMateDialog(session)
   await when(() => refNames(view, 0).join(',') === 'ctgB', { timeout: 5000 })
 
   expect(refNames(view, 1)).toEqual(['ctgA'])
@@ -94,6 +174,7 @@ test('a contig the row cannot resolve is reported, not thrown', async () => {
   const { session, view, level } = await setup()
 
   level.showOffscreenMateContig('nope', level.level + 1)
+  confirmMateDialog(session)
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(session.snackbarMessages[0]!.level).toBe('error')
@@ -110,6 +191,7 @@ test('a mate name that opens a picker is not reported as a move', async () => {
   const { session, view, level } = await setup()
 
   level.showOffscreenMateContig('ctg', level.level + 1)
+  confirmMateDialog(session)
   await when(() => session.queueOfDialogs.length > 0, { timeout: 5000 })
 
   expect(refNames(view, 1)).toEqual(['ctgA'])
@@ -121,11 +203,12 @@ test('a mate name that opens a picker is not reported as a move', async () => {
 // is over there" used to answer it by zooming out past everything else. `grow`
 // puts context around the locus rather than framing it exactly.
 test('a mark with a mate locus shows that locus, not the whole contig', async () => {
-  const { view, level } = await setup()
+  const { session, view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level + 1, {
     locus: { start: 200_000, end: 201_000 },
   })
+  confirmMateDialog(session)
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   // the row still DISPLAYS the whole contig — `navToLocString` sets the region
@@ -141,11 +224,12 @@ test('a mark with a mate locus shows that locus, not the whole contig', async ()
 // at sequence zoom with nothing around the alignment to read it against, which
 // is the same failure as the whole chromosome from the other end.
 test('a locus narrower than the floor is widened around itself', async () => {
-  const { view, level } = await setup()
+  const { session, view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level + 1, {
     locus: { start: 200_000, end: 200_500 },
   })
+  confirmMateDialog(session)
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
@@ -165,6 +249,7 @@ test('the navigation offers an undo that restores what the row was showing', asy
   level.showOffscreenMateContig('ctgB', level.level + 1, {
     locus: { start: 200_000, end: 201_000 },
   })
+  confirmMateDialog(session)
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   const [action] = session.snackbarMessages[0]!.actions!
@@ -195,6 +280,7 @@ test('with the follow off, the undo leaves the anchor row alone', async () => {
   level.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 200_000, end: 201_000 },
   })
+  confirmMateDialog(session)
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   view.setFollowAnchorIndex(1)
@@ -216,6 +302,7 @@ test('with the follow on, the undo gives back the anchor the click took', async 
   level.showOffscreenMateContig('ctgB', 0, {
     locus: { start: 200_000, end: 201_000 },
   })
+  confirmMateDialog(session)
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   expect(view.followAnchorIndex).toBe(0)
 
@@ -238,6 +325,7 @@ test('a navigation that fails does not keep the anchor it took', async () => {
   level.showOffscreenMateContig('nope', 1, {
     locus: { start: 200_000, end: 201_000 },
   })
+  confirmMateDialog(session)
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(session.snackbarMessages[0]!.level).toBe('error')
@@ -453,9 +541,10 @@ test('the undo wins against a flight still in the air', async () => {
 // the minimum. The window slides right instead, so the origin gets the same
 // width as anywhere else.
 test('a locus at the start of its contig still gets the whole floor', async () => {
-  const { view, level } = await setup()
+  const { session, view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', 1, { locus: { start: 100, end: 600 } })
+  confirmMateDialog(session)
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
