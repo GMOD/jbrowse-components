@@ -18,6 +18,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { computeLabelExtraWidth } from './components/labelPositioning.ts'
 import { FloatingLabelsLayer } from './components/overlayElements.tsx'
+import { MIN_ISOFORM_BADGE_GENE_PX } from './isoformTrim.ts'
 import { computeLaidOutData } from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -162,13 +163,19 @@ function regionFor(layout: ReturnType<typeof layoutSubfeatures>) {
 
 // The whole chain the badge crosses: the worker emits every isoform, the
 // main-thread trim drops the losers and writes the badge onto what is left.
+//
+// `geneWith(n)` is n kb wide, so at the default 1 bp/px every case here is far
+// clear of MIN_ISOFORM_BADGE_GENE_PX; the gate cases below name a bpPerPx that
+// puts the drawn extent on the other side of it.
 function trimmedRegion(
   layout: ReturnType<typeof layoutSubfeatures>,
   maxIsoformsPerGene?: number,
   expandedGeneIds?: ReadonlySet<string>,
+  bpPerPx = INPUTS.bpPerPx,
 ) {
   return computeLaidOutData(new Map([[0, regionFor(layout)]]), {
     ...INPUTS,
+    bpPerPx,
     maxIsoformsPerGene,
     expandedGeneIds,
   }).get(0)!
@@ -177,10 +184,21 @@ function trimmedRegion(
 const labelsAt = (
   n: number,
   maxIsoformsPerGene?: number,
-  opts: Parameters<typeof layoutGene>[1] = {},
+  opts: Parameters<typeof layoutGene>[1] & { bpPerPx?: number } = {},
 ) =>
-  trimmedRegion(layoutGene(n, opts), maxIsoformsPerGene, opts.expandedGeneIds)
-    .floatingLabelsData
+  trimmedRegion(
+    layoutGene(n, opts),
+    maxIsoformsPerGene,
+    opts.expandedGeneIds,
+    opts.bpPerPx,
+  ).floatingLabelsData
+
+// The drawn extent of one gene's label, in px at the zoom it was packed at —
+// the number the badge's width gate is about.
+const drawnPx = (
+  label: { minX: number; maxX: number },
+  bpPerPx = INPUTS.bpPerPx,
+) => (label.maxX - label.minX) / bpPerPx
 
 describe('the trim counts what it leaves out', () => {
   it('reports the hidden isoforms of a trimmed gene', () => {
@@ -210,16 +228,74 @@ describe('the trim counts what it leaves out', () => {
     ).toMatchObject({ hidden: 6, expanded: true })
   })
 
-  // The badge reports a trim the reader did not ask for and cannot see the
-  // extent of. `longestCoding` is neither: it is a track-wide mode the user
-  // picked and the corner chip already names, so a badge under every gene there
-  // is one sentence repeated once per label — on exactly the zoomed-out view
-  // the mode exists to keep readable.
-  it('reports nothing for the representative-transcript mode', () => {
+  // The badge says what the READER is not being shown, so it cannot depend on
+  // which side collapsed the gene: a `longestCoding` gene draws one transcript
+  // of four and, without a badge, offered no way to open it at all — the corner
+  // chip names the mode, and switching the whole track's mode is not the same
+  // affordance as opening the one gene you are reading (ADR-093).
+  //
+  // What keeps the zoomed-out crowd the mode exists for readable is the width
+  // gate, which is a property of the picture rather than of the mode: at 2px a
+  // gene the badge is an aside on a name pinned to nothing.
+  it('badges a wide worker-collapsed gene and leaves a narrow one alone', () => {
     const layout = layoutGene(4, { geneGlyphMode: 'longestCoding' })
     expect(layout.children).toHaveLength(1)
+    const stack = trimmedRegion(layout).flatbushItems[0]!.isoformStack!
+    const child = stack.children[0]!
+    const drawnBp = child.endBp - child.startBp
+    const badgeAt = (bpPerPx: number) =>
+      trimmedRegion(
+        layout,
+        undefined,
+        undefined,
+        bpPerPx,
+      ).floatingLabelsData.get('gene1')!.moreIsoformsLabel
+
+    // twice the gate wide, then a fifth of it
+    expect(badgeAt(drawnBp / (MIN_ISOFORM_BADGE_GENE_PX * 2))).toMatchObject({
+      hidden: 3,
+      expanded: false,
+    })
+    expect(badgeAt(drawnBp / (MIN_ISOFORM_BADGE_GENE_PX / 5))).toBeUndefined()
+  })
+
+  // A worker-collapsed gene gets a badge and no trim, so that write is the only
+  // thing the trim pass does — onto the label entry `cloneMutableFields` copied.
+  // Onto the raw one it would outlive the zoom that earned it, since the raw
+  // payload is what every re-pack reads.
+  it('writes a badge-only gene’s badge onto the clone, not the payload', () => {
+    const raw = regionFor(layoutGene(4, { geneGlyphMode: 'longestCoding' }))
+    const laidOut = computeLaidOutData(new Map([[0, raw]]), INPUTS).get(0)!
     expect(
-      trimmedRegion(layout).floatingLabelsData.get('gene1')!.moreIsoformsLabel,
+      laidOut.floatingLabelsData.get('gene1')!.moreIsoformsLabel,
+    ).toBeDefined()
+    expect(
+      raw.floatingLabelsData.get('gene1')!.moreIsoformsLabel,
+    ).toBeUndefined()
+  })
+
+  // Same gate on the ladder's own trims, so one zoom-out does not leave a
+  // trimmed gene badged and a worker-collapsed one beside it bare.
+  it('drops a trimmed gene’s badge once it is too narrow to carry one', () => {
+    const wide = labelsAt(9, 3).get('gene1')!
+    expect(drawnPx(wide)).toBeGreaterThan(MIN_ISOFORM_BADGE_GENE_PX)
+    expect(wide.moreIsoformsLabel).toMatchObject({ hidden: 6 })
+
+    const narrow = labelsAt(9, 3, { bpPerPx: 100 }).get('gene1')!
+    expect(drawnPx(narrow, 100)).toBeLessThan(MIN_ISOFORM_BADGE_GENE_PX)
+    expect(narrow.moreIsoformsLabel).toBeUndefined()
+  })
+
+  // And on "show fewer", which is gated on the EXPANDED extent — every isoform
+  // is drawn there, so the gene is as wide as its whole stack.
+  it('drops an expanded gene’s badge once it is too narrow to carry one', () => {
+    const expanded = { expandedGeneIds: new Set(['gene1']) }
+    expect(
+      labelsAt(9, 3, expanded).get('gene1')!.moreIsoformsLabel,
+    ).toMatchObject({ text: 'show fewer', expanded: true })
+    expect(
+      labelsAt(9, 3, { ...expanded, bpPerPx: 500 }).get('gene1')!
+        .moreIsoformsLabel,
     ).toBeUndefined()
   })
 
@@ -327,20 +403,33 @@ describe('the badge rides the gene name label', () => {
 const overhangPx = (text: string, fontSize: number) =>
   measureText(text, fontSize) + LABEL_PADDING_PX
 
+// The packer reserves max(box, label overhang), so the name has to be WIDER
+// than the box for the badge's own width to move anything — while the box still
+// has to clear MIN_ISOFORM_BADGE_GENE_PX for the badge to exist at all. Hence a
+// long name over a gene ten pixels past the gate, at 1 bp/px so the bp numbers
+// here are pixels.
+const BADGE_GENE_NAME = 'GENE1-WITH-A-NAME-LONG-ENOUGH'
+const BADGE_GENE_END_BP = MIN_ISOFORM_BADGE_GENE_PX + 10
+
 // Just past the name's own overhang and inside the badge's, so the two cases
 // below differ by the badge alone.
 const NEIGHBOUR_BP = Math.round(
-  overhangPx('GENE1', LABEL_FONT_SIZE) +
+  overhangPx(BADGE_GENE_NAME, LABEL_FONT_SIZE) +
     overhangPx('+6 more', LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE) / 2,
 )
 
-// One named gene at the origin and a plain neighbour that far along, packed at
-// 1 bp/px so the bp numbers above are pixels.
+// One named gene at the origin and a plain neighbour that far along.
 function rowOfNeighbour(isoforms: number, maxIsoformsPerGene?: number) {
   const region = {
     regionKey: 'v:ctgA',
     ...packStackedGenes([
-      { featureId: 'gene1', startBp: 0, endBp: 10, isoforms, name: 'GENE1' },
+      {
+        featureId: 'gene1',
+        startBp: 0,
+        endBp: BADGE_GENE_END_BP,
+        isoforms,
+        name: BADGE_GENE_NAME,
+      },
       {
         featureId: 'gene2',
         startBp: NEIGHBOUR_BP,
@@ -357,6 +446,12 @@ function rowOfNeighbour(isoforms: number, maxIsoformsPerGene?: number) {
 }
 
 test('the packer reserves the badge width alongside the name', () => {
+  // the premise: the name outruns the box, and the box clears the badge's gate
+  expect(overhangPx(BADGE_GENE_NAME, LABEL_FONT_SIZE)).toBeGreaterThan(
+    BADGE_GENE_END_BP,
+  )
+  expect(BADGE_GENE_END_BP).toBeGreaterThan(MIN_ISOFORM_BADGE_GENE_PX)
+
   // the name alone stops short of the neighbour, so both sit on row 0
   expect(rowOfNeighbour(3)).toBe(0)
   // trimming 9 to 3 adds a "+6 more" badge, whose reservation carries past the

@@ -197,8 +197,12 @@ export default function stateModelFactory(
             }
           }
         }
-        return planIsoformTrims(stacks, maxIsoforms, self.expandedGeneIdSet)
-          .trims
+        return planIsoformTrims(
+          stacks,
+          maxIsoforms,
+          self.expandedGeneIdSet,
+          self.layoutInputs.bpPerPx,
+        ).trims
       },
 
       /**

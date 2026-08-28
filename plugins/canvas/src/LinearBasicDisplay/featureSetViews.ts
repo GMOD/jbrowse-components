@@ -121,10 +121,9 @@ export function featureSetActions(self: FeatureSetHost) {
     /**
      * #action
      * Open or re-collapse one gene's isoforms, from the badge on its own
-     * label. Nothing else has to change: the trim reports what it WOULD hide
-     * for a gene in the set as well as for one out of it (see
-     * `IsoformTrimPlan.expandedHidden`), so the badge that opened a gene is the
-     * badge that closes it again.
+     * label. Nothing else has to change: the plan records a badge for a gene in
+     * the set as well as for one out of it (see `IsoformTrimPlan.badges`), so
+     * the badge that opened a gene is the badge that closes it again.
      */
     toggleExpandedGene(featureId: string) {
       toggleArrayMember(self.expandedGeneIds, featureId)

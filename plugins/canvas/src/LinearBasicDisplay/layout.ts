@@ -1427,6 +1427,7 @@ function decideLabelReservations(
     prep.stacks,
     inputs.maxIsoformsPerGene,
     inputs.expandedGeneIds,
+    bpPerPx,
   )
   const packed = new Map<string, PackedExtent>()
   // Features whose name was decimated away (`fitWidth`): no row height or overhang
@@ -1445,16 +1446,11 @@ function decideLabelReservations(
       : geom.bodyHeightPx
     const startBp = trim ? trim.startBp : geom.startBp
     const endBp = trim ? trim.endBp : geom.endBp
-    const badgeHidden =
-      trim && trim.hidden > 0
-        ? { hidden: trim.hidden, expanded: false }
-        : trimPlan.expandedHidden.has(id)
-          ? { hidden: trimPlan.expandedHidden.get(id)!, expanded: true }
-          : undefined
+    const badge = trimPlan.badges.get(id)
     const badgeWidthPx =
-      badgeHidden && showLabels && labelInfo?.hasName
+      badge && showLabels && labelInfo?.hasName
         ? paddedLabelWidthPx(
-            moreIsoformsLabel(badgeHidden.hidden, badgeHidden.expanded),
+            moreIsoformsLabel(badge.hidden, badge.expanded),
             labelFontPx,
           )
         : 0

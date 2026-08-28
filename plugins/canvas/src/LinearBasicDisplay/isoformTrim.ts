@@ -84,39 +84,67 @@ export function trimIsoformStack(
   }
 }
 
+// The "+N more" / "show fewer" control one gene's name label carries.
+export interface IsoformBadge {
+  hidden: number
+  // the gene is open, so the badge offers the way back rather than more
+  expanded: boolean
+}
+
 /**
- * Every trim one isoform count puts in force, and the badge counts for the
- * genes it spares because the user opened them.
+ * Every trim one isoform count puts in force, and every badge the picture owes
+ * a reader — which are not the same set of genes.
  *
- * A gene the count leaves whole gets no entry, so a rung that trims nothing
- * does no work downstream — which is what keeps the `full` rung's arrays the
- * worker's own.
+ * A gene the count leaves whole gets no `trims` entry, so a rung that trims
+ * nothing does no work downstream — which is what keeps the `full` rung's
+ * arrays the worker's own. `badges` is independent of that: it is a
+ * presentation rule about what is drawn, so a gene the WORKER collapsed and a
+ * gene the user opened are in it too (ADR-093).
  */
 export interface IsoformTrimPlan {
   trims: ReadonlyMap<string, IsoformTrim>
-  // expanded gene id -> what the count WOULD have hidden, so the badge on it
-  // reads "show fewer" and offers the way back
-  expandedHidden: ReadonlyMap<string, number>
+  badges: ReadonlyMap<string, IsoformBadge>
 }
 
 export const NO_ISOFORM_TRIM: IsoformTrimPlan = {
   trims: new Map(),
-  expandedHidden: new Map(),
+  badges: new Map(),
+}
+
+/**
+ * Narrowest drawn extent a gene can carry the badge on. Below it the badge is
+ * an aside on a name pinned to a glyph a few pixels wide, repeated once per gene
+ * — which is the zoomed-out crowd `longestCoding` exists to keep readable.
+ *
+ * A presentation gate, so it is priced and drawn off the SAME decision: the
+ * plan applies it, `decideLabelReservations` reserves the width the plan
+ * reports, and `applyIsoformTrim` writes what the plan reports.
+ */
+export const MIN_ISOFORM_BADGE_GENE_PX = 100
+
+function stackExtentBp(stack: IsoformStack) {
+  let startBp = Number.POSITIVE_INFINITY
+  let endBp = Number.NEGATIVE_INFINITY
+  for (const child of stack.children) {
+    startBp = Math.min(startBp, child.startBp)
+    endBp = Math.max(endBp, child.endBp)
+  }
+  return endBp > startBp ? endBp - startBp : 0
 }
 
 export function planIsoformTrims(
   stacks: Iterable<readonly [string, IsoformStack]>,
   maxIsoforms: number | undefined,
   expandedGeneIds: ReadonlySet<string> | undefined,
+  bpPerPx: number,
 ): IsoformTrimPlan {
   const trims = new Map<string, IsoformTrim>()
-  const expandedHidden = new Map<string, number>()
+  const badges = new Map<string, IsoformBadge>()
   for (const [featureId, stack] of stacks) {
     // The tighter of the ladder's count and the worker's own collapse. The
-    // second only bites on a gene the user EXPANDED — every other gene under
-    // `longestCoding` already arrives with one child, where trimming to one is
-    // a no-op — and it is what keeps that gene's "show fewer" badge naming the
-    // count it was opened from.
+    // second bites geometrically only on a gene the user EXPANDED — every other
+    // gene under `longestCoding` already arrives with one child — but it is
+    // what makes both of them COUNT their missing isoforms the same way.
     const count = Math.min(
       maxIsoforms ?? Number.POSITIVE_INFINITY,
       stack.collapsedIsoformCount ?? Number.POSITIVE_INFINITY,
@@ -125,16 +153,16 @@ export function planIsoformTrims(
       continue
     }
     const trim = trimIsoformStack(stack, count)
-    if (trim.keptOrdinals.size === stack.children.length) {
-      continue
-    }
-    if (expandedGeneIds?.has(featureId)) {
-      expandedHidden.set(featureId, trim.hidden)
-    } else {
+    const expanded = !!expandedGeneIds?.has(featureId)
+    if (!expanded && trim.keptOrdinals.size !== stack.children.length) {
       trims.set(featureId, trim)
     }
+    const extentBp = expanded ? stackExtentBp(stack) : trim.endBp - trim.startBp
+    if (trim.hidden > 0 && extentBp / bpPerPx >= MIN_ISOFORM_BADGE_GENE_PX) {
+      badges.set(featureId, { hidden: trim.hidden, expanded })
+    }
   }
-  return { trims, expandedHidden }
+  return { trims, badges }
 }
 
 // The most isoforms any gene on screen has — the top of the fit ladder's
@@ -283,65 +311,69 @@ function trimPrimitiveKind(
  * scale the two are mixed into one number and the shift could not be undone.
  *
  * Mutates the clone `cloneMutableFields` produced, and returns without touching
- * a byte when the plan is empty.
+ * a byte when the plan is empty. A plan carrying badges and no trims — every
+ * gene on screen collapsed by the WORKER — reaches only the floating labels,
+ * which is why the geometry below is gated on `trims` rather than on the plan.
  */
 export function applyIsoformTrim(
   data: FeatureDataResult,
   plan: IsoformTrimPlan,
 ) {
-  const { trims, expandedHidden } = plan
-  if (trims.size === 0 && expandedHidden.size === 0) {
+  const { trims, badges } = plan
+  if (trims.size === 0 && badges.size === 0) {
     return
   }
 
-  for (const kind of ['rect', 'line', 'arrow'] as const) {
-    trimPrimitiveKind(kind, data, trims)
-  }
-
-  data.subfeatureInfos = data.subfeatureInfos.filter(info => {
-    const trim = trims.get(info.parentFeatureId)
-    const ordinal = info.childOrdinal ?? ROOT_CHILD_ORDINAL
-    if (!trim || ordinal === ROOT_CHILD_ORDINAL) {
-      return true
+  if (trims.size > 0) {
+    for (const kind of ['rect', 'line', 'arrow'] as const) {
+      trimPrimitiveKind(kind, data, trims)
     }
-    if (!trim.keptOrdinals.has(ordinal)) {
-      return false
-    }
-    const shiftPx = trim.shiftPxByOrdinal.get(ordinal) ?? 0
-    info.topPx -= shiftPx
-    info.bottomPx -= shiftPx
-    info.labelRowsAbove =
-      (info.labelRowsAbove ?? 0) -
-      (trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0)
-    return true
-  })
 
-  if (data.aminoAcidOverlay) {
-    data.aminoAcidOverlay = data.aminoAcidOverlay.filter(aa => {
-      const ordinal = aa.childOrdinal ?? ROOT_CHILD_ORDINAL
-      const trim = trims.get(data.flatbushItems[aa.flatbushIdx]!.featureId)
+    data.subfeatureInfos = data.subfeatureInfos.filter(info => {
+      const trim = trims.get(info.parentFeatureId)
+      const ordinal = info.childOrdinal ?? ROOT_CHILD_ORDINAL
       if (!trim || ordinal === ROOT_CHILD_ORDINAL) {
         return true
       }
       if (!trim.keptOrdinals.has(ordinal)) {
         return false
       }
-      aa.topPx -= trim.shiftPxByOrdinal.get(ordinal) ?? 0
-      aa.labelRowsAbove =
-        (aa.labelRowsAbove ?? 0) -
+      const shiftPx = trim.shiftPxByOrdinal.get(ordinal) ?? 0
+      info.topPx -= shiftPx
+      info.bottomPx -= shiftPx
+      info.labelRowsAbove =
+        (info.labelRowsAbove ?? 0) -
         (trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0)
       return true
     })
-  }
 
-  for (const item of data.flatbushItems) {
-    const trim = trims.get(item.featureId)
-    if (trim) {
-      item.featureHeightPx = trim.heightPx
-      item.bottomPx = trim.heightPx
-      item.labelRows = trim.labelRows
-      item.startBp = trim.startBp
-      item.endBp = trim.endBp
+    if (data.aminoAcidOverlay) {
+      data.aminoAcidOverlay = data.aminoAcidOverlay.filter(aa => {
+        const ordinal = aa.childOrdinal ?? ROOT_CHILD_ORDINAL
+        const trim = trims.get(data.flatbushItems[aa.flatbushIdx]!.featureId)
+        if (!trim || ordinal === ROOT_CHILD_ORDINAL) {
+          return true
+        }
+        if (!trim.keptOrdinals.has(ordinal)) {
+          return false
+        }
+        aa.topPx -= trim.shiftPxByOrdinal.get(ordinal) ?? 0
+        aa.labelRowsAbove =
+          (aa.labelRowsAbove ?? 0) -
+          (trim.shiftLabelRowsByOrdinal.get(ordinal) ?? 0)
+        return true
+      })
+    }
+
+    for (const item of data.flatbushItems) {
+      const trim = trims.get(item.featureId)
+      if (trim) {
+        item.featureHeightPx = trim.heightPx
+        item.bottomPx = trim.heightPx
+        item.labelRows = trim.labelRows
+        item.startBp = trim.startBp
+        item.endBp = trim.endBp
+      }
     }
   }
 
@@ -371,14 +403,15 @@ export function applyIsoformTrim(
       labelData.labelRows = trim.labelRows
       labelData.minX = trim.startBp
       labelData.maxX = trim.endBp
-      if (labelData.nameLabel && trim.hidden > 0) {
-        labelData.moreIsoformsLabel = moreIsoformsLabel(trim.hidden, false)
-      }
-    } else {
-      const hidden = expandedHidden.get(geneId)
-      if (hidden !== undefined && labelData.nameLabel) {
-        labelData.moreIsoformsLabel = moreIsoformsLabel(hidden, true)
-      }
+    }
+    // Off `badges`, not off `trim`: a worker-collapsed gene has no trim entry
+    // (nothing was dropped here) and still shows fewer isoforms than it has.
+    const badge = badges.get(geneId)
+    if (badge && labelData.nameLabel) {
+      labelData.moreIsoformsLabel = moreIsoformsLabel(
+        badge.hidden,
+        badge.expanded,
+      )
     }
   }
 }
