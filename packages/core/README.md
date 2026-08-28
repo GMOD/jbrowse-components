@@ -728,4 +728,16 @@ reader has promoted in their own browser. Pinned by
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### VIRIDIS_STOPS
+
+The 256 viridis stops, fully opaque. Feed them to buildColorRampLut for the
+texture/fillStyle form, or to sampleColorRamp for legend stops.
+
+```js
+// type signature
+readonly ColorRampStop[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
 <!-- API_DOCS_END -->
