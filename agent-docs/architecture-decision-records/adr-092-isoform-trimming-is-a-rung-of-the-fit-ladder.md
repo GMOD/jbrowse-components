@@ -7,7 +7,9 @@ summary: "The worker ships every isoform with a per-child ordinal and a stack ta
 
 ## Status
 
-Accepted (2026-08). Supersedes
+Accepted (2026-08). Amended by
+[ADR-093](adr-093-level-of-detail-keys-off-what-is-on-screen.md) (badge
+presentation, fixed-mode measurement). Supersedes
 [ADR-075](adr-075-the-isoform-cap-runs-in-the-worker.md), which called for
 exactly this the moment something needed per-isoform structure on the main
 thread. The mechanism is `solveIsoformCount` in

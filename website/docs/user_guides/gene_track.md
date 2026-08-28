@@ -36,15 +36,19 @@ length — or, for a gene with no coding isoform at all, the one with the widest
 genomic span. The attribute read and the tags that count are the
 `canonicalTranscriptField` and `canonicalTranscriptTags` config slots.
 
-A gene left short by the track's height says so on its own label: a small **+N
-more** beside the gene name, counting the isoforms that gene is missing.
-Clicking it opens that one gene, and the badge then reads **show fewer** and
-closes it again. The count sits on the gene, since one gene in a window can be
-missing twenty isoforms and its neighbour one. The **Gene glyph** submenu grows
-a row to re-collapse every gene opened this way. Representative transcript puts
-no badge on a gene you have not opened, since that mode is a choice you made and
-the chip below already names it. A gene you did open keeps its badge in every
-mode, which is the way back to a collapsed one.
+A gene drawn with fewer transcripts than it has says so on its own label: a
+small **+N more** beside the gene name, counting the isoforms that gene is
+missing. Clicking it opens that one gene, and the badge then reads **show
+fewer** and closes it again. The count sits on the gene, since one gene in a
+window can be missing twenty isoforms and its neighbour one. The **Gene glyph**
+submenu grows a row to re-collapse every gene opened this way.
+
+The badge is about the picture, so it reads the same whether the track's height
+or the transcript mode is what shortened the gene — under Representative
+transcript it is the way to open the one gene you are reading while the rest of
+the track stays collapsed. It appears wherever the gene is wide enough on screen
+to hold it, which leaves a zoomed-out screenful of narrow genes with the corner
+chip alone.
 
 While transcripts are being left out, the track's bottom-right corner says so
 with a chip naming the rule that did it: `Isoforms trimmed` where the track's
