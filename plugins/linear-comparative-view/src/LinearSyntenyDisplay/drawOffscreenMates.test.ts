@@ -327,14 +327,14 @@ test('a stretch with only a sliver in view goes unlabelled', () => {
 
 test('the hit test answers the contig under the pointer', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgB')
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgB')
 })
 
 // What the tooltip reports for the mark under the pointer: the per-contig tally
 // the menu's headline is summed from, not the number of marks drawn.
 test('the hit is the contig alone, which is all the level asks for', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgB')
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgB')
 })
 
 // Draw and hit test read one layout, so this is the shape the bug cannot take —
@@ -432,7 +432,7 @@ test('where two overlap, the hit is the one drawn on top', () => {
       ),
     ],
   }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgC')
 })
 
 // The merge is per stretch, not per contig: grape chr5 syntenic to two separate
@@ -601,7 +601,7 @@ test('where two displays overlap, the hit is the one drawn on top', () => {
     ...params,
     datasets: [data([[100, 400]], ['ctgB']), data([[150, 350]], ['ctgC'])],
   }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgC')
 })
 
 // A band with no room for the first baseline gets no labels rather than a row
@@ -706,7 +706,7 @@ test('the hit test answers inside the bottom strip and not above it', () => {
     side: 'bottom' as const,
     datasets: [data([[100, 400]], ['ctgB'])],
   }
-  expect(offscreenMateAt(layout, 20, params.height - 1)?.refName).toBe('ctgB')
+  expect(offscreenMateAt(layout, 20, params.height - 1)).toBe('ctgB')
   expect(
     offscreenMateAt(layout, 20, params.height - OFFSCREEN_MATE_HEIGHT_PX - 2),
   ).toBeUndefined()
@@ -1028,21 +1028,6 @@ test('a click on one says the contig is displayed', () => {
     refName: 'other',
     mateCumBp: { start: 90_000, end: 90_300 },
   })
-})
-
-// WHICH OF THE TWO CLICKS THIS IS, answered by the HOVER so the tooltip can
-// say it before anyone commits. Free at this point: the scan already had the
-// lane in hand when it matched.
-test('the hit says whether a click would scroll or replace', () => {
-  const unplaced = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
-  expect(offscreenMateAt(unplaced, 20, 3)?.canScroll).toBe(false)
-
-  const onTheAxis = {
-    ...params,
-    datasets: [placed([[100, 400]], [[90_000, 90_300]], ['ctgB'])],
-    mateBand: { lo: 0, hi: 1000 },
-  }
-  expect(offscreenMateAt(onTheAxis, 20, 3)?.canScroll).toBe(true)
 })
 
 // WHERE THE RIBBONS ARE, which is not where the BLOCKS are once

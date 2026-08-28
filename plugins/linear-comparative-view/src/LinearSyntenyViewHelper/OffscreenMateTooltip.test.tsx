@@ -38,13 +38,12 @@ function draw(
   model: OffscreenMateSource,
   refName: string,
   side: 'top' | 'bottom' = 'top',
-  canScroll = false,
 ) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <OffscreenMateTooltip
         model={model}
-        hover={{ refName, side, canScroll, clientX: 40, clientY: 12 }}
+        hover={{ refName, side, clientX: 40, clientY: 12 }}
       />
     </ThemeProvider>,
   )
@@ -65,21 +64,13 @@ test('and how many alignments go to it', () => {
   expect(draw(source({ ctgB: 2767 }), 'ctgB')).toContain('2,767')
 })
 
-// Clicking REPLACES the facing panel's regions, so the hover has to say what
-// the click will do before it is the only way to find out.
+// The mark is often unlabelled and the click is the only other way to find out
+// where it goes, so the hover says what clicking does. ONE sentence for both
+// classes: a contig the facing panel has is scrolled to, one it lacks is added
+// to it, and neither discards anything the reader would want warned about.
 test('and says what clicking it does', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain(
-    'Click to show it on the panel below, replacing what that panel shows',
-  )
-})
-
-// THE OTHER CLICK, which is a different sentence and the common one: a contig
-// the facing panel already displays is scrolled to, immediately and reversibly.
-// One tooltip for both said "show", which described the destructive half over
-// an action that merely moves the panel.
-test('...and says the other thing when the click merely scrolls', () => {
-  expect(draw(source({ ctgB: 1 }), 'ctgB', 'top', true)).toContain(
-    'Click to scroll the panel below to it',
+    'Click to show it on the panel below',
   )
 })
 

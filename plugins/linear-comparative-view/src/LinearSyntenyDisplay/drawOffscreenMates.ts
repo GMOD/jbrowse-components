@@ -580,21 +580,7 @@ export function offscreenMateAt(
     for (let i = data.starts.length - 1; i >= 0; i--) {
       const rect = offscreenMateRectAt(layout, data, i, strip)
       if (rect && pointerOnMark(rect, x)) {
-        return {
-          refName: offscreenMateRefName(data, i),
-          // Whether a click SCROLLS the facing row or replaces what it is
-          // showing, so the hover can say which before anyone commits to it.
-          //
-          // IT CAN ONLY OVER-WARN, which is what makes answering from this scan
-          // safe when the click's rule is "any placed lane wins". This one
-          // exits at the first mark it reaches backwards, so where a contig
-          // sits in both a worker lane and a culled one it may report the
-          // worker's — saying "replaces" over a click that turns out to scroll.
-          // The reverse cannot happen: reaching a placed lane at all means the
-          // click found one too. So the hover is never the more reassuring of
-          // the two, which is the only direction that would mislead.
-          canScroll: data.mateAxis !== undefined,
-        }
+        return offscreenMateRefName(data, i)
       }
     }
   }

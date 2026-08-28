@@ -1,15 +1,11 @@
-import {
-  getContainingView,
-  getDialogHost,
-  getSession,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import {
   hideTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
@@ -19,11 +15,11 @@ import {
 } from '@jbrowse/synteny-core'
 import { runInAction } from 'mobx'
 
-import ShowOffscreenMateDialog from './ShowOffscreenMateDialog.tsx'
 import {
   captureStackViewports,
   mateFlightAllowed,
-  navLocString,
+  mateRegion,
+  navSpan,
   takeFollowAnchor,
 } from './offscreenMateNav.ts'
 
@@ -521,99 +517,71 @@ export function linearSyntenyViewHelperModelFactory(
             )
             return
           }
-          // THE DESTRUCTIVE CLASS ASKS FIRST. Everything below replaces the
-          // row's displayed regions, and the reader cannot see the cost of that
-          // from the mark: the Undo the navigation posts is offered AFTER the
-          // list is gone, and a snackbar is missed, dismissed, or read once the
-          // row it would restore is no longer what is on screen.
+          // THE ROW GAINS THE CONTIG. It does not swap what it is showing for
+          // it, which is what `navToLocString` would have done — and the
+          // destructiveness was never in the reader's request, only in that
+          // function's semantics. A click here means "show me this too", so the
+          // region is APPENDED and everything the row already had survives.
           //
-          const loc = navLocString(refName, mate?.locus)
-          getDialogHost(self).queueDialog(handleClose => [
-            ShowOffscreenMateDialog,
-            {
-              model: self,
-              refName,
-              side: row > self.level ? ('top' as const) : ('bottom' as const),
-              loc,
-              replacing: view.displayedRegions.map(r => r.refName),
-              // The stack's own state, read here rather than off the strip's
-              // narrow view of the parent: what the panel NOBODY clicked does
-              // is a property of how the rows are held together, and the two
-              // flags are mutually exclusive by `setRowSyncMode`.
-              rowSync: parentView.followSynteny
-                ? ('follow' as const)
-                : parentView.linkViews
-                  ? ('link' as const)
-                  : ('independent' as const),
-              handleClose,
-              onConfirm: () => {
-                this.replaceRowRegions(refName, row, loc)
-              },
-            },
-          ])
-        }
-      },
-      /**
-       * #action
-       * The half of `showOffscreenMateContig` that REPLACES a row's displayed
-       * regions, split out so the dialog in front of it is the only way in.
-       *
-       * Its own action rather than a closure, because the capture and the
-       * anchor take belong to the moment the reader CONFIRMS: a modal can sit
-       * open across a pan, and an Undo restoring where the row was before the
-       * dialog opened would move it somewhere the reader never asked about.
-       */
-      replaceRowRegions(refName: string, row: number, loc: string) {
-        const { parentView } = self
-        const view = parentView.views[row]
-        if (view) {
+          // APPENDED, NEVER INSERTED IN ORDER: `setDisplayedRegions` re-clamps
+          // `bpPerPx` and `offsetPx`, and GROWING the set raises both bounds,
+          // so neither clamp moves anything — the window stays put to the pixel
+          // and every mark, ribbon and fetch-time cumBp lane on screen stays
+          // valid until the refetch lands. Sorting would renumber the regions
+          // under all of them. Region order is therefore click order, which is
+          // an aesthetic cost and not a correctness one; pruning the list is
+          // the region editor's job, not a mark's.
+          //
+          // What this deletes is the whole second destination: no dialog, since
+          // nothing is discarded to consent to; no `replaceRowRegions`; and no
+          // second class for the hover to warn about. After the refetch this
+          // contig IS displayed, so its remaining marks are the scroll class
+          // and a second click goes to the drawn position — which is also how
+          // an approximate landing on a whole-chromosome chain heals itself.
+          const region = mateRegion(self, view, refName)
+          if (!region) {
+            // ordinary: mate names come out of the alignment file, and the
+            // facing assembly need not spell them the same way or have them
+            getSession(self).notify(
+              `Could not find ${refName} in ${view.assemblyNames[0]}`,
+              'warning',
+            )
+            return
+          }
           const restoreStack = captureStackViewports([...parentView.views])
           const anchor = takeFollowAnchor(parentView, row)
-          view
-            .navToLocString(loc)
-            .then(landed => {
-              // The level can be detached while the navigation is in flight —
-              // the track holding it removed, the view closed — and
-              // `getSession` throws on a dead node, inside a `then` whose
-              // `catch` would then call it a second time.
-              //
-              // `landed` is the other half: `navToLocString` resolves without
-              // navigating when the contig is not a refName here and the text
-              // search raises a picker over the hits instead — ordinary for a
-              // PAF naming contigs `1`,`2` against an assembly spelling them
-              // `chr1`,`chr2`. Reported as a move, that posted "Showing 2, and
-              // following this row" with a live Undo over a stack nothing had
-              // touched, and kept the anchor.
-              if (isAlive(self) && isAlive(view) && landed) {
-                getSession(self).notify(
-                  anchor.taken
-                    ? `Showing ${loc}, and following this row`
-                    : `Showing ${loc}`,
-                  'info',
-                  {
-                    name: 'Undo',
-                    onClick: () => {
-                      // one transaction, so the follow sees the settled
-                      // pre-click state rather than a half-restored one
-                      runInAction(() => {
-                        restoreStack()
-                        anchor.release()
-                      })
-                    },
-                  },
-                )
-              } else {
-                anchor.release()
-              }
-            })
-            .catch((e: unknown) => {
-              // an unresolvable contig is ordinary — mate names come out of the
-              // alignment file, and the facing assembly need not have them
-              anchor.release()
-              if (isAlive(self)) {
-                getSession(self).notifyError(`${e}`, e)
-              }
-            })
+          const { start, end } = navSpan(region, mate?.locus)
+          // ONE TRANSACTION, which is what `showRegions` is for: called apart,
+          // the two publish a viewport in between, and a per-bp consumer scans
+          // a window that was never on screen.
+          const already = view.displayedRegions.some(
+            r => r.refName === region.refName,
+          )
+          view.showRegions(
+            already
+              ? [...view.displayedRegions]
+              : [...view.displayedRegions, region],
+            { refName: region.refName, start, end },
+          )
+          getSession(self).notify(
+            anchor.taken
+              ? `Showing ${region.refName}, and following this row`
+              : `Showing ${region.refName}`,
+            'info',
+            {
+              name: 'Undo',
+              onClick: () => {
+                // one transaction, so the follow sees the settled pre-click
+                // state rather than a half-restored one. `captureRowViewport`
+                // already puts the region list back as well as the window, so
+                // removing what was appended needs nothing of its own.
+                runInAction(() => {
+                  restoreStack()
+                  anchor.release()
+                })
+              },
+            },
+          )
         }
       },
       /**

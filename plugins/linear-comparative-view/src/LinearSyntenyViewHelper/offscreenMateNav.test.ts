@@ -3,47 +3,66 @@ import { destroy, types } from '@jbrowse/mobx-state-tree'
 import {
   OFFSCREEN_MATE_NAV_MIN_BP,
   mateFlightAllowed,
-  navLocString,
+  navSpan,
   takeFollowAnchor,
 } from './offscreenMateNav.ts'
 
-// a locstring is 1-based and inclusive, so its width is end - start + 1
-function width(loc: string) {
-  const [start, end] = loc.split(':')[1]!.split('-').map(Number)
-  return end! - start! + 1
+// The contig the window is framed in. Wide enough that the floor and the
+// padding are what decide the answer, except where a test says otherwise.
+const CTG = { start: 0, end: 1_000_000 }
+
+function width({ start, end }: { start: number; end: number }) {
+  return end - start
 }
 
-describe('navLocString', () => {
-  it('is the bare contig with no locus to aim at', () => {
-    expect(navLocString('ctgB')).toBe('ctgB')
+describe('navSpan', () => {
+  it('is the whole contig with no locus to aim at', () => {
+    expect(navSpan(CTG)).toEqual(CTG)
   })
 
   it('pads a locus already wider than the floor', () => {
-    const loc = navLocString('ctgB', { start: 200_000, end: 260_000 })
-    expect(width(loc)).toBe(84_000)
+    expect(width(navSpan(CTG, { start: 200_000, end: 260_000 }))).toBe(84_000)
   })
 
   // the padding lives inside the floor, so this is the width the row lands at
   // rather than 1.4x it
   it('widens a narrow locus to the floor, centred on it, and does not then pad it', () => {
-    const loc = navLocString('ctgB', { start: 200_000, end: 200_500 })
-    expect(width(loc)).toBe(OFFSCREEN_MATE_NAV_MIN_BP)
-    expect(loc).toBe('ctgB:190251-210250')
+    expect(navSpan(CTG, { start: 200_000, end: 200_500 })).toEqual({
+      start: 190_250,
+      end: 210_250,
+    })
   })
 
   // the case the pad-then-clip form got wrong: half the window fell off the
   // start of the contig and was simply lost
   it('slides a near-origin window right instead of trimming it', () => {
-    const loc = navLocString('ctgB', { start: 100, end: 600 })
-    expect(width(loc)).toBe(OFFSCREEN_MATE_NAV_MIN_BP)
-    expect(loc).toBe('ctgB:1-20000')
+    expect(navSpan(CTG, { start: 100, end: 600 })).toEqual({
+      start: 0,
+      end: 20_000,
+    })
+  })
+
+  // ...and the mirror, which the locstring form could not do at all: it had no
+  // contig to measure against, so a locus near the end framed past it
+  it('slides a near-end window left instead of running off the contig', () => {
+    expect(navSpan(CTG, { start: 999_000, end: 999_500 })).toEqual({
+      start: 980_000,
+      end: 1_000_000,
+    })
+  })
+
+  // a contig shorter than the floor is framed whole rather than widened past
+  // its own end in both directions
+  it('gives a contig narrower than the floor its own bounds', () => {
+    const tiny = { start: 0, end: 5_000 }
+    expect(navSpan(tiny, { start: 100, end: 600 })).toEqual(tiny)
   })
 
   it('never names a coordinate before the first base', () => {
     for (const start of [0, 1, 50, 5_000, 12_000]) {
-      const loc = navLocString('ctgB', { start, end: start + 200 })
-      expect(Number(loc.split(':')[1]!.split('-')[0])).toBeGreaterThanOrEqual(1)
-      expect(width(loc)).toBe(OFFSCREEN_MATE_NAV_MIN_BP)
+      const span = navSpan(CTG, { start, end: start + 200 })
+      expect(span.start).toBeGreaterThanOrEqual(0)
+      expect(width(span)).toBe(OFFSCREEN_MATE_NAV_MIN_BP)
     }
   })
 })

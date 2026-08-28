@@ -274,7 +274,7 @@ for (const { name, data } of FIXTURES) {
   for (let round = 0; round < ROUNDS; round++) {
     let t = performance.now()
     for (let i = 0; i < HOVERS; i++) {
-      keep(offscreenMateAt(layout, i % WIDTH, 60)?.refName)
+      keep(offscreenMateAt(layout, i % WIDTH, 60))
     }
     best.hoverRibbons = Math.min(best.hoverRibbons, performance.now() - t)
 
@@ -292,7 +292,7 @@ for (const { name, data } of FIXTURES) {
 
     t = performance.now()
     for (let i = 0; i < HOVERS; i++) {
-      keep(offscreenMateAt(layout, i % WIDTH, 3)?.refName)
+      keep(offscreenMateAt(layout, i % WIDTH, 3))
     }
     best.hoverStrip = Math.min(best.hoverStrip, performance.now() - t)
 

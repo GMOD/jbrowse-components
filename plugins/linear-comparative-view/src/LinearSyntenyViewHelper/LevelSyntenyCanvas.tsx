@@ -131,7 +131,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         mate && {
           refName: mate.refName,
           side: mate.side,
-          canScroll: mate.canScroll,
           clientX: at.clientX,
           clientY: at.clientY,
           bandTransformKey: model.bandTransformKey,

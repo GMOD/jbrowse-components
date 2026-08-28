@@ -1,4 +1,4 @@
-import { animationAllowed } from '@jbrowse/core/util'
+import { animationAllowed, getSession } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
@@ -21,25 +21,41 @@ export const OFFSCREEN_MATE_NAV_GROW = 0.2
 export const OFFSCREEN_MATE_NAV_MIN_BP = 20_000
 
 /**
- * Where a clicked mark sends its row: the mate's own locus, padded, and widened
- * to the floor if that is still narrower.
+ * The window a clicked mark frames on its row: the mate's own locus, padded,
+ * and widened to the floor if that is still narrower. Clamped to the contig,
+ * since the caller has the region and a window off its end frames blank.
  *
  * The floor is a WIDTH, and the padding is inside it, so the number here is the
  * number the row lands at. Padding afterwards instead made a documented 20kb
  * minimum a 28kb one — and 24kb at the origin, where only the left side clips,
  * which is the asymmetry deriving `start` from the span already removed once.
+ *
+ * INTERBASE, and a span rather than a locstring: the click used to hand
+ * `navToLocString` a string for it to parse back into these two numbers, which
+ * only made sense while the destination was also a REGION REPLACEMENT. The row
+ * now keeps its regions and frames a window in them, so the numbers travel as
+ * numbers. No locus at all means the whole contig — the answer a click gave
+ * before there were coordinates.
  */
-export function navLocString(refName: string, locus?: OffscreenMateLocus) {
-  if (locus) {
-    const padded = Math.round(
-      (locus.end - locus.start) * (1 + 2 * OFFSCREEN_MATE_NAV_GROW),
-    )
-    const span = Math.max(OFFSCREEN_MATE_NAV_MIN_BP, padded)
-    const start = Math.max(0, Math.round((locus.start + locus.end - span) / 2))
-    // +1 because the payload is interbase and a locstring is 1-based
-    return `${refName}:${start + 1}-${start + span}`
+export function navSpan(
+  region: { start: number; end: number },
+  locus?: OffscreenMateLocus,
+) {
+  if (!locus) {
+    return { start: region.start, end: region.end }
   }
-  return refName
+  const padded = Math.round(
+    (locus.end - locus.start) * (1 + 2 * OFFSCREEN_MATE_NAV_GROW),
+  )
+  const span = Math.max(OFFSCREEN_MATE_NAV_MIN_BP, padded)
+  const start = Math.max(
+    region.start,
+    Math.min(
+      region.end - span,
+      Math.round((locus.start + locus.end - span) / 2),
+    ),
+  )
+  return { start, end: Math.min(region.end, start + span) }
 }
 
 // The view-wide follow state a mark's navigation borrows. A state tree node
@@ -190,4 +206,34 @@ export function captureStackViewports(views: LinearGenomeViewModel[]) {
       restore()
     }
   }
+}
+
+/**
+ * The facing row's own region for a contig a mark names, or undefined when that
+ * assembly does not have it.
+ *
+ * WHOLE-CONTIG, because a region the row does not yet display has no other
+ * natural extent — the window inside it is `navSpan`'s answer, and the two are
+ * separate so panning off the mark's locus stays inside the region rather than
+ * running out of it.
+ *
+ * `getCanonicalRefName2` rather than `getCanonicalRefName`: mate names come out
+ * of an alignment file, the facing assembly may spell them differently, and the
+ * strict one THROWS when the aliases have not loaded. The fallback there is the
+ * name as given, which then simply fails to match below and reaches the caller
+ * as "not found" — the same answer an absent contig gets.
+ */
+export function mateRegion(
+  node: IStateTreeNode,
+  view: LinearGenomeViewModel,
+  refName: string,
+) {
+  const assemblyName = view.assemblyNames[0]
+  const assembly = assemblyName
+    ? getSession(node).assemblyManager.get(assemblyName)
+    : undefined
+  const canonical = assembly?.getCanonicalRefName2(refName)
+  return canonical
+    ? assembly?.regions?.find(r => r.refName === canonical)
+    : undefined
 }

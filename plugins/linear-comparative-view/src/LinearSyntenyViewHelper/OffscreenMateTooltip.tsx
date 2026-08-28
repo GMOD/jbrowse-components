@@ -14,19 +14,8 @@ export interface OffscreenMateHover {
   // the query axis names a contig the panel BELOW is not showing and one on the
   // target axis names a contig the panel ABOVE is not.
   side: OffscreenMateSide
-  // whether a click scrolls that panel or replaces what it is showing
-  canScroll: boolean
   clientX: number
   clientY: number
-}
-
-// The two clicks in one sentence each. `canScroll` is the facing panel already
-// displaying this contig, so the click only has to move it there.
-function clickLine(side: OffscreenMateSide, canScroll: boolean) {
-  const panel = side === 'top' ? 'panel below' : 'panel above'
-  return canScroll
-    ? `Click to scroll the ${panel} to it`
-    : `Click to show it on the ${panel}, replacing what that panel shows`
 }
 
 /**
@@ -65,21 +54,22 @@ const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
         count > 0
           ? `${hover.refName} · ${count.toLocaleString()} alignments`
           : hover.refName,
-        // WHICH OF THE TWO CLICKS THIS IS. One scrolls the facing panel, which
-        // is reversible and acts immediately; the other replaces what that
-        // panel is showing, and asks first. Nothing said which, so the only way
-        // to find out was to do it — and the reader who most needs to know is
-        // the one about to lose a region list they built.
+        // ONE SENTENCE FOR BOTH CLASSES. A mark whose contig the facing panel
+        // already displays is scrolled to; one whose contig it does not is
+        // ADDED to that panel and then framed. The two used to want different
+        // wording because one of them discarded the panel's regions and the
+        // reader deserved the warning; neither does now, so "show it" is the
+        // whole of what a reader needs before clicking.
         //
-        // Free here, unlike the locus: the hit test already had the lane in
-        // hand when it matched, while resolving WHERE on the contig is a full
-        // scan (`offscreenMateSpanAt`, 4.11ms on a 250k-mark level) and this
-        // runs on a rAF per pointer move. The dialog and the snackbar name the
-        // locus exactly, once a click has paid for it.
+        // THE LOCUS is still not named, deliberately: resolving which locus is
+        // a full scan of the lane (`offscreenMateSpanAt`, 4.11ms on a 250k-mark
+        // level) where this runs on a rAF per pointer move. The snackbar the
+        // click raises names the contig it landed on.
         //
-        // Naming the wrong panel describes a click that then rewrites the
-        // other one's regions, and `navToLocString` REPLACES them.
-        clickLine(hover.side, hover.canScroll),
+        // Naming the wrong panel describes a click that then moves the other.
+        hover.side === 'top'
+          ? 'Click to show it on the panel below'
+          : 'Click to show it on the panel above',
       ]}
     />
   )
