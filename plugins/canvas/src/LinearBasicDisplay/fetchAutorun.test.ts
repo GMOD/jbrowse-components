@@ -2,7 +2,10 @@ import { setConf } from '@jbrowse/core/configuration'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
-import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -1377,6 +1380,69 @@ describe('showLabels auto density gate', () => {
     zoomAndSettle(view, 62.5)
     expect(display.showLabels).toBe(false)
     expect(display.effectiveShowDescriptions).toBe(true)
+  })
+
+  // `n` one-bp features spread evenly across the region, so the count the gate
+  // divides by the viewport width is exactly `n`.
+  function featuresOver(n: number, start: number, end: number) {
+    const step = (end - start) / n
+    return makeFeatureData({
+      flatbushItems: Array.from({ length: n }, (_, i) => {
+        const at = Math.round(start + i * step)
+        return makeFlatbushItem({
+          featureId: `f${i}`,
+          startBp: at,
+          endBp: at + 1,
+        })
+      }),
+    })
+  }
+
+  // Both arms hold the region average and the on-screen count in DISAGREEMENT,
+  // so each one fails if the gate reads the other number (ADR-093).
+  it('keeps names where the on-screen count is sparse and the average is not', () => {
+    const { display, view } = setup()
+    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
+    display.setRpcData(0, featuresOver(4, 0, 50_000), {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 0,
+      end: 50_000,
+    })
+    zoomAndSettle(view, 62.5)
+
+    // 0.625/px averaged over the fetched span, 4/800 = 0.005/px on screen
+    expect(display.visibleFeatureDensityPerPx).toBeGreaterThan(0.2)
+    expect(display.labelDensityPerPx).toBeLessThan(0.2)
+    expect(display.showLabels).toBe(true)
+  })
+
+  it('drops names where the on-screen count is crowded and the average is not', () => {
+    const { display, view } = setup()
+    display.setRpcData(0, featuresOver(200, 0, 50_000), {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 0,
+      end: 50_000,
+    })
+    zoomAndSettle(view, 62.5)
+
+    expect(display.visibleFeatureDensityPerPx).toBe(0)
+    expect(display.labelDensityPerPx).toBeCloseTo(200 / 800)
+    expect(display.showLabels).toBe(false)
+    expect(display.effectiveShowDescriptions).toBe(false)
+  })
+
+  // Nothing fetched yet, or a view restored without coarse blocks: there is no
+  // window to divide by, so the region average stands in.
+  it('falls back to the region average with no on-screen set', () => {
+    const { display, view } = setup()
+    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
+    zoomAndSettle(view, 62.5)
+
+    expect(display.onScreenFeatureIds).toBeUndefined()
+    expect(display.labelDensityPerPx).toBe(display.visibleFeatureDensityPerPx)
+    expect(display.showLabels).toBe(false)
   })
 })
 

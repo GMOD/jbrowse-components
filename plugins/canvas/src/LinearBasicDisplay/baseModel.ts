@@ -387,6 +387,74 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Whether features can be laid out: data is fetched, in-bounds, and the
+         * view is measured. The shared readiness guard for every layout getter —
+         * an empty stack until then, so the GPU upload autorun has nothing to
+         * push and view-geometry getters aren't read before the view is measured.
+         */
+        get layoutReady() {
+          return (
+            !self.regionTooLarge &&
+            getView(self).initialized &&
+            self.rpcDataMap.size > 0
+          )
+        },
+        /**
+         * #getter
+         * The features whose bp span touches the viewport. Why that is not the
+         * whole packed stack — and the matching rules — live with the pure
+         * `featureIdsTouchingBlocks` in layout.ts; this getter is the reactive
+         * half, deciding when to ask.
+         *
+         * Read off `coarseDynamicBlocks` (500ms debounced), like the layout's
+         * `coarseBpPerPx`, so a pan re-measures once it settles instead of
+         * breathing the whole stack every frame. Undefined until the view has
+         * coarse blocks, which every consumer reads as "measure the whole
+         * stack".
+         *
+         * Three things measure over it: the label density gate
+         * (`labelDensityPerPx`), the fit/fixed ladder (`fitMeasureFeatureIds`)
+         * and the scroll extent (`scrollExtentMaxY`).
+         */
+        get onScreenFeatureIds(): ReadonlySet<string> | undefined {
+          if (!self.layoutReady) {
+            return undefined
+          }
+          const blocks = getView(self).coarseDynamicBlocks
+          return blocks.length === 0
+            ? undefined
+            : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
+        },
+        /**
+         * #getter
+         * Features per pixel of what is actually ON SCREEN — the density the
+         * `auto` label modes gate on (ADR-093).
+         *
+         * `visibleFeatureDensityPerPx`, which this replaces at those two call
+         * sites, divides a region's feature count by its whole FETCHED span, so
+         * labels toggled off the buffer's average and a refetch widening the
+         * buffer moved the verdict without anything on screen changing. That
+         * region average keeps its own job in the too-large gate
+         * (`densityTooLarge`), and stands in here while there is no window to
+         * measure — before data, or before the view has coarse blocks.
+         */
+        get labelDensityPerPx() {
+          const ids = this.onScreenFeatureIds
+          if (!ids) {
+            return self.visibleFeatureDensityPerPx
+          }
+          let widthPx = 0
+          for (const block of getView(self).coarseDynamicBlocks) {
+            widthPx += block.widthPx
+          }
+          return widthPx > 0
+            ? ids.size / widthPx
+            : self.visibleFeatureDensityPerPx
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          */
         get renderState() {
           return {
@@ -448,9 +516,9 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Effective name visibility used by layout, hit testing, the DOM
-        // overlay, and SVG export. 'auto' switches to false once feature
-        // density crosses the readability threshold so layout-reserved label
-        // space, the rendered DOM elements, and the hit-test geometry all
+        // overlay, and SVG export. 'auto' switches to false once the ON-SCREEN
+        // feature density crosses the readability threshold so layout-reserved
+        // label space, the rendered DOM elements, and the hit-test geometry all
         // agree — otherwise rows reserve label height that never gets used.
         // Collapsed mode is a single-row overview, so it suppresses names
         // outright — gated here (not just at renderedShowLabels) so all four
@@ -462,8 +530,7 @@ export default function baseStateModelFactory(
             this.displayMode !== 'collapsed' &&
             modeCanShowName(mode) &&
             (mode !== 'auto' ||
-              self.visibleFeatureDensityPerPx <=
-                getConf(self, 'maxLabelFeatureDensity'))
+              self.labelDensityPerPx <= getConf(self, 'maxLabelFeatureDensity'))
           )
         },
 
@@ -573,7 +640,7 @@ export default function baseStateModelFactory(
             this.showDescriptions &&
             (this.showLabelsMode !== 'auto' ||
               (this.showLabels &&
-                self.visibleFeatureDensityPerPx <=
+                self.labelDensityPerPx <=
                   getConf(self, 'maxDescriptionFeatureDensity')))
           )
         },
@@ -795,51 +862,12 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Whether features can be laid out: data is fetched, in-bounds, and the
-         * view is measured. The shared readiness guard for every layout getter —
-         * an empty stack until then, so the GPU upload autorun has nothing to
-         * push and view-geometry getters aren't read before the view is measured.
-         */
-        get layoutReady() {
-          return (
-            !self.regionTooLarge &&
-            getView(self).initialized &&
-            self.rpcDataMap.size > 0
-          )
-        },
-        /**
-         * #getter
-         * The features whose bp span touches the viewport. Why that is not the
-         * whole packed stack — and the matching rules — live with the pure
-         * `featureIdsTouchingBlocks` in layout.ts; this getter is the reactive
-         * half, deciding when to ask.
-         *
-         * Read off `coarseDynamicBlocks` (500ms debounced), like the layout's
-         * `coarseBpPerPx`, so a pan re-measures once it settles instead of
-         * breathing the whole stack every frame. Undefined until the view has
-         * coarse blocks, which every consumer reads as "measure the whole
-         * stack".
-         *
-         * Two things measure over it, for the same reason: the fit ladder
-         * (`fitMeasureFeatureIds`) and the scroll extent (`scrollExtentMaxY`).
-         */
-        get onScreenFeatureIds(): ReadonlySet<string> | undefined {
-          if (!self.layoutReady) {
-            return undefined
-          }
-          const blocks = getView(self).coarseDynamicBlocks
-          return blocks.length === 0
-            ? undefined
-            : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
-        },
-        /**
-         * #getter
          * The features fit mode measures its stack against: the on-screen set
          * while the fit is running, undefined otherwise (which measures the
          * whole stack).
          */
         get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
-          return self.fitHeightToDisplay ? this.onScreenFeatureIds : undefined
+          return self.fitHeightToDisplay ? self.onScreenFeatureIds : undefined
         },
         /**
          * #getter

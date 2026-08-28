@@ -7,10 +7,11 @@ const PEPTIDE_BACKGROUND_MAX_BP_PER_PX = 1
 // rather than restate it.
 export const PEPTIDE_TEXT_MAX_BP_PER_PX = 1 / 8
 
-// Above this features-per-pixel density 'auto' hides floating labels: too many
-// to read individually, and React element creation costs ~70us each. At 0.2 on
-// a 1200px screen roughly 240 features are visible; a sparse 5-feature track on
-// a whole chromosome sits near 0.005 and stays labeled at any zoom.
+// Above this on-screen features-per-pixel density (`labelDensityPerPx`) 'auto'
+// hides floating labels: too many to read individually, and React element
+// creation costs ~70us each. At 0.2 on a 1200px screen roughly 240 features are
+// visible; a sparse 5-feature track on a whole chromosome sits near 0.005 and
+// stays labeled at any zoom.
 export const MAX_LABEL_FEATURE_DENSITY = 0.2
 
 // Descriptions drop out of 'auto' before names do, mirroring the fit ladder's
