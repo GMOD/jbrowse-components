@@ -1,6 +1,6 @@
 ---
 name: a-shape-composes-a-scale
-description: render-core already holds a shape module (rowRect.slang) and a scale module (scoreScale.slang) and has never composed them. Re-measured 2026-08-28, "a per-instance scalar through a ramp" is one channel cardinality but only its RAMP half factors — HiC and LD share the Sampler2D LUT mechanism down to the binding slot, while the three normalizers (scoreScale; HiC's mapHicCount, pinned cross-backend; LD's remap-plus-sentinel) stay per-consumer, and density already composes scoreScale. The plan composes rowRect × scoreScale × a LUT ramp on wiggle density first, because density's autoscale domain is a uniform and a CPU-side colour resolve would turn a pan into a buffer re-upload; the gates are pan cost in bytes uploaded, wiggle.slang shrinking, and a GPU/Canvas2D/SVG ramp-entry parity sweep. Independent of ADR-089/090/091 on structural grounds: composition is compile-time slangc inlining that registers nothing and adds no runtime module edges, so ADR-091's reopening condition and the eager-bundle constraint do not govern it.
+description: render-core already holds a shape module (rowRect.slang) and a scale module (scoreScale.slang) and has never composed them. Re-measured 2026-08-28, "a per-instance scalar through a ramp" is one channel cardinality but only its RAMP half factors — HiC and LD share the Sampler2D LUT mechanism down to the binding slot, while the three normalizers (scoreScale; HiC's mapHicCount, pinned cross-backend; LD's remap-plus-sentinel) stay per-consumer, and density already composes scoreScale. The plan composes rowRect × scoreScale × a LUT ramp on wiggle density first, because density's autoscale domain is a uniform and a CPU-side colour resolve would turn a pan into a buffer re-upload; the gates are pan cost in bytes uploaded, wiggle.slang shrinking, and a GPU/Canvas2D/SVG ramp-entry parity sweep. Step 2 landed 2026-08-28 — wiggleDensity.slang composes rowRect's factored geometry with scoreScale over the existing fill buffer, all three gates measured and passing in its section; Step 3 (the texture/LUT ramp) is still open. Independent of ADR-089/090/091 on structural grounds: composition is compile-time slangc inlining that registers nothing and adds no runtime module edges, so ADR-091's reopening condition and the eager-bundle constraint do not govern it.
 ---
 
 # A shape composes a scale
@@ -162,6 +162,62 @@ sweep it the way `normalizeScoreParity.test.ts` sweeps the normalizer.
 [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md)
 declined a shared quad on a two-consumer bar for that reason and the reason
 still holds.
+
+**Landed 2026-08-28 — all three gates pass, kill condition clear.** The shape:
+`rowRect.slang` factors `rowRectClipPos(startBp, endBp, rowIndex, vid,
+RowRectUniforms)` — the geometry alone, callable independent of the colour lane,
+with `rowRectVertex` now a caller of it — and `wiggleDensity.slang` is the
+composed entry: rowRect geometry off a `RowRectUniforms` derived in the vertex
+stage from wiggleCommon's own uniform block (`minCellPx` = `MIN_FILL_WIDTH_PX`,
+`rowProportion` = 1, `scrollTop` = 0), `scoreScale` normalization, the inline
+white-to-track-colour ramp unchanged. The instance struct is NOT
+"`RowRectInstance` with a `score` added": it is the existing fill record,
+declared once as `WiggleFillInstance` in `wiggleCommon.slang`, and the density
+pass draws off `PASS_FILL`'s buffer via `drawPass`'s `bufferPassId` — the
+`LineInstance` sharing precedent from slangPass.ts — so density gained no
+packer and no buffer. `rowIndex` stays a float lane there (the buffer is shared
+with xyplot/scatter, and the row transform is float arithmetic either way);
+`rowRect`'s own struct keeps uint and each entry converts at its boundary.
+
+- **Gate A: pass.** Jest + MockHal (`gpuWiggleRenderer.test.ts`, "a pan that
+  moves the autoscale domain uploads zero buffer bytes"): a density region
+  uploads 40 bytes (2 × 20-byte record); a pan whose autoscale moves `domainY`
+  [0,20]→[0,35] uploads **0 buffer bytes** and costs one 64-byte uniform write
+  per drawn block. Neither failure mode exists structurally:
+  `packFillInstances(sources)` takes no domain, and `installUpload`'s `inputs`
+  is `gpuProps()`, which carries no domain — the domain rides `renderState`,
+  read per frame by the render autorun.
+- **Gate B: pass.** `wiggle.slang` 217 → 183 lines (116 → 93 non-comment);
+  `wiggleDensity.slang` is 79 (35 non-comment). The surviving arms did shrink:
+  the shared y-span selection lost its density branch, the AA pad ternary
+  (`drawsBar() ? barAaPx() : 0.0`) became unconditional, the vertex colour
+  if/else and the fragment's density case left, and `import scoreScale`
+  dropped. Support files grew by what moved, not by copies: rowRect.slang
+  141 → 154 (the factored function), wiggleCommon.slang 102 → 118 (the shared
+  struct).
+- **Gate C: pass.** `densityColorParity.test.ts` sweeps 8 domain/scale/origin
+  cases (linear/log/symlog, degenerate domain, origin ≠ 0, negative scores) ×
+  3 track colours × 10 scores: the GPU chain (generated `normalizeScore` +
+  `densityGradientT` + the mirrored lerp) lands within one LUT bucket — under
+  2 8-bit channel steps — of `makeDensityRgbStringFn`, the pivot is white
+  exactly on both backends, and the far domain end is the track colour exactly
+  on the GPU side. One pre-existing sub-bucket wrinkle surfaced: the Canvas
+  factory hoists the normalizer's reciprocal, so on symlog its endpoint t is
+  0.99999… and one bucket short (`rgb(255,1,1)` for pure red) — present before
+  the move, GPU-side exact after it. Before/after holds because the composed
+  shader compiles from the same scoreScale/wiggleCommon functions the deleted
+  branch called; the SVG path (`drawDensity` → `makeDensityRgbStringFn`) is
+  untouched.
+- **Kill condition: clear.** `rowRectClipPos` adds no parameter — its five are
+  all exercised through `rowRectVertex` (MAF, multi-row) and by density — and
+  `RowRectUniforms` gained no field; density writes 1.0/0.0 into
+  `rowProportion`/`scrollTop`, fields the existing consumers exercise.
+
+One deliberate behavior change: composing the shape brings `MIN_DRAWN_ROW_PX`
+along, so a sub-pixel row (`numRows` > canvas height) paints at a floored 1px
+and overlaps its neighbours where the old branch let it miss every pixel
+center and drop out. Density and multirowdensity stay one code path — both map
+to `RENDERING_TYPE_DENSITY` and differ only in `rowIndex`/`numRows`.
 
 ### Step 3 — The ramp is a texture, and the module is the ramp, not the scale
 

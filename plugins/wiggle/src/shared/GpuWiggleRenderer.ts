@@ -43,7 +43,7 @@ const PASS_LINE_CENTER = 'lineCenter'
 // the same numbers — rather than the 18 that used to be re-typed here with
 // nothing checking it against the split.
 
-// One buffer per instance layout, so two of the three passes carry a packer.
+// One buffer per instance layout, so two of the four passes carry a packer.
 // Each returns empty for the renderings that aren't its own, which releases that
 // pass's buffer (an empty pack IS the release), so only the layout actually
 // being drawn stays resident.
