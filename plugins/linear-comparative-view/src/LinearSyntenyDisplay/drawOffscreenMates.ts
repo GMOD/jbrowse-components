@@ -611,8 +611,9 @@ export interface OffscreenMateLocus {
  */
 export interface OffscreenMateSpan {
   refName: string
-  // The contig's own bp: the BLOCKS' extent, untrimmed, which is what the
-  // region-replacing navigation frames and what a label can name.
+  // The contig's own bp: the BLOCKS' extent, untrimmed, which is what a click
+  // on a contig the facing row lacks frames once it has added it, and what a
+  // label can name.
   locus: OffscreenMateLocus
   /**
    * Where the alignments under the mark are DRAWN on the facing axis, in that
@@ -703,9 +704,10 @@ export function offscreenMateSpanAt(
   }
   // A DEGENERATE SPAN IS STILL A PLACE. It used to be dropped and the click fell
   // back to the whole contig, which is the answer these coordinates were added
-  // to stop — and on a `displayed` mark the fallback is the region-replacing
-  // navigation that class must never take. `OFFSCREEN_MATE_NAV_MIN_BP` frames a
-  // zero-width locus the same way it frames a 500bp one.
+  // to stop — and on a mark whose contig the facing row already displays, that
+  // fallback is the other class's navigation, which this one must never take.
+  // `OFFSCREEN_MATE_NAV_MIN_BP` frames a zero-width locus the same way it
+  // frames a 500bp one.
   return { refName: top, locus: spans.get(top)!, mateCumBp: drawn.get(top) }
 }
 

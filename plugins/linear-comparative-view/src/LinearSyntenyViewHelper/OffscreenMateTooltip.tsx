@@ -23,11 +23,11 @@ export interface OffscreenMateHover {
  *
  * THE NAME IS OFTEN NOT ON SCREEN. A label goes on a stretch only when the
  * stretch is wide enough to hold it, so the marks a reader most wants explained
- * — a narrow run, one anchor on its own — are exactly the unlabelled ones. Until
- * this the only way to find out where such a mark went was to click it, and the
- * click runs `navToLocString`, which REPLACES the facing panel's displayed
- * regions. That made the one destructive step in the feature the only way to
- * see what it would do.
+ * — a narrow run, one anchor on its own — are exactly the unlabelled ones, and
+ * without this the only way to find out where one went was to click it and
+ * look. That is a cheap thing to undo now and was not always: the click used to
+ * REPLACE the facing panel's displayed regions, which made trying it the
+ * destructive step.
  *
  * The count is the tally's, and this tooltip is the only place it is shown: the
  * hamburger item that used to report a per-contig count is gone, and the

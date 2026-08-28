@@ -396,22 +396,24 @@ export function linearSyntenyViewHelperModelFactory(
        * range. Every mark carries one; the bare form here is for a caller that
        * has a contig and nothing else.
        *
-       * A CONTIG THAT ROW ALREADY HAS IS SCROLLED TO, not navigated to. Its
-       * marks are the ones the band is culling rather than the ones it never
-       * had a second endpoint for (`culledRibbonMates`), and that class arises
-       * precisely where the row displays everything — so replacing its regions
-       * would answer "your mate is over there" by discarding every other
-       * chromosome of the row the mark was pointing at. The rest below is the
-       * other class.
+       * NEITHER CLASS DISCARDS WHAT THE ROW IS SHOWING. A contig that row
+       * already has is SCROLLED to — those marks are the ones the band is
+       * culling rather than the ones it never had a second endpoint for
+       * (`culledRibbonMates`), and that class arises precisely where the row
+       * displays everything. A contig it does not have is ADDED to it. Both are
+       * the same request, "show me this too", and the difference is only
+       * whether the row has to gain a region first.
        *
-       * `navToLocString` REPLACES that row's displayed regions, which is exactly
-       * the narrowing the synteny follow must never do to itself. Here it is the
-       * whole request: the mark says "these go to ctgB", and the only thing that
-       * turns it into a ribbon is that row showing ctgB. That replacement is
-       * also why this offers an UNDO rather than leaving the reader to
-       * reconstruct what the row was showing: what it replaced is a region list
-       * they may have spent several navigations building, and "Show all regions"
-       * — the only thing that was on offer — is not it.
+       * The second class went through `navToLocString` until it didn't, and
+       * that function REPLACES the row's regions — so answering "your mate is
+       * over there" discarded every other chromosome the row was showing, which
+       * is exactly the narrowing the synteny follow must never do to itself. It
+       * needed a confirmation dialog in front of it to be honest about that.
+       * Appending the region instead makes the whole question go away.
+       *
+       * The UNDO stays, because a row that gained a region and moved is still a
+       * change the reader may want back in one gesture, and `captureRowViewport`
+       * covers both halves of it.
        *
        * IT ALSO TAKES THE ANCHOR, when the follow is on and this is not already
        * the anchor row. A row the follow MOVES is re-asserted onto the anchor's
@@ -434,17 +436,17 @@ export function linearSyntenyViewHelperModelFactory(
         const { parentView } = self
         const view = parentView.views[row]
         if (view) {
-          // A CONTIG THE ROW ALREADY HAS scrolls, and must not go through
-          // `navToLocString`: that REPLACES the row's displayed regions, so a
-          // click on a mark in a stack of whole assemblies — the arrangement
-          // that produces these marks in the first place — would answer "your
-          // mate is over there" by throwing away every other chromosome of the
-          // row it was pointing at.
+          // A CONTIG THE ROW ALREADY HAS only has to be scrolled to: its
+          // regions are right and its window is not. Touching the region list
+          // here would rewrite a row over a mark that merely asked it to move,
+          // and in a stack of whole assemblies — the arrangement that produces
+          // these marks in the first place — that list is everything the row
+          // has.
           //
-          // NOTHING IS TAKEN UNTIL A BRANCH COMMITS. The other one asks before
-          // it acts, and a capture or an anchor held across a modal is state
-          // the click has not earned — `takeFollowAnchor`'s own rule, that only
-          // a LANDED navigation keeps it.
+          // NOTHING IS TAKEN UNTIL A BRANCH COMMITS, since the other one can
+          // still fail to resolve the contig and a capture or an anchor taken
+          // before that is state the click has not earned. `takeFollowAnchor`
+          // states the rule: only a LANDED navigation keeps it.
           const drawn = mate?.mateCumBp
           if (drawn && view.displayedRegions.length > 0) {
             // before the take, which already re-places the other rows
@@ -532,12 +534,12 @@ export function linearSyntenyViewHelperModelFactory(
           // an aesthetic cost and not a correctness one; pruning the list is
           // the region editor's job, not a mark's.
           //
-          // What this deletes is the whole second destination: no dialog, since
-          // nothing is discarded to consent to; no `replaceRowRegions`; and no
-          // second class for the hover to warn about. After the refetch this
-          // contig IS displayed, so its remaining marks are the scroll class
-          // and a second click goes to the drawn position — which is also how
-          // an approximate landing on a whole-chromosome chain heals itself.
+          // There is nothing to consent to and so nothing to ask, which is why
+          // the click has one destination rather than two and the hover has one
+          // sentence rather than a warning. After the refetch this contig IS
+          // displayed, so its remaining marks are the scroll class and a second
+          // click goes to the drawn position — which is also how an approximate
+          // landing on a whole-chromosome chain heals itself.
           const region = mateRegion(self, view, refName)
           if (!region) {
             // ordinary: mate names come out of the alignment file, and the

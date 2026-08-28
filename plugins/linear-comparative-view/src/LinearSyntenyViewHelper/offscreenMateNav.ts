@@ -143,10 +143,10 @@ export function takeFollowAnchor(
  * Whether a mark's click may FLY to a contig the row already displays rather
  * than jump to it.
  *
- * Only the scroll class can be flown at all — the other one replaces the row's
- * displayed regions, and there is no path through a coordinate space the
- * destination is not in. This is the second half: whether flying that path is
- * the right thing here.
+ * Only the scroll class can be flown at all — the other one gives the row a
+ * region it did not have, and an arc needs a coordinate space that already
+ * holds both ends. This is the second half: whether flying that path is the
+ * right thing here.
  *
  * The reader's own answer first (`animationAllowed` — the session preference
  * and, under 'system', the OS reduced-motion setting), and then the one thing
@@ -165,9 +165,9 @@ export function mateFlightAllowed(
 
 /**
  * What a row was showing before a mark's click replaced it, as the function
- * that puts it back. `navToLocString` REPLACES `displayedRegions`, so what the
- * click discards may be a region list built over several navigations — "show
- * all regions" is a different destination, not an undo.
+ * that puts it back. A click can APPEND to `displayedRegions`, and the row it
+ * changed may be one the reader built over several navigations — "show all
+ * regions" is a different destination, not an undo.
  *
  * `displayedRegions` is a frozen `Region[]`, so a copy of the array is the whole
  * of what has to be kept, and the captured objects are plain — nothing here
