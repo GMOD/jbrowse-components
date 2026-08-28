@@ -292,8 +292,10 @@ test('a click resolves the same strip and row, plus the mate locus', () => {
     refName: 'fromTarget',
     navRow: 0,
     side: 'bottom',
-    displayed: false,
     locus: { start: 0, end: 500 },
+    // the worker's class: no place on the facing axis at all, so nowhere to
+    // scroll to and no drawn span to carry
+    mateCumBp: undefined,
   })
 })
 
@@ -385,15 +387,16 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
     refName: 'scrolledAway',
     navRow: 0,
     side: 'bottom',
-    displayed: true,
+    mateCumBp: { start: 100_000, end: 100_050 },
   })
 })
 
-// A ZERO-WIDTH MATE SPAN IS STILL A PLACE. Dropped, the click fell back to the
-// whole contig — the answer these coordinates exist to replace — and on this
-// class of mark that fallback is `navToLocString`, which replaces the regions of
-// the very row the mark says already has the contig. `displayed` and the locus
-// therefore travel as a pair rather than as two optionals.
+// A ZERO-WIDTH BLOCK EXTENT IS STILL A PLACE. Dropped, the click fell back to
+// the whole contig — the answer these coordinates exist to replace — and on
+// this class of mark that fallback is `navToLocString`, which replaces the
+// regions of the very row the mark says already has the contig. The DRAWN span
+// is what the click steers by and what says the mark is this class at all, so a
+// collapsed block extent costs it neither.
 test('a mark whose mate span collapses still resolves to a place', () => {
   const point = {
     ...culled('scrolledAway', [100_000, 100_050]),
@@ -416,8 +419,8 @@ test('a mark whose mate span collapses still resolves to a place', () => {
   })
   expect(offscreenMateNavHit(withBand(model), 1, 99)).toMatchObject({
     refName: 'scrolledAway',
-    displayed: true,
     locus: { start: 7_000, end: 7_000 },
+    mateCumBp: { start: 100_000, end: 100_050 },
   })
 })
 
