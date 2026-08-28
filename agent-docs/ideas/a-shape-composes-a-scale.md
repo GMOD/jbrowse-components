@@ -34,7 +34,9 @@ composition here is a hand-written Slang import, never generated code.
 
 ## Four displays spell the missing half four ways
 
-Colour cardinality across the live shaders:
+Colour cardinality across the live shaders, as measured before Step 2 landed —
+density's row has since moved to `wiggleDensity.slang` (see Step 2's results),
+and the `wiggle.slang` citations in it are the pre-move spellings:
 
 | Shader | Colour is | Spelled |
 | --- | --- | --- |
@@ -124,6 +126,9 @@ Costs a document. No gate — a description of the tree cannot fail.
 What it buys: the next shader that needs a ramp stops being a new shader, and
 ADR-090's ruling does not return by default when someone reads it and does not
 notice its status.
+
+**Done 2026-08-28 —
+[ADR-094](../architecture-decision-records/adr-094-colour-cardinality-is-one-channel-not-four-shapes.md).**
 
 ### Step 2 — Compose `rowRect` × `scoreScale` on wiggle density
 
