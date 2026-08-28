@@ -173,22 +173,32 @@ describe('solveIsoformCount', () => {
   const heightAt = (n: number) => n * 12
 
   it('answers the largest count that fits', () => {
-    expect(solveIsoformCount(heightAt, 60, 10)).toBe(5)
+    expect(solveIsoformCount(heightAt, 60, 10, 1)).toBe(5)
   })
 
   it('answers nothing when the whole stack fits', () => {
-    expect(solveIsoformCount(heightAt, 600, 10)).toBeUndefined()
+    expect(solveIsoformCount(heightAt, 600, 10, 1)).toBeUndefined()
   })
 
-  // "Names before isoforms": one per gene is the floor, and the rungs below
-  // inherit it rather than going back to the full stack to save a name.
-  it('answers one when even one per gene overflows', () => {
-    expect(solveIsoformCount(heightAt, 5, 10)).toBe(1)
+  // "Names before isoforms": in fit mode one per gene is the floor, and the
+  // rungs below inherit it rather than going back to the full stack to save a
+  // name. Fixed mode has no rung below, so a trim that cannot achieve a fit
+  // costs every transcript and scrolls anyway — it declines instead.
+  it('answers the caller’s floor when even one per gene overflows', () => {
+    expect(solveIsoformCount(heightAt, 5, 10, 1)).toBe(1)
+    expect(solveIsoformCount(heightAt, 5, 10, undefined)).toBeUndefined()
+  })
+
+  // The floor is only reachable through the "nothing fits" branch: wherever a
+  // count does fit, both callers get it.
+  it('ignores the floor wherever a count fits', () => {
+    expect(solveIsoformCount(heightAt, 60, 10, undefined)).toBe(5)
+    expect(solveIsoformCount(heightAt, 12, 10, undefined)).toBe(1)
   })
 
   it('answers nothing when no gene has a choice to make', () => {
-    expect(solveIsoformCount(heightAt, 1, 1)).toBeUndefined()
-    expect(solveIsoformCount(heightAt, 1, 0)).toBeUndefined()
+    expect(solveIsoformCount(heightAt, 1, 1, 1)).toBeUndefined()
+    expect(solveIsoformCount(heightAt, 1, 0, 1)).toBeUndefined()
   })
 })
 

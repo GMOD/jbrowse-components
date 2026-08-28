@@ -95,14 +95,14 @@ describe('the isoform rung, on the shape that needed it', () => {
   })
 
   it('solves a count that fits with the names kept', () => {
-    const count = solveIsoformCount(isoformProbe, TRACK_HEIGHT, 10)!
+    const count = solveIsoformCount(isoformProbe, TRACK_HEIGHT, 10, 1)!
     expect(count).toBe(5)
     expect(isoformProbe(count)).toBeLessThanOrEqual(TRACK_HEIGHT)
     expect(isoformProbe(count + 1)).toBeGreaterThan(TRACK_HEIGHT)
   })
 
   it('keeps both names and trims the crowded gene', () => {
-    const count = solveIsoformCount(isoformProbe, TRACK_HEIGHT, 10)!
+    const count = solveIsoformCount(isoformProbe, TRACK_HEIGHT, 10, 1)!
     expect(namesDrawn(count)).toEqual(['OPN4', 'LDB3'])
     expect(isoformsDrawn('LDB3', count)).toBeLessThanOrEqual(5)
     // OPN4 has four and the count is five, so it is left alone
@@ -111,7 +111,7 @@ describe('the isoform rung, on the shape that needed it', () => {
   })
 
   it('tells the trimmed gene how many it is missing', () => {
-    const count = solveIsoformCount(isoformProbe, TRACK_HEIGHT, 10)!
+    const count = solveIsoformCount(isoformProbe, TRACK_HEIGHT, 10, 1)!
     const labels = laidOut(count).get(0)!.floatingLabelsData
     expect(labels.get('LDB3')!.moreIsoformsLabel).toMatchObject({
       text: '+5 more',
@@ -127,15 +127,18 @@ describe('the isoform rung, on the shape that needed it', () => {
     expect(heights).toEqual([...heights].sort((a, b) => a - b))
   })
 
-  // A track too short for even one transcript per gene still answers 1, so the
-  // `decimated` and `bodies` rungs below run there rather than back at the full
-  // stack: every isoform goes before any name does.
+  // A track too short for even one transcript per gene still answers 1 for fit
+  // mode, so the `decimated` and `bodies` rungs below run there rather than back
+  // at the full stack: every isoform goes before any name does. Fixed mode has
+  // no rung below and so declines the trim — see the display-level case in
+  // fitToDisplayHeight.test.ts.
   it('answers one when even one per gene overflows', () => {
-    expect(solveIsoformCount(isoformProbe, 20, 10)).toBe(1)
+    expect(solveIsoformCount(isoformProbe, 20, 10, 1)).toBe(1)
+    expect(solveIsoformCount(isoformProbe, 20, 10, undefined)).toBeUndefined()
   })
 
   it('answers nothing when the whole stack already fits', () => {
-    expect(solveIsoformCount(isoformProbe, 400, 10)).toBeUndefined()
+    expect(solveIsoformCount(isoformProbe, 400, 10, 1)).toBeUndefined()
   })
 
   // An expanded gene is the user's own request for the full stack, so the count

@@ -258,9 +258,13 @@ export function fitLadderViews(self: FitLadderHost) {
      * #getter
      * The isoform count the `isoforms` rung commits at: the largest whose
      * names-kept stack fits `fitTargetHeight`, so the most transcripts are kept
-     * without giving up a name. Undefined when nothing is worth trimming; 1
-     * when even one transcript per gene overflows, which the `decimated` and
-     * `bodies` rungs below then inherit.
+     * without giving up a name. Undefined when nothing is worth trimming.
+     *
+     * When even one transcript per gene overflows, fit mode commits to 1 — which
+     * the `decimated` and `bodies` rungs below then inherit, every isoform going
+     * before any name does — while fixed mode leaves the stack whole and
+     * scrolls. Fixed has no rung below the trim, so a trim that cannot achieve a
+     * fit there costs every transcript and scrolls anyway.
      *
      * Never in `grow`, whose height is its own content's — trimming there would
      * shrink the track it was measured against. Never under "All transcripts"
@@ -276,6 +280,7 @@ export function fitLadderViews(self: FitLadderHost) {
             this.isoformsHeightProbe,
             self.fitTargetHeight,
             this.maxIsoformsOnScreen,
+            self.fitHeightToDisplay ? 1 : undefined,
           )
         : undefined
     },
@@ -524,10 +529,12 @@ export function fitLadderViews(self: FitLadderHost) {
           : self.autoHeight
             ? // Grow's height IS its content's, so it gives nothing up.
               [full]
-            : // Fixed height scrolls rather than degrading, but it trims: a
-              // gene with 28 transcripts in a 100px lane draws all 28 inside
-              // the lane's own scrollbar, which is the case the worker's cap
-              // was built for and the one `grow` deliberately keeps.
+            : // Fixed height scrolls rather than degrading, but it trims where
+              // trimming achieves a fit: a gene with 28 transcripts in a 100px
+              // lane draws the count that fits, which is the case the worker's
+              // cap was built for and the one `grow` deliberately keeps. Where
+              // no count fits, `fitIsoformCount` is undefined and this rung
+              // packs the whole stack into the lane's own scrollbar.
               [full, ...isoformRung],
         self.fitTargetHeight,
         fit ? this.fitMinScale : 1,

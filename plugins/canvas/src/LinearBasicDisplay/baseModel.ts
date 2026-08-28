@@ -862,12 +862,20 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * The features fit mode measures its stack against: the on-screen set
-         * while the fit is running, undefined otherwise (which measures the
-         * whole stack).
+         * The features the ladder measures its rungs and its isoform solve
+         * against: the on-screen set in `fit` and `fixed`, undefined in `grow`
+         * (which measures the whole stack).
+         *
+         * Grow's height IS its content's, so it owes every buffered feature a
+         * row to grow into. The other two size a stack to a slot the user fixed,
+         * and a slot spent on a cluster half a viewport away is spent on
+         * something the reader cannot see — a refetch widening the buffer then
+         * moved the trim with nothing on screen changed (ADR-093). What is DRAWN
+         * is never narrowed: `settledMaxY` measures the whole pack outside fit
+         * mode.
          */
         get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
-          return self.fitHeightToDisplay ? self.onScreenFeatureIds : undefined
+          return self.autoHeight ? undefined : self.onScreenFeatureIds
         },
         /**
          * #getter
@@ -1002,25 +1010,38 @@ export default function baseStateModelFactory(
          * #getter
          */
         // The settled laid-out content height, ignoring any in-flight Y morph.
-        // Content height without re-walking the scaled map: fitStage carries the
-        // kept rung's unscaled height, and scaleLaidOutData multiplies every
-        // bottomPx by scale, so this is exactly `maxBottom(laidOutDataMap)` over
-        // the features the stage measured — every feature in grow/fixed mode, the
-        // on-screen ones in fit mode (`fitMeasureFeatureIds`), which is what makes
-        // a fitted track report the height of what it is showing rather than of
-        // the buffer around it. This is what `grow` mode sizes the track to —
-        // it must NOT include the morph hold below, or the track would bounce to
-        // the taller of old/new content for the morph's duration and then
-        // collapse. Scroll-extent consumers read the morph-aware `maxY` instead.
+        // The DRAWING height: the canvas, the overlay layer and the peptide lane
+        // are sized from it through `contentHeight`, so it has to cover every
+        // laid-out feature — a buffered feature packed below the viewport still
+        // gets its box and its label, it is simply not somewhere a scroll can go
+        // (`scrollExtentMaxY`). This is also what `grow` mode sizes the track to,
+        // so it must NOT include the morph hold below, or the track would bounce
+        // to the taller of old/new content for the morph's duration and then
+        // collapse.
+        //
+        // Fit mode reads it off `fitStage` rather than re-walking the map:
+        // `contentHeight` is the kept rung's unscaled height over
+        // `fitMeasureFeatureIds` and `scaleLaidOutData` multiplies every bottomPx
+        // by the same scale, so a fitted track reports the height of what it is
+        // showing rather than of the buffer around it, epsilon-snapped so a
+        // grow/squeeze scale doesn't spuriously scroll. `fitTargetHeight` is the
+        // config slot, not the reactive `height` getter, so grow's
+        // `height`→grownHeight→settledMaxY chain can't cycle back on itself.
+        //
+        // The other two modes measure the whole pack instead: their stage
+        // contentHeight is now narrowed to the on-screen set too
+        // (`fitMeasureFeatureIds`), which is right for choosing the rung and
+        // wrong for sizing a canvas that draws the buffer.
         get settledMaxY() {
+          if (!self.fitHeightToDisplay) {
+            return maxBottom(self.fitStage.layout)
+          }
           const { contentHeight: keptRungHeight, scale } = self.fitStage
-          const raw = keptRungHeight * scale
-          // Snap away a sub-pixel float-epsilon overflow while a fit scale (grow or
-          // squeeze) is active, so a fitted track doesn't spuriously scroll (see
-          // snapFittedContentHeight). Reads the config-slot height (fitTargetHeight),
-          // not the reactive `height` getter, so grow mode's `height`→grownHeight→
-          // settledMaxY chain can't cycle back on itself.
-          return snapFittedContentHeight(raw, self.fitTargetHeight, scale !== 1)
+          return snapFittedContentHeight(
+            keptRungHeight * scale,
+            self.fitTargetHeight,
+            scale !== 1,
+          )
         },
 
         /**
@@ -1094,10 +1115,11 @@ export default function baseStateModelFactory(
         // whole promise is that every feature is in view — so the track-sizing
         // affordance surfaces it (see TrackHeightIndicator's tooltip).
         //
-        // Over `fitMeasureFeatureIds` in fit mode, like every other measurement
-        // the ladder takes: the tooltip tells the user to filter or zoom in, and
-        // a count including the fetch buffer said that about features a pan would
-        // have shown. Everything outside fit mode, where the set is undefined.
+        // Over `fitMeasureFeatureIds`, like every other measurement the ladder
+        // takes — so fit and fixed count the viewport and grow counts the whole
+        // pack. The tooltip tells the user to filter or zoom in, and a count
+        // including the fetch buffer said that about features a pan would have
+        // shown.
         get truncatedFeatureCount() {
           return countTruncatedFeatures(
             self.laidOutDataMap,

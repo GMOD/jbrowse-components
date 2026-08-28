@@ -69,10 +69,13 @@ export function bisectLargestFitting(
  * undefined when trimming buys nothing — either no gene on screen has more than
  * one, or the whole stack already fits.
  *
- * Answers 1 rather than undefined when even one isoform per gene overflows:
- * "names before isoforms" means every isoform goes before any name does, so the
- * `decimated` and `bodies` rungs below run at that 1 rather than back at the
- * full stack.
+ * `floorWhenNothingFits` is the answer when even one isoform per gene overflows,
+ * and it belongs to the caller because the two ladders want opposite things
+ * there. Fit passes 1: "names before isoforms" means every isoform goes before
+ * any name does, so the `decimated` and `bodies` rungs below run at that 1
+ * rather than back at the full stack. Fixed passes undefined, because it has no
+ * rung below — trimming to 1 there costs the reader every transcript AND still
+ * scrolls, so it draws the stack whole and scrolls, which is its contract.
  *
  * Takes the probe rather than building one, like `solveLabelRoomFactor`: its
  * preparation depends on the data and the layout inputs but not on the track
@@ -83,6 +86,7 @@ export function solveIsoformCount(
   heightAt: (maxIsoforms: number) => number,
   trackHeight: number,
   maxIsoformsOnScreen: number,
+  floorWhenNothingFits: 1 | undefined,
 ) {
   if (maxIsoformsOnScreen <= 1) {
     return undefined
@@ -92,7 +96,7 @@ export function solveIsoformCount(
     return undefined
   }
   if (!fits(1)) {
-    return 1
+    return floorWhenNothingFits
   }
   return bisectLargestFitting(fits, 1, maxIsoformsOnScreen)
 }

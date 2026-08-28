@@ -1481,7 +1481,7 @@ function geneRegionData(
 describe('canvas display fit measures the visible window', () => {
   // 800px over 80kb (100kb..180kb visible), with the fetch region covering the
   // buffered 60kb..220kb the display is really handed.
-  function fitOver(offscreenGenes: number) {
+  function fitOver(offscreenGenes: number, mode: 'fit' | 'fixed' = 'fit') {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     view.setDisplayedRegions([
@@ -1500,7 +1500,7 @@ describe('canvas display fit measures the visible window', () => {
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
     display.setHeight(100)
-    display.setHeightMode('fit')
+    display.setHeightMode(mode)
     let onScreenBottom = 0
     for (const data of display.laidOutDataMap.values()) {
       for (const item of data.flatbushItems) {
@@ -1516,6 +1516,7 @@ describe('canvas display fit measures the visible window', () => {
       level: display.fitStage.level,
       scale: display.fitScale,
       contentHeight: display.fitStage.contentHeight,
+      settledMaxY: display.settledMaxY,
       onScreenBottom,
     }
   }
@@ -1532,6 +1533,19 @@ describe('canvas display fit measures the visible window', () => {
     // into a fraction of it.
     expect(buffered.onScreenBottom).toBe(alone.onScreenBottom)
     expect(buffered.onScreenBottom).toBeCloseTo(100, 5)
+  })
+
+  // Fixed mode sizes a stack to a slot the user set, which is the same reason
+  // fit measures the window: a rung chosen by a cluster half a viewport away is
+  // chosen by something the reader cannot see. What it must NOT narrow is the
+  // DRAWING height — the buffered rows below still get their boxes and labels.
+  it('chooses a fixed rung over the window and still draws the buffer', () => {
+    const alone = fitOver(0, 'fixed')
+    const buffered = fitOver(10, 'fixed')
+    expect(buffered.contentHeight).toBe(alone.contentHeight)
+    expect(buffered.level).toBe(alone.level)
+    expect(buffered.settledMaxY).toBeGreaterThan(buffered.contentHeight)
+    expect(alone.settledMaxY).toBe(alone.contentHeight)
   })
 
   // The set is on-screen membership, so a feature entering the viewport starts
@@ -1602,8 +1616,9 @@ describe('canvas display fit measures the visible window', () => {
   // The truncated count is the third measurement, and it is the one the user
   // reads: "N not shown (past the layout row limit; filter or zoom in)". A pile
   // deep enough to truncate, sitting entirely in the fetch buffer, is not
-  // something filtering or zooming addresses — panning is — so in fit mode the
-  // count is over the visible window like everything else.
+  // something filtering or zooming addresses — panning is — so the two modes
+  // that size a stack to a slot count over the visible window like everything
+  // else, and only grow (whose subject is the whole pack) counts all of it.
   it('counts only the truncation the user is looking at', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
@@ -1625,16 +1640,21 @@ describe('canvas display fit measures the visible window', () => {
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
     display.setHeight(100)
 
-    // Outside fit mode the whole stack is the subject, and it is truncated...
-    expect(display.truncatedFeatureCount).toBeGreaterThan(0)
-    // ...but nothing the viewport holds is, so fit mode reports none.
+    // Nothing the viewport holds is truncated, so neither mode that sizes to a
+    // slot reports any...
+    expect(display.heightMode).toBe('fixed')
+    expect(display.truncatedFeatureCount).toBe(0)
     display.setHeightMode('fit')
     expect(display.truncatedFeatureCount).toBe(0)
+    // ...while grow, whose subject is every feature it holds, does.
+    display.setHeightMode('grow')
+    expect(display.truncatedFeatureCount).toBeGreaterThan(0)
   })
 
-  // Outside fit mode nothing is narrowed: grow sizes the track to every feature
-  // it holds, so panning inside the buffer doesn't resize the track.
-  it('measures the whole stack outside fit mode', () => {
+  // Grow is the one mode that narrows nothing: its height IS its content's, so
+  // it owes every buffered feature a row to grow into and panning inside the
+  // buffer doesn't resize the track. Fixed narrows like fit.
+  it('measures the whole stack in grow mode and the window in fixed', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     view.setDisplayedRegions([
@@ -1651,10 +1671,17 @@ describe('canvas display fit measures the visible window', () => {
       { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    const wholePack = maxBottom(display.baseLaidOutDataMap)
+
+    display.setHeightMode('grow')
     expect(display.fitMeasureFeatureIds).toBeUndefined()
-    expect(display.fitStage.contentHeight).toBe(
-      maxBottom(display.baseLaidOutDataMap),
-    )
+    expect(display.fitStage.contentHeight).toBe(wholePack)
+
+    display.setHeightMode('fixed')
+    expect(display.fitMeasureFeatureIds).toBeDefined()
+    expect(display.fitStage.contentHeight).toBeLessThan(wholePack)
+    // ...and the canvas is still sized to draw the buffered rows
+    expect(display.settledMaxY).toBe(wholePack)
   })
 })
 
@@ -1812,6 +1839,27 @@ describe('the isoform rung across the three height modes', () => {
     expect(display.fitStage.maxIsoforms).toBeLessThan(10)
     expect(display.fitStage.scale).toBe(1)
     expect(namesOnScreen(display)).toEqual(['GENE1', 'GENE2'])
+  })
+
+  // Fit's lower rungs inherit the count the trim failed at — names go before
+  // transcripts do — so a track too short for even one transcript per gene
+  // still commits to 1 there. Fixed has no rung below the trim, so trimming to
+  // 1 would cost the reader every transcript AND still scroll: it declines and
+  // draws the stack whole (ADR-093).
+  it('fixed leaves the stack whole where no count achieves a fit', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, ISOFORM_GENES, ctgA)
+    display.setHeight(20)
+
+    expect(display.heightMode).toBe('fixed')
+    expect(display.fitStage.maxIsoforms).toBeUndefined()
+    expect(drawnOrdinals(display, 'gene2').size).toBe(10)
+    expect(display.hasOverflow).toBe(true)
+
+    display.setHeightMode('fit')
+    expect(display.fitStage.maxIsoforms).toBe(1)
+    expect(drawnOrdinals(display, 'gene2').size).toBe(1)
   })
 
   // Grow's height IS its content's, so a trim solved against it would shrink
