@@ -281,6 +281,51 @@ test('a contig the row already displays is scrolled to, not navigated to', async
   expect(row.windowWidthBp).toBe(40_000)
 })
 
+// The linearized bp of ctgB:350,000 — where a clipped block's ribbons are drawn
+const DRAWN_CENTER_BP = BP + 350_000
+
+// WHERE THE RIBBONS ARE, NOT WHERE THE BLOCK IS. `clipLargeBlockToWindow`
+// re-anchors a chain to its visible slice, `locus` stays the UNTRIMMED extent
+// (the detail panel's), and the mark is decided from the drawn one — so the two
+// part company on exactly the alignments that produce these marks. A chain over
+// the whole contig sent every click to the contig's midpoint, whatever the mark
+// stood for and wherever the row already was.
+test('a scrolling click goes to the drawn span, not the block extent', async () => {
+  const { view, level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 0, end: BP },
+    displayed: true,
+    mateCumBp: { start: DRAWN_CENTER_BP - 500, end: DRAWN_CENTER_BP + 500 },
+  })
+  await when(
+    () => row.windowStartBp === DRAWN_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  expect(refNames(view, 1)).toEqual(['ctgA', 'ctgB'])
+  expect(row.windowWidthBp).toBe(40_000)
+})
+
+// A drawn span outside every displayed region is geometry from before the row
+// was navigated. There is no pixel on this row for it, so the click falls back
+// to what it had rather than clamping to an edge nothing is at.
+test('a drawn span this row cannot show falls back to the block extent', async () => {
+  const { level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    displayed: true,
+    mateCumBp: { start: 5_000_000, end: 5_001_000 },
+  })
+  await when(
+    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  expect(row.windowWidthBp).toBe(40_000)
+})
+
 // Flown, not jumped — so the row is somewhere else on the way and the reader
 // can see the distance being crossed. Asserted on the zoom rather than the
 // position, since the pull-back is the half a jump could not produce.

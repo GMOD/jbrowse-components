@@ -17,6 +17,7 @@ import { runInAction } from 'mobx'
 
 import {
   captureStackViewports,
+  mateCenter,
   mateFlightAllowed,
   navLocString,
   takeFollowAnchor,
@@ -429,7 +430,11 @@ export function linearSyntenyViewHelperModelFactory(
         // `OffscreenMateSpan`. Nested, the pair cannot come apart: no mate is
         // the whole contig, which is what a click did before there were
         // coordinates. `OffscreenMateNavHit` is one of these.
-        mate?: { locus: OffscreenMateLocus; displayed?: boolean },
+        mate?: {
+          locus: OffscreenMateLocus
+          displayed?: boolean
+          mateCumBp?: OffscreenMateLocus
+        },
       ) {
         const { parentView } = self
         const view = parentView.views[row]
@@ -444,7 +449,15 @@ export function linearSyntenyViewHelperModelFactory(
           // mate is over there" by throwing away every other chromosome of the
           // row it was pointing at.
           if (mate?.displayed) {
-            const center = Math.round((mate.locus.start + mate.locus.end) / 2)
+            // WHERE THE RIBBONS ARE, which for a clipped block is not where the
+            // blocks are — `mateCumBp` says why. Through `pxToBp` because the
+            // drawn span is the facing row's cumBp: it is the inverse the row
+            // itself uses, so a reversed region and a contig displayed in
+            // several regions both come back right.
+            const drawn = mateCenter(view, mate.mateCumBp)
+            const center =
+              drawn?.coord0 ??
+              Math.round((mate.locus.start + mate.locus.end) / 2)
             // FLOWN, not jumped, when the reader wants motion. The scroll class
             // arises where a row displays whole assemblies, so this is a jump of
             // a chromosome or more: landed instantly, the reader is somewhere

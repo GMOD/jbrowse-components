@@ -612,6 +612,27 @@ export interface OffscreenMateSpan {
   refName: string
   locus: OffscreenMateLocus
   displayed: boolean
+  /**
+   * Where the alignments under the mark are DRAWN on the facing axis, in that
+   * row's cumBp — present exactly when `displayed` is, since `mateAxis` is what
+   * decides both.
+   *
+   * THE MARK IS DECIDED FROM THIS AND THE CLICK USED `locus`, which are two
+   * coordinates for one alignment and agree only while the block is unclipped.
+   * `clipLargeBlockToWindow` re-anchors a chain to its visible slice, and
+   * `locus` is deliberately the UNTRIMMED extent (the detail panel's) — so on a
+   * whole-chromosome chain the click's midpoint was the midpoint of the
+   * CHROMOSOME. Observed on chimp chr19 vs hg38 chr17: a mark whose ribbon is
+   * drawn at chr17:42.6-43.3Mb navigated to chr17:41,645,617, the centre of
+   * `chr17:60,000-83,231,233`, which is nowhere the row could see it — and
+   * since the destination does not depend on where the row is, clicking again
+   * moved nothing.
+   *
+   * cumBp rather than the contig's own bp because that is what `mateAxis`
+   * holds: it is taken off the emitted instances, and the region a coordinate
+   * belongs to is the facing view's question. `pxToBp` is the caller's inverse.
+   */
+  mateCumBp?: OffscreenMateLocus
 }
 
 /**
@@ -650,23 +671,24 @@ export function offscreenMateSpanAt(
     return undefined
   }
   const spans = new Map<string, OffscreenMateLocus>()
+  // The same union in the facing row's cumBp, and only from the datasets that
+  // have one. Kept apart rather than folded into `spans`: a contig can be in
+  // both a worker lane and a culled one, and the two carry coordinates in
+  // different spaces, so one map would union a contig bp with a cumBp.
+  const drawn = new Map<string, OffscreenMateLocus>()
   let top: string | undefined
   let displayed = false
   for (const data of layout.datasets) {
+    const { mateAxis } = data
     for (let i = 0; i < data.starts.length; i++) {
       const rect = offscreenMateRectAt(layout, data, i, strip)
       if (rect && pointerOnMark(rect, x)) {
         const refName = offscreenMateRefName(data, i)
         top = refName
-        displayed = data.mateAxis !== undefined
-        const span = spans.get(refName)
-        const start = data.mateStarts[i]!
-        const end = data.mateEnds[i]!
-        if (span) {
-          span.start = Math.min(span.start, start)
-          span.end = Math.max(span.end, end)
-        } else {
-          spans.set(refName, { start, end })
+        displayed = mateAxis !== undefined
+        extendSpan(spans, refName, data.mateStarts[i]!, data.mateEnds[i]!)
+        if (mateAxis) {
+          extendSpan(drawn, refName, mateAxis.starts[i]!, mateAxis.ends[i]!)
         }
       }
     }
@@ -679,7 +701,27 @@ export function offscreenMateSpanAt(
   // to stop — and on a `displayed` mark the fallback is the region-replacing
   // navigation that class must never take. `OFFSCREEN_MATE_NAV_MIN_BP` frames a
   // zero-width locus the same way it frames a 500bp one.
-  return { refName: top, locus: spans.get(top)!, displayed }
+  return {
+    refName: top,
+    locus: spans.get(top)!,
+    displayed,
+    mateCumBp: displayed ? drawn.get(top) : undefined,
+  }
+}
+
+function extendSpan(
+  spans: Map<string, OffscreenMateLocus>,
+  refName: string,
+  start: number,
+  end: number,
+) {
+  const span = spans.get(refName)
+  if (span) {
+    span.start = Math.min(span.start, start)
+    span.end = Math.max(span.end, end)
+  } else {
+    spans.set(refName, { start, end })
+  }
 }
 
 /**

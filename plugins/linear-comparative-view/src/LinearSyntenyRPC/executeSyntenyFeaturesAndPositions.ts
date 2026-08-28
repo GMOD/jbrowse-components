@@ -442,6 +442,23 @@ export async function executeSyntenyFeaturesAndPositions({
       windowSpan,
       spanRatio: CLIP_SPAN_RATIO,
     })
+    // THE WINDOW LANDED IN A CHAIN GAP, and the block has nothing on screen.
+    // A chain converted to PAF is one record whose CIGAR carries the chain's
+    // gaps as ops, and the top-level chain over a whole chromosome has enormous
+    // ones — chimp chr19 -> hg38 chr17 has a single 30,846,489bp `D` where the
+    // pericentric inversion is, and the inverted segment is a SEPARATE record
+    // that covers it. A viewport inside that gap keeps only query-consuming ops,
+    // so the re-anchored block spans the window against a mate span of ZERO:
+    // `clipSyntenyFeature` is reporting, correctly, that nothing here aligns.
+    //
+    // Read as a position instead, that single point is a ribbon collapsing to a
+    // vertex 29Mb from the alignments around it — culled by the band, and then
+    // marked by `culledRibbonMates` as an off-screen mate, which claims a mate
+    // the reader could scroll to. There is none. Dropping the block is what the
+    // gap means, and the records that DO align in the window are already there.
+    if (clip && clip.mateStart === clip.mateEnd && clip.end > clip.start) {
+      continue
+    }
     let fStart = clip?.start ?? start
     let fEnd = clip?.end ?? end
     let mStart = clip?.mateStart ?? mate.start

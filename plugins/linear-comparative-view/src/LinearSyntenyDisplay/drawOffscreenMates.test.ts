@@ -1029,3 +1029,77 @@ test('a click on one says the contig is displayed', () => {
     displayed: true,
   })
 })
+
+// WHERE THE RIBBONS ARE, which is not where the BLOCKS are once
+// `clipLargeBlockToWindow` has re-anchored a chain to its visible slice.
+// `mateStarts`/`mateEnds` stay the untrimmed extent on purpose (the detail
+// panel's) and the mark itself is decided from `mateAxis`, so a click reading
+// the block extent went somewhere the mark was never about — on a
+// whole-chromosome chain, the midpoint of the CHROMOSOME.
+test('a click on a placed mark carries where it is drawn, not the block extent', () => {
+  const layout = {
+    ...params,
+    datasets: [placed([[100, 400]], [[90_000, 90_300]])],
+    mateBand: { lo: 0, hi: 1000 },
+  }
+  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
+    refName: 'other',
+    displayed: true,
+    locus: { start: 100, end: 400 },
+    mateCumBp: { start: 90_000, end: 90_300 },
+  })
+})
+
+// Unioned over the column exactly as `locus` is, and in the facing row's cumBp
+// rather than a contig's own bp — a mark stands for every alignment under it.
+test('...unioned over the marks stacked under the pointer', () => {
+  const layout = {
+    ...params,
+    datasets: [
+      placed(
+        [
+          [100, 110],
+          [100, 110],
+        ],
+        [
+          [90_000, 90_100],
+          [95_000, 95_100],
+        ],
+      ),
+    ],
+    mateBand: { lo: 0, hi: 1000 },
+  }
+  expect(offscreenMateSpanAt(layout, 11, 3)).toMatchObject({
+    mateCumBp: { start: 90_000, end: 95_100 },
+  })
+})
+
+// TWO SPACES, ONE CONTIG NAME. A worker lane and a culled lane can both hold
+// `ctgB`, and theirs are a contig's own bp and the facing row's cumBp — folded
+// into one union the answer is a coordinate in neither.
+test('...and never unioned with a lane that has no drawn position', () => {
+  const layout = {
+    ...params,
+    datasets: [
+      data([[100, 110]], ['ctgB'], [[4000, 4100]]),
+      placed([[100, 110]], [[90_000, 90_100]], ['ctgB']),
+    ],
+    mateBand: { lo: 0, hi: 1000 },
+  }
+  expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
+    refName: 'ctgB',
+    displayed: true,
+    locus: { start: 100, end: 4100 },
+    mateCumBp: { start: 90_000, end: 90_100 },
+  })
+})
+
+// The other class has no drawn position at all — that is what it is — so the
+// caller's region-replacing branch keeps reading `locus`.
+test('a mark with no place on the facing axis carries no drawn span', () => {
+  const layout = {
+    ...params,
+    datasets: [data([[100, 400]], ['ctgB'], [[4000, 4400]])],
+  }
+  expect(offscreenMateSpanAt(layout, 20, 3)!.mateCumBp).toBeUndefined()
+})
