@@ -1,11 +1,10 @@
 # Weekly watch on what the published plugins actually take off the `@jbrowse/core/*`
 # re-export ABI.
 #
-# Every other ABI check here runs against this tree: `abi.test.ts` pins the
-# surface going forward, `abiPreviousRelease.test.ts` pins it against the last
-# published release. Neither can see the half that matters most — a removed name
-# is `undefined` inside a plugin bundle nobody is going to rebuild, so whether it
-# hurts depends on bundles hosted somewhere else.
+# `abi.test.ts` pins the `@jbrowse/core/*` re-export surface going forward, but
+# that can't see the half that matters most — a removed name is `undefined`
+# inside a plugin bundle nobody is going to rebuild, so whether it hurts depends
+# on bundles hosted somewhere else.
 #
 # Off the PR path for the reason links.yml and figures.yml are: it reads the
 # plugin store over the network, so a required check built on it fails on

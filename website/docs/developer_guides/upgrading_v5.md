@@ -92,8 +92,6 @@ resolves through `jbrequire`. A removed name is `undefined` inside a bundle
 nobody is going to rebuild, which is the quietest failure on this page. They
 fall into groups:
 
-<!-- BEGIN GENERATED ABI REMOVALS -->
-
 - the renderer registry (`RendererType`, `FeatureRendererType`,
   `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`,
   `GlyphType`, `getParentRenderProps`)
@@ -120,10 +118,7 @@ fall into groups:
 - `isConfigurationSlotType`, with the config models that were flattened
 
 That is 48 names over 55 entries, since 7 of them were served from two modules
-each. Every one is recorded with its reason in `REMOVAL_GROUPS` in
-`packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against
-the exports of the previously published package.
-<!-- END GENERATED ABI REMOVALS -->
+each.
 
 `scripts/check-published-plugins.ts` reads every bundle in the plugin store and
 reports the names each one actually takes. One of the fourteen breaks against
@@ -138,8 +133,6 @@ resolves through the `exports` map in `@jbrowse/core`'s `package.json`, and a
 subpath that map no longer serves fails to resolve at your next build. A bundle
 you already published inlined the module and keeps working. Where the code
 merely moved, the entry says which import to use instead.
-
-<!-- BEGIN GENERATED SUBPATH REMOVALS -->
 
 - the renderer registry, whose modules went with the server-side render path:
   - `@jbrowse/core/pluggableElementTypes/GlyphType` — glyphs are drawn by the
@@ -183,14 +176,11 @@ merely moved, the entry says which import to use instead.
     `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import
     path went
 
-That is 16 subpaths the published `exports` map no longer serves, recorded with
-their reasons in `SUBPATH_REMOVALS` in
-`packages/core/src/ReExports/knownRemovals.ts`. The map is generated from
-in-repo import sites, so a subpath leaves it whenever its last in-repo importer
-does; `abiPreviousRelease.test.ts` checks the remainder against the exports map
-of the previously published package, which is what makes the next one a decision
-rather than an accident.
-<!-- END GENERATED SUBPATH REMOVALS -->
+That is 16 subpaths the published `exports` map no longer serves. The map is
+generated from in-repo import sites
+(`packages/core/scripts/generateExports.mjs`), so a subpath leaves it whenever
+its last in-repo importer does — this list is a one-time record of the ones that
+already left, not a live check.
 
 ## Names removed from the session and from a plugin's `exports`
 
@@ -200,8 +190,6 @@ runtime — often behind `'x' in session` — so removing one throws nothing at 
 and the plugin simply stops asking. A plugin `exports` object is reached as
 `pluginManager.getPlugin('X').exports.Y`, where a missing name is `undefined`
 and calling it throws inside the reaching plugin's own `install`.
-
-<!-- BEGIN GENERATED SESSION AND PLUGIN REMOVALS -->
 
 - **the session**, which a plugin reaches by member lookup (`'x' in session`)
   rather than by import, so nothing fails at build time:
@@ -255,20 +243,14 @@ and calling it throws inside the reaching plugin's own `install`.
     (`minX`/`minY`/`maxX`/`maxY`/`name`), declared in the same file and never
     exported past it or read anywhere
 
-Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in
-`packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, none of
-these is checked against a published bundle: `abi.test.ts` pins
+Neither surface is checked against a published bundle: `abi.test.ts` pins
 `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters
 its findings on that same prefix, so neither reaches a plugin `exports` object
-or the session. What each surface has instead is narrower. A plugin `exports`
-object is pinned by name against
-`products/jbrowse-web/src/pluginExportsBaseline.json`, and the session against
-`products/jbrowse-web/src/sessionExportsBaseline.json`, so the next removal from
-either fails a test — but only a removal, and a name that survives with a new
-signature passes, which is why `getReferring` is on this list rather than caught
-by that baseline: `pluginFacingSessionApi.test.ts` is what performs it the way a
-published bundle calls it. For everything else, reading them here is the check.
-<!-- END GENERATED SESSION AND PLUGIN REMOVALS -->
+or the session. `pluginFacingSessionApi.test.ts` pins the fifteen session
+members published bundles actually call, and performs the call rather than just
+asserting the member exists, which is why `getReferring`'s changed signature is
+on this list rather than caught by a presence check. For everything else,
+reading them here is the record.
 
 ## Display types collapsed
 

@@ -13,8 +13,8 @@ import type { BaseAdapter, BaseSequenceAdapter } from './BaseAdapter/index.ts'
  *
  * In core rather than beside one of its callers because the field it reads is
  * `BaseAdapter`'s. Deliberately NOT in `BaseAdapter/index.ts`: that barrel is a
- * `@jbrowse/core/*` re-export, and a name published there can only be removed
- * through `KNOWN_REMOVALS`.
+ * `@jbrowse/core/*` re-export, and a name published there is load-bearing ABI —
+ * `abi.test.ts`/`abiBaseline.json` fails a removal from it.
  *
  * `configured` is passed in rather than read here so each adapter reads its own
  * slot through its own config type.

@@ -569,6 +569,10 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // computed MAF bridged its own `color` field with, named because that bridge
   // is why three adapter schemas advertised a slot reaching no renderer.
   'labelSources',
+  // ARCHITECTURAL_LIMITS.md §"Worker payloads are collect-then-return": the
+  // retired streaming renderer path contrasted with the current collect-then-
+  // return shape. Gone with the whole renderer registry.
+  'FeatureRendererType',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on

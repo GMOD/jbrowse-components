@@ -9,12 +9,9 @@ const repoRoot = join(packageRoot, '../..')
 const srcDir = join(packageRoot, 'src')
 
 // Exports to keep even if not used internally (for backwards compatibility).
-//
-// This is one of the two answers when `abiPreviousRelease.test.ts` reports a
-// subpath the last published `@jbrowse/core` served and this map no longer
-// does. Take this one when the promise should stand; take `SUBPATH_REMOVALS` in
-// `src/ReExports/knownRemovals.ts` when the removal is meant. Entries here were
-// each added after something broke, which is the disease the gate treats.
+// Nothing gates this list any more, so a name that drops out with no
+// importer just un-publishes silently unless it is added here. Entries here
+// were each added after something broke.
 const preservedExports = [
   '@jbrowse/core/util/nanoid',
   '@jbrowse/core/ReExports/list',
@@ -46,15 +43,6 @@ const preservedExports = [
   // moved to util/tabix's header reader — but an external plugin decompressing
   // a bgzf file has no other entry point, so usage is not the test here.
   '@jbrowse/core/util/unzip',
-  // A data module, not API: the removal record `generate-abi-removals.ts`
-  // renders into PLUGIN_ABI_STABILITY.md and the upgrade guide. Nothing
-  // in-repo imports it by subpath — the generator reaches it by relative path
-  // from website/scripts. `products/jbrowse-web/src/sessionExports.test.ts`
-  // imports it by subpath to check that a session member the record marks
-  // gone stays gone, which is the same reason a session baseline needed this
-  // entry rather than being able to build itself the way pluginExports.test.ts
-  // does (that one names no core module at all).
-  '@jbrowse/core/ReExports/knownRemovals',
 ]
 
 // The directories whose import sites decide what @jbrowse/core publishes.

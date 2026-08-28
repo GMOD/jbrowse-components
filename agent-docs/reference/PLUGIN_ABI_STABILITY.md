@@ -13,34 +13,20 @@ semver/`api-extractor` discipline as premature for an experimental phase; this
 doc captures the thinking so it's ready when there are stable surfaces to
 protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
-## The five surfaces that exist today, and how to remove from them
-
-Whatever the policy ends up being, these five are already checked:
+## The surfaces checked today, and how to remove from them
 
 - **`ReExports/modules.ts`** — the `@jbrowse/core/*` modules external plugins
   resolve against, pinned by `abi.test.ts` against `abiBaseline.json`. A removal
   fails there. To drop a name, delete it from the baseline in the same commit
   and say in the message which published plugins you checked.
-- **A plugin's own `exports` object**, which a prebuilt bundle reaches as
-  `pluginManager.getPlugin('LinearGenomeViewPlugin').exports.X`. Four plugins
-  publish one; `products/jbrowse-web/src/pluginExports.test.ts` builds a plugin
-  manager over the full core set and pins their names against
-  `pluginExportsBaseline.json`, the same way and with the same removals-only
-  doctrine. It lives with the product rather than beside `abiBaseline.json`
-  because the plugin list does: `@jbrowse/core` cannot import a product, and
-  making the baseline reachable from core would publish a new subpath. A name
-  whose value is a namespace object (`WigglePlugin.exports.utils`) is pinned as
-  one name, so what is inside it is not checked.
-- **The session, and it fails quieter.** Plugins look members up behind
-  `'x' in session`, so removing one throws nothing at all — no compile error, no
-  test failure, just a plugin that stops asking. Two checks split the job:
-  `products/jbrowse-web/src/sessionExports.test.ts` pins every member
-  (`Object.getOwnPropertyNames` over the whole prototype chain) against
-  `sessionExportsBaseline.json`, removals-only, the same doctrine as the plugin
-  `exports` baseline — but a presence check has nothing to say about a member
-  that survives with a new signature. `pluginFacingSessionApi.test.ts` is the
-  narrower one that catches that class: it pins what published bundles actually
-  call, and performs the call rather than asserting the member exists.
+- **A plugin's own `exports` object** and **the session** were pinned by
+  removals-only baselines for one day (`pluginExportsBaseline.json`,
+  `sessionExportsBaseline.json`) before we decided a hand-maintained baseline
+  per surface does not pay for itself at this plugin count — see "Baselines
+  tried and dropped" below. What still catches a session member that survives
+  with a changed signature (a presence check can't) is
+  `pluginFacingSessionApi.test.ts`: it pins the fifteen members published
+  bundles actually call, and performs the call.
 - **`@jbrowse/core`'s published `exports` map, which nobody writes.**
   `packages/core/scripts/generateExports.mjs` derives it by grepping
   `packages plugins products example-plugins` for import specifiers under
@@ -51,20 +37,33 @@ Whatever the policy ends up being, these five are already checked:
   2026-08-24 because `defineDisplay.tsx` was its only importer and the
   `defineDisplay` revert deleted that file. Nothing shipped in that window, so
   nothing was harmed, but four modules that still exist in `src/` today have
-  gone the same way and are listed below. `abiPreviousRelease.test.ts` pins the
-  map against the `exports` of the previously published `@jbrowse/core`
-  (`subpaths` in `abiPreviousRelease.json`), removals only — a new subpath never
-  trips it. To drop one, declare it in `SUBPATH_REMOVALS` in
-  `knownRemovals.ts`; to keep the promise with no importer left, add it to
-  `preservedExports` in `generateExports.mjs`, which is what that allowlist is
-  for.
-- **The accumulating extension points, which fail quietest of the five.**
+  gone the same way and are listed below. There is no live gate against the
+  previously published package any more (see below); `preservedExports` in
+  `generateExports.mjs` is the only remaining lever, keeping a subpath
+  published with no in-repo importer.
+- **The accumulating extension points, which fail quietest of these.**
   `addToExtensionPoint` excludes them in its *type*, so a plugin rebuilt against
   v5 gets a compile error naming `contributeToExtensionPoint`. A prebuilt v4
   bundle carries no types: the call reaches `pushExtensionPointCallback`, joins
   the fold chain, and the old-style callback returns its own single-element array
   in place of everyone else's entries. Nothing throws, and the plugin that did it
   still works — the plugins that lose their entries are the other ones.
+
+## Baselines tried and dropped
+
+`abiPreviousRelease.test.ts`, `pluginExports.test.ts`/`pluginExportsBaseline.json`
+and `sessionExports.test.ts`/`sessionExportsBaseline.json`, plus the
+`preservedExports`/`SUBPATH_REMOVALS` mechanism in `generateExports.mjs` and the
+deleted `ReExports/knownRemovals.ts` that fed them, existed briefly
+to gate a removal from the plugin `exports` object, the session, and
+`@jbrowse/core`'s published `exports` map against what the previous release
+served. We deleted all of it: at the plugin count JBrowse has today, hand-
+maintaining a baseline per surface on every refactor costs more than the
+removals it would have caught are worth, and the surface the baselines
+themselves exposed — a removals list, a "which entries are load-bearing"
+allowlist — was itself the kind of thing this whole document says rots
+silently. What is below is what that machinery generated before it was
+deleted, kept as a plain historical record rather than a live check.
 
 **The signature is as public as the name.** A required second argument breaks a
 duck-typed caller exactly as deleting the member would, so plugin-facing
@@ -94,12 +93,9 @@ the check would not have said so.
 
 ## What has already left the re-export surface
 
-Generated from `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`
-by `pnpm gen-abi-removals`, and published from there into the release
-announcement as well — a group is invisible by being absent, and a hand-copied
-version of this list had lost seventeen names.
+A static record, also published in `website/docs/developer_guides/upgrading_v5.md`
+— kept in sync by hand now, not generated.
 
-<!-- BEGIN GENERATED ABI REMOVALS -->
 
 - the renderer registry (`RendererType`, `FeatureRendererType`, `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`, `GlyphType`, `getParentRenderProps`)
 - layout, which moved onto the GPU packing path (`PileupLayout`, `SceneGraph`, `calculateLayoutBounds`, `getLayoutId`, `MultiLayout`, `PrecomputedLayout`)
@@ -111,8 +107,7 @@ version of this list had lost seventeen names.
 - names with no caller left in core, which the last callers inlined or folded away (`forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`, `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`, `getUriLink`, `defaultStops`, `useDebouncedCallback`)
 - `isConfigurationSlotType`, with the config models that were flattened
 
-That is 48 names over 55 entries, since 7 of them were served from two modules each. Every one is recorded with its reason in `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against the exports of the previously published package.
-<!-- END GENERATED ABI REMOVALS -->
+That is 48 names over 55 entries, since 7 of them were served from two modules each.
 
 ## What has left the published `exports` map
 
@@ -123,7 +118,6 @@ resolution error at the plugin's next build, and nothing at all for a bundle
 that already inlined it. These went between 4.3.0 and today, none of them by a
 decision anyone wrote down:
 
-<!-- BEGIN GENERATED SUBPATH REMOVALS -->
 
 - the renderer registry, whose modules went with the server-side render path:
   - `@jbrowse/core/pluggableElementTypes/GlyphType` — glyphs are drawn by the GPU displays, not registered
@@ -145,20 +139,18 @@ decision anyone wrote down:
   - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel
   - `@jbrowse/core/util/mst-reflection` — alive, and still served over `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import path went
 
-That is 16 subpaths the published `exports` map no longer serves, recorded with their reasons in `SUBPATH_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. The map is generated from in-repo import sites, so a subpath leaves it whenever its last in-repo importer does; `abiPreviousRelease.test.ts` checks the remainder against the exports map of the previously published package, which is what makes the next one a decision rather than an accident.
-<!-- END GENERATED SUBPATH REMOVALS -->
+That is 16 subpaths the published `exports` map no longer serves. The map is
+generated from in-repo import sites, so a subpath leaves it whenever its last
+in-repo importer does — this is a one-time record of the ones that already
+left, not a live check.
 
 ## What has left the session and the plugin `exports` objects
 
-The other two surfaces above, published the same way but checked by name
-presence rather than the stale-entry gate `abiPreviousRelease.test.ts` runs
-over the list above — so removing a name from `SESSION_AND_PLUGIN_REMOVALS`
-records history but proves nothing about what the baselines currently pin. Same
-source file, a separate array (`SESSION_AND_PLUGIN_REMOVALS`), rendered by the
-same generator into the same two pages, and six removals left in v5 with
-nothing recording them anywhere before it existed.
+The other two surfaces above, published the same way. Neither is checked
+against anything — six removals left in v5 with nothing recording them
+anywhere before this list existed, and nothing pins the list against a future
+one either.
 
-<!-- BEGIN GENERATED SESSION AND PLUGIN REMOVALS -->
 
 - **the session**, which a plugin reaches by member lookup (`'x' in session`) rather than by import, so nothing fails at build time:
   - `removeReferring` — deleted, along with the reference-clearing pass it drove; `undefined is not a function` at the call
@@ -177,18 +169,18 @@ nothing recording them anywhere before it existed.
   - `LayoutRecord` — the 4-tuple `[minX, minY, maxX, maxY]` the block layout handed back, exported from the plugin entry and the `BaseLinearDisplay` barrel with no consumer left in the tree. Its 5-tuple `LayoutFeatureMetadata` variant went with the floating-label code, so what was published in v5 was already the narrowed shape. `@jbrowse/plugin-breakpoint-split-view` declares an identical one of its own and still exports it, which is the import to move to
   - `Layout` — the named-rectangle interface beside it (`minX`/`minY`/`maxX`/`maxY`/`name`), declared in the same file and never exported past it or read anywhere
 
-Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, none of these is checked against a published bundle: `abi.test.ts` pins `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters its findings on that same prefix, so neither reaches a plugin `exports` object or the session. What each surface has instead is narrower. A plugin `exports` object is pinned by name against `products/jbrowse-web/src/pluginExportsBaseline.json`, and the session against `products/jbrowse-web/src/sessionExportsBaseline.json`, so the next removal from either fails a test — but only a removal, and a name that survives with a new signature passes, which is why `getReferring` is on this list rather than caught by that baseline: `pluginFacingSessionApi.test.ts` is what performs it the way a published bundle calls it. For everything else, reading them here is the check.
-<!-- END GENERATED SESSION AND PLUGIN REMOVALS -->
+None of this is checked against a published bundle: `abi.test.ts` pins
+`@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters
+its findings on that same prefix, so neither reaches a plugin `exports` object
+or the session. `pluginFacingSessionApi.test.ts` is the one thing that reaches
+narrower than a bare removal here: it pins what published bundles actually
+call for fifteen session members, and performs the call, which is why
+`getReferring`'s changed signature is caught even though nothing pins session
+member presence any more.
 
-Both halves now have a baseline: the plugin `exports` one described in the
-first section, which stops a repeat of the two `LinearGenomeViewPlugin`
-removals above, and the session one described in the same section, which
-stops a repeat of the three `removeReferring`/`prepareToBreakConnection`/
-`hasWidget` removals here. `./ReExports/knownRemovals` is a published
-`@jbrowse/core` subpath (`preservedExports` in `generateExports.mjs`) so the
-session baseline test can check `SESSION_AND_PLUGIN_REMOVALS` itself — a
-member the record marks gone that came back — the same way
-`abiPreviousRelease.test.ts` does for `KNOWN_REMOVALS`.
+We tried baselining both halves (`pluginExportsBaseline.json`,
+`sessionExportsBaseline.json`) and dropped the mechanism — see "Baselines
+tried and dropped" above.
 
 ## The symptom
 
@@ -748,10 +740,12 @@ belong *inside* RFC-001 §7 rather than bolted beside it.
   because in-repo use "comes and goes"). Every module declaring an extension
   point is derivable and belongs in it by construction; so is every module the
   `@public` surface names. Same "enumerations that rot" disease as the docs, and
-  the same cure. The *silent* half of this is now gated —
-  `abiPreviousRelease.test.ts` fails a subpath the last release published and
-  this map no longer does — so what is left here is deriving the allowlist
-  rather than discovering it one outage at a time.
+  the same cure. We tried gating the *silent* half of this
+  (`abiPreviousRelease.test.ts`, failing a subpath the last release published
+  and this map no longer does) and dropped it as not worth the upkeep — see
+  "Baselines tried and dropped" above — so what is left here is deriving the
+  allowlist rather than discovering it one outage at a time, with no gate
+  behind it.
 - [ ] **Name the dependencies that cross the boundary.** The largest error class
   in the v5 measurement, and the only one with no mechanism —
   [ideas/a-dependency-bump-is-an-abi-event.md](../ideas/a-dependency-bump-is-an-abi-event.md)

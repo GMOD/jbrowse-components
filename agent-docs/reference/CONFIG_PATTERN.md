@@ -309,8 +309,8 @@ view as main-thread SVG with every feature in one array, **dotplot** and
 
 There is no server-side renderer left to migrate off. The renderer registry —
 `ServerSideRendererType`, `FeatureRendererType`, `BoxRendererType`, `GlyphType`
-— is gone, and `packages/core/src/ReExports/abiPreviousRelease.test.ts` records
-each removal with its reason.
+— is gone; `PLUGIN_ABI_STABILITY.md` §"What has already left the re-export
+surface" records each removal with its reason.
 
 ## Reference resolution (the other config concern)
 

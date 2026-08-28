@@ -103,6 +103,23 @@ const ABSENT_ON_PURPOSE = new Map([
     'MiniControlsComponent',
     'EAGER_BUNDLE names the view method whose deletion was the fix',
   ],
+  [
+    'BoxRendererType',
+    'the renderer registry, removed with the server-side render path',
+  ],
+  [
+    'CircularChordRendererType',
+    'the renderer registry, removed with the server-side render path',
+  ],
+  [
+    'ServerSideRendererType',
+    'the renderer registry, removed with the server-side render path; core no longer renders on the server',
+  ],
+  [
+    'RectTuple',
+    'CORE_UTIL_AUDIT names the layout serialization type deleted with MultiLayout/PrecomputedLayout',
+  ],
+  ['SerializedLayout', 'CORE_UTIL_AUDIT, the same sentence'],
 ])
 
 const LADDER = ['~128', '~512', '~2048']

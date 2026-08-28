@@ -192,18 +192,16 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    is the go/no-go gate: it fires both the announcements below and the website
    deploy, so the blog post goes live exactly when the release assets it links
    to become public.
-6. **Re-point the ABI fixture** at what you just shipped, so the next cycle is
-   checked against it rather than against a stale release:
+6. **Re-point the ABI fixture** at what you just shipped, so
+   `scripts/check-published-plugins.ts` reports plugin breakage against this
+   release rather than a stale one:
 
    ```bash
    node --experimental-strip-types scripts/gen-abi-previous-release.ts <version>
    ```
 
-   `abiPreviousRelease.test.ts` then fails on any `@jbrowse/core/*` export
-   dropped since that version unless the removal is declared in its
-   `KNOWN_REMOVALS`. Do this after the npm publish in step 4 has landed, since
-   it downloads the published tarball. Clear out the `KNOWN_REMOVALS` entries
-   the new fixture makes stale — the test tells you which.
+   Do this after the npm publish in step 4 has landed, since it downloads the
+   published tarball.
 
 `pnpm releasenotes [--tag v4.3.1]` prints the same body `release.yml` generates,
 to eyeball locally.
@@ -254,11 +252,11 @@ sentence the draft had written as exceptionless.
 `sync-measurements` and `sync-inline-figures` scan this directory, so a draft
 takes numbers from `agent-docs/measurements/` the same two ways a docs page does
 — a `BEGIN GENERATED MEASUREMENT` block for a table, a `<!--m:id.row.column-->`
-marker for a figure quoted in prose. The ABI removal groups render from
-`knownRemovals.ts`. The diffstat is the placeholder `${DIFFSTAT}`, which
-`release.ts` computes against the last stable tag reachable from HEAD;
-`check-release-drafts` rejects any `${…}` no release fills, because a misspelled
-one publishes literally and leaves no wrong number for a proofreader to catch.
+marker for a figure quoted in prose. The diffstat is the placeholder
+`${DIFFSTAT}`, which `release.ts` computes against the last stable tag reachable
+from HEAD; `check-release-drafts` rejects any `${…}` no release fills, because a
+misspelled one publishes literally and leaves no wrong number for a proofreader
+to catch.
 
 ## Prereleases
 

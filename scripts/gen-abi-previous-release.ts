@@ -1,5 +1,5 @@
 // Regenerates packages/core/src/ReExports/abiPreviousRelease.json from the
-// @jbrowse/core build we actually published last, so abiPreviousRelease.test.ts
+// @jbrowse/core build we actually published last, so check-published-plugins.ts
 // can check the current ABI against what plugins in the wild were built against.
 //
 // Run at release time, after the version bump lands:
