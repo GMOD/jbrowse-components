@@ -48,6 +48,7 @@ const ShowOffscreenMateDialog = observer(function ShowOffscreenMateDialog({
   side,
   loc,
   replacing,
+  rowSync,
   onConfirm,
   handleClose,
 }: {
@@ -60,17 +61,33 @@ const ShowOffscreenMateDialog = observer(function ShowOffscreenMateDialog({
   loc: string
   // the row's displayed regions right now, by name and in order
   replacing: string[]
+  // how the stack is held together, which decides what the panel NOT being
+  // navigated does — see `others` below
+  rowSync: 'independent' | 'link' | 'follow'
   onConfirm: () => void
   handleClose: () => void
 }) {
   const count = offscreenMateCount(model, refName, side)
   const panel = side === 'top' ? 'panel below' : 'panel above'
+  const other = side === 'top' ? 'panel above' : 'panel below'
   const instead =
     replacing.length === 0
       ? ''
       : replacing.length > MAX_NAMED_REGIONS
         ? `, in place of the ${replacing.length.toLocaleString()} regions it is showing now`
         : `, in place of ${listPhrase(replacing)}`
+  // WHAT HAPPENS TO THE ROW NOBODY CLICKED, which is the question the copy left
+  // open: one panel is named and the other never mentioned, so a reader had no
+  // way to tell whether the whole stack was about to move. It depends on the
+  // row sync mode, and all three answers are different — under `follow` the
+  // click TAKES the anchor, so the others are re-placed onto this row's
+  // mapping, which is the whole point of anchoring it.
+  const others =
+    rowSync === 'follow'
+      ? `The ${other} follows it.`
+      : rowSync === 'link'
+        ? `The ${other} keeps its own regions and shares the zoom.`
+        : `The ${other} stays where it is.`
   return (
     <ConfirmDialog
       open
@@ -88,7 +105,7 @@ const ShowOffscreenMateDialog = observer(function ShowOffscreenMateDialog({
           : `The ${panel} is not showing ${refName} yet.`}
       </Typography>
       <Typography color="text.secondary">
-        {`Showing it takes that panel to ${loc}${instead}. You can undo this afterwards.`}
+        {`The ${panel} navigates to ${loc}${instead}. ${others} You can undo this afterwards.`}
       </Typography>
     </ConfirmDialog>
   )

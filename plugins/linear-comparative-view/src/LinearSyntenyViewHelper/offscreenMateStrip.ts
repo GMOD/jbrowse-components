@@ -213,6 +213,11 @@ export interface OffscreenMateHit {
   refName: string
   navRow: number
   side: OffscreenMateSide
+  // Whether a click SCROLLS that row or replaces what it is showing. Carried on
+  // the HOVER because that is the surface with room to say so before anyone
+  // commits — `offscreenMateAt` states why answering it from the hover's scan
+  // is safe against the click's own rule.
+  canScroll: boolean
 }
 
 // What a CLICK on a mark resolves to: the same hit, plus where on that contig
@@ -220,8 +225,16 @@ export interface OffscreenMateHit {
 // it — which is what lets the navigation land on the locus rather than on the
 // whole chromosome, and scroll rather than replace. `OffscreenMateSpan` says why
 // the two travel together.
+//
+// WITHOUT the hover's `canScroll`, which would be a second spelling of the same
+// fact beside `mateCumBp` — and the one this feature has already been bitten
+// by, since the two can disagree and the click must steer by the coordinate it
+// actually navigates to. `canScroll` is the hover's cheap approximation of it,
+// deliberately answerable without the full lane scan this hit pays for.
 export interface OffscreenMateNavHit
-  extends OffscreenMateHit, Omit<OffscreenMateSpan, 'refName'> {}
+  extends
+    Omit<OffscreenMateHit, 'canScroll'>,
+    Omit<OffscreenMateSpan, 'refName'> {}
 
 /**
  * The mark a pointer in either strip is over, or undefined.
@@ -244,10 +257,7 @@ export function offscreenMateHit(
   x: number,
   y: number,
 ): OffscreenMateHit | undefined {
-  return stripHit(model, x, y, (layout, px, py) => {
-    const refName = offscreenMateAt(layout, px, py)
-    return refName ? { refName } : undefined
-  })
+  return stripHit(model, x, y, offscreenMateAt)
 }
 
 /**

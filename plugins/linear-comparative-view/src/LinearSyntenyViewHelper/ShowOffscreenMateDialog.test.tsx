@@ -49,6 +49,7 @@ function open(over: Record<string, unknown> = {}) {
         side="top"
         loc="ctgB:190,000-210,000"
         replacing={['ctgA']}
+        rowSync="independent"
         onConfirm={onConfirm}
         handleClose={handleClose}
         {...over}
@@ -119,6 +120,38 @@ test('...and says the move is undoable', () => {
   expect(screen.getByText(/undo this afterwards/)).toBeTruthy()
 })
 
+// WHAT THE PANEL NOBODY CLICKED DOES. Naming one panel and never mentioning the
+// other left a reader unable to tell whether the whole stack was about to move,
+// and the answer is different in each of the three row-sync modes.
+test('it says the other panel holds still', () => {
+  open()
+  expect(screen.getByText(/panel above stays where it is/)).toBeTruthy()
+})
+
+// Under `follow` the click TAKES the anchor, so the others are re-placed onto
+// this row's mapping — which is the whole point of anchoring it.
+test('...that it follows, when the rows follow each other', () => {
+  open({ rowSync: 'follow' })
+  expect(screen.getByText(/panel above follows it/)).toBeTruthy()
+})
+
+// Linked rows are held together in PIXELS: `installLinkedViewSync` replays a
+// row's zoom onto the others and not its scroll, so the facing panel keeps its
+// own regions and changes zoom with this one.
+test('...and what linking actually does, which is neither', () => {
+  open({ rowSync: 'link' })
+  expect(
+    screen.getByText(/keeps its own regions and shares the zoom/),
+  ).toBeTruthy()
+})
+
+// The strips face opposite rows, so the panel that holds still is the other one
+// from the panel that moves.
+test('...naming the right one from the lower strip', () => {
+  open({ side: 'bottom' })
+  expect(screen.getByText(/panel below stays where it is/)).toBeTruthy()
+})
+
 test('confirming runs the navigation and closes', () => {
   const { onConfirm, handleClose } = open()
   fireEvent.click(screen.getByText('Show'))
@@ -137,5 +170,5 @@ test('cancelling closes without navigating', () => {
 // describes a navigation that then rewrites the other.
 test('it names the panel the click will move', () => {
   open({ side: 'bottom' })
-  expect(screen.getByText(/panel above/)).toBeTruthy()
+  expect(screen.getByText(/panel above navigates to/)).toBeTruthy()
 })

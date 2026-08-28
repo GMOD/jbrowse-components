@@ -231,11 +231,14 @@ test('a pointer at the bottom edge answers the target axis, and the row above', 
     refName: 'fromTarget',
     navRow: 0,
     side: 'bottom',
+    // the worker's lane, so the click has nowhere to scroll to
+    canScroll: false,
   })
 })
 
 test('a pointer at the top edge still answers the query axis', () => {
   expect(offscreenMateHit(withBand(bothSides()), 1, 1)).toEqual({
+    canScroll: false,
     refName: 'fromQuery',
     navRow: 1,
     side: 'top',

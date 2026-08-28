@@ -536,6 +536,15 @@ export function linearSyntenyViewHelperModelFactory(
               side: row > self.level ? ('top' as const) : ('bottom' as const),
               loc,
               replacing: view.displayedRegions.map(r => r.refName),
+              // The stack's own state, read here rather than off the strip's
+              // narrow view of the parent: what the panel NOBODY clicked does
+              // is a property of how the rows are held together, and the two
+              // flags are mutually exclusive by `setRowSyncMode`.
+              rowSync: parentView.followSynteny
+                ? ('follow' as const)
+                : parentView.linkViews
+                  ? ('link' as const)
+                  : ('independent' as const),
               handleClose,
               onConfirm: () => {
                 this.replaceRowRegions(refName, row, loc)

@@ -38,12 +38,13 @@ function draw(
   model: OffscreenMateSource,
   refName: string,
   side: 'top' | 'bottom' = 'top',
+  canScroll = false,
 ) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <OffscreenMateTooltip
         model={model}
-        hover={{ refName, side, clientX: 40, clientY: 12 }}
+        hover={{ refName, side, canScroll, clientX: 40, clientY: 12 }}
       />
     </ThemeProvider>,
   )
@@ -68,7 +69,17 @@ test('and how many alignments go to it', () => {
 // the click will do before it is the only way to find out.
 test('and says what clicking it does', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain(
-    'Click to show that locus on the panel below',
+    'Click to show it on the panel below, replacing what that panel shows',
+  )
+})
+
+// THE OTHER CLICK, which is a different sentence and the common one: a contig
+// the facing panel already displays is scrolled to, immediately and reversibly.
+// One tooltip for both said "show", which described the destructive half over
+// an action that merely moves the panel.
+test('...and says the other thing when the click merely scrolls', () => {
+  expect(draw(source({ ctgB: 1 }), 'ctgB', 'top', true)).toContain(
+    'Click to scroll the panel below to it',
   )
 })
 
@@ -78,7 +89,7 @@ test('and says what clicking it does', () => {
 // then rewrites the other panel's regions.
 test('a mark on the target axis names the panel above instead', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB', 'bottom')).toContain(
-    'Click to show that locus on the panel above',
+    'Click to show it on the panel above',
   )
 })
 
