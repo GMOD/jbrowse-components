@@ -589,8 +589,9 @@
   "tracklabels": {
     "name": "tracklabels",
     "status": "good",
-    "note": "fixed: switched to volvox_bam (light local data settles fast so the View-menu cascade stays open); Track labels boxed.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "note": "re-reviewed after the settings-menu refactor re-shoot (2026-08-24): Show... submenu open, Track labels radio group (Overlapping/Offset/Hidden) visible and boxed, menu reads correctly.",
+    "reviewedAt": "2026-08-28T12:52:27.000Z",
+    "hash": "b95273f4fb62f3a7641f79f213f81f62dfd8364d"
   },
   "trio-basic": {
     "name": "trio-basic",
@@ -1847,9 +1848,9 @@
   "genomes_synteny/ribbons_default": {
     "name": "genomes_synteny/ribbons_default",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-25T21:48:53.137Z",
-    "hash": "b9d8d407a593eb01fa8a6aa0bab23566b3fae065"
+    "note": "re-reviewed after the settings-menu refactor re-shoot (2026-08-24): ribbons menu open, Curved lines and CIGAR indels boxed, matches the Straight ribbons/colored indels title.",
+    "reviewedAt": "2026-08-28T12:52:27.000Z",
+    "hash": "2d7845ab8c6803680e2fbf5606f1e49be60396b7"
   },
   "genomes_synteny/ribbons_curved": {
     "name": "genomes_synteny/ribbons_curved",
@@ -3159,9 +3160,9 @@
   "hg002_haplotypes_location_markers": {
     "name": "hg002_haplotypes_location_markers",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-16T06:26:01.269Z",
-    "hash": "dc352cb476dd4c90dd00fff6ba8d0412f49f8320"
+    "note": "re-reviewed after the settings-menu refactor re-shoot (2026-08-24): ribbons menu open, Location markers checked and boxed, markers visible between panels, matches the title.",
+    "reviewedAt": "2026-08-28T12:52:27.000Z",
+    "hash": "26b3052e2c8c9f4eaa6b59a085d05c4a2a401698"
   },
   "inversion_pair_orientation": {
     "name": "inversion_pair_orientation",
