@@ -72,7 +72,6 @@ exists.
 | [Render webgpu in the blocking cross-backend gate job](todo/render-webgpu-in-the-blocking-cross-backend-gate-job.md) | browser tests, CI | the drift half landed — the capture no longer scrolls and the eight alignments pairs came back on their own, so `test:browser:gate` renders webgpu. `:gate:ci` cannot: the runner has no Firefox Nightly and no display, so webgpu still ships ungated |
 | [Rebuild the three OrthoFinder demos' `chrom.sizes`](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all. `demos/orthofinder_*` is still at `ffa68a2e84` and the two spec-side workarounds are still carrying it |
 | [Sample the seven remaining random release-validation units](todo/sample-the-seven-remaining-random-release-validation-units.md) | release validation, tests | read `git status` first — a worktree that ran a sweep is dirty until proven otherwise. Seven of the estimate's eight draws are outstanding, and the estimate is what says the release is safe |
-| [Write the one-page spec for two more cross-cutting concepts](todo/write-the-one-page-spec-for-two-more-cross-cutting-concepts.md) | release validation, architecture | name the two concepts before writing either; the plan never did. Named in the exit criterion beside the sampling above |
 <!-- END GENERATED TODO READY INDEX -->
 
 ## Blocked on a visual call

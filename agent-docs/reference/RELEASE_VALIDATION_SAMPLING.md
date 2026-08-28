@@ -84,8 +84,8 @@ what that ranking predicts. **The exit criterion counts the random table only**:
 eight units sampled, and ≥3 thin or bare means drawing eight more, at which
 point it is a survey rather than a sample and the extra cost is earned. It
 stands at 1 of 8. The rest of the criterion: survivors triaged, the deleted
-source files walked (done), a one-page spec for the top three concepts, and an
-RC out for two weeks with no P0 from real users.
+source files walked (done), a one-page spec for the top three concepts (done —
+see below), and an RC out for two weeks with no P0 from real users.
 
 ## What the sweep cost to learn
 
@@ -157,14 +157,34 @@ list reaches ([upgrading_v5.md](../../website/docs/developer_guides/upgrading_v5
 
 ## What is outstanding
 
-[todo/sample-the-seven-remaining-random-release-validation-units.md](../todo/sample-the-seven-remaining-random-release-validation-units.md)
-and
-[todo/write-the-one-page-spec-for-two-more-cross-cutting-concepts.md](../todo/write-the-one-page-spec-for-two-more-cross-cutting-concepts.md).
+[todo/sample-the-seven-remaining-random-release-validation-units.md](../todo/sample-the-seven-remaining-random-release-validation-units.md).
 The pilot's findings are all fixed and pinned — git holds the detail, and the
 one generalizable result is that **every mutation survivor was an equality
-boundary**, which wants a second unit to confirm or refute. The gate's own
-collapse, which is what a one-page spec looks like, is in
-[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md).
+boundary**, which wants a second unit to confirm or refute.
+
+## The three one-page specs
+
+Ranked by the same measure that put the region-too-large gate first — file
+count and line count both grown several-fold since `v4.3.0`, spread across
+packages nobody owns end to end — the top three concepts, and what each one's
+collapse found:
+
+- [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) — the byte/density fetch gate: 24
+  → 74 files, 112 → 562 lines. 73 named states collapse to 32 a consumer can
+  distinguish and 7 the chrome/fetch autoruns actually read: a four-value
+  verdict with a re-measure flag.
+- [TRACK_REGISTRATION.md](TRACK_REGISTRATION.md) — the session/catalog/delta
+  routing a track config takes through `addSessionTrackConf`,
+  `publishTrackConf` and their four siblings. 32 named branches across six
+  actions and two session mixins collapse to 17 consumer-visible outcomes and,
+  further, to 4 destination values plus three small side channels.
+- [COLOR_REPRESENTATIONS.md](COLOR_REPRESENTATIONS.md) — the packed-color
+  concept the GPU rendering rollout doubled since `v4.3.0` (18 → 74 consumer
+  files, 301 → ~1,950 implementation lines). **Does not collapse**: two of its
+  six representations share one runtime type with incompatible byte layouts,
+  and the conversion graph is missing the edge back from the GPU layout to the
+  domain every color-math operation lives in. The finding is the gap itself,
+  already named but not yet closed in `CORE_UTIL_AUDIT.md`.
 
 Two things this deliberately does not cover: **design** (only the one-page spec
 asks whether a shape is right) and **emergence** (unit-level mutation says
