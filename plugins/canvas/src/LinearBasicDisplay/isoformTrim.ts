@@ -183,7 +183,7 @@ export function maxIsoformCount(
   return max
 }
 
-// The badge a trimmed gene's name row carries. Its width is part of that row's
+// The badge a gene's name row carries. Its width is part of that row's
 // reservation, so the packer asks for it at the count it is probing and the
 // committed layout writes the same text (see `decideLabelReservations`).
 export function moreIsoformsLabel(hidden: number, expanded: boolean) {
