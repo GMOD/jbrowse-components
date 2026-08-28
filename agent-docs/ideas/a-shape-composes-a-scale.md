@@ -266,6 +266,68 @@ the shape list if it is got wrong.
 library has one shape, which is a fine answer — ADR-090's surviving clause is
 that a shape joins on a consumer's pull, not on completeness.
 
+**Stopped 2026-08-28 — Gate E measured at the census, before a line moved: the
+dotplot has no point drawing to put on the shape, and `point` already has the
+two consumers this step set out to earn it.** Both premises above were stale:
+
+- **"One consumer (Manhattan's disc)" undercounts.** `wiggle.slang`'s scatter
+  arm is a second full shader consumer — `discExpand`, `discAlpha`,
+  `crispSquareCornerClip` and `SMALL_POINT_MAX_DIAMETER`, the same inventory
+  Manhattan pulls — and `wiggleLine.slang` imports `AA_PAD_PX` for its capsule
+  pad. The CPU twin the `js-export` feeds (`pointMarker.ts` in wiggle-core)
+  serves the gwas Canvas2D renderer and wiggle's draw functions. By Step 2's
+  own standard `point` was already the library's second shape before this plan
+  was written; what stays per-consumer already stays — Manhattan keeps
+  `scoreToYPx` and its bin-bar branch, scatter keeps its midpoint anchor and
+  row transform, and each hand-rolls only its own quad placement around the
+  shared expansion factor.
+- **The dotplot draws capsules, not point glyphs.** Every `dotplot.slang`
+  instance is a segment (x1,y1)–(x2,y2) expanded along its tangent/normal
+  frame by `halfWidth + aaHalfPx(dpr)`; the fragment's capsule SDF (`clamp`
+  along the segment, then `length`) collapses to a disc of radius
+  `lineWidth/2` when the segment degenerates, and that degenerate case is the
+  only point the display has. Canvas2D parity is `lineCap: 'round'` strokes
+  (`drawDotplot.ts:45`) — no arc, no square, no snap, on any backend.
+
+Nothing in `pointGlyph`'s inventory transfers without changing drawn output,
+which a factoring step forbids:
+
+- `discExpand` scales a normalized local frame (disc boundary at distance 1)
+  multiplicatively; the dotplot expands additively in true CSS px and has no
+  normalized frame to scale.
+- `discAlpha` measures its ramp with a derivative (`glyphEdgeAlpha`); the
+  dotplot's AA is analytic on purpose — its distance comes off a `clamp`, so a
+  derivative straddles the cap/body discontinuity — and its fragment comment
+  says exactly that.
+- The crisp-square fallback pixel-snaps points at or under
+  `SMALL_POINT_MAX_DIAMETER`; a dotplot dot tracks sub-pixel pans through the
+  `panPx` uniforms and matches a round-cap stroke, so snapping is a visible
+  change on both counts.
+- Routing the degenerate case through `discCoverage` needs a per-instance
+  disc-vs-capsule branch: a rendering seam between a 0-length and a 1-px
+  alignment, and WGSL rejects the derivative AA under a branch on a varying.
+
+The gate results:
+
+- **Gate E: fail, stopped.** Zero lines move: `dotplot.slang` 156 lines (75
+  non-comment) before and after, `pointGlyph.slang` 88 (33), `manhattan.slang`
+  190 (110) and `wiggle.slang` 183 (93) untouched. The library keeps the
+  shapes it has — `rowRect`, `pointGlyph`, `diagonalGrid` — so the answer is
+  one better than the gate's fallback: the manuscript's Step 4 row is already
+  true of the tree, two shapes plus ADR-090's surviving admission clause,
+  with no landing owed.
+- **Kill condition: moot.** No shared function was created to grow a
+  parameter.
+
+One measured fact rides beside the stop: the shape the dotplot does share is
+the capsule, and the tree already says so — `wiggleLine.slang`'s linecenter
+fragment calls its AA "exactly as the dotplot capsule — the same shape, and
+the same reason". The two still differ in frame (start-anchored `0..segLen`
+against center-anchored `±segHalfLen`), pad (`aaHalfPx(dpr)` against
+`AA_PAD_PX`) and blend role (a plot-wide alpha uniform against the max-blend
+join union), so a `capsule` module is its own census and its own gates, not a
+substitution this step could make in passing.
+
 ## What this is not
 
 **Not the factory.**
