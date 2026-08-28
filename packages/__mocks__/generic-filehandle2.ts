@@ -38,7 +38,10 @@ export class LocalFile implements GenericFilehandle {
   public async readFile(
     options?: FilehandleOptions | BufferEncoding,
   ): Promise<Uint8Array<ArrayBuffer> | string> {
-    const res = await readFile(this.filename, options)
+    // `?? null` because node's own overloads take `null` for "no options" and
+    // reject `undefined`, while this signature's `options?` produces exactly
+    // that on the no-argument call the first overload above declares.
+    const res = await readFile(this.filename, options ?? null)
     return typeof res === 'string' ? res : new Uint8Array(res)
   }
 
