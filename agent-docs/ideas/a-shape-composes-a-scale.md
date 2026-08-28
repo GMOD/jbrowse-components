@@ -42,7 +42,7 @@ Colour cardinality across the live shaders:
 | `arc.slang` | a per-instance index into a uniform palette | `float colorType : ATTR2` → `arcColorByIndex()` (`:366`) |
 | `wiggle.slang` density | a per-instance scalar through an inline ramp | `float score : ATTR1` → `lerp(white, instColor.rgb, densityGradientT(norm, zeroNorm))` (`:159`, where `norm` is already `scoreScale`'s `normalizeScore`) |
 | `hic.slang` | a per-instance scalar through a texture ramp | `float count : ATTR1` + `Sampler2D<float4> colorRamp` at `binding(2, 0)` |
-| `ldGenomic.slang` / `ldUniform.slang` | a per-instance scalar through a texture ramp | `float ldValue : ATTR2` + `Sampler2D<float4> colorRamp` at `binding(2, 0)`, via `ldUniforms.slang:57` |
+| `ldGenomic.slang` / `ldUniform.slang` | a per-instance scalar through a texture ramp | `float ldValue` (`ATTR2` / `ATTR0`) + `Sampler2D<float4> colorRamp` at `binding(2, 0)`, via `ldUniforms.slang:57` |
 
 The last three are one cardinality — the scalar stays in the instance buffer,
 the mapping stays in uniform state — but the mechanism splits in half, and only
