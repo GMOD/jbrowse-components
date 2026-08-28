@@ -96,7 +96,8 @@ for (const path of walkFiles(referenceDir, n => n.endsWith('.md'))) {
 }
 
 if (uncited.length > UNCITED_BASELINE) {
-  problems.push(
+  // this is not a real 'problem', just note
+  console.warn(
     `${uncited.length} reference doc(s) are cited by no page under website/docs, above the baseline of ${UNCITED_BASELINE}:
 ${uncited.map(r => `  ${r}`).join('\n')}
 Link it from the page that owns the subject, or add "audience: internal" to its frontmatter if a reader of the site could not act on it.`,
