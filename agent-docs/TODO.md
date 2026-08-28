@@ -29,9 +29,9 @@ entries disagree on.
 
 <!-- BEGIN GENERATED TODO COUNTS -->
 
-Twelve entries are on the list: seven are ordinary work someone can pick up,
-three are blocked on a visual call that is not the implementer's to make, and
-two open with an instruction to go measure something, because the premise is not
+Ten entries are on the list: five are ordinary work someone can pick up, three
+are blocked on a visual call that is not the implementer's to make, and two open
+with an instruction to go measure something, because the premise is not
 established and building first would be guessing.
 <!-- END GENERATED TODO COUNTS -->
 
