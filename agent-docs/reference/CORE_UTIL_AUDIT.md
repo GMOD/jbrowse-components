@@ -81,19 +81,22 @@ runtime plugin through `jbrequire`. The audit's reachability grep was in-tree
 only, so "dead" there means "dead in this repo", not "dead". The deletions that
 landed crossed that surface knowingly — they are obscure helpers, and
 [PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md) is explicit that RFC-001
-deferred formal API-stability policy. The two items below are bigger and were
-left for a deliberate call:
+deferred formal API-stability policy. The two items below were bigger and left
+for a deliberate call; the first has since been made, and is kept here for what
+decided it:
 
-- `layouts/` — only `GranularRectLayout.addRect` has an in-tree caller
-  (`plugins/canvas/src/LinearBasicDisplay/layout.ts`, on a layout built fresh
-  per pack). Dead in-tree: `MultiLayout.ts`, `PrecomputedLayout.ts`,
-  `intervalUtils.isRangeClear` (its live twin is hand-inlined in
-  `GranularRectLayout.ts`), `BaseLayout` as an implemented interface,
-  `serializeRegion`/`toJSON`/`discardRange`/`getByCoord`/`getByID`/
+- ~~`layouts/`~~ — **landed.** Every item this listed went: `MultiLayout.ts`,
+  `PrecomputedLayout.ts`, `BaseLayout.ts` with the `SerializedLayout`/
+  `RectTuple` shapes, `intervalUtils.isRangeClear`, and the members of
+  `GranularRectLayout` that only the block renderer reached
+  (`serializeRegion`/`toJSON`/`discardRange`/`getByCoord`/`getByID`/
   `getDataByID`/`getRectangles`/`getTotalHeight`/`maxHeightReached`/public
-  `addRectToBitmap`, the `Rectangle<T>` generic and both data fields, and the
-  unreachable `hardRowLimit` throw. Roughly 400 of 700 lines. This is the one
-  layout API an external plugin plausibly reaches for.
+  `addRectToBitmap`, the `Rectangle<T>` generic and both data fields, and each
+  row's parallel id array). What settled the ABI question was that the API those
+  members belong to is the one v5 already deleted: a plugin holding a custom
+  `BoxRendererType` is broken at the renderer registry, not here. `hardRowLimit`
+  stayed — its throw is unreachable from the canvas plugin's inputs but is the
+  only thing bounding `bitmap` growth for a rect with an enormous height.
 - `wheelZoom.ts` — nine exports internal to `createWheelZoomController` sit in
   the barrel with no barrel consumer (every in-tree caller imports the
   `util/wheelZoom` subpath directly). `createScrollLatch` likewise. Low external
