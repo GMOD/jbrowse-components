@@ -128,6 +128,12 @@ export default class GranularRectLayout {
     // Eliminates function call overhead which is critical at 100k+ features
     const bitmap = this.bitmap
 
+    // On a collision at row y, the next top worth trying is y + 1, not top + 1.
+    // Rows top..y-1 are clear (y is the first hit walking upward) and every top'
+    // between them still spans y, because y < top + pHeight — so nothing between
+    // can fit. `top = y` plus the loop's own increment is that jump, and it turns
+    // the scan from O(rows * pHeight) into O(rows): without it, a rect pHeight
+    // rows tall re-tests the row that blocked it pHeight times over.
     outer: for (; top <= maxTop; top += 1) {
       // Check all rows that this rectangle would occupy
       const maxY = top + pHeight
@@ -149,6 +155,7 @@ export default class GranularRectLayout {
               const start = intervals[i]!
               const end = intervals[i + 1]!
               if (end > pLeft && start < pRight) {
+                top = y
                 continue outer
               }
             }
@@ -171,6 +178,7 @@ export default class GranularRectLayout {
             if (idx < len) {
               const start = intervals[idx]!
               if (start < pRight) {
+                top = y
                 continue outer
               }
             }

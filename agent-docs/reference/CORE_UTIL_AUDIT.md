@@ -88,15 +88,13 @@ decided it:
 - ~~`layouts/`~~ — **landed.** Every item this listed went: `MultiLayout.ts`,
   `PrecomputedLayout.ts`, `BaseLayout.ts` with the `SerializedLayout`/
   `RectTuple` shapes, `intervalUtils.isRangeClear`, and the members of
-  `GranularRectLayout` that only the block renderer reached
-  (`serializeRegion`/`toJSON`/`discardRange`/`getByCoord`/`getByID`/
-  `getDataByID`/`getRectangles`/`getTotalHeight`/`maxHeightReached`/public
-  `addRectToBitmap`, the `Rectangle<T>` generic and both data fields, and each
-  row's parallel id array). What settled the ABI question was that the API those
-  members belong to is the one v5 already deleted: a plugin holding a custom
-  `BoxRendererType` is broken at the renderer registry, not here. `hardRowLimit`
-  stayed — its throw is unreachable from the canvas plugin's inputs but is the
-  only thing bounding `bitmap` growth for a rect with an enormous height.
+  `GranularRectLayout` that only the block renderer reached (serialization
+  methods, coordinate lookups, and rect/bitmap management). What settled the ABI
+  question was that the API those members belong to is the one v5 already
+  deleted: a plugin holding a custom `BoxRendererType` is broken at the renderer
+  registry, not here. `hardRowLimit` stayed — its throw is unreachable from the
+  canvas plugin's inputs but is the only thing bounding `bitmap` growth for a
+  rect with an enormous height.
 - `wheelZoom.ts` — nine exports internal to `createWheelZoomController` sit in
   the barrel with no barrel consumer (every in-tree caller imports the
   `util/wheelZoom` subpath directly). `createScrollLatch` likewise. Low external

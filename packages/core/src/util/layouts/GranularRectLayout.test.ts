@@ -88,6 +88,16 @@ test('tests adding features far apart in coordinate space', () => {
   expect(l.addRect('test3', 0, 10000, 1)).toBe(1)
 })
 
+test('a tall feature takes the row below a blocker, not the row below itself', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  // The blocker occupies row 0 alone. A 3-row feature over the same span clears
+  // at row 1, so the scan may only skip past the row that blocked it — skipping
+  // the blocked rect's own height instead would land this at 30.
+  expect(l.addRect('blocker', 0, 1000, 10)).toBe(0)
+  expect(l.addRect('tall', 0, 1000, 30)).toBe(10)
+})
+
 test('a very wide feature leaves its rows free where it does not reach', () => {
   const l = new Layout({ pitchX: 1, pitchY: 10 })
 
