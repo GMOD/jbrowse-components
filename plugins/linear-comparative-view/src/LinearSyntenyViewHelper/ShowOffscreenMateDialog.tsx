@@ -24,14 +24,23 @@ const MAX_NAMED_REGIONS = 6
  * not an undo for it.
  *
  * The click already offered an Undo snackbar afterwards, and it stays. What it
- * could not do is tell the reader what they were about to lose BEFORE they lost
- * it: a snackbar is missed, dismissed, or read after the fact, by which time
- * the region list it would restore is no longer the one on screen.
+ * could not do is say what the panel was about to swap out BEFORE it swapped:
+ * a snackbar is missed, dismissed, or read after the fact, by which time the
+ * region list it would restore is no longer the one on screen.
  *
- * WHAT IS ABOUT TO BE REPLACED is therefore the content, not the destination.
- * The destination was already legible — the tooltip names the contig and the
- * count, and this repeats them for a reader who arrived by keyboard — while the
- * cost was legible nowhere.
+ * IT EXPLAINS RATHER THAN WARNS. Nothing here is dangerous — the navigation is
+ * ordinary, it is undoable, and the reader asked for it — so the copy is the
+ * sentence a colleague would say, not an alert. It leads with what the click
+ * GIVES (the marks become ribbons, which is also the clearest short answer to
+ * "what is this strip"), and the panel's current regions follow as the ordinary
+ * consequence they are, in secondary text. A `warning.main` line here read as
+ * "you may be about to break something" over an action whose whole cost is one
+ * Undo away.
+ *
+ * WHAT IS SWAPPED OUT is the content, not the destination. The destination was
+ * already legible — the tooltip names the contig and the count, and this
+ * repeats them for a reader who arrived by keyboard — while the regions the
+ * panel would give up were legible nowhere.
  */
 const ShowOffscreenMateDialog = observer(function ShowOffscreenMateDialog({
   model,
@@ -55,10 +64,13 @@ const ShowOffscreenMateDialog = observer(function ShowOffscreenMateDialog({
   handleClose: () => void
 }) {
   const count = offscreenMateCount(model, refName, side)
-  const shown =
-    replacing.length > MAX_NAMED_REGIONS
-      ? `${replacing.length.toLocaleString()} regions`
-      : replacing.join(', ')
+  const panel = side === 'top' ? 'panel below' : 'panel above'
+  const instead =
+    replacing.length === 0
+      ? ''
+      : replacing.length > MAX_NAMED_REGIONS
+        ? `, in place of the ${replacing.length.toLocaleString()} regions it is showing now`
+        : `, in place of ${listPhrase(replacing)}`
   return (
     <ConfirmDialog
       open
@@ -72,18 +84,22 @@ const ShowOffscreenMateDialog = observer(function ShowOffscreenMateDialog({
     >
       <Typography>
         {count > 0
-          ? `${count.toLocaleString()} alignments on this band go to ${refName}, which the ${side === 'top' ? 'panel below' : 'panel above'} is not showing.`
-          : `${refName} is not shown on the ${side === 'top' ? 'panel below' : 'panel above'}.`}
+          ? `${count.toLocaleString()} alignments on this band point to ${refName}. The ${panel} is not showing it yet, which is why they are marks rather than ribbons.`
+          : `The ${panel} is not showing ${refName} yet.`}
       </Typography>
-      <Typography>Showing it there navigates that panel to {loc}.</Typography>
-      {replacing.length > 0 ? (
-        <Typography color="warning.main">
-          That replaces what the panel is showing now ({shown}). You can undo
-          it.
-        </Typography>
-      ) : null}
+      <Typography color="text.secondary">
+        {`Showing it takes that panel to ${loc}${instead}. You can undo this afterwards.`}
+      </Typography>
     </ConfirmDialog>
   )
 })
+
+// "ctgA", "ctgA and ctgB", "ctgA, ctgB and ctgC" — a sentence a reader is meant
+// to read, rather than a comma-joined field.
+function listPhrase(names: string[]) {
+  return names.length > 1
+    ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
+    : (names[0] ?? '')
+}
 
 export default ShowOffscreenMateDialog

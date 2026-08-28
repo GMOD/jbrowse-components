@@ -22,6 +22,22 @@ const emptyModel = {
   },
 } as unknown as OffscreenMateSource
 
+// ...and one that does answer, since the count is what the leading sentence is
+// built out of. Only the two fields `offscreenMateCount` reads.
+const countingModel = {
+  ...emptyModel,
+  linearSyntenyDisplays: [
+    {
+      featureData: {
+        offscreenMates: {
+          mateRefNameDict: ['ctgB'],
+          counts: Uint32Array.from([12]),
+        },
+      },
+    },
+  ],
+} as unknown as OffscreenMateSource
+
 function open(over: Record<string, unknown> = {}) {
   const onConfirm = jest.fn()
   const handleClose = jest.fn()
@@ -53,25 +69,54 @@ test('it names the destination the row will land at', () => {
 })
 
 // THE POINT OF THE DIALOG. The destination was already legible from the
-// tooltip; what the reader could not see was the region list they were about to
-// lose.
+// tooltip; the regions the panel would give up were legible nowhere.
 test('it names what the panel is showing now', () => {
   open({ replacing: ['ctgA', 'ctgC'] })
-  expect(screen.getByText(/ctgA, ctgC/)).toBeTruthy()
+  expect(screen.getByText(/in place of ctgA and ctgC/)).toBeTruthy()
+})
+
+// A sentence a reader reads, not a comma-joined field.
+test('...as a list with more than two', () => {
+  open({ replacing: ['ctgA', 'ctgC', 'ctgD'] })
+  expect(screen.getByText(/in place of ctgA, ctgC and ctgD/)).toBeTruthy()
 })
 
 // Past a handful the list stops being a thing to weigh and the count carries
 // it — a whole-assembly row would otherwise paper the dialog with scaffolds.
 test('...as a count once there are too many to read', () => {
   open({ replacing: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] })
-  expect(screen.getByText(/7 regions/)).toBeTruthy()
+  expect(screen.getByText(/in place of the 7 regions/)).toBeTruthy()
 })
 
-// A row displaying nothing loses nothing, so the warning would be a sentence
-// about the empty set.
-test('...and says nothing about it when there is nothing to lose', () => {
+// A panel displaying nothing gives nothing up, so the clause would be a
+// sentence about the empty set.
+test('...and says nothing about it when the panel shows nothing', () => {
   open({ replacing: [] })
-  expect(screen.queryByText(/replaces what the panel/)).toBeNull()
+  expect(screen.queryByText(/in place of/)).toBeNull()
+})
+
+// IT EXPLAINS RATHER THAN WARNS. Nothing here is dangerous and the copy should
+// not imply it is — leading with what the click gives is also the clearest
+// short answer to "what is this strip".
+test('it leads with what the click gives, not what it costs', () => {
+  open({ model: countingModel })
+  expect(
+    screen.getByText(/12 alignments on this band point to ctgB/),
+  ).toBeTruthy()
+  expect(screen.getByText(/marks rather than ribbons/)).toBeTruthy()
+})
+
+// A lane with no tally for this contig has no number to lead with, and an
+// invented "0 alignments" would be a sentence contradicting the mark the reader
+// just clicked.
+test('...and drops the count when the lane has none', () => {
+  open()
+  expect(screen.getByText(/is not showing ctgB yet/)).toBeTruthy()
+})
+
+test('...and says the move is undoable', () => {
+  open()
+  expect(screen.getByText(/undo this afterwards/)).toBeTruthy()
 })
 
 test('confirming runs the navigation and closes', () => {
