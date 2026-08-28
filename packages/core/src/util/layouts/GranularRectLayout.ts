@@ -1,81 +1,23 @@
-import {
-  findInsertionPoint,
-  insertInterval,
-  isRangeClear as isRangeClearIntervals,
-} from './intervalUtils.ts'
-
-import type {
-  BaseLayout,
-  RectTuple,
-  Rectangle,
-  SerializedLayout,
-} from './BaseLayout.ts'
+import { findInsertionPoint, insertInterval } from './intervalUtils.ts'
 
 /**
  * See https://github.com/cmdcolin/track_layout_benchmark for information on
  * alternative algorithms and benchmark information
  */
 
-// Optimized row class using flat interval array. Holds only interval extents
-// and feature ids, so it does not need the layout's data generic.
+// One row's occupied spans, as a flat [start1, end1, start2, end2, ...] array
+// kept sorted by start. Spans within a row never overlap, which is what lets
+// the collision scan binary-search it.
 class LayoutRow {
   private padding = 1
 
-  // Flat array: [start1, end1, start2, end2, ...]
-  // Kept sorted by start position for binary search
   private intervals: number[] = []
-
-  // Parallel array storing the feature id for each interval
-  private data: string[] = []
 
   getIntervals(): number[] {
     return this.intervals
   }
 
-  getItemAt(x: number): string | undefined {
-    const intervals = this.intervals
-    const len = intervals.length
-
-    if (len === 0) {
-      return undefined
-    }
-
-    // Linear scan for small arrays
-    if (len < 40) {
-      for (let i = 0; i < len; i += 2) {
-        if (x >= intervals[i]! && x < intervals[i + 1]!) {
-          return this.data[i >> 1]
-        }
-      }
-      return undefined
-    }
-
-    // Binary search for larger arrays - find interval containing x
-    let low = 0
-    let high = len >> 1
-
-    while (low < high) {
-      const mid = (low + high) >>> 1
-      const midIdx = mid << 1
-      if (intervals[midIdx + 1]! <= x) {
-        low = mid + 1
-      } else {
-        high = mid
-      }
-    }
-
-    const idx = low << 1
-    if (idx < len && x >= intervals[idx]! && x < intervals[idx + 1]!) {
-      return this.data[low]
-    }
-    return undefined
-  }
-
-  isRangeClear(left: number, right: number): boolean {
-    return isRangeClearIntervals(this.intervals, left, right)
-  }
-
-  addRect(rect: { l: number; r: number }, data: string): void {
+  addRect(rect: { l: number; r: number }): void {
     const left = rect.l
     const right = rect.r + this.padding
     const intervals = this.intervals
@@ -84,60 +26,27 @@ class LayoutRow {
     // Fast path: features usually arrive sorted, so append to the end
     if (len === 0 || left >= intervals[len - 2]!) {
       intervals.push(left, right)
-      this.data.push(data)
     } else {
-      const idx = findInsertionPoint(intervals, left)
-      insertInterval(intervals, idx, left, right)
-      this.data.splice(idx >> 1, 0, data)
+      insertInterval(
+        intervals,
+        findInsertionPoint(intervals, left),
+        left,
+        right,
+      )
     }
-  }
-
-  discardRange(left: number, right: number): void {
-    const intervals = this.intervals
-    const data = this.data
-    const oldLen = intervals.length
-    const newIntervals: number[] = []
-    const newData: string[] = []
-
-    for (let i = 0; i < oldLen; i += 2) {
-      const start = intervals[i]!
-      const end = intervals[i + 1]!
-      const intervalData = data[i >> 1]!
-
-      // If interval is completely within discard range, skip it
-      if (start >= left && end <= right) {
-        continue
-      }
-      // If no overlap, keep it
-      if (end <= left || start >= right) {
-        newIntervals.push(start, end)
-        newData.push(intervalData)
-      }
-      // If interval overlaps left edge
-      else if (start < left && end > left) {
-        if (end <= right) {
-          // Trim from the right
-          newIntervals.push(start, left)
-          newData.push(intervalData)
-        } else {
-          // Interval spans the entire discard range, split it
-          newIntervals.push(start, left, right, end)
-          newData.push(intervalData, intervalData)
-        }
-      }
-      // If interval overlaps right edge only
-      else if (start < right && end > right) {
-        newIntervals.push(right, end)
-        newData.push(intervalData)
-      }
-    }
-
-    this.intervals = newIntervals
-    this.data = newData
   }
 }
 
-export default class GranularRectLayout<T> implements BaseLayout<T> {
+// A rect the layout has placed, in pitch units. `top` is null for one that
+// overflowed maxHeight and so never reached a row.
+interface Rectangle {
+  l: number
+  r: number
+  top: number | null
+  h: number
+}
+
+export default class GranularRectLayout {
   private pitchX: number
 
   private pitchY: number
@@ -148,13 +57,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   // rows beyond the highest created one, so every access must guard for undefined
   private bitmap: (LayoutRow | undefined)[]
 
-  private rectangles: Map<string, Rectangle<T>>
-
-  public maxHeightReached: boolean
+  private rectangles: Map<string, Rectangle>
 
   private maxHeight: number
-
-  private pTotalHeight: number
 
   /**
    * pitchX - layout grid pitch in the X direction
@@ -175,12 +80,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.pitchX = pitchX
     this.pitchY = pitchY
     this.hardRowLimit = hardRowLimit
-    this.maxHeightReached = false
 
     this.bitmap = []
     this.rectangles = new Map()
     this.maxHeight = Math.ceil(maxHeight / this.pitchY)
-    this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
 
   /**
@@ -192,8 +95,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data?: T,
-    serializableData?: T,
   ): number | null {
     const pitchX = this.pitchX
     const pitchY = this.pitchY
@@ -201,21 +102,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // if we have already laid it out, return its layout
     const storedRec = this.rectangles.get(id)
     if (storedRec) {
-      // Update serializableData even if rect already exists
-      // This is needed when config changes (e.g., showSubfeatureLabels toggle)
-      // cause the same rect to be added with different metadata
-      if (serializableData !== undefined) {
-        storedRec.serializableData = serializableData
-      }
-
-      if (storedRec.top === null) {
-        return null
-      }
-
-      // add it to the bitmap again, since that bitmap range may have been
-      // discarded
-      this.addRectToBitmap(storedRec)
-      return storedRec.top * pitchY
+      return storedRec.top === null ? null : storedRec.top * pitchY
     }
 
     // Use Math.trunc for fast floor operation that works with large coordinates
@@ -224,15 +111,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const pRight = Math.trunc(right / pitchX)
     const pHeight = Math.ceil(height / pitchY)
 
-    const rectangle: Rectangle<T> = {
-      id,
+    const rectangle: Rectangle = {
       l: pLeft,
       r: pRight,
       top: null,
       h: pHeight,
-      originalHeight: height,
-      data,
-      serializableData,
     }
 
     // Allow features to start at any position up to maxHeight
@@ -255,7 +138,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         if (!row) {
           continue
         }
-        // Fully inlined isRangeClear for maximum performance
+
         const intervals = row.getIntervals()
         const len = intervals.length
 
@@ -299,17 +182,16 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       break
     }
 
+    this.rectangles.set(id, rectangle)
     if (top > maxTop) {
-      rectangle.top = null
-      this.rectangles.set(id, rectangle)
-      this.maxHeightReached = true
       return null
     }
 
     rectangle.top = top
-    this.addRectToBitmap(rectangle)
-    this.rectangles.set(id, rectangle)
-    this.pTotalHeight = Math.max(this.pTotalHeight, top + pHeight)
+    const yEnd = top + pHeight
+    for (let y = top; y < yEnd; y += 1) {
+      this.getOrCreateRow(y).addRect(rectangle)
+    }
     return top * pitchY
   }
 
@@ -325,120 +207,5 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       this.bitmap[y] = row
     }
     return row
-  }
-
-  addRectToBitmap(rect: Rectangle<T>) {
-    if (rect.top === null) {
-      return
-    }
-
-    const data = rect.id
-    const yEnd = rect.top + rect.h
-
-    for (let y = rect.top; y < yEnd; y += 1) {
-      this.getOrCreateRow(y).addRect(rect, data)
-    }
-  }
-
-  /**
-   *  Given a range of X coordinates, deletes all data dealing with
-   *  the features.
-   */
-  discardRange(left: number, right: number) {
-    const pLeft = Math.trunc(left / this.pitchX)
-    const pRight = Math.trunc(right / this.pitchX)
-    const { bitmap } = this
-    // bitmap can be sparse: rows are created lazily, so guard for undefined
-    for (const row of bitmap) {
-      if (row) {
-        row.discardRange(pLeft, pRight)
-      }
-    }
-  }
-
-  getByCoord(x: number, y: number) {
-    const pY = Math.trunc(y / this.pitchY)
-    const row = this.bitmap[pY]
-    if (!row) {
-      return undefined
-    }
-    const pX = Math.trunc(x / this.pitchX)
-    return row.getItemAt(pX)
-  }
-
-  getByID(id: string) {
-    const r = this.rectangles.get(id)
-    // top === null means the feature overflowed maxHeight and was never placed
-    if (r && r.top !== null) {
-      const t = r.top * this.pitchY
-      return [
-        r.l * this.pitchX,
-        t,
-        r.r * this.pitchX,
-        t + r.originalHeight,
-      ] as RectTuple
-    }
-
-    return undefined
-  }
-
-  getDataByID(id: string) {
-    return this.rectangles.get(id)?.data
-  }
-
-  getTotalHeight() {
-    return this.pTotalHeight * this.pitchY
-  }
-
-  getRectangles(): Map<string, RectTuple> {
-    const pitchX = this.pitchX
-    const pitchY = this.pitchY
-    return new Map(
-      [...this.rectangles.entries()].map(([id, rect]) => {
-        const { l, r, originalHeight, top, serializableData } = rect
-        const t = (top ?? 0) * pitchY
-        const b = t + originalHeight
-        return [id, [l * pitchX, t, r * pitchX, b, serializableData]] // left, top, right, bottom
-      }),
-    )
-  }
-
-  serializeRegion(region: { start: number; end: number }): SerializedLayout {
-    const pitchX = this.pitchX
-    const pitchY = this.pitchY
-    const x1 = region.start
-    const x2 = region.end
-    const regionRectangles: Record<string, RectTuple> = {}
-    let maxHeightReached = false
-
-    for (const [id, rect] of this.rectangles.entries()) {
-      const { l, r, originalHeight, top } = rect
-      if (top === null) {
-        maxHeightReached = true
-      } else {
-        const t = top * pitchY
-        const b = t + originalHeight
-        const y1 = l * pitchX
-        const y2 = r * pitchX
-        // add +/- pitchX to avoid resolution causing errors
-        if (x2 >= y1 - pitchX && y2 + pitchX >= x1) {
-          regionRectangles[id] = [y1, t, y2, b, rect.serializableData]
-        }
-      }
-    }
-    return {
-      rectangles: regionRectangles,
-      totalHeight: this.getTotalHeight(),
-      maxHeightReached,
-    }
-  }
-
-  toJSON(): SerializedLayout {
-    const rectangles = Object.fromEntries(this.getRectangles())
-    return {
-      rectangles,
-      totalHeight: this.getTotalHeight(),
-      maxHeightReached: this.maxHeightReached,
-    }
   }
 }

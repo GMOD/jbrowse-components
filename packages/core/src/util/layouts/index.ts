@@ -1,11 +1,2 @@
-export type {
-  BaseLayout,
-  RectTuple,
-  Rectangle,
-  SerializedLayout,
-} from './BaseLayout.ts'
 export { default as GranularRectLayout } from './GranularRectLayout.ts'
 export { placeRect } from './placeRect.ts'
-export { default as MultiLayout } from './MultiLayout.ts'
-export { default as PrecomputedLayout } from './PrecomputedLayout.ts'
-export type { Layout } from './PrecomputedLayout.ts'

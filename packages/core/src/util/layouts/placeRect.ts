@@ -10,33 +10,28 @@
  * why this exists as a separate primitive:
  *
  * - **Keys:** GranularRectLayout keys rectangles by string ID in a
- *   `Map<string, Rectangle<T>>`; `placeRect` has no ID and no rectangle
- *   object. Callers with numeric indices (e.g. BAM read indices) don't
- *   pay the cost of allocating string IDs, Rectangle objects, or the
- *   outer Map — they use a `Uint16Array` of row indices instead.
+ *   `Map`, so re-adding an id returns the row it already holds;
+ *   `placeRect` has no ID and no rectangle object. Callers with numeric
+ *   indices (e.g. BAM read indices) don't pay the cost of allocating
+ *   string IDs, Rectangle objects, or the outer Map — they use a
+ *   `Uint16Array` of row indices instead.
  *
  * - **Scaling / height:** GranularRectLayout has `pitchX`, `pitchY`,
- *   multi-row rectangle heights, `maxHeight` / `hardRowLimit`,
- *   compact/collapse display modes, and returns pixel `top` values.
- *   `placeRect` is unit-agnostic (bp or px), one-row-per-rect, no
- *   limits, and returns a row index.
- *
- * - **Ancillary features:** GranularRectLayout supports `discardRange`,
- *   `getByCoord` hit-testing, serialization, and an `allFilled` flag
- *   for very wide rects. `placeRect` does none of this — consumers
- *   that need hit-testing build a Flatbush separately, and layout is
- *   recomputed rather than incrementally maintained.
+ *   multi-row rectangle heights, `maxHeight` / `hardRowLimit`, and
+ *   returns pixel `top` values. `placeRect` is unit-agnostic (bp or
+ *   px), one-row-per-rect, no limits, and returns a row index.
  *
  * - **State ownership:** GranularRectLayout is a class with internal
- *   state; its lifetime must be managed to avoid retaining
- *   `Rectangle<T>` objects. `placeRect` is a pure function operating
- *   on a caller-owned `number[][]` array, so memory lifetime matches
- *   the caller's scope — no leak vector.
+ *   state; `placeRect` is a pure function operating on a caller-owned
+ *   `number[][]` array, so memory lifetime matches the caller's scope.
+ *
+ * Neither hit-tests: both are packing only, and consumers that need
+ * hit-testing build a Flatbush over the result.
  *
  * Use `placeRect` for tight per-call layouts over typed-array data
  * (alignments pileup and chain rendering). Use `GranularRectLayout`
- * when you need persistent layout state, hit-testing, pitch scaling,
- * or variable row heights (feature/gene tracks).
+ * when rects have variable heights or the layout needs a row limit
+ * (feature/gene tracks).
  *
  * Per-row complexity:
  *   - O(1) append when the row's last end ≤ new start (start-sorted

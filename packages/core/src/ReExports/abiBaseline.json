@@ -449,12 +449,7 @@
     "namedColorToHex",
     "randomColor"
   ],
-  "@jbrowse/core/util/layouts": [
-    "GranularRectLayout",
-    "MultiLayout",
-    "PrecomputedLayout",
-    "placeRect"
-  ],
+  "@jbrowse/core/util/layouts": ["GranularRectLayout", "placeRect"],
   "@jbrowse/core/util/tracks": [
     "UNKNOWN",
     "UNSUPPORTED",

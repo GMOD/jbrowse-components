@@ -98,7 +98,7 @@ fall into groups:
   `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`,
   `GlyphType`, `getParentRenderProps`)
 - layout, which moved onto the GPU packing path (`PileupLayout`, `SceneGraph`,
-  `calculateLayoutBounds`, `getLayoutId`)
+  `calculateLayoutBounds`, `getLayoutId`, `MultiLayout`, `PrecomputedLayout`)
 - `AbortSignal` cancellation, which became stop tokens (`abortBreakPoint`,
   `checkAbortSignal`, `observeAbortSignal`, `makeAbortableReaction`)
 - the renderer era's RPC retry and progress reporting (`RetryError`,
@@ -119,7 +119,7 @@ fall into groups:
   `getUriLink`, `defaultStops`, `useDebouncedCallback`)
 - `isConfigurationSlotType`, with the config models that were flattened
 
-That is 46 names over 53 entries, since 7 of them were served from two modules
+That is 48 names over 55 entries, since 7 of them were served from two modules
 each. Every one is recorded with its reason in `REMOVAL_GROUPS` in
 `packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against
 the exports of the previously published package.
@@ -168,6 +168,10 @@ merely moved, the entry says which import to use instead.
     behind `renderToAbstractCanvas`
   - `@jbrowse/core/util/compositeMap` — dead, with no caller in or out of the
     tree
+  - `@jbrowse/core/util/layouts/BaseLayout` — the interface `GranularRectLayout`
+    implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with
+    them, along with the serialization types (`SerializedLayout`, `RectTuple`)
+    that only the worker-to-main layout handoff used
 - modules that still exist, un-published because the last in-repo deep import
   went:
   - `@jbrowse/core/rpc/coreRpcMethods` —
@@ -175,9 +179,6 @@ merely moved, the entry says which import to use instead.
     it relatively; nothing imports it by subpath any more
   - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still
     exports it as `ErrorMessage` — import it from the barrel
-  - `@jbrowse/core/util/layouts/BaseLayout` — alive, and re-exported from
-    `@jbrowse/core/util/layouts`, which is a preserved subpath and a `jbrequire`
-    module
   - `@jbrowse/core/util/mst-reflection` — alive, and still served over
     `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import
     path went

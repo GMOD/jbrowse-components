@@ -59,6 +59,10 @@ export const REMOVAL_GROUPS: RemovalGroup[] = [
       '@jbrowse/core/util#calculateLayoutBounds':
         'replaced by GPU instance packing',
       '@jbrowse/core/util#getLayoutId': 'replaced by GPU instance packing',
+      '@jbrowse/core/util/layouts#MultiLayout':
+        'the per-block named sublayouts the box renderer kept; nothing packs per block any more',
+      '@jbrowse/core/util/layouts#PrecomputedLayout':
+        'replayed a layout the worker had serialized to the main thread; the GPU path lays out on the main thread and hit-tests with Flatbush',
     },
   },
   {
@@ -332,6 +336,8 @@ export const SUBPATH_REMOVALS: SubpathRemovalGroup[] = [
       './util/offscreenCanvasUtils':
         'the server-side canvas helpers behind `renderToAbstractCanvas`',
       './util/compositeMap': 'dead, with no caller in or out of the tree',
+      './util/layouts/BaseLayout':
+        'the interface `GranularRectLayout` implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with them, along with the serialization types (`SerializedLayout`, `RectTuple`) that only the worker-to-main layout handoff used',
     },
   },
   {
@@ -342,8 +348,6 @@ export const SUBPATH_REMOVALS: SubpathRemovalGroup[] = [
         '`packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports it relatively; nothing imports it by subpath any more',
       './ui/ErrorMessage':
         'alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel',
-      './util/layouts/BaseLayout':
-        'alive, and re-exported from `@jbrowse/core/util/layouts`, which is a preserved subpath and a `jbrequire` module',
       './util/mst-reflection':
         'alive, and still served over `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import path went',
     },

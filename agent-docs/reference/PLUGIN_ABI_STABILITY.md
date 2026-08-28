@@ -97,7 +97,7 @@ version of this list had lost seventeen names.
 <!-- BEGIN GENERATED ABI REMOVALS -->
 
 - the renderer registry (`RendererType`, `FeatureRendererType`, `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`, `GlyphType`, `getParentRenderProps`)
-- layout, which moved onto the GPU packing path (`PileupLayout`, `SceneGraph`, `calculateLayoutBounds`, `getLayoutId`)
+- layout, which moved onto the GPU packing path (`PileupLayout`, `SceneGraph`, `calculateLayoutBounds`, `getLayoutId`, `MultiLayout`, `PrecomputedLayout`)
 - `AbortSignal` cancellation, which became stop tokens (`abortBreakPoint`, `checkAbortSignal`, `observeAbortSignal`, `makeAbortableReaction`)
 - the renderer era's RPC retry and progress reporting (`RetryError`, `isRetryException`, `updateStatus2`, `getProgressDisplayStr`, `getStatsId`)
 - desktop file handles, which the desktop package now owns (`getFileHandleCache`, `setFileHandleCache`, `removeFileHandle`, `cleanupStaleHandles`, `getPendingFileHandleIds`, `setPendingFileHandleIds`, `clearPendingFileHandleIds`, `restorePendingFileHandles`)
@@ -106,7 +106,7 @@ version of this list had lost seventeen names.
 - names with no caller left in core, which the last callers inlined or folded away (`forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`, `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`, `getUriLink`, `defaultStops`, `useDebouncedCallback`)
 - `isConfigurationSlotType`, with the config models that were flattened
 
-That is 46 names over 53 entries, since 7 of them were served from two modules each. Every one is recorded with its reason in `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against the exports of the previously published package.
+That is 48 names over 55 entries, since 7 of them were served from two modules each. Every one is recorded with its reason in `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against the exports of the previously published package.
 <!-- END GENERATED ABI REMOVALS -->
 
 ## What has left the published `exports` map
@@ -134,10 +134,10 @@ decision anyone wrote down:
   - `@jbrowse/core/rpc/methods/util` — renderer-era RPC helpers, removed with `CoreRender`
   - `@jbrowse/core/util/offscreenCanvasUtils` — the server-side canvas helpers behind `renderToAbstractCanvas`
   - `@jbrowse/core/util/compositeMap` — dead, with no caller in or out of the tree
+  - `@jbrowse/core/util/layouts/BaseLayout` — the interface `GranularRectLayout` implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with them, along with the serialization types (`SerializedLayout`, `RectTuple`) that only the worker-to-main layout handoff used
 - modules that still exist, un-published because the last in-repo deep import went:
   - `@jbrowse/core/rpc/coreRpcMethods` — `packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports it relatively; nothing imports it by subpath any more
   - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel
-  - `@jbrowse/core/util/layouts/BaseLayout` — alive, and re-exported from `@jbrowse/core/util/layouts`, which is a preserved subpath and a `jbrequire` module
   - `@jbrowse/core/util/mst-reflection` — alive, and still served over `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import path went
 
 That is 16 subpaths the published `exports` map no longer serves, recorded with their reasons in `SUBPATH_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. The map is generated from in-repo import sites, so a subpath leaves it whenever its last in-repo importer does; `abiPreviousRelease.test.ts` checks the remainder against the exports map of the previously published package, which is what makes the next one a decision rather than an accident.

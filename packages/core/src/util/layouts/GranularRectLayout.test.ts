@@ -58,65 +58,20 @@ test('stacks up overlapping features', () => {
   }
 })
 
-test('discards regions', () => {
-  const l = new Layout({ pitchX: 10, pitchY: 4 })
-  for (let i = 0; i < 20; i += 1) {
-    const top = l.addRect(
-      `feature-${i}`,
-      10000 * i + 4000,
-      10000 * i + 16000,
-      1,
-    )
-    expect(top).toEqual((i % 2) * 4)
-  }
-
-  // Verify initial state - both rows should have intervals
-  // @ts-expect-error
-  expect(l.bitmap[0].intervals.length).toBeGreaterThan(0)
-  // @ts-expect-error
-  expect(l.bitmap[1].intervals.length).toBeGreaterThan(0)
-
-  // Discard middle region
-  l.discardRange(190000, 220000)
-  // @ts-expect-error
-  expect(l.bitmap[0].intervals.length).toBeGreaterThan(0)
-  // @ts-expect-error
-  expect(l.bitmap[1].intervals.length).toBeGreaterThan(0)
-
-  // Discard left region
-  l.discardRange(0, 100000)
-  // @ts-expect-error
-  expect(l.bitmap[0].intervals.length).toBeGreaterThan(0)
-  // @ts-expect-error
-  expect(l.bitmap[1].intervals.length).toBeGreaterThan(0)
-
-  // Discard everything
-  l.discardRange(0, 220000)
-  // @ts-expect-error
-  expect(l.bitmap[0].intervals.length).toBe(0)
-})
-
-test('getByID returns undefined for a feature that overflowed maxHeight', () => {
+test('a feature past maxHeight gets no row', () => {
   const l = new Layout({ pitchX: 1, pitchY: 1, maxHeight: 1 })
 
-  // stack overlapping features past maxHeight; the later ones get top === null
-  l.addRect('a', 0, 100, 1)
-  l.addRect('b', 0, 100, 1)
-  const overflowed = l.addRect('c', 0, 100, 1)
-
-  expect(overflowed).toBeNull()
-  expect(l.getByID('c')).toBeUndefined()
+  expect(l.addRect('a', 0, 100, 1)).toBe(0)
+  expect(l.addRect('b', 0, 100, 1)).toBe(1)
+  expect(l.addRect('c', 0, 100, 1)).toBeNull()
 })
 
-// see issue #486
-test('tests that adding +/- pitchX fixes resolution causing errors', () => {
-  const l = new Layout({ pitchX: 91.21851599727707, pitchY: 3 })
+test('re-adding a laid-out id returns the row it already has', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
 
-  l.addRect('test', 2581541, 2581542, 1)
-
-  expect(
-    l.serializeRegion({ start: 2581491, end: 2818659 }).rectangles.test,
-  ).toBeTruthy()
+  expect(l.addRect('a', 0, 100, 10)).toBe(0)
+  expect(l.addRect('b', 0, 100, 10)).toBe(10)
+  expect(l.addRect('a', 500, 600, 10)).toBe(0)
 })
 
 test('tests adding features far apart in coordinate space', () => {
@@ -128,33 +83,9 @@ test('tests adding features far apart in coordinate space', () => {
 
   // Add features very far apart - this tests that the layout
   // can handle sparse coordinate spaces efficiently
-  l.addRect('test1', 0, 10000, 1)
-  l.addRect('test2', 1000000, 1000100, 1)
-  l.addRect('test3', 0, 10000, 1)
-
-  // @ts-expect-error
-  expect(l.rectangles.size).toBe(3)
-
-  // Verify the features are laid out correctly
-  expect(l.getByID('test1')).toBeTruthy()
-  expect(l.getByID('test2')).toBeTruthy()
-  expect(l.getByID('test3')).toBeTruthy()
-})
-
-test('tests adding a gigantic feature that fills entire row with another smaller added on top', () => {
-  const l = new Layout({
-    pitchX: 100,
-    pitchY: 1,
-    maxHeight: 600,
-  })
-
-  expect(l.getByCoord(50000, 0)).toEqual(undefined)
-  l.addRect('test1', 0, 100000000, 1, 'feat1')
-  expect(l.getByCoord(50000, 0)).toEqual('test1')
-  l.addRect('test2', 0, 1000, 1, 'feat2')
-  expect(l.getByCoord(500, 1)).toEqual('test2')
-  // @ts-expect-error
-  expect(l.rectangles.size).toBe(2)
+  expect(l.addRect('test1', 0, 10000, 1)).toBe(0)
+  expect(l.addRect('test2', 1000000, 1000100, 1)).toBe(0)
+  expect(l.addRect('test3', 0, 10000, 1)).toBe(1)
 })
 
 test('a very wide feature leaves its rows free where it does not reach', () => {
