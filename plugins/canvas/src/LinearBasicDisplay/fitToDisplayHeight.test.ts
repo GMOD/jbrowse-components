@@ -891,7 +891,14 @@ describe('canvas display fit escalation ladder', () => {
           }
         }
       }
-      return { level: display.fitStage.level, kept, maxY: display.maxY, h }
+      return {
+        level: display.fitStage.level,
+        kept,
+        maxY: display.maxY,
+        h,
+        factor: display.fitDecimatedFactor,
+        names: display.fitDrops.names,
+      }
     }
 
     const sweep = [0.2, 0.35, 0.5, 0.65, 0.8].map(keptAt)
@@ -904,6 +911,10 @@ describe('canvas display fit escalation ladder', () => {
       expect(s.kept).toBeLessThan(total)
       // ...and the solved stack fills without overflowing the track.
       expect(s.maxY).toBeLessThanOrEqual(s.h + 0.5)
+      // The note reads the factor the rung committed at, so it says "some names
+      // hidden" only where a name really went (factor 0 drops none).
+      expect(s.factor).toBeGreaterThan(0)
+      expect(s.names).toBe('some')
     }
     // Kept names never shrink as the track grows (monotonic)...
     for (let i = 1; i < sweep.length; i++) {

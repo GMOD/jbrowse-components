@@ -22,12 +22,19 @@ export function fitDrops(
   // keeping them, fit mode only reaches it after `labels` dropped them, and one
   // level answers both.
   renderedShowDescriptions: boolean,
+  // the whitespace factor the `decimated` rung committed at. Factor 0 drops no
+  // name at all — `keepFeatureLabel` asks for `room >= width * 0` and no
+  // overhang room is negative — and the rung reaches 0 legitimately, because
+  // the unseeded pack can fit where the seeded `labels` pack did not (see
+  // `solveLabelRoomFactor`). Any factor above 0 means fits(0) failed, so at
+  // least one name went.
+  decimatedFactor: number | undefined,
 ): FitDrops {
   const names = !showLabels
     ? 'none'
     : stage.level === 'bodies'
       ? 'all'
-      : stage.level === 'decimated'
+      : stage.level === 'decimated' && (decimatedFactor ?? 0) > 0
         ? 'some'
         : 'none'
   const descriptions = showDescriptions && !renderedShowDescriptions

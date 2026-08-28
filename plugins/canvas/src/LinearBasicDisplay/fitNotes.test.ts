@@ -12,7 +12,17 @@ const drops = (
   at: ReturnType<typeof stage>,
   showLabels: boolean,
   showDescriptions: boolean,
-) => fitDrops(at, showLabels, showDescriptions, at.level === 'full')
+  // the factor the `decimated` rung committed at; above 0 by default, since a
+  // rung that reached 0 dropped no name and has a case of its own below
+  decimatedFactor = 1,
+) =>
+  fitDrops(
+    at,
+    showLabels,
+    showDescriptions,
+    at.level === 'full',
+    decimatedFactor,
+  )
 
 describe('fitDrops', () => {
   // Outside fit mode the stage is always `full` at scale 1, so this is also
@@ -42,12 +52,25 @@ describe('fitDrops', () => {
   // labels, so a track that lands there has dropped no label kind at all and
   // the note stays silent.
   it('reports nothing when a fixed track trims isoforms', () => {
-    expect(fitDrops(stage('isoforms'), true, true, true)).toEqual({
+    expect(fitDrops(stage('isoforms'), true, true, true, undefined)).toEqual({
       names: 'none',
       descriptions: false,
       everyLabel: false,
       squeezePct: undefined,
     })
+  })
+
+  // The `decimated` rung commits at factor 0 whenever the unseeded pack fits
+  // where the seeded `labels` pack did not, and factor 0 keeps every name
+  // (`keepFeatureLabel` asks for `room >= width * 0`). The note said "some
+  // names hidden" over a track drawing all of them.
+  it('reports no names hidden at a decimated factor of 0', () => {
+    expect(drops(stage('decimated'), true, false, 0).names).toBe('none')
+    expect(fitLadderNote(drops(stage('decimated'), true, false, 0))).toBe(
+      undefined,
+    )
+    // and a factor above 0 means fits(0) failed, so a name really went
+    expect(drops(stage('decimated'), true, false, 0.5).names).toBe('some')
   })
 
   it('walks names from some to all down the ladder', () => {

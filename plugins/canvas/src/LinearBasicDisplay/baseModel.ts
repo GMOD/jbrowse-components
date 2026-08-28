@@ -979,6 +979,7 @@ export default function baseStateModelFactory(
             self.showLabels,
             self.effectiveShowDescriptions,
             this.renderedShowDescriptions,
+            self.fitDecimatedFactor,
           )
         },
       }))
