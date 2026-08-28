@@ -1,20 +1,25 @@
 # plugins/wiggle
 
-Two displays over two shaders, one Canvas2D twin and one hit test, all in
+Two displays over three shaders, one Canvas2D twin and one hit test, all in
 `src/shared`. Scale/axis/score machinery is `packages/wiggle-core`, because six
 other plugins draw a wiggle-shaped axis against it.
 
-## Two shaders, because a module reflects one instance struct
+## Two records, because a module reflects one instance struct
 
-`wiggle.slang` fills (xyplot, density, scatter) on a 20-byte record;
-`wiggleLine.slang` strokes (line, linecenter) on a 40-byte one. Only stroked
-renderings read a neighbour, so while they shared a shader every fill buffer
-carried those 20 bytes for nothing — 164MB rather than 82MB at 1000 sources,
-against a 256MB `maxBufferSize` floor, which is a zoom ceiling rather than
-waste.
+The fill record (20 bytes, `WiggleFillInstance` in `wiggleCommon.slang`) feeds
+`wiggle.slang` (xyplot, scatter) and `wiggleDensity.slang` (density as the
+composed render-core `rowRect` shape, drawn off the fill pass's buffer via
+`bufferPassId`); `wiggleLine.slang` strokes (line, linecenter) on a 40-byte
+record of its own. Only stroked renderings read a neighbour, so while every
+rendering shared a shader every fill buffer carried those 20 bytes for nothing —
+164MB rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor,
+which is a zoom ceiling rather than waste.
 
-`wiggleCommon.slang` holds what they must agree on: the struct is shared, the
-**binding is not**, and each re-imports `colorPack`/`hpmath`.
+`wiggleCommon.slang` holds what they must agree on: the uniform struct and the
+fill record are shared, the **binding is not**, and each re-imports
+`colorPack`/`hpmath`. Density's colour parity across GPU / Canvas2D / SVG is
+swept by `densityColorParity.test.ts`; its autoscale-pan cost (one uniform
+write, zero buffer bytes) is pinned in `gpuWiggleRenderer.test.ts`.
 
 **The pass, the buffer, the `renderingType` uniform and the Canvas2D painter all
 come off the encoded layers, never off `renderState`.** Encode and render are

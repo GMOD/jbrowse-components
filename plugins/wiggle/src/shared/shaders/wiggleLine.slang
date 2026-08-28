@@ -1,8 +1,9 @@
 // The wiggle renderer's two stroked renderings: RENDERING_TYPE_LINE (thick
 // step-line over the bar tops) and RENDERING_TYPE_LINE_CENTER (interpolated
-// point-to-point line). Its sibling `wiggle.slang` draws the filled ones
-// (xyplot, density, scatter); both import `wiggleCommon` for the uniform block
-// and the score math, so where a score lands vertically is one decision.
+// point-to-point line). Its siblings draw the filled ones — `wiggle.slang`
+// xyplot and scatter, `wiggleDensity.slang` density off the same fill buffer;
+// all import `wiggleCommon` for the uniform block and the score math, so where
+// a score lands vertically is one decision.
 //
 // They are separate modules because they need different per-instance records
 // and a module reflects exactly one instance struct. These two renderings are
