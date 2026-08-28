@@ -1,6 +1,6 @@
 ---
 name: a-shape-composes-a-scale
-description: render-core already holds a shape module (rowRect.slang) and a scale module (scoreScale.slang) and has never composed them. Re-measured 2026-08-28, "a per-instance scalar through a ramp" is one channel cardinality but only its RAMP half factors — HiC and LD share the Sampler2D LUT mechanism down to the binding slot, while the three normalizers (scoreScale; HiC's mapHicCount, pinned cross-backend; LD's remap-plus-sentinel) stay per-consumer, and density already composes scoreScale. The plan composes rowRect × scoreScale × a LUT ramp on wiggle density first, because density's autoscale domain is a uniform and a CPU-side colour resolve would turn a pan into a buffer re-upload; the gates are pan cost in bytes uploaded, wiggle.slang shrinking, and a GPU/Canvas2D/SVG ramp-entry parity sweep. Step 2 landed 2026-08-28 — wiggleDensity.slang composes rowRect's factored geometry with scoreScale over the existing fill buffer, all three gates measured and passing in its section; Step 3 (the texture/LUT ramp) is still open. Independent of ADR-089/090/091 on structural grounds: composition is compile-time slangc inlining that registers nothing and adds no runtime module edges, so ADR-091's reopening condition and the eager-bundle constraint do not govern it.
+description: render-core already holds a shape module (rowRect.slang) and a scale module (scoreScale.slang) and has never composed them. Re-measured 2026-08-28, "a per-instance scalar through a ramp" is one channel cardinality but only its RAMP half factors — HiC and LD share the Sampler2D LUT mechanism down to the binding slot, while the three normalizers (scoreScale; HiC's mapHicCount, pinned cross-backend; LD's remap-plus-sentinel) stay per-consumer, and density already composes scoreScale. The plan composes rowRect × scoreScale × a LUT ramp on wiggle density first, because density's autoscale domain is a uniform and a CPU-side colour resolve would turn a pan into a buffer re-upload; the gates are pan cost in bytes uploaded, wiggle.slang shrinking, and a GPU/Canvas2D/SVG ramp-entry parity sweep. Step 2 landed 2026-08-28 — wiggleDensity.slang composes rowRect's factored geometry with scoreScale over the existing fill buffer, all three gates measured and passing in its section. Step 3 landed the same day: colorRampLut.slang + uploadColorRampLut are the one ramp mechanism, HiC and LD moved onto both halves (Gate D), and a named density ramp is the densityColorRamp slot — a uniform flag and one LUT upload, no new shader, parity within one LUT bucket. Step 4 (point as the second shape) is still open. Independent of ADR-089/090/091 on structural grounds: composition is compile-time slangc inlining that registers nothing and adds no runtime module edges, so ADR-091's reopening condition and the eager-bundle constraint do not govern it.
 ---
 
 # A shape composes a scale
@@ -254,6 +254,86 @@ The kill condition governs this helper too — this is the one place the plan
 adds shared *runtime* machinery rather than a compile-time import, and a LUT
 upload path growing a scheme registry or per-display flags is the
 parameter-with-one-caller failure wearing a helper's name.
+
+**Landed 2026-08-28 — Gate D passes, gauge met, kill condition clear.** The
+module is `render-core/src/shaders/colorRampLut.slang`: `rampColor(ramp, t)` —
+the clamp + `SampleLevel(float2(t, 0.5), 0)` both consumers spelled — and
+`rampColorPremultiplied` over it. Premultiplication went INTO the module, as
+the second named entry rather than a flag: HiC and LD shared the
+`float4(c.rgb * c.a, c.a)` line verbatim (it is half of what ADR-094's census
+found factoring), so leaving it in each caller would recreate the two-copy
+drift the module closes — while the `//! blend:` declaration stays per-shader
+and the function name carries the contract, so density (opaque ramps, default
+straight-alpha blend) calls plain `rampColor` and never inherits a transform
+its blend does not match. Each consumer still declares its own
+`[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp` — Slang has no way for a
+module to declare a binding for its importer, so the binding-slot agreement
+stays convention, checked by nothing new.
+
+- **Gate D: pass.** The upload path is `uploadColorRampLut(hal, ramp,
+  passIds)` (`render-core/src/colorRampLut.ts`, new `./colorRampLut` export):
+  the 256×1 shape decision plus a byte-length check, nothing else. All three
+  consumers went through it in the same change — `GpuHicRenderer` (one pass),
+  `GpuLDRenderer` (its two shader variants are why the helper takes a pass
+  list), `GpuWiggleRenderer` (the density pass, memoized on the cached LUT's
+  identity) — and no `hal.uploadTexture` call is left under `plugins/`.
+- **The gauge: met.** Viridis on a density track is the `densityColorRamp`
+  config slot (stringEnum on `wiggleConfigSchemaFields`, default `'default'`,
+  no menu built), which reaches the GPU as one uniform flag
+  (`u.densityRampLut`) plus one 1024-byte LUT upload through the shared path,
+  and zero new shaders — `wiggleDensity.slang` holds both modes, picked per
+  fragment. Pinned in `gpuWiggleRenderer.test.ts`: a named ramp is one
+  `uploadTexture` of the same cached bytes Canvas2D indexes, an autoscale pan
+  in LUT mode still uploads 0 buffer bytes and re-uploads no texture, and the
+  Step 2 Gate A test passes byte-identical (the uniform block grew the flag,
+  so `UNIFORMS_SIZE_BYTES` moved with it through the generated constant).
+- **The per-instance-colour tension the plan glossed, resolved as two modes.**
+  Density's default ramp is parameterized by PER-ROW colour
+  (`lerp(white, inst.color.rgb, t)`, multiwiggle), which one 256-entry LUT
+  cannot encode — so the LUT is an alternative a config names, not a
+  replacement, and the inline lerp stays the default. Holding both cost
+  `wiggleDensity.slang` 10 non-comment lines (35 → 45; 79 → 97 with comments):
+  a sampler binding, its own `DensityVsOut` carrying the flat ramp-position
+  varying beside the resolved default colour, and a two-arm fragment. Not the
+  "worse rather than better" finding the step reserved space for. Two
+  structural costs worth naming: the vertex stage computes the default lerp
+  even in LUT mode (a per-vertex `lerp` on six vertices, unmeasurably small),
+  and a shader that owns a sampler unconditionally never draws on the WebGPU
+  HAL until a texture arrives, so default mode binds a 1KB inert LUT once at
+  first density draw (`UNUSED_RAMP`) that the flag keeps unsampled.
+- **Parity: within one LUT bucket, ends exact.** `densityColorParity.test.ts`
+  gained the LUT-mode sweep — the same 8 domain/scale/origin cases × 10
+  scores, GPU mirrored as the generated `normalizeScore` +
+  `densityGradientT` into a texel-exact model of the linear-filter
+  clamp-to-edge `SampleLevel` both HALs configure — against
+  `makeDensityLutFillFn` (`makeScoreNormalizer` + generated `densityGradientT`
+  + render-core's `makeRampFillStyleLut`, the fillStyle LUT HiC's and LD's
+  Canvas2D twins already index). Bound: the viridis LUT's steepest
+  adjacent-entry step, 3 8-bit units, asserted per channel; the pivot is
+  `LUT[0]` exactly on both backends and the far domain end `LUT[255]` exactly
+  on the GPU side. Both backends and the SVG export read one table:
+  `densityRampLut(name)` caches per name, the GPU uploads that identity, the
+  Canvas2D/SVG painter (`drawDensity`'s `rampLut` arm) indexes it, and viridis
+  itself moved to `@jbrowse/core/util/colorRamp` as `VIRIDIS_STOPS` so HiC's
+  scheme and density's are one 256-stop table (HiC's pinned ramp bytes
+  unchanged).
+- **HiC and LD: behavior unchanged.** Their fragments compile from the module
+  to the same math (`hicShaderParity.test.ts`, `colorRamp.test.ts`'s pinned
+  ramp bytes, `ldColorRamp.test.ts`, both renderer suites — all green
+  untouched); LD's explicit clamp moved into the module, where HiC's
+  `mapHicCount` already clamps, so both double-clamp harmlessly rather than
+  differently.
+- **Kill condition: clear.** The helper's three parameters are `hal`, the
+  bytes, and the pass list, each exercised by all three callers (the list with
+  more than one entry by LD); no scheme registry, no per-display flag, no
+  parameter only one caller passes. The scales stayed three, as rescoped:
+  `mapHicCount`, LD's remap-plus-sentinel and `scoreScale` are untouched.
+
+One seam deliberately left: the density legend (`scoreRamp`) still describes
+the default white→track-colour fade, so a track configured with a named ramp
+plots viridis under a legend drawn for the default. Legend work is UI and out
+of this step's scope; the getter to extend is `scoreRampApplies`/`scoreRamp`
+in `wiggleDisplayViews.ts`.
 
 ### Step 4 — `point` as the second shape
 
