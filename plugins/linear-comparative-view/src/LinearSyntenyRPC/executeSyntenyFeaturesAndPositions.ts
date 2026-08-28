@@ -456,6 +456,12 @@ export async function executeSyntenyFeaturesAndPositions({
     // marked by `culledRibbonMates` as an off-screen mate, which claims a mate
     // the reader could scroll to. There is none. Dropping the block is what the
     // gap means, and the records that DO align in the window are already there.
+    //
+    // THE SAME RULE THE FOLLOW ALREADY HAS. `installSyntenyFollow` walks the
+    // CIGAR through `resolveAlignmentSpan` and holds the row on a span that
+    // comes back empty — "a walk that collapses to a point is not a place" —
+    // which is why the follow was never wrong here and the geometry was. This
+    // is that rule on the path that had no such test.
     if (clip && clip.mateStart === clip.mateEnd && clip.end > clip.start) {
       continue
     }
