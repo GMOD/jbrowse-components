@@ -1,3 +1,4 @@
+import { uploadColorRampLut } from '@jbrowse/render-core/colorRampLut'
 import { GpuGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -105,8 +106,7 @@ export class GpuLDRenderer
   }
 
   uploadColorRamp(colors: Uint8Array) {
-    this.hal.uploadTexture(PASS_MAIN, colors, 256, 1)
-    this.hal.uploadTexture(PASS_GENOMIC, colors, 256, 1)
+    uploadColorRampLut(this.hal, colors, [PASS_MAIN, PASS_GENOMIC])
   }
 
   // signedLD/uniformW come from the payload the buffers were packed from, so an

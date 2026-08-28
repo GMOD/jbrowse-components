@@ -1,3 +1,4 @@
+import { uploadColorRampLut } from '@jbrowse/render-core/colorRampLut'
 import { GpuGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -63,7 +64,7 @@ export class GpuHicRenderer
   }
 
   uploadColorRamp(colors: Uint8Array) {
-    this.hal.uploadTexture(PASS_MAIN, colors, 256, 1)
+    uploadColorRampLut(this.hal, colors, [PASS_MAIN])
   }
 
   // A fetched matrix with no contacts is a finished frame: the cleared canvas

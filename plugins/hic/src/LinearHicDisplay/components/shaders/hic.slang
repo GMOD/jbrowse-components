@@ -6,6 +6,7 @@
 //! js-export: mapHicCount
 //! export-consts: MIN_VISIBLE_ALPHA
 
+import colorRampLut;
 import diagonalGrid;
 import hpmath;
 
@@ -90,7 +91,11 @@ public static const float MIN_VISIBLE_ALPHA = 0.01;
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float t = mapHicCount(fragIn.count, u.colorMaxScore, u.useLogScale == 1u);
-  float4 c = colorRamp.SampleLevel(float2(t, 0.5), 0.0);
+  // Sampling and premultiplication are the shared ramp module's
+  // (render-core colorRampLut.slang); the count→t scale above and the discard
+  // below stay this shader's own. Alpha is unchanged by the premultiply, so the
+  // test reads the ramp's own alpha.
+  float4 c = rampColorPremultiplied(colorRamp, t);
   // Nothing to composite. The blend is `one / one-minus-src-alpha`, so a zero
   // alpha is already a no-op on the framebuffer — it just wasn't a free one, and
   // at these contact counts the read-modify-write it skips is the whole cost of
@@ -99,5 +104,5 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   if (c.a < MIN_VISIBLE_ALPHA) {
     discard;
   }
-  return float4(c.rgb * c.a, c.a);
+  return c;
 }

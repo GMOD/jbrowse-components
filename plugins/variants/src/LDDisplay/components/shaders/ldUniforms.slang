@@ -8,6 +8,7 @@
 //! js-skip: ldGenotypeCovariance — reached as a private helper inside the generated ldGenotypeD and ldGenotypeCorrelation, so it is already shared without being public
 module ldUniforms;
 
+import colorRampLut;
 import diagonalGrid;
 
 public struct Uniforms {
@@ -51,17 +52,17 @@ public bool ldValueComputed(float v) {
 }
 
 // Sample the color ramp by `ldValue`, remapping signed [-1,1] -> [0,1] when
-// signedLd is set. Returns premultiplied-alpha color. A cell nothing computed
-// is transparent, which under premultiplied blending leaves the background
-// exactly as an out-of-band cell — never emitted — leaves it.
+// signedLd is set. Returns premultiplied-alpha color, via the shared ramp
+// module (render-core colorRampLut.slang) — the sentinel gate and the signed
+// remap stay LD's own scale. A cell nothing computed is transparent, which
+// under premultiplied blending leaves the background exactly as an out-of-band
+// cell — never emitted — leaves it.
 public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
   if (!ldValueComputed(ldValue)) {
     return float4(0.0, 0.0, 0.0, 0.0);
   }
   float t = (u.signedLd == 1u) ? (ldValue + 1.0) * 0.5 : ldValue;
-  t = clamp(t, 0.0, 1.0);
-  float4 c = ramp.SampleLevel(float2(t, 0.5), 0.0);
-  return float4(c.rgb * c.a, c.a);
+  return rampColorPremultiplied(ramp, t);
 }
 
 // Decode flat lower-triangular instance index `idx` into (i, j) with i > j,

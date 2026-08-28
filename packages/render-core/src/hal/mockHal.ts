@@ -130,6 +130,11 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
 
   protected destroyBuffer() {}
 
+  // Copied for the same reason `createBuffer` copies, and kept for the same
+  // reason the real HALs keep their texture: a test asserting which LUT a pass
+  // samples needs the bytes, not the byteLength the call log records.
+  private textures = new Map<string, Uint8Array>()
+
   protected createTexture(
     passId: string,
     _binding: TextureBinding,
@@ -137,6 +142,7 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     width: number,
     height: number,
   ) {
+    this.textures.set(passId, data.slice())
     this.record('uploadTexture', passId, data.byteLength, width, height)
   }
 
@@ -337,6 +343,10 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
 
   getBuffer(regionKey: number, passId: string) {
     return this.regions.get(regionKey, passId)
+  }
+
+  getTexture(passId: string) {
+    return this.textures.get(passId)
   }
 
   callsOf(method: string) {
