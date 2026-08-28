@@ -9,6 +9,14 @@ import {
 } from './util.tsx'
 
 import type { Results } from './util.tsx'
+import type {
+  LinearMultiSampleVariantDisplayModel,
+  LinearMultiSampleVariantMatrixDisplayModel,
+} from '@jbrowse/plugin-variants'
+
+type MultiSampleVariantDisplayModel =
+  | LinearMultiSampleVariantDisplayModel
+  | LinearMultiSampleVariantMatrixDisplayModel
 
 type DisplayType = 'matrix' | 'regular'
 
@@ -64,13 +72,21 @@ export async function testLinearMultiSampleVariantDisplay({
   timeout?: number
 }) {
   const opts = [{}, { timeout }] as const
-  const { findByTestId, findByText, info } =
+  const { view, findByTestId, findByText, info } =
     await openMultiSampleVariantDisplay({ displayType, timeout })
 
   if (phasedMode) {
     fireEvent.click(await findByTestId('track_menu_icon', ...opts))
     fireEvent.click(await findByText('Rendering mode', ...opts))
-    fireEvent.click(await findByText(/^Phased/, ...opts))
+    // The row is disabled, and its label carries a "(checking for phased
+    // variants...)" suffix, until the background scan reports whether the data
+    // has phased genotypes. A `/^Phased/` match took that disabled row, and a
+    // click on a disabled MUI item is a no-op, so both phased cases silently
+    // captured allele-count mode. The bare label only exists once the row is
+    // enabled, so matching it exactly waits for the scan.
+    fireEvent.click(await findByText('Phased', ...opts))
+    const display: MultiSampleVariantDisplayModel = view.tracks[0].displays[0]
+    expect(display.renderingMode).toBe('phased')
   }
 
   await findDisplayPainted(info.displayTestId, { timeout })
