@@ -1092,6 +1092,27 @@ test('...and never unioned with a lane that has no drawn position', () => {
   })
 })
 
+// ANY placed lane under the pointer, not the last one scanned. Two displays on
+// one level put a culled lane BEFORE another display's worker lane, and the
+// class used to be whichever the scan reached last — so a contig with a place
+// on the facing row took the region-replacing branch on nothing more than lane
+// order, throwing away every other chromosome that row was showing. If any of
+// the alignments stacked here can be scrolled to, scrolling is the answer.
+test('...whichever order the lanes are scanned in', () => {
+  const layout = {
+    ...params,
+    datasets: [
+      placed([[100, 110]], [[90_000, 90_100]], ['ctgB']),
+      data([[100, 110]], ['ctgB'], [[4000, 4100]]),
+    ],
+    mateBand: { lo: 0, hi: 1000 },
+  }
+  expect(offscreenMateSpanAt(layout, 11, 3)).toMatchObject({
+    refName: 'ctgB',
+    mateCumBp: { start: 90_000, end: 90_100 },
+  })
+})
+
 // The other class has no drawn position at all — that is what it is — so the
 // caller's region-replacing branch keeps reading `locus`.
 test('a mark with no place on the facing axis carries no drawn span', () => {
