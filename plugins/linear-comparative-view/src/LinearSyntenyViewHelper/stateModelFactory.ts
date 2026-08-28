@@ -456,15 +456,25 @@ export function linearSyntenyViewHelperModelFactory(
             // base; on a REVERSED one `regionBase0` counts down from
             // `region.end`, so the two never agree.
             //
-            // A cumBp this row cannot place — stale geometry from before it was
-            // navigated — comes back as a coord outside every region, which
-            // both destinations already answer by holding. There is nothing to
-            // fall back TO: `locus` is the coordinate this branch exists to
-            // stop using.
+            // AND THE ROW HOLDS WHEN THE ANSWER IS NOT ABOUT THIS CONTIG.
+            // Stale geometry — a cumBp from before this row's regions were
+            // replaced — is only self-evidently wrong when it runs off the end
+            // of the whole layout, which is what `oob` reports. Landing INSIDE
+            // some other contig's region is the case that reads as valid: the
+            // conversion happily returns that contig's coordinate, and
+            // `centerAt` would then take it as a coordinate on the MARK's
+            // contig and navigate there. Both tests, because neither catches
+            // the other's case.
+            //
+            // Holding rather than falling back: `locus` is the coordinate this
+            // branch exists to stop using, so there is nothing to fall back TO.
             const centerCumBp = (drawn.start + drawn.end) / 2
-            const { coord0: center } = view.pxToBp(
-              centerCumBp / view.bpPerPx - view.offsetPx,
-            )
+            const at = view.pxToBp(centerCumBp / view.bpPerPx - view.offsetPx)
+            if (at.oob || at.refName !== refName) {
+              anchor.release()
+              return
+            }
+            const center = at.coord0
             // FLOWN, not jumped, when the reader wants motion. The scroll class
             // arises where a row displays whole assemblies, so this is a jump of
             // a chromosome or more: landed instantly, the reader is somewhere

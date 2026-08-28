@@ -306,6 +306,48 @@ test('a scrolling click goes to the drawn span, not the block extent', async () 
   expect(row.windowWidthBp).toBe(40_000)
 })
 
+// THE ROW'S OWN SCROLL IS IN THE CONVERSION. `pxToBp` takes a SCREEN pixel and
+// adds `offsetPx` back, so the drawn cumBp has to have it subtracted first —
+// and every other case here clicks from a row parked at the origin, where the
+// term is zero and a missing one costs nothing. Started anywhere else, dropping
+// it lands the row its own scroll distance past the mark.
+test('the destination does not move with where the row already is', async () => {
+  const { level, row } = await scrollableSetup()
+  row.setWindow(40_000, 300_000)
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 0, end: BP },
+    mateCumBp: { start: MATE_CENTER_BP - 500, end: MATE_CENTER_BP + 500 },
+  })
+  await when(
+    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  expect(row.windowWidthBp).toBe(40_000)
+})
+
+// THE STALE CUMBP THAT READS AS VALID. Off the end of the layout the
+// conversion says `oob` and there is no doubt; landing inside ANOTHER contig's
+// region it just answers with that contig's coordinate, and taken as a
+// coordinate on the mark's contig it navigates somewhere nothing pointed at.
+// Here the drawn span sits in ctgA while the mark names ctgB, which is what a
+// region-list replacement between draw and click leaves behind.
+test('a drawn span that lands on another contig moves nothing', async () => {
+  const { level, row } = await scrollableSetup()
+  const before = row.windowStartBp
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    mateCumBp: { start: 100_000, end: 101_000 },
+  })
+  await new Promise(resolve => {
+    setTimeout(resolve, 500)
+  })
+
+  expect(row.windowStartBp).toBe(before)
+})
+
 // A drawn span outside every displayed region is geometry from before this row
 // was navigated. The row HOLDS: there is nothing to fall back TO, since the
 // block's own extent is the coordinate this branch exists to stop using, and a

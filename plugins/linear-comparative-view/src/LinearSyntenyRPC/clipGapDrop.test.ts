@@ -129,6 +129,41 @@ test('a block that still aligns in the window is kept', async () => {
   expect(value.featureIds).toEqual(['ordinary'])
 })
 
+// THE OTHER DOOR. The clip runs twice — the oversized-block re-anchor above,
+// and the region-containment trim that follows it — and either produces this.
+// A displayed region that is ITSELF a slice inside the gap reaches the second
+// without going near the first's size gate: at 100bp/px the window is 480kb, so
+// a 52kb block is nowhere near `CLIP_SPAN_RATIO` x it. Guarding the first call
+// alone left the wedge, the cull and the phantom mark exactly as they were.
+test('a region sliced inside the gap drops the block too', async () => {
+  jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+    getFeaturesInMultipleRegionsArray: jest.fn(async () => [
+      alignment(GAP_BLOCK),
+    ]),
+  } as never)
+  const sliced = [region(QUERY_ASM, 'q1', 100000)].map(r => ({
+    ...r,
+    start: 20000,
+    end: 21000,
+  }))
+  const { value } = await executeSyntenyFeaturesAndPositions({
+    pluginManager: {} as PluginManager,
+    sessionId: 't1',
+    adapterConfig: { type: 'PAFAdapter' },
+    queryView: {
+      bpPerPx: 100,
+      offsetPx: 200,
+      width: 800,
+      displayedRegions: sliced,
+      fetchRegions: sliced,
+    },
+    targetView: { ...targetView, bpPerPx: 100 },
+  })
+
+  expect(value.featureIds).toEqual([])
+  expect(value.instanceData.instanceCount).toBe(0)
+})
+
 test('the same oversized block is kept where the clip finds alignment', async () => {
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
     getFeaturesInMultipleRegionsArray: jest.fn(async () => [

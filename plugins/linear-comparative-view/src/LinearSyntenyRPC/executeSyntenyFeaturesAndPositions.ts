@@ -442,29 +442,6 @@ export async function executeSyntenyFeaturesAndPositions({
       windowSpan,
       spanRatio: CLIP_SPAN_RATIO,
     })
-    // THE WINDOW LANDED IN A CHAIN GAP, and the block has nothing on screen.
-    // A chain converted to PAF is one record whose CIGAR carries the chain's
-    // gaps as ops, and the top-level chain over a whole chromosome has enormous
-    // ones — chimp chr19 -> hg38 chr17 has a single 30,846,489bp `D` where the
-    // pericentric inversion is, and the inverted segment is a SEPARATE record
-    // that covers it. A viewport inside that gap keeps only query-consuming ops,
-    // so the re-anchored block spans the window against a mate span of ZERO:
-    // `clipSyntenyFeature` is reporting, correctly, that nothing here aligns.
-    //
-    // Read as a position instead, that single point is a ribbon collapsing to a
-    // vertex 29Mb from the alignments around it — culled by the band, and then
-    // marked by `culledRibbonMates` as an off-screen mate, which claims a mate
-    // the reader could scroll to. There is none. Dropping the block is what the
-    // gap means, and the records that DO align in the window are already there.
-    //
-    // THE SAME RULE THE FOLLOW ALREADY HAS. `installSyntenyFollow` walks the
-    // CIGAR through `resolveAlignmentSpan` and holds the row on a span that
-    // comes back empty — "a walk that collapses to a point is not a place" —
-    // which is why the follow was never wrong here and the geometry was. This
-    // is that rule on the path that had no such test.
-    if (clip && clip.mateStart === clip.mateEnd && clip.end > clip.start) {
-      continue
-    }
     let fStart = clip?.start ?? start
     let fEnd = clip?.end ?? end
     let mStart = clip?.mateStart ?? mate.start
@@ -555,6 +532,44 @@ export async function executeSyntenyFeaturesAndPositions({
         mEnd = Math.max(trim.a2, trim.b2)
         clippedCigar = cig ? EMPTY_CIGAR : clippedCigar
       }
+    }
+
+    // NOTHING HERE ALIGNS: the block keeps a span on the query axis and none at
+    // all on the mate's, which is a ribbon collapsing to a vertex rather than a
+    // correspondence.
+    //
+    // A chain converted to PAF is ONE record whose CIGAR carries the chain's
+    // gaps as ops, and the top-level chain over a whole chromosome carries
+    // enormous ones — chimp chr19 -> hg38 chr17 is a single 86Mb record with a
+    // 30,846,489bp `D` where the pericentric inversion is, the inverted segment
+    // being a SEPARATE record that covers it. A window inside that gap keeps
+    // only query-consuming ops, so `clipSyntenyFeature` re-anchors the block
+    // against a mate span of ZERO. That is the clip reporting, correctly, that
+    // the chain aligns nothing here.
+    //
+    // Read as a position instead, the single point it is anchored at became a
+    // ribbon 29Mb from the alignments around it, culled by the band, and then
+    // marked by `culledRibbonMates` as an off-screen mate — telling the reader
+    // to scroll to a mate that does not exist. The records that DO align in the
+    // window are already here, so the gap is drawn by leaving it empty.
+    //
+    // TESTED ON THE FINAL COORDINATES, because the clip runs TWICE and either
+    // call can produce this: `clipLargeBlockToWindow` above re-anchors an
+    // oversized block to the viewport, and the trim just above re-anchors any
+    // block to what the two regions can show — a displayed region that is
+    // itself a slice inside the gap reaches the second without ever tripping
+    // the first's size gate. Guarding the first call alone left that door open.
+    //
+    // `fStart < fEnd` because `clampBlockToRegions` can collapse BOTH axes when
+    // a block meets a region at a single point, which is a different (and
+    // harmless) degeneracy this rule has no business claiming.
+    //
+    // THE SAME RULE THE FOLLOW ALREADY HAS. `installSyntenyFollow` walks the
+    // CIGAR through `resolveAlignmentSpan` and holds the row on a span that
+    // comes back empty — "a walk that collapses to a point is not a place" —
+    // which is why the follow was never wrong here and the geometry was.
+    if (mStart === mEnd && fStart < fEnd) {
+      continue
     }
 
     const f1s = strand === -1 ? fEnd : fStart
