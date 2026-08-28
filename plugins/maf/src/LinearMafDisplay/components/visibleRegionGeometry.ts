@@ -6,6 +6,10 @@
  */
 
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
+import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '@jbrowse/render-core/shaders/rowRect'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
@@ -67,18 +71,27 @@ export interface MafOverlayParams extends MafRowGeometryParams {
 
 /**
  * Per-row vertical band geometry: `h` is the drawn band height
- * (rowHeight × proportion), `offset` places the band of row 0 on screen —
- * centered within its row, then shifted up by the scroll offset. Every caller
- * spells its row top `offset + rowHeight * rowIndex`, so applying the scroll
- * here is what keeps every overlay locked to the cells the canvas paints.
+ * (rowHeight × proportion, floored at the shader's `MIN_DRAWN_ROW_PX`),
+ * `offset` places the band of row 0 on screen — centered within its row, then
+ * shifted up by the scroll offset. Every caller spells its row top
+ * `offset + rowHeight * rowIndex`, so applying the scroll here is what keeps
+ * every overlay locked to the cells the canvas paints.
+ *
+ * Delegates to `rowRect.slang`'s generated twins so the floor and the
+ * centering match the GPU pass by construction: a sub-pixel row (a legitimate
+ * `rowHeight` here — see `autoRowHeight`) paints at a floored 1px band that
+ * overhangs its row evenly, exactly as the shader draws it, rather than
+ * thinner than the cells beneath.
  */
 export function rowBandGeometry(
   rowHeight: number,
   rowProportion: number,
   scrollTop: number,
 ) {
-  const h = rowHeight * rowProportion
-  return { h, offset: (rowHeight - h) / 2 - scrollTop }
+  return {
+    h: drawnRowHeightPx(rowHeight, rowProportion),
+    offset: rowBandOffsetPx(rowHeight, rowProportion) - scrollTop,
+  }
 }
 
 /**
