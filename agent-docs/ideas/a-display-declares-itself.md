@@ -1,6 +1,6 @@
 ---
 name: a-display-declares-itself
-description: A multi-level simplification target whose Level 0 has RUN and been REJECTED, and whose subject, defineDisplay, was then removed from the tree with it (ADR-091, which also rejects ADR-089 and ADR-090) — read the Result section at the top before anything else. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) left behind was rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. Levels 0.5 to 5 below are written against a factory that no longer exists; what survives of them is the census and the placement question (Level 2). The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check.
+description: A multi-level simplification target whose Level 0 has RUN and been REJECTED, and whose subject, defineDisplay, was then removed from the tree with it (ADR-091, which also rejects ADR-089 and ADR-090) — read the Result section at the top before anything else. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) left behind was rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. Levels 0.5 to 5 below are written against a factory that no longer exists; what survives of them is the census and the placement question (Level 2). The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check. Every count in this doc is a 2026-08-24 snapshot and ALL of them had drifted by 2026-08-28 — re-measure, don't quote. The claim that genome-spy "has no pileup" is wrong and corrected inline; the render-path half of Level 1 moved to a-shape-composes-a-scale.
 ---
 
 # A display declares itself
@@ -23,6 +23,16 @@ Everything below this section is the plan as written before it ran, kept
 unedited except where a number in it is now known to be wrong (each such place
 says so and points here). Read this first; it changes what several of the levels
 are worth.
+
+**Every count below is a snapshot of 2026-08-24 and every one of them has since
+drifted** — re-audited 2026-08-28, four days later, and not one still matched.
+The four model files gained 64, 47, 118 and 115 lines; `sortLayout.ts` went
+1,096 → 1,158 and `layout.ts` 1,741 → 1,946; `render-core` went 7,648 → 8,314.
+Three line-number citations are stale (`arc.slang:103` and
+`LinearMultiRowFeatureDisplay/model.ts:99` no longer point at what they name;
+`rowRect.slang:31` still does). **Re-measure before quoting any figure here.**
+The magnitudes are the argument and they hold; the digits are not evidence any
+more, and a paper or an ADR must take them again rather than cite this file.
 
 **Level 0's port happened, and then came back off.** `LinearManhattanDisplay`
 was ported to `defineDisplay` and scored against a pre-committed budget, on a
@@ -233,6 +243,26 @@ they do not overlap, stably under pan, sorted by an anchor at a locus the user
 clicked, across a region boundary*. genome-spy has real genomic sources
 (`bamSource`, `vcfSource`, `tabixSource`) and no pileup. That is not an
 oversight in their design; it is the boundary.
+
+> **The last two sentences are wrong, and the paragraph's conclusion survives on
+> different evidence.** genome-spy has a pileup:
+> `packages/core/src/data/transforms/pileup.js`, 126 lines, greedy lane
+> assignment with a `preference` / `preferredOrder` for lane-by-strand. Gosling
+> has `displace: {method: 'pile'}` with `groupField` and `maxRows`. Both also
+> have `coverage`, and gosling's `visibility` conditions are declarative
+> level-of-detail. So the grammars are not missing these concepts.
+>
+> What they hold is a cheaper version. genome-spy's pileup resets its lane map
+> when a start decreases and carries no prior frame; this tree's `sortLayout.ts`
+> and `layout.ts` are stateful across frames (`seedRowsFrom`, `groupUnchanged`)
+> and re-entrant against a height solve (`createPackProbe`), which is what "stably
+> under pan" and the fit ladder cost. genome-spy draws the same line one level up
+> instead: its interactive sample sorting lives in `packages/app`, driven by
+> actions against a provenance store, unreachable from the spec.
+>
+> [reference/SESSION_SPEC_FORMAT.md](../reference/SESSION_SPEC_FORMAT.md)
+> §"What the grammars do, precisely" is the corrected comparison and the census
+> behind it.
 
 So the position, and it is a stronger one than either adopting or ignoring the
 grammar:
