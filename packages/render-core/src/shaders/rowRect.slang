@@ -118,24 +118,37 @@ public RowBand rowBandPx(float rowHeight, float rowProportion) {
   return band;
 }
 
-public RowRectVsOut rowRectVertex(
-  RowRectInstance inst, uint vid, RowRectUniforms u
+// The shape's geometry alone — row band, hp clip-x span, min-width widening —
+// so a consumer whose colour is not a per-instance packed value (wiggle
+// density: a per-instance score through a uniform scale) composes the same
+// rect without routing a resolved colour through the instance buffer.
+// `rowIndex` is float here because the row transform is float arithmetic;
+// each caller converts at its own boundary (`RowRectInstance` stores uint,
+// wiggle's fill record stores float).
+public float4 rowRectClipPos(
+  uint startBp, uint endBp, float rowIndex, uint vid, RowRectUniforms u
 ) {
   float2 local = quadLocal(vid);
 
   RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
-  float h      = band.height;
-  float rowY   = band.offset + u.rowHeight * float(inst.rowIndex) - u.scrollTop;
+  float rowY   = band.offset + u.rowHeight * rowIndex - u.scrollTop;
 
-  float sx1 = hpToClipX(hpSplitUint(inst.startBp), u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(hpSplitUint(inst.endBp), u.bpRangeX, u.zero);
+  float sx1 = hpToClipX(hpSplitUint(startBp), u.bpRangeX, u.zero);
+  float sx2 = hpToClipX(hpSplitUint(endBp), u.bpRangeX, u.zero);
   sx2 = extendToMinWidthX(sx1, sx2, u.minCellPx, u.viewportWidth);
 
-  float yPx = lerp(rowY, rowY + h, local.y);
+  float yPx = lerp(rowY, rowY + band.height, local.y);
 
-  RowRectVsOut o;
-  o.position = float4(
+  return float4(
     lerp(sx1, sx2, local.x), yPxToClipY(yPx, u.canvasHeight), 0.0, 1.0);
+}
+
+public RowRectVsOut rowRectVertex(
+  RowRectInstance inst, uint vid, RowRectUniforms u
+) {
+  RowRectVsOut o;
+  o.position = rowRectClipPos(
+    inst.startBp, inst.endBp, float(inst.rowIndex), vid, u);
   o.color = unpackRGBA(inst.color);
   return o;
 }

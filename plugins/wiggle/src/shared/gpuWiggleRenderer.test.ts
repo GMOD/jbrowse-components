@@ -1,5 +1,6 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 import {
+  RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
@@ -11,6 +12,7 @@ import {
   INSTANCE_OFFSET_F32 as FILL_F32,
   INSTANCE_OFFSET_U32 as FILL_U32,
   INSTANCE_STRIDE_WORDS as FILL_INSTANCE_STRIDE,
+  UNIFORMS_SIZE_BYTES,
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_I32 as UI,
 } from './shaders/wiggle.generated.ts'
@@ -252,6 +254,70 @@ describe('GpuWiggleRenderer', () => {
     })
 
     expect(hal.callsOf('drawPass')[0]!.args[0]).toBe('line')
+  })
+
+  // Density is the composed rowRect × scoreScale shape (wiggleDensity.slang):
+  // its own pass and pipeline, drawn off PASS_FILL's buffer because the two
+  // entry shaders take the same shader-declared record.
+  it('draws density through the composed pass, off the fill buffer', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
+
+    renderer.upload(0, [source])
+    expect(hal.getBufferCount(0, 'fill')).toBe(2)
+
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_DENSITY,
+    })
+
+    const drawCalls = hal.callsOf('drawPass')
+    expect(drawCalls.length).toBe(1)
+    expect(drawCalls[0]!.args[0]).toBe('density')
+    expect(drawCalls[0]!.args[2]).toBe('fill')
+  })
+
+  // Gate A of agent-docs/ideas/a-shape-composes-a-scale.md, instrumented as
+  // bytes rather than writes counted: density's autoscale domain re-resolves
+  // against the visible data on every pan, and because the score stays in the
+  // instance buffer and the domain stays a uniform, that pan costs one uniform
+  // block per drawn block and zero buffer bytes. The failure this pins against
+  // is a CPU-side colour resolve into the instance lane, which would re-pack
+  // and re-upload the whole buffer whenever the domain moved.
+  it('a pan that moves the autoscale domain uploads zero buffer bytes', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
+    const state = {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_DENSITY,
+    }
+    const uploadedBytes = () =>
+      hal
+        .callsOf('uploadBuffer')
+        .reduce((total, c) => total + (c.args[2] as number), 0)
+
+    renderer.upload(0, [source])
+    const loadBytes = uploadedBytes()
+    expect(loadBytes).toBe(2 * FILL_INSTANCE_STRIDE * 4)
+
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+
+    // The pan: the block scrolls and autoscale re-resolves over the new
+    // visible window, moving the domain.
+    renderer.renderBlocks(
+      [makeBlock({ start: 250, end: 1250 })],
+      new Map([[0, [source]]]),
+      { ...state, domainY: [0, 35] as [number, number] },
+    )
+
+    expect(uploadedBytes()).toBe(loadBytes)
+    const f32 = hal.getLastUniformsF32()!
+    expect(f32[U.domainYMax]).toBe(35)
+    const writes = hal.callsOf('writeUniforms')
+    expect(writes.length).toBe(2)
+    expect(writes.at(-1)!.args[0]).toBe(UNIFORMS_SIZE_BYTES)
   })
 
   it('uses fill pass for XY plot rendering type', () => {

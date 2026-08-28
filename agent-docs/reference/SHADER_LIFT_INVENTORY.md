@@ -13,7 +13,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 97 functions
+Scanned 43 shaders with entry points. 97 functions
 are inside the emitter's subset, of which **69 are exported**.
 
 ## Candidates
@@ -73,8 +73,8 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 22 | `arcBandClipPos`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, `crispSquareCornerPx`, `diagonalCellToClip`, … |
+| type 'ptr' is outside the supported scalar subset | 19 | `bpToClipX`, `covAreaTop`, `covBarScale`, `covBottom`, `covBpToClipX`, `covClipKindColor`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 18 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
-| type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBarScale`, `covBottom`, `covBpToClipX`, `covClipKindColor`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
 | type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `bandedCell`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
@@ -92,6 +92,7 @@ noticing in a diff.
 | type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectInstance' is outside the supported scalar subset | 1 | `rowRectVertex` |
+| type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
 | type 'VsOut' is outside the supported scalar subset | 1 | `arcDistance` |
 
 ## Exported, but nothing imports it

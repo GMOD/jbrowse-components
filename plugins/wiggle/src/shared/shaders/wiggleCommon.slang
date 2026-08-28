@@ -52,6 +52,22 @@ public static const uint NO_PREV_START = 0xffffffffu;
 // naming its TS twin — which is the arrangement adr-051 exists to retire.
 public static const float MIN_FILL_WIDTH_PX = 1.5;
 
+// The fill renderings' per-instance record, declared here because two entry
+// shaders draw off ONE buffer packed in this layout: `wiggle.slang` (xyplot,
+// scatter) and `wiggleDensity.slang` both read the fill pass's buffer, and two
+// passes sharing a buffer must share the struct declaration itself rather than
+// mirror it (slangPass.ts §"There is deliberately no bufferStride override").
+// `rowIndex` is float, not `rowRect.slang`'s uint: the record is what
+// `packFillInstances` writes for every fill rendering, the row transform
+// consumes it as float arithmetic either way, and re-typing the lane would
+// re-touch xyplot/scatter for no behavior.
+public struct WiggleFillInstance {
+  public uint2 startEnd  : ATTR0;
+  public float score     : ATTR1;
+  public uint  color     : ATTR2;
+  public float rowIndex  : ATTR3;
+};
+
 public struct Uniforms {
   public float3 bpRangeX;
   public float  canvasHeight;

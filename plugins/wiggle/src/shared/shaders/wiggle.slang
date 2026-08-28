@@ -1,13 +1,15 @@
-// The wiggle renderer's three FILLED renderings — xyplot, density and scatter —
-// branched on the `renderingType` uniform, plus a linear/log scale branch. Its
-// sibling `wiggleLine.slang` draws the stroked ones (line, linecenter); both
-// import `wiggleCommon` for the uniform block and the score math. Bound to
-// PASS_FILL, which draws 6-vert quads.
+// The wiggle renderer's xyplot and scatter renderings, branched on the
+// `renderingType` uniform. Its siblings: `wiggleLine.slang` draws the stroked
+// renderings (line, linecenter) off a wider record, and `wiggleDensity.slang`
+// draws density off this same fill buffer by composing the shared `rowRect`
+// shape. All three import `wiggleCommon` for the uniform block and the score
+// math. Bound to PASS_FILL, which draws 6-vert quads.
 //
-// None of these three reads a neighbouring feature, which is why the instance
-// record below is the five words it is: a module reflects one instance struct,
-// so while all five renderings shared this shader every fill buffer also carried
-// the step-line's prevScore/nextScore and the center-line's
+// Neither rendering here reads a neighbouring feature, which is why the
+// instance record (`WiggleFillInstance`, declared in wiggleCommon so the
+// density entry point can share the buffer) is the five words it is: while all
+// five renderings shared this shader every fill buffer also carried the
+// step-line's prevScore/nextScore and the center-line's
 // prevStartEnd/prevScoreLine — 20 bytes per feature that no fill pass reads,
 // and tens of MB of a 1000-source multiwiggle's single per-region allocation.
 //! targets: wgsl, glsl
@@ -16,18 +18,10 @@ import antialias;
 import hpmath;
 import colorPack;
 import pointGlyph;
-import scoreScale;
 import wiggleCommon;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
-
-struct WiggleInstance {
-  uint2 startEnd  : ATTR0;
-  float score     : ATTR1;
-  uint  color     : ATTR2;
-  float rowIndex  : ATTR3;
-};
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -60,14 +54,6 @@ bool drawsDisc() {
 
 // Whether this pass draws the xyplot bar, whose two HORIZONTAL cuts the shader
 // antialiases itself. Uniform for the same reason drawsDisc() is.
-//
-// Only xyplot. Density's quad spans the whole row, so its horizontal cuts are
-// row boundaries that TILE with the row above and below — the one case where a
-// per-fragment alpha on both sides of a shared edge sums to 0.75 where 1.0 is
-// right and leaves a seam down every boundary (GPU_RENDERING.md §"Antialiasing
-// ramps", "Tiled cells"). It also has no datum on those cuts: density encodes
-// its score in the COLOR, so a soft row boundary would cost the seam and buy
-// nothing.
 bool drawsBar() {
   return u.renderingType == RENDERING_TYPE_XYPLOT;
 }
@@ -83,7 +69,7 @@ float barAaPx() {
 
 
 [shader("vertex")]
-VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
+VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
   float sx2 = bpToClipX(inst.startEnd.y, u);
 
@@ -128,42 +114,22 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float2 q = quadLocal(vid);
     sx = lerp(sx1, sx2, q.x);
 
-    // Each fill mode picks a vertical [topPx, botPx] span; the clip-space
-    // conversion and y-lerp are shared.
-    float topPx;
-    float botPx;
-    if (u.renderingType == RENDERING_TYPE_DENSITY) {
-      topPx = rowTop;
-      botPx = rowTop + rowHeight;
-    } else {
-      float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
-      float originY = scoreToY(u.origin,   u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
-      topPx = min(scoreY, originY) + rowTop;
-      botPx = max(scoreY, originY) + rowTop;
-    }
+    float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
+    float originY = scoreToY(u.origin,   u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
+    float topPx = min(scoreY, originY) + rowTop;
+    float botPx = max(scoreY, originY) + rowTop;
     // The bar grows one device px past each horizontal cut so the fragment's
     // ramp has geometry to land on; the ramp is zero out there, so the extra
-    // area costs a discarded fragment and paints nothing. Density takes no pad
-    // and no ramp — see drawsBar().
-    float padPx = drawsBar() ? barAaPx() : 0.0;
+    // area costs a discarded fragment and paints nothing.
+    float padPx = barAaPx();
     float vy = lerp(botPx + padPx, topPx - padPx, q.y);
     sy = 1.0 - vy * pxToClip;
     barInkPx = float2(vy - topPx, vy - botPx);
   }
 
-  float4 instColor = unpackRGBA(inst.color);
-  float4 outColor;
-  if (u.renderingType == RENDERING_TYPE_DENSITY) {
-    float norm = normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
-    float zeroNorm = normalizeScore(u.origin, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
-    outColor = float4(lerp(float3(1.0), instColor.rgb, densityGradientT(norm, zeroNorm)), 1.0);
-  } else {
-    outColor = float4(instColor.rgb, 1.0);
-  }
-
   VsOut o;
   o.position = float4(sx, sy, 0.0, 1.0);
-  o.color = outColor;
+  o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.localPos = localPos;
   o.barInkPx = barInkPx;
   return o;
@@ -209,8 +175,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     }
     outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
   } else {
-    // Density and the crisp small-point square are flat fills whose edges are
-    // meant to be hard — a tiled row boundary and a pixel-snapped square.
+    // The crisp small-point square is a flat fill whose edges are meant to be
+    // hard — pixel-snapped by the vertex stage.
     outColor = fragIn.color;
   }
   return outColor;

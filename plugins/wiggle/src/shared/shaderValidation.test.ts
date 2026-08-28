@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 
 import { WGSL_SOURCE as wiggleShader } from './shaders/wiggle.generated.ts'
+import { WGSL_SOURCE as wiggleDensityShader } from './shaders/wiggleDensity.generated.ts'
 
 let tmpDir: string
 
@@ -26,7 +27,10 @@ function validateWgsl(name: string, code: string) {
   }
 }
 
-const wgslShaders: [string, string][] = [['wiggle', wiggleShader]]
+const wgslShaders: [string, string][] = [
+  ['wiggle', wiggleShader],
+  ['wiggleDensity', wiggleDensityShader],
+]
 
 const skipIfNoNaga = hasNaga() ? describe : describe.skip
 

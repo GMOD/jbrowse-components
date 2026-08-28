@@ -3,11 +3,13 @@ import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import {
+  RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
 } from '@jbrowse/wiggle-core'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
+import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'
 import * as wiggleLineShader from './shaders/wiggleLine.generated.ts'
 import { packFillInstances, packLineInstances } from './wiggleInstanceBuffer.ts'
 
@@ -21,18 +23,21 @@ import type {
 } from '@jbrowse/wiggle-core'
 
 const PASS_FILL = 'fill'
+const PASS_DENSITY = 'density'
 const PASS_LINE = 'line'
 const PASS_LINE_CENTER = 'lineCenter'
 
-// Two shaders, three triangle-list passes. PASS_FILL draws xyplot / density /
-// scatter as 6-vert quads off wiggle.slang's 20-byte record; PASS_LINE draws the
-// thick step-line as `STEP_LINE_VERTS` per feature (3 square-capped quad
-// segments) so stroke thickness honors the lineWidth uniform (line-list topology
-// can't — its width is hard-locked to 1px on WebGPU/WebGL); PASS_LINE_CENTER
-// draws the connect-points line as a 6-vert capsule per feature under max blend.
-// The two line passes share wiggleLine.slang and so share one buffer; the fill
-// pass cannot join them, because the record it reads is the one without the
-// neighbour fields.
+// Three shaders, four triangle-list passes. PASS_FILL draws xyplot / scatter as
+// 6-vert quads off the 20-byte `WiggleFillInstance` record; PASS_DENSITY draws
+// density off that same buffer through the composed rowRect shape
+// (wiggleDensity.slang — same record, declared once in wiggleCommon); PASS_LINE
+// draws the thick step-line as `STEP_LINE_VERTS` per feature (3 square-capped
+// quad segments) so stroke thickness honors the lineWidth uniform (line-list
+// topology can't — its width is hard-locked to 1px on WebGPU/WebGL);
+// PASS_LINE_CENTER draws the connect-points line as a 6-vert capsule per
+// feature under max blend. Passes sharing a record share one buffer; the fill
+// family cannot join the line family, because the fill record is the one
+// without the neighbour fields.
 //
 // The step-line's count is the shader's — its `vs_main` splits `SV_VertexID` by
 // the same numbers — rather than the 18 that used to be re-typed here with
@@ -61,6 +66,13 @@ const LINE_PASS = {
 
 export const WIGGLE_PASSES: PipelineDescriptor[] = [
   FILL_PASS,
+  // Density: the composed rowRect × scoreScale shape over PASS_FILL's buffer
+  // (same shader-declared record, so no packer and no buffer of its own — the
+  // sharing rule PASS_LINE_CENTER uses on the line side).
+  slangPass({
+    id: PASS_DENSITY,
+    mod: wiggleDensityShader,
+  }),
   LINE_PASS,
   // Center-line: one 6-vert quad per feature (shares PASS_LINE's buffer — same
   // shader module, same record). Drawn with premultiplied MAX blend so the
@@ -86,8 +98,9 @@ export class GpuWiggleRenderer
 {
   // One per instance layout. Both are packed for every region and one of them
   // comes back empty, which releases its buffer — so a region holds only the
-  // layout its rendering actually draws. PASS_LINE_CENTER reads PASS_LINE's via
-  // drawPass's bufferPassId rather than carrying a third.
+  // layout its rendering actually draws. PASS_DENSITY reads PASS_FILL's and
+  // PASS_LINE_CENTER reads PASS_LINE's via drawPass's bufferPassId rather than
+  // carrying buffers of their own.
   protected regionPasses = [FILL_PASS, LINE_PASS]
 
   constructor(hal: GpuHal) {
@@ -117,12 +130,14 @@ export class GpuWiggleRenderer
       ? renderingType === RENDERING_TYPE_LINE
         ? PASS_LINE
         : PASS_LINE_CENTER
-      : PASS_FILL
+      : renderingType === RENDERING_TYPE_DENSITY
+        ? PASS_DENSITY
+        : PASS_FILL
 
-    // Either module's packer serves: wiggle.slang and wiggleLine.slang share
-    // `wiggleCommon.slang`'s uniform block, so the two generated `Uniforms` are
-    // the same block — the same reason `UNIFORMS_SIZE_BYTES` above is read off
-    // one of them.
+    // Any module's packer serves: all three wiggle entry shaders share
+    // `wiggleCommon.slang`'s uniform block, so the generated `Uniforms` are one
+    // block — the same reason `UNIFORMS_SIZE_BYTES` above is read off one of
+    // them.
     wiggleShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,

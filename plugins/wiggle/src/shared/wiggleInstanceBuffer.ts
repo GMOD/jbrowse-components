@@ -20,12 +20,14 @@ import {
 
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
-// The two shaders take different per-instance records, so there is one packer
-// each and a region's layers feed exactly one of them: whichever matches the
-// rendering they were built for. The other returns an empty buffer, which is how
-// a pass releases its buffer (see GpuPerRegionRenderingBackend.upload — an
-// empty pack IS the release), so switching plot type frees the layout that is no
-// longer drawn instead of leaving a stale one bound.
+// Two per-instance records, so there is one packer each and a region's layers
+// feed exactly one of them: whichever matches the rendering they were built
+// for. The other returns an empty buffer, which is how a pass releases its
+// buffer (see GpuPerRegionRenderingBackend.upload — an empty pack IS the
+// release), so switching plot type frees the layout that is no longer drawn
+// instead of leaving a stale one bound. The fill record serves three entry
+// shaders (wiggle.slang's xyplot/scatter and wiggleDensity.slang, which draws
+// off the fill pass's buffer), the line record two passes of one shader.
 //
 // Splitting them is what lets the filled renderings — xyplot, density, scatter,
 // i.e. the defaults — stop carrying the neighbour fields only the two stroked
