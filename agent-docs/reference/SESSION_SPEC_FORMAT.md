@@ -149,23 +149,39 @@ grammar to carry it.
 
 ## What the grammars do, precisely
 
-Both competitors are Vega-Lite descendants and both put the genomics into
-**transforms over rows already in memory**:
+A mark count needs its denominator stated, or two correct censuses disagree —
+which is exactly what happened between this doc and
+[ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md); the
+counts below were re-taken 2026-08-28 at gosling 1.0.7 (`35bbabc`) and
+genome-spy v0.85.0 (`9d32a48`). Both competitors are Vega-Lite descendants and
+both put the genomics into **transforms over rows already in memory**:
 
-- **Gosling** — eight marks (`point`, `line`, `area`, `bar`, `rect`, `text`,
-  `link`, `triangle`), channels `x` / `xe` / `y` / `ye` / `row` / `color` /
+- **Gosling** — the `Mark` spec union has 14 members (`point`, `line`, `area`,
+  `bar`, `rect`, `text`, `withinLink`, `betweenLink`, `rule`, `triangleLeft`,
+  `triangleRight`, `triangleBottom`, `brush`, `_header`); 13 are
+  user-authorable (`_header` is internal, synthesized for view titles); 12
+  reach the PIXI mark dispatch (`brush` is drawn by a separate D3 plugin
+  track); 10 distinct draw functions render them (the three triangles share
+  one). Channels `x` / `xe` / `y` / `ye` / `row` / `color` /
   `size` / `stroke` / `opacity` / `text`, data types `bam` / `vcf` / `bed` /
   `gff` / `bigwig` / `multivec` / `csv` / `json`, and transforms `filter`,
   `displace` (the pileup, `method: pile`), `coverage`, `exonSplit`, `log`,
   `concat`, `replace`, `subjson`. Views compose by `views` with `arrangement`
   and `alignment`, in `layout: linear` or `circular`.
-- **GenomeSpy** — seven marks (`rect`, `point`, `rule`, `tick`, `text`, `link`,
-  `arrow`), `encoding` + `scales` + `transform`, view composition by `layer` /
+- **GenomeSpy** — 7 registered mark names (`rect`, `point`, `rule`, `tick`,
+  `text`, `link`, `arrow`) over 6 mark classes: `tick` is a documented
+  shorthand branching inside `RuleMark`. `encoding` + `scales` + `transform`,
+  view composition by `layer` /
   `vconcat` / `hconcat`, lazy genomic sources (`bam`, `vcf`, `bigwig`, indexed
   fasta), and among some thirty transforms `pileup`, `coverage`,
   `flattenCigar`, `alignmentMismatches`. It publishes
   `@genome-spy/core/dist/schema.json`, generated from its TypeScript spec types
   with `ts-json-schema-generator`, and every example starts with `$schema`.
+  Its marks compose scales the way
+  [ideas/a-shape-composes-a-scale](../ideas/a-shape-composes-a-scale.md)
+  proposes, at the same seam: hand-written vertex GLSL calls generated
+  `getScaled_<channel>()` accessors over a shared scale-primitive library,
+  with domains wired to uniforms so pan and zoom never touch a vertex buffer.
 
 So the earlier claim in
 [ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md) that

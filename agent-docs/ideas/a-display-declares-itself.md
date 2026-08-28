@@ -1,6 +1,6 @@
 ---
 name: a-display-declares-itself
-description: A multi-level simplification target whose Level 0 has RUN and been REJECTED, and whose subject, defineDisplay, was then removed from the tree with it (ADR-091, which also rejects ADR-089 and ADR-090) — read the Result section at the top before anything else. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) left behind was rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. Levels 0.5 to 5 below are written against a factory that no longer exists; what survives of them is the census and the placement question (Level 2). The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check. Every count in this doc is a 2026-08-24 snapshot and ALL of them had drifted by 2026-08-28 — re-measure, don't quote. The claim that genome-spy "has no pileup" is wrong and corrected inline; the render-path half of Level 1 moved to a-shape-composes-a-scale.
+description: A multi-level simplification target whose Level 0 has RUN and been REJECTED, and whose subject, defineDisplay, was then removed from the tree with it (ADR-091, which also rejects ADR-089 and ADR-090) — read the Result section at the top before anything else. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) left behind was rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. Levels 0.5 to 5 below are written against a factory that no longer exists; what survives of them is the census, the placement question (Level 2) and the band contract (Level 4) — Levels 0.5, 3 and 5 fell with the factory and Level 1, and Level 0 CONFIRMED RFC-001 §2's "the complex case needs the full shape regardless" on §2's own example rather than falsifying it. The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check. Every count in this doc is a 2026-08-24 snapshot and ALL of them had drifted by 2026-08-28 — re-measure, don't quote. The claim that genome-spy "has no pileup" is wrong and corrected inline, and the mark counts are re-taken with denominators stated. The position statement survives only as its boundary clause; the render-path half of Level 1 moved to a-shape-composes-a-scale, which is the live plan.
 ---
 
 # A display declares itself
@@ -155,8 +155,16 @@ cross-cutting mixin for a setting until that seam has a check.**
   six-variant union with a nested six-field `modifications` object inside it.
   **The declaration standardizes a setting's plumbing — where the value lives,
   what changing it invalidates, how it must be read — and not its meaning.**
-- **Levels 0.5, 2, 3, 4, 5** are untouched by this and stand as written. Level 2
-  in particular was always independent.
+- **Only Levels 2 and 4 stand** — an earlier revision claimed 0.5, 3 and 5 stood
+  too, which the doc's own dependency table contradicts (retracted 2026-08-28).
+  Level 0.5's subject, `packages/display-kit/src/marks.ts`, was removed from the
+  tree with ADR-091, so a level about reconciling two mark systems has one left
+  to reconcile: whether alignments' mark can take its row band as an argument,
+  which [one-mark-declaration-per-feature](one-mark-declaration-per-feature.md)
+  now owns. Level 3 depends on 0.5 and then on Level 1's per-instance channels,
+  both gone. Level 5 opens with "Once Level 1 lands", and Level 1 will not land.
+  Level 2 (placement) was always independent; Level 4 (the band contract)
+  depends only on it.
 
 ---
 
@@ -231,10 +239,15 @@ measuring the wrong denominator.
 ## Where the grammar stops, and why that is the finding
 
 The obvious move is a grammar of graphics — the vendored comparisons are
-`~/src/vendor/genome-spy` (74,485 lines core, **six** marks: `rect`, `point`,
-`rule`, `link`, `arrow`, `text`) and `~/src/vendor/gosling.js` (22,128 lines,
-**ten** data marks over PIXI, compiling onto HiGlass). Both are smaller than
-this system in a specific and informative way.
+`~/src/vendor/genome-spy` (74,485 lines core; 7 registered mark names over 6
+mark classes, `tick` aliasing `rule` — this doc's original "six" counted
+classes and omitted tick from its list) and `~/src/vendor/gosling.js` (22,128
+lines; 14 spec-union marks and 10 distinct PIXI draw functions — the "ten" here
+counted draw functions, with three triangles sharing one and `brush` /
+`_header` never reaching the mark dispatch). Re-counted 2026-08-28 at
+genome-spy v0.85.0 and gosling 1.0.7: the docs' earlier counts disagreed only
+because neither stated its denominator. Both libraries are smaller than this
+system in a specific and informative way.
 
 The grammar's unit is **a datum with channels**. This system's expensive units
 are **a cross-region layout** and **a level-of-detail tier**, and no grammar has
@@ -273,6 +286,14 @@ grammar:
 > the fetch stay imperative and per-display, because they are where the domain
 > actually is.
 
+> **Half of this position is retracted (2026-08-28).** ADR-091 rejected the
+> declaration layer on measurement — the table standardizes a setting's
+> plumbing and cannot hold its meaning, and it eliminated zero getters. What
+> survives is the boundary clause and the render half, restated below the
+> display: the live plan is
+> [a-shape-composes-a-scale](a-shape-composes-a-scale.md), and the surviving
+> position is *take the grammar at the shader layer, stop it at layout*.
+
 **This does not restate RFC-001 §2 on narrower ground. It re-opens §2 on §2's own
 ground**, and quoting one of §2's three objections is what obscures that.
 The full non-goal ("no glyph-registration / spec-grammar / DSL layer") rests on:
@@ -293,6 +314,13 @@ That is a better position for this plan, not a worse one: it means Level 0 is a
 sharper experiment than it first appears. If Manhattan ports, the "complex
 case needs the full shape regardless" clause is falsified on the case §2 chose.
 But the doc has to own that it is contesting §2 rather than refining it.
+
+> **Level 0 ran, and §2 won on its own example (retracted 2026-08-28).**
+> Manhattan "ported" only through six override hooks, each of the shape *let me
+> override a piece of what you compose* — the full mixin/RPC/render shape
+> wearing a spec surface, which is what §2 predicted. The clause was confirmed,
+> not falsified, and the challenge to §2's "custom hit-testing" objection fell
+> with Level 3. §2's non-goal stands.
 
 ## The levels
 
@@ -820,6 +848,8 @@ them as re-taken understates what Levels 1 and 3 need.
   that clause on §2's own example. §2 also counts "custom hit-testing" among what
   a grammar loses, which Level 3 proposes to derive. If both land, §2's non-goal
   is superseded rather than refined, and it should be rewritten to say so.
+  **Resolved against this doc (2026-08-28): Level 0 confirmed the clause it
+  tested, and Level 3 fell with Level 1. §2 stands unedited.**
 - **[ADR-090](../architecture-decision-records/adr-090-a-mark-is-a-shape-plus-its-channels.md)**
   — **its colour ruling should be superseded.** "A per-instance color channel...
   is a second shape variant rather than an option on this one" describes `bar`

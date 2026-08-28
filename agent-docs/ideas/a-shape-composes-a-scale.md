@@ -1,6 +1,6 @@
 ---
 name: a-shape-composes-a-scale
-description: render-core already holds a shape module (rowRect.slang) and a scale module (scoreScale.slang) and has never composed them, while four displays each spell "colour is a per-instance scalar through a ramp" their own way — wiggle density inline, HiC and LD through a Sampler2D at the same binding slot, arc through a palette index. The plan composes the two on wiggle density first, because density's autoscale domain is a uniform and resolving its colour CPU-side would turn a pan into a buffer re-upload. Independent of ADR-089/090/091: a shape library holds no colorBy, no RPC and no layout, so ADR-091's reopening condition does not govern it. Gates, kill conditions, and what it must not become.
+description: render-core already holds a shape module (rowRect.slang) and a scale module (scoreScale.slang) and has never composed them. Re-measured 2026-08-28, "a per-instance scalar through a ramp" is one channel cardinality but only its RAMP half factors — HiC and LD share the Sampler2D LUT mechanism down to the binding slot, while the three normalizers (scoreScale; HiC's mapHicCount, pinned cross-backend; LD's remap-plus-sentinel) stay per-consumer, and density already composes scoreScale. The plan composes rowRect × scoreScale × a LUT ramp on wiggle density first, because density's autoscale domain is a uniform and a CPU-side colour resolve would turn a pan into a buffer re-upload; the gates are pan cost in bytes uploaded, wiggle.slang shrinking, and a GPU/Canvas2D/SVG ramp-entry parity sweep. Independent of ADR-089/090/091 on structural grounds: composition is compile-time slangc inlining that registers nothing and adds no runtime module edges, so ADR-091's reopening condition and the eager-bundle constraint do not govern it.
 ---
 
 # A shape composes a scale
@@ -24,6 +24,14 @@ Shape and scale are the two halves of a grammar's encoding — genome-spy spells
 them `mark` and `scales`, and a channel binds a field to one of each. Both
 halves are in this tree, in one directory, unjoined.
 
+genome-spy factors at exactly this seam, which is independent confirmation the
+factoring is the standard one: each mark's hand-written vertex GLSL calls
+`getScaled_<channel>()` functions it never defines, generated per encoding by
+`glslScaleGenerator.js` over a shared scale-primitive library, with domain and
+range wired to uniforms updated on scale-resolution events so pan and zoom
+never touch a vertex buffer. The difference this plan keeps is ADR-051's: the
+composition here is a hand-written Slang import, never generated code.
+
 ## Four displays spell the missing half four ways
 
 Colour cardinality across the live shaders:
@@ -32,19 +40,37 @@ Colour cardinality across the live shaders:
 | --- | --- | --- |
 | `rowRect.slang` | a per-instance resolved value | `uint color : ATTR3`, packed ABGR |
 | `arc.slang` | a per-instance index into a uniform palette | `float colorType : ATTR2` → `arcColorByIndex()` (`:366`) |
-| `wiggle.slang` density | a per-instance scalar through an inline ramp | `float score : ATTR1` → `lerp(white, instColor.rgb, densityGradientT(norm, zeroNorm))` (`:156`) |
+| `wiggle.slang` density | a per-instance scalar through an inline ramp | `float score : ATTR1` → `lerp(white, instColor.rgb, densityGradientT(norm, zeroNorm))` (`:159`, where `norm` is already `scoreScale`'s `normalizeScore`) |
 | `hic.slang` | a per-instance scalar through a texture ramp | `float count : ATTR1` + `Sampler2D<float4> colorRamp` at `binding(2, 0)` |
 | `ldGenomic.slang` / `ldUniform.slang` | a per-instance scalar through a texture ramp | `float ldValue : ATTR2` + `Sampler2D<float4> colorRamp` at `binding(2, 0)`, via `ldUniforms.slang:57` |
 
-The last three are one concept written three times. HiC and LD reached the same
-answer independently, down to the binding slot; density reached a weaker version
-of it, and the weakness is visible to a reader: HiC offers viridis and fall
-(`colorRamp.ts:97`, `generateColorRamp` → a 256-entry `Uint8Array`), and density
-offers `lerp` from white, because its ramp is arithmetic in the shader rather
-than a sampled table.
+The last three are one cardinality — the scalar stays in the instance buffer,
+the mapping stays in uniform state — but the mechanism splits in half, and only
+one half factors (re-measured 2026-08-28):
 
-**That is the finding: a scaled colour channel is not a thing this tree lacks.
-It is a thing this tree has four of.**
+- **The ramp half factors.** HiC and LD reached the same answer independently,
+  down to the binding slot and the premultiplied output, and LD's `ldRampColor`
+  already takes the sampler as a parameter — half the shared module exists.
+  Density is the weaker third: its ramp is arithmetic in the shader, which is
+  why HiC offers viridis and fall (`colorRamp.ts:97`, `generateColorRamp` → a
+  256-entry `Uint8Array`) and a density track can only fade from white to its
+  track colour.
+- **The scale half is three normalizers that do not unify.** Density already
+  composes `scoreScale` — `wiggle.slang:157` calls `normalizeScore`, with
+  `densityGradientT(norm, zeroNorm)` as a transfer function between scale and
+  ramp. HiC's `mapHicCount` is not `normalizeScore` and cannot silently become
+  it: different floors (`max(count, 1)` and `max(colorMaxScore, 2)` against the
+  domain's-own-min rule), different degenerate-domain answers, and it is
+  `js-export`ed precisely so Canvas2D and SVG land on the same LUT entry the
+  GPU does — moving it onto `scoreScale` changes pinned cross-backend values.
+  LD has no scale at all: values arrive in [-1, 1], and its "normalization" is
+  an affine signed remap plus the `LD_NOT_COMPUTED` sentinel gate
+  (`ldValueComputed`, -2 → transparent).
+
+**That is the finding: the tree lacks neither half. It has one scale module
+with real consumers, one ramp mechanism written twice, one inline ramp and one
+palette index — and the composition worth building is shape × scale × ramp,
+with the scale staying per-consumer.**
 
 [ADR-090](../architecture-decision-records/adr-090-a-mark-is-a-shape-plus-its-channels.md)
 ruled that a per-instance colour lane is "a second shape variant rather than an
@@ -104,41 +130,69 @@ notice its status.
 Lift density out of `wiggle.slang`'s `renderingType` branch onto a composed
 shape: `rowRect` geometry, `scoreScale` normalization, a ramp.
 
-**Gate A, and it is the one that matters: autoscale must stay a uniform write.**
-Instrument the pan path before and after. If the composition forces a CPU-side
-colour resolve, stop and record it — the cardinality does not factor, and that
-is a result worth having.
+**Gate A: autoscale must stay a uniform write — instrumented as bytes uploaded
+per pan, not writes counted.** Two real ways to fail it: resolve the colour
+CPU-side into `rowRect`'s packed ABGR lane (the naive reading of
+"`RowRectInstance` with a `score` added"), so a pan re-packs and re-uploads the
+buffer; or put the domain into `installUpload`'s `inputs` getter, so an
+autoscale move re-encodes every region — render-core's documented identity
+trap. If the composition forces either, stop and record it — the cardinality
+does not factor, and that is a result worth having.
+
+A caveat on what Gate A proves: two shaders standing side by side, each keeping
+its own scale and ramp, hold the pan property trivially. A passes a
+non-composition; it discriminates only together with Gate B.
 
 **Gate B: `wiggle.slang` must get simpler when density leaves.** The file
 branches xyplot / density / scatter on one uniform and shares the clip-space
 conversion between them. If removing one arm does not shrink the other two,
 the branch was earning its place and the shape boundary is drawn wrong.
 
+**Gate C: both backends and the export land on the same ramp entry, before and
+after the move.** This is the gate the tree's history demands, where Gate A
+guards a failure it has never had: HiC had to `js-export` `mapHicCount` so
+three backends index one LUT, the alignments mark conversion found a live
+GPU/Canvas2D divergence, and ADR-051's "drawn and exported are one boundary"
+rule exists because this seam is where composition breaks here. It is cheap to
+hold: `getDensityColor.ts` already quantizes the Canvas2D density ramp into 256
+cached buckets, so the LUT form puts both backends on the same 256-entry grid —
+sweep it the way `normalizeScoreParity.test.ts` sweeps the normalizer.
+
 **Kill condition:** a parameter on the composed shape with exactly one caller.
 [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md)
 declined a shared quad on a two-consumer bar for that reason and the reason
 still holds.
 
-### Step 3 — Decide whether the ramp is a texture, and prove it on a second consumer
+### Step 3 — The ramp is a texture, and the module is the ramp, not the scale
 
 HiC and LD both bind `Sampler2D<float4> colorRamp` at `binding(2, 0)`; density
-computes its ramp inline. A composed shape has to pick one, and the texture form
-is the one that already serves two displays and already carries viridis.
+computes its ramp inline. The composed shape takes the texture form — it
+already serves two displays and already carries viridis.
+
+The open question this step shipped with — do HiC's and LD's ramps factor the
+same way? — is settled (2026-08-28, the measurement in the cardinality section
+above), and the answer rescopes the step: **the shared subject is a
+ramp-sampling module plus one LUT upload path, and the scales stay three.**
+`mapHicCount` stays HiC's, LD's remap-plus-sentinel stays LD's, `scoreScale`
+keeps the consumers it has. Step 3 is not three consumers of `scoreScale`; it
+is a third consumer for the ramp mechanism HiC and LD already share.
+
+One constraint rides along: alpha. HiC's default juicebox scheme fades alpha
+across its low counts and discards under `MIN_VISIBLE_ALPHA`, under
+premultiplied blending; density is opaque under normal blending. The module
+shares the sampling; the `//! blend:` declaration stays per-shader.
 
 **Gauge: density gains an arbitrary ramp without a new shader.** Today a
-density track can only fade from white to its track colour. If Step 2 lands on
-the texture form, viridis on a density track is a uniform and a LUT upload.
+density track can only fade from white to its track colour. On the texture
+form, viridis on a density track is a uniform and a LUT upload.
 
-**Gate C: the second consumer must reuse the LUT upload path, not merely import
+**Gate D: the second consumer must reuse the LUT upload path, not merely import
 the shader module.** Two shaders that sample the same way through two upload
 paths is the divergence `scoreScale`'s header already documents, one layer up.
-
-**Open, and cheap to settle before committing to Step 3:** do HiC's and LD's
-ramps actually factor the same way? Both normalize a per-instance scalar and
-sample a 256-entry table, but HiC's `hic.slang:60` splits its count → ramp point
-out specifically so the Canvas2D twin lands on the same entry, and LD's lives in
-`ldUniforms.slang`. Read both against `scoreScale` before assuming three
-consumers rather than one.
+The kill condition governs this helper too — this is the one place the plan
+adds shared *runtime* machinery rather than a compile-time import, and a LUT
+upload path growing a scheme registry or per-display flags is the
+parameter-with-one-caller failure wearing a helper's name.
 
 ### Step 4 — `point` as the second shape
 
@@ -147,7 +201,7 @@ the dotplot draws points too. Ordered after the ramp work because a second shape
 is worth less than a second cardinality: cardinality is the axis that multiplies
 the shape list if it is got wrong.
 
-**Gate D: the dotplot's shader must actually shrink.** If it does not, the
+**Gate E: the dotplot's shader must actually shrink.** If it does not, the
 library has one shape, which is a fine answer — ADR-090's surviving clause is
 that a shape joins on a consumer's pull, not on completeness.
 
@@ -162,13 +216,17 @@ condition — hold alignments' `colorBy`, or Manhattan's LD model and dual-renam
 RPC, without an `extend`, and stay lazy — governs a replacement for the display
 stack. A shape library holds none of those things.
 
-The eager-closure finding does not reach it either, and the existing consumers
-are the proof. ADR-091's closure is about what a *registration* names by value:
-the factory named the `bar` shader, so plugin install loaded it. A shape reached
-through a display's own `lazy()` component is not eager, which is how `rowRect`
-reaches both its consumers today — `maf/LinearMafDisplay/index.ts:10` and
-`canvas/LinearMultiRowFeatureDisplay/index.ts:10` are both `lazy(`. A composed
-shape inherits that, because the display, not a factory, owns the registration.
+The eager-closure finding does not reach it either, and the reason is
+structural, not a discipline. ADR-091's closure is about what a *registration*
+names by value: the factory named the `bar` shader, so plugin install loaded
+it. A shape module is composed at compile time — `slangc` inlines `import
+rowRect` at `pnpm gen:shaders`, so `maf.generated.ts` carries no runtime import
+of render-core's shader modules at all. A composed shape adds zero runtime
+module edges and zero registration bytes, which clears the eager-bundle
+constraint even for a consumer that registers eagerly. Both consumers happen to
+be lazy anyway (`maf/LinearMafDisplay/index.ts:10` and
+`canvas/LinearMultiRowFeatureDisplay/index.ts:10` are both `lazy(`), but
+nothing depends on that.
 
 ADR-090 was reverted because the factory it rode on was, and the port that
 decided ADR-091 drew with Manhattan's own hand-written shader — the mark
@@ -204,7 +262,7 @@ open question there, not a dependency here.
 | --- | --- |
 | 1 | encodings are orthogonal to shapes — stated over five shaders, not one |
 | 2 | a shape and a scale compose, and the composition keeps a pan at one uniform write |
-| 3 | one ramp mechanism across quantitative, contact-matrix and LD colouring |
+| 3 | one ramp mechanism across quantitative, contact-matrix and LD colouring, each keeping its own scale |
 | 4 | a shape library with two shapes and a stated admission rule |
 
 Step 2's row is the one that distinguishes a shape library from a bag of
