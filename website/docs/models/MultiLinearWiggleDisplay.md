@@ -188,6 +188,7 @@ the whole surface.
 | <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-poscolor) |
 | <span id="getter-negcolor">**negColor**</span><br><code>string</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-negcolor) |
 | <span id="getter-bicolorpivot">**bicolorPivot**</span><br><code>number</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-bicolorpivot) |
+| <span id="getter-densitycolorramp">**densityColorRamp**</span><br><code>string</code> | <span data-pagefind-ignore>Density's colour ramp: 'default' for the white→track-colour fade, or a named 256-entry LUT (see densityColorRamp.ts). Rides the render state, so a change is a uniform flag plus one LUT texture upload — never a refetch or a buffer re-encode.</span> | [WiggleCommonMixin](../wigglecommonmixin#getter-densitycolorramp) |
 | <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-numquantile) |
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-linewidth) |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | <span data-pagefind-ignore>Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line.</span> | [WiggleCommonMixin](../wigglecommonmixin#getter-maxgapmultiple) |

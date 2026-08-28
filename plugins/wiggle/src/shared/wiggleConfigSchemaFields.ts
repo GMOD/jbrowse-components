@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
+import { DENSITY_COLOR_RAMPS } from './densityColorRamp.ts'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
@@ -45,6 +46,14 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: 0,
     description: 'Pivot value for bicolor mode',
+    advanced: true,
+  },
+  densityColorRamp: {
+    type: 'stringEnum',
+    model: types.enumeration('Density color ramp', [...DENSITY_COLOR_RAMPS]),
+    defaultValue: 'default',
+    description:
+      'Color ramp for density ("density"/"multirowdensity") rendering. "default" fades from white at the pivot to the track color; a named ramp (e.g. "viridis") colors scores through that fixed 256-entry lookup table instead, the same table the Hi-C viridis scheme uses',
     advanced: true,
   },
   numQuantile: {

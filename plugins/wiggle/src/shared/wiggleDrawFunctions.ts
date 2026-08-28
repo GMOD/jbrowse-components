@@ -3,7 +3,10 @@ import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_FUDGE_FACTOR, WIGGLE_MIN_PX } from '../util.ts'
-import { makeDensityRgbStringFn } from './getDensityColor.ts'
+import {
+  makeDensityLutFillFn,
+  makeDensityRgbStringFn,
+} from './getDensityColor.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -95,6 +98,10 @@ export function drawXYPlot({
   }
 }
 
+// `rampLut` is the named-ramp mode (the resolved `densityColorRamp` LUT): when
+// present the row colours through it, matching the LUT texture the GPU pass
+// samples, and the per-row track colour goes unused — a single LUT is exactly
+// what cannot vary per row.
 export function drawDensity({
   ctx,
   source,
@@ -108,17 +115,27 @@ export function drawDensity({
   r,
   g,
   b,
-}: RowDraw & { r: number; g: number; b: number }) {
-  const colorFn = makeDensityRgbStringFn(
-    domainY[0],
-    domainY[1],
-    scaleType,
-    r,
-    g,
-    b,
-    origin,
-    symlogConstant,
-  )
+  rampLut,
+}: RowDraw & { r: number; g: number; b: number; rampLut: Uint8Array | null }) {
+  const colorFn = rampLut
+    ? makeDensityLutFillFn(
+        domainY[0],
+        domainY[1],
+        scaleType,
+        rampLut,
+        origin,
+        symlogConstant,
+      )
+    : makeDensityRgbStringFn(
+        domainY[0],
+        domainY[1],
+        scaleType,
+        r,
+        g,
+        b,
+        origin,
+        symlogConstant,
+      )
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)

@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
+import { densityRampLut } from './densityColorRamp.ts'
 import {
   INSTANCE_OFFSET_F32 as FILL_F32,
   INSTANCE_OFFSET_U32 as FILL_U32,
@@ -318,6 +319,79 @@ describe('GpuWiggleRenderer', () => {
     const writes = hal.callsOf('writeUniforms')
     expect(writes.length).toBe(2)
     expect(writes.at(-1)!.args[0]).toBe(UNIFORMS_SIZE_BYTES)
+  })
+
+  // The Step 3 gauge (agent-docs/ideas/a-shape-composes-a-scale.md): a named
+  // ramp on a density track is a uniform flag and one 256×1 LUT upload through
+  // the shared path — no new shader, no buffer byte. The LUT bytes are the
+  // cached table Canvas2D indexes too (densityColorParity.test.ts holds the
+  // colour parity).
+  it('a named density ramp is a uniform flag and one LUT texture upload', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
+    const state = {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_DENSITY,
+      densityColorRamp: 'viridis',
+    }
+
+    renderer.upload(0, [source])
+    const uploadedBufferBytes = () =>
+      hal
+        .callsOf('uploadBuffer')
+        .reduce((total, c) => total + (c.args[2] as number), 0)
+    const loadBytes = uploadedBufferBytes()
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+
+    const texCalls = hal.callsOf('uploadTexture')
+    expect(texCalls.length).toBe(1)
+    expect(texCalls[0]!.args).toEqual(['density', 256 * 4, 256, 1])
+    const i32 = hal.getLastUniformsI32()!
+    expect(i32[UI.densityRampLut]).toBe(1)
+    // the uploaded bytes are the shared cached table Canvas2D indexes too
+    expect(hal.getTexture('density')).toEqual(densityRampLut('viridis'))
+
+    // an autoscale pan in LUT mode is still one uniform write, zero buffer
+    // bytes and zero texture re-uploads — the ramp memo holds across frames
+    renderer.renderBlocks(
+      [makeBlock({ start: 250, end: 1250 })],
+      new Map([[0, [source]]]),
+      { ...state, domainY: [0, 35] as [number, number] },
+    )
+    expect(hal.callsOf('uploadTexture').length).toBe(1)
+    expect(uploadedBufferBytes()).toBe(loadBytes)
+    expect(hal.callsOf('writeUniforms').length).toBe(2)
+  })
+
+  // Default density mode binds an inert LUT once — wiggleDensity.slang owns a
+  // sampler unconditionally, and a textured pass with no texture never draws on
+  // the WebGPU HAL — while the uniform flag keeps it unsampled.
+  it('default density binds an inert LUT once and leaves the flag off', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
+    const state = {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_DENSITY,
+    }
+
+    renderer.upload(0, [source])
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+
+    const texCalls = hal.callsOf('uploadTexture')
+    expect(texCalls.length).toBe(1)
+    expect(texCalls[0]!.args[0]).toBe('density')
+    expect(hal.getLastUniformsI32()![UI.densityRampLut]).toBe(0)
+
+    // flipping to a named ramp re-uploads exactly once and flips the flag
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...state,
+      densityColorRamp: 'viridis',
+    })
+    expect(hal.callsOf('uploadTexture').length).toBe(2)
+    expect(hal.getLastUniformsI32()![UI.densityRampLut]).toBe(1)
   })
 
   it('uses fill pass for XY plot rendering type', () => {

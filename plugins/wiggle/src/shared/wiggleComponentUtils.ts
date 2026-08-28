@@ -100,6 +100,7 @@ export interface WiggleRenderStateModel {
   scatterPointSize: number
   lineWidth: number
   bicolorPivot: number
+  densityColorRamp: string
 }
 
 // Always defined: until autoscale resolves a domain, resolveRenderState
@@ -135,5 +136,6 @@ export function makeWiggleRenderState(
     lineWidth: self.lineWidth,
     // bars pivot around, and density fades from, the bicolor threshold
     origin: self.bicolorPivot,
+    densityColorRamp: self.densityColorRamp,
   }))
 }

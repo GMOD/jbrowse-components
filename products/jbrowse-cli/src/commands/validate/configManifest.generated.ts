@@ -4388,6 +4388,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "densityColorRamp",
+          "type": "(JexlString | Density color ramp)"
+        },
+        {
           "name": "numQuantile",
           "type": "(JexlString | number)"
         },
@@ -4480,6 +4484,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "bicolorPivot",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityColorRamp",
+          "type": "(JexlString | Density color ramp)"
         },
         {
           "name": "numQuantile",
@@ -4624,6 +4632,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "densityColorRamp",
+          "type": "(JexlString | Density color ramp)"
+        },
+        {
           "name": "numQuantile",
           "type": "(JexlString | number)"
         },
@@ -4744,6 +4756,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "bicolorPivot",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityColorRamp",
+          "type": "(JexlString | Density color ramp)"
         },
         {
           "name": "numQuantile",

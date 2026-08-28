@@ -24,13 +24,20 @@
 // the pre-composition density branch let sub-pixel rows miss every pixel center
 // and drop out. Only reachable when numRows outgrows the canvas height.
 //
-// The colour resolves in the vertex stage, as it always has: every fragment of
-// a density quad is one flat colour, so per-vertex is the cheaper stage and the
-// fragment stays a passthrough.
+// The default colour resolves in the vertex stage, as it always has: every
+// fragment of a density quad is one flat colour, so per-vertex is the cheaper
+// stage. The alternative named-ramp mode (`u.densityRampLut`) samples the
+// shared 256×1 LUT texture instead — the same colorRampLut module and binding
+// slot HiC and LD sample through — and that sample has to be the fragment's,
+// because the HALs bind textures with fragment-stage visibility only. The
+// vertex stage therefore carries both the resolved default colour and the ramp
+// position `t`, and the fragment picks by the uniform; `t` is per-instance
+// flat, so the varying interpolates nothing.
 //! targets: wgsl, glsl
 
 import hpmath;
 import colorPack;
+import colorRampLut;
 import rowRect;
 import scoreScale;
 import wiggleCommon;
@@ -38,9 +45,16 @@ import wiggleCommon;
 public static const uint VERTS_PER_INSTANCE = 6u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
+
+struct DensityVsOut {
+  float4 position : SV_Position;
+  float4 color    : COLOR0;
+  nointerpolation float rampT : COLOR1;
+};
 
 [shader("vertex")]
-RowRectVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
+DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   // The shape's uniform bundle, derived from the wiggle family's own block: one
   // UBO write per region serves all three wiggle entry shaders. `minCellPx`
   // takes MIN_FILL_WIDTH_PX — the same floor the Canvas2D twin reads back as
@@ -63,17 +77,21 @@ RowRectVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   float zeroNorm = normalizeScore(
     u.origin, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
 
-  RowRectVsOut o;
+  float t = densityGradientT(norm, zeroNorm);
+
+  DensityVsOut o;
   o.position = rowRectClipPos(
     inst.startEnd.x, inst.startEnd.y, inst.rowIndex, vid, r);
   o.color = float4(
-    lerp(float3(1.0), unpackRGBA(inst.color).rgb,
-         densityGradientT(norm, zeroNorm)),
-    1.0);
+    lerp(float3(1.0), unpackRGBA(inst.color).rgb, t), 1.0);
+  o.rampT = t;
   return o;
 }
 
 [shader("fragment")]
-float4 fs_main(RowRectVsOut v) : SV_Target {
+float4 fs_main(DensityVsOut v) : SV_Target {
+  if (u.densityRampLut == 1) {
+    return rampColor(colorRamp, v.rampT);
+  }
   return v.color;
 }

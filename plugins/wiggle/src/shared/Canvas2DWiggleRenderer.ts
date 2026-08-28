@@ -7,6 +7,7 @@ import {
   RENDERING_TYPE_SCATTER,
 } from '@jbrowse/wiggle-core'
 
+import { densityRampLut } from './densityColorRamp.ts'
 import { getRowHeight, getRowTop } from './wiggleComponentUtils.ts'
 import {
   drawDensity,
@@ -48,6 +49,10 @@ function drawWiggleBlocks(
   // export with a hand-built state, and Infinity here would propagate to NaN
   // rect geometry.
   const rowHeight = getRowHeight(canvasHeight, numRows)
+  // Density's named-ramp LUT, or null for the default white→track-colour fade.
+  // The same cached bytes the GPU renderer uploads as the density pass's
+  // texture, so the two backends index one table.
+  const rampLut = densityRampLut(state.densityColorRamp)
 
   forEachClippedBlock(
     ctx,
@@ -97,7 +102,7 @@ function drawWiggleBlocks(
             drawLineCenter({ ...row, rgb, lineWidth })
             break
           case RENDERING_TYPE_DENSITY:
-            drawDensity({ ...row, r, g, b })
+            drawDensity({ ...row, r, g, b, rampLut })
             break
           case RENDERING_TYPE_SCATTER:
             drawScatter({ ...row, rgb, pointSize: scatterPointSize })

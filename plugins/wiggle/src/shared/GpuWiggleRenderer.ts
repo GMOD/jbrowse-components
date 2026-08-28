@@ -1,5 +1,9 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  COLOR_RAMP_LUT_ENTRIES,
+  uploadColorRampLut,
+} from '@jbrowse/render-core/colorRampLut'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import {
@@ -8,6 +12,7 @@ import {
   RENDERING_TYPE_LINE_CENTER,
 } from '@jbrowse/wiggle-core'
 
+import { densityRampLut } from './densityColorRamp.ts'
 import * as wiggleShader from './shaders/wiggle.generated.ts'
 import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'
 import * as wiggleLineShader from './shaders/wiggleLine.generated.ts'
@@ -26,6 +31,13 @@ const PASS_FILL = 'fill'
 const PASS_DENSITY = 'density'
 const PASS_LINE = 'line'
 const PASS_LINE_CENTER = 'lineCenter'
+
+// What the density pass binds while `densityColorRamp` is 'default':
+// wiggleDensity.slang declares its ramp sampler unconditionally (a shader
+// cannot conditionally own a binding), and a textured pass with no texture
+// never draws on the WebGPU HAL — so default mode binds these inert bytes,
+// which the `densityRampLut` uniform flag keeps unsampled.
+const UNUSED_RAMP = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
 
 // Three shaders, four triangle-list passes. PASS_FILL draws xyplot / scatter as
 // 6-vert quads off the 20-byte `WiggleFillInstance` record; PASS_DENSITY draws
@@ -103,6 +115,13 @@ export class GpuWiggleRenderer
   // carrying buffers of their own.
   protected regionPasses = [FILL_PASS, LINE_PASS]
 
+  // The LUT currently uploaded as the density pass's texture, by the ramp
+  // table's stable identity (densityRampLut caches per name). Per-pass, not
+  // per-region — it mirrors the one texture the HAL holds for the pass, so a
+  // ramp that hasn't changed costs a frame nothing and a change is exactly one
+  // upload through the shared path.
+  private boundDensityRamp: Uint8Array | undefined
+
   constructor(hal: GpuHal) {
     super(hal, wiggleShader.UNIFORMS_SIZE_BYTES)
   }
@@ -133,6 +152,20 @@ export class GpuWiggleRenderer
       : renderingType === RENDERING_TYPE_DENSITY
         ? PASS_DENSITY
         : PASS_FILL
+
+    // Density's named ramp resolves here — a name off the render state into
+    // the cached LUT the Canvas2D painter indexes too — and reaches the GPU as
+    // a uniform flag plus, below, the pass's texture. Never the instance
+    // buffer: the score→colour mapping moving must not re-upload a byte.
+    const rampLut =
+      passId === PASS_DENSITY ? densityRampLut(state.densityColorRamp) : null
+    if (passId === PASS_DENSITY) {
+      const ramp = rampLut ?? UNUSED_RAMP
+      if (ramp !== this.boundDensityRamp) {
+        uploadColorRampLut(this.hal, ramp, [PASS_DENSITY])
+        this.boundDensityRamp = ramp
+      }
+    }
 
     // Any module's packer serves: all three wiggle entry shaders share
     // `wiggleCommon.slang`'s uniform block, so the generated `Uniforms` are one
@@ -173,6 +206,7 @@ export class GpuWiggleRenderer
       // renderers: past the backing-store clamp the two differ, and the ramp
       // wants the density of the screen the mark is read on.
       devicePixelRatio: getDpr(),
+      densityRampLut: rampLut ? 1 : 0,
     })
 
     this.hal.writeUniforms(this.uniformData)

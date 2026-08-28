@@ -34,6 +34,7 @@ function makeModel(symlogConstant: number) {
     scatterPointSize: 2,
     lineWidth: 1,
     bicolorPivot: RAMP.pivot,
+    densityColorRamp: 'default',
     isDensityMode: true,
     scoreRamp: RAMP,
     rowHeightTooSmallForScalebar: false,

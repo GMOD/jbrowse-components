@@ -75,6 +75,13 @@ export interface WiggleGPURenderState {
   // on (= the bicolorPivot config slot). Bars grow up for scores above it and
   // down for scores below; default 0 reproduces the fixed-at-zero baseline.
   origin: number
+  // Density's colour ramp by name (= the densityColorRamp config slot).
+  // 'default' — and, for compatibility with states built before the field
+  // existed, undefined — is the inline white→track-colour fade; a named ramp
+  // makes both backends colour through the same 256-entry LUT (the GPU as the
+  // density pass's texture, Canvas2D/SVG as a fillStyle LUT). A string rather
+  // than the LUT bytes so this package stays a vocabulary, not a ramp table.
+  densityColorRamp?: string
 }
 
 export interface SourceRenderData {

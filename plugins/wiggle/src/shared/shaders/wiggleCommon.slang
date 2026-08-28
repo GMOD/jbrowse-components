@@ -92,6 +92,13 @@ public struct Uniforms {
   // without differentiating it (antialias.slang §"Analytic"). The xyplot bar's
   // horizontal cuts and the center line's capsule both read it.
   public float  devicePixelRatio;
+  // 1 = density colours through the bound 256×1 colorRamp LUT texture (a named
+  // ramp like viridis), 0 = the default inline white→track-colour lerp. Only
+  // wiggleDensity.slang reads it — the LUT cannot encode multiwiggle's
+  // PER-ROW track colours, so the inline lerp stays the default and the LUT is
+  // the alternative a config names. In the shared block like the other mode
+  // ints so one UBO write per region serves all three entry shaders.
+  public int    densityRampLut;
 };
 
 public float bpToClipX(uint bp, Uniforms u) {

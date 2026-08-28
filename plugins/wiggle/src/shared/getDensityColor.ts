@@ -1,3 +1,4 @@
+import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
@@ -49,4 +50,30 @@ export function makeDensityRgbStringFn(
     }
     return s
   }
+}
+
+// The named-ramp counterpart, for a density track whose `densityColorRamp`
+// names a LUT (viridis etc.): the same score → t chain the default fn and the
+// shader share (normalizeScore then densityGradientT), indexed into the same
+// 256-entry ramp bytes the GPU samples as the density pass's texture —
+// `makeRampFillStyleLut` is the fillStyle LUT HiC's and LD's Canvas2D twins
+// already index the same way. densityColorParity.test.ts sweeps the two
+// backends onto one LUT bucket.
+export function makeDensityLutFillFn(
+  domainMin: number,
+  domainMax: number,
+  scaleType: WiggleScaleType,
+  ramp: Uint8Array,
+  origin = 0,
+  symlogConstant = 1,
+) {
+  const normalize = makeScoreNormalizer(
+    domainMin,
+    domainMax,
+    scaleType,
+    symlogConstant,
+  )
+  const zeroNorm = normalize(origin)
+  const fill = makeRampFillStyleLut(ramp)
+  return (score: number) => fill(densityGradientT(normalize(score), zeroNorm))
 }

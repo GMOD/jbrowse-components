@@ -160,6 +160,16 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
+       * Density's colour ramp: 'default' for the white→track-colour fade, or a
+       * named 256-entry LUT (see densityColorRamp.ts). Rides the render state,
+       * so a change is a uniform flag plus one LUT texture upload — never a
+       * refetch or a buffer re-encode.
+       */
+      get densityColorRamp(): string {
+        return getConf(confNode(self), 'densityColorRamp')
+      },
+      /**
+       * #getter
        */
       get numQuantile(): number {
         return getConf(confNode(self), 'numQuantile')
