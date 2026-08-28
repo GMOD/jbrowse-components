@@ -387,6 +387,14 @@ band as an argument", the convergence is a refactor, not a redesign.
 > section's own deciding guard, "write alignments' `colorBy` declaration first",
 > was run and the table holds the slot while saying nothing about the union
 > inside it.
+>
+> **The render-path half moved out**, to
+> [a-shape-composes-a-scale](a-shape-composes-a-scale.md). The cardinality
+> argument below is right and does not depend on the factory this doc is written
+> against, so it is planned there against its own consumers — `rowRect.slang`
+> and `scoreScale.slang` composing on wiggle density — with gates. Read that one
+> for the render path; this section for the UI-derivation ambition that the
+> evidence did not support.
 
 **Today.** `colorBy` is three unrelated types wearing one word: a six-variant
 discriminated union with modification sub-options in

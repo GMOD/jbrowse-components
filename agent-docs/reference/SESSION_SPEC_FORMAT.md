@@ -269,6 +269,18 @@ assembly defines — and the schema takes the rest into the editor.
 - *Marks as a published unit.* Run and reversed: ADR-090 accepted, ADR-091
   rejected with measurements. "What would reopen this" there still stands.
 
+**One place the answer differs, and it is below the display rather than above
+it.** Everything assessed here is a grammar a *reader* writes or a *third party*
+authors against. A shape-and-scale vocabulary inside `render-core` is neither: it
+registers nothing, holds no config slot and crosses no RPC boundary, so ADR-091's
+reopening condition does not govern it. The tree already has both halves —
+`rowRect.slang` and `scoreScale.slang` — and four shaders that each spell a
+scaled colour channel their own way.
+[ideas/a-shape-composes-a-scale](../ideas/a-shape-composes-a-scale.md) is the
+plan, with the gates. Do not read the three questions as one: the spec form,
+the authoring surface and the shader library got different answers on different
+evidence.
+
 **Still open from the parked idea:** lowering the jb2export modifiers onto the
 slot names so `color:tag:HP` and `"colorBy": {"type": "tag", "tag": "HP"}`
 parse to one object. It removes a dialect rather than adding a layer, and it is
