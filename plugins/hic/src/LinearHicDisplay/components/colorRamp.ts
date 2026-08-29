@@ -1,7 +1,7 @@
 import {
   VIRIDIS_STOPS,
   buildColorRampLut,
-  sampleColorRamp,
+  stopsFromRampLut,
 } from '@jbrowse/core/util/colorRamp'
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
@@ -58,8 +58,8 @@ export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
 
 // Viridis is the full 256-stop spec (shared with wiggle density via
 // @jbrowse/core/util/colorRamp) so the heatmap gets the smooth
-// perceptually-uniform gradient; legends use an 11-stop subset derived by
-// sampling, so the legend visually matches the heatmap.
+// perceptually-uniform gradient; legends read an 11-stop subset out of the
+// built LUT, so a legend swatch is byte-identical to a heatmap entry.
 const SCHEMES: Record<HicColorScheme, readonly RGBA[]> = {
   fall: FALL_STOPS,
   juicebox: JUICEBOX_STOPS,
@@ -81,14 +81,21 @@ export function generateColorRamp(colorScheme: HicColorScheme): Uint8Array {
   return RAMPS[colorScheme]
 }
 
-// Sample 11 evenly-spaced legend stops from the same source as the GPU ramp.
+const LEGEND_STOP_COUNT = 11
+
+// 11 evenly-spaced legend stops read out of the ramp bytes the GPU uploads —
+// entry round(t * 255), the same index math stopsFromRampLut uses for the SVG
+// stops below, so the CSS and SVG legends and the heatmap are one table.
 export function getLegendStops(colorScheme: HicColorScheme) {
-  const n = 11
-  const scheme = SCHEMES[colorScheme]
+  const ramp = RAMPS[colorScheme]
   const out: { offset: number; rgba: RGBA }[] = []
-  for (let i = 0; i < n; i++) {
-    const t = i / (n - 1)
-    out.push({ offset: t, rgba: sampleColorRamp(scheme, t) })
+  for (let i = 0; i < LEGEND_STOP_COUNT; i++) {
+    const t = i / (LEGEND_STOP_COUNT - 1)
+    const o = Math.round(t * 255) * 4
+    out.push({
+      offset: t,
+      rgba: [ramp[o]!, ramp[o + 1]!, ramp[o + 2]!, ramp[o + 3]!],
+    })
   }
   return out
 }
@@ -111,16 +118,11 @@ export function getLegendCssGradient(colorScheme: HicColorScheme) {
   return `linear-gradient(to right, ${parts.join(', ')})`
 }
 
+// The SVG legend stops, via the shared helper over the same uploaded bytes.
+// Alpha rides stop-opacity there, which is what keeps the juicebox scheme's
+// transparent→opaque fade through exporters with uneven rgba() support.
 export function getLegendSvgStops(colorScheme: HicColorScheme) {
-  const stops = getLegendStops(colorScheme)
-  // Alpha goes in stop-opacity, not baked into an rgba() stop-color: SVG
-  // stop-color alpha is unevenly supported by exporters, so the juicebox
-  // scheme's transparent→opaque fade would otherwise flatten to solid color.
-  return stops.map(s => ({
-    offset: `${(s.offset * 100).toFixed(0)}%`,
-    color: `rgb(${s.rgba[0]},${s.rgba[1]},${s.rgba[2]})`,
-    opacity: s.rgba[3] / 255,
-  }))
+  return stopsFromRampLut(RAMPS[colorScheme], LEGEND_STOP_COUNT)
 }
 
 // Per-cell fillStyle LUT for the Canvas2D + SVG hic draw: returns the cached

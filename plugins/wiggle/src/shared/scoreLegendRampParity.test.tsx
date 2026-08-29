@@ -4,7 +4,11 @@ import { renderToString } from 'react-dom/server'
 
 import WiggleSvgScale from '../LinearWiggleDisplay/WiggleSvgScale.tsx'
 import MultiWiggleSvgScales from '../MultiLinearWiggleDisplay/MultiWiggleSvgScales.tsx'
-import { makeDensityRgbStringFn } from './getDensityColor.ts'
+import { densityRampLut } from './densityColorRamp.ts'
+import {
+  makeDensityLutFillFn,
+  makeDensityRgbStringFn,
+} from './getDensityColor.ts'
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 
 import type React from 'react'
@@ -13,7 +17,9 @@ import type React from 'react'
 // score has to land on the same ink in both. `symlogConstant` is the input
 // that can separate them: the config slot holds a raw value whose `0` means
 // "derive from the domain", and only the renderer's resolution of it is the
-// number actually painted with.
+// number actually painted with. `densityColorRamp` is the other: a named ramp
+// swaps the plot onto a LUT, and a legend still drawing the default fade
+// describes a picture the track no longer paints.
 
 const DOMAIN: [number, number] = [0, 1000]
 const RAMP = {
@@ -25,7 +31,7 @@ const RAMP = {
 
 // A configured constant well away from the auto value this domain derives
 // (max/1000 = 1), so a legend resolving "auto" paints a visibly different bar.
-function makeModel(symlogConstant: number) {
+function makeModel(symlogConstant: number, densityColorRamp = 'default') {
   return {
     domain: DOMAIN,
     scaleType: 'symlog',
@@ -34,9 +40,9 @@ function makeModel(symlogConstant: number) {
     scatterPointSize: 2,
     lineWidth: 1,
     bicolorPivot: RAMP.pivot,
-    densityColorRamp: 'default',
+    densityColorRamp,
     isDensityMode: true,
-    scoreRamp: RAMP,
+    scoreRamp: { ...RAMP, rampLut: densityRampLut(densityColorRamp) },
     rowHeightTooSmallForScalebar: false,
     sources: [{ name: 'a' }],
     isOverlay: false,
@@ -128,5 +134,41 @@ test.each(CALL_SITES)(
     for (const stop of stops(draw(element(model)))) {
       expect(stop.color).toBe(plotColorAt(model, stop.offset))
     }
+  },
+)
+
+// Named-ramp mode: every legend stop is verbatim a render LUT entry — the same
+// cached bytes the GPU uploads as the density pass's texture and the
+// Canvas2D/SVG painter indexes — reached through the same score → t chain the
+// plot paints with, so the pivot end sits on LUT[0].
+test.each(CALL_SITES)(
+  '%s named-ramp bar stops are the render LUT entries the plot paints',
+  (_name, element) => {
+    const model = makeModel(10, 'viridis')
+    const state = renderState(model)
+    const lut = densityRampLut('viridis')!
+    const paint = makeDensityLutFillFn(
+      DOMAIN[0],
+      DOMAIN[1],
+      state.scaleType,
+      lut,
+      state.origin,
+      state.symlogConstant,
+    )
+    const bar = stops(draw(element(model)))
+    expect(bar.length).toBeGreaterThan(2)
+    for (const stop of bar) {
+      expect([stop.offset, stop.color]).toEqual([
+        stop.offset,
+        paint(DOMAIN[0] + (DOMAIN[1] - DOMAIN[0]) * stop.offset),
+      ])
+    }
+    const last = 255 * 4
+    expect(bar[0]!.color).toBe(
+      `rgba(${lut[0]},${lut[1]},${lut[2]},${(lut[3]! / 255).toFixed(3)})`,
+    )
+    expect(bar.at(-1)!.color).toBe(
+      `rgba(${lut[last]},${lut[last + 1]},${lut[last + 2]},${(lut[last + 3]! / 255).toFixed(3)})`,
+    )
   },
 )

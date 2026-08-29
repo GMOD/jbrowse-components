@@ -6,7 +6,10 @@ import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 import { scaleTypeFromString } from '@jbrowse/wiggle-core'
 
 import { formatScore } from '../util.ts'
-import { makeDensityRgbStringFn } from './getDensityColor.ts'
+import {
+  makeDensityLutFillFn,
+  makeDensityRgbStringFn,
+} from './getDensityColor.ts'
 
 import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 
@@ -19,6 +22,12 @@ export interface ScoreRamp {
   posColor: string
   negColor: string
   pivot: number
+  // the resolved densityColorRamp LUT — the same cached bytes both renderers
+  // color through — or null for the default white→track-color fade. Required
+  // rather than optional so a new producer can't quietly leave the legend on
+  // the default fade while the track paints a named ramp, which is exactly how
+  // this field was born.
+  rampLut: Uint8Array | null
   // unique per display, so two density tracks in one view don't share a def.
   // Bundled with the colors rather than passed alongside them, so a caller
   // can't supply half a ramp.
@@ -38,12 +47,15 @@ export function scoreLegendHeight(ramp: ScoreRamp | undefined) {
   return ramp ? RAMP_LEGEND_HEIGHT : TEXT_LEGEND_HEIGHT
 }
 
-// Sampled rather than a three-stop gradient. The painted color is
-// `|norm(score) - norm(pivot)| / max(norm(pivot), 1 - norm(pivot))`, which is
-// piecewise linear with a different slope each side of an off-center pivot: at
-// domain 0..6 with the pivot at 2, the loss side tops out at half saturation.
-// A hand-written neg-white-pos gradient would show both ends fully saturated
-// and so overstate the short side.
+// Sampled from the live color function rather than a three-stop gradient. The
+// painted position is `|norm(score) - norm(pivot)| / max(norm(pivot), 1 -
+// norm(pivot))`, which is piecewise linear with a different slope each side of
+// an off-center pivot: at domain 0..6 with the pivot at 2, the loss side tops
+// out at half saturation. A hand-written neg-white-pos gradient would show
+// both ends fully saturated and so overstate the short side. A named ramp
+// (`rampLut`) goes through the same score → t chain into the same LUT bytes
+// the renderers index, so each stop is verbatim a render LUT entry and the
+// pivot sits on LUT[0].
 function rampStops(
   domain: [number, number],
   ramp: ScoreRamp,
@@ -51,33 +63,45 @@ function rampStops(
   symlogConstant: number,
 ) {
   const [min, max] = domain
-  const [pr, pg, pb] = cssColorToRgb(ramp.posColor)
-  const [nr, ng, nb] = cssColorToRgb(ramp.negColor)
-  const pos = makeDensityRgbStringFn(
-    min,
-    max,
-    scaleType,
-    pr,
-    pg,
-    pb,
-    ramp.pivot,
-    symlogConstant,
-  )
-  const neg = makeDensityRgbStringFn(
-    min,
-    max,
-    scaleType,
-    nr,
-    ng,
-    nb,
-    ramp.pivot,
-    symlogConstant,
-  )
+  let colorAt: (score: number) => string
+  if (ramp.rampLut) {
+    colorAt = makeDensityLutFillFn(
+      min,
+      max,
+      scaleType,
+      ramp.rampLut,
+      ramp.pivot,
+      symlogConstant,
+    )
+  } else {
+    const [pr, pg, pb] = cssColorToRgb(ramp.posColor)
+    const [nr, ng, nb] = cssColorToRgb(ramp.negColor)
+    const pos = makeDensityRgbStringFn(
+      min,
+      max,
+      scaleType,
+      pr,
+      pg,
+      pb,
+      ramp.pivot,
+      symlogConstant,
+    )
+    const neg = makeDensityRgbStringFn(
+      min,
+      max,
+      scaleType,
+      nr,
+      ng,
+      nb,
+      ramp.pivot,
+      symlogConstant,
+    )
+    colorAt = score => (score < ramp.pivot ? neg(score) : pos(score))
+  }
   const steps = 16
   return Array.from({ length: steps + 1 }, (_, i) => {
     const offset = i / steps
-    const score = min + (max - min) * offset
-    return { offset, color: score < ramp.pivot ? neg(score) : pos(score) }
+    return { offset, color: colorAt(min + (max - min) * offset) }
   })
 }
 

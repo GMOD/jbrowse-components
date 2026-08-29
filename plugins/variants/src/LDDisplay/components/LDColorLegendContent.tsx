@@ -1,17 +1,22 @@
 import { SvgGradientLegend } from '@jbrowse/core/ui'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
-import { ldColorStops, ldMetricLabel } from './ldColorRamp.ts'
+import {
+  generateLDColorRamp,
+  ldColorStops,
+  ldMetricLabel,
+} from './ldColorRamp.ts'
 
-// The gradient, evenly spaced across the same color table the cells are painted
-// through. Derived rather than restated: the legend used to carry its own five
-// hand-picked colors per metric, which is a second place to edit a palette and a
-// key that can quietly stop describing the plot beside it.
+// The gradient, read out of the same 256-entry LUT the cells are painted
+// through (and the GPU samples as its ramp texture), one stop per source-table
+// knot. Derived rather than restated: the legend used to carry its own five
+// hand-picked colors per metric, which is a second place to edit a palette and
+// a key that can quietly stop describing the plot beside it.
 function gradientStops(ldMetric: string, signedLD: boolean) {
-  const stops = ldColorStops(ldMetric, signedLD)
-  return stops.map(([r, g, b], i) => ({
-    offset: `${((i / (stops.length - 1)) * 100).toFixed(2)}%`,
-    color: `rgb(${r},${g},${b})`,
-  }))
+  return stopsFromRampLut(
+    generateLDColorRamp(ldMetric, signedLD),
+    ldColorStops(ldMetric, signedLD).length,
+  )
 }
 
 export default function LDColorLegendContent({

@@ -329,11 +329,18 @@ stays convention, checked by nothing new.
   parameter only one caller passes. The scales stayed three, as rescoped:
   `mapHicCount`, LD's remap-plus-sentinel and `scoreScale` are untouched.
 
-One seam deliberately left: the density legend (`scoreRamp`) still describes
-the default white→track-colour fade, so a track configured with a named ramp
-plots viridis under a legend drawn for the default. Legend work is UI and out
-of this step's scope; the getter to extend is `scoreRampApplies`/`scoreRamp`
-in `wiggleDisplayViews.ts`.
+The one seam this left — the density legend still described the default
+white→track-colour fade under a named ramp — closed 2026-08-28: `scoreRamp`
+carries the resolved `densityColorRamp` LUT (the renderers' own cached bytes)
+and `ScoreLegend` draws a named ramp's bar through the same score → t chain
+into those bytes, each stop verbatim a render LUT entry with the pivot on
+LUT[0]; the pivot tick and the per-display `scoreRampApplies` predicates are
+unchanged. The legend-stop derivation is one shared helper, `stopsFromRampLut`
+(`core/util/colorRamp.ts`), which HiC's and LD's legends now read their stops
+through as well; synteny stays on its `toRgb` closures, since its renderer
+lane is packed ABGR rather than an RGBA byte LUT and joining would cost the
+helper a format flag. Pinned in `scoreLegendRampParity.test.tsx` and
+`colorRamp.test.ts`.
 
 ### Step 4 — `point` as the second shape
 

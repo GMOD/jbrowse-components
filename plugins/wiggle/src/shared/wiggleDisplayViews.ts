@@ -1,5 +1,6 @@
 import { computeYTicks } from '@jbrowse/wiggle-core'
 
+import { densityRampLut } from './densityColorRamp.ts'
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 
 import type { WiggleRenderStateModel } from './wiggleComponentUtils.ts'
@@ -78,6 +79,9 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
      * The color ramp the density legend draws, or undefined when there is no
      * single ramp to describe. Lives on the model so the on-screen legend and
      * the SVG export can't disagree about whether density has a ramp.
+     * `rampLut` is the resolved `densityColorRamp` LUT — the same cached bytes
+     * both renderers color through — so a named ramp's legend is drawn from
+     * what the track actually paints, not the default fade.
      */
     get scoreRamp() {
       return self.scoreRampApplies
@@ -85,6 +89,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
             posColor: self.posColor,
             negColor: self.negColor,
             pivot: self.bicolorPivot,
+            rampLut: densityRampLut(self.densityColorRamp),
             gradientId: `score-ramp-${self.id}`,
           }
         : undefined

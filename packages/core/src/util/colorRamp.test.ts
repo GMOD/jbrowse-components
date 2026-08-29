@@ -1,4 +1,8 @@
-import { buildColorRampLut, sampleColorRamp } from './colorRamp.ts'
+import {
+  buildColorRampLut,
+  sampleColorRamp,
+  stopsFromRampLut,
+} from './colorRamp.ts'
 
 import type { ColorRampStop } from './colorRamp.ts'
 
@@ -50,4 +54,32 @@ test('the lut is 256 RGBA entries at t = i / 255', () => {
   expect([...lut.slice(0, 4)]).toEqual([0, 0, 0, 255])
   expect([...lut.slice(128 * 4, 128 * 4 + 4)]).toEqual([128, 128, 128, 255])
   expect([...lut.slice(255 * 4, 255 * 4 + 4)]).toEqual([255, 255, 255, 255])
+})
+
+// The one claim stopsFromRampLut owns: a legend swatch at bar fraction t is
+// byte-identical to the LUT entry both backends color that t through — which,
+// for a LUT built by buildColorRampLut, is sampleColorRamp at the entry's own
+// i / 255.
+test('stopsFromRampLut reads the entries sampleColorRamp defines, exactly', () => {
+  const source: ColorRampStop[] = [
+    [255, 0, 0, 0],
+    [0, 128, 255, 255],
+    [10, 20, 30, 64],
+  ]
+  const lut = buildColorRampLut(source)
+  const n = 11
+  const legend = stopsFromRampLut(lut, n)
+  expect(legend).toHaveLength(n)
+  legend.forEach((stop, i) => {
+    const t = i / (n - 1)
+    const entry = Math.round(t * 255)
+    const [r, g, b, a] = sampleColorRamp(source, entry / 255)
+    expect(stop).toEqual({
+      offset: `${+(t * 100).toFixed(2)}%`,
+      color: `rgb(${r},${g},${b})`,
+      opacity: a / 255,
+    })
+  })
+  expect(legend[0]!.offset).toBe('0%')
+  expect(legend.at(-1)!.offset).toBe('100%')
 })

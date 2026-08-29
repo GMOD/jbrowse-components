@@ -13,6 +13,7 @@ const RAMP = {
   posColor: '#b2182b',
   negColor: '#2166ac',
   pivot: 2,
+  rampLut: null,
   gradientId: 'g1',
 }
 
