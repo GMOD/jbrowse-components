@@ -1,3 +1,4 @@
+import { RAMP_LUT_ENTRIES } from '@jbrowse/render-core/shaders/colorRampLutConsts'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
   SCALE_TYPE_LINEAR,
@@ -11,6 +12,10 @@ import {
   makeDensityRgbStringFn,
 } from './getDensityColor.ts'
 import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
+import {
+  GLSL_FRAGMENT,
+  WGSL_SOURCE,
+} from './shaders/wiggleDensity.generated.ts'
 
 import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 
@@ -77,12 +82,11 @@ const TRACK_COLORS: [number, number, number][] = [
 ]
 
 // The named-ramp (LUT) mode's GPU side: the same generated score→t chain as
-// above, then wiggleDensity.slang's fragment samples the 256×1 ramp texture
-// through colorRampLut.slang — a linear-filter, clamp-to-edge SampleLevel that
-// both HALs configure identically, mirrored here texel for texel. u is the
-// texel-space coordinate (texel centers at i + 0.5), so the sample is the
-// lerp of the two entries around it, and past either end both taps clamp to
-// the end entry.
+// above, then wiggleDensity.slang's fragment samples the ramp texture through
+// colorRampLut.slang — a linear-filter, clamp-to-edge SampleLevel that both
+// HALs configure identically, mirrored here texel for texel. `rampColor` maps
+// t into texel space so entry i lands on its own texel center, which is why
+// the texel coordinate below is `t * (N - 1)` and not `t * N - 0.5`.
 function gpuLutChannels(
   lut: Uint8Array,
   score: number,
@@ -96,7 +100,7 @@ function gpuLutChannels(
     normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant),
     normalizeScore(origin, domainMin, domainMax, scaleType, symlogConstant),
   )
-  const u = Math.min(Math.max(t, 0), 1) * 256 - 0.5
+  const u = Math.min(Math.max(t, 0), 1) * (RAMP_LUT_ENTRIES - 1)
   const i0 = Math.floor(u)
   const frac = u - i0
   const lo = Math.min(Math.max(i0, 0), 255) * 4
@@ -385,4 +389,30 @@ describe('named-ramp (LUT) density mode', () => {
       })
     },
   )
+})
+
+// The sweeps above model `rampColor`'s texel mapping rather than reading it, so
+// an edit to colorRampLut.slang alone is invisible to them — the mirror agrees
+// with itself. This one reads the emitted source.
+//
+// The sabotage is sampling at bare `t`, which is what shipped until this test
+// existed. A linear-filtered N-wide texture puts entry i's center at
+// (i + 0.5)/N while the builder defines it at i/(N - 1), so every entry but the
+// two ends comes back a blend of its neighbours — half a step off the table the
+// Canvas2D and SVG twins index, and on HiC's alpha gate that is a contact one
+// backend paints and the other discards.
+describe('the emitted ramp sample lands entry i on its own texel', () => {
+  function sampleBody(src: string) {
+    const open = src.indexOf('{', src.indexOf('rampColor_0'))
+    return src.slice(open, src.indexOf('}', open))
+  }
+
+  test.each([
+    ['WGSL', WGSL_SOURCE],
+    ['GLSL', GLSL_FRAGMENT],
+  ])('%s remaps t into texel space', (_lang, src) => {
+    const body = sampleBody(src)
+    expect(body).toContain(`${RAMP_LUT_ENTRIES - 1}.0`)
+    expect(body).toContain(`/ ${RAMP_LUT_ENTRIES}.0`)
+  })
 })

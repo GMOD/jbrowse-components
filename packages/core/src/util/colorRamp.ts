@@ -1,3 +1,5 @@
+import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
+
 import type { GradientStop } from '../ui/SvgGradientLegend.tsx'
 
 /** One evenly-spaced ramp stop: 8-bit red, green, blue, alpha. */
@@ -60,14 +62,16 @@ export function sampleColorRamp(stops: readonly ColorRampStop[], t: number) {
 
 /**
  * #api
- * A 256-entry RGBA lookup table over {@link sampleColorRamp}, laid out as the
- * 256x1 texture both GPU backends upload and the Canvas2D twins index — entry
- * `i` is the color at `t = i / 255`.
+ * An RGBA lookup table over {@link sampleColorRamp}, laid out as the Nx1
+ * texture both GPU backends upload and the Canvas2D twins index — entry `i` is
+ * the color at `t = i / (N - 1)`. N comes off the shader that samples it, so
+ * the table and `rampColor`'s texel mapping cannot disagree.
  */
 export function buildColorRampLut(stops: readonly ColorRampStop[]) {
-  const data = new Uint8Array(256 * 4)
-  for (let i = 0; i < 256; i++) {
-    const [r, g, b, a] = sampleColorRamp(stops, i / 255)
+  const last = COLOR_RAMP_LUT_ENTRIES - 1
+  const data = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
+  for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
+    const [r, g, b, a] = sampleColorRamp(stops, i / last)
     data[i * 4] = r
     data[i * 4 + 1] = g
     data[i * 4 + 2] = b

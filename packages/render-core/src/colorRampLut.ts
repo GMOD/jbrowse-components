@@ -1,13 +1,14 @@
+import { RAMP_LUT_ENTRIES } from './shaders/colorRampLut.generated.ts'
+
 import type { GpuHal } from './hal/index.ts'
 
 /**
- * Entries in a colour-ramp LUT, and so the width of the 256×1 texture every
- * ramp consumer binds. The builder side is `buildColorRampLut`
- * (`@jbrowse/core/util/colorRamp`), which bakes the same 256 in; this package
- * cannot import it (render-core takes no `@jbrowse/core` dependency), so the
- * upload path states the number itself and checks the bytes it is handed.
+ * Entries in a colour-ramp LUT, and so the width of the texture every ramp
+ * consumer binds. Off the shader that samples it: `rampColor` divides by this
+ * to land entry i on its own texel center, so a table built to a different
+ * number is a half-shade of drift at every entry.
  */
-export const COLOR_RAMP_LUT_ENTRIES = 256
+export const COLOR_RAMP_LUT_ENTRIES = RAMP_LUT_ENTRIES
 
 /**
  * Upload a 256-entry RGBA colour-ramp LUT as each named pass's 256×1 texture —
