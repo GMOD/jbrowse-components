@@ -151,7 +151,7 @@ grammar to carry it.
 
 A mark count needs its denominator stated, or two correct censuses disagree —
 which is exactly what happened between this doc and
-[ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md); the
+[display-complexity-census](DISPLAY_COMPLEXITY_CENSUS.md); the
 counts below were re-taken 2026-08-28 at gosling 1.0.7 (`35bbabc`) and
 genome-spy v0.85.0 (`9d32a48`). Both competitors are Vega-Lite descendants and
 both put the genomics into **transforms over rows already in memory**:
@@ -184,7 +184,7 @@ both put the genomics into **transforms over rows already in memory**:
   with domains wired to uniforms so pan and zoom never touch a vertex buffer.
 
 So the earlier claim in
-[ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md) that
+[display-complexity-census](DISPLAY_COMPLEXITY_CENSUS.md) that
 GenomeSpy "has no pileup" is wrong as stated; it has one as a per-view
 transform. What it does not have is the part that costs this codebase its
 lines: a layout that is stable across region boundaries under pan, a
@@ -210,7 +210,7 @@ fetch shape and per-display meaning — alignments' `colorBy` is a six-variant
 union carrying a six-field `modifications` object, and no channel table holds
 that without a nested escape hatch. ADR-091 measured the declaration half only.
 The transform half is an inference from where the lines sit — the census in
-[ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md) puts
+[display-complexity-census](DISPLAY_COMPLEXITY_CENSUS.md) puts
 `sortLayout.ts` at 1,096 lines and `layout.ts` at 1,741 — and a rewrite as
 marks plus transforms would move that layout into named `pileup`, `coverage`
 and `flattenCigar` transforms, which is where GenomeSpy keeps its own. The

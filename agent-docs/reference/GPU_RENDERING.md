@@ -1205,9 +1205,16 @@ Layout: display-specific shaders in
 `antialias.slang`, `colorPack.slang`) plus the shared *shapes* two or more
 plugins draw identically (`pointGlyph.slang` disc/square markers,
 `diagonalGrid.slang` the 45°-rotated Hi-C / LD cell transform, `rowRect.slang`
-the MAF / multi-row colored-row rectangle). A shape module earns its place on the `pointGlyph` bar —
+the MAF / multi-row colored-row rectangle, `capsule.slang` the stroked segment
+whose degenerate case is a dot). A shape module earns its place on the `pointGlyph` bar —
 two real consumers with a live drift hazard — not on surface similarity; see
 [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md).
+
+**What each shape draws, who imports it, and the two splits that keep the set
+from becoming a framework — a cap-agnostic frame shared where the cap is not,
+and one named coverage per cap style rather than a `capStyle` flag — is
+[SHADER_SHAPE_LIBRARY.md](SHADER_SHAPE_LIBRARY.md).** Read it before pointing a
+second consumer at an existing shape.
 
 **The coverage band is the one shared *pass set* rather than a shape module**:
 `coverageBand.slang` there declares the band's uniform struct, its geometry and

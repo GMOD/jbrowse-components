@@ -14,7 +14,7 @@ factory (`defineDisplay`), the mark system (`display-kit/marks`,
 `render-core/marks/bar`) and `example-plugins/score-example`'s spec form are
 removed; the example plugin is back on the hand-composed stack it had before
 ADR-089, and the developer guides teach that again. Written against
-[ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md).
+the plan measured in [display-complexity-census](../reference/DISPLAY_COMPLEXITY_CENSUS.md), whose one surviving level is [one-declaration-per-display-band](../ideas/one-declaration-per-display-band.md).
 
 **The port and the settings table were measured on a working branch that no
 longer exists.** This ADR cited `worktree-manhattan-lazy-spike` (29 commits) as
