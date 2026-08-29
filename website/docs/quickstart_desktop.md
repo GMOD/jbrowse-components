@@ -76,8 +76,10 @@ there becomes a new session on that assembly.
 
 The dialog is drop-first. Drop your sequence file (a FASTA, bgzip-compressed
 FASTA, or 2bit, along with any `.fai`/`.gzi` index files) onto the drop area, or
-click it to browse. To load from the web, click **Open from a URL** and paste
-your file URLs, one per line. JBrowse classifies each file, and once it
+click it to browse. A `.chrom.sizes` goes there too, for an assembly of
+reference names and lengths with no sequence behind it — see the format list
+below for what that costs. To load from the web, click **Open from a URL** and
+paste your file URLs, one per line. JBrowse classifies each file, and once it
 recognizes a sequence it shows a confirmation card with a **Genome name** field
 (e.g. `hg38`). The drop area and the URL box stay where they are, so a `.fai`
 you forgot can go in after the sequence is already recognized. JBrowse names any
@@ -93,6 +95,16 @@ details manually**, opening a form with a **Format** dropdown:
   URL), so this can take a while on a large genome. **Cancel** stops it — supply
   a `.fai` and choose "FASTA with index" to skip the step entirely
 - `2bit file (.2bit)`
+- `Chromosome sizes, no sequence (.chrom.sizes)` - a UCSC-style
+  `name<TAB>length` table. The assembly gets its reference names and lengths and
+  no bases at all, which is what whole-genome and synteny views need and a
+  fraction of the size (the six wheat genomes behind
+  [Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny)
+  are tens of gigabytes as sequence and a few kilobytes as chrom.sizes). The
+  dialog warns when you pick it, because the sequence track and GC content then
+  draw nothing, CRAM cannot decode without the reference, and a feature has no
+  DNA or protein sequence to show. Dropping a `.chrom.sizes` on the drop area
+  selects this format on its own
 
 Three buttons finish the dialog:
 
