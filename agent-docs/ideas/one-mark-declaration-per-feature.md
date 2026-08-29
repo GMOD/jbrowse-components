@@ -234,6 +234,14 @@ The others, unchanged from the first pass:
 
 ## Where this sits
 
+**In plugins/alignments, and deliberately not shared wider.** Lifting
+`PileupMark` to a second display type was censused and declined 2026-08-29 —
+MAF's cells have no per-instance index space (run-merged GPU encode, arithmetic
+hit test) and variants resolves everything once in the worker so every consumer
+already reads one array set — the member-by-member table is in
+[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) §Rendering and
+displays, with the reopen condition.
+
 Last of the render-path simplifications, and incrementally — one alignments
 feature at a time behind the parity suite, because it is the one that touches 46
 files. The upload-model collapse ahead of it is done (ADR-078,
