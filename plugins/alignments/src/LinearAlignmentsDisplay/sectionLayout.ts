@@ -4,6 +4,7 @@ import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
+import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 
 // This display's band order, stated once: what a section reserves above its
 // pileup, top to bottom. Both the pooled geometry and the per-section stacking
@@ -122,6 +123,10 @@ export interface BelowCoverageBandsInput {
   // resolved against the mode + score filter by `groupsWithSashimiDownArcs`
   // (mode lives there, not here: 'auto' has to inspect the junctions to know).
   hasSashimiDownArcs: boolean
+  // The range every band height is bound to at read time. These are config
+  // slots, so a config or a session snapshot states one directly and passes no
+  // drag clamp.
+  bandBounds?: BandBounds
 }
 
 // Whether the sashimi junctions reserve the strip below coverage: only with the
@@ -175,10 +180,11 @@ export function totalBelowCoverageOverhead(
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   const hasArcsBand = reservesArcsBand(s) && s.hasArcs
   const hasSashimiBand = reservesSashimiBand(s)
+  const bounds = s.bandBounds
   const { top, reserved, bottom } = stackBands(BAND_ORDER, {
-    coverage: { active: s.showCoverage, height: s.coverageHeight },
-    arcs: { active: hasArcsBand, height: s.readConnectionsHeight },
-    sashimi: { active: hasSashimiBand, height: s.sashimiArcsHeight },
+    coverage: { active: s.showCoverage, height: s.coverageHeight, bounds },
+    arcs: { active: hasArcsBand, height: s.readConnectionsHeight, bounds },
+    sashimi: { active: hasSashimiBand, height: s.sashimiArcsHeight, bounds },
   })
   return {
     // The coverage band's reserved height, 0 when off — what the render state
@@ -326,7 +332,7 @@ export function buildSectionRenders(
         pileupTopOffset: pileupTop,
         coverageTopOffset: 0,
         covClipTop: 0,
-        covClipHeight: canvasHeight,
+        covClipHeight: sec?.coverageHeight ?? 0,
         pileupClipTop: pileupTop,
         pileupClipHeight: hasPileup ? Math.max(0, canvasHeight - pileupTop) : 0,
         // Coverage + arc band are sticky in ungrouped mode (only the pileup

@@ -372,6 +372,45 @@ test('coverageHeight 0 (coverage hidden) collapses each section to its pileup', 
   expect(sections[1]!.pileupTop).toBe(20)
 })
 
+test('belowCoverageBandsGeometry: coverage off spends 0px', () => {
+  // The `active` half of the coverage band. `computeStackedSections`' twin is
+  // pinned below; this one was not, so `active: s.showCoverage` could be
+  // replaced by `true` with the suite green.
+  expect(
+    belowCoverageBandsGeometry({ ...baseBands, showCoverage: false }).bottom,
+  ).toBe(0)
+  expect(
+    belowCoverageBandsGeometry({ ...baseBands, showCoverage: false })
+      .coverageHeight,
+  ).toBe(0)
+})
+
+test('belowCoverageBandsGeometry: a stated height is bound at read time', () => {
+  // These heights are config slots, so a config or hand-edited session can
+  // state any number and no drag clamp ever sees it. Unbounded, a 300px
+  // coverage band on a 250px track floors the pileup at 0 AND carries the
+  // band's own resize handle below the canvas, leaving no way back.
+  //
+  // The floor is deliberately 0, not MIN_BAND_HEIGHT: that one is a constraint
+  // on dragging, and applying it here would grow the 1-4px sashimi bands that
+  // legitimately arrive.
+  const bounds = { min: 0, max: 230 }
+  expect(
+    belowCoverageBandsGeometry({
+      ...baseBands,
+      coverageHeight: 300,
+      bandBounds: bounds,
+    }).coverageHeight,
+  ).toBe(230)
+  expect(
+    belowCoverageBandsGeometry({
+      ...baseBands,
+      coverageHeight: 3,
+      bandBounds: bounds,
+    }).coverageHeight,
+  ).toBe(3)
+})
+
 // One-section layout (groupKey '') with a coverage band of 45 and 4 pileup rows.
 const ungrouped: SectionsLayout = computeStackedSections(
   [lane({ key: '', maxY: 4 })],
@@ -397,7 +436,11 @@ test('buildSectionRenders: ungrouped keeps coverage sticky and pileup full-bleed
       pileupTopOffset: 45,
       coverageTopOffset: 0,
       covClipTop: 0,
-      covClipHeight: 600,
+      // The BAND, not the canvas. An indicator's bar length is not clamped —
+      // it scales the fetched block's peak event count against the visible
+      // domain — so against `canvasHeight` a breakpoint over a bounded domain
+      // painted down through the pileup, where the hit test does not answer.
+      covClipHeight: 45,
       pileupClipTop: 45,
       pileupClipHeight: 555,
     },

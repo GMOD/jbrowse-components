@@ -1370,6 +1370,28 @@ export default function stateModelFactory(
          * `belowCoverageBandsInput` asks once for the whole stack, the fit
          * budget once per lane.
          */
+        /**
+         * #getter
+         * The legal range for a band height that is *stated* — by a config, a
+         * session snapshot or a menu — rather than dragged, which
+         * `resizableBandBounds` covers. Off `fitTargetHeight`, the raw slot,
+         * since this feeds the layout `height` is derived from in grow mode.
+         *
+         * The ceiling leaves the pileup a row to be squashed into, and so
+         * applies only where there is a pileup: an SNP-coverage track is band
+         * all the way down.
+         */
+        get statedBandBounds() {
+          const pileupReservePx = self.showPileup ? MIN_BAND_HEIGHT : 0
+          return {
+            min: 0,
+            max: Math.max(
+              MIN_BAND_HEIGHT,
+              self.fitTargetHeight - pileupReservePx,
+            ),
+          }
+        },
+
         get belowCoverageBandsSettings(): BelowCoverageBandsSettings {
           return {
             showCoverage: self.showCoverage,
@@ -1379,6 +1401,7 @@ export default function stateModelFactory(
             readConnectionsHeight: self.readConnectionsHeight,
             showSashimiArcs: self.showSashimiArcs,
             sashimiArcsHeight: self.sashimiArcsHeight,
+            bandBounds: this.statedBandBounds,
           }
         },
 

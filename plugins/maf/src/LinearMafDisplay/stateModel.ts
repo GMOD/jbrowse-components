@@ -14,7 +14,11 @@ import {
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
-import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import {
+  MIN_BAND_HEIGHT,
+  boundBandHeight,
+  clampBandHeight,
+} from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -119,6 +123,7 @@ import type {
 import type { RowRendering } from './rowRenderings.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region, UriLocation } from '@jbrowse/core/util'
+import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -297,6 +302,28 @@ export default function stateModelFactory(
       .views(self => ({
         get view() {
           return getContainingView(self) as LinearGenomeViewModel
+        },
+        /**
+         * #getter
+         * The legal range for a band height that is *stated* — by a config, a
+         * session snapshot or a menu — rather than dragged. Undefined when the
+         * track height is itself derived from the bands, where they cannot
+         * overflow a height they are a term of.
+         *
+         * `fitTargetHeight` is unavailable to this: it reads `rowsTopOffset`,
+         * which is the band fold.
+         */
+        get statedBandBounds(): BandBounds | undefined {
+          const configuredHeight = getConf(self, 'height')
+          return configuredHeight === undefined
+            ? undefined
+            : {
+                min: 0,
+                max: Math.max(
+                  MIN_BAND_HEIGHT,
+                  configuredHeight - MIN_BAND_HEIGHT,
+                ),
+              }
         },
         /**
          * #getter
@@ -507,11 +534,12 @@ export default function stateModelFactory(
          * #action
          */
         setCoverageHeight(arg: number) {
-          setConf(self, 'coverageHeight', arg)
+          setConf(
+            self,
+            'coverageHeight',
+            boundBandHeight(arg, self.statedBandBounds),
+          )
         },
-        // `resizeCoverageHeight` / `resizeConservationHeight` are NOT here, with
-        // their `set*` twins: they clamp against `resizableBandBounds`, which is
-        // derived from `fitTargetHeight` further down the chain.
         /**
          * #action
          */
@@ -564,7 +592,11 @@ export default function stateModelFactory(
          * #action
          */
         setConservationHeight(arg: number) {
-          setConf(self, 'conservationHeight', arg)
+          setConf(
+            self,
+            'conservationHeight',
+            boundBandHeight(arg, self.statedBandBounds),
+          )
         },
       }))
       .actions(self => {
@@ -914,14 +946,17 @@ export default function stateModelFactory(
          * another, and a band that is off spends 0 px.
          */
         get topBands() {
+          const bounds = self.statedBandBounds
           return stackBands(['coverage', 'conservation'], {
             coverage: {
               active: self.coverageBandActive,
               height: self.coverageHeight,
+              bounds,
             },
             conservation: {
               active: self.conservationBandActive,
               height: self.conservationHeight,
+              bounds,
             },
           })
         },
