@@ -49,8 +49,32 @@
 #   EOF
 #   chmod +x ~/.local/bin/orthofinder
 # Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat|drosophila|solanaceae] [outdir]
+#           bash scripts/build_orthofinder_synteny.sh my_genomes.tsv [outdir]
 #
 #   MAXSEQ=60 MAXCOPIES=6 bash scripts/build_orthofinder_synteny.sh wheat
+#
+# The first argument is one of the sets below OR a manifest naming genomes of
+# your own. Three whitespace-separated columns, `#` comments and blank lines
+# ignored:
+#
+#   # name        proteome (one entry per gene)   annotation
+#   mygenome1     data/mygenome1.pep.fa.gz        data/mygenome1.gff3.gz
+#   mygenome2     https://host/g2.pep.fa.gz       https://host/g2.gff3.gz
+#
+# A column is a local path or a URL; paths resolve against the directory you run
+# from. Everything past the two fetches is the same code the five sets run, and
+# it keys on the name in column 1 rather than on where the files came from, so
+# what a set buys over a manifest is only that its URLs are already written
+# down. Two things the manifest cannot do for you, both of which the run reports
+# rather than guesses at:
+#
+#   * the FASTA header and the GFF3 have to agree on a gene id. The BED step
+#     below reads `ID=gene:` out of column 9, the proteome step reads a `gene:`
+#     tag out of the FASTA header, and the orthogroup table resolves one against
+#     the other. An annotation spelling ids some third way needs its own awk,
+#     and the symptom is an empty .blocks rather than an error;
+#   * chrom.sizes comes from the GFF3's `##sequence-region` header, so an
+#     annotation carrying none leaves the assembly with no reference sequences.
 #
 set -euo pipefail
 
@@ -62,7 +86,11 @@ for h in "${HELPERS[@]}"; do
 done
 
 SET="${1:-vertebrates}"
-OUTDIR="${2:-orthofinder_${SET}_build}"
+# a manifest names its build after the file rather than after the path typed to
+# reach it, so `../sets/grasses.tsv` does not become part of a directory name
+SETNAME=$(basename "${SET%.*}")
+OUTDIR="${2:-orthofinder_${SETNAME}_build}"
+MANIFEST=""
 
 # Sequence regions kept per genome, the ones carrying the most genes: Ensembl
 # lists every unplaced scaffold, and a row with 30,000 of them is unreadable. 30
@@ -175,9 +203,39 @@ EOF
   ALIASES="tomato GCA_000188115.5"
   ;;
 *)
-  echo "unknown species set '$SET' (expected vertebrates, grasses, wheat," >&2
-  echo "drosophila or solanaceae)" >&2
-  exit 1
+  # Not one of the sets above, so it is a manifest of your own genomes, or a
+  # typo. The difference is whether the argument names a readable file.
+  #
+  # Sources are resolved to absolute paths HERE, while the working directory is
+  # still the one the reader ran from: the per-species loop below runs after a
+  # cd into OUTDIR, where `data/mygenome.gff3.gz` means something else entirely.
+  if [ ! -f "$SET" ]; then
+    echo "unknown species set '$SET' (expected vertebrates, grasses, wheat," >&2
+    echo "drosophila or solanaceae, or a path to a genome manifest)" >&2
+    exit 1
+  fi
+  MANIFEST="$SET"
+  SPECIES=$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$MANIFEST" \
+    | while read -r name pep gff extra; do
+        if [ -z "$gff" ] || [ -n "$extra" ]; then
+          echo "$MANIFEST: expected 'name proteome annotation', got: $name $pep $gff $extra" >&2
+          exit 1
+        fi
+        if [ -e "$pep" ]; then
+          pep=$(realpath "$pep")
+        fi
+        if [ -e "$gff" ]; then
+          gff=$(realpath "$gff")
+        fi
+        printf '%s %s %s\n' "$name" "$pep" "$gff"
+      done)
+  # the subshell above exits 1 on a malformed row, which a command substitution
+  # swallows: an empty SPECIES is what reaches here, so say so rather than
+  # running OrthoFinder over nothing
+  if [ -z "$SPECIES" ]; then
+    echo "no usable genomes in '$MANIFEST'" >&2
+    exit 1
+  fi
   ;;
 esac
 
@@ -195,16 +253,31 @@ mkdir -p proteomes
 fetch() {
   local dest=$1 url=$2
   if [ ! -f "$dest" ]; then
-    wget -c -O "$dest.part" "$url"
+    # A manifest column may name a file already on disk. Copied rather than
+    # linked so the build directory stays self-contained, which is what lets a
+    # reader delete the source tree and still re-run a later stage.
+    if [ -f "$url" ]; then
+      cp "$url" "$dest.part"
+    else
+      wget -c -O "$dest.part" "$url"
+    fi
     mv "$dest.part" "$dest"
   fi
 }
 
 # ── Per species: proteome + annotation, then a gene BED and chrom.sizes ──────
-echo "$SPECIES" | while read -r name prefix asm; do
-  species=$(echo "$prefix" | tr '[:upper:]' '[:lower:]')
-  fetch "$name.pep.fa.gz" "$BASE/fasta/$species/pep/$prefix.$asm.pep.all.fa.gz"
-  fetch "$name.gff3.gz" "$BASE/gff3/$species/$prefix.$asm.$REL.gff3.gz"
+echo "$SPECIES" | while read -r name col2 col3; do
+  if [ -n "$MANIFEST" ]; then
+    # a manifest names the two files outright
+    fetch "$name.pep.fa.gz" "$col2"
+    fetch "$name.gff3.gz" "$col3"
+  else
+    # a set names the species and its assembly, and the two urls are built from
+    # the release the branch above declared
+    species=$(echo "$col2" | tr '[:upper:]' '[:lower:]')
+    fetch "$name.pep.fa.gz" "$BASE/fasta/$species/pep/$col2.$col3.pep.all.fa.gz"
+    fetch "$name.gff3.gz" "$BASE/gff3/$species/$col2.$col3.$REL.gff3.gz"
+  fi
 
   # One BED row per gene, named by the bare Ensembl gene id, the same id the
   # proteome step below writes into the FASTA headers, which is what makes the
@@ -495,7 +568,7 @@ done
 # blockAssemblies/bedLocations use $BLOCK_ASSEMBLIES (the .blocks file's own
 # column order); assemblyNames and the session below use $NAMES (the display
 # row order), which need not be the same list order.
-python3 - "$SET" "$TABLE" "$BLOCK_ASSEMBLIES" "$NAMES" <<'PY' > blocks_track.json
+python3 - "$SETNAME" "$TABLE" "$BLOCK_ASSEMBLIES" "$NAMES" <<'PY' > blocks_track.json
 import json
 import sys
 
@@ -518,7 +591,7 @@ print(json.dumps({
 PY
 jb add-track-json blocks_track.json --update --out "$APP"
 
-python3 - "$SET" $NAMES <<'PY' > session.json
+python3 - "$SETNAME" $NAMES <<'PY' > session.json
 import json
 import sys
 
@@ -552,7 +625,7 @@ PY
 jb set-default-session --session session.json --out "$APP"
 
 echo
-echo "Built $APP/config.json with the $SET assemblies, gene tracks, the"
+echo "Built $APP/config.json with the $SETNAME assemblies, gene tracks, the"
 echo "OrthoFinder orthogroup synteny track, and a stacked default session."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"
