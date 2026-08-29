@@ -1,8 +1,5 @@
 import { ldValueComputed } from '@jbrowse/ld-core'
-import {
-  lookupColorRamp,
-  makeRampFillStyleLut,
-} from '@jbrowse/render-core/canvas2dUtils'
+import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { bandRowFirstColumn } from '../../VariantRPC/ldBand.ts'
@@ -56,10 +53,6 @@ export function drawLDBlocks(
         continue
       }
       const t = mapLDValue(ldVal, signedLD)
-      const { a } = lookupColorRamp(colorRamp, t)
-      if (a < 0.01) {
-        continue
-      }
 
       // The four corners of the pre-rotation rect [px,px+cw] x [py,py+ch], each
       // put through the same map the shader's `diagonalCellToClip` applies —

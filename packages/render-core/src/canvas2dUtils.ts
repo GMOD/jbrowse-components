@@ -461,21 +461,15 @@ function rampIndex(t: number) {
   return Math.max(0, Math.min(255, Math.round(t * 255)))
 }
 
-export function lookupColorRamp(ramp: Uint8Array, t: number) {
-  const idx = rampIndex(t) * 4
-  return {
-    r: ramp[idx]!,
-    g: ramp[idx + 1]!,
-    b: ramp[idx + 2]!,
-    a: ramp[idx + 3]! / 255,
-  }
-}
-
-// 256-entry LUT factory for per-cell `rgba(...)` fillStyle strings, keyed by
-// the same quantized index as `lookupColorRamp`. Hot loops in HiC/LD allocate
-// one fillStyle per cell; with up to 256 unique outputs from a fixed ramp,
-// caching brings 7-15x speedup on big matrices. Returned closure is meant to
-// live for one draw call.
+// A LUT factory for per-cell `rgba(...)` fillStyle strings. Hot loops in HiC/LD
+// allocate one fillStyle per cell; with a bounded set of unique outputs from a
+// fixed ramp, caching brings 7-15x speedup on big matrices. Returned closure is
+// meant to live for one draw call.
+//
+// There is deliberately no per-cell `{r, g, b, a}` reader beside it. One
+// existed and had a single caller, which used it to test an alpha that every LD
+// ramp pins at 255 — a gate that could not fire, allocating an object per cell
+// to decide nothing.
 export function makeRampFillStyleLut(ramp: Uint8Array) {
   const lut: (string | undefined)[] = new Array(256)
   return (t: number) => {
