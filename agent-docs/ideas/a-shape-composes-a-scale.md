@@ -415,6 +415,44 @@ against center-anchored `±segHalfLen`), pad (`aaHalfPx(dpr)` against
 join union), so a `capsule` module is its own census and its own gates, not a
 substitution this step could make in passing.
 
+### Step 5 — the capsule, run 2026-08-29
+
+Step 4's closing paragraph asked for this and it ran. **The shape landed; the
+line count did not move, and the reason is worth more than the count.**
+
+- **The SDF is stated once.** `packages/render-core/src/shaders/capsule.slang`
+  (80 lines, 26 non-comment) holds four primitives over bare floats —
+  `capsuleFrame`, `capsuleQuadLocal`, `capsuleDist`, `capsuleCoverage`. No
+  `Uniforms` struct, no mode flag, no single-caller parameter.
+- **Gate: `dotplot.slang` shrinks. Pass** — 156 lines (75 non-comment) → 114
+  (58), against a predicted 59-61. `wiggleLine.slang` 222 (109) → 197 (101),
+  and it sheds `import pointGlyph`, which it carried only for `AA_PAD_PX`.
+- **Aggregate non-comment across the three files: 184 → 185.** The extraction
+  does not pay for itself in lines and was not going to: what it buys is one
+  SDF where there were two copies in two frames (start-anchored `clamp` against
+  center-anchored `max(|x| - halfLen, 0)`), and one degenerate guard where the
+  three spellings had drifted to `1e-3`/`1e-4`/`1e-4`.
+
+**The alignments pair went the other way, and that is the step's real drawn
+change.** `arcFlat` and `linkedReadLine` were inking ROUND caps under comments
+calling them butt-capped — a halfWidth of ink overhanging each endpoint that
+neither Canvas2D nor SVG drew, since both twins stroke `moveTo`/`lineTo` with
+the default `lineCap`. They now measure `buttSegmentCoverage`, the separable
+box-filter product of two `strokeCoverage` calls, so the ends are exactly as
+soft as the sides and nothing overhangs. A cap-style flag was refused: the two
+forms are two named coverages in their own homes, on the
+`rampColor`/`rampColorPremultiplied` pattern, with two consumers each.
+
+`buttSegmentCoverage.test.ts` pins both halves — the numeric cap (one CSS px
+past the end the capsule paints in full and the butt form paints at zero) and
+the wiring (each pass's generated WGSL and GLSL calls it, and names no
+round-cap distance). Re-rounding `arcFlat` and regenerating turns it red.
+
+Freed by the same pass: `strokeCoverage` and `strokeAaRamp` took a `Uniforms`
+against ADR-040's primitives-not-a-struct rule, and now take a bare `dpr` —
+which is what lets `strokeCoverage` be `js-export`ed at all, and so what lets
+the cap test import the shader's own ramp instead of restating it.
+
 ## What this is not
 
 **Not the factory.**
