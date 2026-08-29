@@ -40,7 +40,6 @@ describe('hitTestInterbase histogram bars', () => {
       30,
       rpcData,
       true,
-      true,
       COV_HEIGHT,
       DOMAIN_MAX,
     )
@@ -54,16 +53,7 @@ describe('hitTestInterbase histogram bars', () => {
   it('misses below the bar bottom (that area stays a coverage hit)', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        60,
-        rpcData,
-        true,
-        true,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      ),
+      hitTestInterbase(1005, 0.5, 60, rpcData, true, COV_HEIGHT, DOMAIN_MAX),
     ).toBeUndefined()
   })
 
@@ -71,64 +61,28 @@ describe('hitTestInterbase histogram bars', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     // bpPerPx=0.5, tolerance = 0.5*3 = 1.5bp; 1005 is 3bp away from 1008.
     expect(
-      hitTestInterbase(
-        1008,
-        0.5,
-        30,
-        rpcData,
-        true,
-        true,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      ),
+      hitTestInterbase(1008, 0.5, 30, rpcData, true, COV_HEIGHT, DOMAIN_MAX),
     ).toBeUndefined()
   })
 
   it('ignores bars when showInterbaseIndicators is off', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        30,
-        rpcData,
-        true,
-        false,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      ),
+      hitTestInterbase(1005, 0.5, 30, rpcData, false, COV_HEIGHT, DOMAIN_MAX),
     ).toBeUndefined()
   })
 
   it('skips bars when the coverage domain has not resolved yet', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        30,
-        rpcData,
-        true,
-        true,
-        COV_HEIGHT,
-        undefined,
-      ),
+      hitTestInterbase(1005, 0.5, 30, rpcData, true, COV_HEIGHT, undefined),
     ).toBeUndefined()
   })
 
   it('returns undefined when coverage is hidden', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        30,
-        rpcData,
-        false,
-        true,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      ),
+      hitTestInterbase(1005, 0.5, 30, rpcData, true, 0, DOMAIN_MAX),
     ).toBeUndefined()
   })
 
@@ -156,7 +110,6 @@ describe('hitTestInterbase histogram bars', () => {
         canvasY,
         rpcData,
         true,
-        true,
         COV_HEIGHT,
         DOMAIN_MAX,
       )?.indicatorType,
@@ -168,16 +121,8 @@ describe('hitTestInterbase histogram bars', () => {
   it('falls back to the bottom-most segment in the pad below the bar', () => {
     const rpcData = makeRpcData(stackedAt1005)
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        46,
-        rpcData,
-        true,
-        true,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      )?.indicatorType,
+      hitTestInterbase(1005, 0.5, 46, rpcData, true, COV_HEIGHT, DOMAIN_MAX)
+        ?.indicatorType,
     ).toBe('softclip')
   })
 })
@@ -200,16 +145,7 @@ describe('hitTestInterbase overflowing bars', () => {
   it('still hits the overflowing bar inside the coverage band', () => {
     const rpcData = makeRpcData(overflowingBarAt1005)
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        50,
-        rpcData,
-        true,
-        true,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      ),
+      hitTestInterbase(1005, 0.5, 50, rpcData, true, COV_HEIGHT, DOMAIN_MAX),
     ).toEqual({
       type: 'indicator',
       position: 1005,
@@ -229,7 +165,6 @@ describe('hitTestInterbase overflowing bars', () => {
         canvasY,
         rpcData,
         true,
-        true,
         COV_HEIGHT,
         DOMAIN_MAX,
       ),
@@ -245,16 +180,7 @@ describe('hitTestInterbase indicator triangles', () => {
       ]),
     })
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        3,
-        rpcData,
-        true,
-        true,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      ),
+      hitTestInterbase(1005, 0.5, 3, rpcData, true, COV_HEIGHT, DOMAIN_MAX),
     ).toEqual({
       type: 'indicator',
       position: 1005,
@@ -269,16 +195,7 @@ describe('hitTestInterbase indicator triangles', () => {
       ]),
     })
     expect(
-      hitTestInterbase(
-        1005,
-        0.5,
-        3,
-        rpcData,
-        true,
-        false,
-        COV_HEIGHT,
-        DOMAIN_MAX,
-      ),
+      hitTestInterbase(1005, 0.5, 3, rpcData, false, COV_HEIGHT, DOMAIN_MAX),
     ).toBeUndefined()
   })
 })

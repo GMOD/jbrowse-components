@@ -36,6 +36,7 @@ const baseBands: BelowCoverageBandsInput = {
 
 test('belowCoverageBandsGeometry: coverage only => pileup right below coverage', () => {
   expect(belowCoverageBandsGeometry(baseBands)).toEqual({
+    coverageHeight: 45,
     hasArcsBand: false,
     hasSashimiBand: false,
     arcsBandTop: 45,
@@ -156,6 +157,7 @@ test('a strip that is off spends none of its height on the stack', () => {
       hasArcs: false,
     }),
   ).toEqual({
+    coverageHeight: 45,
     hasArcsBand: false,
     hasSashimiBand: false,
     arcsBandTop: 45,
@@ -176,6 +178,7 @@ test('arc band then sashimi band stack below coverage', () => {
       hasSashimiDownArcs: true,
     }),
   ).toEqual({
+    coverageHeight: 45,
     hasArcsBand: true,
     hasSashimiBand: true,
     arcsBandTop: 45,

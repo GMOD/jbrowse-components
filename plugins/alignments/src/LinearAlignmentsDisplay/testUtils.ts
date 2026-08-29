@@ -101,7 +101,6 @@ export function makeTestRenderState(
     colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 1,
-    showCoverage: false,
     coverageHeight: 0,
     coverageYOffset: 0,
     coverageMinDepth: undefined,

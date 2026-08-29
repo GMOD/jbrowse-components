@@ -165,16 +165,16 @@ function inkFor(overrides: Partial<RenderState>) {
 
 describe('the interbase toggle needs the coverage band', () => {
   it('changes nothing while the band is hidden', () => {
-    expect(inkFor({ showCoverage: false, showInterbaseIndicators: true })).toBe(
-      inkFor({ showCoverage: false, showInterbaseIndicators: false }),
+    expect(inkFor({ coverageHeight: 0, showInterbaseIndicators: true })).toBe(
+      inkFor({ coverageHeight: 0, showInterbaseIndicators: false }),
     )
   })
 
   // The control. Without it the case above passes for a fixture whose interbase
   // feeds are empty, which is the way an A/B like this goes quietly green.
   it('changes the picture while the band is shown', () => {
-    expect(
-      inkFor({ showCoverage: true, showInterbaseIndicators: true }),
-    ).not.toBe(inkFor({ showCoverage: true, showInterbaseIndicators: false }))
+    expect(inkFor({ showInterbaseIndicators: true })).not.toBe(
+      inkFor({ showInterbaseIndicators: false }),
+    )
   })
 })

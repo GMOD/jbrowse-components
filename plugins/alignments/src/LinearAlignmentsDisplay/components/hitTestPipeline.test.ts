@@ -100,7 +100,6 @@ function makeResolved(
 }
 
 const ZOOMED_OUT_OPTS: HitTestOptions = {
-  showCoverage: true,
   showInterbaseIndicators: true,
   coverageHeight: 50,
   coverageMaxDepth: undefined,
@@ -136,9 +135,10 @@ describe('coverage hit — fires at all zoom levels', () => {
       coverageDepths: new Float32Array(200).fill(10),
       coverageStartPos: 9900,
     })
+    // the band being off is its reserved height being 0 — there is no flag
     const result = performHitTest(100, 30, resolved, {
       ...ZOOMED_OUT_OPTS,
-      showCoverage: false,
+      coverageHeight: 0,
     })
     expect(result.type).toBe('none')
   })

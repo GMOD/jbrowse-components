@@ -60,7 +60,9 @@ export interface RenderState {
   colorScheme: number
   featureHeight: number
   featureSpacing: number
-  showCoverage: boolean
+  // The coverage band's RESERVED height — 0 when the band is off, so a painter
+  // or hit test reads one number and never re-derives the gate from a flag
+  // beside it. The model resolves it (`coverageDisplayHeight`).
   coverageHeight: number
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
   // The autoscaled coverage domain, `coverageDomain[0]` and `[1]`. Both ends,

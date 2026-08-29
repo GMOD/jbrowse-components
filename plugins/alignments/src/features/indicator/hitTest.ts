@@ -39,7 +39,6 @@ export function hitTestInterbase(
   bpPerPx: number,
   canvasY: number,
   rpcData: PileupDataResult,
-  showCoverage: boolean,
   showInterbaseIndicators: boolean,
   coverageHeight: number,
   domainMax: number | undefined,
@@ -57,8 +56,10 @@ export function hitTestInterbase(
   // the full height of the pileup: `performHitTest` asks this first and returns
   // on a hit, so every read hover, click and right-click under it answered
   // interbase. `hitTestCoverage` states the same bound one file over.
+  // `coverageHeight` is the band's reserved height, 0 when the band is off —
+  // no interbase mark is hittable without the band it draws in.
   if (
-    !showCoverage ||
+    coverageHeight <= 0 ||
     !showInterbaseIndicators ||
     canvasY < 0 ||
     canvasY > coverageHeight

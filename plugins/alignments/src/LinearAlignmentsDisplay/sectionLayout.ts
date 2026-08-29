@@ -175,12 +175,16 @@ export function totalBelowCoverageOverhead(
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   const hasArcsBand = reservesArcsBand(s) && s.hasArcs
   const hasSashimiBand = reservesSashimiBand(s)
-  const { top, bottom } = stackBands(BAND_ORDER, {
+  const { top, reserved, bottom } = stackBands(BAND_ORDER, {
     coverage: { active: s.showCoverage, height: s.coverageHeight },
     arcs: { active: hasArcsBand, height: s.readConnectionsHeight },
     sashimi: { active: hasSashimiBand, height: s.sashimiArcsHeight },
   })
   return {
+    // The coverage band's reserved height, 0 when off — what the render state
+    // and the coverage painters/hit tests take, so none of them re-derives the
+    // gate from `showCoverage` beside a raw height.
+    coverageHeight: reserved.coverage,
     hasArcsBand,
     hasSashimiBand,
     arcsBandTop: top.arcs,

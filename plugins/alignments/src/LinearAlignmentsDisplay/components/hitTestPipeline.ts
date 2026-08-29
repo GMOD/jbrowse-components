@@ -188,8 +188,9 @@ function hitTestChain(
 }
 
 export interface HitTestOptions {
-  showCoverage: boolean
   showInterbaseIndicators: boolean
+  // The coverage band's reserved height — 0 when the band is off, which is the
+  // whole gate: the coverage and interbase tests answer nothing in a 0px band.
   coverageHeight: number
   // Autoscaled coverage domain max (global across groups), needed to reproduce
   // the interbase histogram bar heights for hit-testing. Undefined until the
@@ -357,7 +358,6 @@ export function performHitTest(
   options: HitTestOptions,
 ): HitTestResult {
   const {
-    showCoverage,
     showInterbaseIndicators,
     coverageHeight,
     coverageMaxDepth,
@@ -390,7 +390,6 @@ export function performHitTest(
     bpPerPx,
     coverageY,
     resolved.rpcData,
-    showCoverage,
     showInterbaseIndicators,
     coverageHeight,
     coverageMaxDepth,
@@ -404,7 +403,6 @@ export function performHitTest(
     bpPerPx,
     coverageY,
     resolved.rpcData,
-    showCoverage,
     coverageHeight,
     resolved.reversed,
     coverageSnpMinFrequency,

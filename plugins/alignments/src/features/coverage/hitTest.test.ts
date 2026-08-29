@@ -31,7 +31,7 @@ describe('hitTestCoverage guards', () => {
       coverageStartPos: 1000,
     })
     expect(
-      hitTestCoverage(ZOOMED_IN.basePos, ZOOMED_IN.bpPerPx, 20, rpcData, false, 50),
+      hitTestCoverage(ZOOMED_IN.basePos, ZOOMED_IN.bpPerPx, 20, rpcData, 0),
     ).toBeUndefined()
   })
 
@@ -41,7 +41,7 @@ describe('hitTestCoverage guards', () => {
       coverageStartPos: 1000,
     })
     expect(
-      hitTestCoverage(ZOOMED_IN.basePos, ZOOMED_IN.bpPerPx, 60, rpcData, true, 50),
+      hitTestCoverage(ZOOMED_IN.basePos, ZOOMED_IN.bpPerPx, 60, rpcData, 50),
     ).toBeUndefined()
   })
 
@@ -53,7 +53,7 @@ describe('hitTestCoverage guards', () => {
       coverageStartPos: 1000,
     })
     expect(
-      hitTestCoverage(1005, ZOOMED_IN.bpPerPx, 20, rpcData, true, 50),
+      hitTestCoverage(1005, ZOOMED_IN.bpPerPx, 20, rpcData, 50),
     ).toBeUndefined()
   })
 })
@@ -70,7 +70,6 @@ describe('hitTestCoverage basic hit', () => {
       ZOOMED_IN.bpPerPx,
       20,
       rpcData,
-      true,
       50,
     )
     expect(result?.position).toBe(1000)
@@ -96,7 +95,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
       mismatchPositions: new Uint32Array([1003, 1003]),
     })
     expect(
-      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50)?.position,
     ).toBe(1003)
   })
 
@@ -108,7 +107,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
     })
     // Falls back to binStart=1000
     expect(
-      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50)?.position,
     ).toBe(1000)
   })
 
@@ -119,7 +118,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
       interbasePositions: new Uint32Array([1005, 1005, 1005]),
     })
     expect(
-      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50)?.position,
     ).toBe(1000)
   })
 
@@ -129,14 +128,14 @@ describe('hitTestCoverage zoomed-out bin search', () => {
       interbasePositions: new Uint32Array([1005, 1005, 1005]),
     })
     expect(
-      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50)?.position,
     ).toBe(1002)
   })
 
   it('falls back to bin start when no significant features in bin', () => {
     const rpcData = makeZoomedRpcData()
     expect(
-      hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
+      hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50)?.position,
     ).toBe(1000)
   })
 
@@ -154,7 +153,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
 
     it('snaps at the default floor of 0, where the band colours it', () => {
       expect(
-        hitTestCoverage(basePos, bpPerPx, 20, tenPercentSnp(), true, 50, false, 0)
+        hitTestCoverage(basePos, bpPerPx, 20, tenPercentSnp(), 50, false, 0)
           ?.position,
       ).toBe(1003)
     })
@@ -166,7 +165,6 @@ describe('hitTestCoverage zoomed-out bin search', () => {
           bpPerPx,
           20,
           tenPercentSnp(),
-          true,
           50,
           false,
           0.2,
@@ -188,7 +186,6 @@ describe('hitTestCoverage zoomed-out bin search', () => {
           bpPerPx,
           20,
           rpcData,
-          true,
           50,
           false,
           0.01,
@@ -224,7 +221,6 @@ describe('hitTestCoverage zoomed-out bin search', () => {
           bpPerPx,
           20,
           fortyMismatches(bases),
-          true,
           50,
           false,
           0.3,
@@ -240,7 +236,6 @@ describe('hitTestCoverage zoomed-out bin search', () => {
           bpPerPx,
           20,
           fortyMismatches(bases),
-          true,
           50,
           false,
           0.3,
@@ -260,12 +255,12 @@ describe('hitTestCoverage zoomed-out bin search', () => {
         coverageDepths: new Float32Array(200).fill(10),
       })
       expect(
-        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, true)?.position,
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50, true)?.position,
       ).toBe(995)
       // …and the forward reading of the same data does not, because 995 is
       // behind the cursor there.
       expect(
-        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, false)
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50, false)
           ?.position,
       ).toBe(1000)
     })
@@ -275,10 +270,10 @@ describe('hitTestCoverage zoomed-out bin search', () => {
         mismatchPositions: new Uint32Array([1005, 1005]),
       })
       expect(
-        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, true)?.position,
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50, true)?.position,
       ).toBe(1000)
       expect(
-        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, false)
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50, false)
           ?.position,
       ).toBe(1005)
     })
@@ -288,7 +283,7 @@ describe('hitTestCoverage zoomed-out bin search', () => {
         mismatchPositions: new Uint32Array([1000, 1000]),
       })
       expect(
-        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, true)?.position,
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, 50, true)?.position,
       ).toBe(1000)
     })
   })

@@ -1003,7 +1003,7 @@ export class GpuAlignmentsRenderer
     // `drawPass` after it reads that slot, which is exactly the handoff the arc
     // band below relies on as well.
     const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
-    if (state.showCoverage && cov.height > 0) {
+    if (state.coverageHeight > 0 && cov.height > 0) {
       fillCoverageBandUniforms(this.uCoverage, sectionState, frame)
       this.hal.writeUniforms(this.uCoverage)
       this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)

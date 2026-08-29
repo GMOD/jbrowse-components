@@ -71,8 +71,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const {
     featureHeight,
     featureSpacing,
-    showCoverage,
-    coverageHeight,
     showInterbaseIndicators,
     isChainMode,
   } = model
@@ -106,9 +104,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       arc ??
       (picked && resolved
         ? performHitTest(canvasX, canvasY, resolved, {
-            showCoverage,
             showInterbaseIndicators,
-            coverageHeight,
+            // The hovered section's own coverage band (gated to 0 when off),
+            // in the section frame `coverageTopOffset` puts the cursor in.
+            coverageHeight: picked.section.coverageHeight,
             coverageMaxDepth: model.coverageDomain?.[1],
             coverageSnpMinFrequency: model.coverageSnpMinFrequency,
             topOffset: picked.section.topOffset,

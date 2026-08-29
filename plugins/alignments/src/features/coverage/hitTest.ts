@@ -24,12 +24,13 @@ export function hitTestCoverage(
   bpPerPx: number,
   canvasY: number,
   rpcData: PileupDataResult,
-  showCoverage: boolean,
   coverageHeight: number,
   reversed = false,
   coverageSnpMinFrequency = 0,
 ): CoverageHitResult | undefined {
-  if (!showCoverage || canvasY > coverageHeight) {
+  // `coverageHeight` is the band's reserved height: 0 when the band is off, so
+  // an off band answers nothing without a flag to consult beside it.
+  if (coverageHeight <= 0 || canvasY > coverageHeight) {
     return undefined
   }
 

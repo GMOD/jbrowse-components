@@ -415,7 +415,7 @@ export function drawAlignmentBlocks(
       // Section 0's region key equals the raw region index, so the ungrouped
       // (single-section) path reproduces the prior draw exactly.
       for (const { sec, sectionState, region } of sections) {
-        if (state.showCoverage) {
+        if (state.coverageHeight > 0) {
           withClip(
             ctx,
             scissorX,
