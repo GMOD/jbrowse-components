@@ -92,6 +92,8 @@ export {
 // published surface and gwas imports it by this path.
 export { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 export { remapRetiredAutoscale } from './shared/remapRetiredAutoscale.ts'
+export { DENSITY_COLOR_RAMPS } from './shared/densityColorRamp.ts'
+export type { DensityRampName } from './shared/densityColorRamp.ts'
 // The one slot every score-summarizing display declares with a different
 // default, so gccontent states its default without restating the enumeration.
 export { summaryScoreModeConfigSchemaFields } from './shared/summaryScoreModeConfigSchemaFields.ts'
