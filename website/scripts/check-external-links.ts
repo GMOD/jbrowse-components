@@ -1,6 +1,8 @@
 // Probes every external URL written anywhere in the repo — docs prose, tutorial
 // reproduce scripts, demo and test configs, screenshot specs — and fails on the
-// ones that are gone.
+// ones that are gone. A demo config's RELATIVE uris are in that too, resolved
+// against the directory the demo is served from; `demoDataUrls` below says why
+// they need a pass of their own.
 //
 // `check-links.ts` is the internal half of this: it validates hrefs between our
 // own pages against the built site. Nothing checked the outbound half, and it
@@ -30,7 +32,7 @@
 //
 // Run: `pnpm check-external-links`, or `--json` for the raw table.
 import { execFile as execFileCb, execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { promisify } from 'node:util'
 
 import { repoRoot } from './paths.ts'
@@ -62,6 +64,8 @@ const IS_TEST = /\.test\.[jt]sx?$|__mocks__|\/test\/data\//
 // bucket key going away, which is the failure the bare prefix cannot see.
 const PREFIXES: [string, string][] = [
   // rGFA stems — RgfaTabixAdapter appends .segs.bed.gz / .links.bed.gz
+  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph', '.segs.bed.gz'],
+  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus', '.segs.bed.gz'],
   ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb', '.segs.bed.gz'],
   [
     'https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50',
@@ -257,7 +261,74 @@ function collectUrls() {
       }
     })
   }
+  for (const [url, at] of demoDataUrls()) {
+    const prev = hits.get(url)
+    if (prev) {
+      prev.push(at)
+    } else {
+      hits.set(url, [at])
+    }
+  }
   return hits
+}
+
+// The data files a demo config names, resolved against the directory the demo
+// is served from.
+//
+// The scan above is a regex for `https?://`, so it sees a demo's absolute URLs
+// and none of its relative ones — and a demo config writes relative by default,
+// because deploy-demo.sh puts config.json in the same bucket prefix as the files
+// beside it. That is 288 of the 357 uris under demos/, and nothing had ever
+// fetched one. The gap is not theoretical: demos/orthofinder_{grasses,
+// vertebrates} spent 2026-08-28 naming `.tbi` indexes that the gene-count
+// rebuild had replaced with `.csi` and deleted from the bucket, and both demos
+// served a broken gene track until someone opened one. check-demo-configs.ts
+// could not see it either — it compares the repo copy against the live copy, so
+// two files that agree with each other agree about a key that is gone.
+//
+// jbrowse.org/demos/<dir>/ is the mapping deploy-demo.sh writes and
+// check-demo-configs.ts reads, so the directory name is the whole address.
+function demoDataUrls(): [string, string][] {
+  const demosDir = `${repoRoot}/demos`
+  const out: [string, string][] = []
+  for (const dir of readdirSync(demosDir, { withFileTypes: true })) {
+    const rel = `demos/${dir.name}/config.json`
+    if (!dir.isDirectory() || !existsSync(`${repoRoot}/${rel}`)) {
+      continue
+    }
+    let config: unknown
+    try {
+      config = JSON.parse(readFileSync(`${repoRoot}/${rel}`, 'utf8'))
+    } catch {
+      continue
+    }
+    for (const uri of uriValues(config)) {
+      // an absolute one is already in the map from the text scan above, with a
+      // line number this pass cannot offer
+      if (!/^https?:\/\//.test(uri) && !PLACEHOLDER.test(uri)) {
+        out.push([`https://jbrowse.org/demos/${dir.name}/${uri}`, rel])
+      }
+    }
+  }
+  return out
+}
+
+// Every `uri` under a UriLocation, wherever the schema puts one: an adapter's
+// own location, its index, a subadapter, a per-assembly entry in a list.
+// Walking for the key rather than reading known slot names is what keeps this
+// from going stale against a new adapter.
+function uriValues(node: unknown): string[] {
+  if (Array.isArray(node)) {
+    return node.flatMap(uriValues)
+  }
+  if (node && typeof node === 'object') {
+    const self = (node as { uri?: unknown }).uri
+    return [
+      ...(typeof self === 'string' ? [self] : []),
+      ...Object.values(node).flatMap(uriValues),
+    ]
+  }
+  return []
 }
 
 // A range request rather than a GET: many of these are multi-gigabyte data
