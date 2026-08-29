@@ -163,8 +163,9 @@ function coordsAt(
 }
 
 function packed() {
-  const u32 = new Uint32Array(packClips(DATA))
-  const f32 = new Float32Array(u32.buffer)
+  const buf = packClips(DATA)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
   const s32 = clipShader.INSTANCE_STRIDE_WORDS
   const F = clipShader.INSTANCE_OFFSET_U32
   const FF = clipShader.INSTANCE_OFFSET_F32

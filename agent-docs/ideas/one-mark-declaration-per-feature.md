@@ -1,6 +1,6 @@
 ---
 name: one-mark-declaration-per-feature
-description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, five features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the shape needed, where it stops (insertion, coverage), and the two things it must not do.
+description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, seven features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the three shapes needed, where it stops (coverage, modification's hit test), and the two things it must not do.
 ---
 
 # A feature declares its mark once
@@ -17,7 +17,8 @@ the same walk over the same per-feature arrays three times:
 3,335 lines. What a feature actually contains is one array schema, one selection
 predicate, one visibility gate and one shape — written out three times.
 
-**Five features are converted.** The sections below are the proposal as written;
+**Seven of the twenty are converted**, leaving thirteen. The sections below are
+the proposal as written;
 [what the shape turned out to be](#status-2026-08-23-two-features-converted-featuresmarkts-is-the-shape)
 is the status further down, and `plugins/alignments/src/features/mark.ts` is the
 code.
@@ -101,6 +102,17 @@ rect; nothing was gained by forcing them together).
 | `perBaseLetter` | `cell` | pack, draw | 70 | 80 |
 | `softclipBases` | `cell` | pack, draw, hit | 105 | 100 |
 
+The two `point` conversions below were counted a second way — non-blank,
+non-comment lines over the pass's files — because the rule behind the column
+above was not recorded and could not be reproduced. Calibrating that rule on the
+rows it can still reach gives `gap` 167 → 168 and `mismatch` 120 → 120, so the
+two counts disagree on absolute lines and agree on the shape.
+
+| feature | shape | consumers | trio | after, incl. declaration |
+| --- | --- | --- | --- | --- |
+| `insertion` | `point` | pack, draw, hit | 177 | 184 |
+| `clip` | `point` | pack, draw, hit | 173 | 195 |
+
 **The three cell walls are roughly LOC-neutral, and that is the honest result.**
 Their packers and painters were already thin; what the conversion buys there is
 the pivot shared with `mismatch` rather than restated three more times, and the
@@ -176,33 +188,74 @@ wherever a shader's fades are already `//! js-export`ed.
   it, so that state is unspellable; the property it guarded (a third gap type is
   packed by neither pass) moved into `selects` and is now a test.
 
+### Status, 2026-08-29: the `point` shape, and what it cost
+
+The paragraph above this one used to say `insertion` wanted a fourth shape "and
+three other things with it, which is past the point where converting it teaches
+anything", and that `clip` wanted the same minus the painter. Both are converted
+now, as one piece rather than one feature at a time, and the prediction was right
+about the pieces and wrong about one of them.
+
+`MarkShape` is `span | cell | point`, and `PileupMark` is a union: a `SpanMark`
+keeps `endBp`, a `PointMark` has no extent at all and states two members in its
+place.
+
+- **`widthPx` is the one that behaved as predicted.** The painter fills a bar
+  centred on the bp edge and the GPU sizes its own quad from insertion.slang's
+  twin of the same rule, so `paintMarks` draws every point mark with one
+  `fillRect`, from the member. `drawInsertionMarker` split into that bar and
+  `drawInsertionSerifs` — the caps are insertion's decoration on top of the
+  shared glyph, and plugin-maf still gets both composed.
+- **`hitToleranceBp` is a second member, not a derivation, and that is a
+  measurement.** The doc predicted one rule, "a tolerance derived from drawn
+  width". Insertion's is exactly that — `widthPx / 2 + 2 px`, one expression off
+  the member the painter draws from. Clip's is `max(0.5 bp, 3 px)`: a floor in
+  BP, which no width rule expresses, and deriving it would have narrowed a
+  deep-zoom clip's target from 5px to 2.5px. Writing the tolerance down per
+  feature keeps insertion's stated as the relationship it is and stops clip's
+  from looking like one it isn't.
+- **The sub-range bound is `rangeStart`/`rangeEnd` on every mark, not on the
+  point.** It is orthogonal to shape — a feature sharing an array could be any of
+  the three — and absent means the whole array, so the first five marks are
+  untouched. It also reached further than expected: `Canvas2DRegionData` had been
+  carrying nine pre-sliced views of the merged interbase array purely so the
+  painters would not need the bound, which was that same expression a third time.
+  The merged array now travels whole and all three consumers slice it through the
+  marks.
+- **`alpha` gained `pxPerBp` beside `widthPx`.** A point has no span for a fade
+  to measure, and both insertion.slang and clip.slang fade on the zoom itself.
+
+**LOC went UP on both**, +7 and +22 by the count above, and neither the packers
+nor the painters were fat to begin with. What the conversion buys is the walk —
+the row scan, the off-canvas skip, the projection, the two gates and the
+sub-range bound — stopping being copied, plus two gates that did not exist. Read
+it the way the cell rows are read.
+
+**The gates are draw-against-hit plus pack-against-draw, in both orientations.**
+A point's hit target is deliberately wider than its ink, so the span gate's claim
+is not available: what replaces it is "everything hittable is drawn, within the
+tolerance the mark declares". Both fixtures hold the other kinds of interbase, so
+the swept assertion on `hit.index` is what sees a lost sub-range bound. Seven
+sabotages went red — the bound in both directions, both tolerances, the packer's
+bp, the packer's kind order, and the centring in `paintMarks`. One stayed green:
+changing `widthPx` moves the ink and the tolerance together, which is the member
+working rather than the gate failing.
+
+**The oracle held.** `coverageParity`, `hitTestGateParity`, `hitTestPipeline`,
+`reversedMirror` and the per-feature suites pass unchanged, and `HIT_GATES` still
+files `insertion` under `showMismatches` and `clip` as `alwaysDrawn` — the
+conversion changed neither story. `hitTestCigarItem` keeps the whole CIGAR
+priority chain, zoom regime included; the marks changed what each step reads, not
+which steps there are. Two test edits, both mechanical consequences of a
+signature rather than an assertion moving: `perBaseLetter/markParity` passes
+`alpha` its fifth argument, and `clip/drawCanvas`'s fixture states the merged
+array instead of a pre-sliced one.
+
+One wart, recorded rather than hidden: the insertion packer needs a mark and the
+mark needs a `featureHeight` it has no use for, since the shader sizes its own
+quad. `INSERTION_PACK_MARK` passes 0 and says so.
+
 ### The features that do NOT fit, and why
-
-`insertion` and `coverage` were both attempted after the cell family and both
-stopped deliberately rather than being forced. Between them they name the two
-edges of what `PileupMark` is.
-
-**`insertion` wants a fourth shape and three other things with it**, which is
-past the point where converting it teaches anything:
-
-- It is a **point on a bp EDGE**, not a span and not a cell. An insertion sits
-  *between* two reference bases, so its genomic extent is zero and
-  `startBp`/`endBp` do not describe it; its on-screen width comes from
-  `insertionBarWidth(length, pxPerBp, featureHeight)`.
-- Its **painter is not a rect**. `drawInsertionMarker` (shared with plugin-maf)
-  draws a labelled box, a short bar or a 1px mark with serif caps depending on
-  size.
-- Its **hit rule is a tolerance derived from that drawn width** — `|genomicPos -
-  pos| < (rectWidthPx / 2 + 2) * bpPerPx`. Which is the RIGHT relationship, and
-  already drift-free; it is simply not containment.
-- It **packs and scans a sub-range**, `[0, numInsertions)` of the merged
-  interbase array, while `rows` would be the whole array. Every walker here
-  bounds its loop by `rows(data).length`.
-
-`clip` wants the same four minus the painter, so **a `point` shape with a width
-rule, a tolerance hit and sub-range bounds is one coherent extension serving two
-features** — worth doing as a piece of work in its own right, and worth NOT doing
-one feature at a time.
 
 **`coverage` is not a pileup mark at all**, and this is the boundary rather than
 a gap:
@@ -224,13 +277,24 @@ out on pileup rows.** A binned histogram over a worker-packed buffer is a
 different mechanism, and giving it a `PileupMark` would mean five members that
 mean nothing.
 
-The others, unchanged from the first pass:
+The others:
 
 - **`modification`** — its hit test is a Flatbush nearest-neighbour query with a
-  bp tolerance, not containment. It IS a `cell` painter, so it can take the mark
-  for its pack and its paint; only the hit test is a different question.
+  bp tolerance. Containment was the objection, and `point` has since made a bp
+  tolerance a shape rather than an exception, so what is actually left is the
+  INDEX: the query answers out of Hilbert order and picks by distance, where
+  every mark test scans rows backwards. It IS a `cell` painter, so it can still
+  take the mark for its pack and its paint.
 - **`indicator`, `arcs`, `read`** — 153 lines of hit test over 26 of paint, a
   band-local path, and a hand-tuned single glyph respectively.
+
+**Thirteen of the twenty directories are unconverted.** Two of them
+(`sashimi`, `derivativePaths`) are not passes at all — no `packGpu.ts`, React
+SVG overlays — and `coverage`, `snpCoverage`, `modCoverage`, `interbase` and
+`indicator` are the coverage band, which the boundary above rules out. That
+leaves `read`, `overlap`, `connectingLines`, `linkedReads`, `arcs` and
+`modification` as the pileup passes still stating their geometry more than once,
+and `read` is the one that would decide whether the shape holds at the top.
 
 ## Where this sits
 
