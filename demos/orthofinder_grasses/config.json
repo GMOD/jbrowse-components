@@ -125,10 +125,10 @@
         },
         "index": {
           "location": {
-            "uri": "rice.sorted.gff3.gz.tbi",
+            "uri": "rice.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["rice"]
@@ -145,10 +145,10 @@
         },
         "index": {
           "location": {
-            "uri": "sorghum.sorted.gff3.gz.tbi",
+            "uri": "sorghum.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["sorghum"]
@@ -165,10 +165,10 @@
         },
         "index": {
           "location": {
-            "uri": "maize.sorted.gff3.gz.tbi",
+            "uri": "maize.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["maize"]
@@ -185,10 +185,10 @@
         },
         "index": {
           "location": {
-            "uri": "brachypodium.sorted.gff3.gz.tbi",
+            "uri": "brachypodium.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["brachypodium"]
@@ -205,10 +205,10 @@
         },
         "index": {
           "location": {
-            "uri": "setaria.sorted.gff3.gz.tbi",
+            "uri": "setaria.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["setaria"]

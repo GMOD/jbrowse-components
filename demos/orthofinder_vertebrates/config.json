@@ -125,10 +125,10 @@
         },
         "index": {
           "location": {
-            "uri": "human.sorted.gff3.gz.tbi",
+            "uri": "human.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["human"]
@@ -145,10 +145,10 @@
         },
         "index": {
           "location": {
-            "uri": "chicken.sorted.gff3.gz.tbi",
+            "uri": "chicken.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["chicken"]
@@ -165,10 +165,10 @@
         },
         "index": {
           "location": {
-            "uri": "frog.sorted.gff3.gz.tbi",
+            "uri": "frog.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["frog"]
@@ -185,10 +185,10 @@
         },
         "index": {
           "location": {
-            "uri": "gar.sorted.gff3.gz.tbi",
+            "uri": "gar.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["gar"]
@@ -205,10 +205,10 @@
         },
         "index": {
           "location": {
-            "uri": "zebrafish.sorted.gff3.gz.tbi",
+            "uri": "zebrafish.sorted.gff3.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["zebrafish"]
