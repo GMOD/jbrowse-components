@@ -28,7 +28,7 @@
  * so the band's internal geometry is that plugin's answer and this file's job
  * stops at how many pixels the band gets.
  */
-import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
+import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { modeCanShowDescription, modeCanShowName } from '@jbrowse/plugin-canvas'
 
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
@@ -126,34 +126,33 @@ export const VARIANT_LANE_BOUNDS = {
   max: MAX_VARIANT_LANE_HEIGHT,
 }
 
-/**
- * The lane height as *stated* — by config, by the size menu, or by this file's
- * own geometry read below. The drag-resize twin is `clampBandHeight` in the
- * setter, which additionally leaves a config-declared sub-floor lane where it
- * is; see `@jbrowse/core/util/bandHeight`.
- */
-function boundVariantLaneHeight(n: number) {
-  return boundBandHeight(n, VARIANT_LANE_BOUNDS)
-}
-
 export function variantTopBandsGeometry({
   showVariantLane,
   variantLaneHeight,
   variantLaneLabels,
   lineZoneHeight,
 }: VariantTopBandsInput): VariantTopBands {
-  // Off spends nothing rather than spending a clamped minimum: the toggle has
-  // to leave the display pixel-identical to what it was before the lane
-  // existed, or every committed figure moves by 8px.
-  const laneHeight = showVariantLane
-    ? boundVariantLaneHeight(variantLaneHeight)
-    : 0
+  // The fold gives the two contract rules: off spends nothing rather than a
+  // clamped minimum (the toggle has to leave the display pixel-identical to
+  // what it was before the lane existed, or every committed figure moves by
+  // 8px), and the lane's `bounds` bind its *stated* height at read time — the
+  // drag-resize twin is `clampBandHeight` in the setter, which additionally
+  // leaves a config-declared sub-floor lane where it is. The connector zone
+  // carries no bounds and no toggle: its "off" is the slot being 0.
+  const { top, reserved, bottom } = stackBands(['lane', 'lineZone'], {
+    lane: {
+      active: showVariantLane,
+      height: variantLaneHeight,
+      bounds: VARIANT_LANE_BOUNDS,
+    },
+    lineZone: { active: true, height: lineZoneHeight },
+  })
   return {
-    laneTop: 0,
-    laneHeight,
+    laneTop: top.lane,
+    laneHeight: reserved.lane,
     wantsName: modeCanShowName(variantLaneLabels),
     wantsDescription: modeCanShowDescription(variantLaneLabels),
-    lineZoneTop: laneHeight,
-    bottom: laneHeight + lineZoneHeight,
+    lineZoneTop: top.lineZone,
+    bottom,
   }
 }
