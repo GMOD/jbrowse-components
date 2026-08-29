@@ -20,6 +20,7 @@ import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
 import { writeSearchResultDocs } from './generateSearchResultDocs.ts'
 import { writeShaderExportDocs } from './generateShaderExportDocs.ts'
+import { writeShaderShapeDocs } from './generateShaderShapeDocs.ts'
 import { writeSlotTypeDocs } from './generateSlotTypeDocs.ts'
 
 import type { SourceCorpus } from './util.ts'
@@ -77,6 +78,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Shader export table',
     write: (_corpus, opts) => writeShaderExportDocs(opts),
+  },
+  {
+    label: 'Shader shape consumers',
+    write: (_corpus, opts) => writeShaderShapeDocs(opts),
   },
   {
     label: 'Menu tables',
