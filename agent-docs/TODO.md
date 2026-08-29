@@ -29,7 +29,7 @@ entries disagree on.
 
 <!-- BEGIN GENERATED TODO COUNTS -->
 
-Ten entries are on the list: five are ordinary work someone can pick up, three
+Nine entries are on the list: four are ordinary work someone can pick up, three
 are blocked on a visual call that is not the implementer's to make, and two open
 with an instruction to go measure something, because the premise is not
 established and building first would be guessing.
@@ -70,7 +70,6 @@ exists.
 | [Verify the shared rect/continuation buffer on real hardware](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed, and no unit test on the Canvas2D path can see a wrong attribute offset |
 | [Read the cross-backend drift the AA ramp conversion predicts](todo/read-the-cross-backend-drift-the-aa-ramp-conversion-predicts.md) | shaders, GPU | all four converted; run the gate with the MSAA sample count held fixed, on a worktree with no second `runner.ts` in it |
 | [Render webgpu in the blocking cross-backend gate job](todo/render-webgpu-in-the-blocking-cross-backend-gate-job.md) | browser tests, CI | the drift half landed — the capture no longer scrolls and the eight alignments pairs came back on their own, so `test:browser:gate` renders webgpu. `:gate:ci` cannot: the runner has no Firefox Nightly and no display, so webgpu still ships ungated |
-| [Rebuild the three OrthoFinder demos' `chrom.sizes`](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all. `demos/orthofinder_*` is still at `ffa68a2e84` and the two spec-side workarounds are still carrying it |
 | [Sample the seven remaining random release-validation units](todo/sample-the-seven-remaining-random-release-validation-units.md) | release validation, tests | read `git status` first — a worktree that ran a sweep is dirty until proven otherwise. Seven of the estimate's eight draws are outstanding, and the estimate is what says the release is safe |
 <!-- END GENERATED TODO READY INDEX -->
 
