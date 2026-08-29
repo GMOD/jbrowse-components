@@ -2648,10 +2648,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // this row is a bare scalebar with no tracks, so it has nowhere to paint
   // either. Both were rendered before being removed. Labelling this row needs
   // either a track on it (there is no useful one at 745 Mb) or a locus anchor
-  // that works on a sub-panel. The caption does the naming instead, and it now
-  // says the red bundle leaves the RIGHT-HAND END of 5D -- the one real
+  // that works on a sub-panel. The caption does the naming instead, and it says
+  // the MIDDLE bundle leaves the RIGHT-HAND END of 5D -- the one real
   // misreading risk here, since that apex sits a few px from the 6D tick label
-  // and 6D contributes 18 links to the whole chromosome.
+  // and 6D contributes 18 links to the whole chromosome. Middle rather than a
+  // colour word: colorBy 'query' indexes the palette by the assembly's region
+  // order, so the 2026-08-28 chrom.sizes rebuild repainted all three bundles
+  // without moving any of them.
   {
     mode: 'url',
     name: 'orthofinder_synteny/wheat_4a',
@@ -2664,16 +2667,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              // Named in numeric order, which is the point: this demo's
-              // chrom.sizes was written largest-first, so the assembly's own
-              // region order is 2D 7D 3D 5D 4D 1D 6D and a whole-assembly row
-              // interleaves the three donor chromosomes among the four that
-              // draw nothing, with the 7D and 5D bundles crossing the 4D one
-              // (rendered, and it is much the worse picture). The 23 unplaced
-              // scaffolds it also drops are 0.46% of the row and invisible
-              // either way. build_orthofinder_synteny.sh now writes chrom.sizes
-              // in the GFF3's order, so a rebuilt set would not need this.
-              { assembly: 'tauschii', loc: '1D 2D 3D 4D 5D 6D 7D' },
+              // The whole assembly, which this row could not take until the
+              // 2026-08-28 rebuild: the demo's chrom.sizes was written
+              // largest-first, so the region order was 2D 7D 3D 5D 4D 1D 6D
+              // and the row interleaved the three donor chromosomes among the
+              // four that draw nothing, the 7D and 5D bundles crossing the 4D
+              // one. build_orthofinder_synteny.sh writes chrom.sizes in the
+              // GFF3's order now, so 1D..7D lead and the 23 unplaced scaffolds
+              // that follow them are 0.46% of the row.
+              { assembly: 'tauschii' },
               { assembly: 'wheat', loc: '4A' },
             ],
             tracks: [['wheat_orthogroups']],
@@ -2782,11 +2784,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              // named rather than left to the assembly, same as the tauschii
-              // row above: this genome's chrom.sizes is largest-first too, and
-              // its IGDB assembly carries unplaced contigs among the seven
-              // chromosomes
-              { assembly: 'urartu', loc: '1 2 3 4 5 6 7' },
+              // the whole assembly, same as the tauschii row above and for the
+              // same reason: the rebuild puts chromosomes 1..7 first, so the
+              // 23 TuUngrouped contigs the IGDB assembly used to interleave
+              // among them now trail the row at 0.66 Mb against its 4.66 Gb.
+              { assembly: 'urartu' },
               { assembly: 'wheat', loc: '4A' },
             ],
             tracks: [['wheat_orthogroups']],
