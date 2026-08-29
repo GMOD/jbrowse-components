@@ -129,3 +129,41 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
     ])
   })
 })
+
+describe('MultiLinearWiggleDisplay reorder', () => {
+  // The wiggle statement of the invariant the other two multi-row displays each
+  // pin for themselves — variants' `rowPlacement.test.ts` ("a reorder does not
+  // invalidate the fetch") and MAF's `singleFetchPerRegion.test.ts` ("re-places
+  // cached rows on a reorder, without refetching"). The row list is in
+  // `gpuProps()` and deliberately not in `rpcProps()`, so dragging a row
+  // re-uploads bytes already in hand rather than re-downloading the window;
+  // `fetchNeeded` says the same thing in a comment. Eleven behavioral tests
+  // enforce this across the tree and none of them was wiggle's.
+  it('a reorder re-places rows without refetching', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue([makeMultiWiggleData(['a', 'b', 'c'])])
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    expect(display.sources.map(s => s.name)).toEqual(['a', 'b', 'c'])
+    const fetches = mockRpcCall.mock.calls.length
+    const fetchKey = JSON.stringify(display.rpcProps())
+
+    display.setLayout([{ name: 'c' }, { name: 'a' }, { name: 'b' }])
+    jest.advanceTimersByTime(700)
+
+    // The reorder reached the rows that get uploaded — without this the
+    // unchanged-key assertion below would also pass if setLayout did nothing.
+    expect(display.sources.map(s => s.name)).toEqual(['c', 'a', 'b'])
+    expect(display.gpuProps().sources.map(s => s.name)).toEqual(['c', 'a', 'b'])
+
+    // ...and did not reach what the fetch is keyed on, so no region reloaded
+    // and the payload already in hand is still there to re-place.
+    expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
+    expect(mockRpcCall.mock.calls.length).toBe(fetches)
+    expect(display.loadedRegions.size).toBe(1)
+  })
+})
