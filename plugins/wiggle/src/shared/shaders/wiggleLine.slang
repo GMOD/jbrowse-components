@@ -18,11 +18,9 @@
 //! targets: wgsl, glsl
 //! export-consts: STEP_LINE_VERTS
 
-import antialias;
+import capsule;
 import hpmath;
 import colorPack;
-// for AA_PAD_PX, the capsule's antialias pad — same constant the disc uses
-import pointGlyph;
 import wiggleCommon;
 
 // The center-line's capsule. A module carries one VERTS_PER_INSTANCE and these
@@ -62,14 +60,6 @@ struct VsOut {
   float2 localPos : TEXCOORD0;
   nointerpolation float segHalfLen : TEXCOORD1;
 };
-
-// Which glyph the pass draws follows entirely from uniforms, so both stages
-// derive it instead of passing a discriminator varying. That also keeps the
-// fragment's branch in UNIFORM control flow, which WGSL requires around the
-// derivatives it takes (a branch on a varying is rejected outright).
-bool drawsCapsule() {
-  return u.renderingType == RENDERING_TYPE_LINE_CENTER;
-}
 
 // Score → clip-space Y within a single row (line mode). Reads the y domain and
 // scale type from the global uniforms.
@@ -124,17 +114,16 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
       sy = lerp(min(clipScoreY, clipNextY) - hwy, max(clipScoreY, clipNextY) + hwy, q.y);
     }
   } else {
-    // Point-to-point line drawn as one CAPSULE per feature: the segment from the
-    // previous feature's bp midpoint (prevStartEnd, prevScoreLine) to this one's
-    // (midX, score), thickened to lineWidth with round caps of radius = half
-    // width, connecting every consecutive pair in the source. Because adjacent
+    // Point-to-point line drawn as one CAPSULE per feature (render-core's
+    // shared capsule shape): the segment from the previous feature's bp
+    // midpoint (prevStartEnd, prevScoreLine) to this one's (midX, score),
+    // thickened to lineWidth with round caps of radius = half width,
+    // connecting every consecutive pair in the source. Because adjacent
     // capsules share a round cap centred on the joint vertex, the max-blend
     // PASS_LINE_CENTER unions them into a seamless round join at ANY angle
     // (square caps left nicks on sharp diagonal bends; a zero-length degenerate
     // at a source start just draws a dot). The fragment reads segment_coord
-    // (localPos) + segHalfLen to evaluate the capsule SDF. Standard instanced
-    // SDF-line technique: https://github.com/rreusser/webgpu-instanced-lines /
-    // https://almarklein.org/line_rendering.html.
+    // (localPos) + segHalfLen to evaluate the capsule SDF.
     bool hasPrev = inst.prevStartEnd.x != NO_PREV_START;
     float midCurrX = (sx1 + sx2) * 0.5;
     // The previous midpoint is averaged in CLIP space from its start/end, the
@@ -154,21 +143,19 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
     // per-vertex offset from the segment center back to clip.
     float centerClipX = (midPrevX + midCurrX) * 0.5;
     float centerYpx = (prevYpx + currYpx) * 0.5;
-    float dxPx = (midCurrX - midPrevX) * u.viewportWidth * 0.5;
-    float dyPx = currYpx - prevYpx;
-    float len = sqrt(dxPx * dxPx + dyPx * dyPx);
-    float2 dir = len > 1e-4 ? float2(dxPx, dyPx) / len : float2(1.0, 0.0);
-    float2 nrm = float2(-dir.y, dir.x);
-    // Quad half-extents bounding the capsule (stroke half-width + AA pad): the
-    // caps add halfExtent past each end along the segment, and halfExtent across
-    // it. localPos (segment_coord) is measured from the segment center.
-    float halfExtent = u.lineWidth * 0.5 + AA_PAD_PX;
-    float2 q = quadLocal(vid);
-    float la = (q.x * 2.0 - 1.0) * (len * 0.5 + halfExtent);
-    float lp = (q.y * 2.0 - 1.0) * halfExtent;
-    sx = centerClipX + pxToClipLen(dir.x * la + nrm.x * lp, u.viewportWidth);
-    sy = 1.0 - (centerYpx + dir.y * la + nrm.y * lp) * pxToClip;
-    localPos = float2(la, lp);
+    float2 deltaPx = float2(
+      (midCurrX - midPrevX) * u.viewportWidth * 0.5, currYpx - prevYpx);
+    float len = length(deltaPx);
+    CapsuleFrame f = capsuleFrame(deltaPx, len);
+    // capsuleQuadLocal (capsule.slang) owns the pad, paired with the
+    // capsuleDist/capsuleCoverage the fragment measures with. localPos
+    // (segment_coord) is measured from the segment center.
+    float2 local =
+      capsuleQuadLocal(vid, len * 0.5, u.lineWidth * 0.5, u.devicePixelRatio);
+    float2 off = f.tangent * local.x + f.normal * local.y;
+    sx = centerClipX + pxToClipLen(off.x, u.viewportWidth);
+    sy = 1.0 - (centerYpx + off.y) * pxToClip;
+    localPos = local;
     segHalfLen = len * 0.5;
   }
 
@@ -182,27 +169,15 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  if (drawsCapsule()) {
-    // Capsule SDF: px distance to the segment centerline. localPos =
-    // segment_coord (along, perp) from the segment center; clamping the
-    // along-overhang past ±segHalfLen to 0 gives rounded caps. Dividing by the
-    // gradient magnitude gives an angle-uniform AA edge, and coincident caps let
-    // the max-blend pass union adjacent capsules into a seamless round join at
-    // any angle.
-    //
-    // Analytic, off `u.devicePixelRatio`, exactly as the dotplot capsule — the
-    // same shape, and the same reason. `dist` is a TRUE Euclidean distance in
-    // CSS px, so |grad dist| = 1 at every angle and one output pixel is
-    // `2 * aaHalfPx(dpr)` with nothing to differentiate. It measured until the
-    // xyplot bar gave this uniform block a devicePixelRatio; the measurement was
-    // one output pixel wide too, but it took ddx/ddy of a quantity that comes
-    // off a `max` clamp, so the 2x2 quads straddling the cap/body junction
-    // differentiated a discontinuity. AA_PAD_PX above already leaves the ramp
-    // room inside the geometry.
-    float alongOver = max(abs(fragIn.localPos.x) - fragIn.segHalfLen, 0.0);
-    float dist = length(float2(alongOver, fragIn.localPos.y));
-    float alpha = aaRamp(u.lineWidth * 0.5 - dist,
-                         2.0 * aaHalfPx(u.devicePixelRatio));
+  // Which glyph the pass draws follows entirely from uniforms, so both stages
+  // derive it instead of passing a discriminator varying. (The branch no
+  // longer has to be uniform control flow: the capsule's AA is analytic —
+  // capsule.slang says why — so nothing here takes a derivative.)
+  if (u.renderingType == RENDERING_TYPE_LINE_CENTER) {
+    // Coincident round caps are what let the max-blend pass union adjacent
+    // capsules into a seamless round join at any angle.
+    float dist = capsuleDist(fragIn.localPos, fragIn.segHalfLen);
+    float alpha = capsuleCoverage(dist, u.lineWidth * 0.5, u.devicePixelRatio);
     if (alpha <= 0.0) {
       discard;
     }

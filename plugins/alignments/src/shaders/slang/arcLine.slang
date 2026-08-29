@@ -105,12 +105,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float alpha = strokeCoverage(abs(fragIn.dx), fragIn.halfWidthPx, u);
+  float alpha = strokeCoverage(abs(fragIn.dx), fragIn.halfWidthPx, u.dpr);
   // `dashCoverage` (alignmentsUniforms) is arcFlat.slang's pattern too. This
   // pass had its own, which measured the ON run straight off the wrap: a dash's
   // trailing edge ramped and its leading edge did not, so half of every dash
   // boundary in the band was the hard cut the quad expansion above exists to
   // avoid on the other axis.
-  alpha *= dashCoverage(fragIn.bandY, ARC_LINE_DASH_PX, ARC_LINE_GAP_PX, u);
+  alpha *= dashCoverage(fragIn.bandY, ARC_LINE_DASH_PX, ARC_LINE_GAP_PX, u.dpr);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

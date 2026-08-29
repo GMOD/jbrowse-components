@@ -95,10 +95,10 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   o.halfWidthPx = arcStrokeHalfPx(inst.lineWidthPx, u);
 
-  // Overshoot both ends by a half-width: the flat form's caps are not cut by
-  // the band scissor, so the fragment's box distance needs somewhere to ramp
-  // them down. segmentQuadLocal (alignmentsUniforms) owns that pad, paired with
-  // the sdSegment the fragment measures with.
+  // The flat form's ends are not cut by the band scissor, so the fragment's
+  // edge ramp needs somewhere to run. segmentQuadLocal (alignmentsUniforms)
+  // grows the quad by STROKE_AA_PX on both axes — exactly the reach of the
+  // coverage the fragment pairs it with.
   o.local = segmentQuadLocal(vid, halfLen, o.halfWidthPx);
   o.halfLen = halfLen;
   o.dashed = inst.dashed;
@@ -111,20 +111,24 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // |grad d| is analytically 1 per CSS px, so the AA ramp is a constant number
-  // of device pixels, not a derivative — see STROKE_AA_PX.
-  float d = sdSegment(fragIn.local, fragIn.halfLen);
-  float alpha = strokeCoverage(d, fragIn.halfWidthPx, u);
+  // BUTT caps, which is what this pass's drawCanvas strokes: the coverage is
+  // the separable box-filter product (buttSegmentCoverage, alignmentsUniforms),
+  // so the ends are exactly as soft as the sides and no ink overhangs the
+  // endpoints. The ramp is a constant number of device pixels rather than a
+  // derivative — see STROKE_AA_PX.
+  float alpha = buttSegmentCoverage(
+    fragIn.local, fragIn.halfLen, fragIn.halfWidthPx, u.dpr);
   // Split-read flat arcs render dashed, off the two constants above rather than
   // a 3.0/6.0 pair spelled into the arithmetic — the SVG twin passes them to
   // `stroke-dasharray` and Canvas2D to `setLineDash`, so a period written here
   // in numbers is a period only a comment holds the other two to.
   //
   // `dashCoverage` (alignmentsUniforms) is the pattern arcLine.slang's tick also
-  // cuts, in the one axis `sdSegment` does not measure.
+  // cuts: a periodic cut along the segment, on top of the single cut the
+  // coverage above makes at each end.
   if (fragIn.dashed > 0.5) {
     alpha *= dashCoverage(
-      fragIn.screenPx, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u);
+      fragIn.screenPx, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u.dpr);
   }
   // Neutral, not black: `colorFlatConnector` is the theme's foreground, so the
   // line reads against a dark track background the way it does against a light

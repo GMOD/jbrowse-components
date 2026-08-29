@@ -9,7 +9,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx, hueRampLane
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx, hueRampLane, strokeCoverage
 //! js-skip: expandMinWidthX — this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded
 //! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 module alignmentsUniforms;
@@ -193,23 +193,18 @@ public struct Uniforms {
 // while leaving the apex crisp. But the constant is one DEVICE px, not one CSS
 // px — spelling it in CSS px (as STROKE_PERP_PX does in the synteny shaders)
 // silently doubles the ramp on a dpr=2 display and reads as a soft, mushy line.
-// Hence `strokeCoverage` divides by u.dpr.
+// Hence `strokeCoverage` divides by dpr.
 public static const float STROKE_AA_PX = 1.0;
 
 // Coverage of an antialiased stroke `halfWidthPx` wide (CSS px) at true
 // perpendicular distance `d` (CSS px). Shared so the arc and arcLine passes
 // cannot drift in weight; a geometry pad of STROKE_AA_PX CSS px always covers
-// the ramp, since dpr >= 1.
-public float strokeCoverage(float d, float halfWidthPx, Uniforms u) {
-  return strokeAaRamp(halfWidthPx - d, u);
-}
-
-// The ramp width these passes use, given a signed distance INTO the ink. The
-// dash pattern below wants the same ramp along the mark that `strokeCoverage`
-// gives across it — the two ends of a dash should be exactly as soft as the two
-// sides of the stroke they interrupt — so both go through here.
-public float strokeAaRamp(float signedInk, Uniforms u) {
-  return aaRamp(signedInk, STROKE_AA_PX / max(u.dpr, 1.0));
+// the ramp, since dpr >= 1. Takes the bare dpr, not the Uniforms struct —
+// hpmath's primitives-not-a-Uniforms granularity (adr-040), and what makes the
+// butt-cap test oracle able to import the generated twin instead of restating
+// it (buttSegmentCoverage.test.ts).
+public float strokeCoverage(float d, float halfWidthPx, float dpr) {
+  return aaRamp(halfWidthPx - d, STROKE_AA_PX / max(dpr, 1.0));
 }
 
 // Coverage of a `dashPx` on / `gapPx` off pattern at `coord` CSS px along the
@@ -224,7 +219,7 @@ public float strokeAaRamp(float signedInk, Uniforms u) {
 // of the period (fixing that) but then ramped over a constant 1 CSS px, which on
 // a dpr=2 display is two device px — twice the softness of the sides of the very
 // same line. Centring the run at half a period puts the wrap deep in the gap
-// where nothing is drawn, and `strokeAaRamp` is the sides' own ramp.
+// where nothing is drawn, and STROKE_AA_PX / dpr is the sides' own ramp.
 //
 // The reduction is `t - period * floor(t / period)` rather than the obvious
 // `frac(t / period) * period`, which are the same number only in exact
@@ -253,41 +248,51 @@ public float dashCoverageAt(
   return aaRamp(dashPx * 0.5 - abs(phase - period * 0.5), aaPx);
 }
 
-public float dashCoverage(float coord, float dashPx, float gapPx, Uniforms u) {
-  return dashCoverageAt(coord, dashPx, gapPx, STROKE_AA_PX / max(u.dpr, 1.0));
+public float dashCoverage(float coord, float dashPx, float gapPx, float dpr) {
+  return dashCoverageAt(coord, dashPx, gapPx, STROKE_AA_PX / max(dpr, 1.0));
 }
 
-// A butt-capped stroked segment, as the two halves of one contract: the quad
-// that covers it, and the distance that shades it. They belong together because
-// the pad is the contract — the quad is grown by exactly STROKE_AA_PX beyond the
-// half-width on both axes, which is what makes |grad d| analytically 1 CSS px
-// per px and lets `strokeCoverage` use a constant ramp instead of `fwidth`. Pad
-// one without the other and the ramp is clipped at the caps, silently.
+// A BUTT-capped stroked segment, as the two halves of one contract: the quad
+// that covers it, and the coverage that shades it. They belong together
+// because the pad is the contract — the quad is grown by exactly STROKE_AA_PX
+// beyond the ink on both axes, which always covers the ramp (dpr >= 1). Pad
+// one without the other and the ramp is clipped, silently.
 //
 // arcFlat.slang and linkedReadLine.slang each carried a copy of both. Sharing
-// them clears ADR-040's bar rather than working around it — that ADR turned down
-// a generic quad skeleton for want of two real consumers and non-obvious math,
-// and this now has both. arcLine.slang is deliberately NOT a third: it is a
+// them clears ADR-040's bar rather than working around it — that ADR turned
+// down a generic quad skeleton for want of two real consumers and non-obvious
+// math, and this has both. arcLine.slang is deliberately NOT a third: it is a
 // full-band tick with no caps, so it measures `abs(dx)` alone and a halfLen it
 // does not have would be noise.
+//
+// Butt caps, because that is what the Canvas2D/SVG twins draw: both passes'
+// drawCanvas strokes moveTo/lineTo with the default lineCap. This coverage
+// inked ROUND caps for a while (the capsule form, now render-core's
+// capsule.slang) under comments calling it butt-capped — a halfWidth of ink
+// overhanging each segment end that no other backend drew. The capsule's
+// round cap is load-bearing where it lives (a dotplot dot is the degenerate
+// cap; linecenter's coincident caps make its max-blend joins seamless);
+// nothing here wants it, so the cut at the ends is the ink's own edge ramp.
+// buttSegmentCoverage.test.ts pins the cap against the generated twin.
+//
+// The product form is exact: box-filter coverage of an axis-aligned rectangle
+// separates per axis, so the ends are exactly as soft as the sides.
 //
 // `local` is in the SEGMENT's own frame — x along it, y across it — so a
 // diagonal segment costs nothing here. Mapping that frame to the screen is the
 // caller's, and genuinely differs: arcFlat's segment is horizontal by
 // construction and adds `local` to a centre, while a linked-read connector
-// rotates it onto `dir`/`nrm`.
+// rotates it onto capsuleFrame's tangent/normal.
 public float2 segmentQuadLocal(uint vid, float halfLenPx, float halfWidthPx) {
-  float hw = halfWidthPx + STROKE_AA_PX;
   float2 q = quadLocal(vid) * 2.0 - 1.0;
-  return float2(q.x * (halfLenPx + hw), q.y * hw);
+  return float2(
+    q.x * (halfLenPx + STROKE_AA_PX), q.y * (halfWidthPx + STROKE_AA_PX));
 }
 
-// Perpendicular distance in CSS px from `local` to that segment's centreline —
-// the y-extent-zero box SDF, which is the cap-correct form: inside the caps it
-// is |local.y|, past them it rounds the corner off the cap's end.
-public float sdSegment(float2 local, float halfLenPx) {
-  float2 q = float2(abs(local.x) - halfLenPx, abs(local.y));
-  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+public float buttSegmentCoverage(
+    float2 local, float halfLenPx, float halfWidthPx, float dpr) {
+  return strokeCoverage(abs(local.y), halfWidthPx, dpr)
+       * strokeCoverage(abs(local.x), halfLenPx, dpr);
 }
 
 // Exact distance from a point to the axis-aligned ellipse |p/ab| = 1 — Inigo

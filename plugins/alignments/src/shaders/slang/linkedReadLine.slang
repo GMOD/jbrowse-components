@@ -93,7 +93,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 nrm = float2(-dir.y, dir.x);
 
   // segmentQuadLocal (alignmentsUniforms) owns the AA pad, paired with the
-  // sdSegment the fragment measures with — the same pair arcFlat.slang uses.
+  // coverage the fragment measures with — the same pair arcFlat.slang uses.
   float halfLen = len * 0.5;
   o.local = segmentQuadLocal(vid, halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5);
   o.halfLen = halfLen;
@@ -111,10 +111,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   // `local` is already in the segment's own frame, so the diagonal costs
   // nothing here — this is the same measurement arcFlat.slang makes of its
-  // horizontal one. |grad d| is analytically 1 per CSS px, so the ramp is a
-  // constant number of device pixels rather than a derivative (STROKE_AA_PX).
-  float d = sdSegment(fragIn.local, fragIn.halfLen);
-  float alpha = strokeCoverage(d, LINKED_READ_LINE_WIDTH_PX * 0.5, u);
+  // horizontal one, and the same BUTT caps its drawCanvas strokes. The ramp is
+  // a constant number of device pixels rather than a derivative
+  // (STROKE_AA_PX).
+  float alpha = buttSegmentCoverage(
+    fragIn.local, fragIn.halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.dpr);
   // Straight alpha; the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

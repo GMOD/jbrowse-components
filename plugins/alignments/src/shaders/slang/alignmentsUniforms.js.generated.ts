@@ -156,3 +156,11 @@ export function hueRampLane(hueDeg: number, lane: number): number {
   }
   return (v + 0.25)
 }
+
+function aaRamp(signedInk: number, widthPx: number): number {
+  return _clamp(((signedInk / widthPx) + 0.5), 0.0, 1.0)
+}
+
+export function strokeCoverage(d: number, halfWidthPx: number, dpr: number): number {
+  return aaRamp((halfWidthPx - d), (1.0 / _max(dpr, 1.0)))
+}

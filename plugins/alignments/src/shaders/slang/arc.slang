@@ -384,7 +384,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   if (abs(fragIn.legSide) < 0.999) { discard; }
   // |∇d| is analytically 1 per CSS px, so the AA ramp is a constant number of
   // device pixels, not a derivative — see STROKE_AA_PX.
-  float alpha = strokeCoverage(arcDistance(fragIn), fragIn.halfWidthPx, u);
+  float alpha = strokeCoverage(arcDistance(fragIn), fragIn.halfWidthPx, u.dpr);
   // Output straight alpha — the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

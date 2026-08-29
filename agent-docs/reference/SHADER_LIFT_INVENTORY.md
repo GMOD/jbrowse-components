@@ -13,8 +13,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 98 functions
-are inside the emitter's subset, of which **70 are exported**.
+Scanned 43 shaders with entry points. 101 functions
+are inside the emitter's subset, of which **71 are exported**.
 
 ## Candidates
 
@@ -23,7 +23,10 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-_None._
+| Function | Signature | Shaders |
+| --- | --- | --- |
+| `capsuleCoverage` | `(f32, f32, f32) -> f32` | dotplot, wiggleLine |
+| `dashCoverage` | `(f32, f32, f32, f32) -> f32` | arcFlat, arcLine |
 
 ## Declined
 
@@ -72,9 +75,9 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 22 | `arcBandClipPos`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, `crispSquareCornerPx`, `diagonalCellToClip`, … |
+| type 'vec2' is outside the supported scalar subset | 25 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
 | type 'ptr' is outside the supported scalar subset | 19 | `bpToClipX`, `covAreaTop`, `covBarScale`, `covBottom`, `covBpToClipX`, `covClipKindColor`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 18 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 15 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
 | type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `bandedCell`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
@@ -85,7 +88,6 @@ noticing in a diff.
 | //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
-| //! js-export: 'strokeCoverage' reaches strokeAaRamp(), which is outside the supported scalar subset | 1 | `strokeCoverage` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
 | indexing is outside the supported scalar subset | 1 | `getWord` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
@@ -114,4 +116,5 @@ is no longer shared with anything.
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `normalizeScore` | tests only — `densityColorParity.test.ts`, `normalizeScoreParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
+| `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts` |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |
