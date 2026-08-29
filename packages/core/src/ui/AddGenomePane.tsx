@@ -7,6 +7,7 @@ import { Alert, Button, Link, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
+  adapterHasSequence,
   applyClassifiedFiles,
   applyPrimaryFile,
   applyTwoBitFile,
@@ -39,6 +40,7 @@ const shortAdapterLabels: Record<AdapterType, string> = {
   BgzipFastaAdapter: 'Compressed FASTA',
   FastaAdapter: 'FASTA',
   TwoBitAdapter: '2bit',
+  ChromSizesAdapter: 'chrom.sizes, no sequence',
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -350,8 +352,9 @@ const SourceInput = observer(function SourceInput({
       ) : (
         <>
           <Typography variant="body2" className={classes.intro}>
-            Paste a URL to a sequence file (FASTA, .fa.gz, or .2bit), plus any
-            index files, one per line. We fill in the rest.
+            Paste a URL to a sequence file (FASTA, .fa.gz, or .2bit) or a
+            .chrom.sizes, plus any index files, one per line. We fill in the
+            rest.
           </Typography>
           <TextField
             variant="outlined"
@@ -444,6 +447,24 @@ const FileNotices = observer(function FileNotices({
   )
 })
 
+// What a sequence-free assembly costs, said where the choice is made rather
+// than left for the empty track to imply. A .chrom.sizes is the right input for
+// a whole-genome or synteny view and the wrong one for everything that reads a
+// base, and the two are not obvious from the file itself.
+const NoSequenceWarning = observer(function NoSequenceWarning() {
+  const { classes } = useStyles()
+  return (
+    <Alert severity="warning" className={classes.intro}>
+      This genome will have no sequence — a <code>.chrom.sizes</code> carries
+      reference names and lengths and nothing else. The sequence track and GC
+      content draw nothing, CRAM tracks cannot decode without the reference, and
+      a feature's DNA or protein sequence is unavailable. Whole-genome and
+      synteny views read no bases, which is what the format is for; open a FASTA
+      or 2bit instead if you need any of the above.
+    </Alert>
+  )
+})
+
 // Drop/paste a genome's files, auto-detect the format, and confirm. Falls back
 // to a manual format picker when filenames don't match our conventions. Produces
 // a FormState the caller turns into an assembly config (desktop indexes plain
@@ -517,6 +538,7 @@ const AddGenomePane = observer(function AddGenomePane({
 
   return (
     <EmptySourceTypeProvider value={source === 'urls' ? 'url' : 'file'}>
+      {adapterHasSequence(form.adapterSelection) ? null : <NoSequenceWarning />}
       {manual ? (
         <ManualEntry
           form={form}

@@ -15,6 +15,7 @@ export const adapterTypes = [
   'BgzipFastaAdapter',
   'FastaAdapter',
   'TwoBitAdapter',
+  'ChromSizesAdapter',
 ] as const
 
 export type AdapterType = (typeof adapterTypes)[number]
@@ -24,6 +25,17 @@ export const adapterLabels: Record<AdapterType, string> = {
   BgzipFastaAdapter: 'Compressed FASTA (.fa.gz + .fai + .gzi)',
   FastaAdapter: 'FASTA (automatically indexed)',
   TwoBitAdapter: '2bit file (.2bit)',
+  ChromSizesAdapter: 'Chromosome sizes, no sequence (.chrom.sizes)',
+}
+
+// The formats that bring bases with them. ChromSizesAdapter is the one that
+// does not: it names the assembly's sequences and their lengths and stops
+// there, which is the whole point of it (six wheat genomes are tens of
+// gigabytes as sequence and a few kilobytes as names and lengths) and also
+// everything a caller has to warn about. `jbrowse add-assembly` has taken
+// `--type chromSizes` since long before this pane offered it.
+export function adapterHasSequence(adapterSelection: AdapterType) {
+  return adapterSelection !== 'ChromSizesAdapter'
 }
 
 export interface FormState {
@@ -75,7 +87,20 @@ const requiredSidecars: Record<AdapterType, SidecarRole[]> = {
   BgzipFastaAdapter: ['fai', 'gzi'],
   FastaAdapter: [],
   TwoBitAdapter: [],
+  ChromSizesAdapter: [],
 }
+
+// The file each format is opened by. A table rather than an `=== 'TwoBit'` test
+// per site, because chrom.sizes is the primary for one format and a 2bit's
+// optional sidecar for another, and the two answers were about to be spelled
+// out at three call sites.
+const primaryFields = {
+  IndexedFastaAdapter: 'fastaLocation',
+  BgzipFastaAdapter: 'fastaLocation',
+  FastaAdapter: 'fastaLocation',
+  TwoBitAdapter: 'twoBitLocation',
+  ChromSizesAdapter: 'chromSizesLocation',
+} as const satisfies Record<AdapterType, LocationField>
 
 // Curried field setter for the add-assembly form:
 // makeSetField(setForm)('faiLocation') returns a value setter that merges just
@@ -117,11 +142,11 @@ export function applyPrimaryFile(
     filename && !state.assemblyName
       ? getAssemblyNameFromFilename(filename)
       : state.assemblyName
-  if (detected === 'TwoBitAdapter') {
+  if (detected === 'TwoBitAdapter' || detected === 'ChromSizesAdapter') {
     return {
       ...state,
-      twoBitLocation: location,
-      adapterSelection: 'TwoBitAdapter',
+      [primaryFields[detected]]: location,
+      adapterSelection: detected,
       assemblyName,
     }
   }
@@ -255,6 +280,10 @@ export type AssemblyAdapter =
       // directory and fails the assembly with `EISDIR`
       chromSizesLocation?: FileLocation
     }
+  | {
+      type: 'ChromSizesAdapter'
+      chromSizesLocation: FileLocation
+    }
 
 export type AssemblyConf = ReturnType<typeof getBaseAssemblyConfig> & {
   sequence: {
@@ -268,13 +297,10 @@ export function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
 
-// The form can be opened only once its primary sequence file is chosen: the
-// 2bit for TwoBitAdapter, otherwise the FASTA. Secondary files (.fai/.gzi) are
-// validated later in getAdapterConfig.
+// The form can be opened only once the chosen format's primary file is there.
+// Secondary files (.fai/.gzi) are validated later in getAdapterConfig.
 export function formHasSequence(form: FormState) {
-  return form.adapterSelection === 'TwoBitAdapter'
-    ? !isBlank(form.twoBitLocation)
-    : !isBlank(form.fastaLocation)
+  return !isBlank(form[primaryFields[form.adapterSelection]])
 }
 
 // The name the assembly is saved under. Trimmed because surrounding whitespace
@@ -318,11 +344,15 @@ export function isFormDirty(form: FormState) {
 export function partitionExtraLocations(form: FormState) {
   const { adapterSelection } = form
   const required = requiredSidecars[adapterSelection]
-  const twoBit = adapterSelection === 'TwoBitAdapter'
+  // it is the primary file for ChromSizesAdapter and listed by the row above
+  // the extras, so it belongs in neither list there
+  const chromSizesReaches =
+    adapterSelection === 'TwoBitAdapter' ||
+    adapterSelection === 'ChromSizesAdapter'
   const sidecarLocation = (role: SidecarRole) => form[sidecars[role].field]
   const used = [
     ...required.map(sidecarLocation),
-    ...(twoBit ? [form.chromSizesLocation] : []),
+    ...(adapterSelection === 'TwoBitAdapter' ? [form.chromSizesLocation] : []),
     form.refNameAliasesLocation,
     form.cytobandsLocation,
   ].filter(loc => !isBlank(loc))
@@ -330,7 +360,7 @@ export function partitionExtraLocations(form: FormState) {
     ...sidecarRoles
       .filter(role => !required.includes(role))
       .map(sidecarLocation),
-    ...(twoBit ? [] : [form.chromSizesLocation]),
+    ...(chromSizesReaches ? [] : [form.chromSizesLocation]),
   ].filter(loc => !isBlank(loc))
   return { used, unused }
 }
@@ -342,6 +372,9 @@ export function partitionExtraLocations(form: FormState) {
 const FASTA_EXT = /\.(fa|fasta|fas|fna|mfa)$/i
 const FASTA_GZ_EXT = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
 const TWOBIT_EXT = /\.2bit$/i
+// the same pattern `jbrowse add-assembly` infers `--type chromSizes` from, so a
+// file that works there is recognized here
+const CHROM_SIZES_EXT = /\.chrom\.sizes$/i
 
 // Every pattern here anchors to the end of the name, which is why getFileName
 // drops a URI's query string — a presigned link's few hundred characters of
@@ -351,6 +384,7 @@ export function getAssemblyNameFromFilename(filename: string) {
     .replace(FASTA_GZ_EXT, '')
     .replace(FASTA_EXT, '')
     .replace(TWOBIT_EXT, '')
+    .replace(CHROM_SIZES_EXT, '')
 }
 
 export function detectAdapterType(filename: string): AdapterType | undefined {
@@ -358,7 +392,9 @@ export function detectAdapterType(filename: string): AdapterType | undefined {
     ? 'BgzipFastaAdapter'
     : TWOBIT_EXT.test(filename)
       ? 'TwoBitAdapter'
-      : undefined
+      : CHROM_SIZES_EXT.test(filename)
+        ? 'ChromSizesAdapter'
+        : undefined
 }
 
 export type FileRole =
@@ -416,6 +452,19 @@ export function classifyAssemblyFiles(
     }
   }
   const primary = classified.filter(f => isSequenceRole(f.role)).at(-1)
+  // A chrom.sizes leads only when nothing that carries bases is in the set: it
+  // is the 2bit's optional sequence-name sidecar in every other drop, and
+  // promoting it would silently downgrade `hg38.2bit + hg38.chrom.sizes` to an
+  // assembly with no sequence.
+  if (!primary && !isBlank(result.chromSizesLocation ?? blank)) {
+    return {
+      ...result,
+      adapterSelection: 'ChromSizesAdapter',
+      assemblyName: getAssemblyNameFromFilename(
+        getFileName(result.chromSizesLocation!),
+      ),
+    }
+  }
   if (primary) {
     result.assemblyName = getAssemblyNameFromFilename(
       getFileName(primary.location),
@@ -610,6 +659,15 @@ export function getAdapterConfig({
         faiLocation,
         gziLocation,
       },
+    }
+  }
+  if (adapterSelection === 'ChromSizesAdapter') {
+    if (isBlank(chromSizesLocation)) {
+      throw new Error('Chromosome sizes location is required')
+    }
+    return {
+      kind: 'ready',
+      adapter: { type: 'ChromSizesAdapter', chromSizesLocation },
     }
   }
   if (isBlank(twoBitLocation)) {

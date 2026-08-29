@@ -231,3 +231,32 @@ test('an index entered inline survives adding one more url', async () => {
   expect(form().adapterSelection).toBe('BgzipFastaAdapter')
   expect(screen.queryByText(/needs its index file/)).not.toBeInTheDocument()
 })
+
+// A .chrom.sizes is the one genome the pane accepts that carries no bases, and
+// the pane is the last place anyone is told so — after this the assembly just
+// exists and its base-level views are quietly empty.
+test('a chrom.sizes is recognized and says what it costs', async () => {
+  const { user, form } = setup()
+  await pasteUrls(user, 'https://example.com/hg38.chrom.sizes')
+  expect(form().adapterSelection).toBe('ChromSizesAdapter')
+  expect(form().assemblyName).toBe('hg38')
+  expect(screen.getByRole('alert')).toHaveTextContent(/no sequence/i)
+  expect(screen.getByRole('alert')).toHaveTextContent(/CRAM/)
+})
+
+test('a genome that does carry sequence gets no such warning', async () => {
+  const { user } = setup()
+  await pasteUrls(user, 'https://example.com/hg38.2bit')
+  expect(screen.queryByText(/will have no sequence/i)).not.toBeInTheDocument()
+})
+
+// the 2bit's optional sidecar, not a sequence-free genome
+test('a chrom.sizes beside a 2bit warns about nothing', async () => {
+  const { user, form } = setup()
+  await pasteUrls(
+    user,
+    'https://example.com/hg38.2bit\nhttps://example.com/hg38.chrom.sizes',
+  )
+  expect(form().adapterSelection).toBe('TwoBitAdapter')
+  expect(screen.queryByText(/will have no sequence/i)).not.toBeInTheDocument()
+})

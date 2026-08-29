@@ -1048,3 +1048,107 @@ describe('buildAssemblyConf', () => {
     ).rejects.toThrow('Both FASTA and FAI locations are required')
   })
 })
+
+// A .chrom.sizes assembly: names and lengths, no bases. `jbrowse add-assembly`
+// has inferred `--type chromSizes` from this extension for years; these pin the
+// pane reaching the same config, and pin the one case the pane must NOT reach
+// it — a 2bit that brought its chrom.sizes along as a sidecar.
+describe('ChromSizesAdapter', () => {
+  test('a lone .chrom.sizes is the primary file', () => {
+    const form = applyPrimaryFile(initialFormState(), chromSizes)
+    expect(form.adapterSelection).toBe('ChromSizesAdapter')
+    expect(form.chromSizesLocation).toEqual(chromSizes)
+    expect(form.assemblyName).toBe('hg38')
+    expect(formHasSequence(form)).toBe(true)
+    expect(isFormReady(form)).toBe(true)
+  })
+
+  test('detectAdapterType and the name strip the double extension', () => {
+    expect(detectAdapterType('hg38.chrom.sizes')).toBe('ChromSizesAdapter')
+    expect(getAssemblyNameFromFilename('hg38.chrom.sizes')).toBe('hg38')
+  })
+
+  test('builds a ChromSizesAdapter', () => {
+    expect(
+      getAdapterConfig({
+        ...initialFormState(),
+        adapterSelection: 'ChromSizesAdapter',
+        chromSizesLocation: chromSizes,
+      }),
+    ).toEqual({
+      kind: 'ready',
+      adapter: { type: 'ChromSizesAdapter', chromSizesLocation: chromSizes },
+    })
+  })
+
+  test('throws when the chrom.sizes is blank', () => {
+    expect(() =>
+      getAdapterConfig({
+        ...initialFormState(),
+        adapterSelection: 'ChromSizesAdapter',
+      }),
+    ).toThrow('Chromosome sizes location is required')
+  })
+
+  test('a dropped .chrom.sizes on its own leads', () => {
+    const form = classifyAssemblyFiles([chromSizes])
+    expect(form.adapterSelection).toBe('ChromSizesAdapter')
+    expect(form.chromSizesLocation).toEqual(chromSizes)
+    expect(form.assemblyName).toBe('hg38')
+  })
+
+  // the sabotage this pair is for: promoting chrom.sizes unconditionally turns
+  // a 2bit drop into a sequence-free assembly, and every base-level view in it
+  // goes quietly empty
+  test('a 2bit alongside it keeps the 2bit as the sequence', () => {
+    const form = classifyAssemblyFiles([twobit, chromSizes])
+    expect(form.adapterSelection).toBe('TwoBitAdapter')
+    expect(form.twoBitLocation).toEqual(twobit)
+    expect(form.chromSizesLocation).toEqual(chromSizes)
+  })
+
+  test('a FASTA alongside it keeps the FASTA as the sequence', () => {
+    const form = classifyAssemblyFiles([fasta, fai, chromSizes])
+    expect(form.adapterSelection).toBe('IndexedFastaAdapter')
+    expect(form.fastaLocation).toEqual(fasta)
+  })
+
+  test('the chrom.sizes is neither a used nor an unused extra', () => {
+    const { used, unused } = partitionExtraLocations({
+      ...initialFormState(),
+      adapterSelection: 'ChromSizesAdapter',
+      chromSizesLocation: chromSizes,
+    })
+    expect(used).not.toContainEqual(chromSizes)
+    expect(unused).not.toContainEqual(chromSizes)
+  })
+
+  test('under a FASTA it is still reported as dropped on the floor', () => {
+    const { unused } = partitionExtraLocations({
+      ...initialFormState(),
+      adapterSelection: 'IndexedFastaAdapter',
+      fastaLocation: fasta,
+      faiLocation: fai,
+      chromSizesLocation: chromSizes,
+    })
+    expect(unused).toContainEqual(chromSizes)
+  })
+
+  test('builds a whole assembly config', async () => {
+    const conf = await buildAssemblyConf(
+      {
+        ...initialFormState(),
+        adapterSelection: 'ChromSizesAdapter',
+        chromSizesLocation: chromSizes,
+        assemblyName: 'hg38',
+      },
+      () => {
+        throw new Error('should not need a fasta index')
+      },
+    )
+    expect(conf.sequence.adapter).toEqual({
+      type: 'ChromSizesAdapter',
+      chromSizesLocation: chromSizes,
+    })
+  })
+})

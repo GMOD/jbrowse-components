@@ -123,6 +123,14 @@ const SequenceAdapterInputs = observer(function SequenceAdapterInputs({
             setLocation={setField('gziLocation')}
           />
         </>
+      ) : adapterSelection === 'ChromSizesAdapter' ? (
+        <FileSelector
+          inline
+          name=".chrom.sizes file"
+          description="One name<TAB>length line per reference sequence. The assembly gets its names and lengths from this and carries no sequence."
+          location={form.chromSizesLocation}
+          setLocation={setField('chromSizesLocation')}
+        />
       ) : (
         <>
           <FileSelector
