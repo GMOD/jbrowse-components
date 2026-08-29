@@ -141,7 +141,6 @@ it('every gated layer stops drawing with its flags off', () => {
 // record following.
 it('names option gates that HitTestOptions actually carries', () => {
   const OPTION_KEYS: Record<keyof HitTestOptions, true> = {
-    showCoverage: true,
     showInterbaseIndicators: true,
     coverageHeight: true,
     coverageMaxDepth: true,

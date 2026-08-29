@@ -48,7 +48,6 @@ const COLORS = distinctPalette()
 function bandState(overrides: Partial<RenderState> = {}) {
   return makeTestRenderState({
     colors: COLORS,
-    showCoverage: true,
     showInterbaseIndicators: true,
     coverageHeight: 60,
     coverageYOffset: 5,

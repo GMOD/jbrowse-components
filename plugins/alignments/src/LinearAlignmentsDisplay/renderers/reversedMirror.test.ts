@@ -252,7 +252,6 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     // Coverage ON. The band's 0.8px fudge is what FUDGE_TOLERANCE_PX absorbs;
     // leaving the band out to dodge that noise is precisely what let its own
     // reversed bug through.
-    showCoverage: true,
     coverageHeight: COV_H,
     coverageYOffset: 0,
     coverageMaxDepth: 9,

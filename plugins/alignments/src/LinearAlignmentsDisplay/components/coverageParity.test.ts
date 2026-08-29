@@ -621,8 +621,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       colorScheme: 0,
       featureHeight: 10,
       featureSpacing: 1,
-      showCoverage: false,
-      coverageHeight: 100,
+      coverageHeight: 0,
       coverageYOffset: 5,
       coverageMinDepth: 0,
       coverageMaxDepth: 50,
@@ -708,7 +707,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       name: 'a coverage-only section with an empty pileup band',
       sync: true,
       section: { covClipHeight: 100, pileupClipTop: 100, pileupClipHeight: 0 },
-      extra: { showCoverage: true },
+      extra: { coverageHeight: 100 },
       expected: true,
     },
     {
@@ -741,7 +740,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       name: 'a block with no synced region',
       sync: false,
       section: { covClipHeight: 100, pileupClipHeight: 100 },
-      extra: { showCoverage: true },
+      extra: { coverageHeight: 100 },
       expected: false,
     },
   ]

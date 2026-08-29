@@ -32,7 +32,6 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 0,
-    showCoverage: false,
     coverageHeight: 0,
     coverageYOffset: 0,
     coverageMinDepth: undefined,

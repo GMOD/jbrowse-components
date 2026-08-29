@@ -93,9 +93,9 @@ function makeResolved(overrides: Partial<PileupDataResult>): ResolvedBlock {
 }
 
 const OPTS: HitTestOptions = {
-  showCoverage: false,
   showInterbaseIndicators: false,
-  coverageHeight: 50,
+  // 0 = the coverage band is off, so the row tests own every y
+  coverageHeight: 0,
   coverageMaxDepth: undefined,
   coverageSnpMinFrequency: 0,
   topOffset: 50,

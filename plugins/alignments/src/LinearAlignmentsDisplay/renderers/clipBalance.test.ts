@@ -148,7 +148,6 @@ function state(): RenderState {
     colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 1,
-    showCoverage: true,
     coverageHeight: 50,
     coverageYOffset: 5,
     coverageMinDepth: 0,

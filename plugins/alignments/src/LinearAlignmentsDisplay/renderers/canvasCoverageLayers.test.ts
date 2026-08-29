@@ -126,7 +126,6 @@ const SCALE: CoverageScale = {
 
 // A resolved domain and the interbase toggle on, so every layer's gate passes.
 const STATE = makeTestRenderState({
-  showCoverage: true,
   coverageHeight: 100,
   coverageMaxDepth: 50,
   coverageMinDepth: 0,

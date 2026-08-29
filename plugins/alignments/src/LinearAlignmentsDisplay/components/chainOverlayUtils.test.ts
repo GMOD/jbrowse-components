@@ -6,9 +6,13 @@ import {
 } from '../renderers/rendererTypes.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 
-import type { RenderState } from '../renderers/rendererTypes.ts'
+import type { ArcBandInput, RenderState } from '../renderers/rendererTypes.ts'
 
-function makeState(overrides: Partial<RenderState> = {}): RenderState {
+// `computeArcBand` keeps its own (showCoverage, raw height) input — the render
+// state carries only the reserved height — so this helper serves both halves.
+function makeState(
+  overrides: Partial<RenderState & ArcBandInput> = {},
+): RenderState & ArcBandInput {
   return {
     scrollTop: 0,
     readConnectionsLineWidth: 1,
