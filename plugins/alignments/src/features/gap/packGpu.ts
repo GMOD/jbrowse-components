@@ -1,10 +1,10 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
-import { countMarks } from '../mark.ts'
+import { countMarks, markEnd, markStart } from '../mark.ts'
 import { DELETION_MARK, SKIP_MARK } from './mark.ts'
 
-import type { PileupMark } from '../mark.ts'
+import type { SpanMark } from '../mark.ts'
 import type { GapUploadData } from './types.ts'
 
 // Two passes over one worker payload and one shader, each taking its own kind
@@ -21,8 +21,9 @@ export const SKIP_PASS = {
   pack: (data: GapUploadData) => packGaps(data, SKIP_MARK),
 }
 
-export function packGaps(data: GapUploadData, mark: PileupMark<GapUploadData>) {
+export function packGaps(data: GapUploadData, mark: SpanMark<GapUploadData>) {
   const rows = mark.rows(data)
+  const end = markEnd(mark, data, rows)
   const F_F32 = gapShader.INSTANCE_OFFSET_F32
   const F_U32 = gapShader.INSTANCE_OFFSET_U32
   const s32 = gapShader.INSTANCE_STRIDE_WORDS
@@ -32,7 +33,7 @@ export function packGaps(data: GapUploadData, mark: PileupMark<GapUploadData>) {
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let o = 0
-  for (let i = 0; i < rows.length; i++) {
+  for (let i = markStart(mark, data); i < end; i++) {
     if (mark.selects(data, i)) {
       u32[o + F_U32.startOff] = mark.startBp(data, i)
       u32[o + F_U32.endOff] = mark.endBp(data, i)

@@ -1,8 +1,10 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
+import { countMarks, markEnd, markStart } from '../mark.ts'
+import { INSERTION_PACK_MARK } from './mark.ts'
 
-import type { CigarUploadData } from '../../shared/uploadTypes.ts'
+import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
 
 export const INSERTION_PASS = {
   ...slangPass({
@@ -12,26 +14,30 @@ export const INSERTION_PASS = {
   pack: packInsertions,
 }
 
-// Reads from the merged interbase array's first `numInsertions` entries —
-// the worker lays out interbases as (insertions, softclips, hardclips).
-export function packInsertions(data: CigarUploadData): ArrayBuffer {
-  const n = data.numInsertions
+// The insertion mark's own slice of the merged interbase array, uploaded as the
+// painter and the hit test read it — see `insertionMark` for where that bound is
+// declared.
+export function packInsertions(data: InterbaseUploadData): ArrayBuffer {
+  const mark = INSERTION_PACK_MARK
+  const rows = mark.rows(data)
+  const end = markEnd(mark, data, rows)
   const F_F32 = insertionShader.INSTANCE_OFFSET_F32
   const F_U32 = insertionShader.INSTANCE_OFFSET_U32
   const s32 = insertionShader.INSTANCE_STRIDE_WORDS
-  const buf = new ArrayBuffer(n * insertionShader.INSTANCE_STRIDE_BYTES)
+  const buf = new ArrayBuffer(
+    countMarks(mark, data) * insertionShader.INSTANCE_STRIDE_BYTES,
+  )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
-  const pos = data.interbasePositions
-  const ys = data.interbaseYs
-  const lens = data.interbaseLengths
-  const freq = data.interbaseFrequencies
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F_U32.position] = pos[i]!
-    u32[o + F_U32.y] = ys[i]!
-    u32[o + F_U32.length] = lens[i]!
-    f32[o + F_F32.frequency] = freq[i]! / 255
+  let o = 0
+  for (let i = markStart(mark, data); i < end; i++) {
+    if (mark.selects(data, i)) {
+      u32[o + F_U32.position] = mark.startBp(data, i)
+      u32[o + F_U32.y] = rows[i]!
+      u32[o + F_U32.length] = data.interbaseLengths[i]!
+      f32[o + F_F32.frequency] = data.interbaseFrequencies[i]! / 255
+      o += s32
+    }
   }
   return buf
 }

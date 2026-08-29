@@ -75,7 +75,15 @@ test.each([
   (_name, mismatchAlpha, filterByFrequency) => {
     for (const [i, instance] of instances().entries()) {
       expect(shaderAlpha(instance, mismatchAlpha, filterByFrequency)).toBe(
-        PER_BASE_LETTER_MARK.alpha(DATA, i, state(mismatchAlpha), PX_PER_BP),
+        // A cell is one base wide, so its on-screen width and the zoom are the
+        // same number here — `paintMarks` passes both.
+        PER_BASE_LETTER_MARK.alpha(
+          DATA,
+          i,
+          state(mismatchAlpha),
+          PX_PER_BP,
+          PX_PER_BP,
+        ),
       )
     }
   },

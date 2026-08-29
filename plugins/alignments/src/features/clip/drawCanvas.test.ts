@@ -4,6 +4,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Records the fillStyle in effect at each fillRect, so we can read back the
@@ -68,11 +69,18 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
   }
 }
 
-function oneSoftclip(frequency: number) {
+// The merged interbase array with one entry, in the softclip slice: the worker
+// lays it out as (insertions, softclips, hardclips) and `SOFTCLIP_MARK` reads
+// the counts to find its own half.
+function oneSoftclip(frequency: number): InterbaseUploadData {
   return {
-    softclipPositions: new Uint32Array([100]),
-    softclipYs: new Uint16Array([0]),
-    softclipFrequencies: new Uint8Array([frequency]),
+    interbasePositions: new Uint32Array([100]),
+    interbaseYs: new Uint16Array([0]),
+    interbaseLengths: new Uint32Array([5]),
+    interbaseFrequencies: new Uint8Array([frequency]),
+    numInsertions: 0,
+    numSoftclips: 1,
+    numHardclips: 0,
   }
 }
 

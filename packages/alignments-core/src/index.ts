@@ -17,6 +17,7 @@ export {
   SERIF_HALF_W_PX,
   drawIndicatorTriangle,
   drawInsertionMarker,
+  drawInsertionSerifs,
   formatInsertionLabel,
   getInsertionType,
   insertionBarWidth,

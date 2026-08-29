@@ -81,39 +81,57 @@ export interface MarkCanvas2D<Data> {
  * - `cell` floors one-sidedly into the base's own cell (`makePileupCellMapper`,
  *   matching mismatch.slang's snapped left edge) and contains the INTEGER
  *   `basePos`.
+ * - `point` has NO genomic extent — it sits on the edge BETWEEN two reference
+ *   bases — so it centres a declared pixel width on the fractional `genomicPos`
+ *   and contains a cursor within a declared bp tolerance of it.
  *
- * Pairing them wrong is a reversed-block bug, not a rounding one: on a reversed
- * block bp runs leftward, so `genomicPos` inside base b's leftmost pixel column
- * is b+1 exactly. `bpAtPx` owns that pivot and `bpAtPxExact` does not, and the
- * two coordinates are on `CigarCoords` side by side for this reason.
+ * Pairing the first two wrong is a reversed-block bug, not a rounding one: on a
+ * reversed block bp runs leftward, so `genomicPos` inside base b's leftmost
+ * pixel column is b+1 exactly. `bpAtPx` owns that pivot and `bpAtPxExact` does
+ * not, and the two coordinates are on `CigarCoords` side by side for this
+ * reason.
  */
-export type MarkShape = 'span' | 'cell'
+export type MarkShape = 'span' | 'cell' | 'point'
 
-// One feature's mark, as its three consumers need it. Every member takes
+// What every mark states whatever its shape. Every member takes
 // `(data, index)` rather than an instance object: these loops run per mark per
 // frame and per covered bp, and `fillSpanRect`'s own note sets the bar — sharing
 // anything out of them has to allocate nothing.
-export interface PileupMark<Data> {
-  shape: MarkShape
+interface MarkCommon<Data> {
   // The pileup row of every instance, one entry per instance. Both the array
   // `findTopmostOnRow` scans and the length every consumer's loop is bounded by,
   // so the count is not a second expression free to disagree.
   rows: (data: Data) => ArrayLike<number>
-  // The mark's absolute genomic extent, half-open. THE span: the packer uploads
-  // it, the painter projects it and the hit test contains a cursor in it.
+  // Which SLICE of `rows` this mark owns, half-open. Absent is all of it, which
+  // is every feature holding its own arrays. The interbase features share ONE
+  // merged array the worker lays out as (insertions, softclips, hardclips), so
+  // each of their three marks is a slice of it — and the bound belongs to the
+  // mark rather than to each walker, which is how the packer and the hit test
+  // came to spell the same arithmetic twice. `findTopmostOnRow` already takes
+  // the pair for exactly this reason.
+  //
+  // Two members rather than one returning a pair, for the reason above: nothing
+  // here allocates.
+  rangeStart?: (data: Data) => number
+  rangeEnd?: (data: Data) => number
+  // Where the mark sits, absolutely. A `span`/`cell` mark's extent runs from
+  // here to `endBp`; a `point` has none and this is the bp edge it stands on.
   startBp: (data: Data, index: number) => number
-  endBp: (data: Data, index: number) => number
   // Which entries of a shared array this mark owns. A feature whose kinds are
   // separate draw layers builds one mark per layer, and between them they still
   // cover each entry exactly once.
   selects: (data: Data, index: number) => boolean
-  // Drawn opacity, 0 for a mark that paints nothing. `widthPx` is the mark's
-  // true on-screen span, which is what the shader's fades test.
+  // Drawn opacity, 0 for a mark that paints nothing. `widthPx` is what the mark
+  // occupies on screen — its true genomic span for `span`/`cell`, its drawn bar
+  // for a `point` — and `pxPerBp` the zoom, because a point's fades measure the
+  // zoom itself: with no extent of its own there is nothing else for them to
+  // test (insertion.slang and clip.slang both fade on `pxPerBp`).
   alpha: (
     data: Data,
     index: number,
     state: RenderState,
     widthPx: number,
+    pxPerBp: number,
   ) => number
   // Whether the mark may intercept a click, which is NOT `alpha > 0` and must
   // not be keyed off it. Visibility is gradual and significance is a threshold:
@@ -129,13 +147,62 @@ export interface PileupMark<Data> {
   canvas2d: MarkCanvas2D<Data>
 }
 
+// A mark with a genomic extent: the packer uploads the span, the painter
+// projects it and the hit test contains a cursor in it.
+export interface SpanMark<Data> extends MarkCommon<Data> {
+  shape: 'span' | 'cell'
+  endBp: (data: Data, index: number) => number
+}
+
+/**
+ * A mark on a bp EDGE. An insertion sits between two reference bases and a clip
+ * at an alignment's boundary, so neither has a `startBp`/`endBp` to be widened
+ * or contained — what it has instead is a drawn width and a hit tolerance.
+ *
+ * They are two members rather than one derivation, and that is a measurement
+ * rather than a preference: an insertion's tolerance IS its drawn bar plus two
+ * pixels either side, while a clip's is `max(0.5 bp, 3 px)` — a floor in bp,
+ * which no width rule expresses. Writing the tolerance down per feature keeps
+ * insertion's stated as the relationship it is (`widthPx / 2 + slop`, one
+ * expression reading the member the painter draws from) and stops clip's from
+ * looking like one it isn't.
+ */
+export interface PointMark<Data> extends MarkCommon<Data> {
+  shape: 'point'
+  // The mark's drawn width in CSS px, centred on `startBp`. THE width: the
+  // painter fills it and a tolerance derived from it cannot drift from what was
+  // drawn. The GPU sizes its own quad from the shader's twin of this rule.
+  widthPx: (data: Data, index: number, pxPerBp: number) => number
+  // How far from `startBp` a cursor still hits, in bp. Wider than the ink on
+  // purpose — a 1px bar is not a clickable target — which is why the drawn
+  // rect is the floor of the draw-against-hit gate rather than its bound.
+  hitToleranceBp: (data: Data, index: number, coords: CigarCoords) => number
+}
+
+// One feature's mark, as its three consumers need it.
+export type PileupMark<Data> = SpanMark<Data> | PointMark<Data>
+
+// The first index a mark owns, and one past its last.
+export function markStart<Data>(mark: PileupMark<Data>, data: Data) {
+  return mark.rangeStart?.(data) ?? 0
+}
+
+export function markEnd<Data>(
+  mark: PileupMark<Data>,
+  data: Data,
+  rows: ArrayLike<number>,
+) {
+  return mark.rangeEnd?.(data) ?? rows.length
+}
+
 // How many instances a mark owns — what a packer allocates for. Counted rather
 // than over-allocated: `uploadPass` reads the instance count off the buffer's
 // own byteLength, so trailing capacity would draw.
 export function countMarks<Data>(mark: PileupMark<Data>, data: Data) {
-  const n = mark.rows(data).length
+  const rows = mark.rows(data)
+  const end = markEnd(mark, data, rows)
   let count = 0
-  for (let i = 0; i < n; i++) {
+  for (let i = markStart(mark, data); i < end; i++) {
     if (mark.selects(data, i)) {
       count++
     }
@@ -155,6 +222,11 @@ export function countMarks<Data>(mark: PileupMark<Data>, data: Data) {
  * `style` receives the resolved alpha, because the opaque case — every mark once
  * zoomed in — wants a CSS string the caller hoisted out of the loop rather than
  * one formatted per instance.
+ *
+ * `decorate` is the point glyph's second half. The shape library's point IS the
+ * centred bar, drawn here from `widthPx` so one expression serves both features;
+ * anything a feature draws ON that bar is its own, and insertion's serif caps
+ * are the only such thing in tree.
  */
 export function paintMarks<Data>(
   ctx: Ctx2D,
@@ -163,39 +235,60 @@ export function paintMarks<Data>(
   frame: MarkFrame,
   state: RenderState,
   style: (alpha: number, data: Data, index: number) => string,
+  decorate?: (
+    ctx: Ctx2D,
+    xCenter: number,
+    top: number,
+    height: number,
+    data: Data,
+    index: number,
+    pxPerBp: number,
+  ) => void,
 ) {
+  const m = mark
   const { block, bpLength, fullBlockWidth } = frame
-  const { bandTop, bandHeight, contiguous } = mark.canvas2d
-  const rows = mark.rows(data)
+  const { bandTop, bandHeight, contiguous } = m.canvas2d
+  const rows = m.rows(data)
+  const end = markEnd(m, data, rows)
   const fH = state.featureHeight
   const pxPerBp = fullBlockWidth / bpLength
   // Two closures per draw call rather than per mark, and only for the shape that
   // wants them — `makeCellLeftMapper` owns the reversed-block pivot every one of
   // the five cell painters had wrong at once.
   const cell =
-    mark.shape === 'cell'
+    m.shape === 'cell'
       ? makePileupCellMapper(block, bpLength, fullBlockWidth, contiguous)
       : undefined
-  for (let i = 0; i < rows.length; i++) {
-    if (mark.selects(data, i)) {
+  for (let i = markStart(m, data); i < end; i++) {
+    if (m.selects(data, i)) {
       const rowY = pileupRowY(rows[i]!, state)
       if (!pileupRowOffCanvas(rowY, state)) {
-        const startBp = mark.startBp(data, i)
-        // The mark's TRUE on-screen span, which is what the shader's fades test
-        // — gap.slang spells this same product, and a drawn width that has been
-        // clamped or seam-fudged is deliberately not it.
-        const widthPx = (mark.endBp(data, i) - startBp) * pxPerBp
-        const alpha = mark.alpha(data, i, state, widthPx)
+        const startBp = m.startBp(data, i)
+        // What the mark occupies on screen: its TRUE genomic span for a span or
+        // a cell — gap.slang spells this same product, and a drawn width that
+        // has been clamped or seam-fudged is deliberately not it — and for a
+        // point, which has no span, the width its own rule draws.
+        const widthPx =
+          m.shape === 'point'
+            ? m.widthPx(data, i, pxPerBp)
+            : (m.endBp(data, i) - startBp) * pxPerBp
+        const alpha = m.alpha(data, i, state, widthPx, pxPerBp)
         if (alpha > 0) {
           ctx.fillStyle = style(alpha, data, i)
           const top = bandTop(data, i, rowY, fH)
           const height = bandHeight(data, i, fH)
-          if (cell) {
+          if (m.shape === 'point') {
+            // Centred on the bp edge, which is where the mark IS: there are no
+            // two edges to order, so a reversed block needs nothing here.
+            const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+            ctx.fillRect(x - widthPx / 2, top, widthPx, height)
+            decorate?.(ctx, x, top, height, data, i, pxPerBp)
+          } else if (cell) {
             ctx.fillRect(cell.cellX(startBp), top, cell.w, height)
           } else {
             const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
             const x2 = bpToScreenX(
-              mark.endBp(data, i),
+              m.endBp(data, i),
               block,
               bpLength,
               fullBlockWidth,
@@ -221,6 +314,11 @@ export function paintMarks<Data>(
  * which is where the two are one decision — so the two cannot disagree about
  * which bases a mark occupies. That is the drift with no cross-backend gate,
  * because every gate this repo has is GPU vs Canvas2D.
+ *
+ * A `point` is the one shape whose hit target is deliberately WIDER than its
+ * ink, since a 1px bar is not something a person can click. What keeps that from
+ * being drift is that both come off the same declaration: the tolerance is a
+ * member beside `widthPx` rather than a constant at a call site.
  */
 export function findMarkAt<Data>(
   mark: PileupMark<Data>,
@@ -228,22 +326,26 @@ export function findMarkAt<Data>(
   coords: CigarCoords,
   filterByFrequency: boolean,
 ) {
-  const rows = mark.rows(data)
+  const m = mark
+  const rows = m.rows(data)
   const { basePos, genomicPos } = coords
   const contains =
-    mark.shape === 'cell'
-      ? (i: number) => basePos === mark.startBp(data, i)
-      : (i: number) =>
-          genomicPos >= mark.startBp(data, i) &&
-          genomicPos < mark.endBp(data, i)
+    m.shape === 'cell'
+      ? (i: number) => basePos === m.startBp(data, i)
+      : m.shape === 'point'
+        ? (i: number) =>
+            Math.abs(genomicPos - m.startBp(data, i)) <
+            m.hitToleranceBp(data, i, coords)
+        : (i: number) =>
+            genomicPos >= m.startBp(data, i) && genomicPos < m.endBp(data, i)
   return findTopmostOnRow(
     rows,
-    0,
-    rows.length,
+    markStart(m, data),
+    markEnd(m, data, rows),
     coords.row,
     i =>
-      mark.selects(data, i) &&
-      mark.hittable(data, i, coords, filterByFrequency) &&
+      m.selects(data, i) &&
+      m.hittable(data, i, coords, filterByFrequency) &&
       contains(i),
   )
 }

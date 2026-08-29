@@ -9,7 +9,7 @@ import {
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
 
-import type { PileupMark } from '../mark.ts'
+import type { SpanMark } from '../mark.ts'
 import type { GapUploadData } from './types.ts'
 
 const isSkip = (data: GapUploadData, index: number) =>
@@ -40,7 +40,7 @@ export interface GapKinds {
 // One gap: a deletion bar or an intron centerline over a reference span on one
 // pileup row. Twin of gap.slang, which branches on the same byte for the same
 // two reasons — the band it fills and the fade it applies.
-export function gapMark(kinds: GapKinds): PileupMark<GapUploadData> {
+export function gapMark(kinds: GapKinds): SpanMark<GapUploadData> {
   return {
     shape: 'span',
     rows: data => data.gapYs,

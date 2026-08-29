@@ -1,56 +1,41 @@
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import {
-  bpToScreenX,
-  frequencyFade,
-  pileupRowOffCanvas,
-  pileupRowY,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { paintMarks } from '../mark.ts'
+import { HARDCLIP_MARK, SOFTCLIP_MARK } from './mark.ts'
 
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
+import type { PointMark } from '../mark.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 type ColorTuple = RenderState['colors']['colorSoftclip']
 
 function drawClipBars(
   ctx: Ctx2D,
-  positions: Uint32Array,
-  ys: Uint16Array,
-  frequencies: Uint8Array,
+  mark: PointMark<InterbaseUploadData>,
+  region: InterbaseUploadData,
   colorTuple: ColorTuple,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  const fH = state.featureHeight
-  const pxPerBp = fullBlockWidth / bpLength
   const opaque = rgb255(colorTuple)
-
-  for (let i = 0; i < positions.length; i++) {
-    const yRow = ys[i]!
-    const y = pileupRowY(yRow, state)
-    if (pileupRowOffCanvas(y, state)) {
-      continue
-    }
-    const bp = positions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    // Sub-pixel frequency fade, mirroring clip.slang.
-    const alpha = frequencyFade(state, pxPerBp, frequencies[i]!)
-    ctx.fillStyle = alpha >= 1 ? opaque : rgba255(colorTuple, alpha)
-    ctx.fillRect(x - 0.5, y, 1, fH)
-  }
+  paintMarks(
+    ctx,
+    mark,
+    region,
+    { block, bpLength, fullBlockWidth },
+    state,
+    alpha => (alpha >= 1 ? opaque : rgba255(colorTuple, alpha)),
+  )
 }
 
 export function drawSoftclips(
   ctx: Ctx2D,
-  region: {
-    softclipPositions: Uint32Array
-    softclipYs: Uint16Array
-    softclipFrequencies: Uint8Array
-  },
+  region: InterbaseUploadData,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -58,9 +43,8 @@ export function drawSoftclips(
 ) {
   drawClipBars(
     ctx,
-    region.softclipPositions,
-    region.softclipYs,
-    region.softclipFrequencies,
+    SOFTCLIP_MARK,
+    region,
     state.colors.colorSoftclip,
     block,
     bpLength,
@@ -71,11 +55,7 @@ export function drawSoftclips(
 
 export function drawHardclips(
   ctx: Ctx2D,
-  region: {
-    hardclipPositions: Uint32Array
-    hardclipYs: Uint16Array
-    hardclipFrequencies: Uint8Array
-  },
+  region: InterbaseUploadData,
   block: DrawBlock,
   bpLength: number,
   fullBlockWidth: number,
@@ -83,9 +63,8 @@ export function drawHardclips(
 ) {
   drawClipBars(
     ctx,
-    region.hardclipPositions,
-    region.hardclipYs,
-    region.hardclipFrequencies,
+    HARDCLIP_MARK,
+    region,
     state.colors.colorHardclip,
     block,
     bpLength,

@@ -37,7 +37,6 @@ import { COVERAGE_LAYERS } from './coverageLayers.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   bpToScreenX,
-  interbaseRangeEnds,
   pileupRowY,
   sectionRegionKey,
   sectionRenderState,
@@ -56,6 +55,7 @@ import type { OverlapsUploadData } from '../../features/overlap/types.ts'
 import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types.ts'
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
+import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
 import type { CoverageLayer } from './coverageLayers.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
@@ -82,18 +82,8 @@ export interface Canvas2DRegionData
     ModificationUploadData,
     OverlapsUploadData,
     PerBaseQualityUploadData,
+    InterbaseUploadData,
     PerBaseLetterUploadData {
-  // interbase arrays sliced from merged worker buffer
-  insertionPositions: Uint32Array
-  insertionYs: Uint16Array
-  insertionLengths: Uint32Array
-  insertionFrequencies: Uint8Array
-  softclipPositions: Uint32Array
-  softclipYs: Uint16Array
-  softclipFrequencies: Uint8Array
-  hardclipPositions: Uint32Array
-  hardclipYs: Uint16Array
-  hardclipFrequencies: Uint8Array
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array
@@ -104,10 +94,14 @@ export interface Canvas2DRegionData
   indicatorPackedBuffer: ArrayBuffer
 }
 
-// Builds all CIGAR-derived canvas fields. The merged interbase array is
-// partitioned as [insertions | softclips | hardclips] by the worker.
+// Builds all CIGAR-derived canvas fields. The merged interbase array travels
+// whole, with the three counts that partition it as
+// [insertions | softclips | hardclips]: the insertion and clip painters read it
+// through their marks, which declare their own slice of it, so the packer, the
+// painter and the hit test now bound their walks by one expression rather than
+// three. The nine pre-sliced views this used to hand the painters were that
+// third expression.
 function buildCigarFields(data: CigarUploadData) {
-  const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
   return {
     // gap positions store [start, end] pairs
     gapPositions: data.gapPositions,
@@ -119,16 +113,13 @@ function buildCigarFields(data: CigarUploadData) {
     mismatchBases: data.mismatchBases,
     mismatchFrequencies: data.mismatchFrequencies,
     mismatchQuals: data.mismatchQuals,
-    insertionPositions: data.interbasePositions.subarray(0, insEnd),
-    insertionYs: data.interbaseYs.subarray(0, insEnd),
-    insertionLengths: data.interbaseLengths.subarray(0, insEnd),
-    insertionFrequencies: data.interbaseFrequencies.subarray(0, insEnd),
-    softclipPositions: data.interbasePositions.subarray(insEnd, scEnd),
-    softclipYs: data.interbaseYs.subarray(insEnd, scEnd),
-    softclipFrequencies: data.interbaseFrequencies.subarray(insEnd, scEnd),
-    hardclipPositions: data.interbasePositions.subarray(scEnd, hcEnd),
-    hardclipYs: data.interbaseYs.subarray(scEnd, hcEnd),
-    hardclipFrequencies: data.interbaseFrequencies.subarray(scEnd, hcEnd),
+    interbasePositions: data.interbasePositions,
+    interbaseYs: data.interbaseYs,
+    interbaseLengths: data.interbaseLengths,
+    interbaseFrequencies: data.interbaseFrequencies,
+    numInsertions: data.numInsertions,
+    numSoftclips: data.numSoftclips,
+    numHardclips: data.numHardclips,
     softclipBasePositions: data.softclipBasePositions,
     softclipBaseYs: data.softclipBaseYs,
     softclipBaseBases: data.softclipBaseBases,
@@ -146,16 +137,13 @@ const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
   mismatchBases: new Uint8Array(0),
   mismatchFrequencies: new Uint8Array(0),
   mismatchQuals: new Uint8Array(0),
-  insertionPositions: new Uint32Array(0),
-  insertionYs: new Uint16Array(0),
-  insertionLengths: new Uint32Array(0),
-  insertionFrequencies: new Uint8Array(0),
-  softclipPositions: new Uint32Array(0),
-  softclipYs: new Uint16Array(0),
-  softclipFrequencies: new Uint8Array(0),
-  hardclipPositions: new Uint32Array(0),
-  hardclipYs: new Uint16Array(0),
-  hardclipFrequencies: new Uint8Array(0),
+  interbasePositions: new Uint32Array(0),
+  interbaseYs: new Uint16Array(0),
+  interbaseLengths: new Uint32Array(0),
+  interbaseFrequencies: new Uint8Array(0),
+  numInsertions: 0,
+  numSoftclips: 0,
+  numHardclips: 0,
   softclipBasePositions: new Uint32Array(0),
   softclipBaseYs: new Uint16Array(0),
   softclipBaseBases: new Uint8Array(0),

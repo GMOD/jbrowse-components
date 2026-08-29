@@ -221,6 +221,23 @@ export function drawInsertionMarker(
 ) {
   const w = insertionBarWidth(length, pxPerBp, height)
   ctx.fillRect(xCenter - w / 2, y, w, height)
+  drawInsertionSerifs(ctx, xCenter, y, height, length, pxPerBp)
+}
+
+// The caps alone, without the bar under them. Split out because the bar is the
+// shape library's point glyph — plugin-alignments draws it from the insertion
+// mark's own `widthPx`, through the one `fillRect` every point mark shares — and
+// what remains is the decoration this feature adds on top. A long insertion has
+// no caps, and neither has any insertion zoomed out past
+// `INSERTION_SERIF_MIN_PX_PER_BP`.
+export function drawInsertionSerifs(
+  ctx: DrawCtx,
+  xCenter: number,
+  y: number,
+  height: number,
+  length: number,
+  pxPerBp: number,
+) {
   const isLong = length >= LONG_INSERTION_MIN_LENGTH
   if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
     drawSerif(ctx, xCenter, y, y + SERIF_H_PX)
