@@ -1,11 +1,11 @@
 ---
 name: a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d
-description: a visual call; the 41% is measured and neither side is obviously wrong
+description: a visual call; the 41% is measured, and MAF settled the same call on the same axis by taking the floor
 metadata:
   area: variants, backends
   category: visual-call
   order: 3
-  first_move: "a visual call; the 41% is measured and neither side is obviously wrong"
+  first_move: "a visual call, and MAF answered it on this axis on 2026-08-28 (`398d3dc7a8`, the row band takes the shader floor) — say why the matrix differs, or delegate the way it did"
 ---
 
 # A sub-pixel matrix row draws 1px on the GPU and thinner on Canvas2D
@@ -53,3 +53,25 @@ from. What the alignments verdict does buy you is the mechanism already worked
 out and a second worked example of what the snap-versus-fractional split does to
 a picture — so this call can be taken on its own merits without re-deriving any
 of that.
+
+## A third instance landed on the row axis, and took the floor
+
+`398d3dc7a8` (2026-08-28) gave MAF's Canvas2D row band the shader's floor.
+`rowBandGeometry` was a hand-written spelling of `rowRect.slang`'s `rowBandPx`
+that omitted `MIN_DRAWN_ROW_PX`, so the painter, the overlays and the SVG export
+drew sub-pixel rows thinner than the GPU — thin enough to miss every pixel
+center and drop out — and it now delegates to the generated twins
+`drawnRowHeightPx` / `rowBandOffsetPx`, with a parity test across sub-pixel and
+normal heights.
+
+**That is this entry's call, on this entry's axis, decided the other way.** The
+alignments verdict above is about pixel COLUMNS, and the Canvas2D comment this
+entry leans on says "decimates sub-pixel columns" — also columns. MAF is rows,
+the failure mode it names is the one a 0.09px row has, and the answer there was
+to match the shader.
+
+The shared floor now has two Canvas2D consumers reading it out of
+`rowRect.slang` — MAF and `LinearMultiRowFeatureDisplay/rendering/rowBand.ts` —
+and `variantMatrix.slang`'s `drawnCellHeightPx` is a fourth spelling of the same
+`1.0` whose Canvas2D side alone does not take it. Whoever takes this should say
+why the matrix differs from MAF, or delegate the way MAF did.

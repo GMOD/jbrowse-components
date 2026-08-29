@@ -1,11 +1,11 @@
 ---
 name: read-the-cross-backend-drift-the-aa-ramp-conversion-predicts
-description: all four converted; run the gate with the MSAA sample count held fixed
+description: all four converted, but the capsule extraction has since moved the dotplot again and rewritten the wiggle-line control; re-baseline before reading a number
 metadata:
   area: shaders, GPU
   category: ready
   order: 2
-  first_move: "all four converted; run the gate with the MSAA sample count held fixed, on a worktree with no second `runner.ts` in it"
+  first_move: "the capsule extraction (`8a9c288605`, 2026-08-29) moved two of the watched sites after the conversions, one of them the control — decide what the baseline is before running anything"
 ---
 
 # Read the cross-backend drift the AA ramp conversion predicts
@@ -31,6 +31,8 @@ pairs, max 0.62%, median 0.00% — not merely somewhere else. `Dotplot View`,
 `Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks` are all in CI scope,
 so all four sites are watched. The wiggle line plots at the top of that
 distribution were already linear, so they are the control rather than the target.
+**Neither the control nor the dotplot is still what that sentence says** — the
+last section here is why.
 
 **Two things a re-run needs that the first two attempts did not have.** Both
 died to a *second* `browser-tests/runner.ts` running in the same worktree — one
@@ -75,3 +77,32 @@ Hi-C/LD diamonds. A run spanning both changes produces a drift table neither
 effort can attribute, so record the commit it was measured at. The antialiasing
 section of [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) carries the
 coverage table and this same warning.
+
+## The capsule extraction moved two of the watched sites, one of them the control
+
+`8a9c288605` (2026-08-29) pulled the capsule SDF the dotplot line renderer and
+wiggle's linecenter each carried into a shared `capsule.slang`, and both now
+shade through `capsuleCoverage`
+([reference/SHADER_SHAPE_LIBRARY.md](../reference/SHADER_SHAPE_LIBRARY.md) is the
+writeup). What matters here is only that it is **analytic** — wiggleLine's
+fragment notes "nothing here takes a derivative" — so it is neither shape
+`antialias.slang` offers, and it replaced the ramp at both sites.
+
+Two consequences for the number this entry is owed, and they are different:
+
+- **The dotplot moved twice.** `856cdbcd86` (2026-08-22) gave the capsule the
+  linear ramp, which is the conversion this entry predicts a drop from;
+  `8a9c288605` then replaced that ramp with analytic coverage. A run taken now
+  measures the sum against a distribution recorded before either, and the
+  prediction is about the first one alone.
+- **The wiggle line is no longer a control.** It was one on the grounds that
+  it was already linear and so should not move; `wiggleLine.slang` was
+  rewritten in the same commit, so `BigWig Tracks` and `Wiggle Color Change`
+  can now move for a reason that has nothing to say about the ramp.
+
+`Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks` are untouched by
+this and still read as posed. So either take the prediction on those three and
+say the dotplot is out of frame, or re-baseline the distribution at
+`8a9c288605` first and give up the before/after on the dotplot entirely. What
+does not work is quoting one run against the 66-pair table as though it
+answered the question.

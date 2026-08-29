@@ -43,3 +43,10 @@ The visual call is which of three:
   overrides plus the link colour do not cover the toolkit-free components: a
   `styleOverrides` hatch cannot reach a `makeStyles` div at all, so the set of
   things it misses grows with every component that leaves MUI.
+
+`ViewContainer.tsx` is the worked instance of that last sentence, and a fourth
+patch site. Its focus ring reaches for `secondary.contrastText` because
+`primary.main` on the header's grape band was "drawn, measured on screen, and
+all but invisible" (`03982f1e70`) — a different ground from the `#121212` paper
+above, the same midnight, and hand-written in a `makeStyles` block no
+`styleOverrides` hatch could have reached.

@@ -29,3 +29,12 @@ debounce interact in a way the code does not make obvious, so a
 `RenderAlignmentData` call count over a scripted zoom on a real BAM is worth more
 than any reading of `FetchVisibleRegions`. If the number is small this closes as
 a note in the reference doc.
+
+**There is a published claim on the other end of it.** The
+`zoom-in-refetch` record is quoted on `website/docs/developer_guides/optimizations.md`, and its `current`
+column is 0ms in every case — zoom no longer waits on a fetch. It was measured
+on 2026-08-05, three weeks before the bin landed (`e3f9fb7eb4`, 2026-08-24),
+and its six cases all colour by the default scheme, so the bin does not
+falsify it. But per-base is now the one mode that can refetch on a zoom, and
+whether the public page owes a caveat is decided by the count this entry asks
+for.

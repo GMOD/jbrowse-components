@@ -33,8 +33,8 @@ different unit after seeing a result turns an estimate into a search.
 
 **The frame's HEAD is not today's, and the gap is growing.** The frame and its
 draw were built by `73ed883192` on 2026-08-21 — "`v4.3.0..HEAD` is 12,714
-commits" is that HEAD — and 914 commits have landed since (checked 2026-08-26),
-40 of them inside the seven units still owed. That does not license a redraw,
+commits" is that HEAD — and 1,229 commits have landed since (checked 2026-08-29),
+63 of them inside the seven units still owed. That does not license a redraw,
 which would defeat the pre-registration for the reason above. It bounds the
 CLAIM: what eight clean draws support is a statement about the tree as of the
 draw, and everything after it is outside the sample. Say which HEAD when quoting

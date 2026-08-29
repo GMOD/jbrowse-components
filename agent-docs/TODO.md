@@ -68,7 +68,7 @@ exists.
 | Item | Area | First move |
 | --- | --- | --- |
 | [Verify the shared rect/continuation buffer on real hardware](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed, and no unit test on the Canvas2D path can see a wrong attribute offset |
-| [Read the cross-backend drift the AA ramp conversion predicts](todo/read-the-cross-backend-drift-the-aa-ramp-conversion-predicts.md) | shaders, GPU | all four converted; run the gate with the MSAA sample count held fixed, on a worktree with no second `runner.ts` in it |
+| [Read the cross-backend drift the AA ramp conversion predicts](todo/read-the-cross-backend-drift-the-aa-ramp-conversion-predicts.md) | shaders, GPU | the capsule extraction (`8a9c288605`, 2026-08-29) moved two of the watched sites after the conversions, one of them the control — decide what the baseline is before running anything |
 | [Render webgpu in the blocking cross-backend gate job](todo/render-webgpu-in-the-blocking-cross-backend-gate-job.md) | browser tests, CI | the drift half landed — the capture no longer scrolls and the eight alignments pairs came back on their own, so `test:browser:gate` renders webgpu. `:gate:ci` cannot: the runner has no Firefox Nightly and no display, so webgpu still ships ungated |
 | [Sample the seven remaining random release-validation units](todo/sample-the-seven-remaining-random-release-validation-units.md) | release validation, tests | read `git status` first — a worktree that ran a sweep is dirty until proven otherwise. Seven of the estimate's eight draws are outstanding, and the estimate is what says the release is safe |
 <!-- END GENERATED TODO READY INDEX -->
@@ -89,7 +89,7 @@ rather than unsettled ones.
 | --- | --- | --- |
 | [Midnight primary is invisible on the dark-stock ground](todo/midnight-primary-is-invisible-on-the-dark-stock-ground.md) | palette, theme | pick one of three; never re-tint a single component. 1.18 contrast on every primary element of the stock dark theme, and the set the two `styleOverrides` hatches miss grows with each component that leaves MUI |
 | [The interbase stack overruns its half-band at a split-read breakpoint](todo/the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint.md) | alignments | a visual call; the overflow is measured, no fix is chosen — and it eats 50% of the coverage bars at exactly the locus someone navigates to |
-| [A sub-pixel matrix row draws 1px on the GPU and thinner on Canvas2D](todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md) | variants, backends | a visual call; the 41% is measured and neither side is obviously wrong |
+| [A sub-pixel matrix row draws 1px on the GPU and thinner on Canvas2D](todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md) | variants, backends | a visual call, and MAF answered it on this axis on 2026-08-28 (`398d3dc7a8`, the row band takes the shader floor) — say why the matrix differs, or delegate the way it did |
 <!-- END GENERATED TODO VISUAL-CALL INDEX -->
 
 ## Measure first: the premise or the cost attribution is unconfirmed
