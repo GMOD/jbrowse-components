@@ -1309,8 +1309,11 @@ genuinely different:
 
 - **Distance already in pixels** (synteny `perpCoverage`, the dotplot capsule,
   wiggle's center-line capsule and the xyplot bar's horizontal cuts): `|∇d| = 1`,
-  so the half-width is `aaHalfPx(dpr)` and there is nothing to differentiate.
-  Needs a `devicePixelRatio` uniform. **A varying set from the same screen y the
+  so the full width is `aaPx(dpr)` and there is nothing to differentiate. Call
+  `edgeCoverage(signedInkCssPx, dpr)`, which is the only spelling of this and
+  the only one the build can see — a shader reaching it without a
+  `devicePixelRatio` uniform fails `pnpm gen:shaders`
+  ([ADR-098](../architecture-decision-records/adr-098-one-ramp-one-unit-and-the-build-checks-it.md)). **A varying set from the same screen y the
   vertex converts to clip is in this case**, not the next one — it is affine in
   screen y with unit slope, so the ramp is one output pixel wide by
   construction; `syntenyTypes.slang`'s `vertCoverage` and `wiggle.slang`'s
@@ -1403,7 +1406,8 @@ change on one build produce a number neither effort can attribute, so record the
 commit any drift table was measured at.
 
 **A ramp needs geometry to live in.** Widening one without padding the quad
-clips it: the dotplot capsule quad is now `halfWidth + aaHalfPx` on both axes, with
+clips it: the dotplot capsule quad is `halfWidth + aaHalfPx(dpr)` on both axes — the
+reach exactly, since over-padding shades fragments to alpha 0 and blends them anyway — with
 a `discard` for the fragments the pad introduces. The tests for this
 (`shaders/dotplotCapsulePad.test.ts`, `shaders/glyphEdgeAlpha.test.ts`, and the
 pre-existing `syntenyFillPad.test.ts`) mirror the shader in TS and assert the
