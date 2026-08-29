@@ -181,9 +181,9 @@ both put the genomics into **transforms over rows already in memory**:
   `flattenCigar`, `alignmentMismatches`. It publishes
   `@genome-spy/core/dist/schema.json`, generated from its TypeScript spec types
   with `ts-json-schema-generator`, and every example starts with `$schema`.
-  Its marks compose scales the way
-  [ideas/a-shape-composes-a-scale](../ideas/a-shape-composes-a-scale.md)
-  proposes, at the same seam: hand-written vertex GLSL calls generated
+  Its marks compose scales the way this tree now composes them
+  ([ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)),
+  at the same seam: hand-written vertex GLSL calls generated
   `getScaled_<channel>()` accessors over a shared scale-primitive library,
   with domains wired to uniforms so pan and zoom never touch a vertex buffer.
 
@@ -293,13 +293,11 @@ assembly defines — and the schema takes the rest into the editor.
 it.** Everything assessed here is a grammar a *reader* writes or a *third party*
 authors against. A shape-and-scale vocabulary inside `render-core` is neither: it
 registers nothing, holds no config slot and crosses no RPC boundary, so ADR-091's
-reopening condition does not govern it. The tree already has both halves —
-`rowRect.slang` and `scoreScale.slang` — and four shaders that each spell a
-scaled colour channel their own way.
-[ideas/a-shape-composes-a-scale](../ideas/a-shape-composes-a-scale.md) is the
-plan, with the gates. Do not read the three questions as one: the spec form,
-the authoring surface and the shader library got different answers on different
-evidence.
+reopening condition does not govern it. That composition landed —
+[ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
+is the decision and the measured results. Do not read the three questions as
+one: the spec form, the authoring surface and the shader library got different
+answers on different evidence.
 
 **Still open from the parked idea:** lowering the jb2export modifiers onto the
 slot names so `color:tag:HP` and `"colorBy": {"type": "tag", "tag": "HP"}`

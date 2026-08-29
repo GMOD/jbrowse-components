@@ -9,9 +9,9 @@ summary: "Constant, per-instance value, per-instance palette index, and per-inst
 
 Accepted (2026-08-28). This ADR describes what five live shaders already do; it
 proposes nothing and carries no gate — a description of the tree cannot fail.
-[ideas/a-shape-composes-a-scale](../ideas/a-shape-composes-a-scale.md) is the
-plan that acts on the rule, and that plan's gates are its own; nothing beyond
-the description is committed here.
+[ADR-095](adr-095-a-shape-composes-a-scale-at-compile-time.md) records the work
+that acted on the rule and its measured gates; nothing beyond the description is
+committed here.
 
 On the colour axis this ADR replaces
 [ADR-090](adr-090-a-mark-is-a-shape-plus-its-channels.md)'s ruling that "a
@@ -85,8 +85,8 @@ factors:
   (`ldValueComputed`, -2 → transparent).
 
 So the composition the cardinality admits is shape × scale × ramp, with the
-scale staying per-consumer. The idea doc holds the plan that builds it; this
-ADR holds only the rule the five shaders already obey.
+scale staying per-consumer. ADR-095 records the work that built it; this ADR
+holds only the rule the five shaders already obey.
 
 ## Consequences
 
@@ -103,6 +103,6 @@ ADR holds only the rule the five shaders already obey.
   channel is, not about extracting helpers (ADR-040's subject) or generating
   code (ADR-051's); a composition acting on the rule is compile-time `slangc`
   inlining of hand-written modules, the form both of those ADRs already allow.
-- No gate, no kill condition. The plan in
-  [ideas/a-shape-composes-a-scale](../ideas/a-shape-composes-a-scale.md)
-  carries both for the work that acts on the rule.
+- No gate, no kill condition.
+  [ADR-095](adr-095-a-shape-composes-a-scale-at-compile-time.md) records the
+  gates and results of the work that acted on the rule.

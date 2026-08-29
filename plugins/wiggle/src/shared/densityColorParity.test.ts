@@ -14,7 +14,7 @@ import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 
 import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 
-// Gate C of agent-docs/ideas/a-shape-composes-a-scale.md: both backends land on
+// Gate C of agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md: both backends land on
 // the same density colour, swept across every scale type. The GPU path is
 // wiggleDensity.slang's vertex stage —
 //
@@ -286,7 +286,7 @@ describe.each(CASES)(
   },
 )
 
-// The Step 3 gauge (agent-docs/ideas/a-shape-composes-a-scale.md): a named
+// The named-ramp gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md): a named
 // ramp on a density track colours both backends through ONE 256-entry LUT —
 // the same bytes the GPU uploads as the density pass's texture and the
 // Canvas2D/SVG painter indexes as a fillStyle LUT — with each side landing

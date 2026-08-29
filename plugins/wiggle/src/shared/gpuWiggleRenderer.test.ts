@@ -279,7 +279,7 @@ describe('GpuWiggleRenderer', () => {
     expect(drawCalls[0]!.args[2]).toBe('fill')
   })
 
-  // Gate A of agent-docs/ideas/a-shape-composes-a-scale.md, instrumented as
+  // Gate A of agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md, instrumented as
   // bytes rather than writes counted: density's autoscale domain re-resolves
   // against the visible data on every pan, and because the score stays in the
   // instance buffer and the domain stays a uniform, that pan costs one uniform
@@ -321,7 +321,7 @@ describe('GpuWiggleRenderer', () => {
     expect(writes.at(-1)!.args[0]).toBe(UNIFORMS_SIZE_BYTES)
   })
 
-  // The Step 3 gauge (agent-docs/ideas/a-shape-composes-a-scale.md): a named
+  // The named-ramp gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md): a named
   // ramp on a density track is a uniform flag and one 256×1 LUT upload through
   // the shared path — no new shader, no buffer byte. The LUT bytes are the
   // cached table Canvas2D indexes too (densityColorParity.test.ts holds the

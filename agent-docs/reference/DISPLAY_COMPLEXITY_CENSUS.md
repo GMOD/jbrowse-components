@@ -28,10 +28,10 @@ more. Re-measure before quoting, and prefer a figure you took yourself.
 
 That ordering is the finding. Work aimed at the drawing layer is aimed at the
 part already in the best shape — which is why the render-path proposals that
-survived this census moved to
-[a-shape-composes-a-scale](../ideas/a-shape-composes-a-scale.md) as a
-*factoring* exercise rather than a simplification one, and why the placement
-half was retired outright on a re-census.
+survived this census moved out as a *factoring* exercise rather than a
+simplification one (landed;
+[ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
+is the record), and why the placement half was retired outright on a re-census.
 
 ## Where the declaration cost sits
 
