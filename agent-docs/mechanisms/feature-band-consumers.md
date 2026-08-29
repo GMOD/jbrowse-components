@@ -73,13 +73,21 @@ making it unit-testable without booting a tree, so it is owed anyway.
 ## What a band consumer owes, and the failure behind each
 
 Seven rules, each independently rediscovered by at least two plugins. This list is
-the point of the doc: they are cheap to follow and expensive to derive.
+the point of the doc: they are cheap to follow and expensive to derive. The first
+two stopped being prose in
+[ADR-096](../architecture-decision-records/adr-096-a-bands-contract-is-a-type-its-allocator-is-a-function.md):
+`@jbrowse/core/util/bandLayout` is the contract (`Band`, `reservedPx`,
+`stackBands`), each display folds its stack through it once, and per-display
+sabotage tests keep the enforcement honest.
 
 - **Off spends 0 px, not a clamped minimum.** A band whose toggle leaves a floor
-  behind moves every committed figure by that floor.
+  behind moves every committed figure by that floor. `reservedPx` is the single
+  spelling.
 - **The reserver and the painter read one function.** A painter that thinks the
   band is taller than the layout reserved paints over the plot's first row, and
-  nothing fails — it just looks like a rendering bug.
+  nothing fails — it just looks like a rendering bug. The fold's output is that
+  one function, and the paint/pick payloads carry reserved heights, never a
+  flag beside a raw height.
 - **`showX` is not `xActive`.** The slots live on the display that can *paint* the
   band; a display that reserves one it cannot fill takes the height from its rows
   and leaves it blank.
@@ -109,9 +117,11 @@ answer to both.
   serving one member is
   [ADR-050](../architecture-decision-records/adr-050-track-containers-are-not-view-types.md)'s
   declined `trackContainer` group again.
-- **Don't generalize the band allocators.** `computeBandStack` is five lines and
-  `variantTopBandsGeometry` is twenty. Sticky coverage, scrolling sections and a
-  fixed top band differ where they should; what they share is this doc, not code.
+- **Don't generalize the band allocators.** Sticky coverage, scrolling sections
+  and a fixed top band differ where they should. What they share is the
+  ten-line fold and the `Band` contract (ADR-096) — the allocators around it
+  (`belowCoverageBandsGeometry`, `computeStackedSections`,
+  `variantTopBandsGeometry`, MAF's `topBands`) stay per-display functions.
 - **Don't package a consumer's fit chain until a second consumer exists.** The
   producing display's own chain is welded to its incremental layout memos and
   cannot consume the extraction, so a shared block would serve one caller.
@@ -126,7 +136,8 @@ A band consumer is ~400 lines of executable glue. It has historically also been
 ~500 lines of prose re-deriving the seven rules above, because each was previously
 findable only inside the plugin that learned it. Re-derivation is the cost, and a
 named contract is the fix — not a framework, which would leave the rules exactly
-where they were and add a registry on top.
+where they were and add a registry on top. ADR-096 is that contract for the two
+rules a fold can carry; this doc keeps teaching the other five.
 
 Subsystem depth stays where it is:
 [reference/MULTI_SAMPLE_VARIANTS.md](../reference/MULTI_SAMPLE_VARIANTS.md) for

@@ -143,8 +143,9 @@ Sharing more is not better, and each of these is a decision with a reason:
   is in that ADR.
 - **The band allocators.**
   [mechanisms/feature-band-consumers](../mechanisms/feature-band-consumers.md)
-  declined generalizing them, correctly — `computeBandStack` is five lines and
-  sticky coverage and scrolling sections differ where they should.
+  declined generalizing them, correctly — sticky coverage and scrolling
+  sections differ where they should, and what the displays share is the `Band`
+  contract and its fold (ADR-096), not the allocators around it.
 
 ## Two ways this goes wrong quietly
 
