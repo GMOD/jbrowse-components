@@ -1,6 +1,6 @@
 ---
 name: a-display-declares-itself
-description: A multi-level simplification target whose Level 0 has RUN and been REJECTED, and whose subject, defineDisplay, was then removed from the tree with it (ADR-091, which also rejects ADR-089 and ADR-090) — read the Result section at the top before anything else. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) left behind was rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. Levels 0.5 to 5 below are written against a factory that no longer exists; what survives of them is the census, the placement question (Level 2) and the band contract (Level 4) — Levels 0.5, 3 and 5 fell with the factory and Level 1, and Level 0 CONFIRMED RFC-001 §2's "the complex case needs the full shape regardless" on §2's own example rather than falsifying it. The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check. Every count in this doc is a 2026-08-24 snapshot and ALL of them had drifted by 2026-08-28 — re-measure, don't quote. The claim that genome-spy "has no pileup" is wrong and corrected inline, and the mark counts are re-taken with denominators stated. The position statement survives only as its boundary clause; the render-path half of Level 1 moved to a-shape-composes-a-scale, which is the live plan.
+description: A multi-level simplification target whose Level 0 has RUN and been REJECTED, and whose subject, defineDisplay, was then removed from the tree with it (ADR-091, which also rejects ADR-089 and ADR-090) — read the Result section at the top before anything else. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) left behind was rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. Levels 0.5 to 5 below are written against a factory that no longer exists; what survives of them is the census and the band contract (Level 4) — Levels 0.5, 3 and 5 fell with the factory and Level 1, Level 2 (placement) was RETIRED on a 2026-08-28 re-census that found packing already merged the narrow way and drop-versus-sentinel to be five consumer-correct conventions rather than a two-sided conflict, and Level 0 CONFIRMED RFC-001 §2's "the complex case needs the full shape regardless" on §2's own example rather than falsifying it. The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check. Every count in this doc is a 2026-08-24 snapshot and ALL of them had drifted by 2026-08-28 — re-measure, don't quote. The claim that genome-spy "has no pileup" is wrong and corrected inline, and the mark counts are re-taken with denominators stated. The position statement survives only as its boundary clause; the render-path half of Level 1 moved to a-shape-composes-a-scale, which is the live plan.
 ---
 
 # A display declares itself
@@ -155,16 +155,19 @@ cross-cutting mixin for a setting until that seam has a check.**
   six-variant union with a nested six-field `modifications` object inside it.
   **The declaration standardizes a setting's plumbing — where the value lives,
   what changing it invalidates, how it must be read — and not its meaning.**
-- **Only Levels 2 and 4 stand** — an earlier revision claimed 0.5, 3 and 5 stood
-  too, which the doc's own dependency table contradicts (retracted 2026-08-28).
+- **Only Level 4 stands** — an earlier revision claimed 0.5, 3 and 5 stood too,
+  which the doc's own dependency table contradicts (retracted 2026-08-28), and
+  Level 2 was retired by the re-census the same day (see its own section).
   Level 0.5's subject, `packages/display-kit/src/marks.ts`, was removed from the
   tree with ADR-091, so a level about reconciling two mark systems has one left
   to reconcile: whether alignments' mark can take its row band as an argument,
   which [one-mark-declaration-per-feature](one-mark-declaration-per-feature.md)
   now owns. Level 3 depends on 0.5 and then on Level 1's per-instance channels,
   both gone. Level 5 opens with "Once Level 1 lands", and Level 1 will not land.
-  Level 2 (placement) was always independent; Level 4 (the band contract)
-  depends only on it.
+  Level 2 (placement) was always independent, and is now retired on its own
+  evidence; Level 4 (the band contract) depended only on it and survives it,
+  because what it takes from placement is the rows half's *contract*, not a
+  shared implementation.
 
 ---
 
@@ -566,6 +569,54 @@ is the one that decides whether the table is a table.
 ---
 
 ### Level 2 — Name the placement
+
+> **RETIRED 2026-08-28, on a re-census.** The placement primitive is dead on
+> current evidence. Both halves of the move below have since been answered
+> against it, and the level's own precondition — "settle drop-versus-sentinel
+> before designing the signature" — turns out to be unsettleable, because there
+> is no longer a two-sided conflict to settle. The section is kept unedited
+> below; read this block first.
+>
+> **Packing already merged, the narrow way.**
+> `packages/core/src/util/layouts/placeRect.ts` is the shared row-packer, and
+> its header (`:1-36`) is an argument *against* merging further: it enumerates
+> how it differs from `GranularRectLayout` in keys, scaling and state ownership,
+> and closes by saying which to reach for when. The remaining canvas packer is
+> not a copy waiting to be folded in — it is stateful across frames and
+> self-seeding (`plugins/canvas/src/LinearBasicDisplay/layout.ts` `seedRowsFrom`
+> `:865`, threaded at `:946`), which is the property a pure primitive over a
+> caller-owned array deliberately does not have.
+>
+> **Drop-versus-sentinel is not two conventions, it is five, and each is
+> correct for its consumer.** The level assumed a binary that a wider census
+> does not find:
+>
+> | Display | Unplaced row | Why it is right there |
+> | --- | --- | --- |
+> | MAF | dropped | everything downstream keys on `rowIndex` and would collide on a shared sentinel (`placeMafRows.ts:22-26`) |
+> | variants | `HIDDEN_ROW` `0x00ffffff` | every painter's Y-cull already discards it, so the sentinel costs no branch, and it is exactly representable in float32 (`shared/constants.ts`) |
+> | multi-row | `undefined` | its walkers already branch per feature, because a legend toggle hides a category the same way (`LinearMultiRowFeatureDisplay/rendering/featurePainting.ts:53-69`) |
+> | wiggle | silently omitted | it iterates the display's own `sources`, never the payload's, so a missing source is simply not reached (`shared/buildSourceRenderData.ts:183-186`) |
+> | canvas packing | `OFFSCREEN_Y` `-1e6`, read back through `isPlacedRow` | the sentinel has to survive a fit transform, so it is a magnitude rather than a flag (`LinearBasicDisplay/rowPlacement.ts:8,18`) |
+>
+> A primitive taking this as a parameter is a union of five functions sharing a
+> name; one picking a side breaks four downstreams. And the two original sides
+> are each pinned by a named test asserting the opposite thing —
+> `placeMafRows.test.ts:65` "a genome the display is not drawing is dropped, not
+> shifted" against `rowPlacement.test.ts:141` "a row the display is not drawing
+> is placed off-canvas, not at row 0" — so this is not drift anyone is free to
+> converge.
+>
+> **What was actually worth having is already had.** The invariant the level
+> exists to name — *a reorder re-places, never refetches* — is enforced
+> behaviorally rather than by a type, in each display that has it, by keeping
+> the row list out of the fetch key. The census's one real residue was that
+> wiggle relied on it without a test; that test now exists
+> (`MultiLinearWiggleDisplay/fetchAutorun.test.ts`, "a reorder re-places rows
+> without refetching"), and closing it is the whole of what this level returned.
+>
+> Level 4 is unaffected: it takes the rows half's *contract*, which is what
+> survives here, and never depended on one implementation of it.
 
 **Today.** Five implementations, and two of them open with the same paragraph.
 Read the doc comments on `maf/LinearMafDisplay/placeMafRows.ts` and
