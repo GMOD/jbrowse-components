@@ -15,6 +15,7 @@
 //! export-consts: ARC_COLOR_INTERCHROM, ARC_LINE_DASH_PX, ARC_LINE_GAP_PX
 
 import alignmentsUniforms;
+import antialias;
 import hpmath;
 
 
@@ -61,7 +62,7 @@ struct VsOut {
   float4 color    : COLOR0;
   // Signed horizontal offset from the tick's centre, in CSS px. The quad is
   // expanded by exactly this much, so |∇dx| is 1 and the AA ramp is a constant
-  // (see STROKE_AA_PX).
+  // (see antialias.slang).
   float  dx       : COLOR1;
   // The resolved half stroke width, carried rather than recomputed in the
   // fragment so the quad the vertex stage expanded and the ink the fragment
@@ -90,7 +91,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float2 local = quadLocal(vid);
   o.halfWidthPx = arcStrokeHalfPx(inst.lineWidthPx, u);
-  float hw = o.halfWidthPx + STROKE_AA_PX;
+  float hw = o.halfWidthPx + aaHalfPx(u.devicePixelRatio);
   o.dx = (local.x * 2.0 - 1.0) * hw;
   o.bandY = local.y * u.arcBandH;
 
@@ -105,12 +106,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float alpha = strokeCoverage(abs(fragIn.dx), fragIn.halfWidthPx, u.dpr);
+  float alpha = edgeCoverage(fragIn.halfWidthPx - abs(fragIn.dx), u.devicePixelRatio);
   // `dashCoverage` (alignmentsUniforms) is arcFlat.slang's pattern too. This
   // pass had its own, which measured the ON run straight off the wrap: a dash's
   // trailing edge ramped and its leading edge did not, so half of every dash
   // boundary in the band was the hard cut the quad expansion above exists to
   // avoid on the other axis.
-  alpha *= dashCoverage(fragIn.bandY, ARC_LINE_DASH_PX, ARC_LINE_GAP_PX, u.dpr);
+  alpha *= dashCoverage(fragIn.bandY, ARC_LINE_DASH_PX, ARC_LINE_GAP_PX, u.devicePixelRatio);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

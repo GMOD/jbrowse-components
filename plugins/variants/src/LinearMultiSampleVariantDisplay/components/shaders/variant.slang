@@ -7,6 +7,7 @@
 //! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
+import antialias;
 import hpmath;
 import colorPack;
 
@@ -101,6 +102,10 @@ struct Uniforms {
   float  rowHeight;
   float  scrollTop;
   float  zero;
+  // The inversion triangle's edge ramp is one OUTPUT pixel, and `localPx` is
+  // CSS px — so the fragment needs the ratio between them. The only device-px
+  // quantity in this block.
+  float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -181,7 +186,16 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     float w = fragIn.sizePx.x;
     float h = fragIn.sizePx.y;
     float d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);
-    alpha *= smoothstep(-0.5, 0.5, d);
+    // `d` is a true perpendicular distance in CSS px, so the ramp is analytic
+    // and one device pixel wide. It was `smoothstep(-0.5, 0.5, d)`: a CSS-px
+    // width, so twice as soft on a retina screen as on a plain one, and the
+    // cubic shape antialias.slang measured and rejected — up to 0.067 of full
+    // ink out at 45 degrees against the linear ramp's 0.043, on a mark whose
+    // whole distinguishing feature is a diagonal.
+    alpha *= edgeCoverage(d, u.devicePixelRatio);
+    // NOT an edge ramp: a whole-mark size fade, in CSS px on purpose, so a
+    // sub-pixel cell dims instead of flickering. Nothing here measures a
+    // distance to an edge.
     alpha *= smoothstep(0.0, 3.0, min(w, h));
   }
 

@@ -56,7 +56,7 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
       // `Math.max(MULTI_ROW_MIN_CELL_PX, …)` path — the same constant on both
       // sides, rather than the same digit. clip.pxW is dpr-scaled, so on hi-DPI
       // it would halve the min width.
-      viewportWidth: clip.scissorW,
+      minCellDenomPx: clip.scissorW,
       minCellPx: MULTI_ROW_MIN_CELL_PX,
       zero: 0,
       rowHeight: state.rowHeight,

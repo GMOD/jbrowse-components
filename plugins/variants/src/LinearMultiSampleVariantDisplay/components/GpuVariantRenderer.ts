@@ -1,4 +1,5 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -51,6 +52,7 @@ export class GpuVariantRenderer extends GpuPerRegionRenderingBackend<
       rowHeight: state.rowHeight,
       scrollTop: state.scrollTop,
       zero: 0,
+      devicePixelRatio: getDpr(),
     })
 
     this.hal.writeUniforms(this.uniformData)

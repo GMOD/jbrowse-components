@@ -7,7 +7,8 @@
 //   - Analytic, when the fragment's distance is a true perpendicular distance
 //     in CSS px. The HAL sizes the backing store by getDpr() and sets the
 //     viewport to canvas.width/height (DEVICE px) while coordinates stay CSS
-//     px, so one output sample spans 1/dpr CSS px. `aaHalfPx` is that number.
+//     px, so one output sample spans 1/dpr CSS px. `aaPx` is that number, and
+//     `edgeCoverage` is the only thing that should be spelling it.
 //   - Measured, when it is not — a quad-local SDF whose scale differs per
 //     shape, or a varying whose foreshortening the shader cannot state.
 //     `aaGradient` is that number.
@@ -45,16 +46,31 @@
 // manhattan's SHAPE_BAR: zero gradient makes the ramp zero-wide and the
 // division 0/0. A degenerate ramp saturates to alpha 1, which is the solid fill
 // those shapes want.
-//! js-skip: aaRamp — the stroke antialiasing ramp, measured per fragment; Canvas2D and SVG get their edge AA from the rasterizer. Split from strokeAaRamp for the referee, not for a consumer: check-oracle sweeps by signature, so a scalar core is swept whether or not anything imports it
-//! js-skip: aaHalfPx — half of one output pixel in CSS px, which only a fragment measuring in CSS px against a device-px grid needs; Canvas2D rasterizes in its own transform and never asks
+// A test modelling a shader's geometry needs the ramp's reach and its shape, so
+// both go to JS. Not for a Canvas2D twin — that side's rasterizer does its own
+// edge AA — but because the alternative is every pad test re-spelling `0.5/dpr`
+// and then agreeing with its own copy, which is what dotplotCapsulePad.test.ts
+// and syntenyFillPad.test.ts each did.
+//! js-export: aaPx, aaHalfPx, aaRamp, edgeCoverage
 module antialias;
 
-// Half-width of a ramp covering exactly one output pixel, in CSS px.
-// `max(dpr, 1.0)` is defensive — getDpr() never returns less — and keeps a
-// bogus uniform from inverting the ramp.
-public float aaHalfPx(float dpr) {
-  return 0.5 / max(dpr, 1.0);
+// Width of a ramp covering exactly one output pixel, in CSS px. THE conversion
+// between the two units in this file: a fragment measuring in CSS px against a
+// device-px grid asks for this and nothing else. `max(dpr, 1.0)` is defensive —
+// getDpr() never returns less — and keeps a bogus uniform from inverting the
+// ramp.
+public float aaPx(float dpr) {
+  return 1.0 / max(dpr, 1.0);
 }
+
+// Half of it: how far past the ink a ramp reaches, and so exactly how far a
+// vertex stage must pad its quad to hold one. A pad stated in CSS px instead
+// over-reaches by dpr — 2x on a plain monitor, 4x on a retina one — and every
+// fragment in the surplus shades to alpha 0.
+public float aaHalfPx(float dpr) {
+  return 0.5 * aaPx(dpr);
+}
+
 
 // One output pixel of `d`, in whatever units `d` is: the true gradient
 // magnitude per device pixel. Takes derivatives, so uniform control flow only.
@@ -66,6 +82,21 @@ public float aaGradient(float d) {
 // is positive inside the mark and zero on its boundary.
 public float aaRamp(float signedInk, float widthPx) {
   return clamp(signedInk / widthPx + 0.5, 0.0, 1.0);
+}
+
+// Coverage of a mark's edge for a fragment whose distance is a TRUE
+// perpendicular distance in CSS px, so its gradient is analytically 1 and there
+// is nothing for `aaGradient` to discover. `signedInkCssPx` is how far inside
+// the ink the fragment is: positive within, zero on the boundary.
+//
+// One function, because there is one ramp. It carries no cap and no shape —
+// a capsule, a butt-capped segment, a synteny ribbon edge and a wiggle bar all
+// reduce to this once their own distance is in hand, and spelling the width
+// again beside each of them is how `2.0 * aaHalfPx(dpr)` and
+// `STROKE_AA_PX / max(dpr, 1.0)` came to be the same number under two
+// constants, one of which no test could see double.
+public float edgeCoverage(float signedInkCssPx, float dpr) {
+  return aaRamp(signedInkCssPx, aaPx(dpr));
 }
 
 // A glyph SDF's edge, measured. `coverage` is positive inside and zero on the

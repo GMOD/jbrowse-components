@@ -1,4 +1,5 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -50,6 +51,9 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
       // hi-DPI displays.
       viewportWidth: clip.scissorW,
       pointRadius: state.pointDiameterPx / 2,
+      // The one device-px quantity here, and it only sizes the glyph quad's AA
+      // pad — every length above is CSS px.
+      devicePixelRatio: getDpr(),
     })
 
     this.hal.writeUniforms(this.uniformData)

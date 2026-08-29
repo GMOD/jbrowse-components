@@ -1,56 +1,20 @@
-// Shared round-capped stroked segment (a capsule): the quad that covers it,
-// the distance that shades it, and the analytic coverage over that distance.
-// The dotplot line renderer and wiggle's linecenter rendering each carried a
-// full copy — one start-anchored (`clamp` along the segment), one
-// center-anchored (`max(|x| - halfLen, 0)`) — algebraically the same SDF,
-// joined only by a fragment comment calling the other "the same shape, and the
-// same reason". Both consumers NEED the round cap: a dotplot dot is the
-// degenerate cap (a segment shorter than its width grows isotropically with
-// lineWidth), and linecenter's consecutive capsules share a cap centred on the
-// joint vertex so its max-blend pass unions them into a seamless round join at
-// any angle. Standard instanced SDF-line technique:
-// https://github.com/rreusser/webgpu-instanced-lines /
-// https://almarklein.org/line_rendering.html.
+// A stroked segment's frame, its quad and its distance. The round cap lives in
+// `capsuleDist` and nowhere else: the edge ramp over that distance is
+// `antialias`'s one `edgeCoverage`, shared with every butt-capped stroke in the
+// tree. Consumers, and which half each takes:
+// agent-docs/reference/SHADER_SHAPE_LIBRARY.md.
 //
-// alignments' arcFlat/linkedReadLine stroked segments are deliberately NOT
-// coverage consumers: their Canvas2D/SVG twins stroke default BUTT caps, so
-// their coverage is the butt form (alignmentsUniforms.slang). A cap-style flag
-// here would be a mode nobody asked for twice; the two forms are two named
-// coverages in their own homes.
+// `capsuleQuadLocal` pads by exactly `aaHalfPx(dpr)` past the ink. Pad less and
+// the ramp is clipped at the quad edge — coverage falls to 0.5 at the boundary,
+// the rasterizer cuts it to 0, and the line reads a hard 50%-alpha edge about a
+// pixel narrower than `lineWidth` asked for. Pad more and the surplus fragments
+// shade to alpha 0.
 //
-// What they take instead is the FRAME, which carries no cap — `linkedReadLine`
-// imports `capsuleFrame` for its diagonal. arcFlat imports nothing here at all:
-// its segment is horizontal by construction, so it adds `local` to a centre and
-// has no frame to orient. Said precisely because the looser version of this
-// sentence ("the frame is shared") sat here while linkedReadLine still spelled
-// its own copy — the same shape of untrue comment as the butt caps above.
-//
-// The pad is the contract between the halves: `capsuleQuadLocal` grows the
-// quad by exactly the coverage ramp's reach (halfWidth + aaHalfPx(dpr)) on
-// both axes, which is what lets `capsuleCoverage` use a constant analytic ramp
-// instead of a derivative. Pad one without the other and the ramp is clipped
-// at the quad edge, silently: coverage falls to 0.5 at the geometry boundary
-// and is then cut to 0 by the rasterizer — a hard 50%-alpha edge on the
-// diagonals, around a line ~1px narrower than lineWidth asked for.
-// dotplotCapsulePad.test.ts models the invariant.
-//
-// The coverage is analytic rather than measured: `capsuleDist` is a TRUE
-// Euclidean distance in CSS px, so |grad d| = 1 at every angle and one output
-// pixel is `2 * aaHalfPx(dpr)` with nothing to differentiate — and d comes off
-// a clamp, so at the 2x2 quads straddling the cap/body junction a derivative
-// would be of a discontinuous quantity.
-// `capsuleCoverage` and the degenerate threshold both go to JS, and neither is
-// for a Canvas2D twin — the rasterizer does that side's AA. They are the pad
-// tests' oracle: those tests model the vertex quad and the SDF in local
-// helpers, because a float2 signature cannot be lifted, and the two numbers
-// that decide how far the ramp reaches are exactly what a hand-written model
-// gets silently wrong. `dotplotCapsulePad.test.ts` had already drifted to the
-// pre-unification `1e-3` while passing, because it was checking its own copy.
-// `capsuleDist` and `capsuleQuadLocal` carry no skip because they need none:
-// both take or build a float2 and so are refused by the subset itself, which
-// the generated inventory already reports.
+// The distance is Euclidean in CSS px, so |grad d| = 1 at every angle and the
+// ramp is analytic rather than differentiated — which it has to be, since `d`
+// comes off a clamp and the 2x2 quads straddling the cap/body junction would be
+// differentiating a discontinuity.
 //! export-consts: CAPSULE_MIN_LEN_PX
-//! js-export: capsuleCoverage
 module capsule;
 
 import antialias;
@@ -95,9 +59,4 @@ public float2 capsuleQuadLocal(
 // degenerate segment — the circular dot of radius halfWidth.
 public float capsuleDist(float2 local, float halfLenPx) {
   return length(float2(max(abs(local.x) - halfLenPx, 0.0), local.y));
-}
-
-// One output pixel of linear ramp, centred on the capsule's edge.
-public float capsuleCoverage(float d, float halfWidthPx, float dpr) {
-  return aaRamp(halfWidthPx - d, 2.0 * aaHalfPx(dpr));
 }

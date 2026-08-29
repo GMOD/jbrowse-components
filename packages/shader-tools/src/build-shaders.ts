@@ -46,6 +46,12 @@ import path from 'node:path'
 
 import { pool } from './pool.ts'
 import {
+  assertDprDeclared,
+  assertNoDeadDprUniform,
+  dprConsumersCalled,
+  readsDprUniform,
+} from './shader-codegen/assertDprDeclared.ts'
+import {
   assertSharedUniformBlocksAgree,
   assertUniformLayoutMatches,
 } from './shader-codegen/assertUniformLayout.ts'
@@ -100,6 +106,7 @@ import {
   parseWgsl,
 } from './shader-codegen/wgslToJs.ts'
 
+import type { DprBlockUse } from './shader-codegen/assertDprDeclared.ts'
 import type { SharedUniformBlock } from './shader-codegen/assertUniformLayout.ts'
 import type { ShaderScan } from './shader-codegen/liftReport.ts'
 import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
@@ -373,6 +380,16 @@ const EXPORTED = new Set<string>()
 // a whole tree it is not: it would mean slangc renamed the declaration and every
 // shader is now skipped, which is the one failure a per-shader guard cannot see.
 let UNIFORM_BLOCKS_COMPARED = 0
+
+// How many shaders were found to convert CSS px to device px, tree-wide. Zero
+// over a full build means `assertDprDeclared`'s call patterns stopped matching
+// what slangc emits, not that the tree stopped antialiasing.
+let DPR_SHADERS = 0
+
+// The same reads, kept whole so the dead-field half can group them by the
+// module declaring the block — a shared block legitimately carries a field only
+// some of its passes read.
+const DPR_USES: DprBlockUse[] = []
 
 // Every shader's reflected uniform layout, tagged with the `.slang` file whose
 // struct declaration it is an instance of. A whole-tree collection because the
@@ -807,6 +824,12 @@ async function compileOne(log: Log, slangPath: string, source: string) {
         uniforms.totalBytes,
         { wgsl, glslVertex },
       )
+      const dprCalled = dprConsumersCalled({ wgsl, glslVertex, glslFragment })
+      DPR_SHADERS += assertDprDeclared(
+        path.relative(PROJECT_ROOT, slangPath),
+        uniforms.fields.map(f => f.name),
+        dprCalled,
+      )
       // The same layout also goes to the tree-wide parity check. The check
       // above compares a shader against its OWN emitted source, so shaders
       // sharing one declaration each pass it however far apart the group has
@@ -828,6 +851,12 @@ async function compileOne(log: Log, slangPath: string, source: string) {
         owner: path.relative(PROJECT_ROOT, owner),
         fields: uniforms.fields,
         totalBytes: uniforms.totalBytes,
+      })
+      DPR_USES.push({
+        shader: path.relative(PROJECT_ROOT, slangPath),
+        owner: path.relative(PROJECT_ROOT, owner),
+        fieldNames: uniforms.fields.map(f => f.name),
+        reads: readsDprUniform({ wgsl, glslVertex, glslFragment }),
       })
     }
 
@@ -1007,6 +1036,20 @@ async function main() {
     }
     console.log(
       `  ok: ${UNIFORM_BLOCKS_COMPARED} uniform block(s) agree with their emitted layout`,
+    )
+    if (DPR_SHADERS === 0) {
+      throw new Error(
+        `no shader was found to convert CSS px to device px, so the ` +
+          `devicePixelRatio check compared nothing. Nine did when it landed ` +
+          `— every arc pass, both capsule consumers, both point-glyph ` +
+          `consumers — so this means slangc stopped emitting those calls ` +
+          `under the names assertDprDeclared matches, and a shader can now ` +
+          `antialias against a constant unnoticed.`,
+      )
+    }
+    assertNoDeadDprUniform(DPR_USES)
+    console.log(
+      `  ok: ${DPR_SHADERS} shader(s) converting CSS px to device px declare the ratio`,
     )
     if (sharedStructs === 0) {
       throw new Error(

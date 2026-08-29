@@ -191,7 +191,7 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     mafShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
-      // viewportWidth feeds only the shader's `extendToMinWidthX` X-axis floor;
+      // minCellDenomPx feeds only the shader's `extendToMinWidthX` X-axis floor;
       // it never interacts with canvasHeight. Device px here gives a
       // 1-device-px minimum cell width (0.5 CSS px at dpr 2).
       //
@@ -211,7 +211,7 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
       // capture and not an argument; `agent-docs/ideas/maf-subpixel-cells.md`
       // has the three candidates, why alignments' `sizeAlpha` is not one of
       // them, and why fixing the dpr-dependence on its own is the wrong move.
-      viewportWidth: clip.pxW,
+      minCellDenomPx: clip.pxW,
       // The bare drawable-at-all floor. Multi-row asks for more (see
       // MULTI_ROW_MIN_CELL_PX); MAF's cells tile the row, so a sub-pixel cell is
       // read as part of the run around it rather than on its own.

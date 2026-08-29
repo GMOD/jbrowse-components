@@ -26,6 +26,7 @@
 //! export-consts: LINKED_READ_LINE_ALPHA, LINKED_READ_LINE_WIDTH_PX
 
 import alignmentsUniforms;
+import antialias;
 // The FRAME only. capsule.slang's cap is deliberately not this pass's — the
 // Canvas2D twin strokes butt caps, so the coverage stays buttSegmentCoverage
 // (alignmentsUniforms) and buttSegmentCoverage.test.ts fails if a round one
@@ -101,7 +102,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // segmentQuadLocal (alignmentsUniforms) owns the AA pad, paired with the
   // coverage the fragment measures with — the same pair arcFlat.slang uses.
   float halfLen = len * 0.5;
-  o.local = segmentQuadLocal(vid, halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5);
+  o.local =
+    segmentQuadLocal(vid, halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);
   o.halfLen = halfLen;
 
   float2 p = mid + dir * o.local.x + nrm * o.local.y;
@@ -119,9 +121,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // nothing here — this is the same measurement arcFlat.slang makes of its
   // horizontal one, and the same BUTT caps its drawCanvas strokes. The ramp is
   // a constant number of device pixels rather than a derivative
-  // (STROKE_AA_PX).
+  // (aaHalfPx).
   float alpha = buttSegmentCoverage(
-    fragIn.local, fragIn.halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.dpr);
+    fragIn.local, fragIn.halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);
   // Straight alpha; the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

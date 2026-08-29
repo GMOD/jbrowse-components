@@ -14,7 +14,7 @@ in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
 Scanned 43 shaders with entry points. 101 functions
-are inside the emitter's subset, of which **72 are exported**.
+are inside the emitter's subset, of which **74 are exported**.
 
 ## Candidates
 
@@ -33,15 +33,13 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 
 | Function | Signature | Why not |
 | --- | --- | --- |
-| `aaHalfPx` | `(f32) -> f32` | half of one output pixel in CSS px, which only a fragment measuring in CSS px against a device-px grid needs; Canvas2D rasterizes in its own transform and never asks |
-| `aaRamp` | `(f32, f32) -> f32` | the stroke antialiasing ramp, measured per fragment; Canvas2D and SVG get their edge AA from the rasterizer. Split from strokeAaRamp for the referee, not for a consumer: check-oracle sweeps by signature, so a scalar core is swept whether or not anything imports it |
 | `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | a 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
 | `dashCoverage` | `(f32, f32, f32, f32) -> f32` | the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it |
 | `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
-| `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
+| `discExpand` | `(f32, f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
 | `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the midpoint rule has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth), and the variant matrix floors in physical px against a canvas the Canvas2D twin sizes itself. A different rule, not a twin |
 | `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
@@ -108,12 +106,14 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
-| `capsuleCoverage` | tests only — `dotplotCapsulePad.test.ts` |
+| `aaHalfPx` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts` |
+| `aaPx` | nothing |
+| `aaRamp` | nothing |
+| `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts` |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `hueRampLane` | tests only — `mapqHueParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `normalizeScore` | tests only — `densityColorParity.test.ts`, `normalizeScoreParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
-| `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts` |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |

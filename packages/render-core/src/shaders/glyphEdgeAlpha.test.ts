@@ -11,7 +11,7 @@
 //      scaling would be silently mis-sized by any constant.
 //
 //   2. The ramp fits in the pad the quad leaves it. `discExpand` grows the quad
-//      by AA_PAD_PX CSS px past the glyph edge; a ramp reaching further is
+//      by aaHalfPx(dpr) CSS px past the glyph edge; a ramp reaching further is
 //      clipped by the rasterizer and the fade ends on a hard edge. This is what
 //      the previous `fwidth`-as-half-width spelling got wrong, and it got it
 //      wrong worst on the diagonals, where fwidth overshoots most.
@@ -21,7 +21,7 @@
 // DotplotDisplay/shaders/dotplotCapsulePad.test.ts.
 // SYNC: keep in step with antialias.slang's glyphEdgeAlpha and with the SDFs
 // in manhattan.slang.
-import { AA_PAD_PX } from './pointGlyph.generated.ts'
+import { aaHalfPx } from './antialias.js.generated.ts'
 
 const INV_SQRT5 = 1 / Math.sqrt(5)
 
@@ -180,8 +180,13 @@ describe('glyphEdgeAlpha ramp', () => {
     },
   )
 
+  // EQUALS, not "fits inside". The measured ramp reaches exactly half an output
+  // pixel past the edge whatever the shape — that is what taking the gradient
+  // buys — so the pad `discExpand` leaves is knowable exactly, and a pad merely
+  // big enough is one nobody can tell from a pad four times too big. `<=` held
+  // for any constant at or above 0.5 and is how a flat 1.0 CSS px survived.
   test.each(['disc', 'diamond', 'triangle'] as const)(
-    'fits inside the pad discExpand leaves: %s',
+    'the pad discExpand leaves is exactly the ramp reach: %s',
     shape => {
       for (const [x, y] of edgePoints(shape)) {
         for (const radiusPx of RADII_PX) {
@@ -193,7 +198,7 @@ describe('glyphEdgeAlpha ramp', () => {
               radiusPx,
               dpr,
             )
-            expect(reachCssPx).toBeLessThanOrEqual(AA_PAD_PX)
+            expect(reachCssPx).toBeCloseTo(aaHalfPx(dpr), 9)
           }
         }
       }
@@ -215,7 +220,7 @@ describe('glyphEdgeAlpha ramp', () => {
       fwidthMag,
     )
     expect(retired.widthDevicePx).toBeCloseTo(2 * Math.SQRT2, 6)
-    expect(retired.reachCssPx).toBeGreaterThan(AA_PAD_PX)
+    expect(retired.reachCssPx).toBeGreaterThan(aaHalfPx(1))
 
     // and on an axis-aligned facing it was merely 2x too wide, which is what
     // made the fade vary with position around one circle.

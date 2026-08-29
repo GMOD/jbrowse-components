@@ -25,7 +25,7 @@
 // shader in bare top-level helpers, and an import-less .test.ts is a global
 // script to TypeScript — so a second one collides with the first on every shared
 // helper name (TS2393).
-import { capsuleCoverage } from '@jbrowse/render-core/shaders/capsule'
+import { aaHalfPx, edgeCoverage } from '@jbrowse/render-core/shaders/antialias'
 import { CAPSULE_MIN_LEN_PX } from '@jbrowse/render-core/shaders/capsuleConsts'
 
 import { VERTS_PER_INSTANCE } from './dotplot.iface.generated.ts'
@@ -35,16 +35,21 @@ interface Pt {
   y: number
 }
 
-// How far past the ink's edge the fragment still writes coverage, found by
+// How far past the ink's edge the FRAGMENT still writes coverage, found by
 // asking the shader's own ramp rather than restating `0.5 / dpr`. Bisection
-// because capsuleCoverage is monotone in `d`: the answer is the largest
-// distance it still returns a non-zero for, and the pad has to cover it.
+// because the coverage is monotone in `d`: the answer is the largest distance
+// it still returns a non-zero for.
+//
+// This is deliberately not the same number as the quad's `ext` below. The whole
+// invariant is that the VERTEX stage's pad covers the FRAGMENT stage's reach,
+// and deriving one from the other makes every assertion here an identity — as
+// it was until the two came off separate shader functions.
 function reachFor(halfWidth: number, dpr: number) {
   let lo = halfWidth
   let hi = halfWidth + 4
   for (let i = 0; i < 80; i++) {
     const mid = (lo + hi) / 2
-    if (capsuleCoverage(mid, halfWidth, dpr) > 0) {
+    if (edgeCoverage(halfWidth - mid, dpr) > 0) {
       lo = mid
     } else {
       hi = mid
@@ -52,8 +57,6 @@ function reachFor(halfWidth: number, dpr: number) {
   }
   return hi
 }
-
-const aaHalfFor = (dpr: number) => reachFor(1, dpr) - 1
 
 // vs_main's tangent/normal, including the degenerate fallback for a segment too
 // short to have a direction.
@@ -134,14 +137,14 @@ function worstCrop(
   p1: Pt,
   p2: Pt,
   halfWidth: number,
-  aaHalf: number,
-  // What the vertex stage extends by. Defaults to the shader's own; the "do not
-  // reintroduce" test feeds the bare halfWidth it used to use.
-  vsExt = halfWidth + aaHalf,
+  dpr: number,
+  // What the vertex stage extends by — `capsuleQuadLocal`'s own expression.
+  // The "do not reintroduce" test feeds the bare halfWidth it used to use.
+  vsExt = halfWidth + aaHalfPx(dpr),
 ) {
   const { tx, ty, nx, ny, len } = segmentFrame(p1, p2)
   const ring = quadRing(p1, p2, vsExt)
-  const reach = halfWidth + aaHalf
+  const reach = reachFor(halfWidth, dpr)
   const N = 60
   let worst = 0
   for (let i = 0; i <= N; i++) {
@@ -183,7 +186,7 @@ describe('dotplot capsule vertex pad', () => {
   test.each(SEGMENTS)('contains the whole shaded region: %s', (_n, p1, p2) => {
     for (const halfWidth of HALF_WIDTHS) {
       for (const dpr of DPRS) {
-        expect(worstCrop(p1, p2, halfWidth, aaHalfFor(dpr))).toBe(0)
+        expect(worstCrop(p1, p2, halfWidth, dpr)).toBe(0)
       }
     }
   })
@@ -193,13 +196,25 @@ describe('dotplot capsule vertex pad', () => {
     // while the fragment ramped out to halfWidth + aa. Coverage reached the
     // geometry boundary at 0.5 and was cut to 0 there — a hard, aliased edge
     // around a line ~1px narrower than lineWidth.
-    const aaHalf = aaHalfFor(1)
     for (const [, p1, p2] of SEGMENTS) {
       for (const halfWidth of HALF_WIDTHS) {
-        expect(worstCrop(p1, p2, halfWidth, aaHalf, halfWidth)).toBeGreaterThan(
-          0,
+        expect(worstCrop(p1, p2, halfWidth, 1, halfWidth)).toBeGreaterThan(0)
+        expect(worstCrop(p1, p2, halfWidth, 1)).toBe(0)
+      }
+    }
+  })
+
+  // Containment alone only catches a pad that is too SMALL. A pad stated in CSS
+  // px rather than device px is too large instead — 2x at dpr 1, 4x at dpr 2 —
+  // and every fragment in the surplus shades to alpha 0 and is blended anyway.
+  // The contract is that the two are equal, so assert equality, not coverage.
+  test('the pad is exactly the reach, at every width and dpr', () => {
+    for (const halfWidth of HALF_WIDTHS) {
+      for (const dpr of DPRS) {
+        expect(halfWidth + aaHalfPx(dpr)).toBeCloseTo(
+          reachFor(halfWidth, dpr),
+          9,
         )
-        expect(worstCrop(p1, p2, halfWidth, aaHalf)).toBe(0)
       }
     }
   })
@@ -219,8 +234,8 @@ describe('dotplot capsule vertex pad', () => {
     // diagonal — and was then used as the ramp's half-width, so the ramp came
     // out 2 to 2.83 device px and varied with the segment's angle.
     for (const dpr of DPRS) {
-      const rampCssPx = 2 * aaHalfFor(dpr)
-      expect(rampCssPx * dpr).toBeCloseTo(1, 12)
+      const rampCssPx = 2 * (reachFor(1, dpr) - 1)
+      expect(rampCssPx * dpr).toBeCloseTo(1, 9)
     }
   })
 })

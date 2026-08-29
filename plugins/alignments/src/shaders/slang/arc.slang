@@ -61,9 +61,10 @@
 //! js-skip: arcIsFar — reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides
 
 import alignmentsUniforms;
+import antialias;
 
 
-// The hull needs enough segments that its ±(lineWidth/2 + STROKE_AA_PX) offsets
+// The hull needs enough segments that its ±(lineWidth/2 + aaHalfPx) offsets
 // still contain every pixel the analytic distance inks. Swept against the exact
 // SDF over the band's aspect-ratio range, 64 is the first power of two that
 // misses nothing; 48 leaves a couple of pixels short on the flattest domes.
@@ -228,7 +229,7 @@ public float2 arcRadiiPx(float halfWidthPx, float destYPx, float canvasWidthPx) 
 // 0.0245, a rate set by the ANGLE PER SEGMENT and so identical at every large
 // radius. The fragment measures the true, near-vertical curve, so the ink is
 // whatever that receding chord still covers: full width at the foot, tapering to
-// nothing at y ≈ 2·(halfWidth + STROKE_AA_PX)/0.0245 — about 100px for a hairline
+// nothing at y ≈ 2·(halfWidth + aaHalfPx)/0.0245 — about 100px for a hairline
 // in a 200px band, which is why the thicker (better-supported) arcs were also the
 // longer triangles. Doubling ARC_CURVE_SEGMENTS only halves the taper rate; it
 // converges to a truncated leg, not to a correct one.
@@ -284,7 +285,8 @@ Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
   // The band the pass is scissored to is u.arcBandH tall measured from the
   // anchor, so that — plus the stroke, so the cut is outside the band rather
   // than on its last row — is the whole of a leg that can be seen.
-  cv.legSweep = legSweepAngle(cv.radii.x, u.arcBandH + strokeHalfPx + STROKE_AA_PX);
+  cv.legSweep =
+    legSweepAngle(cv.radii.x, u.arcBandH + strokeHalfPx + aaHalfPx(u.devicePixelRatio));
   return cv;
 }
 
@@ -300,7 +302,7 @@ Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
 struct ArcVertex { float2 screen; float2 local; float legSide; };
 
 ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
-  float hw = halfWidthPx + STROKE_AA_PX;
+  float hw = halfWidthPx + aaHalfPx(u.devicePixelRatio);
   float2 p;
   float2 tang;
   float2 origin;
@@ -383,8 +385,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // the legs entirely while leaving under a pixel of the bar at each tip.
   if (abs(fragIn.legSide) < 0.999) { discard; }
   // |∇d| is analytically 1 per CSS px, so the AA ramp is a constant number of
-  // device pixels, not a derivative — see STROKE_AA_PX.
-  float alpha = strokeCoverage(arcDistance(fragIn), fragIn.halfWidthPx, u.dpr);
+  // device pixels, not a derivative — see antialias.slang.
+  float alpha =
+    edgeCoverage(fragIn.halfWidthPx - arcDistance(fragIn), u.devicePixelRatio);
   // Output straight alpha — the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

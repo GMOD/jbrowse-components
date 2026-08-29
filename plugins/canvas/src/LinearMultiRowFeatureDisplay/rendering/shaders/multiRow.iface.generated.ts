@@ -15,7 +15,7 @@ export const UNIFORMS_SIZE_BYTES = 48
 export const UNIFORM_OFFSET_F32 = {
   bpRangeX: 0,
   canvasHeight: 3,
-  viewportWidth: 4,
+  minCellDenomPx: 4,
   minCellPx: 5,
   zero: 6,
   rowHeight: 7,
@@ -27,7 +27,7 @@ export const UNIFORM_OFFSET_F32 = {
 export interface Uniforms {
   bpRangeX: [number, number, number]
   canvasHeight: number
-  viewportWidth: number
+  minCellDenomPx: number
   minCellPx: number
   zero: number
   rowHeight: number
@@ -41,7 +41,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[1] = uniforms.bpRangeX[1]
   f32[2] = uniforms.bpRangeX[2]
   f32[3] = uniforms.canvasHeight
-  f32[4] = uniforms.viewportWidth
+  f32[4] = uniforms.minCellDenomPx
   f32[5] = uniforms.minCellPx
   f32[6] = uniforms.zero
   f32[7] = uniforms.rowHeight

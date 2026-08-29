@@ -93,7 +93,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
       float radiusPx = u.scatterPointSize * 0.5;
       float2 local = q * 2.0 - float2(1.0, 1.0);
-      float expand = discExpand(radiusPx);
+      float expand = discExpand(radiusPx, u.devicePixelRatio);
       float halfPx = radiusPx * expand;
       sx = midX + pxToClipLen(local.x * halfPx, u.viewportWidth);
       sy = (1.0 - scoreYPx * pxToClip) + local.y * halfPx * pxToClip;

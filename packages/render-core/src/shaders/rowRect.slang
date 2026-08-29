@@ -11,9 +11,9 @@
 // Row placement comes from uniforms rather than the instance data, so a
 // rowHeight / rowProportion change re-renders without a refetch.
 //
-// What the two callers legitimately differ on is the min-width floor: both the
+// What the callers legitimately differ on is the min-width floor: both the
 // width they write into `minCellPx` and the *unit* they measure it in, via
-// `viewportWidth` (CSS px vs device px) — see GpuMafRenderer's note. Those are
+// `minCellDenomPx` (CSS px vs device px) — see GpuMafRenderer's note. Those are
 // uniform-write decisions, not a reason for two shaders. The unit is also
 // unsettled, and device px additionally makes MAF's floor depend on the
 // reader's monitor: `agent-docs/ideas/maf-subpixel-cells.md`.
@@ -34,10 +34,16 @@ public struct RowRectInstance {
 public struct RowRectUniforms {
   public float3 bpRangeX;      // [bpStartHi, bpStartLo, ±clippedLengthBp]
   public float  canvasHeight;  // CSS px
-  // Width the min-cell floor is measured against; the caller picks CSS or
-  // device px (see the module header).
-  public float  viewportWidth;
-  // Narrowest a cell is painted, in whatever unit `viewportWidth` is in.
+  // The width `minCellPx` is measured against, and so the thing that decides
+  // what unit `minCellPx` IS. Named for that rather than for the viewport
+  // because the three callers do not agree: multi-row and wiggle density pass
+  // a CSS width (a 1 CSS px floor), MAF passes a device one (1 device px, so
+  // half a CSS px on a retina screen and a floor that moves with the monitor).
+  // That disagreement is live and parked, not settled —
+  // agent-docs/ideas/maf-subpixel-cells.md — so the name carries it to every
+  // call site instead of a comment forty lines away.
+  public float  minCellDenomPx;
+  // Narrowest a cell is painted, in whatever unit `minCellDenomPx` is in.
   // MIN_DRAWN_CELL_PX is the floor a caller takes when it has no reason to
   // widen further; the multi-row painter does (see MULTI_ROW_MIN_CELL_PX).
   public float  minCellPx;
@@ -135,7 +141,7 @@ public float4 rowRectClipPos(
 
   float sx1 = hpToClipX(hpSplitUint(startBp), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(endBp), u.bpRangeX, u.zero);
-  sx2 = extendToMinWidthX(sx1, sx2, u.minCellPx, u.viewportWidth);
+  sx2 = extendToMinWidthX(sx1, sx2, u.minCellPx, u.minCellDenomPx);
 
   float yPx = lerp(rowY, rowY + band.height, local.y);
 

@@ -33,6 +33,10 @@ struct Uniforms {
   float  zero;
   float  viewportWidth;
   float  pointRadius;
+  // Only the glyph pad reads this: the disc ramp is one OUTPUT pixel, so the
+  // quad grows by aaHalfPx(dpr) CSS px. Every other length here is CSS px and
+  // stays that way (see the note on viewportWidth in GpuManhattanRenderer).
+  float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -71,9 +75,14 @@ struct VsOut {
   nointerpolation float shape : TEXCOORD1;
 };
 
-// Shape discriminators for the fragment shader. AA_PAD_PX and
-// SMALL_POINT_MAX_DIAMETER (and the disc SDF) come from the shared pointGlyph
-// module so they stay in lockstep with wiggle.slang.
+// Shape discriminators for the fragment shader. SMALL_POINT_MAX_DIAMETER and
+// the disc SDF come from the shared pointGlyph module so they stay in lockstep
+// with wiggle.slang.
+//
+// How far a ranged-SV bar is drawn past its genomic span, each side, in CSS px.
+// A run of adjacent bars leaves hairline gaps at their shared edges without it.
+// Nothing antialiases here — see the vertex branch.
+static const float BAR_OVERDRAW_PX = 1.0;
 static const float SHAPE_DISC = 0.0;
 static const float SHAPE_DIAMOND = 1.0;
 static const float SHAPE_TRI = 2.0;
@@ -120,8 +129,12 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
   o.color = unpackRGBA(inst.color);
   if (isBar) {
     // Horizontal bar from start→end, height 2*pointRadius px, centered on the
-    // score. 1px AA pad on each x edge so adjacent bars don't shimmer.
-    float padClipX = pxToClipLen(AA_PAD_PX, u.viewportWidth);
+    // score, overdrawn by BAR_OVERDRAW_PX on each x edge so adjacent bars abut
+    // instead of shimmering. Solid ink, not a pad: this branch sets SHAPE_BAR,
+    // whose fragment coverage is a constant 1. It borrowed the disc's AA pad
+    // until 2026-08-29, which made retuning the glyph ramp silently change how
+    // wide every ranged-SV bar draws.
+    float padClipX = pxToClipLen(BAR_OVERDRAW_PX, u.viewportWidth);
     // min/max so a reversed region (endClipX < startClipX) still spans the full
     // bar extent instead of drawing an inverted quad — matches wiggle.slang.
     float x = xZero ? (min(startClipX, endClipX) - padClipX)
@@ -140,7 +153,7 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     o.localPos = local;
     o.shape = SHAPE_BAR;
   } else {
-    float expand = discExpand(u.pointRadius);
+    float expand = discExpand(u.pointRadius, u.devicePixelRatio);
     float glyphScale = inst.glyph == GLYPH_INDEX ? INDEX_GLYPH_SCALE : 1.0;
     float halfPx = u.pointRadius * expand * glyphScale;
     float dx = pxToClipLen(local.x * halfPx, u.viewportWidth);

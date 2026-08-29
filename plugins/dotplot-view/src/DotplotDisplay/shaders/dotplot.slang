@@ -30,6 +30,7 @@
 //! targets: wgsl, glsl
 //! blend: premultiplied
 
+import antialias;
 import capsule;
 import colorPack;
 import hpmath;
@@ -101,7 +102,7 @@ VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float d = capsuleDist(fragIn.uv, fragIn.dims.x);
-  float edgeAlpha = capsuleCoverage(d, fragIn.dims.y, u.devicePixelRatio);
+  float edgeAlpha = edgeCoverage(fragIn.dims.y - d, u.devicePixelRatio);
   // The packed color's own alpha, the plot-wide slider, and the SDF edge, in
   // that order. Premultiplied output, so the slider scales rgb with it.
   float finalAlpha = fragIn.color.a * u.alpha * edgeAlpha;

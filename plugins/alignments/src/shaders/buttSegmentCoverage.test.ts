@@ -1,4 +1,5 @@
-import { strokeCoverage } from './slang/alignmentsUniforms.js.generated.ts'
+import { aaHalfPx, edgeCoverage } from '@jbrowse/render-core/shaders/antialias'
+
 import * as arcFlat from './slang/arcFlat.generated.ts'
 import * as linkedReadLine from './slang/linkedReadLine.generated.ts'
 
@@ -9,7 +10,7 @@ import * as linkedReadLine from './slang/linkedReadLine.generated.ts'
 // overhanging each endpoint that no other backend drew. This pins the cut.
 //
 // `buttSegmentCoverage` takes a float2, so it is outside the emitter's scalar
-// subset and has no generated twin. What it is made of does — `strokeCoverage`
+// subset and has no generated twin. What it is made of does — `edgeCoverage`
 // is imported here, so the ramp arithmetic is the shader's own and only the
 // one-line product is restated, which is the residue adr-051 accepts (the
 // alternative, restating the ramp, is what makes a parity test pass against a
@@ -22,8 +23,8 @@ function buttSegmentCoverage(
   dpr: number,
 ) {
   return (
-    strokeCoverage(Math.abs(localY), halfWidthPx, dpr) *
-    strokeCoverage(Math.abs(localX), halfLenPx, dpr)
+    edgeCoverage(halfWidthPx - Math.abs(localY), dpr) *
+    edgeCoverage(halfLenPx - Math.abs(localX), dpr)
   )
 }
 
@@ -38,7 +39,7 @@ function capsuleCoverage(
   dpr: number,
 ) {
   const alongPastEnd = Math.max(Math.abs(localX) - halfLenPx, 0)
-  return strokeCoverage(Math.hypot(alongPastEnd, localY), halfWidthPx, dpr)
+  return edgeCoverage(halfWidthPx - Math.hypot(alongPastEnd, localY), dpr)
 }
 
 const HALF_LEN = 10
@@ -67,23 +68,30 @@ test('the ends are exactly as soft as the sides', () => {
   // different ramp than the other, at any dpr.
   for (const dpr of [1, 1.5, 2, 3, 4]) {
     for (const t of [-0.4, -0.2, 0, 0.2, 0.4]) {
-      expect(strokeCoverage(HALF_LEN + t, HALF_LEN, dpr)).toBeCloseTo(
-        strokeCoverage(HALF_WIDTH + t, HALF_WIDTH, dpr),
+      expect(edgeCoverage(HALF_LEN - (HALF_LEN + t), dpr)).toBeCloseTo(
+        edgeCoverage(HALF_WIDTH - (HALF_WIDTH + t), dpr),
         10,
       )
     }
   }
 })
 
-test('the quad pad covers the ramp at every dpr', () => {
-  // segmentQuadLocal grows the quad by STROKE_AA_PX (1 CSS px) on both axes.
-  // The ramp reaches half an output pixel past the edge, which is 0.5 CSS px
-  // at dpr 1 and shrinks from there — so the pad always contains it, and the
-  // coverage has reached 0 before the quad ends. Pad one without the other and
-  // the ramp is clipped into a hard 50%-alpha edge.
+test('the quad pad is exactly the ramp reach, at every dpr', () => {
+  // `segmentQuadLocal` grows the quad by `aaHalfPx(dpr)` on both axes, and the
+  // ramp reaches exactly that far past the ink — so the pad contains the ramp
+  // and adds nothing beyond it. Both halves are failures: pad less and the
+  // ramp is clipped into a hard 50%-alpha edge; pad more and every fragment in
+  // the surplus shades to alpha 0 and is blended anyway. This pass padded a
+  // flat 1 CSS px until 2026-08-29, which at dpr 2 is four times the reach and
+  // 43% of a 1.5px connector's fragments doing nothing.
+  //
+  // Spelled as an equality rather than as `coverage === 0` past the pad,
+  // because that form is one-sided: it passes for any pad at or above the
+  // reach, which is how the over-pad survived.
   for (const dpr of [1, 1.5, 2, 3, 4]) {
-    expect(strokeCoverage(HALF_WIDTH + 1, HALF_WIDTH, dpr)).toBe(0)
-    expect(strokeCoverage(HALF_LEN + 1, HALF_LEN, dpr)).toBe(0)
+    const pad = aaHalfPx(dpr)
+    expect(edgeCoverage(-pad, dpr)).toBe(0)
+    expect(edgeCoverage(-pad * 0.99, dpr)).toBeGreaterThan(0)
   }
 })
 
@@ -110,7 +118,7 @@ test.each([
     // The separable product, in the emitted source rather than in the .slang:
     // one ramp across the width, one along the length, multiplied.
     expect(src).toMatch(
-      /return strokeCoverage_0\(abs\(\w+\.y\)[^\n]*\* strokeCoverage_0\(abs\(\w+\.x\)/,
+      /return edgeCoverage_0\([^\n]*abs\(\w+\.y\)[^\n]*\* edgeCoverage_0\([^\n]*abs\(\w+\.x\)/,
     )
     // The round-capped distance these passes used to measure with. Its return
     // would be a dome of ink past each endpoint that no other backend draws.

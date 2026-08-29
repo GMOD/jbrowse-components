@@ -112,7 +112,7 @@ function fillFrameUniforms(
 ) {
   // Set on every frame, not just the arc passes: a zero here would divide by
   // zero in strokeCoverage for anything else that antialiases a stroke.
-  f[U.dpr] = getDpr()
+  f[U.devicePixelRatio] = getDpr()
   f[U.bpHi] = frame.bpHi
   f[U.bpLo] = frame.bpLo
   // Keep bpLen POSITIVE for reversed regions — this plugin applies the flip via
@@ -268,7 +268,7 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   // directly, and the note saying so outlived the change.)
   f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth, 1.5 / dpr)
   // Sizes the antialiasing ramp in device pixels (see STROKE_AA_PX).
-  f[U.dpr] = dpr
+  f[U.devicePixelRatio] = dpr
   f[U.pairedArcsDown] = state.readConnectionsDown ? 1 : 0
   // Same domain rule the Canvas2D/SVG draw applies (arcYScale): read cloud
   // picks its own autoscaled |tlen| domain on a base-2 log axis, arc mode falls

@@ -20,6 +20,7 @@ export const UNIFORM_OFFSET_F32 = {
   zero: 6,
   viewportWidth: 7,
   pointRadius: 8,
+  devicePixelRatio: 9,
 } as const
 
 
@@ -31,6 +32,7 @@ export interface Uniforms {
   zero: number
   viewportWidth: number
   pointRadius: number
+  devicePixelRatio: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -44,6 +46,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[6] = uniforms.zero
   f32[7] = uniforms.viewportWidth
   f32[8] = uniforms.pointRadius
+  f32[9] = uniforms.devicePixelRatio
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

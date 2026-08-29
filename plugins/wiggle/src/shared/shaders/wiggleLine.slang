@@ -18,6 +18,7 @@
 //! targets: wgsl, glsl
 //! export-consts: STEP_LINE_VERTS
 
+import antialias;
 import capsule;
 import hpmath;
 import colorPack;
@@ -177,7 +178,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // Coincident round caps are what let the max-blend pass union adjacent
     // capsules into a seamless round join at any angle.
     float dist = capsuleDist(fragIn.localPos, fragIn.segHalfLen);
-    float alpha = capsuleCoverage(dist, u.lineWidth * 0.5, u.devicePixelRatio);
+    float alpha = edgeCoverage(
+      u.lineWidth * 0.5 - dist, u.devicePixelRatio);
     if (alpha <= 0.0) {
       discard;
     }

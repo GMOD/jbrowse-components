@@ -18,6 +18,7 @@
 //! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX
 
 import alignmentsUniforms;
+import antialias;
 // `unpackRGBA`, for the connector colour. Slang does not re-export through an
 // import, so naming a packed colour uniform means importing this too — the same
 // pair mismatch.slang and every other named-colour pass carries.
@@ -67,7 +68,7 @@ struct VsOut {
   float4 position : SV_Position;
   // Offset from the line's centre in CSS px. The quad is expanded by exactly
   // the padded half-extents, so |grad| is 1 per CSS px in both axes and the AA
-  // ramp is a constant (see STROKE_AA_PX).
+  // ramp is a constant (see antialias.slang).
   float2 local    : COLOR0;
   // Half-length of the drawn line, so the fragment can measure the butt caps.
   nointerpolation float halfLen : COLOR1;
@@ -97,9 +98,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // The flat form's ends are not cut by the band scissor, so the fragment's
   // edge ramp needs somewhere to run. segmentQuadLocal (alignmentsUniforms)
-  // grows the quad by STROKE_AA_PX on both axes — exactly the reach of the
+  // grows the quad by aaHalfPx(dpr) on both axes — exactly the reach of the
   // coverage the fragment pairs it with.
-  o.local = segmentQuadLocal(vid, halfLen, o.halfWidthPx);
+  o.local = segmentQuadLocal(vid, halfLen, o.halfWidthPx, u.devicePixelRatio);
   o.halfLen = halfLen;
   o.dashed = inst.dashed;
 
@@ -115,9 +116,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // the separable box-filter product (buttSegmentCoverage, alignmentsUniforms),
   // so the ends are exactly as soft as the sides and no ink overhangs the
   // endpoints. The ramp is a constant number of device pixels rather than a
-  // derivative — see STROKE_AA_PX.
+  // derivative — see antialias.slang.
   float alpha = buttSegmentCoverage(
-    fragIn.local, fragIn.halfLen, fragIn.halfWidthPx, u.dpr);
+    fragIn.local, fragIn.halfLen, fragIn.halfWidthPx, u.devicePixelRatio);
   // Split-read flat arcs render dashed, off the two constants above rather than
   // a 3.0/6.0 pair spelled into the arithmetic — the SVG twin passes them to
   // `stroke-dasharray` and Canvas2D to `setLineDash`, so a period written here
@@ -128,7 +129,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // coverage above makes at each end.
   if (fragIn.dashed > 0.5) {
     alpha *= dashCoverage(
-      fragIn.screenPx, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u.dpr);
+      fragIn.screenPx, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u.devicePixelRatio);
   }
   // Neutral, not black: `colorFlatConnector` is the theme's foreground, so the
   // line reads against a dark track background the way it does against a light

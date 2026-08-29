@@ -4,10 +4,10 @@
 // two shaders (they previously redeclared identical consts with "must match"
 // comments pointing at each other).
 //
-// Imported via `import pointGlyph;`. The CPU side no longer keeps its own copy
-// of either the threshold or the snap: `export-consts` emits the constant and
-// `js-export` emits the snap, both consumed by `pointMarker.ts` (adr-051).
-//! export-consts: SMALL_POINT_MAX_DIAMETER, AA_PAD_PX
+// The CPU side keeps no copy of either the threshold or the snap:
+// `export-consts` emits the constant and `js-export` emits the snap, both
+// consumed by `pointMarker.ts` (adr-051).
+//! export-consts: SMALL_POINT_MAX_DIAMETER
 //! js-export: crispSquareTopLeftPx
 //! js-skip: discExpand — expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand
 module pointGlyph;
@@ -15,20 +15,25 @@ module pointGlyph;
 import antialias;
 import hpmath;
 
-// 1px device pad around a disc so the ramped edge has room to fade without
-// being clipped by the quad.
-public static const float AA_PAD_PX = 1.0;
+// A disc's edge is ramped by `glyphEdgeAlpha`, whose width is one OUTPUT pixel
+// measured in the SDF's own units — so in CSS px the ramp reaches `aaHalfPx`
+// past the boundary and the quad has to grow by exactly that.
+//
+// This was a flat 1.0 under a comment calling it device px while both consumers
+// added it in CSS px: 2x the reach at dpr 1 and 4x at dpr 2, every surplus
+// fragment shading to alpha 0. A pad is the one place the two units cannot be
+// swapped without anyone seeing.
 
 // At/below this diameter an AA disc reads as a muddy blob, so callers draw a
-// crisp filled square instead. Must match SMALL_POINT_MAX_DIAMETER_PX in JS.
+// crisp filled square instead.
 public static const float SMALL_POINT_MAX_DIAMETER = 3.0;
 
-// Quad scale factor that grows the disc's bounding quad by AA_PAD_PX so its
-// faded edge isn't clipped. localPos is scaled by the same factor so the disc
-// boundary stays at distance 1 (see discAlpha). `max(radiusPx, 0.5)` keeps
+// Quad scale factor that grows the disc's bounding quad by the ramp's reach so
+// its faded edge isn't clipped. localPos is scaled by the same factor so the
+// disc boundary stays at distance 1 (see discAlpha). `max(radiusPx, 0.5)` keeps
 // sub-pixel points from exploding the expansion.
-public float discExpand(float radiusPx) {
-  return (radiusPx + AA_PAD_PX) / max(radiusPx, 0.5);
+public float discExpand(float radiusPx, float dpr) {
+  return (radiusPx + aaHalfPx(dpr)) / max(radiusPx, 0.5);
 }
 
 // Pixel-grid-snapped top-left of the crisp small-point square, on one axis. The

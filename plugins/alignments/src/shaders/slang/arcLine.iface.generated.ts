@@ -32,7 +32,7 @@ export const UNIFORM_OFFSET_F32 = {
   reversed: 21,
   pxPerBp: 196,
   arcBandH: 197,
-  dpr: 198,
+  devicePixelRatio: 198,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
@@ -164,7 +164,7 @@ export interface Uniforms {
   readCategoryColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   pxPerBp: number
   arcBandH: number
-  dpr: number
+  devicePixelRatio: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -369,7 +369,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[195] = uniforms.readCategoryColor[22][3]
   f32[196] = uniforms.pxPerBp
   f32[197] = uniforms.arcBandH
-  f32[198] = uniforms.dpr
+  f32[198] = uniforms.devicePixelRatio
 }
 
 export const INSTANCE_STRIDE_BYTES = 8

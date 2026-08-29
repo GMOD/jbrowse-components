@@ -63,9 +63,10 @@ this rule and a doc comment claiming to be the whole of it.
 
 ### buildColorRampLut
 
-A 256-entry RGBA lookup table over sampleColorRamp, laid out as the 256x1
-texture both GPU backends upload and the Canvas2D twins index — entry `i` is the
-color at `t = i / 255`.
+An RGBA lookup table over sampleColorRamp, laid out as the Nx1 texture both GPU
+backends upload and the Canvas2D twins index — entry `i` is the color at
+`t = i / (N - 1)`. N comes off the shader that samples it, so the table and
+`rampColor`'s texel mapping cannot disagree.
 
 ```js
 // type signature

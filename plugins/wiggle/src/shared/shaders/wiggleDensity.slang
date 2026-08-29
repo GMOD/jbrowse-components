@@ -65,7 +65,7 @@ DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   RowRectUniforms r;
   r.bpRangeX      = u.bpRangeX;
   r.canvasHeight  = u.canvasHeight;
-  r.viewportWidth = u.viewportWidth;
+  r.minCellDenomPx = u.viewportWidth;
   r.minCellPx     = MIN_FILL_WIDTH_PX;
   r.zero          = u.zero;
   r.rowHeight     = u.canvasHeight / u.numRows;

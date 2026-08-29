@@ -9,7 +9,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx, hueRampLane, strokeCoverage
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx, hueRampLane
 //! js-skip: expandMinWidthX — this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded
 //! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 //! js-skip: dashCoverage — the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it
@@ -180,33 +180,8 @@ public struct Uniforms {
   // (clip space normalizes, so nothing here needs the buffer's scale) — this is
   // the one exception, and it exists ONLY so an antialiased stroke can size its
   // ramp in DEVICE pixels. Appended at the tail for offset stability.
-  public float dpr;
+  public float devicePixelRatio;
 };
-
-// Antialiased-stroke ramp for the arc band's passes (arc, arcLine), in DEVICE
-// pixels — one device pixel is the box-filter width Canvas2D rasterizes with,
-// so this is what keeps the GPU and Canvas2D mirrors the same weight.
-//
-// The passes build a distance that is a true perpendicular distance in CSS px,
-// so its gradient magnitude is analytically 1 per CSS px and there is nothing
-// for `fwidth` to discover: measuring it only reintroduces the |ddx|+|ddy|
-// anisotropy, which cost the arc up to 0.1 of peak alpha on its diagonal flanks
-// while leaving the apex crisp. But the constant is one DEVICE px, not one CSS
-// px — spelling it in CSS px (as STROKE_PERP_PX does in the synteny shaders)
-// silently doubles the ramp on a dpr=2 display and reads as a soft, mushy line.
-// Hence `strokeCoverage` divides by dpr.
-public static const float STROKE_AA_PX = 1.0;
-
-// Coverage of an antialiased stroke `halfWidthPx` wide (CSS px) at true
-// perpendicular distance `d` (CSS px). Shared so the arc and arcLine passes
-// cannot drift in weight; a geometry pad of STROKE_AA_PX CSS px always covers
-// the ramp, since dpr >= 1. Takes the bare dpr, not the Uniforms struct —
-// hpmath's primitives-not-a-Uniforms granularity (adr-040), and what makes the
-// butt-cap test oracle able to import the generated twin instead of restating
-// it (buttSegmentCoverage.test.ts).
-public float strokeCoverage(float d, float halfWidthPx, float dpr) {
-  return aaRamp(halfWidthPx - d, STROKE_AA_PX / max(dpr, 1.0));
-}
 
 // Coverage of a `dashPx` on / `gapPx` off pattern at `coord` CSS px along the
 // mark, with the ON run starting at coord 0 — the phase `ctx.setLineDash` and
@@ -220,7 +195,7 @@ public float strokeCoverage(float d, float halfWidthPx, float dpr) {
 // of the period (fixing that) but then ramped over a constant 1 CSS px, which on
 // a dpr=2 display is two device px — twice the softness of the sides of the very
 // same line. Centring the run at half a period puts the wrap deep in the gap
-// where nothing is drawn, and STROKE_AA_PX / dpr is the sides' own ramp.
+// where nothing is drawn, and `aaPx(dpr)` is the sides' own ramp.
 //
 // The reduction is `t - period * floor(t / period)` rather than the obvious
 // `frac(t / period) * period`, which are the same number only in exact
@@ -250,31 +225,22 @@ public float dashCoverageAt(
 }
 
 public float dashCoverage(float coord, float dashPx, float gapPx, float dpr) {
-  return dashCoverageAt(coord, dashPx, gapPx, STROKE_AA_PX / max(dpr, 1.0));
+  return dashCoverageAt(coord, dashPx, gapPx, aaPx(dpr));
 }
 
-// A BUTT-capped stroked segment, as the two halves of one contract: the quad
-// that covers it, and the coverage that shades it. They belong together
-// because the pad is the contract — the quad is grown by exactly STROKE_AA_PX
-// beyond the ink on both axes, which always covers the ramp (dpr >= 1). Pad
-// one without the other and the ramp is clipped, silently.
-//
-// arcFlat.slang and linkedReadLine.slang each carried a copy of both. Sharing
-// them clears ADR-040's bar rather than working around it — that ADR turned
-// down a generic quad skeleton for want of two real consumers and non-obvious
-// math, and this has both. arcLine.slang is deliberately NOT a third: it is a
-// full-band tick with no caps, so it measures `abs(dx)` alone and a halfLen it
-// does not have would be noise.
+// A BUTT-capped stroked segment: the quad that covers it, and the coverage that
+// shades it. They belong together because the pad is the contract — the quad
+// grows by exactly `aaHalfPx(dpr)` past the ink on both axes, which is the
+// ramp's reach and no more. Pad less and the ramp is clipped, silently; pad
+// more and the surplus fragments shade to alpha 0 and blend anyway.
 //
 // Butt caps, because that is what the Canvas2D/SVG twins draw: both passes'
-// drawCanvas strokes moveTo/lineTo with the default lineCap. This coverage
-// inked ROUND caps for a while (the capsule form, now render-core's
-// capsule.slang) under comments calling it butt-capped — a halfWidth of ink
-// overhanging each segment end that no other backend drew. The capsule's
-// round cap is load-bearing where it lives (a dotplot dot is the degenerate
-// cap; linecenter's coincident caps make its max-blend joins seamless);
-// nothing here wants it, so the cut at the ends is the ink's own edge ramp.
-// buttSegmentCoverage.test.ts pins the cap against the generated twin.
+// drawCanvas strokes moveTo/lineTo with the default lineCap. The round cap
+// belongs to `capsuleDist`, where it is load-bearing (a dotplot dot is the
+// degenerate cap; linecenter's coincident caps make its max-blend joins
+// seamless) — nothing here wants it, so the cut at the ends is the ink's own
+// edge ramp. arcLine.slang is deliberately not a third consumer: a full-band
+// tick has no caps, so it measures `abs(dx)` alone.
 //
 // The product form is exact: box-filter coverage of an axis-aligned rectangle
 // separates per axis, so the ends are exactly as soft as the sides.
@@ -284,16 +250,17 @@ public float dashCoverage(float coord, float dashPx, float gapPx, float dpr) {
 // caller's, and genuinely differs: arcFlat's segment is horizontal by
 // construction and adds `local` to a centre, while a linked-read connector
 // rotates it onto capsuleFrame's tangent/normal.
-public float2 segmentQuadLocal(uint vid, float halfLenPx, float halfWidthPx) {
+public float2 segmentQuadLocal(
+    uint vid, float halfLenPx, float halfWidthPx, float dpr) {
+  float ext = aaHalfPx(dpr);
   float2 q = quadLocal(vid) * 2.0 - 1.0;
-  return float2(
-    q.x * (halfLenPx + STROKE_AA_PX), q.y * (halfWidthPx + STROKE_AA_PX));
+  return float2(q.x * (halfLenPx + ext), q.y * (halfWidthPx + ext));
 }
 
 public float buttSegmentCoverage(
     float2 local, float halfLenPx, float halfWidthPx, float dpr) {
-  return strokeCoverage(abs(local.y), halfWidthPx, dpr)
-       * strokeCoverage(abs(local.x), halfLenPx, dpr);
+  return edgeCoverage(halfWidthPx - abs(local.y), dpr)
+       * edgeCoverage(halfLenPx - abs(local.x), dpr);
 }
 
 // Exact distance from a point to the axis-aligned ellipse |p/ab| = 1 — Inigo
