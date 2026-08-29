@@ -25,6 +25,18 @@ Apache-2.0 © Evolutionary Software Foundation
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### Band
+
+One band of a display's vertical stack — a coverage histogram, an arc strip, a
+conservation row, a variant lane. The contract is the pair: `active` is whether
+the band exists right now (the display pre-ANDs its settings half, `showX`, with
+its data half, "some lane has ink"), and `height` is the stated height when it
+does. Consumers read pixels through reservedPx or stackBands, never by
+re-combining the pair — the re-combination is where the reserver and the painter
+historically drifted.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
+
 ### boundBandHeight
 
 Bound a band height to its legal range — a config value, a menu choice, or a
@@ -572,6 +584,18 @@ has to read as one tone across the whole palette or it reads as noise.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
 
+### reservedPx
+
+The pixels a band takes from the plot below it: 0 when off, the (optionally
+bound) stated height when on. This is the single spelling of "off spends 0 px".
+
+```js
+// type signature
+(band: Band) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
+
 ### resolveConf
 
 Reads a `promotable` slot through the display-type-default cascade — the track's
@@ -696,6 +720,25 @@ slot, which the declared slot value type doesn't include.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
+### stackBands
+
+Fold an ordered set of bands into tops and a bottom. The order is the argument,
+so a display states its band order exactly once; reserve, paint and pick all
+read the same fold, which is what keeps "the reserver and the painter read one
+function" true by construction rather than by prose.
+
+Only the fold is shared. What varies per display stays there: per-lane iteration
+runs this once per lane, sticky-vs-scrolling is a property of how the result is
+projected to the screen, and a band drawn outside its reservation (an overlay)
+carries its own draw rect beside the stack.
+
+```js
+// type signature
+<K extends string>(order: readonly K[], bands: Record<K, Band>) => BandStack<K>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
 ### stopsFromRampLut
 

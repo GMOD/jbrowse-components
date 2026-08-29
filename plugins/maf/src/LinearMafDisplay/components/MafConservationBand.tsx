@@ -39,13 +39,13 @@ const MafConservationBand = observer(function MafConservationBand({
     conservationBandActive,
     codonConservationActive,
     conservationHeight,
-    coverageDisplayHeight,
+    topBands,
   } = model
   return (
     <MafBand
       model={model}
       show={conservationBandActive}
-      top={coverageDisplayHeight}
+      top={topBands.top.conservation}
       height={conservationHeight}
       ticks={conservationTicks(conservationHeight)}
       resize={n => {

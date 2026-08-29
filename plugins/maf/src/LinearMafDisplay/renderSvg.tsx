@@ -73,7 +73,7 @@ function MafSvgBody({
     sources,
     effectiveRowHeight,
     rowsHeight,
-    coverageDisplayHeight,
+    topBands,
     rowsTopOffset,
     coverageTicks,
     coverageBandActive,
@@ -109,11 +109,11 @@ function MafSvgBody({
       {coverageBandActive ? (
         <PaintLayer
           width={width}
-          height={model.coverageHeight}
+          height={topBands.reserved.coverage}
           opts={opts}
           paint={ctx => {
             drawMafCoverage(ctx, renderBlocks, model.rpcDataMap, {
-              coverageHeight: model.coverageHeight,
+              coverageHeight: topBands.reserved.coverage,
               canvasWidth: width,
               domainMax: coverageDomain?.[1] ?? 0,
               // The export-chosen palette, not the live one — the band's colours
@@ -125,7 +125,7 @@ function MafSvgBody({
         />
       ) : null}
       {conservationBandActive ? (
-        <g transform={`translate(0, ${coverageDisplayHeight})`}>
+        <g transform={`translate(0, ${topBands.top.conservation})`}>
           <PaintLayer
             width={width}
             height={conservationHeight}
@@ -214,11 +214,11 @@ function MafSvgBody({
           their Y-axis units, and an exported figure can't be hovered. */}
       <SvgBandLabels labels={model.bandLabels} theme={theme} />
       {coverageBandActive && coverageTicks ? (
-        <SvgYScaleGutter y={0} ticks={coverageTicks} />
+        <SvgYScaleGutter y={topBands.top.coverage} ticks={coverageTicks} />
       ) : null}
       {conservationBandActive ? (
         <SvgYScaleGutter
-          y={coverageDisplayHeight}
+          y={topBands.top.conservation}
           ticks={conservationTicks(conservationHeight)}
         />
       ) : null}

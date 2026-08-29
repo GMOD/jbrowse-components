@@ -24,13 +24,13 @@ const MafCoverageBand = observer(function MafCoverageBand({
   model: LinearMafDisplayModel
   onResizeActiveChange: (active: boolean) => void
 }) {
-  const { coverageBandActive, coverageHeight, coverageTicks } = model
+  const { coverageBandActive, coverageTicks, topBands } = model
   return (
     <>
       {coverageBandActive && coverageTicks ? (
         <MafYScaleGutter
-          top={0}
-          height={coverageHeight}
+          top={topBands.top.coverage}
+          height={topBands.reserved.coverage}
           ticks={coverageTicks}
         />
       ) : null}
@@ -41,7 +41,7 @@ const MafCoverageBand = observer(function MafCoverageBand({
           model.resizeCoverageHeight(n)
         }}
         // straddles the band/rows seam
-        top={coverageHeight - 4}
+        top={topBands.top.coverage + topBands.reserved.coverage - 4}
         onActiveChange={onResizeActiveChange}
       />
     </>

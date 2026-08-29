@@ -15,6 +15,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -903,13 +904,36 @@ export default function stateModelFactory(
           const rows = self.sourcesVolatile
           return rows.some(s => s.name === refSrc) ? refSrc : rows[0]?.name
         },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The display's band stack, coverage above conservation — the one place
+         * the order is stated. Every top, height and offset below reads this
+         * fold, so a band cannot be reserved at one height and painted at
+         * another, and a band that is off spends 0 px.
+         */
+        get topBands() {
+          return stackBands(['coverage', 'conservation'], {
+            coverage: {
+              active: self.coverageBandActive,
+              height: self.coverageHeight,
+            },
+            conservation: {
+              active: self.conservationBandActive,
+              height: self.conservationHeight,
+            },
+          })
+        },
+      }))
+      .views(self => ({
         /**
          * #getter
          * Height of the coverage band above the rows (0 when hidden, and on the
          * summary path, where it has nothing to draw).
          */
         get coverageDisplayHeight() {
-          return self.coverageBandActive ? self.coverageHeight : 0
+          return self.topBands.reserved.coverage
         },
         /**
          * #getter
@@ -917,19 +941,17 @@ export default function stateModelFactory(
          * on the summary path, where it has nothing to draw).
          */
         get conservationDisplayHeight() {
-          return self.conservationBandActive ? self.conservationHeight : 0
+          return self.topBands.reserved.conservation
         },
-      }))
-      .views(self => ({
         /**
          * #getter
-         * Top offset of the per-sample rows area = the stacked band heights above
-         * it (coverage + conservation). The single source of truth for "where the
-         * rows start" — every rows hit-test / draw / export offset routes through
-         * this so adding a band can't desync them.
+         * Top offset of the per-sample rows area = where the band stack ends.
+         * The single source of truth for "where the rows start" — every rows
+         * hit-test / draw / export offset routes through this so adding a band
+         * can't desync them.
          */
         get rowsTopOffset() {
-          return self.coverageDisplayHeight + self.conservationDisplayHeight
+          return self.topBands.bottom
         },
       }))
       .views(self => ({
@@ -1373,7 +1395,7 @@ export default function stateModelFactory(
           return self.coverageDomain
             ? computeCoverageTicks(
                 self.coverageDomain,
-                self.coverageHeight,
+                self.topBands.reserved.coverage,
                 'linear',
               )
             : undefined
@@ -1405,7 +1427,7 @@ export default function stateModelFactory(
           const domainMax = self.coverageDomain?.[1]
           return self.coverageBandActive && domainMax
             ? {
-                height: self.coverageHeight,
+                height: self.topBands.reserved.coverage,
                 domainMax,
                 ...self.coverageBandColors,
               }
@@ -2101,12 +2123,12 @@ export default function stateModelFactory(
         get bandLabels(): { text: string; top: number }[] {
           return self.coverageBandActive && self.conservationBandActive
             ? [
-                { text: 'Coverage', top: 0 },
+                { text: 'Coverage', top: self.topBands.top.coverage },
                 {
                   text: self.codonConservationActive
                     ? 'Conservation (aa identity)'
                     : 'Conservation (% identity)',
-                  top: self.coverageDisplayHeight,
+                  top: self.topBands.top.conservation,
                 },
               ]
             : []
