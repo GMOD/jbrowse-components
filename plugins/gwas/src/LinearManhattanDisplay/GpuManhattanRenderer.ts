@@ -51,8 +51,6 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
       // hi-DPI displays.
       viewportWidth: clip.scissorW,
       pointRadius: state.pointDiameterPx / 2,
-      // The one device-px quantity here, and it only sizes the glyph quad's AA
-      // pad — every length above is CSS px.
       devicePixelRatio: getDpr(),
     })
 

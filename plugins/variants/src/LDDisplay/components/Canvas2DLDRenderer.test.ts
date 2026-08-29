@@ -2,6 +2,7 @@ import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 
 import { bandCellCount, bandPairIndex } from '../../VariantRPC/ldBand.ts'
 import { Canvas2DLDRenderer, drawLDBlocks } from './Canvas2DLDRenderer.ts'
+import { generateLDColorRamp } from './ldColorRamp.ts'
 
 import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 
@@ -183,21 +184,22 @@ describe('Canvas2DLDRenderer', () => {
     expect(ctx.fillStyle).toBe('rgba(128,128,128,1.000)')
   })
 
-  test('skips cells with near-zero alpha', () => {
-    const { canvas, pathOps } = createMockCanvas()
-    const renderer = new Canvas2DLDRenderer(canvas)
-
-    const ramp = makeColorRamp()
-    ramp[3] = 0
-    renderer.uploadColorRamp(ramp)
-
-    renderer.render(
-      makeOneCell({ ldValues: new Float32Array([0]), signedLD: false }),
-      makeRenderState(),
-    )
-
-    expect(pathOps).not.toContain('fill')
-  })
+  // Every ramp a display can reach is opaque, which is why the painter has no
+  // alpha gate: `generateLDColorRamp` returns one of four LUTs, all built by
+  // `opaqueRampLut`. A translucent one would need a matching `discard` in
+  // ldUniforms.slang, which gates on `ldValueComputed` alone — so a gate here
+  // would be a Canvas2D-only skip.
+  test.each(['r2', 'dprime'])(
+    'every %s ramp entry is opaque, signed and unsigned',
+    metric => {
+      for (const signedLD of [false, true]) {
+        const ramp = generateLDColorRamp(metric, signedLD)
+        for (let i = 0; i < 256; i++) {
+          expect(ramp[i * 4 + 3]).toBe(255)
+        }
+      }
+    },
+  )
   // The shader's own transform (render-core `diagonalCellToClip`), so the
   // assertion below is against what the GPU actually draws rather than against
   // a second copy of the Canvas2D arithmetic.

@@ -102,9 +102,6 @@ struct Uniforms {
   float  rowHeight;
   float  scrollTop;
   float  zero;
-  // The inversion triangle's edge ramp is one OUTPUT pixel, and `localPx` is
-  // CSS px — so the fragment needs the ratio between them. The only device-px
-  // quantity in this block.
   float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -174,6 +171,13 @@ float triSdfRight(float2 p, float w, float h, float hyp) {
   return min(min(dLeft, dTop), dBot);
 }
 
+// Dims a mark whose smallest side is under a few CSS px, so a cell too small
+// to read its own shape fades rather than flickers. A whole-mark fade, sized in
+// the CSS px the mark is drawn in; it measures no edge and takes no dpr.
+float smallMarkFade(float smallestSidePx) {
+  return smoothstep(0.0, 3.0, smallestSidePx);
+}
+
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float alpha = fragIn.color.a;
@@ -186,17 +190,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     float w = fragIn.sizePx.x;
     float h = fragIn.sizePx.y;
     float d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);
-    // `d` is a true perpendicular distance in CSS px, so the ramp is analytic
-    // and one device pixel wide. It was `smoothstep(-0.5, 0.5, d)`: a CSS-px
-    // width, so twice as soft on a retina screen as on a plain one, and the
-    // cubic shape antialias.slang measured and rejected — up to 0.067 of full
-    // ink out at 45 degrees against the linear ramp's 0.043, on a mark whose
-    // whole distinguishing feature is a diagonal.
     alpha *= edgeCoverage(d, u.devicePixelRatio);
-    // NOT an edge ramp: a whole-mark size fade, in CSS px on purpose, so a
-    // sub-pixel cell dims instead of flickering. Nothing here measures a
-    // distance to an edge.
-    alpha *= smoothstep(0.0, 3.0, min(w, h));
+    alpha *= smallMarkFade(min(w, h));
   }
 
   return float4(fragIn.color.rgb * alpha, alpha);

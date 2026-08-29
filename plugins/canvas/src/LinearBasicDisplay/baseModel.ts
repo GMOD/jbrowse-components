@@ -979,13 +979,7 @@ export default function baseStateModelFactory(
             self.showLabels,
             self.effectiveShowDescriptions,
             this.renderedShowDescriptions,
-            // Only the rung that decimated has a factor to report, and asking
-            // for one costs a bisection: `fitDecimatedFactor` gates on
-            // `layoutReady && showLabels` and not on the height mode, so a
-            // fixed- or grow-height track — which has no `decimated` rung at
-            // all — paid up to ten packs for an answer it then discarded. Once
-            // per resize-drag frame, since `fitTargetHeight` is the raw height
-            // slot. At the level, the factor is already memoized.
+            // Solving for one costs a bisection, and only this rung reports it.
             self.fitStage.level === 'decimated'
               ? self.fitDecimatedFactor
               : undefined,

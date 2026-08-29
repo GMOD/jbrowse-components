@@ -13,7 +13,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 101 functions
+Scanned 43 shaders with entry points. 102 functions
 are inside the emitter's subset, of which **74 are exported**.
 
 ## Candidates
@@ -23,7 +23,9 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-_None._
+| Function | Signature | Shaders |
+| --- | --- | --- |
+| `smallMarkFade` | `(f32) -> f32` | variant |
 
 ## Declined
 
