@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as perBaseQualityShader from '../../shaders/slang/packedColorQuad.generated.ts'
-import { countMarks } from '../mark.ts'
+import { countMarks, markEnd, markStart } from '../mark.ts'
 import { qualityAbgr } from './colors.ts'
 import { PER_BASE_QUALITY_MARK } from './mark.ts'
 
@@ -22,12 +22,13 @@ export function packPerBaseQuality(
   const rows = mark.rows(data)
   const F_U32 = perBaseQualityShader.INSTANCE_OFFSET_U32
   const s32 = perBaseQualityShader.INSTANCE_STRIDE_WORDS
+  const end = markEnd(mark, data, rows)
   const buf = new ArrayBuffer(
     countMarks(mark, data) * perBaseQualityShader.INSTANCE_STRIDE_BYTES,
   )
   const u32 = new Uint32Array(buf)
   let o = 0
-  for (let i = 0; i < rows.length; i++) {
+  for (let i = markStart(mark, data); i < end; i++) {
     if (mark.selects(data, i)) {
       u32[o + F_U32.position] = mark.startBp(data, i)
       u32[o + F_U32.y] = rows[i]!

@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
-import { countMarks } from '../mark.ts'
+import { countMarks, markEnd, markStart } from '../mark.ts'
 import { MISMATCH_MARK } from './mark.ts'
 
 import type { MismatchUploadData } from './types.ts'
@@ -19,13 +19,14 @@ export function packMismatches(data: MismatchUploadData): ArrayBuffer {
   const F_F32 = mismatchShader.INSTANCE_OFFSET_F32
   const F_U32 = mismatchShader.INSTANCE_OFFSET_U32
   const s32 = mismatchShader.INSTANCE_STRIDE_WORDS
+  const end = markEnd(MISMATCH_MARK, data, rows)
   const buf = new ArrayBuffer(
     countMarks(MISMATCH_MARK, data) * mismatchShader.INSTANCE_STRIDE_BYTES,
   )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let o = 0
-  for (let i = 0; i < rows.length; i++) {
+  for (let i = markStart(MISMATCH_MARK, data); i < end; i++) {
     if (MISMATCH_MARK.selects(data, i)) {
       u32[o + F_U32.position] = MISMATCH_MARK.startBp(data, i)
       u32[o + F_U32.y] = rows[i]!
