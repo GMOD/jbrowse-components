@@ -72,4 +72,5 @@ it.
 
 | Doc | What it is waiting on |
 | --- | --- |
+| [shape-library-followups-in-flight](shape-library-followups-in-flight.md) | Four follow-ups to the a-shape-composes-a-scale plan died mid-flight on a rate limit (2026-08-28), each in its own uncommitted-or-partial worktree under .claude/worktrees/ — a capsule shape module (early, and the cap policy REVERSED mid-run is recorded only here), the MAF/MAPQ/wiggle defect batch (item 1 committed, item 2 mid-emitter-change), the legend seam closure (complete but uncommitted, "all green" untypechecked), and the bpLen-convention assessment (idea doc drafted, unverified). Landing order, per-thread resume instructions, and the decisions that live nowhere else. |
 <!-- END GENERATED HANDOFFS INDEX -->
