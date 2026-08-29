@@ -80,3 +80,79 @@ export function distToWideCirclePx(x: number, y: number, r: number): number {
   let rk = ((2.0 * x) + (((x * x) + (y * y)) / r))
   return Math.abs((rk / (Math.sqrt(_max((1.0 + (rk / r)), 0.0)) + 1.0)))
 }
+
+export function hueRampLane(hueDeg: number, lane: number): number {
+  let hp = ((hueDeg / 360.0) * 6.0)
+  let x = (0.5 * (1.0 - Math.abs(((hp % 2.0) - 1.0))))
+  let v: number
+  if ((hp < 1.0)) {
+    if ((lane == 0)) {
+      v = 0.5
+    } else {
+      if ((lane == 1)) {
+        v = x
+      } else {
+        v = 0.0
+      }
+    }
+  } else {
+    if ((hp < 2.0)) {
+      if ((lane == 0)) {
+        v = x
+      } else {
+        if ((lane == 1)) {
+          v = 0.5
+        } else {
+          v = 0.0
+        }
+      }
+    } else {
+      if ((hp < 3.0)) {
+        if ((lane == 0)) {
+          v = 0.0
+        } else {
+          if ((lane == 1)) {
+            v = 0.5
+          } else {
+            v = x
+          }
+        }
+      } else {
+        if ((hp < 4.0)) {
+          if ((lane == 0)) {
+            v = 0.0
+          } else {
+            if ((lane == 1)) {
+              v = x
+            } else {
+              v = 0.5
+            }
+          }
+        } else {
+          if ((hp < 5.0)) {
+            if ((lane == 0)) {
+              v = x
+            } else {
+              if ((lane == 1)) {
+                v = 0.0
+              } else {
+                v = 0.5
+              }
+            }
+          } else {
+            if ((lane == 0)) {
+              v = 0.5
+            } else {
+              if ((lane == 1)) {
+                v = 0.0
+              } else {
+                v = x
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return (v + 0.25)
+}

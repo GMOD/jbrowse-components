@@ -9,7 +9,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx, hueRampLane
 //! js-skip: expandMinWidthX — this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded
 //! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 module alignmentsUniforms;
@@ -668,22 +668,36 @@ public float2 pileupCellX(uint bp, Uniforms u) {
       x, snapToPixelX(bpToClipX(bp + 1u, u), u.canvasW), 1.0, u.canvasW));
 }
 
-// Fixed-saturation HSL hue sweep (chroma 0.5, lightness offset 0.25), off a hue
-// in degrees [0,360). Drives the MAPQ read fill (read.slang's RC_MAPQ), the one
-// read category that is a per-read ramp rather than a palette slot.
-public float3 hueRampHalfSat(float hueDeg) {
+// One channel of a fixed-saturation HSL hue sweep (chroma 0.5, lightness offset
+// 0.25), off a hue in degrees [0,360); `lane` is 0/1/2 for R/G/B. Drives the
+// MAPQ read fill (read.slang's RC_MAPQ), the one read category that is a
+// per-read ramp rather than a palette slot.
+//
+// The sector arithmetic is the whole of what the two backends must agree on:
+// Canvas2D hands the browser `hsl(mapq,50%,50%)` and never holds three
+// channels, so what is exported is this lane — the scaling, the six sector
+// boundaries and the `x` trapezoid — and the triple below stays packaging
+// (adr-051 §"A vector signature is usually a scalar decision in a wrapper").
+public float hueRampLane(float hueDeg, uint lane) {
   float hp = (hueDeg / 360.0) * 6.0;
   float c = 0.5;
   float m = 0.25;
   float x = c * (1.0 - abs(hp % 2.0 - 1.0));
-  float3 hue;
-  if (hp < 1.0)      { hue = float3(c, x, 0.0); }
-  else if (hp < 2.0) { hue = float3(x, c, 0.0); }
-  else if (hp < 3.0) { hue = float3(0.0, c, x); }
-  else if (hp < 4.0) { hue = float3(0.0, x, c); }
-  else if (hp < 5.0) { hue = float3(x, 0.0, c); }
-  else               { hue = float3(c, 0.0, x); }
-  return hue + m;
+  float v;
+  if (hp < 1.0)      { v = lane == 0u ? c   : (lane == 1u ? x   : 0.0); }
+  else if (hp < 2.0) { v = lane == 0u ? x   : (lane == 1u ? c   : 0.0); }
+  else if (hp < 3.0) { v = lane == 0u ? 0.0 : (lane == 1u ? c   : x  ); }
+  else if (hp < 4.0) { v = lane == 0u ? 0.0 : (lane == 1u ? x   : c  ); }
+  else if (hp < 5.0) { v = lane == 0u ? x   : (lane == 1u ? 0.0 : c  ); }
+  else               { v = lane == 0u ? c   : (lane == 1u ? 0.0 : x  ); }
+  return v + m;
+}
+
+public float3 hueRampHalfSat(float hueDeg) {
+  return float3(
+    hueRampLane(hueDeg, 0u),
+    hueRampLane(hueDeg, 1u),
+    hueRampLane(hueDeg, 2u));
 }
 
 // Below one 8-bit alpha step a mark is not representable, so sizeAlpha() snaps
