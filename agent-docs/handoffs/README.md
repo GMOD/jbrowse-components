@@ -72,5 +72,4 @@ it.
 
 | Doc | What it is waiting on |
 | --- | --- |
-| [shape-library-followups-in-flight](shape-library-followups-in-flight.md) | One thread left of the four that died on a rate limit (2026-08-28) after the a-shape-composes-a-scale plan landed — the bpLen-convention assessment, whose idea doc is drafted and whose verdict is no-go. The defects batch, the legend seam and the capsule module all landed 2026-08-29; what each of them decided that lives nowhere else is now in the tree (adr-051's export gate, ideas/a-display-declares-itself Level 2, ideas/a-shape-composes-a-scale Step 5). Delete this file when the assessment lands. |
 <!-- END GENERATED HANDOFFS INDEX -->
