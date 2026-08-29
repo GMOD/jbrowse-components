@@ -544,6 +544,42 @@ gives INSDC accessions instead: T. timopheevii in `wheat`, tomato in
 `solanaceae`, and every fly but melanogaster in `drosophila`, each from its
 [sequence report](/docs/config/ncbisequencereportaliasadapter).
 
+## Your own genomes
+
+A set name is Ensembl coordinates the script already holds. Every stage past the
+download keys on the short name rather than on where the files came from, so the
+same run works on genomes of your own once you supply the two files per genome
+it would have fetched:
+
+- a proteome FASTA, each header carrying a `gene:<id>` tag
+- an annotation GFF3, whose gene rows carry `ID=gene:<id>` and whose header
+  carries one `##sequence-region` line per reference sequence
+
+Those two ids have to be the same id. That is the whole contract between the
+files, and it is what the orthogroup table resolves against the BEDs; an
+annotation spelling ids some third way is the one mismatch that yields an empty
+`.blocks` rather than an error. The conversion prints the share of each genome's
+ids it placed, so read that line before reading the picture. The
+`##sequence-region` header is the other requirement worth checking, since that
+is where each assembly's reference names and lengths come from.
+
+Name them in a manifest, one line per genome, and pass it where a set name goes:
+
+```bash
+cat > my_genomes.tsv <<'EOF'
+# name    proteome                  annotation
+speciesA  data/speciesA.pep.fa.gz   data/speciesA.gff3.gz
+speciesB  https://host/B.pep.fa.gz  https://host/B.gff3.gz
+EOF
+
+bash build_orthofinder_synteny.sh my_genomes.tsv
+npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed URL
+```
+
+Either column is a local path or a URL, and column 1 is the name its row is
+labelled with in the view. Two genomes make a valid manifest, and the DIAMOND
+cost is the square of however many you list.
+
 ## See also
 
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
