@@ -523,12 +523,20 @@ Pick the zoom deliberately. `subPixelBinBp` returns 1 below 4 bp/px, so a scene
 under that zoom says nothing about the bin — though as the table shows it still
 fails, because the bin was never what caused this.
 
-**What would reopen it:** either per-base becoming a mode people leave on, or
-someone taking the visual call it shares with
-[todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md](../todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md).
-Note the SVG export takes the Canvas2D path, so an exported figure is the other
-backend's answer than the screen it was exported from — the same complaint that
-entry carries, one display over.
+**What would reopen it:** per-base becoming a mode people leave on. Note the
+SVG export takes the Canvas2D path, so an exported figure is the other backend's
+answer than the screen it was exported from.
+
+**The variant matrix shared that complaint and was fixed, and it does not
+transfer here.** Its Canvas2D painter took `drawnCellHeightPx`'s floor, because
+that display orders cells ref-then-nonref so a variant paints over the reference
+background, and at 0.09px rows a variant drawn `rowHeight + f2` tall blended
+back into the grey — the export kept 41% of the strongly-coloured variant pixels
+the screen showed, and drift fell from 18.2% to 14.4%. **That was the ROW axis.**
+The wall above is columns, the matrix's own columns were deliberately left
+fractional in the same change, and the argument for the floor was a priority
+rule between two cell classes that per-base colouring does not have. So the
+matrix's answer is evidence about rows and says nothing about this.
 
 ## Synteny's one drifting pair is the sub-pixel fade, and it is curve-only
 
