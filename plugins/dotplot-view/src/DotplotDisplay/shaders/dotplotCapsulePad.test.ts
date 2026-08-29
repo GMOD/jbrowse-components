@@ -13,11 +13,21 @@
 // The synteny twin is shaders/syntenyFillPad.test.ts, which exists for the same
 // reason and found the same class of bug.
 //
-// The import is also what makes this file a MODULE. Both pad tests model the
+// What is modelled and what is imported is not a style choice. The frame, the
+// quad and the SDF all take or build a float2, so the emitter refuses them and
+// a local model is the only option. The two SCALARS that decide how far the
+// ramp reaches are imported, because a model of those is what silently goes
+// stale: this file mirrored `len > 0.001` and kept passing after the capsule
+// extraction unified the guard to 1e-4, since a copy checked against itself
+// agrees with itself.
+//
+// The imports are also what make this file a MODULE. Both pad tests model the
 // shader in bare top-level helpers, and an import-less .test.ts is a global
 // script to TypeScript — so a second one collides with the first on every shared
-// helper name (TS2393). Reaching for the generated vertex count rather than
-// `export {}` keeps the quad model tied to the shader it mirrors.
+// helper name (TS2393).
+import { capsuleCoverage } from '@jbrowse/render-core/shaders/capsule'
+import { CAPSULE_MIN_LEN_PX } from '@jbrowse/render-core/shaders/capsuleConsts'
+
 import { VERTS_PER_INSTANCE } from './dotplot.iface.generated.ts'
 
 interface Pt {
@@ -25,18 +35,33 @@ interface Pt {
   y: number
 }
 
-// aaHalf(): 0.5/dpr CSS px. dpr=1 is the largest ramp and therefore the case the
-// geometry has to cover, but both are swept below since the vertex pad scales
-// with it too and a mismatch between the two would only show at one of them.
-const aaHalfFor = (dpr: number) => 0.5 / dpr
+// How far past the ink's edge the fragment still writes coverage, found by
+// asking the shader's own ramp rather than restating `0.5 / dpr`. Bisection
+// because capsuleCoverage is monotone in `d`: the answer is the largest
+// distance it still returns a non-zero for, and the pad has to cover it.
+function reachFor(halfWidth: number, dpr: number) {
+  let lo = halfWidth
+  let hi = halfWidth + 4
+  for (let i = 0; i < 80; i++) {
+    const mid = (lo + hi) / 2
+    if (capsuleCoverage(mid, halfWidth, dpr) > 0) {
+      lo = mid
+    } else {
+      hi = mid
+    }
+  }
+  return hi
+}
 
-// vs_main's tangent/normal, including its `len > 0.001` fallback for a segment
-// too short to have a direction.
+const aaHalfFor = (dpr: number) => reachFor(1, dpr) - 1
+
+// vs_main's tangent/normal, including the degenerate fallback for a segment too
+// short to have a direction.
 function segmentFrame(p1: Pt, p2: Pt) {
   const dx = p2.x - p1.x
   const dy = p2.y - p1.y
   const len = Math.hypot(dx, dy)
-  const degenerate = len <= 0.001
+  const degenerate = len <= CAPSULE_MIN_LEN_PX
   return {
     dx,
     dy,

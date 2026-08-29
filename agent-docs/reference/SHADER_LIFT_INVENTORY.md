@@ -14,7 +14,7 @@ in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
 Scanned 43 shaders with entry points. 101 functions
-are inside the emitter's subset, of which **71 are exported**.
+are inside the emitter's subset, of which **72 are exported**.
 
 ## Candidates
 
@@ -23,10 +23,7 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-| Function | Signature | Shaders |
-| --- | --- | --- |
-| `capsuleCoverage` | `(f32, f32, f32) -> f32` | dotplot, wiggleLine |
-| `dashCoverage` | `(f32, f32, f32, f32) -> f32` | arcFlat, arcLine |
+_None._
 
 ## Declined
 
@@ -42,6 +39,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | a 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
+| `dashCoverage` | `(f32, f32, f32, f32) -> f32` | the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it |
 | `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
 | `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
@@ -110,6 +108,7 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
+| `capsuleCoverage` | nothing |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `hueRampLane` | tests only — `mapqHueParity.test.ts` |
