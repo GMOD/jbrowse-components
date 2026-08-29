@@ -1,14 +1,21 @@
+import { stackBands } from '@jbrowse/core/util/bandLayout'
+
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
 
+// This display's band order, stated once: what a section reserves above its
+// pileup, top to bottom. Both the pooled geometry and the per-section stacking
+// fold it through `stackBands`, so the pileup top is the same statement in both.
+const BAND_ORDER = ['coverage', 'arcs', 'sashimi'] as const
+
 // Vertical band geometry for one stacked group section. Generalizes the
 // single-pileup `belowCoverageBands` to N sections: every section reserves its
-// own coverage -> arcs -> sashimi -> pileup stack via the shared
-// `computeBandStack`, and `arcBandTop`/`arcBandHeight` carry the real
-// `computeArcBand` draw band (relative to the section's own coverage top) so
-// the renderers can draw per-section arcs in Stage 3.
+// own coverage -> arcs -> sashimi -> pileup stack via the shared fold, and
+// `arcBandTop`/`arcBandHeight` carry the real `computeArcBand` draw band
+// (relative to the section's own coverage top) so the renderers can draw
+// per-section arcs in Stage 3.
 export interface Section {
   groupKey: string
   label: string
@@ -66,27 +73,6 @@ export interface SectionGroupInput {
   // signals — whether either strip is actually reserved also depends on the
   // display settings, which `reservesArcsBand`/`reservesSashimiBand` resolve.
   hasSashimiDownArcs: boolean
-}
-
-// Reserved vertical offsets for the bands stacked below a section's coverage,
-// top to bottom: coverage -> arcs -> sashimi -> pileup. Pure extraction of the
-// math the single-section `belowCoverageBands` used, so the ungrouped layout
-// and each grouped section reserve space identically. `pileupTop` is the
-// reserved bottom (where the pileup begins). Up-mode arcs overlay coverage, so
-// they pass `hasArcsBand: false` and reserve nothing.
-export interface BandStackInput {
-  coverageHeight: number // already gated to 0 when coverage is hidden
-  hasArcsBand: boolean
-  arcsHeight: number
-  hasSashimiBand: boolean
-  sashimiHeight: number
-}
-
-export function computeBandStack(s: BandStackInput) {
-  const arcsBandTop = s.coverageHeight
-  const sashimiBandTop = arcsBandTop + (s.hasArcsBand ? s.arcsHeight : 0)
-  const pileupTop = sashimiBandTop + (s.hasSashimiBand ? s.sashimiHeight : 0)
-  return { arcsBandTop, sashimiBandTop, pileupTop }
 }
 
 // Whether the paired-end arcs reserve a band of their own rather than overlaying
@@ -187,22 +173,19 @@ export function totalBelowCoverageOverhead(
 }
 
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
-  const coverageBand = s.showCoverage ? s.coverageHeight : 0
   const hasArcsBand = reservesArcsBand(s) && s.hasArcs
   const hasSashimiBand = reservesSashimiBand(s)
-  const stack = computeBandStack({
-    coverageHeight: coverageBand,
-    hasArcsBand,
-    arcsHeight: s.readConnectionsHeight,
-    hasSashimiBand,
-    sashimiHeight: s.sashimiArcsHeight,
+  const { top, bottom } = stackBands(BAND_ORDER, {
+    coverage: { active: s.showCoverage, height: s.coverageHeight },
+    arcs: { active: hasArcsBand, height: s.readConnectionsHeight },
+    sashimi: { active: hasSashimiBand, height: s.sashimiArcsHeight },
   })
   return {
     hasArcsBand,
     hasSashimiBand,
-    arcsBandTop: stack.arcsBandTop,
-    sashimiBandTop: stack.sashimiBandTop,
-    bottom: stack.pileupTop,
+    arcsBandTop: top.arcs,
+    sashimiBandTop: top.sashimi,
+    bottom,
   }
 }
 
@@ -241,7 +224,6 @@ export function computeStackedSections(
   opts: SectionBandOpts,
 ): SectionsLayout {
   const showCoverage = opts.showCoverage ?? true
-  const coverageBand = showCoverage ? opts.coverageHeight : 0
   const readConnections = opts.readConnections ?? 'off'
   const arcBand = computeArcBand({
     showCoverage,
@@ -268,19 +250,17 @@ export function computeStackedSections(
       showCoverage,
       hasSashimiDownArcs: g.hasSashimiDownArcs,
     })
-    const stack = computeBandStack({
-      coverageHeight: coverageBand,
-      hasArcsBand,
-      arcsHeight: opts.readConnectionsHeight ?? 0,
-      hasSashimiBand,
-      sashimiHeight: opts.sashimiHeight ?? 0,
+    const stack = stackBands(BAND_ORDER, {
+      coverage: { active: showCoverage, height: opts.coverageHeight },
+      arcs: { active: hasArcsBand, height: opts.readConnectionsHeight ?? 0 },
+      sashimi: { active: hasSashimiBand, height: opts.sashimiHeight ?? 0 },
     })
     // Up-mode arcs overlay coverage and reserve nothing, so an arc-less lane
     // still drops its draw band — nothing paints there either way, and a zero
     // height is what tells the renderers to skip the pass.
     const band = g.hasArcs ? arcBand : undefined
     const coverageTop = top
-    const pileupTop = coverageTop + stack.pileupTop
+    const pileupTop = coverageTop + stack.bottom
     const pileupHeight = g.maxY * opts.rowHeight
     // `top` becomes this section's bottom edge — and so the next one's top,
     // which is what makes `height` below the strip this section owns.
@@ -292,14 +272,14 @@ export function computeStackedSections(
       groupKey: g.key,
       label: g.label,
       coverageTop,
-      coverageHeight: coverageBand,
+      coverageHeight: stack.reserved.coverage,
       // Draw band, relative to this section's coverage top — matches
       // computeArcBand so Stage 3 renderers reproduce the ungrouped band.
-      arcBandTop: coverageTop + (band?.top ?? stack.arcsBandTop),
+      arcBandTop: coverageTop + (band?.top ?? stack.top.arcs),
       arcBandHeight: band?.height ?? 0,
       hasArcsBand,
       arcDown: band?.down ?? false,
-      sashimiBandTop: coverageTop + stack.sashimiBandTop,
+      sashimiBandTop: coverageTop + stack.top.sashimi,
       hasSashimiBand,
       pileupTop,
       pileupHeight,

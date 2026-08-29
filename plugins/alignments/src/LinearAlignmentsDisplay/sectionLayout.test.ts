@@ -2,7 +2,6 @@ import { sectionRegionKey } from './renderers/rendererTypes.ts'
 import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
-  computeBandStack,
   computeStackedSections,
 } from './sectionLayout.ts'
 
@@ -146,28 +145,43 @@ test('sectionRegionKey: higher sections never collide across plausible regions',
   expect(keys.has(999999)).toBe(false)
 })
 
-test('computeBandStack: no read-connection bands = pileup right below coverage', () => {
+test('a strip that is off spends none of its height on the stack', () => {
+  // both strip heights stated large and both strips off: every top is the
+  // coverage bottom, so an off band costs 0 px rather than leaking its height
   expect(
-    computeBandStack({
-      coverageHeight: 45,
-      hasArcsBand: false,
-      arcsHeight: 200,
-      hasSashimiBand: false,
-      sashimiHeight: 100,
+    belowCoverageBandsGeometry({
+      ...baseBands,
+      readConnectionsHeight: 200,
+      sashimiArcsHeight: 100,
+      hasArcs: false,
     }),
-  ).toEqual({ arcsBandTop: 45, sashimiBandTop: 45, pileupTop: 45 })
+  ).toEqual({
+    hasArcsBand: false,
+    hasSashimiBand: false,
+    arcsBandTop: 45,
+    sashimiBandTop: 45,
+    bottom: 45,
+  })
 })
 
-test('computeBandStack: arc band then sashimi band stack below coverage', () => {
+test('arc band then sashimi band stack below coverage', () => {
   expect(
-    computeBandStack({
-      coverageHeight: 45,
-      hasArcsBand: true,
-      arcsHeight: 200,
-      hasSashimiBand: true,
-      sashimiHeight: 100,
+    belowCoverageBandsGeometry({
+      ...baseBands,
+      readConnections: 'arc',
+      readConnectionsDown: true,
+      readConnectionsHeight: 200,
+      showSashimiArcs: true,
+      sashimiArcsHeight: 100,
+      hasSashimiDownArcs: true,
     }),
-  ).toEqual({ arcsBandTop: 45, sashimiBandTop: 245, pileupTop: 345 })
+  ).toEqual({
+    hasArcsBand: true,
+    hasSashimiBand: true,
+    arcsBandTop: 45,
+    sashimiBandTop: 245,
+    bottom: 345,
+  })
 })
 
 test('down-mode arcs reserve a band per section, pushing pileups down', () => {
