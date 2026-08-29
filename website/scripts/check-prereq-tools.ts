@@ -101,6 +101,10 @@ const ALLOWED = new Map([
     'a python library jcvi imports, not a command',
   ],
   [
+    'orthofinder_synteny.md#gffread',
+    'build_orthofinder_synteny.sh runs it on a manifest whose column 2 is a genome; the page shows the manifest rather than the conversion, since a reader supplies files rather than calling it',
+  ],
+  [
     'mcscan_synteny_grape_peach.md#LAST',
     'the aligner jcvi drives through --align_soft; nothing calls it directly',
   ],

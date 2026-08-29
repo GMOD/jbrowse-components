@@ -27,6 +27,10 @@ duplicated gene becomes several rows.
   [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
   (`datasets` and `dataformat`), for the sets that name a genome's chromosomes
   from a sequence report: `wheat`, `drosophila` and `solanaceae`
+- [gffread](https://github.com/gpertea/gffread), which translates a genome and
+  its annotation into the proteome OrthoFinder compares. Needed for
+  [your own genomes](#your-own-genomes); the sets above download a published
+  proteome instead
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
@@ -560,8 +564,7 @@ each CDS and prints the transcript-to-gene map alongside it, so the proteome and
 the gene rows come out of one parse of one file. Nothing has to agree about a
 gene id across two downloads, because there is only one file with ids in it.
 Reference names and lengths come from the FASTA index gffread writes, so an
-annotation with no `##sequence-region` header works too. Install gffread for
-this route; the sets above do not use it.
+annotation with no `##sequence-region` header works too.
 
 Pass a proteome in column 2 instead if you already have one, in which case its
 headers carry a `gene:<id>` tag matching the GFF3's `ID=gene:<id>` and the two
