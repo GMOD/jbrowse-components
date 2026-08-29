@@ -20,7 +20,7 @@ export function hitTestModification(
   coords: CigarCoords,
   featureHeight: number,
 ): ModificationHitResult | undefined {
-  const { row, genomicPos, bpPerPx } = coords
+  const { row, genomicPos, basePos, bpPerPx } = coords
   if (
     !isWithinReadBand(coords, featureHeight) ||
     !resolved.rpcData.modFlatbush
@@ -57,11 +57,15 @@ export function hitTestModification(
   // routinely named a neighbouring base — and disagreed with the `snpBase`
   // annotation, which comes from the mismatch test pinned to the exact cursor
   // base.
+  //
+  // A cursor on a cell boundary is equidistant from the bases either side, so
+  // the tie goes to `basePos` — the base the painter draws under that pixel.
   let idx = hits[0]!
   let bestDist = Infinity
   for (const h of hits) {
-    const dist = Math.abs(modificationPositions[h]! - queryCenter)
-    if (dist < bestDist) {
+    const pos = modificationPositions[h]!
+    const dist = Math.abs(pos - queryCenter)
+    if (dist < bestDist || (dist === bestDist && pos === basePos)) {
       bestDist = dist
       idx = h
     }

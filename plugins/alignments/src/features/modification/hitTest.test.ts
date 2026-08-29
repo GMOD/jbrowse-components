@@ -207,6 +207,31 @@ describe('hitTestModification', () => {
       )
       expect(hit).toMatchObject({ position, modType })
     })
+
+    // On a cell boundary the two bases either side are exactly equidistant from
+    // `queryCenter`, and the tie fell through to Flatbush's ascending order —
+    // so the leftmost pixel column of a base answered its LEFT neighbour on a
+    // forward block. One column per base, and only there, which is why sampling
+    // centres above never saw it.
+    //
+    // The orientation is carried entirely by the coords the caller resolved:
+    // `bpAtPx` puts `genomicPos` at b on a forward block and b+1 on a reversed
+    // one for the same pixel column, while `basePos` is b either way. So both
+    // cases are expressible here without a second block.
+    it.each([
+      ['forward', 1002, 1002],
+      ['reversed', 1003, 1002],
+    ])(
+      'the leftmost column of a base resolves that base, %s',
+      (_orientation, genomicPos, basePos) => {
+        const hit = hitTestModification(
+          consecutiveMods(),
+          makeCoords({ genomicPos, basePos }),
+          10,
+        )
+        expect(hit).toMatchObject({ position: 1002, modType: 'c' })
+      },
+    )
   })
 
   it('returns undefined modType when typeIndices are absent', () => {
