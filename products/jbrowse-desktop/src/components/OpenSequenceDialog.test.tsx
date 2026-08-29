@@ -186,3 +186,51 @@ test('both staged genomes are handed over together', async () => {
     expect.objectContaining({ name: 'mm39' }),
   ])
 })
+
+// The one format the dialog takes that carries no bases, checked at the seam
+// that hands a config to the app rather than at the form. The adapter has to be
+// the shape the published OrthoFinder demos already run on, since that is what
+// proves a reader's own chrom.sizes reaches a working assembly and not just a
+// green form.
+test('opens a chrom.sizes genome, and reaches no indexer to do it', async () => {
+  const { user, onClose } = setup()
+  await enterUrls(user, 'https://example.com/rice.chrom.sizes')
+  await user.click(submit())
+
+  expect(mockInvokeIpc).not.toHaveBeenCalled()
+  expect(onClose).toHaveBeenCalledWith([
+    expect.objectContaining({
+      name: 'rice',
+      sequence: expect.objectContaining({
+        type: 'ReferenceSequenceTrack',
+        adapter: {
+          type: 'ChromSizesAdapter',
+          chromSizesLocation: {
+            uri: 'https://example.com/rice.chrom.sizes',
+            locationType: 'UriLocation',
+          },
+        },
+      }),
+    }),
+  ])
+})
+
+// staged beside a genome that does carry sequence, since a multi-assembly
+// synteny session is the case the format exists for
+test('stages alongside a genome that has sequence', async () => {
+  const { user, onClose } = setup()
+  await enterUrls(user, 'https://example.com/rice.chrom.sizes')
+  await user.click(screen.getByText('Add another genome'))
+  await enterUrls(user, 'https://example.com/hg38.2bit')
+  expect(submit()).toHaveTextContent('Open 2 genomes')
+  await user.click(submit())
+
+  const [confs] = onClose.mock.calls[0]!
+  expect(confs.map((c: { name: string }) => c.name)).toEqual(['rice', 'hg38'])
+  expect(
+    confs.map(
+      (c: { sequence: { adapter: { type: string } } }) =>
+        c.sequence.adapter.type,
+    ),
+  ).toEqual(['ChromSizesAdapter', 'TwoBitAdapter'])
+})
