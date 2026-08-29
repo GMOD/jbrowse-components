@@ -1,6 +1,6 @@
-import { boundBandHeight } from './bandHeight'
+import { boundBandHeight } from './bandHeight.ts'
 
-import type { BandBounds } from './bandHeight'
+import type { BandBounds } from './bandHeight.ts'
 
 /**
  * #api core/util

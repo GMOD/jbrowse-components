@@ -1,4 +1,4 @@
-import { reservedPx, stackBands } from './bandLayout'
+import { reservedPx, stackBands } from './bandLayout.ts'
 
 test('a band that is off costs zero px, not its floor', () => {
   expect(reservedPx({ active: false, height: 40 })).toBe(0)
