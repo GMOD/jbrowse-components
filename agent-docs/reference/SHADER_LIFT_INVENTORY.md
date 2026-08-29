@@ -108,7 +108,7 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
-| `capsuleCoverage` | nothing |
+| `capsuleCoverage` | tests only — `dotplotCapsulePad.test.ts` |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `hueRampLane` | tests only — `mapqHueParity.test.ts` |

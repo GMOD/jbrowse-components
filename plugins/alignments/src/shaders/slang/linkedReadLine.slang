@@ -26,6 +26,11 @@
 //! export-consts: LINKED_READ_LINE_ALPHA, LINKED_READ_LINE_WIDTH_PX
 
 import alignmentsUniforms;
+// The FRAME only. capsule.slang's cap is deliberately not this pass's — the
+// Canvas2D twin strokes butt caps, so the coverage stays buttSegmentCoverage
+// (alignmentsUniforms) and buttSegmentCoverage.test.ts fails if a round one
+// comes back. Orienting a segment is the half that carries no cap at all.
+import capsule;
 import colorPack;
 import hpmath;
 
@@ -87,10 +92,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 delta = float2(x2Px - x1Px, y2Px - y1Px);
   float len = length(delta);
   // A zero-length connector needs two mates at the same bp AND the same row,
-  // which is the same read; the guard is here so a degenerate instance cannot
-  // emit NaN positions and take the whole draw with it.
-  float2 dir = (len > 0.0001) ? delta / len : float2(1.0, 0.0);
-  float2 nrm = float2(-dir.y, dir.x);
+  // which is the same read; capsuleFrame's guard is what keeps a degenerate
+  // instance from emitting NaN positions and taking the whole draw with it.
+  CapsuleFrame frame = capsuleFrame(delta, len);
+  float2 dir = frame.tangent;
+  float2 nrm = frame.normal;
 
   // segmentQuadLocal (alignmentsUniforms) owns the AA pad, paired with the
   // coverage the fragment measures with — the same pair arcFlat.slang uses.

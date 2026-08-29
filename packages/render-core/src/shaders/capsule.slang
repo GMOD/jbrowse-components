@@ -14,9 +14,16 @@
 //
 // alignments' arcFlat/linkedReadLine stroked segments are deliberately NOT
 // coverage consumers: their Canvas2D/SVG twins stroke default BUTT caps, so
-// their coverage is the butt form (alignmentsUniforms.slang) and only the
-// cap-agnostic frame is shared. A cap-style flag here would be a mode nobody
-// asked for twice; the two forms are two named coverages in their own homes.
+// their coverage is the butt form (alignmentsUniforms.slang). A cap-style flag
+// here would be a mode nobody asked for twice; the two forms are two named
+// coverages in their own homes.
+//
+// What they take instead is the FRAME, which carries no cap — `linkedReadLine`
+// imports `capsuleFrame` for its diagonal. arcFlat imports nothing here at all:
+// its segment is horizontal by construction, so it adds `local` to a centre and
+// has no frame to orient. Said precisely because the looser version of this
+// sentence ("the frame is shared") sat here while linkedReadLine still spelled
+// its own copy — the same shape of untrue comment as the butt caps above.
 //
 // The pad is the contract between the halves: `capsuleQuadLocal` grows the
 // quad by exactly the coverage ramp's reach (halfWidth + aaHalfPx(dpr)) on
@@ -56,9 +63,10 @@ import hpmath;
 // the one leaving the fallback the smallest reach.
 public static const float CAPSULE_MIN_LEN_PX = 1e-4;
 
-// The segment's own frame — x along it, y across it. Cap-agnostic, so the
-// butt-capped strokes above share it too. The degenerate guard exists only to
-// keep a zero-length segment's 0/0 out of the frame.
+// The segment's own frame — x along it, y across it. Cap-agnostic, which is
+// what lets the butt-capped linkedReadLine orient its diagonal through it. The
+// degenerate guard exists only to keep a zero-length segment's 0/0 out of the
+// frame.
 public struct CapsuleFrame {
   public float2 tangent;
   public float2 normal;
