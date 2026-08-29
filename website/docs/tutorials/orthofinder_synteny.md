@@ -551,25 +551,31 @@ download. Every stage after that reads the files themselves and keys on the
 short name, never on where the files came from, so the same run works on genomes
 of your own once you supply the two files per genome it would have fetched:
 
-- a proteome FASTA, each header carrying a `gene:<id>` tag
-- an annotation GFF3, whose gene rows carry `ID=gene:<id>` and whose header
-  carries one `##sequence-region` line per reference sequence
+- the genome FASTA
+- its annotation GFF3
 
-The two files have to spell a gene's id the same way, because the conversion
-looks up each id from the orthogroup table in the BED it built from the GFF3. An
-annotation that spells ids a third way produces an empty `.blocks` rather than
-an error, so read the share of ids the conversion reports placing before you
-read the picture. Check the `##sequence-region` lines as well: each assembly
-takes its reference names and lengths from them, so an annotation carrying none
-leaves that genome with nothing to draw on.
+That is what assembling a genome leaves you holding, and it is enough on its
+own: given the two, [gffread](https://github.com/gpertea/gffread) translates
+each CDS and prints the transcript-to-gene map alongside it, so the proteome and
+the gene rows come out of one parse of one file. Nothing has to agree about a
+gene id across two downloads, because there is only one file with ids in it.
+Reference names and lengths come from the FASTA index gffread writes, so an
+annotation with no `##sequence-region` header works too. Install gffread for
+this route; the sets above do not use it.
+
+Pass a proteome in column 2 instead if you already have one, in which case its
+headers carry a `gene:<id>` tag matching the GFF3's `ID=gene:<id>` and the two
+have to spell that id the same way. The run says which of the two it read, and
+prints the share of ids it placed either way, which is the line to check before
+reading the picture.
 
 Name the files in a manifest, one line per genome, and pass it where a set name
 goes:
 
 ```bash
 cat > my_genomes.tsv <<'EOF'
-# name    proteome                  annotation              aliases
-speciesA  data/speciesA.pep.fa.gz   data/speciesA.gff3.gz
+# name    genome or proteome        annotation              aliases
+speciesA  data/speciesA.fa.gz       data/speciesA.gff3.gz
 speciesB  https://host/B.pep.fa.gz  https://host/B.gff3.gz  GCF_000001405.40
 EOF
 

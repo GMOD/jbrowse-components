@@ -37,6 +37,8 @@
 # Requires: orthofinder + diamond, python3, bgzip/tabix (htslib), wget, and
 #           node (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
 #           The wheat set also needs the NCBI datasets CLI (see ALIASES below).
+#           A manifest whose column 2 is a genome rather than a proteome also
+#           needs gffread, which is what derives one from the other.
 #
 # Nothing below calls orthofinder by any path other than `orthofinder` on PATH,
 # so the project's container covers the first requirement without root. As an
@@ -57,10 +59,18 @@
 # your own. Three whitespace-separated columns, `#` comments and blank lines
 # ignored:
 #
-#   # name      proteome (one per gene)   annotation              [aliases]
-#   mygenome1   data/mygenome1.pep.fa.gz  data/mygenome1.gff3.gz
+#   # name      genome or proteome        annotation              [aliases]
+#   mygenome1   data/mygenome1.fa.gz      data/mygenome1.gff3.gz
 #   mygenome2   https://host/g2.pep.fa.gz https://host/g2.gff3.gz GCF_000001405.40
-#   mygenome3   data/g3.pep.fa.gz         data/g3.gff3.gz         data/g3_aliases.txt
+#   mygenome3   data/g3.fa.gz             data/g3.gff3.gz         data/g3_aliases.txt
+#
+# Column 2 is the genome the annotation goes with, or a proteome if you have one
+# already. Given a genome, gffread translates each CDS and prints the
+# transcript-to-gene map, so the proteome and the gene rows come out of one
+# parse of one file and cannot disagree about a gene id. That is the case for a
+# species in neither Ensembl nor NCBI: a genome and an annotation is what
+# assembling one leaves you holding, and a published proteome is not. Which way
+# a row went is decided by the first sequence's alphabet and printed by the run.
 #
 # Column 4 is optional, and is how a genome whose GFF3 names sequences something
 # a reader would not recognize gets labelled. An INSDC assembly accession
@@ -280,6 +290,85 @@ fetch() {
   fi
 }
 
+# Is the first sequence in a gzipped fasta nucleotide? A manifest's column 2 is
+# either a proteome or the genome its annotation goes with, and a reader asked to
+# declare which can declare it wrong. The alphabet answers outright: a nucleotide
+# fasta is ACGTUN and little else where a protein one runs twenty amino acids.
+# Read in python rather than piped through head, so that stopping early does not
+# SIGPIPE gzip and fail the script under pipefail.
+is_nucleotide() {
+  python3 - "$1" <<'PY'
+import gzip
+import sys
+
+seq = []
+with gzip.open(sys.argv[1], 'rt') as fh:
+    for line in fh:
+        if line.startswith('>'):
+            if seq:
+                break
+            continue
+        seq.append(line.strip())
+        if sum(map(len, seq)) > 4000:
+            break
+s = ''.join(seq).upper()
+sys.exit(0 if s and sum(c in 'ACGTUN' for c in s) / len(s) > 0.9 else 1)
+PY
+}
+
+# One protein per transcript out of a genome and its annotation, plus the
+# transcript-to-gene map that makes those proteins joinable to the gene rows.
+# Both come from gffread's parse of the same GFF3, so the two id spaces cannot
+# drift the way they do when the proteome is a separate download that spells
+# gene ids its own way. It is also what lets a species in neither Ensembl nor
+# NCBI run at all: a genome and an annotation is what anyone who assembled one
+# has, and a published proteome is what they do not.
+#
+# Headers come out as `>transcript gene:GENEID`, which is the Ensembl shape the
+# proteome reducer below already reads, so nothing downstream learns a second
+# spelling.
+derive_proteome() {
+  local name=$1
+  gzip -dc "$name.genome.fa.gz" > "$name.genome.fa"
+  gzip -dc "$name.gff3.gz" > "$name.ann.gff3"
+  gffread --table @id,@geneid,@chr,@start,@end,@strand "$name.ann.gff3" \
+    > "$name.gffread.tsv.part"
+  mv "$name.gffread.tsv.part" "$name.gffread.tsv"
+  # -y translates each CDS; the .fai it writes beside the genome is where
+  # chrom.sizes comes from when the GFF3 carries no ##sequence-region header
+  gffread -y "$name.tx.faa" -g "$name.genome.fa" "$name.ann.gff3"
+  python3 - "$name.tx.faa" "$name.gffread.tsv" "$name.pep.fa.gz" <<'PY'
+import gzip
+import sys
+
+faa, table, dest = sys.argv[1:]
+gene = {}
+with open(table) as fh:
+    for line in fh:
+        fields = line.rstrip('\n').split('\t')
+        if len(fields) > 1 and fields[1] != '.':
+            gene[fields[0]] = fields[1]
+kept = skipped = 0
+with open(faa) as src, gzip.open(dest + '.part', 'wt') as out:
+    for line in src:
+        if line.startswith('>'):
+            tx = line[1:].split()[0]
+            name = gene.get(tx)
+            # a transcript gffread could not attach to a gene has no row to
+            # join to, so it is dropped rather than given an id of its own
+            skip = name is None
+            skipped += skip
+            kept += not skip
+            if not skip:
+                out.write(f'>{tx} gene:{name}\n')
+        elif not skip:
+            out.write(line)
+import os
+os.rename(dest + '.part', dest)
+print(f'{dest}: {kept} translated, {skipped} with no gene to join')
+PY
+}
+
 # ── Per species: proteome + annotation, then a gene BED and chrom.sizes ──────
 # The trailing `_` catches a manifest's alias column, which the block at the
 # bottom handles: `read` puts every remaining field in the last variable, so
@@ -287,8 +376,18 @@ fetch() {
 echo "$SPECIES" | while read -r name col2 col3 _; do
   if [ -n "$MANIFEST" ]; then
     # a manifest names the two files outright
-    fetch "$name.pep.fa.gz" "$col2"
     fetch "$name.gff3.gz" "$col3"
+    if [ ! -f "$name.pep.fa.gz" ]; then
+      fetch "$name.source.fa.gz" "$col2"
+      if is_nucleotide "$name.source.fa.gz"; then
+        echo "$name: column 2 is a genome, deriving the proteome with gffread"
+        mv "$name.source.fa.gz" "$name.genome.fa.gz"
+        derive_proteome "$name"
+      else
+        echo "$name: column 2 is a proteome, used as supplied"
+        mv "$name.source.fa.gz" "$name.pep.fa.gz"
+      fi
+    fi
   else
     # a set names the species and its assembly, and the two urls are built from
     # the release the branch above declared
@@ -311,12 +410,32 @@ echo "$SPECIES" | while read -r name col2 col3 _; do
   # would go out with an empty name column. Before chrom.sizes, which selects on
   # this file's gene counts.
   if [ ! -f "$name.bed" ]; then
-    gunzip -c "$name.gff3.gz" \
-      | awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=gene:[^;]+/) {
-          id = substr($9, RSTART + 8, RLENGTH - 8)
-          sub(/\.[0-9]+$/, "", id)
-          print $1, $4 - 1, $5, id, 0, $7
-        }' > "$name.bed.part"
+    if [ -f "$name.gffread.tsv" ]; then
+      # The gene ids here are the ones the proteome was just renamed to, since
+      # both came out of the same gffread parse. Rows are per transcript, so a
+      # gene spans the widest of its own, which is what the awk below gets from
+      # a gene row directly.
+      awk -F'\t' -v OFS='\t' '$2 != "." && $2 != "" {
+          if (!($2 in lo) || $4 < lo[$2]) lo[$2] = $4
+          if (!($2 in hi) || $5 > hi[$2]) hi[$2] = $5
+          chr[$2] = $3
+          strand[$2] = $6
+          if (!($2 in seen)) { order[++n] = $2; seen[$2] = 1 }
+        }
+        END {
+          for (i = 1; i <= n; i++) {
+            g = order[i]
+            print chr[g], lo[g] - 1, hi[g], g, 0, strand[g]
+          }
+        }' "$name.gffread.tsv" > "$name.bed.part"
+    else
+      gunzip -c "$name.gff3.gz" \
+        | awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=gene:[^;]+/) {
+            id = substr($9, RSTART + 8, RLENGTH - 8)
+            sub(/\.[0-9]+$/, "", id)
+            print $1, $4 - 1, $5, id, 0, $7
+          }' > "$name.bed.part"
+    fi
     mv "$name.bed.part" "$name.bed"
   fi
 
@@ -328,19 +447,30 @@ echo "$SPECIES" | while read -r name col2 col3 _; do
   # and draws nothing, which is the one mismatch MCScanBlocksAdapter cannot
   # report, since by then the assembly simply has no such refName.
   if [ ! -f "$name.chrom.sizes" ]; then
-    python3 - "$name.gff3.gz" "$name.bed" "$MAXSEQ" <<'PY' > "$name.chrom.sizes.part"
+    python3 - "$name.gff3.gz" "$name.bed" "$MAXSEQ" "$name.genome.fa.fai" <<'PY' > "$name.chrom.sizes.part"
 import gzip
+import os
 import sys
 
-src, bed, keep = sys.argv[1], sys.argv[2], int(sys.argv[3])
+src, bed, keep, fai = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
 regions = []
-with gzip.open(src, "rt") as fh:
-    for line in fh:
-        if line.startswith("##sequence-region"):
-            fields = line.split()
-            regions.append((fields[1], int(fields[3])))
-        elif not line.startswith("#"):
-            break
+# The .fai gffread wrote beside a supplied genome is already name and length in
+# its first two columns, and it is there whether or not the annotation carries a
+# ##sequence-region header. An annotation from a reader's own pipeline often
+# does not, and used to leave the assembly with no sequences at all.
+if os.path.exists(fai):
+    with open(fai) as fh:
+        for line in fh:
+            fields = line.split("\t")
+            regions.append((fields[0], int(fields[1])))
+else:
+    with gzip.open(src, "rt") as fh:
+        for line in fh:
+            if line.startswith("##sequence-region"):
+                fields = line.split()
+                regions.append((fields[1], int(fields[3])))
+            elif not line.startswith("#"):
+                break
 genes = {}
 with open(bed) as fh:
     for line in fh:
