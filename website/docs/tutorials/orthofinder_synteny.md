@@ -569,12 +569,12 @@ annotation with no `##sequence-region` header works too.
 The run prints the share of ids it placed, which is the line to check before
 reading the picture.
 
-Column 2 also takes a proteome, if you have one and the genome is inconvenient
-to move: the sets above go that way, since a published proteome is tens of
-megabytes where the genome it came from can be gigabytes, and this view never
-reads a base. Its headers then carry a `gene:<id>` tag matching the GFF3's
-`ID=gene:<id>`, and the two have to spell that id the same way, which is the
-agreement the genome route does not need. The run says which of the two it read.
+Column 2 also takes a proteome, and it does so for one reason: the sets above
+download one per species, and rebuilding those five from genomes would mean
+fetching 26 genomes to translate proteins Ensembl already publishes. Pass one
+where that saving is what you need. It costs the agreement the genome route
+removes, since its headers then carry a `gene:<id>` tag that has to match the
+GFF3's `ID=gene:<id>`. The run says which of the two it read.
 
 Name the files in a manifest, one line per genome, and pass it where a set name
 goes:

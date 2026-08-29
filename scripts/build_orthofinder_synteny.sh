@@ -70,12 +70,15 @@
 # case for a species in neither Ensembl nor NCBI, which is the case this is for:
 # a genome and an annotation is what assembling one leaves you holding.
 #
-# It also takes a proteome there, which is what the sets below use and what a
-# reader with a published one may prefer: tens of megabytes against gigabytes
-# for the genome it came from, and this view never reads a base. The cost is an
-# agreement the genome route does not need, between the `gene:` tag in the FASTA
-# header and `ID=gene:` in the GFF3. Which of the two a row is gets read off the
-# first sequence's alphabet and printed by the run.
+# Column 2 also takes a proteome, and the reason is worth stating plainly rather
+# than leaving as a second supported route: the five sets below download one per
+# species, and rebuilding them from genomes would mean fetching 26 genomes, tens
+# of gigabytes, to translate proteins their sources already publish, for a view
+# that reads no bases. That is the whole of it. A manifest can pass a proteome
+# for the same saving, and pays an agreement the genome route does not need,
+# between the `gene:` tag in the FASTA header and `ID=gene:` in the GFF3. Prefer
+# the genome anywhere the download is not the problem. Which of the two a row is
+# gets read off the first sequence's alphabet and printed by the run.
 #
 # Column 4 is optional, and is how a genome whose GFF3 names sequences something
 # a reader would not recognize gets labelled. An INSDC assembly accession
