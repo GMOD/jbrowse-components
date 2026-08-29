@@ -53,7 +53,7 @@
 #
 #   MAXSEQ=60 MAXCOPIES=6 bash scripts/build_orthofinder_synteny.sh wheat
 #
-# The first argument is one of the sets below OR a manifest naming genomes of
+# The first argument is one of the sets below, or a manifest naming genomes of
 # your own. Three whitespace-separated columns, `#` comments and blank lines
 # ignored:
 #
@@ -61,18 +61,19 @@
 #   mygenome1     data/mygenome1.pep.fa.gz        data/mygenome1.gff3.gz
 #   mygenome2     https://host/g2.pep.fa.gz       https://host/g2.gff3.gz
 #
-# A column is a local path or a URL; paths resolve against the directory you run
-# from. Everything past the two fetches is the same code the five sets run, and
-# it keys on the name in column 1 rather than on where the files came from, so
-# what a set buys over a manifest is only that its URLs are already written
-# down. Two things the manifest cannot do for you, both of which the run reports
-# rather than guesses at:
+# Either file column takes a local path or a URL, and a path resolves against
+# the directory you run from. Naming a set only decides which URLs get built:
+# every stage after the two fetches runs the same code either way, keyed on the
+# name in column 1 rather than on where the files came from.
+#
+# Two things your own files have to get right, neither of which fails loudly:
 #
 #   * the FASTA header and the GFF3 have to agree on a gene id. The BED step
-#     below reads `ID=gene:` out of column 9, the proteome step reads a `gene:`
-#     tag out of the FASTA header, and the orthogroup table resolves one against
-#     the other. An annotation spelling ids some third way needs its own awk,
-#     and the symptom is an empty .blocks rather than an error;
+#     below reads `ID=gene:` out of GFF3 column 9, the proteome step reads a
+#     `gene:` tag out of the FASTA header, and the conversion looks up each id
+#     from the orthogroup table in that BED. An annotation that spells ids a
+#     third way needs its own awk here, and produces an empty .blocks rather
+#     than an error;
 #   * chrom.sizes comes from the GFF3's `##sequence-region` header, so an
 #     annotation carrying none leaves the assembly with no reference sequences.
 #

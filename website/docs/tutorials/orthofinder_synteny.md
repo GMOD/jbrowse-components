@@ -546,24 +546,25 @@ gives INSDC accessions instead: T. timopheevii in `wheat`, tomato in
 
 ## Your own genomes
 
-A set name is Ensembl coordinates the script already holds. Every stage past the
-download keys on the short name rather than on where the files came from, so the
-same run works on genomes of your own once you supply the two files per genome
-it would have fetched:
+Naming one of the sets above only tells the script which Ensembl files to
+download. Every stage after that reads the files themselves and keys on the
+short name, never on where the files came from, so the same run works on genomes
+of your own once you supply the two files per genome it would have fetched:
 
 - a proteome FASTA, each header carrying a `gene:<id>` tag
 - an annotation GFF3, whose gene rows carry `ID=gene:<id>` and whose header
   carries one `##sequence-region` line per reference sequence
 
-Those two ids have to be the same id. That is the whole contract between the
-files, and it is what the orthogroup table resolves against the BEDs; an
-annotation spelling ids some third way is the one mismatch that yields an empty
-`.blocks` rather than an error. The conversion prints the share of each genome's
-ids it placed, so read that line before reading the picture. The
-`##sequence-region` header is the other requirement worth checking, since that
-is where each assembly's reference names and lengths come from.
+The two files have to spell a gene's id the same way, because the conversion
+looks up each id from the orthogroup table in the BED it built from the GFF3. An
+annotation that spells ids a third way produces an empty `.blocks` rather than
+an error, so read the share of ids the conversion reports placing before you
+read the picture. Check the `##sequence-region` lines as well: each assembly
+takes its reference names and lengths from them, so an annotation carrying none
+leaves that genome with nothing to draw on.
 
-Name them in a manifest, one line per genome, and pass it where a set name goes:
+Name the files in a manifest, one line per genome, and pass it where a set name
+goes:
 
 ```bash
 cat > my_genomes.tsv <<'EOF'
@@ -576,9 +577,10 @@ bash build_orthofinder_synteny.sh my_genomes.tsv
 npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed URL
 ```
 
-Either column is a local path or a URL, and column 1 is the name its row is
-labelled with in the view. Two genomes make a valid manifest, and the DIAMOND
-cost is the square of however many you list.
+Column 1 names the assembly, which is what labels that genome's row in the view.
+The other two columns each take a local path or a URL. Two genomes make a valid
+manifest, and OrthoFinder searches every proteome against every other, so the
+DIAMOND count is the square of however many you list.
 
 ## See also
 
