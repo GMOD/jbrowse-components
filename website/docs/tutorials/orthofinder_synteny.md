@@ -568,9 +568,9 @@ goes:
 
 ```bash
 cat > my_genomes.tsv <<'EOF'
-# name    proteome                  annotation
+# name    proteome                  annotation              aliases
 speciesA  data/speciesA.pep.fa.gz   data/speciesA.gff3.gz
-speciesB  https://host/B.pep.fa.gz  https://host/B.gff3.gz
+speciesB  https://host/B.pep.fa.gz  https://host/B.gff3.gz  GCF_000001405.40
 EOF
 
 bash build_orthofinder_synteny.sh my_genomes.tsv
@@ -578,9 +578,16 @@ npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed U
 ```
 
 Column 1 names the assembly, which is what labels that genome's row in the view.
-The other two columns each take a local path or a URL. Two genomes make a valid
+The file columns each take a local path or a URL. Two genomes make a valid
 manifest, and OrthoFinder searches every proteome against every other, so the
 DIAMOND count is the square of however many you list.
+
+Column 4 is optional, and answers the case where a GFF3 names its sequences
+something a reader would not recognize. An INSDC assembly accession fetches
+NCBI's sequence report, which is where the submitter's chromosome names live and
+is the route three of the sets above already take. Anything else is read as an
+alias table you supply yourself, two columns of reference name and alias, for a
+genome that has no accession to fetch one by.
 
 ## See also
 

@@ -57,9 +57,18 @@
 # your own. Three whitespace-separated columns, `#` comments and blank lines
 # ignored:
 #
-#   # name        proteome (one entry per gene)   annotation
-#   mygenome1     data/mygenome1.pep.fa.gz        data/mygenome1.gff3.gz
-#   mygenome2     https://host/g2.pep.fa.gz       https://host/g2.gff3.gz
+#   # name      proteome (one per gene)   annotation              [aliases]
+#   mygenome1   data/mygenome1.pep.fa.gz  data/mygenome1.gff3.gz
+#   mygenome2   https://host/g2.pep.fa.gz https://host/g2.gff3.gz GCF_000001405.40
+#   mygenome3   data/g3.pep.fa.gz         data/g3.gff3.gz         data/g3_aliases.txt
+#
+# Column 4 is optional, and is how a genome whose GFF3 names sequences something
+# a reader would not recognize gets labelled. An INSDC assembly accession
+# (GCA_/GCF_) fetches NCBI's sequence report for it, which is the same route the
+# `wheat`, `solanaceae` and `drosophila` sets take and needs the NCBI datasets
+# CLI. Anything else is read as an alias table you already have: two columns,
+# reference name and alias, which is what a genome with no accession to fetch
+# one by can still supply.
 #
 # Either file column takes a local path or a URL, and a path resolves against
 # the directory you run from. Naming a set only decides which URLs get built:
@@ -217,18 +226,17 @@ EOF
   fi
   MANIFEST="$SET"
   SPECIES=$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$MANIFEST" \
-    | while read -r name pep gff extra; do
+    | while read -r name pep gff alias extra; do
         if [ -z "$gff" ] || [ -n "$extra" ]; then
-          echo "$MANIFEST: expected 'name proteome annotation', got: $name $pep $gff $extra" >&2
+          echo "$MANIFEST: expected 'name proteome annotation [aliases]', got: $name $pep $gff $alias $extra" >&2
           exit 1
         fi
-        if [ -e "$pep" ]; then
-          pep=$(realpath "$pep")
-        fi
-        if [ -e "$gff" ]; then
-          gff=$(realpath "$gff")
-        fi
-        printf '%s %s %s\n' "$name" "$pep" "$gff"
+        for col in pep gff alias; do
+          if [ -e "${!col}" ]; then
+            printf -v "$col" '%s' "$(realpath "${!col}")"
+          fi
+        done
+        printf '%s %s %s %s\n' "$name" "$pep" "$gff" "$alias"
       done)
   # the subshell above exits 1 on a malformed row, which a command substitution
   # swallows: an empty SPECIES is what reaches here, so say so rather than
@@ -239,6 +247,12 @@ EOF
   fi
   ;;
 esac
+
+# Column 4 of a manifest is the same "name<space>source" list the sets declare,
+# so the alias step at the bottom takes both without knowing which it has.
+if [ -n "$MANIFEST" ]; then
+  ALIASES=$(echo "$SPECIES" | awk 'NF > 3 && $4 != "" {print $1, $4}')
+fi
 
 NAMES=$(echo "$SPECIES" | awk '{print $1}')
 mkdir -p "$OUTDIR"
@@ -267,7 +281,10 @@ fetch() {
 }
 
 # ── Per species: proteome + annotation, then a gene BED and chrom.sizes ──────
-echo "$SPECIES" | while read -r name col2 col3; do
+# The trailing `_` catches a manifest's alias column, which the block at the
+# bottom handles: `read` puts every remaining field in the last variable, so
+# without somewhere for it to go col3 would swallow it.
+echo "$SPECIES" | while read -r name col2 col3 _; do
   if [ -n "$MANIFEST" ]; then
     # a manifest names the two files outright
     fetch "$name.pep.fa.gz" "$col2"
@@ -510,34 +527,45 @@ done
 # NcbiSequenceReportAliasAdapter reads (the report also carries GC content and
 # lengths this has no use for).
 if [ -n "$ALIASES" ]; then
-  echo "$ALIASES" | while read -r name accession; do
-    if [ ! -f "$name.sequence_report.tsv" ]; then
-      datasets download genome accession "$accession" --include seq-report \
-        --filename "$name.seq-report.zip"
-      dataformat tsv genome-seq --package "$name.seq-report.zip" \
-        --inputfile "$accession/sequence_report.jsonl" \
-        --fields genbank-seq-acc,refseq-seq-acc,sequence-name,ucsc-style-name \
-        > "$name.sequence_report.tsv.part"
-      mv "$name.sequence_report.tsv.part" "$name.sequence_report.tsv"
-    fi
-    cp "$name.sequence_report.tsv" "$APP"/
-    python3 - "$APP/config.json" "$name" <<'PY'
+  echo "$ALIASES" | while read -r name source; do
+    # An INSDC assembly accession means "go and get the sequence report", which
+    # is the only form the five sets use. A manifest may instead name a table
+    # the reader already has, for a genome that has no accession to fetch one
+    # by, and that is a plain two-column alias file rather than NCBI's report.
+    case "$source" in
+    GCA_* | GCF_*)
+      if [ ! -f "$name.sequence_report.tsv" ]; then
+        datasets download genome accession "$source" --include seq-report \
+          --filename "$name.seq-report.zip"
+        dataformat tsv genome-seq --package "$name.seq-report.zip" \
+          --inputfile "$source/sequence_report.jsonl" \
+          --fields genbank-seq-acc,refseq-seq-acc,sequence-name,ucsc-style-name \
+          > "$name.sequence_report.tsv.part"
+        mv "$name.sequence_report.tsv.part" "$name.sequence_report.tsv"
+      fi
+      alias_file="$name.sequence_report.tsv"
+      alias_type=NcbiSequenceReportAliasAdapter
+      ;;
+    *)
+      # the same fetch the proteomes use, so this column takes a path or a URL
+      fetch "$name.aliases.txt" "$source"
+      alias_file="$name.aliases.txt"
+      alias_type=RefNameAliasAdapter
+      ;;
+    esac
+    cp "$alias_file" "$APP"/
+    python3 - "$APP/config.json" "$name" "$alias_file" "$alias_type" <<'PY'
 import json
 import sys
 
-config_path, name = sys.argv[1:]
+config_path, name, alias_file, alias_type = sys.argv[1:]
+location = {'uri': alias_file, 'locationType': 'UriLocation'}
 with open(config_path) as f:
     config = json.load(f)
 for assembly in config['assemblies']:
     if assembly['name'] == name:
         assembly['refNameAliases'] = {
-            'adapter': {
-                'type': 'NcbiSequenceReportAliasAdapter',
-                'location': {
-                    'uri': f'{name}.sequence_report.tsv',
-                    'locationType': 'UriLocation',
-                },
-            }
+            'adapter': {'type': alias_type, 'location': location}
         }
 with open(config_path, 'w') as f:
     json.dump(config, f, indent=2)
