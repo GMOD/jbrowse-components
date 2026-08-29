@@ -1,5 +1,9 @@
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '@jbrowse/render-core/shaders/rowRect'
+import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
@@ -207,14 +211,50 @@ describe('Canvas2DWiggleRenderer', () => {
     })
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
-    const source = makeSource([5], [0], [1000])
+    const source = makeSource([5], [0], [1000], RENDERING_TYPE_DENSITY)
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
       ...defaultState,
       renderingType: RENDERING_TYPE_DENSITY,
     })
 
+    // The full row, not a score-scaled bar: the source has to carry the
+    // rendering too, since the renderer branches on the LAYER's. Encoded as
+    // xyplot this drew a 1/10-height bar and still counted one fillRect.
     expect(fillRectCalls.length).toBe(1)
+    expect(fillRectCalls[0]![3]).toBe(defaultState.canvasHeight)
+  })
+
+  // A density row is rowRect's band, and the floor is the whole point of it:
+  // 400 sources in a 200px canvas is a 0.5px row, which paints thinner than a
+  // pixel and drops out between sample points. The shader has always floored
+  // it; the painter drew the raw row height, so the two backends disagreed by
+  // 2x on exactly the deep stacks density is for.
+  test('a sub-pixel density row paints the shader band, floored and centered', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const numRows = 400
+    const rowHeight = defaultState.canvasHeight / numRows
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    const source = {
+      ...makeSource([5], [0], [1000], RENDERING_TYPE_DENSITY),
+      rowIndex: 10,
+    }
+
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      renderingType: RENDERING_TYPE_DENSITY,
+      numRows,
+    })
+
+    expect(rowHeight).toBeLessThan(1)
+    const [, y, , h] = fillRectCalls[0]!
+    expect(h).toBe(drawnRowHeightPx(rowHeight, 1))
+    expect(y).toBe(rowHeight * 10 + rowBandOffsetPx(rowHeight, 1))
   })
 
   test('renderBlocks handles line rendering type', () => {

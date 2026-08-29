@@ -1,5 +1,9 @@
 import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '@jbrowse/render-core/shaders/rowRect'
 import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_FUDGE_FACTOR, WIGGLE_MIN_PX } from '../util.ts'
@@ -140,12 +144,19 @@ export function drawDensity({
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const n = source.numFeatures
+  // The shader's own band, through its generated twins: density tiles rows
+  // edge to edge (`rowProportion` 1), and a sub-pixel row floors to 1px
+  // centered on its slot rather than drawing thinner than a pixel and
+  // dropping out between sample points. 200 sources in a 100px canvas is a
+  // 0.5px row, which is half the height the GPU paints.
+  const bandH = drawnRowHeightPx(rowHeight, 1)
+  const bandTop = rowTop + rowBandOffsetPx(rowHeight, 1)
   for (let i = 0; i < n; i++) {
     const x1 = toX(positions[i * 2]!)
     const x2 = toX(positions[i * 2 + 1]!)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
     ctx.fillStyle = colorFn(scores[i]!)
-    ctx.fillRect(spanLeft(x1, x2, w), rowTop, w, rowHeight)
+    ctx.fillRect(spanLeft(x1, x2, w), bandTop, w, bandH)
   }
 }
 
