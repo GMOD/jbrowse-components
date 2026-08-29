@@ -42,7 +42,7 @@ test('the generated band layout reproduces the hand-written twin it replaced', (
 // coverage mark is `bottom - fraction * effectiveH`, so a band shorter than its
 // two insets INVERTS rather than degrades: the depth bars, the SNP segments
 // stacked in them and the interbase bars all grow DOWNWARD from a baseline near
-// the band's top edge. The floor lives in alignmentsUniforms.slang, at the
+// the band's top edge. The floor lives in coverageBand.slang, at the
 // declaration, so both backends and the axis inherit it — a sub-inset band
 // draws nothing instead of upside down.
 test('a band shorter than its two insets draws nothing rather than inverting', () => {

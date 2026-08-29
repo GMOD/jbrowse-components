@@ -141,6 +141,14 @@ Sharing more is not better, and each of these is a decision with a reason:
   shareable, ADR-051's answer is to split the scalar decision out and leave the
   conversion per-backend; the whole table of candidates that failed that test
   is in that ADR.
+- **The anchor a normalized score is placed against.** `scoreScale` carries a
+  score to `[0,1]` for three importers; where that fraction then lands is the
+  display's own, and the four candidate unifications were measured and declined
+  ([ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
+  A row in a stack, a baseline inside a band that reserves a label inset at both
+  ends, the whole canvas and a band edge that flips with the arc orientation are
+  four different things to measure from, and the two that agree over the ordinary
+  range diverge in the corner one of them was written for.
 - **The band allocators.**
   [mechanisms/feature-band-consumers](../mechanisms/feature-band-consumers.md)
   declined generalizing them, correctly — sticky coverage and scrolling
