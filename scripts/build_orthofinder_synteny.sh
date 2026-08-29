@@ -59,18 +59,23 @@
 # your own. Three whitespace-separated columns, `#` comments and blank lines
 # ignored:
 #
-#   # name      genome or proteome        annotation              [aliases]
+#   # name      genome                    annotation              [aliases]
 #   mygenome1   data/mygenome1.fa.gz      data/mygenome1.gff3.gz
-#   mygenome2   https://host/g2.pep.fa.gz https://host/g2.gff3.gz GCF_000001405.40
+#   mygenome2   https://host/g2.fa.gz     https://host/g2.gff3.gz GCF_000001405.40
 #   mygenome3   data/g3.fa.gz             data/g3.gff3.gz         data/g3_aliases.txt
 #
-# Column 2 is the genome the annotation goes with, or a proteome if you have one
-# already. Given a genome, gffread translates each CDS and prints the
-# transcript-to-gene map, so the proteome and the gene rows come out of one
-# parse of one file and cannot disagree about a gene id. That is the case for a
-# species in neither Ensembl nor NCBI: a genome and an annotation is what
-# assembling one leaves you holding, and a published proteome is not. Which way
-# a row went is decided by the first sequence's alphabet and printed by the run.
+# Column 2 is the genome the annotation goes with. gffread translates each CDS
+# and prints the transcript-to-gene map, so the proteome and the gene rows come
+# out of one parse of one file and cannot disagree about a gene id. That is the
+# case for a species in neither Ensembl nor NCBI, which is the case this is for:
+# a genome and an annotation is what assembling one leaves you holding.
+#
+# It also takes a proteome there, which is what the sets below use and what a
+# reader with a published one may prefer: tens of megabytes against gigabytes
+# for the genome it came from, and this view never reads a base. The cost is an
+# agreement the genome route does not need, between the `gene:` tag in the FASTA
+# header and `ID=gene:` in the GFF3. Which of the two a row is gets read off the
+# first sequence's alphabet and printed by the run.
 #
 # Column 4 is optional, and is how a genome whose GFF3 names sequences something
 # a reader would not recognize gets labelled. An INSDC assembly accession
@@ -367,6 +372,15 @@ import os
 os.rename(dest + '.part', dest)
 print(f'{dest}: {kept} translated, {skipped} with no gene to join')
 PY
+  # The decompressed genome is the biggest thing this script ever writes, and
+  # once the proteome exists nothing reads it again: bread wheat alone is 14.5
+  # Gb of sequence, so six of them left lying about is most of a disk. Its .fai
+  # stays, because chrom.sizes takes reference lengths from that rather than
+  # from the sequence, and it is a few kilobytes.
+  #
+  # Only on success. A failure keeps every intermediate where it fell, which is
+  # what a re-run and a look at the file both want.
+  rm -f "$name.genome.fa" "$name.ann.gff3" "$name.tx.faa"
 }
 
 # ── Per species: proteome + annotation, then a gene BED and chrom.sizes ──────

@@ -566,20 +566,24 @@ gene id across two downloads, because there is only one file with ids in it.
 Reference names and lengths come from the FASTA index gffread writes, so an
 annotation with no `##sequence-region` header works too.
 
-Pass a proteome in column 2 instead if you already have one, in which case its
-headers carry a `gene:<id>` tag matching the GFF3's `ID=gene:<id>` and the two
-have to spell that id the same way. The run says which of the two it read, and
-prints the share of ids it placed either way, which is the line to check before
+The run prints the share of ids it placed, which is the line to check before
 reading the picture.
+
+Column 2 also takes a proteome, if you have one and the genome is inconvenient
+to move: the sets above go that way, since a published proteome is tens of
+megabytes where the genome it came from can be gigabytes, and this view never
+reads a base. Its headers then carry a `gene:<id>` tag matching the GFF3's
+`ID=gene:<id>`, and the two have to spell that id the same way, which is the
+agreement the genome route does not need. The run says which of the two it read.
 
 Name the files in a manifest, one line per genome, and pass it where a set name
 goes:
 
 ```bash
 cat > my_genomes.tsv <<'EOF'
-# name    genome or proteome        annotation              aliases
+# name    genome                    annotation              aliases
 speciesA  data/speciesA.fa.gz       data/speciesA.gff3.gz
-speciesB  https://host/B.pep.fa.gz  https://host/B.gff3.gz  GCF_000001405.40
+speciesB  https://host/B.fa.gz      https://host/B.gff3.gz  GCF_000001405.40
 EOF
 
 bash build_orthofinder_synteny.sh my_genomes.tsv
