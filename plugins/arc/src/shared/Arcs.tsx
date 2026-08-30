@@ -57,10 +57,11 @@ const Arcs = observer(function Arcs({
   const hitTest = useCallback(
     (state?: MouseState) => {
       model.setHoveredFeature(
-        state && hitTestArcs(state.x, state.y, laidOutArcs)?.feature,
+        state &&
+          hitTestArcs(state.x, state.y, laidOutArcs, canvasWidth)?.feature,
       )
     },
-    [model, laidOutArcs],
+    [model, laidOutArcs, canvasWidth],
   )
   const { handleMouseMove, handleMouseLeave } = useMouseTracking(hitTest)
 

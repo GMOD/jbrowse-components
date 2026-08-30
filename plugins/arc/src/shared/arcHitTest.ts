@@ -1,5 +1,6 @@
 import { ARC_HIT_SLOP_PX, bestArcMark } from '@jbrowse/sv-core'
 
+import { arcOnScreen } from './arcLayout.ts'
 import { arcDistancePx, segmentDistancePx } from './arcShape.ts'
 
 import type { LaidOutArc } from './arcLayout.ts'
@@ -16,6 +17,10 @@ import type { LaidOutArc } from './arcLayout.ts'
 // SVG answered this exactly and for free, and what replaced it is deliberately
 // NOT exact: `ARC_HIT_SLOP_PX` widens every target by 3px either side of its own
 // stroke, which is what `pointer-events: stroke` never gave a 1px arc.
+//
+// There is no Y gate here, unlike `hitTestArcBand`'s: the handlers are bound to
+// the arc box itself, which is the display's whole height, so a pointer outside
+// the band never reaches this at all and the DOM is the gate.
 
 /**
  * The arc under `(x, y)`, in the container's own coordinates, or nothing.
@@ -27,14 +32,24 @@ export function hitTestArcs(
   x: number,
   y: number,
   arcs: readonly LaidOutArc[],
+  viewWidth: number,
 ): LaidOutArc | undefined {
   const picker = bestArcMark()
   for (let i = 0; i < arcs.length; i++) {
     const arc = arcs[i]!
-    // The cheap rejection, off the extent the cull already needed: it skips the
-    // bezier flattening for every arc whose column the cursor is nowhere near,
-    // which is nearly all of them on a track carrying thousands.
-    if (x < arc.xMin - ARC_HIT_SLOP_PX || x > arc.xMax + ARC_HIT_SLOP_PX) {
+    // The SAME cull the painter applies, and it has to be: without it an arc
+    // whose ink ends a pixel off the left edge still answers a hover 1px inside
+    // it, through the slop. That is a hit on ink nobody can see, in the one
+    // place the hit test is allowed no opinion of its own.
+    //
+    // Then the cheap column rejection, off the extent the cull already needed:
+    // it skips the bezier flattening for every arc whose column the cursor is
+    // nowhere near, which is nearly all of them on a track carrying thousands.
+    if (
+      !arcOnScreen(arc, viewWidth) ||
+      x < arc.xMin - ARC_HIT_SLOP_PX ||
+      x > arc.xMax + ARC_HIT_SLOP_PX
+    ) {
       continue
     }
     picker.consider(i, arcInkDistancePx(arc, x, y) - arc.strokeWidth / 2)
