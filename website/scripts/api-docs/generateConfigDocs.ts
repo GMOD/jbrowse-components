@@ -1752,31 +1752,101 @@ export function writePromotableSlotDocs(
     byName: mapByKey(withHeader, c => c.header.name),
   }
   resolveInheritedSlotMeta(withHeader, index)
-  const rows = withHeader
+  // Each promotable slot a display ends up with, paired with the config that
+  // declares the winning copy — the nearest one, since `filterUnseenByName` is
+  // what resolves shadowing, so an override's file is what a reader is sent to.
+  const promotableSlots = (cfg: ConfigWithHeader) => {
+    const seen = new Set<string>()
+    return [cfg, ...collectBaseConfigs(cfg, index)]
+      .flatMap(c =>
+        filterUnseenByName(seen, c.slots).map(slot => ({
+          slot,
+          declaredIn: c,
+        })),
+      )
+      .filter(({ slot }) => isPromotableSlot(slotMetaFor(slot).meta))
+      .sort((a, b) => a.slot.name.localeCompare(b.slot.name))
+  }
+  const displays = withHeader
     .filter(cfg => displayToTrackType.has(cfg.header.name))
-    .map(cfg => {
-      const seen = new Set<string>()
-      const slots = [cfg, ...collectBaseConfigs(cfg, index)]
-        .flatMap(c => filterUnseenByName(seen, c.slots))
-        .filter(slot => isPromotableSlot(slotMetaFor(slot).meta))
-        .map(slot => slot.name)
-        .sort((a, b) => a.localeCompare(b))
-      return { cfg, slots }
-    })
+    .map(cfg => ({ cfg, slots: promotableSlots(cfg) }))
     .filter(({ slots }) => slots.length > 0)
     .sort((a, b) => a.cfg.header.name.localeCompare(b.cfg.header.name))
-    .map(({ cfg, slots }) => {
-      const page = `/docs/config/${cfg.header.id}`
-      const trackType = displayToTrackType.get(cfg.header.name)!
-      const links = slots.map(
-        slot => `[\`${slot}\`](${page}/#${slotAnchor(slot)})`,
-      )
-      return `| ${trackType} | [](${page}) | ${links.join(', ')} |`
-    })
+  const rows = displays.map(({ cfg, slots }) => {
+    const page = `/docs/config/${cfg.header.id}`
+    const trackType = displayToTrackType.get(cfg.header.name)!
+    const links = slots.map(
+      ({ slot }) => `[\`${slot.name}\`](${page}/#${slotAnchor(slot.name)})`,
+    )
+    return `| ${trackType} | [](${page}) | ${links.join(', ')} |`
+  })
+  return [
+    ...rewriteMarkerBlock(
+      'PROMOTABLE_SLOTS',
+      markdownTable(
+        ['Track type', 'Display', 'Settings with a session-wide default'],
+        rows,
+      ),
+      { check },
+    ),
+    ...writePromotableAdopterDocs(displays, { check }),
+  ]
+}
+
+// One promotable slot a display ends up with, and the config whose copy won.
+interface PromotableSlot {
+  slot: Item
+  declaredIn: ConfigWithHeader
+}
+
+// The adopter table in agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md: the same
+// promotable slots the user guide's table carries, transposed onto the question
+// that file asks — not "which settings can this track type default", but "who
+// declares this slot, what does it fall back to, and which displays inherit it".
+//
+// Generated for the reason the user-guide table is. It was four hand-written
+// rows naming schema files and slot lists, and `baseConfiguration` means a slot
+// enrols displays whose author never opened that file, so the list was stale
+// from the moment anyone added one. The rows kept their prose arguments, which
+// nothing static can derive; the enumeration is here.
+//
+// **Rows are keyed by declaration site, not by display**, which is what makes it
+// short and what makes it say something: a slot inherited through a base schema
+// is one row naming every display that gets it, and `showLegend`'s seven rows
+// are seven separate declarations whose `promotedBase` genuinely differs.
+function writePromotableAdopterDocs(
+  displays: { cfg: ConfigWithHeader; slots: PromotableSlot[] }[],
+  { check = false } = {},
+) {
+  const byDeclaration = new Map<
+    string,
+    { slot: string; base: string; file: string; displays: string[] }
+  >()
+  for (const { cfg, slots } of displays) {
+    for (const { slot, declaredIn } of slots) {
+      const key = `${slot.name} ${declaredIn.filename}`
+      const row = byDeclaration.get(key) ?? {
+        slot: slot.name,
+        base: slotMetaFor(slot).meta.promotedBase ?? '',
+        file: declaredIn.filename,
+        displays: [],
+      }
+      row.displays.push(cfg.header.name)
+      byDeclaration.set(key, row)
+    }
+  }
+  const rows = [...byDeclaration.values()]
+    .sort(
+      (a, b) => a.slot.localeCompare(b.slot) || a.file.localeCompare(b.file),
+    )
+    .map(
+      row =>
+        `| \`${row.slot}\` | ${codeCell(row.base)} | \`${row.file}\` | ${row.displays.join(', ')} |`,
+    )
   return rewriteMarkerBlock(
-    'PROMOTABLE_SLOTS',
+    'PROMOTABLE_ADOPTERS',
     markdownTable(
-      ['Track type', 'Display', 'Settings with a session-wide default'],
+      ['Slot', 'Falls back to', 'Declared in', 'Displays that get it'],
       rows,
     ),
     { check },
