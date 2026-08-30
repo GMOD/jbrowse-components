@@ -1093,6 +1093,57 @@ live precedent.
 | Derived region map | Upload callback iterates it in place of raw `rpcDataMap` | Upload autorun reads it — MobX re-uploads without an RPC roundtrip |
 | `renderState` | `backend.render(state)` per frame | Render callback reads it — re-fires when deps shift |
 
+### What each tier costs when it moves, and who is zoom-sensitive
+
+**Censused 2026-08-30.** The three tiers are not three flavours of the same
+thing — they differ by two orders of magnitude in what a change costs:
+
+| tier | a change does | cost |
+| --- | --- | --- |
+| `rpcProps()` | `rpcPropsCacheKey` moves -> `SettingsInvalidate` -> `clearAllRpcData()` | refetch every region |
+| `gpuProps()` | the identity `installUpload` compares moves (`p !== lastProps` clears `encodedFrom`, `installUpload.ts:195-198`) | **re-encode every cached region, main thread, no RPC** |
+| `renderState` | the render callback re-fires | repaint |
+
+The middle row is the one that surprises, because it is O(cached regions x
+features) of main-thread work with nothing on the network to make it visible.
+[ADR-016](architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md)
+is the measurement of exactly that cost, taken when the proposal was to move
+wiggle's pos/neg split main-thread-ward; the same accounting applies to anything
+that lands in `gpuProps()`.
+
+**Only one `gpuProps()` in the tree is zoom-sensitive at all**, and it is
+deliberate: `LinearMafDisplay`'s `binBp` reads `encodeBinBp`
+(`plugins/maf/src/LinearMafDisplay/stateModel.ts:1315-1327`), which is
+`subPixelBinBp(view.coarseBpPerPx)` — the **debounced** copy, quantized to a
+power of two precisely so a gesture does not thrash it
+(`subPixelBinBp.ts:19-22`: unquantized, "MAF re-encodes every region on every
+wheel tick"). So a sustained zoom can re-encode every cached MAF region, but
+only on crossing a power-of-two boundary after the debounce settles. Every other
+`gpuProps()` reads session or config state only — none reads live `bpPerPx`,
+`offsetPx`, `visibleRegions`, `dynamicBlocks` or hover.
+
+**That is the invariant to preserve.** A per-frame viewport value reaching
+`gpuProps()` re-encodes the whole cache mid-gesture, silently, and the profile
+blames the encoder rather than the key that let it in.
+
+Two other facts the census turned up, neither a bug:
+
+- **`bicolorPivot` fans out to all three tiers**, which no single comment says.
+  `rpcProps()` (the worker owns the avg-path split, ADR-016), `gpuProps()` (the
+  whiskers bands are coloured main-thread, and the SVG export calls
+  `buildSourceRenderData(data, gpuProps)` directly), and `renderState` as
+  `origin` (the shader's bar pivot and density fade). Each hop is commented
+  where it happens; the fan-out is only visible from here.
+- **Six of fourteen `installUpload` callers pass neither `inputs` nor
+  `encode`** — gwas, sequence, `LinearSyntenyViewHelper`, `MultiWaySyntenyDisplay`,
+  alignments, the two multi-sample variant displays and dotplot. That is the
+  typed no-`encode` overload, not an omission: `cells()` already yields encoded
+  data, built by a `computed` upstream (`LinearSyntenyDisplay.computedColors`,
+  `DotplotDisplay.computedColors`), so MobX's own map diff limits the re-encode
+  instead of `installUpload`'s clear. HiC and LD take a third route — `encode`
+  with no `inputs`, keying the colour ramp as its own map entry so only its
+  identity change re-encodes it.
+
 `rpcProps()` returns **user-controlled settings only**. Structural args
 (`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `stopToken`) are
 spread in at the RPC call site, keeping `rpcProps()` focused on its purpose:
@@ -1577,6 +1628,13 @@ wanted.
   callers silently keep a stale answer; `no-restricted-syntax` fails the
   declaration in source and says why. See [the
   pattern](#rpcprops--gpuprops-pattern).
+- Don't let a per-frame viewport value reach `gpuProps()`. A change to it
+  re-encodes **every cached region** on the main thread with no RPC, so a live
+  `bpPerPx`, `offsetPx` or `visibleRegions` read there does that mid-gesture,
+  silently — and the profile blames the encoder rather than the key. MAF's
+  `binBp` is the one zoom-derived entry and is debounced and power-of-two
+  quantized for exactly this reason. See [what each tier
+  costs](#what-each-tier-costs-when-it-moves-and-who-is-zoom-sensitive).
 - Don't put a pure "go again" signal under a fetch gate. `reloadCounter` and
   friends must be read unconditionally, above the bail-outs — a read inside the
   gate drops out of the dependency set on the run that declines, and nothing

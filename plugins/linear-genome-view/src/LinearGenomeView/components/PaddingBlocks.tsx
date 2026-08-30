@@ -84,7 +84,7 @@ const PaddingBlocks = observer(function PaddingBlocks({
         churn was multiplied by the track count. */}
         {spans.map(({ x, width, kind }, i) => (
           <div
-            // eslint-disable-next-line react/no-array-index-key
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by the span's block identity is what the pooling above removes
             key={i}
             className={cx(classes.block, kindClass[kind])}
             style={{ transform: `translateX(${x}px)`, width }}

@@ -117,8 +117,8 @@ most zooms — so MobX's `===` stops the chain at the computed. Publish it clamp
 or publish nothing. `regionHost.ts` states the rule for both callers, because an
 SVG export applies it against the export's canvas width rather than the view's.
 
-`ZoomRenderCensus` in jbrowse-web is how a per-frame re-render like that gets
-seen at all; INTERACTION_PERF.md has the rest.
+`products/jbrowse-web/src/tests/ZoomRenderCensus.test.tsx` is how a per-frame
+re-render like that gets seen at all; INTERACTION_PERF.md has the rest.
 
 ## Height and scroll are hooks
 

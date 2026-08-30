@@ -119,9 +119,13 @@ free; `MafUploadPayload` is the payload shape to copy.
 the wire, which is the thing being avoided. And `buildSourceRenderData` is where
 the pivot lives: `sourceLayers` colours the whiskers bands around it
 (`buildSourceRenderData.ts:204`), which is why `bicolorPivot` sits in
-**`gpuProps` as well as `rpcProps`** — the second copy exists so a pivot change
-re-fires the encode, not because the worker lacks the value. The worker has it;
-availability is not the obstacle.
+**`gpuProps` as well as `rpcProps`**. The second copy is there because the
+ENCODER needs the value — the SVG export calls `buildSourceRenderData(data,
+gpuProps)` directly (`LinearWiggleDisplay/renderSvg.tsx:38`) and would otherwise
+colour its bands around nothing. It rides along as an invalidation key; it is
+not there for invalidation, since a pivot change already refetches through
+`rpcProps` and a refetch re-encodes every region anyway. The worker has the
+value too. Availability is not the obstacle.
 
 **The obstacle is that the encoder cannot leave, only be duplicated.**
 `installUpload` re-encodes **every cached region** whenever `gpuProps` identity

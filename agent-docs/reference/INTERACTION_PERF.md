@@ -386,6 +386,45 @@ view published `contentRightEdgePx`. Publishing the raw edge would have changed
 nothing: `Math.min(trackWidthPx, …)` is what makes the value repeat, so it has
 to happen where MobX can stop at it.
 
+## The census checked against a real browser
+
+**Measured 2026-08-30**, headed Chrome on a real GPU, production build,
+`ctgA:20000-24000` with eight tracks, six zoom clicks, one build per arm.
+`products/jbrowse-web/browser-tests/probe-zoom-churn.ts` is the harness — the
+browser counterpart of the jsdom census, attributing every DOM mutation to its
+nearest `data-testid` the way the 2026-07-11 sweep did.
+
+| mid-contig, 8 tracks, 6 zoom clicks    |  main | with the padding-overlay fixes |
+| -------------------------------------- | ----: | -----------------------------: |
+| DOM elements                            |   571 |                            541 |
+| elements carrying an inline `translateX`|    40 |                             30 |
+| attr churn, `ZoomTransform` containers under `tracksContainer` | 920 | **90-96** |
+| DOM mutations, total                    | 3,375 |                    2,762-2,823 |
+
+Ten fewer elements carry a `translateX` — the nine per-track-plus-container
+`ZoomTransform` wrappers that no longer exist mid-contig, plus one — and the
+per-frame attribute churn on them falls by **90%**. That is the jsdom census's
+`ZoomTransform` 160 -> 40 reproduced in a browser, at twice the track count, so
+the jsdom numbers describe the app rather than the shim.
+
+**Read the structural row as noise here, and it is instructive why.**
+Mid-contig `paddingSpans` is empty on BOTH arms, so the positional-key fix has
+nothing to pool and contributes nothing; the structural counts came out 545,
+628 and 706 across three runs of two arms, which is the scalebar tick pool and
+fetch-driven label churn moving run to run. The two fixes have different
+regimes, and a single sweep cannot show both: the keys matter where spans exist
+(genome start, multi-region, whole-genome) and the empty-return matters where
+they do not. Running the same probe with `--start` confirms the other half is
+intact — `paddingSpans` 1, 45 translated elements against mid-contig's 30, so
+the overlay still renders where it has something to draw.
+
+**Do not profile this headless.** A first attempt through `profile-zoom.ts`
+with `HEADLESS=1` came back with `fillRect` at 2,756ms of 5,938ms sampled and an
+empty `component renders:` list: headless Chrome fell through WebGL to Canvas2D,
+and eight wiggle tracks drawing bar-by-bar swamped every signal the run was for.
+The harness's own note says the React/DOM side is the same headless — it is, but
+only if something else is not eating the trace. Use `--headed`.
+
 ## The stop-token probe, for whoever finds it in a trace next
 
 `probeBlobUrl` (`packages/core/src/util/stopToken.ts`) is a **synchronous XHR**

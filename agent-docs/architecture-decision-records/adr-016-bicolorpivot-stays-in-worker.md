@@ -73,6 +73,32 @@ Move split to `buildSourceRenderData` on the main thread; put `bicolorPivot`
 in `gpuProps`. Implemented as a branch, reverted: O(total cached features)
 main-thread work per region arrival unacceptable at realistic data volumes.
 
+## Corollary: the cost this measured is now a standing property of `gpuProps`
+
+**Added 2026-08-30.** "O(N cached regions x K) main-thread work per region
+arrival" is not only what the rejected branch would have cost — it is what
+`installUpload` does today whenever `gpuProps()` identity moves
+(`packages/render-core/src/installUpload.ts:195-198`: `p !== lastProps` clears
+`encodedFrom`, so every cached region re-encodes). Most of what moves it —
+colour, plot type, summary score mode, re-sort — does **not** refetch, so that
+path has no network cost to make it visible.
+
+Two consequences for anyone applying this ADR's rule:
+
+- **`bicolorPivot` is in `gpuProps()` as well as `rpcProps()`**, and the second
+  copy is not a violation of this decision. The worker still owns the avg-path
+  split; the encoder needs the same threshold because the whiskers bands are
+  coloured main-thread, and the SVG export calls `buildSourceRenderData(data,
+  gpuProps)` directly. `buildSourceRenderData.ts:112-116` carries the reason.
+- **The mirror-image proposal meets the same accounting from the other side.**
+  Moving wiggle's instance packing *to* the worker (`ideas/zoom-perf-followups.md`)
+  is this ADR's preferred direction — O(K) per region at fetch time — but the
+  encoder cannot leave, only be duplicated, because the no-refetch re-encodes
+  above still have to be served main-thread. This ADR does not forbid that move;
+  it supplies the arithmetic for pricing it.
+
+The "General rule" above is unchanged, and is still the one to apply.
+
 ## Corollary: per-source color does not collapse the pos/neg split
 
 Because the split is worker-side and unconditional, a multi-wiggle source's

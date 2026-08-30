@@ -2338,6 +2338,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * bodies fell from 66 renders to 7.
          */
         get contentRightEdgePx() {
+          // The `trackWidthPx` rule sends a DISPLAY to `model.canvasWidthPx`
+          // so it cannot pick the wrong one of four view getters. This is the
+          // view, publishing its own geometry, and `canvasWidthPx` is defined
+          // as exactly this host's `trackWidthPx` (MultiRegionDisplayMixin) —
+          // the same source of truth, read from the side that owns it.
+          // eslint-disable-next-line no-restricted-syntax
           return contentRightEdgePx(this.visibleRegions, self.trackWidthPx)
         },
 
