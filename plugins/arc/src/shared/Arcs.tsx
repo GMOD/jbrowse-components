@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { hitTestArcs } from './arcHitTest.ts'
-import { arcLabelY } from './arcLayout.ts'
+import { arcLabelBaselineY } from './arcLayout.ts'
 import { arcMidX, arcPathD } from './arcShape.ts'
 import { drawArcs } from './drawArcs.ts'
 
@@ -159,7 +159,7 @@ function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
 // same thing as strokeText-then-fillText.
 function ArcLabel({ arc }: { arc: LaidOutArc }) {
   const x = arcMidX(arc.shape)
-  const y = arcLabelY(arc) + 3
+  const y = arcLabelBaselineY(arc)
   return (
     <>
       <text x={x} y={y} stroke="white" strokeWidth="0.6em">

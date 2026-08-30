@@ -1,4 +1,4 @@
-import { arcLabelY, arcOnScreen } from './arcLayout.ts'
+import { arcLabelBaselineY, arcOnScreen } from './arcLayout.ts'
 import { arcMidX, arcStroke } from './arcShape.ts'
 
 import type { ArcTick, LaidOutArc } from './arcLayout.ts'
@@ -20,9 +20,6 @@ const LABEL_HALO_COLOR = 'white'
 // The halo's width as a fraction of the font size — SVG's `stroke-width: 0.6em`,
 // which is what the two stacked `<text>` elements spent it on.
 const LABEL_HALO_EM = 0.6
-// The baseline offset the labels were drawn at as SVG, kept so the label sits
-// just under the apex rather than centred on it.
-const LABEL_BASELINE_OFFSET_PX = 3
 
 export interface ArcDrawOpts {
   /** The arc the cursor is on, which takes `hoverColor` instead of its own. */
@@ -108,7 +105,7 @@ function drawLabels(
   ctx.strokeStyle = LABEL_HALO_COLOR
   for (const arc of labelled) {
     const x = arcMidX(arc.shape)
-    const y = arcLabelY(arc) + LABEL_BASELINE_OFFSET_PX
+    const y = arcLabelBaselineY(arc)
     ctx.strokeText(arc.label!, x, y)
     ctx.fillStyle = arc.selected ? SELECTED_COLOR : LABEL_COLOR
     ctx.fillText(arc.label!, x, y)

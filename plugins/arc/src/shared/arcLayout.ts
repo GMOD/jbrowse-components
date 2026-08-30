@@ -75,7 +75,15 @@ export function arcOnScreen(arc: LaidOutArc, viewWidth: number) {
   return arc.xMax >= 0 && arc.xMin <= viewWidth
 }
 
-/** The deepest y this arc's ink reaches — what a label sits on. */
-export function arcLabelY(arc: LaidOutArc) {
-  return arcApexY(arc.shape)
+// How far below the apex the label's baseline sits, so the text reads as
+// captioning the curve rather than lying across it.
+const LABEL_BASELINE_OFFSET_PX = 3
+
+/**
+ * Baseline y for this arc's label. ONE number, because the canvas painter and
+ * the export's `<text>` both place it and a nudge applied to one of them is
+ * invisible until someone compares a figure against the screen.
+ */
+export function arcLabelBaselineY(arc: LaidOutArc) {
+  return arcApexY(arc.shape) + LABEL_BASELINE_OFFSET_PX
 }
