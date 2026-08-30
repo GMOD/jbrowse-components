@@ -473,3 +473,51 @@ and catastrophic for one it does — a click in the arrangement that produces th
 marks would answer "your mate is over there" by discarding every other chromosome
 of the row it was pointing at. A class C hit carries `displayed`, and its click
 `centerAt`s instead.
+
+## Where the click sends the row, settled
+
+`mateNavDestination` answers the whole question — which class, which coordinate,
+and the locstring naming it — before the click takes anything. Nothing a click
+takes is earned until it answers: the viewport capture and the follow anchor come
+after, so an unresolvable mark leaves both where the reader had them.
+
+**The scroll class navigates with the ROW's spelling, not the mark's.** The mark
+carries the canonical refName (`renameOffscreenMates`); `displayedRegions` is a
+frozen `Region[]` that `setDisplayedRegions` does not canonicalize, so a
+hand-authored session can spell a contig as an alias. Compared with `===` the
+click read that as stale geometry and silently did nothing. The refName the click
+navigates with now comes off `pxToBp`, which is the row's own, and the staleness
+test canonicalizes both sides.
+
+**The add class swaps the contig's regions rather than appending beside them.**
+A row narrowed to a slice of the contig a mark names cannot reach the window
+`navSpan` frames against the WHOLE contig, and `showRegions` had already replaced
+the region list by the time `navTo` threw `could not find a region that
+contained ...` out of the pointer handler. The rule is now a REACHABILITY test:
+keep the row's own region for that contig when it contains the framed window,
+otherwise drop every region for the contig and append the whole-contig one, so
+containment holds by construction. Every other contig survives either way, which
+is the promise the class was built on.
+
+The reachability test compares refNames with `===` on purpose, and the drop
+filter canonicalizes. They are two different questions: `navTo`, `bpToPx` and
+`bpToOffset` all compare `displayedRegions` refNames RAW, so an aliased region is
+one `navTo` cannot reach whatever it contains — canonicalizing the reachability
+test alone would turn a cosmetic duplicate into a throw. Canonicalizing the
+FILTER is what stops the row listing one contig under two spellings.
+
+**A click that resolves nothing notifies.** The tooltip promises "Click to show
+it on the panel below", so a stale mark returning silently is the one case where
+a reader cannot tell the feature from a dead pixel.
+
+**One coordinate convention.** `coord0` is what `bpToOffset`/`bpToPx` take;
+`assembleLocString` prints its 1-based sibling, which is what the location box
+will read. The snackbar printed `coord0` and so named a base one before the one
+the row landed on.
+
+**Still open: the destination on a contig displayed several times over.**
+`centerAt` and `flyToCenter` both resolve a refName against the FIRST displayed
+region carrying it, so a drawn span in the second copy sends the row to the
+first. `pxToBp` knows the index; `centerAt` takes one and `flyToCenter` does not,
+so closing it means threading `displayedRegionIndex` through `flyToCenter`,
+`bpToLinearBp` and `bpToOffset`. The add class no longer creates such a row.

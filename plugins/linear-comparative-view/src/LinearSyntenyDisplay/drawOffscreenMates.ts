@@ -48,22 +48,11 @@ const LABEL_BASELINE_PX = 16
 const LABEL_BASELINE_FROM_BOTTOM_PX = 10
 
 // Marks to one contig closer together than this many of its own names are one
-// stretch as far as a label is concerned.
-//
-// MEASURED IN LABELS, NOT PIXELS, because what the gap has to be compared
-// against is the thing that would go in it: a break too small to hold a second
-// name is not a break a reader can see, so naming both sides of it repeats the
-// name rather than pointing at two things. A fixed 20px was the same tolerance
-// at every zoom, and a block of anchors spreads with the zoom — at
-// whole-chromosome scale its marks are a few px apart and at a 4 Mb window they
-// are tens, so the one block fragmented into fifteen slivers, none of them wide
-// enough to hold the contig name, and the strip named NOTHING at exactly the
-// zoom where a reader asks what it is looking at.
-//
-// Two names rather than one: at one the fragments each cleared the bar and the
-// same word landed three times across a band. Anything from two up gives the
-// same answer on the grape/peach demo at both zooms, so this is not a knife
-// edge.
+// stretch as far as a label is concerned. MEASURED IN LABELS, NOT PIXELS: a
+// break too small to hold a second name is not a break a reader can see, and a
+// block of anchors spreads with the zoom, so a fixed 20px fragmented one block
+// into fifteen unlabellable slivers at exactly the zoom where a reader asks
+// what they are looking at.
 const LABEL_MERGE_GAP_LABELS = 2
 
 const LABEL_ROW_PX = 12
@@ -82,18 +71,13 @@ const LABEL_ASCENT_PX = 8
 // case; past that the band is a wall of grey text over the ribbons.
 const MAX_LABEL_ROWS = 3
 
-// The marks are the BACKGROUND of this feature and the labels are the finding,
-// so the marks are washed out to roughly the weight of the ribbons they sit
-// over. At full `text.secondary` a strip read as the loudest thing in the band
-// — a dark grey ideogram over a field of 0.2-alpha ribbons — which inverts what
-// the reader should look at first. Alpha rather than a lighter grey so the
-// strip recedes against either theme's ground, and it composites correctly
-// because marks of one color are filled as ONE path (see `drawOffscreenMates`).
+// The marks are the BACKGROUND and the labels are the finding, so the marks are
+// washed out to roughly the weight of the ribbons they sit over. Alpha rather
+// than a lighter grey, so the strip recedes against either theme's ground.
 //
 // Exported because a lane painting its marks by contig
 // (`offscreenMateMarkColorFor`) has to reach the same weight through a different
-// palette: a strip that is grey at 0.35 in one mode and full-strength category10
-// in another is two features, not one with a color key.
+// palette.
 export const MARK_ALPHA = 0.35
 
 // One source for both surfaces: the screen overlay and the SVG export run the
@@ -282,13 +266,9 @@ function markZone(
 /**
  * The baselines this lane may put a name on, nearest its own edge first.
  *
- * EACH SIDE MEASURES FROM ITS OWN EDGE. The top strip's rows step down from
- * `LABEL_BASELINE_PX` and the bottom strip's step UP from
- * `LABEL_BASELINE_FROM_BOTTOM_PX`, so a row count derived from one is wrong for
- * the other in both directions: on a 40px band — what `levelHeightForCount`
- * gives a stack of eight — the top's arithmetic granted the bottom strip a third
- * row at y=6, which is above the band's own top edge and on top of the OTHER
- * strip's marks, while on a 17px band it denied it a row that fits.
+ * EACH SIDE MEASURES FROM ITS OWN EDGE — the top strip's rows step down and the
+ * bottom strip's step up — so a row count derived from one is wrong for the
+ * other in both directions.
  */
 function labelBaselines(
   side: OffscreenMateSide,
@@ -319,30 +299,18 @@ interface LabelSlot {
 
 /**
  * Where each stretch's name goes, on the first baseline it does not collide on.
+ * A stretch with no free row goes unlabelled rather than over another name.
  *
- * TWO STRETCHES CAN COVER THE SAME PIXELS, and in the case this feature exists
- * for they usually do. Drawn on one baseline they land within a few pixels of
- * each other, the last one's halo erases the two before it, and the figure then
- * names one contig where three apply — with nothing to say two are missing.
- *
- * EVERY LANE AT ONCE, which is why this takes a list. The two strips hang off
- * opposite edges, so their MARKS cannot collide — but their labels stack INWARD
- * from those edges and meet in the middle. Placed one lane at a time they were
- * blind to each other: on a 50px band both lanes offered baselines 16/28/40 and
- * a top name and a bottom name landed on exactly the same pixels, and on the
- * 80px band a four-level stack auto-scales to, the two third rows landed 6px
- * apart. Rows within a lane are `LABEL_ROW_PX` apart by construction, so one
- * rule — a name may not share a baseline, or come within a row of one, with an
- * overlapping name already placed — covers both cases.
+ * EVERY LANE AT ONCE, which is why this takes a list. The two strips' MARKS hang
+ * off opposite edges and cannot collide, but their labels stack INWARD and meet
+ * in the middle. One rule covers both that and two stretches of one lane
+ * overlapping: a name may not share a baseline, or come within `LABEL_ROW_PX` of
+ * one, with an overlapping name already placed.
  *
  * A STRETCH IS MEASURED BY THE PART IN VIEW. One wider than the window has its
- * own midpoint off the edge, so centring on it put the name of the contig
- * covering everything the reader can see outside the frame — and the fit test
- * read that same off-screen width, so the label passed the test and then drew
- * where nothing could show it. Zooming into a block was enough: the one contig
- * the whole window maps to was the one contig never named.
- *
- * A stretch with no free row goes unlabelled rather than on top of another name.
+ * midpoint off the edge, so both the centring and the fit test read a width
+ * nothing can show — and the one contig the whole window maps to was the one
+ * contig never named.
  */
 function placeLabels(
   lanes: { runs: LabelRun[]; baselines: number[] }[],
@@ -420,9 +388,8 @@ function offscreenMateRefName(data: OffscreenMateDataset, i: number) {
 
 // Same expression the ribbons project with, written out rather than reused:
 // `projectCorners` works in window-relative bp against the geometry's fetch-time
-// base (ADR-067, so the GPU's Float32 stays exact), and these never reach a
-// shader. Absolute cumBp in Float64 on the main thread is the same number with
-// the base folded back in — `(cumBp - base)/bpPerPx + (base - offsetPx*bpPerPx)/bpPerPx`.
+// base (ADR-067), and these never reach a shader. Absolute cumBp in Float64 on
+// the main thread is the same number with the base folded back in.
 function screenX(cumBp: number, bpPerPx: number, offsetPx: number) {
   return cumBp / bpPerPx - offsetPx
 }
@@ -483,13 +450,9 @@ function stripGeometry({
 }
 
 // The one place a mark's geometry is decided, so the array the canvas paints and
-// the scan the pointer runs cannot describe different rectangles.
-//
-// IT ALLOCATES, and the hit test throws away what it allocates once per
-// alignment. Writing into a scratch instead is the obvious fix and it is a net
-// loss: it halved the strip hover (0.039ms -> 0.019ms on the demo fixture) and
-// cost the REPAINT 25%, which is the every-pan path rather than the
-// pointer-is-on-the-marks one. See `agent-docs/reference/REJECTED_IDEAS.md`.
+// the scan the pointer runs cannot describe different rectangles. It ALLOCATES
+// per alignment, deliberately — a scratch object halved the strip hover and cost
+// the repaint 25%, which is the every-pan path: `REJECTED_IDEAS.md`.
 function offscreenMateRectAt(
   {
     bpPerPx,
@@ -551,19 +514,14 @@ function pointerOnMark(rect: { x: number; width: number }, x: number) {
  * The contig the mark under a point stands for, or undefined.
  *
  * LAST MATCH WINS: the scan runs backwards over the datasets the canvas paints
- * forwards, so where two marks overlap it answers with the one on top. That is
- * the paint order exactly for a strip in the band's grey, which is ONE path in
- * dataset order. A lane painting by contig groups its rects by fill instead, and
- * two COLORS that overlap composite at `MARK_ALPHA` with neither on top — so
- * there is no "on top" there for this to disagree with. What the two hit tests
- * must not differ on is the order between THEM, and both take it off the
- * datasets.
+ * forwards, so where two marks overlap it answers with the one on top. Marks of
+ * two COLORS composite at `MARK_ALPHA` with neither on top, so there is no "on
+ * top" there to disagree with — what the two hit tests must not differ on is the
+ * order between THEM, and both take it off the datasets.
  *
- * THE STRIP IS TESTED BEFORE ANY ALIGNMENT IS. Every mark has the same height,
- * and the strip is a few pixels of a band ~100 tall, so the overwhelming
- * majority of pointer positions this is asked about are not in it. Answering
- * those with one comparison rather than by laying out every mark first is what
- * keeps a hover over the ribbons costing nothing, whatever the level fetched.
+ * THE STRIP IS TESTED BEFORE ANY ALIGNMENT IS: it is a few pixels of a band ~100
+ * tall, so one comparison answers most pointer positions and a hover over the
+ * ribbons costs nothing whatever the level fetched.
  */
 export function offscreenMateAt(
   layout: OffscreenMateLayout,
@@ -603,11 +561,10 @@ export interface OffscreenMateLocus {
  * the other one, where the only way to show the contig is to replace what that
  * row displays, and `locus` frames it.
  *
- * A separate `displayed` boolean stated the same fact and could disagree with
- * the coordinate beside it, which is how the click came to navigate somewhere
- * the mark was never about. Carrying the destination itself makes "displayed
- * with nowhere to scroll to" — the state that branch exists to prevent —
- * unrepresentable rather than merely documented.
+ * Carrying the destination itself, rather than a `displayed` boolean beside it,
+ * makes "displayed with nowhere to scroll to" unrepresentable rather than merely
+ * documented — the two came apart, and the click navigated somewhere the mark
+ * was never about.
  */
 export interface OffscreenMateSpan {
   refName: string
@@ -620,25 +577,17 @@ export interface OffscreenMateSpan {
    * row's cumBp — and, by being present at all, that the row displays this
    * contig and the click may SCROLL rather than replace what it shows.
    *
-   * ONE FIELD FOR ONE FACT. This was a `displayed` boolean beside `locus`, and
-   * the two came apart on exactly the alignments the marks are about: the mark
-   * is decided from `mateAxis` while the click read `locus`, which is
-   * deliberately the untrimmed extent (the detail panel's), and
-   * `clipLargeBlockToWindow` re-anchors a chain to its visible slice. On chimp
-   * chr19 vs hg38 chr17 a mark whose ribbons are drawn at chr17:42.6-43.3Mb
-   * navigated to chr17:41,645,617 — the centre of `chr17:60,000-83,231,233`,
-   * which is to say the centre of the chromosome. The destination did not
-   * depend on where the row was, so clicking again moved nothing at all.
+   * WHERE THE RIBBONS ARE, not where the block is: `locus` is the untrimmed
+   * extent and `clipLargeBlockToWindow` re-anchors a chain to its visible slice,
+   * so on chimp chr19 vs hg38 chr17 a mark drawn at chr17:42.6-43.3Mb navigated
+   * to the centre of the chromosome, wherever the row already was.
    *
    * ANY placed dataset under the pointer gives the mark one, not the last one
-   * scanned: a contig can be in a worker lane and a culled lane at once, and if
-   * ANY of the alignments stacked there has a place on the facing row then
-   * scrolling to it is the answer that does not throw away the rest of what
-   * that row is showing.
+   * scanned: a contig can be in a worker lane and a culled lane at once, and one
+   * placed alignment is enough to scroll to.
    *
-   * cumBp rather than the contig's own bp because that is what `mateAxis`
-   * holds — it is taken off the emitted instances, and which region a
-   * coordinate falls in is the facing view's question, not this one's.
+   * cumBp rather than the contig's own bp because that is what `mateAxis` holds,
+   * and which region a coordinate falls in is the facing view's question.
    */
   mateCumBp?: OffscreenMateLocus
 }
@@ -646,28 +595,20 @@ export interface OffscreenMateSpan {
 /**
  * The contig a click on a mark should show, and where on it.
  *
- * NOT THE ONE ALIGNMENT THE HIT TEST ANSWERED WITH. At any zoom where a contig
- * has more anchors than the strip has pixels, one rect stands for a run of them
- * — `MIN_OFFSCREEN_MATE_WIDTH_PX` makes even a sub-pixel alignment a mark, so
- * they pile up in a column — and picking one among those is arbitrary in a way
- * a reader sees: the same visible mark, clicked at two window widths, would go
- * to two different places. The union is what the mark stands for, and it
- * collapses to the single alignment exactly when the mark is one.
+ * THE UNION OF EVERY ALIGNMENT UNDER THE POINT, because a mark is not one
+ * alignment — `MIN_OFFSCREEN_MATE_WIDTH_PX` makes even a sub-pixel one a mark,
+ * so they pile up in a column and picking one among them would send the same
+ * visible mark to two places at two window widths. The union collapses to the
+ * single alignment exactly when the mark is one.
  *
- * ONE LANE, because the caller hands us one: the two strips hold contigs of
- * DIFFERENT assemblies, so a name matched across them would union coordinates
- * from two genomes.
+ * ONE LANE, because the two strips hold contigs of DIFFERENT assemblies and a
+ * name matched across them would union coordinates from two genomes.
  *
- * ONE FORWARD PASS, unlike the hover's backwards early exit — it answers with
- * the last contig the scan meets, which is `offscreenMateAt`'s own rule read
- * forwards, and the same walk that accumulates the spans knows it by the time it
- * ends. For the SHAPE, not for speed: asking the hit test for
- * the name and then scanning again for its coordinates is two traversals that
- * have to agree on which contig won, and the sentinels the second one needed
- * went with it. The measured difference is 0.014ms on the demo fixture, which
- * is nothing on a once-per-click path — the cost that matters is the scan
- * itself (`agent-docs/.../offscreen-mate-overlay.json`), and it is why the
- * hover does NOT do this.
+ * ONE FORWARD PASS, unlike the hover's backwards early exit: it answers with the
+ * last contig the scan meets, which is `offscreenMateAt`'s rule read forwards,
+ * and the same walk that accumulates the spans already knows it. For the SHAPE
+ * rather than for speed — asking the hit test for the name and scanning again
+ * for its coordinates is two traversals that have to agree on which contig won.
  */
 export function offscreenMateSpanAt(
   layout: OffscreenMateLayout,
@@ -762,25 +703,20 @@ function markPathsByColor(
  * with both bottom corners equal, which draws a full-height vertical band and
  * asserts an alignment to whatever sits directly below.
  *
- * A SEPARATE OVERLAY RATHER THAN AN INSTANCE KIND. The instance format carries
- * four cumBp corners and the shader interpolates vertically over the full band
- * by construction, so a mark that descends part way is a new kind with a
- * per-kind vertical clamp in `.slang` AND its counterpart in
- * `syntenyRibbonPath.ts`, which have to agree or the Canvas2D fallback disagrees
- * with WebGPU. These need none of what that buys — no pick index, no CIGAR
- * tiling, no alpha compositing against ribbons — and there are thousands of
- * them, not millions. See `agent-docs/ideas/offscreen-synteny-mates.md`.
+ * A SEPARATE OVERLAY RATHER THAN AN INSTANCE KIND. The shader interpolates an
+ * instance vertically over the full band by construction, so a mark that
+ * descends part way is a new kind with a clamp in `.slang` and a matching one in
+ * `syntenyRibbonPath.ts`. These need none of what that buys — no pick index, no
+ * CIGAR tiling, no alpha compositing — and there are thousands of them, not
+ * millions. See `agent-docs/ideas/offscreen-synteny-mates.md`.
  *
- * EVERY LANE IN ONE CALL, not one call per strip. The band is the unit: its two
- * strips share a fill (so density cannot darken one against the other) and,
- * more importantly, share the vertical room their labels stack into — see
- * `placeLabels`.
+ * EVERY LANE IN ONE CALL, not one per strip: the band's two strips share a fill
+ * and the vertical room their labels stack into (`placeLabels`).
  *
- * THE LABEL IS THE ACTIONABLE HALF, and it names a STRETCH rather than a mark —
- * one per run of nearby anchors to the same contig. It goes on wherever it fits
- * rather than under a count threshold: fitting is what "too many to label"
- * actually means, and a run too narrow for its contig name is exactly the one
- * whose neighbours would have overprinted it.
+ * THE LABEL IS THE ACTIONABLE HALF, and it names a STRETCH rather than a mark.
+ * It goes on wherever it fits rather than under a count threshold — fitting is
+ * what "too many to label" means, and a run too narrow for its contig name is
+ * exactly the one whose neighbours would have overprinted it.
  */
 export function drawOffscreenMates(
   ctx: Ctx2D,
@@ -796,12 +732,10 @@ export function drawOffscreenMates(
   }
   // ONE PATH PER COLOR, NOT A FILL EACH. The mark color carries alpha, so marks
   // of one color filled separately composite against each other and the strip
-  // darkens with density — at whole-chromosome zoom there are more marks than
-  // pixels, so it saturates to near-black and reads as a solid ideogram rather
-  // than as marks. Filled as one path they take the color once. It is also what
-  // the SVG export wants: one `<path>` per contig instead of a `<rect>` per
-  // alignment. Marks of DIFFERENT colors do composite against each other where
-  // they overlap, and that is honest — they are alignments to different places.
+  // saturates to near-black at whole-chromosome zoom, reading as a solid
+  // ideogram. Filled as one path they take the color once, and the SVG export
+  // gets one `<path>` per contig. Marks of DIFFERENT colors do composite, which
+  // is honest — they are alignments to different places.
   for (const [fillStyle, rects] of markPathsByColor(
     laneRects,
     lanes,

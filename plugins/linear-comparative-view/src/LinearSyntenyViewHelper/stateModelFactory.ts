@@ -167,22 +167,10 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * The numbers that move a ribbon under a stationary cursor: each
-       * connected row's `offsetPx` and `bpPerPx`, plus the band height the
-       * ribbons are drawn through. Synteny's twin of `DotplotView.plotTransform`
-       * — and, like it, the value `installClearHoverOnBandMove` watches to
-       * decide the picture has moved.
-       *
-       * A key rather than the object dotplot returns, because nothing else
-       * consumes it: a string only differs when a number does, so a
-       * re-evaluation that lands on the same viewport fires nothing. Taking
-       * these off `LinearSyntenyDisplay.renderParams` instead would subscribe
-       * the reaction to `hoveredFeatureId` — which the reaction itself writes,
-       * so it would re-fire on its own effect.
-       *
-       * Empty while the rows are not both there (a trailing level, or before
-       * init), which no viewport can produce, so the first real value is a
-       * change and any hover held across init clears with it.
+       * Every number that moves a ribbon under a stationary cursor — each
+       * connected row's `offsetPx` and `bpPerPx`, plus the band height — as one
+       * key, which `installClearHoverOnSurfaceMove` watches. Empty until both
+       * rows are there, which no viewport can produce.
        */
       get bandTransformKey() {
         const { views } = this.parentView
@@ -194,12 +182,9 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * Every failed track's error in this level, combined into the one value
-       * the band has room to report — resolved here rather than per display
-       * because they all paint the same full-height band. On-screen only: it is
-       * one banner floating over the ribbons that did render, and a figure has
-       * nowhere to float one, so a failed track fails the SVG export outright
-       * from that display's own `awaitSvgReady`.
+       * Every failed track's error in this level, joined into the one value the
+       * band has room to report. On-screen only — an SVG export has nowhere to
+       * float a banner, so it fails outright from `awaitSvgReady`.
        */
       get displayError() {
         const errors = this.linearSyntenyDisplays
@@ -210,11 +195,8 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #getter
        * This level's band as the displays drawing onto it see it: first paint,
-       * plus the two parent-view flags that mean what is on screen is not the
-       * answer yet. Published here so a display reads one field instead of
-       * walking to the level for paint and on to the view for the init flags —
-       * and so `settled` below and every display's `displayPhase` are computed
-       * from the same three values.
+       * plus the parent-view flags that mean what is on screen is not the answer
+       * yet. `displayPhase` and `settled` are both computed from it.
        */
       get surfaceReadiness(): ComparativeSurface {
         const { initPending, pendingAutoDiagonalize, effectiveBodyMounted } =
@@ -230,8 +212,8 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #getter
        * What the shared canvas publishes as `data-display-phase`: the ranking
-       * over the ribbons drawing onto it. Its twin `settled` below is the
-       * stricter question — see `comparativeReadiness`.
+       * over the ribbons drawing onto it. `settled` below is the stricter
+       * question — see `comparativeReadiness`.
        */
       get displayPhase(): DisplayStatusPhase {
         return comparativeSurfacePhase(
@@ -241,14 +223,11 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * Canvas has painted and no display is still fetching, so what's on
-       * screen is the final settled content. Drives `synteny_canvas`'s `data-display-drawn`
-       * test-id, which screenshot capture and the browser-test suites wait on
-       * before snapshotting — so it must mean "done", not just "first paint".
-       *
-       * Not the same question as "is every display finished" — see
-       * `comparativeReadiness`, which holds both and says why an error answers
-       * them differently.
+       * The canvas has painted and no display is still fetching, so what is on
+       * screen is final. Drives `synteny_canvas`'s `data-display-drawn`, which
+       * screenshot capture and the browser suites wait on — so it means "done",
+       * not "first paint". `comparativeReadiness` says why an error answers this
+       * and "is every display finished" differently.
        */
       get settled() {
         return comparativeSurfaceSettled(
@@ -258,12 +237,9 @@ export function linearSyntenyViewHelperModelFactory(
       },
     }))
     .actions(self => {
-      // Point one of the level's per-instance states at a pick hit: the display
-      // whose geometry was hit takes the instance index, every other display
-      // clears, and `undefined` (a miss) therefore clears the level. One walk
-      // rather than a loop in the canvas component, so the N writes land in one
-      // MobX batch — and it hands back the display it resolved to, which is the
-      // only thing the caller wanted the key for.
+      // Point one of the level's per-instance states at a pick hit: the hit
+      // display takes the instance index, every other clears, so `undefined`
+      // clears the level. One walk, so the N writes land in one MobX batch.
       function point(
         hit: SyntenyPickResult | undefined,
         write: (display: LinearSyntenyDisplayModel, idx: number) => void,
@@ -319,16 +295,10 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * Aggregated per-frame render state — a resolved value, never undefined;
-       * "the view isn't measured yet" is the `canRender` precondition below.
-       * Every display in the level draws starting at yTop=0 since each level
-       * owns its own canvas.
-       *
-       * An empty `perTrack` is a real frame, not a skip: the row pair has no
-       * synteny track (a legal launch — the rows just stack with no ribbons),
-       * the one it had was hidden, or every one is minimized. The backend
-       * clears before drawing, so painting zero tracks is what drops a hidden
-       * track's ribbons.
+       * Aggregated per-frame render state, always resolved — "the view isn't
+       * measured yet" is `canRender`'s precondition. An empty `perTrack` is a
+       * real frame rather than a skip: the backend clears before drawing, so
+       * painting zero tracks is what drops a hidden track's ribbons.
        */
       get syntenyRenderState(): SyntenyRenderState {
         const perTrack = new Map<number, SyntenyTrackRenderParams>()
@@ -356,20 +326,16 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #method
-       * The display a pick hit belongs to. A scan over the level's handful of
-       * displays, not a keyed map: the map this replaces was a computed no
-       * reaction observed, so every access rebuilt it in full anyway.
+       * The display a pick hit belongs to.
        */
       displayFor(key: number) {
         return self.linearSyntenyDisplays.find(d => d.displayKey === key)
       },
       /**
        * #getter
-       * Render-lifecycle precondition (overrides `RenderLifecycleMixin`'s
-       * default-true hook): the render callback sizes the canvas off
-       * `parentView.width`, which throws by design before the view is
-       * measured. Gating the autorun pair here is what lets
-       * `syntenyRenderState` stay a resolved getter.
+       * Render-lifecycle precondition, overriding `RenderLifecycleMixin`'s
+       * default-true hook: the render callback sizes the canvas off
+       * `parentView.width`, which throws by design before the view is measured.
        */
       get canRender() {
         return self.parentView.initialized
@@ -384,19 +350,15 @@ export function linearSyntenyViewHelperModelFactory(
        * `row` rather than `level + 1`: a level has a strip on each edge, so a
        * mark on the query axis names a contig the row BELOW is not showing and
        * one on the target axis names a contig the row ABOVE is not. The caller
-       * resolved which strip it hit.
+       * resolved which strip it hit. `mate` carries the mark's two coordinates
+       * as one argument, so they cannot come apart from each other or from the
+       * class they decide; omitted means the whole contig.
        *
-       * `mate` carries the mark's own coordinates as ONE argument, so the two
-       * cannot come apart from each other or from the class they decide —
-       * `mateNavDestination` reads them. Omitted means the whole contig, which
-       * is the answer a click gave before there were coordinates.
-       *
-       * NEITHER CLASS DISCARDS WHAT THE ROW IS SHOWING. A contig the row has is
-       * scrolled to; one it does not is added to the list. Both are the same
-       * request, "show me this too". It also takes the follow anchor, since a
-       * row the follow moves is re-asserted onto the anchor's mapping the
-       * moment it settles; the Undo gives back the anchor and every row's
-       * viewport together.
+       * A contig the row has is scrolled to and one it does not is added to its
+       * regions — neither discards what the row was showing. The click takes the
+       * follow anchor too, and the Undo gives back the anchor and every row's
+       * viewport together. `agent-docs/ideas/offscreen-synteny-mates.md` is the
+       * case for all of it.
        */
       showOffscreenMateContig(
         refName: string,
@@ -455,16 +417,13 @@ export function linearSyntenyViewHelperModelFactory(
        * #action
        */
       startRenderingBackend(backend: SyntenyRenderingBackend) {
-        // renderInstanceData is MST-cached; its reference is stable while
-        // upstream deps are unchanged, so the identity diff keeps an
-        // upload-autorun re-fire from one display off the other displays'
-        // buffers.
+        // renderInstanceData is MST-cached, so the identity diff keeps an
+        // upload-autorun re-fire from one display off the others' buffers.
         installUpload(self, backend, {
           cells: () => self.geometryByDisplayKey,
           render: b => {
-            // the parent's own width, not views[0]'s: the same number one hop
-            // closer (the view pushes it down to every row) and no assertion
-            // on a row that may not exist yet
+            // the parent's own width, not views[0]'s: the same number with no
+            // assertion on a row that may not exist yet
             b.resize(self.parentView.width, self.height)
             b.render(self.syntenyRenderState)
             return true
@@ -472,19 +431,14 @@ export function linearSyntenyViewHelperModelFactory(
         })
       },
       afterAttach() {
-        // No `super`: our MST fork auto-chains lifecycle hooks, so calling it
-        // would re-enter RenderLifecycleMixin's own.
+        // No `super`: our MST fork auto-chains lifecycle hooks.
         //
-        // The shared clear for a stored hover over a shared canvas. On the
-        // level rather than the display because the level owns the hover —
+        // The clear is on the LEVEL because the level owns the hover —
         // `setHoveredFeature` fans one pick hit across every display in the
-        // band. `bandTransformKey` is the one value carrying every number that
-        // moves the band under a stationary cursor (see its getter): a wheel
-        // over the canvas scroll-zooms both rows while `useWheelScrollZoom`
-        // suppresses the hover handler, so the commonest way to move the
-        // picture fires no pointer event, and `setRpcData`'s clear only runs
-        // when a fetch commits — a pan inside the snapped fetch window or a
-        // zoom inside the log2 bucket commits nothing.
+        // band. It watches `bandTransformKey` rather than pointer events: a
+        // wheel scroll-zooms both rows while `useWheelScrollZoom` suppresses
+        // the hover handler, and `setRpcData`'s clear runs only when a fetch
+        // commits, which a pan inside the snapped window does not.
         installClearHoverOnSurfaceMove(self, {
           transform: () => self.bandTransformKey,
           clear: () => {

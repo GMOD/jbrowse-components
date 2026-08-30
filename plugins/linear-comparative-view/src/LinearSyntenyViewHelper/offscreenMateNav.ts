@@ -190,32 +190,22 @@ export type MateNavDestination =
   | { kind: 'none'; reason: string }
 
 /**
- * Resolve a mark's click against the row it names, without touching anything.
- *
- * Nothing a click takes — a viewport capture, the follow anchor — is earned
- * until this answers, so it runs first and writes nothing.
+ * Resolve a mark's click against the row it names, without touching anything —
+ * a viewport capture and the follow anchor are both taken after this answers.
  *
  * THE DRAWN SPAN DECIDES THE CLASS, and where the ribbons are is not where the
  * block is: `mateCumBp` is the facing row's own cumBp, read back through
- * `pxToBp` so a reversed region and a contig displayed several times over both
- * come back right. `coord0` rather than `coord` because `bpToOffset`/`bpToPx`
- * take the 0-based one; the locstring below is the 1-based sibling, which is
- * what the location box will read.
- *
- * A DRAWN SPAN LANDING SOMEWHERE ELSE IS STALE, and the row holds. Off the end
- * of the layout `oob` says so; landing inside another contig's region reads as
- * valid, so the refName is checked too. There is nothing to fall back to —
- * `locus` is the coordinate this class exists to stop using.
+ * `pxToBp` so a reversed region comes back right. A span landing off the layout
+ * (`oob`) or on another contig is stale geometry, and the row holds — `locus` is
+ * the coordinate this class exists to stop using, so there is nothing to fall
+ * back to.
  *
  * THE ADD BRANCH CANNOT LEAVE THE WINDOW OUTSIDE THE REGIONS, which is what
- * `showRegions` throws on, out of a pointer handler, having already replaced
- * the list. The row keeps its own region for the contig only when that region
- * REACHES the window `navSpan` framed; otherwise the whole contig replaces it,
- * so containment holds by construction. `===` there rather than a canonical
- * compare on purpose: it is a test of what `navTo` can reach, and `navTo`
- * compares `displayedRegions` refNames raw. The canonical compare belongs on
- * the filter, where dropping an aliased spelling is what stops the row showing
- * one contig twice.
+ * `showRegions` throws on. The row keeps its own region for the contig only when
+ * that region REACHES the framed window; otherwise the whole contig replaces it.
+ * The reachability test compares raw and the drop filter canonicalizes, which
+ * are two different questions —
+ * `agent-docs/ideas/offscreen-synteny-mates.md` §"Where the click sends the row".
  */
 export function mateNavDestination({
   node,
