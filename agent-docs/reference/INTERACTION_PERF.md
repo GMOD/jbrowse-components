@@ -1,6 +1,6 @@
 ---
 name: interaction-perf
-description: 'Measured: interaction is main-thread React re-render bound, the per-frame churn is the LGV coordinate ruler creating ~144 tick divs per zoom rather than the alignments overlays, and the p99 during a multi-track pan is periodic on the 500 ms coarse tick — with the two traps that make that period look absent (testing it against the wall clock) and its size look meaningful (a loaded box, where the profile goes 83% program). Then measured again on a PRODUCTION build, which reorders that list: the ruler is 12ms and the canvas marker overlays are the top cost, because any canvas text op (ctx.font or fillText, not fillRect) flushes the whole document style recalc from inside a passive effect. Read before optimizing the wrong component, before profiling a dev build, or before quoting a frame spike measured on this machine.'
+description: 'Measured: interaction is main-thread React re-render bound, the per-frame churn is the LGV coordinate ruler creating ~144 tick divs per zoom rather than the alignments overlays, and the p99 during a multi-track pan is periodic on the 500 ms coarse tick — with the two traps that make that period look absent (testing it against the wall clock) and its size look meaningful (a loaded box, where the profile goes 83% program). Then measured again on a PRODUCTION build, which reorders that list: the ruler is 12ms and the canvas marker overlays are the top cost, because any canvas text op (ctx.font or fillText, not fillRect) flushes the whole document style recalc from inside a passive effect. Then a third instrument that needs no browser at all: a mobx.spy render census in jsdom, which agrees with the production ranking, finds the PaddingBlocks pooling bug neither profile could see, and shows ZoomTransform topping the list only because its parents re-render. Read before optimizing the wrong component, before profiling a dev build, or before quoting a frame spike measured on this machine.'
 ---
 
 # Interaction perf: which components re-render per frame
@@ -302,6 +302,70 @@ makes affordable.
 branch arm across both pairs. Treat ~17ms as the practical floor for any single
 self-time frame here, not the 4-8ms the tighter rows imply.
 
+## Count the renders in jsdom before you profile a build
+
+**Built 2026-08-30**, and it is the instrument this page asks for four times
+over — "pinning down which ones needs a React-render-level measurement (React
+DevTools profiler or render counters), not a CPU flame graph". It needs neither
+of those, and no browser.
+
+`mobx-react-lite` names every function component's reaction
+`observer<ComponentName>`, and `Reaction.track` wraps the render itself rather
+than only the invalidation, so `mobx.spy()` filtered to `type: 'reaction'`
+events **is** the per-component render count, with no component instrumented.
+`products/jbrowse-web/src/tests/renderCensus.ts` is that; `ZoomRenderCensus.test.tsx`
+drives a geometric `zoomTo` ramp over a real multi-track session and prints the
+ranked count beside a `MutationObserver` tally of where the DOM churn lands.
+One run, ~20s, no rebuild per arm.
+
+**Two limits, and a budget written here must respect both.** A child re-rendered
+purely by a parent's fresh props runs no reaction of its own, and `mobx` reports
+spy events only in its development build — so a count is a FLOOR on React's real
+work. And only part of it is deterministic: the overlay, ruler and scalebar
+components are a function of the zoom steps alone and repeat to the integer,
+while anything downstream of a fetch (`DisplayLoadingOverlay`,
+`DisplayChromeBaseInner`, `FetchVisibleRegions`, `AppReadyMarker`) moved by up
+to 2x between runs of identical source, because how many refetch rounds land
+inside 20 frames is a wall-clock race. Quote the first group; read the second.
+
+### What it says about the production ranking above
+
+The dev-build table above warns that dev profiles reorder the component list,
+and this is a third instrument agreeing with the production column rather than
+the dev one — with one addition it can see and neither profile could.
+
+**`ZoomTransform` tops the census and is not a target.** 7.6 renders a frame,
+and its total is `PaddingBlocks` + `Gridlines` **exactly**: 152 = 114 + 38 over
+20 frames. `observer` wraps `React.memo`, and a fresh `children` element defeats
+the compare, so it re-renders once per parent render and has no reaction of its
+own to stop; dropping `observer` from it would save nothing. Do that arithmetic
+on any wrapper before optimizing it.
+
+**Structural churn was still the expensive class, and `PaddingBlocks` had the
+scalebar's bug.** It keyed its divs by block identity; a zoom moves every block,
+so React rebuilt the list each frame — in a component mounted once per track
+plus once for the container, so the cost scaled with the session. At eight
+tracks that was **360 structural mutations over 20 frames**, and the entry
+leaves the tally once the list is keyed positionally. The July DOM-mutation
+sweep could not have found it: that method attributes to the nearest
+`data-testid`, and these divs sit under `tracksContainer` with every other
+overlay.
+
+**The rule that generalises is narrower than "pool every list".** A zoom changes
+every `paddingSpan` key and every scalebar tick key, which is what made those
+two rebuild wholesale. It does not change a feature's id, so
+`FloatingLabelsLayer` already pools across a zoom and only culling churns it —
+positional keys there would trade a handful of mounts for repainting every
+surviving label. Pool where the gesture changes every key.
+
+**An array-rebuilding computed re-renders every observer that reads it, and the
+clamp has to be inside.** `visibleRegions` rebuilds fresh objects every frame,
+so both wiggle bodies re-rendered per frame to derive a legend edge that is
+usually the unchanged `trackWidthPx` — 66 renders over 20 frames, 7 after the
+view published `contentRightEdgePx`. Publishing the raw edge would have changed
+nothing: `Math.min(trackWidthPx, …)` is what makes the value repeat, so it has
+to happen where MobX can stop at it.
+
 ## The stop-token probe, for whoever finds it in a trace next
 
 `probeBlobUrl` (`packages/core/src/util/stopToken.ts`) is a **synchronous XHR**
@@ -313,3 +377,13 @@ arbitrary remote BAMs over CORS probably cannot require of its host page.
 `stopToken.ts`'s own header records that the probe was deleted once and had to be
 restored. Recorded here so the next person who sees it in a profile recognises it
 and moves on.
+
+**The ~100ms `createObjectURL` frame beside it is not the mints either**, counted
+2026-08-30: a 20-frame zoom over four tracks mints **8** tokens
+(`ZoomStopTokenMints.test.tsx`, which has to install a `URL.createObjectURL`
+because jsdom has none and every token under jest is otherwise a `nanoid`). The
+rate is per fetch round rather than per frame, so jsdom's round count is not a
+browser's — but nothing in the plausible range rescues it, since even a few
+hundred mints a gesture would put a registry insert at 0.3ms a call. Whatever
+that frame contains, attribute it before designing against it;
+[REJECTED_IDEAS.md](REJECTED_IDEAS.md) carries the declined design.

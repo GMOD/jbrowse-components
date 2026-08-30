@@ -1,6 +1,6 @@
 ---
 name: zoom-perf-followups
-description: What survived a four-way investigation of the 2026-08-23 scroll-zoom pass. Two live items — an opt-in sync probe that collects the stop-token blob URL without touching the un-chunkable WASM clustering call, and worker-side wiggle packing that is blocked on a retention decision — plus the deterministic render-count instrument that should be built before any of it. The MAF and displayPhase items moved to REJECTED_IDEAS.
+description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found a PaddingBlocks pooling bug nothing here predicted, made the legendRightEdgePx item three times bigger than it was sold as, and killed the stop-token blob URL item outright by counting the mints. One live item is left — worker-side wiggle packing, blocked on a retention decision.
 ---
 
 # Scroll-zoom: what is left
@@ -17,77 +17,83 @@ Three things this file used to propose are now in
 flush, moving MAF's packing to the worker, and folding content staleness into
 `displayPhase`.
 
-## Build the render-count gate first
+## The render-count gate: built, and what it found
 
-Everything below is bounded by an instrument problem, not an idea problem. The
-browser profile is truncated, noisy (~17ms floor on a single self-time frame,
-67ms on total main busy) and needs a rebuild per arm; resolving a ~100ms effect
-in it needs ≥8 runs an arm.
+`products/jbrowse-web/src/tests/renderCensus.ts`, driven by
+`ZoomRenderCensus.test.tsx`. It works exactly as this section predicted:
+`mobx-react-lite` names every observer's reaction `observer<ComponentName>` and
+`Reaction.track` wraps the render itself, so a `mobx.spy()` filtered to reaction
+events is a per-component render count with no component instrumented. It prints
+that ranked beside a `MutationObserver` tally of where the DOM churn lands, over
+a geometric `zoomTo` ramp at three arms — four tracks, eight tracks, and a gene
+track at label zoom.
 
-`mobx-react-lite` names every observer's reaction `observer<ComponentName>`, so
-`mobx.spy()` filtered to reaction events yields a **per-component render count
-with no instrumentation of any component** — integers, in jsdom, deterministic,
-one run. Drive N `model.zoomTo()` steps over a multi-track LGV in the style of
-`searchBoxPanRenders.test.tsx` and assert a budget.
+**Take the view-geometry counts as exact and the rest as approximate.** The
+overlay, ruler and scalebar components are a function of the zoom steps alone
+and repeat to the integer between runs; anything downstream of a fetch
+(`DisplayLoadingOverlay`, `DisplayChromeBaseInner`, `FetchVisibleRegions`,
+`AppReadyMarker`) moved by up to 2x across runs of identical source, because how
+many refetch rounds land inside 20 frames is a wall-clock race. The census
+asserts one budget, on a component in the first group; the rest is a readout.
 
-That is what turns "fewer components re-render per frame" — prescribed by this
-page in July, August and again now, never executed — into a gate that survives
-its author. An afternoon, and it makes the claim falsifiable for the first time.
+Three things it found, in the order they mattered:
 
-## Retire the stop-token blob URL, opt-in rather than outright
+- **`PaddingBlocks` keyed its divs by block identity**, and a zoom moves every
+  block, so React rebuilt the whole list every frame rather than patching it —
+  `ScalebarCoordinateLabels`' bug, in a component mounted once per track plus
+  once for the container. At eight tracks that was **360 structural mutations
+  over 20 frames, and the entry disappears from the tally** once the list is
+  keyed positionally. Nothing on this page predicted it, and the DOM-mutation
+  method that found the scalebar in July could not have: it attributes to the
+  nearest `data-testid`, and these divs sit under `tracksContainer` with every
+  other overlay.
 
-`createStopToken` mints `URL.createObjectURL`, **measured ~100ms** of main-thread
-self time on one ~7s gesture. (Sharing one `Blob` behind every token landed
-2026-08-24 and took a separate ~61ms; the mint itself is what is left.) The blob
-URL exists so `probeBlobUrl` — a synchronous XHR — has something to fail against
-once revoked, giving a **synchronous** cancellation check no plain-id lookup can.
+- **`legendRightEdgePx` was three times the size it was sold as** below. Not
+  "under 20ms, invisible to the profiler" — it was **one render per wiggle
+  track per frame**, 66 over 20 frames across two bodies, 7 after. The fix is
+  not the one written below either: publishing the raw scalar changes nothing,
+  because the clamp is what makes it stable. `Math.min(trackWidthPx, …)` has to
+  happen INSIDE the computed, which is why `contentRightEdgePx` is a view getter
+  and not a helper the component calls.
 
-**The earlier version of this section said six call sites need the probe and that
-the zoom path is fully chunked. Both are wrong.** There are ~27 probe-dependent
-sites: 26 direct `checkStopTokenThrottled` calls plus everything driven through
-`createProgressReporter` (`packages/core/src/util/progress.ts:1088`), and
-several — `BamAdapter.ts:211`, `extractFeatureArrays.ts:123`,
-`runCoveragePipeline.ts:96` — are squarely on the zoom path. The reason they do
-not matter is a **measurement**, not a structural property: `cancel-bench`
-measured the alignments family probe-on vs probe-off and got nothing (median
-settle 513ms both arms). Everything outside that family is unmeasured.
+- **`ZoomTransform` is not a target, and looks like the biggest one.** It tops
+  the census at 7.6 renders a frame, and its count is `PaddingBlocks` +
+  `Gridlines` **exactly** (152 = 114 + 38 over 20 frames). It re-renders because
+  its parent does — `observer` wraps `React.memo`, and a fresh `children`
+  element defeats the compare every time — so it has no reaction of its own to
+  stop and dropping `observer` from it saves nothing. Check that arithmetic
+  before optimizing anything that renders as a wrapper.
 
-**`clusterMatrix` cannot be chunked, and it decides the shape of the fix.**
-`packages/tree-sidebar/src/clusterMatrix.ts:67` is not a loop — it is the
-`checkCancellation` callback handed to `@gmod/hclust`, registered with
-`module.addFunction` and invoked from inside one synchronous
-`module._hierarchicalCluster` call. A JS callback called from WASM cannot await;
-there is no seam at any stride. All three cluster executors funnel through it,
-so four of the "six" collapse into one un-chunkable call.
-`executeRenderHicData.ts:89` is the same exposure one step down.
+**The lesson is not "pool every list by position".** A zoom changes every
+`paddingSpan` key and every scalebar tick key, which is what made those two
+rebuild whole lists; it does not change a feature's id, so `FloatingLabelsLayer`
+already pools across a zoom and only culling churns it. Positional keys there
+would trade a handful of mounts for repainting every surviving label's text.
+Pool where the gesture changes every key.
 
-**The header's "deleted once and had to be restored" is a misreading.**
-`git log --all -S XMLHttpRequest` on `stopToken.ts` returns one commit, the pnpm
-move; the XHR count is 1 at every commit in the file's history. The deletion
-never landed — it happened inside the development of `2816289219` and was
-restored on a reasoned counter-example (`getLDMatrix`'s O(n²) fill), not an
-observed failure. `probeBlobUrl` is inert under jsdom, so deleting it passes all
-6000+ unit tests either way.
+## Retire the stop-token blob URL — dead, and the count is why
 
-**The shape that works**: `createStopToken({ syncProbe })`, defaulting off, with
-a display able to declare it (`createStopTokenRotation(self, report, {
-syncProbe })`). The un-chunkable paths mint through their own entry points —
-`useClusterRun.ts:66`, `runClusteringAutorun.ts:102`, `DiagonalizeDialog.tsx:86`,
-`indexJobsModel.ts:309` — at single-digit frequency, where a blob URL costs
-nothing. The zoom-hot rotation gets a bare `nanoid()`. An explicit enumerable
-list that fails at the call site, not a `functionName` registry that fails
-silently in a worker.
+**Moved to [reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md)
+2026-08-30.** This section ended with "do first, before any of the work: count
+the mints", and that was the right instinct: a 20-frame zoom over four tracks
+mints **8**. Even extrapolated generously to a few hundred a gesture, the ~100ms
+frame would put `URL.createObjectURL` at 0.3ms a call, and a registry insert is
+not that. The frame is something else — plausibly the revoke or the GC of the
+revoked entries, as this section already suspected — and the `syncProbe` opt-in
+designed below buys none of it.
 
-**Do first, before any of the work**: count the mints. ~100ms over a few dozen
-tokens a gesture is ~2.5ms per call, implausible for a registry insert and a
-strong hint the sampler folds the revoke or GC into that frame. The counter
-already exists — `fetch-cancellation.ts:79-82` patches `URL.createObjectURL`.
-Ten minutes either sizes the prize or redirects the effort. Confirmation
-afterwards is presence/absence, not a delta: the frame leaves the profile and
-`blobUrls` reads 0.
+`products/jbrowse-web/src/tests/ZoomStopTokenMints.test.tsx` is the count, and
+it needs no browser: the rotation that mints is model-side. The one thing it has
+to do is install a `URL.createObjectURL`, because jsdom has none and every token
+under jest is otherwise a `nanoid` — the browser branch never runs, and a naive
+count reads zero.
 
-**Do not** reach for the `SharedArrayBuffer` branch; ADR-056 rejected the
-cross-origin isolation it needs.
+Everything the old section established about the *shape* of the fix stands and
+is now unused: ~27 probe-dependent sites rather than six, `clusterMatrix`
+un-chunkable because its callback is invoked from inside one synchronous WASM
+call, and the header's "deleted once and had to be restored" being a misreading
+of a development-time revert. If the frame is ever attributed to something real,
+that is the design to start from.
 
 ## Wiggle instance packing could move to the worker
 
@@ -124,15 +130,31 @@ resolve it), settle retention, then write the plumbing.
 
 ## Smaller, measured, unclaimed
 
-- **The profiled sweep may be the wrong regime.** `FloatingLabelsLayer`
-  (`overlayElements.tsx:375`) rebuilds every gene label div per frame. At the
-  harness's 0.5-4 bpPerPx that is nearly free; at 10-500, where people read gene
-  tracks, it is plausibly the largest per-frame list in the app.
-- **`legendRightEdgePx`** (`wiggleComponentUtils.ts:38`) consumes the whole
-  `visibleRegions` array to produce what is usually the constant `totalWidth`,
-  re-rendering both wiggle bodies every frame. Publishing the scalar stops it at
-  the computed. Mechanically certain, under 20ms, invisible to the profiler —
-  take it for the rule it states, not the win.
+- **The gene-label regime, measured.** This entry used to say the profiled sweep
+  might be the wrong one and that `FloatingLabelsLayer` was "plausibly the
+  largest per-frame list in the app" at 10-500 bpPerPx. Censused there
+  (`ZoomRenderCensus`'s gene arm, 10-69 bpPerPx): the layer renders **under once
+  per frame**, and its structural churn is 1.6 mutations a frame against the
+  scalebar and overlay chrome's 55 attribute writes. It is the top *attribute*
+  churn once a variant track is on — every visible label's transform moves on a
+  zoom, which it owes — and it is not the structural problem the entry expected.
+  The volvox gene track is small, so this bounds the claim rather than settling
+  it; the arm to widen is the fixture, not the regime.
+- **`legendRightEdgePx`** — done 2026-08-30, and see the instrument section
+  above for why the entry undersold it (one render per wiggle track per frame,
+  not "under 20ms") and mis-stated the fix (the clamp has to be inside the
+  computed). The view getter is `contentRightEdgePx`; the rule moved to
+  `display-kit/regionHost` because the SVG export needs it against the export's
+  canvas width.
+- **The zoom slider is the largest single-element churn left, and it stays.**
+  MUI's `Slider` patches `name`, `value`, `type`, `aria-valuenow` and two
+  `style`s on its thumb and track per render — **5.7 DOM mutations a frame**,
+  more than `PaddingBlocks` now costs. The obvious move is the one `SearchBox`
+  made, reading `coarseBpPerPx` instead of live `bpPerPx`, and it is refused on
+  purpose: `HeaderZoomControls`' own styles comment records killing MUI's 150ms
+  thumb transition *so the thumb stops trailing the zoom it reports*. Coarsening
+  the value re-introduces exactly that, deliberately. A drag is unaffected either
+  way — it reads local `dragValue`, not the model.
 - **Three overlays set `ctx.font` ungated** —
   `drawVariantInsertionGlyphs.ts:147`, `drawMultiRowIndelGlyphs.ts:113`,
   `drawOffscreenMates.ts:763`. Same bug MAF already fixed. Hygiene only: per

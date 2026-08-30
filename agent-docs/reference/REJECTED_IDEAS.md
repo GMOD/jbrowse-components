@@ -828,6 +828,25 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Performance and measurement
 
+- **Retire the stop-token blob URL, so a zoom stops minting one per fetch
+  rotation** — sized and declined 2026-08-30, by the count
+  `ideas/zoom-perf-followups.md` prescribed doing first. The profile books ~100ms
+  of main-thread self time to `createObjectURL` on a ~7s gesture, which is worth
+  chasing only if the mints are numerous. They are not: a 20-frame zoom over four
+  tracks mints **8**, counted twice over — once by spying the module export, once
+  by installing a counting `URL.createObjectURL` (jsdom has none, so every token
+  under jest is otherwise a `nanoid` and the browser branch never runs).
+  `products/jbrowse-web/src/tests/ZoomStopTokenMints.test.tsx` is the count.
+
+  The rate is per fetch ROUND, not per frame, so jsdom's round count is not the
+  browser's — but the conclusion does not depend on getting that right. Even
+  extrapolating to a few hundred mints a gesture puts `URL.createObjectURL` at
+  0.3ms a call, and at the measured rate it is 12ms; a registry insert is neither.
+  So the ~100ms frame is not the mint, and the `syncProbe` opt-in that file
+  designs — an enumerated call-site list, a rotation option, ~27 probe-dependent
+  sites to audit — buys whatever the sampler is really folding into that frame,
+  which is unknown. Measure what the frame contains before designing against it.
+
 - **Raise the RPC worker ceiling so a sixth alignments track gets a sixth
   worker** — declined 2026-08-25: the contention it would relieve was measured
   not to exist. `WebWorkerRpcDriver` sizes its pool
