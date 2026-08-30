@@ -79,8 +79,22 @@ SV_VCF=$DEPLOY/NA12878.1000g_sv.vcf.gz
 REGIONS=(5:175240000-175480000 7:70300000-70560000 17:16560000-16800000)
 
 # ── The reads: three range-requested slices in one pass ─────────────────────
+# `samtools view` WARNS and exits 0 on a region it cannot find, so neither
+# `set -e` nor the exit code sees a slice that is short a locus. Count each
+# region back, and stage through a temporary so a half-written download cannot
+# satisfy this block's own rerun guard.
 if [ ! -f "$BAM" ]; then
-  samtools view -b -o "$BAM" "$BAM_URL" "${REGIONS[@]}"
+  samtools view -b -o "$BAM.tmp" "$BAM_URL" "${REGIONS[@]}"
+  samtools index "$BAM.tmp"
+  for r in "${REGIONS[@]}"; do
+    if [ "$(samtools view -c "$BAM.tmp" "$r")" -eq 0 ]; then
+      echo "no reads for $r — check the region spelling against the BAM header" >&2
+      rm -f "$BAM.tmp" "$BAM.tmp.bai"
+      exit 1
+    fi
+  done
+  mv "$BAM.tmp.bai" "$BAM.bai"
+  mv "$BAM.tmp" "$BAM"
 fi
 [ -f "$BAM.bai" ] || samtools index "$BAM"
 
@@ -96,19 +110,22 @@ fi
 # The helper fetches juicer_tools into its own --out, so that is a work
 # directory and the four .hic files are copied across from it.
 #
-# The rerun guard is on the WORK dir, and the copy then runs every time. It used
-# to guard the pair on `$DEPLOY/depth_difference.hic` and copy the four names in
-# one `cp`, which cannot survive the empty channel this script is built to
-# produce: `cp` skips a missing source, copies the rest — `depth_difference.hic`
-# among them, it is last — and exits 1, so `set -e` aborted with the guard file
-# already in place and the next run skipped the block. A deploy dir permanently
-# short one channel, reported as success.
-if [ ! -f hic/depth_difference.hic ]; then
+# The rerun guard is a stamp this script writes, and the copy then runs every
+# time. Guarding on any .hic name cannot survive the empty channel this script
+# is built to produce — a channel with no contacts legitimately writes no file,
+# so an absent name means "nothing to write" and "the run died" alike. An
+# earlier guard on `$DEPLOY/depth_difference.hic` combined that with a single
+# four-name `cp`: `cp` skipped the missing source, copied the rest, exited 1,
+# and `set -e` aborted with the guard file already in place, so the next run
+# skipped the block — a deploy dir permanently short one channel, reported as
+# success.
+if [ ! -f hic/.channels-built ]; then
   python3 "$SCRIPT_DIR/sv_contact_maps.py" "$BAM" \
     --out hic \
     --min-span 1000 \
     --bin 750 \
     --resolutions 750,1500,5000,25000
+  touch hic/.channels-built
 fi
 # A channel with no contacts writes no .hic (juicer `pre` exits 57 on an empty
 # matrix), so a missing name here is expected rather than a failure.
@@ -122,7 +139,8 @@ done
 # `-c 1` after `-s` drops every site NA12878 is homozygous reference at, leaving
 # 3,260 of the callset's 68,818.
 if [ ! -f "$SV_VCF" ]; then
-  bcftools view -s NA12878 -c 1 -Oz -o "$SV_VCF" "$SV_VCF_URL"
+  bcftools view -s NA12878 -c 1 -Oz -o "$SV_VCF.tmp" "$SV_VCF_URL"
+  mv "$SV_VCF.tmp" "$SV_VCF"
 fi
 tabix -f -p vcf "$SV_VCF"
 

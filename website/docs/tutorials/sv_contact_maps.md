@@ -90,7 +90,6 @@ coverage, and hide the pileup:
     "readConnectionsDown": true,
     "readConnectionsHeight": 110,
     "drawProperPairArcs": false,
-    "colorBy": { "type": "pairOrientation" },
     "groupBy": { "type": "pairOrientation" },
     "linkedReads": "normal"
   }
@@ -102,8 +101,9 @@ four of those keys in one click: **Group by → Pair orientation**, **Read
 connections → Show read arcs**, **Arc / read cloud band options → Show
 concordant-pair arcs** unchecked, and **Show... → Show pileup** off. The two
 heights, `linkedReads` and `readConnectionsDown` are framing, and the row leaves
-them to you. `colorBy` it leaves alone on purpose: with the pileup hidden there
-are no read fills to paint, so the arcs take their color from `arcColorByType`.
+them to you. `colorBy` is absent on purpose: with the pileup hidden there are no
+read fills to paint, and the arcs take their color from `arcColorByType`, so
+setting it here would change nothing.
 
 Four bands come out, one per orientation class, each with its own coverage curve
 and its own arcs:

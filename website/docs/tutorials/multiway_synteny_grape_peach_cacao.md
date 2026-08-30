@@ -486,9 +486,10 @@ every mate at once:
 ## Each genome in its own coordinates
 
 Every lane above is drawn on grape's axis, so it reads as presence and absence
-down a column and nothing else: it cannot say where in peach's own genome those
-genes sit, or how much peach DNA they take. **Display types → Multi-way synteny
-display** on the same track redraws the lanes in each genome's own coordinates:
+down a column and nothing else: the lane cannot say where in peach's own genome
+those genes sit, or how much peach DNA they take. **Display types → Multi-way
+synteny display** on the same track redraws the lanes in each genome's own
+coordinates:
 
 - **Each lane is fitted to its own genome**, spanning the orthologs the visible
   window brings in, so a local expansion takes more of its own lane.

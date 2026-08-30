@@ -99,7 +99,6 @@ const svChannels = (coverageHeight = COVERAGE_H, rest = {}) => ({
   // repeat-rich duplication the same-strand bands fill with them. The figure is
   // about the pairs whose both feet are in frame.
   drawLongRange: false,
-  colorBy: { type: 'pairOrientation' },
   groupBy: { type: 'pairOrientation' },
   linkedReads: 'normal',
   showLegend: true,

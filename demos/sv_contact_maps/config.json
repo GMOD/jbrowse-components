@@ -110,9 +110,6 @@
           "readConnectionsDown": true,
           "readConnectionsHeight": 110,
           "drawProperPairArcs": false,
-          "colorBy": {
-            "type": "pairOrientation"
-          },
           "groupBy": {
             "type": "pairOrientation"
           },

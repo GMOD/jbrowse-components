@@ -253,10 +253,24 @@ def scan(alignments, ref, regions, min_span, bin_size, max_bin_span, handles):
 
 
 def fetch_juicer(outdir):
+    """The pinned jar, downloaded beside the output if it is not there yet.
+
+    Staged through a .part file: urlretrieve raises on a short body but leaves
+    what it got, and the existence check would then adopt that truncated jar on
+    every later run, with `java -jar` dying on it until someone deletes it by
+    hand.
+    """
     jar = os.path.join(outdir, JUICER_JAR_NAME)
     if not os.path.exists(jar):
         print("fetching %s" % JUICER_JAR_NAME, file=sys.stderr)
-        urllib.request.urlretrieve(JUICER_JAR_URL, jar)
+        part = jar + ".part"
+        try:
+            urllib.request.urlretrieve(JUICER_JAR_URL, part)
+        except BaseException:
+            if os.path.exists(part):
+                os.remove(part)
+            raise
+        os.replace(part, jar)
     return jar
 
 

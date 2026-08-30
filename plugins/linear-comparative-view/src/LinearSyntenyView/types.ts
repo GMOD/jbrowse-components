@@ -91,9 +91,11 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedInit {
  * What a `LinearSyntenyView` can be launched with — a session spec's flat args,
  * a config `defaultSession` view's `init` blob, a share link.
  *
- * The commands above, plus every declared property of the view (`drawCurves`,
- * `cigarMode`, `alpha`, `drawLocationMarkers`, `opacityByIdentity`, `lodMode`,
- * and whatever the model grows next), each in its own type. None of them is
+ * The commands above — `drawCurves` and `drawLocationMarkers` among them, which
+ * are commands writing a display config slot rather than view properties —
+ * plus every declared property of the view (`cigarMode`, `alpha`,
+ * `opacityByIdentity`, `lodMode`, and whatever the model grows next), each in
+ * its own type. None of them is
  * listed anywhere: the type comes off the state model and the runtime asks the
  * model too, so declaring a property is the whole of making it authorable.
  */

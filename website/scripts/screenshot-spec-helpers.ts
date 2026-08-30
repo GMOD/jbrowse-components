@@ -94,7 +94,7 @@ export const UCSC_HG38_CONFIG = encodeURIComponent(
 export const DEMO_CONFIG = 'test_data/config_demo.json'
 // Load the remote demo configs against the *local* build (a bare ?config= url
 // that the generator prefixes with localhost), so unreleased display settings
-// like the LinearSyntenyView drawCurves view property render — jbrowse.org/code/
+// like the synteny display's promotable drawCurves slot render — jbrowse.org/code/
 // jb2/latest is an older release that ignores them. specLiveUrl still turns the
 // bare url into a jbrowse.org/code/jb2/latest link for the docs reader links.
 const CGIAB_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/cgiab/config.json')}`
