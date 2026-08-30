@@ -201,9 +201,7 @@ const Host = types
   }))
 
 // `getNotificationSink` walks to the first parent carrying `rpcManager` and
-// `configuration`, so the hand-nudge message needs one — and its actions are
-// what the tests below click, which is the only way to reach the two settings
-// the snackbar offers.
+// `configuration`
 const Session = types
   .model('TestSyntenyFollowSession', { host: Host })
   .volatile(() => ({
@@ -511,10 +509,6 @@ describe('a whole-genome row zoomed by hand', () => {
     expect(shown(rows[1]!)).toHaveLength(CONTIGS)
   })
 
-  // THE SNAP ABOVE, FROM THE READER'S SIDE. Everything the mode reports today
-  // is about where a row could not go; this is the one thing it does that looks
-  // like the control being broken, and the pass has both rows in hand and so is
-  // the only place that can tell it from an ordinary placement.
   test('says so, once, naming both rows', async () => {
     const { rows, host } = await wholeGenome()
     expect(notificationsOf(host)).toHaveLength(0)
@@ -553,9 +547,7 @@ describe('a whole-genome row zoomed by hand', () => {
   })
 })
 
-// The other rung, which navigates rather than positions and so reports from a
-// different branch. Same picture to the reader, and the mode owes the sentence
-// either way.
+// the other rung, which navigates rather than positions
 describe('a row nudged off a single-contig answer', () => {
   const settle = () => new Promise(resolve => setTimeout(resolve, 0))
 

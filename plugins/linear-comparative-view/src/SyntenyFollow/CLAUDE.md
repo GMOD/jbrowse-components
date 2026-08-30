@@ -338,42 +338,23 @@ against where the row actually is, with a tolerance; and the per-level answer
 promise is shared by key, so all three ride one `SyntenyResolveMatchingRegion`.
 The integration suite asserts that count.
 
-## Re-asserting over a hand nudge is the one thing the mode owes a sentence
+## Re-asserting over a hand nudge is reported
 
-Zooming a followed row out and having it come straight back is the same picture
-as a broken control, and until `followHandNudge` nothing on screen separated
-them: the header toggle is a 31px icon whose tooltip has to be hovered for, and
-which row drives is a submenu in. `followUnaligned` and `followApproximate`
-cannot cover it — a row that is holding and a row that is being moved back look
-nothing alike to the code and identical to the reader.
+`handNudged` — the row moved, its input row did not, and the follow did not move
+it. Two things it got wrong first, both invisible from the code:
 
-**It is a question only a pass that reads both rows can answer.** The row moved
-and nothing in this level moved it: the input row holding is what separates a
-nudge from the anchor pan that placed the row a moment ago, however far the row
-travelled. So it is decided in `planLevel`, where both reads are already
-tracked, and carried into the placement — past `execute`'s first `await` a
-placement has no provenance at all.
+- **Over EVERY window of the moving row**, where `alreadyShowing` wants the
+  widest. Zooming a whole-genome row onto its widest contig leaves that contig's
+  window exactly as it was, so by the widest alone the loudest nudge available
+  is the one the check cannot see.
+- **The multi-contig rung measures whether it moved the row.** It re-places
+  every pass and most of those write the numbers already there, so a flag raised
+  on the placement never came down and the next real nudge read as the follow's
+  own work.
 
-**And it is decided over EVERY window of the moving row**, where
-`alreadyShowing` wants the widest one. Zooming a whole-genome row down onto its
-widest contig leaves that contig's window exactly as it was, so by the widest
-alone the loudest nudge available is the one the check cannot see.
-
-**The multi-contig rung measures whether it moved the row; the navigating rung
-knows.** That rung re-places every pass and most of those passes write the
-numbers already there, so a flag raised on the placement itself never came down
-— the last pass of a settle left it standing and the nudge after it read as the
-follow's own work. `placedWindowSignature` compares a placement against itself,
-on the live blocks, where `lastWindows` compares one pass against the next.
-
-**Both actions on the message keep the move the reader was trying to make**, and
-neither is taken for them: anchoring this row is for someone who wants to drive
-from here and keep the other rows with them, stopping is for someone who wants
-this row alone. An anchor that moved itself under a hand zoom would be the
-silent version of the same surprise — the same reason the row's own Flip item
-needs no anchor take. Said **once per level per follow-on**: the second telling
-is one the reader has read, and an actionable snackbar does not dedup itself
-(`pushSnackbarMessage` dedups only the action-less ones).
+**Untested: the frame pass moves the row and touches neither field.** If the
+moving row's coarse-block debounce ever fires while the anchor's has not, that
+is a false nudge. The unit harness has no debounce and so cannot see it.
 
 ## That convergence is load-bearing, and nothing else damps it
 

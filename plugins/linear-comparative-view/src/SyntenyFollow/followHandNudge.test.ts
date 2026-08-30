@@ -16,7 +16,10 @@ test('a signature is the coordinates, not the objects carrying them', () => {
   )
 })
 
-const at = (input: string, moving: string) => ({ input, moving })
+const at = (inputRow: string, followedRow: string) => ({
+  inputRow,
+  followedRow,
+})
 
 describe('who moved the row', () => {
   test('the row moved and its input did not', () => {
@@ -24,7 +27,7 @@ describe('who moved the row', () => {
       handNudged({
         now: at('chr1:0-1000', 'chr5:0-9000'),
         previous: at('chr1:0-1000', 'chr5:0-1000'),
-        placedByFollow: false,
+        movedByFollow: false,
       }),
     ).toBe(true)
   })
@@ -34,7 +37,7 @@ describe('who moved the row', () => {
       handNudged({
         now: at('chr1:500-1500', 'chr5:500-1500'),
         previous: at('chr1:0-1000', 'chr5:0-1000'),
-        placedByFollow: false,
+        movedByFollow: false,
       }),
     ).toBe(false)
   })
@@ -44,34 +47,27 @@ describe('who moved the row', () => {
       handNudged({
         now: at('chr1:0-1000', 'chr5:0-1000'),
         previous: at('chr1:0-1000', 'chr5:0-1000'),
-        placedByFollow: false,
+        movedByFollow: false,
       }),
     ).toBe(false)
   })
 
-  // The pass after a placement sees exactly the nudge shape — the input row
-  // settled a pass ago and the moving row is somewhere new — and the follow put
-  // it there itself. Without this the first thing the mode would report is its
-  // own work.
   test('the follow placed the row, which is why it is somewhere new', () => {
     expect(
       handNudged({
         now: at('chr1:0-1000', 'chr5:0-9000'),
         previous: at('chr1:0-1000', 'chr5:0-1000'),
-        placedByFollow: true,
+        movedByFollow: true,
       }),
     ).toBe(false)
   })
 
-  // A level that has been looked at once has no previous window to attribute
-  // anything against, and a follow switched on over an already-misplaced row
-  // navigates it on the first pass.
   test('the first pass over a level accuses nobody', () => {
     expect(
       handNudged({
         now: at('chr1:0-1000', 'chr5:0-9000'),
         previous: undefined,
-        placedByFollow: false,
+        movedByFollow: false,
       }),
     ).toBe(false)
   })

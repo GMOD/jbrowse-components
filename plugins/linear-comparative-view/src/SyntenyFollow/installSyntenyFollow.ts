@@ -49,9 +49,6 @@ export interface FollowPair {
   movingView: LinearGenomeViewModel
   toMate: boolean
   mateAssembly?: string
-  // which row of the stack the moving view is, for the one message that has to
-  // NAME it — `rowLabels` disambiguates by position, and the views themselves
-  // do not know where they sit
   movingIndex: number
 }
 
@@ -78,10 +75,7 @@ export interface SyntenyFollowHost extends IStateTreeNode {
   setFollowUnaligned: (arg: boolean) => void
   setFollowApproximate: (arg: boolean) => void
   setFollowPartial: (arg: FollowPartialReport | undefined) => void
-  // The four below are the hand-nudge message and nothing else: it names both
-  // rows, and the two ways out of the snap it reports are the same two settings
-  // the header menu offers. Read and called only from `reportHandNudge`, which
-  // runs at most once per level per follow-on.
+  // the four below are `reportHandNudge`'s and nothing else
   followAnchorIndex: number
   views: { assemblyNames: string[] }[]
   setFollowAnchorIndex: (idx: number) => void
@@ -111,11 +105,7 @@ interface FollowWork {
   // the anchor's orientation as it stands, so the flip decision is relative: a
   // reversed anchor inside a forward block wants a reversed mate
   anchorOrientation: RegionsOrientation
-  // the row moved and nothing in this level moved it, so a placement over the
-  // top of it is the follow overriding the user rather than following the
-  // anchor — read only when this rung actually navigates
   handNudged: boolean
-  // only ever the hand-nudge message's, which names the row
   movingIndex: number
   seq: number
   generation: number
@@ -148,8 +138,6 @@ interface SpreadWork {
   level: FollowLevel
   movingView: LinearGenomeViewModel
   spans: ResolvedSpan[]
-  // as in `FollowWork`, and read on every placement rather than on a navigation
-  // — this rung re-places its row every pass, so there is no narrower moment
   handNudged: boolean
   movingIndex: number
 }
@@ -168,11 +156,7 @@ interface FollowPlan {
   partial?: FollowPartialReport
 }
 
-// Where a row is, off the LIVE blocks, for telling a placement that moved it
-// from one that wrote the numbers already there. Never compared across passes —
-// `followAnchorWindow`'s debounced read is what a pass sees, and the two differ
-// by exactly the settle this is called inside of.
-function placedWindowSignature(view: LinearGenomeViewModel) {
+function liveWindowSignature(view: LinearGenomeViewModel) {
   return followWindowSignature(
     followAnchorWindows(view.dynamicBlocks.contentBlocks),
   )
@@ -288,7 +272,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       const nav = navSignature(movingWindow, span)
       if (nav !== state.lastNav) {
         state.lastNav = nav
-        state.movedRow = true
+        state.followMovedRow = true
         reportHandNudge(state, movingIndex, handNudged)
         await navToResolvedSpan(movingView, span)
         if (
@@ -335,17 +319,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const state = levelStates.get(level)
     state.pick = undefined
     reportHandNudge(state, movingIndex, handNudged)
-    // MEASURED RATHER THAN ASSUMED, unlike the navigating rung below, because
-    // this one re-places its row every pass and most of those passes write the
-    // numbers already there. A flag raised on the placement itself therefore
-    // never came down — the last pass of a settle left it standing, and the
-    // nudge after it read as the follow's own work.
-    //
-    // The live blocks on both sides: this compares a placement against itself,
-    // where `lastWindows` compares one pass against the next.
-    const before = placedWindowSignature(movingView)
+    // measured, not assumed: this rung re-places every pass and most of those
+    // write the numbers already there
+    const before = liveWindowSignature(movingView)
     const placed = positionViewOnSpans(movingView, spans)
-    state.movedRow = placedWindowSignature(movingView) !== before
+    state.followMovedRow = liveWindowSignature(movingView) !== before
     if (placed) {
       state.lastNav = undefined
       return
@@ -483,30 +461,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       })
   }
 
-  /**
-   * Say that the follow just put a row back, once per level per follow-on.
-   *
-   * THE ONE MOMENT THE MODE OWES AN EXPLANATION. Zooming a followed row out and
-   * having it come straight back is the same picture as a broken control, and
-   * nothing else on screen distinguishes them: the header toggle is a 31px icon
-   * whose tooltip has to be hovered for, and which row drives is otherwise
-   * visible only inside a submenu. `followUnaligned` and `followApproximate`
-   * are reported for the same reason and cannot cover this one — a row that is
-   * holding and a row that is being moved back look nothing alike to the code
-   * and identical to the reader.
-   *
-   * BOTH ACTIONS KEEP THE MOVE the reader was trying to make, which is why
-   * there are two rather than an explanation alone: anchoring this row is the
-   * one for someone who wants to drive from here and keep the other rows with
-   * them, stopping is the one for someone who wants this row alone. Neither is
-   * taken for them — an anchor that moves itself under a hand zoom is the
-   * silent version of the same surprise.
-   *
-   * ONCE, because the second telling is a message they have already read, and
-   * an actionable snackbar does not dedup on its own (`pushSnackbarMessage`
-   * dedups only the action-less ones). It persists until dismissed, which is
-   * what the reading and the click both need.
-   */
+  // Once per level per follow-on: an actionable snackbar does not dedup on its
+  // own, and the second telling is one the reader has read.
   function reportHandNudge(
     state: FollowLevelState,
     movingIndex: number,
@@ -697,27 +653,21 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // same numbers settles the same block keys, so the re-entry converges.
     const movingBlocks = movingView.coarseDynamicBlocks
     const movingWindow = followAnchorWindow(movingBlocks)
-    // WHO MOVED THE ROW, decided here because only a pass that reads both rows
-    // can tell — past `execute`'s first await the answer is a placement with no
-    // provenance. The snapshot is written every pass whichever rung runs, so a
-    // level that changes rung does not carry a comparison made under the other
-    // one, and `movedRow` is cleared in the same breath it is read: it is a
-    // fact about the pass just gone.
-    // EVERY window of the moving row, where `alreadyShowing` wants the widest
-    // one: zooming a whole-genome row down onto its widest contig leaves that
-    // contig's window exactly as it was, so by the widest alone the loudest
-    // nudge the mode has is the one it cannot see.
+    // Decided here because only a pass that reads both rows can tell: past
+    // `execute`'s first await a placement has no provenance.
     const nowWindows = {
-      input: followWindowSignature(windows),
-      moving: followWindowSignature(followAnchorWindows(movingBlocks)),
+      inputRow: followWindowSignature(windows),
+      // every window, where `alreadyShowing` wants the widest: zooming a
+      // whole-genome row onto its widest contig leaves that window unchanged
+      followedRow: followWindowSignature(followAnchorWindows(movingBlocks)),
     }
     const nudged = handNudged({
       now: nowWindows,
       previous: state.lastWindows,
-      placedByFollow: !!state.movedRow || state.lastNav !== undefined,
+      movedByFollow: !!state.followMovedRow || state.lastNav !== undefined,
     })
     state.lastWindows = nowWindows
-    state.movedRow = false
+    state.followMovedRow = false
 
     // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
     // than one it is the envelope of what lies under the window — and wider
