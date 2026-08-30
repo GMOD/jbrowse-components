@@ -127,3 +127,62 @@ test('the hover color is the theme text color, resolved once', () => {
   expect(container.querySelectorAll('canvas')).toHaveLength(1)
   expect(theme.palette.text.primary).toBeTruthy()
 })
+
+// The one check that runs the WHOLE chain — laidOutArcs → OverlayCanvas →
+// drawArcs → a real 2D context — and looks at what came out. Everything else in
+// this directory tests a piece: the geometry against its own formula, the
+// painter against a recording ctx that draws nothing. A canvas that never gets a
+// context, or an effect that never fires, passes all of those and shows an empty
+// track. jsdom rasterizes through node-canvas here, so this is a pixel read.
+function inkAt(canvas: HTMLCanvasElement, x: number, y: number) {
+  const { data } = canvas.getContext('2d')!.getImageData(x, y, 1, 1)
+  return data[3]! > 0
+}
+
+// A point on the curve, derived from the shape's own numbers rather than read
+// back off the renderer — the Bernstein form of the same cubic, which is what
+// makes this a check on the ink and not a restatement of it. `t` is chosen so
+// the point lands inside the canvas: the arc runs well past the viewport's right
+// edge, and its apex is off screen.
+function onCurve(
+  shape: { left: number; right: number; height: number },
+  t: number,
+) {
+  const mt = 1 - t
+  return {
+    x: Math.round(
+      mt * mt * (1 + 2 * t) * shape.left + t * t * (3 - 2 * t) * shape.right,
+    ),
+    y: Math.round(3 * shape.height * t * mt),
+  }
+}
+
+test('the arcs reach the canvas as pixels', () => {
+  const { display } = oneArc()
+  const { container } = render(<Arcs model={display} />)
+  const canvas = container.querySelector('canvas')!
+  const shape = display.laidOutArcs[0]!.shape as {
+    left: number
+    right: number
+    height: number
+  }
+  const { x, y } = onCurve(shape, 0.25)
+  expect(x).toBeLessThan(canvas.width)
+
+  expect(inkAt(canvas, x, y)).toBe(true)
+  // the empty band above the curve, so "every pixel is ink" cannot pass this
+  expect(inkAt(canvas, x, y - 30)).toBe(false)
+})
+
+test('an arc off screen paints nothing', () => {
+  const { display, view } = oneArc()
+  // pan so far past the arc that its whole extent is left of the viewport
+  view.scrollTo(50000)
+  const { container } = render(<Arcs model={display} />)
+  const canvas = container.querySelector('canvas')!
+  const blank = canvas
+    .getContext('2d')!
+    .getImageData(0, 0, canvas.width, canvas.height)
+    .data.every((v, i) => i % 4 !== 3 || v === 0)
+  expect(blank).toBe(true)
+})
