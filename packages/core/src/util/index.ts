@@ -48,6 +48,7 @@ export {
   type ConnectionInstance,
   type DialogComponentType,
   type DialogHost,
+  type DrawerPosition,
   type FileHandleLocation,
   type FileLocation,
   type InstanceTypeRestrictive,

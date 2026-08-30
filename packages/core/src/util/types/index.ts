@@ -142,7 +142,7 @@ export interface AbstractSessionModel
   /** @deprecated prefer the per-id reactive `getTrackById(id)` */
   getTracksById: () => Record<string, AnyConfigurationModel>
   jbrowse: IAnyStateTreeNode
-  drawerPosition?: string
+  drawerPosition?: DrawerPosition
   // per-browser UI preference (localStorage-backed, stripped from snapshots by
   // MultipleViewsSessionMixin). Optional here rather than behind a guard: the
   // two readers — a view deciding whether to pin its own header, and the app
@@ -497,14 +497,32 @@ export interface SessionWithWidgets extends AbstractSessionModel {
   hideWidget(widget: unknown): void
 }
 
+/**
+ * Which side of the main content the drawer sits on. A closed set rather than a
+ * string: the drawer's three readers disagree about what an unrecognized value
+ * means -- the grid template treats anything but `right` as a left column, the
+ * resize handle treats anything but `left` as a right-hand one, and the app
+ * shell renders the drawer only for an exact match, so a junk value left a
+ * reserved column with nothing in it.
+ */
+export type DrawerPosition = 'left' | 'right'
+
 /* only some sessions with widgets use a drawer widget */
 export interface SessionWithDrawerWidgets extends SessionWithWidgets {
   drawerWidth: number
-  resizeDrawer(arg: number): number
+  /**
+   * @param distance - px the handle travelled
+   * @param availableWidth - width the drawer and the main area share, which
+   * bounds the drawer. Defaults to the window, which is only the same thing in a
+   * full-window app
+   */
+  resizeDrawer(distance: number, availableWidth?: number): number
   minimizeWidgetDrawer(): void
   showWidgetDrawer: () => void
-  drawerPosition: string
-  setDrawerPosition(arg: string): void
+  /** whether the drawer column is on screen at all */
+  drawerVisible: boolean
+  drawerPosition: DrawerPosition
+  setDrawerPosition(arg: DrawerPosition): void
   /** true while the visible widget is shown in a modal instead of the drawer */
   poppedOut: boolean
   popoutWidget(): void

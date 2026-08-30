@@ -95,6 +95,29 @@ test('resizeDrawer returns the width actually consumed', () => {
   expect(session.drawerWidth).toBe(400)
 })
 
+// The window is only the drawer's container in a full-window app. An embedded
+// view is whatever box the host gave it, so clamping a 600px embed against a
+// 1600px window let a drag take the drawer past the whole embed and collapse
+// the view beside it to nothing.
+test('drawer width is clamped to the container the caller measured', () => {
+  setWindowWidth(1600)
+  const session = createSession()
+  expect(session.updateDrawerWidth(5000, 600)).toBe(450)
+  session.resizeDrawer(-1000, 600)
+  expect(session.drawerWidth).toBe(450)
+})
+
+// localStorage holds whatever another tab, an older version or a hand-edit left
+// there, and drawerPosition is an enumeration now: an unrecognized value has to
+// be dropped at the read, or every session in that browser throws on creation.
+test('an unrecognized stored drawer position falls back to the right', () => {
+  localStorage.setItem('drawerPosition', 'sideways')
+  expect(createSession().drawerPosition).toBe('right')
+  localStorage.setItem('drawerPosition', 'left')
+  expect(createSession().drawerPosition).toBe('left')
+  localStorage.removeItem('drawerPosition')
+})
+
 // The widget half of the drawer, which the drawer-widgets guide documents as a
 // lifecycle — open, minimize, restore, close — and which nothing exercised: the
 // tests above are all width arithmetic.
@@ -134,6 +157,27 @@ test('showing a widget restores a minimized drawer', () => {
   expect(session.minimized).toBe(true)
   session.showWidget(addTestWidget(session, 'first'))
   expect(session.minimized).toBe(false)
+})
+
+// Each host used to spell this itself and the two had already drifted: the app
+// shell tested poppedOut and the embedded view did not.
+test('drawerVisible covers all three ways the column leaves the screen', () => {
+  const session = createSession()
+  expect(session.drawerVisible).toBe(false)
+
+  session.showWidget(addTestWidget(session, 'first'))
+  expect(session.drawerVisible).toBe(true)
+
+  session.minimizeWidgetDrawer()
+  expect(session.drawerVisible).toBe(false)
+  session.showWidgetDrawer()
+
+  session.popoutWidget()
+  expect(session.drawerVisible).toBe(false)
+  session.returnWidgetToDrawer()
+
+  session.hideAllWidgets()
+  expect(session.drawerVisible).toBe(false)
 })
 
 test('minimizing and restoring the drawer leaves the widget open', () => {

@@ -51,8 +51,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const { ReactComponent } = pluginManager.getViewType(view.type)
   const { classes } = useStyles()
 
-  const { drawerPosition, drawerWidth, minimized, visibleWidget } = session
-  const drawerVisible = Boolean(visibleWidget) && !minimized
+  const { drawerPosition, drawerWidth, drawerVisible } = session
   const gridTemplateColumns = drawerGridTemplateColumns({
     drawerVisible,
     drawerPosition,
@@ -85,11 +84,6 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
           <ScopedCssBaseline>
             <div className={classes.root} style={style}>
               <EmbeddedAppBar viewState={viewState} />
-              {drawerPosition === 'left' && drawerVisible ? (
-                <Suspense fallback={null}>
-                  <DrawerWidget session={session} />
-                </Suspense>
-              ) : null}
               {/* A bounded root can be shorter than the track set, and this box
                   is `overflow: hidden` with no scrollable ancestor -- nothing
                   above it was asked for a height -- so without a scrollbar of
@@ -108,7 +102,10 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                   </Suspense>
                 </EmbeddedViewContainer>
               </div>
-              {drawerPosition === 'right' && drawerVisible ? (
+              {/* takes the `[drawer]` column `gridTemplateColumns` puts on the
+                  side `drawerPosition` names, so its place in this list means
+                  nothing */}
+              {drawerVisible ? (
                 <Suspense fallback={null}>
                   <DrawerWidget session={session} />
                 </Suspense>

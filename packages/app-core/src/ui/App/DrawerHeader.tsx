@@ -2,12 +2,12 @@ import { Suspense, lazy, useCallback } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { DrawerWidgetSelector } from '@jbrowse/product-core'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import DrawerControls from './DrawerControls.tsx'
-import DrawerWidgetSelector from './DrawerWidgetSelector.tsx'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
@@ -44,9 +44,22 @@ const DrawerHeader = observer(function DrawerHeader({
     : undefined
   const { helpText } = widgetType ?? {}
 
+  // Measured, and re-measured: the toolbar's height is the room a virtualized
+  // widget subtracts from the box it is given, and it changes without this
+  // component re-rendering -- MUI's Toolbar is 56px under the `sm` breakpoint
+  // and 64 above it, and grows again with the root font size. Read once at
+  // mount, a widget's list was that much too tall for the rest of the session.
   const appBarRef = useCallback(
-    (ref: HTMLDivElement | null) => {
-      setToolbarHeight(ref?.getBoundingClientRect().height ?? 0)
+    (node: HTMLDivElement) => {
+      const publish = () => {
+        setToolbarHeight(node.getBoundingClientRect().height)
+      }
+      publish()
+      const observer = new ResizeObserver(publish)
+      observer.observe(node)
+      return () => {
+        observer.disconnect()
+      }
     },
     [setToolbarHeight],
   )

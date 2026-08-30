@@ -13,25 +13,40 @@ import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Widget } from '@jbrowse/core/util/types'
+import type { DrawerPosition, Widget } from '@jbrowse/core/util/types'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const minDrawerWidth = 128
 const minMainWidth = 150
 
+const drawerPositions = ['left', 'right'] as const
+
+// localStorage holds whatever a previous version, another tab, or a hand-edit
+// left there, and `drawerPosition` is now an enumeration that throws on a value
+// outside the set.
+function storedDrawerPosition(): DrawerPosition {
+  const stored = localStorageGetItem('drawerPosition')
+  return drawerPositions.find(position => position === stored) ?? 'right'
+}
+
 // The one clamp both resize paths share. `drawerWidth` is a
-// `types.refinement(types.integer, >= minDrawerWidth)`, so the two things this
+// `types.refinement(types.integer, >= minDrawerWidth)`, so the three things this
 // does are load-bearing rather than cosmetic — MST throws on an assignment that
 // misses either bound:
 //
 // - Rounded, because a drag delta is fractional whenever `clientX` is (browser
 //   zoom, fractional devicePixelRatio, pen/touch), and ResizeHandle passes that
 //   delta straight through.
-// - The minimum applied *last*, because a window narrower than
+// - Bounded by the width the drawer and the main area actually share, which the
+//   caller measures. `window.innerWidth` is the default and is right only for a
+//   full-window app: an embedded view is whatever box the host gave it, and
+//   clamping a 600px embed's drawer against a 1600px window let a drag collapse
+//   the view beside it to nothing and overflow the embed.
+// - The minimum applied *last*, because a container narrower than
 //   minDrawerWidth + minMainWidth has no width satisfying both bounds. The
 //   floor has to win there; the drawer simply crowds the main area.
-function clampDrawerWidth(width: number) {
-  const max = window.innerWidth - minMainWidth
+function clampDrawerWidth(width: number, availableWidth: number) {
+  const max = availableWidth - minMainWidth
   return Math.max(minDrawerWidth, Math.min(Math.round(width), max))
 }
 
@@ -50,8 +65,10 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * #property
        */
       drawerPosition: types.optional(
-        types.string,
-        () => localStorageGetItem('drawerPosition') ?? 'right',
+        types.enumeration<DrawerPosition>('DrawerPosition', [
+          ...drawerPositions,
+        ]),
+        storedDrawerPosition,
       ),
       /**
        * #property
@@ -104,31 +121,53 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       poppedOut: false,
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * whether the drawer column is on screen: there is something to show, it
+       * is not minimized to the FAB, and it is not currently a modal instead.
+       *
+       * A getter rather than each host's own `&&`, because the hosts drifted --
+       * the app shell tested `poppedOut` and the embedded view did not, so the
+       * day a popout button reaches the embedded drawer header it would render
+       * the modal and the drawer at once.
+       */
+      get drawerVisible() {
+        return Boolean(self.visibleWidget) && !self.minimized && !self.poppedOut
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
-      setDrawerPosition(arg: string) {
+      setDrawerPosition(arg: DrawerPosition) {
         self.drawerPosition = arg
       },
 
       /**
        * #action
        */
-      updateDrawerWidth(drawerWidth: number) {
-        self.drawerWidth = clampDrawerWidth(drawerWidth)
+      updateDrawerWidth(
+        drawerWidth: number,
+        availableWidth: number = window.innerWidth,
+      ) {
+        self.drawerWidth = clampDrawerWidth(drawerWidth, availableWidth)
         return self.drawerWidth
       },
 
       /**
        * #action
        */
-      resizeDrawer(distance: number) {
-        if (self.drawerPosition === 'left') {
-          distance *= -1
-        }
+      resizeDrawer(
+        distance: number,
+        availableWidth: number = window.innerWidth,
+      ) {
+        const signed = self.drawerPosition === 'left' ? -distance : distance
         const oldDrawerWidth = self.drawerWidth
-        self.drawerWidth = clampDrawerWidth(oldDrawerWidth - distance)
+        self.drawerWidth = clampDrawerWidth(
+          oldDrawerWidth - signed,
+          availableWidth,
+        )
         return oldDrawerWidth - self.drawerWidth
       },
 

@@ -6,7 +6,12 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import type {
+  DrawerPosition,
+  SessionWithDrawerWidgets,
+} from '@jbrowse/core/util'
+
+const drawerPositionOptions: DrawerPosition[] = ['left', 'right']
 
 const DrawerControls = observer(function DrawerControls({
   session,
@@ -62,7 +67,7 @@ const DrawerControls = observer(function DrawerControls({
           setAnchorEl(null)
         }}
       >
-        {['left', 'right'].map(option => (
+        {drawerPositionOptions.map(option => (
           <MenuItem
             key={option}
             selected={drawerPosition === option}

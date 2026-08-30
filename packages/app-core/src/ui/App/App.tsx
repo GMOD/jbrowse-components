@@ -27,6 +27,9 @@ const useStyles = makeStyles()(theme => ({
     // --jbrowse-app-height CSS variable (e.g. to 100%); it defaults to the
     // full viewport for standalone/full-window use.
     height: 'var(--jbrowse-app-height, 100vh)',
+    // the containing block for AppFab, which floats over the app rather than
+    // over the page
+    position: 'relative',
     // pin the single implicit row to the container height so appContainer
     // fills it (an auto row would instead grow to content and overflow)
     gridTemplateRows: 'minmax(0, 1fr)',
@@ -36,7 +39,7 @@ const useStyles = makeStyles()(theme => ({
   appContainer: {
     gridColumn: 'main',
     display: 'grid',
-    gridTemplateRows: '[menubar] min-content [components] auto',
+    gridTemplateRows: '[menubar] min-content [components] minmax(0, 1fr)',
     height: '100%',
   },
   appBar: {
@@ -53,27 +56,15 @@ interface Props {
 const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
-  const { minimized, visibleWidget, drawerWidth, drawerPosition, poppedOut } =
-    session
-  const drawerVisible = Boolean(visibleWidget) && !minimized && !poppedOut
+  const { drawerVisible, drawerWidth, drawerPosition, poppedOut } = session
   const gridTemplateColumns = drawerGridTemplateColumns({
     drawerVisible,
     drawerPosition,
     drawerWidth,
   })
 
-  // one element placed into either the left or right grid column by DOM order
-  // (the drawer isn't self-positioning, so it must be rendered on the matching
-  // side of the app container)
-  const drawerWidget = drawerVisible ? (
-    <Suspense fallback={null}>
-      <DrawerWidget session={session} />
-    </Suspense>
-  ) : null
-
   return (
     <div className={classes.root} style={{ gridTemplateColumns }}>
-      {drawerPosition === 'left' ? drawerWidget : null}
       {poppedOut ? (
         <ModalWidget
           session={session}
@@ -99,7 +90,14 @@ const App = observer(function App(props: Props) {
       </div>
       <AppFab session={session} />
       <AppReadyMarker session={session} />
-      {drawerPosition === 'right' ? drawerWidget : null}
+      {/* takes the `[drawer]` column `gridTemplateColumns` puts on the side
+          `drawerPosition` names, so it is rendered once and its place in this
+          list means nothing */}
+      {drawerVisible ? (
+        <Suspense fallback={null}>
+          <DrawerWidget session={session} />
+        </Suspense>
+      ) : null}
       <Snackbar session={session} />
     </div>
   )

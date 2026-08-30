@@ -17,8 +17,17 @@ export const DRAWER_Z_INDEX = 1200
  */
 export const MUI_TOOLTIP_Z_INDEX = 1500
 
-// The second group is the two floating layers that live above everything else.
-// Both sit far above Material UI's scale, so they are not expressible on it.
+// The second group is the floating layers that live above everything else. All
+// of them sit far above Material UI's scale, so they are not expressible on it.
+
+/**
+ * The button that brings a minimized drawer back (see AppFab). It floats over
+ * the views, so it has to clear the layers they stack inside themselves — the
+ * LGV's rubberband, its vertical guide and its coordinate labels run to ~1002 —
+ * and it is app chrome rather than a hover, so it stays below the two layers
+ * beneath.
+ */
+export const FAB_Z_INDEX = 10000
 
 /**
  * Hover tooltips (see BaseTooltip). Above the app chrome so a tooltip near a
