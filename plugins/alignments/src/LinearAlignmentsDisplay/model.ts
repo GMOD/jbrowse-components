@@ -1364,14 +1364,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The settings half of the below-coverage band geometry — whether each
-         * strip MAY be reserved and how tall it is, with neither data half
-         * answered. Its two consumers answer those differently: the pooled
-         * `belowCoverageBandsInput` asks once for the whole stack, the fit
-         * budget once per lane.
-         */
-        /**
-         * #getter
          * The legal range for a band height that is *stated* — by a config, a
          * session snapshot or a menu — rather than dragged, which
          * `resizableBandBounds` covers. Off `fitTargetHeight`, the raw slot,
@@ -1391,7 +1383,14 @@ export default function stateModelFactory(
             ),
           }
         },
-
+        /**
+         * #getter
+         * The settings half of the below-coverage band geometry — whether each
+         * strip MAY be reserved and how tall it is, with neither data half
+         * answered. Its two consumers answer those differently: the pooled
+         * `belowCoverageBandsInput` asks once for the whole stack, the fit
+         * budget once per lane.
+         */
         get belowCoverageBandsSettings(): BelowCoverageBandsSettings {
           return {
             showCoverage: self.showCoverage,
