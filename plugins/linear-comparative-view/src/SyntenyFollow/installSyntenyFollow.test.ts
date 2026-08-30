@@ -1,4 +1,8 @@
-import { bpToOffset, moveTo } from '@jbrowse/core/util/Base1DUtils'
+import {
+  bpToOffset,
+  compareBpOffsets,
+  moveTo,
+} from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -77,12 +81,17 @@ const Row = Base1DView.volatile(() => ({
       end: number
     }) {
       const { displayedRegions } = self
-      const lo = bpToOffset({ refName, coord: start, displayedRegions })
-      const hi = bpToOffset({ refName, coord: end, displayedRegions })
-      if (!lo || !hi) {
+      const a = bpToOffset({ refName, coord: start, displayedRegions })
+      const b = bpToOffset({ refName, coord: end, displayedRegions })
+      if (!a || !b) {
         throw new Error('not in this row')
       }
-      moveTo(self, lo, hi)
+      // ORDERED, which is what `resolveNavEndpoint` does with `r.reversed` and
+      // what `spanBounds` does with `compareBpOffsets`: a reversed region puts
+      // a span's end left of its start, and `moveTo` computes a negative
+      // bpPerPx from a backwards pair rather than refusing
+      const backwards = compareBpOffsets(a, b) > 0
+      moveTo(self, backwards ? b : a, backwards ? a : b)
     },
     // navTo's fallback, which is what the follow reaches for a span on a contig
     // the row is not displaying: `showRegions` with the one region the
@@ -563,6 +572,9 @@ describe('orientation', () => {
     place(rows[0]!, 400_000, 600_000)
     installSyntenyFollow(host)
     await settle()
+    // the follow really did place it — the assertion below is that it declined
+    // to turn it, not that it never got there
+    expect(shown(rows[1]!)).toEqual(['chr1'])
     // flipping a mixed row flips every region at once, which is a bigger edit
     // than the follow is entitled to make
     expect(rows[1]!.displayedRegions.map(r => !!r.reversed)).toEqual(
