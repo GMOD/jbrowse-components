@@ -362,6 +362,16 @@ triangle's own first off-diagonal on an axis of allele frequency.
 **The `lollipop` plugin was removed.** A `LinearLollipopDisplay` track in a v4
 config no longer resolves.
 
+**`LinearSyntenyView` no longer has `drawCurves` or `drawLocationMarkers`.**
+Both are promotable config slots on `LinearSyntenyDisplay` now, so the settings
+menu, the pin, the config editor's reset and `displayDefaults` all reach them
+through one mechanism. Authoring them keeps working — a session spec, a
+`defaultSession`, a share link or `--drawCurves` in jbrowse-img writes the slot
+on the tracks the launcher opens — but as a **view property** in a saved session
+they are gone, and MST drops a property a model no longer declares, so such a
+session loads without error and draws straight chords. Re-author the value in
+the track's `displays` block, or set it from the view's settings menu.
+
 **`gff-nostream`'s record parser** now returns `{ feature, record }` pairs — the
 tabix adapter reads it as `parseRecordsLazy` — and the opaque `_lineHash` that
 used to be stamped onto `feature.data` is gone: the adapter mints its stable
