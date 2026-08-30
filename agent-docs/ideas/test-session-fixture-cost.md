@@ -12,6 +12,15 @@ whether to build anything at all. That is an idea, not an action item.
 
 ## The measurement
 
+**Both numbers below are wall clock for a whole `jest` invocation, so most of
+the 2.0s floor was jest's own startup rather than anything a suite did** — the
+haste-map crawl, which is 0.83s since `roots` was scoped on 2026-08-30 and was
+3.6s when this was written. The difference between the two suites is still the
+import. Re-measure before acting on the size of it:
+[TEST_INFRASTRUCTURE.md](../reference/TEST_INFRASTRUCTURE.md#where-a-warm-pnpm-test-spends-its-time)
+has what a full run's import cost actually is, and why a one-suite measurement
+of it reads about eight times too high.
+
 Taken 2026-08-22, warm jest cache, one worker: an empty suite is 2.0s, a suite
 whose only body is `import { createTestSession } from '@jbrowse/web/testUtils'`
 is 6.7s. Cold it is 12.6s. The calls themselves are not the cost —

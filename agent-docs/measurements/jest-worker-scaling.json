@@ -1,0 +1,55 @@
+{
+  "id": "jest-worker-scaling",
+  "measured": "2026-08-30",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "JEST_MAX_WORKERS=<n> npx jest --ci --silent, whole suite, warm transform cache, on an otherwise idle 16-core / 30GB Linux box. Peak memory is the largest total RSS over all processes matching 'jest', sampled every 2s for the length of the run. Sigma per-suite is the sum of (endTime - startTime) over every entry in --json's testResults.",
+    "notes": "Taken after the 2026-08-30 harness changes, so it is the curve the maxWorkers ceiling in jest.config.js is set from rather than a before/after. All four runs were green over the same 1975 suites and 20,504 tests. The measurement this replaces was taken over `packages/core/src/util` alone and concluded worker count did not matter: its suites are ~0.1s each, so that run was reading jest's ~3.5s of startup, which no worker count divides. Read the whole suite. Workers stay ~97% occupied at every count, so the suite parallelises; what stops scaling is the per-suite cost under contention, which is why Sigma per-suite grows down the table while wall clock flattens. Wall clock on this box moves a few percent run to run, so the 12-vs-16 pair is a tie rather than a reversal."
+  },
+  "columns": [
+    { "key": "workers", "label": "workers", "format": "int", "align": "right" },
+    {
+      "key": "wall",
+      "label": "wall clock",
+      "format": "s",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "sumSuite",
+      "label": "Σ per-suite",
+      "format": "s",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "occupancy",
+      "label": "worker occupancy",
+      "format": "x",
+      "precision": 2,
+      "align": "right",
+      "derived": "sumSuite / wall"
+    },
+    {
+      "key": "peakGb",
+      "label": "peak RSS",
+      "format": "GB",
+      "precision": 1,
+      "align": "right"
+    }
+  ],
+  "rows": [
+    { "values": { "workers": 4, "wall": 322, "sumSuite": 1243, "peakGb": 6.7 } },
+    {
+      "values": { "workers": 8, "wall": 216, "sumSuite": 1656, "peakGb": 12.2 },
+      "emphasize": ["wall"]
+    },
+    {
+      "values": { "workers": 12, "wall": 197, "sumSuite": 2264, "peakGb": 18.1 }
+    },
+    {
+      "values": { "workers": 16, "wall": 199, "sumSuite": 3035, "peakGb": 25.3 }
+    }
+  ]
+}
