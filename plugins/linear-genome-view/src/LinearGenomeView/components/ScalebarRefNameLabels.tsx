@@ -234,6 +234,18 @@ const RefNameMenu = observer(function RefNameMenu({
             )
           },
         },
+        ...(labeled.length < numRegions
+          ? [
+              {
+                label: oneRegion
+                  ? 'Show only this region'
+                  : 'Show only these regions',
+                onClick: () => {
+                  model.setDisplayedRegions(labeled)
+                },
+              },
+            ]
+          : []),
         {
           label: 'Copy to clipboard',
           subMenu: [
