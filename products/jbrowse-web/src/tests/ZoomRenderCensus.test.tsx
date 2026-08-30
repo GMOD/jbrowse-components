@@ -212,3 +212,24 @@ test('census: gene track, label zoom', async () => {
     painted: 'feature-display',
   })
 }, 90000)
+
+// An alignments track over DNA, which is where `showSashimiArcs` being promoted
+// on costs something for nothing: every alignments track evaluates the sashimi
+// pipeline now, and reads with no skip gap give it nothing to draw.
+//
+// `SashimiArcsOverlay` re-rendered on every frame of every gesture here,
+// because `sashimiArcSections` rebuilt a fresh list of empty sections each time
+// `view.visibleRegions` did. Zero is the whole band of headroom this one gets:
+// with no junction in the file there is no frame on which the overlay has
+// anything to say, and the counting window opens after first paint so the mount
+// is not in it. `sashimiFrameSplit.test.ts` is the same statement one layer
+// down, where it can also count the merge.
+test('census: alignments over DNA, no junctions to draw', async () => {
+  const counts = await census({
+    label: 'alignments',
+    trackIds: ['volvox_alignments_pileup_coverage'],
+    startBpPerPx: 5,
+    painted: 'pileup-display',
+  })
+  expect(counts.get('SashimiArcsOverlay') ?? 0).toBe(0)
+}, 90000)

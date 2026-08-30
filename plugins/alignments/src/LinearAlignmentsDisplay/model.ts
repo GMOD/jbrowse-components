@@ -247,11 +247,16 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
 // hand the layout a fresh map per evaluation.
 const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 
-// One identity for "no lane has a junction", so the overlay's observer stops on
-// `===` instead of re-rendering a list of empty sections every pan frame. Most
-// alignments tracks are here — `showSashimiArcs` is promoted on and DNA reads
-// carry no skip gaps.
+// A computed that rebuilds `[]` is not free: it invalidates every observer
+// downstream on every frame of every gesture, for a list the overlay is about to
+// `return null` on. So each per-frame overlay geometry hands back ONE empty
+// array, and both of these emptinesses are the common case — `showSashimiArcs`
+// is promoted on while DNA reads carry no skip gap, and a single-region view
+// (nearly every view) has no arc whose two feet are in different regions.
 const NO_SASHIMI_ARC_SECTIONS: SashimiArcSection[] = []
+const NO_CROSS_REGION_ARC_SECTIONS: ReturnType<
+  typeof computeCrossRegionArcSections
+> = []
 
 /**
  * What a right-click on the pileup resolved: the anchor, the whole hit (block,
@@ -2882,13 +2887,13 @@ export default function stateModelFactory(
         get crossRegionArcSections() {
           const view = self.view
           if (self.readConnections === 'off' || !view.initialized) {
-            return []
+            return NO_CROSS_REGION_ARC_SECTIONS
           }
           // Read once per resolve rather than per foot: the breakend feet need
           // it for both of their endpoints and this getter re-runs on every pan
           // frame, where `displayedRegions[i]` is a MobX array read.
           const reversedByRegion = view.displayedRegions.map(r => !!r.reversed)
-          return computeCrossRegionArcSections({
+          const sections = computeCrossRegionArcSections({
             sections: self.renderSections,
             bpToScreenX: makeBpToScreenX(view),
             arcsYDomainBp: this.arcsYDomainBp,
@@ -2903,6 +2908,9 @@ export default function stateModelFactory(
               self.reportArcCap(groupKey, dropped, kept)
             },
           })
+          // The single-region view resolves no cross-region arc at all, so this
+          // is where that view's every pan frame stops — see the constant.
+          return sections.length === 0 ? NO_CROSS_REGION_ARC_SECTIONS : sections
         },
       }))
       .views(self => ({
