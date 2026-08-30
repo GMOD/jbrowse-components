@@ -66,8 +66,12 @@ export function useResizeDrag({
   onDragStart,
   onDragEnd,
   vertical = false,
+  gain = 1,
 }: {
-  /** How far the pointer has travelled since the last committed frame, in px. */
+  /**
+   * How far the pointer has travelled since the last committed frame, in px —
+   * divided by `gain`, and whole.
+   */
   onDrag: (distance: number) => void
   onDragStart?: () => void
   onDragEnd?: () => void
@@ -77,6 +81,19 @@ export function useResizeDrag({
    * resize.
    */
   vertical?: boolean
+  /**
+   * How many px this handle's own position moves per px the dragged value
+   * changes. The default 1 is a divider that moves with what it sizes.
+   *
+   * It is more than 1 whenever the value is SHARED by several stacked copies and
+   * this handle sits below more than one of them: the second of three synteny
+   * ribbons, or the second group's coverage band in a grouped pileup, moves 2px
+   * for every 1px of height, so an undivided drag ran the bar away at twice the
+   * pointer's speed and slid it out from under the cursor. Divide by the number
+   * of copies at or above the handle and the bar stays put; the value then
+   * changes by a fraction of the drag, which is what sharing it means.
+   */
+  gain?: number
 }) {
   const prevPosRef = useRef(0)
 
@@ -85,10 +102,19 @@ export function useResizeDrag({
 
   // The scheduled value is the absolute pointer position, last-write-wins, and
   // the delta against the previous commit is derived here.
+  //
+  // Whole px, and the remainder stays in the baseline rather than in a second
+  // ref: a divided delta has a sub-pixel tail, and every consumer rounds (a band
+  // height is whole px), so rounding it away each frame instead made a gain-2
+  // drag travel 4/3 of the pointer. Leaving the unspent fraction ahead of
+  // `prevPos` is the same mechanism that keeps a drag into a clamp from banking
+  // debt — the distance is always measured from what was last committed.
   const { schedule, flush } = useRafCommit(pos => {
-    const distance = pos - prevPosRef.current
-    prevPosRef.current = pos
-    onDrag(distance)
+    const distance = Math.trunc((pos - prevPosRef.current) / gain)
+    if (distance !== 0) {
+      prevPosRef.current += distance * gain
+      onDrag(distance)
+    }
   })
 
   const handlers = usePointerDrag({

@@ -41,6 +41,7 @@ function ResizeHandle({
   onDragEnd,
   vertical = false,
   bar = false,
+  gain,
   className: originalClassName,
   onPointerDown,
   ...props
@@ -50,6 +51,12 @@ function ResizeHandle({
   onDragEnd?: () => void
   vertical?: boolean
   bar?: boolean
+  /**
+   * How many px this handle moves per px of the value it drags — see
+   * `useResizeDrag`. Pass it when the value is shared by several stacked bands
+   * and this handle sits below more than one of them.
+   */
+  gain?: number
 } & Omit<
   React.ComponentPropsWithoutRef<'div'>,
   'onDrag' | 'onDragStart' | 'onDragEnd'
@@ -65,6 +72,7 @@ function ResizeHandle({
     onDragStart,
     onDragEnd,
     vertical,
+    gain,
   })
 
   return (

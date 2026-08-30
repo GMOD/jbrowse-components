@@ -98,6 +98,32 @@ describe('ResizeHandle', () => {
     expect(onDrag).toHaveBeenLastCalledWith(15)
   })
 
+  // A handle on a value shared by several stacked bands sits below more than one
+  // of them, so it moves `gain` px per px of value — undivided, the second
+  // group's coverage bar in a pileup ran away at twice the pointer's speed.
+  it('divides the drag by `gain`, keeping the sub-pixel tail for the next frame', () => {
+    const onDrag = jest.fn()
+    const { container } = render(<ResizeHandle gain={2} onDrag={onDrag} />)
+    const handle = container.firstChild as HTMLElement
+
+    drag(handle, [30])
+    flushRaf()
+    expect(onDrag).toHaveBeenCalledWith(15)
+
+    // 5px more of pointer is 2.5px of value: 2 now, and the half that is left
+    // rides along rather than being rounded away — a frame of it every frame is
+    // what made a gain-2 drag travel 4/3 of the pointer.
+    fireEvent.pointerMove(handle, { clientY: 35, pointerId: 1 })
+    flushRaf()
+    expect(onDrag).toHaveBeenLastCalledWith(2)
+    fireEvent.pointerMove(handle, { clientY: 36, pointerId: 1 })
+    flushRaf()
+    expect(onDrag).toHaveBeenLastCalledWith(1)
+
+    // 36px of pointer has moved the value 18px, which is exactly half of it
+    expect(onDrag.mock.calls.reduce((sum, [d]) => sum + d, 0)).toBe(18)
+  })
+
   it('flushes the pending frame on drag end, so the resting size is exact', () => {
     const onDrag = jest.fn()
     const onDragEnd = jest.fn()
