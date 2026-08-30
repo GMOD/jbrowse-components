@@ -111,15 +111,18 @@ const SearchResultsDialog = lazy(
   () => import('./components/SearchResultsDialog.tsx'),
 )
 
-// The one array `paddingSpans` returns when a view has nothing to mask, so that
-// computed's value repeats by identity. Frozen because every consumer maps over
-// it and a caller that sorted in place would do so for the whole session.
-const NO_PADDING_SPANS: {
+/** One span of the row that is not track data — see `paddingSpans`. */
+export interface PaddingSpan {
   key: string
   x: number
   width: number
   kind: 'seam' | 'elided' | 'boundary'
-}[] = Object.freeze([]) as never
+}
+
+// The one array `paddingSpans` returns when a view has nothing to mask, so that
+// computed's value repeats by identity. Frozen because every consumer maps over
+// it and a caller that sorted in place would do so for the whole session.
+const NO_PADDING_SPANS = Object.freeze([]) as readonly PaddingSpan[]
 
 /**
  * Calculate the offsetPx needed to center content within a viewport.
@@ -2201,14 +2204,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * The seam is the one that must survive: regions lay out contiguously,
          * so it is all that separates two of them.
          */
-        get paddingSpans(): {
+        // Annotated with the shape spelled out rather than as `PaddingSpan`,
+        // because the API doc's type column is where a host drawing its own
+        // chrome reads the field names, and a named type prints as its name.
+        // `spans` and NO_PADDING_SPANS are both `PaddingSpan[]`, so the two
+        // cannot drift without failing here.
+        get paddingSpans(): readonly {
           key: string
           x: number
           width: number
           kind: 'seam' | 'elided' | 'boundary'
         }[] {
           const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
-          const spans = []
+          const spans: PaddingSpan[] = []
           for (const block of blocks) {
             const x = block.offsetPx - firstBlockOffset
             if (block.type === 'ContentBlock') {
