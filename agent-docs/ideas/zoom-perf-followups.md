@@ -1,6 +1,6 @@
 ---
 name: zoom-perf-followups
-description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found two PaddingBlocks bugs nothing here predicted — the bigger one an overlay every track re-renders per frame to draw nothing, since paddingSpans is empty mid-contig — made the legendRightEdgePx item three times bigger than it was sold as, killed the stop-token blob URL item outright by counting the mints, and then found the only per-FEATURE per-frame cost in the app, in plugins/arc. One live item is left — worker-side wiggle packing, blocked on a retention decision.
+description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found two PaddingBlocks bugs nothing here predicted — the bigger one an overlay every track re-renders per frame to draw nothing, since paddingSpans is empty mid-contig — made the legendRightEdgePx item three times bigger than it was sold as, killed the stop-token blob URL item outright by counting the mints, and then found the only per-FEATURE per-frame cost in the app, in plugins/arc, whose fix moved that cost to a canvas whose own price is timed here. Two live items are left — worker-side wiggle packing, blocked on a retention decision, and the arc labels.
 ---
 
 # Scroll-zoom: what is left
@@ -108,6 +108,32 @@ the fetch-round jitter this instrument's caveats describe.
 The per-arc terms are gone rather than smaller, which is the part that matters:
 the numbers above would have been ~2000 reactions and ~3000 attribute patches a
 frame at 1000 arcs.
+
+**What the canvas costs instead, and it is not nothing.** The census measures
+React renders and DOM churn; it cannot see rasterization, and the per-arc work
+did not vanish so much as move to one `ctx.stroke()` per arc. Timed against
+node-canvas over a 1280x100 band, 60 frames a point:
+
+- 66 arcs on screen, no labels — 3.5 ms/frame
+- 670 — 37 ms/frame; 3360 — 183 ms/frame
+- 670 **with labels** — 134 ms/frame, so the text is ~3.6x the curves
+- those 670 labels alone: halo+fill 132 ms, fill only 26 ms — **the halo is 5x
+  its own fill**, and it is a 7.2px round-join `strokeText` per label
+
+Read those as an upper bound and a SHAPE, not as browser numbers: node-canvas is
+Cairo on the CPU, where a browser's 2D canvas is GPU-backed and stroking is the
+part it accelerates. What they do say is where to look if a real SV callset is
+slow — the labels, then the per-arc stroke call.
+
+**The obvious label fix measured negative.** A label sits at the arc's midpoint
+while the arc is kept for having any ink on screen, so a wide event with one foot
+in view puts its label thousands of px off canvas: on a fixture of 1000 wide arcs
+with 977 such labels, skipping them ought to be free. It made the frame **64 ms
+-> 72 ms**. `measureText` — needed to know whether an off-LEFT label ends before
+x=0 — costs more than the rasterizer's own out-of-bounds reject. Not landed. A
+cull that skips text without measuring it (a cap on labels per frame, or a
+density gate) is the shape that could still win, and it is a product call about
+labels nobody can read at that zoom anyway.
 
 Three things generalise from it:
 
