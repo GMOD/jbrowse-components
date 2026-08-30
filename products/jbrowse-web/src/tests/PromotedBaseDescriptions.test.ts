@@ -6,7 +6,7 @@ import {
 
 import corePlugins from '../corePlugins.ts'
 
-// 36 promotable slots across five plugins end their description with what the
+// 40 promotable slots across seven plugins end their description with what the
 // cascade falls back to — "falling back to off", "falling back to 2",
 // "falling back to `fixed`". That sentence is the only place a config page
 // tells a reader what an unset slot resolves to, and nothing kept it equal to
