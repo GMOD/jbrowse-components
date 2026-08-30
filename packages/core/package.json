@@ -222,6 +222,7 @@
     "./util/types": "./src/util/types/index.ts",
     "./util/types/data": "./src/util/types/data.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
+    "./util/unknownSnapshotKeys": "./src/util/unknownSnapshotKeys.ts",
     "./util/unzip": "./src/util/unzip.ts",
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useFetch": "./src/util/useFetch.ts",
@@ -234,7 +235,6 @@
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
     "./util/viewStatus": "./src/util/viewStatus.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
-    "./util/warnUnknownSnapshotKeys": "./src/util/warnUnknownSnapshotKeys.ts",
     "./util/wheelZoom": "./src/util/wheelZoom.ts",
     "./util/whenViewSettled": "./src/util/whenViewSettled.ts"
   },
@@ -490,6 +490,7 @@
       "./util/types": "./esm/util/types/index.js",
       "./util/types/data": "./esm/util/types/data.js",
       "./util/types/mst": "./esm/util/types/mst.js",
+      "./util/unknownSnapshotKeys": "./esm/util/unknownSnapshotKeys.js",
       "./util/unzip": "./esm/util/unzip.js",
       "./util/useEventCallback": "./esm/util/useEventCallback.js",
       "./util/useFetch": "./esm/util/useFetch.js",
@@ -502,7 +503,6 @@
       "./util/useRowVirtualScroll": "./esm/util/useRowVirtualScroll.js",
       "./util/viewStatus": "./esm/util/viewStatus.js",
       "./util/virtualRange": "./esm/util/virtualRange.js",
-      "./util/warnUnknownSnapshotKeys": "./esm/util/warnUnknownSnapshotKeys.js",
       "./util/wheelZoom": "./esm/util/wheelZoom.js",
       "./util/whenViewSettled": "./esm/util/whenViewSettled.js"
     }

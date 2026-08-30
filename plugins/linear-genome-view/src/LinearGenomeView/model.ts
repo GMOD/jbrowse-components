@@ -39,8 +39,8 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
-import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
@@ -3194,7 +3194,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  return warnUnknownSnapshotKeys(model)
+  return captureUnknownSnapshotKeys(model)
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       if (!snap) {
         return snap

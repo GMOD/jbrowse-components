@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getDialogHost, getSession } from '@jbrowse/core/util'
+import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
-import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
@@ -907,8 +907,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
   // `tracks` as legacy: LinearComparativeView converts a pre-`levels` snapshot's
   // top-level tracks, and a composed base's preprocessor runs after everything
-  // added here, so the check cannot see that conversion.
-  return warnUnknownSnapshotKeys(model, { legacy: ['tracks'] })
+  // added here, so the capture cannot see that conversion.
+  return captureUnknownSnapshotKeys(model, { legacy: ['tracks'] })
     .preProcessSnapshot<
       ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
     >(snap => {

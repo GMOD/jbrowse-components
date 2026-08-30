@@ -1,7 +1,7 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { clamp, getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
+import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
@@ -519,7 +519,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       }
     })
 
-  return warnUnknownSnapshotKeys(model)
+  return captureUnknownSnapshotKeys(model)
 }
 
 export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>

@@ -1,6 +1,6 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
-import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
+import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { reaction } from 'mobx'
@@ -362,7 +362,7 @@ export default function stateModelFactory() {
       }
     })
 
-  return warnUnknownSnapshotKeys(model)
+  return captureUnknownSnapshotKeys(model)
 }
 
 export type SpreadsheetViewStateModel = ReturnType<typeof stateModelFactory>

@@ -16,7 +16,7 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
-import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
+import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -1051,7 +1051,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       return snap
     })
 
-  return warnUnknownSnapshotKeys(model)
+  return captureUnknownSnapshotKeys(model)
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>

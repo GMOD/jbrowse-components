@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { stateModelFactory } from './model.ts'
 
@@ -17,35 +18,54 @@ const NESTED = {
   init: { assembly: 'hg38', loc: 'chr2:134,000,000-137,150,000' },
 }
 
-function model() {
+const notify = jest.fn()
+
+function open(snap: unknown) {
   const pm = new PluginManager([])
   pm.createPluggableElements()
   pm.configure()
-  return stateModelFactory(pm)
+  return types
+    .model({
+      rpcManager: types.frozen(),
+      configuration: types.frozen(),
+      view: stateModelFactory(pm),
+    })
+    .actions(() => ({ notify }))
+    .create({ rpcManager: {}, configuration: {}, view: snap } as any).view
 }
 
-test('a flat launch key on a view snapshot is reported', () => {
-  model().create(FLAT)
-  const report = takeContractReports().join('\n')
-  expect(report).toContain('[jbrowse view contract]')
-  expect(report).toContain('LinearGenomeView')
-  expect(report).toContain('assembly')
-  expect(report).toContain('loc')
-  expect(report).toContain('init')
+let warn: jest.SpyInstance
+
+beforeEach(() => {
+  notify.mockClear()
+  warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+})
+afterEach(() => {
+  warn.mockRestore()
+})
+
+const warnings = () => warn.mock.calls.map(c => `${c[0]}`)
+
+test('a flat launch key on a view snapshot is named', () => {
+  open(FLAT)
+  expect(warnings()).toEqual([
+    'LinearGenomeView ignored unknown key(s): assembly, loc',
+  ])
+  expect(notify).toHaveBeenCalledWith(
+    'LinearGenomeView ignored unknown key(s): assembly, loc',
+    'warning',
+  )
 })
 
 test('the same keys inside init say nothing', () => {
-  model().create(NESTED)
-  expect(takeContractReports()).toEqual([])
+  open(NESTED)
+  expect(warnings()).toEqual([])
+  expect(notify).not.toHaveBeenCalled()
 })
 
 test('a legacy viewport snapshot says nothing', () => {
   // bpPerPx/offsetPx are no longer declared properties; the model's own
-  // preProcessSnapshot converts them, and the check runs after it
-  model().create({
-    type: 'LinearGenomeView',
-    bpPerPx: 10,
-    offsetPx: 1000,
-  } as any)
-  expect(takeContractReports()).toEqual([])
+  // preProcessSnapshot converts them, and the capture runs after it
+  open({ type: 'LinearGenomeView', bpPerPx: 10, offsetPx: 1000 })
+  expect(warnings()).toEqual([])
 })

@@ -71,9 +71,16 @@ where nothing reads it, hence the afterAttach warning.
 
 The mirror mistake is a spec's launch key written flat on a snapshot, next to
 `init` rather than inside it, where MST drops it for naming no declared
-property. `warnUnknownSnapshotKeys` (`core/util/warnUnknownSnapshotKeys.ts`)
-reports that one from each view's own `preProcessSnapshot`, on the `[jbrowse
-view contract]` channel, so a test collecting it fails.
+property. `captureUnknownSnapshotKeys` (`core/util/unknownSnapshotKeys.ts`),
+which every view type wraps its state model in, keeps those keys instead: the
+view's `preProcessSnapshot` moves anything the composed model does not declare
+into an `unknownSnapshotKeys` property, and `afterAttach` names them —
+`console.warn` plus a `notify`, in `warnUnknownLaunchKeys`'s wording. **The
+report cannot live in the preprocessor**, which is neither once per view nor
+only about this view: the session's view type is a `types.union`, so every
+member's preprocessor runs against every candidate snapshot while MST decides
+which one matches, several times over per instantiation. The property is
+stripped from output snapshots, so nothing persists.
 
 Nesting a spec's keys under `init` is therefore **reported, not accepted**
 (`loadSessionSpec`). Two rejected alternatives, so this doesn't get relitigated:

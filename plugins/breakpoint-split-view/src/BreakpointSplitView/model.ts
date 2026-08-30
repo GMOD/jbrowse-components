@@ -13,7 +13,7 @@ import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { installFetch } from '@jbrowse/core/util/installFetch'
-import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
+import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -980,7 +980,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return snap
     })
 
-  return warnUnknownSnapshotKeys(model)
+  return captureUnknownSnapshotKeys(model)
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>
