@@ -1,3 +1,4 @@
+import { GENERATED_NOTICE } from '../check-utils.ts'
 import {
   categoryLabel,
   collectTransitive,
@@ -313,7 +314,7 @@ describe('replaceMarkerRegions', () => {
 
   test('rewrites the region between a pair', () => {
     expect(splice('a\n<!-- T START -->\n\nold\n\n<!-- T END -->\nb')).toBe(
-      'a\n<!-- T START -->\n\nBODY\n\n<!-- T END -->\nb',
+      `a\n<!-- T START -->\n\n${GENERATED_NOTICE}\n\nBODY\n\n<!-- T END -->\nb`,
     )
   })
 

@@ -130,6 +130,7 @@ export type {
   GroupedAlignmentsResult,
   LaidOutPileupData,
   PileupDataResult,
+  RowCap,
   RowCapSource,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
