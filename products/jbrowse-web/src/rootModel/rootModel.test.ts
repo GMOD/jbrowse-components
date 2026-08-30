@@ -478,3 +478,48 @@ test('keeps a session whose drawer holds a widget this build has no plugin for',
     'UcscResultsWidget',
   )
 })
+
+// A synteny view keeps its tracks under `levels[].tracks`, two containers below
+// `session.views` — so a prune that read `view.tracks` and `view.views` found
+// nothing to do, the union short-circuited on the registered VIEW name, and the
+// unbuildable track went straight into `cast`. The whole session was lost on one
+// of the two routes this module exists to keep open.
+test('keeps a synteny session whose level holds a track this build cannot make', () => {
+  const root = getRootModel().create(mainThreadConfig)
+  root.setSession({
+    name: 'from a colleague',
+    views: [
+      {
+        id: 'syn',
+        type: 'LinearSyntenyView',
+        views: [
+          { id: 'row0', type: 'LinearGenomeView' },
+          { id: 'row1', type: 'LinearGenomeView' },
+        ],
+        levels: [
+          {
+            id: 'level0',
+            level: 0,
+            tracks: [{ id: 'imagined', type: 'ImaginarySyntenyTrack' }],
+          },
+        ],
+      },
+    ],
+  })
+  const session = root.session!
+  expect(session.views.map((v: { id: string }) => v.id)).toEqual(['syn'])
+  expect(session.views[0].levels[0].tracks.length).toBe(0)
+  expect(session.snackbarMessages.at(-1)?.message).toContain(
+    'ImaginarySyntenyTrack',
+  )
+  // and the level, not the view, is the anchor it comes back to
+  const snap = getSnapshot(session) as Record<string, unknown>
+  expect(snap.heldForMissingPlugins).toEqual([
+    {
+      group: 'track',
+      parent: 'level0',
+      index: 0,
+      snapshot: { id: 'imagined', type: 'ImaginarySyntenyTrack' },
+    },
+  ])
+})

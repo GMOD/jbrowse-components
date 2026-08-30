@@ -5,12 +5,14 @@ import {
   AdapterType,
   TrackType,
   ViewType,
+  WidgetType,
 } from '@jbrowse/core/pluggableElementTypes'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { BaseRootModelFactory } from './RootModel/BaseRootModel.ts'
 import { BaseSessionModel } from './Session/BaseSession.ts'
+import { DrawerWidgetSessionMixin } from './Session/DrawerWidgets.ts'
 
 import type { BaseRootModelType } from './RootModel/BaseRootModel.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -26,7 +28,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 // inline (which is what BaseRootModel.test.ts does) precisely because the
 // property under test lives there and every product reaches it by composition.
 
-function makeRootType(viewTypes: string[]) {
+function makeRootType(viewTypes: string[], widgetTypes: string[] = []) {
   const pluginManager = new PluginManager()
   pluginManager.addAdapterType(
     () =>
@@ -67,6 +69,21 @@ function makeRootType(viewTypes: string[]) {
         }),
     )
   }
+  for (const name of widgetTypes) {
+    pluginManager.addWidgetType(
+      () =>
+        new WidgetType({
+          name,
+          heading: name,
+          configSchema: ConfigurationSchema(name, {}),
+          stateModel: types.model(name, {
+            id: types.identifier,
+            type: types.literal(name),
+          }),
+          ReactComponent: () => null,
+        }),
+    )
+  }
   pluginManager.createPluggableElements()
   pluginManager.configure()
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
@@ -84,6 +101,7 @@ function makeRootType(viewTypes: string[]) {
         BaseSessionModel<BaseRootModelType, AnyConfigurationSchemaType>(
           pluginManager,
         ),
+        DrawerWidgetSessionMixin(pluginManager),
         types.model({
           views: types.array(
             pluginManager.pluggableMstType('view', 'stateModel'),
@@ -102,8 +120,8 @@ function makeRootType(viewTypes: string[]) {
   })
 }
 
-function makeRoot(viewTypes: string[]) {
-  return makeRootType(viewTypes).create({
+function makeRoot(viewTypes: string[], widgetTypes: string[] = []) {
+  return makeRootType(viewTypes, widgetTypes).create({
     jbrowse: { configuration: {}, assemblies: [] },
     session: { name: 'empty', views: [] },
   })
@@ -123,7 +141,7 @@ test('a session opened without the plugin keeps the node in its own snapshot', (
 
   expect(root.session.views.map((v: { id: string }) => v.id)).toEqual(['v1'])
   expect(root.session.notifications).toEqual([
-    'Removed session items that need plugins this JBrowse does not have: LinearMafView',
+    'Kept but not shown, pending plugins this JBrowse does not have: LinearMafView. Install them and reload to get them back.',
   ])
 
   // the half MST would have thrown away: what the autosave writes back, and
@@ -151,6 +169,36 @@ test('the build that has the plugin gets the view back, in its own place', () =>
     'v1',
     'v2',
   ])
+  expect(withPlugin.session.notifications).toEqual([])
+  const snap = getSnapshot(withPlugin.session) as Record<string, unknown>
+  expect(snap.heldForMissingPlugins).toBeUndefined()
+})
+
+// `widgets` is `types.stripDefault(types.map(...), {})`, so a drawer whose only
+// widget was the unbuildable one comes back out of `getSnapshot` with no
+// `widgets` key at all. That is the session where holding the widget matters
+// most and the one a restore keyed off the incoming snapshot's own keys could
+// not serve: it wrote the widget into an object it then discarded, so the build
+// that HAD the plugin lost it from `widgets` and from `heldForMissingPlugins`
+// in the same breath.
+test('the build with the plugin gets back the drawer’s only widget', () => {
+  const without = makeRoot(['LinearGenomeView'], ['HierarchicalTrackSelector'])
+  without.setSession({
+    name: 'from desktop',
+    views: [],
+    widgets: { ucscResults: { id: 'ucscResults', type: 'UcscResultsWidget' } },
+  })
+  expect([...without.session.widgets.keys()]).toEqual([])
+  const reshared = getSnapshot(without.session) as Record<string, unknown>
+  expect(reshared.widgets).toBeUndefined()
+
+  const withPlugin = makeRoot(
+    ['LinearGenomeView'],
+    ['HierarchicalTrackSelector', 'UcscResultsWidget'],
+  )
+  withPlugin.setSession(reshared)
+
+  expect([...withPlugin.session.widgets.keys()]).toEqual(['ucscResults'])
   expect(withPlugin.session.notifications).toEqual([])
   const snap = getSnapshot(withPlugin.session) as Record<string, unknown>
   expect(snap.heldForMissingPlugins).toBeUndefined()

@@ -59,17 +59,28 @@ import type {
 } from '@jbrowse/mobx-state-tree'
 import type { ComponentType, ReactNode } from 'react'
 
+/**
+ * Every pluggable element group, in the order `elementCreationSchedule` builds
+ * them. The array is the declaration and the union is derived from it, so a
+ * consumer that has to visit every group — `pruneUnbuildableNodes` walking a
+ * session snapshot for containers of a pluggable union — enumerates them at
+ * runtime instead of keeping a second hand-written list that goes stale.
+ */
+export const pluggableElementTypeGroups = [
+  'adapter',
+  'text search adapter',
+  'display',
+  'track',
+  'connection',
+  'view',
+  'widget',
+  'rpc method',
+  'internet account',
+  'add track workflow',
+] as const
+
 export type PluggableElementTypeGroup =
-  | 'adapter'
-  | 'display'
-  | 'track'
-  | 'connection'
-  | 'view'
-  | 'widget'
-  | 'rpc method'
-  | 'internet account'
-  | 'text search adapter'
-  | 'add track workflow'
+  (typeof pluggableElementTypeGroups)[number]
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -499,16 +510,7 @@ export default class PluginManager {
   runtimePluginDefinitions: PluginDefinition[] = []
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
-    'adapter',
-    'text search adapter',
-    'display',
-    'track',
-    'connection',
-    'view',
-    'widget',
-    'rpc method',
-    'internet account',
-    'add track workflow',
+    ...pluggableElementTypeGroups,
   )
 
   pluggableElementsCreated = false

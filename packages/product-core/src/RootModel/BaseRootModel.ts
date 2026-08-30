@@ -139,6 +139,7 @@ export function BaseRootModelFactory({
           const pruned = pruneUnbuildableNodes(
             migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>),
             pluginManager,
+            sessionModelType,
           )
           migrated = pruned.snapshot
           unbuildable.push(...pruned.dropped)

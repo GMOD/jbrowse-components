@@ -1,9 +1,20 @@
-import { isModelType, isType } from '@jbrowse/mobx-state-tree'
+import { pluggableElementTypeGroups } from '@jbrowse/core/PluginManager'
+import {
+  getPropertyMembers,
+  getUnionSubtypes,
+  isArrayType,
+  isMapType,
+  isModelType,
+  isReferenceType,
+  isType,
+  isUnionType,
+} from '@jbrowse/mobx-state-tree'
 
 import { isRecord } from './snapshotUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { IAnyType } from '@jbrowse/mobx-state-tree'
+import type { PluggableElementTypeGroup } from '@jbrowse/core/PluginManager'
+import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
 
 /**
  * A session snapshot that arrives from somewhere else — a share link, a desktop
@@ -37,8 +48,17 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
  * back. Installing the plugin and reloading is then enough to get the session
  * whole again, which is what makes a plugin removable at all.
  *
- * **A node is held only when all three tests fail** (`Registry.admit`): its
- * `type` names no registered element, no element declares it as an `alias`, and
+ * **The session schema is read off the session MST type, not written down here.**
+ * One walk descends `(type, snapshot)` in lockstep: at any `types.array` or
+ * `types.map` whose element type is one of the `pluggableMstType` unions it
+ * admits, holds or restores each entry, and everywhere else it recurses
+ * structurally. That is what reaches a synteny view's `levels[].tracks` and the
+ * session's `connectionInstances`, which a hand-written list of `views` /
+ * `tracks` / `displays` / `widgets` did not, and what will reach the next
+ * container someone adds without anyone editing this file.
+ *
+ * **A node is held only when all three tests fail**: its `type` names no
+ * registered element, no element declares it as an `alias`, and
  * the real MST union refuses the snapshot. The last two are what keep a renamed
  * type alive — an element can declare `aliases`, and a model's own
  * `preProcessSnapshot` can rewrite the type literal
@@ -49,13 +69,12 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
  * holding it would hide a real bug behind a message about plugins.
  */
 
-type PrunedGroup = 'widget' | 'view' | 'track' | 'display'
+type Group = PluggableElementTypeGroup
 
-/** The reserved session-snapshot key the held nodes travel under. */
-export const HELD_NODES_KEY = 'heldForMissingPlugins'
+const HELD_NODES_KEY = 'heldForMissingPlugins'
 
 export interface UnbuildableNode {
-  group: PrunedGroup
+  group: Group
   type: string
   // dropped for what it contained rather than for its own type — a track whose
   // every display went. Its type is not a missing plugin, so the message must
@@ -73,16 +92,20 @@ export interface UnbuildableNode {
  * meant to be — the container going is the user saying so.
  */
 export interface HeldNode {
-  group: PrunedGroup
-  /** map key, for a widget */
+  group: Group
+  /** map key, for a node that came out of a `types.map` */
   key?: string
   /**
-   * id of the containing view (a track, or the child view of a composite one)
-   * or of the containing track (a display). Absent for a top-level view.
+   * id of the nearest enclosing node that has one — the view a track came out
+   * of, the track a display came out of, the synteny level a level's track came
+   * out of. Absent for a container on the session itself.
    */
   parent?: string
-  /** position in the list it came out of, so a restore lands where it was */
-  index: number
+  /**
+   * position in the list it came out of, so a restore lands where it was.
+   * Absent for a map entry, which `key` places instead.
+   */
+  index?: number
   snapshot: Record<string, unknown>
 }
 
@@ -94,51 +117,119 @@ export interface HeldNode {
 // Typed structurally rather than as `PluggableElementBase`, which is not a
 // published `@jbrowse/core` subpath — adding one just to name a type here would
 // widen the plugin ABI for nothing.
-function buildableElements(pluginManager: PluginManager, group: PrunedGroup) {
+function buildableElements(pluginManager: PluginManager, group: Group) {
   return pluginManager.getElementTypesInGroup(group).filter(t => {
     const { stateModel } = t as unknown as { stateModel?: unknown }
     return isType(stateModel) && isModelType(stateModel)
-  }) as unknown as { name: string; aliases?: string[] }[]
+  }) as unknown as { name: string; aliases?: string[]; stateModel: IAnyType }[]
+}
+
+// optional/stripDefault/late/snapshotProcessor all report the type they wrap,
+// so one loop reaches the array, map, model or union a property really declares.
+function unwrapType(type: IAnyType) {
+  let current = type
+  for (let i = 0; i < 16; i++) {
+    const sub = current.getSubTypes()
+    if (
+      !sub ||
+      typeof sub !== 'object' ||
+      Array.isArray(sub) ||
+      sub === current
+    ) {
+      return current
+    }
+    current = sub
+  }
+  return current
 }
 
 // One prune's view of the plugin manager. The unions are built on first use, so
 // a session naming only registered types — every session this build produced
 // itself — never constructs one.
 class Registry {
-  private names = new Map<PrunedGroup, Set<string>>()
-  private aliases = new Map<PrunedGroup, Map<string, string>>()
-  private unions = new Map<PrunedGroup, IAnyType>()
+  private names = new Map<Group, Set<string>>()
+  private aliases = new Map<Group, Map<string, string>>()
+  private unions = new Map<Group, IAnyType>()
+  private groups?: Map<IAnyType, Group>
+  private discriminants = new Map<IAnyType, string | undefined>()
 
   constructor(private pluginManager: PluginManager) {}
 
   /**
-   * The node to keep — canonicalized if it names an element's alias — or
-   * undefined if this build cannot hold it.
-   *
-   * A registered name is admitted without asking the union, so a **malformed**
-   * snapshot of a type this build does have still reaches MST and throws there.
-   * Holding it would hide a real bug behind a message about plugins.
+   * The group a container holds, or undefined for a container of anything else.
+   * Identified by member identity rather than by the union object, which
+   * `pluggableMstType` rebuilds on every call: the members *are* the registered
+   * `stateModel`s.
    */
-  admit(node: unknown, group: PrunedGroup): unknown {
-    const type = isRecord(node) ? node.type : undefined
-    if (typeof type !== 'string') {
-      // MST reports a node with no readable type precisely; guessing at a
-      // repair here would hide it
-      return node
+  groupOf(elementType: IAnyType) {
+    if (isReferenceType(elementType) || !isUnionType(elementType)) {
+      return undefined
     }
-    if (this.namesFor(group).has(type)) {
-      return node
+    this.groups ??= new Map(
+      pluggableElementTypeGroups.flatMap(group =>
+        buildableElements(this.pluginManager, group).map(
+          t => [t.stateModel, group] as const,
+        ),
+      ),
+    )
+    for (const member of getUnionSubtypes(elementType)) {
+      const group = this.groups.get(member)
+      if (group) {
+        return group
+      }
     }
-    const canonical = this.aliasesFor(group).get(type)
-    if (canonical !== undefined) {
-      return { ...(node as Record<string, unknown>), type: canonical }
-    }
-    // a type the registry cannot name that the union takes anyway: an element's
-    // own preProcessSnapshot rewriting the type literal
-    return this.union(group).is(node) ? node : undefined
+    return undefined
   }
 
-  private namesFor(group: PrunedGroup) {
+  /**
+   * The name this build registers the node's type under — itself, or the
+   * element that declares it as an alias — or undefined if neither does.
+   */
+  canonicalName(group: Group, type: string) {
+    return this.namesFor(group).has(type)
+      ? type
+      : this.aliasesFor(group).get(type)
+  }
+
+  /**
+   * The union member a node's type names, so the walk can descend into what
+   * that concrete model declares. A type the registry cannot name has no
+   * member to find; the node is then judged whole by `accepts`.
+   */
+  memberFor(elementType: IAnyType, type: string) {
+    for (const member of getUnionSubtypes(elementType)) {
+      if (this.discriminantOf(member) === type) {
+        return member as IAnyModelType
+      }
+    }
+    return undefined
+  }
+
+  /** Whether the real MST union takes this snapshot. */
+  accepts(node: unknown, group: Group) {
+    let union = this.unions.get(group)
+    if (!union) {
+      union = this.pluginManager.pluggableMstType(group, 'stateModel')
+      this.unions.set(group, union)
+    }
+    return union.is(node)
+  }
+
+  private discriminantOf(member: IAnyType) {
+    if (this.discriminants.has(member)) {
+      return this.discriminants.get(member)
+    }
+    const literal = isModelType(member)
+      ? (getPropertyMembers(member).properties.type as
+          | { value?: unknown }
+          | undefined)
+      : undefined
+    const value = typeof literal?.value === 'string' ? literal.value : undefined
+    this.discriminants.set(member, value)
+    return value
+  }
+
+  private namesFor(group: Group) {
     let names = this.names.get(group)
     if (!names) {
       names = new Set(
@@ -149,7 +240,7 @@ class Registry {
     return names
   }
 
-  private aliasesFor(group: PrunedGroup) {
+  private aliasesFor(group: Group) {
     let aliases = this.aliases.get(group)
     if (!aliases) {
       aliases = new Map(
@@ -161,18 +252,9 @@ class Registry {
     }
     return aliases
   }
-
-  private union(group: PrunedGroup) {
-    let union = this.unions.get(group)
-    if (!union) {
-      union = this.pluginManager.pluggableMstType(group, 'stateModel')
-      this.unions.set(group, union)
-    }
-    return union
-  }
 }
 
-function describe(node: unknown, group: PrunedGroup): UnbuildableNode {
+function describe(node: unknown, group: Group): UnbuildableNode {
   const type = isRecord(node) ? node.type : undefined
   return { group, type: typeof type === 'string' ? type : 'unknown' }
 }
@@ -187,304 +269,523 @@ function readHeld(snapshot: Record<string, unknown>): HeldNode[] {
   return Array.isArray(held) ? (held as HeldNode[]) : []
 }
 
-interface Prune {
-  registry: Registry
-  dropped: UnbuildableNode[]
-  held: HeldNode[]
-  // nodes `admit` canonicalized. Counted rather than inferred from object
-  // identity, because pruneList/pruneView rebuild every node they walk — and a
-  // session whose only change is a rename must not take the identity
-  // short-circuit at the bottom, which would hand back the old names.
-  renamed: number
+function anchorKey(group: Group, parent: string | undefined) {
+  return `${group}/${parent ?? ''}`
 }
 
-// Children first, then the node itself: the union's `is` validates a whole
-// subtree, so a view still holding an unbuildable track would be refused as a
-// whole and taken down with it.
-//
-// A node that goes is held **whole and unpruned**, and the entries its own
-// children produced are rolled back to `mark`. That is what keeps every held
-// entry self-contained: a dropped view's tracks are inside the copy of the view,
-// not separate entries anchored to a view that is no longer in the tree, so a
-// restore never depends on the order the entries come back in.
-function pruneList(
-  list: unknown[],
-  group: PrunedGroup,
-  prune: Prune,
-  parent?: string,
-  pruneChild?: (
-    node: Record<string, unknown>,
-  ) => Record<string, unknown> | undefined,
-) {
-  return list.flatMap((node, index) => {
-    const mark = prune.held.length
-    const pruned = pruneChild && isRecord(node) ? pruneChild(node) : node
-    const admitted =
-      pruned === undefined ? undefined : prune.registry.admit(pruned, group)
-    if (admitted !== undefined) {
-      if (admitted !== pruned) {
-        prune.renamed++
-      }
-      return [admitted]
+function collectIds(value: unknown, into: Set<string>) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectIds(item, into)
     }
-    prune.held.length = mark
-    if (pruned !== undefined) {
-      // pruneChild drops a node only after recording why
-      prune.dropped.push(describe(node, group))
+  } else if (isRecord(value)) {
+    if (typeof value.id === 'string') {
+      into.add(value.id)
     }
-    if (isRecord(node)) {
-      prune.held.push({ group, parent, index, snapshot: node })
+    for (const child of Object.values(value)) {
+      collectIds(child, into)
     }
-    return []
-  })
+  }
 }
 
-// A view's own tracks, and the child views of a composite view (breakpoint-split,
-// the linear-comparative family), which hold tracks of their own.
-function pruneView(view: Record<string, unknown>, prune: Prune) {
-  const out = { ...view }
-  const id = readId(view)
-  if (Array.isArray(view.tracks)) {
-    out.tracks = pruneList(view.tracks, 'track', prune, id, track =>
-      pruneTrack(track, prune),
-    )
-  }
-  if (Array.isArray(view.views)) {
-    out.views = pruneList(view.views, 'view', prune, id, child =>
-      pruneView(child, prune),
-    )
-  }
-  return out
+interface Pending {
+  held: HeldNode
+  snapshot: Record<string, unknown>
 }
 
-// A display type can go missing while its track type stays — a plugin
-// contributing one more display to an existing track type is the ordinary case.
-// A track left with none of them goes too: an empty `displays` array is valid
-// MST, so nothing downstream would refuse it, and `activeDisplay` reads
-// `displays[0]` on the promise that a shown track always has one.
-function pruneTrack(track: Record<string, unknown>, prune: Prune) {
-  if (!Array.isArray(track.displays)) {
-    return track
-  }
-  const displays = pruneList(track.displays, 'display', prune, readId(track))
-  if (displays.length === 0 && track.displays.length > 0) {
-    prune.dropped.push({ ...describe(track, 'track'), cascade: true })
-    return undefined
-  }
-  return { ...track, displays }
-}
+class Walk {
+  readonly dropped: UnbuildableNode[] = []
+  readonly held: HeldNode[] = []
+  /** anchors the walk reached, so an entry naming one it did not is orphaned */
+  readonly anchors = new Set<string>()
+  /** ids of nodes taken out, so a reference container can drop the danglers */
+  readonly removed = new Set<string>()
+  private pending = new Map<string, Pending[]>()
+  private journal: [string, Pending[]][] = []
+  // a node restored on this same call is walked like any other, so its own
+  // unbuildable children come out again — but the user is told nothing, or a
+  // held track whose displays are still missing warns on every load forever.
+  private silence = 0
+  private emptied = 0
 
-function pruneWidgets(snapshot: Record<string, unknown>, prune: Prune) {
-  if (!isRecord(snapshot.widgets)) {
-    return {}
+  constructor(readonly registry: Registry) {}
+
+  // counted rather than flagged, so the track that owns a display container
+  // reads a difference across its own walk and needs no save-and-restore
+  emptiedDisplays() {
+    this.emptied++
   }
-  const widgets = Object.fromEntries(
-    Object.entries(snapshot.widgets).flatMap(([key, widget]) => {
-      const admitted = prune.registry.admit(widget, 'widget')
-      if (admitted !== undefined) {
-        if (admitted !== widget) {
-          prune.renamed++
-        }
-        return [[key, admitted] as const]
-      }
-      prune.dropped.push(describe(widget, 'widget'))
-      if (isRecord(widget)) {
-        prune.held.push({ group: 'widget', key, index: 0, snapshot: widget })
-      }
-      return []
-    }),
-  )
-  // `activeWidgets` holds safeReferences, which do drop themselves when their
-  // target is gone, but only once something resolves them — dropping them here
-  // keeps the pruned snapshot internally consistent rather than relying on that.
-  // Deliberately not held: a drawer panel that comes back closed costs a click,
-  // where a widget that comes back missing costs the work in it.
-  const activeWidgets = isRecord(snapshot.activeWidgets)
-    ? Object.fromEntries(
-        Object.entries(snapshot.activeWidgets).filter(
-          ([, id]) => typeof id !== 'string' || id in widgets,
-        ),
-      )
-    : undefined
-  return { widgets, ...(activeWidgets ? { activeWidgets } : {}) }
-}
 
-// Mutable copies of every list a held node can go back into, indexed by the id
-// its anchor names. Copying up front rather than splicing into the caller's
-// snapshot keeps the no-op case returning the original object by identity.
-class Anchors {
-  readonly views = new Map<string, Record<string, unknown>>()
-  readonly tracks = new Map<string, Record<string, unknown>>()
+  emptiedDisplayCount() {
+    return this.emptied
+  }
 
-  constructor(readonly topViews: unknown[]) {
-    for (const [i, view] of topViews.entries()) {
-      if (isRecord(view)) {
-        topViews[i] = this.copyView(view)
-      }
+  offer(entry: Pending) {
+    const key = anchorKey(entry.held.group, entry.held.parent)
+    const list = this.pending.get(key)
+    if (list) {
+      list.push(entry)
+    } else {
+      this.pending.set(key, [entry])
     }
   }
 
-  private copyView(view: Record<string, unknown>) {
-    const out = { ...view }
-    if (Array.isArray(view.tracks)) {
-      out.tracks = view.tracks.map(t => (isRecord(t) ? this.copyTrack(t) : t))
+  take(group: Group, parent: string | undefined) {
+    const key = anchorKey(group, parent)
+    this.anchors.add(key)
+    const taken = this.pending.get(key)
+    if (taken) {
+      this.pending.delete(key)
+      this.journal.push([key, taken])
     }
-    if (Array.isArray(view.views)) {
-      out.views = view.views.map(v => (isRecord(v) ? this.copyView(v) : v))
-    }
-    const id = readId(view)
-    if (id !== undefined) {
-      this.views.set(id, out)
-    }
-    return out
+    return taken ?? []
   }
 
-  private copyTrack(track: Record<string, unknown>) {
-    const out = { ...track }
-    if (Array.isArray(track.displays)) {
-      out.displays = [...track.displays]
-    }
-    const id = readId(track)
-    if (id !== undefined) {
-      this.tracks.set(id, out)
-    }
-    return out
+  get mark() {
+    return this.journal.length
   }
 
-  /** The list a held node belongs in, or undefined if its parent is gone. */
-  listFor(held: HeldNode) {
-    if (held.group === 'view' && held.parent === undefined) {
-      return this.topViews
+  // A node the walk restored into a subtree the walk then held whole would go
+  // with it: the copy the restore wrote into is discarded. Putting the entry
+  // back on offer keeps it held in its own right instead, anchored where it
+  // was — and a build that can hold the parent restores both, parent first.
+  rollback(mark: number) {
+    for (const [key, entries] of this.journal.splice(mark)) {
+      const existing = this.pending.get(key)
+      this.pending.set(key, existing ? [...entries, ...existing] : entries)
     }
-    const owner =
-      held.parent === undefined
-        ? undefined
-        : held.group === 'display'
-          ? this.tracks.get(held.parent)
-          : this.views.get(held.parent)
-    if (!owner) {
-      return undefined
+  }
+
+  unplaced() {
+    return new Set([...this.pending.values()].flat().map(p => p.held))
+  }
+
+  drop(node: UnbuildableNode) {
+    if (this.silence === 0) {
+      this.dropped.push(node)
     }
-    const field =
-      held.group === 'display'
-        ? 'displays'
-        : held.group === 'track'
-          ? 'tracks'
-          : 'views'
-    if (!Array.isArray(owner[field])) {
-      owner[field] = []
+  }
+
+  quietly<T>(quiet: boolean, run: () => T) {
+    this.silence += quiet ? 1 : 0
+    try {
+      return run()
+    } finally {
+      this.silence -= quiet ? 1 : 0
     }
-    return owner[field] as unknown[]
   }
 }
 
 /**
- * Puts back every held node this build can now build, and returns the ones it
- * still cannot alongside the rebuilt snapshot.
- *
- * Ascending index within each target list, so a run of restores into one list
- * lands in the order they came out of it.
+ * Children first, then the node itself: the union's `is` validates a whole
+ * subtree, so a view still holding an unbuildable track would be refused as a
+ * whole and taken down with it. Returns undefined for a node this build cannot
+ * hold, which the container then holds whole and unpruned.
  */
-function restoreHeldNodes(
-  snapshot: Record<string, unknown>,
-  registry: Registry,
-) {
-  const held = readHeld(snapshot)
-  // canonicalized on the way back in, so a held node whose type has since been
-  // renamed comes back under the name this build registers
-  const restorable = held.flatMap(h => {
-    const admitted = registry.admit(h.snapshot, h.group)
-    return isRecord(admitted) ? [{ held: h, snapshot: admitted }] : []
-  })
-  if (restorable.length === 0) {
-    return { snapshot, stillHeld: held }
+function pruneNode(
+  node: unknown,
+  group: Group,
+  elementType: IAnyType,
+  parent: string | undefined,
+  walk: Walk,
+): unknown {
+  if (!isRecord(node)) {
+    // MST reports a node with no readable type precisely; guessing at a repair
+    // here would hide it
+    return node
   }
-  const widgets = isRecord(snapshot.widgets) ? { ...snapshot.widgets } : {}
-  const anchors = new Anchors(
-    Array.isArray(snapshot.views) ? [...snapshot.views] : [],
-  )
-  const unplaceable: HeldNode[] = []
-  for (const { held: h, snapshot: node } of [...restorable].sort(
-    (a, b) => a.held.index - b.held.index,
+  const type = node.type
+  if (typeof type !== 'string') {
+    return node
+  }
+  const canonical = walk.registry.canonicalName(group, type)
+  const named =
+    canonical === undefined || canonical === type
+      ? node
+      : { ...node, type: canonical }
+  const model = walk.registry.memberFor(elementType, canonical ?? type)
+  const emptied = walk.emptiedDisplayCount()
+  const pruned = model
+    ? walkModel(model, named, readId(named) ?? parent, walk)
+    : named
+  const cascaded = group === 'track' && walk.emptiedDisplayCount() > emptied
+  // A display type can go missing while its track type stays — a plugin
+  // contributing one more display to an existing track type is the ordinary
+  // case. A track left with none of them goes too: an empty `displays` array is
+  // valid MST, so nothing downstream would refuse it, and `activeDisplay` reads
+  // `displays[0]` on the promise that a shown track always has one.
+  if (cascaded) {
+    walk.drop({ ...describe(node, group), cascade: true })
+    return undefined
+  }
+  // a registered name is admitted without asking the union, so a **malformed**
+  // snapshot of a type this build does have still reaches MST and throws there
+  if (canonical !== undefined || walk.registry.accepts(pruned, group)) {
+    return pruned
+  }
+  walk.drop(describe(node, group))
+  return undefined
+}
+
+// Returns the same list by identity when nothing moved, so a session this build
+// produced itself comes back out of the whole walk as the object that went in.
+function pruneArray(
+  value: unknown,
+  group: Group,
+  elementType: IAnyType,
+  parent: string | undefined,
+  walk: Walk,
+) {
+  const list = Array.isArray(value) ? value : undefined
+  const restoring = walk.take(group, parent)
+  if (!list && restoring.length === 0) {
+    return undefined
+  }
+  // ascending index, so a run of restores into one list lands in the order it
+  // came out of it
+  const merged = (list ?? []).map(node => ({ node, restored: false }))
+  for (const entry of restoring.sort(
+    (a, b) => (a.held.index ?? 0) - (b.held.index ?? 0),
   )) {
-    if (h.group === 'widget') {
-      if (h.key !== undefined) {
-        widgets[h.key] = node
+    merged.splice(
+      Math.min(entry.held.index ?? merged.length, merged.length),
+      0,
+      {
+        node: entry.snapshot,
+        restored: true,
+      },
+    )
+  }
+  const out: unknown[] = []
+  let changed = merged.length !== (list?.length ?? 0)
+  for (const [index, { node, restored }] of merged.entries()) {
+    const mark = walk.held.length
+    const restores = walk.mark
+    const pruned = walk.quietly(restored, () =>
+      pruneNode(node, group, elementType, parent, walk),
+    )
+    if (pruned !== undefined || !isRecord(node)) {
+      changed ||= pruned !== node
+      out.push(pruned)
+      continue
+    }
+    // held whole and unpruned, and the entries its own children produced are
+    // rolled back — so a dropped view's tracks are inside the copy of the view,
+    // not separate entries anchored to a view that is no longer in the tree
+    walk.held.length = mark
+    walk.rollback(restores)
+    walk.held.push({ group, parent, index, snapshot: node })
+    const id = readId(node)
+    if (id !== undefined) {
+      walk.removed.add(id)
+    }
+    changed = true
+  }
+  // read by the track this container belongs to: a track left with none of its
+  // displays goes too
+  if (group === 'display' && out.length === 0 && (list?.length ?? 0) > 0) {
+    walk.emptiedDisplays()
+  }
+  return changed || !list ? out : list
+}
+
+function pruneMap(
+  value: unknown,
+  group: Group,
+  elementType: IAnyType,
+  parent: string | undefined,
+  walk: Walk,
+) {
+  const map = isRecord(value) ? value : undefined
+  const restoring = walk.take(group, parent)
+  if (!map && restoring.length === 0) {
+    return undefined
+  }
+  const out: Record<string, unknown> = {}
+  let changed = false
+  for (const [key, node] of Object.entries(map ?? {})) {
+    const mark = walk.held.length
+    const restores = walk.mark
+    const pruned = pruneNode(node, group, elementType, parent, walk)
+    if (pruned !== undefined || !isRecord(node)) {
+      changed ||= pruned !== node
+      out[key] = pruned
+      continue
+    }
+    walk.held.length = mark
+    walk.rollback(restores)
+    walk.held.push({ group, key, parent, snapshot: node })
+    walk.removed.add(readId(node) ?? key)
+    changed = true
+  }
+  for (const entry of restoring) {
+    const key = entry.held.key
+    if (key === undefined) {
+      continue
+    }
+    const mark = walk.held.length
+    const restores = walk.mark
+    const pruned = walk.quietly(true, () =>
+      pruneNode(entry.snapshot, group, elementType, parent, walk),
+    )
+    if (pruned === undefined) {
+      walk.held.length = mark
+      walk.rollback(restores)
+      walk.held.push({ group, key, parent, snapshot: entry.snapshot })
+    } else {
+      out[key] = pruned
+    }
+    changed = true
+  }
+  return changed || !map ? out : map
+}
+
+function pruneContainer(
+  type: IAnyType,
+  elementType: IAnyType,
+  group: Group,
+  value: unknown,
+  parent: string | undefined,
+  walk: Walk,
+) {
+  return isMapType(type)
+    ? pruneMap(value, group, elementType, parent, walk)
+    : pruneArray(value, group, elementType, parent, walk)
+}
+
+// The model a record's snapshot is an instance of. A union that is not a
+// pluggable one — `types.maybe(SomeModel)` — still has to resolve to the member
+// the snapshot names, or the walk stops at a node whose children it could have
+// reached.
+function concreteModel(type: IAnyType, value: Record<string, unknown>) {
+  if (isUnionType(type)) {
+    const members = getUnionSubtypes(type).filter(
+      m => isModelType(m) && !isUnionType(m),
+    )
+    if (members.length === 1) {
+      return members[0] as IAnyModelType
+    }
+    return members.find(
+      m =>
+        (
+          getPropertyMembers(m as IAnyModelType).properties.type as
+            | { value?: unknown }
+            | undefined
+        )?.value === value.type,
+    ) as IAnyModelType | undefined
+  }
+  return isModelType(type) ? type : undefined
+}
+
+function walkValue(
+  declared: IAnyType,
+  value: unknown,
+  parent: string | undefined,
+  walk: Walk,
+): unknown {
+  const type = unwrapType(declared)
+  if (isArrayType(type) || isMapType(type)) {
+    const elementType = unwrapType(type.getChildType())
+    const group = walk.registry.groupOf(elementType)
+    if (group) {
+      return (
+        pruneContainer(type, elementType, group, value, parent, walk) ?? value
+      )
+    }
+    if (Array.isArray(value)) {
+      const out = value.map(item => walkValue(elementType, item, parent, walk))
+      return out.some((item, i) => item !== value[i]) ? out : value
+    }
+    if (isRecord(value)) {
+      const entries = Object.entries(value).map(
+        ([key, item]) =>
+          [key, walkValue(elementType, item, parent, walk)] as const,
+      )
+      return entries.some(([key, item]) => item !== value[key])
+        ? Object.fromEntries(entries)
+        : value
+    }
+    return value
+  }
+  if (isRecord(value)) {
+    const model = concreteModel(type, value)
+    if (model) {
+      return walkModel(model, value, readId(value) ?? parent, walk)
+    }
+  }
+  return value
+}
+
+/**
+ * Every property the model declares, not every key the snapshot has: a
+ * container whose key MST stripped — `widgets` is `stripDefault(map(...), {})`,
+ * so an empty drawer has no key at all — still has to be reached, or a held
+ * widget has nowhere to come back to.
+ */
+function walkModel(
+  model: IAnyModelType,
+  node: Record<string, unknown>,
+  parent: string | undefined,
+  walk: Walk,
+): Record<string, unknown> {
+  const { properties } = getPropertyMembers(model)
+  let out = node
+  const write = (key: string, value: unknown) => {
+    if (out === node) {
+      out = { ...node }
+    }
+    out[key] = value
+  }
+  const references: string[] = []
+  for (const [key, declared] of Object.entries(properties)) {
+    const type = unwrapType(declared)
+    const elementType =
+      isArrayType(type) || isMapType(type)
+        ? unwrapType(type.getChildType())
+        : undefined
+    if (elementType && isReferenceType(elementType)) {
+      references.push(key)
+      continue
+    }
+    const group = elementType ? walk.registry.groupOf(elementType) : undefined
+    if (group) {
+      const next = pruneContainer(
+        type,
+        elementType!,
+        group,
+        node[key],
+        parent,
+        walk,
+      )
+      if (next !== undefined && next !== node[key]) {
+        write(key, next)
       }
       continue
     }
-    const list = anchors.listFor(h)
-    if (list) {
-      list.splice(Math.min(h.index, list.length), 0, node)
-    } else {
-      unplaceable.push(h)
+    const value = node[key]
+    if (value === undefined) {
+      continue
+    }
+    const next = walkValue(type, value, parent, walk)
+    if (next !== value) {
+      write(key, next)
     }
   }
-  const restored = new Set(restorable.map(r => r.held))
-  const stillHeld = held.filter(h => !restored.has(h))
-  return {
-    snapshot: {
-      ...snapshot,
-      ...(isRecord(snapshot.widgets) ? { widgets } : {}),
-      ...(Array.isArray(snapshot.views) ? { views: anchors.topViews } : {}),
-    },
-    stillHeld: [...stillHeld, ...unplaceable],
+  // After the value properties, so a reference into a sibling container sees
+  // what that container dropped. `activeWidgets` holds safeReferences, which do
+  // drop themselves when their target is gone, but only once something resolves
+  // them — clearing them here keeps the pruned snapshot internally consistent
+  // rather than relying on that. Deliberately not restored alongside their
+  // target: a drawer panel that comes back closed costs a click, where a widget
+  // that comes back missing costs the work in it.
+  for (const key of references) {
+    const value = out[key]
+    if (!isRecord(value) || walk.removed.size === 0) {
+      continue
+    }
+    const entries = Object.entries(value).filter(
+      ([, id]) => typeof id !== 'string' || !walk.removed.has(id),
+    )
+    if (entries.length !== Object.keys(value).length) {
+      write(key, Object.fromEntries(entries))
+    }
   }
+  return out
 }
 
 /**
  * Takes the session-snapshot nodes whose pluggable type this plugin manager
  * cannot build out of the tree and holds them under `heldForMissingPlugins`,
- * and puts back the ones already held that it now can build. Returns the
- * snapshot unchanged (by identity) when there is nothing to do either way —
- * which is every session this build produced itself.
+ * and puts back the ones already held that it now can build — in one walk of
+ * the session type, so the two can never disagree about where a node lives.
+ * Returns the snapshot unchanged (by identity) when there is nothing to do
+ * either way, which is every session this build produced itself.
  */
 export function pruneUnbuildableNodes(
   snapshot: Record<string, unknown>,
   pluginManager: PluginManager,
+  sessionModelType: IAnyType,
 ): { snapshot: Record<string, unknown>; dropped: UnbuildableNode[] } {
   const registry = new Registry(pluginManager)
-  const restored = restoreHeldNodes(snapshot, registry)
-  const prune: Prune = { registry, dropped: [], held: [], renamed: 0 }
-  const input = restored.snapshot
-  const pruned: Record<string, unknown> = {
-    ...input,
-    ...pruneWidgets(input, prune),
-    ...(Array.isArray(input.views)
-      ? {
-          views: pruneList(input.views, 'view', prune, undefined, view =>
-            pruneView(view, prune),
-          ),
-        }
-      : {}),
+  const model = concreteModel(unwrapType(sessionModelType), snapshot)
+  if (!model) {
+    return { snapshot, dropped: [] }
   }
-  const held = [...restored.stillHeld, ...prune.held]
+  const walk = new Walk(registry)
+  const incoming = readHeld(snapshot)
+  const restorable = new Set<HeldNode>()
+  for (const entry of incoming) {
+    // canonicalized on the way back in, so a held node whose type has since
+    // been renamed comes back under the name this build registers
+    const type = isRecord(entry.snapshot) ? entry.snapshot.type : undefined
+    if (typeof type !== 'string') {
+      continue
+    }
+    const canonical = registry.canonicalName(entry.group, type)
+    if (
+      canonical === undefined &&
+      !registry.accepts(entry.snapshot, entry.group)
+    ) {
+      continue
+    }
+    restorable.add(entry)
+    walk.offer({
+      held: entry,
+      snapshot:
+        canonical === undefined || canonical === type
+          ? entry.snapshot
+          : { ...entry.snapshot, type: canonical },
+    })
+  }
+  const pruned = walkModel(model, snapshot, undefined, walk)
+
+  // An entry whose anchor the walk never reached has lost its container — the
+  // recipient deleted the view a track hung off. `HeldNode` says such a node is
+  // not restorable and is not meant to be, so it is collected here rather than
+  // riding along in every autosave and every share link forever. Unless the
+  // container is itself held: its snapshot is in this session too, just not in
+  // the tree.
+  const heldIds = new Set<string>()
+  for (const entry of [...incoming, ...walk.held]) {
+    collectIds(entry.snapshot, heldIds)
+  }
+  const unplaced = walk.unplaced()
+  const stillHeld = incoming.filter(
+    entry =>
+      (!restorable.has(entry) || unplaced.has(entry)) &&
+      (walk.anchors.has(anchorKey(entry.group, entry.parent)) ||
+        (entry.parent !== undefined && heldIds.has(entry.parent))),
+  )
+  const held = [...stillHeld, ...walk.held]
   if (
-    prune.dropped.length === 0 &&
-    prune.renamed === 0 &&
-    restored.snapshot === snapshot
+    pruned === snapshot &&
+    walk.held.length === 0 &&
+    stillHeld.length === incoming.length
   ) {
-    return { snapshot, dropped: prune.dropped }
+    return { snapshot, dropped: walk.dropped }
   }
+  const out: Record<string, unknown> = { ...pruned }
   if (held.length > 0) {
-    pruned[HELD_NODES_KEY] = held
+    out[HELD_NODES_KEY] = held
   } else {
-    delete pruned[HELD_NODES_KEY]
+    delete out[HELD_NODES_KEY]
   }
-  return { snapshot: pruned, dropped: prune.dropped }
+  return { snapshot: out, dropped: walk.dropped }
 }
 
 /**
  * The user-facing summary of one prune, or undefined when nothing was dropped.
  * Names the missing types rather than counting nodes: the plugin a person has to
  * install is the actionable half, and one missing display type can take several
- * nodes with it.
+ * nodes with it. Says what a person can do about it, because the nodes are not
+ * gone — they ride along under `heldForMissingPlugins` and come back the moment
+ * a build that has the plugin opens the session.
  */
 export function describeUnbuildableNodes(dropped: UnbuildableNode[]) {
   const types = [
     ...new Set(dropped.flatMap(d => (d.cascade ? [] : [d.type]))),
   ].join(', ')
   return types
-    ? `Removed session items that need plugins this JBrowse does not have: ${types}`
+    ? `Kept but not shown, pending plugins this JBrowse does not have: ${types}. Install them and reload to get them back.`
     : undefined
 }
