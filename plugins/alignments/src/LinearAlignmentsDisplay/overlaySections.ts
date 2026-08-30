@@ -2,11 +2,12 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import { arcAvailH, arcYScale } from '../features/arcs/arcYScale.ts'
 import { computeCrossRegionArcs } from '../features/arcs/crossRegionOverlay.ts'
-import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
+import { projectSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import { splitArcsBySide } from './components/sashimiArcs.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
+import type { MergedJunction } from '../features/sashimi/junctions.ts'
 import type { SashimiArcSection } from './components/sashimiArcs.ts'
 import type { LaneSection } from './lanes.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
@@ -29,14 +30,16 @@ import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 // Only the section fields these three read. Narrower than `LaneSection` so a
 // test can build one, and so a new field on a lane doesn't read as an input
 // here.
+//
+// The junctions are NOT off the lane: they are merged over the region set on
+// screen, which the layout must never see (`sashimiJunctionSections` says why),
+// so the model hands over its own projection of a lane rather than the lane.
 type SashimiSectionInput = Pick<
   LaneSection,
-  | 'groupKey'
-  | 'rawPileupMap'
-  | 'sashimiDownKeys'
-  | 'coverageTop'
-  | 'sashimiBandTop'
->
+  'groupKey' | 'sashimiDownKeys' | 'coverageTop' | 'sashimiBandTop'
+> & {
+  junctions: readonly MergedJunction[]
+}
 
 type ArcBandSectionInput = Pick<
   LaneSection,
@@ -45,7 +48,6 @@ type ArcBandSectionInput = Pick<
 
 export interface SashimiSectionsInput {
   sections: readonly SashimiSectionInput[]
-  visibleRegions: { refName: string; displayedRegionIndex: number }[]
   bpToScreenX: (refName: string, bp: number) => number | undefined
   // The view's width — the overlay sizes its `<svg>` with it and the export
   // paints at `canvasWidth`, which `renderDisplaySvg` resolves to `view.width`
@@ -53,8 +55,6 @@ export interface SashimiSectionsInput {
   viewWidthPx: number
   coverageHeight: number
   sashimiArcsHeight: number
-  minSashimiScore: number
-  hideNonCanonicalJunctions: boolean
 }
 
 /**
@@ -67,15 +67,17 @@ export interface SashimiSectionsInput {
  * Which side each arc takes was decided once, in genomic bp, by
  * `sashimiDownKeysByGroup` — this reads the lane's answer rather than a second
  * one in screen space.
+ *
+ * Projection only: every input here moves during a gesture, and the merge that
+ * produced `sec.junctions` does not, which is why it happens a computed earlier.
  */
 export function computeSashimiArcSections(
   input: SashimiSectionsInput,
 ): SashimiArcSection[] {
   const { sections, ...opts } = input
   return sections.map(sec => {
-    const arcs = computeSashimiArcs({
+    const arcs = projectSashimiArcs(sec.junctions, {
       ...opts,
-      rpcDataMap: sec.rawPileupMap,
       downJunctionKeys: sec.sashimiDownKeys,
     })
     // Already ascending by score — `computeSashimiArcs` emits them that way, and

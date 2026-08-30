@@ -9,7 +9,11 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { mergeJunctions } from './junctions.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
-import type { JunctionFilter, SashimiSide } from './junctions.ts'
+import type {
+  JunctionFilter,
+  MergedJunction,
+  SashimiSide,
+} from './junctions.ts'
 
 // Single source of truth for sashimi arc geometry, color, and stroke width.
 // Both the on-screen `SashimiArcsOverlay` (which adds hover/click handlers)
@@ -38,12 +42,11 @@ export interface SashimiArc {
   showLabel: boolean
 }
 
-export interface ComputeSashimiArcsOpts extends JunctionFilter {
-  rpcDataMap: ReadonlyMap<number, WorkerPileupData>
-  visibleRegions: {
-    refName: string
-    displayedRegionIndex: number
-  }[]
+// What the projection below needs, and nothing the merge needs. Every field
+// here moves during a gesture, which is the whole reason this is a separate
+// interface from the merge's inputs: a caller holding both can see at a glance
+// which half a frame owes.
+export interface ProjectSashimiArcsOpts {
   bpToScreenX: (refName: string, bp: number) => number | undefined
   // The view's width, which is the box both hosts draw into — the overlay's
   // `<svg width>` and, through `canvasWidth`, the export's. One number, so the
@@ -56,6 +59,15 @@ export interface ComputeSashimiArcsOpts extends JunctionFilter {
   // layout reserved and the arcs drawn into it are the same decision — see that
   // module's header for why this isn't recomputed here in screen space.
   downJunctionKeys: ReadonlySet<string>
+}
+
+export interface ComputeSashimiArcsOpts
+  extends ProjectSashimiArcsOpts, JunctionFilter {
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>
+  visibleRegions: {
+    refName: string
+    displayedRegionIndex: number
+  }[]
 }
 
 // Sashimi arcs reuse the read-alignment strand colors (theme.ts) so a junction
@@ -232,16 +244,26 @@ function arcCubic(
   }
 }
 
-export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
+/**
+ * The frame-owed half: merged junctions in, screen geometry out.
+ *
+ * Split from the merge because the two halves answer to different clocks. This
+ * one reads the pan/zoom projection and the two band heights, so a gesture owes
+ * it once per frame; `mergeJunctions` reads loaded data and two filter settings,
+ * and re-running it per frame rebuilds a string-keyed Map and one object per
+ * junction to reach the same answer. The model memoizes the merge and calls
+ * this — `computeSashimiArcs` below is the two composed, for the callers that
+ * have no cache to put between them.
+ */
+export function projectSashimiArcs(
+  merged: Iterable<MergedJunction>,
+  opts: ProjectSashimiArcsOpts,
+): SashimiArc[] {
   const {
-    rpcDataMap,
-    visibleRegions,
     bpToScreenX,
     viewWidthPx,
     coverageHeight,
     sashimiArcsHeight,
-    minSashimiScore,
-    hideNonCanonicalJunctions,
     downJunctionKeys,
   } = opts
   // Up arcs anchor to the coverage histogram's own zero-coverage baseline. The
@@ -260,25 +282,11 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
     coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET,
   )
 
-  // `mergeJunctions` collapses the copies the per-region worker emits of one
-  // junction (see junctions.ts) — the same merge, on the same keys, the layout's
-  // side assignment ran on. Only the visible regions contribute: a junction that
-  // just scrolled off has no business drawing at the edge it left behind.
-  const merged = mergeJunctions(
-    visibleRegions.flatMap(region => {
-      const data = rpcDataMap.get(region.displayedRegionIndex)
-      return data && data.sashimiX1.length > 0
-        ? [{ refName: region.refName, data }]
-        : []
-    }),
-    { minSashimiScore, hideNonCanonicalJunctions },
-  )
-
   // The overlay/export place each side in the matching SVG, so `d` is
   // band-local. MAX_ARC_FRAC leaves the top margin that keeps the tallest arc
   // clear of the y-scalebar label.
   const arcs: SashimiArc[] = []
-  for (const j of merged.values()) {
+  for (const j of merged) {
     const x1 = bpToScreenX(j.refName, j.start)
     const x2 = bpToScreenX(j.refName, j.end)
     // A coordinate inside a collapsed intron is in no displayed region at all,
@@ -355,4 +363,42 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
   // still need their own pass, but now for the reason given.
   arcs.sort((a, b) => a.score - b.score)
   return arcs
+}
+
+/**
+ * One group's per-region sashimi arrays, restricted to the regions on screen and
+ * tagged with the refName each was fetched from — what `mergeJunctions` takes.
+ *
+ * Only the visible regions contribute: a junction that just scrolled off has no
+ * business drawing at the edge it left behind. That set changes when a region
+ * enters or leaves the viewport and at no other time, which is what lets the
+ * model memoize the merge across a gesture's frames.
+ */
+export function visibleRegionJunctions(
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
+  visibleRegions: readonly {
+    refName: string
+    displayedRegionIndex: number
+  }[],
+) {
+  return visibleRegions.flatMap(region => {
+    const data = rpcDataMap.get(region.displayedRegionIndex)
+    return data && data.sashimiX1.length > 0
+      ? [{ refName: region.refName, data }]
+      : []
+  })
+}
+
+/**
+ * The merge and the projection composed, for a caller with nowhere to cache the
+ * merge — the tests, and anything reading one group's arcs once. The display
+ * splits the two (`sashimiMergedByGroup` -> `projectSashimiArcs`) because a pan
+ * frame owes only the second half.
+ */
+export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
+  const merged = mergeJunctions(
+    visibleRegionJunctions(opts.rpcDataMap, opts.visibleRegions),
+    opts,
+  )
+  return projectSashimiArcs(merged.values(), opts)
 }

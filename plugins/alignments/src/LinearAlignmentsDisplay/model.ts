@@ -51,7 +51,13 @@ import {
   visibleStatsDomain,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
-import { autorun, observable, reaction } from 'mobx'
+import {
+  autorun,
+  compareStructural,
+  computed,
+  observable,
+  reaction,
+} from 'mobx'
 
 import { computeReadChains } from '../features/arcs/arcChains.ts'
 import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
@@ -61,6 +67,8 @@ import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
 } from '../features/linkedReads/computeOverlay.ts'
+import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
+import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import {
   COLOR_SCHEMES,
   isModificationScheme,
@@ -238,6 +246,12 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
 // One identity for "no lane sizes itself", so `groupHeightOverrides` doesn't
 // hand the layout a fresh map per evaluation.
 const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
+
+// One identity for "no lane has a junction", so the overlay's observer stops on
+// `===` instead of re-rendering a list of empty sections every pan frame. Most
+// alignments tracks are here — `showSashimiArcs` is promoted on and DNA reads
+// carry no skip gaps.
+const NO_SASHIMI_ARC_SECTIONS: SashimiArcSection[] = []
 
 /**
  * What a right-click on the pileup resolved: the anchor, the whole hit (block,
@@ -2306,42 +2320,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-section sashimi arcs, in stacking order. The overlay and the SVG
-         * export both map over this, so it is the single source for sashimi
-         * geometry and neither path can drift; ungrouped is the single-section
-         * case (sticky band below sticky coverage). Empty when sashimi is off.
-         *
-         * A computed on purpose (tier 3 — mirrors `bezierPairSections`): the arc
-         * math depends on the view's pan/zoom but NOT on scrollTop, so MobX
-         * replays the cache while the user scrolls a grouped track. Computing it
-         * in the overlay's render instead re-ran the O(n^2) 'auto' side
-         * assignment for every section on every scroll frame.
-         */
-        get sashimiArcSections(): SashimiArcSection[] {
-          const view = self.view
-          if (
-            !self.showSashimiArcs ||
-            !self.showCoverage ||
-            !view.initialized
-          ) {
-            return []
-          }
-          return computeSashimiArcSections({
-            sections: this.renderSections,
-            visibleRegions: view.visibleRegions,
-            bpToScreenX: makeBpToScreenX(view),
-            // Safe past the `view.initialized` gate above, which is the same
-            // thing that makes the hosts' own `view.width` read safe.
-            viewWidthPx: view.width,
-            coverageHeight: self.coverageHeight,
-            sashimiArcsHeight: self.sashimiArcsHeight,
-            minSashimiScore: self.minSashimiScore,
-            hideNonCanonicalJunctions: self.hideNonCanonicalJunctions,
-          })
-        },
-
-        /**
-         * #getter
          * What one row of this pileup is called, for UI text built from the
          * model alone (the group-label chips). The menu builders take the same
          * word as a call-site `noun` option. Subclasses that aren't showing
@@ -2608,6 +2586,117 @@ export default function stateModelFactory(
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
         },
       }))
+      .views(self => {
+        // WHICH REGIONS ARE ON SCREEN, as a value a pan frame can compare equal.
+        //
+        // `view.visibleRegions` rebuilds a fresh array of fresh objects on every
+        // pan and zoom frame, and the junction merge below reads two fields of
+        // it: which displayed regions are on screen, and what each is called.
+        // Both change only when a region enters or leaves the viewport. Without
+        // the structural comparer MobX sees a new array every frame and the
+        // merge re-runs to reach the same answer — which is the shape the view's
+        // own `contentRightEdgePx` documents, in its scalar form, and
+        // `MultiLinearWiggleDisplay`'s `sourcesWithoutLayout` in this one.
+        const junctionRegions = computed(
+          () => {
+            const view = self.view
+            return view.initialized
+              ? view.visibleRegions.map(r => ({
+                  refName: r.refName,
+                  displayedRegionIndex: r.displayedRegionIndex,
+                }))
+              : []
+          },
+          { equals: compareStructural },
+        )
+        return {
+          /**
+           * #getter
+           * The junctions each lane draws, merged and filtered, in stacking
+           * order — the half of the sashimi overlay a gesture does NOT owe.
+           *
+           * Split off `sashimiArcSections` because the two halves answer to
+           * different clocks. This one reads loaded data, the region set on
+           * screen and the two junction filters; the projection reads the pan.
+           * At 651 junctions in one lane the merge was 0.20 of a 0.42 ms frame
+           * and at three collapsed-intron region copies 0.49 of 0.70, per lane,
+           * every frame of every gesture — for an answer the previous frame
+           * already had.
+           *
+           * NOT a lane field, which is where the rest of a lane's per-key data
+           * lives: a lane feeds the LAYOUT, and the region set on screen must
+           * never reach that or the pileup re-lays-out on every pan. The side
+           * assignment is the tier-1 twin that can and does ride the lane
+           * (`sashimiDownKeys`), merged over the LOADED regions for exactly that
+           * reason — see `junctions.ts` on why the two region sets differ.
+           */
+          get sashimiJunctionSections() {
+            const view = self.view
+            if (
+              !self.showSashimiArcs ||
+              !self.showCoverage ||
+              !view.initialized
+            ) {
+              return []
+            }
+            const filter = {
+              minSashimiScore: self.minSashimiScore,
+              hideNonCanonicalJunctions: self.hideNonCanonicalJunctions,
+            }
+            const regions = junctionRegions.get()
+            return self.renderSections.map(sec => ({
+              groupKey: sec.groupKey,
+              sashimiDownKeys: sec.sashimiDownKeys,
+              coverageTop: sec.coverageTop,
+              sashimiBandTop: sec.sashimiBandTop,
+              junctions: [
+                ...mergeJunctions(
+                  visibleRegionJunctions(sec.rawPileupMap, regions),
+                  filter,
+                ).values(),
+              ],
+            }))
+          },
+
+          /**
+           * #getter
+           * Per-section sashimi arcs, in stacking order. The overlay and the SVG
+           * export both map over this, so it is the single source for sashimi
+           * geometry and neither path can drift; ungrouped is the single-section
+           * case (sticky band below sticky coverage). Empty when sashimi is off.
+           *
+           * A computed on purpose (tier 3 — mirrors `bezierPairSections`): the
+           * arc math depends on the view's pan/zoom but NOT on scrollTop, so
+           * MobX replays the cache while the user scrolls a grouped track.
+           * Computing it in the overlay's render instead re-ran the O(n^2)
+           * 'auto' side assignment for every section on every scroll frame.
+           *
+           * Empty — the SAME empty, so the overlay's observer stops rather than
+           * re-rendering a list of nulls — when no lane has a junction to draw.
+           * That is the DNA case, which is most tracks: `showSashimiArcs` is
+           * promoted on, so every alignments track evaluates this, and one that
+           * merges nothing has nothing to project.
+           */
+          get sashimiArcSections(): SashimiArcSection[] {
+            const sections = this.sashimiJunctionSections
+            if (!sections.some(sec => sec.junctions.length > 0)) {
+              return NO_SASHIMI_ARC_SECTIONS
+            }
+            const view = self.view
+            return computeSashimiArcSections({
+              sections,
+              bpToScreenX: makeBpToScreenX(view),
+              // Safe past the `view.initialized` gate in
+              // `sashimiJunctionSections`, which is the same thing that makes
+              // the hosts' own `view.width` read safe — and which the empty
+              // result above has already passed through.
+              viewWidthPx: view.width,
+              coverageHeight: self.coverageHeight,
+              sashimiArcsHeight: self.sashimiArcsHeight,
+            })
+          },
+        }
+      })
       .views(() => {
         // Per display instance, and deliberately NOT volatile: the only caller
         // is `crossRegionArcSections`, a computed getter that re-runs on every
