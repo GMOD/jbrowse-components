@@ -239,7 +239,7 @@ const RefNameMenu = observer(function RefNameMenu({
               {
                 label: oneRegion
                   ? 'Show only this region'
-                  : 'Show only these regions',
+                  : `Show only ${refName}`,
                 onClick: () => {
                   model.setDisplayedRegions(labeled)
                 },
