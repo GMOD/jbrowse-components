@@ -1,6 +1,6 @@
 import './svgExportMocks.ts'
 
-import { fireEvent } from '@testing-library/react'
+import { act, fireEvent } from '@testing-library/react'
 
 import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
 import {
@@ -146,8 +146,6 @@ const syntenySession = {
           ],
         },
       ],
-      drawCIGAR: true,
-      drawCurves: true,
     },
   ],
   widgets: {
@@ -166,12 +164,24 @@ const syntenySession = {
   sessionThemeName: 'default',
 }
 
+// The fixture session used to carry a view-level `drawCurves: true`; that
+// property is gone, so the curves the snapshots were captured with are asked
+// for the way the settings checkbox now asks — a config-slot write on the
+// view's synteny displays. The snapshots staying byte-identical is the
+// equivalence check.
+function curveRibbons(view: unknown) {
+  act(() => {
+    ;(view as LinearSyntenyViewModel).setDrawCurves(true)
+  })
+}
+
 test('export svg of synteny', async () => {
   await mockConsoleWarn(async () => {
-    const { findByTestId, findAllByText, findByText } = await createView({
+    const { findByTestId, findAllByText, findByText, view } = await createView({
       ...volvoxConfig,
       defaultSession: syntenySession,
     })
+    curveRibbons(view)
 
     await exportAndVerifySvg({
       findByTestId,
@@ -185,10 +195,11 @@ test('export svg of synteny', async () => {
 
 test('export svg of synteny with gridlines', async () => {
   await mockConsoleWarn(async () => {
-    const { findByTestId, findAllByText, findByText } = await createView({
+    const { findByTestId, findAllByText, findByText, view } = await createView({
       ...volvoxConfig,
       defaultSession: syntenySession,
     })
+    curveRibbons(view)
 
     await exportAndVerifySvg({
       findByTestId,
@@ -207,7 +218,7 @@ test('export svg of synteny with gridlines', async () => {
 // it on has to carry it — otherwise the figure has no key to its ribbon colors
 test('export svg of synteny bakes in the color-by legend', async () => {
   await mockConsoleWarn(async () => {
-    const { findByTestId, findAllByText, findByText } = await createView({
+    const { findByTestId, findAllByText, findByText, view } = await createView({
       ...volvoxConfig,
       defaultSession: {
         ...syntenySession,
@@ -220,6 +231,7 @@ test('export svg of synteny bakes in the color-by legend', async () => {
         ],
       },
     })
+    curveRibbons(view)
 
     const svg = await exportAndVerifySvg({
       findByTestId,
@@ -315,6 +327,7 @@ test('export svg of synteny bakes in the off-screen mate stubs', async () => {
       ...volvoxConfig,
       defaultSession: offscreenMateSession,
     })
+    curveRibbons(view)
 
     // Both rows were saved at 100 bp/px, zoomed out past either row's own
     // fit-to-width (77.12 and 68.76 here). `sameScale` is off, so no shared

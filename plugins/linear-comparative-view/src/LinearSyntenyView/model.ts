@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getDialogHost, getSession } from '@jbrowse/core/util'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -92,10 +92,11 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  * }
  * ```
  * `init` also takes the launch commands (`levelHeights`, `autoDiagonalize`,
- * `sameScale`, `collapseEmptyRows`) and ANY property below — `colorBy`,
- * `alpha`, `minAlignmentLength`, `drawLocationMarkers`, … . There is no list to
- * join: `applyInitSettings` matches an init key against this model's own
- * properties, and `LinearSyntenyViewInit` is derived from its snapshot type.
+ * `sameScale`, `collapseEmptyRows`, `drawCurves`, `drawLocationMarkers`) and
+ * ANY property below — `colorBy`, `alpha`, `minAlignmentLength`, … . There is
+ * no list to join: `applyInitSettings` matches an init key against this
+ * model's own properties, and `LinearSyntenyViewInit` is derived from its
+ * snapshot type.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -121,27 +122,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['off', 'matches', 'full'] as const),
           'full',
         ),
-        /**
-         * #property
-         * Render ribbons as bezier curves rather than straight chords. Reads
-         * much better at whole-genome scale, where straight crossings stack
-         * into noise.
-         *
-         * UNSET IS THE INHERIT STATE, not "off": each level then resolves the
-         * `drawCurves` slot on its own LinearSyntenyDisplay config, which is
-         * where the session-wide "curved lines by default" the pin writes lives
-         * (see `effectiveDrawCurves`). Setting it here overrides every level of
-         * this view, which is what the menu's checkbox does.
-         */
-        drawCurves: types.maybe(types.boolean),
-        /**
-         * #property
-         * Continue the query view's scalebar grid down through the ribbons: a
-         * tick at each round query coordinate, joined to the coordinate the
-         * alignment pairs it with. Unset inherits, exactly as `drawCurves`
-         * above does.
-         */
-        drawLocationMarkers: types.maybe(types.boolean),
         /**
          * #property
          * Mark, on the query axis, the alignments whose mate is on a contig the
@@ -317,41 +297,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * What the "Curved lines" checkbox shows, and what every level draws once
-       * the checkbox has been touched: the view's own `drawCurves` when it is
-       * set, else the first synteny display's walk of the promotable slot's
-       * cascade (this track's configured value, the session-wide default the
-       * row's pin writes, then `promotedBase`).
+       * What the "Curved lines" checkbox shows: the first synteny display's
+       * walk of the promotable slot's cascade (this track's configured value,
+       * the session-wide default the row's pin writes, then `promotedBase`).
        *
        * THE FIRST DISPLAY, not a vote across them. The cascade's lower tier is
        * per track config, so two levels differ only when one of their tracks was
        * authored with a value of its own, and a checkbox has one bit to say it
        * with. With NO display — an import form, or a level whose track has not
-       * arrived — there is no config to resolve against, so the view's own value
-       * answers and `false` behind it matches both slots' `promotedBase`.
+       * arrived — there is no config to resolve against, and `false` matches
+       * both slots' `promotedBase`.
        */
       get effectiveDrawCurves(): boolean {
-        return (
-          this.ribbonSettingsSample?.effectiveDrawCurves ??
-          self.drawCurves ??
-          false
-        )
+        return this.ribbonSettingsSample?.effectiveDrawCurves ?? false
       },
       /**
        * #getter
        * The "Location markers" twin of `effectiveDrawCurves`.
        */
       get effectiveDrawLocationMarkers(): boolean {
-        return (
-          this.ribbonSettingsSample?.effectiveDrawLocationMarkers ??
-          self.drawLocationMarkers ??
-          false
-        )
+        return this.ribbonSettingsSample?.effectiveDrawLocationMarkers ?? false
       },
       /**
        * #getter
-       * The level the two getters above read the cascade off. Both fold in this
-       * view's own override already, so nothing here re-asks for it.
+       * The level the two getters above read the cascade off.
        */
       get ribbonSettingsSample(): SyntenyDisplayRibbonSettings | undefined {
         return self.allSyntenyDisplays[0]
@@ -683,9 +652,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Write the `drawCurves` config slot on every synteny display this view
+       * is showing — the settings checkbox means every level. The write
+       * customizes each track, exactly as any promotable checkbox does, so the
+       * row's pin (or unsetting the slot) is what puts a track back on the
+       * session-wide default.
        */
       setDrawCurves(arg: boolean) {
-        self.drawCurves = arg
+        for (const d of self.allSyntenyDisplays) {
+          setConf(d, 'drawCurves', arg)
+        }
       },
       /**
        * #action
@@ -695,9 +671,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * The "Location markers" twin of `setDrawCurves`: the same config-slot
+       * write, on every synteny display this view is showing.
        */
       setDrawLocationMarkers(arg: boolean) {
-        self.drawLocationMarkers = arg
+        for (const d of self.allSyntenyDisplays) {
+          setConf(d, 'drawLocationMarkers', arg)
+        }
       },
       /**
        * #action

@@ -4027,10 +4027,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearSyntenyView',
-          // curved ribbons (drawCurves is a LinearSyntenyView-level property) so
-          // the connections read clearly. Renders against the local
-          // build (cgiabUrl is now a bare ?config= url) so drawCurves is honored
-          // — the published jb2/latest release predates it.
+          // curved ribbons (drawCurves is a launch key writing the synteny
+          // displays' config slot) so the connections read clearly. Renders
+          // against the local build (cgiabUrl is now a bare ?config= url) so
+          // drawCurves is honored — the published jb2/latest release predates
+          // it.
           drawCurves: true,
           // taller synteny band (LinearSyntenyViewHelper.height, default 100) so
           // the ribbons have room to spread out. NB the launch init

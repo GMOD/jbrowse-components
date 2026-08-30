@@ -65,6 +65,13 @@ export function ecoliAvaStack(trackId: string) {
       { assembly: 'IAI39' },
     ],
     tracks: [[trackId], [trackId], [trackId], [trackId]],
+    // An EXPLICIT false, not the unset default: since drawCurves became a
+    // promotable track setting, this init key customizes each opened track,
+    // and unset would mean "inherit the session default" — these FIGURES need
+    // straight chords whatever the capture environment holds, because the
+    // slant IS the signal on a whole-genome stack. The live ecoli_pangenome
+    // demo deliberately omits it: a visitor's own pinned default may apply
+    // there, and an explicit value would mark the track edited on every load.
     drawCurves: false,
     colorBy: 'default',
     minAlignmentLength: 10000,

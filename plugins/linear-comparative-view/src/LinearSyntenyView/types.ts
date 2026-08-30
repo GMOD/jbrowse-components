@@ -21,7 +21,9 @@ export type FadeThinMode = 'auto' | 'on' | 'off'
  * model's property of the same name means. `LINEAR_SYNTENY_INIT_COMMANDS` is
  * the runtime twin of this list.
  *
- * A new display setting does not belong here. See `LinearSyntenyViewInit`.
+ * A new display setting does not belong here — see `LinearSyntenyViewInit` —
+ * unless, like `drawCurves`, it lives on the synteny DISPLAYS' config rather
+ * than on the view, so applying it is a write the launcher has to fan out.
  *
  * #launchKeys LinearSyntenyView — the URL parameters page renders this
  * interface, and the one it extends, as the view's launch-key table. The `//`
@@ -74,6 +76,15 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedInit {
   // by the per-row stretch — and orthologs between two rows line up at the same
   // scale on both. Applied last, after any autoDiagonalize pass.
   sameScale?: boolean
+  // Draw the ribbons as bezier curves rather than straight chords. Writes the
+  // promotable `drawCurves` config slot on every synteny track this init
+  // opens; omit it to follow the viewer's session-wide default (straight when
+  // nothing is pinned).
+  drawCurves?: boolean
+  // Continue the query row's scalebar grid down through the ribbons: a tick at
+  // each round query coordinate, joined to the coordinate the alignment pairs
+  // it with. The same config-slot write as `drawCurves`.
+  drawLocationMarkers?: boolean
 }
 
 /**

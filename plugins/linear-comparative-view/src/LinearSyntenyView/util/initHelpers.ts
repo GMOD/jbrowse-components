@@ -28,7 +28,9 @@ export function normalizeTrackLevels(
 // there is no fourth:
 //
 //   - no property behind it, it means "do something": `views`,
-//     `autoDiagonalize`, `collapseEmptyRows`
+//     `autoDiagonalize`, `collapseEmptyRows` — and `drawCurves` /
+//     `drawLocationMarkers`, whose destination is a config slot on every
+//     synteny display the init opened
 //   - there is a property behind it and setting it is not the whole job:
 //     `sameScale` latches the mode AND zooms every row onto the shared scale,
 //     which the flag alone does not do
@@ -43,6 +45,8 @@ export const LINEAR_SYNTENY_INIT_COMMANDS = [
   'autoDiagonalize',
   'sameScale',
   'collapseEmptyRows',
+  'drawCurves',
+  'drawLocationMarkers',
 ] as const
 
 /**
@@ -64,5 +68,16 @@ export function applyInitSettings(
     for (const [i, h] of init.levelHeights.entries()) {
       self.levels[i]?.setHeight(h)
     }
+  }
+
+  // The two ribbon settings live on the synteny displays' config (promotable
+  // slots), not on the view, so applying them is a fan-out write — which is
+  // why they are commands. The synteny tracks were shown by
+  // applyInitSyntenyTracks before this runs, so the displays exist.
+  if (init.drawCurves !== undefined) {
+    self.setDrawCurves(init.drawCurves)
+  }
+  if (init.drawLocationMarkers !== undefined) {
+    self.setDrawLocationMarkers(init.drawLocationMarkers)
   }
 }

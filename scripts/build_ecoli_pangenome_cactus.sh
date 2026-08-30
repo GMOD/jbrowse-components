@@ -543,7 +543,6 @@ cat > session.json <<'JSON'
           { "assembly": "IAI39" }
         ],
         "tracks": [["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"]],
-        "drawCurves": false,
         "minAlignmentLength": 10000
       }
     },

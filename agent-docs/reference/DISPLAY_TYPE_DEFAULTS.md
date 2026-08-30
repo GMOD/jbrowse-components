@@ -61,8 +61,9 @@ Tests: `promotableDefaults.test.ts` (resolver + `makePin`),
 pins), `PinAdornment.test.tsx` (the pin), `OverrideBadge.test.tsx`
 (badge), `ShareablePromotedDefaults.test.ts` (the share/export bake +
 the sender-at-base case it deliberately does not cover, jbrowse-web),
-`ribbonSettingsCascade.test.ts` (all four synteny tiers through a live display,
-including the color lane the marker toggle is spent on).
+`ribbonSettingsCascade.test.ts` (the synteny ribbon slots through a live
+display — every tier, the settings checkbox's fan-out write, the init-command
+spelling, and the color lane the marker toggle is spent on).
 
 ### Adopters
 
@@ -136,11 +137,16 @@ What the table cannot derive:
   its own pin. The row itself is one builder — see
   [the `showLegend` note](#showlegend-is-one-row-over-many-schemas-and-one-caller-has-no-slot).
 - **The synteny ribbons** (`drawCurves`, `drawLocationMarkers`) are pinned from
-  `LinearComparativeView/components/syntenySettingsMenuItems.ts`, and the
-  identically-named properties on `LinearSyntenyView` are a tier ABOVE the
-  cascade rather than part of it: unset is the inherit state, and a set one
-  overrides every level of that view. `effectiveDrawCurves` folds the two
-  together, on the display and again on the view.
+  `LinearComparativeView/components/syntenySettingsMenuItems.ts`, and their
+  checkbox writes the SLOT — `setDrawCurves` fans the value out over every
+  synteny display the view shows, so the cascade is the only mechanism. A
+  `LinearSyntenyView` property pair used to sit as a tier above the cascade;
+  its first menu write permanently detached the view from any pinned default
+  (no affordance wrote the inherit sentinel back), and v5 removed it rather
+  than giving it a way home the cascade already had. The authored spellings
+  survive as init COMMANDS (`drawCurves` in a spec/URL writes the slot on the
+  tracks the init opens); a view-level `drawCurves` in an old saved session is
+  dropped. `ribbonSettingsCascade.test.ts` pins the fan-out and the command.
 
 ### Promotable is a schema fact; the pin is a menu fact
 

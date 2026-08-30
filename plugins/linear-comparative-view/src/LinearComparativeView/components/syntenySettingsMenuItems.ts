@@ -48,17 +48,17 @@ const THIN_FADE_HELP =
  * One RIBBONS checkbox whose state a reader can also make this session's
  * default for every synteny track, via the trailing pin.
  *
- * The pin promotes whatever the row currently shows, so a reader who prefers
- * straight chords over an inherited "curves on" can pin that back from the same
- * row. It writes a config slot on a LinearSyntenyDisplay while the checkbox
- * writes the view's own property: the view is the override, the slot is the
- * default the next view opens with. Both directions are read back by
- * `effectiveDrawCurves`.
+ * The checkbox and the pin write the same promotable config slot, exactly as
+ * any other promotable setting's row: the checkbox writes this view's synteny
+ * displays (every level — `setDrawCurves` fans out), the pin makes the value
+ * the session-wide default for the display type. A reader who prefers straight
+ * chords over an inherited "curves on" pins that back from the same row.
  *
  * `display` is the level the pin writes through — any one of them, since a
  * promoted default is keyed by display type rather than by track. A view with
- * no synteny display yet (the import form, a track still arriving) has nothing
- * to key on and gets the plain row.
+ * no synteny display yet (the import form, a track still arriving) has no slot
+ * to write and no ribbon to draw, so its row is disabled rather than a
+ * checkbox that ticks nothing.
  */
 function ribbonToggle({
   display,
@@ -84,7 +84,11 @@ function ribbonToggle({
         pin: makePin(display, slot, value),
         ...opts,
       })
-    : toggleItem(label, value, setValue, opts)
+    : toggleItem(label, value, setValue, {
+        ...opts,
+        disabled: true,
+        disabledHelpText: 'Add a synteny track first — this is a track setting',
+      })
 }
 
 /**

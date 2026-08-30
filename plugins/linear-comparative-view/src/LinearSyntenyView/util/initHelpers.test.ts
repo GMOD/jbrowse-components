@@ -20,19 +20,19 @@ function view() {
 describe('applyInitSettings', () => {
   // The gap this replaced: a property was authorable only once someone
   // remembered to write an arm for it here, and `drawLocationMarkers` shipped
-  // without one. None of these names is mentioned anywhere in initHelpers.
+  // without one (it has since moved off the view onto the displays' config,
+  // and is a command again — with the fan-out write no property could do).
+  // None of these names is mentioned anywhere in initHelpers.
   test('applies any declared view property, named nowhere in this module', () => {
     const v = view()
     applyInitSettings(v, {
       views: [],
-      drawLocationMarkers: true,
       opacityByIdentity: true,
       lodMode: 'coarse',
       overdrawPx: 42,
       cigarMode: 'matches',
       alpha: 0.55,
     })
-    expect(v.drawLocationMarkers).toBe(true)
     expect(v.opacityByIdentity).toBe(true)
     expect(v.lodMode).toBe('coarse')
     expect(v.overdrawPx).toBe(42)
@@ -58,8 +58,7 @@ describe('applyInitSettings', () => {
     const v = view()
     applyInitSettings(v, { views: [] })
     expect(v.cigarMode).toBe('full')
-    // unset is the inherit state; straight chords is what it resolves to
-    expect(v.drawCurves).toBeUndefined()
+    // nothing customized, nothing promoted; straight is the promotedBase
     expect(v.effectiveDrawCurves).toBe(false)
   })
 
@@ -74,8 +73,13 @@ describe('applyInitSettings', () => {
       autoDiagonalize: true,
       sameScale: true,
       collapseEmptyRows: true,
+      // a command with a write of its own — a fan-out over synteny displays
+      // this trackless view has none of — so applying it here changes nothing
+      // and, being a command, warns nothing either
+      drawCurves: true,
     })
     expect(v.views).toHaveLength(0)
+    expect(v.effectiveDrawCurves).toBe(false)
   })
 
   test('an unrecognized key is reported and changes nothing', () => {
@@ -100,10 +104,10 @@ describe('applyInitSettings', () => {
     applyInitSettings(v, {
       views: [],
       alpha: 'loud',
-      drawCurves: true,
+      opacityByIdentity: true,
     } as unknown as LinearSyntenyViewInit)
     expect(v.alpha).toBe(0.2)
-    expect(v.drawCurves).toBe(true)
+    expect(v.opacityByIdentity).toBe(true)
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('invalid value: alpha'),
     )

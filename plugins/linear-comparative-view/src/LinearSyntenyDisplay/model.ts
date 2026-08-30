@@ -598,18 +598,15 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Whether this level draws bezier ribbons: the view's own setting when it
-       * has one, else the promotable `drawCurves` slot resolved through the
-       * display-type cascade — this track's configured value, the session-wide
-       * default the settings menu's pin writes, then `promotedBase` (straight).
-       *
-       * The view tier is an override rather than a fourth cascade tier because
-       * it is a different question: the cascade answers "how are synteny
-       * ribbons drawn around here", the checkbox answers "how is THIS view
-       * drawn now", and a reader who has just ticked it means every level.
+       * Whether this level draws bezier ribbons: the promotable `drawCurves`
+       * slot resolved through the display-type cascade — this track's
+       * configured value, the session-wide default the settings menu's pin
+       * writes, then `promotedBase` (straight). The view settings checkbox
+       * writes the slot too, on every level at once (`setDrawCurves`), so
+       * there is no view tier over this.
        */
       get effectiveDrawCurves(): boolean {
-        return this.view.drawCurves ?? resolveConf(self, 'drawCurves')
+        return resolveConf(self, 'drawCurves')
       },
       /**
        * #getter
@@ -617,10 +614,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * Resolved exactly as `effectiveDrawCurves` above.
        */
       get effectiveDrawLocationMarkers(): boolean {
-        return (
-          this.view.drawLocationMarkers ??
-          resolveConf(self, 'drawLocationMarkers')
-        )
+        return resolveConf(self, 'drawLocationMarkers')
       },
       /**
        * #method

@@ -103,11 +103,14 @@ The pin itself lives on the setting's own row, in whichever menu offers that
 setting, so you only meet it where the setting is. That is the track menu for
 most display types, but not all: a synteny view owns its ribbons, so **Curved
 lines** and **Location markers** and their pins are on the **Synteny display
-settings** button in the view header rather than on any one track's menu. A row
-appears while it applies to what the track is drawing — line width on a line
-rendering, point size on a scatter, the sashimi options once sashimi arcs are on
-— and a display that borrows another display's settings but curates its own menu
-(the synteny display reuses the alignments ones) offers only the rows it lists.
+settings** button in the view header rather than on any one track's menu. Those
+two checkboxes write the setting on every synteny track the view shows, the same
+per-track write as any other checkbox here, so the pin beside them is still what
+makes a value the session-wide default. A row appears while it applies to what
+the track is drawing — line width on a line rendering, point size on a scatter,
+the sashimi options once sashimi arcs are on — and a display that borrows
+another display's settings but curates its own menu (the synteny display reuses
+the alignments ones) offers only the rows it lists.
 
 <!-- PROMOTABLE_SLOTS START -->
 

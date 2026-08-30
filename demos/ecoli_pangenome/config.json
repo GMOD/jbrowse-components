@@ -142,7 +142,6 @@
             ["ecoli_pggb_ava"],
             ["ecoli_pggb_ava"]
           ],
-          "drawCurves": false,
           "minAlignmentLength": 10000
         }
       },

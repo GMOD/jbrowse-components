@@ -260,11 +260,11 @@ test('the CIGAR row sets the mode it names', async () => {
 // visit — which is what `CascadingMenu` gives a checkbox row by its type.
 test('a checkbox row writes its boolean and leaves the menu up', async () => {
   const view = await openMenu()
-  // the row shows the resolved value, and the click writes the view's own
-  // property — which is the override tier over the display's promotable slot
+  // the row shows the resolved value, and the click writes the promotable
+  // `drawCurves` slot on the view's synteny displays
   expect(view.effectiveDrawCurves).toBe(false)
   fireEvent.click(screen.getByText('Curved lines'))
-  expect(view.drawCurves).toBe(true)
+  expect(view.effectiveDrawCurves).toBe(true)
   expect(screen.getByText('Location markers')).toBeTruthy()
 })
 
