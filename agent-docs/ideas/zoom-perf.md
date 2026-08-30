@@ -1,6 +1,6 @@
 ---
 name: zoom-perf
-description: Why zoom is the worse of the two gestures on the GPU path, and what it is actually bound by. Covers the label A/B that looked like a win and was a measurement artifact, and the two targets left: createObjectURL on the stop-token path, and the per-frame component count.
+description: Why zoom is the worse of the two gestures on the GPU path, and what it is actually bound by. Covers the label A/B that looked like a win and was a measurement artifact. Of the two targets it names, createObjectURL was sized and declined 2026-08-30 (8 mints a gesture, so the frame is not the mint) and the per-frame component count was attacked with the render census — see zoom-perf-followups.
 ---
 
 # Zoom is worse than pan, and labels are not the reason
@@ -54,5 +54,29 @@ One lead I'd chase but won't claim yet: the wheel-driven arm books 2158 ms in rA
 
 So, revised
 
-The label container transform is still worth doing — it's a clean pan win with a11y intact. But it's a pan fix, and zoom is the worse of the two gestures. Zoom needs a separate attack, and its two named targets are createObjectURL on the stop-token path (small,
-concrete, already half-solved) and cutting the per-frame component count (large, and the thing your notes have been
+The label container transform is still worth doing — it's a clean pan win with
+a11y intact. But it's a pan fix, and zoom is the worse of the two gestures. Zoom
+needs a separate attack, and its two named targets are createObjectURL on the
+stop-token path and cutting the per-frame component count.
+
+## Both of those were taken up 2026-08-30, and only one survived
+
+- **createObjectURL is not the mint.** A 20-frame zoom over four tracks mints 8
+  stop tokens, counted two ways, which puts a registry insert nowhere near the
+  ~91ms booked here. Declined in
+  [reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md); the count is
+  `products/jbrowse-web/src/tests/ZoomStopTokenMints.test.tsx`. Whatever the
+  sampler is folding into that frame — plausibly the revoke or the GC of revoked
+  entries — is unattributed, and the design that was written against it buys
+  none of it.
+
+- **The per-frame component count now has an instrument**, and it is neither a
+  flame graph nor React DevTools: a `mobx.spy` render census in jsdom. Three
+  fixes came out of pointing it at this list, the largest being a padding
+  overlay every track re-rendered per frame to draw nothing.
+  [zoom-perf-followups.md](zoom-perf-followups.md) has what it found;
+  [reference/INTERACTION_PERF.md](../reference/INTERACTION_PERF.md) has the
+  instrument and its limits.
+
+The wheel-arm rAF lead above is still unclaimed, and still needs the
+matched-range comparison it asks for before its 2158 ms means anything.
