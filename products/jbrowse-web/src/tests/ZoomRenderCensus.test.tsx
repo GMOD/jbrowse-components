@@ -93,21 +93,31 @@ async function census({
     for (const m of mutations) {
       tally.set(m, (tally.get(m) ?? 0) + 1)
     }
-    const churn = [...tally]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 15)
-      .map(([k, n]) => `${String(n).padStart(6)}  ${k}`)
-      .join('\n')
-    // eslint-disable-next-line no-console
-    console.log(
-      `\n=== ${label}: ${FRAMES} frames, ${view.tracks.length} tracks, ` +
-        `${startBpPerPx} -> ${view.bpPerPx.toFixed(0)} bp/px ===\n` +
-        `observer renders  ${c.total()} (${(c.total() / FRAMES).toFixed(1)}/frame)\n` +
-        `DOM mutations     ${mutations.length} (${(mutations.length / FRAMES).toFixed(1)}/frame)\n` +
-        `  structural      ${structural} (${(structural / FRAMES).toFixed(1)}/frame)\n\n` +
-        c.report(25) +
-        `\n\nwhere the DOM churn lands:\n${churn}`,
-    )
+    const per = (n: number) => (n / FRAMES).toFixed(1)
+    const head =
+      `${label}: ${view.tracks.length} tracks, ` +
+      `${startBpPerPx}->${view.bpPerPx.toFixed(0)} bp/px, ${FRAMES} frames — ` +
+      `${per(c.total())} renders/frame, ${per(mutations.length)} DOM ` +
+      `mutations/frame (${per(structural)} structural)`
+
+    // The tables are the instrument and the one-liner is the CI signal, because
+    // this file runs in every full suite and four ranked dumps there are noise.
+    // Anyone reading the summary and wanting to know WHICH component moved
+    // needs the flag named in it.
+    if (process.env.ZOOM_CENSUS) {
+      const churn = [...tally]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([k, n]) => `${String(n).padStart(6)}  ${k}`)
+        .join('\n')
+      // eslint-disable-next-line no-console
+      console.log(
+        `\n=== ${head} ===\n\n${c.report(25)}\n\nwhere the DOM churn lands:\n${churn}`,
+      )
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(`${head}  [ZOOM_CENSUS=1 for the per-component tables]`)
+    }
     return c.components()
   } finally {
     c.stop()
