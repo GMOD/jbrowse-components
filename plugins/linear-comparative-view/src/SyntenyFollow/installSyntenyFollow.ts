@@ -2,6 +2,7 @@ import { getNotificationSink } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
+import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
 import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { alreadyShowing } from './alreadyShowing.ts'
 import {
@@ -11,6 +12,11 @@ import {
 } from './followAnchorWindow.ts'
 import { logFollowSpread, logFollowStep } from './followDebug.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
+import {
+  followWindowSignature,
+  handNudged,
+  handNudgeMessage,
+} from './followHandNudge.ts'
 import { createFollowLevelStates } from './followLevelStates.ts'
 import { followSpreadSpans } from './followSpreadSpans.ts'
 import { followTransform } from './followTransform.ts'
@@ -43,6 +49,10 @@ export interface FollowPair {
   movingView: LinearGenomeViewModel
   toMate: boolean
   mateAssembly?: string
+  // which row of the stack the moving view is, for the one message that has to
+  // NAME it — `rowLabels` disambiguates by position, and the views themselves
+  // do not know where they sit
+  movingIndex: number
 }
 
 /**
@@ -68,6 +78,14 @@ export interface SyntenyFollowHost extends IStateTreeNode {
   setFollowUnaligned: (arg: boolean) => void
   setFollowApproximate: (arg: boolean) => void
   setFollowPartial: (arg: FollowPartialReport | undefined) => void
+  // The four below are the hand-nudge message and nothing else: it names both
+  // rows, and the two ways out of the snap it reports are the same two settings
+  // the header menu offers. Read and called only from `reportHandNudge`, which
+  // runs at most once per level per follow-on.
+  followAnchorIndex: number
+  views: { assemblyNames: string[] }[]
+  setFollowAnchorIndex: (idx: number) => void
+  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
 }
 
 // One level's placement, with the observables the async half needs already read
@@ -93,6 +111,12 @@ interface FollowWork {
   // the anchor's orientation as it stands, so the flip decision is relative: a
   // reversed anchor inside a forward block wants a reversed mate
   anchorOrientation: RegionsOrientation
+  // the row moved and nothing in this level moved it, so a placement over the
+  // top of it is the follow overriding the user rather than following the
+  // anchor — read only when this rung actually navigates
+  handNudged: boolean
+  // only ever the hand-nudge message's, which names the row
+  movingIndex: number
   seq: number
   generation: number
 }
@@ -124,6 +148,10 @@ interface SpreadWork {
   level: FollowLevel
   movingView: LinearGenomeViewModel
   spans: ResolvedSpan[]
+  // as in `FollowWork`, and read on every placement rather than on a navigation
+  // — this rung re-places its row every pass, so there is no narrower moment
+  handNudged: boolean
+  movingIndex: number
 }
 
 // One level's share of a settled pass: what to resolve, and what the header
@@ -138,6 +166,16 @@ interface FollowPlan {
   // set when the multi-contig rung had an answer and refused it as mostly
   // filler, naming the region the rows follow and the ones they do not
   partial?: FollowPartialReport
+}
+
+// Where a row is, off the LIVE blocks, for telling a placement that moved it
+// from one that wrote the numbers already there. Never compared across passes —
+// `followAnchorWindow`'s debounced read is what a pass sees, and the two differ
+// by exactly the settle this is called inside of.
+function placedWindowSignature(view: LinearGenomeViewModel) {
+  return followWindowSignature(
+    followAnchorWindows(view.dynamicBlocks.contentBlocks),
+  )
 }
 
 // One navigation, as "from where" and "to where". Both halves matter: the same
@@ -172,6 +210,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     movingMinWidthBp,
     matchOrientation,
     anchorOrientation,
+    handNudged,
+    movingIndex,
     seq,
     generation,
   }: FollowWork) {
@@ -248,6 +288,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       const nav = navSignature(movingWindow, span)
       if (nav !== state.lastNav) {
         state.lastNav = nav
+        state.movedRow = true
+        reportHandNudge(state, movingIndex, handNudged)
         await navToResolvedSpan(movingView, span)
         if (
           seq !== state.seq ||
@@ -283,10 +325,28 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * a pick standing kept placing the row through a single alignment this rung
    * has just decided does not describe the window.
    */
-  function executeSpread({ level, movingView, spans }: SpreadWork) {
+  function executeSpread({
+    level,
+    movingView,
+    spans,
+    movingIndex,
+    handNudged,
+  }: SpreadWork) {
     const state = levelStates.get(level)
     state.pick = undefined
-    if (positionViewOnSpans(movingView, spans)) {
+    reportHandNudge(state, movingIndex, handNudged)
+    // MEASURED RATHER THAN ASSUMED, unlike the navigating rung below, because
+    // this one re-places its row every pass and most of those passes write the
+    // numbers already there. A flag raised on the placement itself therefore
+    // never came down — the last pass of a settle left it standing, and the
+    // nudge after it read as the follow's own work.
+    //
+    // The live blocks on both sides: this compares a placement against itself,
+    // where `lastWindows` compares one pass against the next.
+    const before = placedWindowSignature(movingView)
+    const placed = positionViewOnSpans(movingView, spans)
+    state.movedRow = placedWindowSignature(movingView) !== before
+    if (placed) {
       state.lastNav = undefined
       return
     }
@@ -423,6 +483,63 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       })
   }
 
+  /**
+   * Say that the follow just put a row back, once per level per follow-on.
+   *
+   * THE ONE MOMENT THE MODE OWES AN EXPLANATION. Zooming a followed row out and
+   * having it come straight back is the same picture as a broken control, and
+   * nothing else on screen distinguishes them: the header toggle is a 31px icon
+   * whose tooltip has to be hovered for, and which row drives is otherwise
+   * visible only inside a submenu. `followUnaligned` and `followApproximate`
+   * are reported for the same reason and cannot cover this one — a row that is
+   * holding and a row that is being moved back look nothing alike to the code
+   * and identical to the reader.
+   *
+   * BOTH ACTIONS KEEP THE MOVE the reader was trying to make, which is why
+   * there are two rather than an explanation alone: anchoring this row is the
+   * one for someone who wants to drive from here and keep the other rows with
+   * them, stopping is the one for someone who wants this row alone. Neither is
+   * taken for them — an anchor that moves itself under a hand zoom is the
+   * silent version of the same surprise.
+   *
+   * ONCE, because the second telling is a message they have already read, and
+   * an actionable snackbar does not dedup on its own (`pushSnackbarMessage`
+   * dedups only the action-less ones). It persists until dismissed, which is
+   * what the reading and the click both need.
+   */
+  function reportHandNudge(
+    state: FollowLevelState,
+    movingIndex: number,
+    nudged: boolean,
+  ) {
+    if (nudged && !state.nudgeReported && isAlive(self)) {
+      const labels = rowLabels(self.views)
+      const moving = labels[movingIndex]
+      const anchor = labels[self.followAnchorIndex]
+      if (moving !== undefined && anchor !== undefined) {
+        state.nudgeReported = true
+        getNotificationSink(self).notify(
+          handNudgeMessage(moving, anchor),
+          'info',
+          [
+            {
+              name: `Anchor ${moving} instead`,
+              onClick: () => {
+                self.setFollowAnchorIndex(movingIndex)
+              },
+            },
+            {
+              name: 'Stop following',
+              onClick: () => {
+                self.setRowSyncMode('independent')
+              },
+            },
+          ],
+        )
+      }
+    }
+  }
+
   function reportError(level: FollowLevel, e: unknown) {
     // an RPC outliving its view rejects into here, and getSession throws on a
     // node with no parent
@@ -457,12 +574,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     pair,
     windows,
     carried,
+    nudged,
     state,
     placed,
   }: {
     pair: FollowPair
     windows: FollowWindow[]
     carried: boolean
+    nudged: boolean
     state: FollowLevelState
     placed: PlacedWindows
   }) {
@@ -508,7 +627,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
     return {
       plan: {
-        spread: spans.length ? { level, movingView, spans } : undefined,
+        spread: spans.length
+          ? {
+              level,
+              movingView,
+              spans,
+              movingIndex: pair.movingIndex,
+              handNudged: nudged,
+            }
+          : undefined,
         unaligned:
           !spans.length && level.linearSyntenyDisplays.some(d => d.featureData),
         // an interpolation over several alignments at once, never a walk
@@ -568,7 +695,29 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // hand. The multi-contig rung used to skip it and waited on the level's
     // refetch instead, ~1s on `volvox_contig_swap`; a placement that writes the
     // same numbers settles the same block keys, so the re-entry converges.
-    const movingWindow = followAnchorWindow(movingView.coarseDynamicBlocks)
+    const movingBlocks = movingView.coarseDynamicBlocks
+    const movingWindow = followAnchorWindow(movingBlocks)
+    // WHO MOVED THE ROW, decided here because only a pass that reads both rows
+    // can tell — past `execute`'s first await the answer is a placement with no
+    // provenance. The snapshot is written every pass whichever rung runs, so a
+    // level that changes rung does not carry a comparison made under the other
+    // one, and `movedRow` is cleared in the same breath it is read: it is a
+    // fact about the pass just gone.
+    // EVERY window of the moving row, where `alreadyShowing` wants the widest
+    // one: zooming a whole-genome row down onto its widest contig leaves that
+    // contig's window exactly as it was, so by the widest alone the loudest
+    // nudge the mode has is the one it cannot see.
+    const nowWindows = {
+      input: followWindowSignature(windows),
+      moving: followWindowSignature(followAnchorWindows(movingBlocks)),
+    }
+    const nudged = handNudged({
+      now: nowWindows,
+      previous: state.lastWindows,
+      placedByFollow: !!state.movedRow || state.lastNav !== undefined,
+    })
+    state.lastWindows = nowWindows
+    state.movedRow = false
 
     // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
     // than one it is the envelope of what lies under the window — and wider
@@ -579,7 +728,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // anchor row.
     const spread =
       windows.length > 1
-        ? planSpread({ pair, windows, carried: !!carried, state, placed })
+        ? planSpread({
+            pair,
+            windows,
+            carried: !!carried,
+            nudged,
+            state,
+            placed,
+          })
         : undefined
     if (spread?.plan) {
       return spread.plan
@@ -619,6 +775,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
         matchOrientation,
         anchorOrientation: stayingView.displayedRegionsOrientation,
+        handNudged: nudged,
+        movingIndex: pair.movingIndex,
         seq,
         generation: levelStates.generation,
       },

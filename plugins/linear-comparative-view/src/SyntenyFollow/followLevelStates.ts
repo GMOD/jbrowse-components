@@ -8,6 +8,7 @@ import type {
 } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyCigarMapResult } from '../LinearSyntenyRPC/SyntenyGetCigarMap.ts'
 import type { FollowAnswerCache } from './followAnswerCache.ts'
+import type { FollowRowWindows } from './followHandNudge.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { SpreadDecision } from './spreadDecision.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -81,6 +82,19 @@ export interface FollowLevelState {
   // user flips by hand afterwards stays flipped until the decision changes,
   // which is what keeps the manual flip from needing an anchor take.
   orientedKey?: string
+  // What the level's two rows were showing at the previous pass, which is the
+  // whole of what tells a hand nudge from an ordinary placement — see
+  // `handNudged`.
+  lastWindows?: FollowRowWindows
+  // Whether the previous pass moved the row itself, so that the row being
+  // somewhere new at this one is not read as the user's doing. Set by whichever
+  // rung placed it and cleared by the next plan, which is the pass it is about.
+  movedRow?: boolean
+  // Per level and per follow-on: the snap is explained once. `clear()` drops it
+  // with everything else, so switching the mode off and on says it again — but
+  // a message per nudge is a message the reader has already read, and the
+  // snackbar it goes to carries actions and so does not dedup on its own.
+  nudgeReported?: boolean
 }
 
 /**

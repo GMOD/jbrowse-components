@@ -4,7 +4,7 @@ import {
   moveTo,
 } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { followAnchorWindows } from './followAnchorWindow.ts'
@@ -15,6 +15,7 @@ import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts
 import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
 import type { FollowPair } from './installSyntenyFollow.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { NotificationLevel, SnackAction } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./requestCigarMap.ts', () => ({
@@ -163,14 +164,19 @@ const Host = types
     followMatchOrientation: true,
     followUnaligned: false,
     followApproximate: false,
+    followAnchorIndex: 0,
     followPartial: undefined as
       | { following: string; elsewhere: string[] }
       | undefined,
     followPairs: [] as FollowPair[],
+    views: [] as { assemblyNames: string[] }[],
   }))
   .actions(self => ({
     setFollowPairs(pairs: FollowPair[]) {
       self.followPairs = pairs
+    },
+    setViews(views: { assemblyNames: string[] }[]) {
+      self.views = views
     },
     setFollowMatchOrientation(arg: boolean) {
       self.followMatchOrientation = arg
@@ -186,7 +192,51 @@ const Host = types
     ) {
       self.followPartial = arg
     },
+    setFollowAnchorIndex(idx: number) {
+      self.followAnchorIndex = idx
+    },
+    setRowSyncMode(mode: 'independent' | 'link' | 'follow') {
+      self.followSynteny = mode === 'follow'
+    },
   }))
+
+// `getNotificationSink` walks to the first parent carrying `rpcManager` and
+// `configuration`, so the hand-nudge message needs one — and its actions are
+// what the tests below click, which is the only way to reach the two settings
+// the snackbar offers.
+const Session = types
+  .model('TestSyntenyFollowSession', { host: Host })
+  .volatile(() => ({
+    rpcManager: {},
+    configuration: {},
+    notifications: [] as { message: string; actions: SnackAction[] }[],
+  }))
+  .actions(self => ({
+    notify(
+      message: string,
+      _level?: NotificationLevel,
+      action?: SnackAction | SnackAction[],
+    ) {
+      self.notifications.push({
+        message,
+        actions: action ? (Array.isArray(action) ? action : [action]) : [],
+      })
+    },
+    notifyError(message: string) {
+      throw new Error(message)
+    },
+  }))
+
+function hostFor(assemblies = ['a', 'b', 'c']) {
+  const session = Session.create({ host: {} })
+  session.host.setViews(assemblies.map(name => ({ assemblyNames: [name] })))
+  return session.host
+}
+
+const notificationsOf = (node: ReturnType<typeof hostFor>) =>
+  getParent<{ notifications: { message: string; actions: SnackAction[] }[] }>(
+    node,
+  ).notifications
 
 // put the row on an interval of its own layout, in bp
 function place(view: ReturnType<typeof row>, start: number, end: number) {
@@ -226,13 +276,14 @@ describe('a spread carried up a three-row stack', () => {
         ],
       },
     ]
-    const host = Host.create()
+    const host = hostFor()
     host.setFollowPairs(
       levels.map((level, i) => ({
         level,
         stayingView: rows[i] as unknown as LinearGenomeViewModel,
         movingView: rows[i + 1] as unknown as LinearGenomeViewModel,
         toMate: true,
+        movingIndex: i + 1,
       })),
     )
     installSyntenyFollow(host)
@@ -271,7 +322,7 @@ describe('a straddle whose answers are far apart', () => {
     // most of chr1 and the head of chr2, the shape a navigation near a contig
     // end produces on its own
     place(rows[0]!, 200_000, 1_100_000)
-    const host = Host.create()
+    const host = hostFor()
     host.setFollowPairs([
       {
         level: {
@@ -282,6 +333,7 @@ describe('a straddle whose answers are far apart', () => {
         stayingView: rows[0] as unknown as LinearGenomeViewModel,
         movingView: rows[1] as unknown as LinearGenomeViewModel,
         toMate: true,
+        movingIndex: 1,
       },
     ])
     installSyntenyFollow(host)
@@ -354,7 +406,7 @@ describe('a straddle whose answers are far apart', () => {
   // Frozen there, the row stopped following for the rest of the drag.
   test('the row keeps following when the kept contig scrolls away mid-drag', async () => {
     const rows = [row('a'), row('b')]
-    const host = Host.create()
+    const host = hostFor()
     host.setFollowPairs([
       {
         level: {
@@ -369,6 +421,7 @@ describe('a straddle whose answers are far apart', () => {
         stayingView: rows[0] as unknown as LinearGenomeViewModel,
         movingView: rows[1] as unknown as LinearGenomeViewModel,
         toMate: true,
+        movingIndex: 1,
       },
     ])
     place(rows[0]!, 200_000, 1_100_000)
@@ -390,13 +443,14 @@ describe('a straddle whose answers are far apart', () => {
 
 function twoRows(displays: LinearSyntenyDisplayModel[]) {
   const rows = [row('a'), row('b')]
-  const host = Host.create()
+  const host = hostFor()
   host.setFollowPairs([
     {
       level: { linearSyntenyDisplays: displays },
       stayingView: rows[0] as unknown as LinearGenomeViewModel,
       movingView: rows[1] as unknown as LinearGenomeViewModel,
       toMate: true,
+      movingIndex: 1,
     },
   ])
   return { rows, host }
@@ -434,7 +488,7 @@ describe('a window wider than the block it is placed by', () => {
 })
 
 describe('a whole-genome row zoomed by hand', () => {
-  test('is put back on the next pass rather than on the next fetch', async () => {
+  async function wholeGenome() {
     const { rows, host } = twoRows([
       display(
         Array.from({ length: CONTIGS }, (_, i) =>
@@ -445,11 +499,105 @@ describe('a whole-genome row zoomed by hand', () => {
     place(rows[0]!, 0, CONTIG * CONTIGS)
     installSyntenyFollow(host)
     await new Promise(resolve => setTimeout(resolve, 0))
+    return { rows, host }
+  }
+
+  test('is put back on the next pass rather than on the next fetch', async () => {
+    const { rows } = await wholeGenome()
     expect(shown(rows[1]!)).toHaveLength(CONTIGS)
     place(rows[1]!, 0, CONTIG)
     // no fetch key in this harness: only a tracked read of the moving row's
     // blocks can wake the pass
     expect(shown(rows[1]!)).toHaveLength(CONTIGS)
+  })
+
+  // THE SNAP ABOVE, FROM THE READER'S SIDE. Everything the mode reports today
+  // is about where a row could not go; this is the one thing it does that looks
+  // like the control being broken, and the pass has both rows in hand and so is
+  // the only place that can tell it from an ordinary placement.
+  test('says so, once, naming both rows', async () => {
+    const { rows, host } = await wholeGenome()
+    expect(notificationsOf(host)).toHaveLength(0)
+    place(rows[1]!, 0, CONTIG)
+    expect(notificationsOf(host).map(n => n.message)).toEqual([
+      'b is following a, so it moved back to the matching region',
+    ])
+    place(rows[1]!, CONTIG, CONTIG * 2)
+    expect(notificationsOf(host)).toHaveLength(1)
+  })
+
+  test('an anchor pan places the row and reports nothing', async () => {
+    const { rows, host } = await wholeGenome()
+    place(rows[0]!, 0, CONTIG * 3)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(shown(rows[1]!)).toEqual(['chr1', 'chr2', 'chr3'])
+    expect(notificationsOf(host)).toHaveLength(0)
+  })
+
+  test('the message offers to anchor the row that was moved', async () => {
+    const { rows, host } = await wholeGenome()
+    place(rows[1]!, 0, CONTIG)
+    const [anchorHere] = notificationsOf(host)[0]!.actions
+    expect(anchorHere!.name).toBe('Anchor b instead')
+    anchorHere!.onClick()
+    expect(host.followAnchorIndex).toBe(1)
+  })
+
+  test('and to stop following', async () => {
+    const { rows, host } = await wholeGenome()
+    place(rows[1]!, 0, CONTIG)
+    const [, stop] = notificationsOf(host)[0]!.actions
+    expect(stop!.name).toBe('Stop following')
+    stop!.onClick()
+    expect(host.followSynteny).toBe(false)
+  })
+})
+
+// The other rung, which navigates rather than positions and so reports from a
+// different branch. Same picture to the reader, and the mode owes the sentence
+// either way.
+describe('a row nudged off a single-contig answer', () => {
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+
+  async function placed() {
+    const { rows, host } = twoRows([
+      display([
+        {
+          refName: 'chr1',
+          start: 300_000,
+          end: 700_000,
+          mateRefName: 'chr1',
+          mateStart: 300_000,
+          mateEnd: 700_000,
+        },
+      ]),
+    ])
+    place(rows[0]!, 0, CONTIG)
+    installSyntenyFollow(host)
+    await settle()
+    await settle()
+    return { rows, host }
+  }
+
+  test('is reported, having been put back', async () => {
+    const { rows, host } = await placed()
+    expect(notificationsOf(host)).toHaveLength(0)
+    const before = rows[1]!.offsetPx
+    place(rows[1]!, 0, CONTIG * CONTIGS)
+    await settle()
+    await settle()
+    expect(rows[1]!.offsetPx).toBe(before)
+    expect(notificationsOf(host).map(n => n.message)).toEqual([
+      'b is following a, so it moved back to the matching region',
+    ])
+  })
+
+  test('an anchor pan is not', async () => {
+    const { rows, host } = await placed()
+    place(rows[0]!, 100_000, CONTIG)
+    await settle()
+    await settle()
+    expect(notificationsOf(host)).toHaveLength(0)
   })
 })
 

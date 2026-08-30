@@ -291,6 +291,7 @@ function stateModelFactory(pluginManager: PluginManager) {
                     stayingView,
                     movingView,
                     toMate,
+                    movingIndex,
                     // the level's LOWER row is the one on the alignments' mate
                     // axis whichever direction the level runs in
                     mateAssembly: self.views[level.level + 1]?.assemblyNames[0],
@@ -379,6 +380,31 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setFollowPartial(arg: FollowPartialReport | undefined) {
         self.followPartial = arg
+      },
+      /**
+       * #action
+       * The one way the UI changes how the rows track each other, so the two
+       * flags can't both be on. They fight if they are: `linkViews` replays the
+       * anchor's own scroll/zoom onto every row, which is precisely the pixel
+       * lock the follow then has to undo on the next settle, and the moving row
+       * visibly jumps twice.
+       *
+       * Here rather than beside `setLinkViews` for the reason above
+       * setFollowUnaligned: the follow's own snackbar offers this as the way out
+       * of a row it moved back, so afterAttach's `installSyntenyFollow` has to
+       * see it on `self`.
+       */
+      setRowSyncMode(mode: 'independent' | 'link' | 'follow') {
+        self.linkViews = mode === 'link'
+        self.followSynteny = mode === 'follow'
+      },
+      /**
+       * #action
+       * Same terms as setRowSyncMode above, and offered beside it in that same
+       * snackbar: which row drives is otherwise a submenu away.
+       */
+      setFollowAnchorIndex(idx: number) {
+        self.followAnchorIndex = idx
       },
       /**
        * #action
@@ -559,24 +585,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (arg) {
           self.followSynteny = false
         }
-      },
-      /**
-       * #action
-       * The one way the UI changes how the rows track each other, so the two
-       * flags can't both be on. They fight if they are: `linkViews` replays the
-       * anchor's own scroll/zoom onto every row, which is precisely the pixel
-       * lock the follow then has to undo on the next settle, and the moving row
-       * visibly jumps twice.
-       */
-      setRowSyncMode(mode: 'independent' | 'link' | 'follow') {
-        self.linkViews = mode === 'link'
-        self.followSynteny = mode === 'follow'
-      },
-      /**
-       * #action
-       */
-      setFollowAnchorIndex(idx: number) {
-        self.followAnchorIndex = idx
       },
       /**
        * #action
