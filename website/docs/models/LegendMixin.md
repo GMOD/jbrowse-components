@@ -39,7 +39,7 @@ legend is what un-dismisses the sections inside it.
 | Member | Description |
 | --- | --- |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | Whether the legend is drawn. Resolved through the promotable-slot tiers (`resolveConf`): an explicit track value customizes it either way, otherwise it follows the session-wide default for this display type, falling back to the slot's `promotedBase`. |
-| <span id="getter-showlegenddisplaytypedefault">**showLegendDisplayTypeDefault**</span><br><code>Pin</code> | The "make the current legend visibility the default for all tracks" control. Symmetric, so it promotes whichever value the track currently shows. `showLegendCheckboxItem` takes this as its `pin`. |
+| <span id="getter-showlegenddisplaytypedefault">**showLegendDisplayTypeDefault**</span><br><code>Pin</code> | The "apply the current legend visibility to the open tracks" control. Symmetric, so it carries whichever value the track currently shows. `showLegendCheckboxItem` takes this as its `pin`. |
 
 ## Actions
 
