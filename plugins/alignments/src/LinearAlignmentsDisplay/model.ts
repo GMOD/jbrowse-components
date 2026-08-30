@@ -1296,17 +1296,17 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The fields `computeArcBand` reads, bundled so the layout can hand them
-         * over whole.
+         * The band settings `computeStackedSections` stacks a section from,
+         * bundled so the layout can hand them over whole. Carries `bandBounds`,
+         * so the per-section stacking clamps a stated height exactly as
+         * `belowCoverageBandsGeometry` does — the two answer for the same bands
+         * and used to be able to resolve one of them to two heights.
          *
-         * It used to have a second caller — the insert-size ruler assembled its
-         * own band from this, and the bundle was what kept the two assemblies
-         * identical. `insertSizeTickSections` now reads the band the LAYOUT
-         * placed (`renderSections`), which it had to in order to rule more than
-         * the first section, so the ruler and the arcs agree by reading one
-         * answer rather than by computing one twice from one input.
+         * Named for the sections rather than the arcs: it fed `computeArcBand`
+         * directly until that function stopped taking a `showCoverage`/height
+         * pair, and it never was the whole of what a section reserves.
          */
-        get arcBandInput() {
+        get sectionBandInput() {
           return {
             showCoverage: self.showCoverage,
             coverageHeight: self.coverageHeight,
@@ -1314,6 +1314,7 @@ export default function stateModelFactory(
             readConnections: self.readConnections,
             readConnectionsDown: self.readConnectionsDown,
             readConnectionsHeight: self.readConnectionsHeight,
+            bandBounds: this.statedBandBounds,
           }
         },
 
@@ -2071,7 +2072,7 @@ export default function stateModelFactory(
          */
         get sections(): SectionsLayout {
           return computeStackedSections(toSectionGroupInputs(this.drawnLanes), {
-            ...self.arcBandInput,
+            ...self.sectionBandInput,
             rowHeight: self.rowHeight,
             showSashimiArcs: self.showSashimiArcs,
             sashimiHeight: self.sashimiArcsHeight,

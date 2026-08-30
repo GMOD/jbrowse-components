@@ -1,10 +1,11 @@
-import { stackBands } from '@jbrowse/core/util/bandLayout'
+import { reservedPx, stackBands } from '@jbrowse/core/util/bandLayout'
 
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
+import type { Band } from '@jbrowse/core/util/bandLayout'
 
 // This display's band order, stated once: what a section reserves above its
 // pileup, top to bottom. Both the pooled geometry and the per-section stacking
@@ -212,6 +213,10 @@ export interface SectionBandOpts {
   readConnectionsHeight?: number
   showSashimiArcs?: boolean
   sashimiHeight?: number
+  // The range each stated height is bound to at read time — the same slot
+  // `belowCoverageBandsGeometry` takes, so the pooled geometry and the
+  // per-section stacking cannot resolve one band to two heights.
+  bandBounds?: BandBounds
   // Floor on the distance to the next section's top, so a section shorter than
   // its own label chip still leaves room for it (the chip is anchored at the
   // section top, so without this consecutive chips overlap). Only the stacking
@@ -235,9 +240,17 @@ export function computeStackedSections(
 ): SectionsLayout {
   const showCoverage = opts.showCoverage ?? true
   const readConnections = opts.readConnections ?? 'off'
+  const bounds = opts.bandBounds
+  // Loop-invariant: the heights are display-global, so the coverage band is one
+  // spec and one resolved reserve for every section — and that number is what
+  // places the arcs, rather than a pair `computeArcBand` re-combines.
+  const coverage: Band = {
+    active: showCoverage,
+    height: opts.coverageHeight,
+    bounds,
+  }
   const arcBand = computeArcBand({
-    showCoverage,
-    coverageHeight: opts.coverageHeight,
+    coverageReservedPx: reservedPx(coverage),
     coverageYOffset: opts.coverageYOffset ?? 0,
     readConnections,
     readConnectionsDown: opts.readConnectionsDown,
@@ -261,9 +274,17 @@ export function computeStackedSections(
       hasSashimiDownArcs: g.hasSashimiDownArcs,
     })
     const stack = stackBands(BAND_ORDER, {
-      coverage: { active: showCoverage, height: opts.coverageHeight },
-      arcs: { active: hasArcsBand, height: opts.readConnectionsHeight ?? 0 },
-      sashimi: { active: hasSashimiBand, height: opts.sashimiHeight ?? 0 },
+      coverage,
+      arcs: {
+        active: hasArcsBand,
+        height: opts.readConnectionsHeight ?? 0,
+        bounds,
+      },
+      sashimi: {
+        active: hasSashimiBand,
+        height: opts.sashimiHeight ?? 0,
+        bounds,
+      },
     })
     // Up-mode arcs overlay coverage and reserve nothing, so an arc-less lane
     // still drops its draw band — nothing paints there either way, and a zero

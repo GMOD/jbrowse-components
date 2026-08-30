@@ -412,6 +412,43 @@ test('belowCoverageBandsGeometry: a stated height is bound at read time', () => 
 })
 
 // One-section layout (groupKey '') with a coverage band of 45 and 4 pileup rows.
+// THE TWO FOLDS RESOLVE ONE BAND TO ONE HEIGHT. A stated height is bound at
+// READ time, so a config or a hand-edited session naming one outside the range
+// is clamped by whoever reads it — and only the pooled geometry was passing
+// `bandBounds`. The per-section stacking reserved the raw 4000, and
+// `computeArcBand` re-combined `showCoverage` with the raw height on top of
+// that, so the ungrouped section's pileup top and the geometry's `bottom` — the
+// same number by construction — disagreed by 3880px.
+test('a stated height out of bounds is clamped the same by both folds', () => {
+  const bounds = { min: 8, max: 120 }
+  const settings = { ...baseBands, coverageHeight: 4000, bandBounds: bounds }
+  const pooled = belowCoverageBandsGeometry(settings)
+  const { sections } = computeStackedSections([lane({ key: '', maxY: 4 })], {
+    coverageHeight: 4000,
+    rowHeight: 10,
+    bandBounds: bounds,
+  })
+
+  expect(pooled.coverageHeight).toBe(120)
+  expect(sections[0]!.coverageHeight).toBe(120)
+  expect(sections[0]!.pileupTop).toBe(pooled.bottom)
+})
+
+// ...and the arcs are placed against that same resolved number, rather than
+// against a `showCoverage`/raw-height pair recombined a third time.
+test('the arc band overlays the clamped coverage height, not the stated one', () => {
+  const { sections } = computeStackedSections([lane({ key: '', maxY: 4 })], {
+    coverageHeight: 4000,
+    rowHeight: 10,
+    bandBounds: { min: 8, max: 120 },
+    coverageYOffset: 5,
+    readConnections: 'arc',
+    readConnectionsHeight: 60,
+  })
+
+  expect(sections[0]!.arcBandHeight).toBe(115)
+})
+
 const ungrouped: SectionsLayout = computeStackedSections(
   [lane({ key: '', maxY: 4 })],
   { coverageHeight: 45, rowHeight: 10 },

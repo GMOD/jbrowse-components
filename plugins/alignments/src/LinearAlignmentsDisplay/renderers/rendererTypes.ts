@@ -232,8 +232,14 @@ export interface ArcBand {
 // its own from these. It no longer does: a ruler per section has to read the
 // band the layout placed, since only that one knows where each section's is.
 export interface ArcBandInput {
-  showCoverage: boolean
-  coverageHeight: number
+  /**
+   * The coverage band's `reservedPx` — 0 when it is off. A resolved number
+   * rather than the `(showCoverage, stated height)` pair, because re-combining
+   * that pair here is the one spelling of "off spends 0 px" that `bandLayout`
+   * does not own, and it stopped agreeing with the fold once the band gained
+   * `bounds` a stated height is clamped to.
+   */
+  coverageReservedPx: number
   coverageYOffset: number
   readConnections: ReadConnectionsMode
   readConnectionsDown?: boolean
@@ -245,7 +251,7 @@ export interface ArcBandInput {
 // Down-mode arcs always sit in their own band below coverage. Returns undefined
 // when there are no arcs to draw.
 export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
-  const covH = state.showCoverage ? state.coverageHeight : 0
+  const covH = state.coverageReservedPx
   const h = state.readConnectionsHeight ?? 0
   if (state.readConnections === 'off' || h === 0) {
     return undefined

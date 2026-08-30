@@ -8,8 +8,8 @@ import { getChainBounds } from './chainOverlayUtils.ts'
 
 import type { ArcBandInput, RenderState } from '../renderers/rendererTypes.ts'
 
-// `computeArcBand` keeps its own (showCoverage, raw height) input — the render
-// state carries only the reserved height — so this helper serves both halves.
+// Both take the coverage band as its RESERVED height now, so the one helper
+// serves the render state and `computeArcBand` with a single field.
 function makeState(
   overrides: Partial<RenderState & ArcBandInput> = {},
 ): RenderState & ArcBandInput {
@@ -22,7 +22,7 @@ function makeState(
     colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 2,
-    showCoverage: false,
+    coverageReservedPx: 0,
     coverageHeight: 50,
     coverageYOffset: 0,
     coverageMinDepth: undefined,
@@ -194,8 +194,7 @@ describe('computeArcBand', () => {
         makeState({
           readConnections: 'arc',
           readConnectionsHeight: 60,
-          showCoverage: true,
-          coverageHeight: 80,
+          coverageReservedPx: 80,
         }),
       ),
     ).toEqual({ top: 0, height: 80, down: false })
@@ -207,7 +206,7 @@ describe('computeArcBand', () => {
         makeState({
           readConnections: 'arc',
           readConnectionsHeight: 60,
-          showCoverage: false,
+          coverageReservedPx: 0,
         }),
       ),
     ).toEqual({ top: 0, height: 60, down: false })
@@ -223,8 +222,7 @@ describe('computeArcBand', () => {
         makeState({
           readConnections: 'arc',
           readConnectionsHeight: 60,
-          showCoverage: true,
-          coverageHeight: 80,
+          coverageReservedPx: 80,
           coverageYOffset: 5,
         }),
       ),
@@ -240,7 +238,7 @@ describe('computeArcBand', () => {
         makeState({
           readConnections: 'arc',
           readConnectionsHeight: 60,
-          showCoverage: false,
+          coverageReservedPx: 0,
           coverageYOffset: 5,
         }),
       ),
@@ -254,8 +252,7 @@ describe('computeArcBand', () => {
           readConnections: 'arc',
           readConnectionsHeight: 60,
           readConnectionsDown: true,
-          showCoverage: true,
-          coverageHeight: 80,
+          coverageReservedPx: 80,
         }),
       ),
     ).toEqual({ top: 80, height: 60, down: true })
@@ -268,7 +265,7 @@ describe('computeArcBand', () => {
           readConnections: 'arc',
           readConnectionsHeight: 60,
           readConnectionsDown: true,
-          showCoverage: false,
+          coverageReservedPx: 0,
         }),
       ),
     ).toEqual({ top: 0, height: 60, down: true })

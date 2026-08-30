@@ -9,6 +9,7 @@ import {
   getNotificationSink,
   getSession,
 } from '@jbrowse/core/util'
+import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -458,11 +459,10 @@ export default function sharedModelFactory(
       // so the room for them is the user's to set, not ours to measure -- but
       // with no band at all they landed on top of the triangle.
       get effectiveLineZoneHeight() {
-        return self.effectiveUseGenomicPositions
-          ? self.showLabels
-            ? self.lineZoneHeight
-            : 0
-          : self.lineZoneHeight
+        return reservedPx({
+          active: !self.effectiveUseGenomicPositions || self.showLabels,
+          height: self.lineZoneHeight,
+        })
       },
       /**
        * #getter
