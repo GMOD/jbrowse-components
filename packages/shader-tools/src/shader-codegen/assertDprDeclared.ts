@@ -77,16 +77,12 @@ export function assertDprDeclared(
   }
   if (!fieldNames.includes(DPR_UNIFORM)) {
     const near = fieldNames.filter(f => /dpr|pixelratio|devicepx/i.test(f))
+    const remedy =
+      near.length > 0
+        ? `It declares ${near.join(', ')} — rename to '${DPR_UNIFORM}', the one spelling this check can follow.`
+        : `Add 'float ${DPR_UNIFORM};' to the block and write it with getDpr(); the generated packer will not let a renderer skip it.`
     throw new Error(
-      `${shader} calls ${called.join(', ')}, which convert CSS px to device ` +
-        `px, but its uniform block declares no '${DPR_UNIFORM}'.` +
-        (near.length > 0
-          ? ` It declares ${near.join(', ')} — rename to '${DPR_UNIFORM}', ` +
-            `the one spelling this check can follow.`
-          : ` Add 'float ${DPR_UNIFORM};' to the block and write it with ` +
-            `getDpr(); the generated packer will not let a renderer skip it.`) +
-        ` A shader antialiasing against a constant is wrong by a factor of ` +
-        `dpr, which is 1 on the machine most people develop on.`,
+      `${shader} calls ${called.join(', ')}, which convert CSS px to device px, but its uniform block declares no '${DPR_UNIFORM}'. ${remedy} A shader antialiasing against a constant is wrong by a factor of dpr, which is 1 on the machine most people develop on.`,
     )
   }
   return 1
@@ -125,11 +121,9 @@ export function assertNoDeadDprUniform(uses: readonly DprBlockUse[]) {
   for (const [owner, group] of byOwner) {
     const declares = group.some(u => u.fieldNames.includes(DPR_UNIFORM))
     if (declares && group.every(u => !u.reads)) {
+      const shaders = group.map(u => u.shader).join(', ')
       throw new Error(
-        `${owner} declares '${DPR_UNIFORM}', but none of the ` +
-          `${group.length} shader(s) compiled against it ` +
-          `(${group.map(u => u.shader).join(', ')}) read it. The field is ` +
-          `dead and every frame writes it for nothing — drop it.`,
+        `${owner} declares '${DPR_UNIFORM}', but none of the ${group.length} shader(s) compiled against it (${shaders}) read it. The field is dead and every frame writes it for nothing — drop it.`,
       )
     }
   }

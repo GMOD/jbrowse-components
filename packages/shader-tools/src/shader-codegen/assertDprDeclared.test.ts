@@ -72,7 +72,7 @@ describe('assertDprDeclared', () => {
 })
 
 describe('assertNoDeadDprUniform', () => {
-  const use = (
+  const blockUse = (
     over: Partial<Parameters<typeof assertNoDeadDprUniform>[0][0]>,
   ) =>
     ({
@@ -85,7 +85,7 @@ describe('assertNoDeadDprUniform', () => {
 
   test('a field no shader in the group reads is dead', () => {
     expect(() => {
-      assertNoDeadDprUniform([use({})])
+      assertNoDeadDprUniform([blockUse({})])
     }).toThrow(/dead/)
   })
 
@@ -95,15 +95,15 @@ describe('assertNoDeadDprUniform', () => {
   test('one reader in the group is enough', () => {
     expect(() => {
       assertNoDeadDprUniform([
-        use({ shader: 'read.slang' }),
-        use({ shader: 'arc.slang', reads: true }),
+        blockUse({ shader: 'read.slang' }),
+        blockUse({ shader: 'arc.slang', reads: true }),
       ])
     }).not.toThrow()
   })
 
   test('a block that never declares it is not dead, just uninterested', () => {
     expect(() => {
-      assertNoDeadDprUniform([use({ fieldNames: ['canvasHeight'] })])
+      assertNoDeadDprUniform([blockUse({ fieldNames: ['canvasHeight'] })])
     }).not.toThrow()
   })
 })
