@@ -1,12 +1,41 @@
+import fs from 'node:fs'
 import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // availableParallelism() honours the CPU affinity mask, so a run already pinned
 // to a subset of cores (taskset, a container's cpuset) sizes itself to what it
 // was actually given. os.cpus().length reports every core on the box regardless.
 const cpuCount = os.availableParallelism?.() ?? os.cpus().length
 
-// Worker budget, most specific wins. See the maxWorkers comment below for why
-// each tier is where it is.
+// What the kernel says can be handed out without swapping — page cache counted
+// as reclaimable, which `os.freemem()` does not do. On a box with 13GB of cache
+// freemem reads 6GB while MemAvailable reads 19GB, and sizing off the first
+// pins every run to one worker on a machine that is not busy at all.
+function availableGb() {
+  try {
+    const kb = /MemAvailable:\s+(\d+) kB/.exec(
+      fs.readFileSync('/proc/meminfo', 'utf8'),
+    )?.[1]
+    if (kb) {
+      return Number(kb) / 1024 / 1024
+    }
+  } catch {
+    // not Linux, or /proc unreadable
+  }
+  return os.freemem() / 1024 ** 3
+}
+
+// Worker budget, most specific wins.
+//
+// The tiers used to be flat numbers — 1 for an agent, 4 for a human — and the
+// flat 1 was the expensive one: measured whole-suite on a quiet 16-core box,
+// warm cache, `pnpm test` runs 372s at 4 workers and 262s at 8, while the same
+// work serialised through one worker is the 1440s those runs sum to. The reason
+// it was flat is real and has not gone away (several agent worktrees each size
+// themselves as though alone, so the machine-wide total is per-run budget times
+// however many agents), but a per-run budget CAN see the machine — through
+// memory and load, below — where it cannot see the other agents directly.
 function resolveMaxWorkers() {
   // 1. Explicit override, for the run that genuinely wants the whole box.
   //    `JEST_MAX_WORKERS=12 pnpm test <dir>`. Ignored unless it parses to >0, so
@@ -16,43 +45,94 @@ function resolveMaxWorkers() {
     return override
   }
 
-  // 2. Agent sessions get 1. Claude Code exports CLAUDECODE=1 into every command
-  //    it runs, and it is not in any shell profile here, so it marks agent runs
-  //    and only agent runs — a human `pnpm test` in a normal terminal never sees
-  //    it. Several agent worktrees run suites concurrently and each one sizes
-  //    itself independently, so the machine-wide total is (per-run budget) x
-  //    (however many agents), which is what actually saturates the box: two
-  //    sessions at the old '50%' measured 8 workers each on a 16-core machine,
-  //    16 total, and nothing in a per-run config could see the other half.
-  //    Measured at 14 concurrent sessions, four jest runs at 2 held 7.2GB while
-  //    the box sat 33GB into swap, so an agent run gets one worker.
+  // 2. The ceiling. Past 8 the box stops paying. Whole suite on 16 cores, warm,
+  //    quiet: 322s at 4, 216s at 8, 197s at 12, 199s at 16 — so the last
+  //    doubling is worth nothing at all, and the 12 that does buy 9% holds
+  //    18.5GB against 8's 12.5GB (16 holds 26GB of the box's 30). Workers stay
+  //    ~97% occupied throughout; what stops scaling is the per-suite cost under
+  //    contention, so past the knee a run is fast only by taking the machine off
+  //    everything else.
   //
-  //    1 is a worker, not in-band, and the distinction is the whole reason this
-  //    is safe — see the maxWorkers note below.
-  if (process.env.CLAUDECODE) {
-    return 1
-  }
+  //    Claude Code exports CLAUDECODE=1 into every command it runs and it is in
+  //    no shell profile here, so it marks agent runs and only agent runs. An
+  //    agent gets the lower ceiling because several sessions overlap by
+  //    construction; a human at a terminal is one run.
+  const ceiling = process.env.CLAUDECODE
+    ? Math.min(4, Math.max(1, Math.floor(cpuCount / 4)))
+    : Math.min(8, Math.max(2, Math.floor(cpuCount / 2)))
 
-  // 3. Interactive runs: half the machine, clamped.
-  return Math.min(4, Math.max(2, Math.floor(cpuCount / 2)))
+  // 3. Then hand back whatever the machine cannot currently afford. A worker
+  //    peaked at ~1.3GB in the 16-worker run, so 1.6GB apiece is the budget
+  //    with room for the main process. This one applies to every run — it is
+  //    the guard against swapping, and swapping is slower than any worker count
+  //    is fast. It never binds on CI, where 16GB over 1.6 is well past the
+  //    ceiling 4 CPUs allow.
+  const byMemory = Math.floor(availableGb() / 1.6)
+
+  // Load, on the other hand, is the multi-agent fairness knob and applies to
+  // agent runs ONLY. It reads state the other sessions create — nothing here
+  // can see them, but their workers are in the load average — so fourteen
+  // concurrent sessions drive it to the floor of 1, which is what the flat tier
+  // used to hard-code. Two runs it must NOT reach: a human at a terminal, who
+  // gets the machine undiluted (the position `scripts/heavy-run-slot.sh` takes
+  // for typechecks, for the same reason), and CI, where `pnpm install` has just
+  // finished and left a load average that would read as a busy box and cut a
+  // 4-CPU runner to one worker.
+  const byLoad = process.env.CLAUDECODE
+    ? Math.floor(cpuCount - os.loadavg()[0])
+    : ceiling
+
+  return Math.max(1, Math.min(ceiling, byMemory, byLoad))
 }
 
+// Transform-cache home. Entries are content-addressed by
+// `config/jest/babelTransform.cjs` — no absolute path is in the key — so every
+// worktree can read the one the primary checkout has already filled instead of
+// re-transpiling the whole graph on its first run. That cold prefix is minutes
+// per worktree, and `EnterWorktree` is the normal way to start work here.
+//
+// Off /tmp deliberately, which is where jest defaults (`/tmp/jest_<uid>`): /tmp
+// is tmpfs on Linux dev boxes, so the ~1.4GB cache would sit in RAM competing
+// with the workers and be lost on every reboot. On disk it survives reboots and
+// CI restores it between runs (push.yml, which names this path).
+//
+// Only the transform cache is shared. jest's other artifacts in here — the
+// haste map, the per-run timing cache — carry a hash of the resolved config,
+// rootDir included, in their filenames, so two checkouts never collide.
+const rootDir = path.dirname(fileURLToPath(import.meta.url))
+const primaryCheckout =
+  /^(?<primary>.*)\/\.claude\/worktrees\/[^/]+$/.exec(rootDir)?.groups
+    ?.primary ?? rootDir
+const cacheDirectory = path.join(primaryCheckout, 'node_modules/.cache/jest')
+
 const baseConfig = {
-  // Pinned off /tmp (jest defaults to /tmp/jest_<uid>). Cache warmth is the
-  // single biggest lever on jest startup here: transpiling the plugin graph
-  // costs a serial prefix before any test body runs, measured repeatedly at
-  // ~19-26s cold vs ~5-7s warm for one trivial suite. Keeping it out of /tmp
-  // matters because /tmp is tmpfs on Linux dev boxes, so the ~200MB cache both
-  // sat in RAM competing with the workers and was lost on every reboot. On disk
-  // it survives reboots, and CI can restore it between runs (push.yml). Entries
-  // are keyed on file content + transformer config, so a partially stale cache
-  // is never wrongly reused, only re-transformed.
+  // Cache warmth is the single biggest lever on jest startup here: transpiling
+  // the plugin graph costs a serial prefix before any test body runs, measured
+  // repeatedly at ~19-26s cold vs ~5-7s warm for one trivial suite. Where the
+  // directory is and why it is shared: the `cacheDirectory` note above.
   //
   // Tuning preset-env's targets is NOT a lever, despite looking like one: at the
   // default browserslist it adds only 3 niche regex transforms over
   // targets:{node:'current'} (~8% of transform time), and an interleaved cold A/B
   // showed no end-to-end difference. Don't diverge test/prod compilation for it.
-  cacheDirectory: '<rootDir>/node_modules/.cache/jest',
+  cacheDirectory,
+  // Crawl scope, and it is the haste map's rather than testMatch's — those
+  // patterns already name these four directories, but jest-haste-map crawls
+  // `roots` (default: the whole rootDir) independently of them. Unscoped it
+  // stats ~42,000 files that hold no module, `1000g_cnv_build` and the 429MB
+  // website corpus among them, which is most of the 3.5s every `jest`
+  // invocation spends before it runs anything — the cost `pnpm test-related`
+  // and any single-file run pay in full.
+  //
+  // Test DATA is deliberately outside this. Suites reach `test_data/` by
+  // relative `require.resolve`, which stats the file rather than asking the
+  // haste map, so those reads do not need the crawl that finding them would.
+  roots: [
+    '<rootDir>/packages',
+    '<rootDir>/products',
+    '<rootDir>/plugins',
+    '<rootDir>/example-plugins',
+  ],
   // Agent worktrees live at `.claude/worktrees/<branch>/`, i.e. whole extra
   // checkouts *inside* rootDir. `testMatch` already misses them (it anchors on
   // `<rootDir>/plugins/**`), but jest-haste-map crawls rootDir independently of
@@ -147,14 +227,20 @@ export default {
   // the first branch of that function and returns before the limit is consulted,
   // so it re-enables exactly the OOM described above.
   //
-  // Ceiling of 4: a bare percentage scales with the machine, and on a big dev
-  // box that is 8+ workers each entitled to workerIdleMemoryLimit before it is
-  // recycled — enough to wedge the whole machine. Workers past 2 buy nothing
-  // measurable: `packages/core/src/util` (98 suites), warm, two reps each, ran
-  // 18.8/17.2s at 2, 25.1/19.9s at 4, 20.9/24.3s at 8 — spread swamps the
-  // difference while memory scales, ~900MB per worker (~1.8GB at 2, ~7.3GB at
-  // 8). Measured on one unit-test-heavy suite; the slow integration files may
-  // spread better and were not measured.
+  // A bare percentage is still wrong, and the earlier reading of why is still
+  // right: it scales with the machine and not with what the machine has left,
+  // so on a big dev box it is 8+ workers each entitled to workerIdleMemoryLimit
+  // before it is recycled. `resolveMaxWorkers` keeps a ceiling for that and then
+  // subtracts what is already in use.
+  //
+  // The 4 that ceiling used to be was measured on `packages/core/src/util`
+  // alone (98 suites, warm: 18.8/17.2s at 2, 25.1/19.9s at 4, 20.9/24.3s at 8),
+  // and that file said what it did not cover — "the slow integration files may
+  // spread better and were not measured". They do, and they are 54% of the
+  // clock: whole-suite on a quiet box the run is 372s at 4 workers and 262s at
+  // 8, each worker ~97% occupied at both. The reason a directory of unit tests
+  // could not see it is that its suites are ~0.1s each, so the run is dominated
+  // by jest's own ~3.5s of startup, which no worker count divides.
   //
   // This has to live in the config rather than in a `--maxWorkers` flag on the
   // package.json scripts: ~15 package-level `test` scripts invoke `jest`
@@ -162,13 +248,18 @@ export default {
   // set on the root script. An explicit `--maxWorkers` on the command line still
   // outranks everything here, since jest applies argv over config.
   //
-  // CI is unchanged: it sets neither env var, and at 4 CPUs the clamp yields 2,
-  // exactly what the '50%' this replaced yielded there.
+  // CI is unchanged in shape: it sets no override, and at 4 CPUs and 16GB the
+  // ceiling yields 2 — what the '50%' before this yielded there.
   maxWorkers: resolveMaxWorkers(),
   workerIdleMemoryLimit: '1500MB',
   // must live at the root: jest drops testTimeout from entries in `projects`,
   // so a copy inside baseConfig silently leaves every test on the 5s default
   testTimeout: 15000,
+  // Each project names its own `id`. Jest otherwise derives one from rootDir,
+  // and it is the transform cache's directory name — a derived id gives every
+  // worktree its own private copy of a cache whose entries are content-addressed
+  // and would have been valid in all of them. The haste map stays per-checkout
+  // regardless: its filename carries a rootDir hash of its own.
   projects: [
     {
       // Root-level integration test
@@ -176,6 +267,8 @@ export default {
       testMatch: ['<rootDir>/integration.test.js'],
       testEnvironment: 'node',
       ...baseConfig,
+      id: 'jbrowse-integration',
+      roots: ['<rootDir>'],
     },
     {
       // Pure helpers behind the docs autogeneration scripts
@@ -183,6 +276,8 @@ export default {
       testMatch: ['<rootDir>/website/scripts/**/*.test.ts'],
       testEnvironment: 'node',
       ...baseConfig,
+      id: 'jbrowse-docs',
+      roots: ['<rootDir>/website/scripts'],
     },
     {
       // Release tooling: the blog-post render/parse contract
@@ -190,6 +285,8 @@ export default {
       testMatch: ['<rootDir>/scripts/**/*.test.ts'],
       testEnvironment: 'node',
       ...baseConfig,
+      id: 'jbrowse-scripts',
+      roots: ['<rootDir>/scripts'],
     },
     {
       // jbrowse-img uses the node environment and the real fetch, unmocked
@@ -198,6 +295,7 @@ export default {
       testPathIgnorePatterns: ['/dist/', '/demos/'],
       testEnvironment: 'node',
       ...baseConfig,
+      id: 'jbrowse-img',
     },
     {
       // All other tests use jsdom with the fetch mock below
@@ -219,6 +317,7 @@ export default {
       // fetch at all and a `Headers` that strips `range`. See the file.
       testEnvironment: '<rootDir>/config/jest/jsdomWithFetch.cjs',
       ...baseConfig,
+      id: 'jbrowse-default',
       // After the spread, and spreading baseConfig's own entry back in: this key
       // is the one both halves define, and `...baseConfig` last would otherwise
       // drop all three of these.
