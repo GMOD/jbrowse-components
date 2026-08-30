@@ -24,9 +24,9 @@ asserts the per-arc terms stay gone.
 **A shape, not a path string.** `shared/arcShape.ts` owns the two curves — a
 semicircle is a true half circle (radius IS half the span) and a bezier is a
 symmetric cubic apexing at `0.75 * height` — and hands out the canvas stroke,
-the `d`, the apex and the distance from ONE derivation. Don't add a fourth
-reading of a curve; `arcShape.test.ts` pins every point of the exported path as
-measuring zero distance, which is the check that keeps the hover on the ink.
+the `d`, the apex and the distance from ONE derivation. Don't write a second;
+`arcShape.test.ts` pins every point of the exported path as measuring zero
+distance, which is the check that keeps the hover on the ink.
 
 **The export stays vector, and is the one thing SVG still does here.** It emits
 `<path>` per arc off the same list because a figure wants vector and that path
