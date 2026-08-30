@@ -11,6 +11,13 @@ obvious version already, and an open handoff often has the bug.
 Rules live here only while nothing in the tree enforces them. Once a check
 exists, this file points at the check.
 
+## Comments
+
+**The density in this tree is not a licence to match it.** `~/.claude/CLAUDE.md`
+says minimal-or-none, and it gets broken the same way every time: three dense
+neighbours get read as the subsystem asking for more of the same but please
+avoid this.
+
 ## Git
 
 Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
