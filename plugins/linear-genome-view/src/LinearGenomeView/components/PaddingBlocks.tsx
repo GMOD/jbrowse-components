@@ -63,9 +63,17 @@ const PaddingBlocks = observer(function PaddingBlocks({
   return (
     <ZoomTransform model={model} offset={offset}>
       <div className={classes.absoluteFill}>
-        {model.paddingSpans.map(({ key, x, width, kind }) => (
+        {/* Keyed by POSITION, not by the span's `key` (its block identity), so
+        the list is a pool: a zoom moves every block, so every identity key
+        changed and React rebuilt the whole list each frame, where positional
+        keys patch the surviving nodes' transform and class instead. Same trade
+        ScalebarCoordinateLabels documents, and it lands harder here — this
+        component mounts once per track plus once for the container, so the
+        churn was multiplied by the track count. */}
+        {model.paddingSpans.map(({ x, width, kind }, i) => (
           <div
-            key={key}
+            // eslint-disable-next-line react/no-array-index-key
+            key={i}
             className={cx(classes.block, kindClass[kind])}
             style={{ transform: `translateX(${x}px)`, width }}
           />
