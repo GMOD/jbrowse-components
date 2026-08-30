@@ -514,6 +514,23 @@ function CascadingMenuItem({
       <MenuItem
         data-testid={makeTestId('menuitem', item.label)}
         disabled={item.disabled}
+        // A checkbox or radio row states its own value. The glyph
+        // `MenuItemEndDecoration` swaps is an `aria-hidden` icon, so without
+        // these a screen reader reads "Curved lines" identically whether the
+        // setting is on or off, and a test has no way to ask but the MUI icon's
+        // internal testid.
+        role={
+          item.type === 'checkbox'
+            ? 'menuitemcheckbox'
+            : item.type === 'radio'
+              ? 'menuitemradio'
+              : undefined
+        }
+        aria-checked={
+          item.type === 'checkbox' || item.type === 'radio'
+            ? item.checked
+            : undefined
+        }
         onClick={() => {
           // onCloseRoot runs before the callback, so item.onClick must NOT read
           // model state that closing clears (e.g. a right-click menu's ephemeral

@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
@@ -130,15 +132,6 @@ async function openMenu(adapter: Record<string, unknown> = PAF) {
 // Opens a radio submenu and clicks one of its options. The submenu rows carry
 // the testid `CascadingMenu` slugs from their label, which is what tells two
 // open-at-once "Off" rows apart.
-// A checkbox row's state is the glyph at its end — `MenuItemEndDecoration`
-// swaps the icon rather than rendering an input — so read it off the row's own
-// `<li>`. `.closest` rather than `parentElement`: the label sits inside a
-// `ListItemText` span, several levels down.
-function rowTicked(label: string) {
-  const row = screen.getByText(label).closest('li')!
-  return row.querySelector('[data-testid="CheckBoxIcon"]') !== null
-}
-
 function pick(row: string, option: string) {
   const slug = row.toLowerCase().replaceAll(' ', '_')
   fireEvent.click(screen.getByTestId(`cascading-submenu-${slug}`))
@@ -290,12 +283,15 @@ test('a checkbox row renders the value it resolved, not a constant', async () =>
     view.setDrawCurves(true)
   })
   expect(view.effectiveDrawCurves).toBe(true)
-  expect(rowTicked('Curved lines')).toBe(true)
+  expect(curvedLinesRow()).toBeChecked()
   act(() => {
     view.setDrawCurves(false)
   })
-  expect(rowTicked('Curved lines')).toBe(false)
+  expect(curvedLinesRow()).not.toBeChecked()
 })
+
+const curvedLinesRow = () =>
+  screen.getByRole('menuitemcheckbox', { name: /Curved lines/ })
 
 // A custom row draws its own content, so the value it reports is the model's
 // rather than a menu decoration — the caption is where a reader reads it back.
