@@ -312,7 +312,10 @@ describe('replaceMarkerRegions', () => {
       file: 'doc.md',
     })
 
-  test('rewrites the region between a pair', () => {
+  // The notice comes from `GENERATED_NOTICE` rather than being spelled again
+  // here: rewording it is what staled this assertion, and a restated copy would
+  // only do it a second time.
+  test('rewrites the region between a pair, under the generated notice', () => {
     expect(splice('a\n<!-- T START -->\n\nold\n\n<!-- T END -->\nb')).toBe(
       `a\n<!-- T START -->\n\n${GENERATED_NOTICE}\n\nBODY\n\n<!-- T END -->\nb`,
     )
