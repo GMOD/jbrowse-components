@@ -1,4 +1,5 @@
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
+import { observable } from 'mobx'
 
 import PaddingBlocks from './PaddingBlocks.tsx'
 
@@ -55,4 +56,50 @@ test('each kind gets its own look, and the same kind the same one', () => {
   expect(seamA).toBe(seamB)
   expect(before).toBe(after)
   expect(new Set([seamA, elided, before]).size).toBe(3)
+})
+
+// The gate on the pooling. A zoom recomputes staticBlocks, so every span's
+// `key` — its block identity — changes from one frame to the next while the
+// span COUNT usually does not. Keyed by identity React rebuilt the whole list
+// every frame; keyed by position it patches the nodes in place.
+//
+// Node identity is the assertion because it is what the DOM charges for: a
+// remounted div pays styling, layout and paint where a patched one pays a style
+// write. Measured over a 20-frame zoom in jbrowse-web's `ZoomRenderCensus`,
+// this was ~360 structural mutations at eight tracks — the component mounts
+// once per track plus once for the container, so the churn scaled with the
+// session.
+//
+// The frame is driven by MUTATING an observable, not by RTL's `rerender`, and
+// that is load-bearing: `rerender` remounts the tree from the root, so every
+// node comes back fresh however the list is keyed and the assertion passes on
+// nothing. What the app does is invalidate a mounted observer, which is this.
+test('a zoom repositions the same divs rather than rebuilding them', () => {
+  const model = observable(
+    { ...makeModel(), paddingSpans: spans },
+    {},
+    { deep: false },
+  ) as unknown as LinearGenomeViewModel & { paddingSpans: typeof spans }
+
+  const { container } = render(<PaddingBlocks model={model} />)
+  const before = spanDivs(container)
+
+  // same spans, new block identities and shifted x: one zoom frame
+  const zoomed = spans.map((s, i) => ({
+    ...s,
+    key: `frame2-${i}`,
+    x: s.x * 1.15,
+  }))
+  act(() => {
+    model.paddingSpans = zoomed
+  })
+  const after = spanDivs(container)
+
+  expect(after).toHaveLength(before.length)
+  for (const [i, node] of after.entries()) {
+    expect(node).toBe(before[i])
+  }
+  expect(after.map(d => d.style.transform)).toEqual(
+    zoomed.map(s => `translateX(${s.x}px)`),
+  )
 })

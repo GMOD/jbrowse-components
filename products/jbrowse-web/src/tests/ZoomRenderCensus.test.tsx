@@ -106,6 +106,7 @@ async function census({
         c.report(25) +
         `\n\nwhere the DOM churn lands:\n${churn}`,
     )
+    return c.components()
   } finally {
     c.stop()
     mo.disconnect()
@@ -115,7 +116,7 @@ async function census({
 // The regime the browser harness sweeps (0.5-4 bp/px), plus a track of each
 // family so the count reflects the chrome each one mounts.
 test('census: mixed tracks, base-ish zoom', async () => {
-  await census({
+  const counts = await census({
     label: 'mixed',
     trackIds: [
       'volvox_microarray',
@@ -126,7 +127,43 @@ test('census: mixed tracks, base-ish zoom', async () => {
     startBpPerPx: 5,
     painted: 'wiggle-display',
   })
+
+  // The one budget this file asserts, and the rest of the census is a readout.
+  // A wiggle body has nothing per-frame to say during a zoom: the plot is
+  // painted onto a canvas by the render autorun, and every observable the body
+  // itself reads — plot geometry, ticks, domain, score rules — is settled or
+  // debounced. It re-rendered once per frame anyway, because it derived its
+  // legend's right edge from `visibleRegions`, an array the view rebuilds every
+  // frame; the view now publishes `contentRightEdgePx` as a scalar. Restoring
+  // the array read takes these back over one per frame, which is the sabotage
+  // this number is chosen to catch, with room for the mount and the refetches.
+  const perGesture = (name: string) => counts.get(name) ?? 0
+  expect(perGesture('WiggleBody')).toBeLessThan(FRAMES)
+  expect(perGesture('MultiWiggleBody')).toBeLessThan(FRAMES)
 }, 90000)
+
+// The same gesture at twice the track count. Every per-frame cost this file
+// ranks is either view-global (the scalebar and ruler chrome) or paid once per
+// track (the padding-block and gridline overlays, each display's own body), and
+// which of the two a component is is the whole of whether it matters in a real
+// session.
+test('census: mixed tracks at 8, base-ish zoom', async () => {
+  await census({
+    label: 'mixed x8',
+    trackIds: [
+      'volvox_microarray',
+      'volvox_microarray_multi',
+      'volvox_filtered_vcf',
+      'volvox_gc',
+      'volvox_microarray_line',
+      'volvox_microarray_density',
+      'volvox_test_vcf',
+      'volvox_microarray_color',
+    ],
+    startBpPerPx: 5,
+    painted: 'wiggle-display',
+  })
+}, 120000)
 
 // The regime INTERACTION_PERF flags as unmeasured: where people read gene
 // tracks, and where FloatingLabelsLayer rebuilds a label div per feature.
