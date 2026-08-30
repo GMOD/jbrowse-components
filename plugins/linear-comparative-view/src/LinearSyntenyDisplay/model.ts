@@ -1,4 +1,7 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  resolveConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   findParentThatIs,
@@ -594,6 +597,32 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         return getContainingView(self) as LinearSyntenyViewModel
       },
       /**
+       * #getter
+       * Whether this level draws bezier ribbons: the view's own setting when it
+       * has one, else the promotable `drawCurves` slot resolved through the
+       * display-type cascade — this track's configured value, the session-wide
+       * default the settings menu's pin writes, then `promotedBase` (straight).
+       *
+       * The view tier is an override rather than a fourth cascade tier because
+       * it is a different question: the cascade answers "how are synteny
+       * ribbons drawn around here", the checkbox answers "how is THIS view
+       * drawn now", and a reader who has just ticked it means every level.
+       */
+      get effectiveDrawCurves(): boolean {
+        return this.view.drawCurves ?? resolveConf(self, 'drawCurves')
+      },
+      /**
+       * #getter
+       * Whether this level continues the query row's ruler through its ribbons.
+       * Resolved exactly as `effectiveDrawCurves` above.
+       */
+      get effectiveDrawLocationMarkers(): boolean {
+        return (
+          this.view.drawLocationMarkers ??
+          resolveConf(self, 'drawLocationMarkers')
+        )
+      },
+      /**
        * #method
        * The parent feature under an INSTANCE index (what the pick engine and
        * the hover/click state carry). Without instanceData the two spaces
@@ -633,7 +662,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        */
       get computedColors() {
         const { instanceData, featureData } = self
-        const { opacityByIdentity, drawLocationMarkers } = this.view
+        const { opacityByIdentity } = this.view
         if (!instanceData || !featureData) {
           return undefined
         }
@@ -643,7 +672,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           colorBy: this.effectiveColorBy,
           trackColor: this.trackColor,
           opacityByIdentity,
-          drawLocationMarkers,
+          drawLocationMarkers: this.effectiveDrawLocationMarkers,
           nameOrder: this.paintedChromosomeOrder,
           attributeRanges: this.view.attributeRanges,
         })
@@ -903,7 +932,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
-          drawCurves: view.drawCurves,
+          drawCurves: this.effectiveDrawCurves,
         }
       },
     }))
