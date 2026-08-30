@@ -219,6 +219,14 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **A band's height MINUS its reserved margin is floored at 0** where the
   expression is declared, not per consumer. If a shader computes it too, the
   `.slang` is the declaration and the CPU imports the generated twin (adr-051).
+- **The scalebar inset is `YSCALEBAR_LABEL_OFFSET` on both backends and must
+  stay a constant.** The GPU takes it as `covYOffset`, a uniform;
+  `coverageLayout` supplies the constant to the same generated twin, and its
+  eight callers — plus MAF's conservation band — have no render state to read a
+  different one from. So the uniform is a degree of freedom nothing can spend:
+  give it a non-5 value and the bars move while `interbaseBarHeightPx` and the
+  y-axis ticks beside them do not, splitting the band against itself inside one
+  frame. Making it configurable means threading it to all nine first.
 - `computeArcBand` is the single source of truth, decoupled from `showCoverage`.
   Arc and sashimi strips are reserved **per section**; `coverageDisplayHeight`
   and the fit-height row budget stay global, since re-deriving them from
