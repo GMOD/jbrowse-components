@@ -58,7 +58,9 @@ describe('applyInitSettings', () => {
     const v = view()
     applyInitSettings(v, { views: [] })
     expect(v.cigarMode).toBe('full')
-    expect(v.drawCurves).toBe(false)
+    // unset is the inherit state; straight chords is what it resolves to
+    expect(v.drawCurves).toBeUndefined()
+    expect(v.effectiveDrawCurves).toBe(false)
   })
 
   // `views` is the reason commands are skipped by name rather than by "is it a

@@ -3342,6 +3342,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
+        },
+        {
+          "name": "drawCurves",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "drawLocationMarkers",
+          "type": "(JexlString | (boolean | undefined))"
         }
       ],
       "stateModelProps": [

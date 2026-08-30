@@ -3,6 +3,7 @@ import {
   promotableSlotsWithoutPin,
 } from '@jbrowse/core/ui'
 
+import { syntenySettingsMenuItems } from '../../../../plugins/linear-comparative-view/src/LinearComparativeView/components/syntenySettingsMenuItems.ts'
 import { doBeforeEach, getPluginManager } from './util.tsx'
 
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
@@ -82,6 +83,15 @@ interface Fixture {
   // Display-level config the fixture opens with, where a row is gated on a
   // *configured* state rather than on a state an action can enter.
   displaySnapshot?: Record<string, unknown>
+  // How to open, where `showTrack` on the session's default LGV cannot — a
+  // synteny display needs a LinearSyntenyView with two rows under it.
+  open?: () => ResolvableDisplay
+  // Where the pins are, when they are not on the display's own track menu. A
+  // display that curates no track menu still has to pin its promotable slots
+  // *somewhere*, and that surface is what the check has to walk; defaulting to
+  // `trackMenuItems()` here would report the slots as pin-less and the
+  // baseline would grow an entry saying so.
+  menuItems?: (display: any) => MenuItem[]
 }
 
 const FIXTURES: Fixture[] = [
@@ -147,6 +157,17 @@ const FIXTURES: Fixture[] = [
     trackId: 'volvox multi-sample sv',
   },
   { displayType: 'LDDisplay', trackId: 'volvox multi-sample sv' },
+  {
+    // The one display in the list with no track menu of its own. Its two ribbon
+    // slots are pinned on the *view's* settings menu, because that is where a
+    // reader sets them — the view owns the ribbons, and a per-track copy of
+    // "Curved lines" would be a second answer to a question the view already
+    // asks once.
+    displayType: 'LinearSyntenyDisplay',
+    trackId: 'volvox_inv_indels',
+    open: openSyntenyDisplay,
+    menuItems: d => syntenySettingsMenuItems(d.view),
+  },
 ]
 
 // Display types that declare a promotable slot and have no fixture above,
@@ -181,6 +202,39 @@ function wiggleRenderingStates(scatter = 'scatter', line = 'line') {
 function overlayWithSources(d: any) {
   d.setRenderingType('multixyplot')
   d.setRpcData(0, { sources: [{ name: 'a' }, { name: 'b' }] })
+}
+
+// A LinearSyntenyDisplay lives on a level of a LinearSyntenyView, not on the
+// session's default LGV, so `showTrack` cannot reach it: the view has to exist
+// first and carry a row for each side of the comparison. The regions are what
+// give the level two initialized rows; nothing here fetches, and the settings
+// menu does not gate any pin on data.
+function openSyntenyDisplay() {
+  const { rootModel } = getPluginManager()
+  const view = rootModel.session!.addView('LinearSyntenyView', {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+        ],
+      },
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
+        ],
+      },
+    ],
+  })
+  view.showTrack('volvox_inv_indels')
+  const display = view.allSyntenyDisplays[0]
+  if (!display) {
+    throw new Error(
+      'LinearSyntenyDisplay did not open on "volvox_inv_indels" — the fixture is stale',
+    )
+  }
+  return display as ResolvableDisplay
 }
 
 // LinearVariantDisplay overrides `colorLegend` instead of reading the `legend`
@@ -223,7 +277,11 @@ beforeEach(() => {
 // Open `trackId` showing `displayType`, and return the display. Passing the
 // display type is what reaches a track's non-default displays — the SV arcs on a
 // VariantTrack, GC content on a ReferenceSequenceTrack.
-function openDisplay({ displayType, trackId, displaySnapshot }: Fixture) {
+function openDisplay(fixture: Fixture) {
+  if (fixture.open) {
+    return fixture.open()
+  }
+  const { displayType, trackId, displaySnapshot } = fixture
   const { rootModel } = getPluginManager()
   const view = rootModel.session!.views[0] as unknown as TestView
   view.showTrack(trackId, {}, { type: displayType, ...displaySnapshot })
@@ -248,7 +306,7 @@ function allMenuItems(fixture: Fixture) {
     display,
     menuItems: states.flatMap(enter => {
       enter(display)
-      return display.trackMenuItems()
+      return fixture.menuItems?.(display) ?? display.trackMenuItems()
     }),
   }
 }
