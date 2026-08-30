@@ -100,9 +100,14 @@ carries 10²-10⁴ arcs in view.
 
 **Fixed by drawing the band on one canvas** (`perf(arc)`, 2026-08-30): 19.5
 renders and 35.0 mutations a frame, with arc contributing **one render and zero
-mutations**. The per-arc terms are gone rather than smaller, which is the part
-that matters — the numbers above would have been ~2000 reactions and ~3000
-attribute patches a frame at 1000 arcs.
+mutations**. Take arc's own share as the measurement and the view-wide totals as
+a readout — the two agree exactly here (26.5 - 8 + 1 = 19.5, 47.0 - 12.0 = 35.0),
+which is what says nothing else in the arm moved, and a re-run gave 19.0/34.5 on
+the fetch-round jitter this instrument's caveats describe.
+
+The per-arc terms are gone rather than smaller, which is the part that matters:
+the numbers above would have been ~2000 reactions and ~3000 attribute patches a
+frame at 1000 arcs.
 
 Three things generalise from it:
 
