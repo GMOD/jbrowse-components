@@ -532,7 +532,7 @@ describe('a whole-genome row zoomed by hand', () => {
     const { rows, host } = await wholeGenome()
     place(rows[1]!, 0, CONTIG)
     const [anchorHere] = notificationsOf(host)[0]!.actions
-    expect(anchorHere!.name).toBe('Anchor b instead')
+    expect(anchorHere!.name).toBe('Anchor this row')
     anchorHere!.onClick()
     expect(host.followAnchorIndex).toBe(1)
   })

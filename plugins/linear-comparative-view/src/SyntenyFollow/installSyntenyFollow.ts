@@ -479,7 +479,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           'info',
           [
             {
-              name: `Anchor ${moving} instead`,
+              // not the row's name: the message has it, and a snackbar button
+              // sized by an assembly name wraps
+              name: 'Anchor this row',
               onClick: () => {
                 self.setFollowAnchorIndex(movingIndex)
               },
