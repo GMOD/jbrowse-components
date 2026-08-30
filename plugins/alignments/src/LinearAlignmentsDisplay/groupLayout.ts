@@ -482,19 +482,20 @@ export function fittedReadPitch(input: FittedReadPitchInput) {
 // the layout mechanics.
 export interface FitViewportInput {
   rowHeight: number
-  height: number
   maxHeight: number
-  // Band overhead (coverage + arc + sashimi strips) summed over every group, in
-  // px — a SUM, not one group's cost, because the strips below coverage are
-  // reserved per lane (`totalBelowCoverageOverhead`).
+  // The cap a lane on the shared fit budget lays out under, already resolved:
+  // the viewport slice when grouped (`fitGroupMaxRows`), the display-wide
+  // ceiling when not.
   //
-  // A thunk rather than a value because only the grouped branch spends it. Read
-  // eagerly, it puts every band height in the layout computed's dependency set,
-  // so an ungrouped display re-placed every row — and its renderer repacked
-  // every GPU buffer — on each frame of a coverage/arc band resize drag, to draw
-  // the rows it already had. Grouping does divide the viewport by band overhead,
-  // so there the dependency is real and the thunk is called.
-  totalOverhead: () => number
+  // Resolved by the CALLER, and that is the whole point. It is derived from the
+  // track height and the summed band overhead, both of which move a px at a time
+  // under a resize drag while the cap they produce moves a ROW at a time — so
+  // taking them as numbers here put them in the layout computed's dependency
+  // set, and every frame of a track-height or band drag re-placed every row and
+  // re-baked every color to arrive at the identical arrays. An ungrouped display
+  // spends neither and was invalidated by both. `resolveFitDefaultCap` builds it
+  // and the model's `fitDefaultCap` is where that gate lives.
+  defaultCap: RowCap
   // Groups drawing coverage only — they cost overhead but no pileup rows.
   collapsedKeys: ReadonlySet<string>
   // The row caps the per-group height overrides impose (drag / "show all"); a
@@ -512,27 +513,9 @@ export function layoutGroupsToViewport(
   ctx: GroupLayoutContext,
   fit: FitViewportInput,
 ): LaidOutByGroup {
-  const { rowHeight, collapsedKeys, overrideCaps } = fit
+  const { rowHeight, collapsedKeys, overrideCaps, defaultCap } = fit
   const maxHeightRows = maxRowsFor(fit.maxHeight, rowHeight)
   const grouped = ctx.order.length > 1
-  // Collapsed groups draw only their coverage band, so they still cost overhead
-  // but claim no pileup rows — divide the pileup budget across just the groups
-  // still showing a pileup so collapsing frees space for the rest.
-  const visibleGroupCount = ctx.order.filter(
-    g => !collapsedKeys.has(g.key),
-  ).length
-  // Ungrouped takes the ceiling and never a slice: there is nothing to split the
-  // viewport with, which is why its clip is always the one the banner speaks for.
-  const defaultCap = grouped
-    ? fitGroupMaxRows({
-        height: fit.height,
-        visibleGroupCount,
-        rowHeight,
-        totalOverhead: fit.totalOverhead(),
-        maxRows: maxHeightRows,
-      })
-    : ceilingCap(maxHeightRows)
-
   const pass = buildLaidOutByGroup(ctx, defaultCap, overrideCaps, collapsedKeys)
   if (!grouped) {
     return pass
@@ -610,6 +593,41 @@ export function fitGroupMaxRows({
   const slice = pileupBudget / Math.max(1, visibleGroupCount)
   const rows = Math.max(MIN_FIT_ROWS, Math.floor(slice / rowHeight))
   return tighterCap(rows, maxRows)
+}
+
+// The cap every lane on the shared fit budget lays out under. Grouped, that is
+// its slice of the viewport; ungrouped there is nothing to split the viewport
+// with, so it is the display-wide ceiling — which is why an ungrouped clip is
+// always the one the truncation banner speaks for.
+//
+// Lifted out of `layoutGroupsToViewport` so the model can resolve it one step
+// earlier and gate the layout on the ROW COUNT it settles at rather than on the
+// px it was derived from.
+export function resolveFitDefaultCap({
+  grouped,
+  height,
+  visibleGroupCount,
+  rowHeight,
+  totalOverhead,
+  maxHeight,
+}: {
+  grouped: boolean
+  height: number
+  visibleGroupCount: number
+  rowHeight: number
+  totalOverhead: number
+  maxHeight: number
+}) {
+  const maxRows = maxRowsFor(maxHeight, rowHeight)
+  return grouped
+    ? fitGroupMaxRows({
+        height,
+        visibleGroupCount,
+        rowHeight,
+        totalOverhead,
+        maxRows,
+      })
+    : ceilingCap(maxRows)
 }
 
 // One group's outcome after the equal-split layout pass, for the spare-row

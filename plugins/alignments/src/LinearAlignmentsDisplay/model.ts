@@ -109,6 +109,7 @@ import {
   layoutGroupsToViewport,
   nextGroupHeightOverride,
   parseGroupRowCaps,
+  resolveFitDefaultCap,
   someAcrossGroups,
 } from './groupLayout.ts'
 import {
@@ -158,6 +159,8 @@ import {
 
 import type {
   GroupedAlignmentsResult,
+  RowCap,
+  RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
@@ -1468,6 +1471,72 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Rows a lane on the shared fit budget may lay out: its slice of the
+         * viewport when grouped, the display-wide ceiling when not.
+         *
+         * The track height and the summed band overhead behind it move a px at a
+         * time under a resize drag, and this moves a ROW at a time — so the
+         * layout reads THIS rather than them, and a drag frame that changes no
+         * row count reuses every placement and every baked color. An ungrouped
+         * display spends neither number and so depends on neither.
+         *
+         * Grow fits rows to the grow ceiling (content grows the track up to it,
+         * then scrolls); fixed/fit fit to the drag-resizable slot. Both read
+         * config slots, never the reactive `height` getter, so grow's
+         * `height`→grownHeight→layout chain can't cycle.
+         */
+        get fitDefaultCapRows(): number {
+          return this.resolvedFitDefaultCap.rows
+        },
+
+        /**
+         * #getter
+         * Which policy set that cap — the viewport slice or the ceiling — which
+         * is what a clipped lane reports as its `clippedBy`.
+         */
+        get fitDefaultCapSource(): RowCapSource {
+          return this.resolvedFitDefaultCap.source
+        },
+
+        /**
+         * #getter
+         * The cap itself. Assembled from the two primitives above rather than
+         * taken from `resolvedFitDefaultCap` directly: MobX compares an object by
+         * identity, so a cap rebuilt to the same numbers would invalidate the
+         * layout anyway — which is the whole point of resolving it here.
+         */
+        get fitDefaultCap(): RowCap {
+          return {
+            rows: this.fitDefaultCapRows,
+            source: this.fitDefaultCapSource,
+          }
+        },
+
+        /**
+         * #getter
+         * The unmemoized cap, read only by the two primitive getters above. Cheap
+         * arithmetic, so it costs less to resolve twice than to encode.
+         */
+        get resolvedFitDefaultCap(): RowCap {
+          // The lane list the layout itself walks (`groupLayoutContext.order`),
+          // so "grouped" and the visible count are the same questions it used to
+          // ask inside — a collapsed lane costs band overhead but claims no
+          // pileup rows, so collapsing one frees its slice for the rest.
+          const { order } = this.groupLayoutContext
+          return resolveFitDefaultCap({
+            grouped: order.length > 1,
+            height: self.autoHeight ? self.growMaxHeight : self.fitTargetHeight,
+            visibleGroupCount: order.filter(
+              g => !self.collapsedGroups.has(g.key),
+            ).length,
+            rowHeight: this.rowHeight,
+            totalOverhead: this.totalBandOverhead,
+            maxHeight: this.maxHeight,
+          })
+        },
+
+        /**
+         * #getter
          * Per-group laid-out data: group key → (region index → laid-out data).
          * Each group lays out independently (own `maxRows` cap) so a dense group
          * can't starve the rest. When grouped, the default cap fits all sections
@@ -1480,20 +1549,14 @@ export default function stateModelFactory(
         get laidOutByGroupUncolored() {
           return layoutGroupsToViewport(this.groupLayoutContext, {
             rowHeight: this.rowHeight,
-            // Grow fits rows to the grow ceiling (content grows the track up to
-            // it, then scrolls); fixed/fit fit to the drag-resizable slot. Both
-            // read config slots, never the reactive `height` getter, so grow's
-            // `height`→grownHeight→layout chain can't cycle.
-            height: self.autoHeight ? self.growMaxHeight : self.fitTargetHeight,
             maxHeight: this.maxHeight,
-            // A thunk, so the band heights only enter this computed's
-            // dependencies when grouping actually spends them — see
-            // `FitViewportInput.totalOverhead`.
-            totalOverhead: () => this.totalBandOverhead,
             collapsedKeys: self.collapsedGroups,
-            // The caps, not the px they came from: a drag frame that lands on
-            // the same caps must reuse this layout rather than recompute it to
-            // the same arrays (`groupRowCapSignature`).
+            // Both caps arrive resolved, and neither the track height nor the
+            // band overhead they came from is read here: those move a px per
+            // drag frame while the caps move a row at a time, so reading them
+            // re-placed every row and re-baked every color to arrive at arrays
+            // that were already correct (`fitDefaultCap`, `groupRowCaps`).
+            defaultCap: this.fitDefaultCap,
             overrideCaps: this.groupRowCaps,
           })
         },
