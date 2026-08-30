@@ -186,3 +186,42 @@ test('an arc off screen paints nothing', () => {
     .data.every((v, i) => i % 4 !== 3 || v === 0)
   expect(blank).toBe(true)
 })
+
+// The other display mode, which nothing else here reaches: a semicircle's
+// height is not a config slot at all — its radius IS half its span — so a model
+// that kept building beziers would still draw something plausible.
+test('semicircle mode lays out semicircles, and they paint', () => {
+  const { createDisplay: createSemicircleDisplay } = createTestEnvironment({
+    thickness: 2,
+    label: '',
+    caption: 'cap',
+    displayMode: 'semicircles',
+  })
+  const { display } = createSemicircleDisplay()
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'f1',
+      refName: 'ctgA',
+      start: 100,
+      end: 600,
+      score: 10,
+    }),
+  ])
+  const { container } = render(<Arcs model={display} />)
+  const { shape } = display.laidOutArcs[0]!
+  expect(shape.kind).toBe('semicircle')
+
+  const canvas = container.querySelector('canvas')!
+  // A point on the circle at a y the canvas actually has. The apex is at the
+  // radius, and a semicircle's radius IS half its span — so a wide arc apexes
+  // far below the track and the band only ever shows its two flanks, which is
+  // the case a check sampling the apex would have missed entirely.
+  const mid = (shape.left + shape.right) / 2
+  const radius = Math.abs(shape.right - shape.left) / 2
+  const y = Math.round(canvas.height / 2)
+  expect(radius).toBeGreaterThan(canvas.height)
+  const x = Math.round(mid - Math.sqrt(radius * radius - y * y))
+  expect(inkAt(canvas, x, y)).toBe(true)
+  // 30px along the baseline from the flank, which is empty band
+  expect(inkAt(canvas, x - 30, y)).toBe(false)
+})
