@@ -1,5 +1,6 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
+import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { reaction } from 'mobx'
@@ -45,7 +46,7 @@ const defaultHeight = 440
 
 export default function stateModelFactory() {
   const ImportWizardModel = ImportWizard()
-  return types
+  const model = types
     .compose(
       BaseViewModel,
       types
@@ -360,6 +361,8 @@ export default function stateModelFactory() {
         spreadsheet: omitRows ? spreadsheetRest : spreadsheet,
       }
     })
+
+  return warnUnknownSnapshotKeys(model)
 }
 
 export type SpreadsheetViewStateModel = ReturnType<typeof stateModelFactory>

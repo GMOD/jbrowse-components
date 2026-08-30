@@ -13,6 +13,7 @@ import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -84,7 +85,7 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
-  return types
+  const model = types
     .compose(
       'BreakpointSplitView',
       BaseViewModel,
@@ -978,6 +979,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }
       return snap
     })
+
+  return warnUnknownSnapshotKeys(model)
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>

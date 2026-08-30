@@ -234,6 +234,7 @@
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
     "./util/viewStatus": "./src/util/viewStatus.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
+    "./util/warnUnknownSnapshotKeys": "./src/util/warnUnknownSnapshotKeys.ts",
     "./util/wheelZoom": "./src/util/wheelZoom.ts",
     "./util/whenViewSettled": "./src/util/whenViewSettled.ts"
   },
@@ -501,6 +502,7 @@
       "./util/useRowVirtualScroll": "./esm/util/useRowVirtualScroll.js",
       "./util/viewStatus": "./esm/util/viewStatus.js",
       "./util/virtualRange": "./esm/util/virtualRange.js",
+      "./util/warnUnknownSnapshotKeys": "./esm/util/warnUnknownSnapshotKeys.js",
       "./util/wheelZoom": "./esm/util/wheelZoom.js",
       "./util/whenViewSettled": "./esm/util/whenViewSettled.js"
     }

@@ -1192,6 +1192,20 @@ only on a real violation):
   unchanged view exports to the same bytes — `svgNodeId`), so the check goes on
   the second mount rather than on the ids.
 
+- **A view snapshot key naming no declared property is dropped in silence.**
+  `warnUnknownSnapshotKeys` (`core/util/warnUnknownSnapshotKeys.ts`), the `view`
+  family, on each registered view model. A config that writes a spec's flat
+  launch keys onto a `defaultSession` view — `{ type: 'LinearGenomeView',
+  assembly, loc, tracks }` — renders a default view and says nothing about why;
+  three demo builders ship that today. The known set is read off the composed
+  model, so it cannot drift as a view gains properties. **The general move for a
+  check inside a preprocessor: order it against the remaps, not against what was
+  authored.** MST runs preprocessors in the reverse of the order they were added
+  and a composed base's after all of them, so the call sits BEFORE a view's own
+  legacy remap — from the other side it reports `bpPerPx` on every pre-window
+  session as a typo — and a base's remap it still cannot see is named in
+  `legacy` (LinearSyntenyView's `tracks`).
+
 **Checked without a runtime check:**
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**

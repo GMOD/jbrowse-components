@@ -69,6 +69,12 @@ load has nowhere to live but the frozen `init` property, and a plain prop is a
 property in its own right — a view prop written *inside* `init` lands in the blob
 where nothing reads it, hence the afterAttach warning.
 
+The mirror mistake is a spec's launch key written flat on a snapshot, next to
+`init` rather than inside it, where MST drops it for naming no declared
+property. `warnUnknownSnapshotKeys` (`core/util/warnUnknownSnapshotKeys.ts`)
+reports that one from each view's own `preProcessSnapshot`, on the `[jbrowse
+view contract]` channel, so a test collecting it fails.
+
 Nesting a spec's keys under `init` is therefore **reported, not accepted**
 (`loadSessionSpec`). Two rejected alternatives, so this doesn't get relitigated:
 

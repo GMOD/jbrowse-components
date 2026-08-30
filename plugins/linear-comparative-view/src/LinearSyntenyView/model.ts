@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getDialogHost, getSession } from '@jbrowse/core/util'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
+import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
@@ -99,7 +100,7 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  * snapshot type.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
-  return types
+  const model = types
     .compose(
       'LinearSyntenyView',
       baseModel(pluginManager),
@@ -903,6 +904,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         doAfterAttach(self)
       },
     }))
+
+  // `tracks` as legacy: LinearComparativeView converts a pre-`levels` snapshot's
+  // top-level tracks, and a composed base's preprocessor runs after everything
+  // added here, so the check cannot see that conversion.
+  return warnUnknownSnapshotKeys(model, { legacy: ['tracks'] })
     .preProcessSnapshot<
       ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
     >(snap => {

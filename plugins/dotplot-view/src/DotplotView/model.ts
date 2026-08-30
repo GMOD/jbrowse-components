@@ -19,6 +19,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -239,7 +240,7 @@ export interface ExportSvgOptions {
  * `loc` on each `views` entry — see the `init` property below.
  */
 export default function stateModelFactory(pm: PluginManager) {
-  return (
+  return warnUnknownSnapshotKeys(
     types
       .compose(
         'DotplotView',
@@ -1712,7 +1713,7 @@ export default function stateModelFactory(pm: PluginManager) {
           return rest as typeof snap
         }
         return snap
-      })
+      }),
   )
 }
 

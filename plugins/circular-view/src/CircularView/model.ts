@@ -16,6 +16,7 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
+import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -178,7 +179,7 @@ function stateModelFactory(pluginManager: PluginManager) {
   const maxPaddingFraction = 0.2
   const maxSpacingFraction = 0.25
   const defaultMinVisibleWidth = 6
-  return types
+  const model = types
     .compose(
       'CircularView',
       BaseViewModel,
@@ -1049,6 +1050,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       }
       return snap
     })
+
+  return warnUnknownSnapshotKeys(model)
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>

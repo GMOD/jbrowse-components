@@ -1,6 +1,7 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { clamp, getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
@@ -75,7 +76,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   // down to nothing
   const minWidthFraction = 0.2
   const maxWidthFraction = 0.8
-  return types
+  const model = types
     .compose(
       'SvInspectorView',
       BaseViewModel,
@@ -517,6 +518,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         circularView: kept.length ? { ...circular, tracks: kept } : circular,
       }
     })
+
+  return warnUnknownSnapshotKeys(model)
 }
 
 export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>

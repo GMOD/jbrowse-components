@@ -40,6 +40,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
+import { warnUnknownSnapshotKeys } from '@jbrowse/core/util/warnUnknownSnapshotKeys'
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
@@ -326,7 +327,7 @@ function isTrackSelectorVisible(self: IAnyStateTreeNode) {
  * ```
  */
 export function stateModelFactory(pluginManager: PluginManager) {
-  return types
+  const model = types
     .compose(
       'LinearGenomeView',
       BaseViewModel,
@@ -3192,6 +3193,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         doAfterAttach(self as LinearGenomeViewModel)
       },
     }))
+
+  return warnUnknownSnapshotKeys(model)
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       if (!snap) {
         return snap
