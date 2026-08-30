@@ -22,9 +22,9 @@ import { makeCoverageScale } from './coverageScale.ts'
 //
 // They had drifted in two directions at once. The min was dropped by all three,
 // so a `minScore` bound changed nothing on screen while the menu reported it in
-// force; and the GPU's linear branch was an unclamped `relDepth * depthScale`
-// against Canvas2D's clamped one, so a region whose peak exceeded the nice
-// rounded domain drew past the top of its band on one backend only.
+// force; and the GPU's linear branch was unclamped against Canvas2D's clamped
+// one, so a region whose peak exceeded the nice rounded domain drew past the top
+// of its band on one backend only.
 
 const DOMAINS: [number, number][] = [
   [0, 100],

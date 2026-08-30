@@ -130,10 +130,9 @@ export interface CoverageBandColors {
 }
 
 /**
- * Everything the band's UBO holds that a caller actually decides. `hpZero` and
- * `depthScale` are absent because neither is a decision: the first is a fixed
- * sentinel the HP math needs, the second falls out of the region's peak against
- * the display's domain — see `writeCoverageBandUniforms`.
+ * Everything the band's UBO holds that a caller actually decides. `hpZero` is
+ * absent because it is not one: it is a fixed sentinel the HP math needs — see
+ * `writeCoverageBandUniforms`.
  */
 export interface CoverageBandUniformValues {
   /** HP-split viewport start + visible span; keep `bpLen` POSITIVE and flip via `reversed`. */
@@ -167,14 +166,10 @@ export interface CoverageBandUniformValues {
  * Fill the coverage band's uniform buffer. Total-write (the generated packer),
  * so a field left out is a compile error rather than last frame's value.
  *
- * The two derived slots are here rather than at each call site because getting
- * either wrong is a silently wrong band, not a broken one:
- *
- * - `depthScale` un-bakes the region's peak from the buffer's `relDepth` so the
- *   bars land on the display's domain. 1 when the domain has not resolved or
- *   the region is empty, which is the identity that leaves `relDepth` alone.
- * - `hpZero` MUST be 0: the HP math materializes +inf as `1/hpZero` to stop the
- *   compiler folding the hi/lo split it exists to preserve.
+ * `hpZero` is derived here rather than at each call site because getting it
+ * wrong is a silently wrong band, not a broken one: it MUST be 0, since the HP
+ * math materializes +inf as `1/hpZero` to stop the compiler folding the hi/lo
+ * split it exists to preserve.
  */
 export function writeCoverageBandUniforms(
   buf: ArrayBuffer,
@@ -191,10 +186,7 @@ export function writeCoverageBandUniforms(
     covHeight: v.covHeight,
     covYOffset: v.covYOffset,
     covTop: v.covTop,
-    depthScale:
-      domainMax !== undefined && v.regionMaxDepth > 0
-        ? v.regionMaxDepth / domainMax
-        : 1,
+    regionMaxDepth: v.regionMaxDepth,
     depthDomainMax: domainMax ?? 0,
     depthDomainMin: v.domainMin,
     coverageSymlogConstant: v.symlogConstant,

@@ -67,14 +67,25 @@ function bandState(overrides: Partial<RenderState> = {}) {
   })
 }
 
-function bandUniforms(state: RenderState) {
+function bandUniforms(state: RenderState, depth?: number) {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   const renderer = new GpuAlignmentsRenderer(hal)
+  // `regionMeta` reports a peak only for a region that packed coverage bins, so
+  // a test about the peak has to give it both.
+  const data = makePileupDataResult(
+    depth === undefined
+      ? {}
+      : {
+          coverageMaxDepth: depth,
+          coverageGpuBinCount: 1,
+          coveragePackedBuffer: new ArrayBuffer(16),
+        },
+  )
   const sources: AlignmentsSources = {
     sections: [
       {
         groupKey: '',
-        laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
+        laidOutPileupMap: new Map([[0, data]]),
         arcsRpcDataMap: new Map(),
       },
     ],
@@ -153,12 +164,36 @@ describe('the coverage band UBO', () => {
     expect(f32[UNIFORM_OFFSET_F32.hpZero]).toBe(0)
   })
 
-  // The one derived slot: it un-bakes the region's own peak from the buffers'
-  // `relDepth` so the bars land on the display's domain. An empty region has no
-  // peak to un-bake, and 1 is the identity that leaves `relDepth` alone — the
-  // failure the other value would give is silently rescaled bars.
-  test('depthScale is the identity for a region with no depth', () => {
-    expect(f32[UNIFORM_OFFSET_F32.depthScale]).toBe(1)
+  // What the buffers' `relDepth` is a fraction of, so it is what recovers a raw
+  // depth — the same product Canvas2D forms. An empty region's peak is 0, and
+  // every `relDepth` in it is 0 too; the ratio this replaced was `Infinity` for
+  // a domainMax of 0, and `relDepth * Infinity * 0` is NaN.
+  test('regionMaxDepth is the region peak, 0 for a region with no depth', () => {
+    expect(f32[UNIFORM_OFFSET_F32.regionMaxDepth]).toBe(0)
+  })
+
+  // A DOMAIN MAX OF 0 IS A SETTING, NOT A DEGENERATE ACCIDENT. `hasCoverageScale`
+  // gates on `!== undefined`, and `getNiceDomain` returns a bound the reader
+  // TYPED verbatim rather than nicing it — so `Set max score` → 0 reaches the
+  // packer with a real region peak beside it. The ratio this uniform replaced
+  // was `regionMaxDepth / 0` = +inf, and the shader's
+  // `relDepth * depthScale * depthDomainMax` then made NaN, which reaches
+  // `clamp(NaN, 0, 1)` — unspecified in WGSL — on the `minScore < 0` linear arm.
+  // Canvas2D forms `relDepth * regionMaxDepth` and drew every bar full height.
+  test('a typed max score of 0 puts no infinity in the buffer', () => {
+    const { f32: degenerate } = bandUniforms(
+      bandState({ coverageMinDepth: -10, coverageMaxDepth: 0 }),
+      40,
+    )
+    expect(degenerate[UNIFORM_OFFSET_F32.regionMaxDepth]).toBe(40)
+    expect(degenerate[UNIFORM_OFFSET_F32.depthDomainMax]).toBe(0)
+    // the float slots by name, not the whole buffer — a packed ABGR colour read
+    // back through `f32` is a NaN bit pattern for most colours
+    expect(
+      Object.entries(UNIFORM_OFFSET_F32)
+        .filter(([, offset]) => !Number.isFinite(degenerate[offset]))
+        .map(([name]) => name),
+    ).toEqual([])
   })
 
   test('a grouped section moves covTop rather than the band box', () => {

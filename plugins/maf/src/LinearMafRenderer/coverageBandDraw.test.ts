@@ -76,7 +76,7 @@ function state(coverage: MafCoverageBandState | undefined): MafGPURenderState {
   }
 }
 
-// One region with a real depth peak, so `depthScale` has something to un-bake.
+// One region with a real depth peak, distinct from the display's domain max.
 function region(): MafRegionData {
   return {
     blocks: [],
@@ -167,9 +167,10 @@ describe('the MAF coverage band on the rows canvas', () => {
     expect(band[UNIFORM_OFFSET_F32.covTop]).toBe(0)
     expect(band[UNIFORM_OFFSET_F32.canvasH]).toBe(COVERAGE_HEIGHT + ROWS_HEIGHT)
     expect(band[UNIFORM_OFFSET_F32.depthDomainMax]).toBe(20)
-    // regionMaxDepth / domainMax — what un-bakes the region's own peak from the
-    // buffer's `relDepth` so the bars land on the display's domain.
-    expect(band[UNIFORM_OFFSET_F32.depthScale]).toBeCloseTo(5 / 20)
+    // the region's own peak, which is what the buffer's `relDepth` is a fraction
+    // of — carried as itself rather than as a ratio the shader multiplies the
+    // domain back into
+    expect(band[UNIFORM_OFFSET_F32.regionMaxDepth]).toBe(5)
     expect(band[UNIFORM_OFFSET_F32.hpZero]).toBe(0)
   })
 

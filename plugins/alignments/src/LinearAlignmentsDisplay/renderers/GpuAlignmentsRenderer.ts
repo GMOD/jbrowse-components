@@ -199,9 +199,9 @@ function fillCoverageBandUniforms(
     symlogConstant: state.coverageSymlogConstant,
     binSize: region.binSize,
     // The same rule drawInterbaseSegments and hitTestInterbase read — see
-    // `interbaseBarHeightPx`. This used to spell the ratio `region.maxDepth /
-    // domainMax` by reusing `depthScale`, which is the interbase bars' scale only
-    // while `interbaseMaxCount === region.maxDepth`.
+    // `interbaseBarHeightPx`. Its own count against its own domain: the depth
+    // bars' ratio is the interbase bars' only while
+    // `interbaseMaxCount === region.maxDepth`.
     interbaseHeight: interbaseBarHeightPx(
       state.coverageHeight,
       region.interbaseMaxCount,

@@ -22,7 +22,7 @@ export const UNIFORM_OFFSET_F32 = {
   covHeight: 6,
   covYOffset: 7,
   covTop: 8,
-  depthScale: 9,
+  regionMaxDepth: 9,
   depthDomainMax: 10,
   depthDomainMin: 11,
   coverageSymlogConstant: 12,
@@ -61,7 +61,7 @@ export interface Uniforms {
   covHeight: number
   covYOffset: number
   covTop: number
-  depthScale: number
+  regionMaxDepth: number
   depthDomainMax: number
   depthDomainMin: number
   coverageSymlogConstant: number
@@ -94,7 +94,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[6] = uniforms.covHeight
   f32[7] = uniforms.covYOffset
   f32[8] = uniforms.covTop
-  f32[9] = uniforms.depthScale
+  f32[9] = uniforms.regionMaxDepth
   f32[10] = uniforms.depthDomainMax
   f32[11] = uniforms.depthDomainMin
   f32[12] = uniforms.coverageSymlogConstant

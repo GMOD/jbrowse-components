@@ -52,10 +52,10 @@ public struct CoverageBandUniforms {
   public float covYOffset;
   public float covTop;
 
-  // The depth axis. `depthScale` is regionMaxDepth / domainMax, which is what
-  // recovers a raw depth from the buffer's `relDepth`; the domain is the
-  // display's autoscaled one, so a rescale needs no repack.
-  public float depthScale;
+  // The depth axis. `regionMaxDepth` is what the buffer's `relDepth` is a
+  // fraction of, so it is what recovers a raw depth; the domain is the display's
+  // autoscaled one, so a rescale needs no repack.
+  public float regionMaxDepth;
   public float depthDomainMax;
   public float depthDomainMin;
   // symlog's linear-region width, already resolved from the domain on the JS
@@ -206,12 +206,16 @@ public float normalizeDepthScalar(float rawDepth, float domainMin, float domainM
 }
 
 // The uniform-block wrapper every pass calls. Recovers the raw depth from the
-// packed `relDepth` (= rawDepth / regionMaxDepth, with
-// depthScale = regionMaxDepth / domainMax) and hands it to the scalar above.
+// packed `relDepth` (= rawDepth / regionMaxDepth) and hands it to the scalar
+// above — the same product Canvas2D forms, rather than a round trip through the
+// domain. Multiplying by `regionMaxDepth / domainMax` and then by `domainMax`
+// cancels algebraically and does not cancel in floats: a domainMax of 0, which
+// `getNiceDomain` returns verbatim for a typed `Set max score` of 0, made the
+// first factor +inf and the product NaN, reaching `clamp(NaN, 0, 1)`.
 // Split in two so the scalar half can be `//! js-export`ed — the twin emitter
 // cannot carry a uniform struct across.
 public float covNormalizeDepth(float relDepth, CoverageBandUniforms u) {
-  float rawDepth = relDepth * u.depthScale * u.depthDomainMax;
+  float rawDepth = relDepth * u.regionMaxDepth;
   return normalizeDepthScalar(
     rawDepth, u.depthDomainMin, u.depthDomainMax, u.coverageScaleType,
     u.coverageSymlogConstant);
