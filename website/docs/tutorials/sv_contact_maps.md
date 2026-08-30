@@ -291,42 +291,6 @@ right has both ends on the other. The grey reads running through both sides are
 the ordinary pairs, and they are unbroken, which is what a heterozygous call
 looks like from underneath.
 
-## Without the preprocessing
-
-The `.hic` route builds files first. The same four contact channels can also be
-computed from the BAM as the view moves, by an adapter that does the
-classification in a worker and hands the Hi-C track the counts:
-
-```json addtrack
-{
-  "type": "HicTrack",
-  "trackId": "sv_contacts_live",
-  "name": "Contacts: same-strand pairs, computed live",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "AlignmentsContactAdapter",
-    "channel": "sameStrand",
-    "minSpan": 1000,
-    "binSizes": [750, 1500, 5000, 25000],
-    "subadapter": {
-      "type": "BamAdapter",
-      "uri": "https://jbrowse.org/demos/sv_contact_maps/NA12878.sv_contact_maps.bam"
-    }
-  },
-  "displayDefaults": {
-    "useColorPercentile": true
-  }
-}
-```
-
-`channel` picks one of `discordant`, `sameStrand`, `outward` or
-`depthDifference`, and the rest of the slots mean what the flags of the same
-name mean above. Four tracks over one BAM give the same four channels with
-nothing precomputed and nothing to host, which is the route to take on reads you
-are still looking at. The `.hic` route is the one to take when the window is
-wide, when the reads are somewhere slow, or when the channels have to outlive
-the BAM. The channels track needs neither: it reads the BAM the pileup reads.
-
 ## Reproduce it end to end
 
 [`build_sv_contact_maps.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_sv_contact_maps.sh)
