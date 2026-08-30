@@ -113,14 +113,32 @@ RPC message handler so it lands mid-frame. Wiggle's `regionFetchKey` is
 `String(bpPerPx)`, so a zoom already refetches and a worker-side pack rides along
 free; `MafUploadPayload` is the payload shape to copy.
 
-**The obstacle list this file used to carry was wrong on two of three counts.**
-Colour strings parse fine in a worker (`colorBits.ts` is a pure parser, and
-wiggle's colours are config slots, not theme reads — the theme-flip hazard was
-imported from MAF by analogy). Multi-wiggle already ships `summaryScoreMode`
-worker-side, so the whisker split is not blocked either. Only `rowIndex` is
-genuinely main-thread-bound, and worse than stated: the ordered source list is
-derived from the fetched data itself, so a fetch discovering a new source cannot
-be told its own row assignment.
+**"Move `pack`" understates the move, and `bicolorPivot` is how you see it.**
+`pack` takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
+— so the worker would have to run that too, or receive the expanded form over
+the wire, which is the thing being avoided. And `buildSourceRenderData` is where
+the pivot lives: `sourceLayers` colours the whiskers bands around it
+(`buildSourceRenderData.ts:204`), which is why `bicolorPivot` sits in
+**`gpuProps` as well as `rpcProps`** — the second copy exists so a pivot change
+re-fires the encode, not because the worker lacks the value. The worker has it;
+availability is not the obstacle.
+
+**The obstacle is that the encoder cannot leave, only be duplicated.**
+`installUpload` re-encodes **every cached region** whenever `gpuProps` identity
+moves (`installUpload.ts:195-198`: `p !== lastProps` clears `encodedFrom`), and
+most of what moves it — colour, plot type, summary score mode, re-sort — does
+**not** refetch. Those have to be served main-thread. So a worker-side pack adds
+a second encoder rather than relocating the first, and the two must agree
+forever.
+
+That O(N cached regions x K) main-thread re-encode is exactly the cost
+[ADR-016](../architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md)
+measured and refused when the proposal was to move the pos/neg split the OTHER
+way, main-thread-ward. The ADR does not forbid this move — its argument runs in
+its favour, since a worker-side encode is the O(K)-per-region side it preferred
+— but it is the same accounting, and its rule ("only move worker computation to
+`gpuProps` when the setting changes frequently AND the per-feature work is cheap
+or expressible as a uniform") is what a reader should apply here.
 
 **The blocker nobody listed is retention.** Today the packed buffer is
 transient — pack, upload, garbage. In the upload payload it is resident for the
@@ -129,15 +147,24 @@ documented immutable so it cannot be nulled after upload). Wiggle's own comment
 puts that at **82MB for a 1000-source multiwiggle at a 1Mb view**
 (`wiggleInstanceBuffer.ts:33`). That is the decision, not a detail.
 
-Note `installPerRegionLifecycle` is now `installUpload` (ADR-088); the no-RPC
-re-encode on recolour, plot type, summary mode and re-sort is at
-`installUpload.ts:188-206`, and the main-thread packer stays in full for it. So
-this deletes no code, and its ~98ms is **~8ms per fetch round over ~11-12
-rounds** — pacing, not throughput. Anyone selling it as "5.68s → 5.58s" is
-quoting noise; it is verifiable only as a frame leaving the top-self list.
+**Of the old obstacle list, two counts were wrong and one is thinner than it
+reads.** Colour strings parse fine in a worker (`colorBits.ts` is a pure parser,
+and wiggle's colours are config slots, not theme reads — the theme-flip hazard
+was imported from MAF by analogy). Multi-wiggle already ships
+`summaryScoreMode` worker-side — but note that answers the *mode*, not the
+*pivot* the bands are coloured around, which is the paragraph above and a
+separate input to the same call. `rowIndex` is genuinely main-thread-bound, and
+worse than stated: the ordered source list is derived from the fetched data
+itself, so a fetch discovering a new source cannot be told its own row
+assignment.
+
+Its ~98ms is **~8ms per fetch round over ~11-12 rounds** — pacing, not
+throughput. Anyone selling it as "5.68s -> 5.58s" is quoting noise; it is
+verifiable only as a frame leaving the top-self list.
 
 Order if taken: measure `pack` in isolation first (a whole-gesture A/B cannot
-resolve it), settle retention, then write the plumbing.
+resolve it), settle retention, decide whether two encoders that must agree is a
+price worth paying, and only then write the plumbing.
 
 ## Smaller, measured, unclaimed
 

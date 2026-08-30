@@ -102,6 +102,24 @@ in dev and not in the production build, where the whole check is stripped. That
 is a display whose fetch re-fires only in development. One test per observable
 the check reads pins it, at the bottom of `installGlobalFetchAutorun.test.ts`.
 
+## Read a scalar off the host, never rebuild its arrays per frame
+
+`RegionHost.visibleRegions` rebuilds a fresh array of fresh objects on every pan
+and zoom frame, so **any observer that reads it re-renders on every frame of
+every gesture** — whatever it then derives. A component wanting a number out of
+it wants the host to publish that number instead.
+
+`contentRightEdgePx` is the worked example: the right edge a right-pinned
+overlay pins to, clamped to the track. The clamp is the load-bearing half. An
+unclamped edge moves every frame like the array did; `Math.min(trackWidthPx, …)`
+is what makes the value repeat whenever content overflows the track — which is
+most zooms — so MobX's `===` stops the chain at the computed. Publish it clamped
+or publish nothing. `regionHost.ts` states the rule for both callers, because an
+SVG export applies it against the export's canvas width rather than the view's.
+
+`ZoomRenderCensus` in jbrowse-web is how a per-frame re-render like that gets
+seen at all; INTERACTION_PERF.md has the rest.
+
 ## Height and scroll are hooks
 
 A display that scrolls its own canvas overrides `scrollableHeight`; one that

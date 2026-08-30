@@ -1,6 +1,6 @@
 ---
 name: perf-instrumentation
-description: Instrumentation patterns for GPU render and scroll jank. Read when diagnosing a perf regression.
+description: Instrumentation patterns for GPU render and scroll jank, and the one question that needs no browser at all — a mobx.spy render census in jsdom answers "which components re-render per frame" in integers. Read when diagnosing a perf regression, and before reaching for a CPU profile to count renders.
 ---
 
 # Perf instrumentation patterns
@@ -25,6 +25,22 @@ in the devtools console (set it, then reload).
 
 When tests fail or commits land, **strip the instrumentation** — keep the actual
 fixes. Diagnostic logs are for the duration of an investigation, not forever.
+
+## Counting React re-renders needs none of this
+
+Everything below instruments a running browser. **"Which components re-render
+per frame, and how many" does not need one**: `mobx-react-lite` names every
+observer's reaction `observer<ComponentName>` and `Reaction.track` wraps the
+render itself, so `mobx.spy()` filtered to `type: 'reaction'` is a per-component
+render count in jsdom — integers, one run, ~20s, no build.
+`products/jbrowse-web/src/tests/renderCensus.ts` is the helper and
+`ZoomRenderCensus.test.tsx` drives it over a real multi-track session
+(`ZOOM_CENSUS=1` for the per-component tables).
+
+Reach for it before a CPU profile whenever the question is about render counts
+rather than wall time. `agent-docs/reference/INTERACTION_PERF.md` carries what it
+found, its two limits — a count is a FLOOR, and only the view-geometry half is
+deterministic — and the three rules that came out of it.
 
 ## Layers worth measuring
 
