@@ -631,24 +631,26 @@ function walkModel(
       isArrayType(type) || isMapType(type)
         ? unwrapType(type.getChildType())
         : undefined
-    if (elementType && isReferenceType(elementType)) {
-      references.push(key)
-      continue
-    }
-    const group = elementType ? walk.registry.groupOf(elementType) : undefined
-    if (group) {
-      const next = pruneContainer(
-        type,
-        elementType!,
-        group,
-        node[key],
-        parent,
-        walk,
-      )
-      if (next !== undefined && next !== node[key]) {
-        write(key, next)
+    if (elementType) {
+      if (isReferenceType(elementType)) {
+        references.push(key)
+        continue
       }
-      continue
+      const group = walk.registry.groupOf(elementType)
+      if (group) {
+        const next = pruneContainer(
+          type,
+          elementType,
+          group,
+          node[key],
+          parent,
+          walk,
+        )
+        if (next !== undefined && next !== node[key]) {
+          write(key, next)
+        }
+        continue
+      }
     }
     const value = node[key]
     if (value === undefined) {
