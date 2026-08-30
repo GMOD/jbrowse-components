@@ -328,8 +328,15 @@ def main(argv=None):
             print("%s: no contacts, no .hic written" % name, file=sys.stderr)
             continue
         # juicer `pre` reads a short-format file in chromosome-pair order.
-        subprocess.run(["sort", "-k2,2d", "-k6,6d", "-o", paths[name], paths[name]],
-                       check=True)
+        #
+        # Byte order, not the caller's collation, and the same reason
+        # build_bubble_tier.sh gives: a UTF-8 locale can rank two distinct
+        # contig names equal, which interleaves their rows. `pre` needs the
+        # pairs contiguous and mis-groups them silently when they are not.
+        # `-d` compounded it by ignoring the `.` and `_` that tell decoy and alt
+        # contigs apart, so the sort was not comparing the whole name either.
+        subprocess.run(["sort", "-k2,2", "-k6,6", "-o", paths[name], paths[name]],
+                       check=True, env={**os.environ, "LC_ALL": "C"})
         hic = os.path.join(args.out, "%s.hic" % name)
         build_hic(jar, paths[name], hic, sizes_file, resolutions, args.heap)
         if not args.keep_contacts:

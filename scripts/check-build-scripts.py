@@ -34,7 +34,6 @@ import shutil
 import subprocess
 import tempfile
 import sys
-import urllib.request
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(root)
@@ -1608,23 +1607,66 @@ check("chrom_sizes reads @SQ, and only @SQ",
 # file, and the two steps between it and one are juicer's: it rounds a position
 # to the nearest bin, and it computes a normalization vector unless told not to.
 # Run the CLI end to end on a synthetic library and read the answer back out.
+# `scan` is the one classifier that needs a real `samtools view` rather than a
+# string, so its checks are gated on samtools alone and run wherever CI already
+# installs it — the .hic round-trip below is what additionally wants the jar.
+if shutil.which("samtools") is None:
+    print("note: samtools not installed, SKIPPING the sv_contact_maps scan checks")
+    sv_scan_ran = False
+else:
+    sv_scan_ran = True
+    scan_dir = tempfile.mkdtemp()
+    scan_sam = os.path.join(scan_dir, "cross_contig.sam")
+    with open(scan_sam, "w") as fh:
+        fh.write("@HD\tVN:1.6\tSO:coordinate\n"
+                 "@SQ\tSN:7\tLN:159138663\n@SQ\tSN:17\tLN:81195210\n")
+        # An ordinary same-contig discordant pair, then the translocation. Both
+        # are read 1 and same-strand, so the only thing separating them is RNEXT
+        # — which is the whole point: dropping the guard writes the second as a
+        # chr7 contact at the mate's chr17 coordinate, a bright cell 54 Mb
+        # off-target in a channel a reader trusts to mean one chromosome.
+        for name, rnext, pnext in (("local", "=", 70_440_000),
+                                   ("translocation", "17", 16_700_000)):
+            fh.write("%s\t%d\t7\t%d\t60\t100M\t%s\t%d\t0\t%s\t%s\n"
+                     % (name, sv_contact_maps.PAIRED | sv_contact_maps.READ1,
+                        70_430_000, rnext, pnext, "A" * 100, "I" * 100))
+    scan_paths = {n: os.path.join(scan_dir, "%s.txt" % n)
+                  for n in sv_contact_maps.CHANNELS}
+    scan_handles = {n: open(p, "w") for n, p in scan_paths.items()}
+    sv_contact_maps.scan(scan_sam, None, (), 1000, 750, 400, scan_handles)
+    for fh in scan_handles.values():
+        fh.close()
+    scan_rows = [l for l in
+                 open(scan_paths["discordant"]).read().splitlines() if l]
+    # Written out rather than counted: the guard's failure is a contact at the
+    # MATE's coordinate on this read's contig, so the coordinates are the
+    # assertion. Both are 0-based, one below the SAM POS above.
+    check("a cross-contig mate writes no contact, the local pair writes one",
+          scan_rows, ["0 7 70429999 0 0 7 70439999 1"])
+
 sv_maps_tools = ["samtools", "java"]
 sv_maps_missing = [t for t in sv_maps_tools if shutil.which(t) is None]
+# The jar is a third tool, not something this script fetches. `check-docs` is a
+# PR gate, and a gate that downloads 36 MB from a bucket nobody here operates
+# fails on that bucket's bad day rather than on the diff — with no timeout, a
+# hung connection stalls the job to the workflow limit.
+#
+# So this block is local-only by design, and that is the right altitude for it:
+# what it measures is juicer 1.22.01's own behaviour — where `pre` floors a
+# position, what `dump` reads back — and a pinned third-party binary does not
+# drift under a PR. Everything a PR *can* break, the classification and the bin
+# arithmetic above, is pure Python that runs everywhere. `build_sv_contact_maps.sh`
+# leaves a jar in its work dir; JUICER_JAR names that or any other copy.
+jar = os.environ.get("JUICER_JAR") or os.path.join(
+    tempfile.gettempdir(), sv_contact_maps.JUICER_JAR_NAME)
+if not sv_maps_missing and not os.path.exists(jar):
+    sv_maps_missing = [sv_contact_maps.JUICER_JAR_NAME]
 if sv_maps_missing:
     # Loud and counted, like sv_multihop's pipeline above.
     print(f"note: {', '.join(sv_maps_missing)} not installed, "
           f"SKIPPING the sv_contact_maps .hic checks")
     sv_maps_ran = False
 else:
-    # 36 MB, fetched once and cached, since a .hic can only be written by the
-    # tool that defines the format. JUICER_JAR points at a copy you have.
-    jar = os.environ.get("JUICER_JAR") or os.path.join(
-        tempfile.gettempdir(), sv_contact_maps.JUICER_JAR_NAME)
-    if not os.path.exists(jar):
-        print(f"fetching {sv_contact_maps.JUICER_JAR_NAME} for the "
-              f"sv_contact_maps checks")
-        urllib.request.urlretrieve(sv_contact_maps.JUICER_JAR_URL, jar)
-
     hic_dir = tempfile.mkdtemp()
     BIN = 750
     sizes = os.path.join(hic_dir, "chrom.sizes")

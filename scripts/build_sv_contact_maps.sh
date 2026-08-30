@@ -95,15 +95,28 @@ fi
 # depth channel writes one record per bin pair.
 # The helper fetches juicer_tools into its own --out, so that is a work
 # directory and the four .hic files are copied across from it.
-if [ ! -f "$DEPLOY/depth_difference.hic" ]; then
+#
+# The rerun guard is on the WORK dir, and the copy then runs every time. It used
+# to guard the pair on `$DEPLOY/depth_difference.hic` and copy the four names in
+# one `cp`, which cannot survive the empty channel this script is built to
+# produce: `cp` skips a missing source, copies the rest — `depth_difference.hic`
+# among them, it is last — and exits 1, so `set -e` aborted with the guard file
+# already in place and the next run skipped the block. A deploy dir permanently
+# short one channel, reported as success.
+if [ ! -f hic/depth_difference.hic ]; then
   python3 "$SCRIPT_DIR/sv_contact_maps.py" "$BAM" \
     --out hic \
     --min-span 1000 \
     --bin 750 \
     --resolutions 750,1500,5000,25000
-  cp hic/discordant.hic hic/same_strand.hic hic/outward.hic \
-    hic/depth_difference.hic "$DEPLOY"/
 fi
+# A channel with no contacts writes no .hic (juicer `pre` exits 57 on an empty
+# matrix), so a missing name here is expected rather than a failure.
+for channel in discordant same_strand outward depth_difference; do
+  if [ -f "hic/$channel.hic" ]; then
+    cp "hic/$channel.hic" "$DEPLOY"/
+  fi
+done
 
 # ── The calls: NA12878's own non-reference SVs out of the 1000G phase 3 map ──
 # `-c 1` after `-s` drops every site NA12878 is homozygous reference at, leaving
