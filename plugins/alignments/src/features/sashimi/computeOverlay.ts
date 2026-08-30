@@ -396,8 +396,8 @@ export function visibleRegionJunctions(
 /**
  * The merge and the projection composed, for a caller with nowhere to cache the
  * merge — the tests, and anything reading one group's arcs once. The display
- * splits the two (`sashimiMergedByGroup` -> `projectSashimiArcs`) because a pan
- * frame owes only the second half.
+ * splits the two (`sashimiJunctionSections` -> `projectSashimiArcs`) because a
+ * pan frame owes only the second half.
  */
 export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
   const merged = mergeJunctions(
