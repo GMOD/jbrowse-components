@@ -316,7 +316,8 @@ events **is** the per-component render count, with no component instrumented.
 `products/jbrowse-web/src/tests/renderCensus.ts` is that; `ZoomRenderCensus.test.tsx`
 drives a geometric `zoomTo` ramp over a real multi-track session and prints the
 ranked count beside a `MutationObserver` tally of where the DOM churn lands.
-One run, ~20s, no rebuild per arm.
+One run, ~20s, no rebuild per arm. It prints a one-line summary per arm; pass
+`ZOOM_CENSUS=1` for the per-component tables.
 
 **Two limits, and a budget written here must respect both.** A child re-rendered
 purely by a parent's fresh props runs no reaction of its own, and `mobx` reports
