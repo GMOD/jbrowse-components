@@ -2334,8 +2334,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * that derived this number itself re-rendered on every frame of every
          * gesture — to produce, whenever content fills the track, the unchanged
          * `trackWidthPx`. Reading the scalar lets MobX's `===` stop the chain at
-         * this computed instead. Measured over 20 zoom frames: the two wiggle
-         * bodies fell from 66 renders to 7.
+         * this computed instead. Measured over 20 zoom frames: the wiggle
+         * family's three body instances fell from 66 renders to 7.
          */
         get contentRightEdgePx() {
           // The `trackWidthPx` rule sends a DISPLAY to `model.canvasWidthPx`

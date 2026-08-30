@@ -25,8 +25,8 @@ flush, moving MAF's packing to the worker, and folding content staleness into
 `Reaction.track` wraps the render itself, so a `mobx.spy()` filtered to reaction
 events is a per-component render count with no component instrumented. It prints
 that ranked beside a `MutationObserver` tally of where the DOM churn lands, over
-a geometric `zoomTo` ramp at three arms — four tracks, eight tracks, and a gene
-track at label zoom.
+a geometric `zoomTo` ramp at four arms — four tracks, eight tracks, mid-contig,
+and a gene track at label zoom.
 
 **Take the view-geometry counts as exact and the rest as approximate.** The
 overlay, ruler and scalebar components are a function of the zoom steps alone
@@ -34,7 +34,11 @@ and repeat to the integer between runs; anything downstream of a fetch
 (`DisplayLoadingOverlay`, `DisplayChromeBaseInner`, `FetchVisibleRegions`,
 `AppReadyMarker`) moved by up to 2x across runs of identical source, because how
 many refetch rounds land inside 20 frames is a wall-clock race. The census
-asserts one budget, on a component in the first group; the rest is a readout.
+asserts three expectations — a per-gesture bound on each wiggle body, and no
+`PaddingBlocks` render at all mid-contig; the rest is a readout. Only the last of
+the three is in the deterministic group. The two bounds sit ~3x under the counts
+they catch, which is what makes them safe against a residual that includes
+fetch-driven renders.
 
 Three things it found, in the order they mattered:
 
@@ -61,7 +65,9 @@ Three things it found, in the order they mattered:
 
 - **`legendRightEdgePx` was three times the size it was sold as** below. Not
   "under 20ms, invisible to the profiler" — it was **one render per wiggle
-  track per frame**, 66 over 20 frames across two bodies, 7 after. The fix is
+  track per frame**: 66 renders over 20 frames from THREE wiggle-family body
+  instances — `volvox_gc` mounts the wiggle component too — reported under two
+  component names, and 7 after. The fix is
   not the one written below either: publishing the raw scalar changes nothing,
   because the clamp is what makes it stable. `Math.min(trackWidthPx, …)` has to
   happen INSIDE the computed, which is why `contentRightEdgePx` is a view getter

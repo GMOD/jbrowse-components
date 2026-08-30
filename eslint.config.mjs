@@ -804,8 +804,10 @@ export default defineConfig(
     },
   },
   // The one file allowed to read `trackWidthPx`: the getter that answers the
-  // width question for everyone else. `LinearGenomeView/model.ts` defines it and
-  // is not a read, so it needs no entry.
+  // width question for everyone else. `LinearGenomeView/model.ts` defines it,
+  // and its one read — `contentRightEdgePx`, publishing the clamped edge the
+  // displays would otherwise each derive — carries an inline disable with the
+  // reason rather than an entry here, so the exemption stays one file wide.
   {
     files: ['packages/display-kit/src/MultiRegionDisplayMixin.ts'],
     rules: {

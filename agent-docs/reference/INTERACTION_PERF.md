@@ -401,9 +401,11 @@ nearest `data-testid` the way the 2026-07-11 sweep did.
 | attr churn, `ZoomTransform` containers under `tracksContainer` | 920 | **90-96** |
 | DOM mutations, total                    | 3,375 |                    2,762-2,823 |
 
-Ten fewer elements carry a `translateX` — the nine per-track-plus-container
-`ZoomTransform` wrappers that no longer exist mid-contig, plus one — and the
-per-frame attribute churn on them falls by **90%**. That is the jsdom census's
+Ten fewer elements carry a `translateX`, and the count is exactly accounted
+for: `PaddingBlocks` mounts once per track (`TrackContainer`), once for
+`TracksContainer` and once for the `Scalebar`, so eight tracks is ten instances,
+and mid-contig none of them renders. The per-frame attribute churn on them falls
+by **90%**. That is the jsdom census's
 `ZoomTransform` 160 -> 40 reproduced in a browser, at twice the track count, so
 the jsdom numbers describe the app rather than the shim.
 
