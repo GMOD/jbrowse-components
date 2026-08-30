@@ -21,7 +21,9 @@ import {
 //
 // Two columns, both off `PluginManager`:
 //
-// - the phase order and each group's name, from the `PhasedScheduler` arguments;
+// - the phase order and each group's name, from `pluggableElementTypeGroups`,
+//   which the scheduler spreads — the spread is checked, so the table cannot go
+//   on claiming an order the manager stopped building in;
 // - the method a plugin calls to register one, from the `addElementType('<group>')`
 //   call in each `addXType` wrapper — matched on the group string, so a renamed
 //   method follows and a method registering into the wrong group shows up as a
@@ -38,16 +40,27 @@ export interface ElementPhase {
 export function collectElementPhases(): ElementPhase[] {
   const text = fs.readFileSync(FILE, 'utf8')
 
-  const schedule =
-    /elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>\(([\s\S]*?)\)/.exec(
+  const declaration =
+    /export const pluggableElementTypeGroups = \[([\s\S]*?)\] as const/.exec(
       text,
     )
-  if (!schedule) {
+  const groups = [...(declaration?.[1] ?? '').matchAll(/'([^']+)'/g)].map(
+    m => m[1]!,
+  )
+  if (groups.length === 0) {
     throw new Error(
-      `${FILE}: no \`elementCreationSchedule = new PhasedScheduler…\`, which is the order the pluggable-elements guide documents`,
+      `${FILE}: no \`pluggableElementTypeGroups\` array of group strings, which is the order the pluggable-elements guide documents`,
     )
   }
-  const groups = [...schedule[1]!.matchAll(/'([^']+)'/g)].map(m => m[1]!)
+  if (
+    !/elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>\(\s*\.\.\.pluggableElementTypeGroups,?\s*\)/.test(
+      text,
+    )
+  ) {
+    throw new Error(
+      `${FILE}: \`elementCreationSchedule\` no longer spreads \`pluggableElementTypeGroups\`, so the guide's phase order would be a list the manager does not build in`,
+    )
+  }
 
   // `addXType(cb) { return this.addElementType('<group>', cb) }` — the method
   // name is the nearest declaration above the call that names the group
