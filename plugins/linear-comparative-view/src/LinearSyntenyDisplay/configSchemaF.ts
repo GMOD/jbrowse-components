@@ -33,7 +33,7 @@ function configSchemaFactory() {
       drawCurves: {
         type: 'maybeBoolean',
         description:
-          'Draw each ribbon as a bezier curve rather than a straight chord. Unset (the default) follows the session-wide default for this display type, falling back to straight chords; an explicit true/false customizes the track. The view-wide `drawCurves` on LinearSyntenyView overrides every level of that view when it is set',
+          'Draw each ribbon as a bezier curve rather than a straight chord. Unset (the default) follows the session-wide default for this display type, falling back to off (straight chords); an explicit true/false customizes the track. The view-wide `drawCurves` on LinearSyntenyView overrides every level of that view when it is set',
         // Promotable via the `maybeBoolean` sentinel: `undefined` is the inherit
         // state and `promotedBase` what it resolves to when nothing is promoted,
         // so a plain boolean could not promote `false` back over an on default.
