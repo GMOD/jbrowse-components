@@ -1,4 +1,8 @@
-import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  assembleLocStringRaw,
+  getSession,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
@@ -153,7 +157,7 @@ export async function movePanelsToSpan({
   }
   if (outcomes.some(outcome => outcome !== 'unmoved')) {
     if (anchor.taken || outcomes.includes('replaced')) {
-      const loc = assembleLocStringRaw(clampedSpan(span))
+      const loc = assembleLocString(clampedSpan(span))
       session.notify(
         anchor.taken ? `Showing ${loc}, ${followNote}` : `Showing ${loc}`,
         'info',
