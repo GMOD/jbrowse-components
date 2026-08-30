@@ -96,13 +96,9 @@ test('the aspect lock row reports the model and writes it back', () => {
   const { model } = setup()
   openViewMenu()
   const name = 'Lock aspect ratio (same bp/px)'
-  // the row's glyph is where its state is, not an aria attribute
-  expect(
-    screen
-      .getByRole('menuitem', { name })
-      .querySelector('[data-testid="CheckBoxOutlineBlankIcon"]'),
-  ).toBeInTheDocument()
+  const row = () => screen.getByRole('menuitemcheckbox', { name })
+  expect(row()).not.toBeChecked()
 
-  fireEvent.click(screen.getByRole('menuitem', { name }))
+  fireEvent.click(row())
   expect(model.lockAspectRatio).toBe(true)
 })

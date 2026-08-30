@@ -172,16 +172,12 @@ test('the identity row captions the model fraction as a percentage', async () =>
   expect(screen.getByText('Min identity: 90%')).toBeTruthy()
 }, 20000)
 
-// A checkbox row is a `menuitem` whose glyph carries the state, so the state is
-// read off the glyph rather than an aria attribute the row does not set.
 function checkboxRow(name: string | RegExp) {
-  return screen.getByRole('menuitem', { name })
+  return screen.getByRole('menuitemcheckbox', { name })
 }
 
 function isTicked(name: string | RegExp) {
-  return Boolean(
-    checkboxRow(name).querySelector('[data-testid="CheckBoxIcon"]'),
-  )
+  return checkboxRow(name).getAttribute('aria-checked') === 'true'
 }
 
 // Both checkboxes came out of the ⋮ menu's "Show..." submenu, which filed them

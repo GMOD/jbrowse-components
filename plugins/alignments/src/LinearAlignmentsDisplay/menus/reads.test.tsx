@@ -86,13 +86,15 @@ test('every row is a checkbox — no actions, headers or dividers', () => {
 })
 
 // The same shape once MUI has laid it out: nothing renders as a bare label or a
-// rule, so the eye never has to skip a row while scanning.
+// rule, so the eye never has to skip a row while scanning. Every row carries the
+// checkbox role its type earns it, which is the rendered half of the assertion
+// above.
 test('renders as an unbroken list of menu rows', () => {
   const { baseElement } = renderRows(subMenuOf(makeModel()))
   const rows = [...baseElement.querySelectorAll('li')]
   expect(rows.length).toBeGreaterThan(0)
   for (const row of rows) {
-    expect(row.getAttribute('role')).toBe('menuitem')
+    expect(row.getAttribute('role')).toBe('menuitemcheckbox')
   }
 })
 
