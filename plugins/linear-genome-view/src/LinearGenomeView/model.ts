@@ -111,6 +111,16 @@ const SearchResultsDialog = lazy(
   () => import('./components/SearchResultsDialog.tsx'),
 )
 
+// The one array `paddingSpans` returns when a view has nothing to mask, so that
+// computed's value repeats by identity. Frozen because every consumer maps over
+// it and a caller that sorted in place would do so for the whole session.
+const NO_PADDING_SPANS: {
+  key: string
+  x: number
+  width: number
+  kind: 'seam' | 'elided' | 'boundary'
+}[] = Object.freeze([]) as never
+
 /**
  * Calculate the offsetPx needed to center content within a viewport.
  * Returns a negative offset when content is smaller than viewport (padding on left).
@@ -2222,7 +2232,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               })
             }
           }
-          return spans
+          // One shared array when there is nothing to draw, so the computed's
+          // value repeats and MobX's `===` stops the chain here. This is the
+          // COMMON case, not an edge one: a view sitting inside one contig has
+          // no region seam, no elision and no boundary, and that is where a
+          // reader spends nearly all of a session. A fresh `[]` each frame
+          // instead re-rendered a PaddingBlocks per track plus one for the
+          // container, every frame of every gesture, to draw nothing.
+          return spans.length > 0 ? spans : NO_PADDING_SPANS
         },
         /**
          * #getter
@@ -2299,7 +2316,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #getter
          * Right edge (px, viewport-relative) of the on-screen content, clamped
          * to the track — where a right-pinned overlay such as a wiggle's colour
-         * or score legend belongs. `contentRightEdgePx` states the rule.
+         * or score legend belongs, rather than out in the empty gutter the
+         * regions can leave at whole-genome zoom. `@jbrowse/display-kit`'s
+         * `contentRightEdgePx` states the rule; an SVG export applies the same
+         * one against the export's canvas width instead of this track's.
          *
          * Published as a SCALAR on purpose. `visibleRegions` rebuilds a fresh
          * array of fresh objects on every pan and zoom frame, so a component

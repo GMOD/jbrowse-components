@@ -54,6 +54,18 @@ const PaddingBlocks = observer(function PaddingBlocks({
   // the geometry is `model.paddingSpans` -- shared with any host drawing this
   // itself, so a seam here and a seam in an embedder's own chrome can't be
   // computed two different ways. This file owns only what the spans look like.
+  const spans = model.paddingSpans
+
+  // Nothing to mask, so no positioned container to hold it — the common case,
+  // since a view sitting inside one contig has no seam, elision or boundary.
+  // The wrapper is not free: `ZoomTransform` reads `staticBlocks`, so an empty
+  // one still re-rendered and rewrote its transform on every gesture frame, per
+  // track. The view returns one shared array here, so this bails without even
+  // re-rendering.
+  if (spans.length === 0) {
+    return null
+  }
+
   const kindClass = {
     seam: classes.regionSeparator,
     elided: classes.elided,
@@ -70,7 +82,7 @@ const PaddingBlocks = observer(function PaddingBlocks({
         ScalebarCoordinateLabels documents, and it lands harder here — this
         component mounts once per track plus once for the container, so the
         churn was multiplied by the track count. */}
-        {model.paddingSpans.map(({ x, width, kind }, i) => (
+        {spans.map(({ x, width, kind }, i) => (
           <div
             // eslint-disable-next-line react/no-array-index-key
             key={i}

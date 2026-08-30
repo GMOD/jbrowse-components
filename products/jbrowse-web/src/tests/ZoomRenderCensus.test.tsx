@@ -21,16 +21,18 @@ beforeEach(() => {
 async function census({
   trackIds,
   startBpPerPx,
+  offsetPx = 0,
   painted,
   label,
 }: {
   trackIds: string[]
   startBpPerPx: number
+  offsetPx?: number
   painted: string
   label: string
 }) {
   const { view, container } = await createView(volvoxConfigWithTracks(trackIds))
-  view.setNewView(startBpPerPx, 0)
+  view.setNewView(startBpPerPx, offsetPx)
   for (const trackId of trackIds) {
     view.showTrack(trackId)
   }
@@ -164,6 +166,28 @@ test('census: mixed tracks at 8, base-ish zoom', async () => {
     painted: 'wiggle-display',
   })
 }, 120000)
+
+// Zooming INSIDE one contig, which is where a reader spends nearly all of a
+// session and where the arms above do not go: they start at offset 0 against a
+// 50kb contig, so a boundary block is on screen throughout. Mid-contig there is
+// no seam, no elision and no boundary — `paddingSpans` is empty, and every
+// padding overlay in the view should be absent from the frame rather than
+// positioning nothing.
+test('census: mid-contig, no padding spans to draw', async () => {
+  const counts = await census({
+    label: 'mid-contig',
+    trackIds: [
+      'volvox_microarray',
+      'volvox_microarray_multi',
+      'volvox_filtered_vcf',
+      'volvox_gc',
+    ],
+    startBpPerPx: 1,
+    offsetPx: 20000,
+    painted: 'wiggle-display',
+  })
+  expect(counts.get('PaddingBlocks') ?? 0).toBe(0)
+}, 90000)
 
 // The regime INTERACTION_PERF flags as unmeasured: where people read gene
 // tracks, and where FloatingLabelsLayer rebuilds a label div per feature.
