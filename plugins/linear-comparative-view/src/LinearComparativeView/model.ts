@@ -7,6 +7,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
@@ -752,6 +753,25 @@ function stateModelFactory(pluginManager: PluginManager) {
       expandAllViews() {
         for (const view of self.views) {
           view.setScalebarOnly(false)
+        }
+      },
+      /**
+       * #action
+       * Resize every synteny band by the same delta. The bars between the rows
+       * size the STACK: a multi-way view is read as one picture, and sizing its
+       * gaps one at a time to match is the tedium the user actually hits — the
+       * levels keep whatever differences they already have, since this moves
+       * each by the same px rather than setting them all to one height.
+       *
+       * A drag, so it clamps like every other band drag (`clampBandHeight`): the
+       * floor keeps the bar itself grabbable, and a level already thinner than
+       * the floor is left where it is rather than jumped up to it.
+       */
+      resizeAllLevelHeights(distance: number) {
+        for (const level of self.levels) {
+          level.setHeight(
+            clampBandHeight(level.height, level.height + distance),
+          )
         }
       },
       /**

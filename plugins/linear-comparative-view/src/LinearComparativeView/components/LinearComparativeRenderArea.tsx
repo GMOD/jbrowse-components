@@ -118,12 +118,21 @@ const LevelSection = observer(function LevelSection({
           />
         ) : null}
       </div>
+      {/* Sizes every band, not this one gap — see `resizeAllLevelHeights`. The
+        bar for the Nth level sits below N bands, all of which just grew, so it
+        moves N px per px of height: `gain` divides the drag by that, which is
+        what keeps the bar the user grabbed under their pointer. */}
       <ResizeHandle
         bar
+        gain={levelIdx + 1}
         onDrag={n => {
-          level.setHeight(level.height + n)
-          return undefined
+          model.resizeAllLevelHeights(n)
         }}
+        title={
+          model.levels.length > 1
+            ? 'Drag to resize every synteny band'
+            : 'Drag to resize the synteny band'
+        }
       />
     </>
   )
