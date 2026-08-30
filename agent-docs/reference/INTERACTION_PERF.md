@@ -351,6 +351,25 @@ sweep could not have found it: that method attributes to the nearest
 `data-testid`, and these divs sit under `tracksContainer` with every other
 overlay.
 
+**The largest single win was an overlay that had nothing to draw.** A view
+sitting inside one contig has no region seam, no elision and no boundary, so
+`paddingSpans` is empty — and that is where a reader spends nearly all of a
+session, not an edge case. Every track still mounted a `PaddingBlocks` that
+rendered an empty list inside a `ZoomTransform`, and that wrapper reads
+`staticBlocks`, so each one re-rendered and rewrote its transform every frame of
+every gesture to position nothing. Returning one shared frozen array from the
+getter (so the computed's value repeats and MobX stops there) and `null` from
+the component took a 20-frame zoom at four tracks from **761 observer renders to
+489, and 63.9 DOM mutations a frame to 50.5** — `PaddingBlocks` leaves the census
+and `ZoomTransform` falls 160 to 40, `Gridlines` being its only parent left.
+Both scale with the track count.
+
+Worth stating as a rule, because it is invisible to every profile above: **a
+computed that rebuilds a fresh empty array is not free — it re-renders every
+observer that reads it.** The arms of this census that start at offset 0 keep a
+boundary block on screen throughout and never see this at all, which is why the
+mid-contig arm exists.
+
 **The rule that generalises is narrower than "pool every list".** A zoom changes
 every `paddingSpan` key and every scalebar tick key, which is what made those
 two rebuild wholesale. It does not change a feature's id, so

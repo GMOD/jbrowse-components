@@ -1,6 +1,6 @@
 ---
 name: zoom-perf-followups
-description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found a PaddingBlocks pooling bug nothing here predicted, made the legendRightEdgePx item three times bigger than it was sold as, and killed the stop-token blob URL item outright by counting the mints. One live item is left — worker-side wiggle packing, blocked on a retention decision.
+description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found two PaddingBlocks bugs nothing here predicted — the bigger one an overlay every track re-renders per frame to draw nothing, since paddingSpans is empty mid-contig — made the legendRightEdgePx item three times bigger than it was sold as, and killed the stop-token blob URL item outright by counting the mints. One live item is left — worker-side wiggle packing, blocked on a retention decision.
 ---
 
 # Scroll-zoom: what is left
@@ -47,6 +47,17 @@ Three things it found, in the order they mattered:
   method that found the scalebar in July could not have: it attributes to the
   nearest `data-testid`, and these divs sit under `tracksContainer` with every
   other overlay.
+
+- **The biggest win was an overlay with nothing to draw**, which nothing on
+  this page or in `INTERACTION_PERF` had looked for. `paddingSpans` is EMPTY
+  mid-contig — no seam, no elision, no boundary — which is where a reader spends
+  nearly all of a session, and every track was still rendering an empty list
+  inside a `ZoomTransform` that rewrites its transform per frame. A shared
+  frozen empty array plus a `null` return took a mid-contig zoom from 761
+  renders to 489 and 63.9 DOM mutations a frame to 50.5, at four tracks. Every
+  census arm that starts at offset 0 keeps a boundary block on screen and cannot
+  see this, which is the trap: **a computed rebuilding a fresh empty array
+  re-renders every observer that reads it.**
 
 - **`legendRightEdgePx` was three times the size it was sold as** below. Not
   "under 20ms, invisible to the profiler" — it was **one render per wiggle
