@@ -368,20 +368,29 @@ export function fitLadderViews(self: FitLadderHost) {
       // `layoutStartBp` tiebreak it would replace already coincide. Don't
       // re-add it without a measurement.
       const factor = this.fitDecimatedFactor
+      // The `isoforms` stack, not the `labels` one, when there is nothing to
+      // decimate: this rung is BELOW that one, so falling back past its trim
+      // packs a stack the ladder has already rejected — and reports the count
+      // over it. With names off there is never a factor, which is exactly when
+      // the stacks are deepest.
       return factor === undefined
-        ? this.fitLabelsOnlyLayout
+        ? this.fitIsoformsSolved
         : self.incrementalLayoutDecimated(
             self.rpcDataMap,
             this.decimatedLayoutInputs(factor),
           )
     },
     get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
-      return self.showLabels
+      const maxIsoformsPerGene = this.fitIsoformCount
+      // With names already off this rung's reservation is the base one, so the
+      // stack is shared by reference rather than packed a second time — but
+      // only while there is no trim to apply, or the reuse drops it.
+      return self.showLabels || maxIsoformsPerGene !== undefined
         ? self.incrementalLayoutBodiesOnly(self.rpcDataMap, {
             ...self.layoutInputs,
             showLabels: false,
             showDescriptions: false,
-            maxIsoformsPerGene: this.fitIsoformCount,
+            maxIsoformsPerGene,
           })
         : this.fitLabelsOnlyLayout
     },

@@ -1873,6 +1873,28 @@ describe('the isoform rung across the three height modes', () => {
     expect(drawnOrdinals(display, 'gene2').size).toBe(1)
   })
 
+  // ...AND THE RUNGS BELOW IT HAVE TO PACK THAT COUNT. With names on, the
+  // `decimated` and `bodies` stacks carry `maxIsoformsPerGene`; with names off
+  // both fell through to `fitLabelsOnlyLayout`, whose inputs never had it — so
+  // the ladder committed to `bodies`, `fitStage.maxIsoforms` went on reporting
+  // the count, and the layout under it drew every transcript. Reachable at
+  // `showLabels: 'none'`, in `collapsed`, and above the auto density gate,
+  // which is exactly where the stacks are deepest. Every other fit case in tree
+  // runs with names on.
+  it('trims on the rungs below the isoform one with names off', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setShowLabels('none')
+    display.setRpcData(0, ISOFORM_GENES, ctgA)
+    display.setHeightMode('fit')
+    display.setHeight(20)
+    expect(display.showLabels).toBe(false)
+
+    expect(display.fitStage.level).toBe('bodies')
+    expect(display.fitStage.maxIsoforms).toBe(1)
+    expect(drawnOrdinals(display, 'gene2').size).toBe(1)
+  })
+
   // Grow's height IS its content's, so a trim solved against it would shrink
   // the track it was measured against. It draws every transcript and grows.
   it('grow never trims', () => {
