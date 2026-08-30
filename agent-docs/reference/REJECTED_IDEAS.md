@@ -1860,6 +1860,38 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Comparative and pangenome
 
+- **Fold the synteny follow's reverse-strand vote into `followWindowsMapping`'s
+  block loop** — measured 2026-08-30 and declined. It reads as free: after
+  scoping the vote to the contig the row is placed on, `followReverseShare` scans
+  exactly the blocks the mapping already visits and accumulates the same
+  `overlap` the mapping already computes, so a `reverseOverlap` field on `Target`
+  would delete a whole pass. But the two run on **different clocks** — the
+  mapping is the frame pass (`followFrameSpan`, once per frame past the picked
+  block), the vote is settle-only — so folding moves work from the rare caller
+  into the hot one. A/B'd interleaved at 300k blocks over 24 windows, the two
+  extra lines cost **0.3% of the mapping loop (0.24ms of 70ms)** while the vote
+  costs **3.5ms per settle**: at 60 frames/s against ~2 settles/s that is
+  **+15ms/s spent to save 7ms/s**, a net loss of about 2x, and it would put a
+  settle-only concern inside the loop the module doc already names as the first
+  thing to measure if dragging a whole-genome overview reads as slow. The vote is
+  cheap precisely because it accumulates for ONE window where the mapping
+  accumulates for all of them. Reopen only if the vote ever has to run per frame.
+
+- **Read the anchor's orientation from the region its window sits on, so a
+  `mixed` anchor can still drive the follow's auto-flip** — costed 2026-08-30
+  and declined. `orient` declines on `mixed` on either side, which loses the case
+  where a reader has reversed one region of the anchor by hand and is now looking
+  at another. The obvious fix — `displayedRegions.find` on the window's refName —
+  reintroduces the defect it would be fixing: a refName may appear in
+  `displayedRegions` more than once with different `reversed` flags, and
+  `followAnchorWindows` unions a refName's blocks into ONE window, so `find`
+  picks one of several answers arbitrarily — which is exactly how reading
+  `coarseDynamicBlocks[0].reversed` came to turn eight regions round to agree
+  with the one the window happened to be over. Declining is the honest answer for
+  a row that has no single orientation, and it matches what a mixed strand vote
+  already gets. Reopen with a window that carries its own region identity rather
+  than a refName.
+
 - **Unify `synteny-core`'s viridis onto `@jbrowse/core/util/colorRamp`'s
   256-stop table** — measured 2026-08-30 and declined. `colorRamps.ts:46`
   interpolates ten stops where the core spec keeps all 256, and the ten are

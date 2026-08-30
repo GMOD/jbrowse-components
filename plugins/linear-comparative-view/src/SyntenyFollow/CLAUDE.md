@@ -466,6 +466,13 @@ them describes a picture the reader is not looking at. A row placed on a contig
 every block of which is inverted stayed forward, because forward blocks to a
 contig it was not on diluted the vote below `NEARLY_ALL`.
 
+It stays a **separate settle-only scan** and is not folded into
+`followWindowsMapping`'s loop, which now visits the same blocks and computes the
+same overlap. The two run on different clocks, so the fold moves work from the
+rare caller into the per-frame one — costed at +15ms/s to save 7ms/s in
+`agent-docs/reference/REJECTED_IDEAS.md`, along with why a `mixed` anchor is
+declined rather than resolved to one of its regions.
+
 **Applied once per key, not once per settle.** `orientedKey` is whatever placed
 the row — the block id, or the contig the envelope answered on — the wanted
 orientation, and the anchor's own orientation; the same key does not flip again.
