@@ -85,7 +85,7 @@ interface Fixture {
   displaySnapshot?: Record<string, unknown>
   // How to open, where `showTrack` on the session's default LGV cannot — a
   // synteny display needs a LinearSyntenyView with two rows under it.
-  open?: () => ResolvableDisplay
+  open?: () => OpenedDisplay
   // Where the pins are, when they are not on the display's own track menu. A
   // display that curates no track menu still has to pin its promotable slots
   // *somewhere*, and that surface is what the check has to walk; defaulting to
@@ -234,7 +234,7 @@ function openSyntenyDisplay() {
       'LinearSyntenyDisplay did not open on "volvox_inv_indels" — the fixture is stale',
     )
   }
-  return display as ResolvableDisplay
+  return display as OpenedDisplay
 }
 
 // LinearVariantDisplay overrides `colorLegend` instead of reading the `legend`
@@ -256,15 +256,17 @@ function colorByConsequenceImpact(d: any) {
   preset.onClick()
 }
 
+// What every fixture's opener hands back: a display the pin check can resolve
+// slots on, and whose track menu is the default surface to walk.
+type OpenedDisplay = ResolvableDisplay & { trackMenuItems: () => MenuItem[] }
+
 interface TestView {
   showTrack: (
     trackId: string,
     initialSnapshot?: Record<string, unknown>,
     displayInitialSnapshot?: Record<string, unknown>,
   ) => unknown
-  tracks: {
-    displays: (ResolvableDisplay & { trackMenuItems: () => MenuItem[] })[]
-  }[]
+  tracks: { displays: OpenedDisplay[] }[]
 }
 
 beforeEach(() => {
