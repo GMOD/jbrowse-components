@@ -24,6 +24,7 @@ import {
   compactAxisLabel,
   leftAxisSpineX,
 } from '../coverageAxisStyle.ts'
+import { stackedBandGain } from '../sectionLayout.ts'
 import ArcDebugOverlay from './ArcDebugOverlay.tsx'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import CrossRegionArcsOverlay from './CrossRegionArcsOverlay.tsx'
@@ -190,16 +191,24 @@ const PileupBody = observer(function PileupBody({
 // the final screen-space `top` and the canvas height; styling, the off-screen
 // cull (every handle is YSCALEBAR_LABEL_OFFSET tall), and the void-returning
 // `onDrag` contract are uniform across coverage, arc/sashimi, and group handles.
+//
+// `gain` (see `useResizeDrag`) is what keeps a handle on a DISPLAY-GLOBAL band
+// under the pointer: growing the coverage height grows the bands of the groups
+// ABOVE it too, so the second group's handle used to travel at twice the
+// pointer's speed and slide out from under the cursor mid-drag. Every caller
+// below states how many copies of its band sit at or above the handle.
 function PileupResizeHandle({
   top,
   canvasHeight,
   onDrag,
   title,
+  gain,
 }: {
   top: number
   canvasHeight: number
   onDrag: (dy: number) => void
   title: string
+  gain?: number
 }) {
   const { classes } = useStyles()
   if (top + YSCALEBAR_LABEL_OFFSET < 0 || top > canvasHeight) {
@@ -209,6 +218,7 @@ function PileupResizeHandle({
     <ResizeHandle
       className={classes.resizeHandle}
       style={{ top }}
+      gain={gain}
       onDrag={onDrag}
       title={title}
     />
@@ -220,6 +230,10 @@ function PileupResizeHandle({
 // still gets one affordance per group (each section keeps its own coverage band,
 // including collapsed groups), scrolling with its band. Ungrouped is the single
 // sticky section, reproducing the prior lone handle at `coverageHeight`.
+//
+// Every section carries a coverage band, so the handle on the Nth one sits below
+// N of them and moves N px per px of height — its `gain`. The title says the
+// drag is display-wide, since the bands the user is NOT pointing at move too.
 const CoverageResizeHandle = observer(function CoverageResizeHandle({
   model,
 }: {
@@ -228,10 +242,10 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
   if (!model.showCoverage) {
     return null
   }
-  const { height, scrollModel: scroll } = model
+  const { height, scrollModel: scroll, isGrouped } = model
   return (
     <>
-      {model.renderSections.map(section => {
+      {model.renderSections.map((section, i) => {
         const bottom = bandScreenTop(
           section.coverageTop + section.coverageHeight,
           scroll,
@@ -241,10 +255,15 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
             key={sectionKey(section.groupKey)}
             top={bottom - YSCALEBAR_LABEL_OFFSET}
             canvasHeight={height}
+            gain={i + 1}
             onDrag={dy => {
               model.setCoverageHeight(model.coverageHeight + dy)
             }}
-            title="Drag to resize coverage track"
+            title={
+              isGrouped
+                ? 'Drag to resize the coverage track of every group'
+                : 'Drag to resize coverage track'
+            }
           />
         )
       })}
@@ -261,16 +280,20 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
 // Both handles are gated per section (`hasArcsBand` / `hasSashimiBand`), not on
 // the global geometry: a lane that reserves no strip has none to resize, and its
 // handle would land on the pixel of the handle above it.
+//
+// Which is also why their `gain` counts the strips actually reserved above each
+// handle rather than the sections: an arc-less lane passes the drag straight
+// through, so it moves nothing the handle below it stacks on.
 const ConnectionBandResizeHandles = observer(
   function ConnectionBandResizeHandles({
     model,
   }: {
     model: LinearAlignmentsDisplayModel
   }) {
-    const { height, scrollModel: scroll } = model
+    const { height, scrollModel: scroll, renderSections } = model
     return (
       <>
-        {model.renderSections.map(section => {
+        {renderSections.map((section, i) => {
           return (
             <Fragment key={sectionKey(section.groupKey)}>
               {section.hasArcsBand ? (
@@ -280,12 +303,13 @@ const ConnectionBandResizeHandles = observer(
                     scroll,
                   )}
                   canvasHeight={height}
+                  gain={stackedBandGain(renderSections, i, s => s.hasArcsBand)}
                   onDrag={dy => {
                     model.setReadConnectionsHeight(
                       model.readConnectionsHeight + dy,
                     )
                   }}
-                  title="Drag to resize arcs area"
+                  title="Drag to resize the arcs area of every group"
                 />
               ) : null}
 
@@ -296,10 +320,15 @@ const ConnectionBandResizeHandles = observer(
                     scroll,
                   )}
                   canvasHeight={height}
+                  gain={stackedBandGain(
+                    renderSections,
+                    i,
+                    s => s.hasSashimiBand,
+                  )}
                   onDrag={dy => {
                     model.setSashimiArcsHeight(model.sashimiArcsHeight + dy)
                   }}
-                  title="Drag to resize sashimi arcs area"
+                  title="Drag to resize the sashimi arcs area of every group"
                 />
               ) : null}
             </Fragment>
@@ -339,7 +368,13 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
         return (
           <PileupResizeHandle
             key={sectionKey(section.groupKey)}
-            top={bottom - YSCALEBAR_LABEL_OFFSET}
+            // Straddling the boundary, where every other handle sits in the last
+            // px of the band it sizes: this is the one boundary that DRAWS a line
+            // (`GroupLabelsOverlay`'s divider, at the next section's top), and
+            // ending above it made the visible line the one place the pointer got
+            // no answer — hover the divider, nothing lights up; a px higher, a
+            // full-width bar appears. So the drawn line is inside the target now.
+            top={bottom - Math.ceil(YSCALEBAR_LABEL_OFFSET / 2)}
             canvasHeight={height}
             onDrag={dy => {
               model.resizeGroupHeight(section.groupKey, dy)

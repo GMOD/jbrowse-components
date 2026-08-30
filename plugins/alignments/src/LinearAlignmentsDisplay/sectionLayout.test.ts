@@ -3,6 +3,7 @@ import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
   computeStackedSections,
+  stackedBandGain,
 } from './sectionLayout.ts'
 
 import type {
@@ -342,6 +343,49 @@ test('single section stacks coverage then pileup from the top', () => {
     pileupHeight: 40,
   })
   expect(contentHeight).toBe(85)
+})
+
+test("stackedBandGain counts a handle's own band plus the ones above it", () => {
+  const lanes = [
+    { hasArcsBand: true },
+    { hasArcsBand: false },
+    { hasArcsBand: true },
+  ]
+  // the top handle only moves by its own band; the third sits below two others
+  expect(stackedBandGain(lanes, 0, s => s.hasArcsBand)).toBe(1)
+  expect(stackedBandGain(lanes, 2, s => s.hasArcsBand)).toBe(2)
+  // a coverage band is reserved by every section, so its gain is the index + 1
+  expect(stackedBandGain(lanes, 2, () => true)).toBe(3)
+})
+
+test('a drag-set height pads the band past its rows, and stacks the rest below', () => {
+  const { sections, contentHeight } = computeStackedSections(
+    [
+      lane({ key: '1', maxY: 3, minPileupHeight: 120 }),
+      lane({ key: '2', maxY: 5 }),
+    ],
+    { coverageHeight: 20, rowHeight: 10 },
+  )
+  // 30px of rows in a 120px band: the surplus draws blank, and section 2 starts
+  // below the padded band rather than below the rows.
+  expect(
+    sections.map(s => [s.coverageTop, s.pileupTop, s.pileupHeight]),
+  ).toEqual([
+    [0, 20, 120],
+    [140, 160, 50],
+  ])
+  expect(contentHeight).toBe(210)
+})
+
+test('a lane drawing no rows is not padded by a banked height override', () => {
+  // Collapsed (maxY 0) with an override still banked from before the collapse:
+  // padding it would reopen the band the collapse just closed.
+  const { sections, contentHeight } = computeStackedSections(
+    [lane({ key: '1', maxY: 0, minPileupHeight: 120 })],
+    { coverageHeight: 20, rowHeight: 10 },
+  )
+  expect(sections[0]).toMatchObject({ pileupHeight: 0 })
+  expect(contentHeight).toBe(20)
 })
 
 test('multiple sections stack with each coverage above its own pileup', () => {

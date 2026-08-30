@@ -6,7 +6,9 @@ import {
   collectAcrossGroups,
   fitGroupMaxRows,
   groupMaxY,
+  groupRowCapSignature,
   nextGroupHeightOverride,
+  parseGroupRowCaps,
   reclaimFitRows,
   someAcrossGroups,
 } from './groupLayout.ts'
@@ -238,36 +240,50 @@ const drag = (o: Partial<Parameters<typeof nextGroupHeightOverride>[0]>) =>
     rowHeight: 20,
     displayedPx: 100,
     existingPx: undefined,
-    fullyShown: false,
     ...o,
   })
 
-test('nextGroupHeightOverride: fresh grow-drag on a fully-shown group banks nothing', () => {
-  expect(drag({ dy: 5, fullyShown: true })).toBeUndefined()
+test('nextGroupHeightOverride: a fresh drag seeds from the displayed height', () => {
+  expect(drag({ dy: -5 })).toBe(95)
+  expect(drag({ dy: 5 })).toBe(105)
 })
 
-test('nextGroupHeightOverride: fresh shrink seeds from the displayed height', () => {
-  expect(drag({ dy: -5, fullyShown: true })).toBe(95)
-  expect(drag({ dy: -5, fullyShown: false })).toBe(95)
+test('nextGroupHeightOverride: accumulates from the stored override', () => {
+  expect(drag({ dy: 5, existingPx: 110 })).toBe(115)
+  expect(drag({ dy: -5, existingPx: 110 })).toBe(105)
 })
 
-test('nextGroupHeightOverride: grows a truncated group past its content', () => {
-  expect(drag({ dy: 5, fullyShown: false })).toBe(105)
-  expect(drag({ dy: 5, existingPx: 110, fullyShown: false })).toBe(115)
+test('nextGroupHeightOverride: grows past the content, which pads the band', () => {
+  // 500px of override over 100px of rows is 400px of blank band, and a shrink
+  // drag walks back from the 500 the handle is drawn at rather than the content.
+  expect(drag({ dy: 5, existingPx: 500 })).toBe(505)
+  expect(drag({ dy: -5, existingPx: 500 })).toBe(495)
 })
 
-test('nextGroupHeightOverride: growing a fully-shown group pins at its content', () => {
-  expect(drag({ dy: 5, existingPx: 110, fullyShown: true })).toBe(100)
+test('groupRowCapSignature: px inside one row, or past the content, name one cap', () => {
+  const sig = (px: number) => groupRowCapSignature(new Map([['HP: 1', px]]), 20)
+  // every px of a row, and every px of pad past what the reads fill, is one cap
+  expect(sig(100)).toBe(sig(119))
+  expect(sig(100)).not.toBe(sig(120))
+  expect(groupRowCapSignature(new Map(), 20)).toBe('')
+})
+
+test('parseGroupRowCaps: round-trips keys holding the delimiters', () => {
+  const overrides = new Map([
+    ['tag:value', 100],
+    ['a=b|c', 40],
+    ['', 60],
+  ])
+  expect([...parseGroupRowCaps(groupRowCapSignature(overrides, 20))]).toEqual([
+    ['tag:value', { rows: 5, source: 'override' }],
+    ['a=b|c', { rows: 2, source: 'override' }],
+    ['', { rows: 3, source: 'override' }],
+  ])
+  expect(parseGroupRowCaps('').size).toBe(0)
 })
 
 test('nextGroupHeightOverride: floors at one row', () => {
   expect(drag({ dy: -500 })).toBe(20)
-})
-
-test('nextGroupHeightOverride: clamps a stale over-content override to one row of headroom', () => {
-  // existing 500px runs well past the 100px content; base clamps to 100+20 so a
-  // reversing (shrink) drag only walks back one row of dead space, not 400px.
-  expect(drag({ dy: -5, existingPx: 500, fullyShown: true })).toBe(115)
 })
 
 // The two-deep walk the legend's four presence scans share. Every one of them

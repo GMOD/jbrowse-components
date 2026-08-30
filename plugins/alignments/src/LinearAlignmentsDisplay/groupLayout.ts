@@ -497,9 +497,11 @@ export interface FitViewportInput {
   totalOverhead: () => number
   // Groups drawing coverage only — they cost overhead but no pileup rows.
   collapsedKeys: ReadonlySet<string>
-  // Per-group pileup-height overrides in px (drag / "show all"); opt out of the
-  // shared fit budget entirely.
-  heightOverridesPx: ReadonlyMap<string, number>
+  // The row caps the per-group height overrides impose (drag / "show all"); a
+  // lane with one opts out of the shared fit budget entirely. Caps rather than
+  // the px they came from, because px that round to the same row count lay out
+  // identically — `groupRowCapSignature` is what lets the model notice.
+  overrideCaps: ReadonlyMap<string, RowCap>
 }
 
 // The full grouped layout: split the viewport across the groups, lay them out,
@@ -510,7 +512,7 @@ export function layoutGroupsToViewport(
   ctx: GroupLayoutContext,
   fit: FitViewportInput,
 ): LaidOutByGroup {
-  const { rowHeight, collapsedKeys, heightOverridesPx } = fit
+  const { rowHeight, collapsedKeys, overrideCaps } = fit
   const maxHeightRows = maxRowsFor(fit.maxHeight, rowHeight)
   const grouped = ctx.order.length > 1
   // Collapsed groups draw only their coverage band, so they still cost overhead
@@ -531,10 +533,6 @@ export function layoutGroupsToViewport(
       })
     : ceilingCap(maxHeightRows)
 
-  const overrideCaps = new Map<string, RowCap>()
-  for (const [key, px] of heightOverridesPx) {
-    overrideCaps.set(key, overrideCap(maxRowsFor(px, rowHeight)))
-  }
   const pass = buildLaidOutByGroup(ctx, defaultCap, overrideCaps, collapsedKeys)
   if (!grouped) {
     return pass
@@ -550,7 +548,7 @@ export function layoutGroupsToViewport(
   for (const [key, map] of pass) {
     if (
       collapsedKeys.has(key) ||
-      heightOverridesPx.has(key) ||
+      overrideCaps.has(key) ||
       collapsesRows(ctx, key, overrideCaps)
     ) {
       continue
@@ -698,48 +696,65 @@ function anyRegionTruncated(map: ReadonlyMap<number, PileupLayoutArrays>) {
   return groupClipSource(map) !== undefined
 }
 
-// The per-group pileup-height override (px) after one drag frame, or `undefined`
-// to leave the group on the shared fit budget (bank no override). The override
-// caps how many rows the group lays out (`maxRowsFor`); a drag accumulates it
-// continuously, `dy` being the per-frame pointer delta (positive = taller).
+// The per-group pileup-height override (px) after one drag frame. The override
+// caps how many rows the group lays out (`maxRowsFor`) and, where the rows fall
+// short of it, pads the band out to it (`minPileupHeight`) — so the handle
+// tracks the pointer in both directions, the way the track's own height bar
+// does. It used to pin an upward drag at the content height, which read as the
+// bar going dead: in grow mode every lane shows all its reads, so every lane's
+// bar was dead in the grow direction.
 //
-// Pure so the drag policy is unit-tested here rather than inferred from the MST
-// action. Three rules, each isolated below:
-//   - Accumulate from the stored px, not the row-snapped displayed height —
-//     re-seeding from `displayed` every frame stutters, since a sub-row `dy`
-//     rounds away against the snap. Seed from `displayed` only on the first
-//     frame (no existing override). When an override already runs past the
-//     content, clamp its base to one row of headroom so a reversing drag
-//     responds immediately instead of eating the dead pixels first.
-//   - Floor at one row.
-//   - A fully-shown group (nothing hidden) can't grow past its content height:
-//     an upward drag pins at `displayed`, and a *fresh* upward drag banks
-//     nothing at all (an override equal to `displayed` is a dead "fit to view"
-//     affordance).
+// `dy` is the per-frame pointer delta (positive = taller). Pure so the drag
+// policy is unit-tested here rather than inferred from the MST action.
+// Accumulate from the stored px, not the row-snapped displayed height —
+// re-seeding from `displayed` every frame stutters, since a sub-row `dy` rounds
+// away against the snap. Floor at one row, and keep the result whole: a pointer
+// delta is fractional, and the padded band is now a layout offset every section
+// below it stacks on.
 export function nextGroupHeightOverride({
   dy,
   rowHeight,
   displayedPx,
   existingPx,
-  fullyShown,
 }: {
   dy: number
-  rowHeight: number
-  // Height the group's pileup currently occupies, row-snapped (maxY*rowHeight).
+  // Height the group's pileup band currently occupies (rows, or the pad).
   displayedPx: number
+  rowHeight: number
   // Current override px, or undefined when the group is still on the fit budget.
   existingPx: number | undefined
-  // Whether every read already shows (no hidden rows to grow into).
-  fullyShown: boolean
-}): number | undefined {
-  const growingFullyShown = dy > 0 && fullyShown
-  const base =
-    existingPx === undefined
-      ? displayedPx
-      : Math.min(existingPx, displayedPx + rowHeight)
-  const grown = Math.max(rowHeight, base + dy)
-  const capped = growingFullyShown ? Math.min(grown, displayedPx) : grown
-  // A fresh grow-drag on a fully-shown group would only pin at its content, so
-  // leave it unset rather than bank a dead override.
-  return existingPx === undefined && growingFullyShown ? undefined : capped
+}) {
+  return Math.max(rowHeight, Math.round((existingPx ?? displayedPx) + dy))
+}
+
+// The row caps a set of per-lane height overrides imposes, as a string, so MobX
+// can compare them by VALUE. An override is a BAND height and a cap is a row
+// count, so every px between two row boundaries — and every px past what the
+// lane's reads fill, where the surplus pads the band — names the same caps.
+// Without that gate every frame of a height drag relaid every read out and
+// re-baked every color to produce the identical arrays.
+//
+// `rows:key` per line, key last and unsplit, because a group key is a tag value
+// or a refName and can hold any of the punctuation a delimiter might use — but
+// not a newline, which SAM's printable-character grammar excludes.
+export function groupRowCapSignature(
+  overridesPx: ReadonlyMap<string, number>,
+  rowHeight: number,
+) {
+  return [...overridesPx]
+    .map(([key, px]) => `${maxRowsFor(px, rowHeight)}:${key}`)
+    .join('\n')
+}
+
+// The caps that signature stands for. The round trip is what lets the model hold
+// the caps in a computed whose only input is the string.
+export function parseGroupRowCaps(signature: string) {
+  const caps = new Map<string, RowCap>()
+  if (signature) {
+    for (const line of signature.split('\n')) {
+      const split = line.indexOf(':')
+      caps.set(line.slice(split + 1), overrideCap(Number(line.slice(0, split))))
+    }
+  }
+  return caps
 }

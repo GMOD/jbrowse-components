@@ -154,7 +154,8 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         const label = groupSectionLabel(section.label)
         // Off the section, not looked back up by its key: a `renderSections`
         // entry IS its lane, chip state included.
-        const { collapsed, hasHeightOverride: hasOverride } = section
+        const { collapsed } = section
+        const hasOverride = section.heightOverridePx !== undefined
         // Sticky: hold the chip at the top of the canvas while its section
         // scrolls past, then let it go with the section's own bottom edge, so a
         // group on its way off the top doesn't park its name over the next

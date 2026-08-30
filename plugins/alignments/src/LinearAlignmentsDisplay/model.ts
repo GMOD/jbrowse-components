@@ -105,8 +105,10 @@ import {
   applyReadColorsByGroup,
   collectAcrossGroups,
   fittedReadPitch,
+  groupRowCapSignature,
   layoutGroupsToViewport,
   nextGroupHeightOverride,
+  parseGroupRowCaps,
   someAcrossGroups,
 } from './groupLayout.ts'
 import {
@@ -1443,6 +1445,29 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The height overrides as the row caps they impose, spelled as a string
+         * so MobX compares them by value. A height drag writes a px per frame,
+         * but a band's px only becomes a different LAYOUT at a row boundary — and
+         * past the lane's own content it never does, since there the extra px pad
+         * the band. Without this gate every frame of a drag relaid every read out
+         * and re-baked every color to produce the identical arrays.
+         */
+        get groupRowCapSignature(): string {
+          return groupRowCapSignature(this.groupHeightOverrides, this.rowHeight)
+        },
+
+        /**
+         * #getter
+         * Those caps, keyed by lane — the layout's actual input. Derived from the
+         * signature and nothing else, so it is rebuilt only when a cap really
+         * moves.
+         */
+        get groupRowCaps() {
+          return parseGroupRowCaps(this.groupRowCapSignature)
+        },
+
+        /**
+         * #getter
          * Per-group laid-out data: group key → (region index → laid-out data).
          * Each group lays out independently (own `maxRows` cap) so a dense group
          * can't starve the rest. When grouped, the default cap fits all sections
@@ -1466,7 +1491,10 @@ export default function stateModelFactory(
             // `FitViewportInput.totalOverhead`.
             totalOverhead: () => this.totalBandOverhead,
             collapsedKeys: self.collapsedGroups,
-            heightOverridesPx: this.groupHeightOverrides,
+            // The caps, not the px they came from: a drag frame that lands on
+            // the same caps must reuse this layout rather than recompute it to
+            // the same arrays (`groupRowCapSignature`).
+            overrideCaps: this.groupRowCaps,
           })
         },
 
@@ -2033,7 +2061,7 @@ export default function stateModelFactory(
             arcInkKeys: self.arcsResult.inkGroupKeys,
             sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
             collapsedKeys: self.collapsedGroups,
-            heightOverrideKeys: self.groupHeightOverrides,
+            heightOverridesPx: self.groupHeightOverrides,
             showPileup: self.showPileup,
             fitHeightToDisplay: self.fitHeightToDisplay,
           })
@@ -3231,34 +3259,34 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Drag a stacked group's pileup band taller/shorter by `dy` px, capping
-           * how many rows that group lays out. The continuous-accumulation policy
-           * (seed once, floor at a row, pin/skip a fully-shown group) lives in the
-           * pure `nextGroupHeightOverride`; this action just gathers the group's
-           * live state and commits the result (undefined = leave on the fit
-           * budget). Pairs with `groupHeightOverrides` / `toggleGroupExpanded`.
+           * Drag a stacked group's pileup band taller/shorter by `dy` px. The
+           * override caps how many rows that group lays out and pads the band
+           * where the rows fall short of it, so the drag runs in both directions.
+           * The continuous-accumulation policy (seed once, floor at a row) lives
+           * in the pure `nextGroupHeightOverride`; this action just gathers the
+           * group's live state and commits the result. Pairs with
+           * `groupHeightOverrides` / `toggleGroupExpanded`.
            */
           resizeGroupHeight(key: string, dy: number) {
             // One lookup: a `renderSections` entry is its lane plus its band
-            // geometry, so the drawn height and the clip come off the same
-            // object rather than out of two collections found by the same key.
-            // A key that isn't drawn has no band to resize — the handle only
-            // exists per drawn section — and the two zero-ish fallbacks this
-            // replaces let a shrink-drag bank a one-row override on it.
+            // geometry, so the drawn height comes off the same object rather
+            // than out of two collections found by the same key. A key that
+            // isn't drawn has no band to resize — the handle only exists per
+            // drawn section — and the two zero-ish fallbacks this replaces let a
+            // shrink-drag bank a one-row override on it.
             const section = self.renderSections.find(s => s.groupKey === key)
             if (!section) {
               return
             }
-            const next = nextGroupHeightOverride({
-              dy,
-              rowHeight: self.rowHeight,
-              displayedPx: section.pileupHeight,
-              existingPx: self.groupMaxHeightOverrides.get(key),
-              fullyShown: section.clippedBy === undefined,
-            })
-            if (next !== undefined) {
-              self.groupMaxHeightOverrides.set(key, next)
-            }
+            self.groupMaxHeightOverrides.set(
+              key,
+              nextGroupHeightOverride({
+                dy,
+                rowHeight: self.rowHeight,
+                displayedPx: section.pileupHeight,
+                existingPx: self.groupMaxHeightOverrides.get(key),
+              }),
+            )
           },
 
           /**

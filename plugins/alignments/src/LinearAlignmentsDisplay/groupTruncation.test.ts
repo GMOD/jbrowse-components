@@ -245,6 +245,33 @@ test('a lane clipped by its own override raises nothing', () => {
   expect(clippedBy(display, '2')).toBe('ceiling')
 })
 
+// The drag's own direction, on a lane with nothing left to reveal: it pads the
+// band rather than pinning at the content, so the handle keeps tracking the
+// pointer. Pinning read as the bar going dead — and in grow mode, where every
+// lane shows all its reads, it was dead on every lane.
+test("a drag past a fully-shown lane's content pads its band", () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 4 },
+    { key: '2', label: 'HP: 2', n: 4 },
+  ])
+  const band = () => display.sections.sections[0]!.pileupHeight
+  const below = () => display.sections.sections[1]!.coverageTop
+  expect(clippedBy(display, '1')).toBeUndefined()
+  const [content, top] = [band(), below()]
+
+  display.resizeGroupHeight('1', 100)
+  expect(band()).toBe(content + 100)
+  // the lane below stacks under the padded band, so the whole stack grew with it
+  expect(below()).toBe(top + 100)
+  // padding hides nothing, so no truncation affordance appears
+  expect(clippedBy(display, '1')).toBeUndefined()
+  expect(rowsIn(display, 0)).toBe(rowsIn(display, 1))
+
+  // and the chip's "fit to view" hands the padding back
+  display.toggleGroupExpanded('1')
+  expect(band()).toBe(content)
+})
+
 // Fit solves one read pitch from every lane's FULL row count, so a lane the
 // layout still caps at its own override shows fewer rows than the pitch was
 // solved for and leaves that much of the display blank. `setHeightMode` drops

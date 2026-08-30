@@ -38,6 +38,9 @@ export interface Section {
   // `hasArcsBand`: a lane with no down-bound junction has no strip to resize.
   hasSashimiBand: boolean
   pileupTop: number
+  // The pileup band's height: the laid-out rows, or the height a drag pinned
+  // this group at when that is taller (the surplus draws blank, like a track
+  // dragged past its own content).
   pileupHeight: number
   // The whole strip this section owns: the distance from its coverage top to
   // the next section's, so the last section's bottom is `contentHeight`.
@@ -75,6 +78,36 @@ export interface SectionGroupInput {
   // signals — whether either strip is actually reserved also depends on the
   // display settings, which `reservesArcsBand`/`reservesSashimiBand` resolve.
   hasSashimiDownArcs: boolean
+  // Height this group's pileup band was dragged to, when the drag asked for more
+  // than its rows fill. The cap it also sets means the rows never exceed it, so
+  // this only ever pads — and only for a lane that draws rows at all, which is
+  // what keeps a collapsed lane's banked override from reopening its band.
+  minPileupHeight?: number
+}
+
+// How far the band bottom a section's resize handle sits on travels per px of a
+// DISPLAY-GLOBAL band height: its own band, plus every band of that kind stacked
+// above it, since those grow by the same px and push it down. Dividing a drag by
+// it is what keeps the handle under the pointer — the second group's coverage
+// handle sits below two coverage bands, so an undivided drag moved it twice as
+// far as the pointer and slid out from under the cursor.
+//
+// A predicate rather than a count, because whether a band is reserved is a
+// per-lane question for the arc and sashimi strips (`hasArcsBand` /
+// `hasSashimiBand`): a lane that reserves neither passes the drag through and
+// moves nothing below it.
+export function stackedBandGain<T>(
+  sections: readonly T[],
+  index: number,
+  reservesBand: (section: T) => boolean,
+) {
+  let gain = 1
+  for (const section of sections.slice(0, index)) {
+    if (reservesBand(section)) {
+      gain += 1
+    }
+  }
+  return gain
 }
 
 // Whether the paired-end arcs reserve a band of their own rather than overlaying
@@ -292,7 +325,11 @@ export function computeStackedSections(
     const band = g.hasArcs ? arcBand : undefined
     const coverageTop = top
     const pileupTop = coverageTop + stack.bottom
-    const pileupHeight = g.maxY * opts.rowHeight
+    const rowsHeight = g.maxY * opts.rowHeight
+    const pileupHeight =
+      g.minPileupHeight !== undefined && rowsHeight > 0
+        ? Math.max(rowsHeight, g.minPileupHeight)
+        : rowsHeight
     // `top` becomes this section's bottom edge — and so the next one's top,
     // which is what makes `height` below the strip this section owns.
     top = Math.max(

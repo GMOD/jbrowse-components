@@ -37,7 +37,11 @@ export interface AlignmentLane {
   hasSashimiDownArcs: boolean
   maxY: number
   collapsed: boolean
-  hasHeightOverride: boolean
+  // The height (px) a drag or "show all" pinned this lane's pileup band at, or
+  // `undefined` while it rides the shared fit budget. The px, not a flag: the
+  // band pads out to it when the rows fall short, and the drag accumulates from
+  // it.
+  heightOverridePx: number | undefined
   clippedBy: RowCapSource | undefined
   // `clippedBy === 'ceiling'` with the display-wide suppressions already
   // applied, i.e. whether THIS lane draws `PileupTruncationRule`. Resolved on
@@ -74,7 +78,7 @@ const SYNTHETIC_LANE: AlignmentLane = {
   hasSashimiDownArcs: false,
   maxY: 0,
   collapsed: false,
-  hasHeightOverride: false,
+  heightOverridePx: undefined,
   clippedBy: undefined,
   ceilingClipped: false,
 }
@@ -96,7 +100,8 @@ export interface BuildLanesInput {
   arcInkKeys: ReadonlySet<string>
   sashimiDownKeysByGroup: ReadonlyMap<string, ReadonlySet<string>>
   collapsedKeys: ReadonlySet<string>
-  heightOverrideKeys: ReadonlySet<string> | ReadonlyMap<string, unknown>
+  // The overrides IN EFFECT (`groupHeightOverrides`), which fit mode empties.
+  heightOverridesPx: ReadonlyMap<string, number>
   showPileup: boolean
   fitHeightToDisplay: boolean
 }
@@ -121,7 +126,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
     arcInkKeys,
     sashimiDownKeysByGroup,
     collapsedKeys,
-    heightOverrideKeys,
+    heightOverridesPx,
     showPileup,
     fitHeightToDisplay,
   } = input
@@ -149,7 +154,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
       // arcs only), the same height-0 path a collapsed lane takes.
       maxY: !showPileup || collapsed ? 0 : groupMaxY(laidOutPileupMap),
       collapsed,
-      hasHeightOverride: heightOverrideKeys.has(key),
+      heightOverridePx: heightOverridesPx.get(key),
       clippedBy,
       ceilingClipped: drawsCeilingNotice && clippedBy === 'ceiling',
     }
@@ -179,6 +184,7 @@ export function toSectionGroupInputs(
     maxY: lane.maxY,
     hasArcs: lane.hasArcs,
     hasSashimiDownArcs: lane.hasSashimiDownArcs,
+    minPileupHeight: lane.heightOverridePx,
   }))
 }
 
