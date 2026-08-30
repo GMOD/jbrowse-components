@@ -103,6 +103,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt; &amp; ... 25 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | LinearMafDisplay |
+| <span id="getter-statedbandbounds">**statedBandBounds**</span><br><code>BandBounds &#124; undefined</code> | The legal range for a band height that is *stated* — by a config, a session snapshot or a menu — rather than dragged. Undefined when the track height is itself derived from the bands, where they cannot overflow a height they are a term of.<br><br>`fitTargetHeight` is unavailable to this: it reads `rowsTopOffset`, which is the band fold. | LinearMafDisplay |
 | <span id="getter-rowproportion">**rowProportion**</span><br><code>number</code> |  | LinearMafDisplay |
 | <span id="getter-showallletters">**showAllLetters**</span><br><code>boolean</code> |  | LinearMafDisplay |
 | <span id="getter-mismatchrendering">**mismatchRendering**</span><br><code>boolean</code> |  | LinearMafDisplay |
