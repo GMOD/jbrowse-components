@@ -1,12 +1,13 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { KIND_BASE_TILE } from './shaders/syntenyTypes.generated.ts'
 import {
   buildFeaturePath,
   computeTransform,
   isInstanceInvisible,
   isRibbonCulled,
   makeCornerScratch,
-  projectCorners,
+  projectSpanCorners,
   ribbonMaxPerpWidth,
 } from './syntenyRibbonPath.ts'
 
@@ -60,9 +61,13 @@ export function makePickCtx(): PickCanvasLike | undefined {
 // (it rejects a zero-item tree).
 export interface PickIndex {
   flatbush: Flatbush | undefined
-  // Flatbush position -> instance index. Not the identity, because unpickable
-  // instances are skipped rather than inserted (see buildPickIndex).
-  instanceOf: Int32Array
+  // Flatbush position -> the entry's first and last instance, an INSTANCE SPAN
+  // in the sense projectSpanCorners takes: `entryStart[p] === entryEnd[p]` for
+  // one instance, and a wider pair for a tiled feature's synthetic body. Not
+  // the identity, because unpickable instances are skipped rather than
+  // inserted, and bodies are inserted alongside them (see buildPickIndex).
+  entryStart: Int32Array
+  entryEnd: Int32Array
   bpPerPxInv0: number
   bpPerPxInv1: number
   panPx0: number
@@ -140,35 +145,127 @@ const MAX_PAN_SKEW_PX = 2000
 // index build 472ms -> 67ms, and a warm hover 192ms -> under 0.01ms. Markers fall
 // out here for free (both their edges are single points, so both deltas are 0),
 // which is why the query needs no marker arm of `isRibbonCulled`.
+//
+// SYNTHETIC FEATURE BODIES. A tiled feature — transparent-indels mode, where
+// `buildSyntenyGeometry` replaces the full-span KIND_BASE quad with one
+// KIND_BASE_TILE per CIGAR match segment — has no instance covering it, so
+// everything above would be asked of the tiles alone. Two ways that loses the
+// feature, and colored-indel mode has neither because every feature there keeps
+// its full-span quad under the indel wedges:
+//
+//   - the see-through indels BETWEEN tiles answer no hover at all, and at a few
+//     px per indel the cursor spends much of the ribbon inside one.
+//   - a tile is judged for pickability ON ITS OWN, while what is DRAWN is the
+//     tiles overlapping into one ribbon — that overlap is exactly what
+//     `thinWidthFade` fades each tile by. So a feature painted as a solid band
+//     answered a hover only where a single tile happened to clear a pixel, and
+//     a sheared ribbon has none that do.
+//
+// So a run of tiles carrying one feature also enters the index as ONE entry
+// spanning the run — the first tile's start edge joined to the last tile's end
+// edge, which is the quad the mode dropped, clipped to the tiles that were
+// emitted. Nothing draws it; it exists to be picked. Derived here rather than
+// emitted by the worker so that "pickable" needs no new instance kind for the
+// two shaders and three draw paths to learn to skip.
+//
+// Inserted immediately BEFORE its own first tile, which keeps position order
+// equal to DRAW order: a body loses to its own tiles and to every feature drawn
+// after it, exactly where its KIND_BASE quad sat. A feature's instances are
+// contiguous (buildSyntenyGeometry emits in one pass per feature) — the same
+// property `syntenyPickDrawOrder.test.ts` pins — so a run is found by looking
+// ahead from its first tile.
+//
+// `syntenyTiledPick.test.ts` states the whole of this as one requirement: sweep
+// a hover across a feature in both cigar modes and get the same answer at every
+// position, because which mode shades indels is not a question about what is
+// hoverable. agent-docs/reference/SYNTENY_PICKING.md carries the rest.
 function buildPickIndex(
   data: SyntenyInstanceData,
   t: ComputedTransform,
 ): PickIndex {
-  const { bp1, bp2, bp3, bp4, instanceCount } = data
+  const { bp1, bp2, bp3, bp4, kinds, instanceFeatureIdx, instanceCount } = data
   const { bpPerPxInv0, bpPerPxInv1 } = t
+
+  // The last tile of the run `i` starts, or `i` itself when `i` is not a tile
+  // or its feature has only this one. A run of one is not a body: its span IS
+  // the tile, already in the index on its own account.
+  function runEnd(i: number) {
+    let last = i
+    if (kinds[i] === KIND_BASE_TILE) {
+      const feat = instanceFeatureIdx[i]
+      while (
+        last + 1 < instanceCount &&
+        kinds[last + 1] === KIND_BASE_TILE &&
+        instanceFeatureIdx[last + 1] === feat
+      ) {
+        last++
+      }
+    }
+    return last
+  }
+
+  function startsRun(i: number) {
+    return (
+      kinds[i] === KIND_BASE_TILE &&
+      (i === 0 ||
+        kinds[i - 1] !== KIND_BASE_TILE ||
+        instanceFeatureIdx[i - 1] !== instanceFeatureIdx[i])
+    )
+  }
+
+  // Counted first, so the two staging lanes below are sized exactly rather than
+  // by a doubling guess. It is one scan of `kinds`, and in colored-indel
+  // geometry — where there are no tiles at all — it finds nothing.
+  let bodyCount = 0
+  for (let i = 0; i < instanceCount; i++) {
+    if (startsRun(i) && runEnd(i) > i) {
+      bodyCount++
+    }
+  }
+
   // One pass to select, then one over the selection to project. The selection
   // pass reads bp deltas rather than projected corners, so it is cheaper than
   // the single projection pass it replaces, and the projection then runs only on
-  // what is kept.
-  const instanceOfAll = new Int32Array(instanceCount)
+  // what is kept. The width test is the span's, so a body is admitted on the
+  // whole feature's width where its tiles are each judged on their own.
+  const startAll = new Int32Array(instanceCount + bodyCount)
+  const endAll = new Int32Array(instanceCount + bodyCount)
   let kept = 0
-  for (let i = 0; i < instanceCount; i++) {
-    const wTop = Math.abs(bp2[i]! - bp1[i]!) * bpPerPxInv0
-    const wBot = Math.abs(bp4[i]! - bp3[i]!) * bpPerPxInv1
+  function keep(first: number, last: number) {
+    const wTop = Math.abs(bp2[last]! - bp1[first]!) * bpPerPxInv0
+    const wBot = Math.abs(bp4[first]! - bp3[last]!) * bpPerPxInv1
     if (wTop >= 1 || wBot >= 1) {
-      instanceOfAll[kept++] = i
+      startAll[kept] = first
+      endAll[kept] = last
+      kept++
     }
+  }
+  for (let i = 0; i < instanceCount; i++) {
+    if (startsRun(i)) {
+      const last = runEnd(i)
+      if (last > i) {
+        keep(i, last)
+      }
+    }
+    keep(i, i)
   }
   // `slice`, not `subarray`: a view keeps the whole instanceCount-long buffer
   // alive behind it, and the index outlives this call — 2 MB retained per region
   // at 500k instances, worst exactly where `kept` is smallest. At whole-genome
   // zoom `kept` is 0 and the retained buffer was the entire cost of the entry.
   // One copy against a rebuild already measured in tens of ms.
-  const instanceOf = instanceOfAll.slice(0, kept)
+  //
+  // With no bodies the end lane IS the start lane, because every entry is then
+  // one instance and `entryEnd[p] === entryStart[p]` for all of them. That is
+  // every colored-indel region, i.e. the default, and it is what keeps this
+  // costing the same as the single lane it replaced there.
+  const entryStart = startAll.slice(0, kept)
+  const entryEnd = bodyCount === 0 ? entryStart : endAll.slice(0, kept)
   if (kept === 0) {
     return {
       flatbush: undefined,
-      instanceOf,
+      entryStart,
+      entryEnd,
       bpPerPxInv0,
       bpPerPxInv1,
       panPx0: t.panPx0,
@@ -178,7 +275,7 @@ function buildPickIndex(
   const flatbush = new Flatbush(kept)
   const scratch = makeCornerScratch()
   for (let k = 0; k < kept; k++) {
-    const c = projectCorners(data, instanceOf[k]!, t, scratch)
+    const c = projectSpanCorners(data, entryStart[k]!, entryEnd[k]!, t, scratch)
     flatbush.add(
       Math.min(c.sx1, c.sx2, c.sx3, c.sx4),
       0,
@@ -189,7 +286,8 @@ function buildPickIndex(
   flatbush.finish()
   return {
     flatbush,
-    instanceOf,
+    entryStart,
+    entryEnd,
     bpPerPxInv0,
     bpPerPxInv1,
     panPx0: t.panPx0,
@@ -262,21 +360,25 @@ export function pickFeatureAtPoint(
     const d1 = transform.panPx1 - idx.panPx1
     const panLo = Math.min(d0, d1)
     const panHi = Math.max(d0, d1)
-    // Walked from the highest instance index down, so the topmost (last drawn)
-    // wins. Sorted as an Int32Array — the native numeric sort has no
-    // per-comparison call into JS the way `(a, b) => b - a` on the plain array
-    // `search` returns does. Ascending then walked backwards, so nothing has to
-    // be reversed.
+    // Walked from the highest position down, so the topmost (last drawn) wins.
+    // Sorted as an Int32Array — the native numeric sort has no per-comparison
+    // call into JS the way `(a, b) => b - a` on the plain array `search` returns
+    // does. Ascending then walked backwards, so nothing has to be reversed.
     //
-    // Sorting POSITIONS and resolving each to its instance index inside the loop
-    // is the same order: `instanceOf` is filled by an ascending scan, so it is
-    // strictly increasing and position order IS instance order.
+    // Sorting POSITIONS and resolving each to its instances inside the loop is
+    // the same order: the entry lanes are filled by an ascending scan, so
+    // position order IS draw order — including each synthetic feature body,
+    // which is inserted at the position its full-span quad would have drawn at.
     const candidates = new Int32Array(
       idx.flatbush.search(x - panHi, 0.5, x - panLo, 0.5),
     ).sort()
-    const { instanceOf } = idx
+    const { entryStart, entryEnd } = idx
     for (let ci = candidates.length - 1; ci >= 0; ci--) {
-      const i = instanceOf[candidates[ci]!]!
+      const pos = candidates[ci]!
+      // Every per-feature question is asked of the entry's first instance: a
+      // body's tiles all carry their feature's length and its base color, which
+      // is the same pair the dropped full-span quad carried.
+      const i = entryStart[pos]!
       if (data.alignmentLengths[i]! < minAlignmentLength) {
         continue
       }
@@ -284,7 +386,7 @@ export function pickFeatureAtPoint(
         continue
       }
 
-      const c = projectCorners(data, i, transform, scratch)
+      const c = projectSpanCorners(data, i, entryEnd[pos]!, transform, scratch)
       if (isRibbonCulled(c, canvasLogicalWidth, state.overdrawPx)) {
         continue
       }
@@ -302,6 +404,12 @@ export function pickFeatureAtPoint(
       // drawn as solid fills are exactly the ones that stay pickable. Evaluated
       // per candidate rather than at index-build time because both the cull and
       // the perpendicular width depend on the live pan.
+      //
+      // A synthetic feature body is measured on the whole run, which is what
+      // makes it the exception that keeps the rule: the tiles it spans are each
+      // drawn as a faded 1px stroke, and it is their OVERLAP that is the solid
+      // band on screen. Answering per tile is what left a visibly solid ribbon
+      // unhoverable.
       if (ribbonMaxPerpWidth(c, height, params.drawCurves) < 1) {
         continue
       }

@@ -1,8 +1,9 @@
 import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
+import { createGeometricPickCtx } from './testUtils.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { PickCanvasLike, PickIndex } from './syntenyPickEngine.ts'
+import type { PickIndex } from './syntenyPickEngine.ts'
 import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
@@ -28,54 +29,6 @@ import type {
 // This drives BOTH real implementations over the same geometry and compares
 // their verdicts, rather than re-deriving the threshold here — a test that
 // restated `< 1` would drift in exactly the way it is meant to catch.
-
-// Real point-in-polygon, so a "pickable" verdict means the point genuinely
-// landed inside the built path.
-function pointInPolygon(x: number, y: number, pts: [number, number][]) {
-  let inside = false
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const [xi, yi] = pts[i]!
-    const [xj, yj] = pts[j]!
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
-      inside = !inside
-    }
-  }
-  return inside
-}
-
-function createPickCtx(): PickCanvasLike {
-  let pts: [number, number][] = []
-  return {
-    fillStyle: '',
-    strokeStyle: '',
-    lineWidth: 1,
-    beginPath() {
-      pts = []
-    },
-    closePath() {},
-    moveTo(x: number, y: number) {
-      pts.push([x, y])
-    },
-    lineTo(x: number, y: number) {
-      pts.push([x, y])
-    },
-    bezierCurveTo(
-      _a: number,
-      _b: number,
-      _c: number,
-      _d: number,
-      x: number,
-      y: number,
-    ) {
-      pts.push([x, y])
-    },
-    fill() {},
-    stroke() {},
-    isPointInPath(x: number, y: number) {
-      return pointInPolygon(x, y, pts)
-    },
-  }
-}
 
 // Records only which branch the renderer took: a filled silhouette or a
 // stroked centerline.
@@ -171,7 +124,7 @@ function isPickable(widthBp: number, alpha?: number) {
     perTrack: new Map([[0, makeParams(alpha)]]),
   }
   const hit = pickFeatureAtPoint({
-    ctx: createPickCtx(),
+    ctx: createGeometricPickCtx(),
     state,
     regions: new Map([[0, makeData(widthBp)]]),
     pickIndices: new Map<number, PickIndex>(),
@@ -278,7 +231,7 @@ function slopedVerdicts(drawCurves: boolean) {
   drawSyntenyTrack(rec.ctx, makeSlopedData(), params, 800, 300)
   expect(rec.filled + rec.stroked).toBe(1)
   const hit = pickFeatureAtPoint({
-    ctx: createPickCtx(),
+    ctx: createGeometricPickCtx(),
     state: { overdrawPx: 300, perTrack: new Map([[0, params]]) },
     regions: new Map([[0, makeSlopedData()]]),
     pickIndices: new Map<number, PickIndex>(),
@@ -301,7 +254,7 @@ test('drawn and pickable stay one boundary in curve mode too', () => {
     const rec = createDrawCtx()
     drawSyntenyTrack(rec.ctx, makeData(w), params, 800, 300)
     const hit = pickFeatureAtPoint({
-      ctx: createPickCtx(),
+      ctx: createGeometricPickCtx(),
       state: { overdrawPx: 300, perTrack: new Map([[0, params]]) },
       regions: new Map([[0, makeData(w)]]),
       pickIndices: new Map<number, PickIndex>(),

@@ -2,61 +2,16 @@ import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
+import { createGeometricPickCtx } from './testUtils.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { PickCanvasLike, PickIndex } from './syntenyPickEngine.ts'
+import type { PickIndex } from './syntenyPickEngine.ts'
 import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
 
 const packed = (len: number, op: number) => (len << 4) | op
-
-function pointInPolygon(x: number, y: number, pts: [number, number][]) {
-  let inside = false
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const [xi, yi] = pts[i]!
-    const [xj, yj] = pts[j]!
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
-      inside = !inside
-    }
-  }
-  return inside
-}
-
-function createPickCtx(): PickCanvasLike {
-  let pts: [number, number][] = []
-  return {
-    fillStyle: '',
-    strokeStyle: '',
-    lineWidth: 1,
-    beginPath() {
-      pts = []
-    },
-    closePath() {},
-    moveTo(x: number, y: number) {
-      pts.push([x, y])
-    },
-    lineTo(x: number, y: number) {
-      pts.push([x, y])
-    },
-    bezierCurveTo(
-      _a: number,
-      _b: number,
-      _c: number,
-      _d: number,
-      x: number,
-      y: number,
-    ) {
-      pts.push([x, y])
-    },
-    fill() {},
-    stroke() {},
-    isPointInPath(x: number, y: number) {
-      return pointInPolygon(x, y, pts)
-    },
-  }
-}
 
 // The hg38/hs1 arrangement, shrunk: feature 0 is the wide block whose CIGAR
 // carries a deletion over x=[200,400], feature 1 a small alignment lying inside
@@ -111,7 +66,7 @@ function pickedFeatureAt(x: number) {
     perTrack: new Map([[0, params]]),
   }
   const hit = pickFeatureAtPoint({
-    ctx: createPickCtx(),
+    ctx: createGeometricPickCtx(),
     state,
     regions: new Map([[0, data]]),
     pickIndices: new Map<number, PickIndex>(),

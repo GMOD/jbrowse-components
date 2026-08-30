@@ -6,8 +6,10 @@ description: How synteny hover/click picking actually performs, measured. The pi
 # Synteny picking, measured
 
 `syntenyPickEngine.ts` answers a hover by stabbing a `flatbush` index of
-per-instance **x-hulls** and testing what comes back exactly. Two facts about
-that shape drive everything below, and neither is obvious from the code:
+**x-hulls** — one per pickable instance, plus one per tiled feature (see
+[below](#a-tiled-feature-is-picked-as-one-body)) — and testing what comes back
+exactly. Two facts about that shape drive everything below, and neither is
+obvious from the code:
 
 - **The index is 1D.** A box is `[minX, 0, maxX, 1]`; the y extent is constant
   because a ribbon always spans the whole track height. So the only thing that
@@ -38,8 +40,9 @@ Two fixtures, differing only in how query and target are paired:
 - **collinear** — target within ±100 kb of query. Two related genomes.
 - **random pairing** — target uniform over the genome. An all-vs-all PAF.
 
-`kept` is how many instances survive the pickable-width exclusion (`≥1px` on
-either axis) and therefore enter the tree.
+`kept` is how many entries survive the pickable-width exclusion (`≥1px` on
+either axis) and therefore enter the tree. Both fixtures are colored-indel
+geometry, which has no tiles, so there `kept` is a count of instances.
 
 ### Collinear — the index works
 
@@ -78,6 +81,58 @@ pays `projectCorners` + `isRibbonCulled` (which rejects it) at ~80ns.
 12.5ms<!--m:synteny-pick-random.1-10k.warmPickMs--> is inside a 16ms
 frame but leaves nothing for anything else, so a hover over an all-vs-all PAF
 reads as sluggish rather than broken.
+
+## A tiled feature is picked as one body
+
+`cigarMode: 'matches'` — Transparent indels — replaces a feature's full-span
+`KIND_BASE` quad with one `KIND_BASE_TILE` per rendered CIGAR match segment
+(`buildSyntenyGeometry.cigarSegmentKind`), so **in that mode no instance covers
+a feature**. Asking the tiles alone loses the feature two ways, and colored mode
+has neither because every feature there keeps its quad under the indel wedges:
+
+- the see-through indels BETWEEN tiles answer no hover at all, and at a few px
+  per indel a dense ribbon is mostly gaps;
+- a tile is judged for pickability ON ITS OWN, against the same `perpW ≥ 1`
+  boundary as any ribbon — while what is DRAWN is the tiles overlapping into one
+  band, which is the whole reason `thinWidthFade` fades a tile by its own width.
+  A ribbon the reader sees as solid therefore answered a hover only where a
+  single tile happened to clear a pixel, and a sheared one has none that do.
+
+So `buildPickIndex` also enters a **synthetic feature body** per run of tiles
+carrying one feature: the first tile's start edge joined to the last tile's end
+edge, which is the quad the mode dropped, clipped to the tiles that were
+emitted. Nothing draws it — it exists to be picked, and it is the one entry in
+the tree that is not an instance.
+
+Three properties make it safe, and each is pinned by `syntenyTiledPick.test.ts`:
+
+- **It sits in draw order.** A body is inserted immediately before its own first
+  tile, so position order stays draw order and the body loses to its own tiles
+  and to every feature drawn after it — exactly where its `KIND_BASE` quad sat.
+  This is what `syntenyPickDrawOrder.test.ts`'s contiguity property buys, and it
+  is why a body can be found by looking ahead from a run's first tile at all.
+- **It obeys the pickable-width exclusion.** A body is measured on the whole
+  run, so a feature that is a hairline as a whole stays out of the tree the same
+  way its tiles do — which is what keeps `kept` at 0 at whole-genome zoom, the
+  property everything in the table above rests on.
+- **It changes nothing in colored mode.** No tiles means no runs and no bodies,
+  so the tree, the query and the retained lanes are all exactly what the
+  measurements above describe. What the build gains there is one predictable
+  read of `kinds` per instance, finding nothing — not measured, and small
+  against the projection pass it sits beside, but not literally zero.
+
+Deriving it here rather than emitting it from the worker is deliberate: a
+pick-only instance kind would have to be understood by both shaders and all
+three draw paths, to be skipped by every one of them.
+
+**What this does NOT recover** is ribbon the geometry never emitted.
+`visitCigarRenderedSegments` labels a merged segment by its LAST op, so match
+bases merged into a segment that a rendered indel closes are dropped whole in
+transparent mode — bounded by one pixel per rendered indel, since a segment
+stops merging as soon as it clears one. Where match runs are consistently
+sub-pixel and the indels between them are not, that is the entire feature:
+nothing is painted, so there are no tiles, so there is no body. See
+[ideas/a-merged-cigar-segment-is-labelled-by-its-last-op.md](../ideas/a-merged-cigar-segment-is-labelled-by-its-last-op.md).
 
 ## Two things this corrects
 

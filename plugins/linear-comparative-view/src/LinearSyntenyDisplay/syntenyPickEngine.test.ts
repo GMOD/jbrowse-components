@@ -8,62 +8,14 @@ import {
   projectCorners,
   ribbonMaxPerpWidth,
 } from './syntenyRibbonPath.ts'
+import { createGeometricPickCtx } from './testUtils.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { PickCanvasLike, PickIndex } from './syntenyPickEngine.ts'
+import type { PickIndex } from './syntenyPickEngine.ts'
 import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
-
-// Real point-in-polygon so positional assertions mean something — a mock that
-// always returns true would make every "hits here, misses there" test vacuous.
-function pointInPolygon(x: number, y: number, pts: [number, number][]) {
-  let inside = false
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const [xi, yi] = pts[i]!
-    const [xj, yj] = pts[j]!
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
-      inside = !inside
-    }
-  }
-  return inside
-}
-
-function createPickCtx(): PickCanvasLike {
-  let pts: [number, number][] = []
-  return {
-    fillStyle: '',
-    strokeStyle: '',
-    lineWidth: 1,
-    beginPath() {
-      pts = []
-    },
-    closePath() {},
-    moveTo(x: number, y: number) {
-      pts.push([x, y])
-    },
-    lineTo(x: number, y: number) {
-      pts.push([x, y])
-    },
-    // Only the endpoint matters here; the positional tests all use straight mode.
-    bezierCurveTo(
-      _cp1x: number,
-      _cp1y: number,
-      _cp2x: number,
-      _cp2y: number,
-      x: number,
-      y: number,
-    ) {
-      pts.push([x, y])
-    },
-    fill() {},
-    stroke() {},
-    isPointInPath(x: number, y: number) {
-      return pointInPolygon(x, y, pts)
-    },
-  }
-}
 
 // One 100px-wide rectangular ribbon: top edge spans x=[100,200] on axis 0,
 // bottom edge the same on axis 1, at bpPerPx=1 with no pan. Corner order
@@ -119,7 +71,7 @@ function pickAt(
     perTrack: new Map([[0, params]]),
   }
   return pickFeatureAtPoint({
-    ctx: createPickCtx(),
+    ctx: createGeometricPickCtx(),
     state,
     regions: new Map([[0, data]]),
     pickIndices,
@@ -280,7 +232,7 @@ function bruteForcePick(
   }
   const t = computeTransform(params, data)
   const scratch = makeCornerScratch()
-  const ctx = createPickCtx()
+  const ctx = createGeometricPickCtx()
   // Descending, so the topmost (last drawn) wins — the order the engine walks.
   for (let i = data.instanceCount - 1; i >= 0; i--) {
     if (data.alignmentLengths[i]! < minAlignmentLength) {

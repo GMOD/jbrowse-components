@@ -1,6 +1,7 @@
 import { makeStringDict } from '@jbrowse/synteny-core'
 
 import type { SyntenyFeatureData } from './model.ts'
+import type { PickCanvasLike } from './syntenyPickEngine.ts'
 
 /**
  * Stand in for the context `makePickCtx` hands the pick engine, so a suite can
@@ -43,6 +44,62 @@ export function stubPickCtx(inPath: boolean | (() => boolean) = true) {
     calls,
     restore: () => {
       globals[key] = original
+    },
+  }
+}
+
+function pointInPolygon(x: number, y: number, pts: [number, number][]) {
+  let inside = false
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i]!
+    const [xj, yj] = pts[j]!
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+      inside = !inside
+    }
+  }
+  return inside
+}
+
+/**
+ * A pick context that answers `isPointInPath` by real point-in-polygon over the
+ * path it was just handed, so a suite's "hits here, misses there" asserts
+ * something — a stub that always says yes makes every positional test vacuous.
+ * `stubPickCtx` above is the other kind of double, and answers the other
+ * question: WHICH context the engine picked through.
+ *
+ * A curve contributes its endpoint only, which is exact for the straight mode
+ * the positional suites run in and a chord approximation in curve mode.
+ */
+export function createGeometricPickCtx(): PickCanvasLike {
+  let pts: [number, number][] = []
+  return {
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    beginPath() {
+      pts = []
+    },
+    closePath() {},
+    moveTo(x: number, y: number) {
+      pts.push([x, y])
+    },
+    lineTo(x: number, y: number) {
+      pts.push([x, y])
+    },
+    bezierCurveTo(
+      _cp1x: number,
+      _cp1y: number,
+      _cp2x: number,
+      _cp2y: number,
+      x: number,
+      y: number,
+    ) {
+      pts.push([x, y])
+    },
+    fill() {},
+    stroke() {},
+    isPointInPath(x: number, y: number) {
+      return pointInPolygon(x, y, pts)
     },
   }
 }

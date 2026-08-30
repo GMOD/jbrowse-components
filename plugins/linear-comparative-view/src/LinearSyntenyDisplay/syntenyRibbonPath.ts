@@ -205,17 +205,33 @@ export function makeCornerScratch(): ProjectedCorners {
 
 // SYNC: matches computeCorners in syntenyTypes.slang. Corners are window-
 // relative bp (cumBp - base), so screen X is `bpRel * bpPerPxInv + panPx` —
-// the identical expression the shader evaluates.
+// the identical expression the shader evaluates, spelled once in
+// `projectSpanCorners` below and reached from here as its one-instance case.
 export function projectCorners(
   data: SyntenyInstanceData,
   i: number,
   t: ComputedTransform,
   out: ProjectedCorners,
 ) {
-  out.sx1 = data.bp1[i]! * t.bpPerPxInv0 + t.panPx0
-  out.sx2 = data.bp2[i]! * t.bpPerPxInv0 + t.panPx0
-  out.sx3 = data.bp3[i]! * t.bpPerPxInv1 + t.panPx1
-  out.sx4 = data.bp4[i]! * t.bpPerPxInv1 + t.panPx1
+  return projectSpanCorners(data, i, i, t, out)
+}
+
+// One instance's START edge (corners 1 and 4) joined to another's END edge
+// (corners 2 and 3). `first === last` is `projectCorners` above, which is the
+// only shape anything DRAWN has. The other case is the pick engine's synthetic
+// feature bodies, where a run of match tiles stands in for the full-span quad
+// transparent-indels mode does not emit — see buildPickIndex.
+export function projectSpanCorners(
+  data: SyntenyInstanceData,
+  first: number,
+  last: number,
+  t: ComputedTransform,
+  out: ProjectedCorners,
+) {
+  out.sx1 = data.bp1[first]! * t.bpPerPxInv0 + t.panPx0
+  out.sx2 = data.bp2[last]! * t.bpPerPxInv0 + t.panPx0
+  out.sx3 = data.bp3[last]! * t.bpPerPxInv1 + t.panPx1
+  out.sx4 = data.bp4[first]! * t.bpPerPxInv1 + t.panPx1
   return out
 }
 
