@@ -75,7 +75,7 @@ export interface BaseMenuItem {
    */
   endAdornment?: React.ReactNode
   /**
-   * #menuField the "make this the default for all tracks of this type" pin; set it with a promotable builder
+   * #menuField the "apply this to all open tracks of this type" pin; set it with a promotable builder
    *
    * The trailing "default for all tracks of this type" pin, as a **description**
    * rather than an element — the renderer builds `PinAdornment` from

@@ -700,9 +700,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * "make the current sashimi-label state the default for all tracks"
-         * control (pin): symmetric, so it promotes whichever value the track
-         * currently shows.
+         * "apply the current sashimi-label state to the open tracks" control
+         * (pin): symmetric, so it carries whichever value the track currently
+         * shows.
          */
         get showSashimiLabelsDisplayTypeDefault() {
           return makePin(self, 'showSashimiLabels')
@@ -718,8 +718,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * "make the current non-canonical filter state the default for all
-         * tracks" control (pin).
+         * "apply the current non-canonical filter state to the open tracks"
+         * control (pin).
          */
         get hideNonCanonicalJunctionsDisplayTypeDefault() {
           return makePin(self, 'hideNonCanonicalJunctions')
@@ -774,8 +774,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // "make the current fade-by-quality state the default for all tracks"
-        // control (pin): symmetric, so it promotes whichever value the track
+        // "apply the current fade-by-quality state to the open tracks"
+        // control (pin): symmetric, so it carries whichever value the track
         // currently shows.
         get mismatchAlphaDisplayTypeDefault() {
           return makePin(self, 'mismatchAlpha')

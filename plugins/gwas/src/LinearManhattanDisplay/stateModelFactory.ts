@@ -242,9 +242,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * "make the current LD-key visibility the default for all tracks"
-         * control (pin): symmetric, so it promotes whichever value the track
-         * shows.
+         * "apply the current LD-key visibility to the open tracks" control
+         * (pin): symmetric, so it carries whichever value the track shows.
          */
         get showLdLegendDisplayTypeDefault() {
           return makePin(self, 'showLdLegend')

@@ -1,4 +1,6 @@
-import { createDisplay } from './testEnv.ts'
+import { takeSnackbarAction } from '@jbrowse/display-test-utils'
+
+import { createDisplay, createSyntenyEnv } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -44,7 +46,7 @@ test('every colour row carries a session-default pin', () => {
 // alone — no alignments pin can write it, which is exactly why the missing row
 // left the slot pinned to its base forever.
 test('a colour pin promotes that scheme for this display type', () => {
-  const display = createDisplay()
+  const { session, display } = createSyntenyEnv()
   const strand = colorRows(display).find(
     i => 'label' in i && i.label === 'Strand',
   )
@@ -53,7 +55,10 @@ test('a colour pin promotes that scheme for this display type', () => {
     throw new Error('no pin on the Strand row')
   }
   expect(pin.control.active).toBe(false)
+  // the click applies Strand to the open tracks; the toast's one action is what
+  // makes it this display type's default (ADR-048)
   pin.control.toggle()
+  takeSnackbarAction(session)
 
   const after = colorRows(display).find(
     i => 'label' in i && i.label === 'Strand',

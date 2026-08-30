@@ -239,9 +239,9 @@ describe('canvas track menu shape', () => {
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
     // The pin names the SETTING, not the row: PinAdornment writes it into
-    // "Make <label> the default for all tracks of this type" and into an
-    // aria-label, so a hint folded into the option before the pin is attached
-    // is read out as part of the setting's name.
+    // "Apply <label> to all open tracks of this type" and into an aria-label,
+    // so a hint folded into the option before the pin is attached is read out
+    // as part of the setting's name.
     expect('pin' in inert && inert.pin?.label).toBe('Name + description')
   })
 

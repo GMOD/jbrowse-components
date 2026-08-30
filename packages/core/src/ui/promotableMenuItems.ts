@@ -17,8 +17,9 @@ import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
 // track (inheriting native hover/sizing/keyboard), and a trailing pin
-// (endAdornment) sets/clears this value as the display type's default. Always
-// shown so the capability is discoverable.
+// (endAdornment) applies this value to every open track of the display type,
+// offering the display-type default as its snackbar's one action. Always shown
+// so the capability is discoverable.
 //
 // **The row itself is `checkboxItem`'s**, so the two builders can only ever
 // differ by the pin. They used to be two literals, and had already drifted: this
@@ -32,7 +33,7 @@ import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 // by its checkbox type: these rows only write a setting, users flip several in
 // one visit, and the menu is an observer so the ticks and pins move live. A row
 // whose click opens a dialog instead (colorBy's "Tag...") passes false.
-/** #menuBuilder promotableToggleItem | `checkboxItem` plus a promote-to-default pin */
+/** #menuBuilder promotableToggleItem | `checkboxItem` plus an apply-to-open-tracks pin */
 export function promotableToggleItem({
   label,
   checked,
@@ -67,7 +68,7 @@ export function promotableToggleItem({
 // its checkbox sibling had — naming `helpText`/`keepMenuOpen` by hand and so
 // silently dropping `disabled` and `disabledHelpText`, which the
 // alignments size presets have to bolt back on afterwards (`needsContent`).
-/** #menuBuilder promotableRadioItem | `radioItem` plus a promote-to-default pin */
+/** #menuBuilder promotableRadioItem | `radioItem` plus an apply-to-open-tracks pin */
 export function promotableRadioItem({
   label,
   checked,

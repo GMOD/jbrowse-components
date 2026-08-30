@@ -585,10 +585,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               // deletions (its module note), so *unsetting* a slot the admin
               // base sets diffs to nothing exactly as netting back to the base
               // does — and reverting the working copy then undid the edit ~400ms
-              // after the user watched it land. The reachable case is the
-              // promoted-default snackbar's "Override N customized tracks",
-              // whose whole job is to unset a slot, over a promotable slot an
-              // admin `config.json` declares.
+              // after the user watched it land. The reachable case is a size
+              // row's reset, whose whole job is to unset a slot, over a
+              // promotable slot an admin `config.json` declares.
               //
               // The removal still doesn't survive a reload, which is the
               // tombstone-free delta's documented limitation; what it no longer

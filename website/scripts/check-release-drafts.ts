@@ -101,8 +101,8 @@ const NAME_PATTERNS = [
   /\b([A-Z][a-z]+[A-Z][A-Za-z0-9]+)\b/g,
 ]
 
-// A label the source builds from a template ("Apply to N open tracks instead" is
-// `Apply to ${open} open ${pluralize(open, 'track')} instead`) is correct and
+// A label the source builds from a template ("Applied to N open tracks" is
+// `Applied to ${open} open ${pluralize(open, 'track')}`) is correct and
 // unfindable by a literal search, and so is a proper noun that happens to be
 // camelCased. `<!-- name-ok: X -->` in the draft exempts one, and the comment
 // never reaches the post.

@@ -241,9 +241,12 @@ describe('CascadingMenu endAdornment', () => {
         />
       </ThemeProvider>,
     )
-    const pin = () =>
-      getByRole('button', { name: 'make Compact the default for all tracks' })
-    expect(pin().getAttribute('aria-pressed')).toBe('false')
+    // the label moves with the state, so naming it per state also pins the
+    // rebuild the aria-pressed flip could otherwise pass without
+    const pin = (name: string) => getByRole('button', { name })
+    expect(
+      pin('apply Compact to all open tracks').getAttribute('aria-pressed'),
+    ).toBe('false')
 
     // the model moves with the menu still mounted — no reopen, no rerender call
     act(() => {
@@ -251,7 +254,9 @@ describe('CascadingMenu endAdornment', () => {
         promoted.set('compact')
       })
     })
-    expect(pin().getAttribute('aria-pressed')).toBe('true')
+    expect(
+      pin('clear the default for Compact').getAttribute('aria-pressed'),
+    ).toBe('true')
   })
 
   it('an adornment that stops propagation does not fire the row click', () => {

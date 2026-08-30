@@ -17,11 +17,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// How the pin names what it promotes. Two shapes, decided by the on-value:
+// How the pin names what it acts on. Two shapes, decided by the on-value:
 //
-// - **A boolean on-value promotes a state**, and the row's label names the
+// - **A boolean on-value carries a state**, and the row's label names the
 //   setting rather than a value ("Show legend", "Show soft clipping"). A pin on
-//   an unchecked such row promotes the setting *off*, so the value-shaped copy
+//   an unchecked such row applies the setting *off*, so the value-shaped copy
 //   below stated the opposite of what the click does — and then, once filled,
 //   claimed the setting was on by default when it had just been turned off.
 // - **Everything else IS what the label says**: a radio option ("Compact"), a
@@ -36,16 +36,38 @@ function pinPredicate(onValue: unknown) {
     : 'the default'
 }
 
-// Trailing "default for all tracks of this type" pin for a promotable setting,
-// rendered as a menu item's `endAdornment` beside the value check. A ToggleButton
-// (native button a11y + a clear selected tint) with a pin — distinct from the
-// value checkbox — reads as "this is the default": outline pin = not the
-// default, filled pin on an accent-tinted button = the default. One click sets or
-// clears it; on set, `pin.toggle` raises an "apply to open tracks" snackbar
-// for any open tracks not already showing this value. Always shown so the
-// capability is discoverable. stopPropagation keeps the click off the row value / menu
-// dismissal. "of this type" because a promoted default is scoped to the display
-// type (e.g. every LinearAlignmentsDisplay), not literally all tracks.
+// The click, which is not the state the pin draws: an outline pin applies the
+// value to the open tracks, a filled one clears the default it stands for.
+function pinCopy(label: string, onValue: unknown, isDefault: boolean) {
+  return isDefault
+    ? {
+        title: `${label} is ${pinPredicate(onValue)} for all tracks of this type (click to clear)`,
+        ariaLabel: `clear the default for ${label}`,
+      }
+    : typeof onValue === 'boolean'
+      ? {
+          title: `Turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
+          ariaLabel: `turn ${label} ${onValue ? 'on' : 'off'} for all open tracks`,
+        }
+      : {
+          title: `Apply ${label} to all open tracks of this type`,
+          ariaLabel: `apply ${label} to all open tracks`,
+        }
+}
+
+// Trailing pin for a promotable setting, rendered as a menu item's
+// `endAdornment` beside the value check. A ToggleButton (native button a11y + a
+// clear selected tint) with a pin — distinct from the value checkbox.
+//
+// **The click and the state are two different things.** One click writes the
+// value into every open track of this display type and raises a snackbar
+// offering to keep it as the display type's default; the filled pin means that
+// default is in place, so a click on a filled pin clears it and touches no
+// track. A default therefore takes two deliberate clicks, which is what it costs
+// to govern every track of the type opened later (ADR-048). Always shown so the
+// capability is discoverable. stopPropagation keeps the click off the row value
+// / menu dismissal. "of this type" because a promoted default is scoped to the
+// display type (e.g. every LinearAlignmentsDisplay), not literally all tracks.
 export function PinAdornment({
   pin,
   disabled,
@@ -56,15 +78,9 @@ export function PinAdornment({
   const { classes } = useStyles()
   const { label, control } = pin
   const isDefault = control.active
-  const predicate = pinPredicate(control.onValue)
+  const { title, ariaLabel } = pinCopy(label, control.onValue, isDefault)
   return (
-    <Tooltip
-      title={
-        isDefault
-          ? `${label} is ${predicate} for all tracks of this type (click to clear)`
-          : `Make ${label} ${predicate} for all tracks of this type`
-      }
-    >
+    <Tooltip title={title}>
       <ToggleButton
         className={classes.button}
         value="default"
@@ -72,7 +88,7 @@ export function PinAdornment({
         selected={isDefault}
         color="primary"
         size="small"
-        aria-label={`make ${label} ${predicate} for all tracks`}
+        aria-label={ariaLabel}
         onChange={e => {
           e.stopPropagation()
           control.toggle()

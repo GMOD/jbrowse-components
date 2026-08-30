@@ -1,102 +1,134 @@
 ---
 status: Accepted
-summary: "Setting a display-type default writes only the session-wide value; rewriting tracks is a separate, explicitly-labeled, opt-in action"
+summary: "The pin's click applies the value to every open track of the display type; promoting it to a session-wide default is the snackbar's one opt-in action"
 ---
 
-# ADR-048: The pin edits the stylesheet, never the elements
+# ADR-048: The pin applies, then offers the default
 
 ## Status
 
-Accepted (2026-07). Mechanism:
-[DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md) §"UI surface".
+Accepted (2026-07), **reversed 2026-08-29** — the click and the snackbar action
+have swapped places. The superseded decision is kept below under
+[The stylesheet reading, and why it went](#the-stylesheet-reading-and-why-it-went),
+because its failure mode is real and the new shape has to answer for it.
+Mechanism: [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md)
+§"UI surface".
 
 ## Context
 
-The make-default pin sets a session-wide default for a display type. The
-question this ADR settles is what *else* that click is allowed to touch.
+The make-default pin sits on every promotable menu row. The question this ADR
+settles is what the click does, and what the snackbar it raises offers.
 
-The pull toward doing more is real: a user who pins "compact" on a track that
-holds its own `displayMode` sees nothing happen to the track in front of them,
-because a customized track outranks the default. That reads as a broken control.
+Two effects are available, and they are not the same size:
+
+- **Apply to the open tracks.** Bounded, visible, and about the tracks in front
+  of the user.
+- **Promote to a display-type default.** Unbounded in time: it outlives the
+  tracks it was set for and governs every track of that type opened later.
 
 ## Decision
 
-**`setDisplayTypeDefault` is the entire write.** No track's own value is ever
-touched by pinning. Tracks that follow the default pick the new value up on
-their next `resolveConf` read; customized tracks keep theirs.
+**The click applies. The snackbar promotes.**
 
-Rewriting tracks happens only through the snackbar's **"Override N customized
-tracks"** action — one explicit, separately-labeled gesture.
+`toggle` on a pin whose value is not the current default writes that value into
+every open track of the display type — `applySlotToOpenTracks` over
+`openTracksOfType` — and raises `"Applied to N open tracks"` carrying one
+action, **"Set as the default"**, which stores the display-type default and
+touches nothing else.
 
-### Rejected: toggling on also resets the clicking display to inherit
+`toggle` on a pin that *is* the current default clears that default and writes
+no track. `"Cleared the default"`, no action.
 
-This was the behavior, and it made the user's own track update with one click.
-It also silently discarded that display's value: pin-then-unpin left the track at
-`promotedBase` rather than at what it held before. A **two-click, non-undoable
-loss of data from a control that reads as a toggle** — the worst shape a
-destructive action can take, because toggles are how users explore.
+So a default takes two deliberate clicks, and the pin's filled state means the
+default is in place — **the state the pin draws is not the effect of clicking
+it**, which is the one genuinely awkward thing here and the reason
+`PinAdornment` words the two states separately (`apply Compact to all open
+tracks` vs `clear the default for Compact`).
 
-Keeping the pin symmetric costs one extra click on a customized track and
-removes the whole failure mode. That track is now simply counted in "Override N
-customized tracks" like any other.
+### One apply, not an override/apply pair
 
-### The action is named for what it does
+The snackbar used to carry two actions over two different track sets: "Override
+N customized tracks" (clear the own values of tracks that *resolve* to something
+else) and "Apply to N open tracks instead" (write the value into every open
+track, reading the *stored* value). The distinction is real in the code and
+invisible to the user, who has one intention — "make these look like this" — and
+no reason to know that a follower and a customized track need opposite writes to
+get there.
 
-It was "Apply to N open tracks", which reads as additive. The default is already
-set by the time the snackbar appears, so a track that still differs is one
-holding its *own* value — the action **clears that value**. It is a bulk,
-non-undoable discard of exactly those customizations, and the label has to say
-so.
+`applySlotToOpenTracks` covers both, because overwriting a customized track is
+the same write as filling in a follower. It reads the **stored** value, which is
+what makes it total: a follower holds nothing of its own and is showing the value
+only by way of whatever default is in place, so skipping it would leave it free
+to move again the next time that default changed. Reading the stored value is
+also what lets a `jexl:` slot answer "is this already what we would write?"
+without being evaluated — this caller has no feature context.
+
+### Promoting does not then clear what it applied
+
+"Set as the default" writes the session default and stops. The open tracks keep
+the values the click just wrote, so they are customized and a later default
+change will not reach them.
+
+That is deliberate. Clearing them would be a *second* bulk write, and it would
+make the subsequent "clear the default" click visibly revert every open track to
+`promotedBase` — turning the only remaining toggle in the flow into a bulk
+discard. It also costs nothing in practice: the pin overwrites open tracks on
+every click, so the redundant copies are corrected by the next pin the user
+touches.
 
 ### The action re-derives on click
 
-The snackbar outlives the click that raised it, so the target set is recomputed
-in `onClick`, not captured:
+The snackbar outlives the click that raised it, so "Set as the default" checks
+`isAlive(self)` inside `onClick` rather than closing over a decision. The whole
+walk hangs off the clicked display's session, and a display destroyed by the user
+closing its track throws on any read.
 
-- A track closed in between would otherwise be reset as a dead MST node; one
-  newly opened would be silently skipped.
-- The default itself can be gone (the user unpinned, or pinned a sibling value on
-  the same slot). The action only ever means "make these tracks follow the
-  default I just set", so with that default no longer in place it does nothing —
-  clearing their own values would strand them on whatever replaced it, discarding
-  customizations to reach a value nobody asked for.
+### The clicked track is always written
 
-### Amended 2026-08-19: "Apply to N open tracks" is back, as a second action
+`openTracksOfType` seeds its map with `self` before walking the session, so the
+track the pin was clicked from is in the applied set by construction rather than
+by the walk happening to reach it. Under the old decision a display the walk
+missed cost nothing — the click wrote only the session default. Now it would be
+the whole of the click.
 
-The name above was rejected for the *override* action because it described a
-bulk clear. It now names a second snackbar action that genuinely applies:
-**"Apply to N open tracks instead"** writes the value into every open track of
-the type and clears the promoted default it was offered from.
+## The stylesheet reading, and why it went
 
-This does not reopen the rejected behavior above. The pin's own click still
-writes only the session default, so it stays symmetric and pin-then-unpin still
-discards nothing. The snackbar is still the only place in the subsystem that
-rewrites a track, and both of its actions re-derive their target set inside
-`onClick` for the reasons this ADR already gives.
+The superseded decision was: **`setDisplayTypeDefault` is the entire write**, no
+track's own value ever touched by the pin. The mental model was CSS — the pin
+edits the stylesheet, the value control edits the element — and its payoff was
+**symmetry**: pin-then-unpin discarded nothing, which is what made a pin safe
+enough to show on every value row.
 
-What the second action buys is a **scope choice**. A promoted default outlives
-the tracks it was set for and governs every track of the type opened later; a
-user who wanted the six tracks in front of them changed had no way to say only
-that. The action is offered only when more than one track of the type is open —
-with a single track the two scopes name the same set, so the toast stays
-auto-hiding as it was.
+It was reversed on the judgment that the two effects are the wrong way round for
+what users actually click a pin to do, and that the override/apply pair was a
+distinction with no user-facing meaning.
 
-The two actions read different track sets, and conflating them is the mistake to
-avoid: override reads each track's *resolved* value (a follower already shows the
-value and needs no clearing), while apply reads the *stored* value, because that
-same follower holds nothing of its own and would be dropped to `promotedBase` the
-moment the default was cleared.
+**What that gives up, stated plainly:** the pin is no longer symmetric. The first
+click is a bulk write over every open track of the type, and no later click
+un-applies it — the second click can only clear the default. A user exploring by
+toggling loses the per-track values those tracks held.
+
+**What is left in its place:** the write is at least *visible* — the tracks in
+front of the user change, and the snackbar names how many — where the old
+silent-on-a-customized-track click was the complaint that started this. The
+older rejected behavior, "toggling on also resets the clicking display to
+inherit", stays rejected for its own reason: it discarded a value *and* left no
+trace, so pin-then-unpin stranded the track on `promotedBase` rather than on
+either value it had held.
 
 ## Consequences
 
-- The pin is safe to click and safe to un-click. That is what makes it
-  discoverable enough to show on every value row.
-- The mental model is CSS: the pin edits the stylesheet, the value control edits
-  the element. Every question about what a control should touch resolves against
-  that analogy.
+- The pin's click is a bulk edit. It is not safe to click idly, and the copy has
+  to say what it does rather than what state it shows.
+- A promoted default is now a two-click, deliberate act, which suits how long it
+  lives.
+- The snackbar is still the only place in the subsystem that writes the session
+  default, and the pin is now the only place that writes a track.
 - No radio or checkbox group offers a "follow default" row — picking a value
   customizes, leaving the group untouched follows the default. The three slider
   rows are the exception (a slider has no untouched position), and reset there
-  writes `undefined`.
-- A user who wants a customized track back on the cascade uses the snackbar
-  action or the track-selector badge's "Reset to default".
+  writes `undefined`. That reset is now the *only* path that unsets a promotable
+  slot, and it carries the `trackConfigDeltas` removal hazard on its own
+  (`PromotedDefaultApply.test.ts`).
+- A user who wants a customized track back on the cascade uses the slider reset
+  or the track-selector badge's "Reset to default".

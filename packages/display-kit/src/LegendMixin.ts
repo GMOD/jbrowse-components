@@ -75,9 +75,9 @@ export default function LegendMixin() {
       },
       /**
        * #getter
-       * The "make the current legend visibility the default for all tracks"
-       * control. Symmetric, so it promotes whichever value the track currently
-       * shows. `showLegendCheckboxItem` takes this as its `pin`.
+       * The "apply the current legend visibility to the open tracks" control.
+       * Symmetric, so it carries whichever value the track currently shows.
+       * `showLegendCheckboxItem` takes this as its `pin`.
        */
       get showLegendDisplayTypeDefault() {
         return makePin(confNode(self), 'showLegend')

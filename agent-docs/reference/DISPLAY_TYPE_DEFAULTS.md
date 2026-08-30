@@ -20,10 +20,12 @@ read one section, read [The cascade](#the-cascade).
   (rather than left unset). A customized track ignores the display-type default
   (top of the cascade). `resolveSlot(...).customized` is the flag.
 - **pin / promoted default** — the display-type default itself, and the UI
-  affordance that sets it: a trailing `PushPin` toggle
-  (`PinAdornment`) on each promotable menu row. A **filled** pin means
-  "this value is the default for all tracks of this type"; **outline** means it
-  isn't. "Pin" is *not* the track's own value — that's "customized".
+  affordance around it: a trailing `PushPin` toggle (`PinAdornment`) on each
+  promotable menu row. A **filled** pin means "this value is the default for all
+  tracks of this type"; **outline** means it isn't. **The state is not the
+  click** — clicking an outline pin applies the value to the open tracks and
+  *offers* the default in a snackbar, so the ordinary way to reach filled is two
+  clicks. "Pin" is *not* the track's own value — that's "customized".
 
 ## Where it lives
 
@@ -244,9 +246,10 @@ Two things make this cheap:
 - **No stored "is-customized" flag.** `types.stripDefault` already collapses an
   unset slot out of the snapshot, so "the slot is unset" *is* the "follows the
   default" signal. Customized = holds any usable value.
-- **The promoted value lives in the session, not the track.** So setting a
-  default doesn't rewrite every track's config — tracks that follow the default
-  just resolve differently on their next read.
+- **The promoted value lives in the session, not the track.** So *promoting* a
+  value doesn't rewrite any track's config — tracks that follow the default just
+  resolve differently on their next read. The pin's own click does rewrite them,
+  which is a separate write and the reason the two are separate clicks.
 
 **Objects are shared, and frozen.** A resolved value is handed out **by
 reference**: `promotedBase` is the schema's own literal, so every track sitting at
@@ -266,7 +269,7 @@ Canaries: `promotedValueCloneable.test.ts`, `sessionModelFactory.test.ts`
 **Objects compare structurally.** `customized` needs no comparison at all — the
 sentinel is `undefined`, so "holds a usable value" is the whole test. But every
 comparison *against the promoted value* (`isPromotableDefault` for the pin's
-filled state, `tracksDifferingFrom` for the snackbar count) uses `deepEqual`, not
+filled state, `applySlotToOpenTracks`'s already-holds-it check) uses `deepEqual`, not
 `===`: a naive `!==` would read every object slot as permanently differing (a
 fresh MST-reconstructed value is never `===` its stored twin), so the pin would
 never light up. `colorBy` (a `maybeFrozen` `{ type: ... }` slot) is promotable on
@@ -453,8 +456,8 @@ This replaced a discriminated union whose callback arm carried `evaluate()`, a
 `disabled` state on the pin control, a greyed pin with its own
 tooltip and live-wrapper `<span>`, and a branch in four consumers — all for a
 state nothing could author and which was already degenerate wherever it did
-appear (the pin disabled itself, the badge couldn't report it, and
-`tracksDifferingFrom` counted it as permanently differing). If a promotable slot
+appear (the pin disabled itself, the badge couldn't report it, and the snackbar
+count read it as permanently differing). If a promotable slot
 ever genuinely needs per-feature values, that is a sign the setting belongs on a
 plain slot, not that the union should come back.
 
@@ -478,68 +481,73 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | `getTrackConfigWithPromotables(session, trackConfig)` | a whole track's config snapshot with every display's promotable slots resolved, plus the `<displayType>.<slot>` list of what came from a session default. Takes a config, not a display — no open track required | the About dialog's "Copy config" (see [Serialization boundaries](#serialization-boundaries-getcomputedstyle)) |
 
 `Pin` is `{ slot: string; onValue: unknown; active: boolean; toggle: () => void }`.
-`active` = this value is the current default (filled pin); `toggle` sets or
-clears it. There is no disabled state — a pin always has a value to promote (see
-[No callbacks](#no-callbacks-jexl)).
+`active` = this value is the current session default (filled pin), which is the
+*state*, not what clicking does. There is no disabled state — a pin always has a
+value to apply (see [No callbacks](#no-callbacks-jexl)).
 
-**`toggle` writes the session default and nothing else.** No track's own value is
-ever touched — the pin edits the stylesheet, never the elements. Following tracks
-pick the new value up via `resolveConf`; customized tracks keep theirs. It raises
-a snackbar `"Set as the default"` carrying up to two actions, and those are the
-subsystem's only writes to a track. On **clear**, `"Cleared the default"`, with
-no action.
+**`toggle` on an outline pin writes every open track of the display type** —
+`applySlotToOpenTracks` over `openTracksOfType` — and raises
+`"Applied to N open tracks"` carrying one action, **"Set as the default"**,
+which stores the display-type default and touches nothing else. **`toggle` on a
+filled pin clears that default and writes no track**: `"Cleared the default"`,
+no action. A default therefore costs two deliberate clicks, which suits how long
+it lives — it outlives the tracks it was set for and governs every track of the
+type opened later.
 
-**"Override N customized tracks"** — for any open track (across all views) not
-already showing this value, clears its own value so it follows the default.
+**One apply, not an override/apply pair.** The snackbar used to carry two
+actions over two different track sets — "Override N customized tracks" (clear
+the own values of tracks that *resolve* to something else) and "Apply to N open
+tracks instead" (write every open track, reading the *stored* value). The
+distinction is real in the code and invisible to the user, who has one intention
+and no reason to know that a follower and a customized track need opposite
+writes to reach it. Overwriting a customized track is the same write as filling
+in a follower, so `applySlotToOpenTracks` covers both.
 
-**"Apply to N open tracks instead"** — the scope choice. Writes the value into
-every open track of the type and then clears the default it was offered from, so
-the tracks in front of the user take the value and nothing governs the ones they
-open later. Offered only when more than one track of the type is open: with a
-single track, "these tracks" and "this display type" name the same set, so there
-is no choice to make and the toast stays auto-hiding.
+**It reads the stored value, and has to.** A follower holds nothing of its own
+and is showing the value only by way of whatever default is in place, so
+skipping it would leave it free to move again the next time that default
+changed. Reading the stored value is also what lets a `jexl:` slot answer "is
+this already what we would write?" without being evaluated — this caller has no
+feature context.
 
-**The two actions want different track sets, and that is the whole of what
-separates them.** Override reads each track's **resolved** value, so a track
-merely *following* the default already shows the value and is correctly absent —
-it needs no clearing. Apply reads the **stored** value, and has to: that same
-follower holds nothing of its own, so writing only the tracks that *differ* and
-then clearing the default would drop it to `promotedBase` — the opposite of what
-was asked for. Reading the stored value is also what lets a `jexl:` slot answer
-"is this already what we would write?" without being evaluated, the reason
-`resetSlotToInherit` reads the same field. `applySlotToOpenTracks` is the
-additive mirror of `resetSlotToInherit`; the canary that holds the distinction is
-`promotableDefaults.test.ts`'s "leaves a follower holding the value once the
-default is gone", which goes red against the differing set and against nothing
-else.
+**"Set as the default" does not then clear what the click applied.** The open
+tracks keep the values just written, so they are customized and a later default
+change will not reach them. Clearing them would be a second bulk write, and it
+would make the following "clear the default" click visibly revert every open
+track to `promotedBase` — a bulk discard out of the one remaining toggle. In
+practice it costs nothing: the pin overwrites open tracks on every click.
 
-**The override is a removal, and a `trackConfigDeltas` track could not keep
-one.** Clearing a slot is the whole of what the action does, and
-`diffTrackConfig` records adds and changes but never deletions — so unsetting a
-promotable slot an admin `config.json` declares diffs to *nothing*, exactly as
-netting back to the base does. `updateTrackConfiguration` read that as an
-implicit reset, cleared the delta, and reverted the track's working copy to the
-base, undoing the override 400ms after the user watched it land. It now keeps the
-working copy when the update came from that working copy itself (the config
-editor, which edits a separate temporary node, still needs the revert). The
-removal still doesn't survive a reload — that is `trackConfigDelta.ts`'s stated
-no-tombstones limitation, not this subsystem's.
+**Unsetting a promotable slot is a removal, and a `trackConfigDeltas` track
+could not keep one.** `diffTrackConfig` records adds and changes but never
+deletions — so unsetting a slot an admin `config.json` declares diffs to
+*nothing*, exactly as netting back to the base does. `updateTrackConfiguration`
+read that as an implicit reset, cleared the delta, and reverted the track's
+working copy to the base, undoing the edit 400ms after the user watched it land.
+It now keeps the working copy when the update came from that working copy itself
+(the config editor, which edits a separate temporary node, still needs the
+revert). The removal still doesn't survive a reload — that is
+`trackConfigDelta.ts`'s stated no-tombstones limitation, not this subsystem's.
+The pin no longer unsets anything, so the reachable caller is the slider rows'
+reset; `PromotedDefaultApply.test.ts` is the canary.
 
 **N counts tracks, and `openTracksOfType` dedupes to make that true.** The walk
 yields *displays*, and one track open in two views is two of them over one config
 node (`TrackConfigurationReference` resolves both through the hydration cache) —
 so the count read `2` for a single track, which is the ordinary case in a
-breakpoint-split view. Both actions take their set from that one deduped walk, so
-the number the label states and the number of tracks written cannot disagree.
+breakpoint-split view. The label's number and the number of tracks written come
+from that one deduped walk and cannot disagree. It is **seeded with the clicked
+display**, so the track the pin was clicked from is in the set by construction
+rather than by the walk happening to reach it — a display the walk missed used to
+cost nothing and would now be the whole of the click.
 `promotableDefaults.test.ts`'s own fakes compose a fresh config into each display
-and cannot express it; the canary is `PromotedDefaultOverride.test.ts` in
-jbrowse-web.
+and cannot express the dedup case; the canary is `PromotedDefaultApply.test.ts`
+in jbrowse-web.
 
-That the pin stays symmetric, that the override action is named for the bulk
-discard it performs, that the scoped action reclaims the "apply" wording because
-it is the one that genuinely applies, and that both re-derive their whole target
-set inside `onClick` rather than capturing it, are all
-[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md).
+That the click applies and the snackbar promotes, that the override/apply pair
+collapsed into one write, and that the promotion re-derives inside `onClick`
+rather than capturing a decision, are all
+[ADR-048](../architecture-decision-records/adr-048-the-pin-applies-then-offers-the-default.md).
+It also records what the reversal gave up — the pin is no longer symmetric.
 Read it before making the pin do more.
 
 `slots` is **required**, and the all-slots form it replaced was a hazard rather
@@ -549,11 +557,10 @@ listed. Clearing every promoted default at once is a preferences-scope action,
 and Preferences → "Reset to defaults" is where it lives.
 
 The low-level primitives behind the builders —
-`isPromotableDefault(self, slot, value)`,
-`tracksDifferingFrom(self, slot, value)`, and
-`resetSlotToInherit(displays, slot)` — are **module-internal** (exercised by
-`promotableDefaults.test.ts`), *not* on the public barrel. Consume the two
-`makePin`, not these.
+`isPromotableDefault(self, slot, value)`, `openTracksOfType(self)`, and
+`applySlotToOpenTracks(displays, slot, value)` — are **module-internal**
+(exercised by `promotableDefaults.test.ts`), *not* on the public barrel. Consume
+the two `makePin`, not these.
 
 Note `resolveSlot` reads the session even for a customized track — required so
 the "customized value equals the promoted default → pin filled" case works. This
@@ -731,14 +738,14 @@ it.
 Every promotable setting renders **one row per value**, and every such row
 carries the same trailing pin — the `PinAdornment` (`PushPin`
 `ToggleButton`) as the menu item's **`endAdornment`**, driven by a
-`Pin`. There is no separate "make default" checkbox row
-anymore; the pin *is* the make-default affordance, and it lives beside the value
-control on the same row. `endAdornment` is a general `BaseMenuItem` field;
+`Pin`. There is no separate "apply to all tracks" or "make default" row
+anymore; the pin *is* that affordance, and it lives beside the value control on
+the same row. `endAdornment` is a general `BaseMenuItem` field;
 `MenuItemTrailing` renders it in a fixed-width column (reserved on every row when
 any row has one, so value checks stay column-aligned and pins right-align in
 their own column). Pins are **always shown** (discoverable) and their content
-`stopPropagation`s so a click sets the default without toggling the row value or
-dismissing the menu.
+`stopPropagation`s so a click applies the value across the open tracks without
+toggling the row value or dismissing the menu.
 
 The row builders in `promotableMenuItems.ts`:
 
@@ -749,7 +756,8 @@ of a row can only differ by the pin:
 - **`promotableToggleItem`** — a `type:'checkbox'` row (native
   hover/sizing/keyboard) for a flat boolean setting (`showSoftClipping`,
   `readConnectionsDown`, `showSashimiLabels`). The checkbox toggles the track's
-  value; the pin promotes the setting's on-value. Takes a `pin`, per-value —
+  value; the pin applies the setting's on-value across the open tracks. Takes a
+  `pin`, per-value —
   `makePin(self, slot, onValue)`. Row built by `checkboxItem`, so it offers that
   builder's full option set (`subLabel`, `disabled`, `disabledHelpText`, …); it
   used to drop three of them.
@@ -782,12 +790,11 @@ reaches by not clicking.
 
 The three **slider** rows (wiggle point size, wiggle/arc line width) do have one,
 because a slider has no "untouched" position to leave alone: the reset button is
-enabled off `isSlotCustomized` and writes `undefined`. When a value-group track
-*is* customized and the user wants it back on the cascade, the paths are the
-snackbar's "Override N customized tracks" (offered whenever a default is set
-and some track differs) and
-the
-track-selector badge's "Reset to default", which drops the whole
+enabled off `isSlotCustomized` and writes `undefined`. That reset is the only
+path left that *unsets* a promotable slot — the pin overwrites rather than
+clears — so it carries the `trackConfigDeltas` removal hazard on its own. When a
+value-group track is customized and the user wants it back on the cascade, the
+path is the track-selector badge's "Reset to default", which drops the whole
 `trackConfigDeltas` entry.
 
 **Disabled-not-hidden for dependent options:** options that only apply once a
@@ -968,8 +975,8 @@ carry a standing "don't reintroduce this", and each is an ADR —
 (cascading inside `getConf`),
 [ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)
 (the `'inherit'` enum member and the `defaultValue`-as-sentinel form), and
-[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md)
-(the pin resetting the clicking display). The rest were straightforward
+[ADR-048](../architecture-decision-records/adr-048-the-pin-applies-then-offers-the-default.md)
+(the pin resetting the clicking display, and the override/apply action pair). The rest were straightforward
 deletions, listed here only so a reader doesn't go looking for them:
 
 - **`PromotableDefaultsMixin`** forwarded the badge's two hooks per display. Both

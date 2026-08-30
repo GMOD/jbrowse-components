@@ -55,6 +55,11 @@ function makeSession({
         ),
       display: Display,
     })
+    .volatile(() => ({
+      lastAction: undefined as
+        | { name: string; onClick: () => void }
+        | undefined,
+    }))
     .views(self => ({
       getDisplayTypeDefault(displayType: string, slot: string): unknown {
         return self.displayTypeDefaults[displayType]?.[slot]
@@ -70,7 +75,13 @@ function makeSession({
           },
         }
       },
-      notify() {},
+      notify(
+        _message: string,
+        _level?: string,
+        action?: { name: string; onClick: () => void },
+      ) {
+        self.lastAction = action
+      },
     }))
   const session = Session.create(
     { display: { type: 'TestLegendDisplay', configuration } },
@@ -135,12 +146,14 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
     expect(display.showLegendDisplayTypeDefault.active).toBe(false)
   })
 
-  // Symmetric: it promotes whichever value the track is showing, rather than
-  // only ever promoting "on".
+  // Symmetric: it carries whichever value the track is showing, rather than
+  // only ever carrying "on". The click applies it to the open tracks; the
+  // snackbar's one action is what makes it the display type's default.
   it('the pin promotes the value the track is showing', () => {
     const { session, display } = makeSession({ promotedBase })
     display.setShowLegend(!promotedBase)
     display.showLegendDisplayTypeDefault.toggle()
+    session.lastAction!.onClick()
     expect(
       session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
     ).toBe(!promotedBase)

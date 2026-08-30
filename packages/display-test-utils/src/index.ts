@@ -1,5 +1,8 @@
 export { createDisplayTestEnvironment } from './createDisplayTestEnvironment.ts'
-export { displayTestSessionModel } from './displayTestSessionModel.ts'
+export {
+  displayTestSessionModel,
+  takeSnackbarAction,
+} from './displayTestSessionModel.ts'
 export { testAssembly, testAssemblyManager } from './testAssembly.ts'
 
 export type {

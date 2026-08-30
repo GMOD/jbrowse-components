@@ -1,6 +1,6 @@
 ---
 name: how-permanent-a-promoted-default-is
-description: A promoted display-type default is permanent on three axes at once — it outlives the session, it travels into a share, and it governs tracks the user has not opened yet — and the subsystem's cost sits almost entirely in the localStorage tier the first axis needs. The scope choice at the pin shipped 2026-08-19; what is left is moving the store into the session snapshot, which acquired a blocker the same day that its own step order does not survive. Read before reopening it.
+description: A promoted display-type default is permanent on three axes at once — it outlives the session, it travels into a share, and it governs tracks the user has not opened yet — and the subsystem's cost sits almost entirely in the localStorage tier the first axis needs. The third axis is closed: the pin's click now applies to the open tracks and the default is an opt-in second click (2026-08-29). What is left is moving the store into the session snapshot, which acquired a blocker that its own step order does not survive. Read before reopening it.
 ---
 
 # How permanent a promoted default is
@@ -10,7 +10,7 @@ Parked. Mechanism this would change:
 Decisions it leaves standing:
 [ADR-046](../architecture-decision-records/adr-046-resolveconf-names-the-cascade.md),
 [ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md),
-[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md),
+[ADR-048](../architecture-decision-records/adr-048-the-pin-applies-then-offers-the-default.md),
 [ADR-063](../architecture-decision-records/adr-063-promotable-defaults-stay-read-time.md).
 Interlocks with [promotable-slot-ui.md](promotable-slot-ui.md) §1, whose admin
 tier is the third place a default could live.
@@ -207,32 +207,36 @@ path-scoped runs skip it.
   ever have. Re-run the check against whatever tag exists at landing time rather
   than trusting this paragraph.
 
-## Option B — give the pin a scope — **shipped 2026-08-19**
+## Option B — give the pin a scope — **shipped 2026-08-19, then went further 2026-08-29**
 
-Took the third axis at the level of the gesture rather than the mechanism: the
-pin is unchanged, and a peer action offers the smaller commitment. The toast the
-pin raises now carries **"Apply to N open tracks instead"**, which writes the
-value into every open track of the type and clears the default it was offered
-from. Mechanism: [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md)
-§"UI surface"; the decision and why it does not reopen the pin question:
-[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md),
-amended.
+Took the third axis at the level of the gesture rather than the mechanism. The
+first version left the pin alone and offered the smaller commitment as a peer
+snackbar action, **"Apply to N open tracks instead"**, alongside an "Override N
+customized tracks" action for the bulk clear.
 
-Placement went to the snackbar rather than to a menu row. The gesture is
+**That pair is gone.** The two effects swapped places: the pin's click now *is*
+the smaller commitment — it writes the value into every open track of the type —
+and the display-type default is the snackbar's one opt-in action, "Set as the
+default". The override/apply distinction went with it, because overwriting a
+customized track is the same write as filling in a follower and the difference
+was visible only in the code. Mechanism:
+[DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md) §"UI surface";
+the decision, and what the reversal gave up (the pin is no longer symmetric):
+[ADR-048](../architecture-decision-records/adr-048-the-pin-applies-then-offers-the-default.md).
+
+Placement stayed on the snackbar rather than a menu row. The gesture is
 per-value, and a row per value doubles a menu that already carries a pin on every
 row; `promotableRadioItems` could have taken one trailing row per group, but the
 checkbox rows (`promotableToggleItem`, most of alignments) have no group to hang
 it on and would have been left out. Every promotable row already raises this
 toast, so the snackbar reaches both shapes and adds no rows anywhere.
 
-The one thing worth knowing before touching it: **the two actions read different
-track sets**, and conflating them is the bug. Override reads each track's
-*resolved* value, so a follower already showing the value is correctly absent.
-Apply reads the *stored* value, because that same follower holds nothing of its
-own and would drop to `promotedBase` the moment the default was cleared. The
-canary is `promotableDefaults.test.ts`'s "leaves a follower holding the value
-once the default is gone", which is red against the differing set and green
-against nothing else.
+**This closes the third axis for the common case**, which is what the question
+above was about: a user who wants their six open alignments tracks compact now
+gets exactly that from the click, and the seventh they open tomorrow only follows
+if they took the second click. The first two axes — outliving the session, and
+travelling into a share — are untouched, and are what the option below is still
+about.
 
 ### The caveat the delta layer imposes
 

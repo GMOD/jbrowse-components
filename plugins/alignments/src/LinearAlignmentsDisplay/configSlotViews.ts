@@ -46,7 +46,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'linkedReads')
     },
     /** #getter */
-    // "make view-as-pairs the default for all tracks" control (pin): active
+    // "apply view-as-pairs to the open tracks" control (pin): active
     // when 'normal' is the session default for this display type
     get pairsDisplayTypeDefault() {
       return makePin(self, 'linkedReads', 'normal')
@@ -127,14 +127,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'readConnections')
     },
     /** #getter */
-    // "make arcs the default for all tracks" control (pin): active when
+    // "apply arcs to the open tracks" control (pin): active when
     // 'arc' is the session default. Independent of read cloud (both toggles
     // share the readConnections slot but target different on-values).
     get arcsDisplayTypeDefault() {
       return makePin(self, 'readConnections', 'arc')
     },
     /** #getter */
-    // "make read cloud the default for all tracks" control (pin): active when
+    // "apply read cloud to the open tracks" control (pin): active when
     // 'cloud' is the session default
     get readCloudDisplayTypeDefault() {
       return makePin(self, 'readConnections', 'cloud')
@@ -148,9 +148,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'readConnectionsDown')
     },
     /** #getter */
-    // "make this the default for all tracks" control (pin): promotes the
-    // track's current resolved value, so either direction (below or above the
-    // coverage band) can be made the session-wide default.
+    // "apply this to the open tracks" control (pin): carries the track's
+    // current resolved value, so either direction (below or above the coverage
+    // band) can be applied and then promoted.
     get readConnectionsDownDisplayTypeDefault() {
       return makePin(self, 'readConnectionsDown')
     },
@@ -162,8 +162,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * "make the current sashimi on/off state the default for all tracks"
-     * control (pin) for the submenu's own checkbox.
+     * "apply the current sashimi on/off state to the open tracks" control
+     * (pin) for the submenu's own checkbox.
      */
     get showSashimiArcsDisplayTypeDefault() {
       return makePin(self, 'showSashimiArcs')
@@ -177,7 +177,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #method
-     * "make this arc placement the default for all tracks" control (pin),
+     * "apply this arc placement to the open tracks" control (pin),
      * one per option of the radio group. A method rather than a getter per
      * value: the options share one slot and differ only in the on-value, so
      * naming each combination was what made the base value 'up' look
@@ -209,9 +209,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
 
     /** #getter */
-    // "make the current soft-clipping state the default for all tracks"
-    // control (pin): symmetric, so it promotes whichever value the track
-    // currently shows.
+    // "apply the current soft-clipping state to the open tracks" control
+    // (pin): symmetric, so it carries whichever value the track currently
+    // shows.
     get softClippingDisplayTypeDefault() {
       return makePin(self, 'showSoftClipping')
     },

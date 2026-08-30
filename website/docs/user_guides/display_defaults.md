@@ -5,38 +5,42 @@ guide_category: General usage
 ---
 
 **TL;DR:** most track-menu settings carry a push-pin beside them. Clicking it
-makes that value the default for every track of the same type. An outline pin
-means "not the default", a filled one means it is. Pinning never edits a track:
-tracks that have no value of their own follow the new default immediately,
-tracks you have already set keep theirs, and a snackbar offers to apply the
-default to those.
+applies that value to every open track of the same type, and a snackbar then
+offers to keep it as the default for the ones you open later. An outline pin
+means "not the default", a filled one means it is — so a default takes two
+clicks, and clicking a filled pin clears it.
 
 This is the in-app counterpart to the `displayDefaults` an administrator can
 bake into `config.json` (see
 [display settings](/docs/tutorials/display_settings)). Anyone can set these, and
 they last beyond the current session.
 
-## Setting a default
+## Applying a value to every open track
 
 Open the track menu, find the setting, and click the pin on the row for the
-value you want. The pin fills in, and a "Set as the default" snackbar confirms
-it.
+value you want. Every open track of that type takes the value — the ones you had
+already set individually included — and an "Applied to N open tracks" snackbar
+says how many.
 
-<Figure caption="Making Compact the default read height. Top: the pin on the Compact preset. Bottom: the track that was following the default compacts, and the snackbar offers to apply it to the one open track with a height of its own." src="/img/feature_height_default.png" />
+<Figure caption="Applying Compact as the read height. Top: the pin on the Compact preset. Bottom: both open alignments tracks are compact, and the snackbar offers to keep Compact as the default." src="/img/feature_height_default.png" />
 
-Three things follow from the pin only writing the default:
+## Keeping it as the default
 
-- Tracks with no value of their own for that setting pick the default up at
-  once, including tracks you open later.
-- Tracks you have already set keep what you gave them. The snackbar's **Override
-  N customized tracks** action is what reaches those: it drops their own value
-  so they follow the default instead.
+The snackbar's **Set as the default** action is the second, deliberate step. It
+stores the value as your default for that display type, so tracks you open later
+start there too. The pin fills in to say the default is set.
+
+Two things follow:
+
+- The default only reaches tracks with no value of their own. The tracks the pin
+  just wrote have one now, so a default you change later won't move them — click
+  the new value's pin again.
 - Choosing a value from a menu row, rather than from its pin, is a change to
-  that one track, so a track you have clicked through is no longer following
-  anything.
+  that one track.
 
-Clicking a filled pin clears the default again, and every track that was
-following it goes back to JBrowse's built-in value.
+Clicking a filled pin clears the default. It does not undo the values the pin
+wrote: those tracks keep what you applied, and only the tracks you open from
+then on go back to JBrowse's built-in value.
 
 Defaults are keyed to the **type of display** rather than to all tracks at once.
 A read height default applies to your alignments tracks, a feature height

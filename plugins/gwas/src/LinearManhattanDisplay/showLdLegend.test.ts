@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -83,6 +84,8 @@ describe('Manhattan showLdLegend', () => {
     expect(display.showLdLegend).toBe(true)
   })
 
+  // The pin's click applies the value to the open tracks; the toast's one
+  // action is what makes it the display type's default (ADR-048).
   it('the menu row carries the pin, and it promotes the current value', () => {
     const { session, display } = createTestEnvironment({
       colorBy: 'ld',
@@ -92,6 +95,7 @@ describe('Manhattan showLdLegend', () => {
     expect(row && 'pin' in row ? row.pin : undefined).toBeDefined()
 
     display.showLdLegendDisplayTypeDefault.toggle()
+    takeSnackbarAction(session)
     expect(
       session.getDisplayTypeDefault('LinearManhattanDisplay', 'showLdLegend'),
     ).toBe(false)

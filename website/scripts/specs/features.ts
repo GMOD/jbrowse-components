@@ -156,18 +156,16 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // The session-wide feature-height default on alignments tracks.
     // featureHeight is a promotable slot (track value → session default →
     // promotedBase 7; spacing is derived from it, never stored). Each height row
-    // in the "Read height" submenu carries a trailing pin
-    // (PinAdornment, aria-label "make <preset> the default for all
-    // tracks") that toggles that preset as the session default on click. The pin
-    // writes *only* the default — it never rewrites a track's own value — so the
-    // two open tracks are seeded differently to show both halves of that: the
-    // pileup track has no featureHeight (it follows the default, so pinning
-    // Compact turns it compact at once) and the CRAM track is customized to 12
-    // (it keeps its own value, and is the "1 customized track" the snackbar
-    // offers to override). Two stages mirror the how-to: stage 1 opens the
-    // submenu with the Compact row's pin circled; stage 2 clicks it and boxes the snackbar
-    // action, then makes the customized track compact so the frame shows the end
-    // state.
+    // in the "Read height" submenu carries a trailing pin (PinAdornment,
+    // aria-label "apply <preset> to all open tracks") whose click writes that
+    // preset into every open track of the type and offers the display-type
+    // default as the snackbar's one action. The two open tracks are seeded
+    // differently so the frame shows the click reaching both kinds: the pileup
+    // track has no featureHeight of its own, the CRAM track is customized to 12,
+    // and one click compacts them both. Two stages mirror the how-to: stage 1
+    // opens the submenu with the Compact row's pin circled; stage 2 clicks it and
+    // boxes the "Set as the default" action, left unclicked so it stays on
+    // screen.
     mode: 'url',
     name: 'feature_height_default',
     url: lgvSession(VOLVOX, {
@@ -218,8 +216,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
           {
             type: 'circle',
             anchor: {
-              selector:
-                '[aria-label="make Compact the default for all tracks"]',
+              selector: '[aria-label="apply Compact to all open tracks"]',
             },
           },
           {
@@ -228,44 +225,31 @@ export const featuresSpecs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 500,
             fontSize: 15,
-            text: 'Each feature-height preset has a trailing pin that sets it as the default for all tracks of this type.',
+            text: 'Each feature-height preset has a trailing pin that applies it to every open track of this type.',
           },
         ],
       },
       {
-        // bottom frame: clicking the pin sets Compact as the session default,
-        // which the uncustomized pileup track picks up at once (it turns compact
-        // in place without the pin touching it); the resulting snackbar's action
-        // (boxed, not clicked, so it stays on screen) reaches the one open track
-        // still holding its own height. To show the end state — both tracks
-        // compact — that track is then made compact through its own "Read height"
-        // > Compact row (not the snackbar, which would dismiss the snackbar the
-        // frame is meant to show). Each menu is dismissed with a neutral title-bar
+        // bottom frame: one pin click compacts both open tracks — the follower
+        // and the one customized to 12 alike — and raises the snackbar whose
+        // "Set as the default" action is boxed, not clicked, so it stays on
+        // screen for the frame. The menu is dismissed with a neutral title-bar
         // click, not Escape, which would pop the snackbar. The snackbar ignores
         // clickaway and no longer auto-hides (actionable ones persist, see
         // SnackbarModel), so the click chain can't race a 5s timeout.
         actions: [
           {
             type: 'click',
-            selector: '[aria-label="make Compact the default for all tracks"]',
+            selector: '[aria-label="apply Compact to all open tracks"]',
           },
-          { type: 'waitForText', text: 'Override 1 customized track' },
-          ...dismissMenus(),
-          // make the OTHER open track compact through its own Read-height menu
-          // (not the snackbar action, which would dismiss the snackbar the
-          // reviewer wants left visible) so the frame ends with both tracks
-          // compact and the "Override 1 customized track" affordance still on screen
-          trackMenuIcon('volvox_cram_alignments_ctga'),
-          ...openFeatureHeightSubmenu(),
-          { type: 'click', text: 'Compact' },
-          { type: 'delay', ms: 400 },
+          { type: 'waitForText', text: 'Applied to 2 open tracks' },
           ...dismissMenus(),
           { type: 'delay', ms: 2000 },
         ],
         annotations: [
           {
             type: 'box',
-            anchor: { text: 'Override 1 customized track' },
+            anchor: { text: 'Set as the default' },
             strokeWidth: 3,
           },
           {
@@ -274,7 +258,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 500,
             fontSize: 15,
-            text: 'Clicking the pin sets Compact as the default: tracks following the default go compact at once, and the snackbar offers to apply it to the one customized track.',
+            text: 'One click compacts both open tracks, including the one with a height of its own; the snackbar then offers to keep Compact as the default for tracks you open later.',
           },
         ],
       },

@@ -2210,13 +2210,17 @@ export const uiSpecs: ScreenshotSpec[] = [
   // The track-selector badge a session-wide default raises, and the dialog it
   // opens (display_defaults.md). A promoted default lives in this browser's
   // preferences, never in a session spec, so the state has to be driven through
-  // the UI: pin Compact in the alignments "Read height" submenu, then open the
-  // track selector. The track holds no height of its own, so the badge reads
-  // "Affected by a session-wide default" (data-testid track_session_default_badge)
-  // rather than the "Edited" pencil, and the dialog names the default as its
-  // source with a "Clear session default" action. One open following track means
-  // no track differs from the new default, so the snackbar carries no "Apply to
-  // N open tracks" action here — wait on its title instead.
+  // the UI: pin Compact in the alignments "Read height" submenu, then take the
+  // snackbar's "Set as the default".
+  //
+  // **The badge is then about a track that was not open for the pin's click.**
+  // The click writes every open track of the type, so the track it was clicked
+  // from now holds its own height and carries the "Edited" pencil, not this one.
+  // A second alignments track shown afterwards holds nothing of its own, so it
+  // is the one whose badge reads "Affected by a session-wide default"
+  // (data-testid track_session_default_badge) and whose dialog names the default
+  // as its source with a "Clear session default" action. The filter leaves only
+  // that track's row on screen, so the two pencils can't be confused.
   {
     mode: 'url',
     name: 'display_type_default_badge',
@@ -2234,8 +2238,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     // geometry settle before the click sequence
     settleMs: 8000,
     hideTooltip: true,
-    // the pin raises a "Set as the default" snackbar that outlives the click
-    // sequence; it is the action being documented, not part of either frame
+    // the pin raises an "Applied to N open tracks" snackbar that outlives the
+    // click sequence; it is the action being documented, not part of either
+    // frame
     hideSelectors: ['.MuiTooltip-popper', '.MuiSnackbar-root'],
     stages: [
       {
@@ -2245,9 +2250,11 @@ export const uiSpecs: ScreenshotSpec[] = [
           ...openFeatureHeightSubmenu(),
           {
             type: 'click',
-            selector: '[aria-label="make Compact the default for all tracks"]',
+            selector: '[aria-label="apply Compact to all open tracks"]',
           },
-          { type: 'waitForText', text: 'Set as the default' },
+          { type: 'waitForText', text: 'Applied to 1 open track' },
+          // the second click, which is the one that makes it a default at all
+          { type: 'click', text: 'Set as the default' },
           ...dismissMenus(),
           {
             type: 'click',
@@ -2257,14 +2264,19 @@ export const uiSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: '[data-testid="hierarchical_track_selector"]',
           },
-          // the tracklist is virtualized, so filter it down until the open
-          // track's row (and its badge) is actually rendered
-          { type: 'type', text: 'Filter tracks', value: 'volvox-sorted.bam' },
+          // the tracklist is virtualized, so filter it down before reaching for
+          // a row; this one also opens the track the badge is about
+          {
+            type: 'type',
+            text: 'Filter tracks',
+            value: 'volvox-long reads with SV',
+          },
+          { type: 'click', text: 'volvox-long reads with SV' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="track_session_default_badge"]',
           },
-          { type: 'delay', ms: 500 },
+          { type: 'delay', ms: 1000 },
         ],
         // The ring alone said "look here" at a 16px glyph and left the reader to
         // work out what it meant (review: "might help to have red text

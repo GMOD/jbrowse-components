@@ -40,8 +40,8 @@ function isAnimationMode(val: unknown): val is AnimationMode {
 // default already in a browser's storage. Nothing released stores these yet, so
 // the reason it keeps this spelling is naming, not compatibility: the key names
 // *what is stored* (a display-type default, reached through
-// `get/setDisplayTypeDefault`), while `Pin` names the menu control that writes
-// it.
+// `get/setDisplayTypeDefault`), while `Pin` names the menu control the write
+// is offered from.
 const DISPLAY_TYPE_DEFAULT_PREFIX = 'displayTypeDefault\0'
 
 // Module-private on purpose: the composite-key spelling is a storage detail of

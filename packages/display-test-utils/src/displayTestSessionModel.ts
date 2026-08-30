@@ -2,6 +2,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { SnackAction } from '@jbrowse/core/util'
 import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
 
 /** What a queued dialog was called with, resolved to `[Component, props]`. */
@@ -60,8 +61,15 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       // than dropped because "the user was told nothing" is a real assertion —
       // a click whose lookup comes back empty and says nothing is the failure
       // `notifyFeatureDetailsMiss` exists for, and a no-op `notify` cannot tell
-      // that apart from a working one.
-      notifications: [] as { message: string; level?: string }[],
+      // that apart from a working one. The `actions` are recorded too: a
+      // promotable pin's click applies its value and offers the display-type
+      // default as a snackbar action, so dropping them left the promotion
+      // unreachable from a test.
+      notifications: [] as {
+        message: string
+        level?: string
+        actions: SnackAction[]
+      }[],
     }))
     .views(self => ({
       getTrackById,
@@ -74,11 +82,19 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
         self.view = view
         return view
       },
-      notify(message: string, level?: string) {
-        self.notifications.push({ message, level })
+      notify(
+        message: string,
+        level?: string,
+        action?: SnackAction | SnackAction[],
+      ) {
+        self.notifications.push({
+          message,
+          level,
+          actions: action ? (Array.isArray(action) ? action : [action]) : [],
+        })
       },
       notifyError(message: string) {
-        self.notifications.push({ message, level: 'error' })
+        self.notifications.push({ message, level: 'error', actions: [] })
       },
       queueDialog(cb: (handleClose: () => void) => QueuedDialog) {
         self.queuedDialogs.push(cb(() => {}))
@@ -99,4 +115,26 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
         }
       },
     }))
+}
+
+/**
+ * Run an action the last snackbar offered. A promotable pin's click applies its
+ * value to the open tracks and offers the display-type default as the toast's
+ * one action, so a test asserting on `getDisplayTypeDefault` has to take this
+ * second step — the click alone deliberately promotes nothing.
+ */
+export function takeSnackbarAction(
+  session: {
+    notifications: { message: string; actions: SnackAction[] }[]
+  },
+  name = 'Set as the default',
+) {
+  const last = session.notifications.at(-1)
+  const found = last?.actions.find(action => action.name === name)
+  if (!found) {
+    throw new Error(
+      `no snackbar action "${name}"; last toast was ${JSON.stringify(last?.message)} offering ${JSON.stringify(last?.actions.map(a => a.name) ?? [])}`,
+    )
+  }
+  found.onClick()
 }

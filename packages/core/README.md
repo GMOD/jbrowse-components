@@ -434,8 +434,9 @@ the check off (`HostChecksSlotNames`).
 
 ### makePin
 
-The pin for one promotable slot: "make this value the default for every track of
-this display type".
+The pin for one promotable slot: "apply this value to every open track of this
+display type", and — via the snackbar it raises — "keep it as the default for
+the ones opened later".
 
 `value` chooses between the subsystem's two meanings, which are otherwise
 identical:
@@ -488,24 +489,23 @@ each display whether it has anything to promote.
 
 ### Pin
 
-The "make this the default for all tracks of this type" affordance on a menu row
-— the trailing `PushPin`, bundled so the row consumes it as one prop. Built by
+The "apply this to every open track of this type" affordance on a menu row — the
+trailing `PushPin`, bundled so the row consumes it as one prop. Built by
 makePin.
 
-`active` = this value is currently the session default (a filled pin); `toggle`
-sets it as the default or clears it, touching no track's own value (see
-`applyDefaultToggle`). On set it raises a snackbar with an "Override N
-customized tracks" action for every open track not already showing this value —
-that action is the only thing in the subsystem that rewrites a track.
+`active` = this value is currently the session default (a filled pin), which is
+the state, not the click. `toggle` **applies the value to every open track of
+the display type** and raises a snackbar whose one action promotes it to the
+display type's default; on an already-promoted value it clears that default
+instead, touching no track (see `applyPinClick`).
 
-**`toggle` rather than a `promote`/`clear` pair**, which was tried and dropped:
+**`toggle` rather than an `apply`/`clear` pair**, which was tried and dropped:
 the sole renderer is a MUI `ToggleButton` whose `onChange` means exactly "flip",
 so splitting it adds a member _and_ a branch at the one call site that never
 needed one. `active` is already public for a caller that wants to state a
 direction. (The house preference for explicit setters over toggles is about MST
 actions, where a toggle destroys the ability to set a known state; nothing here
-stores a value.) ADR-048's requirement is that the flip be _symmetric_ —
-pin-then-unpin discards nothing — not that it be two functions.
+stores a value.)
 
 Lives here, alone and with no imports, rather than beside `makePin` in
 `promotableDefaults.ts`: the menu types describe a pin without building one, and

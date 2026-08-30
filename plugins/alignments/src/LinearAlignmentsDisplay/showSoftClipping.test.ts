@@ -33,12 +33,41 @@ function createDisplay(displayConfig: Record<string, unknown> = {}) {
   })
   // no `call`: nothing here is meant to reach a fetch, so one would throw
   const Session = baseSession
-    .volatile(() => ({ rpcManager: {} }))
-    .actions(() => ({
-      notify(_message: string, _level?: string) {},
+    .volatile(() => ({
+      rpcManager: {},
+      lastActions: [] as SnackActionShim[],
+    }))
+    .actions(self => ({
+      notify(
+        _message: string,
+        _level?: string,
+        action?: SnackActionShim | SnackActionShim[],
+      ) {
+        self.lastActions = action
+          ? Array.isArray(action)
+            ? action
+            : [action]
+          : []
+      },
     }))
   const { session, display } = mount(Session, { configuration: 'd1' })
   return { session, display }
+}
+
+interface SnackActionShim {
+  name: string
+  onClick: () => void
+}
+
+// A pin's click applies its value to the open tracks and offers the display-type
+// default as the toast's one action. Promoting is that second click, never the
+// first, so every assertion about `getDisplayTypeDefault` goes through here.
+function promote(session: ReturnType<typeof createDisplay>['session']) {
+  const found = session.lastActions.find(a => a.name === 'Set as the default')
+  if (!found) {
+    throw new Error('the pin raised no "Set as the default" action')
+  }
+  found.onClick()
 }
 
 // The grow/fit radios live in the same merged "Read height" menu as the fixed
@@ -144,6 +173,7 @@ describe('alignments showSoftClipping session default', () => {
       expect(display.softClippingDisplayTypeDefault.active).toBe(false)
 
       display.softClippingDisplayTypeDefault.toggle()
+      promote(session)
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -156,6 +186,7 @@ describe('alignments showSoftClipping session default', () => {
     it('clears the session default when toggled off', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
       display.softClippingDisplayTypeDefault.toggle()
+      promote(session)
       expect(display.softClippingDisplayTypeDefault.active).toBe(true)
 
       display.softClippingDisplayTypeDefault.toggle()
@@ -357,34 +388,36 @@ describe('feature-height menu per-preset pins', () => {
   it("clicking a preset's pin promotes that exact preset", () => {
     const { session, display } = createDisplay()
     pinProps(display, 'Compact')?.control.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
     ).toBe(3)
     expect(pinProps(display, 'Compact')?.control.active).toBe(true)
   })
 
-  it("clicking a preset's pin leaves the clicked track's own height alone", () => {
-    // a track customized to a taller height: the pin edits the session default
-    // only, so this track keeps 12 until the user takes the explicit "apply to
-    // open tracks" action. It used to be reset here, which silently discarded
-    // the 12 — unpinning then stranded the track on the base height.
+  it("clicking a preset's pin overwrites the clicked track's own height", () => {
+    // a track customized to a taller height. The pin's click applies its value
+    // to every open track of the type, customized ones included — there is no
+    // separate "override" step, because overwriting a customized track is the
+    // same write as filling in a follower (ADR-048).
     const { display } = createDisplay({ featureHeight: 12 })
     expect(display.featureHeight).toBe(12)
 
     pinProps(display, 'Compact')?.control.toggle()
 
-    expect(display.configuredFeatureHeight).toBe(12)
-    expect(display.featureHeight).toBe(12)
+    expect(display.configuredFeatureHeight).toBe(3)
+    expect(display.featureHeight).toBe(3)
   })
 
-  it('a track following the default does move when a preset is pinned', () => {
-    // the other half of the same rule: nothing is written to any track, so a
-    // track with no value of its own picks the new default up by resolution
+  it('a track following the default is written too, not left to resolve', () => {
+    // the other half of the same rule: a follower is showing its value only by
+    // way of whatever default is in place, so the click writes it as well
     const { display } = createDisplay()
     expect(display.featureHeight).toBe(7)
 
     pinProps(display, 'Compact')?.control.toggle()
 
+    expect(display.configuredFeatureHeight).toBe(3)
     expect(display.featureHeight).toBe(3)
   })
 
@@ -453,6 +486,7 @@ describe('feature-height menu per-preset pins', () => {
       display,
       'Fit read height to track height',
     )?.control.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('fit')
@@ -590,6 +624,7 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     const { session, display } = createDisplay()
     display.setMismatchAlpha(true)
     display.mismatchAlphaDisplayTypeDefault.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'mismatchAlpha'),
     ).toBe(true)
@@ -650,6 +685,7 @@ describe('alignments showSashimiLabels (sashimi arc counts)', () => {
     const { session, display } = createDisplay()
     display.setShowSashimiLabels(false)
     display.showSashimiLabelsDisplayTypeDefault.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',
@@ -709,6 +745,7 @@ describe('alignments showLegend (color-scheme key)', () => {
     const { session, display } = createDisplay()
     display.setShowLegend(false)
     display.showLegendDisplayTypeDefault.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend'),
     ).toBe(false)
@@ -734,6 +771,7 @@ describe('alignments showLegend (color-scheme key)', () => {
     expect(row?.pin).toBeDefined()
 
     row?.pin?.control.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend'),
     ).toBe(false)
@@ -808,6 +846,7 @@ describe('alignments grow (auto-height) mode', () => {
       display,
       'Fixed read height + autogrow track height',
     )?.control.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('grow')
@@ -1058,6 +1097,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
       expect(display.pairsDisplayTypeDefault.active).toBe(false)
 
       display.pairsDisplayTypeDefault.toggle()
+      promote(session)
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBe('normal')
@@ -1068,16 +1108,18 @@ describe('alignments linkedReads (view as pairs) session default', () => {
       const { session, display } = createDisplay()
       expect(display.linkedReads).toBe('off')
       display.pairsDisplayTypeDefault.toggle()
+      promote(session)
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBe('normal')
-      // a not-customized track then follows the promoted default
+      // the click wrote the track, so it shows pairs either way
       expect(display.linkedReads).toBe('normal')
     })
 
     it('clears the session default when toggled off', () => {
       const { session, display } = createDisplay({ linkedReads: 'normal' })
       display.pairsDisplayTypeDefault.toggle()
+      promote(session)
       expect(display.pairsDisplayTypeDefault.active).toBe(true)
 
       display.pairsDisplayTypeDefault.toggle()
@@ -1127,6 +1169,7 @@ describe('alignments readConnections (arcs) session default', () => {
   it('the arcs pin promotes arc and clears it (per-value)', () => {
     const { session, display } = createDisplay({ readConnections: 'arc' })
     display.arcsDisplayTypeDefault.toggle()
+    promote(session)
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',

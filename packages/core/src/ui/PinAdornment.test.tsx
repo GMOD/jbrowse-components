@@ -30,14 +30,24 @@ describe('PinAdornment', () => {
   it('renders a labeled pin button', () => {
     const { getByRole } = renderAdornment(fakeControl(false))
     expect(
-      getByRole('button', { name: 'make this the default for all tracks' }),
+      getByRole('button', { name: 'apply this to all open tracks' }),
     ).toBeTruthy()
   })
 
   it('names the pin after its setting so siblings are distinguishable', () => {
     const { getByRole } = renderAdornment(fakeControl(false), 'Compact')
     expect(
-      getByRole('button', { name: 'make Compact the default for all tracks' }),
+      getByRole('button', { name: 'apply Compact to all open tracks' }),
+    ).toBeTruthy()
+  })
+
+  // The click and the state are two different things: an outline pin applies
+  // the value to the open tracks, a filled one clears the default it stands
+  // for, and one label for both described whichever half was written first.
+  it('names the clear, not the apply, once it is the default', () => {
+    const { getByRole } = renderAdornment(fakeControl(true), 'Compact')
+    expect(
+      getByRole('button', { name: 'clear the default for Compact' }),
     ).toBeTruthy()
   })
 
@@ -53,18 +63,18 @@ describe('PinAdornment', () => {
     expect(toggle).toHaveBeenCalledTimes(1)
   })
 
-  // A symmetric pin over a maybeBoolean slot promotes whatever the row is
-  // currently showing, so on an unchecked row it promotes the setting OFF. The
+  // A symmetric pin over a maybeBoolean slot carries whatever the row is
+  // currently showing, so on an unchecked row it applies the setting OFF. The
   // value-shaped copy every other pin uses states the opposite of what the
-  // click does, and then, once filled, claims the setting is on by default.
-  it('names the state a boolean pin promotes, not just the setting', () => {
+  // click does — "apply Show legend" to turn the legend off.
+  it('names the state a boolean pin applies, not just the setting', () => {
     const { getByRole } = renderAdornment(
       fakeControl(false, () => {}, false),
       'Show legend',
     )
     expect(
       getByRole('button', {
-        name: 'make Show legend off by default for all tracks',
+        name: 'turn Show legend off for all open tracks',
       }),
     ).toBeTruthy()
   })
@@ -75,9 +85,7 @@ describe('PinAdornment', () => {
       'Show legend',
     )
     expect(
-      getByRole('button', {
-        name: 'make Show legend on by default for all tracks',
-      }),
+      getByRole('button', { name: 'clear the default for Show legend' }),
     ).toBeTruthy()
   })
 

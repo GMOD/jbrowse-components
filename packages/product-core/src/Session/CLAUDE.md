@@ -18,11 +18,10 @@ genuinely user-added tracks.
   so _unsetting_ a slot the base sets diffs to nothing as well. Clearing the
   delta therefore reverts the working copy only when the update came from
   somewhere other than that working copy — otherwise it undid the edit ~400ms
-  after it landed. The reachable case is the promoted-default snackbar's
-  "Override N customized tracks" over a promotable slot an admin config
-  declares; canary `PromotedDefaultOverride.test.ts`. The removal still doesn't
-  survive a reload, which is `trackConfigDelta.ts`'s stated no-tombstones
-  limitation.
+  after it landed. The reachable case is a size row's reset over a promotable
+  slot an admin config declares; canary `PromotedDefaultApply.test.ts`. The
+  removal still doesn't survive a reload, which is `trackConfigDelta.ts`'s
+  stated no-tombstones limitation.
 
 - **A working copy is cached against the delta it was built from**, not by
   trackId alone. `writeDelta` re-stamps it, so the copy a value is still being

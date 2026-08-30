@@ -35,7 +35,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * can open a view on, and `getCanonicalAssemblyName` is the alias table, which
  * knows nothing by default so every comparison degrades to the raw name.
  */
-export function createDisplay({
+export function createSyntenyEnv({
   neighbourAssembly,
   trackAssemblyNames = ['volvox', 'volvox_random'],
   loadedAssemblies = ['volvox', 'volvox_random'],
@@ -183,7 +183,19 @@ export function createDisplay({
       { refName: 'ctgA', start: 0, end: 1000, assemblyName: assemblies[i]! },
     ])
   }
-  return panels[0]!.tracks[0]!.displays[0]!
+  return { session, display: panels[0]!.tracks[0]!.displays[0]! }
+}
+
+/**
+ * The display alone, which is all most callers here want. `createSyntenyEnv`
+ * is the form for a test that also has to reach the session — the promotable
+ * pins raise a snackbar whose one action is the promotion, and that is only
+ * assertable through `session.notifications`.
+ */
+export function createDisplay(
+  opts: Parameters<typeof createSyntenyEnv>[0] = {},
+) {
+  return createSyntenyEnv(opts).display
 }
 
 /**
