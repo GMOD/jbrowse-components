@@ -17,7 +17,7 @@ five commits between `f1116f9e0c` and `bdc0d0f2c2`:
 | commit | what |
 | --- | --- |
 | `bc3a2313ed` | the adapter, its channel classifier, and three test files (~1200 lines) |
-| `f2f38a6422` | regenerated manifests and `website/docs/config/AlignmentsContactAdapter.md` |
+| `f2f38a6422` | regenerated manifests and the adapter's generated config page |
 | `e40a94e459` | the `depthDifference` cap in `getHeader`, exact mate refName |
 | `08e1c2c538` | comment pass |
 | `35fef90f57` | the link from `HicTrack.md` |
