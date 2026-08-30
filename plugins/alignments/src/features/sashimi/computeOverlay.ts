@@ -19,10 +19,14 @@ import type {
 // Both the on-screen `SashimiArcsOverlay` (which adds hover/click handlers)
 // and the SVG export (which serializes static <path>s) consume this output.
 //
-// Sashimi stays rendered as vector SVG by design — arc counts are low, vector
-// performance is fine, and SVG paths give native hover/tooltip behavior.
-// Keeping the geometry computation shared prevents the on-screen and export
-// paths from drifting (e.g. cubic vs quadratic Bezier, different palettes).
+// Sashimi stays rendered as vector SVG by design — SVG paths give native
+// hover/tooltip behavior, and the per-frame DOM cost is the cheap kind: the
+// paths are keyed by `sashimiArcKey`, so React pools them and a pan patches one
+// `d` per arc with no node created or destroyed (measured in
+// agent-docs/reference/INTERACTION_PERF.md, which is also where the case for
+// moving to the canvas arc band next door is weighed). Keeping the geometry
+// computation shared prevents the on-screen and export paths from drifting
+// (e.g. cubic vs quadratic Bezier, different palettes).
 export interface SashimiArc {
   d: string
   stroke: string

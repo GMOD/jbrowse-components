@@ -51,7 +51,7 @@ function SashimiArcLabel({
 // Every visible count label for one sub-band, as a pass of its own. Both the
 // overlay and the export emit their arc paths first and this second, so a label
 // is never buried under a neighbouring arc's stroke — arcs are painted ascending
-// by score (`computeSashimiArcs` sorts them), so without the split a heavy
+// by score (`projectSashimiArcs` sorts them), so without the split a heavy
 // junction's thick stroke swallowed the count of the lighter one it overlaps.
 // `showLabel` is the compute layer's per-arc "the text fits in this span"
 // verdict; `show` is the display setting.

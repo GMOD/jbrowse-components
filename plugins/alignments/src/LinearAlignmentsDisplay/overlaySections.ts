@@ -80,7 +80,7 @@ export function computeSashimiArcSections(
       ...opts,
       downJunctionKeys: sec.sashimiDownKeys,
     })
-    // Already ascending by score — `computeSashimiArcs` emits them that way, and
+    // Already ascending by score — `projectSashimiArcs` emits them that way, and
     // `computeOverlay.test.ts` pins it. The sort used to be one call up from the
     // array's producer, which is why it read as missing to anyone looking at the
     // producer.

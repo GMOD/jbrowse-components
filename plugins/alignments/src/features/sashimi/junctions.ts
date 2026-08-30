@@ -6,7 +6,7 @@
 //     (`sashimiDownKeysByGroup` -> non-empty set), and must not depend on
 //     pan/zoom or the pileup would re-lay-out on every frame;
 //   - the OVERLAY/EXPORT asks which side to draw each arc on
-//     (`computeSashimiArcs`, which looks its arcs up in the same set).
+//     (`projectSashimiArcs`, which looks its arcs up in the same set).
 //
 // They used to be two separate O(n^2) crossing passes — a genomic one over every
 // loaded region for the layout, a screen-space one over the visible ones for the

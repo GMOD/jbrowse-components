@@ -1,7 +1,6 @@
 {
   "id": "sashimi-frame-split",
   "measured": "2026-08-30",
-  "published": false,
   "source": {
     "kind": "bench",
     "repro": "node --expose-gc plugins/alignments/benches/sashimiFrame.bench.ts --rounds=400 [--copies=3]",

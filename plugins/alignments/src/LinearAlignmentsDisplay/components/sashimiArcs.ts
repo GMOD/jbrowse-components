@@ -60,7 +60,7 @@ export function sashimiSideBand(
         // session snapshot may declare, so any height in 1..4 arrives here.
         // Unfloored it reaches an `<svg height>` and an `<SvgClipRect>` as a
         // negative number, which is invalid SVG — the same reason
-        // `computeSashimiArcs` floors the `effectiveHeight` it draws into and
+        // `projectSashimiArcs` floors the `effectiveHeight` it draws into and
         // `arcAvailH` floors the arc band.
         height: Math.max(0, heights.coverageHeight - YSCALEBAR_LABEL_OFFSET),
         clipped: false,

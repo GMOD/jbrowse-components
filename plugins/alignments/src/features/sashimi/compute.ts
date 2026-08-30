@@ -50,7 +50,7 @@ export interface JunctionReference {
 // emitting `ts` only for recognized motifs, routinely yields tagged and untagged
 // reads on the same junction.
 //
-// Worker-side compute. SVG-overlay geometry (`computeSashimiArcs`) lives in
+// Worker-side compute. SVG-overlay geometry (`projectSashimiArcs`) lives in
 // `./computeOverlay.ts` (intentionally SVG-only — see
 // LinearAlignmentsDisplay/CLAUDE.md).
 export function computeSashimiJunctions(
