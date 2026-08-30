@@ -246,7 +246,13 @@ function spanAtBlend(c: Corners, s: number) {
   return { l: Math.min(e0, e1), r: Math.max(e0, e1) }
 }
 
-const SAMPLES = 400
+// Rows sampled per segment. A crop is continuous in y — a pad that is short is
+// short over a range of rows, not at one — so the sweeps below find it at 100
+// as well as at the 400 this used to take, and the file ran 52s of the suite's
+// wall clock at 400. The nine named shapes and the sabotage arms are what pin
+// the individual geometries; the sweeps are for corner configurations, which is
+// why the sweep COUNT stayed at 4000.
+const SAMPLES = 100
 
 // Worst px the padded geometry crops away, over every segment and SAMPLES rows
 // within each. Zero means the polygon contains the whole footprint.

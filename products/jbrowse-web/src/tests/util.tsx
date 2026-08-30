@@ -567,8 +567,10 @@ export async function testFileReload(config: {
 
   await mockConsole(async () => {
     mockFile404(config.failingFile, readBuffer)
+    // The helper already knows the one track it opens, so it can trim the
+    // config for every caller rather than each of them naming it again.
     const { view, findByTestId, findAllByTestId, findAllByText } =
-      await createView()
+      await createView(volvoxConfigWithTracks([config.trackId]))
     view.setNewView(config.viewLocation[0], config.viewLocation[1])
     fireEvent.click(await findByTestId(hts(config.trackId), ...opts))
     await findAllByText(/HTTP 404/, ...opts)

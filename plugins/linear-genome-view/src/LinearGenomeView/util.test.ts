@@ -214,7 +214,12 @@ describe('tick calculation', () => {
   test.each([0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 25, 50, 100, 250, 1000, 5000])(
     'major pitch stays on the 1/2/5 ladder at %p bp/px',
     bpPerPx => {
-      const majors = makeTicks(0, 100_000_000, bpPerPx, true, false)
+      // A 5000px-wide region at whatever scale is being asked about, rather
+      // than a fixed 100Mb one. `makeTicks` steps by the MINOR pitch even when
+      // it emits no minors, so a span in bp costs an iteration per ~15px of it:
+      // 100Mb at 0.05bp/px walked 100M of them for the two majors read below,
+      // and this suite spent 25 of its 27 seconds there.
+      const majors = makeTicks(0, bpPerPx * 5000, bpPerPx, true, false)
         .map(t => t.base + 1)
         .filter(base => base > 0)
       const pitch = majors[1]! - majors[0]!

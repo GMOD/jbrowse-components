@@ -37,20 +37,40 @@ const sizesOf = (node: LayoutTree) =>
 
 // Canonical form, stated once so every test can assert it rather than restate
 // it. These are the invariants normalize() exists to establish.
-function expectCanonical(node: LayoutTree) {
+// Walks first and asserts once, rather than asserting per node. The 2000-step
+// sequence below calls this on a tree that grows as it goes, so an `expect` per
+// branch made the run quadratic — ~1.4M assertions, 25 of the suite's 29
+// seconds. Returning the offender also names it, which a bare
+// `expect(child.size).toBeGreaterThan(0)` two hundred nodes deep never did.
+function canonicalViolation(node: LayoutTree): string | undefined {
   if (!isBranch(node)) {
-    return
+    return undefined
   }
-  expect(node.children.length).toBeGreaterThan(1)
+  if (node.children.length <= 1) {
+    return `branch ${node.id} has ${node.children.length} children`
+  }
   const total = node.children.reduce((sum, c) => sum + c.size, 0)
-  expect(total).toBeCloseTo(1, 6)
-  for (const child of node.children) {
-    expect(child.size).toBeGreaterThan(0)
-    if (isBranch(child)) {
-      expect(child.direction).not.toBe(node.direction)
-    }
-    expectCanonical(child)
+  // toBeCloseTo(1, 6)'s own threshold
+  if (Math.abs(total - 1) >= 5e-7) {
+    return `branch ${node.id} sizes sum to ${total}`
   }
+  for (const child of node.children) {
+    if (!(child.size > 0)) {
+      return `${child.id} in ${node.id} has size ${child.size}`
+    }
+    if (isBranch(child) && child.direction === node.direction) {
+      return `${child.id} nests ${child.direction} inside ${node.id}`
+    }
+    const deeper = canonicalViolation(child)
+    if (deeper !== undefined) {
+      return deeper
+    }
+  }
+  return undefined
+}
+
+function expectCanonical(node: LayoutTree) {
+  expect(canonicalViolation(node)).toBeUndefined()
 }
 
 describe('normalize', () => {
@@ -505,11 +525,12 @@ test('any sequence of operations leaves a canonical tree', () => {
     // and a panel never shows a tab it does not have. `activeTabId` is a
     // `maybe` naming a sibling, so nothing structural enforces this — every
     // operation that can retire a tab has to hand it on.
-    for (const p of panels(tree)) {
-      if (p.activeTabId !== undefined) {
-        expect(p.tabs.map(t => t.id)).toContain(p.activeTabId)
-      }
-    }
+    const orphanedActive = panels(tree).find(
+      p =>
+        p.activeTabId !== undefined &&
+        !p.tabs.some(t => t.id === p.activeTabId),
+    )
+    expect(orphanedActive).toBeUndefined()
   }
 })
 
