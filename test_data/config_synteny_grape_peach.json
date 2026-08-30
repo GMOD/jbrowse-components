@@ -124,8 +124,7 @@
             "showCenterLine": false,
             "showCytobands": true
           }
-        ],
-        "drawCurves": false
+        ]
       },
       {
         "id": "d1asEMtmS",
@@ -1750,8 +1749,7 @@
             "showCenterLine": false,
             "showCytobands": true
           }
-        ],
-        "drawCurves": false
+        ]
       }
     ],
     "widgets": {},

@@ -173,7 +173,6 @@ cat > session.json <<'JSON'
     {
       "type": "LinearSyntenyView",
       "displayName": "Peach - Grape (MCScan anchors)",
-      "drawCurves": true,
       "init": {
         "views": [
           {
@@ -197,7 +196,8 @@ cat > session.json <<'JSON'
             ]
           }
         ],
-        "tracks": [["grape_peach_anchors", "grape_peach_anchors_simple"]]
+        "tracks": [["grape_peach_anchors", "grape_peach_anchors_simple"]],
+        "drawCurves": true
       }
     }
   ]

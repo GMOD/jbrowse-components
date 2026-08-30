@@ -5,7 +5,7 @@ description: Three seams left after v5 moved the synteny ribbon settings onto th
 
 # Promotable slots: the ways back out
 
-`30ffc77cca` removed the `LinearSyntenyView` override tier and made
+`9539cd3d14` removed the `LinearSyntenyView` override tier and made
 `drawCurves`/`drawLocationMarkers` ordinary promotable config slots, so the
 cascade is the only mechanism and its whole toolkit reaches them. That closed
 the defect it set out to close: the settings checkbox could previously only
@@ -85,10 +85,16 @@ nothing at the call site that says which one the row wants.
 ## 4. Five generated demo configs badge on load
 
 `hpylori`, `primate_selection`, `grape_peach`, `sv_multihop` and the ecoli
-graph/synteny scripts pass `drawCurves: true` as an init key. They work, and the
-init command writes the slot on the tracks the launcher opens — which marks
-those tracks edited on every load. The badge-free authoring shape is the value
-in the track config's own `displays` block instead.
+graph/synteny scripts pass `drawCurves: true` as an init key. The init command
+writes the slot on the tracks the launcher opens — which marks those tracks
+edited on every load. The badge-free authoring shape is the value in the track
+config's own `displays` block instead.
+
+The key only reaches that command from inside `init`. `grape_peach` spelled it
+as a sibling of `init`, i.e. a view snapshot property, which MST drops without a
+word — the demo rendered straight chords until this doc's own audit caught it.
+A generated config is where that typo survives longest, because nothing renders
+it during the build.
 
 Cosmetic, and a mechanical conversion, but it touches generated configs, so it
 wants the generator changed rather than the output. `demos/ecoli_pangenome`
