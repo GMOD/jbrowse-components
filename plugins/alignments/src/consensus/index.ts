@@ -64,8 +64,13 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
   // the view nests these under "Launch" itself, so no `group` here
   addViewMenuItems(pluginManager, 'LinearGenomeView', {
     menu: 'rubberBandLaunchMenuItems',
-    items: self =>
-      launchTargetsMenuItem({
+    // the regions are resolved here, where the items are built, rather than
+    // inside onSelect's callback: the menu's onClose runs before that callback
+    // and releases the selection, so a live read finds none and the entry does
+    // nothing at all
+    items: self => {
+      const regions = self.getSelectedRegions(self.leftOffset, self.rightOffset)
+      return launchTargetsMenuItem({
         label: CONSENSUS_LABEL,
         icon: NotesIcon,
         entries: alignmentsDisplays(self.tracks),
@@ -73,10 +78,6 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
         onSelect:
           ({ name, display }) =>
           () => {
-            const regions = self.getSelectedRegions(
-              self.leftOffset,
-              self.rightOffset,
-            )
             if (regions.length) {
               getDialogHost(self).queueDialog(handleClose => [
                 ConsensusSequenceDialog,
@@ -93,7 +94,8 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
               ])
             }
           },
-      }),
+      })
+    },
   })
 
   // The same dialog from the track menu, where a reader who has not already

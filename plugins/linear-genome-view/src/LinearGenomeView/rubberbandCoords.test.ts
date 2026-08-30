@@ -166,3 +166,20 @@ test('"Copy range" across a collapsed intron names both regions', () => {
   )
   expect(copiedRange(view, 50, 150)).toBe('ctgA:51..100 ctgA:5,001..5,050')
 })
+
+// The menu closes before it runs the clicked item's callback, and a close is
+// free to release the selection — the multi-level rubberband's does, which is
+// what made its "Zoom to region(s)" silently no-op. These items read the
+// offsets captured when they were built, so releasing in between changes
+// nothing.
+test('"Zoom to region" survives the selection being released on menu close', () => {
+  const { view } = setup()
+  const before = view.bpPerPx
+  view.setOffsets(view.pxToBp(100), view.pxToBp(200))
+  const items = buildRubberBandMenuItems(view, [])
+  view.setOffsets(undefined, undefined)
+
+  clickItem(items, 'Zoom to region')
+
+  expect(view.bpPerPx).toBeLessThan(before)
+})

@@ -260,6 +260,10 @@ export function buildRubberBandMenuItems(
   self: LinearGenomeViewModel,
   launchItems: MenuItem[],
 ): MenuItem[] {
+  // captured once here and used by the items below rather than re-read inside
+  // their onClick: the menu's onClose runs first and may release the selection,
+  // which would leave the click reading undefined and silently doing nothing
+  const { leftOffset, rightOffset } = self
   // The same regions `Get sequence` fetches and `Zoom to region` navigates to,
   // named the way the header names what it is showing. Arithmetic on the two
   // offsets' `coord` cannot do this: `coord` is the POINT convention, so on a
@@ -267,7 +271,7 @@ export function buildRubberBandMenuItems(
   // in ascending order, and a `leftRef === rightRef` test calls a selection
   // crossing a collapsed intron one range when it is two.
   const rangeString = assembleLocStrings(
-    self.getSelectedRegions(self.leftOffset, self.rightOffset),
+    self.getSelectedRegions(leftOffset, rightOffset),
   )
 
   return [
@@ -275,17 +279,14 @@ export function buildRubberBandMenuItems(
       label: 'Zoom to region',
       icon: ZoomInIcon,
       onClick: () => {
-        self.moveTo(self.leftOffset, self.rightOffset)
+        self.moveTo(leftOffset, rightOffset)
       },
     },
     {
       label: 'Get sequence',
       icon: MenuOpenIcon,
       onClick: () => {
-        const regions = self.getSelectedRegions(
-          self.leftOffset,
-          self.rightOffset,
-        )
+        const regions = self.getSelectedRegions(leftOffset, rightOffset)
         getDialogHost(self).queueDialog(handleClose => [
           GetSequenceDialog,
           {

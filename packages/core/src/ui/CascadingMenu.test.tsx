@@ -570,3 +570,41 @@ describe('CascadingMenu submenu hover intent', () => {
     })
   })
 })
+
+// A clicked row closes the menu BEFORE its callback runs, so an item whose
+// onClick reads state that closing clears sees it already gone. Every rubberband
+// menu is built this way — the selection is released on close — and a live read
+// there made "Zoom to region(s)" silently do nothing. Items must capture what
+// they need when they are built; this pins the ordering that forces them to.
+describe('CascadingMenu click ordering', () => {
+  it('closes the menu before invoking the clicked item callback', () => {
+    const order: string[] = []
+    const onMenuItemClick = jest.fn((cb: () => void) => {
+      cb()
+    })
+    const onClose = jest.fn(() => {
+      order.push('close')
+    })
+    const { getByText } = render(
+      <ThemeProvider theme={theme}>
+        <CascadingMenu
+          open
+          menuItems={[
+            {
+              label: 'act',
+              onClick: () => {
+                order.push('callback')
+              },
+            },
+          ]}
+          onMenuItemClick={onMenuItemClick}
+          onClose={onClose}
+        />
+      </ThemeProvider>,
+    )
+
+    fireEvent.click(getByText('act'))
+
+    expect(order).toEqual(['close', 'callback'])
+  })
+})

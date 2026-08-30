@@ -944,12 +944,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       rubberBandMenuItems() {
+        // captured here rather than read inside onClick: the menu's onClose
+        // runs first and releases the selection, so a live read sees undefined
+        // and the zoom silently no-ops
+        const selection = self.views.map(view => ({
+          view,
+          leftOffset: view.leftOffset,
+          rightOffset: view.rightOffset,
+        }))
         return [
           {
             label: 'Zoom to region(s)',
             onClick: () => {
-              for (const view of self.views) {
-                const { leftOffset, rightOffset } = view
+              for (const { view, leftOffset, rightOffset } of selection) {
                 if (leftOffset && rightOffset) {
                   view.moveTo(leftOffset, rightOffset)
                 }
