@@ -210,6 +210,97 @@ function checkProse(
   }
 }
 
+// Rule 4, over the generated pages themselves: a promotable row's prose promise
+// ("…falling back to off") against the `promotedBase` printed in the same row.
+//
+// `products/jbrowse-web/src/tests/PromotedBaseDescriptions.test.ts` asks this of
+// the runtime schema's `description`, and the two see different rows.
+// `generateConfigDocs` renders the `#slot` JSDoc in PREFERENCE to `description`,
+// so a slot carrying the sentence in only one of them is either checked there
+// and unread by anyone, or read here and checked by nothing — and both exist:
+// `SharedLDConfigSchema`'s `showLegend` puts it in the JSDoc with no
+// `description`, `LinearMultiRowFeatureDisplay`'s `showLabels` the other way
+// round. The page is the honest oracle, because it is the artifact the promise
+// is actually made on, and it prints the base beside the prose.
+const FALLBACK_PROMISE = /falling back to ([^;,.\s]+)/
+const ROW_DEFAULT = /= <code>([^<]+)<\/code>/
+
+// `on`/`off` for a boolean, a backticked member for an enum, a bare number —
+// the three shapes the sentence takes. The page can run it straight into a
+// trailing `<br>_advanced_`, so cut at the tag.
+function promisedValue(text: string) {
+  const word = text.split('<')[0]!
+  if (word === 'on' || word === 'off') {
+    return word === 'on'
+  }
+  if (/^`[^`]+`$/.test(word)) {
+    return word.slice(1, -1)
+  }
+  const n = Number(word)
+  return Number.isNaN(n) ? word : n
+}
+
+// the default column's own spelling: `false`, `2`, `'fixed'`
+function declaredDefault(text: string) {
+  if (text === 'true' || text === 'false') {
+    return text === 'true'
+  }
+  if (/^'[^']*'$/.test(text)) {
+    return text.slice(1, -1)
+  }
+  const n = Number(text)
+  return Number.isNaN(n) ? text : n
+}
+
+function checkFallbackPromises(problems: Problem[]) {
+  let rows = 0
+  for (const file of docFiles(join(docsDir, 'config'))) {
+    const rel = docRelative(file)
+    const lines = readFileSync(file, 'utf8').split('\n')
+    for (const [i, line] of lines.entries()) {
+      const promise = FALLBACK_PROMISE.exec(line)
+      const slot = SLOT_ROW.exec(line)
+      if (!promise || !slot) {
+        continue
+      }
+      rows += 1
+      const shown = ROW_DEFAULT.exec(line)
+      if (!shown) {
+        problems.push({
+          file: rel,
+          line: i + 1,
+          message:
+            `\`${slot[1]}\` promises a fallback but its row prints no ` +
+            `default, so a reader is told what it resolves to and never shown it`,
+        })
+        continue
+      }
+      const promised = promisedValue(promise[1]!)
+      const base = declaredDefault(shown[1]!)
+      if (promised !== base) {
+        problems.push({
+          file: rel,
+          line: i + 1,
+          message:
+            `\`${slot[1]}\` says it falls back to ${JSON.stringify(promised)} ` +
+            `but its promotedBase is ${JSON.stringify(base)}`,
+        })
+      }
+    }
+  }
+  // Same canary reasoning as assertInventoryParsed: a sentence this stops
+  // matching is a check that passes by reading nothing.
+  if (rows < 40) {
+    console.error(
+      `check-doc-slots matched only ${rows} "falling back to" rows in ` +
+        `docs/config/, expected 40+. FALLBACK_PROMISE or the generated ` +
+        `description format probably changed.`,
+    )
+    process.exit(1)
+  }
+  return rows
+}
+
 // A regex over generated markdown degrades SILENTLY: if the table format shifts,
 // fewer rows match, the inventory shrinks, and every doc passes because nothing
 // is known to be checkable any more. That is not hypothetical — the first
@@ -328,6 +419,7 @@ function checkObject(
 function main() {
   const inv = buildInventory()
   const problems: Problem[] = []
+  const fallbackRows = checkFallbackPromises(problems)
 
   for (const file of docFiles(docsDir)) {
     const rel = docRelative(file)
@@ -372,7 +464,7 @@ function main() {
           'the tables are current.',
         ]
       : [],
-    `All config slots named in hand-written docs exist, and every value is legal (${inv.schemaCount} schemas, ${inv.declsBySlot.size} slot names).`,
+    `All config slots named in hand-written docs exist, and every value is legal (${inv.schemaCount} schemas, ${inv.declsBySlot.size} slot names); ${fallbackRows} promotable rows promise the promotedBase beside them.`,
   )
 }
 

@@ -8,10 +8,18 @@ import corePlugins from '../corePlugins.ts'
 
 // Promotable slots across the display plugins end their description with what
 // the cascade falls back to — "falling back to off", "falling back to 2",
-// "falling back to `fixed`". That sentence is the only place a config page
-// tells a reader what an unset slot resolves to, and nothing kept it equal to
-// the `promotedBase` beside it: change the sentinel and the prose goes on
-// promising the old value, on a generated page, silently.
+// "falling back to `fixed`". Nothing kept that sentence equal to the
+// `promotedBase` beside it: change the sentinel and the prose goes on promising
+// the old value, on a generated page, silently.
+//
+// This reads `description`, which is NOT everything a reader sees.
+// `generateConfigDocs` renders the `#slot` JSDoc in preference to it, so a slot
+// that carries the sentence only in its JSDoc is invisible here — `showLegend`
+// on SharedLDConfigSchema is one, and it reaches LDDisplay.md all the same.
+// `website/scripts/check-doc-slots.ts` closes that by asking the same question
+// of the generated pages, where the promise and the base sit on one row; this
+// stays because it runs against the assembled schemas rather than a build
+// artifact, and so fails at the definition site before autogen has run.
 //
 // Here rather than in core for the same reason as `ConfigSlotDefaults.test.ts`
 // next door — the question is about every registered schema at once, and this
