@@ -239,7 +239,7 @@ test('census: gene track, label zoom', async () => {
 // is not in it. `sashimiFrameSplit.test.ts` is the same statement one layer
 // down, where it can also count the merge.
 test('census: alignments over DNA, no junctions to draw', async () => {
-  const counts = await census({
+  const { counts } = await census({
     label: 'alignments',
     trackIds: ['volvox_alignments_pileup_coverage'],
     startBpPerPx: 5,
