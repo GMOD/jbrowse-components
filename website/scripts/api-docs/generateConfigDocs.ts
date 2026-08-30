@@ -1812,8 +1812,9 @@ interface PromotableSlot {
 //
 // **Rows are keyed by declaration site, not by display**, which is what makes it
 // short and what makes it say something: a slot inherited through a base schema
-// is one row naming every display that gets it, and `showLegend`'s seven rows
-// are seven separate declarations whose `promotedBase` genuinely differs.
+// is one row naming every display that gets it, while `showLegend` — declared
+// separately per display family — gets a row per declaration, which is where
+// their `promotedBase` values visibly disagree.
 function writePromotableAdopterDocs(
   displays: { cfg: ConfigWithHeader; slots: PromotableSlot[] }[],
   { check = false } = {},

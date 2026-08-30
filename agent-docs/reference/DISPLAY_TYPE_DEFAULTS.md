@@ -116,26 +116,25 @@ hand-written version was four rows and went stale the moment anyone added one.
 `website/docs/user_guides/display_defaults.md` carries the same slots keyed by
 track type, for readers rather than for us. Rows here are keyed by declaration
 site instead: a slot inherited through a base schema is one row naming every
-display that gets it, and `showLegend`'s seven rows are seven declarations whose
-`promotedBase` genuinely differs.
+display that gets it, and a slot declared separately per display family —
+`showLegend` — gets a row per declaration, which is where their `promotedBase`
+values visibly disagree.
 
 What the table cannot derive:
 
-- **The canvas five** (`displayMode`, `heightMode`, `showLabels`,
-  `subfeatureLabels`, `displayDirectionalChevrons`) all resolve into the base
-  `rpcProps` worker payload, but only three of the _pins_ come along:
-  `displayMode`, `heightMode` and `showLabels` are built in the shared
-  `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons`
-  rows **and their `resolveConf` getters** live in the concrete
-  `LinearBasicDisplay/model.ts`. That split is right — both are
-  transcript-structure settings, inert on a variant track — so don't move them
-  down; see the variant row in
+- **The canvas slots' pins do not all live where the slots do.** Every one of
+  them resolves into the base `rpcProps` worker payload, but `displayMode`,
+  `heightMode` and `showLabels` take their rows from the shared `trackMenus.ts`
+  while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their
+  `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts`.
+  That split is right — both are transcript-structure settings, inert on a
+  variant track — so don't move them down; see the variant row in
   [the pin table](#promotable-is-a-schema-fact-the-pin-is-a-menu-fact).
-- **`showLegend`** has a different `promotedBase` per display, each one's old
-  `defaultValue` (Hi-C and LD off, the rest on), because the legends are
+- **`showLegend`** has a different `promotedBase` per declaration, each one's
+  old `defaultValue` (Hi-C and LD off, the rest on), because the legends are
   different objects. `LGVSyntenyDisplay` inherits the alignments slot and wires
   its own pin. The row itself is one builder — see
-  [the `showLegend` note](#showlegend-is-one-row-across-nine-displays-and-one-of-them-has-no-slot).
+  [the `showLegend` note](#showlegend-is-one-row-over-many-schemas-and-one-caller-has-no-slot).
 - **The synteny ribbons** (`drawCurves`, `drawLocationMarkers`) are pinned from
   `LinearComparativeView/components/syntenySettingsMenuItems.ts`, and the
   identically-named properties on `LinearSyntenyView` are a tier ABOVE the
@@ -170,11 +169,11 @@ through the states that reveal its rows, and diffs the pins it finds against
 to delete a line from the baseline. This prose table was the previous
 arrangement and it drifted twice in the obvious two directions — a row for a
 slot that had been deleted, and a missing row for one that had been added — which
-is the whole argument for the check. Two displays account for every entry —
-`LGVSyntenyDisplay`, which composes the alignments state model but curates its own
-menu, and `LinearVariantDisplay`, which inherits two transcript-structure settings
-that draw nothing on a VCF feature. The baseline names the slots and says why, per
-entry; a second copy here is a copy to drift.
+is the whole argument for the check. The entries come from `LGVSyntenyDisplay`,
+which composes the alignments state model but curates its own menu, and
+`LinearVariantDisplay`, which inherits transcript-structure settings that draw
+nothing on a VCF feature. The baseline names the slots and says why, per entry; a
+second copy here is a copy to drift.
 
 **Its reach is checked too, and that half had no symptom at all.** The
 per-display test only reports on the display types `FIXTURES` names, so one
@@ -219,7 +218,7 @@ direction and is also wrong: the base `rpcProps` ships
 stops being resolved and reaches the worker as its bare `undefined` sentinel,
 against a `renderConfig` that declares `boolean`. Making it a genuinely plain
 slot means redeclaring `type` and a concrete `defaultValue` on the variant
-schema. The two entries buy nothing today and are recorded rather than fixed.
+schema. Those entries buy nothing today and are recorded rather than fixed.
 
 The generated user-guide table (`writePromotableSlotDocs`) is derived from
 `promotedBase`, so it lists the pin-less slots too; its column therefore claims
@@ -240,17 +239,16 @@ Every other adopter builds a pin where it builds the row — `makePin(self, slot
 inline, with nothing declared anywhere else. Alignments looks worse: its
 `menus/{reads,readConnections,sashimi}.ts` each declare one `Pin` member per slot
 on a duck-typed `…Model` interface, and `LinearAlignmentsDisplay/model.ts` exposes
-a matching getter to satisfy it. Eight interface members, nine getters, for eight
-slots.
+a matching getter to satisfy it — so every one of its pins is named twice.
 
 **Deleting them was tried, and reverted.** The obvious fix is to have those
 modules extend `ResolvableDisplay` and call `makePin` themselves, exactly as
 canvas, LGV, synteny and `makeSizeMenu` do. It works, and it costs more than it
 saves: `makePin` reaches the session through `getSession`, so the *whole* fake in
 each of those three menu tests has to become a live MST display under a session
-shim. Today they are plain object literals — 108, 209 and 124 lines testing menu
-*structure* — and they would each become a `PluginManager`-booting integration
-test to assert the same thing.
+shim. Today they are plain object literals testing menu *structure*, and they
+would each become a `PluginManager`-booting integration test to assert the same
+thing.
 
 The asymmetry with the other adopters is real but not the same shape: those build
 pins in a model file where `self` is in scope, not in a separate module handed a
@@ -266,16 +264,17 @@ production one — harmless while `MenuItemPin` holds the control by reference, 
 the reason flattening that wrapper into `interface MenuItemPin extends Pin` breaks
 them. `MenuTypes.ts` says so at the declaration.
 
-### `showLegend` is one row across nine displays, and one of them has no slot
+### `showLegend` is one row over many schemas, and one caller has no slot
 
 Every other promotable slot is one display's (or one base schema's).
-`showLegend` is eight displays', declared in six schemas — alignments
-(LGVSynteny inherits it), Hi-C, multi-row features, multi-wiggle, both
-multi-sample variant displays via their shared schema, and LD via its own
-shared one. The **schemas stay
-separate**: a Hi-C color ramp and a variant genotype key are different objects
-with different right answers for on-by-default, which is why each `promotedBase`
-is that display's old `defaultValue` rather than a shared constant.
+`showLegend` is declared once per display family that has a legend — alignments
+(LGVSynteny inherits it), Hi-C, multi-row features, multi-wiggle, the
+multi-sample variant displays via their shared schema, and LD via its own shared
+one; [Adopters](#adopters) is the current set, and restating it here is what
+went stale twice. The **schemas stay separate**: a Hi-C color ramp and a variant
+genotype key are different objects with different right answers for
+on-by-default, which is why each `promotedBase` is that display's old
+`defaultValue` rather than a shared constant.
 
 What is shared is the **row**. `showLegendCheckboxItem` takes an optional `pin`
 and builds through `promotableToggleItem` when given one, `checkboxItem`
