@@ -11,9 +11,14 @@ wherever copy number steps. A `.hic` file is the same thing, so JBrowse's
 existing Hi-C track draws Cue's picture with no new code:
 
   discordant.hic         every pair and split whose two ends are >= --min-span apart
-  same_strand.hic        the subset whose two ends align to the same strand (inversion)
-  outward.hic            the subset facing outward, R then F (tandem duplication)
+  same_strand.hic        the PAIRS whose two ends align to the same strand (inversion)
+  outward.hic            the PAIRS facing outward, R then F (tandem duplication)
   depth_difference.hic   |depth[a] - depth[b]| over --bin sized bins (copy number)
+
+The two orientation channels are pair-only. A split read's strand convention is
+not a pair's — an inversion junction gives primary + with its SA on -, which
+reads as same_strand for a reason that is not the inversion — so split evidence
+lands in discordant alone.
 
 It reads `samtools view` on a pipe rather than pysam, so the only Python a
 reader needs is the interpreter.
@@ -136,6 +141,25 @@ def depth_bin(pos, span, bin_size):
     return (pos + span // 2) // bin_size
 
 
+def covered_runs(bins, max_bin_span):
+    """(lo, hi) per stretch of bins, split where the gap exceeds max_bin_span.
+
+    Two --region s on one chromosome leave megabases with no reads between them.
+    A bin nobody sequenced reads as depth 0, which against a covered bin is the
+    whole library depth, so spanning the gap would fill it with a wall of
+    full-depth contacts and push the colour percentile up past the real signal.
+    Nothing is lost by splitting: two bins in different runs are further apart
+    than max_bin_span, so no pair between them was ever emitted.
+    """
+    lo = prev = bins[0]
+    for b in bins[1:]:
+        if b - prev > max_bin_span:
+            yield lo, prev
+            lo = b
+        prev = b
+    yield lo, prev
+
+
 def depth_contacts(depth, bin_size, max_bin_span):
     """`|depth[a] - depth[b]|` for every bin pair within max_bin_span bins.
 
@@ -144,22 +168,26 @@ def depth_contacts(depth, bin_size, max_bin_span):
     position would land in the same cell today; check-build-scripts.py pins the
     flooring, because a writer that rounded instead would shift every cell of
     this channel one bin along and still draw a plausible plaid.
+
+    An empty bin *inside* a covered run keeps its zero depth — that is how a
+    homozygous deletion draws its cross. Only the uncovered stretches between
+    runs are skipped; see covered_runs.
     """
     for chrom in sorted({c for c, _ in depth}):
         bins = sorted(b for c, b in depth if c == chrom)
-        lo, hi = bins[0], bins[-1]
-        for a in range(lo, hi + 1):
-            depth_a = depth.get((chrom, a), 0)
-            for b in range(a + 1, min(hi, a + max_bin_span) + 1):
-                score = abs(depth_a - depth.get((chrom, b), 0))
-                if score:
-                    yield "0 %s %d 0 0 %s %d 1 %d" % (
-                        chrom,
-                        a * bin_size + 1,
-                        chrom,
-                        b * bin_size + 1,
-                        score,
-                    )
+        for lo, hi in covered_runs(bins, max_bin_span):
+            for a in range(lo, hi + 1):
+                depth_a = depth.get((chrom, a), 0)
+                for b in range(a + 1, min(hi, a + max_bin_span) + 1):
+                    score = abs(depth_a - depth.get((chrom, b), 0))
+                    if score:
+                        yield "0 %s %d 0 0 %s %d 1 %d" % (
+                            chrom,
+                            a * bin_size + 1,
+                            chrom,
+                            b * bin_size + 1,
+                            score,
+                        )
 
 
 def chrom_sizes(header):

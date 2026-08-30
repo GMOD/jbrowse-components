@@ -1593,6 +1593,21 @@ check("--max-bin-span bounds how far apart a written bin pair is",
 check("an empty bin inside the range counts as zero depth",
       list(sv_contact_maps.depth_contacts({("7", 10): 40, ("7", 12): 40}, 750, 400)),
       ["0 7 7501 0 0 7 8251 1 40", "0 7 8251 0 0 7 9001 1 40"])
+# That zero holds only inside a covered stretch. Two --region s on one
+# chromosome are megabases apart, and reading the unsequenced gap between them
+# as zero depth fills it with a wall of full-depth contacts that outweighs
+# every real cell.
+check("bins split into runs at a gap wider than --max-bin-span",
+      list(sv_contact_maps.covered_runs([10, 11, 12, 500, 501], 400)),
+      [(10, 12), (500, 501)])
+check("a gap no wider than --max-bin-span stays one run",
+      list(sv_contact_maps.covered_runs([10, 11, 12, 400], 400)),
+      [(10, 400)])
+check("an uncovered stretch between two regions writes no contacts",
+      list(sv_contact_maps.depth_contacts(
+          {("7", 10): 40, ("7", 11): 40, ("7", 500): 40, ("7", 501): 40},
+          750, 400)),
+      [])
 
 check("chrom_sizes reads @SQ, and only @SQ",
       sv_contact_maps.chrom_sizes(
