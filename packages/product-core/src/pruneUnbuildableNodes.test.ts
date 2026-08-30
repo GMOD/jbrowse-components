@@ -696,6 +696,50 @@ test('collects a held node whose view the recipient has since deleted', () => {
   expect(swept.views).toEqual([])
 })
 
+// ...and ONLY when it is really gone. `ElementId` is
+// `types.optional(types.identifier, createElementId)`, so a hand-authored
+// defaultSession names no track id and MST mints one on instantiation — which
+// jbrowse-web then autosaves. A held display anchored to the id-less track fell
+// back to the VIEW's id, so on the next load the walk registered
+// `display/<mintedTrackId>` and the entry's `display/<viewId>` matched no anchor
+// it had reached. Collecting on that reads a container the reader still has as
+// one they deleted, and the message promising the node back was a lie: the
+// entry is gone from the autosave and from every share link made after it.
+test('keeps a held node whose container is still there under a minted id', () => {
+  // a second, buildable display, so the track survives and the held entry is
+  // the DISPLAY — anchored to the track, which is the node with no authored id
+  const kept = { id: 'd', type: 'LinearBasicDisplay' }
+  const authored = {
+    views: [
+      {
+        id: 'v',
+        type: 'LinearGenomeView',
+        tracks: [
+          { type: 'FeatureTrack', displays: [{ type: 'MafDisplay' }, kept] },
+        ],
+      },
+    ],
+  }
+  const { snapshot } = prune(authored, build)
+  expect(
+    (snapshot.heldForMissingPlugins as { group: string; parent: string }[])[0],
+  ).toMatchObject({ group: 'display', parent: 'v' })
+
+  // what MST hands back once the session is built and autosaved
+  const autosaved = {
+    ...snapshot,
+    views: [
+      {
+        id: 'v',
+        type: 'LinearGenomeView',
+        tracks: [{ id: 'minted', type: 'FeatureTrack', displays: [kept] }],
+      },
+    ],
+  }
+  const { snapshot: again } = prune(autosaved, build)
+  expect(again.heldForMissingPlugins).toEqual(snapshot.heldForMissingPlugins)
+})
+
 // Unless the container is only held rather than deleted: its snapshot is still
 // in this session, so the node it anchors has somewhere to go the moment a
 // build that can hold both opens it. Three loads by two different plugin sets

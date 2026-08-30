@@ -318,8 +318,6 @@ interface Pending {
 class Walk {
   readonly dropped: UnbuildableNode[] = []
   readonly held: HeldNode[] = []
-  /** anchors the walk reached, so an entry naming one it did not is orphaned */
-  readonly anchors = new Set<string>()
   /** ids of nodes taken out, so a reference container can drop the danglers */
   readonly removed = new Set<string>()
   private pending = new Map<string, Pending[]>()
@@ -353,7 +351,6 @@ class Walk {
 
   take(group: Group, parent: string | undefined) {
     const key = anchorKey(group, parent)
-    this.anchors.add(key)
     const taken = this.pending.get(key)
     this.pending.delete(key)
     return taken ?? []
@@ -533,6 +530,10 @@ function pruneMap(
   for (const entry of restoring) {
     const key = entry.held.key
     if (key === undefined) {
+      // `take` has already claimed it, and a map places by key alone — so
+      // holding it again is the only thing here that is not a silent delete
+      walk.held.push(entry.held)
+      changed = true
       continue
     }
     const mark = walk.held.length
@@ -751,22 +752,29 @@ export function pruneUnbuildableNodes(
   }
   const pruned = walkModel(model, snapshot, undefined, walk)
 
-  // An entry whose anchor the walk never reached has lost its container — the
-  // recipient deleted the view a track hung off. `HeldNode` says such a node is
-  // not restorable and is not meant to be, so it is collected here rather than
-  // riding along in every autosave and every share link forever. Unless the
-  // container is itself held: its snapshot is in this session too, just not in
-  // the tree.
-  const heldIds = new Set<string>()
-  for (const entry of [...incoming, ...walk.held]) {
-    collectIds(entry.snapshot, heldIds)
+  // An entry whose container the recipient deleted is collected here rather than
+  // riding along in every autosave and every share link forever — `HeldNode`
+  // says such a node is not restorable and is not meant to be.
+  //
+  // The test is that the container is GONE, never that the walk failed to reach
+  // the anchor. `ElementId` is `types.optional(types.identifier, …)`, so a
+  // container the session was authored without an id for is anchored by its
+  // parent instead, MST mints it one, and the autosave then answers a different
+  // key — which reads as a deletion and loses the node the message just promised
+  // back. A container that is itself held counts as present: its snapshot is in
+  // this session too, just not in the tree.
+  const presentIds = new Set<string>()
+  if (incoming.length > 0) {
+    collectIds(pruned, presentIds)
+    for (const entry of walk.held) {
+      collectIds(entry.snapshot, presentIds)
+    }
   }
   const unplaced = walk.unplaced()
   const stillHeld = incoming.filter(
     entry =>
       (!restorable.has(entry) || unplaced.has(entry)) &&
-      (walk.anchors.has(anchorKey(entry.group, entry.parent)) ||
-        (entry.parent !== undefined && heldIds.has(entry.parent))),
+      (entry.parent === undefined || presentIds.has(entry.parent)),
   )
   const held = [...stillHeld, ...walk.held]
   if (
