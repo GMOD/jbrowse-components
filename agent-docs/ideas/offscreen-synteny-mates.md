@@ -499,6 +499,15 @@ otherwise drop every region for the contig and append the whole-contig one, so
 containment holds by construction. Every other contig survives either way, which
 is the promise the class was built on.
 
+**The drop path gives up the append-only cumBp invariant, deliberately.** A
+region removed from the middle of the list shifts the cumulative bp of every
+region after it, and ribbons, marks and fetch-time cumBp lanes on screen are
+keyed to the old numbering until the debounced refetch lands — which is why the
+add class appends and never inserts in order. The drop only fires where the old
+code THREW with the region list already rewritten, so it trades a throw for
+about half a second of ribbons drawn against a stale lane on the row the reader
+just moved. Nothing else in the list is touched.
+
 The reachability test compares refNames with `===` on purpose, and the drop
 filter canonicalizes. They are two different questions: `navTo`, `bpToPx` and
 `bpToOffset` all compare `displayedRegions` refNames RAW, so an aliased region is
@@ -518,6 +527,8 @@ the row landed on.
 **Still open: the destination on a contig displayed several times over.**
 `centerAt` and `flyToCenter` both resolve a refName against the FIRST displayed
 region carrying it, so a drawn span in the second copy sends the row to the
-first. `pxToBp` knows the index; `centerAt` takes one and `flyToCenter` does not,
-so closing it means threading `displayedRegionIndex` through `flyToCenter`,
-`bpToLinearBp` and `bpToOffset`. The add class no longer creates such a row.
+first. `pxToBp` already returns the `index`, and `centerAt` already takes one
+(`LinearGenomeView/model.ts:2969`), so the JUMP half closes today by passing it
+through. Only the flight needs work: `flyToCenter` takes no index and resolves
+through `bpToLinearBp` → `bpToOffset`, so both would have to thread it. The add
+class no longer creates such a row.

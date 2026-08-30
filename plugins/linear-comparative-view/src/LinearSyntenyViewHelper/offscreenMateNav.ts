@@ -198,7 +198,9 @@ export type MateNavDestination =
  * `pxToBp` so a reversed region comes back right. A span landing off the layout
  * (`oob`) or on another contig is stale geometry, and the row holds — `locus` is
  * the coordinate this class exists to stop using, so there is nothing to fall
- * back to.
+ * back to. Those two tests are the whole of what staleness can be caught by, and
+ * a rearrangement WITHIN the named contig passes both; the message says what was
+ * established rather than naming a cause.
  *
  * THE ADD BRANCH CANNOT LEAVE THE WINDOW OUTSIDE THE REGIONS, which is what
  * `showRegions` throws on. The row keeps its own region for the contig only when
@@ -233,7 +235,7 @@ export function mateNavDestination({
     return at.oob || canonical(at.refName) !== canonical(refName)
       ? {
           kind: 'none',
-          reason: `Could not show ${refName}: that mark was drawn before this row's regions changed`,
+          reason: `Could not show ${refName}: that mark's drawn position no longer lands on it`,
         }
       : {
           kind: 'scroll',
