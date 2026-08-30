@@ -4,21 +4,10 @@ import { arcMidX, arcStroke } from './arcShape.ts'
 import type { ArcTick, LaidOutArc } from './arcLayout.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// The on-screen painter. One canvas per display, whatever the arc count — which
-// is the whole change: as `<path>` elements each arc booked its own MobX
-// reaction, rebuilt its own `d` and had ~3 SVG attributes patched into the DOM
-// every frame of a zoom or a pan.
-//
-// The SVG EXPORT still emits one `<path>` per arc (`ArcsSvg`), off this same
-// `LaidOutArc` list. That path runs once per export rather than once per frame,
-// and a figure wants vector.
-
-/** A selected arc is red, and stays red under the cursor. */
 const SELECTED_COLOR = 'red'
 const LABEL_COLOR = 'black'
 const LABEL_HALO_COLOR = 'white'
-// The halo's width as a fraction of the font size — SVG's `stroke-width: 0.6em`,
-// which is what the two stacked `<text>` elements spent it on.
+// The halo width as a fraction of the font size — SVG's `stroke-width: 0.6em`.
 const LABEL_HALO_EM = 0.6
 
 export interface ArcDrawOpts {
@@ -28,9 +17,9 @@ export interface ArcDrawOpts {
   /** Anything whose ink lands outside `[0, viewWidth]` is not painted. */
   viewWidth: number
   /**
-   * The label font, as a CSS `font` shorthand. Resolved from the theme by the
-   * caller: the `<text>` elements this replaces inherited the app's font through
-   * the cascade, and a canvas inherits nothing.
+   * The label font, as a CSS `font` shorthand. The `<text>` elements this
+   * replaces inherited the app's font through the cascade; a canvas inherits
+   * nothing, so the caller resolves it from the theme.
    */
   font: string
 }
@@ -50,18 +39,12 @@ export function drawArcs(
     strokeTicks(ctx, arc.ticks)
   }
 
-  // Every curve, THEN every label: the labels are opaque text with a halo, and
-  // interleaved they were painted over by whatever arc came after them. As
-  // stacked `<text>` elements the DOM order gave that for free, since the whole
-  // list was one `<g>` per arc in one `<svg>` — and it is exactly the ordering
-  // the alignments band's flat connectors and endpoint squares had to be split
-  // into two passes for.
+  // Every curve, THEN every label. Interleaved, a later arc's stroke crosses an
+  // earlier arc's label; as `<g>`s in one `<svg>` the DOM order gave that free.
   drawLabels(ctx, visible, opts)
 }
 
-// Both of an arc's mate-direction ticks in one path, at the stroke the caller
-// already set for its curve — they are the same ink, and one `stroke()` for the
-// pair is one rasterizer pass instead of two.
+// Both ticks in one path, at the stroke the caller set for the curve.
 function strokeTicks(
   ctx: CanvasRenderingContext2D,
   ticks: readonly ArcTick[] | undefined,
@@ -77,6 +60,7 @@ function strokeTicks(
   ctx.stroke()
 }
 
+/** A selected arc is red, and stays red under the cursor. */
 function strokeFor(
   arc: LaidOutArc,
   hovered: Feature | undefined,
@@ -112,9 +96,8 @@ function drawLabels(
   }
 }
 
-// The px size out of a CSS `font` shorthand, so the halo scales with the label
-// the way `0.6em` did. Falls back rather than throwing: this only sizes a halo,
-// and a font string with no px size still has to draw something.
+// The px size out of a CSS `font` shorthand, so the halo scales the way `0.6em`
+// did. Falls back rather than throwing: this only sizes a halo.
 function fontSizePx(font: string) {
   return Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 12)
 }

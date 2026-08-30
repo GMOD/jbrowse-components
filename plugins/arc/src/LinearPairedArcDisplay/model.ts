@@ -37,8 +37,7 @@ const TICK_PX = 20
 const TICK_Y = 1.5
 
 // One breakend's direction tick, or nothing when the record states no
-// direction. A list rather than an optional value so the two feet spread into
-// one array: an arc has zero, one or two of these, and the caller has no branch.
+// direction. A list so the two feet spread into one array with no branch.
 function mateTick(
   x: number,
   keepsDir: number | undefined,
@@ -165,8 +164,7 @@ export function stateModelFactory(
       /**
        * #getter
        * every arc placed in screen px, `view.offsetPx` already subtracted — see
-       * the twin on `LinearArcDisplay`. The ONLY place this display reads
-       * `bpToPx`, and the reason a zoom no longer costs a MobX reaction per arc.
+       * the twin on `LinearArcDisplay`.
        *
        * The two ends resolve through their OWN displayed region: a session may
        * reverse one and not the other, and `mateDirection` is genomic, so each

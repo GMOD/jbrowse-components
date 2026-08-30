@@ -3,17 +3,9 @@ import { arcApexY } from './arcShape.ts'
 import type { ArcShape } from './arcShape.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// One arc, placed. Both displays resolve their own features into this — the
-// single-feature one spans a feature's own start↔end and carries a label, the
-// paired one joins two independent breakends and carries their direction ticks —
-// and everything downstream of it is shared: the Canvas2D stroke, the SVG
-// export's `<path>`, and the hit test.
-//
-// Screen px, viewport-relative, with `view.offsetPx` already subtracted. That is
-// the whole reason this type exists: projecting an arc reads `bpToPx` and
-// `offsetPx`, and doing it per arc inside a React component meant a MobX
-// reaction per arc per frame of every zoom and pan. The projection is one model
-// computed now, and the components read a plain array.
+// One arc, placed — screen px with `view.offsetPx` already subtracted. Both
+// displays resolve their features into this and everything downstream of it is
+// shared: the canvas stroke, the export's `<path>`, and the hit test.
 
 /** A mate-direction tick: a short horizontal mark lying over one foot's arm. */
 export interface ArcTick {
@@ -24,7 +16,6 @@ export interface ArcTick {
 
 export interface LaidOutArc {
   feature: Feature
-  /** Stable per arc, so the export's element list keys off it. */
   key: string
   shape: ArcShape
   /** The resting stroke; hover and selection are resolved by the painter. */
@@ -32,22 +23,20 @@ export interface LaidOutArc {
   strokeWidth: number
   /**
    * The arc's whole horizontal ink extent, ticks and stroke width included —
-   * both the off-screen cull and the hit test's column prefilter, which are the
-   * same question asked at two tolerances.
+   * both the off-screen cull and the hit test's column prefilter.
    */
   xMin: number
   xMax: number
   selected: boolean
   ticks?: readonly ArcTick[]
   label?: string
-  /** Hover text, resolved with the styles rather than per frame. */
   caption?: string
 }
 
 /**
- * How far the ink reaches either side. A semicircle and a bezier are both
- * contained between their own two feet — the bezier's control points share its
- * feet's x — so only the stroke and the ticks reach past them.
+ * How far the ink reaches either side. Both shapes are contained between their
+ * own two feet — the bezier's control points share its feet's x — so only the
+ * stroke and the ticks reach past them.
  */
 export function arcExtent(
   shape: ArcShape,
@@ -65,24 +54,20 @@ export function arcExtent(
 }
 
 /**
- * Whether any of this arc's ink lands in the viewport.
- *
- * Compared on the extent rather than on `left`/`right` as given: a reversed
- * displayed region puts `left` past `right`, and culling on the raw pair dropped
- * arcs that were on screen.
+ * Whether any of this arc's ink lands in the viewport. On the extent rather than
+ * on `left`/`right` as given: a reversed region puts `left` past `right`, and
+ * culling on the raw pair dropped arcs that were on screen.
  */
 export function arcOnScreen(arc: LaidOutArc, viewWidth: number) {
   return arc.xMax >= 0 && arc.xMin <= viewWidth
 }
 
-// How far below the apex the label's baseline sits, so the text reads as
-// captioning the curve rather than lying across it.
 const LABEL_BASELINE_OFFSET_PX = 3
 
 /**
- * Baseline y for this arc's label. ONE number, because the canvas painter and
- * the export's `<text>` both place it and a nudge applied to one of them is
- * invisible until someone compares a figure against the screen.
+ * Baseline y for this arc's label. One number, because the canvas painter and
+ * the export's `<text>` both place it and a nudge to one is invisible until
+ * someone compares a figure against the screen.
  */
 export function arcLabelBaselineY(arc: LaidOutArc) {
   return arcApexY(arc.shape) + LABEL_BASELINE_OFFSET_PX

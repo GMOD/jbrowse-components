@@ -1,15 +1,11 @@
-// Which arc the cursor is on, when several are near it — the ranking, with no
+// Which arc the cursor is on when several are near it — the ranking, with no
 // geometry in it.
 //
-// It lives here because TWO arc stacks need exactly this rule and neither can
-// use the other's geometry. `plugins/alignments` places conic domes and flat
-// bars out of `ArcsUploadData` through the generated `arcRadiiPx`, against a
-// genomic Y domain; `plugins/arc` places SVG semicircles and cubic beziers out
-// of features, with no Y domain at all. The SHAPES share nothing, and the
-// distances are computed by different solvers. What they share is the answer to
-// "several marks are within tolerance, which one does the reader think they are
-// pointing at", and that had one implementation and one set of hard-won
-// tie-breaks. A second copy of it is the thing that drifts.
+// Two arc stacks need this rule and neither can use the other's geometry:
+// `plugins/alignments` places conic domes and flat bars out of `ArcsUploadData`
+// against a genomic Y domain, `plugins/arc` places semicircles and cubic beziers
+// out of features with no Y domain at all. The tie-breaks below are what they
+// share.
 
 /**
  * How far outside its own stroke an arc still answers a hover, in CSS px.

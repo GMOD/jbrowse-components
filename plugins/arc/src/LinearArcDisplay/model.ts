@@ -150,14 +150,9 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       /**
        * #getter
        * every arc placed in screen px, `view.offsetPx` already subtracted — the
-       * one thing that has to be re-derived when the viewport moves, and the
-       * ONLY place this display reads `bpToPx`.
-       *
-       * A computed rather than a component body: each arc used to be its own
-       * `observer` doing this projection for itself, so a zoom or a pan ran a
-       * MobX reaction and patched three SVG attributes per arc per frame. MobX
-       * caches this against the viewport, so a hover — which redraws — does not
-       * re-place anything.
+       * only place this display reads `bpToPx`. A computed rather than a
+       * component body, so MobX caches it against the viewport and a hover
+       * redraws without re-placing anything.
        */
       get laidOutArcs(): LaidOutArc[] {
         const view = getContainingView(self) as LinearGenomeViewModel
