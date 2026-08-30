@@ -143,6 +143,28 @@ function unwrapType(type: IAnyType) {
   return current
 }
 
+// The array or map a property really declares, or undefined for anything else.
+//
+// A union is descended into rather than tested, because `isArrayType` and
+// `isMapType` read TypeFlags and a union ORs its members' flags upward: the
+// sentinel spelling `types.maybe(types.array(types.string))` answers isArrayType
+// while being a `Union` carrying no `getChildType` at all. The container is the
+// member, never the union around it.
+type Container = IAnyType & { getChildType(): IAnyType }
+
+function containerType(type: IAnyType): Container | undefined {
+  if (isUnionType(type)) {
+    for (const member of getUnionSubtypes(type)) {
+      const found = containerType(unwrapType(member))
+      if (found) {
+        return found
+      }
+    }
+    return undefined
+  }
+  return isArrayType(type) || isMapType(type) ? type : undefined
+}
+
 // One prune's view of the plugin manager. The unions are built on first use, so
 // a session naming only registered types — every session this build produced
 // itself — never constructs one.
@@ -572,12 +594,14 @@ function walkValue(
   walk: Walk,
 ): unknown {
   const type = unwrapType(declared)
-  if (isArrayType(type) || isMapType(type)) {
-    const elementType = unwrapType(type.getChildType())
+  const container = containerType(type)
+  if (container) {
+    const elementType = unwrapType(container.getChildType())
     const group = walk.registry.groupOf(elementType)
     if (group) {
       return (
-        pruneContainer(type, elementType, group, value, parent, walk) ?? value
+        pruneContainer(container, elementType, group, value, parent, walk) ??
+        value
       )
     }
     if (Array.isArray(value)) {
@@ -627,11 +651,9 @@ function walkModel(
   const references: string[] = []
   for (const [key, declared] of Object.entries(properties)) {
     const type = unwrapType(declared)
-    const elementType =
-      isArrayType(type) || isMapType(type)
-        ? unwrapType(type.getChildType())
-        : undefined
-    if (elementType) {
+    const container = containerType(type)
+    if (container) {
+      const elementType = unwrapType(container.getChildType())
       if (isReferenceType(elementType)) {
         references.push(key)
         continue
@@ -639,7 +661,7 @@ function walkModel(
       const group = walk.registry.groupOf(elementType)
       if (group) {
         const next = pruneContainer(
-          type,
+          container,
           elementType,
           group,
           node[key],

@@ -65,7 +65,14 @@ function fakeBuild(
         displays: types.array(pluggable('display')),
       }
     }
-    return { id: types.identifier }
+    // `jexlFiltersSetting`'s spelling, on the model that really carries it. A
+    // union ORs its members' TypeFlags upward, so this answers `isArrayType`
+    // while being a `Union` with no `getChildType` — a walk that trusts the
+    // flags throws on every session that reaches one.
+    return {
+      id: types.identifier,
+      jexlFiltersSetting: types.maybe(types.array(types.string)),
+    }
   }
   for (const [group, names] of Object.entries(groups)) {
     elements[group] = names.map(name => ({
@@ -261,6 +268,28 @@ test('drops a connection whose plugin this build does not have', () => {
     (snapshot.connectionInstances as Record<string, unknown>[]).map(c => c.id),
   ).toEqual(['c1'])
   expect(dropped).toEqual([{ group: 'connection', type: 'CustomConnection' }])
+})
+
+// THE FLAGS LIE ON A UNION. `types.maybe(types.array(types.string))` — the
+// sentinel spelling every jexl-filter setting uses — reports `isArrayType`,
+// because a union ORs its members' TypeFlags upward, while being a `Union` with
+// no `getChildType`. A walk that branched on the flags threw
+// `type.getChildType is not a function` out of `setSession` for every session
+// that reached a display, which is every real one; the fake build's shapes gave
+// no property this shape and nothing here saw it.
+test('walks past a maybe-wrapped array without mistaking it for a container', () => {
+  const snapshot = {
+    widgets: {
+      h: {
+        id: 'h',
+        type: 'HierarchicalTrackSelectorWidget',
+        jexlFiltersSetting: ['jexl:true'],
+      },
+    },
+  }
+  const pruned = prune(snapshot, build)
+  expect(pruned.snapshot).toBe(snapshot)
+  expect(pruned.dropped).toEqual([])
 })
 
 // A plugin contributing one more display to an existing track type is ordinary,
