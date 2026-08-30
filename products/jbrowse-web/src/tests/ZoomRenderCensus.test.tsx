@@ -118,7 +118,21 @@ async function census({
       // eslint-disable-next-line no-console
       console.log(`${head}  [ZOOM_CENSUS=1 for the per-component tables]`)
     }
-    return c.components()
+    return {
+      counts: c.components(),
+      // How many DOM mutations the tally attributed to these testids. The
+      // component count cannot answer for a display that draws to a canvas —
+      // it renders once a frame either way — so an arm asserting that a display
+      // stopped churning the DOM needs the other half of the instrument.
+      //
+      // A LIST, because `where` attributes each mutation to its NEAREST
+      // testid: a display's own subtree is split across every testid inside it,
+      // and asking about the outermost one alone would miss exactly the churn
+      // an inner wrapper is hiding.
+      mutationsUnder: (testids: string[]) =>
+        mutations.filter(m => testids.some(id => m.includes(`@  ${id} `)))
+          .length,
+    }
   } finally {
     c.stop()
     mo.disconnect()
@@ -128,7 +142,7 @@ async function census({
 // The regime the browser harness sweeps (0.5-4 bp/px), plus a track of each
 // family so the count reflects the chrome each one mounts.
 test('census: mixed tracks, base-ish zoom', async () => {
-  const counts = await census({
+  const { counts } = await census({
     label: 'mixed',
     trackIds: [
       'volvox_microarray',
@@ -187,7 +201,7 @@ test('census: mixed tracks at 8, base-ish zoom', async () => {
 // padding overlay in the view should be absent from the frame rather than
 // positioning nothing.
 test('census: mid-contig, no padding spans to draw', async () => {
-  const counts = await census({
+  const { counts } = await census({
     label: 'mid-contig',
     trackIds: [
       'volvox_microarray',
@@ -255,10 +269,27 @@ test('census: spliced alignments, sashimi arcs drawn', async () => {
 // reading `bpToPx` and `offsetPx`, so four visible arcs booked 4 `Arc` + 4
 // `ArcGlyph` reactions and 12 SVG attribute patches every frame.
 test('census: arcs', async () => {
-  await census({
+  const { counts, mutationsUnder } = await census({
     label: 'arcs',
     trackIds: ['arc_track', 'volvox_bedpe'],
     startBpPerPx: 1,
     painted: 'arc-display',
   })
+  // The arcs are ink on a canvas, so a zoom moves pixels and not the DOM. This
+  // was 240 over the same 20 frames — 160 `attr:x` on the two `<text>`s of each
+  // arc's label and 80 `attr:d` on its `<path>`, 12 a frame for FOUR arcs and
+  // growing with every one added.
+  //
+  // A small bound rather than 0: what is left is the chrome's own
+  // `data-display-phase` / `data-display-drawn`, which flip when a refetch
+  // round lands inside the 20 frames — a wall-clock race, and this arm has seen
+  // both 0 and 2. Anything per-arc is two orders of magnitude above it.
+  expect(mutationsUnder(['arc-display', 'arcs', 'arcs-canvas'])).toBeLessThan(
+    10,
+  )
+  // ONE render per frame per display, whatever the arc count. `Arc` and
+  // `ArcGlyph` — the per-feature observer and its wrapper — booked 4 apiece a
+  // frame here and would book 2000 on a real SV callset.
+  expect(counts.get('Arcs') ?? 0).toBeLessThanOrEqual(FRAMES * 2)
+  expect(counts.has('Arc')).toBe(false)
 }, 90000)

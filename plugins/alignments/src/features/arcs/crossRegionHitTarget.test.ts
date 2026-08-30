@@ -1,7 +1,8 @@
+import { ARC_HIT_SLOP_PX } from '@jbrowse/sv-core'
+
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { computeCrossRegionArcs } from './crossRegionOverlay.ts'
-import { ARC_HIT_SLOP_PX } from './hitTest.ts'
 
 import type { CrossRegionArc } from './arcTypes.ts'
 

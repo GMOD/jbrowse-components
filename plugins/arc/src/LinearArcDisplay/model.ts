@@ -6,14 +6,22 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
-import { getSession, isFeature, openFeatureWidget } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  isFeature,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
+import { arcExtent } from '../shared/arcLayout.ts'
 import { filterByScore } from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
 
+import type { LaidOutArc } from '../shared/arcLayout.ts'
+import type { ArcShape } from '../shared/arcShape.ts'
 import type {
   LinearArcDisplayConfig,
   LinearArcDisplayConfigModel,
@@ -21,6 +29,7 @@ import type {
 import type { ArcDisplayMode } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearArcDisplay
@@ -65,7 +74,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       'LinearArcDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      ArcFetchModel(() => import('./renderSvg.tsx')),
+      ArcFetchModel(() => import('../shared/renderArcSvg.tsx')),
       types.model({
         /**
          * #property
@@ -135,6 +144,57 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
           }
         }
         return undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * every arc placed in screen px, `view.offsetPx` already subtracted — the
+       * one thing that has to be re-derived when the viewport moves, and the
+       * ONLY place this display reads `bpToPx`.
+       *
+       * A computed rather than a component body: each arc used to be its own
+       * `observer` doing this projection for itself, so a zoom or a pan ran a
+       * MobX reaction and patched three SVG attributes per arc per frame. MobX
+       * caches this against the viewport, so a hover — which redraws — does not
+       * re-place anything.
+       */
+      get laidOutArcs(): LaidOutArc[] {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const assembly = getSession(self).assemblyManager.get(
+          view.assemblyNames[0]!,
+        )
+        if (!assembly || !view.initialized) {
+          return []
+        }
+        const semicircle = self.displayMode === 'semicircles'
+        const out: LaidOutArc[] = []
+        for (const style of self.arcStyles ?? []) {
+          const { feature, color, thickness, label, caption, arcHeight } = style
+          const ra = assembly.getCanonicalRefName2(feature.get('refName'))
+          const l = view.bpToPx({ refName: ra, coord: feature.get('start') })
+          const r = view.bpToPx({ refName: ra, coord: feature.get('end') })
+          if (l === undefined || r === undefined) {
+            continue
+          }
+          const left = l.offsetPx - view.offsetPx
+          const right = r.offsetPx - view.offsetPx
+          const shape: ArcShape = semicircle
+            ? { kind: 'semicircle', left, right }
+            : { kind: 'bezier', left, right, height: arcHeight }
+          out.push({
+            feature,
+            key: feature.id(),
+            shape,
+            color,
+            strokeWidth: thickness,
+            selected: self.selectedFeatureId === feature.id(),
+            label,
+            caption,
+            ...arcExtent(shape, thickness),
+          })
+        }
+        return out
       },
     }))
     .actions(self => ({

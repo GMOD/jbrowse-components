@@ -1,3 +1,5 @@
+import { ARC_HIT_SLOP_PX } from '@jbrowse/sv-core'
+
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildArcColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
@@ -14,7 +16,6 @@ import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts
 import { arcPaintOrder } from './arcColors.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcMarkScreenPath } from './arcPath.ts'
-import { ARC_HIT_SLOP_PX } from './hitTest.ts'
 import { arcMarkFrom } from './mark.ts'
 import { ARC_SHAPE_FLAT_SPLIT } from './shapes.ts'
 

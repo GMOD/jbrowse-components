@@ -1,0 +1,129 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
+import { SimpleFeature } from '@jbrowse/core/util'
+import { ThemeProvider } from '@mui/material'
+import { render } from '@testing-library/react'
+
+import Arcs from './Arcs.tsx'
+import { arcPathD } from './arcShape.ts'
+import {
+  createPairedTestEnvironment,
+  createTestEnvironment,
+} from './testEnv.ts'
+
+// The one fact this component exists to own, and the reason it is shared rather
+// than written once per arc display: WHICH renderer draws the arcs depends on
+// which path is drawing, and each display was answering it for itself.
+//
+// On screen the arcs are ink on one canvas — the change this file was rewritten
+// for. In the export they are one `<path>` apiece, because a figure wants
+// vector, and both take their geometry from the same `laidOutArcs`.
+const { createDisplay } = createTestEnvironment({
+  thickness: 2,
+  label: 'lbl',
+  caption: 'cap',
+})
+// a plain value for `color`, whose default is a jexl call into a function the
+// plugin's `install` registers and the bare harness does not
+const { createDisplay: createPairedDisplay } = createPairedTestEnvironment({
+  color: 'green',
+})
+
+// The `<svg>` the export shell opens (renderDisplaySvg → SvgChrome →
+// renderArcSvg's SvgClipRect). Bare `<path>`s outside one render, but React
+// warns about every element in them, so the assertion that `Arcs` opens no
+// second `<svg>` is written as "there is exactly this one".
+function exportShell(model: Parameters<typeof Arcs>[0]['model']) {
+  return (
+    <svg data-testid="shell">
+      <Arcs model={model} exportSVG />
+    </svg>
+  )
+}
+
+function oneArc() {
+  const { display, view } = createDisplay()
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'f1',
+      refName: 'ctgA',
+      start: 100,
+      end: 2000,
+      score: 10,
+    }),
+  ])
+  return { display, view }
+}
+
+test('on screen the arcs are one canvas, sized off the display', () => {
+  const { display, view } = oneArc()
+  // scrolled past an end, so the boundary padding blocks make the display's
+  // `canvasWidth` differ from the content width a second spelling might take
+  view.scrollTo(-200)
+  const { container } = render(<Arcs model={display} />)
+  const canvas = container.querySelector('canvas')
+  expect(canvas).not.toBeNull()
+  expect(container.querySelectorAll('path')).toHaveLength(0)
+  // the model's getter, which `renderArcSvg` clips the export to as well — the
+  // two halves of one number
+  expect(canvas!.getAttribute('width')).toBe(`${display.canvasWidth}`)
+  expect(display.canvasWidth).toBeGreaterThan(view.totalWidthPxWithoutBorders)
+})
+
+test('on the export path it is a path per arc, and no <svg> or <canvas>', () => {
+  const { display } = oneArc()
+  const { container } = render(exportShell(display))
+  // the export shell has already opened an <svg>, so a second would nest and
+  // clip the arcs to a box inside the box they were laid out in
+  expect(container.querySelectorAll('svg')).toHaveLength(1)
+  expect(container.querySelector('canvas')).toBeNull()
+  const paths = container.querySelectorAll('path')
+  expect(paths).toHaveLength(1)
+  expect(paths[0]!.getAttribute('d')).toBe(
+    arcPathD(display.laidOutArcs[0]!.shape),
+  )
+})
+
+test('the export carries the label, its halo and the arc color', () => {
+  const { display } = oneArc()
+  const { container } = render(exportShell(display))
+  const texts = [...container.querySelectorAll('text')]
+  expect(texts.map(t => t.textContent)).toEqual(['lbl', 'lbl'])
+  // the white one first: SVG paints stroke over fill, so the thick white stroke
+  // under the real glyphs is what makes the halo
+  expect(texts.map(t => t.getAttribute('stroke'))).toEqual(['white', 'black'])
+  // getStrokeProps normalizes, so the config's `darkblue` arrives as its hex
+  expect(container.querySelector('path')!.getAttribute('stroke')).toBe(
+    '#00008b',
+  )
+})
+
+test("the paired display's direction ticks export as lines", () => {
+  const { display, view } = createPairedDisplay()
+  view.setNewView(1, 0)
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'sv1',
+      refName: 'ctgA',
+      start: 100,
+      end: 101,
+      ALT: ['N[ctgA:2000['],
+    }),
+  ])
+  const { container } = render(exportShell(display))
+  expect(container.querySelectorAll('path')).toHaveLength(1)
+  expect(container.querySelectorAll('line').length).toBeGreaterThan(0)
+  expect(container.querySelectorAll('text')).toHaveLength(0)
+})
+
+test('the hover color is the theme text color, resolved once', () => {
+  const { display } = oneArc()
+  const theme = createJBrowseTheme()
+  const { container } = render(
+    <ThemeProvider theme={theme}>
+      <Arcs model={display} />
+    </ThemeProvider>,
+  )
+  // nothing per arc subscribes to the theme any more — one canvas, one read
+  expect(container.querySelectorAll('canvas')).toHaveLength(1)
+  expect(theme.palette.text.primary).toBeTruthy()
+})
