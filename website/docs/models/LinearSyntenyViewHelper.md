@@ -78,6 +78,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-setheight">**setHeight**</span><br><code>(n: number) =&gt; void</code> |  | LinearSyntenyViewHelper |
+| <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; void</code> | Drag this band taller or shorter, clamped like every other band drag: the floor keeps the bar itself grabbable, and a band already thinner than the floor stays where it is rather than jumping up to it. The stack-wide drag (`resizeAllLevelHeights`) is this, per level, so the clamp is stated once. | LinearSyntenyViewHelper |
 | <span id="action-showtrack">**showTrack**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackId: string, initialSnapshot?: object, displayInitialSnaps…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackId: string, initialSnapshot?: object, displayInitialSnapshot?: DisplayInitialSnapshot, inlineConf?: Record&lt;string, unknown&gt; &#124; undefined) =&gt; any</code></pre></dialog></span> |  | LinearSyntenyViewHelper |
 | <span id="action-hidetrack">**hideTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | LinearSyntenyViewHelper |
 | <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | LinearSyntenyViewHelper |

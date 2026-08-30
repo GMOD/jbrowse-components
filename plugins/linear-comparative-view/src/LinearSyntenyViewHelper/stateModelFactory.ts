@@ -1,4 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -100,6 +101,17 @@ export function linearSyntenyViewHelperModelFactory(
        */
       setHeight(n: number) {
         self.height = n
+      },
+      /**
+       * #action
+       * Drag this band taller or shorter, clamped like every other band drag:
+       * the floor keeps the bar itself grabbable, and a band already thinner
+       * than the floor stays where it is rather than jumping up to it. The
+       * stack-wide drag (`resizeAllLevelHeights`) is this, per level, so the
+       * clamp is stated once.
+       */
+      resizeHeight(distance: number) {
+        self.height = clampBandHeight(self.height, self.height + distance)
       },
       /**
        * #action

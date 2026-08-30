@@ -120,6 +120,20 @@ test('a band drag resizes every band by the same amount', async () => {
   expect(heights(view)).toEqual([100, 120, 100])
 })
 
+// Alt on the press is the way back to a stack whose bands differ on purpose, so
+// the per-level drag has to leave its neighbours exactly where they were.
+test('an alt-drag resizes only the band it was started on', async () => {
+  const { view } = await openStack(4)
+  expect(heights(view)).toEqual([100, 100, 100])
+
+  view.levels[1]!.resizeHeight(40)
+  expect(heights(view)).toEqual([100, 140, 100])
+
+  // and it clamps on its own floor, without touching the others
+  view.levels[1]!.resizeHeight(-1000)
+  expect(heights(view)).toEqual([100, 20, 100])
+})
+
 // The floor is what keeps the bar itself grabbable, and it is per level: a drag
 // that takes the stack down cannot leave one band with no bar to drag back.
 test('a band drag stops at the height that keeps its bar grabbable', async () => {

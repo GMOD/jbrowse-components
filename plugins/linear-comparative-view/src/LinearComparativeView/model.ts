@@ -7,7 +7,6 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
@@ -763,15 +762,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        * levels keep whatever differences they already have, since this moves
        * each by the same px rather than setting them all to one height.
        *
-       * A drag, so it clamps like every other band drag (`clampBandHeight`): the
-       * floor keeps the bar itself grabbable, and a level already thinner than
-       * the floor is left where it is rather than jumped up to it.
+       * Each level clamps its own drag (`LinearSyntenyViewHelper.resizeHeight`),
+       * which is also what one band's Alt-drag goes through — so the floor that
+       * keeps a bar grabbable is stated once, for both.
        */
       resizeAllLevelHeights(distance: number) {
         for (const level of self.levels) {
-          level.setHeight(
-            clampBandHeight(level.height, level.height + distance),
-          )
+          level.resizeHeight(distance)
         }
       },
       /**

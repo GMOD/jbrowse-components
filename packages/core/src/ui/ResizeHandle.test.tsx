@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { act, fireEvent, render } from '@testing-library/react'
 
 import { colord } from '../util/colord.ts'
@@ -122,6 +124,39 @@ describe('ResizeHandle', () => {
 
     // 36px of pointer has moved the value 18px, which is exactly half of it
     expect(onDrag.mock.calls.reduce((sum, [d]) => sum + d, 0)).toBe(18)
+  })
+
+  // A modifier can decide which value a bar sizes — Alt on a synteny band bar
+  // sizes that band alone rather than the stack — and the divisor changes with
+  // it. The press sets that state, so it has to reach the hook before the first
+  // frame commits, which is why the caller may hold it in state rather than a
+  // ref.
+  it('picks up a gain that the press starting the drag set', () => {
+    const onDrag = jest.fn()
+    function Host() {
+      const [alone, setAlone] = useState(false)
+      return (
+        <ResizeHandle
+          gain={alone ? 1 : 3}
+          onPointerDown={event => {
+            setAlone(event.altKey)
+          }}
+          onDrag={onDrag}
+        />
+      )
+    }
+    const { container } = render(<Host />)
+    const handle = container.firstChild as HTMLElement
+
+    fireEvent.pointerDown(handle, {
+      clientY: 0,
+      pointerId: 1,
+      button: 0,
+      altKey: true,
+    })
+    fireEvent.pointerMove(handle, { clientY: 30, pointerId: 1 })
+    flushRaf()
+    expect(onDrag).toHaveBeenCalledWith(30)
   })
 
   it('flushes the pending frame on drag end, so the resting size is exact', () => {

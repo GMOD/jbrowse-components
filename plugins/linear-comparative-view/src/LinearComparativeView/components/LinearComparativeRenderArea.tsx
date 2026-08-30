@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -85,6 +87,10 @@ const LevelSection = observer(function LevelSection({
   levelIdx: number
 }) {
   const { classes } = useStyles()
+  // Whether the press that started the current drag held Alt, i.e. sizes this
+  // band alone. Set on every pointerdown, so it is always the live answer by the
+  // time a frame commits.
+  const [alone, setAlone] = useState(false)
   const level = model.levels[levelIdx]!
   const syntenyModel = asSyntenyModel(model)
   // One legend for the whole view, hosted in the topmost synteny band (the
@@ -118,19 +124,32 @@ const LevelSection = observer(function LevelSection({
           />
         ) : null}
       </div>
-      {/* Sizes every band, not this one gap — see `resizeAllLevelHeights`. The
-        bar for the Nth level sits below N bands, all of which just grew, so it
-        moves N px per px of height: `gain` divides the drag by that, which is
-        what keeps the bar the user grabbed under their pointer. */}
+      {/* Sizes every band, not this one gap — see `resizeAllLevelHeights` — and
+        Alt sizes this one alone, which is the only way back to a stack whose
+        bands differ on purpose.
+
+        The bar for the Nth level sits below N bands, all of which just grew, so
+        it moves N px per px of height: `gain` divides the drag by that, which is
+        what keeps the bar the user grabbed under their pointer. Alt-dragging
+        moves one band, so its gain is 1 — which is why this is state and not a
+        ref: the divisor is read at render, so the press has to re-render before
+        the first frame commits. */}
       <ResizeHandle
         bar
-        gain={levelIdx + 1}
+        gain={alone ? 1 : levelIdx + 1}
+        onPointerDown={event => {
+          setAlone(event.altKey)
+        }}
         onDrag={n => {
-          model.resizeAllLevelHeights(n)
+          if (alone) {
+            level.resizeHeight(n)
+          } else {
+            model.resizeAllLevelHeights(n)
+          }
         }}
         title={
           model.levels.length > 1
-            ? 'Drag to resize every synteny band'
+            ? 'Drag to resize every synteny band (hold Alt to resize just this one)'
             : 'Drag to resize the synteny band'
         }
       />
