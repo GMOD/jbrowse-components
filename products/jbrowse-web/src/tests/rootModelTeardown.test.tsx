@@ -8,6 +8,7 @@ import { Image, createCanvas } from 'canvas'
 import { Loader } from '../components/Loader.tsx'
 import { renderLoggedComponents } from '../components/renderLogRecord.ts'
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
+import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 
@@ -29,6 +30,8 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 })
 
 const delay = { timeout: 20000 }
+
+suppressTeardownNoise()
 
 // The rootModel half of the superseded-loader crash (#5618 fixed the loader
 // half). disposePluginManager runs from a React effect cleanup, in the unmount

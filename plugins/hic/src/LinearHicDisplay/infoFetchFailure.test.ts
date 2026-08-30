@@ -17,11 +17,16 @@ function flush() {
 // the info autorun runs on attach, so the RPC behavior has to be in place
 // before the display is created
 test('a failed CoreGetInfo lands in the error phase, not a permanent scrim', async () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { createDisplay, mockRpcCall } = createTestEnvironment()
   mockRpcCall.mockRejectedValue(new Error('could not read .hic header'))
   const { display } = createDisplay()
   await flush()
 
+  expect(`${reported.mock.calls[0]?.[0]}`).toContain(
+    'could not read .hic header',
+  )
+  reported.mockRestore()
   expect(display.effectiveResolution).toBeUndefined()
   expect(`${display.error}`).toContain('could not read .hic header')
   expect(display.displayPhase).toBe('error')
@@ -49,11 +54,14 @@ test.each([
 })
 
 test('retry re-reads the header instead of dropping back onto the scrim', async () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { createDisplay, mockRpcCall } = createTestEnvironment()
   mockRpcCall.mockRejectedValue(new Error('transient'))
   const { display } = createDisplay()
   await flush()
   expect(display.displayPhase).toBe('error')
+  expect(`${reported.mock.calls[0]?.[0]}`).toContain('transient')
+  reported.mockRestore()
 
   mockRpcCall.mockResolvedValue({ norms: ['KR'], resolutions: [5000, 25000] })
   display.reload()

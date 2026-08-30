@@ -2,9 +2,6 @@ import { LocalFile } from 'generic-filehandle2'
 
 import type { GenericFilehandle } from 'generic-filehandle2'
 
-// clamps open-ended (`bytes=start-`) ranges; test files are far smaller
-const maxRangeRequest = 20000000
-
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
   // Ensure the function always returns a Promise<Response>
   return async (request: Request): Promise<Response> =>
@@ -35,14 +32,17 @@ export async function handleRangeRequest(
   file: GenericFilehandle,
   rangeHeader: string,
 ) {
-  const { start, end } = parseByteRange(rangeHeader, maxRangeRequest)
-  const length = end - start + 1
-  const buffer = await file.read(length, start)
-  const stats = await file.stat()
+  // The file's own size, so an over-long or open-ended range comes back clamped
+  // to the last byte the way a real server clamps it. Anything else makes the
+  // Content-Range below contradict itself, and `parseContentRange` reads a
+  // header it cannot reconcile as no length at all.
+  const { size } = await file.stat()
+  const { start, end } = parseByteRange(rangeHeader, size)
+  const buffer = await file.read(end - start + 1, start)
 
   return new Response(buffer, {
     status: 206,
-    headers: [['content-range', `${start}-${end}/${stats.size}`]],
+    headers: [['content-range', `bytes ${start}-${end}/${size}`]],
   })
 }
 

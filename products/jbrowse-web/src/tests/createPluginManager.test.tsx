@@ -4,6 +4,7 @@ import { Image, createCanvas } from 'canvas'
 
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
+import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 
@@ -31,6 +32,8 @@ afterEach(() => {
 })
 
 const delay = { timeout: 20000 }
+
+suppressTeardownNoise()
 
 // This test exercises the real Loader.tsx component's reloadPluginManagerCallback
 // by accessing window.JBrowseRootModel (exposed by JBrowse.tsx) and calling

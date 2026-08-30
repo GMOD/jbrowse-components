@@ -4,6 +4,7 @@ import { Image, createCanvas } from 'canvas'
 
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
+import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 
@@ -25,6 +26,8 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 })
 
 const delay = { timeout: 20000 }
+
+suppressTeardownNoise()
 
 // Switching sessions used to destroy the outgoing one inside setSession, and
 // MobX runs an action's pending reactions at the endBatch closing it — so every

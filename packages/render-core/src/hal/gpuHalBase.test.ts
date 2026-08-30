@@ -86,6 +86,7 @@ test('an empty upload IS the release', () => {
 })
 
 test('an over-limit buffer is refused, reported, and leaves nothing behind', () => {
+  const logged = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { hal, errors } = makeHal()
   hal.uploadBuffer(0, 'rect', new Uint8Array(8), 2)
   hal.uploadBuffer(0, 'rect', new Uint8Array(2048), 4)
@@ -96,6 +97,9 @@ test('an over-limit buffer is refused, reported, and leaves nothing behind', () 
   expect(errors).toEqual([
     expect.stringContaining('vertex buffer 2048 bytes exceeds the 1024-byte'),
   ])
+  // the reporter logs as well as handing the handler the error
+  expect(logged).toHaveBeenCalled()
+  logged.mockRestore()
 })
 
 test('a texture upload reaches the leaf with the pass binding', () => {
@@ -117,6 +121,7 @@ test('a pass with no texture binding is answered without touching the leaf', () 
 })
 
 test('an over-limit texture is refused and reported', () => {
+  const logged = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { hal, errors } = makeHal()
   hal.uploadTexture('ramp', new Uint8Array(4), 512, 1)
 
@@ -124,6 +129,8 @@ test('an over-limit texture is refused and reported', () => {
   expect(errors).toEqual([
     expect.stringContaining('texture 512×1 exceeds max texture size 256'),
   ])
+  expect(logged).toHaveBeenCalled()
+  logged.mockRestore()
 })
 
 test('deleteRegion and pruneRegions destroy through the leaf hook', () => {

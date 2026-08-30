@@ -30,6 +30,7 @@ test('a cancelled reorder lowers the gate', async () => {
 })
 
 test('a reorder that fails on its own keeps the gate raised', async () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const self = viewWithGate()
   self.beginAutoDiagonalize(true)
 
@@ -39,4 +40,6 @@ test('a reorder that fails on its own keeps the gate raised', async () => {
 
   expect(self.awaitingAutoDiagonalize).toBe(false)
   expect(self.pendingAutoDiagonalize).toBe(true)
+  expect(`${reported.mock.calls[0]?.[0]}`).toContain('the RPC died')
+  reported.mockRestore()
 })

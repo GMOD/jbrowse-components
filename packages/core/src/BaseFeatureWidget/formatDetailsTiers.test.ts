@@ -255,9 +255,12 @@ test('a static object needs no jexl at all', () => {
 })
 
 test('a broken callback reports which track to look at', () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const model = setup({ trackFormatDetails: { feature: 'jexl:{{{' } })
   model.widget.setFeatureData(feature)
   expect(`${model.widget.error}`).toContain('testtrack')
+  expect(`${reported.mock.calls[0]?.[0]}`).toContain('testtrack')
+  reported.mockRestore()
 })
 
 // The clone and the per-subfeature walk are both proportional to the subfeature

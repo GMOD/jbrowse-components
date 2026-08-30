@@ -37,6 +37,7 @@ beforeEach(() => {
 // reasons that have nothing to do with the request. The only way back to Start
 // was to close the dialog and pick the menu item again.
 test('a failed run can be retried in place', async () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   let attempts = 0
   renderDialog(() => {
     attempts++
@@ -47,6 +48,8 @@ test('a failed run can be retried in place', async () => {
 
   fireEvent.click(screen.getByText('Start'))
   expect(await screen.findByText(/tabix query failed/)).toBeTruthy()
+  expect(`${reported.mock.calls[0]?.[0]}`).toContain('tabix query failed')
+  reported.mockRestore()
 
   fireEvent.click(screen.getByText('Retry'))
   expect(

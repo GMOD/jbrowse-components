@@ -86,6 +86,7 @@ describe('a details lookup that finds nothing says so', () => {
   // must stay quiet — otherwise one click tells the user off twice, the second
   // time less usefully than the first.
   it('does not double-report a failed lookup', async () => {
+    const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { display, session, mockRpcCall } = setup()
     onlyDetails(mockRpcCall, () => {
       throw new Error('worker exploded')
@@ -99,6 +100,8 @@ describe('a details lookup that finds nothing says so', () => {
       ).toBe(true)
     })
     expect(misses(session)).toHaveLength(0)
+    expect(`${reported.mock.calls[0]?.[0]}`).toContain('worker exploded')
+    reported.mockRestore()
   })
 
   it('a region that is no longer loaded is the same nothing-to-open', async () => {

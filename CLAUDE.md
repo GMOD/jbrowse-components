@@ -88,6 +88,11 @@ survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
   `pnpm test <directory>` scopes by path and so misses the jbrowse-web suites
   that exercise a plugin from outside — `agent-docs/CLAUDE.md` §"Definition of
   done" has the three that went red on main that way in one week.
+- **An agent's jest run prints nothing for a passing suite.** jest 30 swaps in
+  `AgentReporter` once it detects an agent environment (`CLAUDECODE` is one),
+  and it prints only files that fail — so every `console.log`/`warn`/`error` a
+  green suite emits is invisible, and a run checked for console noise that way
+  reads clean whatever it printed. `--reporters=default` is what shows them.
 - **A memoization sabotage that stays green under `pnpm test` proves nothing** —
   React Compiler stands in for the `memo` you deleted.
   `pnpm test-ci-no-react-compiler` is the run that sees it, and the only one

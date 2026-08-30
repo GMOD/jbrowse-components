@@ -5,7 +5,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 
 import { renderLoggedComponents } from '../components/renderLogRecord.ts'
-import { measure } from './teardownNoise.ts'
+import { measure, suppressTeardownNoise } from './teardownNoise.ts'
 import {
   createView,
   doBeforeEach,
@@ -26,6 +26,8 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 30000 }
+
+suppressTeardownNoise()
 const opts = [{}, delay] as const
 
 // Undo is the second door into ADR-069, and the one the rule was not applied

@@ -15,6 +15,11 @@ const useStyles = makeStyles()(theme => ({
     border: 0,
     padding: theme.spacing(0.25),
   },
+  // the Tooltip listens on this rather than on the button, which fires no
+  // events once the row disables it
+  wrapper: {
+    display: 'inline-flex',
+  },
 }))
 
 // How the pin names what it acts on. Two shapes, decided by the on-value:
@@ -81,25 +86,27 @@ export function PinAdornment({
   const { title, ariaLabel } = pinCopy(label, control.onValue, isDefault)
   return (
     <Tooltip title={title}>
-      <ToggleButton
-        className={classes.button}
-        value="default"
-        disabled={disabled}
-        selected={isDefault}
-        color="primary"
-        size="small"
-        aria-label={ariaLabel}
-        onChange={e => {
-          e.stopPropagation()
-          control.toggle()
-        }}
-      >
-        {isDefault ? (
-          <PushPinIcon fontSize="small" />
-        ) : (
-          <PushPinOutlinedIcon fontSize="small" />
-        )}
-      </ToggleButton>
+      <span className={classes.wrapper}>
+        <ToggleButton
+          className={classes.button}
+          value="default"
+          disabled={disabled}
+          selected={isDefault}
+          color="primary"
+          size="small"
+          aria-label={ariaLabel}
+          onChange={e => {
+            e.stopPropagation()
+            control.toggle()
+          }}
+        >
+          {isDefault ? (
+            <PushPinIcon fontSize="small" />
+          ) : (
+            <PushPinOutlinedIcon fontSize="small" />
+          )}
+        </ToggleButton>
+      </span>
     </Tooltip>
   )
 }

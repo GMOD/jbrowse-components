@@ -239,6 +239,38 @@ is filed separately: mobx-react `observer()` reactions from renders React
 discarded are never disposed, and go on observing the tree. See
 [TODO.md](../TODO.md).
 
+### A fetch in flight over the detach window still counts as current
+
+`createStopTokenRotation`'s guard is
+`!ended && token === current && isAlive(self)`, and a detached node is alive —
+so for the one task between the detach and the `scheduleDetachedDestroy` that
+follows it, a display inside a closed view is still the current fetch. One that
+fails in that window is therefore logged and published rather than swallowed.
+`LinearSyntenyDisplay`'s `afterAttach` reaches `getRpcHost` after an await, so
+closing a synteny view mid-fetch lands `no session model found!` with
+`no matching node found` as its cause — the walk reaching the detached view as
+root, every node on the way alive, which is what tells that case apart from the
+`alive=false` one the deferred destroy produces.
+
+Accepted, and on the invariant this ADR already relies on everywhere else:
+**a detach always hands the node straight to `scheduleDetachedDestroy`**, so the
+window is bounded and the guard closes correctly the moment it fires. Nothing is
+dropped — `rotation.dispose` is an `addDisposer`, so the token is stopped on that
+destroy and the worker stops with it, a task later than it could have. Inside the
+window the cost is a console line and a `setError` on a node about to be freed,
+and the throw is inside `runFetchOnce`'s own catch, so it cannot reach a boundary
+— which is the failure this ADR is about.
+
+Both fixes are ones already rejected above. There is no cheap "am I still in the
+app tree" predicate to widen the guard with: a display under a detached view has
+a parent and is alive, so the test would be per-call-site and `isAlive`-shaped.
+Closing the window properly means cancelling every fetch under a view on detach
+rather than on destroy, which is teardown work moved back into the action the
+detach exists to keep it out of. `SyntenySettingsMenu.test.tsx`,
+`DotplotSettingsMenu.test.tsx` and `appendRow.integration.test.ts` take the two
+messages rather than print them, and assert they were still provoked so the
+filter cannot outlive its cause.
+
 ### `isSessionModel*` cannot stand in for `isAlive`
 
 The `isX(thing)` predicates in `core/util/types` are **capability** checks, and

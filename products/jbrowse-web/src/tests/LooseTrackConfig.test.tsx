@@ -36,7 +36,17 @@ test('a config track written as { trackId, uri } opens as an alignments track on
     },
     { timeout: 30000 },
   )
-  expect(view.tracks[0]!.displays[0]!.type).toBe('LinearAlignmentsDisplay')
+  const display = view.tracks[0]!.displays[0]!
+  expect(display.type).toBe('LinearAlignmentsDisplay')
+  // the track the assertions are about starts a real render, and a test that
+  // returns while it is in flight resolves its lazy RPC import after the jest
+  // environment has gone
+  await waitFor(
+    () => {
+      expect(display.isLoading).toBe(false)
+    },
+    { timeout: 30000 },
+  )
 }, 40000)
 
 test('a loose track added to the config or the session expands the same way', () => {

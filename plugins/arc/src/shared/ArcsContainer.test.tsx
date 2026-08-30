@@ -37,11 +37,13 @@ test('on screen the arcs get their own <svg>, sized off the display', () => {
 test('on the export path they do not, since the export shell opened one', () => {
   const { display } = createDisplay()
   const { container } = render(
-    <ArcsContainer model={display} exportSVG>
-      {() => <path d="M 0 0 L 1 1" />}
-    </ArcsContainer>,
+    <svg>
+      <ArcsContainer model={display} exportSVG>
+        {() => <path d="M 0 0 L 1 1" />}
+      </ArcsContainer>
+    </svg>,
   )
-  expect(container.querySelector('svg')).toBeNull()
+  expect(container.querySelector('svg svg')).toBeNull()
   expect(container.querySelector('path')).not.toBeNull()
 })
 

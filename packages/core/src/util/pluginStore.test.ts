@@ -320,6 +320,7 @@ describe('resolveStoreRefs', () => {
     ['the store cannot be read', undefined],
     ['the name is not listed', store],
   ])('falls back to the url it carries when %s', (_why, listing) => {
+    const warned = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const hybrid = {
       name: 'Retired',
       url: 'https://jbrowse.org/plugins/jbrowse-plugin-retired/latest/dist/r.js',
@@ -332,6 +333,10 @@ describe('resolveStoreRefs', () => {
     )
     expect(failures).toEqual([])
     expect(definitions).toEqual([hybrid])
+    // the fallback is silent to the config but not to the console, and naming
+    // the url is what makes the warning actionable
+    expect(`${warned.mock.calls[0]?.[0]}`).toContain(hybrid.url)
+    warned.mockRestore()
   })
 
   it('fails a ref with no url to fall back on', () => {
@@ -397,6 +402,8 @@ describe('resolveStorePluginRefs', () => {
   // the store being down must not be able to take out a config that also names
   // a url, which is every config the migration shape produces
   it('resolves against an unreadable store as if nothing were listed', async () => {
+    const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const warned = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const hybrid = {
       name: 'MsaView',
       url: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/m.js',
@@ -409,6 +416,10 @@ describe('resolveStorePluginRefs', () => {
     )
     expect(failures).toEqual([])
     expect(definitions).toEqual([hybrid])
+    expect(`${reported.mock.calls[0]?.[0]}`).toContain('offline')
+    expect(`${warned.mock.calls[0]?.[0]}`).toContain(hybrid.url)
+    reported.mockRestore()
+    warned.mockRestore()
   })
 
   it('fetches once and resolves against what it got', async () => {

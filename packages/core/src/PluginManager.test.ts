@@ -46,6 +46,7 @@ test('installs a plugin once, whichever copy arrives first', () => {
 })
 
 test('a skipped duplicate is not reported as an installed runtime plugin', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const { bundled, downloaded } = pluginPair()
   const pluginManager = new PluginManager([bundled])
   pluginManager.addPlugin({
@@ -55,6 +56,10 @@ test('a skipped duplicate is not reported as an installed runtime plugin', () =>
   })
 
   expect(pluginManager.runtimePluginDefinitions).toEqual([])
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('already installed'),
+  )
+  warn.mockRestore()
 })
 
 test('still installs plugins that differ by name', () => {

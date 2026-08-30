@@ -92,6 +92,7 @@ test('the manual tab offers no downloads until the matrix arrives', async () => 
 // paste box, not in a session snackbar somewhere else on screen while the dialog
 // covering it is the thing the user has to edit.
 test('a bad pasted order keeps the manual tab open and says why', async () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { createDisplay } = setup()
   const { display } = createDisplay()
   await loadSources(display)
@@ -108,6 +109,10 @@ test('a bad pasted order keeps the manual tab open and says why', async () => {
   expect(handleClose).not.toHaveBeenCalled()
   expect(display.layout.map(s => s.name)).toEqual(before)
   expect(await findByText(/expected 2 entries, got 1/)).toBeTruthy()
+  expect(`${reported.mock.calls[0]?.[0]}`).toContain(
+    'expected 2 entries, got 1',
+  )
+  reported.mockRestore()
 })
 
 test('a complete pasted order applies and closes', async () => {

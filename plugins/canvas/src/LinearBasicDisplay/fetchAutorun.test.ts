@@ -261,6 +261,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   it('fetch error sets display error and stops retrying', async () => {
+    const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
     const { display } = createDisplay()
@@ -272,6 +273,8 @@ describe('FetchVisibleRegions autorun', () => {
     await waitFor(() => {
       expect(display.error).toBeTruthy()
     })
+    expect(`${reported.mock.calls[0]?.[0]}`).toContain('network failure')
+    reported.mockRestore()
 
     const callCount = mockRpcCall.mock.calls.length
 
@@ -318,6 +321,7 @@ describe('FetchVisibleRegions autorun', () => {
   })
 
   it('reload after error clears error and re-fetches successfully', async () => {
+    const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
     const { display } = createDisplay()
@@ -330,6 +334,8 @@ describe('FetchVisibleRegions autorun', () => {
     await waitFor(() => {
       expect(display.error).toBeTruthy()
     })
+    expect(`${reported.mock.calls[0]?.[0]}`).toContain('network failure')
+    reported.mockRestore()
 
     // Now fix the issue and retry (simulating user clicking "Retry")
     mockRpcCall.mockResolvedValue(makeFeatureData())

@@ -121,6 +121,10 @@ export function createSyntenyEnv({
       'SyntenyTestSession',
       displayTestSessionModel({
         viewModel: LinearGenomeModel,
+        // Never settles, the same default `createDisplayTestEnvironment` uses:
+        // setting a displayed region wakes the display's fetch, and an
+        // rpcManager without a `call` fails it into a logged TypeError.
+        rpcManager: { call: () => new Promise(() => {}) },
         // Answers for any name: the two panels sit on different assemblies, and
         // the readiness reactions a displayed region wakes only need something
         // to ask.

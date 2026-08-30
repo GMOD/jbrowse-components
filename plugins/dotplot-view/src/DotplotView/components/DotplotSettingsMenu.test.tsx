@@ -26,6 +26,29 @@ afterEach(() => {
   opened.length = 0
 })
 
+// Both shapes this suite provokes go through `console.error`: the adapter
+// failure above, and the `no session model found!` a fetch still in flight
+// raises once `afterEach` has taken its view out — `removeView` detaches rather
+// than destroys (ADR-069), so the fetch's `isCurrent` guard still reads the
+// display as alive and reports. Taken here; anything else still prints, so the
+// contract gate keeps working.
+const provoked = /Offset is outside the bounds|no session model found/
+let reported: jest.SpyInstance
+beforeAll(() => {
+  const print = console.error
+  reported = jest
+    .spyOn(console, 'error')
+    .mockImplementation((...args: unknown[]) => {
+      if (!provoked.test(args.map(a => `${a}`).join(' '))) {
+        print(...args)
+      }
+    })
+})
+afterAll(() => {
+  expect(reported).toHaveBeenCalled()
+  reported.mockRestore()
+})
+
 // Which adapter the view is opened with is the whole of what gates the Level of
 // detail row: `trackHasLodTiers` reads the threshold SLOT, so a plain
 // PAFAdapter has no tier to switch to and the indexed one does.

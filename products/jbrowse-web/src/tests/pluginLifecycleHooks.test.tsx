@@ -8,6 +8,7 @@ import {
   lifecycleProbe,
 } from './apolloShapedPlugin.ts'
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
+import { suppressTeardownNoise } from './teardownNoise.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 import type * as ApolloShapedFixture from './apolloShapedPlugin.ts'
@@ -58,6 +59,8 @@ jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
 })
 
 const delay = { timeout: 20000 }
+
+suppressTeardownNoise()
 
 // The contract jbrowse-plugin-apollo depends on, driven the way Apollo drives it.
 //

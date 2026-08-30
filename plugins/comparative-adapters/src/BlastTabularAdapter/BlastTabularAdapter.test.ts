@@ -83,6 +83,7 @@ test('each perspective labels its mate with the other assembly', async () => {
 // empty answer rather than a throw or a download. getRefNames resolves it
 // before the setup, so an unlisted assembly never fetches the table at all.
 test('an assembly this adapter does not carry gets an empty answer', async () => {
+  const warned = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const adapter = makeAdapter()
 
   expect(await adapter.getRefNames({ assemblyName: 'mouse' })).toEqual([])
@@ -99,6 +100,8 @@ test('an assembly this adapter does not carry gets an empty answer', async () =>
       .pipe(toArray()),
   )
   expect(features).toEqual([])
+  expect(warned).toHaveBeenCalledWith('mouse not found in this adapter')
+  warned.mockRestore()
 })
 
 // A self-alignment names one assembly on both sides. Picking the side by first

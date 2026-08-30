@@ -3,6 +3,7 @@ import { Image, createCanvas } from 'canvas'
 
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
+import { suppressTeardownNoise } from './teardownNoise.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -12,6 +13,8 @@ global.nodeImage = Image
 global.nodeCreateCanvas = createCanvas
 
 const delay = { timeout: 10000 }
+
+suppressTeardownNoise()
 
 utilizeFetchMockForTest()
 
@@ -138,6 +141,8 @@ test('spec url can carry its own assembly via sessionAssemblies', async () => {
 // dropped outright for want of an assembly to resolve it against, and supplying
 // an &assembly= instead replaced the pending init, losing the tracks it opened.
 test('extendSession navigates within a defaultSession init, keeping its tracks', async () => {
+  // the failed load below reports itself; taken here rather than printed
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const { findByTestId, findByPlaceholderText } = render(
     <App search="?config=test_data/volvox/config_spec.json&extendSession=true&loc=ctgB:1-100" />,
   )
@@ -157,4 +162,6 @@ test('extendSession navigates within a defaultSession init, keeping its tracks',
     {},
     delay,
   )
+  expect(reported).toHaveBeenCalled()
+  reported.mockRestore()
 }, 60000)

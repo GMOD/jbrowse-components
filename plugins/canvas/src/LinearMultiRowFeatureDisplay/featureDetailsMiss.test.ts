@@ -77,6 +77,7 @@ describe('multi-row: a details lookup that finds nothing says so', () => {
   })
 
   it('does not double-report a failed lookup', async () => {
+    const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
     const { display, session, mockRpcCall } = setup()
     onlyDetails(mockRpcCall, () => {
       throw new Error('worker exploded')
@@ -90,5 +91,7 @@ describe('multi-row: a details lookup that finds nothing says so', () => {
       ).toBe(true)
     })
     expect(misses(session)).toHaveLength(0)
+    expect(`${reported.mock.calls[0]?.[0]}`).toContain('worker exploded')
+    reported.mockRestore()
   })
 })
