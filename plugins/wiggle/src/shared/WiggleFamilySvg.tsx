@@ -1,9 +1,8 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { CrossHatchLines, axisPlotBox } from '@jbrowse/wiggle-core'
-
-import { legendRightEdgePx } from './wiggleComponentUtils.ts'
 
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -51,7 +50,10 @@ export function svgLegendRightPx(
   view: { visibleRegions: { screenEndPx: number }[] },
   canvasWidth: number,
 ) {
-  return legendRightEdgePx(view.visibleRegions, canvasWidth)
+  // Not `view.contentRightEdgePx`, which the on-screen path reads: that one is
+  // clamped to the view's own `trackWidthPx`, and an export's canvas is its own
+  // width. Same rule, this width.
+  return contentRightEdgePx(view.visibleRegions, canvasWidth)
 }
 
 // Shared SVG-export body for every wiggle-family display, mounted by each

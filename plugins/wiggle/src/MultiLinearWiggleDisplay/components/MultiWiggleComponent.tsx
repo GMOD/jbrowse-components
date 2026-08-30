@@ -15,7 +15,6 @@ import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales, {
@@ -137,8 +136,9 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   const labelOffset = treeSidebarOffset(model)
 
   // Pin the right-aligned legends to the content's right edge, not the full
-  // track width (see legendRightEdgePx).
-  const legendWidth = legendRightEdgePx(model.host.visibleRegions, totalWidth)
+  // track width — the view's clamped scalar, not a derivation off
+  // `visibleRegions`, which rebuilds its array every gesture frame.
+  const legendWidth = model.host.contentRightEdgePx
 
   return (
     <>

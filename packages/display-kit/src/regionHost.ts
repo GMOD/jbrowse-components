@@ -19,6 +19,26 @@ export interface VisibleRegion {
 }
 
 /**
+ * Right edge (px, viewport-relative) that a right-pinned overlay belongs at:
+ * the last visible region's right edge, clamped to `width`. At whole-genome
+ * zoom the regions can end before the track does, and an overlay pinned to the
+ * full width parks out in the empty gutter reading as detached from the plot.
+ * When content fills the track this is just `width`, so the common case is
+ * unchanged.
+ *
+ * The rule lives here, beside {@link VisibleRegion}, because two callers need
+ * it against two different widths: a view publishes it against its own
+ * `trackWidthPx` as {@link RegionHost.contentRightEdgePx}, and an SVG export
+ * against the export's canvas width.
+ */
+export function contentRightEdgePx(
+  visibleRegions: { screenEndPx: number }[],
+  width: number,
+) {
+  return Math.min(width, visibleRegions.at(-1)?.screenEndPx ?? width)
+}
+
+/**
  * A visible region widened by the host's fetch buffer and clamped to the
  * displayed region it came from. The shape a per-region fetch is issued over.
  */
@@ -50,6 +70,7 @@ export interface RegionHost extends AbstractViewModel, IStateTreeNode {
   readonly dynamicBlocks: BlockSet
   readonly settledDynamicBlocks: ContentBlock[]
   readonly visibleRegions: VisibleRegion[]
+  readonly contentRightEdgePx: number
   readonly bufferedVisibleRegions: BufferedVisibleRegion[]
   readonly visibleBp: number
   readonly hasVisibleContent: boolean

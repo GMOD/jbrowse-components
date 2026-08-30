@@ -40,6 +40,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
+import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
   getParent,
@@ -2293,6 +2294,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
               screenEndPx: screenStartPx + block.widthPx,
             }
           })
+        },
+        /**
+         * #getter
+         * Right edge (px, viewport-relative) of the on-screen content, clamped
+         * to the track — where a right-pinned overlay such as a wiggle's colour
+         * or score legend belongs. `contentRightEdgePx` states the rule.
+         *
+         * Published as a SCALAR on purpose. `visibleRegions` rebuilds a fresh
+         * array of fresh objects on every pan and zoom frame, so a component
+         * that derived this number itself re-rendered on every frame of every
+         * gesture — to produce, whenever content fills the track, the unchanged
+         * `trackWidthPx`. Reading the scalar lets MobX's `===` stop the chain at
+         * this computed instead. Measured over 20 zoom frames: the two wiggle
+         * bodies fell from 66 renders to 7.
+         */
+        get contentRightEdgePx() {
+          return contentRightEdgePx(this.visibleRegions, self.trackWidthPx)
         },
 
         /**

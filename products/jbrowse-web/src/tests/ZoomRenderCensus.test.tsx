@@ -46,7 +46,7 @@ async function census({
     let el = (n instanceof Element ? n : n?.parentElement) ?? null
     const trail: string[] = []
     while (el) {
-      const id = el.dataset?.testid
+      const id = (el as HTMLElement).dataset.testid
       if (id) {
         return `${id} > ${trail.slice(0, 2).reverse().join('/')}`
       }

@@ -13,7 +13,6 @@ import { observer } from 'mobx-react'
 import ScoreLegend, { scoreLegendHeight } from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import { findSourceHit, hitTestMouse } from '../../shared/wiggleHitTest.ts'
 import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 
@@ -93,13 +92,11 @@ const WiggleBody = observer(function WiggleBody({
   const mouseState = useMouseState(mouseTracker)
   const { yTop, plotHeight } = model.plotGeometry
   // Pin the right-aligned score legend to the content's right edge, not the
-  // full track width (see legendRightEdgePx). Read HERE, in the body, and not
-  // where the chrome is mounted — `visibleRegions` rebuilds its array on every
-  // pan frame, so a read up there re-rendered `DisplayChrome` itself (and with
-  // it `useRenderingBackend`, the status container's fresh inline style and the
-  // overlay portal) for the whole of every drag. Multi-wiggle already reads it
-  // in its body for this reason; this was the last copy that didn't.
-  const legendWidth = legendRightEdgePx(model.host.visibleRegions, width)
+  // full track width. The view publishes the clamped SCALAR: deriving it here
+  // from `visibleRegions` read an array the view rebuilds every pan and zoom
+  // frame, so this body re-rendered on every frame of every gesture to produce
+  // the unchanged `width`.
+  const legendWidth = model.host.contentRightEdgePx
   return (
     <>
       <canvas
