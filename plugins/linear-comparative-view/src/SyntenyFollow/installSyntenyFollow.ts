@@ -28,7 +28,10 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LinearGenomeViewModel,
+  RegionsOrientation,
+} from '@jbrowse/plugin-linear-genome-view'
 
 export interface FollowLevel {
   linearSyntenyDisplays: LinearSyntenyDisplayModel[]
@@ -83,10 +86,13 @@ interface FollowWork {
   // the narrowest window the moving row can show, which is what lets
   // `alreadyShowing` terminate over an answer below it
   movingMinWidthBp: number
-  // each row's orientation as it stands, read here so the flip decision is
-  // relative: a reversed anchor inside a forward block wants a reversed mate
-  anchorReversed: boolean
-  movingReversed: boolean
+  // Read HERE, tracked, so the checkbox wakes this pass: `orient` runs past the
+  // autorun's first `await` and inside its `untracked`, so a flag it read for
+  // itself would take effect only on whatever moved the anchor next.
+  matchOrientation: boolean
+  // the anchor's orientation as it stands, so the flip decision is relative: a
+  // reversed anchor inside a forward block wants a reversed mate
+  anchorOrientation: RegionsOrientation
   seq: number
   generation: number
 }
@@ -164,8 +170,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     step,
     movingWindow,
     movingMinWidthBp,
-    anchorReversed,
-    movingReversed,
+    matchOrientation,
+    anchorOrientation,
     seq,
     generation,
   }: FollowWork) {
@@ -221,31 +227,46 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         : undefined,
     }
     ensureCigarMap(state, step)
-    orient(state, step, anchorReversed, movingReversed, movingView)
     if (alreadyShowing(movingWindow, span, movingMinWidthBp)) {
       // arrived, so the next disagreement is a fresh one — a row the user
       // nudges away from here has to be navigable back to exactly this span
       state.lastNav = undefined
-      return
+    } else {
+      // THE BACKSTOP, and it bounds the loop without claiming to diagnose it.
+      // Nothing else damps this: `navToLocString` replaces the row's
+      // `displayedRegions` whether or not it moves the row, which invalidates
+      // `followPairs` and wakes this pass. Measured on the swapped track —
+      // coarse blocks, featureData and width all stable across fourteen
+      // consecutive passes — so an `alreadyShowing` that says no while the row
+      // has stopped moving is a locked tab, not a misplacement. The two checks
+      // above close the two ways that is reachable today; this closes the shape
+      // of it.
+      //
+      // The same target asked for from the same place twice is the one thing
+      // that cannot be a real disagreement: the first attempt already had its
+      // chance, and the row is still reporting where it was.
+      const nav = navSignature(movingWindow, span)
+      if (nav !== state.lastNav) {
+        state.lastNav = nav
+        await navToResolvedSpan(movingView, span)
+        if (
+          seq !== state.seq ||
+          generation !== levelStates.generation ||
+          !isAlive(self) ||
+          !isAlive(movingView)
+        ) {
+          return
+        }
+      }
     }
-    // THE BACKSTOP, and it bounds the loop without claiming to diagnose it.
-    // Nothing else damps this: `navToLocString` replaces the row's
-    // `displayedRegions` whether or not it moves the row, which invalidates
-    // `followPairs` and wakes this pass. Measured on the swapped track — coarse
-    // blocks, featureData and width all stable across fourteen consecutive
-    // passes — so an `alreadyShowing` that says no while the row has stopped
-    // moving is a locked tab, not a misplacement. The two checks above close
-    // the two ways that is reachable today; this closes the shape of it.
-    //
-    // The same target asked for from the same place twice is the one thing that
-    // cannot be a real disagreement: the first attempt already had its chance,
-    // and the row is still reporting where it was.
-    const nav = navSignature(movingWindow, span)
-    if (nav === state.lastNav) {
-      return
-    }
-    state.lastNav = nav
-    await navToResolvedSpan(movingView, span)
+    // AFTER THE NAVIGATION, which can undo it. `navToResolvedSpan` falls back
+    // to `navToLocString` for a span on a contig the row is not displaying, and
+    // a bare locstring names no orientation — so the row it replaces
+    // `displayedRegions` with is forward whatever the row was. Flipped first,
+    // that landed the row the wrong way round with the decision already
+    // recorded against it, and nothing re-asserted until the anchor left the
+    // block.
+    orient(state, step, matchOrientation, anchorOrientation, movingView)
   }
 
   /**
@@ -290,12 +311,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * way, so panning the anchor right moves the row right and the ribbons run
    * parallel instead of crossing.
    *
-   * ONCE PER DECISION, not once per settle. The key is the block or the vote
-   * plus the anchor's own orientation; a row the user flips by hand afterwards
-   * disagrees with the key's answer and is left alone until the decision
-   * changes, which is what spares the row's Flip item an anchor take. A mixed
-   * window decides nothing (`wantReversed` undefined) and leaves the row as it
-   * was.
+   * ONCE PER DECISION, not once per settle. The key is whatever placed the row
+   * — the block, or the contig the envelope answered on — plus the anchor's own
+   * orientation; a row the user flips by hand afterwards disagrees with the
+   * key's answer and is left alone until the decision changes, which is what
+   * spares the row's Flip item an anchor take. A mixed window decides nothing
+   * (`wantReversed` undefined) and leaves the row as it was.
+   *
+   * THE ROW'S OWN ORIENTATION, not its leftmost block's. `horizontallyFlip`
+   * reverses every region at once, so the only orientation it can answer is the
+   * row-wide one — and a row someone reversed a single region of by hand has
+   * none, which is `mixed`. Read off the blocks instead, such a row reported
+   * whichever region the window happened to be over and the follow turned every
+   * OTHER region round to agree with it.
    *
    * `horizontallyFlip` keeps the bp window and replaces `displayedRegions`,
    * which wakes this pass; the replan carries the same key and does not flip
@@ -304,21 +332,39 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   function orient(
     state: FollowLevelState,
     step: FollowStep,
-    anchorReversed: boolean,
-    movingReversed: boolean,
+    matchOrientation: boolean,
+    anchorOrientation: RegionsOrientation,
     movingView: LinearGenomeViewModel,
   ) {
-    if (!self.followMatchOrientation || step.wantReversed === undefined) {
+    if (!matchOrientation) {
+      // DROPPED WHILE OFF, so that switching back on re-asserts. The decision
+      // is the checkbox's as much as the anchor's: kept, a row turned round by
+      // hand while the mode was off sat wrong-way-up under a mode that was on,
+      // until the anchor happened to leave the block.
+      state.orientedKey = undefined
       return
     }
+    if (step.wantReversed === undefined) {
+      return
+    }
+    // the same fallback the placement takes: with no envelope the row is placed
+    // by interpolating across the picked block (`resolveFollowSpan`), so that
+    // block is the decision
     const decision = step.windowInsideFeat
       ? step.feat.id
-      : step.envelope?.refName
-    const key = `${decision}|${step.wantReversed}|${anchorReversed}`
+      : (step.envelope?.refName ?? step.feat.id)
+    const key = `${decision}|${step.wantReversed}|${anchorOrientation}`
     if (key === state.orientedKey) {
       return
     }
+    const movingOrientation = movingView.displayedRegionsOrientation
+    // Not recorded, so a row that stops being mixed is decided then
+    if (anchorOrientation === 'mixed' || movingOrientation === 'mixed') {
+      return
+    }
     state.orientedKey = key
+    const anchorReversed = anchorOrientation === 'reversed'
+    const movingReversed = movingOrientation === 'reversed'
     if (movingReversed !== (anchorReversed !== step.wantReversed)) {
       movingView.horizontallyFlip()
     }
@@ -478,6 +524,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   function planLevel(pair: FollowPair, placed: PlacedWindows): FollowPlan {
     const { level, stayingView, movingView, toMate, mateAssembly } = pair
     const state = levelStates.get(level)
+    // UNCONDITIONALLY, so the checkbox is a dependency of the pass whichever
+    // rung the level ends up on — read where it is used, at the bottom, a level
+    // placed by the multi-contig rung registers none and the toggle waits for
+    // whatever moves the anchor next.
+    const matchOrientation = self.followMatchOrientation
     // EVERY LEVEL THE PASS VISITS, not only the ones it goes on to resolve. A
     // pass that finds nothing under the window has decided the row holds, and
     // an answer still in flight for the previous window landed and moved it
@@ -494,13 +545,16 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const windows =
       carried ?? followAnchorWindows(stayingView.coarseDynamicBlocks)
     const widest = windows[0]
-    // A DECISION ABOUT SEVERAL CONTIGS SAYS NOTHING ABOUT ONE. The rung is out
-    // of reach below two windows, so `planSpread` does not run and a refusal
-    // left standing outlives the window set it was made over: the header went
-    // on naming a region the anchor no longer spans, ahead of `approximate` in
-    // the wording, and the frame pass inherited the incumbent and the
-    // hysteresis band when the anchor widened again. Both are answers to a
-    // question this pass is no longer asking.
+    // A DECISION ABOUT SEVERAL CONTIGS SAYS NOTHING ABOUT ONE, and
+    // `state.spread` is only ever written by the rung that makes it. The rung is
+    // out of reach below two windows, so `planSpread` does not run and a refusal
+    // left standing outlives the window set it was made over: the header went on
+    // naming a region the anchor no longer spans, ahead of `approximate` in the
+    // wording, and told the reader to scroll onto a contig they were already on
+    // — while the row was in fact following it, by the `widest` fallback — and
+    // the frame pass inherited the incumbent and the hysteresis band when the
+    // anchor widened again. All answers to a question this pass is no longer
+    // asking.
     if (windows.length <= 1) {
       state.spread = undefined
     }
@@ -523,15 +577,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // overview placed every other row on whichever single contig aligned to the
     // anchor's widest, which is what "show all regions" then only did to the
     // anchor row.
-    // ONE WINDOW IS NOT A REFUSAL, and `state.spread` is only ever written by
-    // the rung below. Left standing it made the `partial` report below outlive
-    // the panel it was about: the header told the reader to scroll onto the
-    // other contig, they did, and it went on naming the contig they had left and
-    // telling them to scroll onto the one they were now on — while the row was
-    // in fact following that one, by the `widest` fallback.
-    if (windows.length <= 1) {
-      state.spread = undefined
-    }
     const spread =
       windows.length > 1
         ? planSpread({ pair, windows, carried: !!carried, state, placed })
@@ -572,8 +617,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         step,
         movingWindow,
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
-        anchorReversed: !!stayingView.coarseDynamicBlocks[0]?.reversed,
-        movingReversed: !!movingView.coarseDynamicBlocks[0]?.reversed,
+        matchOrientation,
+        anchorOrientation: stayingView.displayedRegionsOrientation,
         seq,
         generation: levelStates.generation,
       },

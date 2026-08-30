@@ -459,12 +459,46 @@ and only past `NEARLY_ALL` (90%) either way. A mixed window decides nothing —
 the crossing ribbons are the picture of a rearrangement, and flipping would hide
 half of it. Rung 3 carries no strand and never flips.
 
-**Applied once per key, not once per settle.** `orientedKey` is the block id or
-the vote's target, the wanted orientation, and the anchor's own `reversed`; the
-same key does not flip again. That is what lets a reader flip a followed row by
-hand without the row's Flip item taking the anchor: their flip disagrees with
-the key's answer and stands until the decision changes. The wanted state is
-relative — a reversed anchor inside an inverted block wants a forward mate.
+**The vote is over the contig the row is PLACED ON**, which is `followAxes`'
+same insistence applied to a third scan: rung 2 reaches several of the mate's
+contigs and puts the row on exactly one of them, so a share taken across all of
+them describes a picture the reader is not looking at. A row placed on a contig
+every block of which is inverted stayed forward, because forward blocks to a
+contig it was not on diluted the vote below `NEARLY_ALL`.
+
+**Applied once per key, not once per settle.** `orientedKey` is whatever placed
+the row — the block id, or the contig the envelope answered on — the wanted
+orientation, and the anchor's own orientation; the same key does not flip again.
+That is what lets a reader flip a followed row by hand without the row's Flip
+item taking the anchor: their flip disagrees with the key's answer and stands
+until the decision changes. The wanted state is relative — a reversed anchor
+inside an inverted block wants a forward mate.
+
+**The checkbox is read in `planLevel`, unconditionally, or it is not a
+dependency of the pass at all.** `orient` runs past the autorun's first `await`
+_and_ inside its `untracked`, so a flag read there wakes nothing: ticking "flip
+rows to match the anchor" did nothing at all until whatever the reader did next
+moved the anchor. And the key is **dropped while the mode is off**, so switching
+it back on re-asserts — kept, a row turned round by hand with the mode off sat
+wrong-way-up under a mode that was on.
+
+**It orients AFTER the navigation, which can undo it.** `navToResolvedSpan`
+falls back to `navToLocString` for a span on a contig the row is not displaying,
+and a bare locstring names no orientation, so the `displayedRegions` it replaces
+are forward whatever the row was. Flipped first, the row landed the wrong way
+round with the decision already recorded against it and nothing re-asserted
+until the anchor left the block. The re-guard after that `await` is the ordinary
+latest-wins one; the pass that supersedes this one orients instead, and the
+backstop's no-await path is what terminates it.
+
+**Orientation is a fact about the ROW, so it is read off
+`displayedRegionsOrientation` and not off the leftmost block.**
+`horizontallyFlip` reverses every region at once, so the only orientation it can
+answer is the row-wide one. A row someone reversed a single region of has none —
+`mixed` — and read off blocks it reported whichever region the window was over,
+so the follow turned every OTHER region round to agree with it. Both sides
+declining on `mixed`, without recording the key, is the same policy the mixed
+window already gets.
 
 `horizontallyFlip` replaces `displayedRegions` and so wakes the pass; the bp
 window is unchanged, the replan carries the same key, and `alreadyShowing`

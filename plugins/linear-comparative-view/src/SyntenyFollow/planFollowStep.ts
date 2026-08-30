@@ -115,6 +115,18 @@ export function planFollowStep({
   const { display, data } = best
   const feat = getFeatureAtIndex(data, best.index)
   const inside = windowInsideFeat(feat, window, toMate)
+  // AFTER the winner is known, and only in the case that reads it: a full scan
+  // of every loaded block, which a level with several synteny tracks used to
+  // pay for once per improving candidate
+  const envelope = inside
+    ? undefined
+    : followWindowMapping({
+        data,
+        window,
+        toMate,
+        mateAssembly,
+        incumbentTarget,
+      })
   return {
     display,
     feat,
@@ -122,22 +134,21 @@ export function planFollowStep({
     toMate,
     hasCigar: data.hasCigar,
     windowInsideFeat: inside,
-    // AFTER the winner is known, and only in the case that reads it: a full
-    // scan of every loaded block, which a level with several synteny tracks
-    // used to pay for once per improving candidate
-    envelope: inside
-      ? undefined
-      : followWindowMapping({
-          data,
-          window,
-          toMate,
-          mateAssembly,
-          incumbentTarget,
-        }),
+    envelope,
+    // Over the contig the row is PLACED ON, which is the envelope's own answer
+    // — and the picked block's mate when the envelope has none, since that is
+    // then what `resolveFollowSpan` interpolates across.
     wantReversed: inside
       ? feat.strand === -1
       : wantReversedFor(
-          followReverseShare({ data, window, toMate, mateAssembly }),
+          followReverseShare({
+            data,
+            window,
+            toMate,
+            mateAssembly,
+            targetRefName:
+              envelope?.refName ?? (toMate ? feat.mate.refName : feat.refName),
+          }),
         ),
   }
 }

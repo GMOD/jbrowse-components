@@ -44,6 +44,14 @@ const Row = Base1DView.volatile(() => ({
     get coarseDynamicBlocks() {
       return self.heldBlocks ?? self.dynamicBlocks.contentBlocks
     },
+    get displayedRegionsOrientation() {
+      const first = !!self.displayedRegions[0]?.reversed
+      return self.displayedRegions.every(r => !!r.reversed === first)
+        ? first
+          ? 'reversed'
+          : 'forward'
+        : 'mixed'
+    },
   }))
   .actions(self => ({
     holdCoarseBlocks() {
@@ -75,6 +83,25 @@ const Row = Base1DView.volatile(() => ({
         throw new Error('not in this row')
       }
       moveTo(self, lo, hi)
+    },
+    // navTo's fallback, which is what the follow reaches for a span on a contig
+    // the row is not displaying: `showRegions` with the one region the
+    // locstring named, and a bare locstring names no orientation
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async navToLocString(locString: string) {
+      const [refName, range] = locString.split(':')
+      const [start, end] = range!.split('-').map(Number)
+      const { assemblyName } = self.displayedRegions[0]!
+      self.setDisplayedRegions([
+        { refName: refName!, start: 0, end: CONTIG, assemblyName },
+      ])
+      const { displayedRegions } = self
+      moveTo(
+        self,
+        bpToOffset({ refName: refName!, coord: start!, displayedRegions }),
+        bpToOffset({ refName: refName!, coord: end!, displayedRegions }),
+      )
+      return true
     },
   }))
 
@@ -496,5 +523,77 @@ describe('orientation', () => {
     installSyntenyFollow(host)
     await settle()
     expect(reversedOf(rows[1]!)).toBe(false)
+  })
+
+  test('turning it on turns the row round without waiting for a pan', async () => {
+    const { rows, host } = twoRows([display([inverted])])
+    host.setFollowMatchOrientation(false)
+    place(rows[0]!, 400_000, 600_000)
+    installSyntenyFollow(host)
+    await settle()
+    expect(reversedOf(rows[1]!)).toBe(false)
+
+    host.setFollowMatchOrientation(true)
+    await settle()
+    expect(reversedOf(rows[1]!)).toBe(true)
+  })
+
+  test('a row navigated onto another contig lands turned round', async () => {
+    const onChr2 = { ...inverted, refName: 'chr2', mateRefName: 'chr2' }
+    const { rows, host } = twoRows([display([onChr2])])
+    // the row displays ONE contig, so the span's own contig is out of reach of
+    // navTo and the follow takes navToLocString's region replacement
+    rows[1]!.setDisplayedRegions([
+      { refName: 'chr1', start: 0, end: CONTIG, assemblyName: 'b' },
+    ])
+    place(rows[0]!, 1_400_000, 1_600_000)
+    installSyntenyFollow(host)
+    await settle()
+    expect(shown(rows[1]!)).toEqual(['chr2'])
+    expect(reversedOf(rows[1]!)).toBe(true)
+  })
+
+  test('a row with one region reversed by hand is left alone', async () => {
+    const { rows, host } = twoRows([display([inverted])])
+    rows[1]!.setDisplayedRegions(
+      rows[1]!.displayedRegions.map((r, i) =>
+        i === 3 ? { ...r, reversed: true } : { ...r },
+      ),
+    )
+    place(rows[0]!, 400_000, 600_000)
+    installSyntenyFollow(host)
+    await settle()
+    // flipping a mixed row flips every region at once, which is a bigger edit
+    // than the follow is entitled to make
+    expect(rows[1]!.displayedRegions.map(r => !!r.reversed)).toEqual(
+      Array.from({ length: CONTIGS }, (_, i) => i === 3),
+    )
+  })
+
+  test('the vote is over the contig that places the row, not every contig under the window', async () => {
+    const ribbon = (mateRefName: string, start: number, strand: number) => ({
+      refName: 'chr1',
+      start,
+      end: start + 20_000,
+      mateRefName,
+      mateStart: start,
+      mateEnd: start + 20_000,
+      strand,
+    })
+    // chr5 takes the row, on 200kb of inverted alignment; chr6's forward 160kb
+    // is on a contig the row is not placed on
+    const { rows, host } = twoRows([
+      display([
+        ...Array.from({ length: 10 }, (_, i) => ribbon('chr5', i * 40_000, -1)),
+        ...Array.from({ length: 8 }, (_, i) =>
+          ribbon('chr6', 400_000 + i * 40_000, 1),
+        ),
+      ]),
+    ])
+    place(rows[0]!, 0, CONTIG)
+    installSyntenyFollow(host)
+    await settle()
+    expect(shown(rows[1]!)).toEqual(['chr5'])
+    expect(reversedOf(rows[1]!)).toBe(true)
   })
 })

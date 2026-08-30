@@ -79,6 +79,23 @@ test('a followed row turns round inside an inverted alignment and back past it',
   expect(reversedOf(row1!)).toBe(false)
 }, 60000)
 
+// The checkbox is live, and the rows are usually already following when it is
+// ticked. `orient` runs past the exact pass's first `await` and inside its
+// `untracked`, so the flag has to be read in `planLevel` to wake anything.
+test('ticking it after the rows have settled turns the row round', async () => {
+  const view = await openView()
+  const [row0, row1] = view.views
+  await row0!.navToLocString(`ctgA:${INVERTED.start}-${INVERTED.end}`, ASM)
+  await row1!.navToLocString('ctgA', MATE)
+  view.setRowSyncMode('follow')
+  await settle()
+  expect(reversedOf(row1!)).toBe(false)
+
+  view.setFollowMatchOrientation(true)
+  await settle()
+  expect(reversedOf(row1!)).toBe(true)
+}, 60000)
+
 test('off, the row is placed inside the inverted alignment without turning', async () => {
   const view = await openView()
   const [row0, row1] = view.views
