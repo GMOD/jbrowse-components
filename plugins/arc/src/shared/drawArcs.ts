@@ -4,11 +4,13 @@ import { arcMidX, arcStroke } from './arcShape.ts'
 import type { ArcTick, LaidOutArc } from './arcLayout.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-const SELECTED_COLOR = 'red'
-const LABEL_COLOR = 'black'
-const LABEL_HALO_COLOR = 'white'
+// Exported because the export path paints the same labels as `<text>`: one
+// definition, so screen and figure cannot drift apart on a color or a halo.
+export const SELECTED_COLOR = 'red'
+export const LABEL_COLOR = 'black'
+export const LABEL_HALO_COLOR = 'white'
 // The halo width as a fraction of the font size — SVG's `stroke-width: 0.6em`.
-const LABEL_HALO_EM = 0.6
+export const LABEL_HALO_EM = 0.6
 
 export interface ArcDrawOpts {
   /** The arc the cursor is on, which takes `hoverColor` instead of its own. */

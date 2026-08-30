@@ -7,14 +7,12 @@ import type { LinearArcDisplayModel } from '../model.ts'
 
 const LinearArcReactComponent = observer(function LinearArcReactComponent({
   model,
-  exportSVG,
 }: {
   model: LinearArcDisplayModel
-  exportSVG?: boolean
 }) {
   return (
     <BaseDisplayComponent model={model}>
-      <Arcs model={model} exportSVG={exportSVG} />
+      <Arcs model={model} />
     </BaseDisplayComponent>
   )
 })

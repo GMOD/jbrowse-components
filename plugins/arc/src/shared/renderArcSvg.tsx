@@ -2,7 +2,7 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
-import Arcs from './Arcs.tsx'
+import { ArcsSvg } from './Arcs.tsx'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -51,7 +51,7 @@ export async function renderArcSvg(
           width={props.model.canvasWidth}
           height={props.height}
         >
-          <Arcs model={props.model} exportSVG />
+          <ArcsSvg arcs={props.model.laidOutArcs} />
         </SvgClipRect>
       )
     },

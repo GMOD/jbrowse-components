@@ -1,10 +1,11 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 
-import Arcs from './Arcs.tsx'
-import { arcPathD } from './arcShape.ts'
+import Arcs, { ArcsSvg } from './Arcs.tsx'
+import { arcLabelBaselineY } from './arcLayout.ts'
+import { arcMidX, arcPathD } from './arcShape.ts'
 import {
   createPairedTestEnvironment,
   createTestEnvironment,
@@ -35,7 +36,7 @@ const { createDisplay: createPairedDisplay } = createPairedTestEnvironment({
 function exportShell(model: Parameters<typeof Arcs>[0]['model']) {
   return (
     <svg data-testid="shell">
-      <Arcs model={model} exportSVG />
+      <ArcsSvg arcs={model.laidOutArcs} />
     </svg>
   )
 }
@@ -89,12 +90,37 @@ test('the export carries the label, its halo and the arc color', () => {
   const texts = [...container.querySelectorAll('text')]
   expect(texts.map(t => t.textContent)).toEqual(['lbl', 'lbl'])
   // the white one first: SVG paints stroke over fill, so the thick white stroke
-  // under the real glyphs is what makes the halo
-  expect(texts.map(t => t.getAttribute('stroke'))).toEqual(['white', 'black'])
+  // under the real glyphs is what makes the halo. The glyph itself is a FILL,
+  // which is what `drawArcs` paints with `fillText` — as a stroke it would come
+  // out hollow on the canvas's side of the same label.
+  expect(texts.map(t => t.getAttribute('stroke'))).toEqual(['white', null])
+  expect(texts.map(t => t.getAttribute('fill'))).toEqual([null, 'black'])
+  // and both carry a size, or a serialized figure renders them at SVG's 16px
+  // default under a baseline placed for the theme's
+  for (const t of texts) {
+    expect(Number(t.getAttribute('font-size'))).toBeGreaterThan(0)
+  }
   // getStrokeProps normalizes, so the config's `darkblue` arrives as its hex
   expect(container.querySelector('path')!.getAttribute('stroke')).toBe(
     '#00008b',
   )
+})
+
+// Both painters place a label from `arcMidX` and `arcLabelBaselineY`, and
+// nothing compared them: the canvas recorder in `drawArcs.test.ts` discards the
+// x/y it was given, so offsetting either painter's label by 40px left every
+// test in this plugin green. The export is the half whose numbers are readable,
+// so pin those against the shared derivation.
+test('the exported label sits on the shared baseline, at the shared midpoint', () => {
+  const { display } = oneArc()
+  const { container } = render(exportShell(display))
+  const arc = display.laidOutArcs[0]!
+  const texts = [...container.querySelectorAll('text')]
+  expect(texts).toHaveLength(2)
+  for (const t of texts) {
+    expect(Number(t.getAttribute('x'))).toBe(arcMidX(arc.shape))
+    expect(Number(t.getAttribute('y'))).toBe(arcLabelBaselineY(arc))
+  }
 })
 
 test("the paired display's direction ticks export as lines", () => {
@@ -134,9 +160,12 @@ test('the hover color is the theme text color, resolved once', () => {
 // painter against a recording ctx that draws nothing. A canvas that never gets a
 // context, or an effect that never fires, passes all of those and shows an empty
 // track. jsdom rasterizes through node-canvas here, so this is a pixel read.
+function rgbaAt(canvas: HTMLCanvasElement, x: number, y: number) {
+  return [...canvas.getContext('2d')!.getImageData(x, y, 1, 1).data]
+}
+
 function inkAt(canvas: HTMLCanvasElement, x: number, y: number) {
-  const { data } = canvas.getContext('2d')!.getImageData(x, y, 1, 1)
-  return data[3]! > 0
+  return rgbaAt(canvas, x, y)[3]! > 0
 }
 
 // A point on the curve, derived from the shape's own numbers rather than read
@@ -172,6 +201,33 @@ test('the arcs reach the canvas as pixels', () => {
   expect(inkAt(canvas, x, y)).toBe(true)
   // the empty band above the curve, so "every pixel is ink" cannot pass this
   expect(inkAt(canvas, x, y - 30)).toBe(false)
+})
+
+// The headline behaviour of the canvas rewrite, and the one nothing reached:
+// `arcHover.test.tsx` reads model state and `drawArcs.test.ts` reads a stub
+// ctx, so passing `hovered: undefined` into the draw call left all of them
+// green with the highlight entirely dead. This is the pixel.
+test('hovering an arc repaints it in the hover color', () => {
+  const { display } = oneArc()
+  const theme = createJBrowseTheme()
+  const { container } = render(
+    <ThemeProvider theme={theme}>
+      <Arcs model={display} />
+    </ThemeProvider>,
+  )
+  const arc = display.laidOutArcs[0]!
+  const shape = arc.shape as { left: number; right: number; height: number }
+  const { x, y } = onCurve(shape, 0.25)
+  const before = rgbaAt(container.querySelector('canvas')!, x, y)
+
+  act(() => {
+    display.setHoveredFeature(arc.feature, arc.key)
+  })
+  const after = rgbaAt(container.querySelector('canvas')!, x, y)
+
+  expect(before[3]).toBeGreaterThan(0)
+  expect(after[3]).toBeGreaterThan(0)
+  expect(after).not.toEqual(before)
 })
 
 test('an arc off screen paints nothing', () => {

@@ -61,6 +61,14 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          * declares that hook as a computed and MST refuses a volatile over one.
          */
         hoveredArcFeature: undefined as Feature | undefined,
+        /**
+         * #volatile
+         * Which ARC of that feature, since one feature can lay out as several:
+         * `pairKey` keys on endpoints, so a BND record with two ALTs survives
+         * dedupe as two arcs sharing one `Feature`. The tooltip looks the
+         * caption up by this, not by the feature.
+         */
+        hoveredArcKey: undefined as string | undefined,
       }))
       .actions(self => ({
         /**
@@ -74,8 +82,9 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
         /**
          * #action
          */
-        setHoveredFeature(feature?: Feature) {
+        setHoveredFeature(feature?: Feature, arcKey?: string) {
           self.hoveredArcFeature = feature
+          self.hoveredArcKey = arcKey
         },
         /**
          * #action
@@ -85,6 +94,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          */
         clearHoveredFeature() {
           self.hoveredArcFeature = undefined
+          self.hoveredArcKey = undefined
         },
         /**
          * #action

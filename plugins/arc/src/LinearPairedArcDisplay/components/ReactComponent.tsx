@@ -8,14 +8,12 @@ import type { LinearPairedArcDisplayModel } from '../model.ts'
 const LinearPairedArcReactComponent = observer(
   function LinearPairedArcReactComponent({
     model,
-    exportSVG,
   }: {
     model: LinearPairedArcDisplayModel
-    exportSVG?: boolean
   }) {
     return (
       <BaseDisplayComponent model={model}>
-        <Arcs model={model} exportSVG={exportSVG} />
+        <Arcs model={model} />
       </BaseDisplayComponent>
     )
   },

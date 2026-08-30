@@ -9,7 +9,13 @@ import { observer } from 'mobx-react'
 import { hitTestArcs } from './arcHitTest.ts'
 import { arcLabelBaselineY } from './arcLayout.ts'
 import { arcMidX, arcPathD } from './arcShape.ts'
-import { drawArcs } from './drawArcs.ts'
+import {
+  LABEL_COLOR,
+  LABEL_HALO_COLOR,
+  LABEL_HALO_EM,
+  SELECTED_COLOR,
+  drawArcs,
+} from './drawArcs.ts'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 import type { LaidOutArc } from './arcLayout.ts'
@@ -22,15 +28,10 @@ const ArcTooltip = lazy(() => import('../ArcTooltip.tsx'))
 // it — a canvas on screen, one `<path>` per arc in the export. See
 // `plugins/arc/CLAUDE.md` for why the split is that way round.
 
-const Arcs = observer(function Arcs({
-  model,
-  exportSVG,
-}: {
-  model: ArcDisplayModel
-  exportSVG?: boolean
-}) {
+const Arcs = observer(function Arcs({ model }: { model: ArcDisplayModel }) {
   const theme = useTheme()
-  const { laidOutArcs, hoveredFeature, canvasWidth, height } = model
+  const { laidOutArcs, hoveredFeature, hoveredArcKey, canvasWidth, height } =
+    model
   // contrasts against the track background in either theme
   const hoverColor = theme.palette.text.primary
   // the size and family the `<text>` elements used to inherit through the
@@ -39,10 +40,9 @@ const Arcs = observer(function Arcs({
 
   const hitTest = useCallback(
     (state?: MouseState) => {
-      model.setHoveredFeature(
-        state &&
-          hitTestArcs(state.x, state.y, laidOutArcs, canvasWidth)?.feature,
-      )
+      const hit =
+        state && hitTestArcs(state.x, state.y, laidOutArcs, canvasWidth)
+      model.setHoveredFeature(hit?.feature, hit?.key)
     },
     [model, laidOutArcs, canvasWidth],
   )
@@ -60,9 +60,6 @@ const Arcs = observer(function Arcs({
     [laidOutArcs, hoveredFeature, hoverColor, canvasWidth, font],
   )
 
-  if (exportSVG) {
-    return <ArcsSvg arcs={laidOutArcs} />
-  }
   return (
     <div
       data-testid="arcs"
@@ -90,26 +87,32 @@ const Arcs = observer(function Arcs({
       />
       {hoveredFeature ? (
         <Suspense fallback={null}>
-          <ArcTooltip contents={captionFor(laidOutArcs, hoveredFeature)} />
+          <ArcTooltip contents={captionFor(laidOutArcs, hoveredArcKey)} />
         </Suspense>
       ) : null}
     </div>
   )
 })
 
-function captionFor(
-  arcs: readonly LaidOutArc[],
-  feature: NonNullable<ArcDisplayModel['hoveredFeature']>,
-) {
-  return arcs.find(a => a.feature === feature)?.caption
+// By arc key, not by feature: two arcs can share one `Feature` (a BND with two
+// ALTs), and finding by feature would answer with whichever of them laid out
+// first however far away the other one is.
+function captionFor(arcs: readonly LaidOutArc[], arcKey?: string) {
+  return arcs.find(a => a.key === arcKey)?.caption
 }
 
 // No `<svg>` of its own — the export shell has already opened one, and a second
 // would clip the arcs to a box inside the box they were laid out in. No cull
 // either: the export captures the whole region.
-function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
+//
+// Not an observer, and it takes the arcs rather than the model: a figure is
+// frozen, and `useFrozenFigureContract` fails any observer mounted inside one.
+// It reads `laidOutArcs` — a computed over `bpToPx` and `offsetPx` — so as an
+// observer it would slide the arcs across a body frozen at an older snapshot
+// the next time the underlying view panned.
+export function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
   return arcs.map(arc => {
-    const stroke = getStrokeProps(arc.selected ? 'red' : arc.color)
+    const stroke = getStrokeProps(arc.selected ? SELECTED_COLOR : arc.color)
     return (
       <g key={arc.key}>
         <path
@@ -138,15 +141,36 @@ function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
 // Two stacked `<text>`s, the white one first: SVG paints stroke over fill, so a
 // thick white stroke under the real glyphs is the halo. `drawArcs` spells it
 // strokeText-then-fillText.
+//
+// Both carry an explicit size and family. A `<text>` with neither takes SVG's
+// 16px default in a serialized file, or the host page's font inline, while the
+// canvas pins the theme's — and `arcLabelBaselineY` places a baseline for
+// glyphs of one size, so the two paths have to agree on which.
 function ArcLabel({ arc }: { arc: LaidOutArc }) {
+  const theme = useTheme()
   const x = arcMidX(arc.shape)
   const y = arcLabelBaselineY(arc)
+  const font = {
+    fontSize: theme.typography.fontSize,
+    fontFamily: theme.typography.fontFamily,
+  }
   return (
     <>
-      <text x={x} y={y} stroke="white" strokeWidth="0.6em">
+      <text
+        {...font}
+        x={x}
+        y={y}
+        stroke={LABEL_HALO_COLOR}
+        strokeWidth={`${LABEL_HALO_EM}em`}
+      >
         {arc.label}
       </text>
-      <text x={x} y={y} stroke={arc.selected ? 'red' : 'black'}>
+      <text
+        {...font}
+        x={x}
+        y={y}
+        fill={arc.selected ? SELECTED_COLOR : LABEL_COLOR}
+      >
         {arc.label}
       </text>
     </>
