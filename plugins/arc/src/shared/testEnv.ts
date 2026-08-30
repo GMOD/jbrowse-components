@@ -10,7 +10,7 @@ import type { LinearArcDisplayModel } from '../LinearArcDisplay/model.ts'
 import type { LinearPairedArcDisplayModel } from '../LinearPairedArcDisplay/model.ts'
 
 // The shared display harness wired for the arc display. Arc is the one LGV
-// display class with no rendering backend — it paints JSX `<path>` elements —
+// display class with no rendering backend — it paints a Canvas2D of its own —
 // so what these tests exercise is its fetch model and display phase, both of
 // which need a real attach.
 // `displayConfig` for the style slots: their defaults are jexl calls into

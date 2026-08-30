@@ -1,9 +1,42 @@
 # @jbrowse/plugin-arc
 
-Main-thread SVG — no RPC worker, no GPU backend, no `RenderLifecycleMixin`.
+Main-thread Canvas2D — no RPC worker, no GPU backend, no `RenderLifecycleMixin`.
 `LinearArcDisplay` connects one feature's own start↔end;
 `LinearPairedArcDisplay` connects two independent endpoints each with their own
 refName.
+
+## One list, three consumers
+
+**`model.laidOutArcs` is the only place either display reads `bpToPx`**, and
+everything downstream of it takes a plain array: `drawArcs` strokes it,
+`hitTestArcs` measures it, and `ArcsSvg` writes one `<path>` per entry for the
+export.
+
+That is a performance shape, not tidiness. Each arc used to be its own
+`observer` projecting itself, so a zoom ran a MobX reaction and patched ~3 SVG
+attributes **per arc per frame**, per track — 4 arcs cost 8 reactions and 12 DOM
+mutations a frame, and an SV callset carries thousands in view. As a model
+computed MobX caches it against the viewport, so a hover redraws without
+re-placing anything. The `census: arcs` arm of
+`products/jbrowse-web/src/tests/ZoomRenderCensus.test.tsx` holds the numbers and
+asserts the per-arc terms stay gone.
+
+**A shape, not a path string.** `shared/arcShape.ts` owns the two curves — a
+semicircle is a true half circle (radius IS half the span) and a bezier is a
+symmetric cubic apexing at `0.75 * height` — and hands out the canvas stroke,
+the `d`, the apex and the distance from ONE derivation. Don't add a fourth
+reading of a curve; `arcShape.test.ts` pins every point of the exported path as
+measuring zero distance, which is the check that keeps the hover on the ink.
+
+**The export stays vector, and is the one thing SVG still does here.** It emits
+`<path>` per arc off the same list because a figure wants vector and that path
+runs once, not sixty times a second. See `agent-docs/reference/SVG_EXPORT.md`.
+
+**The hover is a hit test.** `ARC_HIT_SLOP_PX` and the `bestArcMark` ranking are
+`@jbrowse/sv-core`'s, shared with the alignments arc band — nearest ink wins,
+later-painted breaks the tie. The alignments GEOMETRY does not travel and
+cannot: `hitTestArcBand` reads `ArcsUploadData` and resolves conic domes through
+the generated `arcRadiiPx` against a genomic Y domain, none of which arc has.
 
 ## Chrome: `DisplayStatusChrome`, the backend-free half of DisplayChrome
 

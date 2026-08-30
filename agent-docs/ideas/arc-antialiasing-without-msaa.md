@@ -100,13 +100,14 @@ restored, not sure if we really need it"* (`84cb2ba62d`, with `4cc4708ebb`
 
 ### The bezier overlays and `plugins/arc` are not on this path at all
 
-`plugins/arc` (`LinearArcDisplay`, `LinearPairedArcDisplay`) renders SVG
-`<path>` elements — `getSemicirclePath` / `getBezierPath` — and so does the
-breakpoint/linked-read connector overlay (`bezierConnectorPath` in
-`packages/core/src/util/bezierConnector.ts`, consumed by
-`AlignmentConnections.tsx` and `features/linkedReads/computeOverlay.ts`). Those
-are antialiased by the browser's SVG rasteriser and have never touched a HAL.
-The only GPU-drawn arcs in the tree are the alignments read-connection band.
+`plugins/arc` (`LinearArcDisplay`, `LinearPairedArcDisplay`) strokes a plain
+main-thread Canvas2D (`shared/drawArcs.ts`, off `shared/arcShape.ts`), so it is
+antialiased by the 2D rasteriser and has never touched a HAL; it emits SVG
+`<path>` only in the export. Neither has the breakpoint/linked-read connector
+overlay (`bezierConnectorPath` in `packages/core/src/util/bezierConnector.ts`,
+consumed by `AlignmentConnections.tsx` and
+`features/linkedReads/computeOverlay.ts`), which is still SVG on screen. The
+only GPU-drawn arcs in the tree are the alignments read-connection band.
 
 ### Which GPU marks have their own AA, and which lean on the target
 

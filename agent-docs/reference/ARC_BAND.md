@@ -107,11 +107,13 @@ Stated in two places, for the two things that overlap:
 hover resolves to is a question about that order, and the answer belongs beside
 the scan rather than at each call site. Both renderers run the line pass **first**
 (`drawArcsPass`; `drawArcs` strokes the ticks before the curves), so an arc is
-always the later ink. `bestMark`'s on-ink winner is simply the **last candidate
-considered**, both feeds arriving in paint order and both scans running ascending
-— it used to rank on `support`, which was the same thing only while support _was_
-the sort key, so a fixture built out of feed order now tests a state production
-cannot reach.
+always the later ink. `bestArcMark`'s on-ink winner is simply the **last
+candidate considered**, both feeds arriving in paint order and both scans running
+ascending — it used to rank on `support`, which was the same thing only while
+support _was_ the sort key, so a fixture built out of feed order now tests a
+state production cannot reach. The ranking itself is `@jbrowse/sv-core`'s, since
+`plugins/arc` resolves its own semicircles and beziers by it and shares none of
+the geometry.
 
 The rule is two-tier — on-ink beats near-ink either way, the arc wins among
 on-ink, and a near-ink tie goes the same way — because "arc always" would make a

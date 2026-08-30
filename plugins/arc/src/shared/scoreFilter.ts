@@ -70,7 +70,7 @@ export function makeScoreFilterMenuItem(
     // scores are counts and a fractional threshold means nothing
     step: span > 100 ? 1 : span / 100,
     format: n => (Number.isInteger(n) ? `${n}` : n.toFixed(2)),
-    // main-thread SVG repaint over already-fetched features, so live
+    // main-thread canvas repaint over already-fetched features, so live
     getValue: () => model.minScore,
     isDefault: model.minScore === 0,
     onChange: score => {

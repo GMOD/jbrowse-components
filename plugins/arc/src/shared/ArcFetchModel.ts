@@ -19,10 +19,10 @@ import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type React from 'react'
 
 /**
- * The lazy boundary for a display's export path — `LinearArcDisplay/renderSvg.tsx`
- * and its twin. Typed on the bare node rather than the display it pairs the
- * shared body with: naming that model here is a circular reference through the
- * factory's return type, so the edge narrows inside.
+ * The lazy boundary for the export path — `shared/renderArcSvg.tsx`, which both
+ * displays pass. Typed on the bare node rather than on the display: naming
+ * either model here is a circular reference through the factory's return type,
+ * so the edge narrows inside.
  */
 export interface ArcExportEdge {
   renderArcSvg: (model: IStateTreeNode) => Promise<React.ReactNode>
@@ -134,7 +134,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
       .views(self => ({
         /**
          * #getter
-         * The box the arcs are laid out in: the on-screen `<svg>` and the
+         * The box the arcs are laid out in: the on-screen canvas and the
          * export's clip rect have to be one number, or a bezier that legitimately
          * bows outside the viewport is clipped on one path and not the other.
          * Same name and same reason as the LD display's, over `totalWidthPx`
@@ -165,9 +165,10 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          * #getter
          * Narrows the foundation's `displayPhase` to the backend-free variant.
          * Arc composes the render lifecycle with the rest of the foundation but
-         * never calls `attachRenderingBackend` — it paints JSX `<path>`s, on
-         * screen and in SVG export alike — so `renderError` is a phase it cannot
-         * reach, and the narrower type is what lets `DisplayStatusChrome` (whose
+         * never calls `attachRenderingBackend` — it paints its own Canvas2D on
+         * screen, and JSX `<path>`s only in the SVG export — so `renderError` is
+         * a phase it cannot reach, and the narrower type is what lets
+         * `DisplayStatusChrome` (whose
          * banners have no backend `retry()` to offer) accept this display with
          * neither a cast nor a dead branch. On the model rather than derived
          * inside `BaseDisplayComponent` so the component can't disagree with the
@@ -230,7 +231,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
         /**
          * #action
          * `opts` is accepted (the export framework calls every display's
-         * renderSvg with it) but unused: arc paints vector JSX, not a
+         * renderSvg with it) but unused: the export emits vector JSX, not a
          * paintLayer.
          */
         async renderSvg(

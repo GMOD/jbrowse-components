@@ -34,10 +34,10 @@ export type StatusChromeModel = DisplayErrorBarModel &
 // It exists as its own component because two displays need exactly this and
 // only one of them has a GPU backend. `DisplayChromeBase` wraps it with
 // `useRenderingBackend` + the `renderError` phase (the only phase whose banner
-// needs the hook's `retry`); arc, which renders main-thread SVG and has no
-// backend to fail, renders it directly with `svgReady`'s looser sibling as
-// `drawn`. Before this split arc hand-copied the whole branch and had already
-// drifted — it rendered no background-progress chip at all. A display's
+// needs the hook's `retry`); arc, which paints its own main-thread Canvas2D
+// and has no backend to fail, renders it directly with `svgReady`'s looser
+// sibling as `drawn`. Before this split arc hand-copied the whole branch and
+// had already drifted — it rendered no background-progress chip at all. A display's
 // alignment with the chrome should cost it a prop, not a copy.
 //
 // Deliberately NOT an observer, and it reads no observable: `phase` and `drawn`
@@ -64,7 +64,8 @@ export type DisplayStatusChromeBaseProps = {
    */
   phase: DisplayStatusPhase
   /**
-   * First paint: `painted` for a GPU display, arc's own `painted` for SVG.
+   * First paint: `painted` for a GPU display, arc's own `painted` for its
+   * Canvas2D.
    * Drives the published `data-display-drawn` and the loading overlay's
    * anti-flash suppression while there is nothing on screen to flash over.
    *

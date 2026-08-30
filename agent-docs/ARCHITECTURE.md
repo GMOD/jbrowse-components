@@ -64,9 +64,10 @@ main:    model.rpcDataMap              (MST node, observable)
 Every canvas-drawing display **must** provide a Canvas2D draw function; the GPU
 shader path is an optional accelerator layered on top. Because SVG export runs
 the Canvas2D path, on-screen and exported pixels can't drift. Drawing to a
-canvas is itself a choice, though: the arc classes paint JSX `<path>` elements
-on both paths and touch no canvas at all (circular view's `ChordVariantDisplay`
-does the same off this axis entirely); see [Display stacks](#display-stacks).
+canvas is itself a choice, though: the arc classes own a plain Canvas2D of their
+own rather than a rendering backend, and emit JSX `<path>` elements on the export
+path only (circular view's `ChordVariantDisplay` is SVG on both paths, off this
+axis entirely); see [Display stacks](#display-stacks).
 
 ## Vocabulary
 
@@ -323,7 +324,7 @@ gate](#the-region-too-large-gate-summary)).
 knowing about because the argument for it reads well and did not survive
 contact. `GlobalFetchMixin` was the rendering-agnostic half and
 `GlobalDataDisplayMixin` layered `RenderLifecycleMixin` on it, on the reasoning
-that arc — which paints main-thread JSX `<path>`s and attaches no rendering
+that arc — which paints its own main-thread Canvas2D and attaches no rendering
 backend — shouldn't drag the render lifecycle in to get
 fetch/cancel/too-large/reload. What that bought arc was five unused volatiles
 and two autoruns it never installs (`attachRenderingBackend` is what installs

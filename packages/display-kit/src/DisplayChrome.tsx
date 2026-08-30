@@ -64,8 +64,8 @@ export default function DisplayChrome<B extends RenderingBackend>(
 }
 
 /**
- * The same chrome for a display with **no rendering backend** — arc's
- * main-thread SVG. Identical container, testid, `data-display-phase`
+ * The same chrome for a display with **no rendering backend** — arc's own
+ * main-thread Canvas2D. Identical container, testid, `data-display-phase`
  * and overlays; it just takes the phase and the first-paint flag as props
  * instead of reading them off a `RenderLifecycleMixin`, and offers no
  * `renderError` banner because there is no backend to fail (hence

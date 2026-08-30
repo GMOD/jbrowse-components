@@ -29,7 +29,7 @@ export function blockKeySignature(blocks: { key: string }[]) {
  * dataset — HiC's contact matrix, the LD triangle, both arc displays. One
  * foundation rather than the two this family carried until 2026-08-23:
  * `GlobalDataDisplayMixin` existed only to layer `RenderLifecycleMixin` on top
- * for the GPU composers, because arc paints main-thread SVG `<path>`s and
+ * for the GPU composers, because arc paints its own main-thread Canvas2D and
  * declined it — so the fetch foundation was split in two, and the three getters
  * on the upper half (`canRender`, `paintInert`, `displayPhase`) were reachable
  * only by whichever displays composed it. A display that composes this now gets

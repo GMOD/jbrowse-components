@@ -35,7 +35,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * #stateModel LinearArcDisplay
  * #displayFoundation GlobalFetchMixin
  * a non-block-based display drawing one arc per feature, connecting that
- * feature's own start and end, rendered as plain SVG on the main thread. For
+ * feature's own start and end, drawn on a main-thread Canvas2D. For
  * arcs that connect two *separate* loci (a breakend and its mate) use
  * [LinearPairedArcDisplay](../linearpairedarcdisplay) instead.
  *

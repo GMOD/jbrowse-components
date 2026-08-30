@@ -1,6 +1,6 @@
 ---
 name: zoom-perf-followups
-description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found two PaddingBlocks bugs nothing here predicted — the bigger one an overlay every track re-renders per frame to draw nothing, since paddingSpans is empty mid-contig — made the legendRightEdgePx item three times bigger than it was sold as, and killed the stop-token blob URL item outright by counting the mints. One live item is left — worker-side wiggle packing, blocked on a retention decision.
+description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found two PaddingBlocks bugs nothing here predicted — the bigger one an overlay every track re-renders per frame to draw nothing, since paddingSpans is empty mid-contig — made the legendRightEdgePx item three times bigger than it was sold as, killed the stop-token blob URL item outright by counting the mints, and then found the only per-FEATURE per-frame cost in the app, in plugins/arc. One live item is left — worker-side wiggle packing, blocked on a retention decision.
 ---
 
 # Scroll-zoom: what is left
@@ -25,8 +25,8 @@ flush, moving MAF's packing to the worker, and folding content staleness into
 `Reaction.track` wraps the render itself, so a `mobx.spy()` filtered to reaction
 events is a per-component render count with no component instrumented. It prints
 that ranked beside a `MutationObserver` tally of where the DOM churn lands, over
-a geometric `zoomTo` ramp at four arms — four tracks, eight tracks, mid-contig,
-and a gene track at label zoom.
+a geometric `zoomTo` ramp at five arms — four tracks, eight tracks, mid-contig,
+a gene track at label zoom, and an arc band.
 
 **Take the view-geometry counts as exact and the rest as approximate.** The
 overlay, ruler and scalebar components are a function of the zoom steps alone
@@ -34,11 +34,13 @@ and repeat to the integer between runs; anything downstream of a fetch
 (`DisplayLoadingOverlay`, `DisplayChromeBaseInner`, `FetchVisibleRegions`,
 `AppReadyMarker`) moved by up to 2x across runs of identical source, because how
 many refetch rounds land inside 20 frames is a wall-clock race. The census
-asserts three expectations — a per-gesture bound on each wiggle body, and no
-`PaddingBlocks` render at all mid-contig; the rest is a readout. Only the last of
-the three is in the deterministic group. The two bounds sit ~3x under the counts
-they catch, which is what makes them safe against a residual that includes
-fetch-driven renders.
+asserts a per-gesture bound on each wiggle body, no `PaddingBlocks` render at
+all mid-contig, and no per-arc component or DOM churn in the arc arm; the rest is
+a readout. The two wiggle bounds sit ~3x under the counts they catch, which is
+what makes them safe against a residual that includes fetch-driven renders, and
+the arc arm's mutation bound is loose for the same reason — the chrome's own
+`data-display-phase` flips when a refetch round lands inside the 20 frames,
+which the arm has seen contribute both 0 and 2 against a per-arc cost of 240.
 
 Three things it found, in the order they mattered:
 
@@ -80,6 +82,41 @@ Three things it found, in the order they mattered:
   element defeats the compare every time — so it has no reaction of its own to
   stop and dropping `observer` from it saves nothing. Check that arithmetic
   before optimizing anything that renders as a wrapper.
+
+### The one per-FEATURE cost in the app was `plugins/arc`
+
+Every other per-frame cost this instrument ranks is view-global or paid once per
+TRACK. Arc was neither: it rendered **one `observer` per visible arc**, each
+reading `getCanonicalRefName2` and two `bpToPx` and `offsetPx` for itself. So a
+zoom ran a reaction, rebuilt a path string and patched three SVG attributes per
+arc per frame, per track, on both gestures.
+
+At **four** arcs on screen (`arc_track` + `volvox_bedpe`, 1→16 bp/px, 20 frames)
+that was 26.5 renders and 47.0 DOM mutations a frame, of which arc owned 8
+renders and 12.0 mutations — a quarter of the whole view's frame, for four arcs.
+Two thirds of the mutations were the LABELS: 160 `attr:x` over the two stacked
+`<text>` elements against 80 `attr:d` on the paths. A real SV bedpe or VCF track
+carries 10²-10⁴ arcs in view.
+
+**Fixed by drawing the band on one canvas** (`perf(arc)`, 2026-08-30): 19.5
+renders and 35.0 mutations a frame, with arc contributing **one render and zero
+mutations**. The per-arc terms are gone rather than smaller, which is the part
+that matters — the numbers above would have been ~2000 reactions and ~3000
+attribute patches a frame at 1000 arcs.
+
+Three things generalise from it:
+
+- **`ArcGlyph`'s count equalled `Arc`'s exactly** (80 = 80), the `ZoomTransform`
+  arithmetic above, so it had no reaction of its own to stop. Do that
+  subtraction on any wrapper before treating it as a cost.
+- **The projection belongs on the model, not in the component.** `laidOutArcs`
+  is a MobX computed, so it re-places arcs when the viewport moves and not when
+  a hover redraws them. A component body cannot make that distinction.
+- **SVG's free hit-testing is no longer worth a per-frame DOM.**
+  `pointer-events: stroke` is what kept these as `<path>`s; `hitTestArcs` plus
+  `@jbrowse/sv-core`'s `bestArcMark` replaces it, and the export keeps vector
+  because an export runs once. `reference/SVG_EXPORT.md` carries the amended
+  exception, including the invariant that made the split safe.
 
 **The lesson is not "pool every list by position".** A zoom changes every
 `paddingSpan` key and every scalebar tick key, which is what made those two

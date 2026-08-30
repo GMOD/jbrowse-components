@@ -60,8 +60,8 @@ function mateTick(
  * #displayFoundation GlobalFetchMixin
  * a non-block-based display that draws one arc per feature from its position to
  * its mate breakend (parsed from the VCF `ALT`), connecting the two loci of a
- * structural variant even across displayed regions / chromosomes; rendered as
- * plain SVG on the main thread. For arcs that span a single feature's own
+ * structural variant even across displayed regions / chromosomes; drawn on a
+ * main-thread Canvas2D. For arcs that span a single feature's own
  * start–end use [LinearArcDisplay](../lineararcdisplay) instead.
  *
  * #example

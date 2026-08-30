@@ -13,9 +13,9 @@ JBrowse core.
 — HiC's contact matrix, the LD triangle, both arc displays. One foundation
 rather than the two this family carried until 2026-08-23:
 `GlobalDataDisplayMixin` existed only to layer `RenderLifecycleMixin` on top for
-the GPU composers, because arc paints main-thread SVG `<path>`s and declined it
-— so the fetch foundation was split in two, and the three getters on the upper
-half (`canRender`, `paintInert`, `displayPhase`) were reachable only by
+the GPU composers, because arc paints its own main-thread Canvas2D and declined
+it — so the fetch foundation was split in two, and the three getters on the
+upper half (`canRender`, `paintInert`, `displayPhase`) were reachable only by
 whichever displays composed it. A display that composes this now gets the whole
 answer, and arc pays five unused volatiles and two autoruns it never installs
 (`attachRenderingBackend` is what installs them, and arc never calls it) for the
