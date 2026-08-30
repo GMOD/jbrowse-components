@@ -90,8 +90,10 @@ async function startObserver(page: Page) {
 // tell a `PaddingBlocks` wrapper from a `Gridlines` one — they render the same
 // `ZoomTransform`. Total elements, and the elements carrying an inline
 // `translateX`, which is what `ZoomTransform` writes: an instance that renders
-// contributes two of the first and one of the second, whether or not it has any
-// span to draw.
+// contributes three of the first — `ZoomTransform`'s outer and inner containers
+// plus its own absolute fill — and one of the second, whether or not it has any
+// span to draw. Ten silenced instances are the 30 elements INTERACTION_PERF's
+// browser table reports, not 20.
 async function domCounts(page: Page) {
   return page.evaluate(() => ({
     elements: document.querySelectorAll('*').length,

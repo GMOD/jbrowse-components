@@ -23,7 +23,7 @@
 //   control  a second, separately-declared driver over `computeSashimiArcs`
 //
 // THE FIXTURE is real: 651 distinct junctions with their true read support
-// (mean 41.7, max in the hundreds), from `samtools view` over
+// (mean 41.7, max 2424), from `samtools view` over
 // `https://jbrowse.org/demos/cancer_sv/K562_isoseq.bam` at
 // chr22:23,000,000-24,000,000 — a megabase of K562 Iso-Seq, which is a wide
 // window on a gene-dense arm and so an upper end of what one lane carries.

@@ -139,8 +139,10 @@ async function census({
   }
 }
 
-// The regime the browser harness sweeps (0.5-4 bp/px), plus a track of each
-// family so the count reflects the chrome each one mounts.
+// A track of each family, so the count reflects the chrome each one mounts.
+// This arm zooms 5->69 bp/px, which is NOT the 0.5-4 bp/px `profile-zoom.ts`
+// sweeps: no arm of this census covers the browser harness's band, so the two
+// are read side by side rather than against each other.
 test('census: mixed tracks, base-ish zoom', async () => {
   const { counts } = await census({
     label: 'mixed',
@@ -166,9 +168,16 @@ test('census: mixed tracks, base-ish zoom', async () => {
   // this number is chosen to catch. The counting window opens after first
   // paint, so the mount is not in it; the headroom is for the refetch rounds a
   // gesture legitimately triggers, which are the nondeterministic part.
+  //
+  // The two bounds are not the same distance under what they catch. Restoring
+  // the array read puts `WiggleBody` at 50 against a bound of 20, and
+  // `MultiWiggleBody` at 19 — so `FRAMES` would have passed the sabotage on the
+  // multi-wiggle side by one render. Both bodies sit at 0 when the scalar
+  // holds, so the multi bound is the tighter of the two by measurement rather
+  // than by symmetry.
   const perGesture = (name: string) => counts.get(name) ?? 0
   expect(perGesture('WiggleBody')).toBeLessThan(FRAMES)
-  expect(perGesture('MultiWiggleBody')).toBeLessThan(FRAMES)
+  expect(perGesture('MultiWiggleBody')).toBeLessThan(FRAMES / 4)
 }, 90000)
 
 // The same gesture at twice the track count. Every per-frame cost this file
@@ -214,6 +223,17 @@ test('census: mid-contig, no padding spans to draw', async () => {
     painted: 'wiggle-display',
   })
   expect(counts.get('PaddingBlocks') ?? 0).toBe(0)
+  // A zero keyed on a component's name reads the same whether the component sat
+  // the frame out or was renamed, unmounted, or stopped being an observer, so
+  // it needs something positive beside it. Two things make PaddingBlocks
+  // silent here and the count above sees only one: the shared frozen empty
+  // array, and the early return that draws no overlay for it. With the overlay
+  // absent, ZoomTransform owes exactly what Gridlines owes — one render per
+  // track per frame, the equality INTERACTION_PERF states as an invariant.
+  // Deleting the early return takes ZoomTransform to 160 against Gridlines' 40
+  // while `PaddingBlocks` stays 0.
+  expect(counts.get('Gridlines') ?? 0).toBeGreaterThan(0)
+  expect(counts.get('ZoomTransform') ?? 0).toBe(counts.get('Gridlines') ?? 0)
 }, 90000)
 
 // The regime INTERACTION_PERF flags as unmeasured: where people read gene

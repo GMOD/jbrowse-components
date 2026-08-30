@@ -36,8 +36,13 @@ and repeat to the integer between runs; anything downstream of a fetch
 many refetch rounds land inside 20 frames is a wall-clock race. The census
 asserts a per-gesture bound on each wiggle body, no `PaddingBlocks` render at
 all mid-contig, and no per-arc component or DOM churn in the arc arm; the rest is
-a readout. The two wiggle bounds sit ~3x under the counts they catch, which is
-what makes them safe against a residual that includes fetch-driven renders, and
+a readout. Both wiggle bodies sit at 0 when the scalar holds, and the sabotage
+puts `WiggleBody` at 50 against its bound of 20 but `MultiWiggleBody` at only
+19 — so the two bounds cannot be the same number. `WiggleBody` keeps `FRAMES`,
+2.5x under what it catches; `MultiWiggleBody` is `FRAMES / 4`, since `FRAMES`
+there passed the sabotage by one render and caught nothing at all. The headroom
+each keeps is what makes it safe against a residual that includes fetch-driven
+renders, and
 the arc arm's mutation bound is loose for the same reason — the chrome's own
 `data-display-phase` flips when a refetch round lands inside the 20 frames,
 which the arm has seen contribute both 0 and 2 against a per-arc cost of 240.
@@ -59,8 +64,9 @@ Three things it found, in the order they mattered:
   mid-contig — no seam, no elision, no boundary — which is where a reader spends
   nearly all of a session, and every track was still rendering an empty list
   inside a `ZoomTransform` that rewrites its transform per frame. A shared
-  frozen empty array plus a `null` return took a mid-contig zoom from 761
-  renders to 489 and 63.9 DOM mutations a frame to 50.5, at four tracks. Every
+  frozen empty array plus a `null` return took a mid-contig zoom from 63.9 DOM
+  mutations a frame to 50.5 and `ZoomTransform` from 160 renders to 40, at four
+  tracks. The gesture's render total moves too much between runs to quote. Every
   census arm that starts at offset 0 keeps a boundary block on screen and cannot
   see this, which is the trap: **a computed rebuilding a fresh empty array
   re-renders every observer that reads it.**

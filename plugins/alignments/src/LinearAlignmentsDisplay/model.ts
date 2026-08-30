@@ -253,10 +253,15 @@ const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 // array, and both of these emptinesses are the common case — `showSashimiArcs`
 // is promoted on while DNA reads carry no skip gap, and a single-region view
 // (nearly every view) has no arc whose two feet are in different regions.
-const NO_SASHIMI_ARC_SECTIONS: SashimiArcSection[] = []
-const NO_CROSS_REGION_ARC_SECTIONS: ReturnType<
+// Frozen, like `NO_PADDING_SPANS` next door: a singleton handed out of a public
+// getter is one in-place `.sort()` away from being corrupted for the session,
+// and `projectSashimiArcs` one layer down already sorts.
+const NO_SASHIMI_ARC_SECTIONS = Object.freeze(
+  [],
+) as readonly SashimiArcSection[]
+const NO_CROSS_REGION_ARC_SECTIONS = Object.freeze([]) as readonly ReturnType<
   typeof computeCrossRegionArcSections
-> = []
+>[number][]
 
 /**
  * What a right-click on the pileup resolved: the anchor, the whole hit (block,
@@ -2683,7 +2688,7 @@ export default function stateModelFactory(
            * promoted on, so every alignments track evaluates this, and one that
            * merges nothing has nothing to project.
            */
-          get sashimiArcSections(): SashimiArcSection[] {
+          get sashimiArcSections(): readonly SashimiArcSection[] {
             const sections = this.sashimiJunctionSections
             if (!sections.some(sec => sec.junctions.length > 0)) {
               return NO_SASHIMI_ARC_SECTIONS
