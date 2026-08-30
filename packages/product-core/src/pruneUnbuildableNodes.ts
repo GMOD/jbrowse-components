@@ -301,7 +301,6 @@ class Walk {
   /** ids of nodes taken out, so a reference container can drop the danglers */
   readonly removed = new Set<string>()
   private pending = new Map<string, Pending[]>()
-  private journal: [string, Pending[]][] = []
   // a node restored on this same call is walked like any other, so its own
   // unbuildable children come out again — but the user is told nothing, or a
   // held track whose displays are still missing warns on every load forever.
@@ -334,28 +333,17 @@ class Walk {
     const key = anchorKey(group, parent)
     this.anchors.add(key)
     const taken = this.pending.get(key)
-    if (taken) {
-      this.pending.delete(key)
-      this.journal.push([key, taken])
-    }
+    this.pending.delete(key)
     return taken ?? []
   }
 
-  get mark() {
-    return this.journal.length
-  }
-
-  // A node the walk restored into a subtree the walk then held whole would go
-  // with it: the copy the restore wrote into is discarded. Putting the entry
-  // back on offer keeps it held in its own right instead, anchored where it
-  // was — and a build that can hold the parent restores both, parent first.
-  rollback(mark: number) {
-    for (const [key, entries] of this.journal.splice(mark)) {
-      const existing = this.pending.get(key)
-      this.pending.set(key, existing ? [...entries, ...existing] : entries)
-    }
-  }
-
+  /**
+   * Entries no container claimed. A node whose subtree the walk descended into
+   * is one the registry can name, and so one it admits — the single exception
+   * is a track the cascade takes, which needs its display list to have come out
+   * empty and so to have claimed nothing. Nothing a container takes can
+   * therefore be discarded with the node around it.
+   */
   unplaced() {
     return new Set([...this.pending.values()].flat().map(p => p.held))
   }
@@ -403,7 +391,13 @@ function pruneNode(
     canonical === undefined || canonical === type
       ? node
       : { ...node, type: canonical }
-  const model = walk.registry.memberFor(elementType, canonical ?? type)
+  // only for a name the registry knows, which is exactly the set `accepts`
+  // waves through: a node whose subtree the walk descends into is one it can
+  // put back
+  const model =
+    canonical === undefined
+      ? undefined
+      : walk.registry.memberFor(elementType, canonical)
   const emptied = walk.emptiedDisplayCount()
   const pruned = model
     ? walkModel(model, named, readId(named) ?? parent, walk)
@@ -460,7 +454,6 @@ function pruneArray(
   let changed = merged.length !== (list?.length ?? 0)
   for (const [index, { node, restored }] of merged.entries()) {
     const mark = walk.held.length
-    const restores = walk.mark
     const pruned = walk.quietly(restored, () =>
       pruneNode(node, group, elementType, parent, walk),
     )
@@ -473,7 +466,6 @@ function pruneArray(
     // rolled back — so a dropped view's tracks are inside the copy of the view,
     // not separate entries anchored to a view that is no longer in the tree
     walk.held.length = mark
-    walk.rollback(restores)
     walk.held.push({ group, parent, index, snapshot: node })
     const id = readId(node)
     if (id !== undefined) {
@@ -505,7 +497,6 @@ function pruneMap(
   let changed = false
   for (const [key, node] of Object.entries(map ?? {})) {
     const mark = walk.held.length
-    const restores = walk.mark
     const pruned = pruneNode(node, group, elementType, parent, walk)
     if (pruned !== undefined || !isRecord(node)) {
       changed ||= pruned !== node
@@ -513,7 +504,6 @@ function pruneMap(
       continue
     }
     walk.held.length = mark
-    walk.rollback(restores)
     walk.held.push({ group, key, parent, snapshot: node })
     walk.removed.add(readId(node) ?? key)
     changed = true
@@ -524,13 +514,11 @@ function pruneMap(
       continue
     }
     const mark = walk.held.length
-    const restores = walk.mark
     const pruned = walk.quietly(true, () =>
       pruneNode(entry.snapshot, group, elementType, parent, walk),
     )
     if (pruned === undefined) {
       walk.held.length = mark
-      walk.rollback(restores)
       walk.held.push({ group, key, parent, snapshot: entry.snapshot })
     } else {
       out[key] = pruned
