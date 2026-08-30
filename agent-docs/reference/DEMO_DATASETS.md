@@ -66,15 +66,15 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **Read-pair SV contact channels → NA12878 at three 1000G phase 3 calls**
   (`demos/sv_contact_maps`, `scripts/build_sv_contact_maps.sh`). Cue's encoding
   over one GIAB HG001 300x slice, twice: `na12878_sv_channels` is one
-  `AlignmentsTrack` with `groupBy: pairOrientation`, arcs colored by
-  orientation, concordant arcs off and the pileup hidden, which is the four
-  channels as coverage-plus-arcs bands; the four `.hic` files are the same
-  channels binned. Measured off the BAM, so do not re-pick by SV type:
+  `AlignmentsTrack` with `groupBy: pairOrientation`, concordant arcs off and the
+  pileup hidden, which is the four channels as coverage-plus-arcs bands (the
+  arcs take `arcColorByType`, left at its default); the four `.hic` files are
+  the same channels binned. Measured off the BAM, so do not re-pick by SV type:
   - **INV `7:70,420,799-70,438,952`** (het, delly, and `CINV` in the record's
     own name). 605 of the 660 same-strand pairs in the whole chr7 slice land in
     a handful of cells that share a bin at 70,438k, and TWO of those hold 411 of
     them: 70,425,750 x 70,438,500 is the RR class and 70,420,500 x 70,438,500
-    the FF one. So the figure of it carries two cells rather than one. The two
+    the LL one. So the figure of it carries two cells rather than one. The two
     left ends sit either side of `7:70,421,000-70,426,000`, which holds zero
     aligned records in a 300x library, and each class anchors on the side of
     that hole it can align to. This is the only one of the three loci with

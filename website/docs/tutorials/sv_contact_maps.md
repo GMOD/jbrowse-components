@@ -97,11 +97,13 @@ coverage, and hide the pileup:
 }
 ```
 
-The track menu's **SV channels (pairs by orientation)** row sets all of that in
-one click. The settings behind it are **Group by → Pair orientation**, **Read
-connections → Show read arcs** with **Arc / read cloud band options → Show
-concordant-pair arcs** unchecked, **Color by... → Pair orientation**, and
-**Show... → Show pileup** off.
+**Track menu → Read connections → SV channels (pairs by orientation)** writes
+four of those keys in one click: **Group by → Pair orientation**, **Read
+connections → Show read arcs**, **Arc / read cloud band options → Show
+concordant-pair arcs** unchecked, and **Show... → Show pileup** off. The two
+heights, `linkedReads` and `readConnectionsDown` are framing, and the row leaves
+them to you. `colorBy` it leaves alone on purpose: with the pileup hidden there
+are no read fills to paint, so the arcs take their color from `arcColorByType`.
 
 Four bands come out, one per orientation class, each with its own coverage curve
 and its own arcs:

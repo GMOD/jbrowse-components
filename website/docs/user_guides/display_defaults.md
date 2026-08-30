@@ -4,11 +4,11 @@ description: Making one track setting the default for every track of that type
 guide_category: General usage
 ---
 
-**TL;DR:** most track-menu settings carry a push-pin beside them. Clicking it
-applies that value to every open track of the same type, and a snackbar then
-offers to keep it as the default for the ones you open later. An outline pin
-means "not the default", a filled one means it is — so a default takes two
-clicks, and clicking a filled pin clears it.
+**TL;DR:** most track settings carry a push-pin beside them. Clicking it applies
+that value to every open track of the same type, and a snackbar then offers to
+keep it as the default for the ones you open later. An outline pin means "not
+the default", a filled one means it is — so a default takes two clicks, and
+clicking a filled pin clears it.
 
 This is the in-app counterpart to the `displayDefaults` an administrator can
 bake into `config.json` (see
@@ -17,10 +17,11 @@ they last beyond the current session.
 
 ## Applying a value to every open track
 
-Open the track menu, find the setting, and click the pin on the row for the
-value you want. Every open track of that type takes the value — the ones you had
-already set individually included — and an "Applied to N open tracks" snackbar
-says how many.
+Open the menu that offers the setting — the track menu, for most display types —
+find the setting, and click the pin on the row for the value you want. Every
+open track of that type takes the value — the ones you had already set
+individually included — and an "Applied to N open tracks" snackbar says how
+many.
 
 <Figure caption="Applying Compact as the read height. Top: the pin on the Compact preset. Bottom: both open alignments tracks are compact, and the snackbar offers to keep Compact as the default." src="/img/feature_height_default.png" />
 
@@ -98,12 +99,15 @@ Each setting below resolves through a session-wide default for its display type.
 Follow a link for what the setting does and what it falls back to when nothing
 is pinned.
 
-The pin itself lives on the setting's own row in the track menu, so you only
-meet it where that menu offers the setting. A row appears while it applies to
-what the track is drawing — line width on a line rendering, point size on a
-scatter, the sashimi options once sashimi arcs are on — and a display that
-borrows another display's settings but curates its own menu (the synteny display
-reuses the alignments ones) offers only the rows it lists.
+The pin itself lives on the setting's own row, in whichever menu offers that
+setting, so you only meet it where the setting is. That is the track menu for
+most display types, but not all: a synteny view owns its ribbons, so **Curved
+lines** and **Location markers** and their pins are on the **Synteny display
+settings** button in the view header rather than on any one track's menu. A row
+appears while it applies to what the track is drawing — line width on a line
+rendering, point size on a scatter, the sashimi options once sashimi arcs are on
+— and a display that borrows another display's settings but curates its own menu
+(the synteny display reuses the alignments ones) offers only the rows it lists.
 
 <!-- PROMOTABLE_SLOTS START -->
 
