@@ -225,9 +225,9 @@ test('a locus narrower than the floor is widened around itself', async () => {
   expect((visible!.start + visible!.end) / 2).toBeLessThan(210_000)
 }, 20000)
 
-// `navToLocString` REPLACES the row's regions, so what the click discards may be
-// a region list built over several navigations. "Show all regions" is a
-// different destination, not an undo.
+// The click changes the row's region list, which may be one the reader built
+// over several navigations. "Show all regions" is a different destination, not
+// an undo.
 test('the navigation offers an undo that restores what the row was showing', async () => {
   const { session, view, level } = await setup()
   const before = view.views[1]!.bpPerPx

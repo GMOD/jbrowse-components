@@ -558,8 +558,8 @@ export interface OffscreenMateLocus {
  *
  * `mateCumBp` PRESENT IS THE SCROLL CLASS — the facing row already has this
  * contig and has merely scrolled off it, and this is where to scroll. Absent is
- * the other one, where the only way to show the contig is to replace what that
- * row displays, and `locus` frames it.
+ * the other one, where the row has to gain a region for the contig first and
+ * `locus` frames the window inside it.
  *
  * Carrying the destination itself, rather than a `displayed` boolean beside it,
  * makes "displayed with nowhere to scroll to" unrepresentable rather than merely
@@ -575,7 +575,7 @@ export interface OffscreenMateSpan {
   /**
    * Where the alignments under the mark are DRAWN on the facing axis, in that
    * row's cumBp — and, by being present at all, that the row displays this
-   * contig and the click may SCROLL rather than replace what it shows.
+   * contig and the click may SCROLL rather than change its regions.
    *
    * WHERE THE RIBBONS ARE, not where the block is: `locus` is the untrimmed
    * extent and `clipLargeBlockToWindow` re-anchors a chain to its visible slice,
