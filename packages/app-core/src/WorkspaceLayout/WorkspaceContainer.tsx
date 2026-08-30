@@ -140,9 +140,11 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
       renderTabContent: tab => {
         const views = viewsOf(session, tab.viewIds)
         return views.length > 0 ? (
-          <div className={classes.stack}>
-            <ViewStack views={views} session={session} />
-          </div>
+          <ViewStack
+            views={views}
+            session={session}
+            className={classes.stack}
+          />
         ) : (
           <div className={classes.empty}>
             <Suspense fallback={null}>

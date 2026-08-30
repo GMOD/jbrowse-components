@@ -1,3 +1,4 @@
+import { persistentScrollbarStyle } from '@jbrowse/core/ui/persistentScrollbarStyle'
 import { useScrollPortHeightVar } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -49,6 +50,7 @@ const useStyles = makeStyles()(theme => ({
     minWidth: 0,
     minHeight: 0,
     overflow: 'auto',
+    ...persistentScrollbarStyle(theme),
   },
   indicator: {
     position: 'absolute',

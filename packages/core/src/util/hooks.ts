@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 // The package names itself here on purpose, and this import must not be made
 // relative: `jest.config.js` maps `@jbrowse/core/util/useMeasure` to a mock,
@@ -340,6 +340,67 @@ export function useScrollPortHeightVar() {
     }
   }, [])
   return ref
+}
+
+/**
+ * The nearest ancestor that actually scrolls `el`, or undefined if nothing
+ * above it does.
+ */
+function scrollPortOf(el: HTMLElement) {
+  let node = el.parentElement
+  while (node) {
+    const { overflowY } = getComputedStyle(node)
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      return node
+    }
+    node = node.parentElement
+  }
+  return undefined
+}
+
+/**
+ * Whether the element the ref is on is taller than the scroll port it sits in —
+ * i.e. whether there is content a user could actually scroll to.
+ *
+ * Not the same question as "does the port overflow": a port can overflow by
+ * trailing space it renders for its own reasons, and a scrollbar offering only
+ * that is worse than none, since it says the page has more to show when it does
+ * not. So this measures the *content* box and leaves the trailing space out of
+ * the comparison, which means the caller has to keep that space outside the
+ * measured element.
+ *
+ * Stable rather than oscillating, and not by luck: turning the answer true adds
+ * a scrollbar, which narrows the content, and narrowing can only make content
+ * taller — so a true answer stays true and a false one stays false.
+ *
+ * `useLayoutEffect`, so the first measurement and the re-render it causes both
+ * land before paint. A view added to the stack scrolls itself into view from a
+ * passive effect, and passive effects run after every layout effect in the tree:
+ * measuring here means the trailing space this gates is already in the DOM by
+ * the time that scroll is computed against it.
+ */
+export function useScrollPortOverflow(
+  ref: React.RefObject<HTMLElement | null>,
+) {
+  const [overflowing, setOverflowing] = useState(false)
+  useLayoutEffect(() => {
+    const el = ref.current
+    const port = el ? scrollPortOf(el) : undefined
+    if (!el || !port || !('ResizeObserver' in window)) {
+      return
+    }
+    const check = () => {
+      setOverflowing(el.getBoundingClientRect().height > port.clientHeight)
+    }
+    check()
+    const observer = new ResizeObserver(check)
+    observer.observe(el)
+    observer.observe(port)
+    return () => {
+      observer.disconnect()
+    }
+  }, [ref])
+  return overflowing
 }
 
 /**
