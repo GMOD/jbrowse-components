@@ -1,4 +1,8 @@
-import { animationAllowed, getSession } from '@jbrowse/core/util'
+import {
+  animationAllowed,
+  assembleLocString,
+  getSession,
+} from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
@@ -6,36 +10,21 @@ import type { AnimationMode, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// Padding around the mate locus, as a fraction of its own width per side. The
-// span is where the hidden alignments land and nothing more, so shown exactly
-// it puts their ribbons hard against both edges of the row with nothing around
-// them to read against. Applied HERE rather than handed to `navToLocString`, so
-// the floor below is the width the row actually lands at.
+// Padding around the mate locus, as a fraction of its own width per side, so
+// the ribbons that gain both ends have something to be read against.
 export const OFFSCREEN_MATE_NAV_GROW = 0.2
 
-// The narrowest window a mark may navigate to. A single small anchor is a
-// perfectly ordinary thing to click, and its own span can be a few hundred bp —
-// framed exactly, the row lands at sequence-level zoom showing that one
-// alignment and nothing to place it against, which is the opposite failure from
-// the whole-chromosome one this fixes.
+// The narrowest window a mark may navigate to: a small anchor framed exactly
+// lands the row at sequence-level zoom with nothing around it.
 export const OFFSCREEN_MATE_NAV_MIN_BP = 20_000
 
 /**
  * The window a clicked mark frames on its row: the mate's own locus, padded,
- * and widened to the floor if that is still narrower. Clamped to the contig,
- * since the caller has the region and a window off its end frames blank.
+ * widened to the floor if that is still narrower, and clamped to the contig.
  *
- * The floor is a WIDTH, and the padding is inside it, so the number here is the
- * number the row lands at. Padding afterwards instead made a documented 20kb
- * minimum a 28kb one — and 24kb at the origin, where only the left side clips,
- * which is the asymmetry deriving `start` from the span already removed once.
- *
- * INTERBASE, and a span rather than a locstring: the click used to hand
- * `navToLocString` a string for it to parse back into these two numbers, which
- * only made sense while the destination was also a REGION REPLACEMENT. The row
- * now keeps its regions and frames a window in them, so the numbers travel as
- * numbers. No locus at all means the whole contig — the answer a click gave
- * before there were coordinates.
+ * The floor is a WIDTH with the padding inside it, so the number here is the
+ * number the row lands at. Interbase, and a span rather than a locstring. No
+ * locus at all means the whole contig.
  */
 export function navSpan(
   region: { start: number; end: number },
@@ -94,24 +83,15 @@ export function noFollowAnchor(): FollowAnchorTake {
  *
  * TAKEN BEFORE the navigation, because the follow propagates AWAY from the
  * anchor: a row navigated while some other row holds it is a row the next
- * follow pass pulls straight back, so the click would post its snackbar and
- * change nothing. Which is what makes giving it back this module's problem —
- * the take is a state change the navigation has not earned yet, and only a
- * LANDED navigation raises the snackbar that can undo it. Every other exit has
- * to release, and so does that snackbar's Undo.
+ * follow pass pulls straight back. That makes giving it back this module's
+ * problem — every exit that does not land has to release, and so does the
+ * snackbar's Undo.
  *
- * `release` is safe to call on any path and any number of times. It writes only
- * while the HOST is alive — the node it writes, which is why it is not a
- * liveness test a caller supplies: handed the navigated row's instead, the one
- * exit that most needs releasing (the row died mid-flight) is the one where the
- * test reads false and the anchor is kept. And only while the anchor is still
- * the one this take set: snackbars stack, and an older one's cleanup must not
- * drag the anchor off a row a later click moved it to.
- *
- * With the follow off nothing is taken and `release` writes nothing at all —
- * the anchor is a persisted setting this click never touched, and putting a
- * value back that was never moved silently re-points it at whichever row a mark
- * was last clicked on.
+ * `release` is safe on any path and any number of times. It writes only while
+ * the HOST is alive — the node it writes, so a row that died mid-flight still
+ * gives the anchor back — and only while the anchor is still the one this take
+ * set, since snackbars stack. With the follow off nothing is taken and
+ * `release` writes nothing at all.
  */
 export function takeFollowAnchor(
   host: FollowAnchorHost,
@@ -141,20 +121,11 @@ export function takeFollowAnchor(
 
 /**
  * Whether a mark's click may FLY to a contig the row already displays rather
- * than jump to it.
- *
- * Only the scroll class can be flown at all — the other one gives the row a
- * region it did not have, and an arc needs a coordinate space that already
- * holds both ends. This is the second half: whether flying that path is the
- * right thing here.
- *
- * The reader's own answer first (`animationAllowed` — the session preference
- * and, under 'system', the OS reduced-motion setting), and then the one thing
- * about this stack that makes the arc wrong: `linkViews` holds the rows
- * together in PIXELS, and `installLinkedViewSync` replays a row's `zoomTo` onto
- * the others but not its scroll. So a flight there pulls every row back to the
- * arc's apex and drops them all in again while one of them travels — a picture
- * of the stack coming apart. The jump is what those rows keep.
+ * than jump to it: the reader's own answer (`animationAllowed`), and then the
+ * one arrangement where the arc is wrong. `linkViews` holds the rows together
+ * in PIXELS and `installLinkedViewSync` replays a row's `zoomTo` onto the
+ * others but not its scroll, so a flight there pulls every row back to the
+ * apex and drops them in again while one of them travels.
  */
 export function mateFlightAllowed(
   host: { linkViews: boolean },
@@ -164,24 +135,16 @@ export function mateFlightAllowed(
 }
 
 /**
- * What a row was showing before a mark's click replaced it, as the function
- * that puts it back. A click can APPEND to `displayedRegions`, and the row it
- * changed may be one the reader built over several navigations — "show all
- * regions" is a different destination, not an undo.
+ * What a row was showing before a mark's click, as the function that puts it
+ * back. A click can change `displayedRegions`, and the row it changed may be
+ * one the reader built over several navigations — "show all regions" is a
+ * different destination, not an undo.
  *
- * `displayedRegions` is a frozen `Region[]`, so a copy of the array is the whole
- * of what has to be kept, and the captured objects are plain — nothing here
- * holds an MST node that could be destroyed under the snackbar.
- *
- * A bp WINDOW, not a pixel pair, for the reason `showRegionsWithUndo` states:
- * a snackbar carrying an action never auto-hides, so a capture and its Undo can
- * be a window resize apart, and pixels mean nothing without the width they were
- * measured at.
- *
- * Regions first: `setWindow` clamps against the region set, so restoring into
- * the wrong one lands somewhere else.
+ * A bp WINDOW, not a pixel pair: a snackbar carrying an action never
+ * auto-hides, so a capture and its Undo can be a window resize apart. Regions
+ * first, since `setWindow` clamps against the region set.
  */
-export function captureRowViewport(view: LinearGenomeViewModel) {
+function captureRowViewport(view: LinearGenomeViewModel) {
   const regions: Region[] = [...view.displayedRegions]
   const { windowWidthBp, windowStartBp } = view
   return () => {
@@ -209,31 +172,112 @@ export function captureStackViewports(views: LinearGenomeViewModel[]) {
 }
 
 /**
- * The facing row's own region for a contig a mark names, or undefined when that
- * assembly does not have it.
+ * Where a clicked mark sends its row, and the locstring naming it.
  *
- * WHOLE-CONTIG, because a region the row does not yet display has no other
- * natural extent — the window inside it is `navSpan`'s answer, and the two are
- * separate so panning off the mark's locus stays inside the region rather than
- * running out of it.
- *
- * `getCanonicalRefName2` rather than `getCanonicalRefName`: mate names come out
- * of an alignment file, the facing assembly may spell them differently, and the
- * strict one THROWS when the aliases have not loaded. The fallback there is the
- * name as given, which then simply fails to match below and reaches the caller
- * as "not found" — the same answer an absent contig gets.
+ * `scroll` for a contig the row already displays: its regions are right and its
+ * window is not. `add` for one it does not, which the row gains rather than
+ * swaps its list for. `none` when neither resolves, carrying what to tell the
+ * reader.
  */
-export function mateRegion(
-  node: IStateTreeNode,
-  view: LinearGenomeViewModel,
-  refName: string,
-) {
+export type MateNavDestination =
+  | { kind: 'scroll'; loc: string; refName: string; coord0: number }
+  | {
+      kind: 'add'
+      loc: string
+      regions: Region[]
+      location: { refName: string; start: number; end: number }
+    }
+  | { kind: 'none'; reason: string }
+
+/**
+ * Resolve a mark's click against the row it names, without touching anything.
+ *
+ * Nothing a click takes — a viewport capture, the follow anchor — is earned
+ * until this answers, so it runs first and writes nothing.
+ *
+ * THE DRAWN SPAN DECIDES THE CLASS, and where the ribbons are is not where the
+ * block is: `mateCumBp` is the facing row's own cumBp, read back through
+ * `pxToBp` so a reversed region and a contig displayed several times over both
+ * come back right. `coord0` rather than `coord` because `bpToOffset`/`bpToPx`
+ * take the 0-based one; the locstring below is the 1-based sibling, which is
+ * what the location box will read.
+ *
+ * A DRAWN SPAN LANDING SOMEWHERE ELSE IS STALE, and the row holds. Off the end
+ * of the layout `oob` says so; landing inside another contig's region reads as
+ * valid, so the refName is checked too. There is nothing to fall back to —
+ * `locus` is the coordinate this class exists to stop using.
+ *
+ * THE ADD BRANCH CANNOT LEAVE THE WINDOW OUTSIDE THE REGIONS, which is what
+ * `showRegions` throws on, out of a pointer handler, having already replaced
+ * the list. The row keeps its own region for the contig only when that region
+ * REACHES the window `navSpan` framed; otherwise the whole contig replaces it,
+ * so containment holds by construction. `===` there rather than a canonical
+ * compare on purpose: it is a test of what `navTo` can reach, and `navTo`
+ * compares `displayedRegions` refNames raw. The canonical compare belongs on
+ * the filter, where dropping an aliased spelling is what stops the row showing
+ * one contig twice.
+ */
+export function mateNavDestination({
+  node,
+  view,
+  refName,
+  mate,
+}: {
+  node: IStateTreeNode
+  view: LinearGenomeViewModel
+  refName: string
+  mate?: { locus: OffscreenMateLocus; mateCumBp?: OffscreenMateLocus }
+}): MateNavDestination {
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName
     ? getSession(node).assemblyManager.get(assemblyName)
     : undefined
-  const canonical = assembly?.getCanonicalRefName2(refName)
-  return canonical
-    ? assembly?.regions?.find(r => r.refName === canonical)
-    : undefined
+  // `getCanonicalRefName2` rather than the strict one: mate names come out of
+  // an alignment file, and the strict one THROWS before the aliases load
+  const canonical = (name: string) =>
+    assembly?.getCanonicalRefName2(name) ?? name
+  const drawn = mate?.mateCumBp
+  if (drawn && view.displayedRegions.length > 0) {
+    const centerCumBp = (drawn.start + drawn.end) / 2
+    const at = view.pxToBp(centerCumBp / view.bpPerPx - view.offsetPx)
+    return at.oob || canonical(at.refName) !== canonical(refName)
+      ? {
+          kind: 'none',
+          reason: `Could not show ${refName}: that mark was drawn before this row's regions changed`,
+        }
+      : {
+          kind: 'scroll',
+          refName: at.refName,
+          coord0: at.coord0,
+          loc: assembleLocString({
+            refName: at.refName,
+            start: at.coord0,
+            end: at.coord0 + 1,
+          }),
+        }
+  }
+  const region = assembly?.getRegionForRefName(canonical(refName))
+  if (!region) {
+    return {
+      kind: 'none',
+      reason: `Could not find ${refName} in ${assemblyName}`,
+    }
+  }
+  const { start, end } = navSpan(region, mate?.locus)
+  const reaches = view.displayedRegions.some(
+    r => r.refName === region.refName && start >= r.start && end <= r.end,
+  )
+  return {
+    kind: 'add',
+    regions: reaches
+      ? [...view.displayedRegions]
+      : [
+          ...view.displayedRegions.filter(
+            r => canonical(r.refName) !== region.refName,
+          ),
+          region,
+        ],
+    location: { refName: region.refName, start, end },
+    loc: assembleLocString({ refName: region.refName, start, end }),
+  }
 }

@@ -18,8 +18,7 @@ import { runInAction } from 'mobx'
 import {
   captureStackViewports,
   mateFlightAllowed,
-  mateRegion,
-  navSpan,
+  mateNavDestination,
   takeFollowAnchor,
 } from './offscreenMateNav.ts'
 
@@ -382,209 +381,75 @@ export function linearSyntenyViewHelperModelFactory(
        * Show the contig an off-screen mate mark points at, on the row that is
        * not displaying it — what clicking a mark does.
        *
-       * `row` rather than `level + 1`, because a level has a strip on each edge:
-       * a mark on the query axis names a contig the row BELOW is not showing,
-       * and one on the target axis names a contig the row ABOVE is not. The
-       * caller resolved which strip it hit, and the hit carries the answer.
+       * `row` rather than `level + 1`: a level has a strip on each edge, so a
+       * mark on the query axis names a contig the row BELOW is not showing and
+       * one on the target axis names a contig the row ABOVE is not. The caller
+       * resolved which strip it hit.
        *
-       * THE LOCUS, NOT THE CONTIG. A bare refName is a whole chromosome, so
-       * every click used to answer a question about one locus by zooming out
-       * past every other one — and the mate coordinates that make it answerable
-       * were being collected and dropped (`collectOffscreenMates`). `grow` and a
-       * floor rather than an exact span, so the ribbons that now have both ends
-       * have something around them to be read against at either end of the size
-       * range. Every mark carries one; the bare form here is for a caller that
-       * has a contig and nothing else.
+       * `mate` carries the mark's own coordinates as ONE argument, so the two
+       * cannot come apart from each other or from the class they decide —
+       * `mateNavDestination` reads them. Omitted means the whole contig, which
+       * is the answer a click gave before there were coordinates.
        *
-       * NEITHER CLASS DISCARDS WHAT THE ROW IS SHOWING. A contig that row
-       * already has is SCROLLED to — those marks are the ones the band is
-       * culling rather than the ones it never had a second endpoint for
-       * (`culledRibbonMates`), and that class arises precisely where the row
-       * displays everything. A contig it does not have is ADDED to it. Both are
-       * the same request, "show me this too", and the difference is only
-       * whether the row has to gain a region first.
-       *
-       * The second class went through `navToLocString` until it didn't, and
-       * that function REPLACES the row's regions — so answering "your mate is
-       * over there" discarded every other chromosome the row was showing, which
-       * is exactly the narrowing the synteny follow must never do to itself. It
-       * needed a confirmation dialog in front of it to be honest about that.
-       * Appending the region instead makes the whole question go away.
-       *
-       * The UNDO stays, because a row that gained a region and moved is still a
-       * change the reader may want back in one gesture, and `captureRowViewport`
-       * covers both halves of it.
-       *
-       * IT ALSO TAKES THE ANCHOR, when the follow is on and this is not already
-       * the anchor row. A row the follow MOVES is re-asserted onto the anchor's
-       * mapping every time the anchor settles — that is what the exact pass is
-       * for, "re-asserting the follow over a row the user dragged" — so the
-       * click ran, posted its snackbar, and the row came straight back
-       * (`LinearSyntenyOffscreenMateFollow.test.tsx` is the proof). Anchoring
-       * the row is what the click MEANS: this row should show that contig, and
-       * the others should come to it. The undo puts the anchor back too.
+       * NEITHER CLASS DISCARDS WHAT THE ROW IS SHOWING. A contig the row has is
+       * scrolled to; one it does not is added to the list. Both are the same
+       * request, "show me this too". It also takes the follow anchor, since a
+       * row the follow moves is re-asserted onto the anchor's mapping the
+       * moment it settles; the Undo gives back the anchor and every row's
+       * viewport together.
        */
       showOffscreenMateContig(
         refName: string,
         row: number,
-        // ONE ARGUMENT, so the two coordinates cannot come apart from each
-        // other or from the class they decide — see `OffscreenMateSpan`. No
-        // mate is the whole contig, which is what a click did before there were
-        // coordinates at all. `OffscreenMateNavHit` is one of these.
         mate?: { locus: OffscreenMateLocus; mateCumBp?: OffscreenMateLocus },
       ) {
         const { parentView } = self
         const view = parentView.views[row]
-        if (view) {
-          // A CONTIG THE ROW ALREADY HAS only has to be scrolled to: its
-          // regions are right and its window is not. Touching the region list
-          // here would rewrite a row over a mark that merely asked it to move,
-          // and in a stack of whole assemblies — the arrangement that produces
-          // these marks in the first place — that list is everything the row
-          // has.
-          //
-          // NOTHING IS TAKEN UNTIL A BRANCH COMMITS, since the other one can
-          // still fail to resolve the contig and a capture or an anchor taken
-          // before that is state the click has not earned. `takeFollowAnchor`
-          // states the rule: only a LANDED navigation keeps it.
-          const drawn = mate?.mateCumBp
-          if (drawn && view.displayedRegions.length > 0) {
-            // before the take, which already re-places the other rows
-            const restoreStack = captureStackViewports([...parentView.views])
-            const anchor = takeFollowAnchor(parentView, row)
-            // WHERE THE RIBBONS ARE, which for a clipped block is not where the
-            // blocks are — `OffscreenMateSpan.mateCumBp` says why. Through
-            // `pxToBp` because the drawn span is the facing row's cumBp and
-            // that is the row's own inverse, so a reversed region and a contig
-            // displayed several times over both come back right.
-            //
-            // `coord0`, NOT `coord`: both destinations below resolve through
-            // `bpToOffset`/`bpToPx`, which take a 0-based coord, while `coord`
-            // is the 1-based one for display. On a forward region that is one
-            // base; on a REVERSED one `regionBase0` counts down from
-            // `region.end`, so the two never agree.
-            //
-            // AND THE ROW HOLDS WHEN THE ANSWER IS NOT ABOUT THIS CONTIG.
-            // Stale geometry — a cumBp from before this row's regions were
-            // replaced — is only self-evidently wrong when it runs off the end
-            // of the whole layout, which is what `oob` reports. Landing INSIDE
-            // some other contig's region is the case that reads as valid: the
-            // conversion happily returns that contig's coordinate, and
-            // `centerAt` would then take it as a coordinate on the MARK's
-            // contig and navigate there. Both tests, because neither catches
-            // the other's case.
-            //
-            // Holding rather than falling back: `locus` is the coordinate this
-            // branch exists to stop using, so there is nothing to fall back TO.
-            const centerCumBp = (drawn.start + drawn.end) / 2
-            const at = view.pxToBp(centerCumBp / view.bpPerPx - view.offsetPx)
-            if (at.oob || at.refName !== refName) {
-              anchor.release()
-              return
-            }
-            const center = at.coord0
-            // FLOWN, not jumped, when the reader wants motion. The scroll class
-            // arises where a row displays whole assemblies, so this is a jump of
-            // a chromosome or more: landed instantly, the reader is somewhere
-            // else with no way to tell what they passed over, and the marks that
-            // became ribbons are just a different picture. The arc pulls back
-            // far enough to hold both ends, travels, and drops in — and with the
-            // follow on, the whole stack comes with it, since the follow's frame
-            // pass is already the thing that tracks a row through a drag.
-            //
-            // The destination is the same either way, which is what leaves the
-            // snackbar, the Undo and the anchor take below untouched: the Undo
-            // writes the pre-click window, and the flight reads back what it
-            // wrote each frame, so pressing it mid-flight ends the flight rather
-            // than being overwritten by its next frame.
-            if (mateFlightAllowed(parentView, getSession(self).animationMode)) {
-              view.flyToCenter(center, refName)
-            } else {
-              view.centerAt(center, refName)
-            }
-            getSession(self).notify(
-              anchor.taken
-                ? `Showing ${refName}:${center.toLocaleString()}, and following this row`
-                : `Showing ${refName}:${center.toLocaleString()}`,
-              'info',
-              {
-                name: 'Undo',
-                onClick: () => {
-                  runInAction(() => {
-                    restoreStack()
-                    anchor.release()
-                  })
-                },
-              },
-            )
-            return
-          }
-          // THE ROW GAINS THE CONTIG. It does not swap what it is showing for
-          // it, which is what `navToLocString` would have done — and the
-          // destructiveness was never in the reader's request, only in that
-          // function's semantics. A click here means "show me this too", so the
-          // region is APPENDED and everything the row already had survives.
-          //
-          // APPENDED, NEVER INSERTED IN ORDER: `setDisplayedRegions` re-clamps
-          // `bpPerPx` and `offsetPx`, and GROWING the set raises both bounds,
-          // so neither clamp moves anything — the window stays put to the pixel
-          // and every mark, ribbon and fetch-time cumBp lane on screen stays
-          // valid until the refetch lands. Sorting would renumber the regions
-          // under all of them. Region order is therefore click order, which is
-          // an aesthetic cost and not a correctness one; pruning the list is
-          // the region editor's job, not a mark's.
-          //
-          // There is nothing to consent to and so nothing to ask, which is why
-          // the click has one destination rather than two and the hover has one
-          // sentence rather than a warning. After the refetch this contig IS
-          // displayed, so its remaining marks are the scroll class and a second
-          // click goes to the drawn position — which is also how an approximate
-          // landing on a whole-chromosome chain heals itself.
-          const region = mateRegion(self, view, refName)
-          if (!region) {
-            // ordinary: mate names come out of the alignment file, and the
-            // facing assembly need not spell them the same way or have them
-            getSession(self).notify(
-              `Could not find ${refName} in ${view.assemblyNames[0]}`,
-              'warning',
-            )
-            return
-          }
-          const restoreStack = captureStackViewports([...parentView.views])
-          const anchor = takeFollowAnchor(parentView, row)
-          const { start, end } = navSpan(region, mate?.locus)
-          // ONE TRANSACTION, which is what `showRegions` is for: called apart,
-          // the two publish a viewport in between, and a per-bp consumer scans
-          // a window that was never on screen.
-          const already = view.displayedRegions.some(
-            r => r.refName === region.refName,
-          )
-          view.showRegions(
-            already
-              ? [...view.displayedRegions]
-              : [...view.displayedRegions, region],
-            { refName: region.refName, start, end },
-          )
-          getSession(self).notify(
-            anchor.taken
-              ? `Showing ${region.refName}, and following this row`
-              : `Showing ${region.refName}`,
-            'info',
-            {
-              name: 'Undo',
-              onClick: () => {
-                // one transaction, so the follow sees the settled pre-click
-                // state rather than a half-restored one. `captureRowViewport`
-                // already puts the region list back as well as the window, so
-                // removing what was appended needs nothing of its own.
-                runInAction(() => {
-                  restoreStack()
-                  anchor.release()
-                })
-              },
-            },
-          )
+        if (!view) {
+          return
         }
+        const session = getSession(self)
+        const dest = mateNavDestination({ node: self, view, refName, mate })
+        if (dest.kind === 'none') {
+          session.notify(dest.reason, 'warning')
+          return
+        }
+        // Captured before the take, which already re-places the other rows.
+        const restoreStack = captureStackViewports([...parentView.views])
+        const anchor = takeFollowAnchor(parentView, row)
+        if (dest.kind === 'scroll') {
+          // Flown rather than jumped where the reader wants motion: this class
+          // arises over stacked whole assemblies, so it is a jump of a
+          // chromosome or more. The destination is the same either way, and the
+          // flight reads back what it wrote each frame, so the Undo below ends
+          // it rather than being overwritten by its next frame.
+          if (mateFlightAllowed(parentView, session.animationMode)) {
+            view.flyToCenter(dest.coord0, dest.refName)
+          } else {
+            view.centerAt(dest.coord0, dest.refName)
+          }
+        } else {
+          // One transaction: called apart, the two publish a viewport in
+          // between and a per-bp consumer scans a window never on screen.
+          view.showRegions(dest.regions, dest.location)
+        }
+        session.notify(
+          anchor.taken
+            ? `Showing ${dest.loc}, and following this row`
+            : `Showing ${dest.loc}`,
+          'info',
+          {
+            name: 'Undo',
+            onClick: () => {
+              // one transaction, so the follow sees the settled pre-click state
+              // rather than a half-restored one
+              runInAction(() => {
+                restoreStack()
+                anchor.release()
+              })
+            },
+          },
+        )
       },
       /**
        * #action

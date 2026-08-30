@@ -330,13 +330,6 @@ test('the hit test answers the contig under the pointer', () => {
   expect(offscreenMateAt(layout, 20, 3)).toBe('ctgB')
 })
 
-// What the tooltip reports for the mark under the pointer: the per-contig tally
-// the menu's headline is summed from, not the number of marks drawn.
-test('the hit is the contig alone, which is all the level asks for', () => {
-  const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
-  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgB')
-})
-
 // Draw and hit test read one layout, so this is the shape the bug cannot take —
 // pinned anyway, because a second code path here is the obvious "optimization".
 test('every drawn mark is hittable at its own left edge', () => {

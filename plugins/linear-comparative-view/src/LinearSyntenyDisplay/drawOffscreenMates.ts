@@ -536,6 +536,17 @@ function offscreenMateRectAt(
   }
 }
 
+// The strip's hit test, so the hover and the click cannot disagree about what
+// "under the pointer" means. Both spelled these comparisons out, and one of the
+// two widened is a click that navigates where no tooltip ever appeared.
+function pointerOnStrip(strip: StripGeometry, y: number) {
+  return y >= strip.markY && y <= strip.markY + strip.markHeight
+}
+
+function pointerOnMark(rect: { x: number; width: number }, x: number) {
+  return x >= rect.x && x <= rect.x + rect.width
+}
+
 /**
  * The contig the mark under a point stands for, or undefined.
  *
@@ -554,17 +565,6 @@ function offscreenMateRectAt(
  * those with one comparison rather than by laying out every mark first is what
  * keeps a hover over the ribbons costing nothing, whatever the level fetched.
  */
-// The strip's hit test, so the hover and the click cannot disagree about what
-// "under the pointer" means. Both spelled these comparisons out, and one of the
-// two widened is a click that navigates where no tooltip ever appeared.
-function pointerOnStrip(strip: StripGeometry, y: number) {
-  return y >= strip.markY && y <= strip.markY + strip.markHeight
-}
-
-function pointerOnMark(rect: { x: number; width: number }, x: number) {
-  return x >= rect.x && x <= rect.x + rect.width
-}
-
 export function offscreenMateAt(
   layout: OffscreenMateLayout,
   x: number,
@@ -726,6 +726,32 @@ function extendSpan(
   }
 }
 
+// The strip's marks grouped into one path per fill, in a stable order: a lane
+// with no `markColorFor` contributes every rect to the band's grey, so the
+// uncolored case is one group and one fill exactly as it was.
+function markPathsByColor(
+  laneRects: OffscreenMateRect[][],
+  lanes: OffscreenMateLane[],
+  markColor: string,
+) {
+  const byColor = new Map<string, OffscreenMateRect[]>()
+  for (const [i, rects] of laneRects.entries()) {
+    const colorFor = lanes[i]!.markColorFor
+    for (const r of rects) {
+      const color = colorFor
+        ? colorFor(offscreenMateRefName(r.data, r.index))
+        : markColor
+      let group = byColor.get(color)
+      if (!group) {
+        group = []
+        byColor.set(color, group)
+      }
+      group.push(r)
+    }
+  }
+  return byColor
+}
+
 /**
  * Mark, on the edges of one band, the alignments its level fetched and cannot
  * draw.
@@ -756,32 +782,6 @@ function extendSpan(
  * actually means, and a run too narrow for its contig name is exactly the one
  * whose neighbours would have overprinted it.
  */
-// The strip's marks grouped into one path per fill, in a stable order: a lane
-// with no `markColorFor` contributes every rect to the band's grey, so the
-// uncolored case is one group and one fill exactly as it was.
-function markPathsByColor(
-  laneRects: OffscreenMateRect[][],
-  lanes: OffscreenMateLane[],
-  markColor: string,
-) {
-  const byColor = new Map<string, OffscreenMateRect[]>()
-  for (const [i, rects] of laneRects.entries()) {
-    const colorFor = lanes[i]!.markColorFor
-    for (const r of rects) {
-      const color = colorFor
-        ? colorFor(offscreenMateRefName(r.data, r.index))
-        : markColor
-      let group = byColor.get(color)
-      if (!group) {
-        group = []
-        byColor.set(color, group)
-      }
-      group.push(r)
-    }
-  }
-  return byColor
-}
-
 export function drawOffscreenMates(
   ctx: Ctx2D,
   lanes: OffscreenMateLane[],

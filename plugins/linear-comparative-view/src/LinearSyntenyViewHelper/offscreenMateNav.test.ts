@@ -58,6 +58,17 @@ describe('navSpan', () => {
     expect(navSpan(tiny, { start: 100, end: 600 })).toEqual(tiny)
   })
 
+  // The clamp is to the REGION, not to zero, and every other case here uses a
+  // contig starting at the origin, where the two are the same number.
+  it('slides a near-edge window inside a region that does not start at zero', () => {
+    expect(
+      navSpan(
+        { start: 100_000, end: 200_000 },
+        { start: 100_100, end: 100_600 },
+      ),
+    ).toEqual({ start: 100_000, end: 120_000 })
+  })
+
   it('never names a coordinate before the first base', () => {
     for (const start of [0, 1, 50, 5_000, 12_000]) {
       const span = navSpan(CTG, { start, end: start + 200 })

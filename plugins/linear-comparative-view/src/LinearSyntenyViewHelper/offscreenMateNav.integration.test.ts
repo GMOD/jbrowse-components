@@ -533,3 +533,184 @@ test('a locus at the start of its contig still gets the whole floor', async () =
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
   expect(visible!.end - visible!.start).toBeGreaterThanOrEqual(20_000)
 }, 20000)
+
+// A ROW NARROWED TO A SLICE OF THE CONTIG THE MARK NAMES, which the design
+// contemplates on its own — a stale worker-lane mark survives the row being
+// narrowed. `already` was a refName test, so the row gained nothing and the
+// window `navSpan` framed against the WHOLE contig fell outside every displayed
+// region: `showRegions` replaced the list and `navTo` then threw
+// `could not find a region that contained ...`, out of a pointer handler, with
+// the region list already rewritten.
+test('a row showing a slice of the contig gains the region the window needs', async () => {
+  const { view, level } = await setup()
+  const row = view.views[1]!
+  row.setDisplayedRegions([
+    { assemblyName: 'volvox2', refName: 'ctgB', start: 0, end: 1000 },
+  ])
+
+  expect(() => {
+    level.showOffscreenMateContig('ctgB', 1, {
+      locus: { start: 300_000, end: 301_000 },
+    })
+  }).not.toThrow()
+
+  // the slice could not reach the window, so the whole contig replaced it —
+  // one region rather than the contig listed twice
+  expect(refNames(view, 1)).toEqual(['ctgB'])
+  const [visible] = row.dynamicBlocks.contentBlocks
+  expect(visible!.start).toBeGreaterThan(250_000)
+  expect(visible!.end).toBeLessThan(350_000)
+}, 20000)
+
+// ...and only when it has to. A row already displaying the whole contig keeps
+// the region list it has, which is what stops a second click on the same mark
+// stacking duplicates.
+test('...and keeps the region it has when that region reaches the window', async () => {
+  const { view, level } = await setup()
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 300_000, end: 301_000 },
+  })
+  await when(() => refNames(view, 1).includes('ctgB'), { timeout: 5000 })
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 100_000, end: 101_000 },
+  })
+
+  expect(refNames(view, 1)).toEqual(['ctgA', 'ctgB'])
+}, 20000)
+
+// `displayedRegions` is a frozen `Region[]` and `setDisplayedRegions` does not
+// canonicalize, so a hand-authored session can put an alias spelling there
+// while the mark's refName is canonical (`renameOffscreenMates`). Compared with
+// `===`, the row gained a second region for a contig it was already showing and
+// the ruler read the contig twice.
+test('an aliased region spelling is replaced rather than duplicated', async () => {
+  const { view, level } = await setup()
+  const row = view.views[1]!
+  row.setDisplayedRegions([
+    { assemblyName: 'volvox2', refName: 'CTGB', start: 0, end: BP },
+  ])
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+  })
+
+  expect(refNames(view, 1)).toEqual(['ctgB'])
+  const [visible] = row.dynamicBlocks.contentBlocks
+  expect(visible!.start).toBeGreaterThan(150_000)
+  expect(visible!.end).toBeLessThan(250_000)
+}, 20000)
+
+// The same mismatch on the scroll branch, where it silently did nothing: the
+// drawn span resolves to the row's own spelling and the mark carries the
+// canonical one, so `at.refName !== refName` read the click as stale geometry.
+test('an aliased region spelling still scrolls', async () => {
+  const { view, level } = await setup()
+  const row = view.views[1]!
+  row.setDisplayedRegions([
+    { assemblyName: 'volvox2', refName: 'CTGB', start: 0, end: BP },
+  ])
+  row.setWindow(40_000, 0)
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    mateCumBp: { start: 200_000, end: 201_000 },
+  })
+  await when(() => row.windowStartBp === 200_500 - row.windowWidthBp / 2, {
+    timeout: 5000,
+  })
+
+  expect(refNames(view, 1)).toEqual(['CTGB'])
+}, 20000)
+
+// THE COORDINATE THE SNACKBAR PRINTS IS THE ONE THE LOCATION BOX WILL READ.
+// `coord0` is the 0-based sibling `bpToPx` takes; printed as a genomic position
+// it named a base one before the one the row landed on.
+test('the snackbar names the position in the same convention as the location box', async () => {
+  const { session, level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+  })
+  await when(
+    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  expect(session.snackbarMessages[0]!.message).toBe('Showing ctgB:200,501')
+  expect(row.pxToBp(row.width / 2).coord).toBe(200_501)
+}, 20000)
+
+// A click that resolves nothing SAYS SO. The tooltip promised "Click to show it
+// on the panel below", and a stale mark answered by returning silently — the
+// one case where the reader has no way to tell the feature from a dead pixel.
+test('a click that resolves nothing is reported', async () => {
+  const { session, level, row } = await scrollableSetup()
+  const before = row.windowStartBp
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    mateCumBp: { start: 5_000_000, end: 5_001_000 },
+  })
+  await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
+
+  expect(session.snackbarMessages[0]!.level).toBe('warning')
+  expect(row.windowStartBp).toBe(before)
+}, 20000)
+
+// THE CAPTURE IS STACK-WIDE, not the clicked row's. The click takes the follow
+// anchor, and the follow re-places every OTHER row onto it — so restoring one
+// row leaves the stack mirrored: the click's arrangement under the pre-click
+// anchor. The re-placement itself needs alignments this fixture has none of, so
+// row 0 is moved by hand here, standing in for the pass the take wakes.
+test('the undo puts back every row, not only the clicked one', async () => {
+  const { session, view, level } = await scrollableSetup()
+  const other = view.views[0]!
+  other.setWindow(40_000, 0)
+  const before = { start: other.windowStartBp, width: other.windowWidthBp }
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 200_000, end: 201_000 },
+    mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+  })
+  await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
+  other.setWindow(80_000, 120_000)
+
+  const [action] = session.snackbarMessages[0]!.actions!
+  action!.onClick()
+
+  expect(other.windowStartBp).toBe(before.start)
+  expect(other.windowWidthBp).toBe(before.width)
+}, 20000)
+
+// A REVERSED region runs bp leftward, so the region's own coordinate and its
+// offset from the left screen edge are two different numbers — 150,000 cumBp
+// into a reversed 400kb contig is genomic 250,000. Every other case here is
+// forward and parked at the origin, where all three agree and a destination
+// taken off the wrong one lands in the right place anyway.
+test('a reversed region places the destination the way the row draws it', async () => {
+  const { session, view, level } = await setup()
+  const row = view.views[1]!
+  row.setDisplayedRegions([
+    {
+      assemblyName: 'volvox2',
+      refName: 'ctgB',
+      start: 0,
+      end: BP,
+      reversed: true,
+    },
+  ])
+  row.setWindow(40_000, 0)
+
+  level.showOffscreenMateContig('ctgB', 1, {
+    locus: { start: 0, end: BP },
+    mateCumBp: { start: 149_500, end: 150_500 },
+  })
+  await when(() => row.windowStartBp === 150_000 - row.windowWidthBp / 2, {
+    timeout: 5000,
+  })
+
+  expect(row.pxToBp(row.width / 2).coord0).toBe(250_000)
+  expect(session.snackbarMessages[0]!.message).toBe('Showing ctgB:250,001')
+}, 20000)

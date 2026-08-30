@@ -164,6 +164,46 @@ test('a region sliced inside the gap drops the block too', async () => {
   expect(value.instanceData.instanceCount).toBe(0)
 })
 
+// THE OTHER DEGENERACY, and the rule has no business claiming it. A block that
+// meets its region at a single point collapses BOTH axes, so the mate span is
+// zero for a reason that says nothing about whether the block aligns —
+// widening the gate to `fStart <= fEnd` drops it along with the real gaps.
+test('a block collapsed on both axes is kept', async () => {
+  jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+    getFeaturesInMultipleRegionsArray: jest.fn(async () => [
+      alignment({
+        id: 'at-the-edge',
+        start: 1000,
+        end: 2000,
+        mateStart: 1000,
+        mateEnd: 2000,
+        cigar: '1000M',
+      }),
+    ]),
+  } as never)
+  // both regions end where the block starts, so the trim keeps the single
+  // parameter t=0 and every corner lands on 1000
+  const edge = [{ ...region(QUERY_ASM, 'q1', 1000) }]
+  const { value } = await executeSyntenyFeaturesAndPositions({
+    pluginManager: {} as PluginManager,
+    sessionId: 't1',
+    adapterConfig: { type: 'PAFAdapter' },
+    queryView: {
+      bpPerPx: 1,
+      offsetPx: 0,
+      width: 800,
+      displayedRegions: edge,
+      fetchRegions: edge,
+    },
+    targetView: {
+      ...targetView,
+      displayedRegions: [region(TARGET_ASM, 't1', 1000)],
+    },
+  })
+
+  expect(value.featureIds).toEqual(['at-the-edge'])
+})
+
 test('the same oversized block is kept where the clip finds alignment', async () => {
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
     getFeaturesInMultipleRegionsArray: jest.fn(async () => [
