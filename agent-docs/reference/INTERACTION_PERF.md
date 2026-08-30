@@ -41,7 +41,20 @@ section below, where the same gesture profiles at 83% `(program)` with every
 worker idle. Attribution is worthless in that state and the inflation is not
 uniform across frames.
 
-**Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`highlightBoxes` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`laidOutByGroup` read only vertical layout, never `offsetPx`/`bpPerPx`; sashimi/bezier default-off) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
+**Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`highlightBoxes` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`laidOutByGroup` read only vertical layout, never `offsetPx`/`bpPerPx`) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
+
+**One clause of that verdict has since expired: sashimi arcs are no longer
+default-off.** `showSashimiArcs` is a promotable slot with `promotedBase: true`
+(`configSchema.ts:571`), so it draws wherever coverage does, and
+`sashimiArcSections` (`LinearAlignmentsDisplay/model.ts:2320-2341`) reads
+`view.visibleRegions` — a fresh array every frame — so the computed invalidates
+on every zoom AND pan frame, re-running `mergeJunctions` from scratch inside it.
+On DNA data that costs nothing (empty flatMap, one null overlay render a frame,
+the `PeptideCanvas` class) and the July verdict still holds. On spliced data it
+does not: the merge kernel benches at **1.09ms per call at 4000 junction copies**
+and is frame-invariant within a gesture, so it is redundant work proportional to
+junction count. Unmeasured end to end — volvox's junction counts are too small
+to show it, and sizing it needs an RNA-seq fixture.
 
 The churn was `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it created and destroyed ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* and not *zoom*, which is the wrong way round — `scalebarLabels` is **unchanged** during a pan (the labels live in the staticBlocks frame, and only the container transform moves), so there was nothing there to save; a zoom moves the whole tick set, so every key changed and React rebuilt the list, each new node paying the emotion/tss `tickLabel` styling cost.
 
