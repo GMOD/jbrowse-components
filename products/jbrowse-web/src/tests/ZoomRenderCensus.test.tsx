@@ -233,3 +233,19 @@ test('census: alignments over DNA, no junctions to draw', async () => {
   })
   expect(counts.get('SashimiArcsOverlay') ?? 0).toBe(0)
 }, 90000)
+
+// Spliced reads, where the overlay DOES owe a frame — every arc's `d` is a
+// function of the pan. What this arm is for is the per-arc DOM rate, which is
+// the input to whether sashimi should leave SVG for the canvas/GPU arc stack:
+// one `<path>` per arc gets one `attr:d` per frame, so `attr:d @ pileup-display`
+// divided by the arc count is a rate that a bigger dataset multiplies. Volvox's
+// junction counts are small (13 distinct in spliced.bam, 11 over the default
+// score floor) — read the RATE here, not the total.
+test('census: spliced alignments, sashimi arcs drawn', async () => {
+  await census({
+    label: 'spliced',
+    trackIds: ['spliced'],
+    startBpPerPx: 5,
+    painted: 'pileup-display',
+  })
+}, 90000)

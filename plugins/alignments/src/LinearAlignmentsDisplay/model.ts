@@ -2623,10 +2623,11 @@ export default function stateModelFactory(
            * Split off `sashimiArcSections` because the two halves answer to
            * different clocks. This one reads loaded data, the region set on
            * screen and the two junction filters; the projection reads the pan.
-           * At 651 junctions in one lane the merge was 0.20 of a 0.42 ms frame
-           * and at three collapsed-intron region copies 0.49 of 0.70, per lane,
-           * every frame of every gesture — for an answer the previous frame
-           * already had.
+           * Folded together, a gesture re-merged every frame for an answer the
+           * previous frame already had — most of the frame's sashimi cost at
+           * real RNA-seq junction counts, and more of it the more displayed
+           * regions a gene is drawn across
+           * (agent-docs/reference/INTERACTION_PERF.md).
            *
            * NOT a lane field, which is where the rest of a lane's per-key data
            * lives: a lane feeds the LAYOUT, and the region set on screen must

@@ -1,0 +1,74 @@
+{
+  "id": "sashimi-frame-split",
+  "measured": "2026-08-30",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --expose-gc plugins/alignments/benches/sashimiFrame.bench.ts --rounds=400 [--copies=3]",
+    "notes": "One lane's worth of a pan frame, min of 400 rotated rounds, one process per row (two datasets through one arm object contaminate the second — BENCHMARKING.md). `whole` is `computeSashimiArcs`, the shape that ran inside `sashimiArcSections` on every pan and zoom frame; `project` is `projectSashimiArcs` off a merge the model now memoizes; `control` is a second, separately-declared driver over the same call as `whole`, and both rows scored it at 1.028x. Output is compared field by field before any timing is believed and was identical.\n\nTHE FIXTURE is real junction counts from real RNA-seq: `samtools view https://jbrowse.org/demos/cancer_sv/K562_isoseq.bam chr22:23,000,000-24,000,000`, walked for N-op gaps, gives 651 distinct junctions over 27,160 supporting reads (mean 41.7). `plugins/alignments/benches/k562-chr22-junctions.tsv` is that output. 245 survive the default `minSashimiScore` of 2 and 244 have ink on a 1000px view of the window, so the projection column is 244 arcs' worth wherever the merge column is 651 entries' worth per region copy.\n\nREGION COPIES is the collapsed-intron multiplier: the per-region worker re-emits a junction in every displayed region its reads reach, so a gene drawn as three exon regions hands the merge three copies of each junction and the projection still draws one arc each. That is why the merge column grows down the table and the projection column does not.\n\nNOT AN END-TO-END FRAME. This is the sashimi geometry alone, for one lane. No in-repo fixture carries junction counts anywhere near these — volvox's largest is `spliced.bam` at 13 distinct junctions — and the BAM these came from is against hg38, which the jsdom test config does not carry. The render-count half of the same change is measured end to end in `products/jbrowse-web/src/tests/ZoomRenderCensus.test.tsx`."
+  },
+  "columns": [
+    {
+      "key": "copies",
+      "label": "region copies",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "entries",
+      "label": "junction entries merged",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "whole",
+      "label": "merge + project (was)",
+      "format": "ms",
+      "precision": 3,
+      "align": "right"
+    },
+    {
+      "key": "project",
+      "label": "project only (is)",
+      "format": "ms",
+      "precision": 3,
+      "align": "right"
+    },
+    {
+      "key": "control",
+      "label": "control",
+      "format": "ms",
+      "precision": 3,
+      "align": "right"
+    },
+    {
+      "key": "share",
+      "label": "of the frame the merge was",
+      "format": "percent",
+      "derived": "(whole - project) / whole * 100",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "copies": 1,
+        "entries": 651,
+        "whole": 0.516,
+        "project": 0.271,
+        "control": 0.53
+      },
+      "emphasize": ["share"]
+    },
+    {
+      "values": {
+        "copies": 3,
+        "entries": 1953,
+        "whole": 0.838,
+        "project": 0.236,
+        "control": 0.861
+      },
+      "emphasize": ["share"]
+    }
+  ]
+}
