@@ -110,6 +110,9 @@ Rounds a domain to "nice" endpoints, clamped to the origin. An end given an
 explicit `bounds` value keeps that value exactly — only an autoscaled end is
 rounded. A log scale's floor still outranks a bound it cannot hold.
 
+The result never descends: a bound that would put `min` above `max` widens the
+other end instead, so no consumer has to guess what a backwards domain means.
+
 ```js
 // type signature
 ({ scaleType, domain, bounds, }: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; }) => [number, number]
@@ -149,6 +152,12 @@ Returns a loop-hoistable function normalizing a score to [0,1].
 already resolved by resolveSymlogConstant — the shader gets the same resolved
 number as a uniform, so the "auto" rule lives on this side only and the two
 backends compare like for like.
+
+A range that is zero **or negative** normalizes everything to 0, which is the
+rule `scoreScale.slang` spells as `range <= 0.0`. Testing `range === 0` here
+instead let a descending domain through to a negative `1 / range`, so every
+score saturated to 1 on this side while the shader flattened them all to 0 — one
+view, opposite plots. `normalizeScoreParity.test.ts` sweeps the two.
 
 ```js
 // type signature
