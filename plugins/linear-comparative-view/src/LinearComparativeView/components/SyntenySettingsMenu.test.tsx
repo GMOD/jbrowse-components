@@ -130,6 +130,15 @@ async function openMenu(adapter: Record<string, unknown> = PAF) {
 // Opens a radio submenu and clicks one of its options. The submenu rows carry
 // the testid `CascadingMenu` slugs from their label, which is what tells two
 // open-at-once "Off" rows apart.
+// A checkbox row's state is the glyph at its end — `MenuItemEndDecoration`
+// swaps the icon rather than rendering an input — so read it off the row's own
+// `<li>`. `.closest` rather than `parentElement`: the label sits inside a
+// `ListItemText` span, several levels down.
+function rowTicked(label: string) {
+  const row = screen.getByText(label).closest('li')!
+  return row.querySelector('[data-testid="CheckBoxIcon"]') !== null
+}
+
 function pick(row: string, option: string) {
   const slug = row.toLowerCase().replaceAll(' ', '_')
   fireEvent.click(screen.getByTestId(`cascading-submenu-${slug}`))
@@ -266,6 +275,26 @@ test('a checkbox row writes its boolean and leaves the menu up', async () => {
   fireEvent.click(screen.getByText('Curved lines'))
   expect(view.effectiveDrawCurves).toBe(true)
   expect(screen.getByText('Location markers')).toBeTruthy()
+})
+
+// The half the click test cannot see. It asserts false -> click -> true, which
+// a row hardcoded to `checked: false` satisfies too, because `!false` is still
+// true — so both ribbon rows could render permanently unticked, and build a pin
+// offering the opposite of what is on screen, with every suite green. What goes
+// wrong for a reader is a session whose promoted default is ON: the ribbons
+// draw curved, the row says they do not, and the pin offers to make straight
+// the default. So read the row back with the setting resolved true.
+test('a checkbox row renders the value it resolved, not a constant', async () => {
+  const view = await openMenu()
+  act(() => {
+    view.setDrawCurves(true)
+  })
+  expect(view.effectiveDrawCurves).toBe(true)
+  expect(rowTicked('Curved lines')).toBe(true)
+  act(() => {
+    view.setDrawCurves(false)
+  })
+  expect(rowTicked('Curved lines')).toBe(false)
 })
 
 // A custom row draws its own content, so the value it reports is the model's
