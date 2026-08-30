@@ -249,3 +249,16 @@ test('census: spliced alignments, sashimi arcs drawn', async () => {
     painted: 'pileup-display',
   })
 }, 90000)
+
+// The arc band, the one display family whose per-frame cost scaled with the
+// FEATURE count rather than the track count: each arc was its own observer
+// reading `bpToPx` and `offsetPx`, so four visible arcs booked 4 `Arc` + 4
+// `ArcGlyph` reactions and 12 SVG attribute patches every frame.
+test('census: arcs', async () => {
+  await census({
+    label: 'arcs',
+    trackIds: ['arc_track', 'volvox_bedpe'],
+    startBpPerPx: 1,
+    painted: 'arc-display',
+  })
+}, 90000)
