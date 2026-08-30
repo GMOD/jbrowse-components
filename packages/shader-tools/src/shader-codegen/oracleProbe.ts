@@ -334,3 +334,48 @@ export function buildOracleMain(
   lines.push('  return 0;', '}', '')
   return lines.join('\n')
 }
+
+// float32 against float64 over the same exactly-representable inputs. Loose
+// enough that a legitimately-narrower intermediate does not fail, tight enough
+// that a wrong operator cannot pass: every mistranslation this is looking for
+// (a float divide where WGSL truncates, a sign-extended shift, an unwrapped
+// subtraction) is wrong by whole units, not by an ulp.
+const REL_TOLERANCE = 1e-5
+
+// A float32 significand is 24 bits, so a value of magnitude M carries up to
+// M * 2^-24 of rounding the float64 twin does not — and that error is absolute,
+// so it survives an operation that drops the magnitude. `hueRampLane(65536)`
+// is the worked example: `(hueDeg / 360.0) * 6.0` is 1092.2667236328125 in
+// float32 and 1092.2666666666667 in float64, under half an ulp apart at that
+// magnitude and therefore correct, and then `% 2.0` carries the whole 5.7e-5
+// down onto a result of 0.38. Scaling the slack by the RESULT calls that a
+// mistranslation; scaling it by the widest magnitude the inputs carried in
+// calls it what it is.
+const F32_EPS = 2 ** -24
+
+/**
+ * Whether the twin's output matches the C++ oracle's.
+ *
+ * `floatArgs` is the call's float-typed arguments and nothing else. Integer
+ * parameters are exact on both sides — `uint` is `uint32_t` in the C++ and a
+ * whole float64 in the twin — so drawing 4294967295 from `UINT_POOL` says
+ * nothing about how much rounding the computation can have accumulated, and
+ * folding it in would put the slack at 256.
+ */
+export function agrees(
+  a: number,
+  b: number,
+  floatArgs: readonly number[] = [],
+) {
+  if (Object.is(a, b) || (Number.isNaN(a) && Number.isNaN(b))) {
+    return true
+  }
+  const outScale = Math.max(1, Math.abs(a), Math.abs(b))
+  const inScale = Math.max(
+    outScale,
+    ...floatArgs.map(Math.abs).filter(v => Number.isFinite(v)),
+  )
+  return (
+    Math.abs(a - b) <= Math.max(REL_TOLERANCE * outScale, F32_EPS * inScale)
+  )
+}

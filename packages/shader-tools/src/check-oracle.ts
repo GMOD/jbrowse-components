@@ -34,6 +34,7 @@ import path from 'node:path'
 
 import {
   RETURN_WIDTH,
+  agrees,
   buildOracleMain,
   buildProbeEntry,
   resolveCppName,
@@ -61,13 +62,6 @@ const PROJECT_ROOT = path.resolve(
 const SLANGC = process.env.SLANGC ?? `${PROJECT_ROOT}/.cache/slangc/bin/slangc`
 const SHARED_INCLUDE = `${PROJECT_ROOT}/packages/render-core/src/shaders`
 const DRAWS = Number(process.env.ORACLE_DRAWS ?? 400)
-
-// float32 against float64 over the same exactly-representable inputs. Loose
-// enough that a legitimately-narrower intermediate does not fail, tight enough
-// that a wrong operator cannot pass: every mistranslation this is looking for
-// (a float divide where WGSL truncates, a sign-extended shift, an unwrapped
-// subtraction) is wrong by whole units, not by an ulp.
-const REL_TOLERANCE = 1e-5
 
 function resolveCompiler() {
   for (const bin of [process.env.CXX, 'c++', 'g++', 'clang++'].filter(
@@ -167,15 +161,6 @@ function parseOracleNumber(text: string) {
       : t === 'nan' || t === '-nan'
         ? NaN
         : Number(t)
-}
-
-function agrees(a: number, b: number) {
-  if (Object.is(a, b) || (Number.isNaN(a) && Number.isNaN(b))) {
-    return true
-  }
-  return (
-    Math.abs(a - b) <= REL_TOLERANCE * Math.max(1, Math.abs(a), Math.abs(b))
-  )
 }
 
 /**
@@ -346,9 +331,10 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
           : typeof called === 'number'
             ? [called]
             : called
+      const floatArgs = args.filter((_, i) => fn.paramTypes[i] === 'float')
       if (
         jsOut.length !== cppOut.length ||
-        !jsOut.every((v, i) => agrees(v, cppOut[i]!))
+        !jsOut.every((v, i) => agrees(v, cppOut[i]!, floatArgs))
       ) {
         mismatches.push({ fn: name!, args, cpp: cppOut, js: [...jsOut] })
       }
@@ -426,7 +412,11 @@ async function main() {
     throw new Error(
       `${failures.length} shader(s) whose generated twin disagrees with ` +
         `slangc's own C++. The twin is transliterated from slangc's WGSL, so ` +
-        `a disagreement is a bug in wgslToJs.ts — not in the shader.`,
+        `a disagreement is usually a bug in wgslToJs.ts — not in the shader. ` +
+        `The exception is float32 against float64: the tolerance already ` +
+        `admits the rounding an input's own magnitude carries, so check a ` +
+        `surviving near-miss against that before reading it as a ` +
+        `mistranslation (agrees() in oracleProbe.ts).`,
     )
   }
 }

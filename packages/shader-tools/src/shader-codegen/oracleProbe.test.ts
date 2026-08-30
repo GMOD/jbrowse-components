@@ -1,4 +1,5 @@
 import {
+  agrees,
   buildOracleMain,
   buildProbeEntry,
   resolveCppName,
@@ -153,5 +154,63 @@ describe('buildOracleMain', () => {
     expect(src).toContain('bool a0 = pool_f_0[')
     expect(src).toContain('emit(a0 ? 1 : 0);')
     expect(src).toContain('emit(double(f_0(a0) ? 1 : 0));')
+  })
+})
+
+// The float32 oracle and the float64 twin start from inputs both represent
+// exactly, but nothing keeps their INTERMEDIATES exact, and an operation that
+// drops the magnitude leaves the difference sitting on a small result. These
+// are `hueRampLane(65536, lane)`'s real numbers, which failed the sweep while
+// the shader and the emitter were both correct.
+describe('agrees admits the rounding an input magnitude carries', () => {
+  const CPP = 0.38336181640625
+  const JS = 0.38333333333332575
+
+  test('a large float argument widens the slack onto a small result', () => {
+    expect(agrees(JS, CPP, [65536])).toBe(true)
+  })
+
+  test('and the result alone does not — this is what the sweep was reading', () => {
+    expect(agrees(JS, CPP)).toBe(false)
+  })
+
+  test('the widening tracks the magnitude rather than switching on at one', () => {
+    // 1024 is the pool's next magnitude down and needs none of it: the same
+    // arithmetic there lands 64x closer, inside the plain relative tolerance.
+    const hp = (1024 / 360) * 6
+    const f32 = Math.fround(Math.fround(Math.fround(1024 / 360) * 6))
+    const near = (h: number) => 0.5 * (1 - Math.abs((h % 2) - 1)) + 0.25
+    expect(Math.abs(near(hp) - near(f32))).toBeLessThan(1e-5)
+    expect(agrees(near(hp), near(f32))).toBe(true)
+  })
+
+  test('a whole-unit mistranslation still fails at the widest input', () => {
+    // The sabotage the tolerance exists to catch, at the magnitude that buys
+    // the most slack: 65536 * 2^-24 is 3.9e-3, still 250x under one unit.
+    expect(agrees(JS, CPP + 1, [65536])).toBe(false)
+    expect(agrees(0, 1, [65536])).toBe(false)
+    expect(agrees(0.5, 0.51, [65536])).toBe(false)
+  })
+
+  test('no float argument is the plain relative tolerance', () => {
+    // Which is how an integer parameter buys no slack: `check-oracle.ts` passes
+    // the float-typed arguments and drops the rest, so a function of `uint`
+    // alone arrives here with an empty list. That filter is the call site's,
+    // not this function's — UINT_POOL reaches 4294967295, and folding one in
+    // would put the slack at 256 and referee nothing.
+    expect(agrees(JS, CPP, [])).toBe(false)
+    expect(agrees(0, 1)).toBe(false)
+  })
+
+  test('exact equality and NaN agreement are unchanged', () => {
+    expect(agrees(0, -0, [65536])).toBe(true)
+    expect(agrees(Number.NaN, Number.NaN)).toBe(true)
+    expect(agrees(Number.NaN, 0, [65536])).toBe(false)
+    expect(agrees(Infinity, Infinity)).toBe(true)
+  })
+
+  test('a non-finite float argument does not widen the slack to everything', () => {
+    expect(agrees(0, 1, [Infinity])).toBe(false)
+    expect(agrees(0, 1, [Number.NaN])).toBe(false)
   })
 })

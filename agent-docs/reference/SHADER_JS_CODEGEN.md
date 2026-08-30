@@ -232,9 +232,26 @@ is an error for the same reason it is above.
 reviewable.** slangc will also emit C++ for the same Slang, so the second
 implementation is generated instead of written: the check compiles to C++,
 sweeps ~400 pseudo-random argument tuples per function over pools of
-exactly-float32-representable values, and compares. ~28,000 comparisons across
-20 shaders, in a few seconds. A disagreement is a bug in `wgslToJs.ts`, not in
-the shader.
+exactly-float32-representable values, and compares. ~102,000 comparisons across
+25 shaders, in a few seconds. A disagreement is a bug in `wgslToJs.ts`, not in
+the shader — with one exception, below.
+
+**The pools are exact; the intermediates are not, and that is a real red.** A
+float32 value of magnitude M carries up to `M * 2^-24` of rounding the float64
+twin does not, and the error is absolute, so an operation that drops the
+magnitude leaves the whole of it sitting on a small result. `hueRampLane(65536)`
+is the worked example and it failed the sweep for a day with both the shader and
+the emitter correct: `(hueDeg / 360.0) * 6.0` is `1092.2667236328125` in float32
+against `1092.2666666666667` in float64 — under half an ulp apart at that
+magnitude, so neither side is wrong — and then `% 2.0` carries the full 5.7e-5
+down onto a result of 0.38, which is 2.8x the flat `REL_TOLERANCE`. `agrees()`
+takes the slack from the widest FLOAT argument the call carried rather than from
+the result, so the reduction no longer reads as a mistranslation. Integer
+parameters are excluded and the exclusion is the point: `UINT_POOL` reaches
+4294967295, and folding one in would put the slack at 256 and referee nothing.
+The widening is per call, so the other 23 float pool values still hold the same
+function to 1e-5 — a 4e-4 drift planted in `hueRampLane`'s twin is caught at 93
+draws, none of them the 65536 one.
 
 **It sweeps every function the emitter can emit, not just the exported ones**,
 and that is where its value is. An export already has a consumer and often a
