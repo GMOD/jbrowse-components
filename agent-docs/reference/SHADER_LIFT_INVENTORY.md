@@ -23,9 +23,7 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-| Function | Signature | Shaders |
-| --- | --- | --- |
-| `smallMarkFade` | `(f32) -> f32` | variant |
+_None._
 
 ## Declined
 
@@ -55,6 +53,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
 | `scoreToY` | `(f32, f32, f32, f32, i32, f32) -> f32` | a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller |
+| `smallMarkFade` | `(f32) -> f32` | compensation for MSAA quantizing a tiny triangle's coverage to a few sample positions; Canvas2D's rasterizer blends that coverage per pixel on its own, so applying the ramp there would fade the glyph twice |
 | `snapBoxCenterY` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
 | `snapCellEdgePx` | `(f32, f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
 | `snapToPixelX` | `(f32, f32) -> f32` | clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin |

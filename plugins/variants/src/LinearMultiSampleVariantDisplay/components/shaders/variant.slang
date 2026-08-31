@@ -6,6 +6,7 @@
 //! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT
 //! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
+//! js-skip: smallMarkFade — compensation for MSAA quantizing a tiny triangle's coverage to a few sample positions; Canvas2D's rasterizer blends that coverage per pixel on its own, so applying the ramp there would fade the glyph twice
 
 import antialias;
 import hpmath;
