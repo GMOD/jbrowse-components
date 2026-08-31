@@ -96,6 +96,17 @@ const ClusterManualTab = observer(function ClusterManualTab({
   const script = matrix ? generateClusterRScript(matrix, clusterMethod) : ''
   const tsv = matrix ? matrixToTsv(matrix) : ''
 
+  // Which rows the export the user is taking away describes. Recorded as it
+  // leaves rather than read back at submit time, because the matrix on screen
+  // does not stand still: its fetch is keyed on the view, so a region change
+  // behind the dialog replaces it with one over a different row set, and the
+  // paste would then be checked against rows the exported script never saw.
+  const [exportedRowNames, setExportedRowNames] = useState<string[]>()
+  const matrixRowNames = matrix ? [...matrix.keys()] : undefined
+  function recordExport() {
+    setExportedRowNames(matrixRowNames)
+  }
+
   return (
     <SubmitForm
       submitText="Apply clustering"
@@ -107,9 +118,15 @@ const ClusterManualTab = observer(function ClusterManualTab({
         try {
           setPasteError(undefined)
           // parseClusterOrder yields 1-based R indices; applyOrder takes
-          // 0-based, and validates the order covers every row before
-          // anything is applied
-          applyOrder(parseClusterOrder(paste).map(idx => idx - 1))
+          // 0-based, and validates that the order covers every row and that
+          // they are still the rows the matrix held, before anything is
+          // applied. A paste from a script taken in some earlier session has
+          // no export of its own, and falls back to the matrix in hand — which
+          // it also has to describe.
+          applyOrder(
+            parseClusterOrder(paste).map(idx => idx - 1),
+            exportedRowNames ?? matrixRowNames,
+          )
           handleClose()
         } catch (e) {
           // a bad paste keeps the dialog open so the user can fix it
@@ -125,6 +142,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
             variant="contained"
             disabled={!script}
             onClick={() => {
+              recordExport()
               void download(script, 'cluster.R')
             }}
           >
@@ -134,7 +152,10 @@ const ClusterManualTab = observer(function ClusterManualTab({
           <CopyToClipboardButton
             variant="contained"
             disabled={!script}
-            value={() => script}
+            value={() => {
+              recordExport()
+              return script
+            }}
           >
             Copy Rscript to clipboard
           </CopyToClipboardButton>
@@ -143,6 +164,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
             variant="contained"
             disabled={!tsv}
             onClick={() => {
+              recordExport()
               void download(tsv, tsvFilename)
             }}
           >

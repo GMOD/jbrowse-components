@@ -45,6 +45,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { compareStructural, computed } from 'mobx'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import {
@@ -295,97 +296,132 @@ export default function stateModelFactory(
         return readConfObject(self.conf, 'rowGroups')
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * Rows discovered in the loaded data: the distinct partition values across
-       * all loaded regions, ordered by the config `rowOrder` then sorted. The
-       * pre-layout, pre-filter input to the arrangement dialog and to clustering.
-       */
-      get sourcesWithoutLayout(): MultiRowSource[] {
-        const values = new Set<string>()
-        for (const data of self.rpcDataMap.values()) {
-          for (const v of data.partitionValues) {
-            values.add(v)
+    .views(self => {
+      // The comparer is load-bearing. A plain getter hands out a fresh array on
+      // every write to `rpcDataMap`, and this list reaches `featurePaintInputs`
+      // — whose identity clears `installUpload`'s encode cache, so region k's
+      // arrival re-encoded regions 1..k-1 into the bytes they already held. A
+      // progressive load keeps rediscovering the same rows. Same comparer, for
+      // the same reason, as MultiLinearWiggleDisplay's `sourcesWithoutLayout`.
+      const sourcesWithoutLayout = computed(
+        () => {
+          const values = new Set<string>()
+          for (const data of self.rpcDataMap.values()) {
+            for (const v of data.partitionValues) {
+              values.add(v)
+            }
           }
-        }
-        return orderPartitionValues(values, self.rowOrder).map(name => ({
-          name,
-        }))
-      },
-      /**
-       * #getter
-       * Whether the loaded data colored itself via `itemRgb` (only possible with
-       * the `color` slot at its default). Suppresses the per-row palette, which
-       * would otherwise paint over those colors.
-       */
-      get usedItemRgb(): boolean {
-        return [...self.rpcDataMap.values()].some(data => data.usedItemRgb)
-      },
-      /**
-       * #getter
-       * The attribute the rows are actually partitioned on: the `partitionField`
-       * slot, or — with the slot at its empty default — what the worker picked
-       * off the columns the data turned out to carry (`resolvePartitionField`,
-       * `repClass` on a RepeatMasker file). `name` until something has loaded,
-       * which is what auto falls back to anyway.
-       *
-       * The resolved twin of the `partitionField` transport read above, which
-       * stays the raw slot because that is what the fetch has to send — resolve
-       * it there and the worker would be handed the main thread's guess at a
-       * question only the worker can answer, and the auto pick could never
-       * happen. Everything that asks "which attribute are these rows" — the
-       * menu's radio, the clustering call that has to land features in the rows
-       * the painting drew — reads this one.
-       *
-       * Off the first loaded region rather than a vote across them: one file's
-       * columns are one file's columns, and a region that disagreed would be a
-       * different partition, not a tiebreak.
-       */
-      get effectivePartitionField(): string {
-        const [first] = self.rpcDataMap.values()
-        return first === undefined ? 'name' : first.resolvedPartitionField
-      },
-      /**
-       * #getter
-       * What a fetch issued NOW should partition on under auto: the attribute an
-       * already-loaded region resolved, or auto again when none has. Unlike
-       * `effectivePartitionField` there is no display default to fall back to —
-       * this is an instruction to the worker, where "no instruction" is a real
-       * answer.
-       *
-       * The worker resolves auto off a SAMPLE of the region it packs, so a
-       * region panned into later can land on a different attribute. Not an
-       * `rpcProps()` key: keying on the resolved field would refetch every
-       * region the moment the first one answered.
-       */
-      get pinnedPartitionField(): string {
-        const [first] = self.rpcDataMap.values()
-        return first === undefined
-          ? AUTO_PARTITION_FIELD
-          : first.resolvedPartitionField
-      },
-      /**
-       * #getter
-       * The attribute names the loaded features carry, which is what the
-       * "Partition by..." menu offers. Unioned across regions and re-sorted,
-       * since two regions can be served by adapters that saw different optional
-       * columns.
-       *
-       * Empty until something is loaded, which is the menu's own disabled
-       * condition — the names are discovered from the data rather than declared,
-       * the same way the rows themselves are.
-       */
-      get partitionCandidates(): string[] {
-        const names = new Set<string>()
-        for (const data of self.rpcDataMap.values()) {
-          for (const name of data.partitionCandidates) {
-            names.add(name)
+          return orderPartitionValues(values, self.rowOrder).map(name => ({
+            name,
+          }))
+        },
+        { equals: compareStructural },
+      )
+      return {
+        /**
+         * #getter
+         * Rows discovered in the loaded data: the distinct partition values across
+         * all loaded regions, ordered by the config `rowOrder` then sorted. The
+         * pre-layout, pre-filter input to the arrangement dialog and to clustering.
+         */
+        get sourcesWithoutLayout(): MultiRowSource[] {
+          return sourcesWithoutLayout.get()
+        },
+        /**
+         * #getter
+         * Whether the loaded data colored itself via `itemRgb` (only possible with
+         * the `color` slot at its default). Suppresses the per-row palette, which
+         * would otherwise paint over those colors.
+         */
+        get usedItemRgb(): boolean {
+          return [...self.rpcDataMap.values()].some(data => data.usedItemRgb)
+        },
+        /**
+         * #getter
+         * The attribute a loaded region actually resolved its rows on, or
+         * undefined while none has — the one answer `effectivePartitionField` and
+         * `pinnedPartitionField` are two readings of.
+         *
+         * Off the first loaded region that PUT SOMETHING IN A ROW, rather than
+         * the first loaded region: a region that came back empty resolved
+         * nothing. `resolvePartitionField` collects its candidates off the
+         * features, so an empty one falls through to the degenerate `name` — and
+         * pinned for the display that is every later region partitioned by
+         * feature name, which on the RepeatMasker files auto exists for is tens
+         * of thousands of one-feature hairline rows, a "Partition by" radio
+         * checking a field nobody picked, and clustering keyed on the same wrong
+         * attribute.
+         *
+         * Not a vote across the regions either: one file's columns are one file's
+         * columns, and a region that disagreed is a different partition rather
+         * than a tiebreak — which is why a disagreeing region is refetched (see
+         * `regionHasData`) instead of being averaged in here.
+         */
+        get answeredPartitionField(): string | undefined {
+          return [...self.rpcDataMap.values()].find(
+            data => data.partitionValues.length > 0,
+          )?.resolvedPartitionField
+        },
+        /**
+         * #getter
+         * The attribute the rows are actually partitioned on: the `partitionField`
+         * slot, or — with the slot at its empty default — what the worker picked
+         * off the columns the data turned out to carry (`resolvePartitionField`,
+         * `repClass` on a RepeatMasker file). `name` until something has loaded,
+         * which is what auto falls back to anyway.
+         *
+         * The resolved twin of the `partitionField` transport read above, which
+         * stays the raw slot because that is what the fetch has to send — resolve
+         * it there and the worker would be handed the main thread's guess at a
+         * question only the worker can answer, and the auto pick could never
+         * happen. Everything that asks "which attribute are these rows" — the
+         * menu's radio, the clustering call that has to land features in the rows
+         * the painting drew — reads this one.
+         */
+        get effectivePartitionField(): string {
+          return this.answeredPartitionField ?? 'name'
+        },
+        /**
+         * #getter
+         * What a fetch issued NOW should partition on under auto: the attribute an
+         * already-loaded region resolved, or auto again when none has. Unlike
+         * `effectivePartitionField` there is no display default to fall back to —
+         * this is an instruction to the worker, where "no instruction" is a real
+         * answer.
+         *
+         * The worker resolves auto off a SAMPLE of the region it packs, so a
+         * region panned into later can land on a different attribute, and the
+         * regions of one batch fan out in parallel with nothing to pin yet — so
+         * this is also what a landed region is CHECKED against (`regionHasData`),
+         * not only what a later fetch is told. Not an `rpcProps()` key: keying on
+         * the resolved field would refetch every region the moment the first one
+         * answered.
+         */
+        get pinnedPartitionField(): string {
+          return this.answeredPartitionField ?? AUTO_PARTITION_FIELD
+        },
+        /**
+         * #getter
+         * The attribute names the loaded features carry, which is what the
+         * "Partition by..." menu offers. Unioned across regions and re-sorted,
+         * since two regions can be served by adapters that saw different optional
+         * columns.
+         *
+         * Empty until something is loaded, which is the menu's own disabled
+         * condition — the names are discovered from the data rather than declared,
+         * the same way the rows themselves are.
+         */
+        get partitionCandidates(): string[] {
+          const names = new Set<string>()
+          for (const data of self.rpcDataMap.values()) {
+            for (const name of data.partitionCandidates) {
+              names.add(name)
+            }
           }
-        }
-        return [...names].sort()
-      },
-    }))
+          return [...names].sort()
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -812,48 +848,86 @@ export default function stateModelFactory(
         }
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * Per-region drawn features bucketed by display row, keyed by
-       * displayedRegionIndex. Built through `forEachDrawnFeature` off the same
-       * `featurePaintInputs` the painters use, so the hit test cannot answer "is
-       * this feature drawn" differently from the paint that put it there.
-       *
-       * Memoized because the hit test needs it per *pointer frame*: `featureAt`
-       * runs on every rAF-coalesced mouse move, and building it inline meant
-       * resolving the region's whole partition list (a couple of thousand rows
-       * on a cohort painting) sixty times a second for a value that changes
-       * only when the rows, the colors or the data do.
-       *
-       * Bucketing rather than a bare context, because the memo only removed the
-       * *setup* from the pointer frame and left the scan: the row is known
-       * before the search starts, so a hit on a 200-feature row was still
-       * walking the region's other half-million. See `findTopDrawnFeatureInRow`.
-       *
-       * `featurePaintInputs` rather than the whole `renderState`, so that
-       * "changes only when the rows, the colors or the data do" is actually
-       * true — see there.
-       *
-       * The memo needs an observer to exist at all, which `afterAttach`
-       * installs: the hit test reads this from a React event handler, and MobX
-       * does not cache a computed nobody is watching.
-       */
-      get drawnFeaturesByRow(): Map<number, DrawnFeaturesByRow> {
-        const state = self.featurePaintInputs
-        const rowCount = self.sources.length
-        return new Map(
-          [...self.rpcDataMap.entries()].map(([index, data]) => [
-            index,
-            drawnFeaturesByRow(
-              data,
-              drawnFeatureContext(data, state),
-              rowCount,
-            ),
-          ]),
-        )
-      },
-    }))
+    .views(self => {
+      // Held per region, because `rpcDataMap` invalidates the computed whole:
+      // the Nth region to land rebuilt the N-1 indexes that already held, two
+      // passes over every feature each. Kept on exactly the compares
+      // `installUpload` keeps its encodings on, and exact for the same reason —
+      // a region payload is replaced whole and never mutated
+      // (`regionDataMap`), and `featurePaintInputs` is the memoized triple the
+      // painters key on.
+      const held = new Map<
+        number,
+        { data: MultiRowRegionData; byRow: DrawnFeaturesByRow }
+      >()
+      // the row count is `state.rowIndexByValue.size`, so it cannot move
+      // without the state identity moving with it
+      let heldFor:
+        | Pick<
+            MultiRowRenderState,
+            'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
+          >
+        | undefined
+      return {
+        /**
+         * #getter
+         * Per-region drawn features bucketed by display row, keyed by
+         * displayedRegionIndex. Built through `forEachDrawnFeature` off the same
+         * `featurePaintInputs` the painters use, so the hit test cannot answer "is
+         * this feature drawn" differently from the paint that put it there.
+         *
+         * Memoized because the hit test needs it per *pointer frame*: `featureAt`
+         * runs on every rAF-coalesced mouse move, and building it inline meant
+         * resolving the region's whole partition list (a couple of thousand rows
+         * on a cohort painting) sixty times a second for a value that changes
+         * only when the rows, the colors or the data do.
+         *
+         * Bucketing rather than a bare context, because the memo only removed the
+         * *setup* from the pointer frame and left the scan: the row is known
+         * before the search starts, so a hit on a 200-feature row was still
+         * walking the region's other half-million. See `findTopDrawnFeatureInRow`.
+         *
+         * `featurePaintInputs` rather than the whole `renderState`, so that
+         * "changes only when the rows, the colors or the data do" is actually
+         * true — see there.
+         *
+         * The memo needs an observer to exist at all, which `afterAttach`
+         * installs: the hit test reads this from a React event handler, and MobX
+         * does not cache a computed nobody is watching.
+         */
+        get drawnFeaturesByRow(): Map<number, DrawnFeaturesByRow> {
+          const state = self.featurePaintInputs
+          const rowCount = self.sources.length
+          if (state !== heldFor) {
+            heldFor = state
+            held.clear()
+          }
+          const byRegion = new Map<number, DrawnFeaturesByRow>()
+          for (const [index, data] of self.rpcDataMap.entries()) {
+            const prev = held.get(index)
+            const entry =
+              prev?.data === data
+                ? prev
+                : {
+                    data,
+                    byRow: drawnFeaturesByRow(
+                      data,
+                      drawnFeatureContext(data, state),
+                      rowCount,
+                    ),
+                  }
+            held.set(index, entry)
+            byRegion.set(index, entry.byRow)
+          }
+          for (const index of held.keys()) {
+            if (!byRegion.has(index)) {
+              held.delete(index)
+            }
+          }
+          return byRegion
+        },
+      }
+    })
     .views(self => ({
       /**
        * #method
@@ -898,10 +972,18 @@ export default function stateModelFactory(
         // under this pixel" that the painters also own: which features are
         // drawn at all, and which of two overlapping ones is on top. All this
         // adds is the span.
+        //
+        // A zero-length feature covers its own start base rather than nothing:
+        // `start <= bp && bp < end` is empty when the two are equal, so the
+        // block both painters DO draw — widened to MULTI_ROW_MIN_CELL_PX from
+        // its start edge — had no hover, tooltip, details or menu. Same
+        // degenerate span `featureSpanRegion` had to widen.
         const i = findTopDrawnFeatureInRow(
           byRow,
           targetRow,
-          i => featureStarts[i]! <= bp && bp < featureEnds[i]!,
+          i =>
+            featureStarts[i]! <= bp &&
+            bp < Math.max(featureEnds[i]!, featureStarts[i]! + 1),
         )
         return i === -1
           ? undefined
@@ -1083,7 +1165,17 @@ export default function stateModelFactory(
           // survive the reorder) and unfiltered by the subtree, so a focused
           // clade doesn't persist itself as the whole row order and drop
           // everything it was hiding.
-          self.setLayout(rowOrderByValueAt(self.editableSources, region, pos))
+          // the same triple the painters and the hit test resolve "does this
+          // feature paint" from, so a hidden legend category orders the rows the
+          // way it draws them
+          self.setLayout(
+            rowOrderByValueAt(
+              self.editableSources,
+              region,
+              pos,
+              self.featurePaintInputs,
+            ),
+          )
         },
         /**
          * #action
@@ -1231,11 +1323,33 @@ export default function stateModelFactory(
        * No zoom rule beside it: the worker's output is absolute genomic uint32,
        * so `regionFetchKey` stays at its empty default.
        *
+       * **And the reconciliation for auto partitioning**, which is the second
+       * thing this hook is for (MAF's "which of several held payloads answers"
+       * is the first). Auto is resolved in the worker off a sample of the
+       * region it packs, and a batch fans out in parallel with nothing pinned
+       * yet — so two regions of one display can come back partitioned on
+       * different attributes, after which one row name means two things and
+       * `sourcesWithoutLayout` unions both sets. A region that answered
+       * something other than the pin has not stored data this display can draw,
+       * so it is refetched, and this time it is TOLD the field. It terminates
+       * because the worker echoes an explicit field back verbatim, and because
+       * the pin is itself some loaded region's answer, so at least one region
+       * always agrees.
+       *
+       * A region holding no row is exempt: it has nothing to land in the wrong
+       * one, and refetching it would re-download every empty contig of a
+       * whole-genome load to be told the same nothing.
+       *
        * A view, not an action: as an action MobX untracks the `rpcDataMap` read
        * and `FetchVisibleRegions` keeps a stale answer.
        */
       regionHasData(displayedRegionIndex: number) {
-        return self.rpcDataMap.has(displayedRegionIndex)
+        const data = self.rpcDataMap.get(displayedRegionIndex)
+        return (
+          data !== undefined &&
+          (data.partitionValues.length === 0 ||
+            data.resolvedPartitionField === self.pinnedPartitionField)
+        )
       },
     }))
     .actions(self => ({

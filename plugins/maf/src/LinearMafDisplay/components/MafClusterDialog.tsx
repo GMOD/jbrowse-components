@@ -47,13 +47,14 @@ const MafClusterDialog = observer(function MafClusterDialog({
           ...args,
         })
       }
-      applyOrder={order => {
+      applyOrder={(order, matrixRowNames) => {
         model.setLayout(
           clusteredMafLayout({
             sources: model.sources,
             editableSources: model.editableSources,
             layout: model.layout,
             order,
+            matrixRowNames,
           }),
         )
       }}

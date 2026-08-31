@@ -1,4 +1,5 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
+import { compareRowValues } from '@jbrowse/tree-sidebar'
 
 // A row in the painting. `name` is the partition value (the row identity, and
 // the tree leaf name); the rest are user arrangement overrides. `labelColor`
@@ -133,6 +134,11 @@ export function resolveRowColorStrings(
  * Order the discovered partition values: those named in the config `rowOrder`
  * come first in that order, remaining values are appended in sorted order. Empty
  * `rowOrder` = fully sorted.
+ *
+ * Sorted through `compareRowValues`, which is numeric when both sides are
+ * numbers — a partition field is as often a number written as text as it is a
+ * name, and a bare `sort()` files a chromHMM run's 25 states as 1, 10, 11, ...,
+ * 2, 20. The row-arrangement grid already orders its columns that way.
  */
 export function orderPartitionValues(
   values: Set<string>,
@@ -140,6 +146,6 @@ export function orderPartitionValues(
 ): string[] {
   const listed = [...new Set(rowOrder)].filter(v => values.has(v))
   const seen = new Set(listed)
-  const rest = [...values].filter(v => !seen.has(v)).sort()
+  const rest = [...values].filter(v => !seen.has(v)).sort(compareRowValues)
   return [...listed, ...rest]
 }

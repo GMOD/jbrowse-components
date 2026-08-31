@@ -109,6 +109,7 @@ export {
   updateRows,
 } from './sourcesGridUtils.ts'
 export { paletteColorsByRow } from './setColorDialog/applyColorPalette.ts'
+export { compareRowValues } from './setColorDialog/useSourceSort.ts'
 export { default as SetColorDialog } from './setColorDialog/SetColorDialog.tsx'
 export type {
   SetColorDialogProps,

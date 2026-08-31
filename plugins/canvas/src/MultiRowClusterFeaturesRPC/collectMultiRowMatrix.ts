@@ -1,5 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import {
@@ -54,13 +54,26 @@ export async function collectMultiRowMatrix({
     partitionField,
     pluginManager.jexl,
   )
+  // Every region at once: the regions are independent, and awaited one at a
+  // time a 24-region clustering run paid 24 round trips end to end. Each gets
+  // its own status slot so the concurrent downloads aggregate into one bar
+  // rather than clobbering the shared field, the way the score matrix does.
+  const slot = createStatusFanOut(statusCallback)
+  const featuresPerRegion = await updateStatus(
+    'Downloading features',
+    statusCallback,
+    () =>
+      Promise.all(
+        regions.map(region =>
+          dataAdapter.getFeaturesArray(region, {
+            statusCallback: slot(),
+            stopToken,
+          }),
+        ),
+      ),
+  )
   const features: MatrixFeature[] = []
-  for (const [regionIndex, region] of regions.entries()) {
-    const feats = await updateStatus(
-      'Downloading features',
-      statusCallback,
-      () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
-    )
+  for (const [regionIndex, feats] of featuresPerRegion.entries()) {
     checkStopTokenThrottled(stopTokenCheck)
     // Dedup by feature id — a duplicate would double-count coverage in the
     // matrix and skew the row order. Per region rather than across the whole

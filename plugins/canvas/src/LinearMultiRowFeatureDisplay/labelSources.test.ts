@@ -20,6 +20,7 @@ function rows(names: string[], usedItemRgb = false): MultiRowRegionData {
     featureIds: [],
     usedItemRgb,
     partitionCandidates: [],
+    legendCandidates: [],
     resolvedPartitionField: 'name',
   }
 }

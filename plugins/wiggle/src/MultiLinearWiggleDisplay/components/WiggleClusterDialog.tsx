@@ -52,8 +52,8 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
           ...handles,
         })
       }
-      applyOrder={order => {
-        validateClusterOrder(order, model.sourcesWithoutLayout.length)
+      applyOrder={(order, matrixRowNames) => {
+        validateClusterOrder(order, model.sourcesWithoutLayout, matrixRowNames)
         model.setLayout(
           buildClusteredLayout(model.sourcesWithoutLayout, model.layout, order),
         )

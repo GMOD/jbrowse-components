@@ -1,5 +1,6 @@
 import { isCallbackValue, readConfigValue } from '@jbrowse/core/configuration'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
+import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
 
 // multi-row's unset-slot fallback is just the generic feature default; unset is
 // also what turns on the per-row palette (resolveRowColorStrings), which paints
@@ -7,7 +8,10 @@ import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 // compared against a stored value (the slot is a `maybeColor`).
 import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 
-import type { MultiRowGetFeaturesResult } from './rpcTypes.ts'
+import type {
+  MultiRowGetFeaturesResult,
+  MultiRowRegionData,
+} from './rpcTypes.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -79,10 +83,40 @@ export function makeFeatureColorResolver(
 }
 
 // A BED column arrives as a string or a number depending on the parser, and a
-// numeric category (a chromHMM state number, a cluster id) is a real row name,
-// so coerce rather than trust. Absent stays '' rather than becoming "undefined".
-function partitionValue(raw: unknown) {
+// numeric category (a chromHMM state number, a cluster id) is a real row name
+// and a real label, so coerce rather than trust. Absent stays '' rather than
+// becoming "undefined" — and '' is what the row axis and the legend both read as
+// "this feature names nothing".
+function columnValue(raw: unknown) {
   return raw === undefined || raw === null ? '' : String(raw)
+}
+
+/**
+ * This display's feed of the shared derived-key collector, which is what the
+ * main thread builds the color legend from instead of re-walking the features. A
+ * region's rows are its `partitionValues`, so a candidate's `rowIndex` indexes
+ * that list and `buildColorLegend` resolves it to a display row.
+ *
+ * A pass of its own rather than a line inside the pack loop, so it can also be
+ * run over an already-packed region.
+ */
+export function collectLegendCandidates({
+  featureNames,
+  featureColors,
+  featurePartitionIndex,
+}: Pick<
+  MultiRowRegionData,
+  'featureNames' | 'featureColors' | 'featurePartitionIndex'
+>) {
+  const collector = createLegendCandidateCollector()
+  for (let i = 0; i < featureNames.length; i++) {
+    collector.add(
+      featurePartitionIndex[i]!,
+      featureNames[i]!,
+      featureColors[i]!,
+    )
+  }
+  return collector.candidates
 }
 
 // Attributes that name a feature's PLACE rather than anything about it. Rows
@@ -206,14 +240,12 @@ export function makeFeaturePartitionResolver(
   jexl: JexlInstance,
 ) {
   if (!isCallbackValue(partitionField)) {
-    return (feature: Feature) => partitionValue(feature.get(partitionField))
+    return (feature: Feature) => columnValue(feature.get(partitionField))
   }
   const cfg = { partitionField }
   return (feature: Feature) => {
     try {
-      return partitionValue(
-        readConfigValue(cfg, 'partitionField', feature, jexl),
-      )
+      return columnValue(readConfigValue(cfg, 'partitionField', feature, jexl))
     } catch {
       return ''
     }
@@ -292,17 +324,13 @@ export function packMultiRowFeatures({
     featureStarts[i] = feature.get('start')
     featureEnds[i] = feature.get('end')
     featureIds[i] = feature.id()
-    // Coerced the same way the partition value is (see partitionValue), and for
-    // the same reason: a BED column arrives as a string or a number depending on the
-    // parser, and a numeric name (a chromHMM state number, a numeric category)
-    // is a real label — dropped to '' it cost the tooltip its text and the
-    // legend its entry, since buildColorLegend skips unnamed features.
-    //
-    // Typed `unknown` because the `get('name')` overload's `string | undefined`
-    // is optimistic about exactly that: this coerced rather than trusted it even
-    // when it was throwing the number away.
+    // The same coercion the partition value gets, and for the same reason: a
+    // numeric name (a chromHMM state number, a numeric category) is a real
+    // label, and dropped to '' it cost the tooltip its text and the legend its
+    // entry. `get('name')`'s `string | undefined` overload is optimistic about
+    // exactly that, which is why the value is coerced rather than trusted.
     const name: unknown = feature.get('name')
-    featureNames[i] = name === undefined || name === null ? '' : String(name)
+    featureNames[i] = columnValue(name)
 
     if (packDeltas) {
       // A BED column arrives as a string or a number depending on the parser, so
@@ -342,5 +370,10 @@ export function packMultiRowFeatures({
     usedItemRgb,
     partitionCandidates,
     resolvedPartitionField,
+    legendCandidates: collectLegendCandidates({
+      featureNames,
+      featureColors,
+      featurePartitionIndex,
+    }),
   }
 }

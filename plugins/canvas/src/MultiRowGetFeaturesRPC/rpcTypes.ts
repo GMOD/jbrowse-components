@@ -1,4 +1,5 @@
 import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LegendCandidate } from '@jbrowse/core/util/legendCandidates'
 
 export interface MultiRowGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
@@ -76,6 +77,13 @@ export interface MultiRowRegionData {
   // same on every line, and a union over half a million features would rebuild a
   // Set per region for an answer the first few rows already give.
   partitionCandidates: string[]
+  // The distinct (row, name, color) combinations the features carry, in
+  // first-seen order and bounded — the shared derived-key shape, with `rowIndex`
+  // indexing `partitionValues`. Packed here because deriving it is a walk over
+  // every feature: on the main thread `buildColorLegend` re-walked half a million
+  // segments per region on every region arrival, row reorder and recolor, usually
+  // to hand back nothing.
+  legendCandidates: LegendCandidate[]
   // The attribute this region's rows were actually partitioned on — the
   // configured `partitionField`, or what auto picked off `partitionCandidates`
   // when the slot was left empty (resolvePartitionField). The main thread has no

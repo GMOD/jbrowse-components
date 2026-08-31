@@ -181,9 +181,11 @@ test('buildClusteredLayout throws on out-of-bounds index', () => {
   )
 })
 
+const abc = [{ name: 'A' }, { name: 'B' }, { name: 'C' }]
+
 test('validateClusterOrder accepts a full permutation', () => {
   expect(() => {
-    validateClusterOrder([2, 0, 1], 3)
+    validateClusterOrder([2, 0, 1], abc)
   }).not.toThrow()
 })
 
@@ -192,13 +194,13 @@ test('validateClusterOrder accepts a full permutation', () => {
 // where a position reads.
 test('validateClusterOrder rejects out-of-range, duplicate, and wrong-length', () => {
   expect(() => {
-    validateClusterOrder([0, 3], 3)
+    validateClusterOrder([0, 3], abc)
   }).toThrow('entry 2 is 4, outside the range 1-3')
   expect(() => {
-    validateClusterOrder([0, 1, 1], 3)
+    validateClusterOrder([0, 1, 1], abc)
   }).toThrow('entry 3 repeats row 2')
   expect(() => {
-    validateClusterOrder([0, 1], 3)
+    validateClusterOrder([0, 1], abc)
   }).toThrow(/expected 3 entries/)
 })
 
@@ -207,8 +209,31 @@ test('validateClusterOrder rejects out-of-range, duplicate, and wrong-length', (
 // the position nor the value.
 test('validateClusterOrder names a non-numeric paste line by position', () => {
   expect(() => {
-    validateClusterOrder([0, Number.NaN, 2], 3)
+    validateClusterOrder([0, Number.NaN, 2], abc)
   }).toThrow('entry 2 is not a whole number')
+})
+
+test('validateClusterOrder accepts an order over the rows the matrix held', () => {
+  expect(() => {
+    validateClusterOrder([2, 0, 1], abc, ['A', 'B', 'C'])
+  }).not.toThrow()
+})
+
+// The one a cardinality check cannot see: the row set moved while the user was
+// in R, keeping its count, so every rank lands on a row that never entered the
+// matrix and the dendrogram still draws.
+test('validateClusterOrder rejects an order whose rows were swapped out', () => {
+  expect(() => {
+    validateClusterOrder([2, 0, 1], abc, ['A', 'D', 'C'])
+  }).toThrow('row 2 was "D" and is now "B"')
+})
+
+test('validateClusterOrder reports a row count that moved before the entries', () => {
+  // the count check would have said "expected 3 entries, got 2", which names
+  // the paste rather than the rows that changed under it
+  expect(() => {
+    validateClusterOrder([1, 0], abc, ['A', 'B'])
+  }).toThrow('the matrix had 2 rows and there are now 3')
 })
 
 // hclust's `length` is an absolute merge height, so a collapsing unary node

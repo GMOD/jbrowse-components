@@ -29,29 +29,33 @@ import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 //   thing superseded; a hidden HAPLOTYPE row is kept even when its sibling
 //   clustered, since the filter may be hiding exactly one of a pair.
 //
-// Validation lives here rather than at the paste box because the length an order
-// must cover is the *expanded* row count, which only this function knows: in
-// phased mode a 2x-ploidy haplotype set is what the matrix (and so the order)
-// was built over. An order from the RPC always covers it; a hand-pasted one is
-// where a short or duplicated list would otherwise silently drop or double rows.
+// Validation lives here rather than at the paste box because the rows an order
+// must cover are the *expanded* ones, which only this function knows: in phased
+// mode a 2x-ploidy haplotype set is what the matrix (and so the order) was built
+// over. An order from the RPC always covers it; a hand-pasted one is where a
+// short or duplicated list would otherwise silently drop or double rows, and
+// where `matrixRowNames` catches a row set that moved during the trip to R —
+// a sample filter, or phasing switching on as `sampleInfo` arrives.
 export function applyClusterOrder({
   sourcesBase,
   layout,
   order,
   renderingMode,
   sampleInfo,
+  matrixRowNames,
 }: {
   sourcesBase: ProcessedSource[]
   layout: Source[]
   order: number[]
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
+  matrixRowNames?: string[]
 }): Source[] {
   const baseSources =
     renderingMode === 'phased' && sampleInfo
       ? expandSourcesToHaplotypes({ sources: sourcesBase, sampleInfo })
       : sourcesBase
-  validateClusterOrder(order, baseSources.length)
+  validateClusterOrder(order, baseSources, matrixRowNames)
   const clustered = buildClusteredLayout(baseSources, layout, order)
   const clusteredNames = new Set(clustered.map(s => s.name))
   const clusteredSamples = new Set(clustered.map(resolveSampleName))

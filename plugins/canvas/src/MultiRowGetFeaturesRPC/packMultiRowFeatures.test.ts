@@ -400,6 +400,62 @@ test('coerces a numeric partition value rather than dropping it', () => {
   expect(r.partitionValues).toEqual(['15', ''])
 })
 
+// What the color legend is derived from. Packed here because the main thread
+// would otherwise re-walk every feature of every region on every row reorder and
+// recolor to find the same handful of pairs.
+describe('the legend candidates', () => {
+  const chromHmm = [
+    feat({ start: 0, end: 5, sample: 'mom', name: 'TssA', itemRgb: '255,0,0' }),
+    feat({
+      start: 5,
+      end: 9,
+      sample: 'mom',
+      name: 'Quies',
+      itemRgb: '0,255,0',
+    }),
+    feat({ start: 0, end: 9, sample: 'dad', name: 'TssA', itemRgb: '255,0,0' }),
+  ]
+
+  function packed(features: Feature[]) {
+    return packMultiRowFeatures({
+      features,
+      partitionField: 'sample',
+      lengthField: '',
+      colorConfig: undefined,
+      jexl: createJexlInstance(),
+    })
+  }
+
+  it('keeps one per (row, name, color), rows as partitionValues indices', () => {
+    const red = cssColorToABGR('255,0,0')
+    expect(packed(chromHmm).legendCandidates).toEqual([
+      { rowIndex: 0, label: 'TssA', color: red },
+      { rowIndex: 0, label: 'Quies', color: cssColorToABGR('0,255,0') },
+      // the same pair on 'dad', which may be the only row still painting it
+      { rowIndex: 1, label: 'TssA', color: red },
+    ])
+  })
+
+  it('packs nothing for unnamed features', () => {
+    // an unnamed track has no vocabulary to key, so the legend gets an empty
+    // list rather than one entry per feature
+    expect(
+      packed([feat({ start: 0, end: 5, sample: 'mom', itemRgb: '255,0,0' })])
+        .legendCandidates,
+    ).toEqual([])
+  })
+
+  it('is bounded on a track carrying a name per feature', () => {
+    const n = 3000
+    const r = packed(
+      Array.from({ length: n }, (_, i) =>
+        feat({ start: i, end: i + 1, sample: `s${i}`, name: `gene${i}` }),
+      ),
+    )
+    expect(r.legendCandidates.length).toBeLessThan(n)
+  })
+})
+
 // The "Partition by..." menu's options. Discovered from the data rather than
 // declared, so the one thing the display is built on stops being config-only.
 test('collects the attribute names a reader could partition on', () => {

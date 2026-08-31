@@ -19,6 +19,7 @@ function regionData(): MultiRowRegionData {
     featureIds: ['a', 'b'],
     usedItemRgb: false,
     partitionCandidates: [],
+    legendCandidates: [],
     resolvedPartitionField: 'name',
   }
 }
@@ -114,6 +115,71 @@ describe('featurePaintInputs', () => {
 
     display.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
     expect(display.drawnFeaturesByRow).not.toBe(first)
+  })
+
+  // The progressive-load half of the same regression. A plain
+  // `sourcesWithoutLayout` getter handed out a fresh array on every write to
+  // `rpcDataMap`, which reaches here — and `installUpload` clears its whole
+  // encode cache when this identity moves, so region k's arrival re-encoded and
+  // re-uploaded the byte-identical instance buffer of regions 1..k-1. The rows a
+  // second region discovers are, on the files this display is pointed at, the
+  // rows the first one already had.
+  it('survives a second region discovering the rows it already had', () => {
+    const display = makeDisplay()
+    const paint = countRecomputes(() => display.featurePaintInputs)
+
+    display.setRpcData(1, regionData())
+
+    expect(paint.count()).toBe(1)
+    paint.dispose()
+  })
+
+  it('still invalidates when a second region brings a new row', () => {
+    const display = makeDisplay()
+    const paint = countRecomputes(() => display.featurePaintInputs)
+
+    display.setRpcData(1, {
+      ...regionData(),
+      partitionValues: ['sampleA', 'sampleC'],
+    })
+
+    expect(paint.count()).toBe(2)
+    paint.dispose()
+  })
+
+  // Region k's arrival must not re-walk regions 1..k-1: the bucketing is two
+  // full passes over every feature of a region, `rpcDataMap` invalidates the
+  // whole computed, and a whole-genome load pays that once per region that
+  // lands. Reference identity is the exact statement — a reused index IS the
+  // same object.
+  it('reuses the already-loaded regions indexes when another region lands', () => {
+    const display = makeDisplay()
+    const first = display.drawnFeaturesByRow.get(0)
+
+    display.setRpcData(1, regionData())
+
+    expect(display.drawnFeaturesByRow.get(0)).toBe(first)
+    expect(display.drawnFeaturesByRow.get(1)).toBeDefined()
+  })
+
+  it('rebuilds the region whose data was replaced', () => {
+    const display = makeDisplay()
+    const first = display.drawnFeaturesByRow.get(0)
+
+    display.setRpcData(0, regionData())
+
+    expect(display.drawnFeaturesByRow.get(0)).not.toBe(first)
+  })
+
+  it('drops a region that leaves the map', () => {
+    const display = makeDisplay()
+    const first = display.drawnFeaturesByRow.get(0)
+
+    display.clearDisplaySpecificData()
+    expect(display.drawnFeaturesByRow.size).toBe(0)
+
+    display.setRpcData(0, regionData())
+    expect(display.drawnFeaturesByRow.get(0)).not.toBe(first)
   })
 
   // `renderState` must keep carrying all three, since the Canvas2D fallback and

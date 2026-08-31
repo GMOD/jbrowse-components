@@ -50,7 +50,7 @@ const MultiSampleVariantClusterDialog = observer(
             ...args,
           })
         }
-        applyOrder={order => {
+        applyOrder={(order, matrixRowNames) => {
           const { sourcesBase, sampleInfo, renderingMode, layout } = model
           if (sourcesBase) {
             model.setLayout(
@@ -60,6 +60,7 @@ const MultiSampleVariantClusterDialog = observer(
                 order,
                 renderingMode,
                 sampleInfo,
+                matrixRowNames,
               }),
             )
           }

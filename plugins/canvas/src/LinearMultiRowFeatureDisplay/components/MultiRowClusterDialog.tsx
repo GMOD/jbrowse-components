@@ -46,8 +46,11 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
           ...args,
         })
       }
-      applyOrder={order => {
-        validateClusterOrder(order, sourcesWithoutLayout.length)
+      applyOrder={(order, matrixRowNames) => {
+        // the same rows `fetchMatrix` keyed the matrix by, so a partition value
+        // discovered while the user was in R is caught rather than shifting
+        // every rank below it onto the wrong row
+        validateClusterOrder(order, sourcesWithoutLayout, matrixRowNames)
         model.setLayout(
           buildClusteredLayout(sourcesWithoutLayout, model.layout, order),
         )

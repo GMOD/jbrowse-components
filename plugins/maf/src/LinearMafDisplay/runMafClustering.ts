@@ -47,19 +47,27 @@ export interface MafClusterSelf extends IStateTreeNode {
  * The rows a subtree filter is hiding are re-appended rather than dropped.
  * `layout` is the persisted record of every row's position and colour, so
  * losing them here would erase them for good the moment the filter is cleared.
+ *
+ * `matrixRowNames` comes from the R-script path and names the rows the exported
+ * matrix held, so a paste applied after the drawn rows moved (a subtree filter
+ * cleared, a guide tree arriving) is rejected rather than landing each rank on
+ * its neighbour. The RPC path has none: its order came from the very array
+ * passed here.
  */
 export function clusteredMafLayout({
   sources,
   editableSources,
   layout,
   order,
+  matrixRowNames,
 }: {
   sources: MafSource[]
   editableSources: MafSource[]
   layout: readonly MafSource[]
   order: number[]
+  matrixRowNames?: string[]
 }): MafSource[] {
-  validateClusterOrder(order, sources.length)
+  validateClusterOrder(order, sources, matrixRowNames)
   const clustered = buildClusteredLayout(sources, [...layout], order)
   const clusteredNames = new Set(clustered.map(s => s.name))
   return [

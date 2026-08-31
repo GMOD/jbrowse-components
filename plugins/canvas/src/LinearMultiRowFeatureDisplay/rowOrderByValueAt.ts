@@ -1,6 +1,9 @@
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
-import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
+import type {
+  MultiRowRegionData,
+  MultiRowRenderState,
+} from './rendering/multiRowRenderingBackendTypes.ts'
 
 // Just the arrays the sort reads, off the region the caller already resolved as
 // the one covering the column (`loadedRegionIndexAt`). A `Pick` rather than a
@@ -15,17 +18,45 @@ export type RowValueRegion = Pick<
   | 'featurePartitionIndex'
 >
 
+// The same three inputs `featurePainting` answers "does this feature paint" from
+// — the model's `featurePaintInputs` getter satisfies it whole. A sort that
+// grouped rows by a color the painters skip would order the rows by something
+// nobody can see.
+export type RowPaintInputs = Pick<
+  MultiRowRenderState,
+  'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
+>
+
+// `drawnRowAt`'s rule, asked by row name rather than by drawn row index: a
+// feature in a legend category the user toggled off paints nothing, unless its
+// row carries a per-row color override — that row paints the override, which
+// the legend never lists, so a baked color coinciding with a hidden category
+// must not hide it.
+function paintsAt(name: string, color: number, paint: RowPaintInputs) {
+  const rowIndex = paint.rowIndexByValue.get(name)
+  return (
+    (rowIndex !== undefined &&
+      paint.rowColorsByIndex[rowIndex] !== undefined) ||
+    !paint.hiddenColors.has(color)
+  )
+}
+
 // The ABGR color painted at `pos` on each row, for the rows that have one. The
-// last covering feature wins, matching paint order — the same rule the hit test
-// follows for overlapping features.
-function colorsPaintedAt(region: RowValueRegion, pos: number) {
+// last covering feature that actually paints wins, matching paint order — the
+// same rule the hit test follows for overlapping features.
+function colorsPaintedAt(
+  region: RowValueRegion,
+  pos: number,
+  paint: RowPaintInputs,
+) {
   const byRow = new Map<string, number>()
   for (let i = 0; i < region.featureStarts.length; i++) {
     if (region.featureStarts[i]! <= pos && pos < region.featureEnds[i]!) {
-      byRow.set(
-        region.partitionValues[region.featurePartitionIndex[i]!]!,
-        region.featureColors[i]!,
-      )
+      const name = region.partitionValues[region.featurePartitionIndex[i]!]!
+      const color = region.featureColors[i]!
+      if (paintsAt(name, color, paint)) {
+        byRow.set(name, color)
+      }
     }
   }
   return byRow
@@ -47,13 +78,16 @@ function colorsPaintedAt(region: RowValueRegion, pos: number) {
 //
 // Sinking the rows with no feature at pos, and staying stable otherwise, is
 // `orderRowsByValueAt`'s — shared with multi-wiggle's `sortSourcesByScoreAt`,
-// which asks the same question of a score.
+// which asks the same question of a score. A row whose only feature at pos is
+// in a hidden legend category sinks with them: it paints nothing there, so it
+// carries no value there either.
 export function rowOrderByValueAt<T extends { name: string }>(
   sources: T[],
   region: RowValueRegion,
   pos: number,
+  paint: RowPaintInputs,
 ): T[] {
-  const colorByRow = colorsPaintedAt(region, pos)
+  const colorByRow = colorsPaintedAt(region, pos, paint)
   // counted over the rows being ordered, not over the data, so a subtree filter
   // sizes the blocks by what is actually on screen
   const blockSize = new Map<number, number>()

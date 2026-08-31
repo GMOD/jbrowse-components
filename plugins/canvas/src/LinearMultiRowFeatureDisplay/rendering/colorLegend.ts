@@ -1,14 +1,15 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { unionLegendCandidates } from '@jbrowse/core/util/legendCandidates'
 
 import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
+import type { LegendEntry } from '@jbrowse/core/util/legendCandidates'
 
-export interface LegendEntry {
-  label: string
-  // ABGR-packed per-feature color
-  color: number
-}
+// A key row is the shared shape — every display deriving a key off packed data
+// gets the same rows. Only what "this row paints that color" means is this
+// display's own (see buildColorLegend).
+export type { LegendEntry }
 
 // An admin-declared legend entry from the `legend` config slot: a CSS color.
 interface ConfiguredLegendEntry {
@@ -53,74 +54,47 @@ export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
   return result
 }
 
-// A key with more distinct labels than this isn't a categorical vocabulary
-// (e.g. a track keyed by unique per-feature names) — show nothing rather than an
-// unusably long list.
-const MAX_LEGEND_ENTRIES = 30
-
 /**
- * Derive the categorical color key for a per-feature-colored painting: one entry
- * per distinct per-feature color, labeled by the first name seen in that color,
- * in first-seen order.
+ * Derive the categorical color key for a per-feature-colored painting, off each
+ * region's `legendCandidates` — the distinct (row, name, color) combinations the
+ * worker packed while it was already walking the features. The union, the
+ * color-keyed dedupe and the give-up bar are `unionLegendCandidates`; what this
+ * adds is the one thing they can't know, which is whether a row paints those
+ * packed colors at all.
  *
- * Entries are keyed by color (not name) so each legend row is 1:1 with a color.
- * Toggling a category hides features *by color* (see `hiddenColors`), so a color
- * shared by two names must collapse to a single row — otherwise one swatch would
- * appear twice and toggling either would hide both. A name reused across two
- * colors keeps its first-seen color.
- *
- * Only per-feature color mode has an unlabeled vocabulary worth a legend. Rows
+ * Only per-feature color mode has an unlabeled vocabulary worth a legend. A row
  * with a per-row color override (palette / sampleColorMap / arrangement dialog)
- * paint every block the row color and are already named by the sidebar labels,
- * so they contribute nothing here — the legend describes the `color` axis, not
- * the row axis. Returns `[]` when there's no categorical signal (unnamed
- * features, or more than `MAX_LEGEND_ENTRIES` distinct colors).
+ * paints every block the row color and is already named by the sidebar labels,
+ * so it contributes nothing here — the legend describes the `color` axis, not
+ * the row axis. Nor does a partition value with no row on screen (filtered out,
+ * or not yet discovered).
  */
 export function buildColorLegend(
   regions: Iterable<MultiRowRegionData>,
   rowIndexByValue: ReadonlyMap<string, number>,
   rowColorsByIndex: readonly (number | undefined)[],
 ): LegendEntry[] {
-  // Every row painting a per-row color contributes nothing (below), so when
-  // that is *all* of them there is no legend to find and the scan below is
-  // pure waste. That is not an edge case: it is the default configuration —
-  // an unset `color` slot over features with no itemRgb gives every row a
-  // palette color — so a default-config track was walking every feature of
-  // every region, on every reorder and recolor, to build an empty list.
+  // Every row painting a per-row color contributes nothing, so when that is
+  // *all* of them there is no legend to find and no region need be read. That is
+  // not an edge case: it is the default configuration — an unset `color` slot
+  // over features with no itemRgb gives every row a palette color.
   if (
     rowColorsByIndex.length > 0 &&
     rowColorsByIndex.every(c => c !== undefined)
   ) {
     return []
   }
-  const entries: LegendEntry[] = []
-  const seenColors = new Set<number>()
-  const seenLabels = new Set<string>()
-  for (const data of regions) {
+  return unionLegendCandidates(regions, data => {
     const rowForLocal = resolveLocalRowIndices(
       data.partitionValues,
       rowIndexByValue,
     )
-    const { featureNames, featureColors, featurePartitionIndex } = data
-    for (let i = 0; i < featureNames.length; i++) {
-      const row = rowForLocal[featurePartitionIndex[i]!]
-      const label = featureNames[i]!
-      const color = featureColors[i]!
-      if (
-        row !== undefined &&
-        rowColorsByIndex[row] === undefined &&
-        label &&
-        !seenLabels.has(label) &&
-        !seenColors.has(color)
-      ) {
-        seenLabels.add(label)
-        seenColors.add(color)
-        entries.push({ label, color })
-        if (entries.length > MAX_LEGEND_ENTRIES) {
-          return []
-        }
-      }
+    return {
+      candidates: data.legendCandidates,
+      rowPaintsCandidateColor: partitionIndex => {
+        const row = rowForLocal[partitionIndex]
+        return row !== undefined && rowColorsByIndex[row] === undefined
+      },
     }
-  }
-  return entries
+  })
 }

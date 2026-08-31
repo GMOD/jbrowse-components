@@ -48,27 +48,45 @@ describe('partitionField reaches the worker unevaluated', () => {
   })
 })
 
+function regionData(resolvedPartitionField: string) {
+  return {
+    featureStarts: new Uint32Array([0]),
+    featureEnds: new Uint32Array([100]),
+    featureColors: new Uint32Array([0xff0000ff]),
+    featureDeltas: new Int32Array(0),
+    partitionValues: ['LINE'],
+    featurePartitionIndex: new Uint32Array([0]),
+    featureNames: ['L1HS'],
+    featureIds: ['f1'],
+    usedItemRgb: false,
+    partitionCandidates: ['repClass', 'repFamily'],
+    legendCandidates: [],
+    resolvedPartitionField,
+  }
+}
+
+// What the worker returns for a region with nothing in it: no features, so no
+// rows and no candidates to collect, and `resolvePartitionField` falls through
+// to its degenerate `name`.
+function emptyRegionData() {
+  return {
+    ...regionData('name'),
+    featureStarts: new Uint32Array(0),
+    featureEnds: new Uint32Array(0),
+    featureColors: new Uint32Array(0),
+    partitionValues: [],
+    featurePartitionIndex: new Uint32Array(0),
+    featureNames: [],
+    featureIds: [],
+    partitionCandidates: [],
+  }
+}
+
 // Auto is resolved per region, off a SAMPLE of the features that region holds,
 // so two regions of one file can land on different attributes — after which the
 // same row name means two things and the rows of one display stop lining up.
 // Once a region has answered, later fetches are told the answer.
 describe('auto resolution is pinned once a region has answered', () => {
-  function regionData(resolvedPartitionField: string) {
-    return {
-      featureStarts: new Uint32Array([0]),
-      featureEnds: new Uint32Array([100]),
-      featureColors: new Uint32Array([0xff0000ff]),
-      featureDeltas: new Int32Array(0),
-      partitionValues: ['LINE'],
-      featurePartitionIndex: new Uint32Array([0]),
-      featureNames: ['L1HS'],
-      featureIds: ['f1'],
-      usedItemRgb: false,
-      partitionCandidates: [],
-      resolvedPartitionField,
-    }
-  }
-
   it('is the auto sentinel until one has', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -94,5 +112,80 @@ describe('auto resolution is pinned once a region has answered', () => {
     display.setRpcData(0, regionData('sample'))
 
     expect(display.rpcProps().partitionField).toBe('sample')
+  })
+
+  // A region with nothing in it resolved nothing: no features, so no candidates,
+  // so `resolvePartitionField` answered the `name` fallback. Pinned off THAT,
+  // every later region was told to partition by feature name — on the rmsk files
+  // auto exists for, tens of thousands of one-feature hairline rows, with the
+  // menu's radio checking a field nobody chose and clustering keyed on it.
+  // Nothing ever refetched it either: the pin is deliberately not an rpcProps
+  // key.
+  it('is not established by a region that came back empty', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, emptyRegionData())
+
+    expect(display.pinnedPartitionField).toBe('')
+    // and the empty region is not itself treated as unresolved data — it has no
+    // feature to land in the wrong row, so refetching it would buy nothing
+    expect(display.regionHasData(0)).toBe(true)
+
+    display.setRpcData(1, regionData('repClass'))
+
+    expect(display.pinnedPartitionField).toBe('repClass')
+    expect(display.effectivePartitionField).toBe('repClass')
+  })
+})
+
+// The regions of the FIRST batch fan out in parallel, all of them told auto, so
+// the pin cannot keep them together — each worker resolves off its own feature
+// sample. `regionHasData` is what does: a region that answered something else
+// reads as holding nothing, and the fetch plan re-issues it with the field
+// spelled out.
+describe('regions that resolved differently reconcile to the pin', () => {
+  it('reads a region that answered another field as holding no data', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, regionData('repClass'))
+    display.setRpcData(3, regionData('name'))
+
+    expect(display.pinnedPartitionField).toBe('repClass')
+    expect(display.regionHasData(0)).toBe(true)
+    expect(display.regionHasData(3)).toBe(false)
+  })
+
+  // Terminating, and this is why: the worker echoes an explicit field back
+  // verbatim, so the refetch the line above asks for answers the pin.
+  it('settles once the refetch lands', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, regionData('repClass'))
+    display.setRpcData(3, regionData('name'))
+
+    display.setRpcData(3, regionData('repClass'))
+
+    expect(display.regionHasData(3)).toBe(true)
+  })
+
+  it('leaves the empty regions of a whole-genome load alone', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, regionData('repClass'))
+    display.setRpcData(1, emptyRegionData())
+
+    expect(display.regionHasData(1)).toBe(true)
+  })
+
+  it('has nothing to reconcile against a configured slot', () => {
+    const { createDisplay } = createTestEnvironment({
+      displayConfig: { partitionField: 'sample' },
+    })
+    const { display } = createDisplay()
+    display.setRpcData(0, regionData('sample'))
+    display.setRpcData(1, regionData('sample'))
+
+    expect(display.regionHasData(0)).toBe(true)
+    expect(display.regionHasData(1)).toBe(true)
   })
 })

@@ -29,6 +29,7 @@ function regionData(): MultiRowRegionData {
     featureIds: ['feat1', 'insertion'],
     usedItemRgb: false,
     partitionCandidates: [],
+    legendCandidates: [],
     resolvedPartitionField: 'name',
   }
 }

@@ -1,6 +1,7 @@
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import ClusterManualTab from './ClusterManualTab.tsx'
 
@@ -47,7 +48,10 @@ const Root = types
     rpcSessionId: 'session',
   }))
 
-function setup(fetchMatrix: ClusterDialogProps['fetchMatrix']) {
+function setup(
+  fetchMatrix: ClusterDialogProps['fetchMatrix'],
+  applyOrder: ClusterDialogProps['applyOrder'] = () => {},
+) {
   const root = Root.create({})
   return render(
     <ClusterManualTab
@@ -60,7 +64,7 @@ function setup(fetchMatrix: ClusterDialogProps['fetchMatrix']) {
       tsvFilename="genotypes.tsv"
       matrixKey={['genotypeMatrix']}
       fetchMatrix={fetchMatrix}
-      applyOrder={() => {}}
+      applyOrder={applyOrder}
     >
       {null}
     </ClusterManualTab>,
@@ -126,4 +130,33 @@ describe('ClusterManualTab forwards the fetch handles it is given', () => {
       expect(screen.getByText('Generating genotype matrix')).toBeTruthy()
     })
   })
+})
+
+// The pasted ranks are indexed against the matrix, so the row list that matrix
+// was built over has to travel with them: the rows on screen move while the user
+// is in R (a region finishes loading, a filter changes), and a count check
+// cannot see one row swapped for another.
+test('applyOrder is told which rows the matrix was built over', async () => {
+  const applyOrder = jest.fn()
+  const { getByLabelText, getByRole, getByText } = setup(
+    () =>
+      Promise.resolve<ClusterMatrix>(
+        new Map([
+          ['a', [1]],
+          ['b', [2]],
+        ]),
+      ),
+    applyOrder,
+  )
+  await waitFor(() => {
+    expect(
+      (getByRole('button', { name: 'Download Rscript' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false)
+  })
+
+  await userEvent.type(getByLabelText(/Paste result/), '2\n1')
+  await userEvent.click(getByText('Apply clustering'))
+
+  expect(applyOrder).toHaveBeenCalledWith([1, 0], ['a', 'b'])
 })

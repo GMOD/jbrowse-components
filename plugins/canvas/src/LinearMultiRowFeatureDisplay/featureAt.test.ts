@@ -1,5 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import { collectLegendCandidates } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -37,7 +38,7 @@ function region(feats: Feat[], opts?: { usedItemRgb?: boolean }) {
     }
     featurePartitionIndex[i] = idx
   })
-  return {
+  const packed = {
     featureStarts: Uint32Array.from(feats, f => f.start),
     featureEnds: Uint32Array.from(feats, f => f.end),
     featureColors: Uint32Array.from(feats, f => f.color ?? RED),
@@ -49,6 +50,10 @@ function region(feats: Feat[], opts?: { usedItemRgb?: boolean }) {
     usedItemRgb: opts?.usedItemRgb ?? false,
     partitionCandidates: [],
     resolvedPartitionField: 'name',
+  }
+  return {
+    ...packed,
+    legendCandidates: collectLegendCandidates(packed),
   } satisfies MultiRowRegionData
 }
 
@@ -110,6 +115,25 @@ describe('featureAt', () => {
     )
     expect(display.featureAt(199, 10)).toBeDefined()
     expect(display.featureAt(200, 10)).toBeUndefined()
+  })
+
+  // Both render paths draw a zero-length feature (an insertion): the block is
+  // widened to MULTI_ROW_MIN_CELL_PX from its start edge, by `spanLeft` on
+  // Canvas2D and `extendToMinWidthX` in the shader. `start <= bp && bp < end` is
+  // empty when the two are equal, so the block on screen had no hover, no
+  // tooltip, no click-to-details and no context menu — the same degenerate span
+  // the details narrowing had to widen.
+  it('resolves a zero-length feature at the base it is painted from', () => {
+    const { display } = twoRowDisplay(
+      region([
+        { row: 'a', start: 400, end: 400, id: 'insertion' },
+        { row: 'b', start: 0, end: 1000 },
+      ]),
+    )
+    expect(display.featureAt(400, 10)?.id).toBe('insertion')
+    // one base wide, not a widened claim on the bases beside it
+    expect(display.featureAt(399, 10)).toBeUndefined()
+    expect(display.featureAt(401, 10)).toBeUndefined()
   })
 
   it('is undefined past the last row rather than clamping to it', () => {

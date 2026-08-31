@@ -1,6 +1,6 @@
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 
-import type { RowValueRegion } from './rowOrderByValueAt.ts'
+import type { RowPaintInputs, RowValueRegion } from './rowOrderByValueAt.ts'
 
 // The rows being ordered: only `name` is read, so this stands in for the
 // display's layout-merged sources.
@@ -8,8 +8,29 @@ function rows(...names: string[]) {
   return names.map(name => ({ name }))
 }
 
-function order(names: string[], region: RowValueRegion, pos: number) {
-  return rowOrderByValueAt(rows(...names), region, pos).map(s => s.name)
+// The model's `featurePaintInputs`, over rows drawn in the order given. Nothing
+// hidden and no per-row override unless a test asks for one.
+function paintInputs(
+  names: string[],
+  opts: {
+    hiddenColors?: Set<number>
+    rowColorsByIndex?: (number | undefined)[]
+  } = {},
+): RowPaintInputs {
+  return {
+    rowIndexByValue: new Map(names.map((name, i) => [name, i] as const)),
+    rowColorsByIndex: opts.rowColorsByIndex ?? names.map(() => undefined),
+    hiddenColors: opts.hiddenColors ?? new Set<number>(),
+  }
+}
+
+function order(
+  names: string[],
+  region: RowValueRegion,
+  pos: number,
+  paint = paintInputs(names),
+) {
+  return rowOrderByValueAt(rows(...names), region, pos, paint).map(s => s.name)
 }
 
 // One region's wire arrays — the region the caller resolved as covering the
@@ -81,4 +102,68 @@ test('pos outside every feature leaves the original order', () => {
     ['a', 'b'],
   )
   expect(order(['a', 'b'], r, 500)).toEqual(['a', 'b'])
+})
+
+test('a hidden legend category carries no value, and sinks its rows', () => {
+  // a,c are the big red block; b is blue; d has nothing at pos
+  const r = region(
+    [
+      { start: 0, end: 100, color: 1, row: 0 }, // a
+      { start: 0, end: 100, color: 2, row: 1 }, // b
+      { start: 0, end: 100, color: 1, row: 2 }, // c
+    ],
+    ['a', 'b', 'c'],
+  )
+  const names = ['a', 'b', 'c', 'd']
+  // red visible: the two-row block leads
+  expect(order(names, r, 50)).toEqual(['a', 'c', 'b', 'd'])
+  // red toggled off in the legend paints nothing, so a and c sink with d rather
+  // than leading on a block the user cannot see
+  expect(
+    order(names, r, 50, paintInputs(names, { hiddenColors: new Set([1]) })),
+  ).toEqual(['b', 'a', 'c', 'd'])
+})
+
+test('a hidden color does not overwrite the visible feature under it', () => {
+  // two features cover pos on row a and the later one is hidden, so what paints
+  // there is still the earlier one — a stays in the blue block rather than
+  // becoming a singleton the block sorts ahead of
+  const r = region(
+    [
+      { start: 0, end: 100, color: 2, row: 0 }, // a, visible
+      { start: 0, end: 100, color: 1, row: 0 }, // a, hidden
+      { start: 0, end: 100, color: 2, row: 1 }, // b
+      { start: 0, end: 100, color: 2, row: 2 }, // c
+    ],
+    ['a', 'b', 'c'],
+  )
+  const names = ['a', 'b', 'c']
+  expect(
+    order(names, r, 50, paintInputs(names, { hiddenColors: new Set([1]) })),
+  ).toEqual(['a', 'b', 'c'])
+})
+
+test('a row painting a per-row override is not hidden by its baked color', () => {
+  // a and b are baked in the hidden color; a carries an arrangement-dialog
+  // override, which the legend never lists, so a still paints
+  const r = region(
+    [
+      { start: 0, end: 100, color: 1, row: 0 }, // a
+      { start: 0, end: 100, color: 1, row: 1 }, // b
+      { start: 0, end: 100, color: 2, row: 2 }, // c
+    ],
+    ['a', 'b', 'c'],
+  )
+  const names = ['a', 'b', 'c']
+  expect(
+    order(
+      names,
+      r,
+      50,
+      paintInputs(names, {
+        hiddenColors: new Set([1]),
+        rowColorsByIndex: [0xff123456, undefined, undefined],
+      }),
+    ),
+  ).toEqual(['a', 'c', 'b'])
 })

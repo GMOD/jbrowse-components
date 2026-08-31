@@ -27,20 +27,33 @@ export function nextSortState(
   }
 }
 
-// Compare two cells: numerically when both parse as finite numbers (so a
-// numeric column like a score sorts 2 < 10, not "10" < "2"), else by locale
-// string order. An unset cell normalizes to '' — most row fields are optional,
-// and stringifying one through String(undefined) sorted it among values
-// starting with "u" instead of clustering the unset rows at one end. '' is also
-// what keeps `null` out of the numeric branch, where Number(null) is 0.
-function compareCells(a: unknown, b: unknown): number {
-  const sa = a === undefined || a === null ? '' : getStr(a)
-  const sb = b === undefined || b === null ? '' : getStr(b)
-  const na = Number(sa)
-  const nb = Number(sb)
+/**
+ * Compare two row values: numerically when both parse as finite numbers (so a
+ * numeric column like a score sorts 2 < 10, not "10" < "2"), else by locale
+ * string order.
+ *
+ * Exported because a row value written as a number is not this dialog's
+ * situation, it is the row axis's: a partition field naming chromHMM states
+ * gives rows "1" through "25", and plain string order files state 10 between 1
+ * and 2 there exactly as it would in this grid.
+ */
+export function compareRowValues(a: string, b: string) {
+  const na = Number(a)
+  const nb = Number(b)
   const bothNumeric =
-    sa !== '' && sb !== '' && Number.isFinite(na) && Number.isFinite(nb)
-  return bothNumeric ? na - nb : sa.localeCompare(sb)
+    a !== '' && b !== '' && Number.isFinite(na) && Number.isFinite(nb)
+  return bothNumeric ? na - nb : a.localeCompare(b)
+}
+
+// An unset cell normalizes to '' — most row fields are optional, and
+// stringifying one through String(undefined) sorted it among values starting
+// with "u" instead of clustering the unset rows at one end. '' is also what
+// keeps `null` out of the numeric branch, where Number(null) is 0.
+function compareCells(a: unknown, b: unknown): number {
+  return compareRowValues(
+    a === undefined || a === null ? '' : getStr(a),
+    b === undefined || b === null ? '' : getStr(b),
+  )
 }
 
 export function sortRows<S>(
