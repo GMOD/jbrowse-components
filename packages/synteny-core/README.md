@@ -40,18 +40,43 @@ The colorBy string that paints a named feature attribute.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
-### blendOverWhite
+### bandGroundColor
 
-Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
-synteny canvas draws every ribbon at the view's global alpha over the white page
-(shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
-renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
-shows as salmon, a blue deletion as pale blue. Blending the legend chip the same
-way keeps the key matched to what's actually on screen.
+The colour a comparative band is painted on, for every surface that has to agree
+about it.
+
+`background.paper` rather than `background.default`: the band is a sheet the
+views sit on, the same slot the multi-way lane bands already use.
+
+ONE decision in one place because the band's ground is not a background — the
+renderers BAKE it into the pixels. An indel wedge is pre-blended against it and
+written opaque so it agrees with the base ribbon composited beside it, and every
+mark, tick, label halo and outline is `getContrastText` of it. A surface that
+resolves its own ink off the theme while the clear says something else is the
+bug that shipped the off-screen-mate strip invisible under a dark theme.
+`LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear` is the arithmetic.
 
 ```js
 // type signature
-(color: string, a: number) => string
+(node: IAnyStateTreeNode) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
+
+### blendOverGround
+
+Composite a CSS color over `ground` by `a`, returning an opaque `rgb(...)`. The
+synteny canvas draws every ribbon at the view's global alpha over the band's
+ground (shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
+renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
+shows as salmon over a white band, a blue deletion as pale blue. Blending the
+legend chip the same way keeps the key matched to what's actually on screen,
+which means blending it over the SAME ground the renderers cleared to rather
+than over an assumed white.
+
+```js
+// type signature
+(color: string, a: number, ground: string) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -181,11 +206,11 @@ alpha.
 
 ### legendChipColor
 
-blendOverWhite for a legend chip, floored at LEGEND_CHIP_ALPHA_FLOOR.
+blendOverGround for a legend chip, floored at LEGEND_CHIP_ALPHA_FLOOR.
 
 ```js
 // type signature
-(color: string, alpha: number) => string
+(color: string, alpha: number, ground: string) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
