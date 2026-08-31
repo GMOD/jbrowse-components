@@ -22,6 +22,20 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 
 jest.setTimeout(30_000)
 
+// ON A FAKE CLOCK, because what every case here waits for is a debounce and
+// nothing else. `leadingEdgeAutorun` arms `setTimeout(run, 600)` and the
+// harness's own fetch delay is another one, so advancing the clock runs exactly
+// what elapsing would have run — 50.4s of a suite that spent all of it idle,
+// against 2.3s. The counts are unchanged and so is what a sabotage catches:
+// dropping the `fetchGeneration` read fails the same three cases either way.
+beforeEach(() => {
+  jest.useFakeTimers()
+})
+
+afterEach(() => {
+  jest.useRealTimers()
+})
+
 const POLL_MS = 200
 // 4 quiet polls span 800ms, comfortably past the 600ms FetchVisibleRegions
 // debounce, so "no further fetch" is a settled answer rather than a race the
@@ -53,13 +67,16 @@ function setup(opts?: { measuresBytes?: boolean; estimateBytes?: number }) {
  * fetches it has issued in total. Polling for quiet rather than sleeping a fixed
  * span: a sleep long enough to pass is also long enough to hide a late fetch
  * cycle satisfying the assertion by accident.
+ *
+ * The poll advances the fake clock, so `Date.now()` moves with it and the
+ * deadline below is 100 polls rather than 20 seconds of anybody's afternoon.
  */
 async function quiet(display: PerRegionTestDisplay) {
   const deadline = Date.now() + 20_000
   let last = -1
   let stable = 0
   while (stable < QUIET_POLLS) {
-    await new Promise(r => setTimeout(r, POLL_MS))
+    await jest.advanceTimersByTimeAsync(POLL_MS)
     const n = display.fetchLog.length
     stable = n === last && !display.isLoading ? stable + 1 : 0
     last = n
