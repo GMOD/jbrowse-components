@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@jbrowse/plugin-score-example": "file:./packed/jbrowse-plugin-score-example.tgz",
-    "@jbrowse/react-linear-genome-view2": "^4.0.3",
+    "@jbrowse/react-linear-genome-view2": "file:./packed/jbrowse-react-linear-genome-view2.tgz",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

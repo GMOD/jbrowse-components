@@ -13,7 +13,7 @@
     "e2e": "start-test 'serve --listen 5000 dist/' 5000 'cypress run --headless --browser chrome'"
   },
   "dependencies": {
-    "@jbrowse/react-linear-genome-view2": "^4.0.3",
+    "@jbrowse/react-linear-genome-view2": "file:./packed/jbrowse-react-linear-genome-view2.tgz",
     "@mui/x-data-grid": "^8.0.0-beta.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

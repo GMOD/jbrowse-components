@@ -138,8 +138,34 @@ export function pinnedFiles(root: string, index: WorkspaceIndex) {
     const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
     const deps = pkgJson.dependencies ?? {}
 
+    // Yarn classic's `resolutions` only steers a TRANSITIVE dependency to the
+    // packed tarball — a name this app depends on directly still resolves the
+    // range in `dependencies` itself, straight from the registry. So a
+    // directly-depended-on entry point (lgv-vite on
+    // @jbrowse/react-linear-genome-view2, cgv-vite on
+    // @jbrowse/react-circular-genome-view2, app-vite on @jbrowse/react-app2)
+    // needs its own `dependencies` entry pinned, the same as `resolutions`.
+    let dependenciesChanged = false
+    for (const name of Object.keys(deps)) {
+      if (name in index.tarballs) {
+        const pinned = `file:./packed/${index.tarballs[name]}`
+        if (deps[name] !== pinned) {
+          deps[name] = pinned
+          dependenciesChanged = true
+        }
+      }
+    }
+    if (dependenciesChanged) {
+      pkgJson.dependencies = deps
+    }
+
     if (pkgJson.resolutions) {
       pkgJson.resolutions = pinnedClosure(pkgJson.resolutions, deps, index)
+      files.push({
+        path: pkgJsonPath,
+        content: `${JSON.stringify(pkgJson, null, 2)}\n`,
+      })
+    } else if (dependenciesChanged) {
       files.push({
         path: pkgJsonPath,
         content: `${JSON.stringify(pkgJson, null, 2)}\n`,
