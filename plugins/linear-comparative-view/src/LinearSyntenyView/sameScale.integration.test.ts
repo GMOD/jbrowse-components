@@ -165,16 +165,27 @@ test('a flat sameScale applies the shared scale on load', async () => {
 // whichever way it is written, and the zoom onto the shared scale is the
 // imperative half a launch adds. Flat used to give the latch and skip the zoom
 // — the wrong picture, said nowhere — because only `init.sameScale` was read.
+// Rows placed by their own `loc` are where the zoom is the whole of the work:
+// with no loc a row's own show-all-regions already targets the ceiling the
+// latched mode raises, so the flag alone looks right. Placed, nothing re-zooms
+// them, and a flat spelling gave the latch, skipped `applySharedScale` and drew
+// two rows at two scales under a menu that said "same bp per pixel".
+const placed = [
+  { assembly: 'small', loc: 'ctgB' },
+  { assembly: 'large', loc: 'ctgB' },
+]
+
 test('the nested and flat spellings produce the same scale', async () => {
   // the nested spelling warns that it is deprecated, which is the point of the
   // spelling still working at all
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const flat = await launch({ views, sameScale: true })
-  const nested = await launch({ init: { views, sameScale: true } })
+  const flat = await launch({ views: placed, sameScale: true })
+  const nested = await launch({ init: { views: placed, sameScale: true } })
   expect(warn).toHaveBeenCalledWith(expect.stringContaining('deprecated'))
   warn.mockRestore()
 
-  expect(nested.sameScale).toBe(true)
+  expect(flat.sameScale).toBe(true)
+  expect(flat.views[0]!.bpPerPx).toBeCloseTo(flat.views[1]!.bpPerPx)
   expect(nested.views[0]!.bpPerPx).toBeCloseTo(flat.views[0]!.bpPerPx)
   expect(nested.views[1]!.bpPerPx).toBeCloseTo(flat.views[1]!.bpPerPx)
 })
