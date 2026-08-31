@@ -73,11 +73,11 @@ import type { SourceCorpus } from './util.ts'
 // Commands interface with no `#launchKeys` tag, and a partly-described launch
 // bucket. The last three all render something that looks complete and is short.
 
-// Never settable from a spec whatever the model declares, because the launcher
-// reserves them. `id`/`type`/`init` mirror RESERVED in the linear genome view's
-// initKeys.ts; `session` is on every Launch*Args interface and is supplied by
-// the launcher, never written in a link.
-const RESERVED = new Set(['id', 'type', 'init', 'session'])
+// Never settable from a spec whatever the model declares. `id`/`type` are the
+// view's identity; `init`/`launch` are the blob the partition fills, not
+// something anyone writes; `session` is on every Launch*Args interface and is
+// supplied by the launcher, never written in a link.
+const RESERVED = new Set(['id', 'type', 'init', 'launch', 'session'])
 
 // Keys that are the spec's own structure rather than a setting, and are the
 // subject of the prose around every marker already.
@@ -150,6 +150,21 @@ interface Scan {
   // replaced by the declarative form), so they are declared, are not settable,
   // and would otherwise render as rows telling a reader to write them.
   omitted: Map<string, Set<string>>
+}
+
+// The key map itself, whether it is written bare (`Record<keyof X, true>`) or
+// handed to a registrar (`defineLaunchKeys<X>()({ … }, { … })`). Only the first
+// object argument is the map; the second is options.
+function keyMapLiteral(init: ts.Expression | undefined) {
+  if (!init) {
+    return undefined
+  }
+  if (ts.isObjectLiteralExpression(init)) {
+    return init
+  }
+  return ts.isCallExpression(init)
+    ? init.arguments.find(a => ts.isObjectLiteralExpression(a))
+    : undefined
 }
 
 function stringArrayOf(decl: ts.VariableDeclaration) {
@@ -262,16 +277,15 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
           (ts.isVariableStatement(parent)
             ? tagAbove(parent, text, 'launchKeys')
             : undefined)
-        if (viewType && node.initializer) {
-          if (ts.isObjectLiteralExpression(node.initializer)) {
-            buckets.push({
-              viewType,
-              keys: node.initializer.properties
-                .filter(ts.isPropertyAssignment)
-                .map(p => ({ name: p.name.getText(), docs: '' })),
-              extends: [],
-            })
-          }
+        const literal = viewType && keyMapLiteral(node.initializer)
+        if (literal) {
+          buckets.push({
+            viewType,
+            keys: literal.properties
+              .filter(ts.isPropertyAssignment)
+              .map(p => ({ name: p.name.getText(), docs: '' })),
+            extends: [],
+          })
         }
         const listFor =
           tagAbove(node, text, 'valueList') ??

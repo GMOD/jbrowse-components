@@ -1,43 +1,15 @@
-import type { InitState } from './types.ts'
+import { lgvLaunchKeys } from './launchKeys.ts'
 
-// The init keys are derived from their interface so they can't drift: the
-// Record requires exactly one entry per key, so adding a field without listing
-// it here is a compile error rather than a key that silently warns as "unknown".
-//
-// There is no matching list for the plain view props, and there must not be:
-// they are whatever the state model declares, read off it by the caller and
-// passed in as `viewPropKeys`. A hand-written eight is what left `hideHeader`,
-// `showGridlines`, `showCytobands` and five others declared, menu-settable and
-// silently unreachable from any spec — the same failure LinearSyntenyView's
-// `drawLocationMarkers` had.
-//
-// #launchKeys LinearGenomeView — the URL parameters page renders this list
-// rather than restating it; each of these keys has its own `&param=` section
-// there, which is why no description is attached here.
-const knownInitKeyMap: Record<keyof InitState, true> = {
-  loc: true,
-  grow: true,
-  assembly: true,
-  displayedRegionNames: true,
-  tracks: true,
-  tracklist: true,
-  nav: true,
-  highlight: true,
-}
-const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
+// The remaining v4 partition, still used by the synteny view to build its LGV
+// rows. `lgvLaunchKeys` is the one declaration of what a launch key is, so the
+// two cannot disagree while both exist.
+const knownInitKeys = new Set(Object.keys(lgvLaunchKeys.keys))
 
 // Never settable from a spec, whatever the model declares: `type` picks the
 // view and `id` is passed top-level so MST's optional identifier honors it.
 const RESERVED = new Set(['id', 'type', 'init'])
 
-// The viewport keys from before it was stored as a window. They are no longer
-// declared properties, so the model's own property list does not contain them
-// and they would partition as typos — reported as unknown and dropped. They are
-// not typos: `preProcessSnapshot` still converts them, so they belong in the
-// snapshot bucket, and a URL or saved spec that names them goes on working.
-//
-// Deletable with `legacyBpPerPx` in the model, and for the same reason.
-const LEGACY_VIEWPORT_PROPS = new Set(['bpPerPx', 'offsetPx'])
+const LEGACY_VIEWPORT_PROPS = new Set(lgvLaunchKeys.passThrough)
 
 // Partition launch keys three ways, once, for every caller that needs to know
 // which is which:
@@ -102,15 +74,4 @@ export function linearGenomeViewPropKeys(pluginManager: {
   const keys: ReadonlySet<string> = new Set(Object.keys(stateModel.properties))
   propKeyCache.set(pluginManager, keys)
   return keys
-}
-
-// Report the `unknown` bucket. Both callers say the same thing about the same
-// mistake and differ only in which surface they name, so the wording lives next
-// to the partition that produces the bucket rather than in two hand-written
-// copies that drift.
-export function warnUnknownLaunchKeys(surface: string, unknown: object) {
-  const keys = Object.keys(unknown)
-  if (keys.length) {
-    console.warn(`${surface} ignored unknown key(s): ${keys.join(', ')}`)
-  }
 }

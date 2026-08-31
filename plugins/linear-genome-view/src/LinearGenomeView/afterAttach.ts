@@ -7,31 +7,16 @@ import {
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { normalizeTrackInit } from '@jbrowse/core/util/tracks'
-import { addDisposer, getPropertyMembers } from '@jbrowse/mobx-state-tree'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
-import { partitionLaunchKeys, warnUnknownLaunchKeys } from './initKeys.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
 import type { AssemblyHost, NotificationSink } from '@jbrowse/core/util'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-function warnInitKeyProblems(self: LinearGenomeViewModel, init: InitState) {
-  const { viewProps, unknown } = partitionLaunchKeys(
-    init,
-    new Set(Object.keys(getPropertyMembers(self).properties)),
-  )
-  const viewPropKeys = Object.keys(viewProps)
-  warnUnknownLaunchKeys('LinearGenomeView init', unknown)
-  if (viewPropKeys.length) {
-    console.warn(
-      `LinearGenomeView init ignored view prop(s): ${viewPropKeys.join(', ')} — set these on the view alongside init, not inside it`,
-    )
-  }
-}
 
 // `init` is a frozen blob that often comes from hand-authored JSON, where a
 // lone entry gets written bare (`tracks: 'genes'`). A string is iterable, so
@@ -233,7 +218,6 @@ async function applyInit(
   { superseded }: InitApplyContext,
 ) {
   const session = getSession(self)
-  warnInitKeyProblems(self, init)
   if (init.tracklist) {
     await openTracklist(self, session, superseded)
   }

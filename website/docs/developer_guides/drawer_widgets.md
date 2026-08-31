@@ -122,9 +122,9 @@ export interface InitState {
   highlight?: (string | HighlightType)[]
 }
 
-// Plain persisted view props a launch spec may set inline alongside init keys.
-// Unlike InitState these need no resolution — LaunchView forwards them straight
-// onto the view snapshot, where MST restores and validates them natively.
+// Plain persisted view props a launch spec may set beside the launch keys.
+// Unlike InitState these need no resolution — they stay on the view snapshot,
+// where MST restores and validates them natively.
 //
 // EVERY declared property of the view, derived, minus the init keys (which mean
 // something else here: `tracks` is trackIds to open, not built track models)
@@ -136,11 +136,11 @@ export interface InitState {
 // `scalebarOnly`, `showCytobands`, `showGridlines` and `showTrackOutlines` were
 // all declared, all settable from the menu, and all dropped in silence by a
 // spec that named them — which is most of what a figure or an embed wants to
-// say. `partitionLaunchKeys` reads the same set off the model at runtime.
+// say. The partition reads the same set off the model at wrap time.
 export type LinearGenomeViewLaunchProps = Partial<
   Omit<
     SnapshotIn<LinearGenomeViewStateModel>,
-    keyof InitState | 'id' | 'type' | 'init'
+    keyof InitState | 'id' | 'type' | 'launch'
   >
 >
 ```

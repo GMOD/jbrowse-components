@@ -11,12 +11,22 @@ interface CaptureHost extends IStateTreeNode {
   unknownSnapshotKeys?: Record<string, unknown>
 }
 
-function report(self: CaptureHost) {
-  const keys = Object.keys(self.unknownSnapshotKeys ?? {})
+/** what a diagnostic calls the view: its snapshot `type`, or the model name */
+export function viewLabel(self: IStateTreeNode) {
+  return (self as CaptureHost).type ?? getType(self).name
+}
+
+/**
+ * Name the keys a view was handed and could not place. Shared with
+ * `withLaunchInput`, whose partition subsumes the capture below for any view
+ * that registers launch keys, so the two say the same thing about the same
+ * mistake.
+ */
+export function reportUnknownKeys(self: IStateTreeNode, keys: string[]) {
   if (!keys.length) {
     return
   }
-  const message = `${self.type ?? getType(self).name} ignored unknown key(s): ${keys.join(', ')}`
+  const message = `${viewLabel(self)} ignored unknown key(s): ${keys.join(', ')}`
   console.warn(message)
   try {
     getNotificationSink(self).notify(message, 'warning')
@@ -67,7 +77,7 @@ export function captureUnknownSnapshotKeys<M extends IAnyModelType>(
     })
     .actions(self => ({
       afterAttach() {
-        report(self as CaptureHost)
+        reportUnknownKeys(self, Object.keys(self.unknownSnapshotKeys ?? {}))
       },
     }))
     .postProcessSnapshot((snap: Record<string, unknown>) => {

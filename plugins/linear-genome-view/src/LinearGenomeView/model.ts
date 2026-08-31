@@ -39,8 +39,8 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
+import { withLaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
@@ -67,6 +67,7 @@ import {
 } from './consts.ts'
 import { planFlight } from './flyTo.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
+import { lgvLaunchKeys } from './launchKeys.ts'
 import {
   buildMenuItems,
   buildRubberBandMenuItems,
@@ -105,6 +106,7 @@ import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
@@ -513,20 +515,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         scalebarOnly: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * transient declarative launch spec: assembly + optional location,
-         * tracks, and highlights to apply once the view attaches. It is applied
-         * by the afterAttach autorun and then cleared (setInit(undefined)), so a
-         * saved session never retains it. Shared by all three launch surfaces —
-         * URL params, createViewState(), and session/config JSON. example:
-         * ```json
-         * {
-         *   "assembly": "hg19",
-         *   "loc": "chr1:1,000,000-2,000,000",
-         *   "tracks": ["genes", "variants"]
-         * }
-         * ```
+         * transient launch state: the settings written on the view object that
+         * need resolving before they can be view state — an assembly, a
+         * location, track recipes, highlights. `preProcessSnapshot` moves them
+         * here off the snapshot, the afterAttach autorun applies them and
+         * clears this, so a saved session never retains it. Not written by
+         * hand: author every setting directly on the view.
          */
-        init: types.frozen<InitState | undefined>(),
+        launch: types.frozen<LaunchInput<InitState> | undefined>(),
       }),
     )
     .volatile(self => {
@@ -608,6 +604,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // ahead of every other getter so that the ~300 reads of `self.bpPerPx` /
       // `self.offsetPx` across the codebase go on resolving by name. Only the
       // writes had to move, and they are six actions below.
+      /**
+       * #getter
+       * v4's name for `launch`, kept while the other six views and the products
+       * that drive them still spell it this way. Deleted with `setInit`.
+       */
+      get init() {
+        return self.launch
+      },
       /**
        * #getter
        * corresponds roughly to the zoom level, base-pairs per pixel.
@@ -1702,8 +1706,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(arg?: InitState) {
-        self.init = arg
+      setInit(arg?: LaunchInput<InitState>) {
+        self.launch = arg
       },
 
       /**
@@ -3194,7 +3198,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  return captureUnknownSnapshotKeys(model)
+  return withLaunchInput(model, lgvLaunchKeys)
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       if (!snap) {
         return snap
@@ -3245,7 +3249,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // init is transient launch state, never persisted. showCenterLine is
+      // launch is transient, never persisted. showCenterLine is
       // purely a localStorage-backed preference (see setupLocalStorageAutorun
       // in afterAttach.ts) and is never persisted into session snapshots. The
       // remaining fields are also localStorage-backed, but still persist when
@@ -3253,7 +3257,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // here), not the localStorage-derived creation default, so a
       // localStorage-set value stays portable across browsers.
       const {
-        init,
+        launch,
         showCenterLine,
         showCytobands,
         trackLabels,
@@ -3265,13 +3269,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       return {
         ...rest,
-        // keep init until displayedRegions exist, so a snapshot taken before the
-        // launch autorun navigates (e.g. autosave firing mid-load) can still
-        // rebuild the view instead of dropping to the import form.
-        // displayedRegions is stripDefault, so it's absent (not []) when empty —
-        // the optional chain is runtime-necessary despite the non-nullish type.
+        // keep the launch state until displayedRegions exist, so a snapshot
+        // taken before the launch autorun navigates (e.g. autosave firing
+        // mid-load) can still rebuild the view instead of dropping to the
+        // import form. displayedRegions is stripDefault, so it's absent (not
+        // []) when empty — the optional chain is runtime-necessary despite the
+        // non-nullish type.
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(init && !snap.displayedRegions?.length ? { init } : {}),
+        ...(launch && !snap.displayedRegions?.length ? { launch } : {}),
         ...(!showCytobands ? { showCytobands } : {}),
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),

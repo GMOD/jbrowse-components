@@ -236,7 +236,8 @@
     "./util/viewStatus": "./src/util/viewStatus.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
     "./util/wheelZoom": "./src/util/wheelZoom.ts",
-    "./util/whenViewSettled": "./src/util/whenViewSettled.ts"
+    "./util/whenViewSettled": "./src/util/whenViewSettled.ts",
+    "./util/withLaunchInput": "./src/util/withLaunchInput.ts"
   },
   "files": [
     "esm"
@@ -504,7 +505,8 @@
       "./util/viewStatus": "./esm/util/viewStatus.js",
       "./util/virtualRange": "./esm/util/virtualRange.js",
       "./util/wheelZoom": "./esm/util/wheelZoom.js",
-      "./util/whenViewSettled": "./esm/util/whenViewSettled.js"
+      "./util/whenViewSettled": "./esm/util/whenViewSettled.js",
+      "./util/withLaunchInput": "./esm/util/withLaunchInput.js"
     }
   },
   "sideEffects": false

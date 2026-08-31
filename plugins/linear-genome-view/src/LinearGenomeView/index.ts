@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
+import { lgvLaunchKeys } from './launchKeys.ts'
 import { stateModelFactory } from './model.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
@@ -44,12 +45,14 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
       name: 'LinearGenomeView',
       displayName: 'Linear genome view',
       stateModel: stateModelFactory(pluginManager),
+      launchKeys: lgvLaunchKeys,
       ReactComponent: lazy(() => import('./components/LinearGenomeView.tsx')),
     })
   })
 }
 
 export { stateModelFactory } from './model.ts'
+export { lgvLaunchKeys } from './launchKeys.ts'
 export type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,

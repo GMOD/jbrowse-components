@@ -1,5 +1,6 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 
+import type { LaunchKeyRegistration } from '../util/withLaunchInput.ts'
 import type DisplayType from './DisplayType.ts'
 import type { IAnyModelType, IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -22,6 +23,11 @@ export default class ViewType extends PluggableElementBase {
 
   stateModel: IAnyModelType
 
+  // What `withLaunchInput` partitioned out of this view's snapshots, published
+  // beside the model so an out-of-tree plugin, the doc generator and the
+  // validator read one declaration rather than each keeping a list.
+  launchKeys?: LaunchKeyRegistration<unknown>
+
   displayTypes: DisplayType[] = []
 
   viewMetadata: ViewMetadata = {}
@@ -39,6 +45,7 @@ export default class ViewType extends PluggableElementBase {
     name: string
     displayName?: string
     stateModel: IAnyModelType
+    launchKeys?: LaunchKeyRegistration<unknown>
     extendedName?: string
     viewMetadata?: ViewMetadata
     ReactComponent: ViewComponentType
@@ -48,6 +55,7 @@ export default class ViewType extends PluggableElementBase {
     this.ReactComponent = stuff.ReactComponent
     this.viewMetadata = stuff.viewMetadata ?? {}
     this.stateModel = stuff.stateModel
+    this.launchKeys = stuff.launchKeys
     this.extendedName = stuff.extendedName
   }
 

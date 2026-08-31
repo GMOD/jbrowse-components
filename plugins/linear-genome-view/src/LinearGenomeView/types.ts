@@ -34,16 +34,15 @@ export interface VolatileGuide {
   xPos: number
 }
 
-// A declarative LGV `init` blob holds ONLY keys that need on-attach
-// resolution/conversion and have no direct MST representation — `loc` (→
-// offsetPx/bpPerPx once the assembly loads), tracks (→ showTrack), highlight (→
-// coercion), etc. — and is discarded once applied. Plain persisted view props
-// (showCenterLine, trackLabels, colorByCDS, showAminoAcids, showHighlightChips)
-// are NOT init:
-// LaunchView sets them directly on the view snapshot, where MST restores them
-// natively and they round-trip on save. Add a resolution field here + a case in
-// afterAttach's applyInit + an entry in its knownInitKeyMap; add a plain prop to
-// LinearGenomeViewLaunchProps (LaunchView forwards it automatically).
+// The LGV launch keys: the settings that need on-attach resolution or
+// conversion and have no direct MST representation — `loc` (→ the viewport once
+// the assembly loads), `tracks` (→ showTrack), `highlight` (→ coercion). They
+// are written directly on the view like any other setting;
+// `preProcessSnapshot` moves them into `launch`, and the autorun discards them
+// once applied. A plain persisted prop needs nothing here: declaring it on the
+// model is what makes it settable. Adding a key here means an entry in
+// `lgvLaunchKeys` — the Record makes an unregistered one a compile error — and
+// a case in afterAttach's applyInit.
 // #region initState
 export interface InitState {
   /**
@@ -73,9 +72,9 @@ export interface InitState {
   highlight?: (string | HighlightType)[]
 }
 
-// Plain persisted view props a launch spec may set inline alongside init keys.
-// Unlike InitState these need no resolution — LaunchView forwards them straight
-// onto the view snapshot, where MST restores and validates them natively.
+// Plain persisted view props a launch spec may set beside the launch keys.
+// Unlike InitState these need no resolution — they stay on the view snapshot,
+// where MST restores and validates them natively.
 //
 // EVERY declared property of the view, derived, minus the init keys (which mean
 // something else here: `tracks` is trackIds to open, not built track models)
@@ -87,11 +86,11 @@ export interface InitState {
 // `scalebarOnly`, `showCytobands`, `showGridlines` and `showTrackOutlines` were
 // all declared, all settable from the menu, and all dropped in silence by a
 // spec that named them — which is most of what a figure or an embed wants to
-// say. `partitionLaunchKeys` reads the same set off the model at runtime.
+// say. The partition reads the same set off the model at wrap time.
 export type LinearGenomeViewLaunchProps = Partial<
   Omit<
     SnapshotIn<LinearGenomeViewStateModel>,
-    keyof InitState | 'id' | 'type' | 'init'
+    keyof InitState | 'id' | 'type' | 'launch'
   >
 >
 // #endregion
