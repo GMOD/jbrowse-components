@@ -770,12 +770,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             function breakpointSplitViewInitAutorun() {
-              const { init, width } = self
-              if (!width || !init?.views) {
+              const { pendingLaunch, width } = self
+              if (!width || !pendingLaunch?.views) {
                 return
               }
 
-              self.setViews(init.views)
+              self.setViews(pendingLaunch.views)
               self.setLaunch(undefined)
             },
             { name: 'BreakpointSplitViewInit' },

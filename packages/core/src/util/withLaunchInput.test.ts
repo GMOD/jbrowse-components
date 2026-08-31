@@ -204,27 +204,31 @@ describe('the per-entry discriminators', () => {
 })
 
 describe('the v4 nested form', () => {
-  test('it produces the same launch state, and says it is deprecated', () => {
+  const REMOVED =
+    'TestView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+
+  test('it applies nothing and says the key is gone', () => {
     const view = open({ type: 'TestView', init: { assembly: 'hg38' } })
-    expect(view.launch).toEqual({ assembly: 'hg38', legacyInit: true })
-    expect(warnings()).toEqual([
-      'TestView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
-    ])
+    expect(view.launch).toEqual({ legacyInit: true })
+    expect(pendingLaunch(view.launch)).toBeUndefined()
+    expect(warnings()).toEqual([REMOVED])
   })
 
-  test('a key inside it that names nothing is still reported', () => {
-    open({ type: 'TestView', init: { asembly: 'hg38' } })
-    expect(warnings()).toContain('TestView ignored unknown key(s): asembly')
+  // one message, not one per key: what is under `init` is unread, so listing it
+  // would describe settings that arrive nowhere
+  test('what is under it is not classified', () => {
+    open({ type: 'TestView', init: { asembly: 'hg38', showThing: true } })
+    expect(warnings()).toEqual([REMOVED])
   })
 
-  // the comparative views' v4 `init` applied any declared property it found, so
-  // a nested one lands on the property rather than reading as a typo
-  test('a declared property inside it lands on the property', () => {
+  test('a declared property inside it does not land on the property', () => {
     const view = open({ type: 'TestView', init: { showThing: true } })
-    expect(getSnapshot(view).showThing).toBe(true)
-    expect(warnings()).not.toContain(
-      'TestView ignored unknown key(s): showThing',
-    )
+    expect(getSnapshot(view).showThing).toBe(false)
+  })
+
+  test('the flat keys beside it are still read', () => {
+    const view = open({ type: 'TestView', assembly: 'hg38', init: {} })
+    expect(view.launch).toEqual({ assembly: 'hg38', legacyInit: true })
   })
 })
 

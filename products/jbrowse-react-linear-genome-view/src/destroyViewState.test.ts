@@ -47,11 +47,9 @@ test('an engine destroyed before it was ever rendered does not throw', () => {
       name: 'never rendered',
       view: {
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1..100',
-          tracks: ['volvox_gff3'],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1..100',
+        tracks: ['volvox_gff3'],
       },
     },
   })

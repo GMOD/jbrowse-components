@@ -11,6 +11,7 @@ const props: ReadonlySet<string> = new Set([
   'hideHeader',
   'id',
   'type',
+  'launch',
 ])
 
 test('resolution keys go to init, plain view props go to the snapshot', () => {
@@ -46,11 +47,15 @@ test('any declared property reaches the snapshot, with nothing listing it', () =
 
 test('identity keys are not settable even though the model declares them', () => {
   const { viewProps, unknown } = partitionLaunchKeys(
-    { id: 'hijacked', type: 'OtherView' },
+    { id: 'hijacked', type: 'OtherView', launch: { assembly: 'volvox' } },
     props,
   )
   expect(viewProps).toEqual({})
-  expect(unknown).toEqual({ id: 'hijacked', type: 'OtherView' })
+  expect(unknown).toEqual({
+    id: 'hijacked',
+    type: 'OtherView',
+    launch: { assembly: 'volvox' },
+  })
 })
 
 // `bpPerPx`/`offsetPx` stopped being declared properties when the viewport

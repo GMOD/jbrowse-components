@@ -403,10 +403,9 @@ test('a registered view type with no launcher says that instead', async () => {
   )
 })
 
-// the config/defaultSession shape, pasted into a spec. Reported here rather than
-// unwrapped, so it reads the same for every view type — the LGV would otherwise
-// report "No assembly provided", the downstream symptom of a misplaced block
-test('a spec view nesting its settings under init is told where they go', async () => {
+// v4's nesting, in the words every surface now uses for it — the LGV would
+// otherwise report "No assembly provided", the downstream symptom
+test('a spec view nesting its settings under init is told the key is gone', async () => {
   const { session, pluginManager } = setup({
     'LaunchView-LinearGenomeView': async s => {
       s.views.push(stubView('lgv'))
@@ -424,7 +423,7 @@ test('a spec view nesting its settings under init is told where they go', async 
   )
 
   expect(session.notifyError).toHaveBeenCalledWith(
-    expect.stringContaining('nest their settings under "init"'),
+    'LinearGenomeView nests its settings under "init", which v5 removed: write every setting directly on the view object.',
   )
 })
 

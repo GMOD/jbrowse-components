@@ -366,8 +366,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLaunch(init?: LaunchInput<SvInspectorViewCommands>) {
-        self.launch = init
+      setLaunch(launch?: LaunchInput<SvInspectorViewCommands>) {
+        self.launch = launch
       },
     }))
     .views(self => ({
@@ -400,9 +400,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const { init } = self
-              if (init) {
-                self.spreadsheetView.setLaunch(init)
+              const { pendingLaunch } = self
+              if (pendingLaunch) {
+                self.spreadsheetView.setLaunch(pendingLaunch)
                 self.setLaunch(undefined)
               }
             },

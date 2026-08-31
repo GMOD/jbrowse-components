@@ -133,14 +133,15 @@ decision anyone wrote down:
   - `@jbrowse/core/rpc/methods/util` — renderer-era RPC helpers, removed with `CoreRender`
   - `@jbrowse/core/util/offscreenCanvasUtils` — the server-side canvas helpers behind `renderToAbstractCanvas`
   - `@jbrowse/core/util/compositeMap` — dead, with no caller in or out of the tree
+  - `@jbrowse/core/util/applyInitSettings` — the v4 `init` applier. Its `applyInitSettings`/`warnInitSettings` lost their last caller when the seven views moved to `withLaunchInput`; the `ViewInit<Model, Commands>` type it also held is alive and moved to `@jbrowse/core/util/withLaunchInput`, which is published
   - `@jbrowse/core/util/layouts/BaseLayout` — the interface `GranularRectLayout` implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with them, along with the serialization types (`SerializedLayout`, `RectTuple`) that only the worker-to-main layout handoff used
 - modules that still exist, un-published because the last in-repo deep import went:
   - `@jbrowse/core/rpc/coreRpcMethods` — `packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports it relatively; nothing imports it by subpath any more
   - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel
   - `@jbrowse/core/util/mst-reflection` — alive, and still served over `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import path went
-  - `@jbrowse/core/util/unknownSnapshotKeys` — alive, and `withLaunchInput` imports it relatively for the two report helpers; the four views that wrapped a model in `captureUnknownSnapshotKeys` register launch keys now, and the partition subsumes the capture. An out-of-tree view that wants the bare capture has no subpath to reach it by
+  - `@jbrowse/core/util/unknownSnapshotKeys` — alive, and `withLaunchInput` imports it relatively for the three report helpers. `captureUnknownSnapshotKeys` itself is gone: every view that wrapped a model in it registers launch keys now, and the partition subsumes the capture
 
-That is 17 subpaths the published `exports` map no longer serves. The map is
+That is 18 subpaths the published `exports` map no longer serves. The map is
 generated from in-repo import sites, so a subpath leaves it whenever its last
 in-repo importer does — this is a one-time record of the ones that already
 left, not a live check.

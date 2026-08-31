@@ -66,7 +66,7 @@ function setup(
       },
     }))
 
-  const session = Session.create({ view: { init: { tag: 'first' } } })
+  const session = Session.create({ view: { launch: { tag: 'first' } } })
   return { view: session.view, notified }
 }
 

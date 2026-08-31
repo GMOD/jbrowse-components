@@ -62,15 +62,15 @@ test('a hand-authored multi-way session sizes levels from its views', () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  // three genome rows written out directly: no `init` to build them and no
-  // `levels` key, the shape a hand-authored defaultSession takes. Without the
-  // load-time reconcile this rendered a single synteny band between the first
-  // two rows and nothing between the last pair.
+  // three genome rows written out as built views with no `levels` key, the
+  // shape a hand-authored defaultSession takes. Without the load-time reconcile
+  // this rendered a single synteny band between the first two rows and nothing
+  // between the last pair.
   const view = session.addView('LinearSyntenyView', {
     views: [
-      { type: 'LinearGenomeView', init: { assembly: 'volvox_del' } },
-      { type: 'LinearGenomeView', init: { assembly: 'volvox' } },
-      { type: 'LinearGenomeView', init: { assembly: 'volvox_ins' } },
+      { type: 'LinearGenomeView', assembly: 'volvox_del' },
+      { type: 'LinearGenomeView', assembly: 'volvox' },
+      { type: 'LinearGenomeView', assembly: 'volvox_ins' },
     ],
   })
 

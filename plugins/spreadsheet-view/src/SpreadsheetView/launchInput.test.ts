@@ -47,21 +47,20 @@ test('a declared property lands natively, named nowhere in the launch path', () 
 })
 
 describe('the v4 nested form', () => {
-  test('a nested spec produces the same view, and says it is going', () => {
+  const REMOVED =
+    'SpreadsheetView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+
+  test('a nested spec launches nothing and says the key is gone', () => {
     const view = open({ init: { assembly: 'volvox', fileType: 'BEDPE' } })
-    expect(view.importWizard.selectedAssemblyName).toBe('volvox')
-    expect(view.importWizard.fileType).toBe('BEDPE')
-    expect(warnings()).toContain(
-      'SpreadsheetView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
-    )
+    expect(view.importWizard.selectedAssemblyName).not.toBe('volvox')
+    expect(view.importWizard.fileType).not.toBe('BEDPE')
+    expect(warnings()).toContain(REMOVED)
   })
 
-  test('a declared property nested inside it still lands', () => {
+  test('a declared property nested inside it does not land', () => {
     const view = open({ init: { assembly: 'volvox', height: 700 } })
-    expect(view.height).toBe(700)
-    expect(warnings()).not.toContain(
-      'SpreadsheetView ignored unknown key(s): height',
-    )
+    expect(view.height).not.toBe(700)
+    expect(warnings()).toEqual([REMOVED])
   })
 })
 
@@ -72,9 +71,7 @@ test('a key naming neither a launch key nor a property is named on attach', () =
   )
 })
 
-// The partition subsumes captureUnknownSnapshotKeys for this view. Both wired
-// up, a typo warns twice.
-test('an unknown key is reported once, not once per capture', () => {
+test('an unknown key is reported once', () => {
   open({ fileTypes: 'BEDPE' })
   expect(warnings()).toHaveLength(1)
 })

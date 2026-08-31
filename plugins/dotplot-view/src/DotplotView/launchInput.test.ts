@@ -59,25 +59,22 @@ test('any declared property lands natively, named nowhere in the launch path', (
 })
 
 describe('the v4 nested form', () => {
-  test('a nested spec produces the same view as the flat one, and says so', () => {
+  const REMOVED =
+    'DotplotView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+
+  test('a nested spec launches nothing and says the key is gone', () => {
     const nested = open({ init: { views: AXES, tracks: ['a_track'] } })
-    expect(nested.launch).toEqual({
-      ...open({ views: AXES, tracks: ['a_track'] }).launch,
-      legacyInit: true,
-    })
-    expect(warnings()).toContain(
-      'DotplotView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
-    )
+    expect(nested.launch).toEqual({ legacyInit: true })
+    expect(nested.pendingLaunch).toBeUndefined()
+    expect(warnings()).toContain(REMOVED)
   })
 
-  // `scripts/build_oat_homoeologs.sh` ships `"init": { …, "colorBy": "dnds" }`,
-  // and v4's applyInitSettings applied it.
-  test('a declared property nested inside it still lands', () => {
+  // `scripts/build_oat_homoeologs.sh` shipped `"init": { …, "colorBy": "dnds" }`
+  // and v4 applied it; the codemod moves it out rather than this reading it.
+  test('a declared property nested inside it does not land', () => {
     const view = open({ init: { views: AXES, colorBy: 'dnds' } })
-    expect(view.colorBy).toBe('dnds')
-    expect(warnings()).not.toContain(
-      'DotplotView ignored unknown key(s): colorBy',
-    )
+    expect(view.colorBy).not.toBe('dnds')
+    expect(warnings()).toEqual([REMOVED])
   })
 })
 

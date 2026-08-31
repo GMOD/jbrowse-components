@@ -6,8 +6,9 @@ import { lgvLaunchKeys } from './launchKeys.ts'
 const knownInitKeys = new Set(Object.keys(lgvLaunchKeys.keys))
 
 // Never settable from a spec, whatever the model declares: `type` picks the
-// view and `id` is passed top-level so MST's optional identifier honors it.
-const RESERVED = new Set(['id', 'type', 'init'])
+// view, `id` is passed top-level so MST's optional identifier honors it, and
+// `launch` is the blob the partition fills rather than something anyone writes.
+const RESERVED = new Set(['id', 'type', 'launch'])
 
 const LEGACY_VIEWPORT_PROPS = new Set(lgvLaunchKeys.passThrough)
 

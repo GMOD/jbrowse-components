@@ -175,19 +175,17 @@ const placed = [
   { assembly: 'large', loc: 'ctgB' },
 ]
 
-test('the nested and flat spellings produce the same scale', async () => {
-  // the nested spelling warns that it is deprecated, which is the point of the
-  // spelling still working at all
+test('the flat spelling re-fits, the nested one opens nothing', async () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const flat = await launch({ views: placed, sameScale: true })
   const nested = await launch({ init: { views: placed, sameScale: true } })
-  expect(warn).toHaveBeenCalledWith(expect.stringContaining('deprecated'))
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('v5 removed'))
   warn.mockRestore()
 
   expect(flat.sameScale).toBe(true)
   expect(flat.views[0]!.bpPerPx).toBeCloseTo(flat.views[1]!.bpPerPx)
-  expect(nested.views[0]!.bpPerPx).toBeCloseTo(flat.views[0]!.bpPerPx)
-  expect(nested.views[1]!.bpPerPx).toBeCloseTo(flat.views[1]!.bpPerPx)
+  expect(nested.views).toHaveLength(0)
+  expect(nested.sameScale).toBe(false)
 })
 
 // The replay runs only where a launch blob does. Restoring a saved session

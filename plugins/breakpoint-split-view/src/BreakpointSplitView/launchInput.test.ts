@@ -56,29 +56,25 @@ test('a declared property lands natively, named nowhere in the launch path', () 
 })
 
 describe('the v4 nested form', () => {
-  // `init` was a BARE ARRAY here, the one unkeyed blob in the tree. Keyed to
-  // `views` before the partition sees it, since an array reaches the classifier
-  // as an object whose keys are its indices — every panel would sort as a typo.
-  test('a bare array under init still opens the panels', () => {
+  const REMOVED =
+    'BreakpointSplitView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+
+  // `init` was a BARE ARRAY here, the one unkeyed blob in the tree. Refused the
+  // same way the keyed form is, rather than keyed onto `views` first.
+  test('a bare array under init opens no panel', () => {
     const view = open({ init: PANELS })
-    expect(view.views.map(v => v.launch)).toEqual(PANELS)
-    expect(warnings()).toContain(
-      'BreakpointSplitView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
-    )
+    expect(view.views).toHaveLength(0)
+    expect(warnings()).toContain(REMOVED)
   })
 
-  test('the keyed nested form works too', () => {
-    expect(open({ init: { views: PANELS } }).views.map(v => v.launch)).toEqual(
-      PANELS,
-    )
+  test('the keyed nested form opens none either', () => {
+    expect(open({ init: { views: PANELS } }).views).toHaveLength(0)
   })
 
-  test('a declared property nested inside it still lands', () => {
+  test('a declared property nested inside it does not land', () => {
     const view = open({ init: { views: PANELS, height: 900 } })
-    expect(view.height).toBe(900)
-    expect(warnings()).not.toContain(
-      'BreakpointSplitView ignored unknown key(s): height',
-    )
+    expect(view.height).not.toBe(900)
+    expect(warnings()).toEqual([REMOVED])
   })
 })
 
@@ -89,9 +85,7 @@ test('a key naming neither a launch key nor a property is named on attach', () =
   )
 })
 
-// The partition subsumes captureUnknownSnapshotKeys for this view. Both wired
-// up, a typo warns twice.
-test('an unknown key is reported once, not once per capture', () => {
+test('an unknown key is reported once', () => {
   open({ showIntraViewLinks: false })
   expect(warnings()).toHaveLength(1)
 })

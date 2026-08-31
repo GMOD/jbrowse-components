@@ -249,18 +249,17 @@ describe('validateConfig', () => {
       expect(error?.message).toContain('not of DotplotView')
     })
 
-    // Deprecated rather than dead: the view's own preprocessor still lifts it.
-    it('warns on the nested init form and checks inside it', () => {
+    // Nothing reads what is under it, so the keys inside are not reported: a
+    // list of them would describe settings that arrive nowhere.
+    it('errors on the nested init form and does not descend', () => {
       const config = baseConfig()
       config.defaultSession.views = [
         { type: 'LinearGenomeView', init: { assembly: 'hg38', lo: 'chr1' } },
       ]
-      const [warning] = warningsOf(config)
-      expect(warning?.where).toBe('defaultSession.views[0].init')
-      expect(warning?.message).toContain('deprecated')
       expect(errorsOf(config).map(e => e.where)).toEqual([
-        'defaultSession.views[0].init.lo',
+        'defaultSession.views[0].init',
       ])
+      expect(errorsOf(config)[0]?.message).toContain('v5 removed')
     })
 
     it('checks a row of a comparative view as a view of its own', () => {

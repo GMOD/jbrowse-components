@@ -32,11 +32,13 @@ type UserOpened = Extract<ImportFormSyntenyTrack, { type: 'userOpened' }>
 
 // A row names its assembly through its displayedRegions, so a row still loading
 // names none — including the one this dialog just added, if it is reopened
-// straight away. The pending `init` carries the name until then, and without it
+// straight away. The pending launch carries the name until then, and without it
 // the dialog anchors to '', which reaches no dataset and can add a track config
 // naming an empty assembly.
 function rowAssembly(
-  row: { assemblyNames: string[]; init?: { assembly: string } } | undefined,
+  row:
+    | { assemblyNames: string[]; pendingLaunch?: { assembly: string } }
+    | undefined,
 ) {
   return row?.assemblyNames[0] ?? row?.pendingLaunch?.assembly ?? ''
 }

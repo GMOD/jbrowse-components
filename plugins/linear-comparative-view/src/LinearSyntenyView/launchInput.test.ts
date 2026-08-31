@@ -69,25 +69,22 @@ test('an omitted property keeps its default', () => {
 })
 
 describe('the v4 nested form', () => {
-  test('a nested spec produces the same view as the flat one, and says so', () => {
+  const REMOVED =
+    'LinearSyntenyView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+
+  test('a nested spec launches nothing and says the key is gone', () => {
     const nested = open({ init: { views: ROWS, tracks: ['a_track'] } })
-    expect(nested.launch).toEqual({
-      ...open({ views: ROWS, tracks: ['a_track'] }).launch,
-      legacyInit: true,
-    })
-    expect(warnings()).toContain(
-      'LinearSyntenyView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
-    )
+    expect(nested.launch).toEqual({ legacyInit: true })
+    expect(nested.pendingLaunch).toBeUndefined()
+    expect(warnings()).toContain(REMOVED)
   })
 
-  // The shipped demos write `"init": { "colorBy": "reference", … }`, and v4's
-  // applyInitSettings applied it. Sorted as a typo it would be dropped instead.
-  test('a declared property nested inside it still lands', () => {
+  // The v4 demos wrote `"init": { "colorBy": "reference", … }` and v4 applied
+  // it; the codemod moves it out rather than this reading it.
+  test('a declared property nested inside it does not land', () => {
     const view = open({ init: { views: ROWS, colorBy: 'reference' } })
-    expect(view.colorBy).toBe('reference')
-    expect(warnings()).not.toContain(
-      'LinearSyntenyView ignored unknown key(s): colorBy',
-    )
+    expect(view.colorBy).not.toBe('reference')
+    expect(warnings()).toEqual([REMOVED])
   })
 })
 
@@ -98,9 +95,7 @@ test('a key naming neither a launch key nor a property is named on attach', () =
   )
 })
 
-// The partition subsumes captureUnknownSnapshotKeys for this view. Both wired
-// up, a typo warns twice.
-test('an unknown key is reported once, not once per capture', () => {
+test('an unknown key is reported once', () => {
   open({ drawCurvez: true })
   expect(warnings()).toHaveLength(1)
 })

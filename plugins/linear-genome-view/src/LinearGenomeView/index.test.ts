@@ -2623,13 +2623,13 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
   })
 })
 
-describe('declarative init: highlight, nav, unknown keys', () => {
+describe('declarative launch: highlight, nav, unknown keys', () => {
   function makeModel(init: InitState) {
     const { Session, LinearGenomeModel } = initialize()
     const model = Session.create({ configuration: {} }).setView(
       LinearGenomeModel.create({
         type: 'LinearGenomeView',
-        init,
+        ...init,
       }),
     )
     model.setWidth(800)

@@ -286,7 +286,7 @@ Almost nothing needs changing:
   getters. Reading either is unchanged.
 - `scrollTo(offsetPx)`, `setNewView(bpPerPx, offsetPx)` and `moveTo` keep their
   signatures.
-- A snapshot, URL spec or `init` naming `bpPerPx`/`offsetPx` is still accepted.
+- A snapshot or URL spec naming `bpPerPx`/`offsetPx` is still accepted.
   `windowStartBp` converts exactly, and the scale rides to the first measure and
   is adopted at whatever width arrives — bit for bit what v4 did, so an old link
   keeps its old behavior rather than being reinterpreted. That covers the
@@ -350,8 +350,23 @@ saved session is unaffected: `tracks` holding built track models still restores
 as built track models, and `tracks` holding trackIds is read as the request to
 open them, which is how the two shapes coexist under one name.
 
-`init` still works on a `defaultSession` and warns. On a session-spec URL it is
-refused with an error, as in v4.
+**`init` is gone, and every surface refuses it in the same words.** A view
+snapshot naming it applies nothing under it, warns in the console and raises a
+notification; a `?session=spec-` URL and `jbrowse validate` both report an
+error. The message names what to do instead:
+
+```
+LinearGenomeView nests its settings under "init", which v5 removed: write every setting directly on the view object.
+```
+
+A `defaultSession` view that still nests therefore opens on its defaults rather
+than half-applying, which is the point: v4's silent drop is what the whole
+change is against.
+
+One `init` survives and is unrelated: the `createViewState({ init })` option in
+`@jbrowse/react-linear-genome-view2` and `@jbrowse/react-circular-genome-view2`.
+That is a function argument the product hands to the view it builds, not a key
+on a view object, and it is unchanged.
 
 Three behavior changes carry no migration:
 
@@ -366,7 +381,7 @@ Three behavior changes carry no migration:
   window.
 - **`BreakpointSplitView`'s `init` was a bare array** of panels, the one view
   whose `init` was not an object. Its panels are `views` now, the same key a
-  session spec already used, and the array under `init` still works and warns.
+  session spec and a `jb2export --spec` already used.
 
 ## Extension points changed shape
 

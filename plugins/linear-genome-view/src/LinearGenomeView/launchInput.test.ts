@@ -56,11 +56,12 @@ test('a launch key written on the view object reaches the launch state', () => {
   expect(notify).not.toHaveBeenCalled()
 })
 
-test('the nested v4 form produces the same launch state, and says it is going', () => {
+test('the nested v4 form launches nothing and says the key is gone', () => {
   const view = open(NESTED)
-  expect(view.launch).toEqual({ ...open(FLAT).launch, legacyInit: true })
+  expect(view.launch).toEqual({ legacyInit: true })
+  expect(view.pendingLaunch).toBeUndefined()
   expect(warnings()).toEqual([
-    'LinearGenomeView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
+    'LinearGenomeView nests its settings under "init", which v5 removed: write every setting directly on the view object.',
   ])
 })
 
@@ -73,9 +74,7 @@ test('a key naming neither a launch key nor a property is named on attach', () =
   )
 })
 
-// The partition subsumes captureUnknownSnapshotKeys for this view. Both wired
-// up, a typo warns twice and notifies twice.
-test('an unknown key is reported once, not once per capture', () => {
+test('an unknown key is reported once', () => {
   open({ type: 'LinearGenomeView', locc: 'chr1' })
   expect(warnings()).toHaveLength(1)
   expect(notify).toHaveBeenCalledTimes(1)

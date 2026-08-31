@@ -39,7 +39,9 @@ describe('viewsToSession', () => {
     })
   })
 
-  it('still carries a deprecated nested init', () => {
+  // carried over whole: this maps, it does not classify. `init` names no
+  // property, so the view it reaches is what reports it.
+  it('carries a nested init through for the view to refuse', () => {
     const session = viewsToSession('s', [
       { type: 'LinearGenomeView', init: { assembly: 'hg38' } },
     ])

@@ -77,7 +77,7 @@ test('a launch key and a persisted property both land written flat', () => {
 // afterAttach reports on a later tick than createApp returns on
 const settled = () => new Promise(resolve => setTimeout(resolve, 0))
 
-test('a flat view warns about nothing, a nested init still warns', async () => {
+test('a flat view warns about nothing, a nested init is refused', async () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
   const flat = createApp(mount(), {
@@ -93,7 +93,10 @@ test('a flat view warns about nothing, a nested init still warns', async () => {
     views: [{ type: 'LinearGenomeView', init: { assembly: 'volvox' } }],
   })
   await settled()
-  expect(warn).toHaveBeenCalledWith(expect.stringContaining('"init"'))
+  expect(warn).toHaveBeenCalledWith(
+    'LinearGenomeView nests its settings under "init", which v5 removed: write every setting directly on the view object.',
+  )
+  expect(nested.viewState.session.views[0]!.pendingLaunch).toBeUndefined()
   nested.destroy()
 
   warn.mockRestore()

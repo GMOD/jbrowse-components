@@ -161,10 +161,10 @@ describe('breakpointPanelsFromSpec', () => {
     expect(breakpointPanelsFromSpec({ views: panels })).toEqual(panels)
   })
 
-  // a --spec is hand-written JSON with no compiler behind it, and v4 spelled
-  // the same array as a bare `init`
-  it('still takes the v4 init array', () => {
-    expect(breakpointPanelsFromSpec({ init: panels })).toEqual(panels)
+  it("refuses v4's bare array under init", () => {
+    expect(() => breakpointPanelsFromSpec({ init: panels })).toThrow(
+      /needs a "views" array/,
+    )
   })
 
   it('refuses a spec whose panels are not an array', () => {

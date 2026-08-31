@@ -2,16 +2,13 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 
 // `addView(type, snapshot)` takes the one authoring shape a view has: every
-// setting written directly on the snapshot. The v4 nesting under `init` is
-// still ACCEPTED — a config or an embedded host mid-deprecation can still send
-// it, and `withLaunchInput` lifts it and warns — so nothing fails when a
-// launcher inside the tree writes it, except the warning, which is aimed at
-// someone who cannot fix our code.
+// setting written directly on the snapshot. v5 reads nothing under `init`, so a
+// launcher that nests opens a default view — but its own tests cannot tell,
+// because a launcher that nests still produces a view. This is what tells.
 //
 // Four launchers wrote it (grid-bookmark's bookmark navigation, maf's
 // open-sample and row-synteny, the synteny mate opener) plus jbrowse-img's
-// per-mode builder, and none of their own tests could tell: the picture is the
-// same either way. This is what tells.
+// per-mode builder.
 const ROOTS = ['packages', 'plugins', 'products']
 
 const repo = path.join(__dirname, '..', '..', '..', '..')

@@ -53,26 +53,20 @@ test('a declared property lands natively, named nowhere in the launch path', () 
 })
 
 describe('the v4 nested form', () => {
-  test('a nested spec produces the same launch state, and says it is going', () => {
+  const REMOVED =
+    'CircularView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+
+  test('a nested spec launches nothing and says the key is gone', () => {
     const nested = open({ init: { assembly: 'volvox', tracks: ['sv'] } })
-    expect(nested.launch).toEqual({
-      ...open({ assembly: 'volvox', tracks: ['sv'] }).launch,
-      legacyInit: true,
-    })
-    expect(warnings()).toContain(
-      'CircularView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
-    )
+    expect(nested.launch).toEqual({ legacyInit: true })
+    expect(nested.pendingLaunch).toBeUndefined()
+    expect(warnings()).toContain(REMOVED)
   })
 
-  // v4's applyInit read three keys and ignored the rest, so a declared property
-  // written inside `init` reached nothing at all. The classifier sorts a nested
-  // key the same three ways a flat one gets sorted.
-  test('a declared property nested inside it still lands', () => {
+  test('a declared property nested inside it does not land', () => {
     const view = open({ init: { assembly: 'volvox', paddingPx: 12 } })
-    expect(view.paddingPx).toBe(12)
-    expect(warnings()).not.toContain(
-      'CircularView ignored unknown key(s): paddingPx',
-    )
+    expect(view.paddingPx).not.toBe(12)
+    expect(warnings()).toEqual([REMOVED])
   })
 })
 
@@ -83,9 +77,7 @@ test('a key naming neither a launch key nor a property is named on attach', () =
   )
 })
 
-// The partition subsumes captureUnknownSnapshotKeys for this view. Both wired
-// up, a typo warns twice.
-test('an unknown key is reported once, not once per capture', () => {
+test('an unknown key is reported once', () => {
   open({ displayedRegionName: 'ctgA' })
   expect(warnings()).toHaveLength(1)
 })
