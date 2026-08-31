@@ -10,8 +10,8 @@ import path from 'node:path'
 //
 // Four launchers wrote it (grid-bookmark's bookmark navigation, maf's
 // open-sample and row-synteny, the synteny mate opener) plus jbrowse-img's
-// per-mode builder, and none of their tests could tell: the picture is the same
-// either way. This is what tells.
+// per-mode builder, and none of their own tests could tell: the picture is the
+// same either way. This is what tells.
 const ROOTS = ['packages', 'plugins', 'products']
 
 const repo = path.join(__dirname, '..', '..', '..', '..')
@@ -28,13 +28,44 @@ function walk(dir: string): string[] {
   })
 }
 
-// the second argument's own keys, so a nested object that happens to hold an
-// `init` of its own (a fetch RequestInit, say) is not read as this one
-const NESTED_INIT = /\baddView\(\s*[^,]+,\s*\{[^{}]*\binit\s*[,:}]/
+// The keys of the object literal starting at `open`, one nesting level only —
+// a `${}` in a template literal and a nested snapshot both push depth, so
+// neither is read as a key of this object.
+function topLevelKeys(source: string, open: number) {
+  const keys: string[] = []
+  let depth = 0
+  for (let i = open; i < source.length; i++) {
+    const c = source[i]!
+    if ('{(['.includes(c)) {
+      depth++
+    } else if ('})]'.includes(c)) {
+      depth--
+      if (depth === 0) {
+        return keys
+      }
+    } else if (depth === 1 && /[A-Za-z_]/.test(c)) {
+      const word = /^\w+/.exec(source.slice(i))![0]
+      if (/^\s*[,:}]/.test(source.slice(i + word.length))) {
+        keys.push(word)
+      }
+      i += word.length - 1
+    }
+  }
+  return keys
+}
+
+function nestsInit(source: string) {
+  for (const m of source.matchAll(/\baddView\([^,)]+,\s*(?=\{)/g)) {
+    if (topLevelKeys(source, m.index + m[0].length).includes('init')) {
+      return true
+    }
+  }
+  return false
+}
 
 test('no launcher nests a view snapshot under init', () => {
   const offenders = ROOTS.flatMap(root => walk(path.join(repo, root)))
-    .filter(file => NESTED_INIT.test(readFileSync(file, 'utf8')))
+    .filter(file => nestsInit(readFileSync(file, 'utf8')))
     .map(file => path.relative(repo, file))
   expect(offenders).toEqual([])
 })
