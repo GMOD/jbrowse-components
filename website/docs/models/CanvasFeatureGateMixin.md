@@ -4,16 +4,13 @@ title: CanvasFeatureGateMixin
 sidebar_label: Mixin -> CanvasFeatureGateMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`canvas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
 
 The density axis of the region-too-large gate, composed after
 `MultiRegionDisplayMixin` by the canvas feature displays: how the
-features-per-pixel number is measured and the worker budget for it. The byte
-axis is entirely `RegionTooLargeMixin`'s. A display opts in by composing this
-and calling `commitGateMeasurements` from its fetch's `onComplete`.
+features-per-pixel number is measured and the worker budget for it. The
+byte axis is entirely `RegionTooLargeMixin`'s. A display opts in by composing
+this and calling `commitGateMeasurements` from its fetch's `onComplete`.
 
 ## Volatiles
 

@@ -4,13 +4,9 @@ title: SessionTracksManagerSessionMixin
 sidebar_label: Mixin -> SessionTracksManagerSessionMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/SessionTracks.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/SessionTracks.ts).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

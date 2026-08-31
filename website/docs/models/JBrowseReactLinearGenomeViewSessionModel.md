@@ -4,18 +4,15 @@ title: JBrowseReactLinearGenomeViewSessionModel
 sidebar_label: Session -> JBrowseReactLinearGenomeViewSessionModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createSessionModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createSessionModel.ts).
 
-The shared EmbeddedSessionMixin plus this product's tracks mixin, its single
-LinearGenomeView, and `disableAddTracks`, which is a root prop rather than a
-session one. The mixin and the view are spelled out here rather than passed to a
-shared factory because `types.compose` cannot infer through a generic — see
-EmbeddedSessionMixin.
+The shared EmbeddedSessionMixin plus this product's tracks mixin, its
+single LinearGenomeView, and `disableAddTracks`, which is a root prop rather
+than a session one. The mixin and the view are spelled out here rather than
+passed to a shared factory because `types.compose` cannot infer through a
+generic — see EmbeddedSessionMixin.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

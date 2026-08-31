@@ -4,17 +4,14 @@ title: LinearSyntenyView
 sidebar_label: View -> LinearSyntenyView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-comparative-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts).
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`, with every setting written directly
-on the view object. `views` declares the member assemblies (stacked as linear
-views) and `tracks` the synteny feature track connecting them with a ribbon:
-
+Hand-authored under `defaultSession.views`, with every setting written
+directly on the view object. `views` declares the member assemblies (stacked
+as linear views) and `tracks` the synteny feature track connecting them with
+a ribbon:
 ```js
 {
   type: 'LinearSyntenyView',
@@ -24,13 +21,11 @@ views) and `tracks` the synteny feature track connecting them with a ribbon:
   colorBy: 'query',
 }
 ```
-
 The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
 `sameScale`, `collapseEmptyRows`, `drawCurves` and `drawLocationMarkers`;
 everything else is a property below and needs no list to join.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

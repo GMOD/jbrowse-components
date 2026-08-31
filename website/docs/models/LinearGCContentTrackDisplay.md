@@ -4,17 +4,13 @@ title: LinearGCContentTrackDisplay
 sidebar_label: Display -> LinearGCContentTrackDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`gccontent` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModelTrack.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModelTrack.ts).
 
 ## Example usage
 
-A standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence adapter
-(use this instead of the `ReferenceSequenceTrack` display when you want GC as
-its own track):
-
+A standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence
+adapter (use this instead of the `ReferenceSequenceTrack` display when you
+want GC as its own track):
 ```js
 {
   type: 'GCContentTrack',
@@ -33,14 +29,12 @@ its own track):
 ```
 
 used on GCContentTrack, separately from the display type on the
-ReferenceSequenceTrack. A GCContentTrack may also name a bare sequence adapter,
-which `gcAdapterConfig` wraps.
+ReferenceSequenceTrack. A GCContentTrack may also name a bare sequence
+adapter, which `gcAdapterConfig` wraps.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/lineargccontenttrackdisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/lineargccontenttrackdisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

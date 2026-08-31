@@ -4,19 +4,16 @@ title: TrackColorsMixin
 sidebar_label: Mixin -> TrackColorsMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/TrackColorsMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/TrackColorsMixin.ts).
 
 The color-by state shared by every view that can draw more than one synteny
-track at once: the view-wide mode, the per-track overrides, and the palette that
-tells overlaid tracks apart.
+track at once: the view-wide mode, the per-track overrides, and the palette
+that tells overlaid tracks apart.
 
 A view supplies only `colorableTrackConfigs` — the dotplot walks its flat
-`tracks`, a linear synteny view flattens `levels`. Everything downstream of that
-list (palette assignment, mode resolution, legend rows) is identical, so it
-lives here rather than being copied into both models.
+`tracks`, a linear synteny view flattens `levels`. Everything downstream of
+that list (palette assignment, mode resolution, legend rows) is identical, so
+it lives here rather than being copied into both models.
 
 ## Properties
 

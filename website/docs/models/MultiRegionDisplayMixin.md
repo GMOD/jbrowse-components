@@ -4,18 +4,14 @@ title: MultiRegionDisplayMixin
 sidebar_label: Mixin -> MultiRegionDisplayMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/MultiRegionDisplayMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/MultiRegionDisplayMixin.ts).
 
 Per-region fetch lifecycle for LGV-based GPU displays. Installs the fetch
 autoruns in `afterAttach` and exposes overridable hooks (`fetchNeeded`,
-`rpcProps`, `regionFetchKey`, `regionHasData`, `gateEnabled`) plus the
-`fetchRegions` / `loadedRegions` machinery.
+`rpcProps`, `regionFetchKey`, `regionHasData`, `gateEnabled`) plus
+the `fetchRegions` / `loadedRegions` machinery.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Volatiles
 

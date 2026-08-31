@@ -4,34 +4,28 @@ title: ScoreScaleMixin
 sidebar_label: Mixin -> ScoreScaleMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
-#crossCuttingMixin Score axis. Nothing — the config slots. Brings `scaleType` /
-`autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their
-setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and
-`SetMinMaxDialog` consume
+#crossCuttingMixin Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
 
-The score axis every quantitative display shares: which scale, how to autoscale
-it, and the manual min/max bounds. This is the runtime half of ScoreScaleModel
-in `scoreMenuItems.ts` — that interface is what the shared Score menu, the
-autoscale/scale submenus and `SetMinMaxDialog` consume, and it was already the
-canonical contract while two displays hand-wrote identical implementations of it
-(`WiggleScoreConfigMixin`, and the alignments coverage band). Composing this is
-now how a display satisfies it, so a new score display cannot satisfy it
-_partially_.
+The score axis every quantitative display shares: which scale, how to
+autoscale it, and the manual min/max bounds. This is the runtime half of
+ScoreScaleModel in `scoreMenuItems.ts` — that interface is what the
+shared Score menu, the autoscale/scale submenus and `SetMinMaxDialog` consume,
+and it was already the canonical contract while two displays hand-wrote
+identical implementations of it (`WiggleScoreConfigMixin`, and the alignments
+coverage band). Composing this is now how a display satisfies it, so a new
+score display cannot satisfy it *partially*.
 
 Deliberately just the axis. Colors, `resolution`, cross-hatches and the
-autoscale _computation_ stay in `WiggleScoreConfigMixin` / `WiggleCommonMixin` —
-the alignments coverage band shares this axis but none of the rest.
+autoscale *computation* stay in `WiggleScoreConfigMixin` / `WiggleCommonMixin`
+— the alignments coverage band shares this axis but none of the rest.
 
 `minScore`/`maxScore` are the **raw** slot values with their
-`Number.MIN_VALUE`/`Number.MAX_VALUE` "unset" sentinels intact, because that is
-what the dialog round-trips; `minScoreBound`/`maxScoreBound` are the resolved
-bounds, where `undefined` means "autoscale this end". Every consumer that
-computes a domain reads the `*Bound` pair.
+`Number.MIN_VALUE`/`Number.MAX_VALUE` "unset" sentinels intact, because that
+is what the dialog round-trips; `minScoreBound`/`maxScoreBound` are the
+resolved bounds, where `undefined` means "autoscale this end". Every consumer
+that computes a domain reads the `*Bound` pair.
 
 ## Getters
 

@@ -4,18 +4,14 @@ title: UCSCTrackHubConnection
 sidebar_label: Connection -> UCSCTrackHubConnection
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`data-management` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts).
 
 ## Example usage
 
-An entry in the config's `connections`. The hub's `hub.txt` is read on connect
-and every track it declares for a matching assembly is added to the session —
-nothing is written into your config, so the hub stays the source of truth.
-`assemblyNames` limits which of the hub's genomes are used.
-
+An entry in the config's `connections`. The hub's `hub.txt` is read on
+connect and every track it declares for a matching assembly is added to the
+session — nothing is written into your config, so the hub stays the source of
+truth. `assemblyNames` limits which of the hub's genomes are used.
 ```js
 {
   type: 'UCSCTrackHubConnection',
@@ -35,11 +31,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots are top-level fields of the connection's entry in `connections`.
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the connection's entry in `connections`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

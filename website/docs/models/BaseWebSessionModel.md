@@ -4,17 +4,14 @@ title: BaseWebSessionModel
 sidebar_label: Session -> BaseWebSessionModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/BaseWebSession/index.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/BaseWebSession/index.ts).
 
 Composable web session shared by jbrowse-web and react-app, before
-finalizeWebSession (the snapshotProcessor can't be `compose`d). jbrowse-web
-composes `WebSessionManagementMixin` onto this; react-app uses it as-is.
+finalizeWebSession (the snapshotProcessor can't be `compose`d).
+jbrowse-web composes `WebSessionManagementMixin` onto this; react-app uses it
+as-is.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

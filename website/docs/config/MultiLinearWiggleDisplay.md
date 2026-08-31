@@ -4,17 +4,13 @@ title: MultiLinearWiggleDisplay
 sidebar_label: Display -> MultiLinearWiggleDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `wiggle`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/configSchema.ts).
 
 ## Example usage
 
 Minimal `MultiQuantitativeTrack` config. See the
 [multi-quantitative track guide](/docs/config_guides/multiquantitative_track)
 for all adapter and display options:
-
 ```js
 {
   type: 'MultiQuantitativeTrack',
@@ -31,9 +27,8 @@ for all adapter and display options:
 }
 ```
 
-Taller track overlaying two samples in one shared plot (`multixyplot`) instead
-of the default stacked-per-subtrack layout:
-
+Taller track overlaying two samples in one shared plot (`multixyplot`)
+instead of the default stacked-per-subtrack layout:
 ```js
 {
   type: 'MultiQuantitativeTrack',
@@ -56,17 +51,17 @@ _See the **Config slots** section below for all available configuration fields._
 configuration for the multi-wiggle display, which draws several quantitative
 subtracks (e.g. BigWig files) on a shared Y axis
 
-These are display-level slots: set them inside a track's `displays` to change
-its defaults (setting them at the track top level has no effect). The object
-shorthand `displayDefaults: { key: value }` is equivalent to the full
-`displays: [{ type: 'MultiLinearWiggleDisplay', displayId: '...', key: value }]`
+These are display-level slots: set them inside a track's `displays` to
+change its defaults (setting them at the track top level has no effect).
+The object shorthand `displayDefaults: { key: value }` is equivalent to the
+full `displays: [{ type: 'MultiLinearWiggleDisplay', displayId: '...', key: value }]`
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).
 
 Per-subtrack metadata (a `name`, `color`, and `group` for each subtrack) is
-preloaded on the _adapter_, not here — use `MultiWiggleAdapter`'s `subadapters`
-slot, where `group` drives the sidebar clustering tree and `color` sets each
-subtrack's line/fill.
+preloaded on the *adapter*, not here — use `MultiWiggleAdapter`'s
+`subadapters` slot, where `group` drives the sidebar clustering tree and
+`color` sets each subtrack's line/fill.
 
 ## Related links
 
@@ -75,13 +70,7 @@ subtrack's line/fill.
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "MultiLinearWiggleDisplay", ... }]`, or in the track's
-[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
-is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go on a display entry: `"displays": [{ "type": "MultiLinearWiggleDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

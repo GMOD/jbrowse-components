@@ -4,17 +4,14 @@ title: GCContentTrack
 sidebar_label: Track -> GCContentTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `gccontent`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentTrack/configSchema.ts).
 
 ## Example usage
 
-A standalone `GCContentTrack` (use this instead of the `ReferenceSequenceTrack`
-display when you want GC as its own track). The sequence comes from the assembly
-named in `assemblyNames`, so the adapter needs nothing but its type:
-
+A standalone `GCContentTrack` (use this instead of the
+`ReferenceSequenceTrack` display when you want GC as its own track). The
+sequence comes from the assembly named in `assemblyNames`, so the adapter
+needs nothing but its type:
 ```js
 {
   type: 'GCContentTrack',
@@ -29,9 +26,7 @@ GC-skew mode with a small, overlapping sliding window for a smoother signal
 (`windowDelta` smaller than `windowSize` means windows overlap). The
 `displayDefaults` object shorthand applies settings to whichever display uses
 them — equivalent to writing a full `displays: [{ type, displayId, ... }]`
-array. See
-[configuring displays](/docs/config_guides/tracks#configuring-displays):
-
+array. See [configuring displays](/docs/config_guides/tracks#configuring-displays):
 ```js
 {
   type: 'GCContentTrack',
@@ -49,17 +44,12 @@ used for having a gc content track outside of the "reference sequence display"
 
 ## Related links
 
-- **Display:** [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay)
-  ([state model](../../models/lineargccontenttrackdisplay))
+- **Display:** [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay) ([state model](../../models/lineargccontenttrackdisplay))
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

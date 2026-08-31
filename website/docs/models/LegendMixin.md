@@ -4,34 +4,27 @@ title: LegendMixin
 sidebar_label: Mixin -> LegendMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/LegendMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/LegendMixin.ts).
 
-#crossCuttingMixin A legend the user can turn off. A promotable `showLegend`
-config slot, whose `promotedBase` sets whether this display type's legend is on
-by default. Brings the resolved `showLegend` getter, the
-`showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and
-`setShowLegend`
+#crossCuttingMixin A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend`
 
 Six displays carried a character-identical copy of these three members —
 alignments, Hi-C, multi-row features, multi-wiggle, the multi-sample variant
 base and the shared LD model — reading and writing one slot name through the
 promotable cascade. **Both ends of that were already shared**: the track-menu
-row is `showLegendCheckboxItem` and the thing it shows is `FloatingLegend`, so
-this was the middle link between two pieces of common code.
+row is `showLegendCheckboxItem` and the thing it shows is `FloatingLegend`,
+so this was the middle link between two pieces of common code.
 
 **The config slot stays per display, and deliberately** — `promotedBase`
-legitimately differs (a Hi-C color scale is off by default, a variant genotype
-key on) and each description describes a genuinely different legend. That
-decision is `showLegendCheckboxItem`'s docstring and this does not disturb it:
-the slot is what the composing display still supplies, and the mixin only stops
-it hand-writing the accessors over it.
+legitimately differs (a Hi-C color scale is off by default, a variant
+genotype key on) and each description describes a genuinely different legend.
+That decision is `showLegendCheckboxItem`'s docstring and this does not
+disturb it: the slot is what the composing display still supplies, and the
+mixin only stops it hand-writing the accessors over it.
 
-`setShowLegend` is overridable, and one display overrides it: the multi-sample
-variant base also clears `dismissedLegendSections`, since re-showing the whole
-legend is what un-dismisses the sections inside it.
+`setShowLegend` is overridable, and one display overrides it: the
+multi-sample variant base also clears `dismissedLegendSections`, since
+re-showing the whole legend is what un-dismisses the sections inside it.
 
 ## Getters
 

@@ -4,28 +4,24 @@ title: MultiLinearWiggleDisplay
 sidebar_label: Display -> MultiLinearWiggleDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`wiggle` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts).
 
 ## Example usage
 
-The two row-ordering triggers are display _properties_, not config slots, so
-they go on the display node in a session — `defaultSession` here, and the same
-shape a `session=spec-` link carries. Written on the track config's own
+The two row-ordering triggers are display *properties*, not config slots, so
+they go on the display node in a session — `defaultSession` here, and the
+same shape a `session=spec-` link carries. Written on the track config's own
 `displays` entry they would be dropped as unknown slots.
 
 `runClustering` is a transient declarative launch spec, the same idea as
 `LinearGenomeView`'s `init`: it runs the real "Cluster columns" RPC once
 automatically (no dialog) as soon as subtrack data is available, then clears
-itself so a saved session never re-triggers it. `sortRowsBy` is the other one,
-and the declarative form of the right-click "Sort rows by score here" — where
-clustering orders rows by the whole region in view, this ranks them by the score
-each carries at one base, so a cohort can open already ranked at a candidate
-locus with the surrounding context still on screen. Use one or the other;
-whichever applies last owns the row order.
-
+itself so a saved session never re-triggers it. `sortRowsBy` is the other
+one, and the declarative form of the right-click "Sort rows by score here" —
+where clustering orders rows by the whole region in view, this ranks them by
+the score each carries at one base, so a cohort can open already ranked at a
+candidate locus with the surrounding context still on screen. Use one or the
+other; whichever applies last owns the row order.
 ```js
 defaultSession: {
   name: 'Copy number at CCL3L1',
@@ -46,14 +42,12 @@ defaultSession: {
 }
 ```
 
-Wiggle display overlaying/stacking multiple quantitative subtracks in one area,
-with optional clustering and a tree sidebar.
+Wiggle display overlaying/stacking multiple quantitative subtracks in one
+area, with optional clustering and a tree sidebar.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/multilinearwiggledisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/multilinearwiggledisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 
