@@ -1615,13 +1615,12 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
 
   it.each([
     ['showLabels', 'none'],
-    // Height and its bounds, all four. The isoform trim is the fit ladder's
+    // Height and its bounds, all three. The isoform trim is the fit ladder's
     // now, so nothing about the track's size reaches the worker at all
     // (ADR-092) — which is the property the resize handle needs, since it
     // writes `height` every drag frame.
     ['height', 600],
     ['heightMode', 'grow'],
-    ['maxHeight', 2400],
     ['growMaxHeight', 900],
     // the main-thread `showLabels` auto gate — layout reserves label rows from
     // it, the worker never sees it

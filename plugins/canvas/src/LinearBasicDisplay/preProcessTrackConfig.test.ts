@@ -14,6 +14,7 @@ type DisplaySnapshot = {
   autoHeight?: boolean
   heightMode?: string
   height?: number
+  maxHeight?: number
   featureHeight?: number
   renderer?: Record<string, unknown>
 }
@@ -112,6 +113,21 @@ test('drops a legacy autoHeight:false without setting heightMode', () => {
   })
   expect(out.displays![0]!.heightMode).toBeUndefined()
   expect(out.displays![0]!.autoHeight).toBeUndefined()
+})
+
+// The retired `maxHeight` slot (a second grow ceiling; growMaxHeight is the one
+// grow clamp now) is dropped, including the old renderer's layout-bound slot of
+// the same name that liftRendererProps carries up.
+test('drops the retired maxHeight slot, from the display and the renderer', () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [
+      { type: 'LinearBasicDisplay', maxHeight: 600 },
+      { type: 'LinearBasicDisplay', renderer: { maxHeight: 600 } },
+    ],
+  })
+  expect(out.displays![0]!.maxHeight).toBeUndefined()
+  expect(out.displays![1]!.maxHeight).toBeUndefined()
 })
 
 // Pre-GPU-rewrite configs nested style slots under a `renderer` sub-config that

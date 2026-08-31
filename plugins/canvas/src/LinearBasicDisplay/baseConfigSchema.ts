@@ -26,31 +26,17 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearCanvasBaseDisplay',
     {
-      // NOT a cap on the layout, and NOT the autogrow ceiling (that is
-      // `growMaxHeight` below). It is the outer clamp on `growTargetHeight`, the
-      // content height the grow ceiling is then applied to, so it binds only in
-      // grow mode and only when set below that ceiling. The packer has its own,
-      // separate limit — GranularRectLayout's row limit — past which features are
-      // dropped entirely (surfaced as truncatedFeatureCount). Three different
-      // limits, don't conflate them.
-      /**
-       * #slot
-       */
-      maxHeight: {
-        type: 'number',
-        defaultValue: 1200,
-        description:
-          'Outer clamp in pixels on the content height the "autogrow track height" mode sizes to. Applies to no other mode — fixed and fit keep their configured height and scroll taller content. The autogrow ceiling proper is growMaxHeight, which is lower by default, so this only binds when set below it',
-        advanced: true,
-      },
-      // `maxHeight` above clamps `growTargetHeight` first, so the effective grow
-      // ceiling is min(maxHeight, growMaxHeight) — raising `growMaxHeight` past
-      // `maxHeight` alone changes nothing.
+      // The autogrow ceiling is `growMaxHeight` below, and it is the ONLY height
+      // ceiling: the packer's own limit — GranularRectLayout's row cap, past
+      // which features are dropped entirely (truncatedFeatureCount) — bounds the
+      // layout, not the track. A former `maxHeight` slot was a second grow clamp
+      // that was dead at its default (1200, above growMaxHeight's 800); a legacy
+      // config's value is dropped in migrateBasicConfigSnapshot.
       ...heightModeConfigSchemaFields({
         heightMode:
           'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
         growMaxHeight:
-          'Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes. Raising it past maxHeight has no effect, since that clamps the content height first',
+          'Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes',
       }),
       // maxFeatureScreenDensity is inherited from baseLinearDisplayConfigSchema
       // (default 1) — single source of truth for the density gate

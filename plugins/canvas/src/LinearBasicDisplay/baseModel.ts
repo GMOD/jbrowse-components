@@ -180,7 +180,7 @@ const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 // Floor for GROW mode's target height, so a sparse or empty track doesn't shrink
 // the track to a sliver. Nothing to do with the fit ladder below, which never
 // resizes the track at all — `growTargetHeight` is its only reader, and the
-// `maxHeight` config slot is the ceiling at the other end of the same clamp.
+// mixin's `growMaxHeight` slot is the ceiling at the other end of the clamp.
 const MIN_GROW_HEIGHT = 50
 
 /**
@@ -477,13 +477,6 @@ export default function baseStateModelFactory(
         // rebuild — labels only re-emit once the user scrolls a full bucket.
         get labelScrollBucket() {
           return Math.floor(self.scrollTop / LABEL_CULL_BUCKET_PX)
-        },
-
-        /**
-         * #getter
-         */
-        get maxHeight() {
-          return getConf(self, 'maxHeight')
         },
 
         /**
@@ -1178,8 +1171,13 @@ export default function baseStateModelFactory(
         // before the mixin's own `growMaxHeight` cap. That is the settled content
         // height (settledMaxY, NOT the morph-inflated maxY — grow must target the
         // destination height so it doesn't bounce during a zoom morph), floored
-        // at MIN_GROW_HEIGHT so a sparse track doesn't collapse to a sliver and
-        // capped by the `maxHeight` config slot.
+        // at MIN_GROW_HEIGHT so a sparse track doesn't collapse to a sliver.
+        //
+        // With no layout at all — data not landed yet, or the too-large banner
+        // up — the content height is unknown rather than zero, so the track
+        // holds the configured slot height instead. The floor is a claim about
+        // sparse DATA; applied here it squeezed the too-large banner into a
+        // 50px sliver and bounced every grow track slot→floor→content on load.
         //
         // Height-independent — settledMaxY reads the config-slot
         // `fitTargetHeight`, never the reactive `height` getter — which is what
@@ -1187,14 +1185,9 @@ export default function baseStateModelFactory(
         // `grownHeight`, the `height` override and the grow-aware `resizeHeight`
         // all come from the mixin.
         get growTargetHeight() {
-          // Ceiling last, so a `maxHeight` configured below MIN_GROW_HEIGHT
-          // still wins: `clamp` tests its floor first and would hand back a
-          // height above the cap the config asked for. The floor is a guess
-          // about usable tracks, the ceiling is an instruction.
-          return Math.min(
-            self.maxHeight,
-            Math.max(MIN_GROW_HEIGHT, this.settledMaxY),
-          )
+          return self.layoutReady
+            ? Math.max(MIN_GROW_HEIGHT, this.settledMaxY)
+            : self.fitTargetHeight
         },
 
         /**

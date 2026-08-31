@@ -374,28 +374,26 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.scrollableHeight).toBe(0)
   })
 
-  // growTargetHeight (the grow-mode target) resolves to MIN_GROW_HEIGHT when
-  // there's no content, rather than collapsing the track to a sliver.
-  it('growTargetHeight floors at MIN_GROW_HEIGHT with no content', () => {
+  // With no layout at all the content height is unknown, not zero: the target
+  // holds the configured slot height rather than flooring, so a grow track
+  // doesn't bounce slot->floor->content on load and the too-large banner isn't
+  // squeezed into a 50px sliver.
+  it('growTargetHeight holds the slot height while no layout exists', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     expect(display.maxY).toBe(0)
-    expect(display.growTargetHeight).toBe(50)
+    expect(display.growTargetHeight).toBe(100)
   })
 
-  // ...but the `maxHeight` ceiling still wins over that floor. The floor is a
-  // guess about what makes a usable track; the slot is an instruction. Ordered
-  // the other way (a bare `clamp`, whose floor is tested first) a track capped
-  // below 50px grew past the cap it was given.
-  it('growTargetHeight honors a maxHeight below the floor', () => {
+  // Once a region has LOADED and holds nothing, the content height really is
+  // ~zero — growTargetHeight resolves to MIN_GROW_HEIGHT then, rather than
+  // collapsing the track to a sliver.
+  it('growTargetHeight floors at MIN_GROW_HEIGHT once an empty region loads', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    setConf(display, 'maxHeight', 30)
-    expect(display.growTargetHeight).toBe(30)
-
-    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
-    expect(display.settledMaxY).toBeGreaterThan(30)
-    expect(display.growTargetHeight).toBe(30)
+    display.setRpcData(0, stackedRegionData(0, 20), ctgA)
+    expect(display.settledMaxY).toBe(0)
+    expect(display.growTargetHeight).toBe(50)
   })
 
   // Grow drives `height` from the laid-out content reactively — via the `height`

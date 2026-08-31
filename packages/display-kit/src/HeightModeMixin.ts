@@ -169,14 +169,26 @@ export default function HeightModeMixin() {
       /**
        * #action
        * Set the track-height strategy by writing the unified `heightMode` slot;
-       * the modes are mutually exclusive by construction. Entering a non-`fixed`
-       * mode drops a leftover scroll offset that the reconfigured height
-       * contradicts — neither fit nor grow generally scrolls, and a sticky canvas
-       * left at an out-of-range offset paints clipped or blank with no DOM scroll
-       * event to resync it. Displays with more transient state to reset
-       * super-capture this.
+       * the modes are mutually exclusive by construction. Leaving grow bakes the
+       * grown height into the `height` slot in the same action, so the switch is
+       * atomic: `installGrowExitBake` also covers this exit, but it is a
+       * reaction, and an observer scheduled ahead of it would catch the new mode
+       * against the stale slot — a track grown to 800px fitting one frame into
+       * the 100px the slot still held. The reaction sees the slot move with the
+       * mode and skips, the same guard that protects a drag-resize exit.
+       * Entering a non-`fixed` mode drops a leftover scroll offset that the
+       * reconfigured height contradicts — neither fit nor grow generally
+       * scrolls, and a sticky canvas left at an out-of-range offset paints
+       * clipped or blank with no DOM scroll event to resync it. Displays with
+       * more transient state to reset super-capture this.
        */
       setHeightMode(mode: HeightMode) {
+        // `grownHeight` read bare, exactly as `resizeHeight` below reads it: a
+        // mode switch is a user gesture, so the view is measured by the time it
+        // can fire (the reaction's exits are the ones that need the init guard).
+        if (self.autoHeight && mode !== 'grow') {
+          heightHost(self).setHeight(self.grownHeight)
+        }
         setConf(confNode(self), 'heightMode', mode)
         if (mode !== 'fixed') {
           heightHost(self).setScrollTop(0)
@@ -207,8 +219,8 @@ export default function HeightModeMixin() {
 /**
  * Leaving grow mode: bake the height the user was seeing into the `height` slot
  * so fixed/fit start from it rather than snapping to the stale slot value (grow
- * computes `height` reactively and never writes the slot). A reaction rather than
- * a call inside `setHeightMode` because the resolved `heightMode` also flips
+ * computes `height` reactively and never writes the slot). A reaction as well as
+ * the call inside `setHeightMode` because the resolved `heightMode` also flips
  * without any imperative action — resetting a track customized to grow, or changing the
  * session-wide default out from under grow-following tracks that inherit it (the
  * promotable cascade) — and every such exit must bake. Install from `afterAttach`
@@ -222,10 +234,11 @@ export default function HeightModeMixin() {
  * `height` slot, which the expression ignores once `autoHeight` is false.
  *
  * Skip the bake when the `height` slot itself was written during the exit (`slot`
- * changed alongside `mode`): that is a drag-resize leaving grow (`resizeHeight`
- * writes `grownHeight + distance` in the same action), and re-baking `prev.grown`
- * would clobber the drag delta. Menu/cascade exits leave the slot untouched, so
- * they still bake the displayed height.
+ * changed alongside `mode`): that is an imperative exit that already settled the
+ * slot — a drag-resize leaving grow (`resizeHeight` writes `grownHeight +
+ * distance` in the same action), or `setHeightMode`'s own synchronous bake — and
+ * re-baking `prev.grown` would clobber a drag delta. Cascade exits leave the
+ * slot untouched, so they still bake the displayed height here.
  */
 export function installGrowExitBake(
   self: {

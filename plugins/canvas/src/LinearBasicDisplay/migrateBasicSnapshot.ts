@@ -111,5 +111,9 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
     }
     delete result.autoHeight
   }
+  // The retired `maxHeight` slot (a second grow ceiling, dead at its default —
+  // growMaxHeight is the one grow clamp now). Also arrives via liftRendererProps
+  // from the old renderer's layout-bound slot of the same name.
+  delete result.maxHeight
   return result
 }
