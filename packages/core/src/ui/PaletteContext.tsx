@@ -1,4 +1,10 @@
-import { createContext, use, useEffect, useMemo } from 'react'
+import {
+  createContext,
+  use,
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+} from 'react'
 
 import { defaultStyleTheme } from './styleTheme.ts'
 
@@ -71,6 +77,36 @@ export function usePalette(): JBrowsePalette {
   return useStyleTheme().palette
 }
 
+function darkSchemeQuery() {
+  return typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : undefined
+}
+
+function subscribeToColorScheme(onChange: () => void) {
+  const media = darkSchemeQuery()
+  media?.addEventListener('change', onChange)
+  return () => {
+    media?.removeEventListener('change', onChange)
+  }
+}
+
+function readColorScheme(): 'light' | 'dark' {
+  return darkSchemeQuery()?.matches ? 'dark' : 'light'
+}
+
+const alwaysLight = () => 'light' as const
+const subscribeToNothing = () => () => {}
+
+function useResolvedMode(mode: 'light' | 'dark' | undefined) {
+  const systemMode = useSyncExternalStore(
+    mode === undefined ? subscribeToColorScheme : subscribeToNothing,
+    mode === undefined ? readColorScheme : alwaysLight,
+    alwaysLight,
+  )
+  return mode === undefined ? systemMode : mode
+}
+
 /** What {@link useSessionPalette} needs of a session. */
 export interface ThemeModeSession {
   setThemeMode: (mode: 'light' | 'dark') => void
@@ -85,8 +121,9 @@ export interface ThemeModeSession {
  * hook and the provider in one.
  *
  * How the host knows its own mode is the host's business — an attribute on
- * `<html>`, a `prefers-color-scheme` media query, a design-system context —
- * and deliberately not this hook's.
+ * `<html>`, a design-system context, a toggle in its own state. Pass no mode
+ * and JBrowse follows `prefers-color-scheme` instead, tracking OS changes; a
+ * host whose mode is only ever the OS preference has nothing to write.
  *
  * **Both halves are load-bearing, which is why the pairing is published as a
  * component.** The palette is what *React* draws with; the config `theme` slot
@@ -102,11 +139,12 @@ export interface ThemeModeSession {
  */
 export function useSessionPalette(
   session: ThemeModeSession,
-  mode: 'light' | 'dark',
+  mode?: 'light' | 'dark',
 ): JBrowsePalette {
+  const resolved = useResolvedMode(mode)
   useEffect(() => {
-    session.setThemeMode(mode)
-  }, [session, mode])
+    session.setThemeMode(resolved)
+  }, [session, resolved])
   return session.palette
 }
 
@@ -120,6 +158,12 @@ export function useSessionPalette(
  *   {tracks}
  * </SessionPaletteProvider>
  * ```
+ *
+ * `mode` is optional. Left out, JBrowse follows `prefers-color-scheme` and
+ * re-themes when the OS preference changes, through the same session write an
+ * explicit mode takes — so a host whose dark mode *is* the OS preference mounts
+ * this with a session and nothing else. Pass a mode as soon as the host has a
+ * toggle of its own, since the media query cannot see it.
  *
  * A component rather than a documented pair of calls because the pair has a
  * half that can be left out with nothing to show for it. `PaletteProvider` is
@@ -138,7 +182,7 @@ export function SessionPaletteProvider({
   children,
 }: {
   session: ThemeModeSession
-  mode: 'light' | 'dark'
+  mode?: 'light' | 'dark'
   children: ReactNode
 }) {
   const palette = useSessionPalette(session, mode)

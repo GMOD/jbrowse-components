@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 
 import {
   PaletteProvider,
@@ -54,6 +54,93 @@ test('SessionPaletteProvider writes the mode and provides what comes back', () =
   )
   expect(modes).toEqual(['dark', 'light'])
   expect(screen.getByTestId('bg').textContent).not.toBe(dark)
+})
+
+// jsdom ships no matchMedia at all, which is also the environment the provider
+// guards for, so the query is installed per-test and removed after.
+class FakeMediaQueryList extends EventTarget implements MediaQueryList {
+  readonly media = '(prefers-color-scheme: dark)'
+  onchange = null
+  subscriptions = 0
+
+  constructor(public matches: boolean) {
+    super()
+  }
+
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions,
+  ) {
+    this.subscriptions++
+    super.addEventListener(type, listener, options)
+  }
+
+  addListener() {}
+  removeListener() {}
+
+  setMatches(matches: boolean) {
+    this.matches = matches
+    this.dispatchEvent(new Event('change'))
+  }
+}
+
+function installMatchMedia(matches: boolean) {
+  const media = new FakeMediaQueryList(matches)
+  window.matchMedia = (query: string) => {
+    expect(query).toBe('(prefers-color-scheme: dark)')
+    return media
+  }
+  return media
+}
+
+afterEach(() => {
+  Reflect.deleteProperty(window, 'matchMedia')
+})
+
+test('no mode follows prefers-color-scheme, and its changes', () => {
+  const media = installMatchMedia(true)
+  const { session, modes } = fakeSession()
+  render(
+    <SessionPaletteProvider session={session}>
+      <ReadsPalette />
+    </SessionPaletteProvider>,
+  )
+  expect(modes).toEqual(['dark'])
+  const dark = screen.getByTestId('bg').textContent
+
+  act(() => {
+    media.setMatches(false)
+  })
+  expect(modes).toEqual(['dark', 'light'])
+  expect(screen.getByTestId('bg').textContent).not.toBe(dark)
+})
+
+test('an explicit mode ignores the media query and subscribes to nothing', () => {
+  const media = installMatchMedia(true)
+  const { session, modes } = fakeSession()
+  render(
+    <SessionPaletteProvider session={session} mode="light">
+      <ReadsPalette />
+    </SessionPaletteProvider>,
+  )
+  expect(modes).toEqual(['light'])
+  expect(media.subscriptions).toBe(0)
+
+  act(() => {
+    media.setMatches(false)
+  })
+  expect(modes).toEqual(['light'])
+})
+
+test('no mode without matchMedia is light', () => {
+  const { session, modes } = fakeSession()
+  render(
+    <SessionPaletteProvider session={session}>
+      <ReadsPalette />
+    </SessionPaletteProvider>,
+  )
+  expect(modes).toEqual(['light'])
 })
 
 test('PaletteProvider alone leaves the session mode untouched', () => {

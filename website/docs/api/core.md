@@ -71,6 +71,12 @@ Make JBrowse follow the host's light/dark state — the whole of it, in one moun
 </SessionPaletteProvider>
 ```
 
+`mode` is optional. Left out, JBrowse follows `prefers-color-scheme` and
+re-themes when the OS preference changes, through the same session write an
+explicit mode takes — so a host whose dark mode _is_ the OS preference mounts
+this with a session and nothing else. Pass a mode as soon as the host has a
+toggle of its own, since the media query cannot see it.
+
 A component rather than a documented pair of calls because the pair has a half
 that can be left out with nothing to show for it. `PaletteProvider` is the name
 a host reaches for, and it colors the React side alone; the session write is
@@ -84,7 +90,7 @@ colors of its own mounts `PaletteProvider` directly instead.
 
 ```js
 // type signature
-({ session, mode, children, }: { session: ThemeModeSession; mode: "dark" | "light"; children: ReactNode; }) => Element
+({ session, mode, children, }: { session: ThemeModeSession; mode?: "dark" | "light" | undefined; children: ReactNode; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/PaletteContext.tsx)
