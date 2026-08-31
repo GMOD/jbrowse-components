@@ -5,11 +5,11 @@ import {
 } from '@jbrowse/render-core/contractReports'
 
 import type { NotificationSink } from '@jbrowse/core/util/types'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ContractReport } from '@jbrowse/render-core/contractReports'
 
 interface DeveloperModeHost
-  extends IAnyStateTreeNode, Pick<NotificationSink, 'notify'> {
+  extends IStateTreeNode, Pick<NotificationSink, 'notify'> {
   getPreference: (key: string) => unknown
 }
 
