@@ -2263,10 +2263,12 @@ re-attempt without genuinely new data.
   in a reused worker. And the tax it would be reclaiming is small to begin with:
   the 1310 suites with under 50ms of test bodies cost **184s of the run's 1120s
   between them**, median 92ms each. The 449s a run spends outside test bodies is
-  not a per-suite floor — it is module import in the ~670 larger suites, the
-  260 carrying the `@jbrowse/web` graph most of all. A 1500-file environment
-  sweep buys nothing and breaks every suite that touches `document`,
-  `localStorage` or the fetch mock.
+  not a per-suite floor: a suite importing nothing is 31ms and the same suite
+  importing the jbrowse-web app graph is 362ms, so what fills that window is the
+  import graph re-executing per test file. TEST_INFRASTRUCTURE.md, "What the
+  449s outside test bodies is", has the breakdown. A 1500-file environment sweep
+  buys nothing and breaks every suite that touches `document`, `localStorage` or
+  the fetch mock.
 
 - **A `preserveDrawingBuffer` override to make the webgl blank verdict
   conclusive** — declined 2026-08-25, because the flag that discriminates

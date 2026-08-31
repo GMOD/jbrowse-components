@@ -244,11 +244,42 @@ found it — its manual import form scans the whole track list for the assembly
 pair it launches, and the local-file tests draw a canvas 74% different without
 the rest of the list, so only `three level` takes the trim there.
 
-**The 449s a run spends outside test bodies is not a per-suite floor**, so the
-lever people reach for next — moving the pure-logic suites off jsdom — is not
-one: an empty suite is 43ms under jsdom and 53ms under `node`, and the 1310
-suites with under 50ms of bodies cost 184s between them. It is module import in
-the ~670 larger suites. REJECTED_IDEAS.md, "Tooling, tests and docs".
+### What the 449s outside test bodies is
+
+Suite wall minus the sum of its tests' durations, per `--json`. Three things
+live in that window, and they are not the same size. Probed on one worker,
+six copies of each shape so the numbers are medians rather than a first run:
+
+| a suite that…                                       | wall  |
+| --------------------------------------------------- | ----- |
+| has one test and imports nothing                      | 31ms  |
+| imports `@jbrowse/core/util`                          | 53ms  |
+| imports `products/jbrowse-web/src/tests/util.tsx`     | 362ms |
+| …and runs `doBeforeEach` before twenty tests          | 414ms |
+
+**The floor is 31ms** — the jsdom environment, the ten `setupFiles`, the
+`setupFilesAfterEnv` and teardown. Times 1980 suites that is ~61s, and it is why
+the jsdom-to-`node` sweep buys nothing (REJECTED_IDEAS.md, "Tooling, tests and
+docs").
+
+**Everything above it is the import graph, re-executed per test FILE.** Jest
+builds a fresh module registry for each one, so a warm transform cache and a
+reused worker save the *transpile* and not the *run*: the sixth copy of the
+`util.tsx` probe cost the same 362ms as the first, on the same worker. That is
+the 2,900 modules the app graph carries, and it is the reason "module import is
+memoized per worker process" (above) is true of `getCacheKey` and false of
+execution.
+
+**Hooks are in this window too and are noise**: `doBeforeEach` measured 2.6ms a
+call, so twenty of them are 52ms against the 331ms the same suite spent on its
+imports.
+
+Where it falls in a real 4-worker run, where contention roughly doubles each
+figure: `products/jbrowse-web` is 180 suites and **120s**, mean 667ms — but
+**everything else is 1800 suites and 329s**, mean 183ms, which is each plugin's
+own graph rather than the app's. So the overhead is broad rather than
+concentrated: the top decile of suites holds 166s of it and no single suite
+holds more than 3.1s.
 
 What is left, in order of size, is flat: nothing above 18s and the top twenty
 are all real React rendering and painting. `plugins/blat/src/liveIsPcr.test.ts`
