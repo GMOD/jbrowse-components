@@ -81,6 +81,15 @@ test('an unknown key is reported once, not once per capture', () => {
   expect(notify).toHaveBeenCalledTimes(1)
 })
 
+// A blob holding only what afterAttach reports is not work to do. Read as one,
+// `initialized` waits on the assembly `launch.assembly` does not name, and the
+// view sits on its spinner forever.
+test('a typo alone leaves nothing pending', () => {
+  const view = open({ type: 'LinearGenomeView', locc: 'chr1' })
+  expect(view.launch).toEqual({ unknown: { locc: 'chr1' } })
+  expect(view.init).toBeUndefined()
+})
+
 test('a plain view prop stays on the snapshot', () => {
   const view = open({
     type: 'LinearGenomeView',

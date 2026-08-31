@@ -1,6 +1,10 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import { defineLaunchKeys, withLaunchInput } from './withLaunchInput.ts'
+import {
+  defineLaunchKeys,
+  pendingLaunch,
+  withLaunchInput,
+} from './withLaunchInput.ts'
 
 import type { LaunchInput } from './withLaunchInput.ts'
 import type {
@@ -80,6 +84,18 @@ test('a view with nothing to launch gets no blob', () => {
 test('a key naming neither a launch key nor a property is reported on attach', () => {
   open({ type: 'TestView', assembly: 'hg38', asembly: 'hg19' })
   expect(warnings()).toEqual(['TestView ignored unknown key(s): asembly'])
+})
+
+test('a blob holding only what to report is not pending work', () => {
+  const view = open({ type: 'TestView', asembly: 'hg19' })
+  expect(view.launch).toEqual({ unknown: { asembly: 'hg19' } })
+  expect(pendingLaunch(view.launch)).toBeUndefined()
+})
+
+test('a blob with one command is pending, bookkeeping and all', () => {
+  const view = open({ type: 'TestView', assembly: 'hg38', asembly: 'hg19' })
+  // the blob itself, not a copy: the launch autorun clears by identity
+  expect(pendingLaunch(view.launch)).toBe(view.launch)
 })
 
 test('a declared property is settable with nothing listing it', () => {
