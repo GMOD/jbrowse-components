@@ -8,7 +8,7 @@
 // must make identically to the GPU — which pixel row a glyph centers on, how a
 // sub-pixel span is widened. `pnpm gen:shaders` transliterates them into
 // hpmath.js.generated.ts; nothing downstream re-derives them by hand.
-//! js-export: snapBoxHeightPx, snapBoxCenterYPx, extendToMinWidthPx
+//! js-export: snapBoxHeightPx, snapBoxTopPx, snapBoxCenterYPx, extendToMinWidthPx
 //! js-skip: hpSplitUint — the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number
 //! js-skip: quadLocal — maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect
 //! js-skip: yPxToClipY — clip space is the GPU coordinate system; the px-space decision it wraps is what gets exported (snapBoxCenterYPx and friends)
@@ -91,14 +91,27 @@ public float snapBoxHeightPx(float heightPx) {
   return even && hPx >= 2.0 && hPx <= THIN_BOX_PX ? hPx + 1.0 : hPx;
 }
 
+// The pixel row a box's top edge lands on. Snapped about the box's CENTER, not
+// its top: `snapBoxHeightPx` rounds the height and sometimes nudges it a whole
+// pixel, and anchoring the top spends all of that off the BOTTOM edge. A box the
+// layout deliberately centered inside its row then isn't — a UTR is
+// center-shrunk to 0.65 of the transcript body, so at superCompact's 3px row its
+// 1.95px box rounded up to 3px and drew a full pixel below the CDS beside it,
+// while the intron line and strand arrow (which snap to the row's center row)
+// sat on its top edge. Top-anchored and center-anchored agree wherever the
+// height survives the snap unchanged, which is every full-height feature box.
+public float snapBoxTopPx(float topY, float heightPx, float scrollY) {
+  float centerY = topY + heightPx * 0.5;
+  return floor(centerY - snapBoxHeightPx(heightPx) * 0.5 - scrollY + 0.5);
+}
+
 // Center a thin glyph on the *drawn* middle row of the box it annotates, given
-// the box's real center `centerY` and height `heightPx`. The box is rasterized
-// with the rect shader's edge snapping (top = floor(top+0.5), height =
-// snapBoxHeightPx(h)); reproducing that here lands the line/chevron exactly on
-// the box's center row instead of the ~1px bias a plain pixel-center snap
-// (`floor(centerY - scrollY + 0.5) + 0.5`) gives. Thin boxes are drawn at an odd
-// height precisely so that center row exists; a taller even box still has none,
-// and stays consistent (just below the seam).
+// the box's real center `centerY` and height `heightPx`. Reproducing the rect
+// shader's own edge snapping (`snapBoxTopPx` + `snapBoxHeightPx`) lands the
+// line/chevron exactly on the box's center row instead of the ~1px bias a plain
+// pixel-center snap (`floor(centerY - scrollY + 0.5) + 0.5`) gives. Thin boxes
+// are drawn at an odd height precisely so that center row exists; a taller even
+// box still has none, and stays consistent (just below the seam).
 //
 // Split in two on purpose. The decision — which pixel row is the center — is
 // resolution math the Canvas2D and SVG paths need in *screen px*; only the
@@ -107,7 +120,7 @@ public float snapBoxHeightPx(float heightPx) {
 // re-deriving it (see adr-051). Keep new shared decisions in this shape: pure
 // px-in/px-out below, the `yPxToClipY` wrapper above it.
 public float snapBoxCenterYPx(float centerY, float heightPx, float scrollY) {
-  float topPx = floor(centerY - heightPx * 0.5 - scrollY + 0.5);
+  float topPx = snapBoxTopPx(centerY - heightPx * 0.5, heightPx, scrollY);
   return topPx + floor(snapBoxHeightPx(heightPx) * 0.5) + 0.5;
 }
 

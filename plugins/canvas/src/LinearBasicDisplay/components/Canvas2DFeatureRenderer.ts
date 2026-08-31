@@ -15,6 +15,7 @@ import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegio
 import {
   snapBoxCenterYPx,
   snapBoxHeightPx,
+  snapBoxTopPx,
 } from '@jbrowse/render-core/shaders/hpmath'
 
 import { arrowDraws } from '../passes/shaders/arrow.js.generated.ts'
@@ -77,11 +78,13 @@ type BpToScreen = (bp: number) => number
 
 // `snapBoxHeightPx` (the pixel height a box is drawn at, nudging a THIN box with
 // an even height up to the next odd one so it has a true center row for the 1px
-// glyphs riding on it) and `snapBoxCenterYPx` (the crisp x.5 screen-y of that
-// row) are generated from hpmath.slang by `pnpm gen:shaders` — this file runs
-// the shader's own math rather than a hand-written twin of it. Both were
-// hand-ported here until adr-051; `hpmathParity.test.ts` pins the generated
-// pair against the implementations they replaced.
+// glyphs riding on it), `snapBoxTopPx` (which row that box starts on, snapped
+// about its center so the nudge doesn't all land on the bottom edge) and
+// `snapBoxCenterYPx` (the crisp x.5 screen-y of the center row) are generated
+// from hpmath.slang by `pnpm gen:shaders` — this file runs the shader's own math
+// rather than a hand-written twin of it. All were hand-ported here until
+// adr-051; `hpmathParity.test.ts` pins the generated set against the
+// implementations they replaced.
 
 // The furthest a glyph reaches outside the box it rides on: chevrons half of
 // CHEVRON_H_PX around the center row, arrowheads HEAD_HALF_H_PX, continuation
@@ -271,7 +274,7 @@ function drawRects(
     if (!rowVisible(state, region.rectYs[i]!, region.rectHeights[i]!)) {
       continue
     }
-    const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
+    const y = snapBoxTopPx(region.rectYs[i]!, region.rectHeights[i]!, scrollY)
     const h = snapBoxHeightPx(region.rectHeights[i]!)
     const [xLeft, w] = paintedRectSpan(
       region.rectPositions[i * 2]!,

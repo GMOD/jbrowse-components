@@ -134,12 +134,14 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float sx2 = pxToClipX(span.y, cw);
   float sx = lerp(sx1, sx2, localX);
 
-  float yTopPx = floor(inst.y - u.scrollY + 0.5);
-  // snapBoxHeightPx, not a bare round: a thin box is drawn at an odd height so
-  // the 1px glyphs riding on it (intron line, chevrons, strand arrow) have a
-  // true center row to land on. The line/chevron/arrow shaders derive their y
-  // from the same helper via snapBoxCenterY, so box and glyph agree by
-  // construction.
+  // snapBoxTopPx/snapBoxHeightPx, not a bare round of each edge: a thin box is
+  // drawn at an odd height so the 1px glyphs riding on it (intron line,
+  // chevrons, strand arrow) have a true center row to land on, and the top is
+  // snapped about the box's center so that extra pixel doesn't all land on the
+  // bottom edge and slide a center-shrunk UTR off the row. The line/chevron/
+  // arrow shaders derive their y from the same helpers via snapBoxCenterY, so
+  // box and glyph agree by construction.
+  float yTopPx = snapBoxTopPx(inst.y, inst.height, u.scrollY);
   float yBotPx = yTopPx + snapBoxHeightPx(inst.height);
   float syTop = yPxToClipY(yTopPx, u.canvasHeight);
   float syBot = yPxToClipY(yBotPx, u.canvasHeight);

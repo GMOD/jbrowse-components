@@ -2,17 +2,20 @@ import {
   extendToMinWidthPx,
   snapBoxCenterYPx,
   snapBoxHeightPx,
+  snapBoxTopPx,
 } from '@jbrowse/render-core/shaders/hpmath'
 
 // The retirement gate for adr-051's first `//! js-export` set.
 //
-// These three functions were hand-written twins of hpmath.slang living in
+// These functions were hand-written twins of hpmath.slang living in
 // Canvas2DFeatureRenderer / canvas2dUtils, kept in step by comment. They are now
 // transliterated from the shader's own WGSL by `pnpm gen:shaders`. The
 // implementations below are the *retired originals*, verbatim — this file exists
 // to prove the generated pair reproduces them before the hand-written ones stop
 // being reviewed, and it is the pattern any future js-export set should copy:
-// keep the twin as a fixture, sweep, then delete the twin, not the test.
+// keep the twin as a fixture, sweep, then delete the twin, not the test. A rule
+// that later changes on purpose loses its fixture and keeps its test, stated as
+// the property instead — see the box-center pair below.
 //
 // Sweeps favour the inputs where these historically broke: the 2-5px thin-box
 // range that fit mode squeezes down to, half-pixel feature tops, zero, and
@@ -24,12 +27,6 @@ const THIN_BOX_PX = 4
 function retiredBoxHeightPx(heightPx: number) {
   const hPx = Math.floor(heightPx + 0.5)
   return hPx % 2 === 0 && hPx >= 2 && hPx <= THIN_BOX_PX ? hPx + 1 : hPx
-}
-
-function retiredBoxCenterY(centerY: number, heightPx: number, scrollY: number) {
-  const topPx = Math.floor(centerY - heightPx / 2 - scrollY + 0.5)
-  const hPx = retiredBoxHeightPx(heightPx)
-  return topPx + Math.floor(hPx / 2) + 0.5
 }
 
 // The `max(floor, |dx|)` spelling drawRects used before it called the shader's
@@ -65,14 +62,42 @@ test('a thin box is drawn at an odd height so it has a center row', () => {
   expect(snapBoxHeightPx(20)).toBe(20)
 })
 
-test('snapBoxCenterYPx matches the hand-written twin it replaced', () => {
+// `snapBoxCenterYPx` has no retired twin left to sweep against: the twin
+// anchored the box on its rounded TOP, which slid a center-shrunk UTR off the
+// row it was shrunk inside. The contract it always meant is asserted directly
+// instead — the glyph lands on the middle row of the box the rect shader draws,
+// and both now derive that box from `snapBoxTopPx`.
+test('a glyph centers on the middle row of the box the rect shader draws', () => {
   for (const h of HEIGHTS) {
     for (const centerY of [0, 0.5, 1, 7.25, 100.5, 1000.75]) {
       for (const scrollY of [0, 0.5, 13, 250.25]) {
+        const topPx = snapBoxTopPx(centerY - h / 2, h, scrollY)
         expect(snapBoxCenterYPx(centerY, h, scrollY)).toBe(
-          retiredBoxCenterY(centerY, h, scrollY),
+          topPx + Math.floor(snapBoxHeightPx(h) / 2) + 0.5,
         )
       }
+    }
+  }
+})
+
+test('a shrunken box stays inside the row it was centered in', () => {
+  // A UTR at 0.65 of the body, the retrotransposon body at the same fraction:
+  // both are emitted as a box centered inside the parent row, and both used to
+  // hang a pixel below it once the height snap rounded up. Asserted over the
+  // body heights the three display modes produce.
+  for (const rowHeight of [10, 6, 3, 5, 2.1, 4.5]) {
+    for (const rowTop of [0, 20, 20.4, 33.5]) {
+      const shrunkHeight = rowHeight * 0.65
+      const rowDrawnTop = snapBoxTopPx(rowTop, rowHeight, 0)
+      const rowDrawnBottom = rowDrawnTop + snapBoxHeightPx(rowHeight)
+      const shrunkTop = snapBoxTopPx(
+        rowTop + ((1 - 0.65) / 2) * rowHeight,
+        shrunkHeight,
+        0,
+      )
+      const shrunkBottom = shrunkTop + snapBoxHeightPx(shrunkHeight)
+      expect(shrunkTop).toBeGreaterThanOrEqual(rowDrawnTop)
+      expect(shrunkBottom).toBeLessThanOrEqual(rowDrawnBottom)
     }
   }
 })
