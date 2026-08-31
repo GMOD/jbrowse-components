@@ -32,17 +32,15 @@ defaultSession: {
   views: [
     {
       type: 'LinearGenomeView',
-      init: {
-        assembly: 'hg38',
-        loc: 'chr17:36,080,000-36,270,000',
-        tracks: [
-          {
-            trackId: 'pur_copynumber_1000g',
-            type: 'MultiLinearWiggleDisplay',
-            sortRowsBy: { refName: 'chr17', pos: 36180000 },
-          },
-        ],
-      },
+      assembly: 'hg38',
+      loc: 'chr17:36,080,000-36,270,000',
+      tracks: [
+        {
+          trackId: 'pur_copynumber_1000g',
+          type: 'MultiLinearWiggleDisplay',
+          sortRowsBy: { refName: 'chr17', pos: 36180000 },
+        },
+      ],
     },
   ],
 }

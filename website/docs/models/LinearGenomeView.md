@@ -11,8 +11,9 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Example usage
 
-A `LinearGenomeView` is what you hand-author under `defaultSession.views`. The
-`init` shorthand fills in `displayedRegions`/`bpPerPx`/`offsetPx` for you:
+A `LinearGenomeView` is what you hand-author under `defaultSession.views`, and
+every setting goes directly on the view object. `assembly`/`loc` fill in
+`displayedRegions`/`bpPerPx`/`offsetPx` for you:
 
 ```js
 defaultSession: {
@@ -20,24 +21,21 @@ defaultSession: {
   views: [
     {
       type: 'LinearGenomeView',
-      // plain persisted props sit alongside init, not inside it
       colorByCDS: true,
-      init: {
-        assembly: 'hg38',
-        loc: 'chr1:1,000,000-1,100,000',
-        tracks: ['genes', 'alignments'],
-      },
+      assembly: 'hg38',
+      loc: 'chr1:1,000,000-1,100,000',
+      tracks: ['genes', 'alignments'],
     },
   ],
 }
 ```
 
-`init` holds only keys that need on-attach resolution — also `tracklist`, `nav`,
-`highlight` (see the `init` property below). Plain view props like `colorByCDS`,
-`showAminoAcids`, `showCenterLine`, `trackLabels`, `showHighlightChips` are set
-directly on the view (MST restores them natively). At runtime the same model is
-driven imperatively — every property and action below is reachable on
-`viewState.session.views[0]`:
+`assembly`, `loc`, `tracks`, `tracklist`, `nav` and `highlight` need on-attach
+resolution and are captured into the `launch` property below; `colorByCDS`,
+`showAminoAcids`, `showCenterLine`, `trackLabels` and `showHighlightChips` are
+plain view props MST restores natively. Both are written the same way. At
+runtime the same model is driven imperatively — every property and action below
+is reachable on `viewState.session.views[0]`:
 
 ```js
 const view = viewState.session.views[0]
