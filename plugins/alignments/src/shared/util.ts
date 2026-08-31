@@ -127,10 +127,12 @@ export function filterSpliced(
       : false
 }
 
-export function filterTagValue(readVal: unknown, filterVal?: string) {
-  return filterVal === '*'
-    ? readVal === undefined
-    : `${readVal}` !== `${filterVal}`
+// An absent value means the same as '*' — "reads that carry this tag" — which
+// is what a hand-written `tagFilters: [{tag: 'HP'}]` can only have meant.
+// Comparing against the absent value stringified kept exactly the reads
+// LACKING the tag.
+export function filterTagValue(readVal: unknown, filterVal = '*') {
+  return filterVal === '*' ? readVal === undefined : `${readVal}` !== filterVal
 }
 
 export interface SamHeaderLine {

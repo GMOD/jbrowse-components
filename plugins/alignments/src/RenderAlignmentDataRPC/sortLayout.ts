@@ -427,9 +427,6 @@ class MinHeap {
   }
 }
 
-// Build the soft-clip iteration order: read indices sorted by expanded left
-// edge (soft-clip-aware), genomic start as tiebreak. The placeRect algorithm
-// (and the fast path below) need left-to-right ordering.
 /**
  * Placement order for a plain pileup: genomic span, then read id. Returns
  * undefined when the array is already in that order, which is the normal case —
@@ -454,6 +451,9 @@ function buildCanonicalOrder(data: WorkerPileupData, numReads: number) {
   return undefined
 }
 
+// Read indices sorted by expanded left edge (soft-clip-aware), genomic start as
+// tiebreak. The placeRect algorithm and the fast path need left-to-right
+// ordering.
 function buildSoftclipOrder(
   data: WorkerPileupData,
   ext: ReadExtents,
@@ -467,12 +467,6 @@ function buildSoftclipOrder(
   )
 }
 
-// Placement order that puts the widest features first — by on-screen extent
-// (soft-clip aware), genomic start as a deterministic tiebreak. Placed
-// first-fit-lowest-row, the widest features take the lowest rows so large
-// alignments cluster at the top instead of interleaving with small ones (the
-// LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
-// row-scan rather than the interval-partitioning fast path.
 // 1 for every read whose CIGAR carries a skip, off the gap arrays the worker
 // already ships, so no per-read flag crosses the boundary for this.
 function readSplicedFlags(data: WorkerPileupData, numReads: number) {
@@ -500,6 +494,12 @@ function buildSplicedFirstOrder(data: WorkerPileupData, numReads: number) {
   )
 }
 
+// Placement order that puts the widest features first — by on-screen extent
+// (soft-clip aware), genomic start as a deterministic tiebreak. Placed
+// first-fit-lowest-row, the widest features take the lowest rows so large
+// alignments cluster at the top instead of interleaving with small ones (the
+// LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
+// row-scan rather than the interval-partitioning fast path.
 function buildLargeFirstOrder(
   data: WorkerPileupData,
   ext: ReadExtents,

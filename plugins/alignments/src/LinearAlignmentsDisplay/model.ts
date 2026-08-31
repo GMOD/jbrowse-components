@@ -1287,10 +1287,7 @@ export default function stateModelFactory(
             presentTagValues: this.presentTagValues,
             presentModifications: this.presentModifications,
             refNamePosition: this.paintedRefNamePosition,
-            chainFramed: framesUnpairedChainStrand(
-              colorSchemeIndexFor(this.colorBy.type),
-              this.readColorOpts,
-            ),
+            chainFramed: this.framesChainStrand,
           })
         },
 
@@ -2588,10 +2585,7 @@ export default function stateModelFactory(
         get readCategoryLabel() {
           const overrides = readCategoryLabelOverrides(
             self.colorBy,
-            framesUnpairedChainStrand(
-              colorSchemeIndexFor(self.colorBy.type),
-              self.readColorOpts,
-            ),
+            self.framesChainStrand,
           )
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
         },

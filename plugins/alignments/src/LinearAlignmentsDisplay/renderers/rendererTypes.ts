@@ -271,7 +271,10 @@ export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
   //
   // This picks where the band's height comes from; it is not a `covH > 0` gate
   // on whether arcs draw — that decoupling is the point of this function.
-  const bandH = covH > 0 ? covH - state.coverageYOffset : h
+  // Floored here, per the band rule: a config-declared coverageHeight below the
+  // 5px inset is an honored state (bandHeight.test.ts), and a negative height
+  // slips the `=== 0` emptiness gates in hitTestArcBand.
+  const bandH = covH > 0 ? Math.max(0, covH - state.coverageYOffset) : h
   return { top: 0, height: bandH, down: false }
 }
 

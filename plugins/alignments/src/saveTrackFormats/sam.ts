@@ -24,7 +24,9 @@ export function stringifySAM({
   const assembly = session.assemblyManager.get(assemblyName)
   if (assembly?.regions) {
     for (const region of assembly.regions) {
-      lines.push(`@SQ\tSN:${region.refName}\tLN:${region.end - region.start}`)
+      // a whole-sequence region is 0-based, so `end` is the sequence length;
+      // `end - start` under-reported LN for any region not starting at 0
+      lines.push(`@SQ\tSN:${region.refName}\tLN:${region.end}`)
     }
   }
 
@@ -51,5 +53,5 @@ export function stringifySAM({
     )
   }
 
-  return lines.join('\n')
+  return `${lines.join('\n')}\n`
 }

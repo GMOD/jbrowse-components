@@ -654,8 +654,10 @@ interface ClipRect {
 }
 
 // Append 4 quads forming a 2px-wide selection frame (top + bottom + two sides)
-// to `out`. 2 CSS px matches Canvas2D's strokeRect(lineWidth=2) so the box looks
-// identical on the GPU fallback; tx/ty convert that to clip space. Each quad is
+// to `out`. Each edge straddles the rect boundary by 1 CSS px either side,
+// matching Canvas2D's strokeRect(lineWidth=2), whose stroke is centered on the
+// edge — quads built wholly inside the rect drew the box a pixel smaller and
+// half as thick on the GPU. tx/ty are 1 CSS px in clip space. Each quad is
 // 8 floats: x1,y1,x2,y2,r,g,b,a.
 function pushSelectionFrame(
   out: number[],
@@ -667,23 +669,23 @@ function pushSelectionFrame(
   const ty = 2 / canvasHeight
   const [r, g, b, a] = SELECTION_RGBA
   out.push(
-    c.sx1,
-    c.syTop,
-    c.sx2,
+    c.sx1 - tx,
+    c.syTop + ty,
+    c.sx2 + tx,
     c.syTop - ty,
     r,
     g,
     b,
     a,
-    c.sx1,
+    c.sx1 - tx,
     c.syBot + ty,
-    c.sx2,
-    c.syBot,
+    c.sx2 + tx,
+    c.syBot - ty,
     r,
     g,
     b,
     a,
-    c.sx1,
+    c.sx1 - tx,
     c.syTop,
     c.sx1 + tx,
     c.syBot,
@@ -693,7 +695,7 @@ function pushSelectionFrame(
     a,
     c.sx2 - tx,
     c.syTop,
-    c.sx2,
+    c.sx2 + tx,
     c.syBot,
     r,
     g,

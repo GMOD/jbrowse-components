@@ -5,6 +5,7 @@ import { convertTagsToPlainArrays } from '../shared/util.ts'
 import { packCigar } from './packCigar.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
+import type { ParsedSamHeader } from '../shared/util.ts'
 import type CramAdapter from './CramAdapter.ts'
 import type { CramRecord } from '@gmod/cram'
 import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
@@ -21,6 +22,18 @@ const MISMATCH_OPTS: { start?: number; end?: number; origin: number } = {
   start: undefined,
   end: undefined,
   origin: 0,
+}
+
+// The one spelling of where a read's RG lives. The RG data series resolved
+// through the header wins; a conforming encoder writes nothing else, but a
+// nonconforming one can leave RG in the tag block with no @RG line, and
+// htslib-family tools still show it. Shared by getTag and the adapter's tag
+// filter so the details panel and the filter cannot disagree about a read's RG.
+export function cramReadGroup(
+  samHeader: ParsedSamHeader | undefined,
+  record: CramRecord,
+) {
+  return samHeader?.readGroups[record.readGroupId] ?? record.getTag('RG')
 }
 
 export default class CramSlightlyLazyFeature implements MismatchFeature {
@@ -43,8 +56,10 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     return this.record.start
   }
 
+  // floored at 1 like parseSam: a zero-width span (fully soft-clipped record)
+  // is unfindable by interval search
   get end() {
-    return this.start + (this.record.lengthOnRef ?? 1)
+    return this.start + Math.max(this.record.lengthOnRef ?? 0, 1)
   }
 
   get score() {
@@ -135,19 +150,14 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
    * for every unrelated tag on the read to answer for one. `@gmod/cram` measures
    * the targeted read at 3.8-7.8x the object's.
    *
-   * The `RG` arm mirrors `tags` above rather than deferring to the record: the
-   * spread there lets the header's read group win over any `RG` the tag block
-   * carries, so this has to check the header first and only fall through when it
-   * has nothing.
+   * The `RG` arm defers to `cramReadGroup`, the same precedence `tags` above
+   * spells with its spread: the header's read group wins over any `RG` the tag
+   * block carries.
    */
   getTag(tagName: string) {
-    if (tagName === 'RG') {
-      const RG = this.adapter.samHeader?.readGroups[this.record.readGroupId]
-      if (RG !== undefined) {
-        return RG
-      }
-    }
-    return this.record.getTag(tagName)
+    return tagName === 'RG'
+      ? cramReadGroup(this.adapter.samHeader, this.record)
+      : this.record.getTag(tagName)
   }
 
   get seq() {

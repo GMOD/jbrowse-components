@@ -16,7 +16,9 @@ import {
   filterSpliced,
   filterTagValue,
 } from '../shared/util.ts'
-import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
+import CramSlightlyLazyFeature, {
+  cramReadGroup,
+} from './CramSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
@@ -104,9 +106,7 @@ function shouldFilterRecord(
     // the object form decodes every tag on the read to answer for the one being
     // filtered on.
     const tagValue =
-      tf.tag === 'RG'
-        ? samHeader.readGroups[record.readGroupId]
-        : record.getTag(tf.tag)
+      tf.tag === 'RG' ? cramReadGroup(samHeader, record) : record.getTag(tf.tag)
     return filterTagValue(tagValue, tf.value)
   })
   if (failsTag) {

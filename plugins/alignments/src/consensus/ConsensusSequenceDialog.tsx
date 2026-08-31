@@ -279,7 +279,9 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
                     type: 'VcfAdapter',
                     vcfLocation: {
                       locationType: 'UriLocation',
-                      uri: `data:text/plain;base64,${btoa(vcf)}`,
+                      // percent-encoded rather than btoa, which throws on any
+                      // code point past Latin1 (a unicode refName is enough)
+                      uri: `data:text/plain,${encodeURIComponent(vcf)}`,
                     },
                   },
                 },
