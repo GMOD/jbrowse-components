@@ -270,6 +270,55 @@ describe('parseAssemblyAndChr (shared sample-discovery split)', () => {
   })
 })
 
+// A bare accession's `.11` is its version, not a chromosome. Split the other
+// way it collided with the file's real chromosome 11: the two interleave under
+// one `.tai` key, breaking the ascending binary search over it, while a query
+// for the accession itself resolved nothing at all.
+describe('bare versioned accessions', () => {
+  test('a RefSeq accession is the whole sequence name', () => {
+    expect(parseAssemblyAndChr('NC_000001.11')).toEqual({
+      assemblyName: 'NC_000001.11',
+      chr: '',
+    })
+  })
+
+  test('an assembly accession too', () => {
+    expect(parseAssemblyAndChr('GCA_000001405.15')).toEqual({
+      assemblyName: 'GCA_000001405.15',
+      chr: '',
+    })
+  })
+
+  test('a prefixed accession still splits on the assembly', () => {
+    expect(parseAssemblyAndChr('hg38.NC_000001.11')).toEqual({
+      assemblyName: 'hg38',
+      chr: 'NC_000001.11',
+    })
+  })
+
+  // Only the underscore form is recognised. `NA12878.1` has exactly the shape
+  // of a bare GenBank accession and is exactly as likely to be a sample id
+  // carrying an Ensembl chromosome number, so guessing there would break a real
+  // naming scheme to fix a rarer one.
+  test('a sample id with an Ensembl chromosome is untouched', () => {
+    expect(parseAssemblyAndChr('NA12878.1')).toEqual({
+      assemblyName: 'NA12878',
+      chr: '1',
+    })
+    expect(parseAssemblyAndChr('CM000663.2')).toEqual({
+      assemblyName: 'CM000663',
+      chr: '2',
+    })
+  })
+
+  test('an underscore-bearing assembly name is untouched', () => {
+    expect(parseAssemblyAndChr('Homo_sapiens.1')).toEqual({
+      assemblyName: 'Homo_sapiens',
+      chr: '1',
+    })
+  })
+})
+
 describe('selectReferenceSequenceString', () => {
   const hg38Seq = 'ACGTACGT'
   const mm10Seq = 'TGCATGCA'

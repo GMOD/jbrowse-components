@@ -1,8 +1,8 @@
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
-import { subscribeToObservable } from '../util/observableUtils.ts'
 import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { collectMafTransferables } from './collectTransferables.ts'
 import { MafWirePacker } from './mafWirePacker.ts'

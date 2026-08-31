@@ -1,4 +1,5 @@
 import { DASH } from '../util/asciiBytes.ts'
+import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
 
 import type { AlignmentRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
@@ -22,6 +23,12 @@ export interface AlignmentBlock {
 
 export interface TafFeature {
   uniqueId: string
+  /**
+   * The reference row's unresolved sequence name (`hg38.chr1`). Carried so the
+   * adapter can drop a block belonging to another chromosome — the read reaches
+   * past the queried contig's end by design, see `makeRefChrFilter`.
+   */
+  refSrc: string
   start: number
   end: number
   strand: number
@@ -31,6 +38,13 @@ export interface TafFeature {
 
 /**
  * Decode RLE-encoded bases ("A 3 T 2" → "AAATT") or pass through plain bases.
+ *
+ * Throws on a malformed `base count` pair, for the reason `parseRowInstructions`
+ * throws on an unknown opcode: a decoded column is read *positionally* —
+ * `finalizeBlock` takes row `j`'s base from character `j` of every column — so
+ * dropping a bad pair shortens the string and hands every row below it a base
+ * belonging to a different species. Skipping made that silent, and silently
+ * wrong bases at real coordinates are the worst answer this file can give.
  */
 export function parseBases(
   basesStr: string,
@@ -41,10 +55,13 @@ export function parseBases(
     const parts: string[] = []
     for (let i = 0; i < tokens.length; i += 2) {
       const base = tokens[i]!
-      const count = parseInt(tokens[i + 1]!, 10)
-      if (!Number.isNaN(count) && base.length === 1) {
-        parts.push(base.repeat(count))
+      const count = Number.parseInt(tokens[i + 1]!, 10)
+      if (Number.isNaN(count) || base.length !== 1) {
+        throw new Error(
+          `Malformed run-length-encoded TAF column: expected \`base count\` pairs, got ${JSON.stringify(basesStr)}`,
+        )
       }
+      parts.push(base.repeat(count))
     }
     return parts.join('')
   }
@@ -201,15 +218,30 @@ export function blockToFeature(
     }
   }
 
+  // A `-` reference row counts from the reverse complement of its source, so
+  // the block is turned over before anything reads its extent — the MAF path
+  // does the same, through the same helper. `strand` is 1 either way after it.
+  const placed =
+    row0.strand === -1
+      ? flipBlockToForwardStrand({
+          refStart: row0.start,
+          refSize: row0.length,
+          refSrcSize: row0.sequenceLength,
+          refSeq: row0.bases,
+          alignments,
+        })
+      : { start: row0.start, end: row0.start + row0.length, seq: row0.bases }
+
   return {
     // Qualified by the reference row's sequence name: `start`+`length` alone
     // repeats across chromosomes, and a feature id has to survive being read
     // outside the one region query that produced it.
-    uniqueId: `${row0.sequenceName}-${row0.start}-${row0.length}`,
-    start: row0.start,
-    end: row0.start + row0.length,
-    strand: row0.strand,
+    uniqueId: `${row0.sequenceName}-${placed.start}-${row0.length}`,
+    refSrc: row0.sequenceName,
+    start: placed.start,
+    end: placed.end,
+    strand: 1,
     alignments,
-    seq: row0.bases,
+    seq: placed.seq,
   }
 }

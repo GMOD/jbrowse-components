@@ -1,7 +1,7 @@
+import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
-import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { AlignmentRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -110,6 +110,15 @@ export async function buildIdentityMatrix({
   // rather than per row.
   const covered = new Float32Array(columns)
 
+  // Per-block reference decisions, replayed for every row: the bin each column
+  // falls in (-1 for none) and its case-folded reference byte. Grown across
+  // blocks rather than allocated per block, and the fold hoisted out of the row
+  // loop, for the reasons `IdentityColumns` in `drawRowIdentity` gives for the
+  // same shape — real MAF is many small blocks (ce11 26-way's median is 7bp),
+  // and the fold was redone once per species per column.
+  let columnBin = new Int32Array(0)
+  let refFolded = new Uint8Array(0)
+
   for (const region of regions) {
     await subscribeToObservable(
       adapter.getFeatures(region, opts),
@@ -124,10 +133,17 @@ export async function buildIdentityMatrix({
 
         // Column -> bin, walked once per block and reused by every row in it. A
         // reference-gap column advances no reference position and is marked -1.
-        const columnBin = new Int32Array(refSeq.length)
+        if (columnBin.length < refSeq.length) {
+          columnBin = new Int32Array(refSeq.length)
+          refFolded = new Uint8Array(refSeq.length)
+        }
         let refPos = blockStart
         for (let c = 0; c < refSeq.length; c++) {
-          if (refSeq.charCodeAt(c) === GAP) {
+          const refCode = refSeq.charCodeAt(c)
+          // case-insensitive, since soft-masked repeat runs are lower case in
+          // most MAFs and a masked match is still a match
+          refFolded[c] = refCode | 32
+          if (refCode === GAP) {
             columnBin[c] = -1
             continue
           }
@@ -157,9 +173,7 @@ export async function buildIdentityMatrix({
               continue
             }
             const base = seq.charCodeAt(c)
-            // case-insensitive, since soft-masked repeat runs are lower case in
-            // most MAFs and a masked match is still a match
-            if (base !== GAP && (base | 32) === (refSeq.charCodeAt(c) | 32)) {
+            if (base !== GAP && (base | 32) === refFolded[c]!) {
               row[bin]! += 1
             }
           }

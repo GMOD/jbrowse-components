@@ -19,9 +19,34 @@ const BGZF_BLOCK_SIZE = 65536
  * interleave two chromosomes' offsets and break `selectIndexEntries`' ascending
  * binary search.
  */
-function chrFromSourceName(name: string) {
+export function chrFromSourceName(name: string) {
   const { assemblyName, chr } = parseAssemblyAndChr(name)
   return chr === '' ? assemblyName : chr
+}
+
+/**
+ * Whether a block's reference source token names `refName` — the chromosome
+ * filter both bgzip adapters apply to what they decode. The read is
+ * deliberately generous (`queryBlockSpan` bounds past-the-end at the *next*
+ * chromosome's first block, plus a 64KB cushion), and coordinates restart per
+ * chromosome, so filtering on numeric overlap alone put the next chromosome's
+ * blocks at real positions on the queried scaffold.
+ *
+ * Compared through `chrFromSourceName`, which is how the `.tai` keys
+ * `getRefNames` advertises are built, so both sides are in one namespace.
+ * Memoized like `makeSourceResolver`: one source token, tens of thousands of
+ * blocks.
+ */
+export function makeRefChrFilter(refName: string) {
+  const answers = new Map<string, boolean>()
+  return (sourceName: string) => {
+    let onChr = answers.get(sourceName)
+    if (onChr === undefined) {
+      onChr = chrFromSourceName(sourceName) === refName
+      answers.set(sourceName, onChr)
+    }
+    return onChr
+  }
 }
 
 /**
@@ -38,7 +63,7 @@ export function parseTaiIndex(text: string): IndexData {
     .split('\n')
     .map(f => f.trim())
     .filter(line => line !== '')
-  const entries: IndexData = {}
+  const entries: IndexData = new Map()
   let lastChr = ''
   let lastChrStart = 0
   let lastRawVirtualOffset = 0
@@ -56,8 +81,12 @@ export function parseTaiIndex(text: string): IndexData {
     const blockPosition = Math.floor(absVirtualOffset / BGZF_BLOCK_SIZE)
     const dataPosition = absVirtualOffset % BGZF_BLOCK_SIZE
 
-    entries[currChr] ??= []
-    entries[currChr].push({
+    let chrEntries = entries.get(currChr)
+    if (chrEntries === undefined) {
+      chrEntries = []
+      entries.set(currChr, chrEntries)
+    }
+    chrEntries.push({
       chrStart: absChrStart,
       virtualOffset: { blockPosition, dataPosition },
     })
@@ -128,15 +157,25 @@ export function selectIndexEntries(
 /**
  * Compressed byte offset where the chromosome after `refName` begins, i.e. where
  * `refName`'s data ends — `undefined` if `refName` is the last chromosome. TAF
- * is sorted by reference position so each chromosome's blocks are contiguous and
- * `Object.keys` preserves that file order. Used to bound a read that runs past a
- * chromosome's last sparse index entry without needing the file size.
+ * and MAF are sorted by reference position so each chromosome's blocks are
+ * contiguous, and the index preserves that file order. Used to bound a read that
+ * runs past a chromosome's last sparse index entry without needing the file
+ * size.
+ *
+ * File order is the whole point, which is why `IndexData` is a `Map` — see its
+ * own comment for what an object's integer-like key ordering did to this.
  */
 export function nextChrStartBlock(index: IndexData, refName: string) {
-  const chrs = Object.keys(index)
-  const nextChr = chrs[chrs.indexOf(refName) + 1]
-  return (nextChr ? index[nextChr] : undefined)?.[0]?.virtualOffset
-    .blockPosition
+  let seenRefName = false
+  let next: ByteRange[] | undefined
+  for (const [chr, entries] of index) {
+    if (seenRefName) {
+      next = entries
+      break
+    }
+    seenRefName = chr === refName
+  }
+  return next?.[0]?.virtualOffset.blockPosition
 }
 
 /** The index entries and compressed block span one region query resolves to. */
@@ -190,7 +229,7 @@ export function queryBlockSpan(
   queryStart: number,
   queryEnd: number,
 ): QueryBlockSpan | undefined {
-  const records = index[refName]
+  const records = index.get(refName)
   const selected = records?.length
     ? selectIndexEntries(records, queryStart, queryEnd)
     : undefined

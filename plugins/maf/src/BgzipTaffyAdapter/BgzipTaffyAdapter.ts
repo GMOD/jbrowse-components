@@ -1,17 +1,11 @@
 import { unzip } from '@gmod/bgzf-filehandle'
-import {
-  BaseFeatureDataAdapter,
-  cachedSetup,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
-import {
-  loadMafSummaryAdapter,
-  mafSummaryFeatures,
-} from '../util/loadMafSummaryAdapter.ts'
+import { MafAdapterBase } from '../util/MafAdapterBase.ts'
+import { buildSampleFilter } from '../util/getSamples.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
 import {
@@ -24,14 +18,13 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import { parseTaiIndex } from './taiIndex.ts'
+import { makeRefChrFilter, parseTaiIndex } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
 import type { IndexData } from './types.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 interface SetupData {
@@ -45,7 +38,7 @@ interface SetupData {
  *
  * TAF Format: https://github.com/ComparativeGenomicsToolkit/taffy
  */
-export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffyAdapterConfig> {
+export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterConfig> {
   // Not private: `BgzipTaffyAdapter.test.ts` asserts the header read resolves
   // the whole setup, and no public method reports `runLengthEncodeBases`.
   configure = cachedSetup({
@@ -53,21 +46,12 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
     setup: () => this.doSetup(),
   })
 
-  summaryAdapter = cachedSetup({
-    setup: () => loadMafSummaryAdapter(this),
-  })
-
-  getSamples = cachedSetup({
-    setup: () =>
-      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
-  })
-
   // utf-8 (default) tends to be faster than 'ascii' in modern engines.
   private decoder = new TextDecoder()
 
   async getRefNames() {
     const { index } = await this.configure()
-    return Object.keys(index)
+    return [...index.keys()]
   }
 
   *parseTafBlocksStreaming(
@@ -85,9 +69,22 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
     let isFirstCoordLine = true
 
     const text = this.decoder.decode(buffer)
+    // A slice that does not end on a newline had its last line cut by the byte
+    // range, and that line cannot be trusted: a coordinate line cut before its
+    // ` ; ` looks like a plain bases line and gets fed to `parseBasesColumn` as
+    // one, so the trailing block ends up short a column or holding a fragment
+    // of a coordinate string. Both put a wrong sequence at real coordinates.
+    // `parseMafBlocks` guards the same way — the two readers share the problem
+    // because they share the read.
+    const endsClean = text.endsWith('\n')
     const lines = text.split('\n')
 
-    for (const line of lines) {
+    for (const [i, line] of lines.entries()) {
+      // The final element of a split is '' when the text ended with a newline,
+      // so an unterminated last line is exactly the non-empty final element.
+      if (i === lines.length - 1 && !endsClean && line !== '') {
+        break
+      }
       const trimmedLine = line.trim()
       if (!trimmedLine || trimmedLine.startsWith('#')) {
         continue
@@ -145,7 +142,10 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
       }
     }
 
-    if (currentBlock && columns.length > 0) {
+    // Only when the slice ended cleanly: TAF has no block terminator, so a
+    // block is complete exactly when the *next* coordinate line arrives — a cut
+    // tail leaves the open one missing however many columns the cut removed.
+    if (endsClean && currentBlock && columns.length > 0) {
       const feature = buildFeature(currentBlock, columns)
       if (feature) {
         yield feature
@@ -200,6 +200,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
     return ObservableCreate<Feature>(async observer => {
       const { index, runLengthEncodeBases } = await this.configure(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
+      const onQueriedChr = makeRefChrFilter(query.refName)
 
       const slice = await readTaiSlice({
         index,
@@ -220,8 +221,14 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
         runLengthEncodeBases,
         resolver.resolve,
       )) {
-        // Filter features that overlap with query region
-        if (feat.end > query.start && feat.start < query.end) {
+        // Overlapping the query span is not enough — the read runs past the
+        // chromosome's end by design, so a block of the *next* chromosome can
+        // overlap numerically. See `makeRefChrFilter`.
+        if (
+          feat.end > query.start &&
+          feat.start < query.end &&
+          onQueriedChr(feat.refSrc)
+        ) {
           observer.next(
             new MafFeature(
               feat.uniqueId,
@@ -245,13 +252,6 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
       // rxjs chain at all. The body's own errors need no try/catch either —
       // ObservableCreate forwards a rejected promise to `observer.error`.
     }, opts?.stopToken)
-  }
-
-  // The zoom-out tier, same slot and same reader as the other three adapters'.
-  // See the slot's own comment for why the `.tai` does not remove the need for
-  // one.
-  getSummaryFeatures(query: Region, opts?: BaseOptions) {
-    return mafSummaryFeatures(this, query, opts)
   }
 
   async getRegionByteSize(regions: Region[]) {

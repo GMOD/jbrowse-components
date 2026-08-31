@@ -1,17 +1,13 @@
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
-  BaseFeatureDataAdapter,
-  cachedSetup,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+  ObservableCreate,
+  subscribeToObservable,
+} from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
-import {
-  loadMafSummaryAdapter,
-  mafSummaryFeatures,
-} from '../util/loadMafSummaryAdapter.ts'
+import { MafAdapterBase } from '../util/MafAdapterBase.ts'
+import { buildSampleFilter } from '../util/getSamples.ts'
 import { loadSubAdapter } from '../util/loadSubAdapter.ts'
-import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
   makeSourceResolver,
   scanMafTabixEntry,
@@ -50,19 +46,10 @@ function alignmentColumn(feature: Feature) {
   return encoded
 }
 
-export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdapterConfig> {
+export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfig> {
   private configure: SubAdapterLoader = cachedSetup({
     label: 'Downloading index',
     setup: () => loadSubAdapter(this, 'BedTabixAdapter'),
-  })
-
-  summaryAdapter = cachedSetup({
-    setup: () => loadMafSummaryAdapter(this),
-  })
-
-  getSamples = cachedSetup({
-    setup: () =>
-      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
   })
 
   async getRefNames(opts?: BaseOptions) {
@@ -136,15 +123,6 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
       resolver.reportUnmatched()
       observer.complete()
     }, opts?.stopToken)
-  }
-
-  // The zoom-out tier. A tabix MAF is the format that needs one most: every
-  // species' bases ride on one BED line, so a wide read downloads the whole
-  // alignment and the byte gate blocks it — without a summary this track has no
-  // zoom-out path at all, only a force-load prompt. Same slot and same reader as
-  // BigMaf's; `maf2bed --summary` is the producer.
-  getSummaryFeatures(query: Region, opts?: BaseOptions) {
-    return mafSummaryFeatures(this, query, opts)
   }
 
   // Byte budget for the fetch gate comes straight from the tabix index (the

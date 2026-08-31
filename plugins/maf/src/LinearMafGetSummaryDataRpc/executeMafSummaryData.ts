@@ -1,7 +1,7 @@
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
+import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
-import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

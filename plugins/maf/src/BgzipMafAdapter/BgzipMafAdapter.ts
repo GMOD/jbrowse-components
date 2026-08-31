@@ -1,24 +1,20 @@
-import {
-  BaseFeatureDataAdapter,
-  cachedSetup,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { parseTaiIndex } from '../BgzipTaffyAdapter/taiIndex.ts'
-import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
 import {
-  loadMafSummaryAdapter,
-  mafSummaryFeatures,
-} from '../util/loadMafSummaryAdapter.ts'
+  makeRefChrFilter,
+  parseTaiIndex,
+} from '../BgzipTaffyAdapter/taiIndex.ts'
+import MafFeature from '../MafFeature.ts'
+import { MafAdapterBase } from '../util/MafAdapterBase.ts'
+import { buildSampleFilter } from '../util/getSamples.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 /**
@@ -37,26 +33,17 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * is the only thing this does not share. Measured against HPRC's own index, a
  * 10 kb locus resolves to a ~924 KB read out of the 53 GB file.
  */
-export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdapterConfig> {
+export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfig> {
   private configure = cachedSetup({
     label: 'Downloading index',
     setup: () => this.readTaiFile(),
-  })
-
-  summaryAdapter = cachedSetup({
-    setup: () => loadMafSummaryAdapter(this),
-  })
-
-  getSamples = cachedSetup({
-    setup: () =>
-      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
   })
 
   private decoder = new TextDecoder()
 
   async getRefNames() {
     const index = await this.configure()
-    return Object.keys(index)
+    return [...index.keys()]
   }
 
   async readTaiFile() {
@@ -71,6 +58,7 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
     return ObservableCreate<Feature>(async observer => {
       const index = await this.configure(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
+      const onQueriedChr = makeRefChrFilter(query.refName)
 
       const slice = await readTaiSlice({
         index,
@@ -87,7 +75,14 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
       const text = this.decoder.decode(slice)
 
       for (const feat of parseMafBlocks(text, resolver.resolve)) {
-        if (feat.end > query.start && feat.start < query.end) {
+        // Overlapping the query span is not enough — the read runs past the
+        // chromosome's end by design, so a block of the *next* chromosome can
+        // overlap numerically. See `makeRefChrFilter`.
+        if (
+          feat.end > query.start &&
+          feat.start < query.end &&
+          onQueriedChr(feat.refSrc)
+        ) {
           observer.next(
             new MafFeature(
               feat.uniqueId,
@@ -107,14 +102,6 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
       statusCallback?.('')
       observer.complete()
     }, opts?.stopToken)
-  }
-
-  // The zoom-out tier, same slot and same reader as the other three adapters'.
-  // The `.tai` is what made this look unnecessary — a read costs the span on
-  // screen, not the alignment — and that reasoning misses the depth factor; see
-  // the slot's own comment for the number.
-  getSummaryFeatures(query: Region, opts?: BaseOptions) {
-    return mafSummaryFeatures(this, query, opts)
   }
 
   async getRegionByteSize(regions: Region[]) {

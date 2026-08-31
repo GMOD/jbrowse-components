@@ -1,5 +1,6 @@
 import {
   lowerBound,
+  makeRefChrFilter,
   nextChrStartBlock,
   parseTaiIndex,
   queryBlockSpan,
@@ -25,17 +26,18 @@ describe('parseTaiIndex', () => {
     const index = parseTaiIndex(
       'hg38.chr1\t0\t65536\nhg38.chr1\t1000\t131072\n',
     )
-    expect(Object.keys(index)).toEqual(['chr1'])
-    expect(index.chr1).toHaveLength(2)
-    expect(index.chr1![0]).toMatchObject({ chrStart: 0 })
+    expect([...index.keys()]).toEqual(['chr1'])
+    const chr1 = index.get('chr1')!
+    expect(chr1).toHaveLength(2)
+    expect(chr1[0]).toMatchObject({ chrStart: 0 })
     // 65536 -> block 1, data 0
-    expect(index.chr1![0]!.virtualOffset).toMatchObject({
+    expect(chr1[0]!.virtualOffset).toMatchObject({
       blockPosition: 1,
       dataPosition: 0,
     })
-    expect(index.chr1![1]).toMatchObject({ chrStart: 1000 })
+    expect(chr1[1]).toMatchObject({ chrStart: 1000 })
     // 131072 -> block 2, data 0
-    expect(index.chr1![1]!.virtualOffset).toMatchObject({
+    expect(chr1[1]!.virtualOffset).toMatchObject({
       blockPosition: 2,
       dataPosition: 0,
     })
@@ -45,15 +47,16 @@ describe('parseTaiIndex', () => {
     // first row absolute: chrStart 100, voff 70000 (block 1, data 4464)
     // second row relative: +50 chrStart, +1000 voff -> 150, 71000
     const index = parseTaiIndex('hg38.chrI\t100\t70000\n*\t50\t1000\n')
-    expect(index.chrI).toHaveLength(2)
-    expect(index.chrI![0]).toMatchObject({ chrStart: 100 })
-    expect(index.chrI![0]!.virtualOffset).toMatchObject({
+    const chrI = index.get('chrI')!
+    expect(chrI).toHaveLength(2)
+    expect(chrI[0]).toMatchObject({ chrStart: 100 })
+    expect(chrI[0]!.virtualOffset).toMatchObject({
       blockPosition: 1,
       dataPosition: 70000 - 65536,
     })
-    expect(index.chrI![1]).toMatchObject({ chrStart: 150 })
+    expect(chrI[1]).toMatchObject({ chrStart: 150 })
     // 71000 -> block 1, data 71000-65536=5464
-    expect(index.chrI![1]!.virtualOffset).toMatchObject({
+    expect(chrI[1]!.virtualOffset).toMatchObject({
       blockPosition: 1,
       dataPosition: 71000 - 65536,
     })
@@ -63,31 +66,32 @@ describe('parseTaiIndex', () => {
     const index = parseTaiIndex(
       'a.chr1\t0\t0\n*\t10\t100\n*\t10\t100\n*\t10\t100\n',
     )
-    expect(index.chr1!.map(r => r.chrStart)).toEqual([0, 10, 20, 30])
-    expect(index.chr1!.map(r => r.virtualOffset.dataPosition)).toEqual([
+    const chr1 = index.get('chr1')!
+    expect(chr1.map(r => r.chrStart)).toEqual([0, 10, 20, 30])
+    expect(chr1.map(r => r.virtualOffset.dataPosition)).toEqual([
       0, 100, 200, 300,
     ])
   })
 
   test('relative rows inherit the previous absolute chromosome', () => {
     const index = parseTaiIndex('a.chr1\t0\t0\n*\t10\t100\na.chr2\t0\t5000\n')
-    expect(Object.keys(index)).toEqual(['chr1', 'chr2'])
-    expect(index.chr1).toHaveLength(2)
-    expect(index.chr2).toHaveLength(1)
+    expect([...index.keys()]).toEqual(['chr1', 'chr2'])
+    expect(index.get('chr1')).toHaveLength(2)
+    expect(index.get('chr2')).toHaveLength(1)
   })
 
   test('ignores blank and whitespace-only lines', () => {
     const index = parseTaiIndex('\n  \na.chr1\t0\t0\n\n')
-    expect(index.chr1).toHaveLength(1)
+    expect(index.get('chr1')).toHaveLength(1)
   })
 
   test('empty input yields empty index', () => {
-    expect(parseTaiIndex('')).toEqual({})
+    expect(parseTaiIndex('').size).toBe(0)
   })
 
   test('a numeric middle segment is a genome version, not the chromosome', () => {
     const index = parseTaiIndex('hg38.1.chrX\t0\t0\n')
-    expect(Object.keys(index)).toEqual(['chrX'])
+    expect([...index.keys()]).toEqual(['chrX'])
   })
 
   test('keeps dots that belong to the chromosome name', () => {
@@ -97,7 +101,7 @@ describe('parseTaiIndex', () => {
     const index = parseTaiIndex(
       'hg38.CM000663.2\t0\t0\nhg38.CM000664.2\t0\t5000\nmm10.chr1.random\t0\t9000\n',
     )
-    expect(Object.keys(index)).toEqual([
+    expect([...index.keys()]).toEqual([
       'CM000663.2',
       'CM000664.2',
       'chr1.random',
@@ -105,7 +109,7 @@ describe('parseTaiIndex', () => {
   })
 
   test('a token with no assembly prefix is the chromosome itself', () => {
-    expect(Object.keys(parseTaiIndex('chrI\t0\t0\n'))).toEqual(['chrI'])
+    expect([...parseTaiIndex('chrI\t0\t0\n').keys()]).toEqual(['chrI'])
   })
 
   // The `.tai` keys are what `getRefNames` advertises and what
@@ -115,14 +119,60 @@ describe('parseTaiIndex', () => {
   // assembly for this repo's E. coli pangenome calls the reference `chr`.
   test('PanSN source names key on the contig, not the whole token', () => {
     const index = parseTaiIndex('K12#1#chr\t0\t0\nK12#1#chr\t500\t9000\n')
-    expect(Object.keys(index)).toEqual(['chr'])
-    expect(index.chr).toHaveLength(2)
+    expect([...index.keys()]).toEqual(['chr'])
+    expect(index.get('chr')).toHaveLength(2)
   })
 
   test('a PanSN contig keeps its own separators', () => {
-    expect(Object.keys(parseTaiIndex('HG002#1#ctg#7\t0\t0\n'))).toEqual([
+    expect([...parseTaiIndex('HG002#1#ctg#7\t0\t0\n').keys()]).toEqual([
       'ctg#7',
     ])
+  })
+
+  // `nextChrStartBlock` reads "the chromosome after this one" off the key
+  // order, so integer-like names are the case a plain object silently got
+  // wrong: `Object.keys` sorts `1`..`22` numerically whatever the insertion
+  // order, which put `2` next to `1` in a lexicographically sorted file and
+  // left chromosomes 10-19 inside the bound.
+  test('integer-like chromosome names keep file order, not numeric order', () => {
+    const index = parseTaiIndex(
+      ['1', '10', '11', '2', '20', 'X']
+        .map((chr, i) => `hg38.${chr}\t0\t${i * 65536}`)
+        .join('\n') + '\n',
+    )
+    expect([...index.keys()]).toEqual(['1', '10', '11', '2', '20', 'X'])
+  })
+
+  test('a bare versioned accession keys on the whole accession', () => {
+    // `NC_000001.11` split as assembly `NC_000001` + chr `11` collided with the
+    // file's real chromosome 11, interleaving two chromosomes' offsets under one
+    // key and breaking the ascending binary search over it.
+    const index = parseTaiIndex('NC_000001.11\t0\t0\nNC_000011.10\t0\t5000\n')
+    expect([...index.keys()]).toEqual(['NC_000001.11', 'NC_000011.10'])
+  })
+})
+
+describe('makeRefChrFilter', () => {
+  test('accepts a reference row on the queried chromosome, whatever its prefix', () => {
+    const onChr1 = makeRefChrFilter('chr1')
+    expect(onChr1('hg38.chr1')).toBe(true)
+    expect(onChr1('chr1')).toBe(true)
+    expect(onChr1('Species1.1.chr1')).toBe(true)
+    expect(onChr1('K12#1#chr1')).toBe(true)
+  })
+
+  // The read deliberately runs past the chromosome's end, so blocks of the
+  // next chromosome arrive and can overlap the query numerically.
+  test('rejects a reference row on another chromosome', () => {
+    const onChr1 = makeRefChrFilter('chr1')
+    expect(onChr1('hg38.chr2')).toBe(false)
+    expect(onChr1('hg38.chr10')).toBe(false)
+  })
+
+  test('agrees with the keys parseTaiIndex builds', () => {
+    const source = 'hg38.CM000663.2'
+    const [key] = parseTaiIndex(`${source}\t0\t0\n`).keys()
+    expect(makeRefChrFilter(key!)(source)).toBe(true)
   })
 })
 
@@ -204,11 +254,11 @@ describe('nextChrStartBlock', () => {
     chrStart: 0,
     virtualOffset: { blockPosition, dataPosition: 0 },
   })
-  const index: IndexData = {
-    chr1: [at(0), at(1000)],
-    chr2: [at(5000), at(6000)],
-    chr3: [at(9000)],
-  }
+  const index: IndexData = new Map([
+    ['chr1', [at(0), at(1000)]],
+    ['chr2', [at(5000), at(6000)]],
+    ['chr3', [at(9000)]],
+  ])
 
   test('interior chromosome bounds at the next chromosome first block', () => {
     expect(nextChrStartBlock(index, 'chr1')).toBe(5000)
@@ -220,7 +270,23 @@ describe('nextChrStartBlock', () => {
   })
 
   test('single-chromosome index has no next block', () => {
-    expect(nextChrStartBlock({ chr1: [at(0)] }, 'chr1')).toBeUndefined()
+    expect(
+      nextChrStartBlock(new Map([['chr1', [at(0)]]]), 'chr1'),
+    ).toBeUndefined()
+  })
+
+  // The `Map` is what makes this hold: as a plain object these keys enumerate
+  // `1`, `2`, `10` whatever the insertion order, so chromosome `1` bounded at
+  // `2`'s offset — past `10` — and reported a ~2x read.
+  test('integer-like names bound at the next chromosome in FILE order', () => {
+    const index: IndexData = new Map([
+      ['1', [at(0)]],
+      ['10', [at(1000)]],
+      ['2', [at(9000)]],
+    ])
+    expect(nextChrStartBlock(index, '1')).toBe(1000)
+    expect(nextChrStartBlock(index, '10')).toBe(9000)
+    expect(nextChrStartBlock(index, '2')).toBeUndefined()
   })
 })
 
@@ -231,9 +297,12 @@ describe('queryBlockSpan', () => {
   })
 
   test('interior query spans to the cushion entry', () => {
-    const index: IndexData = {
-      chr1: [entry(0, 0), entry(100, 1000), entry(200, 2000), entry(300, 3000)],
-    }
+    const index: IndexData = new Map([
+      [
+        'chr1',
+        [entry(0, 0), entry(100, 1000), entry(200, 2000), entry(300, 3000)],
+      ],
+    ])
     const span = queryBlockSpan(index, 'chr1', 50, 120)!
     expect(span.ranPastEnd).toBe(false)
     expect(span.startBlock).toBe(0)
@@ -242,10 +311,10 @@ describe('queryBlockSpan', () => {
   })
 
   test('past the last sparse entry it bounds at the next chromosome', () => {
-    const index: IndexData = {
-      chr1: [entry(0, 0), entry(100, 1000)],
-      chr2: [entry(0, 90000)],
-    }
+    const index: IndexData = new Map([
+      ['chr1', [entry(0, 0), entry(100, 1000)]],
+      ['chr2', [entry(0, 90000)]],
+    ])
     const span = queryBlockSpan(index, 'chr1', 50, 99999)!
     expect(span.ranPastEnd).toBe(true)
     // the whole of chr1's data, not the distance to its last entry (1000)
@@ -255,13 +324,18 @@ describe('queryBlockSpan', () => {
   // The estimate is what the fetch gate sees; measuring to the fallback entry
   // reported 0 bytes here while the read pulled the entire chromosome.
   test('a single-entry chromosome still measures its whole data span', () => {
-    const index: IndexData = { chr1: [entry(0, 0)], chr2: [entry(0, 40000)] }
+    const index: IndexData = new Map([
+      ['chr1', [entry(0, 0)]],
+      ['chr2', [entry(0, 40000)]],
+    ])
     const span = queryBlockSpan(index, 'chr1', 0, 99999)!
     expect(span.endBlock - span.startBlock).toBe(40000)
   })
 
   test('the last chromosome has no next block to bound against', () => {
-    const index: IndexData = { chr1: [entry(0, 0), entry(100, 1000)] }
+    const index: IndexData = new Map([
+      ['chr1', [entry(0, 0), entry(100, 1000)]],
+    ])
     const span = queryBlockSpan(index, 'chr1', 50, 99999)!
     expect(span.endBlock).toBe(span.startBlock)
   })
@@ -270,22 +344,32 @@ describe('queryBlockSpan', () => {
   // zero-width block span still costs one whole bgzf block to read, and
   // reporting the raw span told the fetch gate that read was free.
   test('readLength covers the one-block cushion the read adds', () => {
-    const index: IndexData = {
-      chr1: [entry(0, 0), entry(100, 1000), entry(200, 2000), entry(300, 3000)],
-    }
+    const index: IndexData = new Map([
+      [
+        'chr1',
+        [entry(0, 0), entry(100, 1000), entry(200, 2000), entry(300, 3000)],
+      ],
+    ])
     const wide = queryBlockSpan(index, 'chr1', 50, 120)!
     expect(wide.readLength).toBe(wide.endBlock - wide.startBlock + 65536)
 
     // A query resolving to a single block: zero span, one block of real read.
-    const narrow = queryBlockSpan({ chr1: [entry(0, 0)] }, 'chr1', 0, 10)!
+    const narrow = queryBlockSpan(
+      new Map([['chr1', [entry(0, 0)]]]),
+      'chr1',
+      0,
+      10,
+    )!
     expect(narrow.endBlock).toBe(narrow.startBlock)
     expect(narrow.readLength).toBe(65536)
   })
 
   test('a chromosome absent from the index has no span', () => {
     expect(
-      queryBlockSpan({ chr1: [entry(0, 0)] }, 'chrZ', 0, 10),
+      queryBlockSpan(new Map([['chr1', [entry(0, 0)]]]), 'chrZ', 0, 10),
     ).toBeUndefined()
-    expect(queryBlockSpan({ chr1: [] }, 'chr1', 0, 10)).toBeUndefined()
+    expect(
+      queryBlockSpan(new Map([['chr1', []]]), 'chr1', 0, 10),
+    ).toBeUndefined()
   })
 })

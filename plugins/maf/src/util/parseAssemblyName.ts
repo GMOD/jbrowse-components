@@ -35,6 +35,21 @@ function splitPanSn(token: string): ParsedAssemblyName | undefined {
 }
 
 /**
+ * A bare RefSeq/INSDC accession's trailing `.<digits>` is its version, which the
+ * dot rules below read as assembly `NC_000001` plus chromosome `11` — colliding
+ * with the file's real chromosome 11 under one `.tai` key, breaking the
+ * ascending binary search over it, and leaving a query for the accession itself
+ * resolving nothing.
+ *
+ * Only the underscore form, deliberately: `LL_NNNNNN.V` is fixed by the
+ * accession spec and no assembly name has that shape, while bare GenBank
+ * (`CM000663.2`) is indistinguishable from a sample id carrying an Ensembl
+ * chromosome number (`NA12878.1`). Prefixed accessions (`hg38.GL000009.2`) need
+ * none of this.
+ */
+const VERSIONED_ACCESSION_REGEX = /^[A-Z]{2,3}_\d{4,}\.\d+$/
+
+/**
  * Split a MAF `genome.sequence` source token when no sample set is configured
  * to resolve it against — the discovery path shared by all three adapters
  * (MAF-tabix, bigMaf, TAF) and by the `.tai` index reader.
@@ -42,6 +57,8 @@ function splitPanSn(token: string): ParsedAssemblyName | undefined {
  * Handles multiple formats:
  * - `sample#haplotype#contig` (PanSN): assemblyName is `sample#haplotype`, chr
  *   is the contig — see `splitPanSn`
+ * - A bare versioned accession (`NC_000001.11`): the whole token is the
+ *   sequence, chr is empty — see `VERSIONED_ACCESSION_REGEX`
  * - Single string with no separators: assemblyName is the entire string, chr is
  *   empty
  * - `assembly.chr`: Single dot separates assembly name from chromosome
@@ -65,6 +82,12 @@ export function parseAssemblyAndChr(
   const panSn = splitPanSn(assemblyAndChr)
   if (panSn) {
     return panSn
+  }
+  if (VERSIONED_ACCESSION_REGEX.test(assemblyAndChr)) {
+    return {
+      assemblyName: assemblyAndChr,
+      chr: '',
+    }
   }
   const firstDotIndex = assemblyAndChr.indexOf('.')
   if (firstDotIndex === -1) {

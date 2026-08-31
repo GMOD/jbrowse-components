@@ -359,6 +359,23 @@ describe('BgzipTaffyAdapter methods', () => {
     expect(parseBases('- 3 A 1', true)).toBe('---A')
   })
 
+  // A column is read positionally — `finalizeBlock` takes row `j`'s base from
+  // character `j` — so skipping a malformed pair shortened the string and gave
+  // every row below it a base belonging to a different species, silently. The
+  // analogous misalignment in `parseRowInstructions` already throws.
+  test('parseBases throws on a malformed RLE pair rather than dropping it', () => {
+    expect(() => parseBases('A 2 T x C 1', true)).toThrow(
+      /Malformed run-length-encoded TAF column/,
+    )
+    expect(() => parseBases('A 2 GG 3', true)).toThrow(
+      /Malformed run-length-encoded TAF column/,
+    )
+    // an odd token count leaves the last base with no count
+    expect(() => parseBases('A 2 T', true)).toThrow(
+      /Malformed run-length-encoded TAF column/,
+    )
+  })
+
   test('parseCoordinatesAndEstablishBlock creates new block from scratch', () => {
     const instructions = filterFirstLineInstructions(
       parseRowInstructions('s 0 ce10.chrI 100 + 1000 s 1 mm10.chr1 200 + 2000'),
@@ -1049,5 +1066,104 @@ describe('BgzipTaffyAdapter RLE detection', () => {
     })
     await expect(adapter.readHeader()).rejects.toThrow()
     await expect(adapter.configure()).rejects.toThrow()
+  })
+})
+
+describe('parseTafBlocksStreaming guards a cut tail', () => {
+  // The generator reads no config, so a bare adapter is enough to reach it.
+  const adapter = new BgzipTaffyAdapter(configSchema.create({}))
+  const stream = (taf: string) => [
+    ...adapter.parseTafBlocksStreaming(
+      new TextEncoder().encode(taf),
+      false,
+      makeSourceResolver().resolve,
+    ),
+  ]
+
+  const twoBlocks = [
+    'AC ; i 0 hg38.chr1 100 + 1000',
+    'AC',
+    'GT ; s 0 hg38.chr1 102 + 1000',
+    'GT',
+    '',
+  ].join('\n')
+
+  test('keeps every block when the slice ends on a newline', () => {
+    const features = stream(twoBlocks)
+    expect(features.map(f => [f.start, f.end])).toEqual([
+      [100, 102],
+      [102, 104],
+    ])
+    expect(features.map(f => f.seq)).toEqual(['AA', 'GG'])
+  })
+
+  // TAF has no block terminator, so the open block is complete only once the
+  // next coordinate line arrives. A read bounded by a byte range ends mid-line,
+  // which leaves that block short however many columns the cut removed — here
+  // it would place a 1bp block where a 2bp one belongs.
+  test('drops the open block when the slice ends mid-line', () => {
+    expect(stream(twoBlocks.trimEnd()).map(f => [f.start, f.end])).toEqual([
+      [100, 102],
+    ])
+  })
+
+  // A coordinate line cut before its ` ; ` looks like a plain bases line, so
+  // `parseBasesColumn` would take `s 0 hg38.chr` for sequence; cut *after* it,
+  // the truncated instruction stream reaches `parseRowInstructions`, which
+  // throws on an opcode it doesn't know. Neither happens — the line is never
+  // read.
+  test('never reads a cut coordinate line', () => {
+    expect(stream(`${twoBlocks}TT ; s 0 hg38.chr`).map(f => f.start)).toEqual([
+      100,
+    ])
+    expect(() =>
+      stream(`${twoBlocks}TT ; s 0 hg38.chr1 104 + 10`),
+    ).not.toThrow()
+  })
+})
+
+describe('blockToFeature places a minus-strand reference row forward', () => {
+  const splitResolve = makeSourceResolver().resolve
+  const row = (
+    sequenceName: string,
+    bases: string,
+    strand: number,
+    sequenceLength: number,
+  ) => ({
+    sequenceName,
+    start: 1000,
+    strand,
+    sequenceLength,
+    bases,
+    length: bases.replaceAll('-', '').length,
+  })
+
+  const block = {
+    rows: [
+      row('hg38.chr1', 'ACGTACGTAC', -1, 2000),
+      row('mm10.chr2', 'ACGTACGTAT', 1, 3000),
+    ],
+    columnNumber: 10,
+  }
+
+  test('flips the span through the reference srcSize', () => {
+    const feature = blockToFeature(block, splitResolve)!
+    expect([feature.start, feature.end]).toEqual([990, 1000])
+    expect(feature.strand).toBe(1)
+  })
+
+  test('turns the whole block over, not just the coordinate', () => {
+    const feature = blockToFeature(block, splitResolve)!
+    expect(feature.seq).toBe('GTACGTACGT')
+    expect(feature.alignments.hg38).toMatchObject({ start: 990, strand: 1 })
+    expect(feature.alignments.mm10).toMatchObject({
+      start: 1990,
+      strand: -1,
+      seq: 'ATACGTACGT',
+    })
+  })
+
+  test('carries the reference row source token for the chromosome filter', () => {
+    expect(blockToFeature(block, splitResolve)!.refSrc).toBe('hg38.chr1')
   })
 })

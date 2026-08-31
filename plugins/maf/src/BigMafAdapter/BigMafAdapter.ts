@@ -1,17 +1,13 @@
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
-  BaseFeatureDataAdapter,
-  cachedSetup,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+  ObservableCreate,
+  subscribeToObservable,
+} from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
-import {
-  loadMafSummaryAdapter,
-  mafSummaryFeatures,
-} from '../util/loadMafSummaryAdapter.ts'
+import { MafAdapterBase } from '../util/MafAdapterBase.ts'
+import { buildSampleFilter } from '../util/getSamples.ts'
 import { loadSubAdapter } from '../util/loadSubAdapter.ts'
-import { subscribeToObservable } from '../util/observableUtils.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { parseBigMafStanza } from '../util/parseBigMaf.ts'
 
@@ -43,19 +39,10 @@ function mafBlockField(feature: Feature) {
   return block
 }
 
-export default class BigMafAdapter extends BaseFeatureDataAdapter<BigMafAdapterConfig> {
+export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
   private configure: SubAdapterLoader = cachedSetup({
     label: 'Downloading index',
     setup: () => loadSubAdapter(this, 'BigBedAdapter'),
-  })
-
-  summaryAdapter = cachedSetup({
-    setup: () => loadMafSummaryAdapter(this),
-  })
-
-  getSamples = cachedSetup({
-    setup: () =>
-      getSamplesFromConfig(this.getConf('nhLocation'), this.getConf('samples')),
   })
 
   async getRefNames(opts?: BaseOptions) {
@@ -97,14 +84,6 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter<BigMafAdapterC
       resolver.reportUnmatched()
       observer.complete()
     }, opts?.stopToken)
-  }
-
-  // Per-species alignment-block rows for zoom-out rendering, from whatever the
-  // `summaryAdapter` slot names — typically a BigBedAdapter over UCSC's
-  // bigMafSummary.bb. Shared with the tabix and TAF adapters, which take the
-  // same slot; see `mafSummaryFeatures`.
-  getSummaryFeatures(query: Region, opts?: BaseOptions) {
-    return mafSummaryFeatures(this, query, opts)
   }
 
   // Compressed download-size estimate from the bigMaf.bb R-tree index, delegated

@@ -1,7 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
-
-import { subscribeToObservable } from '../util/observableUtils.ts'
+import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import type { BaseMafRpcArgs, MafFrameRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

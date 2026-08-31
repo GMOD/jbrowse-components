@@ -1,7 +1,11 @@
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseNewick } from '@jbrowse/tree-sidebar'
 
+import { navigationFields } from './navigationFields.ts'
+import { isUnconfiguredNhLocation } from './nhLocation.ts'
+
 import type { MafAdapterOptions, Sample } from '../types.ts'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, UriLocation } from '@jbrowse/core/util'
 import type { NewickNode } from '@jbrowse/tree-sidebar'
 
@@ -45,10 +49,7 @@ export function normalizeSamples(r: SampleConfig): Sample[] {
         id: trimId(s.id),
         label: s.label ?? trimId(s.id),
         color: s.color,
-        ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
-        ...(s.assemblyConfigLocation
-          ? { assemblyConfigLocation: s.assemblyConfigLocation }
-          : {}),
+        ...navigationFields(s),
       }))
 }
 
@@ -121,10 +122,7 @@ export async function getSamplesFromConfig(
   nhLocation: FileLocation,
   samplesConfig: SampleConfig,
 ) {
-  const isDefaultPath =
-    'uri' in nhLocation && nhLocation.uri === '/path/to/my.nh'
-
-  const treeNewick = isDefaultPath
+  const treeNewick = isUnconfiguredNhLocation(nhLocation)
     ? undefined
     : await openLocation(nhLocation).readFile('utf8')
 
@@ -134,4 +132,20 @@ export async function getSamplesFromConfig(
     : configSamples
 
   return { samples, treeNewick }
+}
+
+/**
+ * {@link getSamplesFromConfig} against an adapter's own slots — what
+ * `MafAdapterBase` holds in `getSamples`. A function rather than inline in that
+ * class for the reason `ComparativeAdapterBase` hoists no config read at all: a
+ * base generic over its config cannot prove a slot name to `getConf`, while a
+ * plain `BaseFeatureDataAdapter` parameter resolves them against
+ * `AnyConfigurationModel` — how `loadMafSummaryAdapter` already reads
+ * `summaryAdapter` for the same four.
+ */
+export function getSamplesFromAdapter(self: BaseFeatureDataAdapter) {
+  return getSamplesFromConfig(
+    self.getConf('nhLocation'),
+    self.getConf('samples'),
+  )
 }

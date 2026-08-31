@@ -1,3 +1,4 @@
+import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
 import { applyMafLine } from '../util/mafLines.ts'
 
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
@@ -5,6 +6,12 @@ import type { SourceResolver } from '../util/parseAssemblyName.ts'
 
 export interface MafBlockFeature {
   uniqueId: string
+  /**
+   * The reference row's unresolved source token (`hg38.chr1`). Carried so the
+   * adapter can drop a block belonging to another chromosome — the read reaches
+   * past the queried contig's end by design, see `makeRefChrFilter`.
+   */
+  refSrc: string
   start: number
   end: number
   strand: number
@@ -22,7 +29,8 @@ export interface MafBlockFeature {
  * lines become their row's left/right context here exactly as they do there.
  * `s src start size strand srcSize text` — the first `s` line is the reference
  * row and fixes the block's genomic extent, taken before `resolve` so a
- * reference filtered out of the sample set still positions the block.
+ * reference filtered out of the sample set still positions the block. A `-`
+ * reference row is re-expressed forward first (`flipBlockToForwardStrand`).
  *
  * `trailingPartial` is the one thing this has to be careful about. The read is a
  * byte range, so its last block is very often cut mid-row; emitting it would put
@@ -45,34 +53,52 @@ export function* parseMafBlocks(
     alignments: Record<string, AlignmentRecord>
     empties: Record<string, EmptyRecord>
   } = { alignments: {}, empties: {} }
-  let refName: string | undefined
+  let refSrc: string | undefined
   let refStart = 0
   let refSize = 0
   let refStrand = 1
+  let refSrcSize = 0
   let refSeq = ''
   let open = false
 
   const flush = () => {
-    const done =
-      open && refName !== undefined
-        ? {
-            // Qualified by the reference row's own name for the reason the TAF
-            // path does it: start+size repeats across chromosomes, and a feature
-            // id has to survive being read outside the query that produced it.
-            uniqueId: `${refName}-${refStart}-${refSize}`,
-            start: refStart,
-            end: refStart + refSize,
-            strand: refStrand,
-            alignments: rows.alignments,
-            empties: rows.empties,
-            seq: refSeq,
-          }
-        : undefined
+    let done: MafBlockFeature | undefined
+    if (open && refSrc !== undefined) {
+      // A `-` reference row counts from the reverse complement, so the block is
+      // turned over before anything reads its extent — see
+      // `flipBlockToForwardStrand`. `strand` is then 1 either way, because the
+      // block is now stated forward.
+      const placed =
+        refStrand === -1
+          ? flipBlockToForwardStrand({
+              refStart,
+              refSize,
+              refSrcSize,
+              refSeq,
+              alignments: rows.alignments,
+              empties: rows.empties,
+            })
+          : { start: refStart, end: refStart + refSize, seq: refSeq }
+      done = {
+        // Qualified by the reference row's own name for the reason the TAF
+        // path does it: start+size repeats across chromosomes, and a feature
+        // id has to survive being read outside the query that produced it.
+        uniqueId: `${refSrc}-${placed.start}-${refSize}`,
+        refSrc,
+        start: placed.start,
+        end: placed.end,
+        strand: 1,
+        alignments: rows.alignments,
+        empties: rows.empties,
+        seq: placed.seq,
+      }
+    }
     rows = { alignments: {}, empties: {} }
-    refName = undefined
+    refSrc = undefined
     refStart = 0
     refSize = 0
     refStrand = 1
+    refSrcSize = 0
     refSeq = ''
     open = false
     return done
@@ -108,11 +134,12 @@ export function* parseMafBlocks(
       continue
     }
     const s = applyMafLine(line, resolve, rows)
-    if (s !== undefined && refName === undefined) {
-      refName = s.src
+    if (s !== undefined && refSrc === undefined) {
+      refSrc = s.src
       refStart = s.start
       refSize = s.size
       refStrand = s.strand
+      refSrcSize = s.srcSize
       refSeq = s.seq
     }
   }

@@ -1,7 +1,9 @@
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import {
+  ObservableCreate,
+  subscribeToObservable,
+} from '@jbrowse/core/util/rxjs'
 
 import { toMafStatus } from './mafStatus.ts'
-import { subscribeToObservable } from './observableUtils.ts'
 
 import type { MafSummaryRecord } from '../types.ts'
 import type {
