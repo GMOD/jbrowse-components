@@ -748,7 +748,9 @@ function buildCliConfig(): string {
       views: [
         {
           type: 'LinearGenomeView',
-          init: { assembly: 'volvox', loc: 'ctgA:1-20,000', tracks: trackIds },
+          assembly: 'volvox',
+          loc: 'ctgA:1-20,000',
+          tracks: trackIds,
         },
       ],
     }),

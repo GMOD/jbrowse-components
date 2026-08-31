@@ -35,10 +35,8 @@ test('init.highlight is applied after the assembly finishes loading', async () =
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError')
   const view = session.addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
-      highlight: ['ctgA:5000-15000'],
-    },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
+    highlight: ['ctgA:5000-15000'],
   })
   view.setWidth(800)
   // await the one async precondition rather than polling for it; see the note
@@ -59,13 +57,11 @@ test('init loc navigation runs once regions exist, and highlight still applies',
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError')
   const view = session.addView('DotplotView', {
-    init: {
-      views: [
-        { assembly: 'volvox', loc: 'ctgA:5000-15000' },
-        { assembly: 'volvox' },
-      ],
-      highlight: ['ctgA:5000-15000'],
-    },
+    views: [
+      { assembly: 'volvox', loc: 'ctgA:5000-15000' },
+      { assembly: 'volvox' },
+    ],
+    highlight: ['ctgA:5000-15000'],
   })
   view.setWidth(800)
   // await the one async precondition rather than polling for it; see the note
@@ -90,13 +86,11 @@ test('a bad init.highlight entry keeps its siblings and the loc-nav after it', a
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   const consoleError = jest.spyOn(console, 'error').mockImplementation()
   const view = session.addView('DotplotView', {
-    init: {
-      views: [
-        { assembly: 'volvox', loc: 'ctgA:5000-15000' },
-        { assembly: 'volvox' },
-      ],
-      highlight: ['ctgA:1000-2000', 'nonexistent:1-2', 'ctgA:8000-9000'],
-    },
+    views: [
+      { assembly: 'volvox', loc: 'ctgA:5000-15000' },
+      { assembly: 'volvox' },
+    ],
+    highlight: ['ctgA:1000-2000', 'nonexistent:1-2', 'ctgA:8000-9000'],
   })
   view.setWidth(800)
   // await the one async precondition rather than polling for it; see the note
@@ -121,12 +115,10 @@ test('a bad per-axis init loc leaves the other axis navigated', async () => {
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   jest.spyOn(console, 'error').mockImplementation()
   const view = session.addView('DotplotView', {
-    init: {
-      views: [
-        { assembly: 'volvox', loc: 'nonexistent:1-2' },
-        { assembly: 'volvox', loc: 'ctgA:5000-15000' },
-      ],
-    },
+    views: [
+      { assembly: 'volvox', loc: 'nonexistent:1-2' },
+      { assembly: 'volvox', loc: 'ctgA:5000-15000' },
+    ],
   })
   view.setWidth(800)
   // await the one async precondition rather than polling for it; see the note

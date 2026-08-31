@@ -32,7 +32,7 @@ async function launch() {
   session.addAssemblyConf(assembly('a1'))
   session.addAssemblyConf(assembly('a2'))
   const view = session.addView('LinearSyntenyView', {
-    init: { views: [{ assembly: 'a1' }, { assembly: 'a2' }] },
+    views: [{ assembly: 'a1' }, { assembly: 'a2' }],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.init === undefined)

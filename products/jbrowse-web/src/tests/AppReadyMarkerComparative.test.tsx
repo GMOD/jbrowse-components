@@ -34,13 +34,11 @@ test('the app marker counts a synteny level a walk of view.tracks cannot reach',
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-        { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-      ],
-      tracks: [['subset']],
-    },
+    views: [
+      { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+      { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+    ],
+    tracks: [['subset']],
   }) as {
     setWidth: (n: number) => void
     levels: {
@@ -114,13 +112,11 @@ test('the app marker does not wait on a view whose body was never mounted', asyn
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-        { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-      ],
-      tracks: [['subset']],
-    },
+    views: [
+      { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+      { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+    ],
+    tracks: [['subset']],
   }) as {
     setWidth: (n: number) => void
     setBodyMounted: (flag: boolean) => void
@@ -170,10 +166,8 @@ test('the app marker counts a dotplot display', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-      tracks: ['subset'],
-    },
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+    tracks: ['subset'],
   }) as {
     setWidth: (n: number) => void
     markCanvasDrawn: () => void

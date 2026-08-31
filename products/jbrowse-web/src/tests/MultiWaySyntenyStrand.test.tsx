@@ -90,17 +90,15 @@ test('a reverse-strand link between two mate lanes draws a crossed ribbon', asyn
   const { rootModel } = getPluginManager(reversePafConfig())
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: [
-        {
-          trackId: 'three_way_rev',
-          type: 'MultiWaySyntenyDisplay',
-          rowOrder: ['peach', 'cacao'],
-        },
-      ],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: [
+      {
+        trackId: 'three_way_rev',
+        type: 'MultiWaySyntenyDisplay',
+        rowOrder: ['peach', 'cacao'],
+      },
+    ],
   })
   view.setWidth(800)
 
@@ -170,17 +168,15 @@ test('a link record outside a lane frame draws no ribbon off the canvas', async 
   const { rootModel } = getPluginManager(farPafConfig())
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: [
-        {
-          trackId: 'three_way_far',
-          type: 'MultiWaySyntenyDisplay',
-          rowOrder: ['peach', 'cacao'],
-        },
-      ],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: [
+      {
+        trackId: 'three_way_far',
+        type: 'MultiWaySyntenyDisplay',
+        rowOrder: ['peach', 'cacao'],
+      },
+    ],
   })
   const width = 800
   view.setWidth(width)
@@ -232,17 +228,15 @@ test('flipping the view horizontally does not twist the ribbons', async () => {
   const { rootModel } = getPluginManager(structuredClone(baseConfig))
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: [
-        {
-          trackId: 'multiway_blocks',
-          type: 'MultiWaySyntenyDisplay',
-          rowOrder: ['peach', 'cacao'],
-        },
-      ],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: [
+      {
+        trackId: 'multiway_blocks',
+        type: 'MultiWaySyntenyDisplay',
+        rowOrder: ['peach', 'cacao'],
+      },
+    ],
   })
   view.setWidth(800)
 

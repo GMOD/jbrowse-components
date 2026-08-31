@@ -36,7 +36,7 @@ function setup() {
 
 function launch(session: ReturnType<typeof setup>, views: unknown[]) {
   const view = session.addView('DotplotView', {
-    init: { views },
+    views,
   }) as DotplotViewModel
   view.setWidth(800)
   return view

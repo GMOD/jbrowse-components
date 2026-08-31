@@ -93,7 +93,7 @@ async function openStack(rowCount: number) {
     })
   }
   const view = session.addView('LinearSyntenyView', {
-    init: { views: names.map(assembly => ({ assembly })) },
+    views: names.map(assembly => ({ assembly })),
   }) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(

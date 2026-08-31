@@ -86,7 +86,7 @@ async function setup() {
     },
   })
   const view = session.addView('DotplotView', {
-    init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
   }) as DotplotViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('volvox')

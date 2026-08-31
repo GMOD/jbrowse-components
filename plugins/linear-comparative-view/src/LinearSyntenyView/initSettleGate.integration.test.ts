@@ -42,7 +42,7 @@ const views = [{ assembly: 'volvox' }, { assembly: 'volvox2' }]
 test('an init pass declares the diagonalize gate rather than only raising it', async () => {
   const session = setup()
   const view = session.addView('LinearSyntenyView', {
-    init: { views },
+    views,
   }) as LinearSyntenyViewModel
   // what an init that requested a reorder and was superseded leaves behind
   view.beginAutoDiagonalize(true)
@@ -59,7 +59,7 @@ test('an init pass declares the diagonalize gate rather than only raising it', a
 test('a level does not settle while init is still adding its tracks', async () => {
   const session = setup()
   const view = session.addView('LinearSyntenyView', {
-    init: { views },
+    views,
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 
@@ -82,12 +82,10 @@ test('a level does not settle while init is still adding its tracks', async () =
 test('a row spec sets the LGV view props on its own panel', async () => {
   const session = setup()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: 'volvox', showAminoAcids: false, trackLabels: 'offset' },
-        { assembly: 'volvox2' },
-      ],
-    },
+    views: [
+      { assembly: 'volvox', showAminoAcids: false, trackLabels: 'offset' },
+      { assembly: 'volvox2' },
+    ],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 

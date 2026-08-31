@@ -18,7 +18,7 @@ async function setup() {
   const session = createTestSession()
   addVolvoxAssembly(session)
   const view = session.addView('DotplotView', {
-    init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
   }) as DotplotViewModel
   view.setWidth(800)
   // Causal, not a wall clock: the only async precondition here is the assembly

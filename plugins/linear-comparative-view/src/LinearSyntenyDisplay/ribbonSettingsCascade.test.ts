@@ -293,11 +293,9 @@ async function openInitializedPair(initExtras: Record<string, unknown> = {}) {
     },
   })
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
-      tracks: ['pair'],
-      ...initExtras,
-    },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
+    tracks: ['pair'],
+    ...initExtras,
   }) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.init === undefined)

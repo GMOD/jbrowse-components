@@ -23,10 +23,8 @@ async function loadedDotplotDisplay() {
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-      tracks: ['subset'],
-    },
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+    tracks: ['subset'],
   })
   view.setWidth(800)
   await waitFor(
@@ -131,10 +129,8 @@ async function twoOverlaidTracks() {
   const { rootModel } = getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-      tracks: ['subset', 'peach_grape_small'],
-    },
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+    tracks: ['subset', 'peach_grape_small'],
   })
   view.setWidth(800)
   // both displays are awaited all the way to their data even though the color

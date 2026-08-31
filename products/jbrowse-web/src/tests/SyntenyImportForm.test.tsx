@@ -32,14 +32,12 @@ afterEach(() => {
 test('three level', async () => {
   const { session } = await createView(config)
   session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: 'volvox_del' },
-        { assembly: 'volvox' },
-        { assembly: 'volvox_ins' },
-      ],
-      tracks: [['volvox_del.paf'], ['volvox_ins.paf']],
-    },
+    views: [
+      { assembly: 'volvox_del' },
+      { assembly: 'volvox' },
+      { assembly: 'volvox_ins' },
+    ],
+    tracks: [['volvox_del.paf'], ['volvox_ins.paf']],
   })
   const canvases = await waitFor(() => {
     const found = document.querySelectorAll<HTMLElement>(

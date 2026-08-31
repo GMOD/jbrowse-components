@@ -83,10 +83,8 @@ async function openWith(
 ) {
   const { session } = getTestSession()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: assemblies.map(assembly => ({ assembly })),
-      tracks: [trackId],
-    },
+    views: assemblies.map(assembly => ({ assembly })),
+    tracks: [trackId],
   }) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {

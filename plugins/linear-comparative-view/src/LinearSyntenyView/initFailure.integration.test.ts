@@ -41,12 +41,10 @@ test('a bad per-row init loc keeps the built rows', async () => {
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   jest.spyOn(console, 'error').mockImplementation()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: 'volvox', loc: 'nonexistent:1-2' },
-        { assembly: 'volvox2', loc: 'ctgA:5000-15000' },
-      ],
-    },
+    views: [
+      { assembly: 'volvox', loc: 'nonexistent:1-2' },
+      { assembly: 'volvox2', loc: 'ctgA:5000-15000' },
+    ],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 
@@ -70,9 +68,7 @@ test('an unloadable assembly keeps init and shows the import form', async () => 
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   jest.spyOn(console, 'error').mockImplementation()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: 'volvox' }, { assembly: 'nope' }],
-    },
+    views: [{ assembly: 'volvox' }, { assembly: 'nope' }],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 

@@ -25,10 +25,8 @@ test('Linear synteny view of selection from dotplot view', async () => {
 
   // Create a DotplotView with a synteny track
   const dotplotView = session.addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-      tracks: ['subset'],
-    },
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+    tracks: ['subset'],
   })
   dotplotView.setWidth(800)
 
@@ -76,10 +74,8 @@ test('Linear synteny view of selection from dotplot preserves track configuratio
 
   // Create a DotplotView with a synteny track
   const dotplotView = session.addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-      tracks: ['subset'],
-    },
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+    tracks: ['subset'],
   })
   dotplotView.setWidth(800)
 

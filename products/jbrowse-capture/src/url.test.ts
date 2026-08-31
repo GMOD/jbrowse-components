@@ -4,7 +4,9 @@ const session = {
   views: [
     {
       type: 'LinearGenomeView',
-      init: { assembly: 'hg38', loc: 'chr1:1,000-2,000', tracks: ['a&b'] },
+      assembly: 'hg38',
+      loc: 'chr1:1,000-2,000',
+      tracks: ['a&b'],
     },
   ],
 }

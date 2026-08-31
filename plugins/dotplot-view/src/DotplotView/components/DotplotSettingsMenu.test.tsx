@@ -98,10 +98,8 @@ async function openMenu(adapter: Record<string, unknown> = PAF) {
     adapter,
   })
   const view = session.addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
-      tracks: ['pair'],
-    },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
+    tracks: ['pair'],
   }) as DotplotViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('volvox')

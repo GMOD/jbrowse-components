@@ -34,7 +34,7 @@ test('a row of an unmounted stack reports its body unmounted', async () => {
   session.addAssemblyConf(assembly('volvox'))
   session.addAssemblyConf(assembly('volvox2'))
   const view = session.addView('LinearSyntenyView', {
-    init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }] },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.views.length === 2)

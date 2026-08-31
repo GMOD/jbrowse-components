@@ -24,14 +24,12 @@ test('multi-way LinearSyntenyView init routes tracks to per-level slots', async 
   // volvox_del.paf maps volvox_del↔volvox  → level 0
   // volvox_ins.paf maps volvox↔volvox_ins  → level 1
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: 'volvox_del' },
-        { assembly: 'volvox' },
-        { assembly: 'volvox_ins' },
-      ],
-      tracks: [['volvox_del.paf'], ['volvox_ins.paf']],
-    },
+    views: [
+      { assembly: 'volvox_del' },
+      { assembly: 'volvox' },
+      { assembly: 'volvox_ins' },
+    ],
+    tracks: [['volvox_del.paf'], ['volvox_ins.paf']],
   })
 
   view.setWidth(800)
@@ -87,9 +85,7 @@ test('a failed init lands on the import form, not a permanent spinner', async ()
   const session = rootModel.session!
 
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: 'no_such_assembly' }, { assembly: 'volvox' }],
-    },
+    views: [{ assembly: 'no_such_assembly' }, { assembly: 'volvox' }],
   })
   view.setWidth(800)
 
@@ -117,13 +113,11 @@ test('the track selector targets the level it was opened for', async () => {
   const session = rootModel.session!
 
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: 'volvox_del' },
-        { assembly: 'volvox' },
-        { assembly: 'volvox_ins' },
-      ],
-    },
+    views: [
+      { assembly: 'volvox_del' },
+      { assembly: 'volvox' },
+      { assembly: 'volvox_ins' },
+    ],
   })
   view.setWidth(800)
 

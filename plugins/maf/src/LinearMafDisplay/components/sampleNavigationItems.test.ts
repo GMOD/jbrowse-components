@@ -112,7 +112,8 @@ test('launching opens a view keyed on display + assembly', async () => {
   expect(views).toEqual([
     {
       id: 'display1_mm10',
-      init: { assembly: 'mm10', loc: 'chr2:1001-1020' },
+      assembly: 'mm10',
+      loc: 'chr2:1001-1020',
     },
   ])
 })

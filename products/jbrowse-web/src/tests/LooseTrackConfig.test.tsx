@@ -27,7 +27,9 @@ test('a config track written as { trackId, uri } opens as an alignments track on
     adapter: { type: 'BamAdapter' },
   })
   const view = session.addView('LinearGenomeView', {
-    init: { assembly: 'volvox', loc: 'ctgA:1..1000', tracks: ['loose_bam'] },
+    assembly: 'volvox',
+    loc: 'ctgA:1..1000',
+    tracks: ['loose_bam'],
   }) as LinearGenomeViewModel
   view.setWidth(800)
   await waitFor(

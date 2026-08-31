@@ -16,11 +16,9 @@ async function setupView(trackIds: string[]) {
   const { rootModel } = getPluginManager()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'volvox',
-      loc: 'ctgA:1..1000',
-      tracks: trackIds,
-    },
+    assembly: 'volvox',
+    loc: 'ctgA:1..1000',
+    tracks: trackIds,
   }) as LinearGenomeViewModel
   view.setWidth(800)
   await waitFor(

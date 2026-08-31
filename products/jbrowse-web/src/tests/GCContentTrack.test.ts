@@ -227,7 +227,9 @@ test('GCContentTrack display wraps a bare sequence adapter', async () => {
         {
           id: 'view1',
           type: 'LinearGenomeView',
-          init: { assembly: 'volvox', loc: 'ctgA', tracks: ['gc_legacy'] },
+          assembly: 'volvox',
+          loc: 'ctgA',
+          tracks: ['gc_legacy'],
         },
       ],
     },

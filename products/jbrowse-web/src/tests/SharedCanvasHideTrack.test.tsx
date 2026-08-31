@@ -68,10 +68,8 @@ function session() {
 
 async function loadedDotplot(tracks: string[]) {
   const view = session().addView('DotplotView', {
-    init: {
-      views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-      tracks,
-    },
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+    tracks,
   })
   view.setWidth(800)
   await waitFor(
@@ -96,13 +94,11 @@ async function loadedDotplot(tracks: string[]) {
 
 async function loadedSynteny(tracks: string[]) {
   const view = session().addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { loc: 'Pp01:1..1,000,000', assembly: 'peach' },
-        { loc: 'chr1:1..1,000,000', assembly: 'grape' },
-      ],
-      tracks: [tracks],
-    },
+    views: [
+      { loc: 'Pp01:1..1,000,000', assembly: 'peach' },
+      { loc: 'chr1:1..1,000,000', assembly: 'grape' },
+    ],
+    tracks: [tracks],
   })
   view.setWidth(800)
   await waitFor(

@@ -38,10 +38,8 @@ interface SyntenyView {
 async function openSyntenyView() {
   const { session } = getTestSession()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: QUERY_ASM }, { assembly: TARGET_ASM }],
-      tracks: ['volvox_inv_indels'],
-    },
+    views: [{ assembly: QUERY_ASM }, { assembly: TARGET_ASM }],
+    tracks: ['volvox_inv_indels'],
   }) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
@@ -72,10 +70,8 @@ async function openTwoContigView() {
     },
   }) as { trackId: string }
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: TARGET_ASM }, { assembly: TARGET_ASM }],
-      tracks: [added.trackId],
-    },
+    views: [{ assembly: TARGET_ASM }, { assembly: TARGET_ASM }],
+    tracks: [added.trackId],
   }) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
@@ -730,10 +726,8 @@ test('anchoring the bottom row reverses which row moves', async () => {
 test('following an all-vs-all track walks the CIGAR rather than scaling the block', async () => {
   const { session } = getTestSession()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: 'volvox_ins' }, { assembly: 'volvox' }],
-      tracks: ['volvox_all_vs_all'],
-    },
+    views: [{ assembly: 'volvox_ins' }, { assembly: 'volvox' }],
+    tracks: ['volvox_all_vs_all'],
   }) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
@@ -785,14 +779,12 @@ const INS_LOCUS = 39660
 async function openThreeRowView() {
   const { session } = getTestSession()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: 'volvox_ins' },
-        { assembly: 'volvox' },
-        { assembly: 'volvox_del' },
-      ],
-      tracks: [['volvox_all_vs_all'], ['volvox_all_vs_all']],
-    },
+    views: [
+      { assembly: 'volvox_ins' },
+      { assembly: 'volvox' },
+      { assembly: 'volvox_del' },
+    ],
+    tracks: [['volvox_all_vs_all'], ['volvox_all_vs_all']],
   }) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
@@ -972,10 +964,8 @@ test('a level that can never resolve reports itself once, not once a settle', as
 test('a swapped-assembly track holds the row rather than spinning', async () => {
   const { session } = getTestSession()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
-      tracks: ['volvox_del.paf'],
-    },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+    tracks: ['volvox_del.paf'],
   }) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
@@ -1167,10 +1157,8 @@ test('a session naming both row-sync modes loads with only the follow on', () =>
   const view = session.addView('LinearSyntenyView', {
     linkViews: true,
     followSynteny: true,
-    init: {
-      views: [{ assembly: QUERY_ASM }, { assembly: TARGET_ASM }],
-      tracks: ['volvox_inv_indels'],
-    },
+    views: [{ assembly: QUERY_ASM }, { assembly: TARGET_ASM }],
+    tracks: ['volvox_inv_indels'],
   }) as unknown as { linkViews: boolean; followSynteny: boolean }
 
   expect([view.linkViews, view.followSynteny]).toEqual([false, true])

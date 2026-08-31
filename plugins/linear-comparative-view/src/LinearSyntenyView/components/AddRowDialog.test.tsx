@@ -56,10 +56,8 @@ async function openDialog(datasets: string[][], openTracks: string[] = []) {
     })
   }
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
-      tracks: openTracks,
-    },
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
+    tracks: openTracks,
   }) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(

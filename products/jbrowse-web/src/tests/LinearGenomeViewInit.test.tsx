@@ -226,10 +226,8 @@ test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
   const session = rootModel.session!
 
   const view = session.addView('LinearGenomeView', {
-    init: {
-      loc: 'chr1:1..1000',
-      assembly: 'nonexistent',
-    },
+    loc: 'chr1:1..1000',
+    assembly: 'nonexistent',
   })
   view.setWidth(800)
 

@@ -52,7 +52,9 @@ async function openDisplay(
   const { rootModel } = getPluginManager(config)
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
-    init: { assembly: 'grape', loc: 'chr1:1-1000', tracks: [trackId] },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: [trackId],
   })
   view.setWidth(800)
   return await waitFor(

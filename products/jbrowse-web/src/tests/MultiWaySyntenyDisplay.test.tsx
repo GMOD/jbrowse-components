@@ -36,11 +36,9 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -107,11 +105,9 @@ test('MultiWaySyntenyDisplay shows its lanes before the coarse blocks settle', a
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -157,11 +153,9 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -237,11 +231,9 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -296,11 +288,9 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -360,11 +350,9 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -410,11 +398,9 @@ test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -461,11 +447,9 @@ test('MultiWaySyntenyDisplay re-anchors on a mate lane from its label menu', asy
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 
@@ -507,11 +491,9 @@ test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track alon
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'grape',
-      loc: 'chr1:1-1000',
-      tracks: ['multiway_blocks'],
-    },
+    assembly: 'grape',
+    loc: 'chr1:1-1000',
+    tracks: ['multiway_blocks'],
   })
   view.setWidth(800)
 

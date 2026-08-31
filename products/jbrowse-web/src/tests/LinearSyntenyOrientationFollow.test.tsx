@@ -39,10 +39,8 @@ const FORWARD = { start: 20000, end: 25000 }
 async function openView() {
   const { session } = getTestSession()
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [{ assembly: ASM }, { assembly: MATE }],
-      tracks: ['volvox_inv_indels'],
-    },
+    views: [{ assembly: ASM }, { assembly: MATE }],
+    tracks: ['volvox_inv_indels'],
   }) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {

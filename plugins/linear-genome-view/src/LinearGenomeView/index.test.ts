@@ -1340,9 +1340,7 @@ test('init without loc shows whole genome', async () => {
     LinearGenomeModel.create({
       id: 'testInitNoLoc',
       type: 'LinearGenomeView',
-      init: {
-        assembly: 'volvox',
-      },
+      assembly: 'volvox',
     }),
   )
   model.setWidth(width)
@@ -1361,10 +1359,8 @@ test('init with loc keeps loading until navigation populates regions', async () 
     LinearGenomeModel.create({
       id: 'testInitPending',
       type: 'LinearGenomeView',
-      init: {
-        assembly: 'volvox',
-        loc: 'ctgA:1-100',
-      },
+      assembly: 'volvox',
+      loc: 'ctgA:1-100',
     }),
   )
   model.setWidth(800)
@@ -1422,7 +1418,8 @@ test('status carries the loading message the spinner would draw', async () => {
     LinearGenomeModel.create({
       id: 'testStatusLoading',
       type: 'LinearGenomeView',
-      init: { assembly: 'volvox', loc: 'ctgA:1-100' },
+      assembly: 'volvox',
+      loc: 'ctgA:1-100',
     }),
   )
   model.setWidth(800)
@@ -1883,10 +1880,8 @@ test('showLoading is true when init is set and becomes false after initializatio
   }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
-      init: {
-        assembly: 'volvox',
-        loc: 'ctgA:1000-2000',
-      },
+      assembly: 'volvox',
+      loc: 'ctgA:1000-2000',
     }),
   )
   // not initialized yet, so showLoading should be true
@@ -1911,10 +1906,8 @@ test('loadingMessage reports what the assembly load is downloading', () => {
   }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
-      init: {
-        assembly: 'volvox',
-        loc: 'ctgA:1000-2000',
-      },
+      assembly: 'volvox',
+      loc: 'ctgA:1000-2000',
     }),
   )
   expect(model.showLoading).toBe(true)
@@ -2229,11 +2222,9 @@ describe('TrackInit with display configuration', () => {
     const model = session.setView(
       LinearGenomeModel.create({
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1-1000',
-          tracks: ['track1', 'track2'],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1', 'track2'],
       }),
     )
     model.setWidth(800)
@@ -2251,16 +2242,14 @@ describe('TrackInit with display configuration', () => {
     const model = session.setView(
       LinearGenomeModel.create({
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1-1000',
-          tracks: [
-            {
-              trackId: 'track1',
-              displaySnapshot: { type: 'LinearBareDisplay' },
-            },
-          ],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: [
+          {
+            trackId: 'track1',
+            displaySnapshot: { type: 'LinearBareDisplay' },
+          },
+        ],
       }),
     )
     model.setWidth(800)
@@ -2278,16 +2267,14 @@ describe('TrackInit with display configuration', () => {
     const model = session.setView(
       LinearGenomeModel.create({
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1-1000',
-          tracks: [
-            {
-              trackId: 'track1',
-              displaySnapshot: { height: 250 },
-            },
-          ],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: [
+          {
+            trackId: 'track1',
+            displaySnapshot: { height: 250 },
+          },
+        ],
       }),
     )
     model.setWidth(800)
@@ -2304,17 +2291,15 @@ describe('TrackInit with display configuration', () => {
     const model = session.setView(
       LinearGenomeModel.create({
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1-1000',
-          tracks: [
-            'track1',
-            {
-              trackId: 'track2',
-              displaySnapshot: { height: 300 },
-            },
-          ],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: [
+          'track1',
+          {
+            trackId: 'track2',
+            displaySnapshot: { height: 300 },
+          },
+        ],
       }),
     )
     model.setWidth(800)
@@ -2801,7 +2786,9 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     const model = session.setView(
       LinearGenomeModel.create({
         type: 'LinearGenomeView',
-        init: { assembly: 'volvox', loc: 'ctgA:1-1000', tracklist: true },
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracklist: true,
       }),
     )
     model.setWidth(800)
@@ -2836,7 +2823,8 @@ describe('declarative init: highlight, nav, unknown keys', () => {
         displayedRegions: [
           { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
         ],
-        init: { assembly: 'volvox', displayedRegionNames: ['ctgB'] },
+        assembly: 'volvox',
+        displayedRegionNames: ['ctgB'],
       }),
     )
     model.setWidth(800)
@@ -2855,7 +2843,8 @@ describe('declarative init: highlight, nav, unknown keys', () => {
         displayedRegions: [
           { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
         ],
-        init: { assembly: 'volvox', displayedRegionNames: ['nonexistent'] },
+        assembly: 'volvox',
+        displayedRegionNames: ['nonexistent'],
       }),
     )
     model.setWidth(800)
@@ -2939,7 +2928,8 @@ describe('declarative init: highlight, nav, unknown keys', () => {
       LinearGenomeModel.create({
         type: 'LinearGenomeView',
         showCenterLine: true,
-        init: { assembly: 'volvox', loc: 'ctgA:1-1000' },
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
       }),
     )
     model.setWidth(800)

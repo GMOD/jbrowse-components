@@ -39,7 +39,8 @@ test('<JBrowse /> maps the views prop into session.views', () => {
         views={[
           {
             type: 'LinearGenomeView',
-            init: { assembly: 'volvox', loc: 'ctgA:1-10' },
+            assembly: 'volvox',
+            loc: 'ctgA:1-10',
           },
         ]}
       />

@@ -21,17 +21,15 @@ test('MultiWaySyntenyDisplay on an all-vs-all PAF groups per record and fetches 
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: {
-      assembly: 'volvox',
-      loc: 'ctgA:1-50,000',
-      tracks: [
-        {
-          trackId: 'volvox_all_vs_all',
-          type: 'MultiWaySyntenyDisplay',
-          rowOrder: ['volvox_ins', 'volvox_del'],
-        },
-      ],
-    },
+    assembly: 'volvox',
+    loc: 'ctgA:1-50,000',
+    tracks: [
+      {
+        trackId: 'volvox_all_vs_all',
+        type: 'MultiWaySyntenyDisplay',
+        rowOrder: ['volvox_ins', 'volvox_del'],
+      },
+    ],
   })
   view.setWidth(800)
 

@@ -47,12 +47,10 @@ async function setup() {
   session.addAssemblyConf(assembly('volvox', ['ctgA', 'ctgB']))
   session.addAssemblyConf(assembly('volvox2', ['ctgA', 'ctgB']))
   const view = session.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: 'volvox', loc: 'ctgA' },
-        { assembly: 'volvox2', loc: 'ctgA' },
-      ],
-    },
+    views: [
+      { assembly: 'volvox', loc: 'ctgA' },
+      { assembly: 'volvox2', loc: 'ctgA' },
+    ],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.init === undefined)

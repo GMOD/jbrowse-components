@@ -28,7 +28,7 @@ function createBreakpointView(
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('BreakpointSplitView', {
-    init: locs.map(loc => ({ loc, assembly: 'volvox', tracks: [trackId] })),
+    views: locs.map(loc => ({ loc, assembly: 'volvox', tracks: [trackId] })),
   })
   view.setWidth(800)
   return view
