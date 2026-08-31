@@ -1230,8 +1230,22 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * sampleName -> column index into each feature's interned
-         * `genotypeCodes`. Rebuilt only when cellData changes. Used by the
-         * tooltips to decode a hovered cell's genotype (see genotypeCodec.ts).
+         * `genotypeCodes`. Used by the tooltips to decode a hovered cell's
+         * genotype (see genotypeCodec.ts).
+         *
+         * **Rebuilt per pointer frame, not per `cellData` change.** Its only
+         * readers are the two displays' hit tests, which run in React pointer
+         * handlers where nothing is tracked — and MobX discards an unobserved
+         * computed's value as it hands it over. So a hover walks every sample in
+         * the callset, ~60×/s, on a cohort VCF.
+         *
+         * A keep-alive autorun is the fix the canvas displays use
+         * (`CanvasHitIndexes`, and see packages/display-kit/CLAUDE.md), and it
+         * does not work here yet: it evaluates this before any payload has
+         * landed, and several suites stub the cell-data RPC with a catch-all
+         * that resolves a bare `[]`, so `cellData` is truthy with no
+         * `sampleNames` and the reaction throws. Making it holdable means giving
+         * those stubs a real payload shape first; the getter itself is fine.
          */
         get genotypeSampleIndex() {
           return self.cellData

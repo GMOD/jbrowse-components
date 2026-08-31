@@ -695,6 +695,18 @@ export function stateModelFactory(
          * built off the same stack it painted, so the box under the cursor is the
          * box the pick returns. Its label overhang is part of the hit box there,
          * which is why this reads the RENDERED label flags and not the mode's.
+         *
+         * **Deliberately NOT held alive by an autorun**, unlike the genotype
+         * indexes in `setupMultiSampleVariantAutoruns`. Its only reader is the
+         * hit test, so MobX rebuilds it per pointer frame — but it walks
+         * `visibleRegions`, which the LGV rebuilds fresh on every pan and zoom
+         * FRAME (see `contentRightEdgePx` there), and takes its bpPerPx off the
+         * live block width. Subscribing would move a Hilbert-sorted Flatbush
+         * build with a text measurement per mark from "the track under the
+         * cursor, while hovering" to "every one of these displays, every pan
+         * frame". Canvas's `flatbushIndexes` can be held alive because it keys
+         * off `laidOutDataMap` and the DEBOUNCED `coarseBpPerPx` instead; making
+         * this one safe to hold means giving it those dependencies first.
          */
         get laneFlatbushIndexes() {
           const { showLabels, showDescriptions } = self.laneRenderedLabels

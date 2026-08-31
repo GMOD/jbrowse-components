@@ -1942,25 +1942,27 @@ export default function baseStateModelFactory(
             )
 
             // Keep the hit-test indexes observed, which is the only reason MobX
-            // caches them. Their sole consumer is hit-testing inside DOM event
+            // caches them: their sole consumer is hit-testing inside DOM event
             // handlers, and MobX suspends a computed with no observers — so
-            // without this subscription every mousemove rebuilt a Hilbert-sorted
-            // Flatbush per visible region. Subscribing moves that rebuild onto the
-            // layout's own cadence (it recomputes only when laidOutDataMap /
-            // coarseBpPerPx / label visibility actually change), which is a small
-            // marginal cost on top of the strictly more expensive layout pass that
-            // already runs eagerly for every track on those same inputs.
+            // without this every mousemove rebuilt a Hilbert-sorted Flatbush per
+            // visible region. Safe to hold BECAUSE `flatbushIndexes` keys off
+            // `laidOutDataMap` and the debounced `coarseBpPerPx`: the rebuild
+            // lands on the layout's own cadence, a small marginal cost on top of
+            // the strictly more expensive layout pass that already runs eagerly
+            // for every track on those same inputs. A getter that read live
+            // `visibleRegions` instead must NOT be held this way — see
+            // `laneFlatbushIndexes` in plugin-variants for that trap.
             // autorunOnReadyView because flatbushIndexes transitively reads view
             // geometry that throws before the view is measured.
             //
-            // The two id->item maps ride along for the same reason, and they
-            // suspend far more often than the Flatbush ones: their only readers
-            // are hoveredFeature/hoveredSubfeature, which short-circuit to null
-            // when nothing is under the cursor — so the dependency disappears on
-            // every hover-out, and the next hover-in rebuilt a Map over every
-            // laid-out feature. Drag-panning over a track hit that on every
-            // frame (the clearHover-on-viewport-change autorun below un-hovers,
-            // the next mousemove re-hovers).
+            // The two id->item maps ride along, and they suspend far more often
+            // than the Flatbush ones: their only readers are
+            // hoveredFeature/hoveredSubfeature, which short-circuit to null when
+            // nothing is under the cursor — so the dependency disappears on every
+            // hover-out, and the next hover-in rebuilt a Map over every laid-out
+            // feature. Drag-panning over a track hit that on every frame (the
+            // clearHover-on-viewport-change autorun below un-hovers, the next
+            // mousemove re-hovers).
             autorunOnReadyView(
               self,
               () => {

@@ -133,13 +133,14 @@ an unobserved computed's value as it hands it over**. Every rAF-coalesced mouse
 move then rebuilds it: a Hilbert-sorted Flatbush, a Map over every sample in the
 callset, a row index over every loaded feature. The getter reads as memoized,
 its doc usually says so, and nothing catches it — it typechecks and it tests
-green. Four getters across two plugins were doing this.
+green. Five getters across three plugins were found doing it; two were worth
+holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
-(`CanvasHitIndexes`, `MultiRowHitIndexes`, `MultiSampleVariantHitIndexes`) so
-the set is greppable. **Type the structural `self` with the getters' real
-types**, not `unknown`: a rename otherwise reads `undefined`, establishes no
-dependency, and leaves a keep-alive holding nothing.
+(`CanvasHitIndexes`, `MultiRowHitIndexes`) so the set is greppable. Where the
+read goes through a structural `self`, **type it with the getters' real types**,
+not `unknown`: a rename otherwise reads `undefined`, establishes no dependency,
+and leaves a keep-alive holding nothing.
 
 **Only hold alive a getter whose dependencies exclude per-frame view geometry.**
 This is the whole decision, and it inverts: subscribing moves the rebuild from
@@ -150,6 +151,13 @@ plugin-variants is not, and says so at the getter: it walks `visibleRegions`
 (see the section above), so holding it would have bought a per-pan-frame
 Flatbush build on every variant track in the session. Give a getter canvas's
 dependencies before giving it canvas's autorun.
+
+The second precondition is that the getter is **safe to evaluate before data
+lands**, which a hover-only getter has never had to be. `genotypeSampleIndex` in
+plugin-variants fails it and says so at the getter: a keep-alive throws there
+because suites stub the cell-data RPC with a catch-all `[]`, leaving `cellData`
+truthy with no `sampleNames`, and the contract gate turns a reaction throw into
+a failed suite. Fix the stubs first; the getter itself is fine.
 
 ## Height and scroll are hooks
 

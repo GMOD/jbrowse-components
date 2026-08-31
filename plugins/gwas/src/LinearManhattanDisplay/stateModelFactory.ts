@@ -372,9 +372,15 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * displayedRegionIndex → refName lookup. Hit-testing reads this on every
-         * mousemove; MobX caches the view so visibleRegions changes invalidate it
-         * once rather than rebuilding per event.
+         * displayedRegionIndex → refName lookup.
+         *
+         * Rebuilt per mousemove, NOT cached: its only reader is `computeHit`,
+         * which runs in a pointer handler where nothing is tracked, and MobX
+         * discards an unobserved computed's value as it hands it over. One entry
+         * per visible region — typically one to three — so the rebuild is a Map
+         * of a few strings and is left alone deliberately. A version that walked
+         * the loaded data would want the keep-alive autorun canvas installs as
+         * `CanvasHitIndexes`.
          */
         get regionRefNames(): ReadonlyMap<number, string> {
           const view = self.host

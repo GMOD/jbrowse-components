@@ -17,10 +17,12 @@ import { copyText } from '@jbrowse/core/util/copyText'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
-import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import MultiRegionDisplayMixin, {
+  autorunOnReadyView,
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -43,7 +45,6 @@ import {
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { autorun } from 'mobx'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import {
@@ -1273,14 +1274,18 @@ export default function stateModelFactory(
 
         afterAttach() {
           // What makes `drawnFeaturesByRow` a memo at all: its consumers are
-          // pointer handlers, and MobX drops an unobserved computed's value as
-          // it hands it over — so every mouse-move frame rebuilt every loaded
-          // region's row index. Observing it here holds the cache.
-          addDisposer(
+          // pointer handlers, and MobX discards an unobserved computed's value
+          // as it hands it over — so every mouse-move frame rebuilt every loaded
+          // region's row index. Safe to hold because it keys off the data, the
+          // rows and the colors, never live view geometry (see
+          // `laneFlatbushIndexes` in plugin-variants for the getter where that
+          // distinction bites).
+          autorunOnReadyView(
             self,
-            autorun(() => {
+            () => {
               void self.drawnFeaturesByRow
-            }),
+            },
+            { name: 'MultiRowHitIndexes' },
           )
           setupTreeSidebarAutoruns(self, {
             name: 'MultiRowFeature',
