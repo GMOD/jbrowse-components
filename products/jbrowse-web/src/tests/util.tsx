@@ -247,7 +247,8 @@ export async function findDisplayById(displayId: string, timeout = 20000) {
  * the previous frame still up. Not hypothetical: `BigWigColor` was ported to
  * this and captured the pre-recolor canvas (the default blue, 68% different
  * from the green it had just asked for) while the phase sat at `ready`
- * throughout. Those callers still sleep, and that is why.
+ * throughout. Those callers take {@link waitForRepaintedCanvas}, which watches
+ * the pixels because nothing on the model moves.
  */
 export async function findSettledDisplay(
   testid = 'pileup-display',
@@ -265,6 +266,36 @@ export async function findSettledDisplay(
   await waitFor(find, { timeout })
   await new Promise(res => setTimeout(res, 100))
   return waitFor(find, { timeout })
+}
+
+/**
+ * Wait for a canvas to be REPAINTED — different pixels from the ones handed in,
+ * and then the same pixels twice running.
+ *
+ * The gap {@link findSettledDisplay} names and cannot fill: a setting in the
+ * `renderState` tier repaints without refetching, so the display phase never
+ * leaves `ready` and every readiness attribute is already true. The pixels are
+ * the only thing that moves, so they are the signal — and taking two matching
+ * samples is what separates the new frame from a frame still being drawn.
+ */
+export async function waitForRepaintedCanvas(
+  before: Buffer,
+  { timeout = 20000 }: { timeout?: number } = {},
+) {
+  let last: Buffer | undefined
+  return waitFor(
+    async () => {
+      const canvas = await waitForRenderedCanvas(timeout)
+      const now = canvasToBuffer(canvas)
+      const changed = !now.equals(before) && !!last?.equals(now)
+      last = now
+      if (!changed) {
+        throw new Error('canvas has not settled on a new frame')
+      }
+      return canvas
+    },
+    { timeout },
+  )
 }
 
 /**

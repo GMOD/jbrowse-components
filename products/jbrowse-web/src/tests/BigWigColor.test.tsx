@@ -1,13 +1,15 @@
 import { fireEvent } from '@testing-library/react'
 
 import {
+  canvasToBuffer,
   createView,
   doBeforeEach,
   expectCanvasMatch,
   hts,
   setup,
-  waitForRenderedCanvas,
   volvoxConfigWithTracks,
+  waitForRenderedCanvas,
+  waitForRepaintedCanvas,
 } from './util.tsx'
 
 setup()
@@ -32,14 +34,16 @@ test.each(['green', 'purple'])(
 
     const canvas1 = await waitForRenderedCanvas()
     expectCanvasMatch(canvas1)
+    const blue = canvasToBuffer(canvas1)
 
     const display = view.tracks[0]!.displays[0] as {
       setColor: (c: string) => void
     }
     display.setColor(color)
 
-    await new Promise(res => setTimeout(res, 2000))
-    expectCanvasMatch(await waitForRenderedCanvas())
+    // the recolor repaints without refetching, so nothing on the model moves —
+    // the pixels leaving the default blue are the signal
+    expectCanvasMatch(await waitForRepaintedCanvas(blue))
   },
   40000,
 )
