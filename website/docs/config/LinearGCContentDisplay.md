@@ -4,13 +4,17 @@ title: LinearGCContentDisplay
 sidebar_label: Display -> LinearGCContentDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/configSchemaReferenceSequence.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `gccontent`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/configSchemaReferenceSequence.ts).
 
 ## Example usage
 
 Added to the assembly's `sequence` track, which is where a
-`ReferenceSequenceTrack` is authored. `gcMode` is `content` for GC percentage
-or `skew` for (G-C)/(G+C):
+`ReferenceSequenceTrack` is authored. `gcMode` is `content` for GC percentage or
+`skew` for (G-C)/(G+C):
+
 ```js
 sequence: {
   type: 'ReferenceSequenceTrack',
@@ -38,8 +42,7 @@ there is no second adapter to configure. Use a `GCContentTrack` with
 [](/docs/config/lineargccontenttrackdisplay) instead when GC should be its own
 track rather than a display on the sequence.
 
-Every slot comes from the shared base below; this display adds none of its
-own.
+Every slot comes from the shared base below; this display adds none of its own.
 
 ## Related links
 
@@ -55,7 +58,13 @@ own.
 
 ## Config slots
 
-These slots go on a display entry: `"displays": [{ "type": "LinearGCContentDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go on a display entry:
+`"displays": [{ "type": "LinearGCContentDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

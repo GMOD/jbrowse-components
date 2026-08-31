@@ -4,7 +4,10 @@ title: LinearSyntenyDisplay
 sidebar_label: Display -> LinearSyntenyDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/configSchemaF.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/configSchemaF.ts).
 
 ## Example usage
 
@@ -12,6 +15,7 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 (first) and target (second) assembly names, matched by the track's
 `assemblyNames`. See the
 [synteny track guide](/docs/config_guides/synteny_track) for all options:
+
 ```js
 {
   type: 'SyntenyTrack',
@@ -46,7 +50,13 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go on a display entry: `"displays": [{ "type": "LinearSyntenyDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go on a display entry:
+`"displays": [{ "type": "LinearSyntenyDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

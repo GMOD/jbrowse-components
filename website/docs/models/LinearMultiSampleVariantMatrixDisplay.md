@@ -4,14 +4,19 @@ title: LinearMultiSampleVariantMatrixDisplay
 sidebar_label: Display -> LinearMultiSampleVariantMatrixDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/model.ts).
 
 Multi-sample variant display rendering genotypes as a compact sample-by-site
 matrix, with subpixel column alpha-scaling for anti-aliased parity.
 
-The configuration slots for this model are documented on its [config schema page](../../config/linearmultisamplevariantmatrixdisplay).
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearmultisamplevariantmatrixdisplay).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

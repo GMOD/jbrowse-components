@@ -4,13 +4,16 @@ title: JBrowseWebSessionModel
 sidebar_label: Session -> JBrowseWebSessionModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/sessionModel/index.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/sessionModel/index.ts).
 
-The full-app web session: the shared web session plus the saved-session
-database management surface (favorites, recent sessions, activate/delete) and
-the permanent plugin list.
+The full-app web session: the shared web session plus the saved-session database
+management surface (favorites, recent sessions, activate/delete) and the
+permanent plugin list.
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

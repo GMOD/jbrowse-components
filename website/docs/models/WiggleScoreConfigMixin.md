@@ -4,31 +4,34 @@ title: WiggleScoreConfigMixin
 sidebar_label: Mixin -> WiggleScoreConfigMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`wiggle` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts).
 
 The score-PLOT config every wiggle-family display shares: the score axis
-(`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
-Config only. The strict-`bpPerPx` fetch rule (adr-008) belongs to
-`WiggleCommonMixin`, as its `regionFetchKey`, because it describes what a
-fetch returns rather than how a plot is drawn — `LinearManhattanDisplay`
-composes this mixin for the score axis and fetches untransformed SNPs.
+(`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size. Config
+only. The strict-`bpPerPx` fetch rule (adr-008) belongs to `WiggleCommonMixin`,
+as its `regionFetchKey`, because it describes what a fetch returns rather than
+how a plot is drawn — `LinearManhattanDisplay` composes this mixin for the score
+axis and fetches untransformed SNPs.
 
-Deliberately NOT the wiggle-specific palette, rendering-type, summary-mode
-and resolution config either — those moved to `WiggleCommonMixin`, which
-composes this, when it became clear that `LinearManhattanDisplay` (the other
-composer) reads none of them and was inheriting a config schema that
-advertised twelve slots doing nothing on a Manhattan plot. Relocation rather
-than a new mixin layer: `types.compose` depth is a real ceiling in these
-chains (ADR-041).
+Deliberately NOT the wiggle-specific palette, rendering-type, summary-mode and
+resolution config either — those moved to `WiggleCommonMixin`, which composes
+this, when it became clear that `LinearManhattanDisplay` (the other composer)
+reads none of them and was inheriting a config schema that advertised twelve
+slots doing nothing on a Manhattan plot. Relocation rather than a new mixin
+layer: `types.compose` depth is a real ceiling in these chains (ADR-041).
 
-A display that owns its own rpcDataMap type composes this; a wiggle-shaped
-one composes `WiggleCommonMixin`.
+A display that owns its own rpcDataMap type composes this; a wiggle-shaped one
+composes `WiggleCommonMixin`.
 
-The score *axis* itself (scaleType / autoscale / min-max and their setters) is
+The score _axis_ itself (scaleType / autoscale / min-max and their setters) is
 `ScoreScaleMixin`, composed in below and shared with the alignments coverage
 band, which wants that axis and none of the color/resolution config here.
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Getters
 

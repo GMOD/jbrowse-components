@@ -4,7 +4,10 @@ title: SyntenyFetchStateMixin
 sidebar_label: Mixin -> SyntenyFetchStateMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFetchStateMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFetchStateMixin.ts).
 
 The fetch-lifecycle bookkeeping shared by the two comparative displays
 (LinearSyntenyDisplay, DotplotDisplay): whether an RPC is in flight, the
@@ -15,20 +18,20 @@ reversed-assembly flag, and the two members the overlay's buttons are — the
 Composed rather than duplicated so the two displays can't drift on what
 "loading" versus "refetching" means — the difference decides whether the user
 gets a full overlay or a corner spinner. What is computed FROM these pieces
-lives in plain functions rather than as members here: the four flags
-(`loading`, `refetching`, `dataCurrent`, `svgReady`) in
-`comparativeFetchFlags`, and each display's `displayPhase` and each view's
-`settled` gate in `comparativeReadiness.ts`. Each display calls the function
-from its own one-line getters.
+lives in plain functions rather than as members here: the four flags (`loading`,
+`refetching`, `dataCurrent`, `svgReady`) in `comparativeFetchFlags`, and each
+display's `displayPhase` and each view's `settled` gate in
+`comparativeReadiness.ts`. Each display calls the function from its own one-line
+getters.
 
 Functions rather than members because of **`error`**: it is a `BaseDisplay`
-volatile that three of the four flags read, and declaring it here to make
-them type-check would put a second `error` in the compose chain, where one
-set silently wins by argument order — the hazard `FetchMixin` documents
-against ADR-041 and the thing this mixin exists to avoid, not reproduce.
-`ready` (each display holds its data in a different field) and
-`currentFetchKey` (view-specific inputs) could both be default-false hooks
-here, exactly as `fetchInert` is; `error` is the only reason they are not.
+volatile that three of the four flags read, and declaring it here to make them
+type-check would put a second `error` in the compose chain, where one set
+silently wins by argument order — the hazard `FetchMixin` documents against
+ADR-041 and the thing this mixin exists to avoid, not reproduce. `ready` (each
+display holds its data in a different field) and `currentFetchKey`
+(view-specific inputs) could both be default-false hooks here, exactly as
+`fetchInert` is; `error` is the only reason they are not.
 
 ## Volatiles
 

@@ -4,7 +4,9 @@ title: MafTabixAdapter
 sidebar_label: Adapter -> MafTabixAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -36,7 +38,14 @@ names the MAF's reference species when it differs from the assembly name.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "MafTabixAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi`, `nhUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "MafTabixAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri`, `csi`, `nhUri` in place of writing a location slot out. Slot types
+(`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

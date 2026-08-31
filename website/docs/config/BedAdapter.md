@@ -4,7 +4,9 @@ title: BedAdapter
 sidebar_label: Adapter -> BedAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -21,7 +23,10 @@ Auto-generated config schema for the current JBrowse release — see the [config
 }
 ```
 
-`features.bed` infers `BedAdapter` and `FeatureTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`features.bed` infers `BedAdapter` and `FeatureTrack` on its own, and `name`
+defaults to the file name. In a config declaring one assembly, `assemblyNames`
+comes from there too — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -35,12 +40,16 @@ _See the **Config slots** section below for all available configuration fields._
 
 :::caution Gotcha
 
-Named BED columns past `name`/`score`/`strand` (`itemRgb`, `thickStart`, ...) are only guaranteed for BED12 or a track with an `autoSql`/`columnNames`. For a BED7-BED11 file JBrowse cannot know what the extra columns mean, so it exposes them generically as `field6`, `field7`, ... and a jexl callback reading `feature.itemRgb` gets `undefined`. Set `columnNames` to refer to them by name.
+Named BED columns past `name`/`score`/`strand` (`itemRgb`, `thickStart`, ...)
+are only guaranteed for BED12 or a track with an `autoSql`/`columnNames`. For a
+BED7-BED11 file JBrowse cannot know what the extra columns mean, so it exposes
+them generically as `field6`, `field7`, ... and a jexl callback reading
+`feature.itemRgb` gets `undefined`. Set `columnNames` to refer to them by name.
 
 :::
 
-used to load plain-text BED files. Loads the whole file into memory, so
-prefer the BedTabixAdapter for large files.
+used to load plain-text BED files. Loads the whole file into memory, so prefer
+the BedTabixAdapter for large files.
 
 ## Related links
 
@@ -52,7 +61,14 @@ prefer the BedTabixAdapter for large files.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "BedAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "BedAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri` in place of writing a location slot out. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

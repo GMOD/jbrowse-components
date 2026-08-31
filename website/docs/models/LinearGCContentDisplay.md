@@ -4,13 +4,17 @@ title: LinearGCContentDisplay
 sidebar_label: Display -> LinearGCContentDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModelReferenceSequence.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`gccontent` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModelReferenceSequence.ts).
 
 ## Example usage
 
 This display attaches to a `ReferenceSequenceTrack` — it derives GC from the
 track's own sequence adapter, so no extra adapter is needed. `gcMode` is
 `content` or `skew`:
+
 ```js
 {
   type: 'ReferenceSequenceTrack',
@@ -35,9 +39,11 @@ track's own sequence adapter, so no extra adapter is needed. `gcMode` is
 
 base model `SharedGCContentModel`
 
-The configuration slots for this model are documented on its [config schema page](../../config/lineargccontentdisplay).
+The configuration slots for this model are documented on its
+[config schema page](../../config/lineargccontentdisplay).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

@@ -4,12 +4,15 @@ title: FetchMixin
 sidebar_label: Mixin -> FetchMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/FetchMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/FetchMixin.ts).
 
-Cancel-safe fetch lifecycle for any display that loads data over RPC. Owns
-the entire fetch state machine (stop-token rotation, staleness tracking,
-error capture, status reporting); consumers see only `runFetch`,
-`cancelFetch`, `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
+Cancel-safe fetch lifecycle for any display that loads data over RPC. Owns the
+entire fetch state machine (stop-token rotation, staleness tracking, error
+capture, status reporting); consumers see only `runFetch`, `cancelFetch`,
+`isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
 
 ## Volatiles
 

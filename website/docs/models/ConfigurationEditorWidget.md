@@ -4,7 +4,10 @@ title: ConfigurationEditorWidget
 sidebar_label: Widget -> ConfigurationEditorWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`config` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
 
 Widget for editing a config model's slots in a form: holds the target
 configuration and debounce-saves edits back to the session.

@@ -4,7 +4,10 @@ title: MCScanSimpleAnchorsAdapter
 sidebar_label: Adapter -> MCScanSimpleAnchorsAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanSimpleAnchorsAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`comparative-adapters` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanSimpleAnchorsAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -28,14 +31,20 @@ _See the **Config slots** section below for all available configuration fields._
 
 :::caution Gotcha
 
-A block row names four genes, the first and last on each side, and all four are placed by matching column 4 of a BED byte for byte. A row with any of the four missing is dropped, so a partial mismatch draws fewer blocks than the file holds rather than erroring, and only a file where no row resolves fails the track. Ids get mangled by isoform suffixes and by jcvi stripping suffixes unless run with `--no_strip_names`. BED column 1 has to match the assembly's reference sequence names too, and a name the assembly does not have draws nothing at all.
+A block row names four genes, the first and last on each side, and all four are
+placed by matching column 4 of a BED byte for byte. A row with any of the four
+missing is dropped, so a partial mismatch draws fewer blocks than the file holds
+rather than erroring, and only a file where no row resolves fails the track. Ids
+get mangled by isoform suffixes and by jcvi stripping suffixes unless run with
+`--no_strip_names`. BED column 1 has to match the assembly's reference sequence
+names too, and a name the assembly does not have draws nothing at all.
 
 :::
 
 used to load MCScan (jcvi) `.anchors.simple` files with their two BED files
 
-See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
-also covers converting an MCScanX run into these files.
+See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach),
+which also covers converting an MCScanX run into these files.
 
 ## Related links
 
@@ -47,7 +56,14 @@ also covers converting an MCScanX run into these files.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "MCScanSimpleAnchorsAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `bed1`, `bed2`, `chromSizes`, `csi`, `htsgetBase`, `nhUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "MCScanSimpleAnchorsAdapter", ... }`. It also accepts the
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri`, `bed1`, `bed2`, `chromSizes`, `csi`, `htsgetBase`, `nhUri` in place
+of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are
+explained in the [config slot types reference](/docs/config_guides/slot_types).
+Slots a base configuration contributes are listed here too, so this table is the
+whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

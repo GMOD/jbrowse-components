@@ -4,14 +4,18 @@ title: NcbiSequenceReportAliasAdapter
 sidebar_label: Adapter -> NcbiSequenceReportAliasAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `config`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
 
 ## Example usage
 
 Goes on an ASSEMBLY, under `refNameAliases` — not on a track. The file ships
-beside any RefSeq assembly on NCBI datasets and aliases the RefSeq, GenBank
-and UCSC-style names of every sequence at once, so it replaces a
-hand-maintained chromAlias table:
+beside any RefSeq assembly on NCBI datasets and aliases the RefSeq, GenBank and
+UCSC-style names of every sequence at once, so it replaces a hand-maintained
+chromAlias table:
+
 ```js
 {
   name: 'GCF_000001405.40',
@@ -38,6 +42,7 @@ With an NCBI FASTA (`NC_000001.11`), the default displays UCSC-style names
 (`chr1`) while still fetching bases under the accession. Set
 `useNameOverride: false` to display the accessions instead, with `chr1` left
 searchable as an alias:
+
 ```js
 {
   name: 'GCF_000001405.40',
@@ -65,7 +70,14 @@ can read "sequence_report.tsv" type files from NCBI
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "NcbiSequenceReportAliasAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "NcbiSequenceReportAliasAdapter", ... }`. It also accepts
+the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
+`baseUri` in place of writing a location slot out. Slot types (`fileLocation`,
+`frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

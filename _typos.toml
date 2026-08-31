@@ -32,6 +32,11 @@ Nevers = "Nevers"     # AssertNevers
 VILL = "VILL"         # villin gene prefix
 STIL = "STIL"         # STIL, the gene next to TAL1 on chr1
 Bre = "Bre"           # Bre1, the Drosophila ubiquitin ligase on 3L
+# the misspelling IS the fixture: six files spell a key wrong on purpose to
+# assert the unknown-key warning names it, and withLaunchInput.test.ts writes
+# `{assembly: 'hg38', asembly: 'hg19'}` with both spellings on one line. A word
+# rather than six file excludes, so those files stay spell-checked otherwise
+asembly = "asembly"
 # pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"

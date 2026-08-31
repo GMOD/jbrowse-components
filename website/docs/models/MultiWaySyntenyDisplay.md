@@ -4,21 +4,25 @@ title: MultiWaySyntenyDisplay
 sidebar_label: Display -> MultiWaySyntenyDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/model.ts).
 
-draws a multi-genome ortholog track (an adapter whose features carry a
-`mate` per other assembly, e.g. MCScanBlocksAdapter) as one lane per
-assembly inside a plain linear genome view. The top lane is the view's own
-assembly at genomic coordinates; every other lane is laid out in its own
-local coordinate frame fitted to the viewport — non-anchored, the same move
-the multi-sample variant matrix makes — with ribbons connecting each gene's
-placements between adjacent lanes. The ribbons ride the pairwise synteny
-display's GPU passes and the lanes the feature track's, with Canvas2D and
-the SVG export drawing the same cells.
+draws a multi-genome ortholog track (an adapter whose features carry a `mate`
+per other assembly, e.g. MCScanBlocksAdapter) as one lane per assembly inside a
+plain linear genome view. The top lane is the view's own assembly at genomic
+coordinates; every other lane is laid out in its own local coordinate frame
+fitted to the viewport — non-anchored, the same move the multi-sample variant
+matrix makes — with ribbons connecting each gene's placements between adjacent
+lanes. The ribbons ride the pairwise synteny display's GPU passes and the lanes
+the feature track's, with Canvas2D and the SVG export drawing the same cells.
 
-The configuration slots for this model are documented on its [config schema page](../../config/multiwaysyntenydisplay).
+The configuration slots for this model are documented on its
+[config schema page](../../config/multiwaysyntenydisplay).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

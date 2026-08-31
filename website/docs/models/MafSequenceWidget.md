@@ -4,7 +4,10 @@ title: MafSequenceWidget
 sidebar_label: Widget -> MafSequenceWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafSequenceWidget/stateModelFactory.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`maf` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafSequenceWidget/stateModelFactory.ts).
 
 Widget showing multiple-alignment (MAF) sequence for a set of samples over the
 connected view's regions, with per-row hover highlight state.

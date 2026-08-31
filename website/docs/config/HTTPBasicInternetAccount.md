@@ -4,13 +4,17 @@ title: HTTPBasicInternetAccount
 sidebar_label: Internet Account -> HTTPBasicInternetAccount
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
 
 ## Example usage
 
 An entry in the config's `internetAccounts`. JBrowse prompts for the username
-and password the first time a file under one of `domains` is opened, and
-sends them as an `Authorization: Basic …` header from then on.
+and password the first time a file under one of `domains` is opened, and sends
+them as an `Authorization: Basic …` header from then on.
+
 ```js
 {
   type: 'HTTPBasicInternetAccount',
@@ -30,7 +34,11 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots are top-level fields of the account's entry in `internetAccounts`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots are top-level fields of the account's entry in `internetAccounts`.
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

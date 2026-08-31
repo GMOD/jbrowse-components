@@ -4,7 +4,10 @@ title: GCContentAdapter
 sidebar_label: Adapter -> GCContentAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `gccontent`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -22,9 +25,9 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-Computes GC content (or GC skew) from an assembly's sequence at render time,
-so there is no data file to prepare, and nothing to configure: the sequence
-comes from the assembly the track is displayed against.
+Computes GC content (or GC skew) from an assembly's sequence at render time, so
+there is no data file to prepare, and nothing to configure: the sequence comes
+from the assembly the track is displayed against.
 
 ## Related links
 
@@ -33,7 +36,13 @@ comes from the assembly the track is displayed against.
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "GCContentAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`:
+`"adapter": { "type": "GCContentAdapter", ... }`. This adapter has no `uri`
+[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
+location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

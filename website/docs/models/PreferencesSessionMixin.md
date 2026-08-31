@@ -4,14 +4,18 @@ title: PreferencesSessionMixin
 sidebar_label: Mixin -> PreferencesSessionMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Preferences.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Preferences.ts).
 
 loads and persists user-preference overrides (the BaseSession
-`preferencesOverrides` volatile) to localStorage. Compose into products that
-let users edit preferences (web, desktop); embedded sessions omit it and
-resolve preferences from `configuration.preferences` admin defaults only.
+`preferencesOverrides` volatile) to localStorage. Compose into products that let
+users edit preferences (web, desktop); embedded sessions omit it and resolve
+preferences from `configuration.preferences` admin defaults only.
 
-PreferencesSessionMixin declares no members of its own — it composes the models below, and everything here is theirs.
+PreferencesSessionMixin declares no members of its own — it composes the models
+below, and everything here is theirs.
 
 ## Properties
 

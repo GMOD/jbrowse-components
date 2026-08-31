@@ -4,7 +4,9 @@ title: BaseAssembly
 sidebar_label: Assembly Management -> BaseAssembly
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyConfigSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyConfigSchema.ts).
 
 ## Example usage
 
@@ -14,6 +16,7 @@ A hand-authored human assembly. `sequence` is a `ReferenceSequenceTrack` whose
 adapter points at a bgzipped+indexed FASTA — the `uri` shorthand auto-resolves
 the companion `.fai`/`.gzi` index files. `geneticCodes` translates the
 mitochondrial contig with the vertebrate mitochondrial code (NCBI table 2):
+
 ```js
 {
   name: 'hg38',
@@ -33,11 +36,12 @@ mitochondrial contig with the vertebrate mitochondrial code (NCBI table 2):
 ### Example: shorthand-flat
 
 The flattest form: an assembly is just a `name` and a sequence-file `uri`.
-jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the
-extension, derives the `.fai`/`.gzi` siblings, and fills in the
-`ReferenceSequenceTrack`. `refNameAliases`/`cytobands` take the same bare
-`{ uri }` shorthand. (Keep the `uri` *key* rather than a bare string so
-relative URIs still resolve against the config's location.)
+jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the extension,
+derives the `.fai`/`.gzi` siblings, and fills in the `ReferenceSequenceTrack`.
+`refNameAliases`/`cytobands` take the same bare `{ uri }` shorthand. (Keep the
+`uri` _key_ rather than a bare string so relative URIs still resolve against the
+config's location.)
+
 ```js
 {
   name: 'hg38',
@@ -49,10 +53,11 @@ relative URIs still resolve against the config's location.)
 
 ### Example: shorthand-sequence
 
-`sequence.type`/`sequence.trackId` are boilerplate that can be omitted —
-they're always `'ReferenceSequenceTrack'` and a name derived from the
-assembly `name` — leaving just the adapter (whose own `uri` shorthand still
-infers the adapter type and index siblings):
+`sequence.type`/`sequence.trackId` are boilerplate that can be omitted — they're
+always `'ReferenceSequenceTrack'` and a name derived from the assembly `name` —
+leaving just the adapter (whose own `uri` shorthand still infers the adapter
+type and index siblings):
+
 ```js
 {
   name: 'hg38',
@@ -64,6 +69,7 @@ infers the adapter type and index siblings):
 
 Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
 `cytobands` (ideogram banding), each fetched from its own adapter:
+
 ```js
 {
   name: 'hg38',
@@ -89,9 +95,10 @@ Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
 
 ### Example: custom-display-name-and-genetic-codes-sidecar
 
-Sets a `displayName` for the assembly selector and loads the per-refName
-genetic codes from a sidecar TSV (`geneticCodesLocation`) instead of inlining
-them — handy when a config generator emits the mapping separately:
+Sets a `displayName` for the assembly selector and loads the per-refName genetic
+codes from a sidecar TSV (`geneticCodesLocation`) instead of inlining them —
+handy when a config generator emits the mapping separately:
+
 ```js
 {
   name: 'hg38',
@@ -113,15 +120,19 @@ This corresponds to the assemblies section of the config
 
 ### BaseAssembly - Identifier
 
-Every BaseAssembly has a unique `name`, a required top-level field that identifies it (not one of the config slots below).
+Every BaseAssembly has a unique `name`, a required top-level field that
+identifies it (not one of the config slots below).
 
-there is no separate "id" field on an assembly: the "name" is the id,
-usually a short machine-readable string like hg38. For a longer
-human-readable label, set the "displayName" config slot instead
+there is no separate "id" field on an assembly: the "name" is the id, usually a
+short machine-readable string like hg38. For a longer human-readable label, set
+the "displayName" config slot instead
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

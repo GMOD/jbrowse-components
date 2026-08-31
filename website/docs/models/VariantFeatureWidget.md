@@ -4,12 +4,16 @@ title: VariantFeatureWidget
 sidebar_label: Widget -> VariantFeatureWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantFeatureWidget/stateModelFactory.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantFeatureWidget/stateModelFactory.ts).
 
-Feature-details widget for a VCF variant, extending the base feature widget
-with variant-specific fields such as genotypes and INFO.
+Feature-details widget for a VCF variant, extending the base feature widget with
+variant-specific fields such as genotypes and INFO.
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

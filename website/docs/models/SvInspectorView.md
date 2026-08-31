@@ -4,14 +4,18 @@ title: SvInspectorView
 sidebar_label: View -> SvInspectorView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `sv-inspector` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`sv-inspector` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts).
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`, with every setting written
-directly on the view object. `uri` loads a structural-variant file into the
-spreadsheet and mirrors the rows as arcs in the paired circular view;
-`assembly` resolves coordinates for both:
+Hand-authored under `defaultSession.views`, with every setting written directly
+on the view object. `uri` loads a structural-variant file into the spreadsheet
+and mirrors the rows as arcs in the paired circular view; `assembly` resolves
+coordinates for both:
+
 ```js
 {
   type: 'SvInspectorView',
@@ -22,10 +26,12 @@ spreadsheet and mirrors the rows as arcs in the paired circular view;
 ```
 
 does not extend, but is a combination of a
+
 - [SpreadsheetView](../spreadsheetview)
 - [CircularView](../circularview)
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 

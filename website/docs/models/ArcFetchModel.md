@@ -4,18 +4,22 @@ title: ArcFetchModel
 sidebar_label: Display -> ArcFetchModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `arc` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/shared/ArcFetchModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`arc` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/shared/ArcFetchModel.ts).
 
-Everything the two arc displays share above `GlobalFetchMixin` — the one
-global foundation (cancel-safe `runFetch`, region-too-large gate,
-`reload`/`reloadCounter`, `svgReady`, `displayPhase`): the fetched features
-and their region signature, a **derived** `regionTooLarge` (the byte-only
-pattern LD and multi-sample variant use, so the banner is a pure function of
-the last measurement — see RegionTooLargeMixin §"Measurement follows the
-viewport"), the score filter, the stored hover, the fetch installation and
-the SVG export. The display adds its glyph geometry and its own menu rows.
+Everything the two arc displays share above `GlobalFetchMixin` — the one global
+foundation (cancel-safe `runFetch`, region-too-large gate,
+`reload`/`reloadCounter`, `svgReady`, `displayPhase`): the fetched features and
+their region signature, a **derived** `regionTooLarge` (the byte-only pattern LD
+and multi-sample variant use, so the banner is a pure function of the last
+measurement — see RegionTooLargeMixin §"Measurement follows the viewport"), the
+score filter, the stored hover, the fetch installation and the SVG export. The
+display adds its glyph geometry and its own menu rows.
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Volatiles
 

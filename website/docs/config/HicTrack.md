@@ -4,12 +4,15 @@ title: HicTrack
 sidebar_label: Track -> HicTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/HicTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/HicTrack/configSchema.ts).
 
 ## Example usage
 
 A minimal `HicTrack` config. See the
 [Hi-C track guide](/docs/config_guides/hic_track) for all options:
+
 ```js
 {
   type: 'HicTrack',
@@ -20,7 +23,10 @@ A minimal `HicTrack` config. See the
 }
 ```
 
-`contacts.hic` infers `HicAdapter` and `HicTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`contacts.hic` infers `HicAdapter` and `HicTrack` on its own, and `name`
+defaults to the file name. In a config declaring one assembly, `assemblyNames`
+comes from there too — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -30,11 +36,12 @@ A minimal `HicTrack` config. See the
 }
 ```
 
-With log scale and a coarser resolution (`resolutionBias` nudges the
-auto-picked binsize; negative = finer, positive = coarser). The
-`displayDefaults` object shorthand applies settings to whichever display uses
-them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
+With log scale and a coarser resolution (`resolutionBias` nudges the auto-picked
+binsize; negative = finer, positive = coarser). The `displayDefaults` object
+shorthand applies settings to whichever display uses them — equivalent to a full
+`displays: [{ type, displayId, ... }]` array. See
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
+
 ```js
 {
   type: 'HicTrack',
@@ -50,13 +57,18 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Display:** [LinearHicDisplay](../linearhicdisplay) ([state model](../../models/linearhicdisplay))
+- **Display:** [LinearHicDisplay](../linearhicdisplay)
+  ([state model](../../models/linearhicdisplay))
 - **Adapter:** [HicAdapter](../hicadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots are top-level fields of the track config, alongside `trackId` and
+`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

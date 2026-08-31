@@ -4,7 +4,10 @@ title: SyntenyTrack
 sidebar_label: Track -> SyntenyTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/SyntenyTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/SyntenyTrack/configSchema.ts).
 
 ## Example usage
 
@@ -12,6 +15,7 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 (first) and target (second) assembly names, matched by the track's
 `assemblyNames`. See the
 [synteny track guide](/docs/config_guides/synteny_track) for all options:
+
 ```js
 {
   type: 'SyntenyTrack',
@@ -31,10 +35,14 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Display:** [DotplotDisplay](../dotplotdisplay) ([state model](../../models/dotplotdisplay))
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay) ([state model](../../models/lgvsyntenydisplay))
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay) ([state model](../../models/linearsyntenydisplay))
-- **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay) ([state model](../../models/multiwaysyntenydisplay))
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+  ([state model](../../models/dotplotdisplay))
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+  ([state model](../../models/lgvsyntenydisplay))
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
+  ([state model](../../models/linearsyntenydisplay))
+- **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
+  ([state model](../../models/multiwaysyntenydisplay))
 - **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
 - **Adapter:** [BlastTabularAdapter](../blasttabularadapter)
@@ -50,7 +58,11 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots are top-level fields of the track config, alongside `trackId` and
+`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types). Slots a base
+configuration contributes are listed here too, so this table is the whole
+surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
