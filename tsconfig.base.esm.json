@@ -14,6 +14,7 @@
     "${configDir}/src/**/*.node.ts"
   ],
   "compilerOptions": {
+    "declaration": true,
     "outDir": "${configDir}/esm",
     "rootDir": "${configDir}/src",
     "noEmit": false,

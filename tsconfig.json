@@ -5,17 +5,22 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "rootDir": "./",
     "noEmit": true,
-    // Whole-repo `--noEmit` is 27-35s with no cache. With one: ~1.5s when
-    // nothing changed or the edit didn't move a type, up to ~20s after an edit
-    // that fans out from packages/core. `*.tsbuildinfo` is gitignored; the
-    // composite build projects keep writing their own.
+    // Whole-repo `--noEmit` is 7.7s with no cache. With one: ~1.0s when nothing
+    // changed, 9.1s after an edit that fans out from packages/core.
+    // `*.tsbuildinfo` is gitignored; the composite build projects keep writing
+    // their own.
     "incremental": true,
+    // No `declaration` here on purpose — this project only checks, and
+    // `tsconfig.base.esm.json` sets it for the projects that emit. Enabling it
+    // alongside `incremental` makes tsc declaration-emit all 8310 files to hash
+    // a signature per file, and that dominates: cold went 7.7s -> 24.0s and
+    // 4.0GB -> 6.9GB, a body-only edit to packages/core 9.1s -> 29.7s. The
+    // signatures buy none of it back — tsgo rechecks the dependents anyway.
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "declaration": true,
     "module": "esnext",
     // Jest and vite both transpile file-by-file, so the repo already lives
     // under these semantics — assert it rather than rely on it.
