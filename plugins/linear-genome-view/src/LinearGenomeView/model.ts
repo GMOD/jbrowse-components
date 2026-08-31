@@ -608,11 +608,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the launch state that still has something to apply — the gate every
-       * loading and error path below reads. Also v4's name for it, kept while
-       * the other six views and the products that drive them still spell it
-       * this way; deleted with `setInit`.
+       * loading and error path below reads.
        */
-      get init() {
+      get pendingLaunch() {
         return pendingLaunch(self.launch)
       },
       /**
@@ -786,8 +784,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * and error checks resolve it directly through here.
        */
       get initAssembly() {
-        return self.init
-          ? getSession(self).assemblyManager.get(self.init.assembly)
+        return self.pendingLaunch
+          ? getSession(self).assemblyManager.get(self.pendingLaunch.assembly)
           : undefined
       },
 
@@ -799,7 +797,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return false
         }
         // if init is set, wait for that assembly to have regions loaded
-        if (self.init) {
+        if (self.pendingLaunch) {
           const asm = this.initAssembly
           return !!(asm?.initialized && asm.regions)
         }
@@ -820,7 +818,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * displayed assemblies that hasn't finished loading.
        */
       get loadingAssembly() {
-        return self.init
+        return self.pendingLaunch
           ? this.initAssembly
           : getSession(self).assemblyManager.loadingAssembly(self.assemblyNames)
       },
@@ -864,7 +862,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get hasSomethingToShow() {
-        return this.hasDisplayedRegions || !!self.init
+        return this.hasDisplayedRegions || !!self.pendingLaunch
       },
 
       /**
@@ -875,7 +873,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * would mount over empty regions and pxToBp/hover would throw.
        *
        * **Not dotplot's or synteny's `initPending`**, which is the bare
-       * `!!self.init` — "an init blob has not been applied" — and which those
+       * `!!self.pendingLaunch` — "an init blob has not been applied" — and which those
        * views read from their `settled` gate rather than from `showLoading`.
        * This one is narrower on purpose: it closes only the window where there
        * is nothing on screen. Once navigation has produced regions the view is
@@ -885,7 +883,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * theirs.
        */
       get awaitingInitNavigation() {
-        return !!self.init && !this.hasDisplayedRegions
+        return !!self.pendingLaunch && !this.hasDisplayedRegions
       },
 
       /**
@@ -1188,17 +1186,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return this.assembliesNotFound
         }
         // Check init assembly for errors (displayedRegions may be empty during init)
-        if (self.init) {
+        if (self.pendingLaunch) {
           // `assembly` is required by InitState, but init is a frozen blob and
           // hand-authored JSON is what fills it, so the type is not a guarantee.
           // Naming the authoring mistake beats the downstream symptom, which is
           // the literal string "Assembly undefined not found".
-          if (!self.init.assembly) {
+          if (!self.pendingLaunch.assembly) {
             return 'LinearGenomeView init needs an "assembly"'
           }
           const asm = this.initAssembly
           if (!asm) {
-            return `Assembly ${self.init.assembly} not found`
+            return `Assembly ${self.pendingLaunch.assembly} not found`
           }
           if (asm.error) {
             return asm.error
@@ -1709,7 +1707,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(arg?: LaunchInput<InitState>) {
+      setLaunch(arg?: LaunchInput<InitState>) {
         self.launch = arg
       },
 

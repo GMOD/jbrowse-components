@@ -204,18 +204,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the launch state that still has something to apply — the gate the
-       * loading and import-form paths below read. Also v4's name for it, kept
-       * while the other views and the products that drive them still spell it
-       * this way; deleted with `setInit`.
+       * loading and import-form paths below read.
        */
-      get init() {
+      get pendingLaunch() {
         return pendingLaunch(self.launch)
       },
       /**
        * #getter
        */
       get hasSomethingToShow() {
-        return self.views.length > 0 || this.init !== undefined
+        return self.views.length > 0 || this.pendingLaunch !== undefined
       },
 
       /**
@@ -257,7 +255,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.views.length > 0
           ? self.views.find(v => !v.initialized)?.loadingAssembly
           : getSession(self).assemblyManager.loadingAssembly(
-              this.init?.views?.map(v => v.assembly) ?? [],
+              this.pendingLaunch?.views?.map(v => v.assembly) ?? [],
             )
       },
 
@@ -724,7 +722,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: LaunchInput<BreakpointSplitViewCommands>) {
+      setLaunch(init?: LaunchInput<BreakpointSplitViewCommands>) {
         self.launch = init
       },
 
@@ -778,7 +776,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               }
 
               self.setViews(init.views)
-              self.setInit(undefined)
+              self.setLaunch(undefined)
             },
             { name: 'BreakpointSplitViewInit' },
           ),
@@ -1004,19 +1002,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return snap
     })
 
-  return withLaunchInput(model, breakpointSplitLaunchKeys).preProcessSnapshot(
-    (snap: Record<string, unknown> | undefined) => {
-      // v4 spelled the panels as a bare array under `init`, the one unkeyed
-      // blob in the tree. Key it before the partition sees it: an array reaches
-      // the classifier as an object whose keys are its indices, so every panel
-      // would sort as a typo. Added after `withLaunchInput`, which is what
-      // makes it run BEFORE the partition — MST runs preprocessors in the
-      // reverse of the order they were added.
-      return snap && Array.isArray(snap.init)
-        ? { ...snap, init: { views: snap.init } }
-        : snap
-    },
-  )
+  return withLaunchInput(model, breakpointSplitLaunchKeys)
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>

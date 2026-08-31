@@ -120,7 +120,7 @@ test('BreakpointSplitView initializes from the views launch key', async () => {
   expect(view.views.length).toBe(2)
   expect(view.views[0].assemblyNames[0]).toBe('hg19')
   expect(view.views[1].assemblyNames[0]).toBe('hg19')
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('BreakpointSplitView initializes with tracks', async () => {
@@ -147,7 +147,7 @@ test('BreakpointSplitView initializes with tracks', async () => {
   expect(view.views.length).toBe(2)
   expect(view.views[0].tracks.length).toBe(1)
   expect(view.views[1].tracks.length).toBe(1)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('BreakpointSplitView init without loc shows all regions', async () => {

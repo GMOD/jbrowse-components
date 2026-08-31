@@ -112,9 +112,9 @@ the page whose whole argument for `view.status` over `view.ready` _is_ that
 state. The copies were right, the drift check was green, and the thing being
 taught had no demo anywhere. `loading-and-errors` now builds one engine with no
 `init`, and `viewStatusStatesAreDrawn` drives both ends of it: the state has to
-be drawn, and `setInit` has to get back out of it. When a demo's own prose names
-a case, grep the site for an input that produces it before believing the case is
-shown.
+be drawn, and `setLaunch` has to get back out of it. When a demo's own prose
+names a case, grep the site for an input that produces it before believing the
+case is shown.
 
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
 re-checked by `pnpm smoke`. Going **under** a budget fails as well as over —

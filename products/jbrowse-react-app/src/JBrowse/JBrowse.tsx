@@ -25,11 +25,6 @@ import type { Ref } from 'react'
 export interface ManagedView {
   type: string
   id?: string
-  /**
-   * @deprecated nest nothing: write every setting directly on the view object.
-   * Accepted for now, with a warning from the view it opens.
-   */
-  init?: Record<string, unknown> | unknown[]
   [key: string]: unknown
 }
 

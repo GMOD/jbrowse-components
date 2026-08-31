@@ -251,18 +251,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the launch state that still has something to apply — the gate the
-       * loading and import-form paths below read. Also v4's name for it, kept
-       * while the other views and the products that drive them still spell it
-       * this way; deleted with `setInit`.
+       * loading and import-form paths below read.
        */
-      get init() {
+      get pendingLaunch() {
         return pendingLaunch(self.launch)
       },
       /**
        * #getter
        */
       get hasSomethingToShow() {
-        return self.views.length > 0 || !!this.init
+        return self.views.length > 0 || !!this.pendingLaunch
       },
       /**
        * #getter
@@ -278,7 +276,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * `showLoading`; it used to share this name.
        */
       get initPending() {
-        return !!this.init
+        return !!this.pendingLaunch
       },
       /**
        * #getter
@@ -570,7 +568,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return assemblyManager.loadingAssembly(
           self.views.length > 0
             ? self.views.flatMap(v => v.assemblyNames)
-            : (self.init?.views?.map(v => v.assembly) ?? []),
+            : (self.pendingLaunch?.views?.map(v => v.assembly) ?? []),
         )
       },
       /**
@@ -772,7 +770,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: LaunchInput<LinearSyntenyViewCommands>) {
+      setLaunch(init?: LaunchInput<LinearSyntenyViewCommands>) {
         self.launch = init
       },
     }))
@@ -787,7 +785,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          */
         clearView() {
           superClearView()
-          self.setInit(undefined)
+          self.setLaunch(undefined)
         },
       }
     })

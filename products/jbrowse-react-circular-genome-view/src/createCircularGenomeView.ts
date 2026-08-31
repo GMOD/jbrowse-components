@@ -287,10 +287,10 @@ export function createCircularGenomeView(
     if (state.displayedRegionNames && assemblyName) {
       // Re-driven through the view's own `init` field rather than by resolving
       // the names here and calling setDisplayedRegions: the init autorun
-      // re-fires on every setInit and owns the resolution — aliases, globs, and
+      // re-fires on every setLaunch and owns the resolution — aliases, globs, and
       // the warning when a name matches nothing. A second implementation here
       // would be the one that drops the ring to its import form on a typo.
-      current.session.view.setInit({
+      current.session.view.setLaunch({
         assembly: assemblyName,
         displayedRegionNames: displayedRegionNames?.length
           ? displayedRegionNames

@@ -53,7 +53,7 @@ async function setup() {
     ],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   return { session, view, level: view.levels[0]! }
 }
 

@@ -87,7 +87,7 @@ test('an unknown key is reported once, not once per capture', () => {
 test('a typo alone leaves nothing pending', () => {
   const view = open({ type: 'LinearGenomeView', locc: 'chr1' })
   expect(view.launch).toEqual({ unknown: { locc: 'chr1' } })
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 })
 
 test('a plain view prop stays on the snapshot', () => {

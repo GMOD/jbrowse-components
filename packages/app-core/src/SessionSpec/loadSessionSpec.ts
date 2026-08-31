@@ -2,7 +2,10 @@ import {
   isSessionWithAddAssembly,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
-import { unknownKeysMessage } from '@jbrowse/core/util/withLaunchInput'
+import {
+  legacyInitMessage,
+  unknownKeysMessage,
+} from '@jbrowse/core/util/withLaunchInput'
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
@@ -333,31 +336,6 @@ export async function loadSessionSpec(
       )
     }
 
-    // The two ways of writing a view are not the same shape, and this is the
-    // confusable pair:
-    //
-    // - a spec view is flat *arguments* to LaunchView-<type>, in that launcher's
-    //   own vocabulary (a dotplot takes `views`, a spreadsheet takes `uri`), and
-    //   the launcher sorts them into what the new view needs
-    // - a config/defaultSession view is MST *state*, so keys that need resolving
-    //   on load have nowhere to live but the view's own `init` property
-    //
-    // Reported rather than unwrapped here, deliberately: only a launcher knows
-    // which of its keys are one-shot commands versus plain view props, so
-    // flattening `init` centrally would erase that distinction and let a view prop
-    // nested inside it be honored from a spec while the identical config drops it.
-    // Teaching each launcher to accept both instead is per-view-type work that
-    // every future launcher has to remember — the shapes then differ by view type,
-    // which is worse than differing by surface. One check here covers every view
-    // type, including plugin-provided ones. Without it the LGV reports the
-    // downstream symptom, "No assembly provided", for a misplaced block.
-    const nested = views.filter(view => 'init' in view).map(view => view.type)
-    if (nested.length) {
-      session?.notifyError(
-        `Session spec view(s) ${nested.join(', ')} nest their settings under "init". A spec takes those keys flat (assembly, loc, tracks, …); "init" is the config/defaultSession form.`,
-      )
-    }
-
     // The same classification a view snapshot gets, run here because a spec
     // never becomes one: `LaunchView-<type>` takes these keys as arguments, so
     // `withLaunchInput`'s partition never sees them and nothing names a typo.
@@ -375,6 +353,12 @@ export async function loadSessionSpec(
     // launcher's vocabulary is undeclared, so every argument would read as a
     // typo.
     for (const { type, ...view } of views) {
+      // v4's nesting, which every surface now refuses in the same words. Its own
+      // message rather than a line in the unknown list: it is the one key an
+      // author is most likely to have written on purpose.
+      if ('init' in view) {
+        session?.notifyError(legacyInitMessage(type))
+      }
       const accepted = viewTypes.has(type)
         ? pluginManager.getViewType(type).acceptedKeys
         : undefined
@@ -394,13 +378,12 @@ export async function loadSessionSpec(
     // synchronously and in order; capturing the delta per launch instead is
     // correct even if a handler awaits or adds an auxiliary view, and lets a
     // later spec view (e.g. a connected MsaView) reference an earlier one that
-    // now already exists. `type` is the dispatch key, not view init data:
-    // forwarding it would land in the view's declarative init blob and trip the
-    // spurious "init ignored unknown key(s): type" warning meant to catch typos.
+    // now already exists. `type` is the dispatch key, not a setting: forwarding
+    // it would land in the view's launch blob and trip the spurious
+    // "ignored unknown key(s): type" warning meant to catch typos.
     // `displayName` is applied here rather than forwarded because it is a base
     // view prop every view type has, so one path covers all of them (including
-    // plugin-provided types whose launcher never heard of it). A nested `init` is
-    // NOT unwrapped the same way — see the diagnostic above for why.
+    // plugin-provided types whose launcher never heard of it).
     // Let any connection this spec registered finish before the views that
     // reference what it supplies are launched (see whenConnectionsSettle). Gated
     // on there being views: with none, nothing is waiting on the connection, and

@@ -126,7 +126,7 @@ const pairHeading = () => screen.getByRole('status')
 // displayedRegions, which its afterAttach autorun loads asynchronously, so the
 // declarative init is what a synchronous launch can be checked against.
 const launchedRows = (model: LinearSyntenyViewModel) =>
-  model.views.map(v => v.init?.assembly)
+  model.views.map(v => v.pendingLaunch?.assembly)
 
 // the synteny track on each level. A level's `tracks` is loosely typed, so the
 // track is annotated rather than cast.
@@ -644,7 +644,7 @@ test('a chromosome box reaches that row as its init displayedRegionNames', () =>
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA, ctgB' } })
   fireEvent.click(launchButton())
-  expect(model.views.map(v => v.init)).toEqual([
+  expect(model.views.map(v => v.pendingLaunch)).toEqual([
     { assembly: 'hg38', displayedRegionNames: ['ctgA', 'ctgB'] },
     // omitted rather than [], which would take the named-regions path with
     // nothing to name
@@ -691,7 +691,7 @@ test('hiding the boxes clears what was typed in them', () => {
 
   fireEvent.click(chromosomesCheckbox())
   fireEvent.click(launchButton())
-  expect(model.views.map(v => v.init)).toEqual([
+  expect(model.views.map(v => v.pendingLaunch)).toEqual([
     { assembly: 'hg38' },
     { assembly: 'mm39' },
   ])

@@ -135,7 +135,7 @@ type ScenarioName = keyof typeof SCENARIOS
  * The `unnavigated` scenario is the one that withholds `init`, and the whole
  * difference is that one argument: the engine, the assembly and the track
  * config are what every other radio builds. `navigate` hands the view the same
- * blob afterwards through the model's own `setInit`, which spells `assembly`
+ * blob afterwards through the model's own `setLaunch`, which spells `assembly`
  * because it is the model-level call -- `createViewState` fills that field in
  * from its own option so a host never names the genome twice.
  */
@@ -158,7 +158,7 @@ function makeView(name: ScenarioName) {
     trackId: track.trackId,
     loc,
     navigate: () => {
-      view.setInit({ ...init, assembly: assembly.name })
+      view.setLaunch({ ...init, assembly: assembly.name })
     },
   }
 }

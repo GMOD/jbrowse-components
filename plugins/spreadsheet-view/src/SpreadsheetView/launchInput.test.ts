@@ -85,7 +85,7 @@ test('an unknown key is reported once, not once per capture', () => {
 test('a typo alone leaves nothing pending', () => {
   const view = open({ fileTypes: 'BEDPE' })
   expect(view.launch).toEqual({ unknown: { fileTypes: 'BEDPE' } })
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
   expect(view.importWizard.selectedAssemblyName).toBeUndefined()
 })
 

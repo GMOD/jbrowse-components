@@ -95,7 +95,7 @@ test('an unknown key is reported once, not once per capture', () => {
 test('a typo alone leaves nothing pending', () => {
   const view = open({ displayedRegionName: 'ctgA' })
   expect(view.launch).toEqual({ unknown: { displayedRegionName: 'ctgA' } })
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
   expect(view.hasSomethingToShow).toBe(false)
   view.setWidth(800)
   expect(view.initialized).toBe(true)

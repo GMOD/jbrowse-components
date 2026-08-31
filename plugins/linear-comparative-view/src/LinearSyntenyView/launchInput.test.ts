@@ -110,7 +110,7 @@ test('an unknown key is reported once, not once per capture', () => {
 test('a typo alone leaves nothing pending', () => {
   const view = open({ drawCurvez: true })
   expect(view.launch).toEqual({ unknown: { drawCurvez: true } })
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
   expect(view.hasSomethingToShow).toBe(false)
 })
 
@@ -146,7 +146,7 @@ describe('the rows discriminator', () => {
     const view = open({ views: [built, { assembly: 'volvox2' }] })
     expect(view.views).toHaveLength(0)
     expect(view.launch?.views).toBeUndefined()
-    expect(view.init).toBeUndefined()
+    expect(view.pendingLaunch).toBeUndefined()
     expect(warnings()).toContain(
       'LinearSyntenyView refused views: the list mixes built view snapshots with recipes to open one, and the rows index against the levels between them. Write all of them one way.',
     )

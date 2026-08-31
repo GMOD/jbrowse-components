@@ -48,7 +48,7 @@ async function setup() {
     views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
 
   session.addSessionTrackConf({
     trackId: 'pafTrack',

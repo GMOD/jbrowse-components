@@ -1,13 +1,13 @@
 import {
+  reportLegacyInit,
   reportMalformedRows,
   reportUnknownKeys,
-  viewLabel,
 } from './unknownSnapshotKeys.ts'
 
 // re-exported here because the surfaces that classify their own keys — a
 // session spec, which launches without ever building a snapshot — reach the
 // partition's vocabulary through this module
-export { unknownKeysMessage } from './unknownSnapshotKeys.ts'
+export { legacyInitMessage, unknownKeysMessage } from './unknownSnapshotKeys.ts'
 
 import type {
   IAnyModelType,
@@ -45,7 +45,7 @@ export interface LaunchKeyRegistration<Commands> {
 }
 
 /**
- * The launch keys a view captured, plus the two things it has to report.
+ * The launch keys a view captured, plus what it has to report.
  *
  * `Commands` is not made partial: hand-authored JSON is what fills this, so a
  * key the interface marks required is not a guarantee here either way, and the
@@ -91,10 +91,32 @@ export type LaunchSnapshotIn<M extends IAnyModelType, Commands> = Omit<
   [K in keyof Commands]?: K extends keyof SnapshotIn<M>
     ? Commands[K] | SnapshotIn<M>[K]
     : Commands[K]
-} & {
-  /** v4's nested form, accepted while the other views still write it */
-  init?: Commands
 }
+
+// Keys that are a view's identity or its plumbing rather than a setting: `type`
+// picks the view, `id` is passed top-level so MST's optional identifier honors
+// it, and `launch` is the blob the partition below fills.
+type ReservedKey = 'id' | 'type' | 'launch'
+
+/**
+ * What a view can be launched with, derived: the keys its launcher interprets
+ * (`Commands`) plus every declared property of its state model, optional, in
+ * the property's own snapshot type. Nothing is restated, so a property is
+ * authorable — and TYPED — from the line that declares it.
+ *
+ * ```ts
+ * export type LinearSyntenyViewInit = ViewInit<
+ *   LinearSyntenyViewStateModel,
+ *   LinearSyntenyViewCommands
+ * >
+ * ```
+ *
+ * The twin of `LaunchSnapshotIn` above, from the other end: that one widens a
+ * snapshot type for a literal MST site, this one is what a caller BUILDING a
+ * spec annotates, so its commands stay required and its properties optional.
+ */
+export type ViewInit<M extends IAnyModelType, Commands> = Commands &
+  Partial<Omit<SnapshotIn<M>, keyof Commands | ReservedKey>>
 
 export type LaunchInputModel<M extends IAnyModelType, Commands> =
   M extends IModelType<infer P, infer O, any, infer S>
@@ -264,13 +286,11 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
         malformed: {},
       }
       classify(rest, registration, known, out)
-      if (isObject(init)) {
-        // v4 nested its launch keys here, and the comparative views' v4 `init`
-        // also applied any declared property it found, so a nested key sorts
-        // the same three ways a flat one does. `passThrough` does not carry
-        // over: a legacy spelling the view's own preprocessor converts is
-        // written flat by definition.
-        classify(init, { ...registration, passThrough: [] }, known, out)
+      if (init !== undefined) {
+        // v4's nesting, refused rather than unwrapped: it is one key everyone
+        // hits, so it gets its own message instead of reading as a typo. What
+        // is under it is dropped, which is what makes the view come up on its
+        // defaults and the report the only thing saying why.
         out.launch.legacyInit = true
       }
       if (Object.keys(out.unknown).length) {
@@ -296,9 +316,7 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
           launch?: LaunchInput<Commands>
         }
         if (launch?.legacyInit) {
-          console.warn(
-            `${viewLabel(self)} nests its settings under "init", which is deprecated: write every setting directly on the view object.`,
-          )
+          reportLegacyInit(self)
         }
         reportUnknownKeys(self, Object.keys(launch?.unknown ?? {}))
         reportMalformedRows(self, Object.keys(launch?.malformed ?? {}))

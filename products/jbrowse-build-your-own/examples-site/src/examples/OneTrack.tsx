@@ -68,7 +68,7 @@ const conservationTrack = {
  * `init` rather than poking `displayedRegions`/`tracks` directly: it is the
  * same declarative path a URL launch or a saved session takes, so the assembly
  * load, the navigation and the track show-ing all happen in the right order.
- * The view's own `setInit` takes the same blob if you need to re-launch one
+ * The view's own `setLaunch` takes the same blob if you need to re-launch one
  * later; passing it here fills in `assembly` from the option above, so the
  * genome is named once and the two cannot drift apart.
  *

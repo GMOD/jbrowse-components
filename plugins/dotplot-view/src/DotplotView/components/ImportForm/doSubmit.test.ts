@@ -34,7 +34,7 @@ function setup(
     setAssemblyNames: (x: string, y: string) => {
       calls.assemblyNames = [x, y]
     },
-    setInit: (init: unknown) => {
+    setLaunch: (init: unknown) => {
       calls.init = init
     },
     clearImportFormSyntenyTracks: () => {

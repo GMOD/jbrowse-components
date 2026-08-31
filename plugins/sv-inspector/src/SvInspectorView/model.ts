@@ -163,11 +163,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #getter
        * the launch state that still has something to apply — what the
-       * afterAttach autorun forwards to the sheet. Also v4's name for it, kept
-       * while the other views and the products that drive them still spell it
-       * this way; deleted with `setInit`.
+       * afterAttach autorun forwards to the sheet.
        */
-      get init() {
+      get pendingLaunch() {
         return pendingLaunch(self.launch)
       },
       /**
@@ -368,7 +366,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: LaunchInput<SvInspectorViewCommands>) {
+      setLaunch(init?: LaunchInput<SvInspectorViewCommands>) {
         self.launch = init
       },
     }))
@@ -404,8 +402,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             () => {
               const { init } = self
               if (init) {
-                self.spreadsheetView.setInit(init)
-                self.setInit(undefined)
+                self.spreadsheetView.setLaunch(init)
+                self.setLaunch(undefined)
               }
             },
             { name: 'SvInspectorViewInit' },

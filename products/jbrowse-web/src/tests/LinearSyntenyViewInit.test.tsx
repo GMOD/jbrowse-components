@@ -67,7 +67,7 @@ test('LinearSyntenyView initializes with init property', async () => {
   expect(view.levels[0]?.tracks.length).toBe(1)
 
   // init should be cleared after processing
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('LinearSyntenyView init without loc shows all regions', async () => {

@@ -44,7 +44,7 @@ test('SpreadsheetView initializes from a launch key for vcf.gz', async () => {
   )
 
   expect(view.spreadsheet?.assemblyName).toBe('volvox')
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('SpreadsheetView initializes from a launch key for bed.gz', async () => {
@@ -61,7 +61,7 @@ test('SpreadsheetView initializes from a launch key for bed.gz', async () => {
   )
 
   expect(view.spreadsheet?.assemblyName).toBe('volvox')
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('SpreadsheetView initializes with explicit fileType', async () => {
@@ -79,7 +79,7 @@ test('SpreadsheetView initializes with explicit fileType', async () => {
   )
 
   expect(view.spreadsheet?.assemblyName).toBe('volvox')
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('SpreadsheetView with no launch keys shows import form', () => {
@@ -90,7 +90,7 @@ test('SpreadsheetView with no launch keys shows import form', () => {
   const view = session.addView('SpreadsheetView', {})
 
   expect(view.spreadsheet).toBeUndefined()
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 // Regression: the reaction clears init synchronously, so the cached file

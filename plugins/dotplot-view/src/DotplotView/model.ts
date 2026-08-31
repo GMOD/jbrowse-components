@@ -478,11 +478,9 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #getter
          * the launch state that still has something to apply — the gate every
-         * loading and import-form path below reads. Also v4's name for it, kept
-         * while the other views and the products that drive them still spell it
-         * this way; deleted with `setInit`.
+         * loading and import-form path below reads.
          */
-        get init() {
+        get pendingLaunch() {
           return pendingLaunch(self.launch)
         },
         /**
@@ -583,7 +581,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          */
         get hasSomethingToShow() {
-          return self.assemblyNames.length > 0 || !!self.init
+          return self.assemblyNames.length > 0 || !!self.pendingLaunch
         },
         /**
          * #getter
@@ -601,7 +599,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * reader would assume they agree.
          */
         get initPending() {
-          return !!self.init
+          return !!self.pendingLaunch
         },
         /**
          * #getter
@@ -630,7 +628,7 @@ export default function stateModelFactory(pm: PluginManager) {
           return assemblyManager.loadingAssembly(
             self.assemblyNames.length > 0
               ? self.assemblyNames
-              : (self.init?.views?.map(v => v.assembly) ?? []),
+              : (self.pendingLaunch?.views?.map(v => v.assembly) ?? []),
           )
         },
         /**
@@ -1301,7 +1299,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setInit(init?: LaunchInput<DotplotViewCommands>) {
+        setLaunch(init?: LaunchInput<DotplotViewCommands>) {
           self.launch = init
         },
 

@@ -298,7 +298,7 @@ async function openInitializedPair(initExtras: Record<string, unknown> = {}) {
     ...initExtras,
   }) as LinearSyntenyViewModel
   view.setWidth(800)
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   const level = view.levels[0]!
   await when(() => level.linearSyntenyDisplays.length > 0)
   return {

@@ -211,7 +211,7 @@ describe('loadHubSpec with a view init', () => {
 
     expect(session.views).toHaveLength(1)
     expect(session.views[0].type).toBe('LinearGenomeView')
-    expect(session.views[0].init).toMatchObject({
+    expect(session.views[0].pendingLaunch).toMatchObject({
       loc: 'chr1:1-100',
       assembly: 'hubAsm',
     })

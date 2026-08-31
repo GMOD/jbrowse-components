@@ -168,19 +168,20 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
     stateTree.restoreSession(opts.session)
   }
   const { view } = stateTree.session
-  // Route every declarative launch through the view's own `init` field — the
+  // Route every declarative launch through the view's own launch blob — the
   // same path URL and session-spec launches take — instead of a bespoke
-  // setDisplayedRegions/showTrack sequence here. The view's init autorun sets
-  // displayedRegions once the assembly loads, then clears init.
+  // setDisplayedRegions/showTrack sequence here. The launch autorun sets
+  // displayedRegions once the assembly loads, then clears the blob.
   //
   // The last clause is the circular view's own default: a view with no
-  // displayedRegions is showing its import form, and `init` is the only thing
-  // that can build the figure, so a session that specifies neither gets one
-  // seeded from the configured assembly. A session that already has regions is
-  // left alone unless the caller asked for something.
-  const positioned = view.displayedRegions.length > 0 || view.init !== undefined
+  // displayedRegions is showing its import form, and a pending launch is the
+  // only thing that can build the figure, so a session that specifies neither
+  // gets one seeded from the configured assembly. A session that already has
+  // regions is left alone unless the caller asked for something.
+  const positioned =
+    view.displayedRegions.length > 0 || view.pendingLaunch !== undefined
   if (init !== undefined || displayedRegionNames !== undefined || !positioned) {
-    view.setInit({
+    view.setLaunch({
       ...init,
       assembly: assembly.name,
       displayedRegionNames: displayedRegionNames ?? init?.displayedRegionNames,

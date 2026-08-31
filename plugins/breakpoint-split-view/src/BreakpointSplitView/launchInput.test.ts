@@ -101,7 +101,7 @@ test('an unknown key is reported once, not once per capture', () => {
 test('a typo alone leaves nothing pending', () => {
   const view = open({ showIntraViewLinks: false })
   expect(view.launch).toEqual({ unknown: { showIntraViewLinks: false } })
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
   expect(view.hasSomethingToShow).toBe(false)
   expect(view.showLoading).toBe(false)
   expect(view.showImportForm).toBe(true)
@@ -133,7 +133,7 @@ describe('the rows discriminator', () => {
     const view = open({ views: [built, { assembly: 'volvox' }] })
     expect(view.views).toHaveLength(0)
     expect(view.launch?.views).toBeUndefined()
-    expect(view.init).toBeUndefined()
+    expect(view.pendingLaunch).toBeUndefined()
     expect(view.showImportForm).toBe(true)
     expect(warnings()).toContain(
       'BreakpointSplitView refused views: the list mixes built view snapshots with recipes to open one, and the rows index against the levels between them. Write all of them one way.',

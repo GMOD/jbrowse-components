@@ -96,7 +96,7 @@ test('an unknown key is reported once, not once per capture', () => {
 test('a typo alone leaves nothing pending', () => {
   const view = open({ colorBz: 'query' })
   expect(view.launch).toEqual({ unknown: { colorBz: 'query' } })
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
   expect(view.hasSomethingToShow).toBe(false)
 })
 

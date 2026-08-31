@@ -16,7 +16,7 @@ Content-Length — draw an indeterminate bar when it is missing, not one at zero
 state `view.ready` answers _ready_ to, so gating on that mounts tracks over an
 empty view. The last radio withholds the location from `createViewState` to sit
 in it, and its button leaves by handing the view an `init` blob through
-`setInit`.
+`setLaunch`.
 
 ## The channel that isn't on the view
 

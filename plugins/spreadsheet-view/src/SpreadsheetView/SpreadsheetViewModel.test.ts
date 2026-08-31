@@ -31,17 +31,17 @@ beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
-test('setInit applies the import exactly once', () => {
+test('setLaunch applies the import exactly once', () => {
   const { Session, SpreadsheetView } = makeSession()
   const session = Session.create({ rpcManager: {}, configuration: {} })
   const model = session.setView(
     SpreadsheetView.create({ type: 'SpreadsheetView' }),
   )
 
-  model.setInit({ assembly: 'volvox', uri: 'test.vcf' })
+  model.setLaunch({ assembly: 'volvox', uri: 'test.vcf' })
 
   // the reaction consumes init synchronously and points the wizard at the file
-  expect(model.init).toBeUndefined()
+  expect(model.pendingLaunch).toBeUndefined()
   expect(model.importWizard.fileSource).toMatchObject({ uri: 'test.vcf' })
 })
 
@@ -54,7 +54,7 @@ test('an init with no uri seeds the import form instead of loading', () => {
     SpreadsheetView.create({ type: 'SpreadsheetView' }),
   )
 
-  model.setInit({ assembly: 'volvox', fileType: 'BEDPE' })
+  model.setLaunch({ assembly: 'volvox', fileType: 'BEDPE' })
 
   expect(model.importWizard.selectedAssemblyName).toBe('volvox')
   expect(model.importWizard.fileType).toBe('BEDPE')
@@ -72,7 +72,7 @@ test('an explicit fileType wins over the type inferred from the uri', () => {
     SpreadsheetView.create({ type: 'SpreadsheetView' }),
   )
 
-  model.setInit({ assembly: 'volvox', uri: 'test.vcf', fileType: 'BEDPE' })
+  model.setLaunch({ assembly: 'volvox', uri: 'test.vcf', fileType: 'BEDPE' })
   expect(model.importWizard.fileType).toBe('BEDPE')
 })
 
@@ -160,7 +160,7 @@ test('width churn does not re-trigger the load (reaction tracks init, not width)
     SpreadsheetView.create({ type: 'SpreadsheetView' }),
   )
 
-  model.setInit({ assembly: 'volvox', uri: 'test.vcf' })
+  model.setLaunch({ assembly: 'volvox', uri: 'test.vcf' })
   // each applyInit run calls setFileSource with a fresh object, so fileSource
   // identity is a proxy for "the load re-ran". Under the old width-reactive
   // autorun this changed on every resize (duplicate import); the reaction

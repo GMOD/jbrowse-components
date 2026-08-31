@@ -820,7 +820,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
 
   // half two: view.status noRegions, the state `view.ready` answers "ready" to.
   // The radio builds an engine with no `init`, so nothing has told the view
-  // where to look, and the panel's button hands it one through `setInit`.
+  // where to look, and the panel's button hands it one through `setLaunch`.
   //
   // **Both ends are asserted, and the second is the one that keeps the page
   // honest.** Every other radio here is a state to be drawn; this one is a
@@ -857,7 +857,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
       )
     } catch {
       out.push(
-        'setInit on a view in noRegions mounted no display — the state has no ' +
+        'setLaunch on a view in noRegions mounted no display — the state has no ' +
           `way out, so drawing it buys the reader nothing. Demo read:\n${await demoText()}`,
       )
     }

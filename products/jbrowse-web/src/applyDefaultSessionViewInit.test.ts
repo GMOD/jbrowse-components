@@ -19,7 +19,7 @@ function makeSession(init?: InitState, aliases: Record<string, string> = {}) {
           type: 'LinearGenomeView',
           assemblyNames: [],
           init,
-          setInit: (arg: InitState) => applied.push(arg),
+          setLaunch: (arg: InitState) => applied.push(arg),
         },
       ],
     },

@@ -35,7 +35,7 @@ async function launch() {
     views: [{ assembly: 'a1' }, { assembly: 'a2' }],
   }) as LinearSyntenyViewModel
   view.setWidth(800)
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   return view
 }
 

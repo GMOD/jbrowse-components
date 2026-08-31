@@ -77,8 +77,8 @@ test('<JBrowseCircularGenomeView />', async () => {
 
 test('createViewState with no defaultSession auto-displays the assembly', async () => {
   const state = createViewState({ assembly, tracks: [] })
-  // with no session, createViewState seeds view.init to draw the whole assembly
-  expect(state.session.view.init).toEqual({ assembly: 'volvox' })
+  // with no session, createViewState seeds view.pendingLaunch to draw the whole assembly
+  expect(state.session.view.pendingLaunch).toEqual({ assembly: 'volvox' })
   state.session.view.setWidth(800)
   const { findAllByText } = render(
     <Suspense fallback={<div>Loading...</div>}>
@@ -89,7 +89,7 @@ test('createViewState with no defaultSession auto-displays the assembly', async 
 
   // init drove the displayed regions, then cleared itself
   jest.runAllTimers()
-  expect(state.session.view.init).toBeUndefined()
+  expect(state.session.view.pendingLaunch).toBeUndefined()
   expect(state.session.view.displayedRegions.length).toBe(2)
 }, 10000)
 

@@ -96,11 +96,9 @@ export default function stateModelFactory() {
           /**
            * #getter
            * the launch state that still has something to apply — the gate the
-           * afterAttach reaction reads. Also v4's name for it, kept while the
-           * other views and the products that drive them still spell it this
-           * way; deleted with `setInit`.
+           * afterAttach reaction reads.
            */
-          get init() {
+          get pendingLaunch() {
             return pendingLaunch(self.launch)
           },
         }))
@@ -156,7 +154,7 @@ export default function stateModelFactory() {
           /**
            * #action
            */
-          setInit(init?: LaunchInput<SpreadsheetViewCommands>) {
+          setLaunch(init?: LaunchInput<SpreadsheetViewCommands>) {
             self.launch = init
           },
 
@@ -282,7 +280,7 @@ export default function stateModelFactory() {
         }))
         .actions(self => ({
           afterAttach() {
-            const hadInit = !!self.init
+            const hadInit = !!self.pendingLaunch
             addDisposer(
               self,
               // Trigger on `init` ONLY. A reaction tracks just its data fn, so
@@ -290,13 +288,13 @@ export default function stateModelFactory() {
               // dependencies — width churn (sv-inspector resizes, a workspace
               // tab settling, StrictMode) can no longer retrigger the load. `init`
               // is cleared synchronously up front so the same request can't be
-              // applied twice; a later setInit supersedes. Re-entrancy is
+              // applied twice; a later setLaunch supersedes. Re-entrancy is
               // excluded by the dependency graph rather than a guard flag.
               reaction(
-                () => self.init,
+                () => self.pendingLaunch,
                 init => {
                   if (init) {
-                    self.setInit(undefined)
+                    self.setLaunch(undefined)
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.applyInit(init)
                   }

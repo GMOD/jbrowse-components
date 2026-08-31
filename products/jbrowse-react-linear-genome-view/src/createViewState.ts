@@ -222,7 +222,7 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
     // navToLocString/addToHighlights/showTrack sequence written here — and it
     // drives the loading-state machine, so the view shows a spinner rather than
     // the import form while the assembly loads.
-    stateTree.session.view.setInit({
+    stateTree.session.view.setLaunch({
       ...init,
       assembly: assembly.name,
       loc: location

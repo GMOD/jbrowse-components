@@ -301,7 +301,7 @@ export function createLinearGenomeView(
       // unhandled rejection. The init autorun waits for `initialized` and runs
       // the same navToLocString, gene-name search included, then reports a
       // locstring that matched nothing as a snackbar rather than a throw.
-      current.session.view.setInit({ assembly: assemblyName, loc: location })
+      current.session.view.setLaunch({ assembly: assemblyName, loc: location })
     }
   }
 

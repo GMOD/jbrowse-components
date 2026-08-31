@@ -32,7 +32,7 @@ test('init reaches the view, with the assembly name filled in', () => {
     init: { loc: 'ctgA:1..100', tracks: ['volvox_gff3'], tracklist: true },
   })
 
-  expect(state.session.view.init).toEqual({
+  expect(state.session.view.pendingLaunch).toEqual({
     assembly: 'volvox',
     loc: 'ctgA:1..100',
     tracks: ['volvox_gff3'],
@@ -48,7 +48,7 @@ test('location and highlight are shorthands on the same blob', () => {
     highlight: ['ctgA:5..10'],
   })
 
-  expect(state.session.view.init).toMatchObject({
+  expect(state.session.view.pendingLaunch).toMatchObject({
     assembly: 'volvox',
     loc: 'ctgA:1..100',
     highlight: ['ctgA:5..10'],
@@ -66,7 +66,7 @@ test('location wins over init.loc, and does not disturb the rest of init', () =>
     init: { loc: 'ctgA:1..100', tracks: ['volvox_gff3'] },
   })
 
-  expect(state.session.view.init).toMatchObject({
+  expect(state.session.view.pendingLaunch).toMatchObject({
     loc: 'ctgA:200..300',
     tracks: ['volvox_gff3'],
   })
@@ -82,7 +82,7 @@ test('location wins over init.loc, and does not disturb the rest of init', () =>
 test('no init input leaves the view with none, in a state that says so', () => {
   const state = createViewState({ assembly, tracks })
 
-  expect(state.session.view.init).toBeUndefined()
+  expect(state.session.view.pendingLaunch).toBeUndefined()
   expect(state.session.view.status).toEqual({ type: 'noRegions' })
   expect(state.session.view.ready).toBe(true)
 })

@@ -54,7 +54,7 @@ test('multi-way LinearSyntenyView init routes tracks to per-level slots', async 
     'volvox_ins.paf',
   )
 
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('a hand-authored multi-way session sizes levels from its views', () => {
@@ -98,12 +98,12 @@ test('a failed init lands on the import form, not a permanent spinner', async ()
   expect(view.showLoading).toBe(false)
   expect(view.showImportForm).toBe(true)
   // kept so a reload can retry the init from a clean slate
-  expect(view.init).toBeDefined()
+  expect(view.pendingLaunch).toBeDefined()
 
   // ...and "return to import form" drops it, so the view can't bounce back to
   // the spinner
   view.clearView()
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
   expect(view.showImportForm).toBe(true)
 }, 40000)
 

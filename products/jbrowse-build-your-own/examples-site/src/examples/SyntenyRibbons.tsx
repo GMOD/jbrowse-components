@@ -142,11 +142,11 @@ const MOUSE_LOC = 'chr11:101,375,000..101,447,000'
 /**
  * `createViewState` from the app product takes its config in one blob and
  * builds the session from `defaultSession`, rather than the single-view
- * product's `setInit` on a view that already exists. Same idea, one level up:
+ * product's `setLaunch` on a view that already exists. Same idea, one level up:
  * declare what you want and let the engine resolve assemblies in the right
  * order.
  *
- * `init` on the view snapshot is the synteny view's own version of `setInit`:
+ * `init` on the view snapshot is the synteny view's own version of `setLaunch`:
  * per row an assembly, where to open it and which tracks to show, and per band
  * which synteny track goes in it. The view resolves both assemblies first, then
  * builds a linear genome view for each row -- so a row arrives already at its

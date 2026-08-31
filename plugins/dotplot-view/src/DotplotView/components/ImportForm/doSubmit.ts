@@ -54,7 +54,7 @@ export function doSubmit({
     // undefined rather than an init with two empty lists when neither box was
     // used: `init` is persisted and is what "has something to show" consults,
     // so an empty one is a request that never resolves to anything.
-    model.setInit(
+    model.setLaunch(
       views.some(v => v.displayedRegionNames.length > 0)
         ? { views }
         : undefined,

@@ -62,7 +62,7 @@ test('a displayedRegionNames that matches nothing keeps the whole assembly', asy
 // the drain has to have consumed it by the time regions are on the circle
 test('a consumed init is cleared rather than re-applied on the next resize', async () => {
   const { view } = await setup({ assembly: 'volvox' })
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
 
   view.zoomInButton()
   const { bpPerPx } = view

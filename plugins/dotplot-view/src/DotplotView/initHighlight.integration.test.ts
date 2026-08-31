@@ -132,5 +132,5 @@ test('a bad per-axis init loc leaves the other axis navigated', async () => {
 
   expect(notifyError).toHaveBeenCalledTimes(1)
   // the plot materialized, so init is consumed rather than kept for a retry
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 })

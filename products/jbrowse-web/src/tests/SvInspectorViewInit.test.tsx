@@ -51,7 +51,7 @@ test('SvInspectorView initializes its spreadsheet from the launch keys', async (
   )
 
   expect(view.spreadsheetView.spreadsheet?.assemblyName).toBe('volvox')
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 // The view had no `showLoading` at all, so ViewContainer published
@@ -105,7 +105,7 @@ test('an assembly with no uri lands on the import form, on that assembly', () =>
   expect(view.spreadsheetView.importWizard.selectedAssemblyName).toBe('volvox')
   expect(view.showCircularView).toBe(false)
   expect(view.spreadsheetView.spreadsheet).toBeUndefined()
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 async function loadedSvInspector() {

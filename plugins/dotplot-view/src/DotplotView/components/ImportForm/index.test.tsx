@@ -226,7 +226,7 @@ test('the chromosome box reaches the init as that axis displayedRegionNames', ()
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA, ctgB' } })
   fireEvent.click(launchButton())
-  expect(model.init).toEqual({
+  expect(model.pendingLaunch).toEqual({
     views: [
       { assembly: 'hg38', displayedRegionNames: ['ctgA', 'ctgB'] },
       { assembly: 'mm39', displayedRegionNames: [] },
@@ -286,7 +286,7 @@ test('hiding the boxes clears what was typed in them', () => {
   // no init at all, which is doSubmit's "neither box was used" — an init
   // carrying two empty lists would be a restriction request that resolves to
   // nothing
-  expect(model.init).toBeUndefined()
+  expect(model.pendingLaunch).toBeUndefined()
 })
 
 test('the track picker offers a connection-supplied synteny track', () => {

@@ -1,12 +1,12 @@
 import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 
-// `view.type` is the discriminant; the LinearGenomeView model owns setInit,
-// `init` and assemblyNames, none of which are on the base view interface
+// `view.type` is the discriminant; the LinearGenomeView model owns setLaunch,
+// `pendingLaunch` and assemblyNames, none of which are on the base view interface
 interface LinearGenomeViewLike {
   type: string
   assemblyNames: string[]
-  init?: InitState
-  setInit: (init: InitState) => void
+  pendingLaunch?: InitState
+  setLaunch: (launch: InitState) => void
 }
 
 // The alias-aware half of the session the assembly comparison below needs.
@@ -29,19 +29,19 @@ export function applyDefaultSessionViewInit(
   const view = session?.views.find(v => v.type === 'LinearGenomeView') as
     | LinearGenomeViewLike
     | undefined
-  // The URL may omit assembly. A defaultSession view that used the `init`
-  // shorthand hasn't navigated yet, so assemblyNames (derived from
-  // displayedRegions) is still empty and only its pending init names one.
-  const pending = view?.init
+  // The URL may omit assembly. A defaultSession view launched from a locstring
+  // hasn't navigated yet, so assemblyNames (derived from displayedRegions) is
+  // still empty and only its pending launch names one.
+  const pending = view?.pendingLaunch
   const assembly = init.assembly ?? pending?.assembly ?? view?.assemblyNames[0]
   if (session && view && assembly) {
     // extendSession means "add to the defaultSession", so the URL's keys layer
-    // over the view's own pending init rather than replacing it — a config that
-    // opened tracks via `init.tracks` keeps them when the URL only sets `loc`.
+    // over the view's own pending launch rather than replacing it — a config
+    // that opened tracks via `tracks` keeps them when the URL only sets `loc`.
     // buildLgvInit omits the params the URL didn't carry, so no key here is
     // present-but-undefined, which would erase its counterpart.
     //
-    // Unless the URL switches assemblies: the pending init's tracks and loc
+    // Unless the URL switches assemblies: the pending launch's tracks and loc
     // belong to the old one, and carrying them over opens tracks whose adapters
     // resolve no refNames — an empty track, not an error.
     //
@@ -52,7 +52,7 @@ export function applyDefaultSessionViewInit(
     const base = sameAssembly(session, pending?.assembly, assembly)
       ? pending
       : undefined
-    view.setInit({ ...base, ...init, assembly })
+    view.setLaunch({ ...base, ...init, assembly })
   }
 }
 

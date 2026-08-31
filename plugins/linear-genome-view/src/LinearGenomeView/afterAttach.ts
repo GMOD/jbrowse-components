@@ -224,7 +224,7 @@ async function applyInit(
   // `superseded`, not a bare isAlive: it subsumes the liveness check (the view
   // may have been removed while the drawer or the navigation resolved, and
   // reading or mutating a detached node throws) and also covers the case
-  // isAlive misses — a newer setInit landed mid-apply, so the rest of *this*
+  // isAlive misses — a newer setLaunch landed mid-apply, so the rest of *this*
   // blob is stale. Finishing it anyway appends its tracks and highlights under
   // the one that replaced it, and addToHighlights pushes, so a re-launch of the
   // same spec (a StrictMode remount) doubles the bands. The drain loop applies

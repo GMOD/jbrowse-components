@@ -102,10 +102,7 @@ export function breakpointTracks(
 /**
  * The panel array a `--spec` supplies directly.
  *
- * The panels are the view's `views`, one entry per stacked panel. v4 spelled
- * the same array as a bare `init`, which this still accepts: a spec is
- * hand-written JSON with no compiler behind it, and the two spellings mean the
- * same picture.
+ * The panels are the view's `views`, one entry per stacked panel.
  *
  * Not the shared `viewSettingsFromSpec`, which hands the rest of the object
  * over whole — for this view that would nest the array a level too deep
@@ -115,7 +112,7 @@ export function breakpointTracks(
 export function breakpointPanelsFromSpec(
   spec: Record<string, unknown>,
 ): BreakpointSplitViewInitView[] {
-  const panels = spec.views ?? spec.init
+  const panels = spec.views
   if (!Array.isArray(panels)) {
     throw new Error(
       'a BreakpointSplitView --spec needs a "views" array, one entry per panel: ' +

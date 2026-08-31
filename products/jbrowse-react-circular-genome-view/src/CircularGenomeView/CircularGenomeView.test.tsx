@@ -49,5 +49,5 @@ test('<CircularGenomeView /> builds its own engine and shows regions via init', 
 
   // init drove the displayed regions, then cleared itself
   jest.runAllTimers()
-  expect(ref.current!.session.view.init).toBeUndefined()
+  expect(ref.current!.session.view.pendingLaunch).toBeUndefined()
 }, 10000)

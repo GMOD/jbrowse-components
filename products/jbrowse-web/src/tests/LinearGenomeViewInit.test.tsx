@@ -55,7 +55,7 @@ test('LinearGenomeView initializes with gene name search', async () => {
 
   expect(view.displayedRegions[0]!.start).toBeLessThan(1050)
   expect(view.displayedRegions[0]!.end).toBeGreaterThan(9000)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('init.highlight (the &highlight= URL param) is parsed onto the list and governed by the session-wide flag', async () => {
@@ -98,7 +98,7 @@ test('LinearGenomeView initializes with init property and location', async () =>
 
   expect(view.assemblyNames[0]).toBe('volvox')
   expect(view.displayedRegions.length).toBeGreaterThan(0)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('LinearGenomeView initializes with init property and tracks', async () => {
@@ -116,7 +116,7 @@ test('LinearGenomeView initializes with init property and tracks', async () => {
   )
 
   expect(view.tracks.length).toBe(1)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('LinearGenomeView initializes without location shows all regions', async () => {
@@ -133,7 +133,7 @@ test('LinearGenomeView initializes without location shows all regions', async ()
 
   expect(view.assemblyNames[0]).toBe('volvox')
   expect(view.displayedRegions.length).toBeGreaterThan(0)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('LinearGenomeView initializes with tracklist and nav options', async () => {
@@ -149,7 +149,7 @@ test('LinearGenomeView initializes with tracklist and nav options', async () => 
       expect(view.initialized).toBe(true)
       // Wait for init to be cleared - autorun is async so we need to wait for
       // all init operations to complete
-      expect(view.init).toBeUndefined()
+      expect(view.pendingLaunch).toBeUndefined()
     },
     { timeout: 30000 },
   )
@@ -182,7 +182,7 @@ test('LinearGenomeView without init shows import form', () => {
   const view = session.addView('LinearGenomeView', {})
 
   expect(view.displayedRegions.length).toBe(0)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {

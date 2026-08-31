@@ -54,7 +54,7 @@ test.each([
   const view = launch(session, views)
 
   // consumed, not kept: a retry could not launch it either
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   expect(view.assemblyNames).toHaveLength(0)
   expect(notify).not.toHaveBeenCalled()
 })
@@ -70,7 +70,7 @@ test.each([
   const notify = jest.spyOn(session, 'notifyError')
   const view = launch(session, views)
 
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   expect(notify).toHaveBeenCalledWith(
     expect.stringContaining('an assembly on each of its two views'),
   )

@@ -206,33 +206,33 @@ function throwOnRenderError(session: RenderErrorSources) {
 interface InitView {
   setWidth: (n: number) => void
   initialized: boolean
-  init?: unknown
+  pendingLaunch?: unknown
 }
 
 // A comparative/circular view sets `initialized` true as soon as it has regions
-// to show, but its frozen `init` snapshot is consumed a moment later by an async
-// autorun (which awaits assemblies, navigates each sub-view, and attaches
-// tracks). The SVG only has content once that autorun has cleared `init`. On
-// failure the dotplot/synteny autorun deliberately KEEPS `init` set (interactive
-// recovery) but reports the error to the session, so waiting on `!init` alone
-// would hang — also resolve on a session error, which is then rethrown.
+// to show, but its launch blob is consumed a moment later by an async autorun
+// (which awaits assemblies, navigates each sub-view, and attaches tracks). The
+// SVG only has content once that autorun has cleared it. On failure the
+// dotplot/synteny autorun deliberately KEEPS the blob (interactive recovery) but
+// reports the error to the session, so waiting on `!pendingLaunch` alone would
+// hang — also resolve on a session error, which is then rethrown.
 //
-// `!init` and NOT the views' own `initPending`, which looks like the obvious
-// predicate and is the wrong one here: that getter answers "should a loading
-// indicator show", and LinearGenomeView's clears the moment displayedRegions
-// land — while the same apply pass still has `init.tracks` to attach and
-// `init.highlight` to place. Rendering there would emit a positioned view with
-// its tracks missing. `init` is cleared only once the whole pass is done, which
-// is the question this is actually asking.
+// `pendingLaunch` and NOT the views' own `initPending`, which looks like the
+// obvious predicate and is the wrong one here: that getter answers "should a
+// loading indicator show", and LinearGenomeView's clears the moment
+// displayedRegions land — while the same apply pass still has `tracks` to attach
+// and `highlight` to place. Rendering there would emit a positioned view with
+// its tracks missing. The blob is cleared only once the whole pass is done,
+// which is the question this is actually asking.
 //
 // Deliberately unbounded. A time limit here can only mislabel a stuck fetch as
 // "the view didn't initialize", and the same reasoning already removed the 60s
 // bound from core's awaitSvgReady: if a view can reach a state where neither
-// disjunct ever becomes true, that view's init is the bug, not this wait.
+// disjunct ever becomes true, that view's launch is the bug, not this wait.
 async function whenViewReady(view: InitView, session: RenderErrorSources) {
   await when(
     () =>
-      (view.initialized && !view.init) ||
+      (view.initialized && !view.pendingLaunch) ||
       firstRenderError(session) !== undefined,
   )
   throwOnRenderError(session)
@@ -251,21 +251,21 @@ async function whenViewReady(view: InitView, session: RenderErrorSources) {
 type SpecSettings = Record<string, unknown>
 
 // The one gate between "I have a view" and "I can render it": size it, then
-// wait for any `init` blob to be consumed.
+// wait for the launch blob to be consumed.
 //
 // It belongs to *holding* a view rather than to having just built one, which is
-// the distinction this used to get wrong. A view carries an `init` whether this
-// tool synthesized it from flags (addLaunchView below) or a `--session` /
-// `--defaultSession` supplied one already carrying it — `init` is a persisted
+// the distinction this used to get wrong. A view carries a launch blob whether
+// this tool synthesized it from flags (addLaunchView below) or a `--session` /
+// `--defaultSession` supplied one already carrying it — `launch` is a persisted
 // prop on LinearGenomeView, DotplotView and LinearSyntenyView alike, applied by
 // the shared `installInitAutorun` state machine. Waiting only in the construct
 // path meant the one view type this tool ADOPTS rather than builds, the LGV in
-// renderLinear, never awaited its init: the positioned-on-a-region check ran
-// against a view whose navigation autorun had not finished, so a session using
-// the modern `init: {assembly, loc, tracks}` form failed with "has no view
+// renderLinear, never awaited its launch: the positioned-on-a-region check ran
+// against a view whose navigation autorun had not finished, so a session
+// carrying `{assembly, loc, tracks}` on the view failed with "has no view
 // positioned on a region" instead of rendering.
 //
-// Free for a view with nothing to wait for: an LGV with no `init` has no
+// Free for a view with nothing to wait for: an LGV with nothing pending has no
 // displayed regions yet, so `assemblyNames` is empty, `assembliesInitialized` is
 // vacuously true, and this resolves as soon as `setWidth` lands.
 async function readyView<T extends InitView>(view: T, ctx: ModeContext) {
@@ -525,7 +525,7 @@ const renderCircular: ModeRenderer = async ctx => {
 const renderBreakpoint: ModeRenderer = async ctx => {
   const { data, opts, model } = ctx
   // trackId AND its modifiers: breakpointTracks builds a display snapshot from
-  // them, since a breakpoint panel opens its tracks from `init` and never
+  // them, since a breakpoint panel opens its tracks from its launch blob and never
   // reaches the `applyDisplayOpts`/`showTrack` call every other mode uses
   const showTracks = (opts.showTracks ?? []).map(
     ([, [trackInput, ...trackOpts]]) => {
@@ -551,14 +551,15 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   // A SECOND wait, because this view's launch state is consumed one level above
   // the one that matters. Its autorun turns the panel array into sub-views and
   // clears it in the same tick, so `readyView` is satisfied the moment the
-  // panels EXIST — while each sub-view still carries its own `init` holding the
-  // loc and, decisively, the tracks. Rendering there produced two correctly
+  // panels EXIST — while each sub-view still carries its own pending launch
+  // holding the loc and, decisively, the tracks. Rendering there produced two
+  // correctly
   // positioned, correctly labelled, completely empty panels: the exact
   // failure `whenViewReady` warns about for LGV's `initPending`, one level of
   // nesting further out.
   await when(
     () =>
-      view.views.every(v => !v.init) ||
+      view.views.every(v => !v.pendingLaunch) ||
       firstRenderError(model.session) !== undefined,
   )
   throwOnRenderError(model.session)
@@ -572,7 +573,7 @@ const renderBreakpoint: ModeRenderer = async ctx => {
 }
 
 // Options only renderLinear reads. A comparative or circular view takes its
-// tracks from its own init (or --spec), so a --track/--refseq passed to one is
+// tracks from its own launch blob (or --spec), so a --track/--refseq passed to one is
 // dropped; --loc positions the sub-views of a comparative view but means nothing
 // to a circular one, which always shows the whole assembly. main.ts warns about
 // the reverse — comparative flags in a linear run — so say this here rather than

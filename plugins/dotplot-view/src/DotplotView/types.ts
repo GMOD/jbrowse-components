@@ -1,5 +1,5 @@
 import type { DotplotViewStateModel } from './model.ts'
-import type { ViewInit } from '@jbrowse/core/util/applyInitSettings'
+import type { ViewInit } from '@jbrowse/core/util/withLaunchInput'
 import type { SyntenyViewSharedCommands } from '@jbrowse/synteny-core'
 
 // A plot-area pointer position in component px, as the drag handlers and the

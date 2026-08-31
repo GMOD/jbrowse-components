@@ -50,7 +50,7 @@ test('DotplotView initializes with init property', async () => {
 
   expect(view.assemblyNames).toContain('peach')
   expect(view.assemblyNames).toContain('grape')
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('DotplotView initializes without tracks', async () => {
@@ -67,7 +67,7 @@ test('DotplotView initializes without tracks', async () => {
 
   expect(view.assemblyNames).toContain('peach')
   expect(view.assemblyNames).toContain('grape')
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('DotplotView showImportForm is false when init is set', async () => {

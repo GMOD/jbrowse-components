@@ -6,15 +6,15 @@ import { getNotificationSink } from './sessionServices.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 interface InitAutorunHost<T> extends IStateTreeNode {
-  init?: T
-  setInit: (init?: T) => void
+  pendingLaunch?: T
+  setLaunch: (launch?: T) => void
   setError: (error: unknown) => void
 }
 
 export interface InitApplyContext {
   /**
    * True once this init can no longer be the one being applied: the node is
-   * gone, or a newer `setInit` has replaced it. Any mid-apply wait that can
+   * gone, or a newer `setLaunch` has replaced it. Any mid-apply wait that can
    * park indefinitely must fold this into its condition — an unbounded wait on
    * state that never arrives holds the drain open, and the newer init that
    * would have superseded it is exactly what gets stranded. This is the causal
@@ -43,13 +43,13 @@ interface InitAutorunOptions<T> {
   apply: (init: T, ctx: InitApplyContext) => Promise<void>
 }
 
-// Clear only when `init` is still the exact object we applied. A setInit that
-// lands while `apply` is awaiting (React StrictMode remounts, a programmatic
-// re-launch) swaps in a new object; clearing unconditionally would silently
-// drop that pending init. Leaving it lets the drain loop apply it next.
+// Clear only when the pending blob is still the exact object we applied. A
+// setLaunch that lands while `apply` is awaiting (React StrictMode remounts, a
+// programmatic re-launch) swaps in a new object; clearing unconditionally would
+// silently drop it. Leaving it lets the drain loop apply it next.
 function clearIfUnchanged<T>(self: InitAutorunHost<T>, init: T) {
-  if (isAlive(self) && self.init === init) {
-    self.setInit(undefined)
+  if (isAlive(self) && self.pendingLaunch === init) {
+    self.setLaunch(undefined)
   }
 }
 
@@ -60,7 +60,7 @@ async function applyInitOnce<T>(
 ) {
   try {
     await apply(init, {
-      superseded: () => !isAlive(self) || self.init !== init,
+      superseded: () => !isAlive(self) || self.pendingLaunch !== init,
     })
     clearIfUnchanged(self, init)
   } catch (e) {
@@ -83,7 +83,7 @@ function currentInit<T>(
   self: InitAutorunHost<T>,
   { ready }: InitAutorunOptions<T>,
 ) {
-  return isAlive(self) && ready() ? self.init : undefined
+  return isAlive(self) && ready() ? self.pendingLaunch : undefined
 }
 
 // Apply pending inits one at a time until none remain. Serializing (rather
@@ -100,14 +100,14 @@ async function drainInit<T>(
   while (pending !== undefined) {
     await applyInitOnce(self, pending, opts)
     const next = currentInit(self, opts)
-    // a fatal failure keeps `init` for a reload retry; the same object still
+    // a fatal failure keeps `launch` for a reload retry; the same object still
     // sitting there means it was not consumed, so stop rather than spin on it
     pending = next === pending ? undefined : next
   }
 }
 
 /**
- * The init state machine shared by the views that take a declarative `init`
+ * The launch state machine shared by the views that take a declarative launch
  * blob (LinearGenomeView, DotplotView, LinearSyntenyView): the re-entry guard,
  * the readiness gate, the serialized drain, the identity-checked clear, the
  * isAlive guards, and one failure policy.
@@ -115,18 +115,18 @@ async function drainInit<T>(
  * The failure policy keys off `materialized`, the same line each view's
  * postProcessSnapshot already draws for persistence:
  *
- * - Not materialized — nothing is on screen and `init` is still persisted, so
+ * - Not materialized — nothing is on screen and `launch` is still persisted, so
  *   keep it for a reload retry and `setError`. That flips the view onto its
  *   import form, which renders the error in its own banner; a snackbar would
  *   state the same failure twice and the banner is the one that persists.
  * - Materialized — the view works, so a later failure is one sub-step's
  *   problem and must not take the view down with it. `setError` would, since
  *   showImportForm keys off `error` alone and would discard rows that loaded
- *   fine, so report it as a snackbar instead. Clearing `init` is also what
+ *   fine, so report it as a snackbar instead. Clearing `launch` is also what
  *   disarms the re-fire: `ready` usually folds in the measured width, so
- *   leaving it set lets any resize re-run `apply` over a half-applied init.
+ *   leaving it set lets any resize re-run `apply` over a half-applied blob.
  *
- * `apply` therefore never clears `init` and never catches for reporting — it
+ * `apply` therefore never clears `launch` and never catches for reporting — it
  * catches only the failures it wants to keep going through (a bad locstring in
  * one row), and everything it lets escape is fatal-as-of-that-point.
  */
@@ -153,7 +153,7 @@ export function installInitAutorun<T>(
         // reading a detached node throws — here into an unawaited promise.
         const alive = isAlive(self)
         const isReady = alive && opts.ready()
-        const init = alive ? self.init : undefined
+        const init = alive ? self.pendingLaunch : undefined
         if (isReady && init !== undefined && !draining) {
           draining = true
           try {

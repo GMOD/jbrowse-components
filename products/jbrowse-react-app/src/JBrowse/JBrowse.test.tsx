@@ -53,7 +53,7 @@ test('<JBrowse /> maps the views prop into session.views', () => {
   // the per-view init blob must actually reach the view model, not be dropped.
   // toMatchObject because the view also records that the blob arrived nested,
   // which is deprecated and reported on attach
-  expect(views[0]!.init).toMatchObject({
+  expect(views[0]!.pendingLaunch).toMatchObject({
     assembly: 'volvox',
     loc: 'ctgA:1-10',
   })

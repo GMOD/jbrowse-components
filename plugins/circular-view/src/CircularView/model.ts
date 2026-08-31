@@ -522,11 +522,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the launch state that still has something to apply — the gate the
-       * loading and import-form paths below read. Also v4's name for it, kept
-       * while the other views and the products that drive them still spell it
-       * this way; deleted with `setInit`.
+       * loading and import-form paths below read.
        */
-      get init() {
+      get pendingLaunch() {
         return pendingLaunch(self.launch)
       },
       /**
@@ -542,7 +540,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * none, and waiting on one nobody named never ends.
        */
       get launchAssemblyName() {
-        return this.init?.assembly
+        return this.pendingLaunch?.assembly
       },
       /**
        * #getter
@@ -603,7 +601,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get hasSomethingToShow() {
-        return self.displayedRegions.length > 0 || !!this.init
+        return self.displayedRegions.length > 0 || !!this.pendingLaunch
       },
 
       /**
@@ -917,7 +915,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: LaunchInput<CircularViewCommands>) {
+      setLaunch(init?: LaunchInput<CircularViewCommands>) {
         self.launch = init
       },
 

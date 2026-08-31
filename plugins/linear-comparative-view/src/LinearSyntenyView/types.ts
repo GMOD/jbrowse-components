@@ -1,7 +1,7 @@
 import type { LinearSyntenyViewStateModel } from './model.ts'
-import type { ViewInit } from '@jbrowse/core/util/applyInitSettings'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
+import type { ViewInit } from '@jbrowse/core/util/withLaunchInput'
 import type {
   LinearGenomeViewLaunchProps,
   TrackLabelMode,

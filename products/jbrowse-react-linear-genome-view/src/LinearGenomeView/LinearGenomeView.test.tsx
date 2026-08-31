@@ -55,7 +55,7 @@ test('<LinearGenomeView /> builds its own engine and navigates via init', async 
   expect(ref.current).toBeDefined()
   await waitFor(
     () => {
-      expect(ref.current!.session.view.init).toBeUndefined()
+      expect(ref.current!.session.view.pendingLaunch).toBeUndefined()
     },
     { timeout },
   )

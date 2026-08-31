@@ -14,16 +14,21 @@ function setup(
 
   const View = types
     .model('TestView', {
-      init: types.frozen<Init | undefined>(),
+      launch: types.frozen<Init | undefined>(),
     })
     .volatile(() => ({
       ready: false,
       materialized: false,
       error: undefined as unknown,
     }))
+    .views(self => ({
+      get pendingLaunch() {
+        return self.launch
+      },
+    }))
     .actions(self => ({
-      setInit(init?: Init) {
-        self.init = init
+      setLaunch(launch?: Init) {
+        self.launch = launch
       },
       setError(error: unknown) {
         self.error = error
@@ -82,7 +87,7 @@ test('gates on ready, then applies and clears init', async () => {
   expect(applied).toHaveLength(0)
 
   view.setReady(true)
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   expect(applied.map(i => i.tag)).toEqual(['first'])
 })
 
@@ -102,10 +107,10 @@ test('an init that lands mid-apply is applied, not dropped', async () => {
 
   view.setReady(true)
   await when(() => !!inFlight)
-  view.setInit({ tag: 'second' })
+  view.setLaunch({ tag: 'second' })
   inFlight!()
 
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   expect(applied.map(i => i.tag)).toEqual(['first', 'second'])
 })
 
@@ -131,7 +136,7 @@ test('ready churn mid-apply does not run a second apply', async () => {
   expect(calls).toBe(1)
 
   inFlight!()
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   expect(calls).toBe(1)
 })
 
@@ -154,8 +159,8 @@ test('a mid-apply wait can unpark on being superseded', async () => {
   await settle()
   expect(applied).toHaveLength(0)
 
-  view.setInit({ tag: 'second' })
-  await when(() => view.init === undefined)
+  view.setLaunch({ tag: 'second' })
+  await when(() => view.pendingLaunch === undefined)
   expect(applied.map(i => i.tag)).toEqual(['first', 'second'])
 })
 
@@ -167,7 +172,7 @@ test('a failure after materialization clears init and notifies', async () => {
   jest.spyOn(console, 'error').mockImplementation()
 
   view.setReady(true)
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
   expect(notified).toEqual(['Error: late step failed'])
   // the view still works — setError would drop it to the import form
   expect(view.error).toBeUndefined()
@@ -186,7 +191,7 @@ test('a failure before materialization keeps init, sets error, does not spin', a
   await settle()
 
   // kept, so a reload can retry it
-  expect(view.init).toEqual({ tag: 'first' })
+  expect(view.pendingLaunch).toEqual({ tag: 'first' })
   // the import form's banner is the whole report — no duplicate snackbar
   expect(notified).toEqual([])
   // and the drain stopped rather than reapplying the init it left in place

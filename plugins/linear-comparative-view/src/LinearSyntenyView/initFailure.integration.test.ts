@@ -48,7 +48,7 @@ test('a bad per-row init loc keeps the built rows', async () => {
   }) as LinearSyntenyViewModel
   view.setWidth(800)
 
-  await when(() => view.init === undefined)
+  await when(() => view.pendingLaunch === undefined)
 
   expect(view.views).toHaveLength(2)
   // the row with the good loc still navigated
@@ -76,7 +76,7 @@ test('an unloadable assembly keeps init and shows the import form', async () => 
 
   expect(view.views).toHaveLength(0)
   // kept, so a reload can retry it
-  expect(view.init).toBeDefined()
+  expect(view.pendingLaunch).toBeDefined()
   expect(view.showImportForm).toBe(true)
   // `initialized` waits on every row, so it is false here and stays false — a
   // host gating on it draws an empty box for as long as the tab is open, with

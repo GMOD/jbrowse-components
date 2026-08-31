@@ -1,19 +1,12 @@
-import { getType, types } from '@jbrowse/mobx-state-tree'
+import { getType } from '@jbrowse/mobx-state-tree'
 
 import { getNotificationSink } from './sessionServices.ts'
 
-import type { IAnyModelType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-const BUCKET = 'unknownSnapshotKeys'
-
-interface CaptureHost extends IStateTreeNode {
-  type?: string
-  unknownSnapshotKeys?: Record<string, unknown>
-}
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /** what a diagnostic calls the view: its snapshot `type`, or the model name */
 export function viewLabel(self: IStateTreeNode) {
-  return (self as CaptureHost).type ?? getType(self).name
+  return (self as IStateTreeNode & { type?: string }).type ?? getType(self).name
 }
 
 /**
@@ -27,10 +20,8 @@ export function unknownKeysMessage(label: string, keys: string[]) {
 }
 
 /**
- * Name the keys a view was handed and could not place. Shared with
- * `withLaunchInput`, whose partition subsumes the capture below for any view
- * that registers launch keys, so the two say the same thing about the same
- * mistake.
+ * Name the keys a view was handed and could not place, from the partition
+ * `withLaunchInput` runs on the snapshot.
  */
 export function reportUnknownKeys(self: IStateTreeNode, keys: string[]) {
   if (!keys.length) {
@@ -66,53 +57,22 @@ export function reportMalformedRows(self: IStateTreeNode, keys: string[]) {
 }
 
 /**
- * Keep the view snapshot keys MST would otherwise drop without a word, so
- * attaching the view can name them. A config authoring
- * `{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr1:1-100' }` renders a
- * default view and says nothing about why; those two are launch keys and
- * belong inside `init`. The known set is read off the composed model, so it
- * cannot drift as a view gains properties.
- *
- * The capture is a `preProcessSnapshot`, which is **not** once per view: the
- * session's view type is a `types.union`, so every member's preprocessor runs
- * against every candidate snapshot while MST decides which one matches, and it
- * runs several times more per instantiation. So the preprocessor stays pure and
- * `afterAttach` — reached only by a snapshot that won — does the reporting.
- *
- * ORDER: MST runs preprocessors in the reverse of the order they were added,
- * and a composed base's after all of them. So this belongs on the chain BEFORE
- * a view's own legacy-key `preProcessSnapshot`, where it sees the snapshot MST
- * finally consumes rather than capturing a key that remap converts. `legacy`
- * names what it still cannot see: the keys a composed base converts.
+ * What every surface calls v4's nested `init`. v5 takes every setting directly
+ * on the view object, so the key names no declared property and nothing reads
+ * what is under it — the view opens on its defaults, which is why this says
+ * more than the generic unknown-key line would.
  */
-export function captureUnknownSnapshotKeys<M extends IAnyModelType>(
-  model: M,
-  { legacy = [] }: { legacy?: readonly string[] } = {},
-): M {
-  const known = new Set([...Object.keys(model.properties), ...legacy, BUCKET])
-  return model
-    .props({
-      [BUCKET]: types.frozen<Record<string, unknown> | undefined>(),
-    })
-    .preProcessSnapshot((snap: unknown) => {
-      if (!snap || typeof snap !== 'object') {
-        return snap
-      }
-      const kept: Record<string, unknown> = {}
-      const unknown: Record<string, unknown> = {}
-      for (const [key, value] of Object.entries(snap)) {
-        ;(known.has(key) ? kept : unknown)[key] = value
-      }
-      return Object.keys(unknown).length ? { ...kept, [BUCKET]: unknown } : snap
-    })
-    .actions(self => ({
-      afterAttach() {
-        reportUnknownKeys(self, Object.keys(self.unknownSnapshotKeys ?? {}))
-      },
-    }))
-    .postProcessSnapshot((snap: Record<string, unknown>) => {
-      const rest = { ...snap }
-      delete rest[BUCKET]
-      return rest
-    }) as unknown as M
+export function legacyInitMessage(label: string) {
+  return `${label} nests its settings under "init", which v5 removed: write every setting directly on the view object.`
+}
+
+/** Name a snapshot that still writes v4's nested `init`. */
+export function reportLegacyInit(self: IStateTreeNode) {
+  const message = legacyInitMessage(viewLabel(self))
+  console.warn(message)
+  try {
+    getNotificationSink(self).notify(message, 'warning')
+  } catch {
+    // a view built outside a session has nowhere to put it
+  }
 }

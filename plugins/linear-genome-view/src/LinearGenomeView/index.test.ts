@@ -2738,7 +2738,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     model.setWidth(802)
     model.setWidth(803)
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
     expect(model.highlight.length).toBe(1)
   })
@@ -2758,13 +2758,13 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     })
     // makeModel already setWidth(800), so the apply is parked on the tracklist
     // width-settle await — the window a re-launch lands in
-    model.setInit({
+    model.setLaunch({
       assembly: 'volvox',
       loc: 'ctgA:1-1000',
       highlight: ['ctgA:300-400'],
     })
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
     // only the successor's band, and it did get applied (the locstring is
     // 1-based closed, so 300-400 lands at interbase 299)
@@ -2804,7 +2804,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     model.setWidth(600)
 
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
     expect(model.width).toBe(600)
     // the whole 1000bp is on screen, i.e. bpPerPx was computed from 600
@@ -2849,7 +2849,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     )
     model.setWidth(800)
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
     expect(model.displayedRegions.map(r => r.refName)).toEqual(['ctgA'])
   })
@@ -2862,7 +2862,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
       tracks: 'abc' as unknown as string[],
     })
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
     // the stub session resolves no tracks, so each attempt notifies: exactly one
     expect((console.error as jest.Mock).mock.calls).toEqual([
@@ -2879,7 +2879,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
       highlight: ['badref:1-100', 'ctgA:100-200'],
     })
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
     expect(model.highlight.length).toBe(1)
     expect(model.highlight[0]!.refName).toBe('ctgA')
@@ -2899,7 +2899,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
       colorByCDS: true,
     } as InitState)
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
     expect(console.warn).not.toHaveBeenCalledWith(
       expect.stringContaining('ignored unknown key(s): colorByCDS'),
@@ -2953,7 +2953,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     })
     // init is still consumed/cleared despite the unknown key
     await waitFor(() => {
-      expect(model.init).toBeUndefined()
+      expect(model.pendingLaunch).toBeUndefined()
     })
   })
 

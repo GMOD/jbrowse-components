@@ -106,7 +106,7 @@ test('top-level location + highlight navigate via init', async () => {
   // init consumes highlight and backfills assemblyName, then clears itself
   await waitFor(
     () => {
-      expect(state.session.view.init).toBeUndefined()
+      expect(state.session.view.pendingLaunch).toBeUndefined()
     },
     { timeout },
   )

@@ -49,7 +49,7 @@ test('CircularView initializes from the assembly launch key', async () => {
 
   expect(view.assemblyNames[0]).toBe('volvox')
   expect(view.displayedRegions.length).toBeGreaterThan(0)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('CircularView initializes with tracks', async () => {
@@ -66,7 +66,7 @@ test('CircularView initializes with tracks', async () => {
   )
 
   expect(view.tracks.length).toBe(1)
-  expect(view.init).toBeUndefined()
+  expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
 test('CircularView showImportForm is false when init is set', async () => {

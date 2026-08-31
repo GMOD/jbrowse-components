@@ -440,7 +440,7 @@ test('settled gates on an unapplied init', () => {
 
   // no width in this fixture, so the init autorun never fires and this stays
   // pending — the same state the real apply passes through
-  model.setInit({ views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] })
+  model.setLaunch({ views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] })
   expect(model.settled).toBe(false)
 })
 

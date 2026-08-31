@@ -38,7 +38,7 @@ type UserOpened = Extract<ImportFormSyntenyTrack, { type: 'userOpened' }>
 function rowAssembly(
   row: { assemblyNames: string[]; init?: { assembly: string } } | undefined,
 ) {
-  return row?.assemblyNames[0] ?? row?.init?.assembly ?? ''
+  return row?.assemblyNames[0] ?? row?.pendingLaunch?.assembly ?? ''
 }
 
 // Exactly what this dialog reads off the band above the bottom row. `levels` is
