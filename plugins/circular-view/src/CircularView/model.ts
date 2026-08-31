@@ -1104,6 +1104,14 @@ function stateModelFactory(pluginManager: PluginManager) {
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>
+
+// #region registry
+declare module '@jbrowse/core/PluginManager' {
+  interface ViewTypeRegistry {
+    CircularView: CircularViewStateModel
+  }
+}
+// #endregion
 export type CircularViewModel = Instance<CircularViewStateModel>
 
 export default stateModelFactory

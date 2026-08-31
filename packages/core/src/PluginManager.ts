@@ -946,6 +946,20 @@ export default class PluginManager {
     return this.displayTypes.get(typeName)
   }
 
+  // Overloaded on `ViewTypeRegistry` so a registered name hands back its own
+  // state model rather than `IAnyModelType`. The four sites that compose another
+  // view's model into their own — the two comparative views' `views` arrays,
+  // sv-inspector, the circular embedded product — used to assert the type they
+  // expected, and an assertion is exactly as happy naming the wrong one.
+  //
+  // Widened inside core, and that is not a gap: `ViewTypeRegistry` is declared
+  // empty here and filled by module augmentation, so `ViewTypeName` is `never`
+  // in this package and the first overload is uninhabitable. The precise type is
+  // what the CALLER gets — the same arrangement `extendViewType` documents.
+  getViewType<N extends ViewTypeName>(
+    typeName: N,
+  ): Omit<ViewType, 'stateModel'> & { stateModel: ViewTypeRegistry[N] }
+  getViewType(typeName: string): ViewType
   getViewType(typeName: string) {
     return this.viewTypes.get(typeName)
   }

@@ -64,7 +64,6 @@ import type { Feature, StatusChannel } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -132,8 +131,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
-            .stateModel as LinearGenomeViewStateModel,
+          pluginManager.getViewType('LinearGenomeView').stateModel,
         ),
         /**
          * #property

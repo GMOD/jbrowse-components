@@ -11,7 +11,6 @@ import type {
 } from '@jbrowse/core/util/types'
 import type { EmbeddedSessionParent } from '@jbrowse/embedded-core'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
 // Compile-time guard binding the shared parent shadow to this product's real
@@ -48,9 +47,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      view: pluginManager.getViewType('CircularView')!
-        .stateModel as CircularViewStateModel,
+      view: pluginManager.getViewType('CircularView').stateModel,
     })
     .views(self => ({
       /**

@@ -13,7 +13,6 @@ import type {
 } from '@jbrowse/core/util/types'
 import type { EmbeddedSessionParent } from '@jbrowse/embedded-core'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
 // This product's root carries one prop beyond the shared shadow, so the slice
@@ -51,9 +50,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      view: pluginManager.getViewType('LinearGenomeView')!
-        .stateModel as LinearGenomeViewStateModel,
+      view: pluginManager.getViewType('LinearGenomeView').stateModel,
     })
     .views(self => ({
       /**

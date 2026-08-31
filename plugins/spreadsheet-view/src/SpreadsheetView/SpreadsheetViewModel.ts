@@ -385,4 +385,12 @@ export default function stateModelFactory() {
 }
 
 export type SpreadsheetViewStateModel = ReturnType<typeof stateModelFactory>
+
+// #region registry
+declare module '@jbrowse/core/PluginManager' {
+  interface ViewTypeRegistry {
+    SpreadsheetView: SpreadsheetViewStateModel
+  }
+}
+// #endregion
 export type SpreadsheetViewModel = Instance<SpreadsheetViewStateModel>

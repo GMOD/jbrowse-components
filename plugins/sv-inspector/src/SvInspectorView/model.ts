@@ -17,8 +17,6 @@ import type { SvInspectorViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
-import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
 
 /** height of the "show only regions with data" bar above the circular view */
 export const circularViewOptionsBarHeight = 52
@@ -60,9 +58,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
 
-  const SpreadsheetModel =
-    SpreadsheetViewType.stateModel as SpreadsheetViewStateModel
-  const CircularModel = CircularViewType.stateModel as CircularViewStateModel
+  const SpreadsheetModel = SpreadsheetViewType.stateModel
+  const CircularModel = CircularViewType.stateModel
 
   const minHeight = 400
   const defaultHeight = 550

@@ -29,10 +29,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackContainer } from '@jbrowse/core/util'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ComparativeWarning } from '@jbrowse/synteny-core'
 
 // lazies
@@ -127,8 +124,7 @@ function stateModelFactory(pluginManager: PluginManager) {
          * views/levels invariant is maintained by reconcileLevels().
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
-            .stateModel as LinearGenomeViewStateModel,
+          pluginManager.getViewType('LinearGenomeView').stateModel,
         ),
       }),
     )
