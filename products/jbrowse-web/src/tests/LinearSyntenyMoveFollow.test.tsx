@@ -2,6 +2,7 @@ import { waitFor } from '@testing-library/react'
 
 import { bandMoveTargets } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/bandMoveTargets.ts'
 import { moveMatchingPanel } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/moveMatchingPanel.ts'
+import { followSettled } from './syntenyFollowSettle.ts'
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
 import type {
@@ -77,15 +78,6 @@ async function openSwapView() {
   return view
 }
 
-// Long enough to cover the coarse-blocks debounce the exact pass waits on, so
-// an assertion after it is "the follow has had its say" rather than "it has not
-// spoken yet".
-function settle() {
-  return new Promise(resolve => {
-    setTimeout(resolve, 2000)
-  })
-}
-
 // In bp, never `offsetPx`: a followed row's scale is not constant through a
 // pan, so a pixel offset can move backwards over a step the row moved forwards
 // through. `SyntenyFollow/CLAUDE.md` has the measurement.
@@ -99,7 +91,7 @@ async function followingSwap() {
   await row0!.navToLocString('ctgB', ASM)
   await row1!.navToLocString('ctgA', ASM)
   view.setRowSyncMode('follow')
-  await settle()
+  await followSettled(view.views)
   expect(view.followAnchorIndex).toBe(0)
   return { view, row0: row0!, row1: row1! }
 }
@@ -147,7 +139,7 @@ test('a band move hands the follow anchor to the panel that stays', async () => 
     stayingIndex: target!.stayingIndex,
     toMate: target!.toMate,
   })
-  await settle()
+  await followSettled(view.views)
 
   expect(view.followAnchorIndex).toBe(1)
 }, 60000)
@@ -177,11 +169,11 @@ test('...so the next pan is led by the panel that stayed', async () => {
     stayingIndex: target.stayingIndex,
     toMate: target.toMate,
   })
-  await settle()
+  await followSettled(view.views)
 
   const held = windowOf(row1)
   await row0.navToLocString('ctgB:1000-2000', ASM)
-  await settle()
+  await followSettled(view.views)
 
   expect(windowOf(row1)).toBe(held)
 }, 60000)

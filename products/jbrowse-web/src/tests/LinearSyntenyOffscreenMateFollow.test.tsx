@@ -1,6 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 
+import { followSettled } from './syntenyFollowSettle.ts'
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -84,16 +85,6 @@ function regionsOf(lgv: LinearGenomeViewModel) {
   return lgv.displayedRegions.map(r => r.refName)
 }
 
-// Long enough to cover the coarse-blocks debounce the exact pass waits on, so
-// an assertion after it is "the follow has had its say", not "it has not spoken
-// yet" — which is the difference between this test and one that passes for the
-// wrong reason.
-function settle() {
-  return new Promise(resolve => {
-    setTimeout(resolve, 2000)
-  })
-}
-
 // Row 0 on ctgB, so the follow's answer for row 1 is ctgA — and the mark we
 // then click names ctgB, which is a contig the follow would never send it to.
 async function followingSwap() {
@@ -102,7 +93,7 @@ async function followingSwap() {
   await row0!.navToLocString('ctgB', ASM)
   await row1!.navToLocString('ctgA', ASM)
   view.setRowSyncMode('follow')
-  await settle()
+  await followSettled(view.views)
   expect(regionsOf(row1!)).toEqual(['ctgA'])
   return { view, row0: row0!, row1: row1! }
 }
@@ -113,7 +104,10 @@ test('a mark on a followed row shows its contig, and is not undone by the follow
   view.levels[0]!.showOffscreenMateContig('ctgB', 1, {
     locus: { start: 0, end: 6079 },
   })
-  await settle()
+  await waitFor(() => {
+    expect(regionsOf(row1)).toEqual(['ctgA', 'ctgB'])
+  }, timeout)
+  await followSettled(view.views)
 
   expect(regionsOf(row1)).toEqual(['ctgA', 'ctgB'])
   // ...because the click took the anchor. Left as a followed row this read

@@ -57,10 +57,12 @@ async function openView() {
 const reversedOf = (lgv: LinearGenomeViewModel) =>
   !!lgv.dynamicBlocks.contentBlocks[0]?.reversed
 
-function settle() {
-  return new Promise(resolve => {
-    setTimeout(resolve, 2000)
-  })
+// Where the row ends up when the follow has placed it: inside the inverted
+// block, which is a window it has to be moved onto from the whole of ctgA.
+const placedInsideInverted = (lgv: LinearGenomeViewModel) => {
+  const [block] = lgv.dynamicBlocks.contentBlocks
+  expect(block!.start).toBeGreaterThan(18000)
+  expect(block!.end).toBeLessThan(19500)
 }
 
 test('a followed row turns round inside an inverted alignment and back past it', async () => {
@@ -70,13 +72,15 @@ test('a followed row turns round inside an inverted alignment and back past it',
   await row1!.navToLocString('ctgA', MATE)
   view.setRowSyncMode('follow')
   view.setFollowMatchOrientation(true)
-  await settle()
+  await waitFor(() => {
+    expect(reversedOf(row1!)).toBe(true)
+  }, timeout)
   expect(reversedOf(row0!)).toBe(false)
-  expect(reversedOf(row1!)).toBe(true)
 
   await row0!.navToLocString(`ctgA:${FORWARD.start}-${FORWARD.end}`, ASM)
-  await settle()
-  expect(reversedOf(row1!)).toBe(false)
+  await waitFor(() => {
+    expect(reversedOf(row1!)).toBe(false)
+  }, timeout)
 }, 60000)
 
 // The checkbox is live, and the rows are usually already following when it is
@@ -88,12 +92,15 @@ test('ticking it after the rows have settled turns the row round', async () => {
   await row0!.navToLocString(`ctgA:${INVERTED.start}-${INVERTED.end}`, ASM)
   await row1!.navToLocString('ctgA', MATE)
   view.setRowSyncMode('follow')
-  await settle()
+  await waitFor(() => {
+    placedInsideInverted(row1!)
+  }, timeout)
   expect(reversedOf(row1!)).toBe(false)
 
   view.setFollowMatchOrientation(true)
-  await settle()
-  expect(reversedOf(row1!)).toBe(true)
+  await waitFor(() => {
+    expect(reversedOf(row1!)).toBe(true)
+  }, timeout)
 }, 60000)
 
 test('off, the row is placed inside the inverted alignment without turning', async () => {
@@ -102,9 +109,8 @@ test('off, the row is placed inside the inverted alignment without turning', asy
   await row0!.navToLocString(`ctgA:${INVERTED.start}-${INVERTED.end}`, ASM)
   await row1!.navToLocString('ctgA', MATE)
   view.setRowSyncMode('follow')
-  await settle()
+  await waitFor(() => {
+    placedInsideInverted(row1!)
+  }, timeout)
   expect(reversedOf(row1!)).toBe(false)
-  const [block] = row1!.dynamicBlocks.contentBlocks
-  expect(block!.start).toBeGreaterThan(18000)
-  expect(block!.end).toBeLessThan(19500)
 }, 60000)

@@ -2,6 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 import { spy } from 'mobx'
 
+import { followSettled } from './syntenyFollowSettle.ts'
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -118,11 +119,16 @@ test('the target row is left alone until following is turned on', async () => {
   const before = windowOf(target!)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
-  // long enough to cover the coarse-blocks debounce the follow waits on, so
-  // this is "it did not move", not "it has not moved yet"
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(windowOf(target!)).toEqual(before)
+
+  // ...and the same anchor window moves it once the mode is on, so the hold
+  // above is the mode being off rather than the pass not having run yet
+  view.setRowSyncMode('follow')
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
 })
 
 test('following sends the target row to the region that aligns to the query', async () => {
@@ -202,9 +208,7 @@ test('a whole-genome overview is a place every row can be, not just the anchor',
   const [anchor, target] = view.views
   view.setRowSyncMode('follow')
 
-  // long enough that every settle this woke has run, so this is "it stayed",
-  // not "it has not moved yet"
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(shownBy(anchor!)).toEqual({
     contigs: ['ctgA', 'ctgB'],
@@ -236,7 +240,7 @@ test('show all regions puts every row back on all of them while following', asyn
     expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
   }, timeout)
   // and it stays there rather than being pulled back one settle later
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
   expect(shownBy(anchor!)).toEqual({
     contigs: ['ctgA', 'ctgB'],
     bp: WHOLE_GENOME_BP,
@@ -257,7 +261,7 @@ test('an overview places its rows without asking the worker anything', async () 
   await waitFor(() => {
     expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
   }, timeout)
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(
     call.mock.calls.filter(
@@ -438,9 +442,7 @@ test('the settle does not move a row the frame pass already placed', async () =>
     query!.horizontalScroll(40)
   }
   const beforeSettle = windowOf(target!).start
-  await new Promise(resolve => {
-    setTimeout(resolve, 3000)
-  })
+  await followSettled(view.views)
   // 2bp, against a map tolerance of ~1.8bp on this block: a correction this
   // small is the map's own rounding, not the follow disagreeing with itself
   expect(Math.abs(windowOf(target!).start - beforeSettle)).toBeLessThan(2)
@@ -489,8 +491,7 @@ test('an answer the follow has just applied is not resolved a second time', asyn
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(39500)
   }, timeout)
-  // long enough that every pass this move woke has run
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(
     call.mock.calls.filter(c => c[1] === 'SyntenyResolveMatchingRegion'),
@@ -510,18 +511,14 @@ test('the CIGAR map is fetched once per block, not once per settle', async () =>
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(29500)
   }, timeout)
-  await new Promise(resolve => {
-    setTimeout(resolve, 1500)
-  })
+  await followSettled(view.views)
 
   const call = jest.spyOn(getSession(query!).rpcManager, 'call')
   await query!.navToLocString('ctgA:40000..41000', QUERY_ASM)
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(39500)
   }, timeout)
-  await new Promise(resolve => {
-    setTimeout(resolve, 1500)
-  })
+  await followSettled(view.views)
 
   expect(
     call.mock.calls.filter(c => c[1] === 'SyntenyGetCigarMap'),
@@ -564,7 +561,7 @@ test('a resolve landing after the mode is switched off does not move the row', a
 
   view.setRowSyncMode('independent')
   release!()
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(windowOf(target!)).toEqual(held)
 })
@@ -605,7 +602,7 @@ test('a resolve landing after the anchor has left every alignment does not move 
   }, timeout)
 
   release!()
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(windowOf(target!)).toEqual(held)
 })
@@ -644,16 +641,14 @@ test('a resolve landing after the mode is toggled off and on does not move the r
   // nothing of its own to place the row with — and would otherwise leave the
   // stale answer standing rather than correcting it
   await query!.navToLocString('ctgA:16100..16250', QUERY_ASM)
-  // long enough for the anchor's 500ms coarse-block debounce, so the pass below
-  // plans against this window rather than the one it was switched off over
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   view.setRowSyncMode('follow')
   await waitFor(() => {
     expect(view.followUnaligned).toBe(true)
   }, timeout)
   releases[0]!()
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(windowOf(target!)).toEqual(held)
 }, 60000)
@@ -696,7 +691,7 @@ test('a row the exact pass holds is not still steered by the frame pass', async 
   const held = windowOf(target!)
 
   await query!.navToLocString('ctgA:31000..32000', QUERY_ASM)
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(windowOf(target!)).toEqual(held)
 }, 60000)
@@ -891,7 +886,7 @@ test('the frame pass does not re-run itself over an interior row', async () => {
     `ctgA:${INS_LOCUS}..${INS_LOCUS + 1000}`,
     'volvox_ins',
   )
-  await new Promise(resolve => setTimeout(resolve, 2500))
+  await followSettled(view.views)
 
   let runs = 0
   const dispose = spy(ev => {
@@ -949,7 +944,7 @@ test('a level that can never resolve reports itself once, not once a settle', as
       expect(windowOf(volvox!).start).toBeGreaterThan(locus - 5000)
     }, timeout)
   }
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await followSettled(view.views)
 
   expect(
     session.snackbarMessages.filter(m =>
@@ -998,9 +993,9 @@ test('a swapped-assembly track holds the row rather than spinning', async () => 
   view.setRowSyncMode('follow')
   view.setFollowAnchorIndex(0)
   await top!.navToLocString('ctgA:30000..31000', 'volvox')
-  // long enough that a runaway would have issued hundreds by now; before the
-  // fix this never returned at all
-  await new Promise(resolve => setTimeout(resolve, 6000))
+  // a runaway never quiets, so this is the deadline rather than the settle —
+  // and the assertions below are what call that a failure
+  await followSettled(view.views, { deadlineMs: 6000 })
 
   expect(
     call.mock.calls.filter(c => c[1] === 'SyntenyResolveMatchingRegion').length,
@@ -1053,7 +1048,7 @@ test('a navigation that does not move the row is not asked for twice', async () 
   })
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
-  await new Promise(resolve => setTimeout(resolve, 4000))
+  await followSettled(view.views, { deadlineMs: 4000 })
 
   expect(navs).toBeLessThanOrEqual(2)
 }, 60000)
