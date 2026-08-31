@@ -3,7 +3,6 @@ import './svgExportMocks.ts'
 import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
 import { generateReadBuffer, volvoxGetFile } from './generateReadBuffer.ts'
 import {
   createView,
@@ -12,6 +11,7 @@ import {
   hts,
   mockFile404,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
@@ -23,12 +23,15 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+// the one chord track this file opens - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_sv_test'])
+
 const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of circular', async () => {
   const { findByTestId, findByText } = await createView({
-    ...volvoxConfig,
+    ...config,
     defaultSession: {
       name: 'Integration Test Circular',
       views: [{ id: 'integration_test_circular', type: 'CircularView' }],
@@ -57,7 +60,7 @@ test('export svg of circular fails when a track fails to load', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
   mockFile404('volvox.dup.vcf.gz', generateReadBuffer(volvoxGetFile))
   const { findByTestId, findByText } = await createView({
-    ...volvoxConfig,
+    ...config,
     defaultSession: {
       name: 'Integration Test Circular Error',
       views: [{ id: 'integration_test_circular_error', type: 'CircularView' }],

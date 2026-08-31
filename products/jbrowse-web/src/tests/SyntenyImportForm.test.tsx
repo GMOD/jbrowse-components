@@ -6,9 +6,17 @@ import {
   expectCanvasMatch,
   findDisplayPainted,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// The two PAFs `three level` launches by name, and only that test takes the
+// trim. The other three go through the manual import form, which scans the
+// whole track list for the assembly pair it is launching — the local-file pair
+// draws a canvas 74% different on a trimmed config, so the list is an input to
+// them - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_del.paf', 'volvox_ins.paf'])
 
 const delay = { timeout: 20000 }
 beforeEach(() => {
@@ -22,7 +30,7 @@ afterEach(() => {
 })
 
 test('three level', async () => {
-  const { session } = await createView()
+  const { session } = await createView(config)
   session.addView('LinearSyntenyView', {
     init: {
       views: [

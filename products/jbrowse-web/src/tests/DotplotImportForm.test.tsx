@@ -6,9 +6,15 @@ import {
   expectCanvasMatch,
   findDisplayPainted,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// The two PAFs the manual form launches. `open tracklist file` keeps the whole
+// config: it is the one test here that picks a track OUT of the list rather
+// than naming one - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_del.paf'])
 
 const delay = { timeout: 50000 }
 beforeEach(() => {
@@ -40,7 +46,8 @@ test('open tracklist file', async () => {
 }, 50000)
 
 test('open local paf', async () => {
-  const { session, findByTestId, findByRole, findByText } = await createView()
+  const { session, findByTestId, findByRole, findByText } =
+    await createView(config)
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
@@ -68,7 +75,7 @@ test('open local paf', async () => {
 
 test('open local pif', async () => {
   const { session, findByRole, findAllByTestId, findByText } =
-    await createView()
+    await createView(config)
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))

@@ -2,8 +2,13 @@ import '@testing-library/jest-dom'
 
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  hts,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 setup()
 
@@ -11,12 +16,18 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+// the two chord tracks this file opens - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks([
+  'volvox_sv_test',
+  'volvox_sv_test_renamed',
+])
+
 const delay = { timeout: 10000 }
 const opts = [{}, delay]
 
 test('open a circular view', async () => {
   const { findByTestId, findByText, queryByTestId } = await createView({
-    ...configSnapshot,
+    ...config,
     defaultSession: {
       name: 'Integration Test Circular',
       views: [{ id: 'integration_test_circular', type: 'CircularView' }],
