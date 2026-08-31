@@ -1,5 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { featureSpanEndBp } from './featureSpanBp.ts'
+
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -10,20 +12,23 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 // screen a second time to pick a single row out of.
 //
 // A zero-length feature (an insertion) is STRADDLED, not grown from its start
-// edge — the same move `renderedSpanPx` makes for the same shape. Adapters keep
-// a feature on `doesIntersect2`, which is `end > queryStart && start <
-// queryEnd`: a query of [pos, pos + 1] fails the first half against a feature
-// whose own end IS pos, so growing rightwards drops exactly the feature it was
-// widened for. The whole-region query it replaced always straddled, so this is
-// the one case narrowing can lose.
+// edge — the same move `renderedSpanPx` makes for the same shape. The right
+// edge is `featureSpanEndBp`'s one base; the left one is this query's own,
+// because adapters keep a feature on `doesIntersect2` (`end > queryStart &&
+// start < queryEnd`) and a query of [pos, pos + 1] fails the first half against
+// a feature whose own end IS pos, dropping exactly the feature it was widened
+// for. The whole-region query it replaced always straddled, so this is the one
+// case narrowing can lose.
 export function featureSpanRegion(
   region: Region,
   startBp: number,
   endBp: number,
 ): Region {
-  return endBp > startBp
-    ? { ...region, start: startBp, end: endBp }
-    : { ...region, start: Math.max(0, startBp - 1), end: startBp + 1 }
+  return {
+    ...region,
+    start: endBp > startBp ? startBp : Math.max(0, startBp - 1),
+    end: featureSpanEndBp(startBp, endBp),
+  }
 }
 
 // Re-fetch one full feature by id for the details widget. Both canvas displays

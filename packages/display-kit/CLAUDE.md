@@ -131,6 +131,11 @@ SVG export applies it against the export's canvas width rather than the view's.
 `products/jbrowse-web/src/tests/ZoomRenderCensus.test.tsx` is how a per-frame
 re-render like that gets seen at all; INTERACTION_PERF.md has the rest.
 
+Where the value has to stay an array — a row list rebuilt from `rpcDataMap` on
+every region arrival — `stableIdentityComputed` is what keeps its identity, for
+the `!==` caches downstream (render-core `installUpload`'s encode cache). Both
+multi-row families hold their `sourcesWithoutLayout` through it.
+
 ## A hit test's index needs an observer, or it is not memoized
 
 A pointer handler runs untracked, so a computed whose only readers are

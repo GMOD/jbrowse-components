@@ -77,6 +77,30 @@ describe('feature "Zoom to feature" context menu', () => {
     expect(Math.round(vr!.end)).toBe(2000)
   })
 
+  // The span guard below the clamp reads a zero-length feature as empty, so the
+  // item did nothing at all on an insertion — the same degenerate span
+  // `featureSpanContainsBp` covers for the hit test.
+  it('zooms to the base a zero-length feature is painted at', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    const insertion = makeFlatbushItem({
+      featureId: 'ins',
+      type: 'insertion',
+      name: 'ins',
+      startBp: 4000,
+      endBp: 4000,
+    })
+    display.setRpcData(0, makeFeatureData({ flatbushItems: [insertion] }), ctgA)
+    display.setLoadedRegion(0, ctgA)
+
+    rightClick(display, insertion)
+    clickContextMenuItem(display, 'Zoom to feature')
+
+    const [vr] = view.visibleRegions
+    expect(vr!.start).toBeLessThanOrEqual(4000)
+    expect(vr!.end).toBeGreaterThanOrEqual(4001)
+  })
+
   it('clamps to the clicked region, not the first sharing its refName', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()

@@ -15,6 +15,7 @@ import MultiRegionDisplayMixin, {
   fetchAllRegions,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   ContextMenuMixin,
@@ -35,7 +36,6 @@ import {
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import { makeCrossHatchItem } from '@jbrowse/wiggle-core'
-import { compareStructural, computed } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
@@ -149,14 +149,14 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      // A plain getter would hand out a fresh array on every region arrival,
-      // and this list reaches `gpuProps()` — whose identity re-encodes every
-      // loaded region. The structural comparer keeps the previous array while
-      // the row metadata is unchanged, which is what a refetch of the same
-      // track produces.
-      const sources = computed(() => sourcesFromRegionData(self.rpcDataMap), {
-        equals: compareStructural,
-      })
+      // This list reaches `gpuProps()`, whose identity re-encodes every loaded
+      // region, and a plain getter would hand out a fresh array on every region
+      // arrival — `stableIdentityComputed` keeps the previous one while the row
+      // metadata is unchanged, which is what a refetch of the same track
+      // produces.
+      const sources = stableIdentityComputed(() =>
+        sourcesFromRegionData(self.rpcDataMap),
+      )
       return {
         // Raw adapter sources, discovered from the loaded regions in adapter
         // order. Used as input to clustering: cluster RPC reads `name` and

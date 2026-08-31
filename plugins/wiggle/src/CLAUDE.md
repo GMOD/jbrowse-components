@@ -74,13 +74,13 @@ via `clearAllRpcData`, so the row set IS the first-seen union over its values �
 plain fallback adapter discovers its sources per region. There is no second
 store to keep in step, which is what `sourcesVolatile` was.
 
-**The comparer on that computed is load-bearing.** The list reaches
-`gpuProps()`, whose identity re-encodes every loaded region, so a refetch
-reporting the same rows has to hand back the same array — `compareStructural`,
-and the metadata is stripped off the payload first so the compare never walks a
-feature array. MAF's `sourcesVolatile` buys the same property with a `deepEqual`
-before the write; either way it is the property, not the mechanism, that
-matters.
+That getter is a `stableIdentityComputed`
+(`@jbrowse/display-kit/stableIdentityComputed`), which owns why: the list
+reaches `gpuProps()`, whose identity re-encodes every loaded region. What is
+local is that the metadata is stripped off the payload first, so the comparer
+never walks a feature array. MAF's `sourcesVolatile` buys the same property with
+a `deepEqual` before the write; either way it is the property, not the
+mechanism, that matters.
 
 ## `viewportWidth` is CSS px — `clip.scissorW`, never `clip.pxW`
 

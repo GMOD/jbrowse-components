@@ -22,6 +22,7 @@ import MultiRegionDisplayMixin, {
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -45,9 +46,9 @@ import {
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { compareStructural, computed } from 'mobx'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
 import {
   featureSpanRegion,
   fetchCanvasFeatureDetails,
@@ -297,26 +298,21 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      // The comparer is load-bearing. A plain getter hands out a fresh array on
-      // every write to `rpcDataMap`, and this list reaches `featurePaintInputs`
-      // — whose identity clears `installUpload`'s encode cache, so region k's
-      // arrival re-encoded regions 1..k-1 into the bytes they already held. A
-      // progressive load keeps rediscovering the same rows. Same comparer, for
-      // the same reason, as MultiLinearWiggleDisplay's `sourcesWithoutLayout`.
-      const sourcesWithoutLayout = computed(
-        () => {
-          const values = new Set<string>()
-          for (const data of self.rpcDataMap.values()) {
-            for (const v of data.partitionValues) {
-              values.add(v)
-            }
+      // A plain getter hands out a fresh array on every write to `rpcDataMap`,
+      // and this list reaches `featurePaintInputs` — the identity
+      // `stableIdentityComputed` is holding steady, for the same reason as
+      // MultiLinearWiggleDisplay's `sourcesWithoutLayout`.
+      const sourcesWithoutLayout = stableIdentityComputed(() => {
+        const values = new Set<string>()
+        for (const data of self.rpcDataMap.values()) {
+          for (const v of data.partitionValues) {
+            values.add(v)
           }
-          return orderPartitionValues(values, self.rowOrder).map(name => ({
-            name,
-          }))
-        },
-        { equals: compareStructural },
-      )
+        }
+        return orderPartitionValues(values, self.rowOrder).map(name => ({
+          name,
+        }))
+      })
       return {
         /**
          * #getter
@@ -971,19 +967,10 @@ export default function stateModelFactory(
         // `findTopDrawnFeatureInRow` owns both halves of "which feature is
         // under this pixel" that the painters also own: which features are
         // drawn at all, and which of two overlapping ones is on top. All this
-        // adds is the span.
-        //
-        // A zero-length feature covers its own start base rather than nothing:
-        // `start <= bp && bp < end` is empty when the two are equal, so the
-        // block both painters DO draw — widened to MULTI_ROW_MIN_CELL_PX from
-        // its start edge — had no hover, tooltip, details or menu. Same
-        // degenerate span `featureSpanRegion` had to widen.
-        const i = findTopDrawnFeatureInRow(
-          byRow,
-          targetRow,
-          i =>
-            featureStarts[i]! <= bp &&
-            bp < Math.max(featureEnds[i]!, featureStarts[i]! + 1),
+        // adds is the span, and `featureSpanContainsBp` owns the zero-length
+        // case within that.
+        const i = findTopDrawnFeatureInRow(byRow, targetRow, i =>
+          featureSpanContainsBp(featureStarts[i]!, featureEnds[i]!, bp),
         )
         return i === -1
           ? undefined

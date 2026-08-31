@@ -23,6 +23,7 @@ import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
+import { featureSpanEndBp } from '../shared/featureSpanBp.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
 
 import type {
@@ -227,7 +228,9 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
         // to the part of the feature that region shows; where the feature fits,
         // which is every ordinary whole-chromosome view, it is a no-op.
         const start = Math.max(startBp, region.start)
-        const end = Math.min(endBp, region.end)
+        // `featureSpanEndBp` so a zero-length feature zooms to the base it is
+        // painted at, rather than failing the guard below and doing nothing
+        const end = Math.min(featureSpanEndBp(startBp, endBp), region.end)
         if (end > start) {
           // grow 0.2 adds ~20% flanks so the feature isn't pinned to
           // the viewport edges (matches synteny/bookmark zoom-to).

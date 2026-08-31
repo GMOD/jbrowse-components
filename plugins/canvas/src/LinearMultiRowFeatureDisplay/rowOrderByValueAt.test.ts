@@ -167,3 +167,23 @@ test('a row painting a per-row override is not hidden by its baked color', () =>
     ),
   ).toEqual(['a', 'c', 'b'])
 })
+
+test('a zero-length feature carries a value at the base it is painted from', () => {
+  // b's only feature at pos 50 is an insertion. Both painters draw it there, so
+  // the sort has to read a value off it rather than sinking the row — the same
+  // rule `featureAt` resolves the hover by.
+  //
+  // Counted, a and b share the commonest color and lead as a block of two. Not
+  // counted, b sinks below c, which is what the empty `[50, 50)` produced.
+  const r = region(
+    [
+      { start: 0, end: 100, color: 1, row: 0 }, // a
+      { start: 50, end: 50, color: 1, row: 1 }, // b
+      { start: 0, end: 100, color: 2, row: 2 }, // c
+    ],
+    ['a', 'b', 'c'],
+  )
+  expect(order(['a', 'b', 'c'], r, 50)).toEqual(['a', 'b', 'c'])
+  // one base past it the insertion is gone and b sinks
+  expect(order(['a', 'b', 'c'], r, 51)).toEqual(['a', 'c', 'b'])
+})

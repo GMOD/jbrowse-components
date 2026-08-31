@@ -1,5 +1,7 @@
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
+import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
+
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
@@ -51,7 +53,13 @@ function colorsPaintedAt(
 ) {
   const byRow = new Map<string, number>()
   for (let i = 0; i < region.featureStarts.length; i++) {
-    if (region.featureStarts[i]! <= pos && pos < region.featureEnds[i]!) {
+    if (
+      featureSpanContainsBp(
+        region.featureStarts[i]!,
+        region.featureEnds[i]!,
+        pos,
+      )
+    ) {
       const name = region.partitionValues[region.featurePartitionIndex[i]!]!
       const color = region.featureColors[i]!
       if (paintsAt(name, color, paint)) {
