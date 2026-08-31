@@ -61,12 +61,12 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    git grep -n 'not on npm yet' -- website agent-docs
    ```
 
-   `@jbrowse/render-core` and `@jbrowse/shader-tools` are the standing case:
-   both were created after 4.3.0, and `creating_gpu_display.md` currently tells
-   plugin authors to build against a checkout and hand-copy the generated shader
-   modules. That instruction becomes wrong the moment the tag lands, and it is
-   the instruction an external GPU plugin is blocked on
-   (`~/src/jb2plugins/jbrowse-plugin-graphgenomeview` links both by path today).
+   The sixteen packages created after 4.3.0 were all first published manually on
+   2026-08-31, at whatever version each manifest carried, because `publish.yml`
+   authenticates only by trusted publishing and npm cannot configure a trusted
+   publisher for a package that does not exist. A future new package needs the
+   same manual first publish (plus its trusted-publisher config on npmjs.com)
+   before the tag that first ships it.
 
    **Optionally**, write
    `website/release_announcement_drafts/v<version>.changelog.md` to replace the

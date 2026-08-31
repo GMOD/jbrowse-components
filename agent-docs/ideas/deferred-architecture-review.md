@@ -1,6 +1,6 @@
 ---
 name: deferred-architecture-review
-description: The chrome loose end left after the bring-your-own-chrome pass, and the custom-display page that would answer "can I draw my own visualization", blocked on `render-core` being unpublished.
+description: The chrome loose end left after the bring-your-own-chrome pass, and the custom-display page that would answer "can I draw my own visualization" — unblocked on the packaging side since `render-core` first published 2026-08-31, with the ABI re-export question still open.
 ---
 
 # Deferred architecture-review items (type-safety / DisplayChrome)
@@ -92,20 +92,21 @@ sequence, gwas, hic, maf, synteny — and the draw functions are small:
 calls on the same engine, which is a far stronger page than anything about
 chrome.
 
-**The blocker is packaging, not difficulty.** `@jbrowse/render-core` is
-unpublished — 404 on the npm registry, despite carrying a version and being a
-workspace dependency of `plugins/linear-genome-view` and `jbrowse-web` — and it
-is absent from `ReExports/modules.ts`, so it is not on the runtime-plugin ABI
-either. That bites from both directions at once:
+**The blocker was packaging, not difficulty.** `@jbrowse/render-core` first
+published 2026-08-31 (a manual publish so trusted publishing could be
+configured before the v5.0.0 tag; the tag republishes it at the release
+version). It is still absent from `ReExports/modules.ts`, so it is not on the
+runtime-plugin ABI. What that leaves:
 
-- an examples-site page importing it would build inside the monorepo and be
-  **un-pasteable** by a reader, which breaks the one inviolable rule of those
-  sites (an example may import only from published packages);
-- an external runtime plugin cannot reach it at all.
+- an examples-site page importing it now builds against a published package, so
+  the un-pasteable objection is gone;
+- an external runtime plugin (as opposed to a build-step one) still cannot
+  reach it.
 
 So this is not a "write the page" decision, it is **do we want custom displays
-to be a supported public extension point?** If yes, the work is: publish
-`render-core`, or re-export the needed surface through `@jbrowse/core`, plus the
+to be a supported public extension point?** If yes, the remaining work is: keep
+`render-core` published, or re-export the needed surface through
+`@jbrowse/core`, plus the
 `abiBaseline.json` entry — and then the page is straightforward and the shader
 boilerplate never enters it. If no, the page cannot honestly exist on those
 sites, because the reader could not run what it shows.

@@ -17,12 +17,10 @@ The scale-up path, for roughly ≳100K features per frame. Start from
 plugin without the shader, so moving up later adds files rather than changing
 them.
 
-`@jbrowse/render-core` and `@jbrowse/shader-tools` **first publish in the next
-release**. Until then, author against a `jbrowse-components` checkout and copy
-the emitted `*.generated.ts` into your plugin. Both land `@experimental`, so pin
-an exact version and expect to rebuild on upgrade. `render-core`'s GPU surface
-is static-import-only, which is what makes a GPU display a
-[build-step plugin](/docs/developer_guides/simple_plugin).
+`@jbrowse/render-core` and `@jbrowse/shader-tools` are on npm. Both are
+`@experimental`, so pin an exact version and expect to rebuild on upgrade.
+`render-core`'s GPU surface is static-import-only, which is what makes a GPU
+display a [build-step plugin](/docs/developer_guides/simple_plugin).
 
 :::
 

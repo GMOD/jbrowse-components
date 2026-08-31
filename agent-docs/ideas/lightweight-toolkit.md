@@ -1,6 +1,6 @@
 ---
 name: lightweight-toolkit
-description: Bring-your-own is a docs site, not a package, so there is nothing to install when someone wants the engine without the app. The four rungs an escape parachute actually has, the six silent failures a newcomer hits on the way to one track, the 81-member session interface that makes a small host impossible, and the two packages that are 404 on npm.
+description: Bring-your-own is a docs site, not a package, so there is nothing to install when someone wants the engine without the app. The four rungs an escape parachute actually has, the six silent failures a newcomer hits on the way to one track, and the 81-member session interface that makes a small host impossible. The two packages that were 404 on npm first published 2026-08-31.
 ---
 
 # JBrowse as a lightweight toolkit
@@ -223,19 +223,17 @@ trap unrepresentable, and tells a reader the states exist. It is finishing a
 pattern rather than introducing one. **Landed** — see item 3 below, including
 the fourth state the two-state framing above misses.
 
-### 5. The engine kernel is the most reusable thing here, and it is 404 on npm
+### 5. The engine kernel is the most reusable thing here, and it was 404 on npm until 2026-08-31
 
 `@jbrowse/render-core` carries the HAL, the WebGPU → WebGL2 → Canvas2D ladder,
 the upload/render lifecycle, instance passes, hi-DPI handling, context-loss
-recovery, the float32 bp-precision math, and the Slang toolchain. It is
-unpublished. So is `@jbrowse/display-ui`, which the bring-your-own examples
-import 19 times — **on a site whose one inviolable rule is that an example
-imports only from published packages.**
-
-Both are non-private, so `publish.yml`'s bare `pnpm publish -r` ships them on
-the next tag; `PUBLISHING.md` already names them as the standing case and says
-to grep the docs that assume their absence. Until that happens, everything below
-is unshippable and the site's central rule is quietly broken.
+recovery, the float32 bp-precision math, and the Slang toolchain. It and
+`@jbrowse/display-ui` (which the bring-your-own examples import 19 times) first
+published 2026-08-31, along with the other fourteen packages that had never
+been on npm — a manual first publish, because `publish.yml` authenticates only
+by trusted publishing and npm cannot configure a trusted publisher for a
+package that does not exist. The versions published are each manifest's current
+one; the v5.0.0 tag republishes everything uniformly.
 
 Worth saying plainly because it reads as a limitation and is not: `render-core`
 is a **genomic** visualization engine, not a general one. `hpmath`,
@@ -262,9 +260,8 @@ coordinate-system concepts. That is the differentiator.
 
 ## Work, in order of leverage over cost
 
-1. **Publish `render-core` and `display-ui`.** No design work. Everything else
-   here depends on it, and the examples site is out of compliance with its own
-   rule until it lands.
+1. ~~**Publish `render-core` and `display-ui`.**~~ **Done**, 2026-08-31 — see
+   finding 5. The examples site imports published packages again.
 2. **Name the engine and export its types.** Move the `createViewState`
    composition somewhere whose subject is the headless engine, taking the plugin
    set as an argument; `@jbrowse/react-linear-genome-view2` keeps its API and
