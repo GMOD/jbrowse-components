@@ -89,12 +89,33 @@ export interface IpcPushChannels {
   // does. See the comment on ensureWindow for why the navigating route is still
   // the right one when no session is open.
   openLaunchTarget: { args: [target: LaunchTarget] }
+  // An MCP tool call whose subject is the session model. Answered by an
+  // mcpResponse invoke carrying the request's id.
+  mcpRequest: { args: [request: McpBridgeRequest] }
 }
 
 export interface AuthWindowParams {
   internetAccountId: string
   data: { redirect_uri: string }
   url: string
+}
+
+/**
+ * One MCP tool call the bridge is relaying to the renderer, which is where the
+ * session model lives. `id` correlates the mcpResponse coming back — the push
+ * direction has no reply of its own (see IpcPushChannels), so the answer is an
+ * invoke in the other direction carrying the same id.
+ */
+export interface McpBridgeRequest {
+  id: number
+  tool: string
+  args: Record<string, unknown>
+}
+
+export interface McpBridgeResponse {
+  id: number
+  result?: unknown
+  error?: string
 }
 
 export interface IpcChannels {
@@ -173,4 +194,6 @@ export interface IpcChannels {
     args: [url: string, body: string]
     return: { ok: boolean; status: number; text: string }
   }
+  // The renderer's answer to an mcpRequest push
+  mcpResponse: { args: [response: McpBridgeResponse]; return: void }
 }

@@ -60,6 +60,23 @@ test('an info flag prints even while another instance holds the lock', () => {
   ).toEqual({ type: 'info', output: VERSION })
 })
 
+test('--mcp runs the stdio server and never touches the lock', () => {
+  // the MCP server talks to the running instance over its bridge socket;
+  // acquiring the lock would raise that instance's window on every MCP client
+  // startup
+  const lock = acquire(true)
+  expect(
+    resolveLaunchMode(['jbrowse-desktop', '--mcp'], VERSION, lock),
+  ).toEqual({ type: 'mcp' })
+  expect(lock).not.toHaveBeenCalled()
+})
+
+test('--mcp works while the app instance holds the lock', () => {
+  expect(
+    resolveLaunchMode(['jbrowse-desktop', '--mcp'], VERSION, acquire(false)),
+  ).toEqual({ type: 'mcp' })
+})
+
 test('argv[0] is the executable, not a flag', () => {
   // a launch from a path that happens to contain the flag text is still a launch
   const lock = acquire(true)

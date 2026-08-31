@@ -48,4 +48,18 @@ await esbuild.build({
   minify: process.env.NODE_ENV === 'production',
 })
 
+// The MCP stdio server as a plain-node entry (no electron import anywhere in
+// its graph), for MCP clients configured with `node build/mcpServer.js`; the
+// packaged app serves the same role via `--mcp` from the electron.js bundle.
+await esbuild.build({
+  entryPoints: [path.join(rootDir, 'electron/mcp/standalone.ts')],
+  bundle: true,
+  platform: 'node',
+  target: 'node20',
+  format: 'esm',
+  outfile: path.join(rootDir, 'build/mcpServer.js'),
+  sourcemap: false,
+  minify: process.env.NODE_ENV === 'production',
+})
+
 console.log('Electron main process bundled successfully')

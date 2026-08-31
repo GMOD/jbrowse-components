@@ -22,6 +22,9 @@ import {
   parseProtocolUrl,
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
+import { startMcpBridge } from './mcp/bridge.ts'
+import { defaultSocketPath } from './mcp/socketPath.ts'
+import { runMcpStdioServer } from './mcp/stdioServer.ts'
 import { initializePaths } from './paths.ts'
 import { logError } from './util.ts'
 import { buildAppUrl, createMainWindow } from './window.ts'
@@ -286,6 +289,12 @@ function runApp() {
       registerPluginHandlers()
       registerDownloadHandler()
       setupAutoUpdater(autoUpdater)
+      const stopMcpBridge = startMcpBridge({
+        paths,
+        getWindow: () => wm.current,
+        openTarget: target => wm.ensureWindow(target),
+      })
+      app.on('will-quit', stopMcpBridge)
 
       // Register app-level event handlers before any await so a second-instance
       // launch or macOS open-file/open-url that fires during filesystem init is
@@ -326,6 +335,15 @@ const launchMode = resolveLaunchMode(process.argv, app.getVersion(), () =>
 if (launchMode.type === 'info') {
   console.log(launchMode.output)
   app.exit(0)
+} else if (launchMode.type === 'mcp') {
+  app.dock?.hide()
+  runMcpStdioServer({
+    socketPath: defaultSocketPath(),
+    version: app.getVersion(),
+    onExit: () => {
+      app.exit(0)
+    },
+  })
 } else if (launchMode.type === 'run') {
   runApp()
 } else {

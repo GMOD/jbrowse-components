@@ -9,6 +9,7 @@ import { CssBaseline, LinearProgress, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../ipc.ts'
+import { useMcpRequests } from '../mcp/useMcpRequests.ts'
 import { useIpc } from '../useIpc.ts'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
@@ -162,6 +163,8 @@ const LoaderContents = observer(function LoaderContents() {
       )
     }),
   })
+
+  useMcpRequests(() => installedRef.current)
 
   // What the main process asked this window to open, if anything. buildAppUrl
   // writes one param or the other, never both, so one load covers both routes
