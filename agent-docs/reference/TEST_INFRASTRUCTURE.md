@@ -270,9 +270,16 @@ the 2,900 modules the app graph carries, and it is the reason "module import is
 memoized per worker process" (above) is true of `getCacheKey` and false of
 execution.
 
-**Hooks are in this window too and are noise**: `doBeforeEach` measured 2.6ms a
-call, so twenty of them are 52ms against the 331ms the same suite spent on its
-imports.
+**Hooks are in this window too and are not where to look.** `doBeforeEach` is
+the one every jbrowse-web suite runs, and timed inside itself over a whole
+`products/jbrowse-web` run it is **0.04ms a call, 386 calls, 10ms in total** —
+p99 0.23ms. The 52ms the probe above gains from adding it to twenty tests is
+jest's own per-test hook and reporting machinery, not the function body. Its two
+cache clears are free downstream as well: dropping `clearCache()` and
+`clearAdapterCache()` moved 30 tests across five suites from 39.84s to 39.53s,
+inside the noise, because each test builds a fresh session and so misses the
+adapter cache anyway. They are isolation at no cost — do not remove them for
+speed.
 
 Where it falls in a real 4-worker run, where contention roughly doubles each
 figure: `products/jbrowse-web` is 180 suites and **120s**, mean 667ms — but
