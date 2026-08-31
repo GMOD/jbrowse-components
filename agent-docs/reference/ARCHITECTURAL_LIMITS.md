@@ -512,7 +512,7 @@ Three costs, for whoever revisits this:
 - **Software raster is the one place it pays, and is not the app.** The same A/B
   under SwiftShader went 208.7s to 43.2s. That is the figure pipeline, whose real
   answer is the `--angle-gl` flag already on `website/scripts/profile-spec.ts`
-  ([SCREENSHOT_PERF.md](SCREENSHOT_PERF.md)).
+  ([FIGURE_CAPTURE.md](FIGURE_CAPTURE.md), "Slow figures are SwiftShader").
 
 **Don't chase this per display.** The dependency is legitimate wherever render
 geometry derives from fetched data (alignments' stacked bands, wiggle's autoscale

@@ -1886,7 +1886,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         // offsets that a re-worded label kept invalidating -- the comment they
         // replace was already the second attempt at the number. And the tail
         // silently ignored the `alignX: 'right'` it carried (a fromAnchor is
-        // always the rect's centre, which is the trap SCREENSHOT_CALLOUT_ANCHORS
+        // always the rect's centre, which is the trap FIGURE_CAPTURE.md
         // names), so it sat a cell-width left of where it read as sitting and
         // the arrow collapsed to a stub in open space between box and pill.
         //

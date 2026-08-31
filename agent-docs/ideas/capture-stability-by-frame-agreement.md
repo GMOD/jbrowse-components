@@ -81,7 +81,7 @@ captures on a pileup — `isConnected` false afterwards while
 `document.querySelector` still finds one canvas at the same rect. Read geometry
 through the selector, never through a cached handle.
 
-Related: [../reference/SCREENSHOT_CAPTURE_RACE.md](../reference/SCREENSHOT_CAPTURE_RACE.md),
+Related: [../reference/FIGURE_CAPTURE.md](../reference/FIGURE_CAPTURE.md),
 whose "The third one" was a *different* drift with a settled attribution — app
 chrome composited in after `el.screenshot()` scrolled the element — and is fixed;
 and the backlog's

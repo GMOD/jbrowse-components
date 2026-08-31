@@ -568,7 +568,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // or clustering (2.1s and 0.4s measured) but from ~10 multi-second software
     // GPU passes over the 1104-row canvas. Regenerate with --headed and it is
     // ready in ~14s; the budget stays large so a headless run can still finish.
-    // See agent-docs/reference/SCREENSHOT_PERF.md.
+    // See agent-docs/reference/FIGURE_CAPTURE.md, "Slow figures are SwiftShader".
     readyTimeout: 900000,
     viewportWidth: 1900,
     // tall enough for the whole 760px stack below the 120px frequency track:

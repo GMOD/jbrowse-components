@@ -111,7 +111,7 @@ that the blank captures are closed — but it is the first thing tried against t
 that separated from its controls, and the two arms above did not.
 
 The durable capture-side mechanics are in
-[SCREENSHOT_CAPTURE_RACE.md](SCREENSHOT_CAPTURE_RACE.md).
+[FIGURE_CAPTURE.md](FIGURE_CAPTURE.md).
 
 ## Do not re-derive
 
@@ -684,7 +684,7 @@ header and the capture composited 37px of locstring box, toolbar divs and ruler
 into the canvas rectangle. `captureElementPng` measures the rect and clips to it
 instead, and asserts the rect across the capture. Mechanism, the numbers either
 side, and two things the fix turned up that the attribution did not predict:
-[SCREENSHOT_CAPTURE_RACE.md](SCREENSHOT_CAPTURE_RACE.md), "The third one".
+[FIGURE_CAPTURE.md](FIGURE_CAPTURE.md), "The third one".
 `browser-tests/probe-webgpu-coverage.ts` prints both capture paths in one run.
 
 Re-measured on the two suites, `--backend=all --swiftshader --gate-only

@@ -175,9 +175,8 @@ the tour was filmed in.
 
 `scripts/generate-screenshots.ts`, run with `node` — **not `npx tsx`**, whose
 `keepNames` breaks `page.evaluate`'d functions. Specs in
-`scripts/screenshot-specs.ts`. Capture races and callout anchoring are
-`agent-docs/reference/SCREENSHOT_CAPTURE_RACE.md` and
-`SCREENSHOT_CALLOUT_ANCHORS.md`.
+`scripts/screenshot-specs.ts`. Capture races and callout anchoring are both
+`agent-docs/reference/FIGURE_CAPTURE.md`.
 
 - The package is `@jbrowse/web`; `pnpm --filter jbrowse-web build` matches
   nothing and exits 0. The generator serves the BUILD's `test_data`.

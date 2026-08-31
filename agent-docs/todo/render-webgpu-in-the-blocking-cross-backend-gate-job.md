@@ -19,7 +19,7 @@ threshold override. `pnpm test:browser:gate` drops `--skip-webgpu` as of
 2026-08-26. Numbers and mechanism:
 [reference/CROSS_BACKEND_GATE.md](../reference/CROSS_BACKEND_GATE.md) §"Alignments
 under webgpu" and
-[reference/SCREENSHOT_CAPTURE_RACE.md](../reference/SCREENSHOT_CAPTURE_RACE.md)
+[reference/FIGURE_CAPTURE.md](../reference/FIGURE_CAPTURE.md)
 §"The third one".
 
 **What is left is the CI runner, not the pixels.** `pnpm test:browser:gate:ci`

@@ -53,7 +53,7 @@ const leaderRatchet =
         `${labels.found.length} label+arrow pairs in screenshot specs, up from ${labels.baseline}.`,
         '  Write the new one as one annotation: `leader: true` on the text, with',
         '  the anchor on what it names and `dx` placing the label off it. See',
-        '  website/CLAUDE.md and reference/SCREENSHOT_CALLOUT_ANCHORS.md.',
+        '  website/CLAUDE.md and reference/FIGURE_CAPTURE.md.',
         ...labels.found.map(entry => `  - ${entry}`),
       ]
     : labels.found.length < labels.baseline

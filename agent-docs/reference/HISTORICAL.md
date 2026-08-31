@@ -304,7 +304,7 @@ and wiggle gated on `rpcDataMap.size === 0`; `LinearMultiRowFeatureDisplay` and
 `LinearMultiSampleVariantDisplay` gated on nothing, so they flipped `canvasDrawn`
 on a tick that drew nothing. On screen that was masked (`isReady` also requires
 `!isLoading`), but the `-done` testid fired early — which is the root cause the
-per-display workarounds in `SCREENSHOT_CAPTURE_RACE.md` were built to
+per-display workarounds in `FIGURE_CAPTURE.md` were built to
 dodge, each new display having to reinvent a data-derived readiness selector.
 
 `renderBlocks` now returns the boolean and the callbacks forward it. The two

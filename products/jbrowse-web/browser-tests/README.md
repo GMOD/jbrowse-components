@@ -173,7 +173,7 @@ because `toDataURL` does not flatten alpha and does not include DOM drawn over
 the canvas. Comparing one backend's backing store against another's composited
 layers compares capture paths, not renderers. A blank fails its test, and
 `--ci-gate`'s retry takes it again through the same path on both sides. See
-`agent-docs/reference/SCREENSHOT_CAPTURE_RACE.md`.
+`agent-docs/reference/FIGURE_CAPTURE.md`.
 
 Because nothing refreshes the goldens but `-u`, they drift silently: as of
 2026-07, 133 of 187 came from a single 2026-05-30 commit. **A large diff usually
