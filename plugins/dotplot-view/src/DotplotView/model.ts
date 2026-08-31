@@ -19,6 +19,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
   withLaunchInput,
@@ -74,6 +75,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
+import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
@@ -663,6 +665,26 @@ export default function stateModelFactory(pm: PluginManager) {
           return this.showLoading
             ? this.loadingAssembly?.statusSource
             : undefined
+        },
+        /**
+         * #getter
+         * The view's lifecycle as one value — ready, error, loading or noRegions
+         * — for a host that draws its own chrome and has to render all four.
+         * Same shape and same precedence as the linear view's, through
+         * `computeViewStatus`.
+         */
+        get status(): ViewStatus {
+          return computeViewStatus({
+            error: self.error,
+            hasSomethingToShow: this.hasSomethingToShow,
+            loading: () =>
+              this.showLoading
+                ? {
+                    message: this.loadingMessage ?? 'Loading',
+                    progress: this.loadingProgress,
+                  }
+                : undefined,
+          })
         },
         /**
          * #getter

@@ -16,6 +16,7 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
+import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
   withLaunchInput,
@@ -34,6 +35,7 @@ import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util/types'
+import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { FC, ReactNode } from 'react'
@@ -689,6 +691,27 @@ function stateModelFactory(pluginManager: PluginManager) {
         return (
           !self.disableImportForm && (!this.hasSomethingToShow || !!this.error)
         )
+      },
+
+      /**
+       * #getter
+       * The view's lifecycle as one value — ready, error, loading or noRegions
+       * — for a host that draws its own chrome and has to render all four. Same
+       * shape and same precedence as the linear view's, through
+       * `computeViewStatus`.
+       */
+      get status(): ViewStatus {
+        return computeViewStatus({
+          error: this.error,
+          hasSomethingToShow: this.hasSomethingToShow,
+          loading: () =>
+            this.showLoading
+              ? {
+                  message: this.loadingMessage ?? 'Loading',
+                  progress: this.loadingProgress,
+                }
+              : undefined,
+        })
       },
     }))
     .views(self => ({
