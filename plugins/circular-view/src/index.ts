@@ -32,7 +32,6 @@ export default class CircularViewPlugin extends Plugin {
 }
 
 export {
-  type CircularViewInit,
   type CircularViewModel,
   type CircularViewStateModel,
   type ExportSvgOptions,
@@ -43,7 +42,9 @@ export {
   type SliceElidedRegion,
   type SliceNonElidedRegion,
 } from './CircularView/slices.ts'
+export { circularLaunchKeys } from './CircularView/launchKeys.ts'
 export { renderToSvg } from './CircularView/svgcomponents/SVGCircularView.tsx'
+export type { CircularViewCommands } from './CircularView/types.ts'
 
 // Carries this module's extension-point declaration into the emitted `.d.ts`;
 // `scripts/check-extension-point-reachability.ts` is the gate, and its header

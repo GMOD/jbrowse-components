@@ -17,7 +17,9 @@ export type {
   BreakpointViewModel,
   BreakpointViewStateModel,
 } from './BreakpointSplitView/model.ts'
+export { breakpointSplitLaunchKeys } from './BreakpointSplitView/launchKeys.ts'
 export type {
+  BreakpointSplitViewCommands,
   BreakpointSplitViewInitView,
   LayoutMatch,
   LayoutRecord,

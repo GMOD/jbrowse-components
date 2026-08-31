@@ -13,7 +13,7 @@ import type {
   createSessionModel,
 } from './createModel/index.ts'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { CircularViewInit } from '@jbrowse/plugin-circular-view'
+import type { CircularViewCommands } from '@jbrowse/plugin-circular-view'
 import type {
   LocalFileInput,
   PluginInput,
@@ -82,7 +82,7 @@ export interface CreateViewStateBaseOptions {
    * is drawn either way, so this is how you restrict the ring or name tracks to
    * open with it, not how you ask for the genome.
    */
-  init?: Omit<CircularViewInit, 'assembly'>
+  init?: Omit<CircularViewCommands, 'assembly'>
 }
 
 // the imperative call adds the two session slots, plus a shorthand for the one

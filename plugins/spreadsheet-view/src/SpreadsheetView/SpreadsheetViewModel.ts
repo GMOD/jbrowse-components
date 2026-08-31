@@ -1,25 +1,22 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
-import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
+import {
+  pendingLaunch,
+  withLaunchInput,
+} from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { reaction } from 'mobx'
 
 import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
+import { spreadsheetLaunchKeys } from './launchKeys.ts'
 import { rowsExceedSnapshotBudget } from './snapshotBudget.ts'
 
 import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
+import type { SpreadsheetViewCommands } from './types.ts'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-export interface SpreadsheetViewInit {
-  assembly: string
-  /** absent means "open the import form", pre-set to the assembly/fileType */
-  uri?: string
-  fileType?: string
-  /** search-box text to open the sheet already narrowed to matching rows */
-  filterText?: string
-}
 
 const minHeight = 40
 const defaultHeight = 440
@@ -29,17 +26,16 @@ const defaultHeight = 440
  * #category view
  *
  * #example
- * Hand-authored under `defaultSession.views`. The `init` shorthand loads a
- * tabular file (VCF/BED/CSV/etc) straight into the grid, skipping the import
- * form; `assembly` is used to resolve genomic coordinates in the rows:
+ * Hand-authored under `defaultSession.views`, with every setting written
+ * directly on the view object. `uri` loads a tabular file (VCF/BED/CSV/etc)
+ * straight into the grid, skipping the import form; `assembly` is used to
+ * resolve genomic coordinates in the rows:
  * ```js
  * {
  *   type: 'SpreadsheetView',
- *   init: {
- *     assembly: 'hg38',
- *     uri: 'https://example.com/variants.vcf.gz',
- *     fileType: 'VCF',
- *   },
+ *   assembly: 'hg38',
+ *   uri: 'https://example.com/variants.vcf.gz',
+ *   fileType: 'VCF',
  * }
  * ```
  */
@@ -78,15 +74,35 @@ export default function stateModelFactory() {
           spreadsheet: types.maybe(Spreadsheet()),
           /**
            * #property
-           * used for initializing the view from a session snapshot
+           * transient launch state: the settings written on the view object
+           * that need resolving before they can be view state — the file to
+           * load, the assembly its rows are read against, the filter to open
+           * it under. `preProcessSnapshot` moves them here off the snapshot,
+           * the afterAttach reaction applies them and clears this, so a saved
+           * session never retains it. Not written by hand: author every
+           * setting directly on the view.
            */
-          init: types.frozen<SpreadsheetViewInit | undefined>(),
+          launch: types.frozen<
+            LaunchInput<SpreadsheetViewCommands> | undefined
+          >(),
         })
         .volatile(() => ({
           /**
            * #volatile
            */
           width: 400,
+        }))
+        .views(self => ({
+          /**
+           * #getter
+           * the launch state that still has something to apply — the gate the
+           * afterAttach reaction reads. Also v4's name for it, kept while the
+           * other views and the products that drive them still spell it this
+           * way; deleted with `setInit`.
+           */
+          get init() {
+            return pendingLaunch(self.launch)
+          },
         }))
         .actions(self => ({
           /**
@@ -140,8 +156,8 @@ export default function stateModelFactory() {
           /**
            * #action
            */
-          setInit(init?: SpreadsheetViewInit) {
-            self.init = init
+          setInit(init?: LaunchInput<SpreadsheetViewCommands>) {
+            self.launch = init
           },
 
           /**
@@ -225,10 +241,12 @@ export default function stateModelFactory() {
            * then opens on the caller's assembly and file type instead of
            * whichever assembly happens to sort first
            */
-          async applyInit(init: SpreadsheetViewInit) {
+          async applyInit(init: LaunchInput<SpreadsheetViewCommands>) {
             const { importWizard } = self
             const { assembly, uri, fileType, filterText } = init
-            importWizard.setSelectedAssemblyName(assembly)
+            if (assembly) {
+              importWizard.setSelectedAssemblyName(assembly)
+            }
             if (uri) {
               const fileLocation = {
                 uri,
@@ -247,7 +265,10 @@ export default function stateModelFactory() {
             if (fileType) {
               importWizard.setFileType(fileType)
             }
-            if (uri) {
+            // an assembly is what the rows' coordinates are read against, so a
+            // spec naming a file and no assembly seeds the wizard and stops
+            // there rather than importing against nothing
+            if (uri && assembly) {
               await self.loadSpreadsheet(assembly)
               // after the load, because the sheet the filter belongs to does
               // not exist until then: displaySpreadsheet replaces the whole
@@ -345,7 +366,7 @@ export default function stateModelFactory() {
         })),
     )
     .postProcessSnapshot(snap => {
-      const { init, spreadsheet, ...rest } = snap
+      const { launch, spreadsheet, ...rest } = snap
       if (!spreadsheet) {
         return rest
       }
@@ -362,7 +383,7 @@ export default function stateModelFactory() {
       }
     })
 
-  return captureUnknownSnapshotKeys(model)
+  return withLaunchInput(model, spreadsheetLaunchKeys)
 }
 
 export type SpreadsheetViewStateModel = ReturnType<typeof stateModelFactory>

@@ -39,7 +39,7 @@ import type {
   BreakpointViewModel,
 } from '@jbrowse/plugin-breakpoint-split-view'
 import type {
-  CircularViewInit,
+  CircularViewCommands,
   CircularViewModel,
 } from '@jbrowse/plugin-circular-view'
 import type {
@@ -295,7 +295,7 @@ async function addInitView<T extends InitView>(
     | SpecInit
     | DotplotViewInit
     | LinearSyntenyViewInit
-    | CircularViewInit
+    | CircularViewCommands
     // BreakpointSplitView's own init is an ARRAY, one entry per stacked panel
     | BreakpointSplitViewInitView[],
 ) {
@@ -489,7 +489,7 @@ function circularTrackIds(model: Model, tracks: Track[]) {
 // comparative builders this needs the model (circularTrackIds asks the
 // pluginManager which tracks the view can open), so it stays here rather than in
 // comparativeInit.ts.
-function circularInit(ctx: ModeContext): CircularViewInit {
+function circularInit(ctx: ModeContext): CircularViewCommands {
   return {
     assembly: ctx.data.assembly.name,
     tracks: circularTrackIds(ctx.model, ctx.data.tracks),

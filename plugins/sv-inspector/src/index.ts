@@ -9,6 +9,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util/types'
 
 export type { SvInspectorViewModel } from './SvInspectorView/model.ts'
+export { svInspectorLaunchKeys } from './SvInspectorView/launchKeys.ts'
+export type { SvInspectorViewCommands } from './SvInspectorView/types.ts'
 
 export default class SvInspectorViewPlugin extends Plugin {
   name = 'SvInspectorViewPlugin'

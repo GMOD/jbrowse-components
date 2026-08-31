@@ -20,6 +20,26 @@ export interface BreakpointSplitViewInitView {
   tracks?: TrackInit[]
 }
 
+/**
+ * The launch keys `BreakpointSplitView` writes code for, which is one: the
+ * panels to stack. `views` collides with the built rows the model declares, so
+ * the partition splits it per entry — a row carrying `type` is a built
+ * LinearGenomeView snapshot MST restores, one without it is a recipe this
+ * view's own autorun opens.
+ *
+ * A plain display setting does not belong here: `showIntraviewLinks`,
+ * `linkViews`, `interactiveOverlay` and `showHeader` are declared on the model,
+ * and the partition leaves them on the snapshot.
+ *
+ * #launchKeys BreakpointSplitView — the URL parameters page renders this
+ * interface as the view's launch-key table.
+ */
+export interface BreakpointSplitViewCommands {
+  // one entry per stacked panel, each naming its own assembly, an optional loc
+  // and the tracks to open there
+  views?: BreakpointSplitViewInitView[]
+}
+
 export type LayoutRecord = [number, number, number, number]
 
 // Per-view-level geometry an overlay needs to place a feature, resolved once per

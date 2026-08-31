@@ -1,15 +1,16 @@
 import type { CircularViewStateModel } from '../CircularView/model.ts'
+import type { CircularViewCommands } from '../CircularView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // Every CircularView snapshot property (autoFit, paddingPx, spacingPx,
-// minimumRadiusPx, hideTrackSelectorButton, ...) minus the ones the launcher
-// controls itself: `type` is fixed, `init` is the resolution blob built below,
-// and `tracks`/`displayedRegions` are replaced by the declarative
-// `tracks`/`displayedRegionNames` here (resolved async against the assembly).
-// `id` stays, so a session spec can pin the created view's id.
+// minimumRadiusPx, hideTrackSelectorButton, ...) minus the ones a launch never
+// writes: `type` is fixed, `init`/`launch` are the partition's own blob, and
+// `displayedRegions` is what `displayedRegionNames` resolves into. The launch
+// keys come from `CircularViewCommands`, so the args are a view object — the
+// same shape a `defaultSession` view and a session spec take. `id` stays, so a
+// session spec can pin the created view's id.
 //
 // DERIVED, not restated. Only `height` used to be listed, so the other eight
 // were unreachable from a session spec, a share link or a config
@@ -20,18 +21,20 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 // line that declares it.
 type CircularViewSnapshot = SnapshotIn<CircularViewStateModel>
 
-export interface LaunchCircularViewArgs extends Omit<
-  CircularViewSnapshot,
-  'type' | 'init' | 'tracks' | 'displayedRegions'
-> {
+export interface LaunchCircularViewArgs
+  extends
+    Omit<
+      CircularViewSnapshot,
+      | 'type'
+      | 'init'
+      | 'launch'
+      | 'displayedRegions'
+      | 'tracks'
+      | 'assembly'
+      | 'displayedRegionNames'
+    >,
+    CircularViewCommands {
   session: AbstractViewContainer
-  // the assembly whose chromosomes the circle draws. Optional because a spec
-  // view is untyped user input; without one the view opens on its import form
-  assembly?: string
-  // whole chromosomes to draw, in this order; the rest of the assembly's
-  // contigs are left off the circle
-  displayedRegionNames?: string[]
-  tracks?: TrackInit[]
 }
 
 declare module '@jbrowse/core/PluginManager' {
@@ -46,30 +49,17 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchCircularViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-CircularView | async | Programmatically launch a circular view */
   pluginManager.addToExtensionPoint('LaunchView-CircularView', args => {
-    const {
-      session,
-      assembly,
-      displayedRegionNames,
-      tracks = [],
-      ...viewProps
-    } = args
-    if (!assembly) {
+    const { session, ...spec } = args
+    if (!spec.assembly) {
       throw new Error(
         'No assembly provided when launching circular genome view',
       )
     }
-    // Whatever is left after the four keys above is a plain view property, and
-    // goes on the snapshot: MST restores it natively, validates it, and it
-    // round-trips on save. `id` rides along the same way, which is what makes
-    // MST's optional identifier honor it rather than generating one.
-    session.addView('CircularView', {
-      ...viewProps,
-      init: {
-        assembly,
-        displayedRegionNames,
-        tracks,
-      },
-    })
+    // Nothing is sorted here — the view's own `preProcessSnapshot` partitions
+    // the snapshot, which is what makes a spec, a `defaultSession` view and an
+    // `addView` literal one shape. `id` rides along the same way, which is what
+    // makes MST's optional identifier honor it rather than generating one.
+    session.addView('CircularView', spec)
     return args
   })
 }

@@ -38,7 +38,8 @@ export {
   type SpreadsheetViewModel,
   type SpreadsheetViewStateModel,
 } from './SpreadsheetView/index.ts'
-export type { SpreadsheetViewInit } from './SpreadsheetView/SpreadsheetViewModel.ts'
+export { spreadsheetLaunchKeys } from './SpreadsheetView/launchKeys.ts'
+export type { SpreadsheetViewCommands } from './SpreadsheetView/types.ts'
 export type {
   GridRow,
   RowSet,

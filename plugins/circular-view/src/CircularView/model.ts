@@ -16,20 +16,25 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
-import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
+import {
+  pendingLaunch,
+  withLaunchInput,
+} from '@jbrowse/core/util/withLaunchInput'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
+import { circularLaunchKeys } from './launchKeys.ts'
 import { maxLabelGutterPx, regionLabelText } from './rulerLabels.ts'
 import { calculateStaticSlices } from './slices.ts'
 
 import type { SliceRegion } from './slices.ts'
+import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { FC, ReactNode } from 'react'
 
@@ -70,15 +75,6 @@ function figureMiddleY(width: number, height: number, figureSize: number) {
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
-export interface CircularViewInit {
-  assembly: string
-  // restrict the circle to these assembly refNames (whole chromosomes), in the
-  // order given — e.g. the main chromosomes without the unplaced/alt contigs,
-  // which otherwise take a slice each. Names resolve through the assembly's
-  // aliases and may be globs, the same as the linear view's key of this name.
-  displayedRegionNames?: string[]
-  tracks?: TrackInit[]
-}
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
@@ -100,16 +96,22 @@ interface CircularViewInitSelf extends IStateTreeNode {
 }
 
 /**
- * Apply one `init` blob: the regions the circle is drawn from, then the chord
+ * Apply one launch blob: the regions the circle is drawn from, then the chord
  * tracks. Nothing here awaits, so `installInitAutorun`'s supersede ceiling never
  * comes up — it is still the owner of the re-entry guard, the `isAlive` checks,
  * the identity-checked clear of `init`, and the failure policy.
  */
-function applyInit(self: CircularViewInitSelf, init: CircularViewInit) {
+function applyInit(
+  self: CircularViewInitSelf,
+  init: LaunchInput<CircularViewCommands>,
+) {
   const session = getSession(self)
-  const assembly = session.assemblyManager.get(init.assembly)
+  const assemblyName = init.assembly
+  const assembly = assemblyName
+    ? session.assemblyManager.get(assemblyName)
+    : undefined
   const regions = assembly?.regions
-  if (assembly && regions) {
+  if (assemblyName && assembly && regions) {
     const names = init.displayedRegionNames
     // A list that matches nothing draws the whole assembly rather than blanking
     // the circle — the same fallback the synteny row takes, and it matters more
@@ -124,7 +126,7 @@ function applyInit(self: CircularViewInitSelf, init: CircularViewInit) {
       ? resolveNamedRegions({
           regions,
           names,
-          assemblyName: init.assembly,
+          assemblyName,
           getCanonicalRefName: assembly.getCanonicalRefName2,
           allRefNames: assembly.allRefNames,
           notify: message => {
@@ -144,18 +146,16 @@ function applyInit(self: CircularViewInitSelf, init: CircularViewInit) {
  * #stateModel CircularView
  *
  * #example
- * Hand-authored under `defaultSession.views`. The `init` shorthand takes a
- * single `assembly` and the structural-variant `tracks` to draw as chords. A
- * track entry may carry display config inline, and `displayedRegionNames` keeps
- * an assembly's alt/unplaced contigs off the circle:
+ * Hand-authored under `defaultSession.views`, with every setting written
+ * directly on the view object. `assembly` picks the genome, a `tracks` entry may
+ * carry display config inline, and `displayedRegionNames` keeps an assembly's
+ * alt/unplaced contigs off the circle:
  * ```js
  * {
  *   type: 'CircularView',
- *   init: {
- *     assembly: 'hg38',
- *     displayedRegionNames: ['chr1', 'chr2', 'chr3'],
- *     tracks: [{ trackId: 'my-sv-vcf', strokeColor: 'red' }],
- *   },
+ *   assembly: 'hg38',
+ *   displayedRegionNames: ['chr1', 'chr2', 'chr3'],
+ *   tracks: [{ trackId: 'my-sv-vcf', strokeColor: 'red' }],
  * }
  * ```
  */
@@ -285,9 +285,15 @@ function stateModelFactory(pluginManager: PluginManager) {
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
-         * used for initializing the view from a session snapshot
+         * transient launch state: the settings written on the view object that
+         * need resolving before they can be view state — the assembly the
+         * circle is drawn from, the refNames to restrict it to, chord track
+         * recipes. `preProcessSnapshot` moves them here off the snapshot, the
+         * afterAttach autorun applies them and clears this, so a saved session
+         * never retains it. Not written by hand: author every setting directly
+         * on the view.
          */
-        init: types.frozen<CircularViewInit | undefined>(),
+        launch: types.frozen<LaunchInput<CircularViewCommands> | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -515,9 +521,28 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the launch state that still has something to apply — the gate the
+       * loading and import-form paths below read. Also v4's name for it, kept
+       * while the other views and the products that drive them still spell it
+       * this way; deleted with `setInit`.
+       */
+      get init() {
+        return pendingLaunch(self.launch)
+      },
+      /**
+       * #getter
        */
       get assemblyNames() {
         return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
+      },
+      /**
+       * #getter
+       * The assembly a pending launch names, which is what the gates below wait
+       * on before `displayedRegions` exist. A blob carrying only tracks names
+       * none, and waiting on one nobody named never ends.
+       */
+      get launchAssemblyName() {
+        return this.init?.assembly
       },
       /**
        * #getter
@@ -527,9 +552,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           return false
         }
         const { assemblyManager } = getSession(self)
-        // if init is set, wait for that assembly to have regions loaded
-        if (self.init) {
-          const asm = assemblyManager.get(self.init.assembly)
+        const launching = this.launchAssemblyName
+        if (launching) {
+          const asm = assemblyManager.get(launching)
           return !!(asm?.initialized && asm.regions)
         }
         return this.assemblyNames.every(
@@ -558,12 +583,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (this.assemblyErrors) {
           return this.assemblyErrors
         }
-        // Check init assembly for errors (displayedRegions may be empty during init)
-        if (self.init) {
+        // Check the launch assembly for errors (displayedRegions may be empty
+        // while it is still resolving)
+        const launching = this.launchAssemblyName
+        if (launching) {
           const { assemblyManager } = getSession(self)
-          const asm = assemblyManager.get(self.init.assembly)
+          const asm = assemblyManager.get(launching)
           if (!asm) {
-            return `Assembly ${self.init.assembly} not found`
+            return `Assembly ${launching} not found`
           }
           if (asm.error) {
             return asm.error
@@ -589,14 +616,15 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The assembly whose load the spinner is waiting on. `init` names it
-       * before displayedRegions exist, so it is the source until then — the same
-       * order `initialized` above resolves in.
+       * The assembly whose load the spinner is waiting on. A pending launch
+       * names it before displayedRegions exist, so it is the source until then
+       * — the same order `initialized` above resolves in.
        */
       get loadingAssembly() {
         const { assemblyManager } = getSession(self)
+        const launching = this.launchAssemblyName
         return assemblyManager.loadingAssembly(
-          self.init ? [self.init.assembly] : this.assemblyNames,
+          launching ? [launching] : this.assemblyNames,
         )
       },
 
@@ -889,8 +917,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: CircularViewInit) {
-        self.init = init
+      setInit(init?: LaunchInput<CircularViewCommands>) {
+        self.launch = init
       },
 
       /**
@@ -1037,21 +1065,21 @@ function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      // init is transient: redundant once displayedRegions exist, so strip it
-      // then. While displayedRegions is still empty, init is the only thing that
+      // launch is transient: redundant once displayedRegions exist, so strip it
+      // then. While displayedRegions is still empty it is the only thing that
       // can rebuild the view -> keep it so a reload/restore resumes instead of
       // dropping to the import form. displayedRegions is stripDefault, so it's
       // absent (not []) when empty — the optional chain is runtime-necessary
       // despite the non-nullish type.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snap.displayedRegions?.length) {
-        const { init, ...rest } = snap
+        const { launch, ...rest } = snap
         return rest as typeof snap
       }
       return snap
     })
 
-  return captureUnknownSnapshotKeys(model)
+  return withLaunchInput(model, circularLaunchKeys)
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>

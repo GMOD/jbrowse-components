@@ -13,7 +13,10 @@ import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { installFetch } from '@jbrowse/core/util/installFetch'
-import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
+import {
+  pendingLaunch,
+  withLaunchInput,
+} from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -33,6 +36,7 @@ import {
   markHiddenSegments,
   readChainSegments,
 } from './featureMatching.ts'
+import { breakpointSplitLaunchKeys } from './launchKeys.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
   calc,
@@ -45,6 +49,7 @@ import {
 } from './util.ts'
 
 import type {
+  BreakpointSplitViewCommands,
   BreakpointSplitViewInitView,
   ExportSvgOptions,
   LayoutRecord,
@@ -57,6 +62,7 @@ import type { OverlayTrack } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, StatusChannel } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -68,13 +74,14 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
  * #category view
  *
  * #example
- * Hand-authored under `defaultSession.views`. `init` is an array — one entry
- * per stacked panel — each declaring the `assembly`, a `loc`, and the `tracks`
- * to show. The two panels flank a structural-variant breakpoint:
+ * Hand-authored under `defaultSession.views`, with every setting written
+ * directly on the view object. `views` is one entry per stacked panel, each
+ * declaring the `assembly`, a `loc`, and the `tracks` to show. The two panels
+ * flank a structural-variant breakpoint:
  * ```js
  * {
  *   type: 'BreakpointSplitView',
- *   init: [
+ *   views: [
  *     { assembly: 'hg38', loc: 'chr1:1,000,000-1,100,000', tracks: ['alignments'] },
  *     { assembly: 'hg38', loc: 'chr5:2,000,000-2,100,000', tracks: ['alignments'] },
  *   ],
@@ -130,11 +137,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * declarative child panels (loc/assembly/tracks) resolved into `views`
-         * once the view has a width; used for initializing from a session
-         * snapshot. Transient — stripped by postProcessSnapshot.
+         * transient launch state: the declarative panels written on the view
+         * object as `views`, which need a measured width before they can be
+         * built rows. `preProcessSnapshot` moves them here off the snapshot,
+         * the afterAttach autorun applies them and clears this, so a saved
+         * session never retains it. Not written by hand: author every setting
+         * directly on the view.
          */
-        init: types.frozen<BreakpointSplitViewInitView[] | undefined>(),
+        launch: types.frozen<
+          LaunchInput<BreakpointSplitViewCommands> | undefined
+        >(),
       }),
     )
     .volatile<{
@@ -191,9 +203,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * the launch state that still has something to apply — the gate the
+       * loading and import-form paths below read. Also v4's name for it, kept
+       * while the other views and the products that drive them still spell it
+       * this way; deleted with `setInit`.
+       */
+      get init() {
+        return pendingLaunch(self.launch)
+      },
+      /**
+       * #getter
        */
       get hasSomethingToShow() {
-        return self.views.length > 0 || self.init !== undefined
+        return self.views.length > 0 || this.init !== undefined
       },
 
       /**
@@ -235,7 +257,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.views.length > 0
           ? self.views.find(v => !v.initialized)?.loadingAssembly
           : getSession(self).assemblyManager.loadingAssembly(
-              self.init?.map(v => v.assembly) ?? [],
+              this.init?.views?.map(v => v.assembly) ?? [],
             )
       },
 
@@ -702,8 +724,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: BreakpointSplitViewInitView[]) {
-        self.init = init
+      setInit(init?: LaunchInput<BreakpointSplitViewCommands>) {
+        self.launch = init
       },
 
       /**
@@ -714,7 +736,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           viewInits.map(({ loc, assembly, tracks }) => ({
             type: 'LinearGenomeView' as const,
             hideHeader: true,
-            init: { loc, assembly, tracks },
+            assembly,
+            ...(loc ? { loc } : {}),
+            ...(tracks ? { tracks } : {}),
           })),
         )
       },
@@ -749,11 +773,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             function breakpointSplitViewInitAutorun() {
               const { init, width } = self
-              if (!width || !init) {
+              if (!width || !init?.views) {
                 return
               }
 
-              self.setViews(init)
+              self.setViews(init.views)
               self.setInit(undefined)
             },
             { name: 'BreakpointSplitViewInit' },
@@ -968,19 +992,31 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // init is transient: redundant once views materialize, so strip it then.
-      // But while views is still empty (a snapshot taken before the init
-      // autorun runs setViews) init is the only thing that can rebuild the view
+      // launch is transient: redundant once views materialize, so strip it
+      // then. But while views is still empty (a snapshot taken before the init
+      // autorun runs setViews) it is the only thing that can rebuild the view
       // -> keep it so a reload/restore resumes instead of dropping to the
       // import form.
       if (snap.views.length) {
-        const { init, ...rest } = snap
+        const { launch, ...rest } = snap
         return rest
       }
       return snap
     })
 
-  return captureUnknownSnapshotKeys(model)
+  return withLaunchInput(model, breakpointSplitLaunchKeys).preProcessSnapshot(
+    (snap: Record<string, unknown> | undefined) => {
+      // v4 spelled the panels as a bare array under `init`, the one unkeyed
+      // blob in the tree. Key it before the partition sees it: an array reaches
+      // the classifier as an object whose keys are its indices, so every panel
+      // would sort as a typo. Added after `withLaunchInput`, which is what
+      // makes it run BEFORE the partition — MST runs preprocessors in the
+      // reverse of the order they were added.
+      return snap && Array.isArray(snap.init)
+        ? { ...snap, init: { views: snap.init } }
+        : snap
+    },
+  )
 }
 
 export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>

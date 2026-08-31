@@ -9,6 +9,7 @@ import {
   makeFindJunctionsNear,
 } from '@jbrowse/sv-core'
 
+import { svInspectorLaunchKeys } from './launchKeys.ts'
 import stateModelFactory from './model.ts'
 import { svChordColor } from './svChordColor.ts'
 
@@ -97,6 +98,7 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
       name: 'SvInspectorView',
       displayName: 'SV inspector',
       stateModel,
+      launchKeys: svInspectorLaunchKeys,
       ReactComponent: lazy(() => import('./components/SvInspectorView.tsx')),
     })
   })

@@ -1,24 +1,23 @@
 import type { BreakpointViewStateModel } from '../BreakpointSplitView/model.ts'
-import type { BreakpointSplitViewInitView } from '../BreakpointSplitView/types.ts'
+import type { BreakpointSplitViewCommands } from '../BreakpointSplitView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-// Every BreakpointSplitView snapshot property (showIntraviewLinks,
-// interactiveOverlay, linkViews, showHeader, ...) minus the ones the launcher controls
-// itself: `type` is fixed, and `views`/`init` are replaced by the declarative
-// loc-based `views` below (resolved async in the view's afterAttach). `id` stays,
-// so a session spec can pin the created view's id. Deriving from the model
-// snapshot keeps this in lockstep with the model — any view prop is settable
-// declaratively, fully type-checked.
+// The args are a view object: every BreakpointSplitView snapshot property
+// (showIntraviewLinks, interactiveOverlay, linkViews, showHeader, ...) beside
+// the declarative `views` the commands declare, minus the ones a launch never
+// writes — `type` is fixed and `init`/`launch` are the partition's own blob.
+// `id` stays, so a session spec can pin the created view's id. Deriving from
+// the model snapshot keeps this in lockstep with the model — any view prop is
+// settable declaratively, fully type-checked.
 type BreakpointSplitViewSnapshot = SnapshotIn<BreakpointViewStateModel>
 
-export interface LaunchBreakpointSplitViewArgs extends Omit<
-  BreakpointSplitViewSnapshot,
-  'type' | 'views' | 'init'
-> {
+export interface LaunchBreakpointSplitViewArgs
+  extends
+    Omit<BreakpointSplitViewSnapshot, 'type' | 'views' | 'init' | 'launch'>,
+    BreakpointSplitViewCommands {
   session: AbstractViewContainer
-  views: BreakpointSplitViewInitView[]
 }
 
 declare module '@jbrowse/core/PluginManager' {
@@ -35,16 +34,11 @@ export default function LaunchBreakpointSplitViewF(
 ) {
   /** #extensionPoint LaunchView-BreakpointSplitView | async | Programmatically launch a breakpoint split view */
   pluginManager.addToExtensionPoint('LaunchView-BreakpointSplitView', args => {
-    const { session, views, ...rest } = args
+    const { session, ...spec } = args
+    const { views } = spec
     if (!Array.isArray(views)) {
-      // Naming the likely cause beats the `views.length` TypeError this used to
-      // throw: `init` is the config/defaultSession spelling and a session spec
-      // takes the panels flat, which is easy to get backwards because the view's
-      // own snapshot property really is called `init`.
       throw new Error(
-        `BreakpointSplitView launch needs a "views" array of panels, but got ${JSON.stringify(
-          views,
-        )}. A session spec passes the panels flat as "views"; "init" is the config/defaultSession form.`,
+        `BreakpointSplitView launch needs a "views" array of panels, but got ${JSON.stringify(views)}`,
       )
     }
     if (views.length < 2) {
@@ -52,13 +46,11 @@ export default function LaunchBreakpointSplitViewF(
         'BreakpointSplitView requires at least 2 views to be specified',
       )
     }
-    // `rest` is the view-level snapshot overrides; `views` are declarative
-    // (loc/assembly/tracks) and go through `init` so the view resolves their
-    // regions once it has a width.
-    session.addView('BreakpointSplitView', {
-      ...rest,
-      init: views,
-    })
+    // Nothing is sorted here — the view's own preProcessSnapshot tells the
+    // declarative panels from the built rows a saved session carries, which is
+    // what makes a spec, a `defaultSession` view and an `addView` literal one
+    // shape.
+    session.addView('BreakpointSplitView', spec)
     return args
   })
 }

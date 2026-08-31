@@ -1,26 +1,24 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { clamp, getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
+import {
+  pendingLaunch,
+  withLaunchInput,
+} from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import { featureRefNames } from './featureRefNames.ts'
+import { svInspectorLaunchKeys } from './launchKeys.ts'
 import { sameCircularRegions } from './sameCircularRegions.ts'
 
+import type { SvInspectorViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
-import type {
-  SpreadsheetViewInit,
-  SpreadsheetViewStateModel,
-} from '@jbrowse/plugin-spreadsheet-view'
-
-// forwarded verbatim to the child spreadsheet view, so it extends that view's
-// init rather than restating it: a field added there arrives here too, where a
-// lookalike interface would still typecheck while silently dropping it
-interface SvInspectorViewInit extends SpreadsheetViewInit {}
+import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
 
 /** height of the "show only regions with data" bar above the circular view */
 export const circularViewOptionsBarHeight = 52
@@ -45,17 +43,16 @@ function trackConfId(configuration: unknown) {
  * - [CircularView](../circularview)
  *
  * #example
- * Hand-authored under `defaultSession.views`. The `init` shorthand loads a
- * structural-variant file into the spreadsheet and mirrors the rows as arcs in
- * the paired circular view; `assembly` resolves coordinates for both:
+ * Hand-authored under `defaultSession.views`, with every setting written
+ * directly on the view object. `uri` loads a structural-variant file into the
+ * spreadsheet and mirrors the rows as arcs in the paired circular view;
+ * `assembly` resolves coordinates for both:
  * ```js
  * {
  *   type: 'SvInspectorView',
- *   init: {
- *     assembly: 'hg38',
- *     uri: 'https://example.com/sv.vcf.gz',
- *     fileType: 'VCF',
- *   },
+ *   assembly: 'hg38',
+ *   uri: 'https://example.com/sv.vcf.gz',
+ *   fileType: 'VCF',
  * }
  * ```
  */
@@ -139,9 +136,17 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * used for initializing the view from a session snapshot
+         * transient launch state: the settings written on the view object that
+         * need resolving before they can be view state — the file both halves
+         * are built from and the assembly it is read against.
+         * `preProcessSnapshot` moves them here off the snapshot, the
+         * afterAttach autorun forwards them to the sheet and clears this, so a
+         * saved session never retains it. Not written by hand: author every
+         * setting directly on the view.
          */
-        init: types.frozen<SvInspectorViewInit | undefined>(),
+        launch: types.frozen<
+          LaunchInput<SvInspectorViewCommands> | undefined
+        >(),
       }),
     )
     .volatile(() => ({
@@ -155,6 +160,16 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       CircularViewReactComponent: CircularViewType.ReactComponent,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the launch state that still has something to apply — what the
+       * afterAttach autorun forwards to the sheet. Also v4's name for it, kept
+       * while the other views and the products that drive them still spell it
+       * this way; deleted with `setInit`.
+       */
+      get init() {
+        return pendingLaunch(self.launch)
+      },
       /**
        * #getter
        */
@@ -353,8 +368,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: SvInspectorViewInit) {
-        self.init = init
+      setInit(init?: LaunchInput<SvInspectorViewCommands>) {
+        self.launch = init
       },
     }))
     .views(self => ({
@@ -491,7 +506,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // `init` is forwarded to the child spreadsheet synchronously in
+      // the launch blob is forwarded to the child spreadsheet synchronously in
       // afterAttach, and that view caches the file location just as
       // synchronously, so this node's copy has nothing left to reconstruct.
       //
@@ -506,7 +521,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       // which the circular view means to keep across a reload, and dropping the
       // whole node used to reset the circle on every session load.
       // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { init, circularView, ...rest } = snap
+      const { launch, circularView, ...rest } = snap
       const { tracks, ...circular } = circularView
       const generatedId = `sv-inspector-variant-track-${snap.id}`
       const kept = tracks.filter(
@@ -519,7 +534,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       }
     })
 
-  return captureUnknownSnapshotKeys(model)
+  return withLaunchInput(model, svInspectorLaunchKeys)
 }
 
 export type SvInspectorViewStateModel = ReturnType<typeof SvInspectorViewF>
