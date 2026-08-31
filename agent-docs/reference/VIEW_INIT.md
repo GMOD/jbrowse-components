@@ -75,7 +75,7 @@ property. `captureUnknownSnapshotKeys` (`core/util/unknownSnapshotKeys.ts`),
 which every view type wraps its state model in, keeps those keys instead: the
 view's `preProcessSnapshot` moves anything the composed model does not declare
 into an `unknownSnapshotKeys` property, and `afterAttach` names them —
-`console.warn` plus a `notify`, in `warnUnknownLaunchKeys`'s wording. **The
+`console.warn` plus a `notify`, through `reportUnknownKeys`. **The
 report cannot live in the preprocessor**, which is neither once per view nor
 only about this view: the session's view type is a `types.union`, so every
 member's preprocessor runs against every candidate snapshot while MST decides
