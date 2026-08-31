@@ -61,7 +61,7 @@ Keep one derivation per path (`connectedEndpoints`, `syntenyTrackRows`). Nothing
 renames assembly names at the RPC boundary, so unlike refNames
 (REFNAME_NAMESPACES.md) there is no worker-side exception.
 
-## The keys, LGV's set
+## LGV's launch keys
 
 `InitState` (`plugins/linear-genome-view/src/LinearGenomeView/types.ts`):
 
@@ -406,40 +406,19 @@ URL param means touching both. jbrowse-web's `buildLgvInit` wrapper is annotated
 with the real type and is where the two are checked against each other; if the
 restatement ever stops being assignable, that is where it fails.
 
-## History: why there is one shape and not two per surface
+## Before v5 there were two shapes
 
-Until v5 a view carried two authoring shapes, and which was correct depended on
-the surface: flat on the view in a session spec, a URL and a jbrowse-img spec;
-nested under `init` in a `defaultSession`. The reasoning was that a spec view is
-*arguments* to a launcher while a config view is *state*, so a key needing
-resolution had nowhere to live but a frozen property. It is a real distinction
-and it is still the one the partition draws — the mistake was making an author
-draw it. Nothing said so at the point of writing, MST drops an undeclared
-top-level key silently, and about 650 authored artifacts used the flat shape
-against about 60 nesting: four shipped broken on main at once, and a demo drew
-straight chords for a release. This doc argued the two shapes should not be
-unified, and is what those mistakes were following.
+Until v5 the correct shape depended on the surface: flat on the view in a spec, a
+URL and a jbrowse-img spec; nested under `init` in a `defaultSession`. The
+command-vs-property distinction behind that split is real and the partition still
+draws it — what was wrong was asking an author to draw it, against an MST that
+drops a misplaced key without a word. This doc argued for keeping the two shapes,
+and the mistakes that shipped were following it.
 
-Two alternatives were rejected then and are rejected on the same grounds now,
-which is why the partition sits where it does rather than in either of them:
-
-- **Flattening centrally in `loadSessionSpec`** erases the command-vs-prop
-  distinction before the only code that can draw it — the view's own
-  registration — has seen the snapshot. A nested view prop would then be honored
-  from a spec while the identical config dropped it. A `preProcessSnapshot`
-  "hoist" was written to paper over that asymmetry, which is a `types.frozen`
-  blob quietly relocating its own keys; both were backed out.
-- **Teaching each launcher to accept both shapes** is per-view-type work every
-  future launcher has to remember, so the accepted shape ends up differing by
-  view type rather than by surface, which is worse. One mechanism covers every
-  view type including plugin-provided ones.
-
-What changed is the third option neither of those was measured against: resolve
-the dimorphism **once, before any instance exists**, in a preprocessor that is a
-declared property of the view type rather than a central special case. The full
-decision, including what the collision cost and why the state props did not have
-to be renamed, is
-[ADR-099](../architecture-decision-records/adr-099-a-view-takes-one-authored-object.md).
+[ADR-099](../architecture-decision-records/adr-099-a-view-takes-one-authored-object.md)
+is the record: what the split cost, the two alternatives rejected before this one
+and still rejected on the same grounds, and why the state props did not have to
+be renamed. Read it before proposing that a surface get its own shape back.
 
 ## Tests
 
