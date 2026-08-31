@@ -1,6 +1,11 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
-import { doBeforeEach, doSetupForImportForm, setup } from './util.tsx'
+import {
+  doBeforeEach,
+  doSetupForImportForm,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 setup()
 
@@ -8,12 +13,34 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+const config = volvoxConfigWithTracks([
+  // exactly the tracks `trix/volvox_meta.json` indexes, so every search here can
+  // still land on the track its hit names — and the selector stops mounting the
+  // hundred rows no search in this file can reach
+  'volvox_sv_test',
+  'volvox_sv_test_renamed',
+  'volvox_test_vcf',
+  'gff3tabix_genes',
+  'gff3tabix_canonical_tags',
+  'volvox_filtered_vcf',
+  'variant_colors',
+  'single_exon_gene',
+  'volvox.inv.vcf',
+  'volvox.filtered.lowercase',
+  'variant_effect_demo_data',
+  'variant_effect_demo_jannovar',
+  'test',
+  'volvox_del_sv',
+  'volvox multi-sample sv',
+  'volvox_test_vcf_jexl',
+])
+
 const timeout = 50_000
 const delay = { timeout }
 const opts = [{}, delay]
 
 async function getInput() {
-  const rest = await doSetupForImportForm()
+  const rest = await doSetupForImportForm(config)
   return {
     ...rest,
     input: (await rest.findByPlaceholderText(

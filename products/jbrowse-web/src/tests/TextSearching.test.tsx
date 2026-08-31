@@ -1,13 +1,41 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json' with { type: 'json' }
-import { createView, doBeforeEach, getTestSession, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  getTestSession,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 setup()
 
 beforeEach(() => {
   doBeforeEach()
 })
+
+const config = volvoxConfigWithTracks([
+  // exactly the tracks `trix/volvox_meta.json` indexes, so every search here can
+  // still land on the track its hit names — and the selector stops mounting the
+  // hundred rows no search in this file can reach
+  'volvox_sv_test',
+  'volvox_sv_test_renamed',
+  'volvox_test_vcf',
+  'gff3tabix_genes',
+  'gff3tabix_canonical_tags',
+  'volvox_filtered_vcf',
+  'variant_colors',
+  'single_exon_gene',
+  'volvox.inv.vcf',
+  'volvox.filtered.lowercase',
+  'variant_effect_demo_data',
+  'variant_effect_demo_jannovar',
+  'test',
+  'volvox_del_sv',
+  'volvox multi-sample sv',
+  'volvox_test_vcf_jexl',
+])
 
 const delay = { timeout: 70_000 }
 const opts = [{}, delay]
@@ -23,7 +51,7 @@ function typeAndEnter({
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
 }
 
-async function doSetup(val?: unknown) {
+async function doSetup(val: unknown = config) {
   const args = await createView(val)
   const { findByTestId, findByPlaceholderText } = args
 
