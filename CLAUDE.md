@@ -84,10 +84,14 @@ survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
 
 ## Tooling
 
-- **`pnpm test-related`**, in your own worktree. Lint `--fix`.
-  `pnpm test <directory>` scopes by path and so misses the jbrowse-web suites
-  that exercise a plugin from outside — `agent-docs/CLAUDE.md` §"Definition of
-  done" has the three that went red on main that way in one week.
+- **`pnpm test-related`**, in your own worktree. Lint `--fix`. It walks the
+  module graph rather than scoping by path, but it **leaves
+  `products/jbrowse-web` out** unless the change is in it: those suites all
+  import `corePlugins`, so the same 164 are "related" to any change anywhere and
+  they are 77% of the run. Add `--with-web` before landing anything that moves a
+  config slot, a menu, a label or a snapshot shape — `agent-docs/CLAUDE.md`
+  §"Definition of done" has the three that went red on main that way in one
+  week.
 - **An agent's jest run prints nothing for a passing suite.** jest 30 swaps in
   `AgentReporter` once it detects an agent environment (`CLAUDECODE` is one),
   and it prints only files that fail — so every `console.log`/`warn`/`error` a

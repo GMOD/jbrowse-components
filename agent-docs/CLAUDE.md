@@ -137,20 +137,26 @@ Typecheck the touched packages, **`pnpm test-related`**, a browser test if UI
 behavior changed, `pnpm lint --fix`. Snapshots only after a visually verified
 change. **Then commit.** Don't push or open a PR unless asked.
 
-**`pnpm test <path>` is the wrong scope, and it is the one that keeps failing.**
-It selects by PATH, so it runs the suites that live beside a change and none of
-the ones that exercise it from outside — and the suites that exercise a plugin
-from outside are nearly all in `products/jbrowse-web`. Three of them went red on
-main in one week that way, each broken by a change whose own tests moved with
-it: a config-slot removal staled `ConfigSlotDefaults.test.ts`, a menu group
-becoming a submenu broke `AlignmentsFilters.test.tsx`, and a new scalebar
-caption staled `ReversedRegionLabels.test.tsx`. `pnpm test plugins/alignments`
-is green across all three.
-
 `test-related` walks the module GRAPH (`jest --findRelatedTests`) over the files
-this branch changed, so an integration suite that imports the app — and so,
-transitively, the changed file — is included. It names all three above. On this
-plugin it is ~320 suites and about seven minutes, against a full run's ~50.
+this branch changed, so a suite that imports the app — and so, transitively, the
+changed file — is included where `pnpm test <path>` would miss it.
+
+**It leaves `products/jbrowse-web` out unless the change is in it** (2026-08-30),
+and the honest reason is cost rather than irrelevance. Those suites cannot
+discriminate: every one of them imports `corePlugins`, so a change in wiggle, one
+in variants and one in linear-comparative-view each return the SAME 164 — a
+constant, not a selection — and they are 77% of the clock, 224s of a 269-suite
+run against 52s for the other 131. Locally that is most of the wait on every
+iteration and it never narrows.
+
+**So know what you have stopped running.** Three suites went red on main in one
+week from changes whose own tests moved with them, and all three live there: a
+config-slot removal staled `ConfigSlotDefaults.test.ts`, a menu group becoming a
+submenu broke `AlignmentsFilters.test.tsx`, a new scalebar caption staled
+`ReversedRegionLabels.test.tsx`. **CI's full run is the net for that class now.**
+Before landing anything that moves a config slot, a menu, a label or a snapshot
+shape, run `pnpm test-related --with-web` — or `pnpm test products/jbrowse-web`,
+which is the same directory and needs no graph.
 
 **Five CI jobs are gated by none of that**: `pnpm check-format`, `pnpm
 check-docs`, `typos`, `pnpm build:esm` and `pnpm lint:eslint`. A validator that
