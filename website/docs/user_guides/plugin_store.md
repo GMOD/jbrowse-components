@@ -61,12 +61,7 @@ nobody.
 - [Plugin store page](/plugin_store)
 - [](/docs/developer_guide)
 - [Plugin configuration](/docs/config_guides/plugins)
-- [PLUGIN_INSTALL_RESTART.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PLUGIN_INSTALL_RESTART.md)
-  — why installing one rebuilds the whole app, and which of the two plugin lists
-  an edit goes into
-- [GLOBAL_PLUGINS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GLOBAL_PLUGINS.md)
-  — Desktop's global list, and the crash marker behind safe mode: when it arms,
-  and what clears it
-- [PERMANENT_PLUGINS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PERMANENT_PLUGINS.md)
-  — the same idea in jbrowse-web, and why its list is keyed on the config rather
-  than on the origin
+- [PLUGIN_LISTS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PLUGIN_LISTS.md)
+  — the four lists a plugin can be in, the two that outlive a session (Desktop's
+  global list and jbrowse-web's per-config permanent list), the crash marker
+  behind both safe modes, and why installing one rebuilds the whole app
