@@ -20,7 +20,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-async function createLinearGenomeViewWithInit(init: {
+async function createLinearGenomeViewWithInit(spec: {
   loc?: string
   assembly: string
   tracks?: string[]
@@ -32,7 +32,7 @@ async function createLinearGenomeViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('LinearGenomeView', { init })
+  const view = session.addView('LinearGenomeView', spec)
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
@@ -58,7 +58,7 @@ test('LinearGenomeView initializes with gene name search', async () => {
   expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
-test('init.highlight (the &highlight= URL param) is parsed onto the list and governed by the session-wide flag', async () => {
+test('`highlight` (the &highlight= URL param) is parsed onto the list and governed by the session-wide flag', async () => {
   const { view } = await createLinearGenomeViewWithInit({
     loc: 'ctgA:1-1000',
     assembly: 'volvox',
@@ -83,7 +83,7 @@ test('init.highlight (the &highlight= URL param) is parsed onto the list and gov
   expect(session.highlightsVisible).toBe(false)
 }, 40000)
 
-test('LinearGenomeView initializes with init property and location', async () => {
+test('LinearGenomeView initializes with an assembly and a location', async () => {
   const { view } = await createLinearGenomeViewWithInit({
     loc: 'ctgA:1..1000',
     assembly: 'volvox',
@@ -101,7 +101,7 @@ test('LinearGenomeView initializes with init property and location', async () =>
   expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
-test('LinearGenomeView initializes with init property and tracks', async () => {
+test('LinearGenomeView initializes with an assembly and tracks', async () => {
   const { view } = await createLinearGenomeViewWithInit({
     loc: 'ctgA:1..1000',
     assembly: 'volvox',
@@ -157,7 +157,7 @@ test('LinearGenomeView initializes with tracklist and nav options', async () => 
   expect(view.hideHeader).toBe(true)
 }, 40000)
 
-test('LinearGenomeView showImportForm is false when init is set', async () => {
+test('LinearGenomeView showImportForm is false when a launch is pending', async () => {
   const { view } = await createLinearGenomeViewWithInit({
     assembly: 'volvox',
     loc: 'ctgA:1..1000',
@@ -174,7 +174,7 @@ test('LinearGenomeView showImportForm is false when init is set', async () => {
   )
 }, 40000)
 
-test('LinearGenomeView without init shows import form', () => {
+test('LinearGenomeView with nothing to launch shows import form', () => {
   const { rootModel } = getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
@@ -185,7 +185,7 @@ test('LinearGenomeView without init shows import form', () => {
   expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
-test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
+test('LinearGenomeView launch with 404 TwoBitAdapter shows error', async () => {
   const config404 = {
     assemblies: [
       {

@@ -19,7 +19,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(grapePeachGetFile)
 
-async function createDotplotViewWithInit(init: {
+async function createDotplotViewWithInit(spec: {
   views: { assembly: string }[]
   tracks?: string[]
 }) {
@@ -27,13 +27,13 @@ async function createDotplotViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('DotplotView', { init })
+  const view = session.addView('DotplotView', spec)
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
 }
 
-test('DotplotView initializes with init property', async () => {
+test('DotplotView initializes from the settings on the view object', async () => {
   const { view } = await createDotplotViewWithInit({
     views: [{ assembly: 'peach' }, { assembly: 'grape' }],
     tracks: ['subset'],
@@ -70,7 +70,7 @@ test('DotplotView initializes without tracks', async () => {
   expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
-test('DotplotView showImportForm is false when init is set', async () => {
+test('DotplotView showImportForm is false when a launch is pending', async () => {
   const { view } = await createDotplotViewWithInit({
     views: [{ assembly: 'peach' }, { assembly: 'grape' }],
   })
@@ -86,7 +86,7 @@ test('DotplotView showImportForm is false when init is set', async () => {
   )
 }, 40000)
 
-test('DotplotView showImportForm is true when no init', () => {
+test('DotplotView showImportForm is true with nothing to launch', () => {
   const { rootModel } = getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!

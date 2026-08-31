@@ -66,7 +66,7 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
   // whole-genome views where the default ~100px is too cramped for the
   // ribbon detail to be readable.
   levelHeights?: number[]
-  // Open any genome row this init gives no tracks collapsed to its ruler. The
+  // Open any genome row the launch gives no tracks collapsed to its ruler. The
   // "No tracks active / Open track selector" block costs ~90px per row, which on
   // a five-row launch is more of the viewport than the ribbons; a row is one
   // click from expanding again (MiniControls, or the view menu's "Rows" →
@@ -81,7 +81,7 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
   // scale on both. Applied last, after any autoDiagonalize pass.
   sameScale?: boolean
   // Draw the ribbons as bezier curves rather than straight chords. Writes the
-  // promotable `drawCurves` config slot on every synteny track this init
+  // promotable `drawCurves` config slot on every synteny track the launch
   // opens; omit it to follow the viewer's session-wide default (straight when
   // nothing is pinned).
   drawCurves?: boolean

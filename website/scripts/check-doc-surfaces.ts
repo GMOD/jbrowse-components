@@ -104,9 +104,6 @@ const EXEMPT = new Map([
     'a base view-model prop, reachable only via a snapshot-shaped launcher',
   ],
   ['$__mstEmpty__', 'an MST internal, not a field'],
-  // v5 writes every setting directly on the view object, so documenting the
-  // nested spelling would teach the form the release replaced
-  ['init', 'the v4 nesting the flat view object replaced'],
   // superseded by fadeThinAlignmentsMode, and marked deprecated at its
   // declaration; documenting it would advertise the form we want retired
   ['fadeThinAlignments', 'deprecated in favour of fadeThinAlignmentsMode'],

@@ -48,16 +48,17 @@ function setup() {
 
 const views = [{ assembly: 'volvox' }, { assembly: 'volvox2' }]
 
-async function openWith(init: Record<string, unknown>) {
+async function openWith(spec: Record<string, unknown>) {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
-    init,
-  }) as LinearSyntenyViewModel
+  const view = session.addView(
+    'LinearSyntenyView',
+    spec,
+  ) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),
   )
-  // levels are reconciled from the view pairs; give the init pass its microtasks
+  // levels are reconciled from the view pairs; give the launch pass its microtasks
   await when(() => view.levels.length > 0)
   return view
 }
@@ -71,10 +72,10 @@ const openTrackIds = (view: LinearSyntenyViewModel) =>
     ),
   )
 
-// The `init.tracks` shorthand documented on the LinearSyntenyView state model:
-// a flat string[] means "all on level 0". This is the form a hand-authored
+// The `tracks` shorthand documented on the LinearSyntenyView state model: a flat
+// string[] means "all on level 0". This is the form a hand-authored
 // defaultSession uses, and the form the model's own #example shows.
-test('a flat init.tracks opens the synteny track on level 0', async () => {
+test('a flat `tracks` opens the synteny track on level 0', async () => {
   const view = await openWith({ views, tracks: ['vol_synteny'] })
   await when(() => openTrackIds(view).length > 0, { timeout: 5000 })
   expect(openTrackIds(view)).toEqual(['vol_synteny'])
@@ -82,7 +83,7 @@ test('a flat init.tracks opens the synteny track on level 0', async () => {
 
 // The per-level form, which is what LaunchLinearSyntenyView stores after
 // normalizing. Both shapes have to land in the same place.
-test('a per-level init.tracks opens the synteny track on level 0', async () => {
+test('a per-level `tracks` opens the synteny track on level 0', async () => {
   const view = await openWith({ views, tracks: [['vol_synteny']] })
   await when(() => openTrackIds(view).length > 0, { timeout: 5000 })
   expect(openTrackIds(view)).toEqual(['vol_synteny'])
