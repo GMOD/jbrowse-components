@@ -68,7 +68,7 @@ export default function WithInitAdvanced() {
 
 Opening a widget from your own code means holding the engine, so it needs the
 `useCreateViewState` form — the same object either way, see
-[driving the view from your own code](/docs/embedded_components#driving-the-view-from-your-own-code).
+[useCreateViewState](https://jbrowse.org/storybook/lgv/setting-up-the-view#use-create-view-state).
 
 Every drawer action is on the session, so they read
 `state.session.setDrawerPosition('left')` and so on:
