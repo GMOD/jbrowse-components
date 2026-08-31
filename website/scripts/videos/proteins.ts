@@ -1,10 +1,10 @@
-// The protein tours. Two are filmed against a site rather than a session — one
-// on genomes.jbrowse.org and one on the JBrowseMSA Gene Explorer — because what
-// each documents is a launcher that lives there; the third takes the same gene
-// menu on the local build, where the launch dialog's split button is readable.
+// The protein tours. One is filmed against genomes.jbrowse.org's released app,
+// because what it documents is that specific launcher; the other two take the
+// same gene menu on the local build, where the workspace tiling actions and the
+// launch dialog's split button are both readable.
 import { RELEASED_CODE_BASE } from '../../src/lib/code-base.ts'
 import { proteinLaunchFixtures } from '../specs/features.ts'
-import { geneExplorerTourFixtures, proteinTourFixtures } from '../specs/msa.ts'
+import { proteinTourFixtures } from '../specs/msa.ts'
 import { LOCATION_BOX } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
@@ -159,73 +159,198 @@ export const proteinVideos: VideoSpec[] = [
     posterAt: 36,
     tailMs: 1200,
   },
-  // THREE VIEWS ANSWERING ONE HOVER, which is the thing no still and no pair of
-  // stills can state: a figure can show a genome, an alignment and a structure
-  // in one frame, and it cannot show that the residue lit in the third is the
-  // codon under the cursor in the first.
+  // THREE VIEWS ANSWERING ONE HOVER, tiled side by side rather than stacked.
+  // Both plugins load on genomes.jbrowse.org (see the comment beside
+  // `proteinTourFixtures` in specs/msa.ts), so one gene menu reaches both
+  // launchers, and each one asks the session's workspace layout to split its
+  // new view off to the right (`placeMsaView` / `maybeLaunchSideBySide`) — the
+  // local build has both of those session actions, unlike the released app the
+  // clip above is stuck filming. `findConnectedMsaView`'s "shared genome view"
+  // rule is what then bridges the alignment and the structure with no explicit
+  // id between them: both carry `connectedViewId` pointing at the same LGV, so
+  // a hover in the genome reaches both without either launch naming the other.
   //
-  // It is also the only tour that leaves JBrowse to get where it is going. The
-  // JBrowseMSA Gene Explorer is a launcher, so the route is: pick a gene, press
-  // its button, and read the session that arrives in the tab it opens. The
-  // `opensTab` step is what lets the camera follow.
+  // Two sequential splitRights nest (each one re-collapses everything BUT the
+  // view it is placing into a single cell — see WorkspaceLayout/CLAUDE.md), so
+  // after both launches the three views are in two columns, one of them a
+  // vertical stack. `Global: tile horizontally` is the layout's own menu item
+  // for "one column per view", the thing this clip is FOR: filming it is
+  // filming the retile, not narrating it in prose the reader would have to
+  // trust.
   {
-    name: 'proteins/gene_explorer',
+    name: 'proteins/tiled_views',
     description:
-      'A gene symbol to three connected views on the JBrowseMSA Gene Explorer: pick TP53, open the session it builds, and hover the collapsed coding exons to walk one residue through the alignment and the structure',
-    url: geneExplorerTourFixtures.url,
-    // Sized to the SESSION, which is three stacked views: the run reports 1759px
-    // at the last frame. It reports 0 at the first, and that is the measurement
-    // working rather than failing — the content report reads JBrowse view
-    // containers, and the tour opens on the Gene Explorer's own page, which has
-    // none. So the clip opens with page background under a short page, the same
-    // trade every launch tour here makes and the same way round: a frame sized
-    // to the launcher would cut the structure the launcher exists to produce.
-    viewportHeight: 1790,
-    readySelector: geneExplorerTourFixtures.geneInput,
-    settleMs: 4000,
+      'A gene menu to a genome view, a cross-species alignment and an AlphaFold structure tiled side by side with the workspace layout, and one hover in the genome walking a residue through both',
+    url: proteinTourFixtures.session,
+    // Three columns rather than three stacked rows: each view keeps its own
+    // height (ViewStack does not stretch a view to fill its panel), so a
+    // horizontal tile's frame is the TALLEST column rather than the sum of all
+    // three. The run reports 1097px at the tallest (the protein view's own
+    // panel, once tiled) against 395px at the first frame, so 1100 is that
+    // tallest state plus the even-height rounding — a fraction of the old
+    // clip's 1790px single-column stack.
+    viewportHeight: 1100,
+    readySelector: '::-p-text(NCBI RefSeq)',
+    readyTimeout: 120000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'rightclick',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: 'chr17:7,676,000',
+          fracY: 0.2,
+        },
+        say: 'Right-click the gene',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Launch MSA view' },
       {
         type: 'click',
-        text: geneExplorerTourFixtures.exampleGene,
-        say: `Examples: ${geneExplorerTourFixtures.exampleGene}`,
-        hold: 1200,
+        text: 'Launch MSA view',
+        say: 'Launch MSA view',
       },
-      { type: 'waitForText', text: geneExplorerTourFixtures.launchLink },
-      // held on the card, which names what the session will carry before it
-      // carries it: the transcript, the collapsed CDS, the alignment, the model
-      { type: 'delay', ms: 3000 },
+      { type: 'waitForText', text: 'Orthologs (fast)' },
+      // Fewer than the dialog's own default of 100: this clip's point is the
+      // tiling, not the aligner queue, and a smaller alignment also reads
+      // better in a column a third of the screen wide.
+      {
+        type: 'type',
+        selector: 'input[type="number"]',
+        value: '15',
+        clear: true,
+        say: 'Rows to align: 15',
+      },
+      // OFF CAMERA. Submit stays disabled until hgdownload answers with the
+      // transcript's CDS, and a film of that wait is a film of a spinner —
+      // the same reason the launch dialog below cuts here.
+      {
+        type: 'waitForSelector',
+        selector: 'button:not([disabled])::-p-text(Submit)',
+        timeout: 120000,
+        cut: true,
+      },
       {
         type: 'click',
-        text: geneExplorerTourFixtures.launchLink,
-        // The caption carries the label as the page paints it, which its own
-        // text-transform makes different from the string above.
-        say: 'OPEN IN JBROWSE',
-        opensTab: true,
+        selector: 'button::-p-text(Submit)',
+        say: 'Submit',
       },
-      // Everything the session fetches happens here: the gene track, the indexed
-      // multiz alignment, the tree, and the AlphaFold model. The protein view's
-      // own ready flag is the last of them to flip.
+      // OFF CAMERA again, for the aligner queue: NCBI's ortholog lookup answers
+      // immediately and EBI's Clustal Omega run is the wait, about half a
+      // second a row. The alignment view mounts its toolbar only once
+      // `orthologParams` clears, so the toolbar appearing IS the gate.
+      {
+        type: 'waitForSelector',
+        selector: 'button[tooltip="Fit / zoom options"]',
+        timeout: 300000,
+        cut: true,
+      },
+      {
+        type: 'click',
+        selector: 'button[tooltip="Fit / zoom options"]',
+        say: 'Fit / zoom options',
+      },
+      { type: 'click', text: 'Fit horizontally', say: 'Fit horizontally' },
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'rightclick',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: 'chr17:7,676,000',
+          fracY: 0.2,
+        },
+        say: 'Right-click the gene again',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Launch protein view' },
+      {
+        type: 'click',
+        text: 'Launch protein view',
+        say: 'Launch protein view',
+      },
+      // OFF CAMERA, the same three round trips (UniProt ID mapping, the
+      // isoform's protein sequence, AlphaFold's structure url) the other two
+      // protein tours cut here for.
+      {
+        type: 'waitForSelector',
+        selector: 'button:not([disabled])::-p-text(Launch)',
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2000 },
+      {
+        type: 'click',
+        selector: 'button::-p-text(Launch)',
+        say: 'Launch',
+      },
       {
         type: 'waitForSelector',
         selector: '[data-testid="protein-view-ready"]',
         timeout: 300000,
         cut: true,
       },
-      { type: 'delay', ms: 3500 },
-      ...geneExplorerTourFixtures.hoverLoci.map((locus, i) => ({
-        type: 'hover' as const,
-        anchor: { track: geneExplorerTourFixtures.geneTrack, locus },
-        // One caption for the first hover, and none after: the second and third
-        // say the same thing, and a caption that reappears unchanged reads as a
-        // new instruction.
-        ...(i === 0 ? { say: 'Hover a codon' } : {}),
-        hold: 3200,
-      })),
+      // THE RETILE. Every panel's `+` menu carries the same whole-workspace
+      // commands ("Global: ..."), so any one of them reaches this — there is
+      // one per cell right now, in whichever mix of columns and stacks the two
+      // splitRights above left behind.
+      {
+        type: 'click',
+        // The strip's OWN two actions (add, close), not the kebab menu inside
+        // the tab label (rename/close tab) — both are a `button:first-of-type`
+        // of their own parent, so the tablist has to be excluded structurally.
+        selector:
+          '[data-tab-strip] > div:not([role="tablist"]) button:first-of-type',
+        say: 'Panel menu',
+      },
+      {
+        type: 'click',
+        text: 'Global: tile horizontally',
+        say: 'Tile horizontally',
+        hold: 1000,
+      },
+      { type: 'waitForAppSettled' },
+      // In to the coding exons, so the hovers below are spread across the
+      // frame instead of crowded into a narrow column's worth of pixels.
+      {
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: proteinTourFixtures.hoverWindow,
+        clear: true,
+        say: proteinTourFixtures.hoverWindow,
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'delay', ms: 2500 },
+      // THE PAYOFF. One genomic position, answered twice: the column it lands
+      // on in the alignment, and the residue it lights on the structure.
+      {
+        type: 'hover',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: proteinTourFixtures.codingLocus,
+        },
+        say: 'Hover a coding position',
+        hold: 3000,
+      },
+      {
+        type: 'hover',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: proteinTourFixtures.intronicLocus,
+        },
+        say: 'An intronic position maps to no residue',
+        hold: 3000,
+      },
+      {
+        type: 'hover',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: proteinTourFixtures.secondCodingLocus,
+        },
+        say: 'Back on the exon, and the residue is back',
+        hold: 3500,
+      },
     ],
-    // A hover, for the reason the other protein tour's poster is one: filming
-    // ends by parking the cursor, so the last frame is the session with nothing
-    // asked of it.
-    posterAt: 23,
+    posterAt: 48,
     tailMs: 1200,
   },
   // THE SPLIT BUTTON, and the destination on it that a still actively misleads

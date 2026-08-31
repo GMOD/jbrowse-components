@@ -62,8 +62,6 @@ seven species: human genes arrive with all three views, and mouse, zebrafish,
 fly, worm, plant and yeast arrive as a genome view and a structure. The
 right-click route works on every genome the site hosts.
 
-<Video src="/media/proteins/gene_explorer.mp4" caption="TP53 from the Gene Explorer's examples row: the session it builds opens the collapsed coding exons, the vertebrate alignment and the AlphaFold model in one window, and a hover in the genome answers in all three at once." />
-
 ## Launching a structure
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org) and type `TP53`
@@ -173,6 +171,15 @@ overlay drawn over the residues once NCBI returns it.
 The view opens at residue zoom, which on a long protein is a window on its N
 terminus. **Fit horizontally**, under the toolbar's fit and zoom button, puts
 the whole alignment on screen, which is the zoom the domain blocks read at.
+
+Both launchers place their new view beside the ones already open, so a genome,
+an alignment and a structure launched from the same gene end up as separate
+panels rather than one tall column. Each panel's own menu carries a **Global:
+tile horizontally** command that lines every open view up side by side, and that
+arrangement is what keeps a hover reaching all three genome-linked views at once
+on screen together.
+
+<Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching both an alignment and a structure, then Global: tile horizontally arranging the genome, the alignment and the structure in three columns. One hover in the genome moves the highlighted column in the alignment and the highlighted residue on the structure together." />
 
 The figures below take _NLRP1_, an inflammasome sensor whose domain architecture
 varies between mammals.

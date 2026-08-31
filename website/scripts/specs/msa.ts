@@ -195,46 +195,6 @@ export const proteinTourFixtures = {
   }),
 }
 
-// The OTHER route the proteins page documents, and the only tour here whose
-// subject is a site this repo does not build: the JBrowseMSA Gene Explorer takes
-// a gene symbol and hands back a JBrowse session with all three views already
-// connected.
-//
-// Nothing here spells that session out, and that is the point of filming this
-// one rather than reproducing it: the explorer's generator owns the collapsed
-// intron list, the indexed multiz alignment and the AlphaFold url, and a fixture
-// restating them would document a session only this file believes in. The tour
-// clicks the page's own example and follows the tab it opens.
-export const geneExplorerTourFixtures = {
-  url: 'https://gmod.org/JBrowseMSA/gene-explorer/',
-  // The page's own examples row, which is also the gene the rest of the page
-  // uses.
-  exampleGene: 'TP53',
-  geneInput: 'input[placeholder="e.g. TP53"]',
-  // As the DOM spells it. The page renders it in caps through a text-transform,
-  // so the label a reader sees is not the string a selector matches.
-  launchLink: 'Open in JBrowse',
-  // The gene track the explorer's session turns on, and three coding positions
-  // to hover along it. Refnames are the explorer's (`17`, not `chr17`).
-  //
-  // All three are in the protein's first sixty residues, and that is the whole
-  // of what constrains them. The alignment opens at residue zoom, which on a
-  // protein this long is about sixty readable columns, and it does not scroll
-  // itself to a hovered residue — so a hover past them moves a column nobody can
-  // see, which is a film of two views answering instead of three. **Fit
-  // horizontally** is the other way to get the column on screen and it is worse
-  // here: fitted, twelve hundred columns are a purple texture and the one the
-  // hover lights is a hairline in it.
-  //
-  // TP53 is on the minus strand, so those residues are the gene's right-hand
-  // end. What buys the separation the other protein tour needed a zoom for is
-  // the explorer's own collapsed-intron view: the introns are gone, so the CDS
-  // is drawn at about a pixel per base and sixty residues are a couple of
-  // hundred pixels of screen, spread across three exon blocks.
-  geneTrack: 'hg38-ncbiRefSeqSelect',
-  hoverLoci: ['17:7,676,560', '17:7,676,390', '17:7,676,200'],
-}
-
 export const msaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
