@@ -332,8 +332,8 @@ where you were writing. Flat on the view is what a session spec, a URL and a
 jbrowse-img spec took; nested under `init` is what a `defaultSession` took.
 Nothing said so at the point of writing.
 
-v5 keeps the flat shape. `LinearGenomeView`, `LinearSyntenyView` and
-`DotplotView` take every setting directly on the view object:
+v5 keeps the flat shape. Every view type takes every setting directly on the
+view object:
 
 ```json
 {
@@ -353,7 +353,7 @@ open them, which is how the two shapes coexist under one name.
 `init` still works on a `defaultSession` and warns. On a session-spec URL it is
 refused with an error, as in v4.
 
-Two behavior changes carry no migration:
+Three behavior changes carry no migration:
 
 - **A pre-`levels` `LinearSyntenyView` session** — one with a top-level `tracks`
   array of built track snapshots, the shape that predates synteny levels — is
@@ -364,6 +364,9 @@ Two behavior changes carry no migration:
   after an `autoDiagonalize`, kept a scale the mode said they should not have.
   Restoring a saved session still only latches, since those rows carry their own
   window.
+- **`BreakpointSplitView`'s `init` was a bare array** of panels, the one view
+  whose `init` was not an object. Its panels are `views` now, the same key a
+  session spec already used, and the array under `init` still works and warns.
 
 ## Extension points changed shape
 
