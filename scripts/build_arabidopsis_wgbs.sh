@@ -119,11 +119,9 @@ cfg["defaultSession"] = {
     "views": [{
         "id": "wgbs_lgv",
         "type": "LinearGenomeView",
-        "init": {
-            "assembly": "tair10",
-            "loc": "NC_003070.9:4,398,000-4,412,000",
-            "tracks": ["tair10_genes", "arabidopsis_wgbs"],
-        },
+          "assembly": "tair10",
+          "loc": "NC_003070.9:4,398,000-4,412,000",
+          "tracks": ["tair10_genes", "arabidopsis_wgbs"],
     }],
 }
 json.dump(cfg, open(path, "w"), indent=2)

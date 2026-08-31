@@ -842,20 +842,16 @@ cat > session.json <<JSON
   "views": [
     {
       "type": "LinearSyntenyView",
-      "init": {
-        "views": [$panels],
-        "tracks": [$ribbons],
-        "drawCurves": false,
-        "minAlignmentLength": 10000
-      }
+      "views": [$panels],
+      "tracks": [$ribbons],
+      "drawCurves": false,
+      "minAlignmentLength": 10000
     },
     {
       "type": "LinearGenomeView",
-      "init": {
-        "assembly": "$REF",
-        "loc": "chr:1,000,000-1,010,000",
-        "tracks": ["${REF}_genes", "ecoli_pggb_depth", "ecoli_pggb_pav", "ecoli_pggb_variants", "ecoli_pggb_maf"]
-      }
+      "assembly": "$REF",
+      "loc": "chr:1,000,000-1,010,000",
+      "tracks": ["${REF}_genes", "ecoli_pggb_depth", "ecoli_pggb_pav", "ecoli_pggb_variants", "ecoli_pggb_maf"]
     }
   ]
 }

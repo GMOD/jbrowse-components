@@ -56,11 +56,9 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "GCF_000861205.1",
-          "loc": "NC_001430.1:727-7311",
-          "tracks": ["ncbi_genes_enterovirus_d"]
-        }
+        "assembly": "GCF_000861205.1",
+        "loc": "NC_001430.1:727-7311",
+        "tracks": ["ncbi_genes_enterovirus_d"]
       }
     ]
   }

@@ -228,17 +228,15 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg19",
-          "loc": "7:70,400,000-70,460,000",
-          "tracks": [
-            "ncbi_refseq_hg19",
-            "na12878_1000g_sv",
-            "na12878_sv_channels",
-            "sv_contacts_same_strand",
-            "na12878_300x_reads"
-          ]
-        }
+        "assembly": "hg19",
+        "loc": "7:70,400,000-70,460,000",
+        "tracks": [
+          "ncbi_refseq_hg19",
+          "na12878_1000g_sv",
+          "na12878_sv_channels",
+          "sv_contacts_same_strand",
+          "na12878_300x_reads"
+        ]
       }
     ]
   }

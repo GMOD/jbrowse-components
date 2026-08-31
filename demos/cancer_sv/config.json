@@ -221,15 +221,13 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg38",
-          "loc": "chr3:25,320,000-25,370,000",
-          "tracks": [
-            "ncbi_refseq_hg38",
-            "COLO829_somatic_sv",
-            "COLO829_tumor_ont"
-          ]
-        }
+        "assembly": "hg38",
+        "loc": "chr3:25,320,000-25,370,000",
+        "tracks": [
+          "ncbi_refseq_hg38",
+          "COLO829_somatic_sv",
+          "COLO829_tumor_ont"
+        ]
       }
     ]
   }

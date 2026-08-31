@@ -251,16 +251,14 @@ cat > session.json <<'JSON'
       "type": "LinearSyntenyView",
       "displayName": "Aegilops tauschii - sorghum - bread wheat",
       "showColorLegend": true,
-      "init": {
-        "views": [
-          { "assembly": "tauschii" },
-          { "assembly": "sorghum" },
-          { "assembly": "wheat" }
-        ],
-        "tracks": [["sorghum_tauschii"], ["sorghum_wheat"]],
-        "colorBy": "attribute:copies",
-        "autoDiagonalize": true
-      }
+      "views": [
+        { "assembly": "tauschii" },
+        { "assembly": "sorghum" },
+        { "assembly": "wheat" }
+      ],
+      "tracks": [["sorghum_tauschii"], ["sorghum_wheat"]],
+      "colorBy": "attribute:copies",
+      "autoDiagonalize": true
     }
   ]
 }

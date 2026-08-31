@@ -55,11 +55,9 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "Zm-B73-NAM5",
-          "loc": "chr1:59,500-71,000",
-          "tracks": ["maize_b73_edta_te"]
-        }
+        "assembly": "Zm-B73-NAM5",
+        "loc": "chr1:59,500-71,000",
+        "tracks": ["maize_b73_edta_te"]
       }
     ]
   }

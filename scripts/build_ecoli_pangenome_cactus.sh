@@ -534,25 +534,21 @@ cat > session.json <<'JSON'
   "views": [
     {
       "type": "LinearSyntenyView",
-      "init": {
-        "views": [
-          { "assembly": "K12" },
-          { "assembly": "Sakai" },
-          { "assembly": "CFT073" },
-          { "assembly": "NCTC86" },
-          { "assembly": "IAI39" }
-        ],
-        "tracks": [["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"]],
-        "minAlignmentLength": 10000
-      }
+      "views": [
+        { "assembly": "K12" },
+        { "assembly": "Sakai" },
+        { "assembly": "CFT073" },
+        { "assembly": "NCTC86" },
+        { "assembly": "IAI39" }
+      ],
+      "tracks": [["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"]],
+      "minAlignmentLength": 10000
     },
     {
       "type": "LinearGenomeView",
-      "init": {
-        "assembly": "K12",
-        "loc": "chr:1,000,000-1,010,000",
-        "tracks": ["K12_genes", "ecoli_cactus_reads", "ecoli_cactus_variants", "ecoli_cactus_maf", "ecoli_cactus_depth", "ecoli_cactus_pav"]
-      }
+      "assembly": "K12",
+      "loc": "chr:1,000,000-1,010,000",
+      "tracks": ["K12_genes", "ecoli_cactus_reads", "ecoli_cactus_variants", "ecoli_cactus_maf", "ecoli_cactus_depth", "ecoli_cactus_pav"]
     }
   ]
 }

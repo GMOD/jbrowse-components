@@ -62,12 +62,10 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "loc": "NC_018939.1:391,180..408,961",
-          "assembly": "hpylori_26695",
-          "tracklist": true,
-          "tracks": ["hpylori_26695.gff", "26695_vs_j99.pif"]
-        }
+        "loc": "NC_018939.1:391,180..408,961",
+        "assembly": "hpylori_26695",
+        "tracklist": true,
+        "tracks": ["hpylori_26695.gff", "26695_vs_j99.pif"]
       }
     ]
   },

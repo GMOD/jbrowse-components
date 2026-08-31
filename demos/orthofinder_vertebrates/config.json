@@ -80,35 +80,33 @@
         "type": "LinearSyntenyView",
         "displayName": "human - chicken - frog - gar - zebrafish (OrthoFinder orthogroups)",
         "showColorLegend": false,
-        "init": {
-          "views": [
-            {
-              "assembly": "human"
-            },
-            {
-              "assembly": "chicken"
-            },
-            {
-              "assembly": "frog"
-            },
-            {
-              "assembly": "gar"
-            },
-            {
-              "assembly": "zebrafish"
-            }
-          ],
-          "tracks": [
-            ["vertebrates_orthogroups"],
-            ["vertebrates_orthogroups"],
-            ["vertebrates_orthogroups"],
-            ["vertebrates_orthogroups"]
-          ],
-          "colorBy": "reference",
-          "autoDiagonalize": true,
-          "sameScale": true,
-          "collapseEmptyRows": true
-        }
+        "views": [
+          {
+            "assembly": "human"
+          },
+          {
+            "assembly": "chicken"
+          },
+          {
+            "assembly": "frog"
+          },
+          {
+            "assembly": "gar"
+          },
+          {
+            "assembly": "zebrafish"
+          }
+        ],
+        "tracks": [
+          ["vertebrates_orthogroups"],
+          ["vertebrates_orthogroups"],
+          ["vertebrates_orthogroups"],
+          ["vertebrates_orthogroups"]
+        ],
+        "colorBy": "reference",
+        "autoDiagonalize": true,
+        "sameScale": true,
+        "collapseEmptyRows": true
       }
     ]
   },

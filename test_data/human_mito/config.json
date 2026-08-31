@@ -65,14 +65,9 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "human_mito",
-          "loc": "NC_012920.1:3307-4262",
-          "tracks": [
-            "human_mito-ReferenceSequenceTrack",
-            "ncbi_genes_human_mito"
-          ]
-        }
+        "assembly": "human_mito",
+        "loc": "NC_012920.1:3307-4262",
+        "tracks": ["human_mito-ReferenceSequenceTrack", "ncbi_genes_human_mito"]
       }
     ]
   }

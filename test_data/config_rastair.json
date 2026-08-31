@@ -95,15 +95,13 @@
       {
         "id": "rastair_lgv",
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "mm10",
-          "loc": "chr19:6,103,000-6,144,000",
-          "tracks": [
-            "mm10_ncbi_refseq",
-            "rastair_mm10_chr19_taps_multi",
-            "rastair_mm10_chr19_taps"
-          ]
-        }
+        "assembly": "mm10",
+        "loc": "chr19:6,103,000-6,144,000",
+        "tracks": [
+          "mm10_ncbi_refseq",
+          "rastair_mm10_chr19_taps_multi",
+          "rastair_mm10_chr19_taps"
+        ]
       }
     ]
   }

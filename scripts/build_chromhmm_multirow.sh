@@ -139,11 +139,9 @@ sed "s|\"@ROW_ORDER@\"|${ROW_ORDER%, }|" > "$APP"/config.json <<'JSON'
       {
         "id": "chromhmm_lgv",
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg19",
-          "loc": "chr7:27,050,000-27,300,000",
-          "tracks": ["broad_chromhmm_multirow_hg19"]
-        }
+        "assembly": "hg19",
+        "loc": "chr7:27,050,000-27,300,000",
+        "tracks": ["broad_chromhmm_multirow_hg19"]
       }
     ]
   }

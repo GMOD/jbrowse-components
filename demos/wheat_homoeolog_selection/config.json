@@ -42,19 +42,17 @@
         "type": "LinearSyntenyView",
         "displayName": "Bread wheat against itself, coloured by dN/dS",
         "showColorLegend": true,
-        "init": {
-          "views": [
-            {
-              "assembly": "wheat"
-            },
-            {
-              "assembly": "wheat"
-            }
-          ],
-          "tracks": [["wheat_homoeologs"]],
-          "colorBy": "dnds",
-          "alpha": 0.15
-        }
+        "views": [
+          {
+            "assembly": "wheat"
+          },
+          {
+            "assembly": "wheat"
+          }
+        ],
+        "tracks": [["wheat_homoeologs"]],
+        "colorBy": "dnds",
+        "alpha": 0.15
       }
     ]
   }

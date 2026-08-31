@@ -123,11 +123,9 @@
       {
         "id": "bxd_lgv",
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "mm10",
-          "loc": "chr4",
-          "tracks": ["bxd_gwas_coatcolor_mm10", "bxd_chromosome_painting_mm10"]
-        }
+        "assembly": "mm10",
+        "loc": "chr4",
+        "tracks": ["bxd_gwas_coatcolor_mm10", "bxd_chromosome_painting_mm10"]
       }
     ]
   }

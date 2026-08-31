@@ -779,22 +779,20 @@ print(json.dumps({
         "type": "LinearSyntenyView",
         "displayName": f"{' - '.join(names)} (OrthoFinder orthogroups)",
         "showColorLegend": False,
-        "init": {
-            "views": [{"assembly": n} for n in names],
-            # one entry per band: N genomes stack into N-1 bands
-            "tracks": [[track]] * (len(names) - 1),
-            "colorBy": "reference",
-            "autoDiagonalize": True,
-            # one bp/px down the whole stack, so a row's drawn length is its
-            # genome size and the size differences between the genomes (which
-            # for the wheat set is the subject) are visible rather than
-            # normalized away by fitting each row to the pane
-            "sameScale": True,
-            # no row carries a track, so each would otherwise spend ~90px on a
-            # "No tracks active" block; a row is one click from expanding, and
-            # the reclaimed height goes to the ribbons
-            "collapseEmptyRows": True,
-        },
+          "views": [{"assembly": n} for n in names],
+          # one entry per band: N genomes stack into N-1 bands
+          "tracks": [[track]] * (len(names) - 1),
+          "colorBy": "reference",
+          "autoDiagonalize": True,
+          # one bp/px down the whole stack, so a row's drawn length is its
+          # genome size and the size differences between the genomes (which
+          # for the wheat set is the subject) are visible rather than
+          # normalized away by fitting each row to the pane
+          "sameScale": True,
+          # no row carries a track, so each would otherwise spend ~90px on a
+          # "No tracks active" block; a row is one click from expanding, and
+          # the reclaimed height goes to the ribbons
+          "collapseEmptyRows": True,
     }],
 }, indent=2))
 PY

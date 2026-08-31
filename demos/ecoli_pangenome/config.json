@@ -118,47 +118,43 @@
     "views": [
       {
         "type": "LinearSyntenyView",
-        "init": {
-          "views": [
-            {
-              "assembly": "K12"
-            },
-            {
-              "assembly": "Sakai"
-            },
-            {
-              "assembly": "CFT073"
-            },
-            {
-              "assembly": "NCTC86"
-            },
-            {
-              "assembly": "IAI39"
-            }
-          ],
-          "tracks": [
-            ["ecoli_pggb_ava"],
-            ["ecoli_pggb_ava"],
-            ["ecoli_pggb_ava"],
-            ["ecoli_pggb_ava"]
-          ],
-          "minAlignmentLength": 10000
-        }
+        "views": [
+          {
+            "assembly": "K12"
+          },
+          {
+            "assembly": "Sakai"
+          },
+          {
+            "assembly": "CFT073"
+          },
+          {
+            "assembly": "NCTC86"
+          },
+          {
+            "assembly": "IAI39"
+          }
+        ],
+        "tracks": [
+          ["ecoli_pggb_ava"],
+          ["ecoli_pggb_ava"],
+          ["ecoli_pggb_ava"],
+          ["ecoli_pggb_ava"]
+        ],
+        "minAlignmentLength": 10000
       },
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "K12",
-          "loc": "chr:1,000,000-1,010,000",
-          "tracks": [
-            "K12_genes",
-            "ecoli_pggb_depth",
-            "ecoli_pggb_carriage",
-            "ecoli_pggb_pav",
-            "ecoli_pggb_variants",
-            "ecoli_pggb_maf"
-          ]
-        }
+        "assembly": "K12",
+        "loc": "chr:1,000,000-1,010,000",
+        "tracks": [
+          "K12_genes",
+          "ecoli_pggb_depth",
+          "ecoli_pggb_carriage",
+          "ecoli_pggb_pav",
+          "ecoli_pggb_variants",
+          "ecoli_pggb_maf"
+        ]
       }
     ]
   },
@@ -328,8 +324,14 @@
           "partitionField": "strain",
           "rowOrder": ["Sakai", "CFT073", "NCTC86", "IAI39"],
           "legend": [
-            { "label": "Same orientation as K12", "color": "rgb(153,153,153)" },
-            { "label": "Inverted", "color": "rgb(214,39,40)" }
+            {
+              "label": "Same orientation as K12",
+              "color": "rgb(153,153,153)"
+            },
+            {
+              "label": "Inverted",
+              "color": "rgb(214,39,40)"
+            }
           ]
         }
       ]
@@ -578,11 +580,26 @@
           "showLabels": false,
           "color": "jexl:feature.carriers==1?'#e31a1c':feature.carriers==2?'#fd8d3c':feature.carriers==3?'#feb24c':feature.carriers==4?'#fed976':feature.carriers==5?'#bdbdbd':'#eeeeee'",
           "legend": [
-            { "label": "All 5 strains (core)", "color": "#bdbdbd" },
-            { "label": "4 strains", "color": "#fed976" },
-            { "label": "3 strains", "color": "#feb24c" },
-            { "label": "2 strains", "color": "#fd8d3c" },
-            { "label": "1 strain (private)", "color": "#e31a1c" }
+            {
+              "label": "All 5 strains (core)",
+              "color": "#bdbdbd"
+            },
+            {
+              "label": "4 strains",
+              "color": "#fed976"
+            },
+            {
+              "label": "3 strains",
+              "color": "#feb24c"
+            },
+            {
+              "label": "2 strains",
+              "color": "#fd8d3c"
+            },
+            {
+              "label": "1 strain (private)",
+              "color": "#e31a1c"
+            }
           ]
         }
       ],

@@ -583,10 +583,8 @@
       {
         "type": "LinearGenomeView",
         "id": "initialView",
-        "init": {
-          "assembly": "amel",
-          "loc": "LG1:9251400-9261400"
-        }
+        "assembly": "amel",
+        "loc": "LG1:9251400-9261400"
       }
     ]
   },

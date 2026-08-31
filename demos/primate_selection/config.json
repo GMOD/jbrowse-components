@@ -73,24 +73,22 @@
         "type": "LinearSyntenyView",
         "displayName": "Human vs rhesus macaque orthologs, coloured by dN/dS",
         "showColorLegend": true,
-        "init": {
-          "views": [
-            {
-              "assembly": "human",
-              "loc": "12:68,790,000-69,880,000",
-              "tracks": ["human_genes"]
-            },
-            {
-              "assembly": "rhesus",
-              "loc": "11:68,330,000-69,390,000",
-              "tracks": ["rhesus_genes"]
-            }
-          ],
-          "tracks": [["primate_orthologs"]],
-          "colorBy": "dnds",
-          "alpha": 0.95,
-          "drawCurves": true
-        }
+        "views": [
+          {
+            "assembly": "human",
+            "loc": "12:68,790,000-69,880,000",
+            "tracks": ["human_genes"]
+          },
+          {
+            "assembly": "rhesus",
+            "loc": "11:68,330,000-69,390,000",
+            "tracks": ["rhesus_genes"]
+          }
+        ],
+        "tracks": [["primate_orthologs"]],
+        "colorBy": "dnds",
+        "alpha": 0.95,
+        "drawCurves": true
       }
     ]
   }

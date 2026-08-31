@@ -232,25 +232,20 @@
         "type": "LinearSyntenyView",
         "displayName": "Peach \u2013 Cacao \u2013 Grape (MCScan blocks)",
         "showColorLegend": false,
-        "init": {
-          "views": [
-            {
-              "assembly": "peach"
-            },
-            {
-              "assembly": "cacao"
-            },
-            {
-              "assembly": "grape"
-            }
-          ],
-          "tracks": [
-            ["grape_peach_cacao_blocks"],
-            ["grape_peach_cacao_blocks"]
-          ],
-          "colorBy": "reference",
-          "autoDiagonalize": true
-        }
+        "views": [
+          {
+            "assembly": "peach"
+          },
+          {
+            "assembly": "cacao"
+          },
+          {
+            "assembly": "grape"
+          }
+        ],
+        "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
+        "colorBy": "reference",
+        "autoDiagonalize": true
       }
     ]
   }

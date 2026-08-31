@@ -80,35 +80,33 @@
         "type": "LinearSyntenyView",
         "displayName": "rice - sorghum - maize - brachypodium - setaria (OrthoFinder orthogroups)",
         "showColorLegend": false,
-        "init": {
-          "views": [
-            {
-              "assembly": "rice"
-            },
-            {
-              "assembly": "sorghum"
-            },
-            {
-              "assembly": "maize"
-            },
-            {
-              "assembly": "brachypodium"
-            },
-            {
-              "assembly": "setaria"
-            }
-          ],
-          "tracks": [
-            ["grasses_orthogroups"],
-            ["grasses_orthogroups"],
-            ["grasses_orthogroups"],
-            ["grasses_orthogroups"]
-          ],
-          "colorBy": "reference",
-          "autoDiagonalize": true,
-          "sameScale": true,
-          "collapseEmptyRows": true
-        }
+        "views": [
+          {
+            "assembly": "rice"
+          },
+          {
+            "assembly": "sorghum"
+          },
+          {
+            "assembly": "maize"
+          },
+          {
+            "assembly": "brachypodium"
+          },
+          {
+            "assembly": "setaria"
+          }
+        ],
+        "tracks": [
+          ["grasses_orthogroups"],
+          ["grasses_orthogroups"],
+          ["grasses_orthogroups"],
+          ["grasses_orthogroups"]
+        ],
+        "colorBy": "reference",
+        "autoDiagonalize": true,
+        "sameScale": true,
+        "collapseEmptyRows": true
       }
     ]
   },

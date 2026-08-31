@@ -269,16 +269,14 @@ cat > "$APP"/config.json <<'JSON'
       {
         "id": "popgen_lgv",
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "dm6",
-          "loc": "chr2L",
-          "tracks": [
-            "dm6_ncbiRefSeq",
-            "fst_in2lt",
-            "pi_by_arrangement",
-            "dgrp_In2Lt_sv"
-          ]
-        }
+        "assembly": "dm6",
+        "loc": "chr2L",
+        "tracks": [
+          "dm6_ncbiRefSeq",
+          "fst_in2lt",
+          "pi_by_arrangement",
+          "dgrp_In2Lt_sv"
+        ]
       }
     ]
   }

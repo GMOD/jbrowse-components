@@ -138,24 +138,22 @@ cat > session.json <<'JSON'
   "views": [
     {
       "type": "LinearSyntenyView",
-      "init": {
-        "views": [
-          { "assembly": "K12" },
-          { "assembly": "Sakai" },
-          { "assembly": "CFT073" },
-          { "assembly": "NCTC86" },
-          { "assembly": "IAI39" }
-        ],
-        "tracks": [
-          ["ecoli_ava"],
-          ["ecoli_ava"],
-          ["ecoli_ava"],
-          ["ecoli_ava"]
-        ],
-        "drawCurves": false,
-        "minAlignmentLength": 10000,
-        "collapseEmptyRows": true
-      }
+      "views": [
+        { "assembly": "K12" },
+        { "assembly": "Sakai" },
+        { "assembly": "CFT073" },
+        { "assembly": "NCTC86" },
+        { "assembly": "IAI39" }
+      ],
+      "tracks": [
+        ["ecoli_ava"],
+        ["ecoli_ava"],
+        ["ecoli_ava"],
+        ["ecoli_ava"]
+      ],
+      "drawCurves": false,
+      "minAlignmentLength": 10000,
+      "collapseEmptyRows": true
     }
   ]
 }

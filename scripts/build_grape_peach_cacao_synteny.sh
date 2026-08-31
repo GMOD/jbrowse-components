@@ -281,16 +281,14 @@ cat > session.json <<'JSON'
       "type": "LinearSyntenyView",
       "displayName": "Peach - Cacao - Grape (MCScan blocks)",
       "showColorLegend": false,
-      "init": {
-        "views": [
-          { "assembly": "peach" },
-          { "assembly": "cacao" },
-          { "assembly": "grape" }
-        ],
-        "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-        "colorBy": "reference",
-        "autoDiagonalize": true
-      }
+      "views": [
+        { "assembly": "peach" },
+        { "assembly": "cacao" },
+        { "assembly": "grape" }
+      ],
+      "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
+      "colorBy": "reference",
+      "autoDiagonalize": true
     }
   ]
 }

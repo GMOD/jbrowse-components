@@ -173,32 +173,30 @@ cat > session.json <<'JSON'
     {
       "type": "LinearSyntenyView",
       "displayName": "Peach - Grape (MCScan anchors)",
-      "init": {
-        "views": [
-          {
-            "assembly": "peach",
-            "tracks": [
-              {
-                "trackId": "grape_peach_anchors_simple",
-                "type": "LGVSyntenyDisplay",
-                "height": 60
-              }
-            ]
-          },
-          {
-            "assembly": "grape",
-            "tracks": [
-              {
-                "trackId": "grape_peach_anchors_simple",
-                "type": "LGVSyntenyDisplay",
-                "height": 60
-              }
-            ]
-          }
-        ],
-        "tracks": [["grape_peach_anchors", "grape_peach_anchors_simple"]],
-        "drawCurves": true
-      }
+      "views": [
+        {
+          "assembly": "peach",
+          "tracks": [
+            {
+              "trackId": "grape_peach_anchors_simple",
+              "type": "LGVSyntenyDisplay",
+              "height": 60
+            }
+          ]
+        },
+        {
+          "assembly": "grape",
+          "tracks": [
+            {
+              "trackId": "grape_peach_anchors_simple",
+              "type": "LGVSyntenyDisplay",
+              "height": 60
+            }
+          ]
+        }
+      ],
+      "tracks": [["grape_peach_anchors", "grape_peach_anchors_simple"]],
+      "drawCurves": true
     }
   ]
 }

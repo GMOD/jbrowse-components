@@ -116,35 +116,33 @@
         "type": "LinearSyntenyView",
         "displayName": "melanogaster - simulans - yakuba - pseudoobscura - virilis (OrthoFinder orthogroups)",
         "showColorLegend": false,
-        "init": {
-          "views": [
-            {
-              "assembly": "melanogaster"
-            },
-            {
-              "assembly": "simulans"
-            },
-            {
-              "assembly": "yakuba"
-            },
-            {
-              "assembly": "pseudoobscura"
-            },
-            {
-              "assembly": "virilis"
-            }
-          ],
-          "tracks": [
-            ["drosophila_orthogroups"],
-            ["drosophila_orthogroups"],
-            ["drosophila_orthogroups"],
-            ["drosophila_orthogroups"]
-          ],
-          "colorBy": "reference",
-          "autoDiagonalize": true,
-          "sameScale": true,
-          "collapseEmptyRows": true
-        }
+        "views": [
+          {
+            "assembly": "melanogaster"
+          },
+          {
+            "assembly": "simulans"
+          },
+          {
+            "assembly": "yakuba"
+          },
+          {
+            "assembly": "pseudoobscura"
+          },
+          {
+            "assembly": "virilis"
+          }
+        ],
+        "tracks": [
+          ["drosophila_orthogroups"],
+          ["drosophila_orthogroups"],
+          ["drosophila_orthogroups"],
+          ["drosophila_orthogroups"]
+        ],
+        "colorBy": "reference",
+        "autoDiagonalize": true,
+        "sameScale": true,
+        "collapseEmptyRows": true
       }
     ]
   },

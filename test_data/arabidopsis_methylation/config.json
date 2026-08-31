@@ -46,24 +46,22 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "arabidopsis",
-          "loc": "NC_003070.9:16,000-18,000",
-          "tracks": [
-            {
-              "trackId": "arabidopsis_meth",
-              "displaySnapshot": {
-                "type": "LinearAlignmentsDisplay",
-                "colorBy": {
-                  "type": "methylation",
-                  "modifications": {
-                    "cytosineContext": "CHH"
-                  }
+        "assembly": "arabidopsis",
+        "loc": "NC_003070.9:16,000-18,000",
+        "tracks": [
+          {
+            "trackId": "arabidopsis_meth",
+            "displaySnapshot": {
+              "type": "LinearAlignmentsDisplay",
+              "colorBy": {
+                "type": "methylation",
+                "modifications": {
+                  "cytosineContext": "CHH"
                 }
               }
             }
-          ]
-        }
+          }
+        ]
       }
     ]
   },

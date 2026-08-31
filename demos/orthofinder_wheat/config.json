@@ -103,39 +103,37 @@
         "type": "LinearSyntenyView",
         "displayName": "tauschii - wheat - durum - emmer - urartu - timopheevii (OrthoFinder orthogroups)",
         "showColorLegend": false,
-        "init": {
-          "views": [
-            {
-              "assembly": "tauschii"
-            },
-            {
-              "assembly": "wheat"
-            },
-            {
-              "assembly": "durum"
-            },
-            {
-              "assembly": "emmer"
-            },
-            {
-              "assembly": "urartu"
-            },
-            {
-              "assembly": "timopheevii"
-            }
-          ],
-          "tracks": [
-            ["wheat_orthogroups"],
-            ["wheat_orthogroups"],
-            ["wheat_orthogroups"],
-            ["wheat_orthogroups"],
-            ["wheat_orthogroups"]
-          ],
-          "colorBy": "reference",
-          "autoDiagonalize": true,
-          "sameScale": true,
-          "collapseEmptyRows": true
-        }
+        "views": [
+          {
+            "assembly": "tauschii"
+          },
+          {
+            "assembly": "wheat"
+          },
+          {
+            "assembly": "durum"
+          },
+          {
+            "assembly": "emmer"
+          },
+          {
+            "assembly": "urartu"
+          },
+          {
+            "assembly": "timopheevii"
+          }
+        ],
+        "tracks": [
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"],
+          ["wheat_orthogroups"]
+        ],
+        "colorBy": "reference",
+        "autoDiagonalize": true,
+        "sameScale": true,
+        "collapseEmptyRows": true
       }
     ]
   },

@@ -94,24 +94,22 @@ jb add-track 26695_vs_j99.paf --trackId hpylori_26695_vs_j99 \
   --load copy --force --out "$APP"
 
 # ── Default session: stack the three strains, genes lining up across them ─────
-# init.views is one row per strain (each carrying its gene track); init.tracks
-# is per-level; tracks[i] is the synteny shown between views[i] and views[i+1].
+# `views` is one row per strain (each carrying its gene track); `tracks` is
+# per-level, so tracks[i] is the synteny shown between views[i] and views[i+1].
 cat > session.json <<'JSON'
 {
   "name": "H. pylori three-strain synteny",
   "views": [
     {
       "type": "LinearSyntenyView",
-      "init": {
-        "views": [
-          { "assembly": "hpylori_26695", "tracks": ["hpylori_26695_genes"] },
-          { "assembly": "hpylori_chc155", "tracks": ["hpylori_chc155_genes"] },
-          { "assembly": "hpylori_j99", "tracks": ["hpylori_j99_genes"] }
-        ],
-        "tracks": [["hpylori_26695_vs_chc155"], ["hpylori_chc155_vs_j99"]],
-        "drawCurves": true,
-        "minAlignmentLength": 5000
-      }
+      "views": [
+        { "assembly": "hpylori_26695", "tracks": ["hpylori_26695_genes"] },
+        { "assembly": "hpylori_chc155", "tracks": ["hpylori_chc155_genes"] },
+        { "assembly": "hpylori_j99", "tracks": ["hpylori_j99_genes"] }
+      ],
+      "tracks": [["hpylori_26695_vs_chc155"], ["hpylori_chc155_vs_j99"]],
+      "drawCurves": true,
+      "minAlignmentLength": 5000
     }
   ]
 }

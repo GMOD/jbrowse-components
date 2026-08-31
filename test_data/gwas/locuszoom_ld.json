@@ -5,11 +5,9 @@
       {
         "id": "giant_fto_view",
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg19",
-          "loc": "chr16:53,700,000..53,900,000",
-          "tracks": ["giant_bmi_ld", "ncbi_refseq_hg19"]
-        }
+        "assembly": "hg19",
+        "loc": "chr16:53,700,000..53,900,000",
+        "tracks": ["giant_bmi_ld", "ncbi_refseq_hg19"]
       }
     ]
   },

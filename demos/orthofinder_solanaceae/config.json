@@ -89,35 +89,33 @@
         "type": "LinearSyntenyView",
         "displayName": "tomato - potato - pepper - tobacco - coffee (OrthoFinder orthogroups)",
         "showColorLegend": false,
-        "init": {
-          "views": [
-            {
-              "assembly": "tomato"
-            },
-            {
-              "assembly": "potato"
-            },
-            {
-              "assembly": "pepper"
-            },
-            {
-              "assembly": "tobacco"
-            },
-            {
-              "assembly": "coffee"
-            }
-          ],
-          "tracks": [
-            ["solanaceae_orthogroups"],
-            ["solanaceae_orthogroups"],
-            ["solanaceae_orthogroups"],
-            ["solanaceae_orthogroups"]
-          ],
-          "colorBy": "reference",
-          "autoDiagonalize": true,
-          "sameScale": true,
-          "collapseEmptyRows": true
-        }
+        "views": [
+          {
+            "assembly": "tomato"
+          },
+          {
+            "assembly": "potato"
+          },
+          {
+            "assembly": "pepper"
+          },
+          {
+            "assembly": "tobacco"
+          },
+          {
+            "assembly": "coffee"
+          }
+        ],
+        "tracks": [
+          ["solanaceae_orthogroups"],
+          ["solanaceae_orthogroups"],
+          ["solanaceae_orthogroups"],
+          ["solanaceae_orthogroups"]
+        ],
+        "colorBy": "reference",
+        "autoDiagonalize": true,
+        "sameScale": true,
+        "collapseEmptyRows": true
       }
     ]
   },

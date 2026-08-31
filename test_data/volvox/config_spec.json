@@ -58,11 +58,9 @@
       {
         "id": "integration_test",
         "type": "LinearGenomeView",
-        "init": {
-          "loc": "ctgA:5,000-6,000",
-          "assembly": "volvox",
-          "tracks": ["volvox_cram_alignments_ctga"]
-        }
+        "loc": "ctgA:5,000-6,000",
+        "assembly": "volvox",
+        "tracks": ["volvox_cram_alignments_ctga"]
       }
     ],
     "widgets": {
