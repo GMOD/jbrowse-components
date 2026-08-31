@@ -4,7 +4,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 interface CapturedAddView {
   type: string
-  initialState: { init: { views: unknown; tracks: string[][] } }
+  initialState: { views: unknown; tracks: string[][] }
 }
 
 function setup() {
@@ -40,7 +40,7 @@ test('flat 1D tracks normalized to 2D at level 0', async () => {
   })
   expect(captured).toHaveLength(1)
   expect(captured[0]!.type).toBe('LinearSyntenyView')
-  expect(captured[0]!.initialState.init.tracks).toEqual([['t1', 't2']])
+  expect(captured[0]!.initialState.tracks).toEqual([['t1', 't2']])
 })
 
 test('2D tracks preserved per-level for multi-way', async () => {
@@ -50,10 +50,7 @@ test('2D tracks preserved per-level for multi-way', async () => {
     views: [{ assembly: 'A' }, { assembly: 'B' }, { assembly: 'C' }],
     tracks: [['ab_paf'], ['bc_paf']],
   })
-  expect(captured[0]!.initialState.init.tracks).toEqual([
-    ['ab_paf'],
-    ['bc_paf'],
-  ])
+  expect(captured[0]!.initialState.tracks).toEqual([['ab_paf'], ['bc_paf']])
 })
 
 test('empty tracks passed through as empty', async () => {
@@ -63,7 +60,7 @@ test('empty tracks passed through as empty', async () => {
     views: [{ assembly: 'A' }, { assembly: 'B' }],
     tracks: [],
   })
-  expect(captured[0]!.initialState.init.tracks).toEqual([])
+  expect(captured[0]!.initialState.tracks).toEqual([])
 })
 
 test('omitted tracks defaults to empty', async () => {
@@ -72,5 +69,5 @@ test('omitted tracks defaults to empty', async () => {
     session,
     views: [{ assembly: 'A' }, { assembly: 'B' }],
   })
-  expect(captured[0]!.initialState.init.tracks).toEqual([])
+  expect(captured[0]!.initialState.tracks).toEqual([])
 })

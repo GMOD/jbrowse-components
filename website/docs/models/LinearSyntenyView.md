@@ -11,26 +11,23 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`. `init.views` declares the two member
-assemblies (stacked as linear views) and `tracks` the synteny feature track
-connecting them with a ribbon:
+Hand-authored under `defaultSession.views`, with every setting written directly
+on the view object. `views` declares the member assemblies (stacked as linear
+views) and `tracks` the synteny feature track connecting them with a ribbon:
 
 ```js
 {
   type: 'LinearSyntenyView',
-  init: {
-    views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
-    tracks: ['hg38_vs_mm10.paf'],
-    drawCurves: true,
-  },
+  views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+  tracks: ['hg38_vs_mm10.paf'],
+  drawCurves: true,
+  colorBy: 'query',
 }
 ```
 
-`init` also takes the launch commands (`levelHeights`, `autoDiagonalize`,
-`sameScale`, `collapseEmptyRows`, `drawCurves`, `drawLocationMarkers`) and ANY
-property below — `colorBy`, `alpha`, `minAlignmentLength`, … . There is no list
-to join: `applyInitSettings` matches an init key against this model's own
-properties, and `LinearSyntenyViewInit` is derived from its snapshot type.
+The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
+`sameScale`, `collapseEmptyRows`, `drawCurves` and `drawLocationMarkers`;
+everything else is a property below and needs no list to join.
 
 Members a composed model contributes are listed here too, so these tables are
 the whole surface.
@@ -50,7 +47,7 @@ the whole surface.
 | <span id="property-lodmode">**lodMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>lodMode: types.stripDefault( types.enumeration('LodMode', ['aut…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>lodMode: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.enumeration('LodMode', ['auto', 'fine', 'coarse']),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'auto',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the no-CIGAR tier (T/Q) when present. | LinearSyntenyView |
 | <span id="property-opacitybyidentity">**opacityByIdentity**</span><br><code>opacityByIdentity: types.stripDefault(types.boolean, false)</code> | Fade alignment blocks by per-feature identity (lower identity = more transparent). Orthogonal to colorBy — surfaces identity-dropoff zones without consuming the color channel. | LinearSyntenyView |
 | <span id="property-fadethinalignmentsmode">**fadeThinAlignmentsMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>fadeThinAlignmentsMode: types.stripDefault( types.enumeration('…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>fadeThinAlignmentsMode: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.enumeration('FadeThinMode', ['auto', 'on', 'off']),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'auto',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Whether to fade a sub-pixel-thin ribbon's opacity by its on-screen width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. 'auto' enables the fade once a display is dominated by sub-pixel ribbons (see `autoFadeWidthPx`); a genuinely sparse comparison (only a handful of ribbons) keeps full alpha so the fade doesn't wash it out. 'on'/'off' pin it. Resolved view-wide by the `fadeThinAlignments` getter, so all levels fade together. | LinearSyntenyView |
-| <span id="property-init">**init**</span><br><code>init: types.frozen&lt;LinearSyntenyViewCommands &#124; undefined&gt;()</code> | used for initializing the view from a session snapshot. tracks is 2D — outer index is the level (the gap between views[i] and views[i+1]), so a 3-way view has two entries. example: ```json { views: [ { loc: "chr1:1-100", assembly: "hg38", tracks: ["genes"] }, { loc: "chr1:1-100", assembly: "mm39" }, { loc: "chr1:1-100", assembly: "rn7" } ], tracks: [["hg38_vs_mm39_synteny"], ["mm39_vs_rn7_synteny"]] } ``` | LinearSyntenyView |
+| <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt; LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | transient launch state: the settings written on the view object that need resolving before they can be view state — the genome rows to open, the synteny tracks per level, the shared scale. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. | LinearSyntenyView |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [LinearComparativeView](../linearcomparativeview#property-id) |
 | <span id="property-trackselectortype">**trackSelectorType**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>trackSelectorType: types.stripDefault(types.string, 'hierarchic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>trackSelectorType: types.stripDefault(types.string, 'hierarchical')</code></pre></dialog></span> | <span data-pagefind-ignore>vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it.</span> | [LinearComparativeView](../linearcomparativeview#property-trackselectortype) |
 | <span id="property-linkviews">**linkViews**</span><br><code>linkViews: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>sync scroll and zoom across the genome rows, so panning one pans them all</span> | [LinearComparativeView](../linearcomparativeview#property-linkviews) |
@@ -91,6 +88,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-init">**init**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>LaunchInput&lt;LinearSyntenyViewCommands &amp; { unknown?: Record&lt;…&gt; &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>LaunchInput&lt;LinearSyntenyViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; undefined; malformed?: Record&lt;…&gt; &#124; undefined; legacyInit?: boolean &#124; undefined; } &amp; IStateTreeNode&lt;...&gt;&gt; &#124; undefined</code></pre></dialog></span> | the launch state that still has something to apply — the gate the loading and import-form paths below read. Also v4's name for it, kept while the other views and the products that drive them still spell it this way; deleted with `setInit`. | LinearSyntenyView |
 | <span id="getter-hassomethingtoshow">**hasSomethingToShow**</span><br><code>boolean</code> |  | LinearSyntenyView |
 | <span id="getter-initpending">**initPending**</span><br><code>boolean</code> | An `init` blob that has not been applied yet — `installInitAutorun` clears it as the last thing an apply pass does. The view is assembling itself: the rows can already exist, and be initialized, while the synteny tracks are still several awaits away, which is why the levels' `settled` gate reads this.<br><br>Same predicate as dotplot's, and read the same way — by `settled`, not by `showLoading`. LGV's `awaitingInitNavigation` is the narrower "init set and nothing on screen at all", which it does fold into `showLoading`; it used to share this name. | LinearSyntenyView |
 | <span id="getter-showassemblynameinsubviewscalebar">**showAssemblyNameInSubviewScalebar**</span><br><code>boolean</code> | Opt each sub-view's scalebar into prefixing its refName labels with the assembly name (e.g. "hg38:chr1"), so stacked genome rows of different assemblies stay distinguishable. Read duck-typed by the child LinearGenomeView (scalebarDisplayPrefix) to avoid an upward plugin dependency. | LinearSyntenyView |
@@ -171,7 +169,7 @@ the whole surface.
 | <span id="action-setfadethinalignmentsmode">**setFadeThinAlignmentsMode**</span><br><code>(arg: FadeThinMode) =&gt; void</code> |  | LinearSyntenyView |
 | <span id="action-setfadethinlatch">**setFadeThinLatch**</span><br><code>(arg: boolean) =&gt; void</code> | Move the latched 'auto' thin-fade decision — `installAutoFadeLatch` is the only caller. | LinearSyntenyView |
 | <span id="action-showallregions">**showAllRegions**</span><br><code>() =&gt; void</code> | Every row back to its own whole assembly, fit to its own width — and so also the way off `sameScale`, whose raised ceiling would otherwise make "show all regions" mean the shared scale on every row. The fit-to-width half of `showAllRegionsAcrossRows`, under the name the rest of the app reaches it by. | LinearSyntenyView |
-| <span id="action-setinit">**setInit**</span><br><code>(init?: LinearSyntenyViewCommands &#124; undefined) =&gt; void</code> |  | LinearSyntenyView |
+| <span id="action-setinit">**setInit**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(init?: LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124; undefined) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(init?: LaunchInput&lt;LinearSyntenyViewCommands&gt; &#124; undefined) =&gt; void</code></pre></dialog></span> |  | LinearSyntenyView |
 | <span id="action-clearview">**clearView**</span><br><code>() =&gt; void</code> | Also drops `init`, which `hasSomethingToShow` keys off while views is empty — leaving it set would bounce "return to import form" straight back to the loading spinner. | LinearSyntenyView |
 | <span id="action-exportsvg">**exportSvg**</span><br><code>(opts: ExportSvgOptions) =&gt; Promise&lt;void&gt;</code> |  | LinearSyntenyView |
 | <span id="action-setfollowunaligned">**setFollowUnaligned**</span><br><code>(arg: boolean) =&gt; void</code> | <span data-pagefind-ignore>Written by the follow's autorun and read only by the header, which is what keeps it from being a dependency of the very pass that writes it.<br><br>In THIS block, ahead of afterAttach, rather than with the other follow actions below: a later block's actions are not on the `self` an earlier one sees, so anything afterAttach calls has to be declared before it — the same reason `reconcileLevels` is here.</span> | [LinearComparativeView](../linearcomparativeview#action-setfollowunaligned) |

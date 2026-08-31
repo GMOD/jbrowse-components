@@ -11,23 +11,21 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`. `init.views` lists the two
-assemblies on the axes and `tracks` the synteny track(s) to plot (self-vs-self
-is allowed):
+Hand-authored under `defaultSession.views`, with every setting written directly
+on the view object. `views` lists the two assemblies on the axes and `tracks`
+the synteny track(s) to plot (self-vs-self is allowed):
 
 ```js
 {
   type: 'DotplotView',
-  init: {
-    views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
-    tracks: ['hg38_vs_mm10.paf'],
-    colorBy: 'query',
-  },
+  views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+  tracks: ['hg38_vs_mm10.paf'],
+  colorBy: 'query',
 }
 ```
 
-Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
-`loc` on each `views` entry — see the `init` property below.
+`autoDiagonalize` and a per-axis `loc` on each `views` entry are the other
+launch keys; everything else is a property below.
 
 Members a composed model contributes are listed here too, so these tables are
 the whole surface.
@@ -53,7 +51,7 @@ the whole surface.
 | <span id="property-hview">**hview**</span><br><code>hview: types.optional(DotplotHView, {})</code> | the horizontal axis, as a full 1D view state. A spec writes `views[0]` instead, which the launcher resolves into this. | DotplotView |
 | <span id="property-vview">**vview**</span><br><code>vview: types.optional(DotplotVView, {})</code> | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. | DotplotView |
 | <span id="property-tracks">**tracks**</span><br><code>tracks: types.array(pm.pluggableMstType('track', 'stateModel'))</code> |  | DotplotView |
-| <span id="property-init">**init**</span><br><code>init: types.frozen&lt;DotplotViewCommands &#124; undefined&gt;()</code> | used for initializing the view from a session snapshot | DotplotView |
+| <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt;LaunchInput&lt;DotplotViewCommands&gt; &#124; undefin…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;LaunchInput&lt;DotplotViewCommands&gt; &#124; undefined&gt;()</code></pre></dialog></span> | transient launch state: the settings written on the view object that need resolving before they can be view state — the two axis assemblies, track recipes, highlights. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. | DotplotView |
 | <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
 | <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>collapse the view to its header bar, keeping it in the session rather than closing it</span> | [BaseViewModel](../baseviewmodel#property-minimized) |
 | <span id="property-highlight">**highlight**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>highlight: types.stripDefault( types.array(types.frozen&lt;Highlig…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>highlight: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(types.frozen&lt;HighlightType&gt;()),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | <span data-pagefind-ignore>translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu</span> | [HighlightsMixin](../highlightsmixin#property-highlight) |
@@ -95,6 +93,7 @@ the whole surface.
 | <span id="getter-vrefnamelabels">**vRefNameLabels**</span><br><code>Map&lt;string, string&gt;</code> |  | DotplotView |
 | <span id="getter-borderx">**borderX**</span><br><code>number</code> | Left margin: fits the vertical (vview) axis labels. Derived purely from that axis's regions + zoom — never from viewWidth — so it can't feed back through viewWidth = width - borderX into a render loop. | DotplotView |
 | <span id="getter-bordery">**borderY**</span><br><code>number</code> | Bottom margin: fits the horizontal (hview) axis labels. See borderX. | DotplotView |
+| <span id="getter-init">**init**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>LaunchInput&lt;DotplotViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>LaunchInput&lt;DotplotViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; undefined; malformed?: Record&lt;…&gt; &#124; undefined; legacyInit?: boolean &#124; undefined; } &amp; IStateTreeNode&lt;...&gt;&gt; &#124; undefined</code></pre></dialog></span> | the launch state that still has something to apply — the gate every loading and import-form path below reads. Also v4's name for it, kept while the other views and the products that drive them still spell it this way; deleted with `setInit`. | DotplotView |
 | <span id="getter-assemblyerrors">**assemblyErrors**</span><br><code>string</code> |  | DotplotView |
 | <span id="getter-assembliesinitialized">**assembliesInitialized**</span><br><code>boolean</code> |  | DotplotView |
 | <span id="getter-axisassemblyerror">**axisAssemblyError**</span><br><code>Error &#124; undefined</code> | A dotplot plots one assembly against another, so anything but two names here cannot lay out. `initializeDisplayedRegions` walks the two axes in step with this array, so one name leaves the other axis with no regions and `initialized` never comes true — the view sat on its spinner saying "Loading" forever, with the assembly it was supposedly waiting for already loaded. Extra names are the same statement in the other direction: nothing reads past the second, so a third assembly is silently not plotted.<br><br>Only reachable from a hand-authored snapshot — `setAssemblyNames` writes both, and `applyInit` already rejects an init naming one — which is exactly the case that needs telling. Zero names is not an error: it is the import form. | DotplotView |
@@ -190,7 +189,7 @@ the whole surface.
 | <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; number</code> |  | DotplotView |
 | <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  | DotplotView |
 | <span id="action-seterror">**setError**</span><br><code>(e: unknown) =&gt; void</code> |  | DotplotView |
-| <span id="action-setinit">**setInit**</span><br><code>(init?: DotplotViewCommands &#124; undefined) =&gt; void</code> |  | DotplotView |
+| <span id="action-setinit">**setInit**</span><br><code>(init?: LaunchInput&lt;DotplotViewCommands&gt; &#124; undefined) =&gt; void</code> |  | DotplotView |
 | <span id="action-zoomout">**zoomOut**</span><br><code>() =&gt; void</code> |  | DotplotView |
 | <span id="action-zoomin">**zoomIn**</span><br><code>() =&gt; void</code> |  | DotplotView |
 | <span id="action-scrollxy">**scrollXY**</span><br><code>(dx: number, dy: number) =&gt; void</code> | Pan both axes one gesture step. Each delta is in its own axis' scroll direction, not screen px — the vertical axis lays out bottom-up, and both callers (wheel, drag) already hold the flipped value for their own reasons.<br><br>One action rather than two `scroll` calls, because an MST action is a MobX action: unbatched, the render autorun ran twice per pointermove and drew a whole frame against a moved h axis and a stale v one. | DotplotView |

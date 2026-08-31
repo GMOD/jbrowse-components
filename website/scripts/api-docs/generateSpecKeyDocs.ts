@@ -361,6 +361,17 @@ function launchKeysFor(viewType: string, scan: Scan): SpecKey[] {
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
+// A `#valueList` names the values one key accepts, and the key it names may be
+// a launch key or a plain property — `colorBy` moved from one to the other when
+// the comparative views stopped interpreting it, and its ten modes went with it
+// until this reached both tables.
+function withValues(name: string, docs: string, scan: Scan) {
+  const values = scan.valueLists.get(name)
+  return values
+    ? `${docs} One of ${values.map(v => `\`${v}\``).join(', ')}.`
+    : docs
+}
+
 function renderGroup(
   viewType: string,
   models: Record<string, StateModel>,
@@ -399,7 +410,7 @@ function renderGroup(
     ['Property', 'What it does'],
     props.map(
       p =>
-        `| [\`${p.member.name}\`](${modelAnchor(p.declaredBy, p.member.name)}) | ${proseCell(p.member.docs)} |`,
+        `| [\`${p.member.name}\`](${modelAnchor(p.declaredBy, p.member.name)}) | ${proseCell(withValues(p.member.name, p.member.docs, scan))} |`,
     ),
   )
   if (!launch.length) {
@@ -436,13 +447,10 @@ function renderGroup(
         '',
         markdownTable(
           ['Launch key', 'What it does'],
-          described.map(k => {
-            const values = scan.valueLists.get(k.name)
-            const docs = values
-              ? `${k.docs} One of ${values.map(v => `\`${v}\``).join(', ')}.`
-              : k.docs
-            return `| \`${k.name}\` | ${proseCell(docs)} |`
-          }),
+          described.map(
+            k =>
+              `| \`${k.name}\` | ${proseCell(withValues(k.name, k.docs, scan))} |`,
+          ),
         ),
       ]
     : [
