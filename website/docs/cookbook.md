@@ -108,11 +108,9 @@ theme. Every recipe below changes one piece of it.
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "loc": "ctgA:1-50000",
-          "assembly": "volvox",
-          "tracks": ["genes", "reads", "coverage", "variants"]
-        }
+        "loc": "ctgA:1-50000",
+        "assembly": "volvox",
+        "tracks": ["genes", "reads", "coverage", "variants"]
       }
     ]
   },
@@ -1004,11 +1002,9 @@ per band, so three rows means two bands:
   "views": [
     {
       "type": "LinearSyntenyView",
-      "init": {
-        "views": [{ "assembly": "K12" }, { "assembly": "Sakai" }, { "assembly": "CFT073" }],
-        "tracks": [["ecoli_ava"], ["ecoli_ava"]],
-        "minAlignmentLength": 10000
-      }
+      "views": [{ "assembly": "K12" }, { "assembly": "Sakai" }, { "assembly": "CFT073" }],
+      "tracks": [["ecoli_ava"], ["ecoli_ava"]],
+      "minAlignmentLength": 10000
     }
   ]
 }
@@ -1130,5 +1126,5 @@ inline features in a config.
 - [](/docs/config_guides/file_types) - every format and its adapter
 - [Config reference](/docs/config) - the complete, auto-generated slot list for
   every track, display, and adapter
-- [](/docs/automating) - the shared `init` launch model across config, URL, and
+- [](/docs/automating) - the launch fields shared across config, URL, and
   embedded components

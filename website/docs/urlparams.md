@@ -369,14 +369,10 @@ A "session spec" encodes a session as JSON in the URL, as the value of
 &session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5100"}]}
 ```
 
-Each view object lists the keys that view launches with, flat as below. A spec
-is arguments to a view's launcher, so nothing is nested. A `defaultSession` in a
-config writes the same settings under an `init` block instead, because there the
-view is a saved state snapshot (see
-[Config / session files](/docs/automating#config--session-files)); moving a view
-between the two means reshaping it, and pasting an `init` block into a spec is
-reported. The embedded `@jbrowse/react-linear-genome-view2` component takes the
-`init` form via `defaultSession.view.init`.
+Each view object lists the keys that view launches with, written directly on the
+view as below. A `defaultSession` in a config carries the same object (see
+[Config / session files](/docs/automating#config--session-files)), so a view
+moves between a spec, a config and an `addView` call unchanged.
 
 Under the hood, each view's `type` dispatches to a `LaunchView-<type>`
 [extension point](/docs/developer_guides/extension_points) that builds the view
@@ -1099,7 +1095,7 @@ ribbons and stronger opacity:
 }
 ```
 
-Supported init fields:
+Supported fields:
 
 <!-- SPEC_KEYS LinearSyntenyView START -->
 

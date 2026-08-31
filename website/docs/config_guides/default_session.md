@@ -7,10 +7,9 @@ guide_category: Appearance
 ---
 
 **TL;DR:** a `defaultSession` in `config.json` sets the initial state loaded for
-all users. Give each view an `init` block naming an assembly, a location and the
-tracks to open — three lines you can write by hand or emit from a script. URL
-params like `&session=` and `&loc=` build a fresh session and ignore the
-`defaultSession`, unless
+all users. Give each view an assembly, a location and the tracks to open — three
+lines you can write by hand or emit from a script. URL params like `&session=`
+and `&loc=` build a fresh session and ignore the `defaultSession`, unless
 [`&extendSession=true`](/docs/urlparams#navigating-within-the-default-session)
 is set, which navigates within it while keeping its tracks and settings.
 
@@ -37,50 +36,32 @@ already showing:
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "volvox",
-          "loc": "ctgA:1-50000",
-          "tracks": ["volvox_genes"]
-        }
+        "assembly": "volvox",
+        "loc": "ctgA:1-50000",
+        "tracks": ["volvox_genes"]
       }
     ]
   }
 }
 ```
 
-`init` is resolved when the view attaches: it works out the `displayedRegions`
-and the window the locus implies. [](/docs/automating) lists every field it
-takes — `grow` to pad the locus for context, `highlight`, `tracklist`, `nav`,
-and `displayedRegionNames` to open a whole-genome view of selected chromosomes.
+`assembly` and `loc` are resolved when the view attaches, which works out the
+`displayedRegions` and the window the locus implies. [](/docs/automating) lists
+every field a view takes — `grow` to pad the locus for context, `highlight`,
+`tracklist`, `nav`, and `displayedRegionNames` to open a whole-genome view of
+selected chromosomes. Every other view setting goes on the same object:
+`colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`.
 
 A track entry can be an object when it needs display options:
 `{ "trackId": "volvox_genes", "height": 200 }` opens the track 200px tall. Any
 slot the display defines can be set this way.
 
-View settings — `colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`
-— are properties of the view itself, so they sit _beside_ `init`:
-
-```json session
-{
-  "defaultSession": {
-    "name": "Session",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "colorByCDS": true,
-        "init": { "assembly": "volvox", "loc": "ctgA:1-50000" }
-      }
-    ]
-  }
-}
-```
-
 ## Referencing tracks by trackId
 
-`init.tracks` lists `trackId`s from the top-level `tracks` array; the session
-never repeats an adapter. Any track the session opens must exist in that array
-(or come from the assembly), or the session silently fails to open it. If a
-pipeline regenerates `config.json` with different `trackId`s each build, the
+A view's `tracks` lists `trackId`s from the top-level `tracks` array; the
+session never repeats an adapter. Any track the session opens must exist in that
+array (or come from the assembly), or the session silently fails to open it. If
+a pipeline regenerates `config.json` with different `trackId`s each build, the
 `defaultSession` breaks along with every previously shared link, which is why
 [trackIds must stay stable](/docs/config_guides/deploying#keep-trackids-stable-for-reproducible-links).
 
@@ -102,10 +83,11 @@ It is long, and hand-editing it comes with caveats:
   offsets.
 - A display node accepts only that display's state-model properties, so a config
   slot written there — `"height": 250` on the display — is dropped without
-  warning, where the same key works in an `init` track entry.
+  warning, where the same key works in a track entry the view opens by id.
 
 Use an export to capture a view you built by clicking, and read the locus and
-track ids off it into an `init` block for anything you intend to keep editing.
+track ids off it into a hand-written view for anything you intend to keep
+editing.
 
 ## Shipping several named sessions
 
@@ -126,10 +108,10 @@ without a link.
 }
 ```
 
-They are the same format as `defaultSession`: a `name` and a list of views with
-`init` blocks, so a set of them is cheap to generate from whatever already knows
-the loci. The same `trackId` caveat applies: a session naming a track that is
-not in the top-level `tracks` array silently opens without it.
+They are the same format as `defaultSession`: a `name` and a list of views, so a
+set of them is cheap to generate from whatever already knows the loci. The same
+`trackId` caveat applies: a session naming a track that is not in the top-level
+`tracks` array silently opens without it.
 
 ## See also
 

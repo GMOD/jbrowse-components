@@ -156,7 +156,7 @@ Two things worth knowing about that URL:
 
 - **`&loc=` accepts a gene name** because the hosted config carries a text
   index. `&loc=BRCA1` navigates to it. The equivalent field inside a
-  [session spec](/docs/urlparams#session-spec) does **not** — `init.loc` is
+  [session spec](/docs/urlparams#session-spec) does **not** — a view's `loc` is
   parsed as a locstring and throws on a name — so reach for the URL parameters
   when you have a symbol and a spec when you have coordinates.
 - **`&tracks=` adds to the hub's own default session** rather than replacing it,

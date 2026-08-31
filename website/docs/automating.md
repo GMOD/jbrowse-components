@@ -7,7 +7,7 @@ description:
 
 You can open JBrowse directly into a specific assembly, location, and set of
 tracks from a URL link, an embedded app, a config file, or a saved session spec.
-Each of these populates the same `init` object on a view, which sets the
+Every one of them writes the same settings directly on the view object: the
 assembly, location, tracks, and highlights it shows.
 
 For headless static-image export see [@jbrowse/img](/docs/jbrowse-img); for
@@ -15,12 +15,14 @@ screenshotting a real running instance see [](/docs/agents_capture); for the
 Python/notebook API see [](/docs/jbrowse_anywidget). If a coding agent is doing
 the automating, start at [](/docs/agents).
 
-## The `init` fields
+## What a view takes
 
-`InitState` is the set below. Beneath it is `LinearGenomeViewLaunchProps`, the
-other half of what a launch may set: every plain view property, derived from the
-model, so a setting you can reach from a menu is generally settable at launch
-too.
+The settings that need resolving when the view attaches — an assembly, a
+location, track ids, highlights — are the `InitState` set below. Beneath it is
+`LinearGenomeViewLaunchProps`, the other half of what a launch may set: every
+plain view property, derived from the model, so a setting you can reach from a
+menu is generally settable at launch too. Both go on the view object, written
+the same way.
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/types.ts#initState -->
 
@@ -106,8 +108,8 @@ export type TrackInit =
 Any other key on that object is folded into the display snapshot, so
 `{ trackId, height: 250 }` is the shorthand for the nested form above.
 
-`init` is applied once when the view attaches, then cleared, so a saved session
-never retains it.
+The keys needing resolution are applied once when the view attaches, then
+cleared, so a saved session never retains them.
 
 ## Ways to automate a view
 
@@ -119,12 +121,11 @@ never retains it.
 - Ship a preset view in a config file with a `defaultSession` in config.json,
   see [](/docs/config_guides/default_session).
 - Open a preset session programmatically with a session spec, which lists these
-  same fields flat on each view, see
-  [URL params → session spec](/docs/urlparams).
+  same fields on each view, see [URL params → session spec](/docs/urlparams).
 
 ## URL parameters
 
-JBrowse Web maps query parameters straight onto `init`:
+JBrowse Web maps query parameters straight onto the view:
 
 ```
 ?assembly=hg19&loc=chr1:1,000-2,000&tracks=genes,variants&tracklist=true&nav=false&highlight=chr1:1,500-1,600
@@ -139,8 +140,9 @@ up to the host application.
 
 ## Embedded components (`createViewState`)
 
-`createViewState` accepts `location` and `highlight` and routes them through
-`init`, so an embedded view shows the loading spinner while the assembly loads:
+`createViewState` accepts `location` and `highlight` and routes them through the
+same launch path, so an embedded view shows the loading spinner while the
+assembly loads:
 
 ```js
 const state = createViewState({
@@ -151,13 +153,13 @@ const state = createViewState({
 })
 ```
 
-For full track control at launch, provide a `defaultSession` whose view carries
-an `init` object. See [](/docs/tutorials/embed_linear_genome_view).
+For full track control at launch, provide a `defaultSession` whose view names
+its tracks. See [](/docs/tutorials/embed_linear_genome_view).
 
 ## Config / session files
 
-A `defaultSession` in config.json (or any session snapshot) can give a view an
-`init` block:
+A `defaultSession` in config.json (or any session snapshot) carries the same
+view object a spec or a URL does:
 
 ```json session
 {
@@ -166,30 +168,20 @@ A `defaultSession` in config.json (or any session snapshot) can give a view an
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg19",
-          "loc": "chr1:1,000,000-2,000,000",
-          "tracks": ["genes", "variants"]
-        }
+        "assembly": "hg19",
+        "loc": "chr1:1,000,000-2,000,000",
+        "tracks": ["genes", "variants"]
       }
     ]
   }
 }
 ```
 
-Here `init` is required: a `defaultSession` view is a saved state snapshot, and
-`init` is the property holding the keys that need resolving on load. Which key
-goes where:
-
-- **Inside `init`** — `loc`, `tracks`, `highlight`, `tracklist`, `nav`,
-  `displayedRegionNames`, `grow`.
-- **Beside `init`** — plain view settings, which are properties in their own
-  right: `colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`,
-  `showHighlightChips`.
-
-A [session spec](/docs/urlparams#session-spec) lists the same keys flat instead,
-since there they are arguments to the view's launcher, so a view moved between
-the two has to be reshaped.
+A view therefore moves between a config, a
+[session spec](/docs/urlparams#session-spec) and an `addView` call without being
+reshaped, and the plain view settings — `colorByCDS`, `showAminoAcids`,
+`showCenterLine`, `trackLabels`, `showHighlightChips` — sit beside `loc` and
+`tracks` on the same object.
 
 See [](/docs/config_guides/default_session).
 
@@ -210,9 +202,9 @@ for programmatic `createViewState`/session-JSON launches. See the
 ## Other view types
 
 Circular, dotplot, synteny, spreadsheet, breakpoint-split, and SV-inspector
-views each accept their own `init`/session-spec shape, applied once on launch in
-the same way. Their fields are documented per view type in the
-[](/docs/urlparams) session-spec section.
+views each accept their own set of launch fields, applied once on launch in the
+same way. Their fields are documented per view type in the [](/docs/urlparams)
+session-spec section.
 
 ## Headless / puppeteer
 
@@ -233,8 +225,8 @@ Three things commonly trip people up when driving JBrowse headlessly.
   `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
 - **Knowing when a view has finished loading.** JBrowse publishes its own state
   onto the DOM for exactly this: a view carries `data-view-phase="loading"`
-  while it is still waiting on its assembly (or on `init`'s navigation) and has
-  mounted no displays yet, and each track display carries
+  while it is still waiting on its assembly (or on its launch navigation) and
+  has mounted no displays yet, and each track display carries
   `data-display-phase="loading"` for the whole of its fetch. Waiting until
   neither is present reads the app's own state. Key the wait on those
   attributes: the loading overlay keeps the literal `Loading…` in the DOM behind

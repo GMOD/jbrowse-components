@@ -87,7 +87,7 @@ full form for a file whose extension does not decide the format, or for a track
 needing a slot the guess does not set.
 
 What the CLI does not write is what the view opens onto — `defaultSession` and
-the `init` fields under it, which are [](/docs/automating), and which
+the launch fields on each view, which are [](/docs/automating), and which
 `jbrowse set-default-session` takes once composed.
 
 ## Check the result
@@ -108,7 +108,7 @@ jbrowse validate config.json
 
 ```
 error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"? — JBrowse ignores keys it does not declare, so this setting silently does nothing
-error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config — did you mean "sample_bam"?
+error: defaultSession.views[0].tracks[0]: trackId "sample_bem" is not defined in this config — did you mean "sample_bam"?
 
 2 error(s), 0 warning(s) in config.json
 ```
@@ -241,9 +241,9 @@ The picture is the check. The deliverable is usually one of three things:
 
 A request to put a genome browser in a web application is the same JSON in a
 different position: `@jbrowse/react-linear-genome-view2` and its siblings take
-the `assembly`, `tracks` and `init` an agent already knows how to write, as
-props rather than as a file. [](/docs/embedded_components) covers which package
-fits which goal.
+the `assembly`, `tracks` and view settings an agent already knows how to write,
+as props rather than as a file. [](/docs/embedded_components) covers which
+package fits which goal.
 
 **The props are initial values.** The view engine is built on first render and
 later prop changes are ignored, so code that swaps `assembly` on a mounted
@@ -265,7 +265,7 @@ For config authoring specifically, the useful path is:
 - `https://jbrowse.org/jb2/docs/config/<lowercased type name>.md` for the slots
   that type accepts — one page per adapter, track, and display type, generated
   from the schemas, a few hundred words each.
-- [](/docs/automating) for the `init` fields that decide what a view opens onto.
+- [](/docs/automating) for the fields that decide what a view opens onto.
 - [](/docs/cookbook) when the request is about how something should look rather
   than which type it is — color callbacks, filters, arcs, several signals on one
   track — each recipe a whole track config rather than the slot on its own.

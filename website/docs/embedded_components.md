@@ -353,8 +353,8 @@ notebook cell or a Shiny observer fires as soon as it has a widget — long befo
 a hub fetch and an assembly load have finished. The state is recorded
 immediately and applied when the engine arrives. It resolves once the state has
 _reached_ the view rather than once the view has finished drawing: a `location`
-goes to the same init machinery a URL launch uses, which waits for the assembly
-and then navigates. Watch `onLocationChange` to see it land.
+goes to the same launch machinery a URL uses, which waits for the assembly and
+then navigates. Watch `onLocationChange` to see it land.
 
 `whenReady()` is the whole read API. The model it hands back is MobX-observable
 throughout: every `#getter` and `#property` on the view and session models is
@@ -416,9 +416,8 @@ await ring.update({ displayedRegionNames: [] }) // back to the whole genome
 every displayed region at once, so what changes is which chromosomes are on the
 ring. Names resolve through the assembly's aliases and may be globs, an empty
 list means the whole assembly, and naming the main chromosomes is how you keep a
-few thousand unplaced contigs from each taking a hairline slice. They are the
-same two fields the view's own `init` blob carries, which a URL spec and a saved
-session carry too.
+few thousand unplaced contigs from each taking a hairline slice. A URL spec and
+a saved session write the same two fields on the view itself.
 
 There is no `onLocationChange`: there is no visible region to report, so the
 callback would only ever fire `undefined`. `onSessionChange` carries a change to
