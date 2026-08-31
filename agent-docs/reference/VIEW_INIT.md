@@ -34,12 +34,12 @@ displayed regions, `tracks` is trackIds that have to become open tracks,
 `highlight` needs `coerceHighlight` and the assembly manager. None has an MST
 property behind it, so none can be restored — hence a blob applied once and
 cleared. A declared property is the other case and needs no per-setting code at
-all: `applyInitSettings` writes it as a patch against the model's own property
-list, so **declaring a property is declaring it authorable**, mixins included.
-The hand-written `if (init.x !== undefined) self.setX(init.x)` arm per property
-is what that replaced, and what it cost while it existed is in the docstring
-there — `drawLocationMarkers` shipped unauthorable, and four DotplotView
-properties never had an arm.
+all: the partition leaves it on the snapshot for MST to restore against the
+model's own property list, so **declaring a property is declaring it
+authorable**, mixins included. The hand-written
+`if (init.x !== undefined) self.setX(init.x)` arm per property is what that
+replaced — while it existed, `drawLocationMarkers` shipped unauthorable and four
+DotplotView properties never had an arm.
 
 ## An assembly name read off a track config: canonical, **and** screened
 
@@ -208,10 +208,10 @@ URL ?loc=&assembly=&tracks=&tracklist=&nav=&highlight=&regions=
   → LaunchLinearGenomeViewF: session.addView('LinearGenomeView', spec)
 
 the same params over a config's defaultSession (&extendSession=true)
-  → applyDefaultSessionViewInit: view.setInit({ …base, …init, assembly })
+  → applyDefaultSessionViewInit: view.setLaunch({ …base, …init, assembly })
 
 createViewState({ location, highlight, init })  (react-linear-genome-view)
-  → view.setInit(...)   (loc-less input skips re-nav if regions exist)
+  → view.setLaunch(...)   (loc-less input skips re-nav if regions exist)
 
 session/config JSON, an addView literal, a session spec's view
   → the view object → withLaunchInput's preProcessSnapshot → `launch`
@@ -229,7 +229,7 @@ afterAttach.ts setupInitAutorun (autorun "LGVInit"):
   → if nav !== undefined: setHideHeader(!nav)
   → backfill assemblyName on existing highlights, then parse the highlight recipes
     (per-entry try/catch: parseLocString throws on an unknown refName)
-  → setInit(undefined)   // clear; one-shot
+  → setLaunch(undefined)   // clear; one-shot
 ```
 
 Nothing is sorted in the launcher: `LaunchLinearGenomeViewF` validates
@@ -256,8 +256,8 @@ which owns:
   Overlapping applies duplicated LGV's highlights, and in synteny the second
   run's `setViews` detached the models the first was still awaiting.
 - the serialized drain, so an input set mid-apply is applied rather than
-  stranded, and the identity-checked clear (`self.init === init`), so that
-  pending input isn't silently dropped by a blind `setInit(undefined)`.
+  stranded, and the identity-checked clear (`self.pendingLaunch === launch`), so
+  that pending input isn't silently dropped by a blind `setLaunch(undefined)`.
 - one failure policy, keyed off `materialized` — the same line each view's
   `postProcessSnapshot` draws for persistence:
 
@@ -275,7 +275,7 @@ keys off `error` alone. Clearing there is also what disarms the re-fire.
 ### Mid-apply waits, and why there is no timeout
 
 `apply` gets a second argument, `{ superseded }` — true once the node is gone or
-a newer `setInit` has replaced this input. Any wait inside `apply` that can park
+a newer `setLaunch` has replaced this input. Any wait inside `apply` that can park
 indefinitely **must** fold it in:
 
 ```ts
@@ -352,12 +352,12 @@ returns the blob itself and never a copy, because the autorun clears by identity
 - `initialized` — false until `volatileWidth` is set; with a pending launch it
   additionally waits for that launch's `assembly` to have `regions` loaded
   (otherwise it falls back to `assembliesInitialized`).
-- `hasSomethingToShow` = `hasDisplayedRegions || !!init`
-- `awaitingInitNavigation` = `!!init && !hasDisplayedRegions` — the window where
-  the assembly is ready and the autorun has not navigated yet, which
-  `initialized` does not cover. **Not the comparative views' `initPending`**,
-  which is the bare `!!init` and which they read from `settled` rather than from
-  the loading gate; the two disagree exactly once regions exist, and this one
+- `hasSomethingToShow` = `hasDisplayedRegions || !!pendingLaunch`
+- `awaitingInitNavigation` = `!!pendingLaunch && !hasDisplayedRegions` — the
+  window where the assembly is ready and the autorun has not navigated yet,
+  which `initialized` does not cover. **Not the comparative views'
+  `initPending`**, which is the bare `!!pendingLaunch` and which they read from
+  `settled` rather than from the loading gate; the two disagree exactly once regions exist, and this one
   stops holding the spinner there.
 - `showLoading` = `hasSomethingToShow && !error && (!initialized || awaitingInitNavigation)`
 - `showImportForm` = `!hasSomethingToShow || !!error`
@@ -391,9 +391,7 @@ machine above. Circular, breakpoint and sv-inspector apply synchronously inside
 the autorun, so there is no await window to guard. SpreadsheetView is async but
 deliberately different — a `reaction` cleared synchronously up front, so
 re-entrancy is excluded by the dependency graph instead of a flag; it can do that
-because the launch blob is not what keeps its loading state up. Beware:
-`session.setInit(...)` (app-core / jbrowse-web `loadSessionSpec`) is a
-**different** thing — the workspace dockview layout — not this view-launch input.
+because the launch blob is not what keeps its loading state up.
 
 ## Known warts (see also the user doc website/docs/automating.md)
 
@@ -409,7 +407,8 @@ restatement ever stops being assignable, that is where it fails.
 ## Before v5 there were two shapes
 
 Until v5 the correct shape depended on the surface: flat on the view in a spec, a
-URL and a jbrowse-img spec; nested under `init` in a `defaultSession`. The
+URL and a jbrowse-img spec; nested under `init` in a `defaultSession`. v5 refuses
+`init` on every one of them, in one wording, and applies nothing under it. The
 command-vs-property distinction behind that split is real and the partition still
 draws it — what was wrong was asking an author to draw it, against an MST that
 drops a misplaced key without a word. This doc argued for keeping the two shapes,
