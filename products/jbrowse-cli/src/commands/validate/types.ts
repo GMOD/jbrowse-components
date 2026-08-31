@@ -40,12 +40,35 @@ export interface TypeEntry {
 
 export type TypeGroup = Record<string, TypeEntry>
 
+/**
+ * A view type, which has no ConfigurationSchema at all — a view carries its
+ * settings as MST state, so the two entries below are the whole accepted set
+ * and anything else written on a session's view object is dropped.
+ */
+export interface ViewEntry {
+  /** the MST properties of the view's state model */
+  stateModelProps: string[]
+  /**
+   * The keys the view's `defineLaunchKeys` registration publishes: settings a
+   * launcher resolves rather than MST — `assembly`, `loc`, `tracks`. Empty for
+   * a view that registers none, which then takes declared properties only.
+   */
+  launchKeys: string[]
+  /** legacy spellings the view's own preProcessSnapshot converts */
+  passThrough?: string[]
+  /** Old type names this view still answers to. */
+  aliases?: string[]
+}
+
+export type ViewGroup = Record<string, ViewEntry>
+
 export interface ConfigManifest {
   adapters: TypeGroup
   tracks: TypeGroup
   displays: TypeGroup
   textSearchAdapters: TypeGroup
   connections: TypeGroup
+  views: ViewGroup
   /**
    * Legacy display-instance keys product-core's sessionMigrations still lifts
    * onto the config slots that replaced them, keyed by the display type they

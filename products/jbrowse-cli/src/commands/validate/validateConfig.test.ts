@@ -34,11 +34,9 @@ function baseConfig() {
       views: [
         {
           type: 'LinearGenomeView',
-          init: {
-            assembly: 'hg38',
-            loc: 'chr1:1-1000',
-            tracks: ['sample_bam'],
-          },
+          assembly: 'hg38',
+          loc: 'chr1:1-1000',
+          tracks: ['sample_bam'],
         },
       ],
     },
@@ -210,9 +208,9 @@ describe('validateConfig', () => {
 
   it('reports a defaultSession naming a track that does not exist', () => {
     const config = baseConfig()
-    config.defaultSession.views[0]!.init.tracks = ['sample_bem']
+    config.defaultSession.views[0]!.tracks = ['sample_bem']
     const [error] = errorsOf(config)
-    expect(error?.where).toBe('defaultSession.views[0].init.tracks[0]')
+    expect(error?.where).toBe('defaultSession.views[0].tracks[0]')
     expect(error?.message).toContain('did you mean "sample_bam"')
   })
 

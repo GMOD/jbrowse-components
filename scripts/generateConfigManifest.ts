@@ -94,11 +94,46 @@ function isSubSchema(prop) {
 // The MST properties of a type's STATE MODEL, which is a different question
 // from its config slots and the one a saved session turns on: a session
 // snapshot's display node is instantiated by the state model, so a config-slot
-// name written there is dropped exactly like a misspelling. Only displays are
-// collected — that is where a session actually carries settings.
+// name written there is dropped exactly like a misspelling. Collected for
+// displays and for views — the two nodes a session actually carries settings on.
 function stateModelPropsOf(stateModel) {
   const model = modelOf(stateModel)
   return model?.properties ? Object.keys(model.properties) : undefined
+}
+
+// A view has no config schema, so its accepted keys are its state model's
+// properties plus the launch keys its registration publishes — \`assembly\`,
+// \`loc\`, \`tracks\` and the rest, which a launcher resolves rather than MST. The
+// two together are the COMPLETE set, which is what lets the validator call
+// anything else an error rather than a guess.
+function collectViews() {
+  const out = {}
+  for (const name of Object.keys(
+    pm.getElementTypeRecord('view').registeredTypes,
+  )) {
+    let entry
+    try {
+      entry = pm.getViewType(name)
+    } catch {
+      continue
+    }
+    const stateModelProps = stateModelPropsOf(entry.stateModel)
+    if (!stateModelProps) {
+      continue
+    }
+    const registration = entry.launchKeys
+    out[name] = {
+      stateModelProps,
+      // A view that registers none takes settings only as declared properties,
+      // and the validator says so rather than assuming keys it cannot see.
+      launchKeys: registration ? Object.keys(registration.keys).sort() : [],
+      ...(registration?.passThrough?.length
+        ? { passThrough: [...registration.passThrough].sort() }
+        : {}),
+      ...(entry.aliases?.length ? { aliases: entry.aliases } : {}),
+    }
+  }
+  return out
 }
 
 // A snapshot normalizer lets an adapter accept keys its schema never declares —
@@ -354,6 +389,7 @@ console.log(JSON.stringify({
   displays: collect('display', n => pm.getDisplayType(n)),
   textSearchAdapters: collect('text search adapter', n => pm.getTextSearchAdapterType(n)),
   connections: collect('connection', n => pm.getConnectionType(n)),
+  views: collectViews(),
   // Legacy display-instance keys product-core's sessionMigrations still lifts
   // into the config, keyed by display type ('*' = any). Taken from the migration
   // itself rather than restated, so the two cannot disagree about what is stale
@@ -617,6 +653,7 @@ const TYPE_GROUPS = new Set([
   'displays',
   'textSearchAdapters',
   'connections',
+  'views',
 ])
 const counts = Object.entries(schema)
   .filter(([group]) => TYPE_GROUPS.has(group))

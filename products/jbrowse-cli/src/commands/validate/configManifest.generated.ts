@@ -5381,6 +5381,211 @@ export const configManifest: ConfigManifest = {
       ]
     }
   },
+  "views": {
+    "LinearGenomeView": {
+      "stateModelProps": [
+        "id",
+        "displayName",
+        "minimized",
+        "highlight",
+        "showHighlightChips",
+        "type",
+        "windowStartBp",
+        "windowWidthBp",
+        "legacyBpPerPx",
+        "displayedRegions",
+        "tracks",
+        "hideHeader",
+        "hideHeaderOverview",
+        "hideNoTracksActive",
+        "trackSelectorType",
+        "showCenterLine",
+        "showCytobands",
+        "trackLabels",
+        "showGridlines",
+        "labelsVisible",
+        "colorByCDS",
+        "showAminoAcids",
+        "showTrackOutlines",
+        "scalebarOnly",
+        "launch"
+      ],
+      "launchKeys": [
+        "assembly",
+        "displayedRegionNames",
+        "grow",
+        "highlight",
+        "loc",
+        "nav",
+        "tracklist",
+        "tracks"
+      ],
+      "passThrough": [
+        "bpPerPx",
+        "offsetPx"
+      ]
+    },
+    "CircularView": {
+      "stateModelProps": [
+        "id",
+        "displayName",
+        "minimized",
+        "type",
+        "offsetRadians",
+        "bpPerPx",
+        "autoFit",
+        "tracks",
+        "hideVerticalResizeHandle",
+        "hideTrackSelectorButton",
+        "disableImportForm",
+        "height",
+        "displayedRegions",
+        "minimumRadiusPx",
+        "spacingPx",
+        "paddingPx",
+        "minVisibleWidth",
+        "trackSelectorType",
+        "launch"
+      ],
+      "launchKeys": [
+        "assembly",
+        "displayedRegionNames",
+        "tracks"
+      ]
+    },
+    "DotplotView": {
+      "stateModelProps": [
+        "id",
+        "displayName",
+        "minimized",
+        "highlight",
+        "showHighlightChips",
+        "colorBy",
+        "trackColorBy",
+        "trackColors",
+        "showColorLegend",
+        "type",
+        "height",
+        "trackSelectorType",
+        "assemblyNames",
+        "drawCigar",
+        "showGridlines",
+        "lodMode",
+        "lockAspectRatio",
+        "lineWidth",
+        "alpha",
+        "minAlignmentLength",
+        "minIdentity",
+        "hview",
+        "vview",
+        "tracks",
+        "launch"
+      ],
+      "launchKeys": [
+        "autoDiagonalize",
+        "highlight",
+        "tracks",
+        "views"
+      ]
+    },
+    "LinearSyntenyView": {
+      "stateModelProps": [
+        "id",
+        "displayName",
+        "minimized",
+        "type",
+        "trackSelectorType",
+        "linkViews",
+        "followSynteny",
+        "sameScale",
+        "followAnchorIndex",
+        "followMatchOrientation",
+        "levels",
+        "views",
+        "colorBy",
+        "trackColorBy",
+        "trackColors",
+        "showColorLegend",
+        "cigarMode",
+        "showOffscreenMates",
+        "bidirectionalFetch",
+        "overdrawPx",
+        "alpha",
+        "minAlignmentLength",
+        "lodMode",
+        "opacityByIdentity",
+        "fadeThinAlignmentsMode",
+        "launch"
+      ],
+      "launchKeys": [
+        "autoDiagonalize",
+        "collapseEmptyRows",
+        "drawCurves",
+        "drawLocationMarkers",
+        "levelHeights",
+        "sameScale",
+        "tracks",
+        "views"
+      ]
+    },
+    "SpreadsheetView": {
+      "stateModelProps": [
+        "id",
+        "displayName",
+        "minimized",
+        "type",
+        "height",
+        "hideVerticalResizeHandle",
+        "importWizard",
+        "spreadsheet",
+        "launch"
+      ],
+      "launchKeys": [
+        "assembly",
+        "fileType",
+        "filterText",
+        "uri"
+      ]
+    },
+    "SvInspectorView": {
+      "stateModelProps": [
+        "id",
+        "displayName",
+        "minimized",
+        "type",
+        "height",
+        "onlyDisplayRelevantRegionsInCircularView",
+        "spreadsheetWidthFraction",
+        "spreadsheetView",
+        "circularView",
+        "launch"
+      ],
+      "launchKeys": [
+        "assembly",
+        "fileType",
+        "filterText",
+        "uri"
+      ]
+    },
+    "BreakpointSplitView": {
+      "stateModelProps": [
+        "id",
+        "displayName",
+        "minimized",
+        "type",
+        "height",
+        "showIntraviewLinks",
+        "linkViews",
+        "interactiveOverlay",
+        "showHeader",
+        "views",
+        "launch"
+      ],
+      "launchKeys": [
+        "views"
+      ]
+    }
+  },
   "migratedDisplayKeys": {
     "*": [
       "heightPreConfig"

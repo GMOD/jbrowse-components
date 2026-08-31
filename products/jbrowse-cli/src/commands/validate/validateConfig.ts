@@ -21,6 +21,7 @@ import type {
   TypeEntry,
   TypeGroup,
   ValidationResult,
+  ViewEntry,
 } from './types.ts'
 
 // ------------------------------------------------------------------ reporting
@@ -160,13 +161,13 @@ function checkSlots(
 // author finds out either way. It is also frequently not wrong: a plugin
 // registers types this manifest never saw. An unknown *slot* has neither
 // property, which is why that one is the error.
-function resolveType(
+function resolveType<Entry extends { aliases?: string[] }>(
   obj: Record<string, unknown>,
-  group: TypeGroup,
+  group: Record<string, Entry>,
   groupLabel: string,
   where: string,
   report: Report,
-): (TypeEntry & { canonicalName: string }) | undefined {
+): (Entry & { canonicalName: string }) | undefined {
   const typeName = obj.type
   if (typeof typeName !== 'string') {
     report.error(
@@ -532,9 +533,142 @@ function checkSessionViewTracks(
   }
 }
 
-// A view's `init` names tracks and an assembly by id. Nothing validates those at
-// load: a trackId that does not exist simply fails to open, which reads as a
-// rendering bug rather than a typo.
+// A view node in a session — `defaultSession.views[]` — is instantiated by the
+// view's STATE MODEL, and a view has no config schema at all, so every setting
+// an author writes lands on that node: the properties MST restores, plus the
+// launch keys a launcher resolves (`assembly`, `loc`, `tracks`). Those two
+// together are the whole accepted set, which is what makes this check
+// exhaustive rather than a guess — anything else is dropped exactly like a
+// misspelling, and the view opens on its defaults with nothing said.
+//
+// The same trap checkSessionDisplay catches one level down, and the same three
+// diagnoses: a real key in the wrong place, a stale spelling that still works,
+// and a key nothing anywhere reads.
+function checkSessionViewKeys(
+  view: Record<string, unknown>,
+  entry: ViewEntry & { canonicalName: string },
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const accepted = [
+    ...entry.stateModelProps,
+    ...entry.launchKeys,
+    ...(entry.passThrough ?? []),
+  ]
+  for (const key of Object.keys(view)) {
+    if (accepted.includes(key) || key === 'init') {
+      continue
+    }
+    // Whichever other view types do read the key. `assembly` on a DotplotView is
+    // not a misspelling and no suggestion reaches it, so naming the views that
+    // take it is the only thing that tells the author what they wrote.
+    const elsewhere = Object.entries(manifest.views)
+      .filter(
+        ([name, other]) =>
+          name !== entry.canonicalName &&
+          [...other.stateModelProps, ...other.launchKeys].includes(key),
+      )
+      .map(([name]) => name)
+    report.error(
+      `${where}.${key}`,
+      elsewhere.length
+        ? `"${key}" is a setting of ${elsewhere.join(', ')}, not of ${entry.canonicalName}${didYouMean(key, accepted)} — a session snapshot drops keys the view does not declare, so this setting silently does nothing`
+        : `unknown view key "${key}"${didYouMean(key, accepted)} — a session snapshot drops keys the view does not declare, so this setting silently does nothing`,
+    )
+  }
+}
+
+// The ids a view names, which nothing validates at load: a trackId that does not
+// exist simply fails to open, which reads as a rendering bug rather than a typo.
+function checkViewReferences(
+  view: Record<string, unknown>,
+  where: string,
+  report: Report,
+  ctx: Ctx,
+) {
+  const assembly = view.assembly
+  if (typeof assembly === 'string' && !ctx.assemblyNames.has(assembly)) {
+    report.error(
+      `${where}.assembly`,
+      `assembly "${assembly}" is not defined in this config${didYouMean(assembly, [...ctx.assemblyNames])}`,
+    )
+  }
+  if (!Array.isArray(view.tracks)) {
+    return
+  }
+  // A LinearSyntenyView's `tracks` is one array PER LEVEL (`[[a], [b]]`) — the
+  // multi-way form — so flatten one level before reading entries. Treating those
+  // inner arrays as track entries reported every genome row of every synteny
+  // demo as a track with no trackId.
+  const entries = view.tracks.flatMap((t: unknown) =>
+    Array.isArray(t) ? (t as unknown[]) : [t],
+  )
+  for (const [j, entry] of entries.entries()) {
+    // A built track snapshot names its config through `configuration` rather
+    // than `trackId`, and is state MST restores rather than a reference to open.
+    if (isRecord(entry) && !('trackId' in entry)) {
+      continue
+    }
+    const trackId = isRecord(entry) ? entry.trackId : entry
+    if (typeof trackId !== 'string') {
+      report.error(`${where}.tracks[${j}]`, 'track entry has no trackId')
+    } else if (
+      !ctx.seenTrackIds.has(trackId) &&
+      !ctx.sequenceTrackIds.has(trackId)
+    ) {
+      report.error(
+        `${where}.tracks[${j}]`,
+        `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds, ...ctx.sequenceTrackIds])}`,
+      )
+    }
+  }
+}
+
+function checkSessionView(
+  view: Record<string, unknown>,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+  ctx: Ctx,
+) {
+  const entry = resolveType(
+    view,
+    manifest.views,
+    'view',
+    `${where}.type`,
+    report,
+  )
+  // A view type the manifest doesn't know (a plugin's) is already a warning from
+  // resolveType, and its keys are unknowable here.
+  if (!entry) {
+    return
+  }
+  checkSessionViewKeys(view, entry, manifest, where, report)
+  checkViewReferences(view, where, report, ctx)
+
+  const init = view.init
+  if (isRecord(init)) {
+    report.warn(
+      `${where}.init`,
+      'nesting a view\'s settings under "init" is deprecated — write every setting directly on the view object',
+    )
+    checkSessionViewKeys(init, entry, manifest, `${where}.init`, report)
+    checkViewReferences(init, `${where}.init`, report, ctx)
+  }
+
+  // A synteny or breakpoint row is a whole view snapshot of its own. Only a row
+  // carrying a `type` can be checked: a row written as a recipe names no view
+  // type, and which one it becomes is the parent launcher's business.
+  if (Array.isArray(view.views)) {
+    for (const [i, row] of view.views.entries()) {
+      if (isRecord(row) && typeof row.type === 'string') {
+        checkSessionView(row, manifest, `${where}.views[${i}]`, report, ctx)
+      }
+    }
+  }
+}
+
 function checkSession(
   session: unknown,
   manifest: ConfigManifest,
@@ -548,47 +682,14 @@ function checkSession(
     checkSessionViewTracks(view, manifest, `defaultSession.views[${i}]`, report)
   }
   for (const [i, view] of session.views.entries()) {
-    if (!isRecord(view) || !isRecord(view.init)) {
-      continue
-    }
-    const init = view.init
-    const where = `defaultSession.views[${i}].init`
-    if (
-      typeof init.assembly === 'string' &&
-      !ctx.assemblyNames.has(init.assembly)
-    ) {
-      report.error(
-        `${where}.assembly`,
-        `assembly "${init.assembly}" is not defined in this config${didYouMean(init.assembly, [...ctx.assemblyNames])}`,
+    if (isRecord(view)) {
+      checkSessionView(
+        view,
+        manifest,
+        `defaultSession.views[${i}]`,
+        report,
+        ctx,
       )
-    }
-    if (Array.isArray(init.tracks)) {
-      // A LinearSyntenyView's `tracks` is one array PER LEVEL (`[[a], [b]]`) —
-      // the multi-way form — so flatten one level before reading entries.
-      // Treating those inner arrays as track entries reported every genome row
-      // of every synteny demo as a track with no trackId.
-      const entries = init.tracks.flatMap((t: unknown) =>
-        Array.isArray(t) ? (t as unknown[]) : [t],
-      )
-      for (const [j, entry] of entries.entries()) {
-        const trackId =
-          typeof entry === 'string'
-            ? entry
-            : isRecord(entry)
-              ? entry.trackId
-              : undefined
-        if (typeof trackId !== 'string') {
-          report.error(`${where}.tracks[${j}]`, 'track entry has no trackId')
-        } else if (
-          !ctx.seenTrackIds.has(trackId) &&
-          !ctx.sequenceTrackIds.has(trackId)
-        ) {
-          report.error(
-            `${where}.tracks[${j}]`,
-            `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds, ...ctx.sequenceTrackIds])}`,
-          )
-        }
-      }
     }
   }
 }
