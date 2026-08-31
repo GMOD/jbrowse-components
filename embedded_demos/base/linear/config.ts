@@ -91,16 +91,14 @@ export const config = {
     view: {
       id: 'linearGenomeView',
       type: 'LinearGenomeView',
-      init: {
-        assembly: 'hg38',
-        loc: '10:29,838,565..29,838,850',
-        tracks: [
-          'hg38-ReferenceSequenceTrack',
-          'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-          'hg38.100way.phyloP100way',
-          'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
-        ],
-      },
+      assembly: 'hg38',
+      loc: '10:29,838,565..29,838,850',
+      tracks: [
+        'hg38-ReferenceSequenceTrack',
+        'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+        'hg38.100way.phyloP100way',
+        'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
+      ],
     },
   },
 }

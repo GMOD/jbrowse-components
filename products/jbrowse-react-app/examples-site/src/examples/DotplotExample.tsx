@@ -28,10 +28,8 @@ export default function DotplotExample() {
       views={[
         {
           type: 'DotplotView',
-          init: {
-            views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
-            tracks: ['volvox_fake_synteny'],
-          },
+          views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
+          tracks: ['volvox_fake_synteny'],
         },
       ]}
     />

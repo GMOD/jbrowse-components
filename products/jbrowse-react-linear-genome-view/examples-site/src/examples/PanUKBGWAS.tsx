@@ -127,11 +127,9 @@ function GenomeView({
       name: 'Pan-UKB GWAS',
       view: {
         type: 'LinearGenomeView',
-        init: {
-          assembly: assembly.name,
-          loc: FEATURED[phenotype.id] ?? 'chr1',
-          tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
-        },
+        assembly: assembly.name,
+        loc: FEATURED[phenotype.id] ?? 'chr1',
+        tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
       },
     },
   })

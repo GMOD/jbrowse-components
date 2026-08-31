@@ -127,11 +127,9 @@ export default function ObserveVisible() {
       name: 'Observe visible',
       view: {
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1105..1221',
-          tracks: ['volvox_gff3'],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1105..1221',
+        tracks: ['volvox_gff3'],
       },
     },
   })

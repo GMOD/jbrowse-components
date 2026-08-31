@@ -13,10 +13,8 @@ export default function SvInspectorExample() {
       views={[
         {
           type: 'SvInspectorView',
-          init: {
-            assembly: 'volvox',
-            uri: `${base}/volvox.dup.vcf.gz`,
-          },
+          assembly: 'volvox',
+          uri: `${base}/volvox.dup.vcf.gz`,
         },
       ]}
     />

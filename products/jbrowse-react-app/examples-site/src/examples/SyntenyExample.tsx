@@ -32,10 +32,8 @@ export default function SyntenyExample() {
       views={[
         {
           type: 'LinearSyntenyView',
-          init: {
-            views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
-            tracks: ['volvox_del.paf'],
-          },
+          views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+          tracks: ['volvox_del.paf'],
         },
       ]}
     />

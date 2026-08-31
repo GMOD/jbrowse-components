@@ -96,16 +96,14 @@ export default function HumanDemo() {
       views={[
         {
           type: 'LinearGenomeView',
-          init: {
-            loc: 'chr7:155,799,529..155,812,871',
-            assembly: 'hg38',
-            tracks: [
-              'genes',
-              'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-              'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
-              'hg38.100way.phyloP100way',
-            ],
-          },
+          loc: 'chr7:155,799,529..155,812,871',
+          assembly: 'hg38',
+          tracks: [
+            'genes',
+            'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+            'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
+            'hg38.100way.phyloP100way',
+          ],
         },
       ]}
     />

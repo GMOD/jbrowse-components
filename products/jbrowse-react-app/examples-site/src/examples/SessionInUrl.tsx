@@ -31,11 +31,9 @@ const config = {
       {
         id: 'view-0',
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1..50000',
-          tracks: ['volvox_gff3'],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1..50000',
+        tracks: ['volvox_gff3'],
       },
     ],
   },

@@ -48,11 +48,9 @@ export default function ObserveSelection() {
       name: 'Observe selection',
       view: {
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'volvox',
-          loc: 'ctgA:1..50,000',
-          tracks: ['volvox_gff3'],
-        },
+        assembly: 'volvox',
+        loc: 'ctgA:1..50,000',
+        tracks: ['volvox_gff3'],
       },
     },
   })

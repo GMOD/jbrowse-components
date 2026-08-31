@@ -40,10 +40,8 @@ export default function CreateAppSynteny() {
             views: [
               {
                 type: 'LinearSyntenyView',
-                init: {
-                  views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
-                  tracks: ['volvox_del.paf'],
-                },
+                views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+                tracks: ['volvox_del.paf'],
               },
             ],
           })

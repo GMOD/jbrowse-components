@@ -24,7 +24,7 @@ export default function BreakpointSplitExample() {
       views={[
         {
           type: 'BreakpointSplitView',
-          init: [
+          views: [
             {
               loc: 'ctgA:1-5000',
               assembly: 'volvox',

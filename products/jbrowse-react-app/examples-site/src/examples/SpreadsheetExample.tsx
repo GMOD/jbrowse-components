@@ -13,10 +13,8 @@ export default function SpreadsheetExample() {
       views={[
         {
           type: 'SpreadsheetView',
-          init: {
-            assembly: 'volvox',
-            uri: `${base}/volvox.filtered.vcf.gz`,
-          },
+          assembly: 'volvox',
+          uri: `${base}/volvox.filtered.vcf.gz`,
         },
       ]}
     />

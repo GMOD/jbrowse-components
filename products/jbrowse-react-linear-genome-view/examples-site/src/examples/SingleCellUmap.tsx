@@ -306,12 +306,10 @@ const Demo = observer(function Demo() {
       name: 'scRNA pseudobulk',
       view: {
         type: 'LinearGenomeView',
-        init: {
-          assembly: 'GRCh38',
-          // MS4A1, the B-cell marker: one row carries the coverage
-          loc: '11:60,453,846-60,472,752',
-          tracks: ['hg38_refseq_curated', TRACK_ID, PER_CELL_TRACK_ID],
-        },
+        assembly: 'GRCh38',
+        // MS4A1, the B-cell marker: one row carries the coverage
+        loc: '11:60,453,846-60,472,752',
+        tracks: ['hg38_refseq_curated', TRACK_ID, PER_CELL_TRACK_ID],
       },
     },
   })

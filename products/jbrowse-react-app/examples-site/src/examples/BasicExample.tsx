@@ -30,12 +30,10 @@ export default function BasicExample() {
       views={[
         {
           type: 'LinearGenomeView',
-          init: {
-            assembly: 'volvox',
-            loc: 'ctgA:1..50000',
-            tracks: ['volvox_cram'],
-            tracklist: true,
-          },
+          assembly: 'volvox',
+          loc: 'ctgA:1..50000',
+          tracks: ['volvox_cram'],
+          tracklist: true,
         },
       ]}
     />

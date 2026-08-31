@@ -30,11 +30,9 @@ const freshSession = {
   name: 'Persisted session',
   view: {
     type: 'LinearGenomeView',
-    init: {
-      assembly: 'volvox',
-      loc: 'ctgA:1105..1221',
-      tracks: ['volvox_gff3'],
-    },
+    assembly: 'volvox',
+    loc: 'ctgA:1105..1221',
+    tracks: ['volvox_gff3'],
   },
 }
 

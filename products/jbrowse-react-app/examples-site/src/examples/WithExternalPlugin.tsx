@@ -74,11 +74,9 @@ export default function WithExternalPlugin() {
                 {
                   id: 'view1',
                   type: 'LinearGenomeView',
-                  init: {
-                    assembly: 'hg19',
-                    loc: '1:2,467,681..2,667,681',
-                    tracks: ['segdups_ucsc_hg19'],
-                  },
+                  assembly: 'hg19',
+                  loc: '1:2,467,681..2,667,681',
+                  tracks: ['segdups_ucsc_hg19'],
                 },
               ],
             },

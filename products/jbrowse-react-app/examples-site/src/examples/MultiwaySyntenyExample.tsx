@@ -47,15 +47,13 @@ export default function MultiwaySyntenyExample() {
       views={[
         {
           type: 'LinearSyntenyView',
-          init: {
-            // four strain rows → three bands, all backed by ecoli_ava
-            views: strains.map(s => ({ assembly: s.name })),
-            tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
-            drawCurves: true,
-            // hide the short minimap2 alignments so the shared backbone reads
-            // as clean ribbons instead of a dense noise band
-            minAlignmentLength: 10000,
-          },
+          // four strain rows → three bands, all backed by ecoli_ava
+          views: strains.map(s => ({ assembly: s.name })),
+          tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
+          drawCurves: true,
+          // hide the short minimap2 alignments so the shared backbone reads
+          // as clean ribbons instead of a dense noise band
+          minAlignmentLength: 10000,
         },
       ]}
     />

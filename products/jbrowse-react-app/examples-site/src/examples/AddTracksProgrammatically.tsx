@@ -50,7 +50,8 @@ export default function AddTracksProgrammatically() {
         views={[
           {
             type: 'LinearGenomeView',
-            init: { assembly: 'volvox', loc: 'ctgA:1..50000' },
+            assembly: 'volvox',
+            loc: 'ctgA:1..50000',
           },
         ]}
       />

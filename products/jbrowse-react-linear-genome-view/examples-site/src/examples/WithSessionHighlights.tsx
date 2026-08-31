@@ -50,16 +50,14 @@ export default function WithSessionHighlights() {
             label: 'Promoter',
           },
         ],
-        init: {
-          loc: 'chr1:11,106,077-11,261,675',
-          assembly: 'hg38',
-          tracks: [
-            {
-              trackId: 'ncbi-refseq-genes',
-              displaySnapshot: { height: 200 },
-            },
-          ],
-        },
+        loc: 'chr1:11,106,077-11,261,675',
+        assembly: 'hg38',
+        tracks: [
+          {
+            trackId: 'ncbi-refseq-genes',
+            displaySnapshot: { height: 200 },
+          },
+        ],
       },
     },
   })

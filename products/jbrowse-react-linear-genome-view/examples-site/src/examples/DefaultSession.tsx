@@ -35,11 +35,9 @@ export default function DefaultSession() {
       name: 'My session',
       view: {
         type: 'LinearGenomeView',
-        init: {
-          loc: 'ctgA:1105..1221',
-          assembly: 'volvox',
-          tracks: ['volvox-long-reads-sv-bam'],
-        },
+        loc: 'ctgA:1105..1221',
+        assembly: 'volvox',
+        tracks: ['volvox-long-reads-sv-bam'],
       },
     },
   })

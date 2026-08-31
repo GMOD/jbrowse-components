@@ -162,33 +162,31 @@ function makeView() {
         views: [
           {
             type: 'LinearSyntenyView',
-            init: {
-              views: [
-                {
-                  assembly: 'hg38',
-                  loc: HUMAN_LOC,
-                  tracks: ['hg38_genes'],
-                },
-                {
-                  assembly: 'mm39',
-                  loc: MOUSE_LOC,
-                  tracks: ['mm39_genes'],
-                },
-              ],
-              tracks: ['hg38_mm39'],
-              // Bezier ribbons rather than straight chords. Two rows opened at
-              // orthologous genes are offset from each other, so every chord
-              // runs at a slant; curves leave the two ends vertical and only
-              // bend in the middle, which is what makes a stack of them
-              // readable instead of a hatch pattern.
-              drawCurves: true,
-              // 'matches' leaves the indel wedges see-through and paints only
-              // the aligned runs. Human BRCA1 is ~25% longer than the mouse
-              // copy, so at 'full' the wedges for that extra sequence are the
-              // largest coloured areas on screen and the conserved exons --
-              // the thing worth seeing -- are the thin bits between them.
-              cigarMode: 'matches',
-            },
+            views: [
+              {
+                assembly: 'hg38',
+                loc: HUMAN_LOC,
+                tracks: ['hg38_genes'],
+              },
+              {
+                assembly: 'mm39',
+                loc: MOUSE_LOC,
+                tracks: ['mm39_genes'],
+              },
+            ],
+            tracks: ['hg38_mm39'],
+            // Bezier ribbons rather than straight chords. Two rows opened at
+            // orthologous genes are offset from each other, so every chord
+            // runs at a slant; curves leave the two ends vertical and only
+            // bend in the middle, which is what makes a stack of them
+            // readable instead of a hatch pattern.
+            drawCurves: true,
+            // 'matches' leaves the indel wedges see-through and paints only
+            // the aligned runs. Human BRCA1 is ~25% longer than the mouse
+            // copy, so at 'full' the wedges for that extra sequence are the
+            // largest coloured areas on screen and the conserved exons --
+            // the thing worth seeing -- are the thin bits between them.
+            cigarMode: 'matches',
           },
         ],
       },

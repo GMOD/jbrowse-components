@@ -35,18 +35,14 @@ export default function MultiViewSession() {
       views={[
         {
           type: 'CircularView',
-          init: {
-            assembly: 'volvox',
-            tracks: ['volvox_sv'],
-          },
+          assembly: 'volvox',
+          tracks: ['volvox_sv'],
         },
         {
           type: 'LinearGenomeView',
-          init: {
-            assembly: 'volvox',
-            loc: 'ctgA:1..50000',
-            tracks: ['volvox_cram'],
-          },
+          assembly: 'volvox',
+          loc: 'ctgA:1..50000',
+          tracks: ['volvox_cram'],
         },
       ]}
     />

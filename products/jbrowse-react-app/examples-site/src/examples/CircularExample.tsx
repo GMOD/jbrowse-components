@@ -23,10 +23,8 @@ export default function CircularExample() {
       views={[
         {
           type: 'CircularView',
-          init: {
-            assembly: 'volvox',
-            tracks: ['volvox_sv'],
-          },
+          assembly: 'volvox',
+          tracks: ['volvox_sv'],
         },
       ]}
     />

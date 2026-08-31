@@ -87,17 +87,15 @@ export const embeddedSpecs: ScreenshotSpec[] = [
         view: {
           id: 'linearGenomeView',
           type: 'LinearGenomeView',
-          init: {
-            assembly: 'hg38',
-            loc: '10:29,838,565..29,838,850',
-            tracks: [
-              'hg38-ReferenceSequenceTrack',
-              'ncbi_genes',
-              'NA12878_exome',
-              'phyloP100way',
-              '1000g_vcf',
-            ],
-          },
+          assembly: 'hg38',
+          loc: '10:29,838,565..29,838,850',
+          tracks: [
+            'hg38-ReferenceSequenceTrack',
+            'ncbi_genes',
+            'NA12878_exome',
+            'phyloP100way',
+            '1000g_vcf',
+          ],
         },
       },
     },
