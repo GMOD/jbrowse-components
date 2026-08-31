@@ -69,6 +69,14 @@ const TruthTableDisplay = types
     },
   }))
   .actions(self => ({
+    setInputs(row: Row) {
+      self.inGateEnabled = row.gateEnabled
+      self.inDensityEnabled = row.densityEnabled
+      self.inDensityTooLarge = row.densityTooLarge
+      self.inConfigForceLoad = row.configForceLoad
+      self.inAdapterLimit = row.adapterLimit
+      self.inSpanBp = row.spanBp
+    },
     // Nothing wipes the estimate this is handed: the fork fires `afterAttach`
     // on attachment, and a root fixture is never attached, so the tier-swap
     // autorun that would clear it is not installed here at all.
@@ -177,16 +185,20 @@ function enumerateRows() {
   return rows
 }
 
+// ONE NODE FOR ALL 33,600 ROWS, rewritten per row. A node per row was 9.1s of
+// this suite against 0.6s of test bodies, all of it MST instantiation and all of
+// it at module load. Nothing carries between rows: the seven inputs and all
+// three volatiles are written every time, and the mixin has no other state.
+const display = TruthTableDisplay.create({
+  inGateEnabled: false,
+  inDensityEnabled: false,
+  inDensityTooLarge: false,
+  inConfigForceLoad: false,
+  inConfigLimit: CONFIG_LIMIT,
+})
+
 function evaluate(row: Row): Out {
-  const display = TruthTableDisplay.create({
-    inGateEnabled: row.gateEnabled,
-    inDensityEnabled: row.densityEnabled,
-    inDensityTooLarge: row.densityTooLarge,
-    inConfigForceLoad: row.configForceLoad,
-    inConfigLimit: CONFIG_LIMIT,
-    inAdapterLimit: row.adapterLimit,
-    inSpanBp: row.spanBp,
-  })
+  display.setInputs(row)
   display.setRuntime({
     forceLoadTrack: row.forceLoadTrack,
     byteEstimate:
