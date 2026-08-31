@@ -7,6 +7,7 @@ import { stateModelFactory } from './model.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ViewTypeRegistry } from '@jbrowse/core/PluginManager'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 declare module '@jbrowse/core/PluginManager' {
@@ -41,10 +42,15 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
+    // annotated against the registry rather than inferred, which is what
+    // makes a hand-written augmentation earn what `getViewType` promises
+    // its callers — see `ViewTypeRegistry`
+    const stateModel: ViewTypeRegistry['LinearGenomeView'] =
+      stateModelFactory(pluginManager)
     return new ViewType({
       name: 'LinearGenomeView',
       displayName: 'Linear genome view',
-      stateModel: stateModelFactory(pluginManager),
+      stateModel,
       launchKeys: lgvLaunchKeys,
       ReactComponent: lazy(() => import('./components/LinearGenomeView.tsx')),
     })

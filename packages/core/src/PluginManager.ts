@@ -319,7 +319,18 @@ export interface ReplaceWidgetProps {
  *
  * That is what makes `extendViewType(pm, 'LinearGenomeView', …)` hand back a
  * typed state model, and a misspelled or renamed name a compile error rather
- * than an extension that quietly never applies. Declaring them here rather than
+ * than an extension that quietly never applies. `getViewType` reads it too, so
+ * a caller composing another view's model into its own gets the real type
+ * instead of `IAnyModelType`.
+ *
+ * AN AUGMENTATION IS HAND-WRITTEN, so each registration annotates the model it
+ * passes to `ViewType` against its own entry here (`const stateModel:
+ * ViewTypeRegistry['CircularView'] = …`). That one line is what makes the
+ * registry earn what `getViewType` promises: without it a drifted entry is
+ * worse than the `IAnyModelType` it replaced, since a caller would get a
+ * confidently wrong type rather than an unchecked one. It cannot live on
+ * `ViewType`'s constructor — TypeScript forbids type parameters there, and a
+ * class parameter widens `name` to `string`, so the conditional never fires. Declaring them here rather than
  * beside the helpers is load-bearing: an interface can only be augmented
  * through the module that declares it, and a barrel re-exporting the type would
  * give every augmentation its own unrelated copy.
