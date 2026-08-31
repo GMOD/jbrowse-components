@@ -118,6 +118,24 @@ manually for local files or non-standard names.
 
 <Video src="/media/ui/open_track_url.mp4" caption="A bigwig opened by URL against the volvox test data: the File menu item, the URL typed into the form, the name and adapter the form fills in from it, and the track drawing under the gene lane." />
 
+### Opening local files
+
+The **File** toggle in the "Add a track" form opens a file from your own machine
+instead of a URL, and the bytes are read in the browser rather than uploaded
+anywhere.
+
+Where the browser has the File System Access API (Chrome and Edge), JBrowse Web
+remembers which file you picked, so a session you reopen later can get the track
+back. The browser still makes you re-grant read permission after a reload, which
+is what the "local files need permission to be restored" banner and its
+**Restore access** button do. Where it does not (Firefox), a local file lasts
+only for the life of the tab, and after a refresh the track shows "(need to
+reload)".
+
+A local file never travels in a share link on any browser, and its index has to
+be picked by hand. [JBrowse Desktop](/docs/quickstart_desktop) has neither
+limit, since it stores the path.
+
 ### Adding many tracks at once
 
 **Add multiple tracks at once** in the "Add a track" form takes a list of file

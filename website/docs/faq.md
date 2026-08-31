@@ -37,10 +37,11 @@ entirely offline. The Share button
 
 ### Can I open files from my own computer
 
-[JBrowse Desktop](/docs/quickstart_desktop) opens them through its file picker
-and keeps the paths in the session. JBrowse Web can open one for the life of a
-tab only — browsers do not let a page re-open a path on disk later, so the track
-is gone after a reload and cannot travel in a share link.
+Yes, with the **File** toggle in the "Add a track" form, in both apps. JBrowse
+Web can remember the file for a later session in browsers with the File System
+Access API, which is why a reopened session may ask you to restore access, and a
+local file never travels in a share link. See
+[opening local files](/docs/user_guides/basic_usage#opening-local-files).
 
 ### How do I make an image for a publication
 
