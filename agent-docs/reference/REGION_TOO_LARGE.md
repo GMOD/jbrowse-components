@@ -40,7 +40,8 @@ is the mixin's and the fetch runners'.
    the payload carries `bytes` too. Canvas then samples density before the
    download and refuses on that axis the same way.
 2. **The runner commits.** `fetchEachRegion`, `fetchAllRegions`,
-   `fetchRegionsBatched` and `runGlobalFetch` capture `gateFetchState()` before
+   `fetchRegionsBatched` and the global family's shared `run` capture
+   `gateFetchState()` before
    issuing — the viewport, whether the gate was active, and which adapter tier
    it was about — and call `commitFetchBytes(perRegionBytes, issued)` when the
    results land. A refused region is neither stored nor marked loaded.

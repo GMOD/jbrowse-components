@@ -1,4 +1,4 @@
-import { runGlobalFetch } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { runGlobalFetchOnce } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 import { ldFetchPhases } from './ldFetchPhases.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -29,7 +29,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
 
   const issuedOffsetPx = view.offsetPx
   const issuedSignature = display.fetchSignature
-  const fetching = runGlobalFetch(display, ldFetchPhases(display))
+  const fetching = runGlobalFetchOnce(display, ldFetchPhases(display))
   // the byte-gate pre-flight resolves first, so the matrix RPC is a few
   // microtasks out; nothing here waits long enough to reach the 500ms debounce
   while (!landData) {

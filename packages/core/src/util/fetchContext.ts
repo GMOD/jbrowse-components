@@ -49,8 +49,8 @@ export interface FetchContext {
 
 /**
  * Build a {@link FetchContext} over a live fetch's primitives. One
- * constructor, so every context — `runFetch`'s, the prerequisite skeleton's —
- * carries the same `callRpc` envelope.
+ * constructor, so every context — `FetchMixin.runFetch`'s and `runFetchOnce`'s
+ * alike — carries the same `callRpc` envelope.
  *
  * **`self` has to be somewhere `getRpcSessionId` can find one, which in practice
  * means a track or something under it.** `rpcSessionId` is declared by

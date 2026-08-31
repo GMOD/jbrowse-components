@@ -116,7 +116,7 @@ export default function sharedModelFactory(
     .actions(self => ({
       /**
        * #action
-       * `runGlobalFetch` stamps the signature this was fetched for
+       * The shared commit stamps the signature this was fetched for
        * (`GlobalFetchMixin.commitFetchResult`) in the same transaction.
        */
       setRpcData(data: LDDataResult) {

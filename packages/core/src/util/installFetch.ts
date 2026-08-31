@@ -18,6 +18,7 @@ import type {
 } from './createStopTokenRotation.ts'
 import type { FetchContext } from './fetchContext.ts'
 import type { FetchPhases } from './fetchPhases.ts'
+import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -45,8 +46,13 @@ export interface FetchLifecycle {
    * the comparative family's `fetching`), and anything a display blanks
    * because it has no freshness signature to keep stale data honest with
    * (chord's refName map).
+   *
+   * Takes the token rather than the whole {@link ActiveFetch}: publishing it is
+   * the only thing any implementation does with the fetch, and the guard and
+   * the status slot are the skeleton's to hand out — through `ctx`, where a
+   * `run` gets them pre-wired.
    */
-  onBegin?: (active: ActiveFetch) => void
+  onBegin?: (stopToken: StopToken) => void
   /**
    * Runs in the `finally`, before the rotation's `end()`. `current` is this
    * run's own guard, already evaluated: a **superseded** run must not clear the
@@ -96,7 +102,7 @@ export async function runFetchOnce<TArgs, TResult>(
   const { stopToken, isCurrent, statusCallback, end } = active
   // synchronous, so it lands while this run is by construction the current one
   setError(undefined)
-  onBegin?.(active)
+  onBegin?.(stopToken)
   try {
     const result = await run(
       args,
@@ -275,6 +281,19 @@ function installContractChecks(self: FetchSkeletonHost, contract: string) {
 }
 
 /**
+ * The rotation for an installation that was lent none: created here, so
+ * disposed here — a lent one is the host's, and resetting its status window
+ * would drop a write the host's other operations are still owed.
+ */
+function ownRotation(self: IStateTreeNode, report: StatusReporter) {
+  const rotation = createStopTokenRotation(self, report)
+  addDisposer(self, () => {
+    rotation.dispose()
+  })
+  return rotation
+}
+
+/**
  * A whole fetch, installed: the rotation, the leading-edge autorun, the
  * unconditional trigger reads, the gates, and {@link runFetchOnce} under them.
  *
@@ -318,10 +337,8 @@ export function installFetch<TArgs, TResult>(
   } = opts
   const noteFetchAutorunRun =
     contract === undefined ? undefined : installContractChecks(self, contract)
-  const rotation =
-    opts.rotation === undefined
-      ? createStopTokenRotation(self, opts.report)
-      : opts.rotation
+  const lent = opts.rotation
+  const rotation = lent === undefined ? ownRotation(self, opts.report) : lent
   // The `reloadCounter` this installation last issued a fetch at. Per
   // installation and per instance, so a host with several fetches gives each its
   // own — and a closure rather than model state, because nothing outside reads
@@ -343,13 +360,6 @@ export function installFetch<TArgs, TResult>(
         })
       }
     : commit
-  if (opts.rotation === undefined) {
-    // a lent rotation is the host's to dispose; one created here is ours
-    addDisposer(self, () => {
-      rotation.dispose()
-    })
-  }
-
   leadingEdgeAutorun(
     self,
     // #region voidTracking
@@ -363,13 +373,21 @@ export function installFetch<TArgs, TResult>(
       // Cancel would be a one-way door with a Retry button on it. Order, not
       // just position: counter first, then this, then the gates.
       const canceled = self.fetchCanceled === true
+      // Above the gate, not only above `prepare`: teardown mutates the
+      // observables this body reads before the disposers run, and every `gate`
+      // in the tree but the breakpoint view's reaches the containing view or
+      // track through a parent walk — `host.initialized`, `isMinimized`,
+      // `getContainingView` — each of which warns then throws on a detached
+      // node. Nothing is reported for a dead one: there is no Retry button left
+      // to be dead, and the check would read three more members to decide it.
+      if (!isAlive(self)) {
+        return false
+      }
       if (canceled || gate?.() === false) {
         noteFetchAutorunRun?.('gated')
         return false
       }
-      // Teardown mutates observables `prepare` reads before the disposers run,
-      // and getContainingView on a detached node warns then throws.
-      const args = isAlive(self) ? prepare() : undefined
+      const args = prepare()
       if (args === undefined) {
         noteFetchAutorunRun?.('declined')
         return false

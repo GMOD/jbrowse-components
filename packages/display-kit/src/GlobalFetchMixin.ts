@@ -65,10 +65,11 @@ export default function GlobalFetchMixin() {
        * #volatile
        * `fetchSignature` as it stood when the held data was committed — the
        * loaded half of this family's freshness compare. Written only by
-       * `commitFetchResult` and cleared only by `reload`, so a display cannot
-       * stamp data it did not fetch or forget to invalidate on retry; the data
-       * itself stays display-owned (arc keeps stale arcs on screen under the
-       * loading overlay, HiC keeps the stale matrix).
+       * `commitFetchResult`, so a display cannot stamp data it did not fetch,
+       * and cleared by `reload` for the overlay's sake rather than the
+       * refetch's (the skeleton's reload epoch is what overrides its gate). The
+       * data itself stays display-owned: arc keeps stale arcs on screen under
+       * the loading overlay, HiC keeps the stale matrix.
        */
       loadedFetchSignature: undefined as string | undefined,
     }))
@@ -127,8 +128,9 @@ export default function GlobalFetchMixin() {
       /**
        * #getter
        * Signature of the fetch the current view and settings call for — the
-       * display's `viewSignature` plus the serialized `rpcProps()` axis. What
-       * `runGlobalFetch` gates on, captures at issue, and stamps at commit.
+       * display's `viewSignature` plus the serialized `rpcProps()` axis. The
+       * fetch skeleton's freshness key: captured at issue, compared against the
+       * stamp below, and written to it at commit.
        */
       get fetchSignature(): string | undefined {
         const base = self.viewSignature
@@ -140,13 +142,16 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * The fetch gate: data has been committed (`loadedFetchSignature` is only
-       * ever written beside it) and it was fetched for the current view and
-       * settings. A pan inside the loaded blocks stays current; a block
+       * The freshness compare: data has been committed (`loadedFetchSignature`
+       * is only ever written beside it) and it was fetched for the current view
+       * and settings. A pan inside the loaded blocks stays current; a block
        * entering, a tier step, a settings change or a `reload()` moves one side
-       * of the compare and `runGlobalFetch` refetches. The per-region twin is
-       * `isCacheValid`: what decides a refetch, and deliberately not the whole
-       * freshness answer below.
+       * of it and the fetch autorun refetches. **What the fetch autorun gates on
+       * is the same compare inside `installFetch`**, not this getter — the
+       * skeleton owns it so a reload can override it. This one is for the
+       * readers outside the fetch, through `dataCurrent` below. The per-region
+       * twin is `isCacheValid`: what decides a refetch, and deliberately not the
+       * whole freshness answer.
        */
       get signatureCurrent(): boolean {
         return isDataCurrent(self.loadedFetchSignature, self.fetchSignature)
@@ -158,7 +163,7 @@ export default function GlobalFetchMixin() {
        * dependent fetch of its own is still out, or a fetch input it writes
        * itself has moved. The same hook `MultiRegionDisplayMixin` declares,
        * for the same reason: the signature compare is structurally blind to
-       * anything the display fetches outside `runGlobalFetch`, and an export
+       * anything the display fetches outside its primary fetch, and an export
        * sampling `svgReady` in that window paints the half-filled frame.
        *
        * Folded into `dataCurrent` and NOT into `signatureCurrent`, so it holds
@@ -242,8 +247,8 @@ export default function GlobalFetchMixin() {
     .actions(self => ({
       /**
        * #action
-       * The commit half of `runGlobalFetch`: run the display's own store in the
-       * same transaction as the signature stamp, so no observer can see fresh
+       * The commit half of this family's fetch: run the display's own store in
+       * the same transaction as the signature stamp, so no observer can see fresh
        * data under a stale signature or the reverse. Being the only writer of
        * `loadedFetchSignature` is what makes `dataCurrent` derivable — a
        * display cannot commit without stamping.

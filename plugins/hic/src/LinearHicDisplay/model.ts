@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getContainingView } from '@jbrowse/core/util'
-import { installFetch } from '@jbrowse/core/util/installFetch'
 import GlobalFetchMixin, {
   blockKeySignature,
 } from '@jbrowse/display-kit/GlobalFetchMixin'
@@ -14,6 +13,7 @@ import LegendMixin, {
 } from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { installPrerequisiteFetch } from '@jbrowse/display-kit/installPrerequisiteFetch'
 import { triangleScreenToData } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -481,7 +481,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .actions(self => ({
       /**
        * #action
-       * `runGlobalFetch` stamps the signature this was fetched for
+       * The shared commit stamps the signature this was fetched for
        * (`GlobalFetchMixin.commitFetchResult`) in the same transaction.
        */
       setRpcData(data: HicDataResult) {
@@ -654,33 +654,14 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         // lands), so a failure here is terminal for this display, not a
         // degradation — hence `setError` rather than a session snackbar; the
         // chrome's retry button re-runs this through the skeleton's
-        // `reloadCounter` read.
-        installFetch(self, {
-          // The display's own status window, lent so this read takes a slot on
-          // the one status field beside the contacts fetch rather than opening
-          // a second writer over it. It matters more here than for most
-          // fetches: this call happens inside the pre-first-paint window, where
-          // the scrim is up because `canvasDrawn` is still false rather than
-          // because `isLoading` is — so `statusMessage` is the only thing that
-          // can say what is happening while a v8 `.hic`'s norm-vector index is
-          // discovered by walking the file. The stop token is held by this
-          // installation's own rotation, so only a superseding header read ever
-          // aborts one — a user cancel of the contacts fetch cannot strand the
-          // display the way sharing the main fetch's token would.
-          //
-          // No `contract`: this is a SECOND fetch on a display whose global
-          // foundation already installed both contract checks, and a second
-          // `assertDisplayContract` would report the double-attach it exists to
-          // catch.
-          report: { statusWindow: self.statusWindow },
-          gate: () => !self.isMinimized,
-          // tracked, because an adapter edited in the config editor has to
-          // re-read the header — `run`'s own reads are untracked by contract.
-          // Keyed on it too, so an un-minimize over the same file re-walks
-          // nothing.
-          prepare: () => ({ adapterConfig: self.adapterConfig }),
-          fetchKey: ({ adapterConfig }) => JSON.stringify(adapterConfig),
-          run: async ({ adapterConfig }, ctx) =>
+        // `reloadCounter` read. The shared prerequisite-read declaration owns
+        // the rest: the adapter-config trigger and key, the minimized gate, the
+        // lent status window — the only thing that can narrate a v8 `.hic`'s
+        // norm-vector index being discovered by walking the file, since the
+        // pre-first-paint scrim is up on `canvasDrawn` rather than on
+        // `isLoading` — and the reason there is no `contract` here.
+        installPrerequisiteFetch(self, {
+          run: async (adapterConfig, ctx) =>
             (await ctx.callRpc('CoreGetInfo', { adapterConfig })) as {
               norms?: string[]
               resolutions?: number[]
@@ -717,8 +698,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         })
 
         installGlobalFetchAutorun(self, {
-          // The shared gates (minimized, data-current, signature pending) live
-          // in `runGlobalFetch`. `viewSignature` reads `effectiveResolution`,
+          // The shared gates (minimized, view not initialized, the byte-gate
+          // skip, and the signature against its own stamp) are
+          // `installGlobalFetchAutorun`'s declaration over the skeleton, and a
+          // signature that is not yet computable declines in the plan's own
+          // `prepare`. `viewSignature` reads `effectiveResolution`,
           // which is undefined until availableResolutions arrives from
           // CoreGetInfo — that is the prerequisite gate
           // (`awaitingPrerequisite`), and its arrival rewakes this run through

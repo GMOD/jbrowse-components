@@ -24,10 +24,16 @@ gate, the freshness gate with its reload epoch, and both contract checks.
 `installGlobalFetchAutorun` is a declaration over that skeleton (its gates, its
 signature as the freshness key, `FetchMixin`'s rotation lent through the
 `rotation` option so `cancelFetch` reaches the fetch it installs), the same way
-the comparative installer is. `FetchMixin.runFetch` is the MST-flow wrapper the
-per-region family holds `runFetchOnce` through — it needs the flow (so a fetch
-autorun's synchronous prefix runs untracked) because its trigger is
-`planRegionFetch`'s autorun, not the skeleton's.
+the comparative installer is. **`runGlobalFetchOnce` beside it has no gates and
+must not grow any** — it is the same phases, rotation and lifecycle for a test
+that wants one round trip and its promise, and the gate copy it carried until
+2026-08-31 had drifted from the installed one on three of four terms. Gate
+behaviour is `installGlobalFetchAutorun.test.ts`'s, which drives the autorun.
+Both entries take `FetchMixin`'s begin/end/error trio from
+`fetchMixinLifecycle`, which `runFetch` uses too. `FetchMixin.runFetch` is the
+MST-flow wrapper the per-region family holds `runFetchOnce` through — it needs
+the flow (so a fetch autorun's synchronous prefix runs untracked) because its
+trigger is `planRegionFetch`'s autorun, not the skeleton's.
 
 The composition and fetch rules a display must not break are in
 `agent-docs/ARCHITECTURE.md` ("What not to do"): mixin order, `afterAttach`
@@ -258,8 +264,9 @@ that display waits out `awaitSvgReady`'s backstop instead of failing.
   `RegionTooLargeResult` in place of its payload when the region is over.
   `fetchEachRegion` / `fetchAllRegions` / `fetchRegionsBatched` commit that
   measurement (`commitFetchBytes`) and skip the store and `loadedRegions` for a
-  refused region; `runGlobalFetch` does the same for the global family. No
-  display issues a pre-flight estimate RPC, and there is no display-side commit.
+  refused region; `installGlobalFetchAutorun`'s shared commit does the same for
+  the global family. No display issues a pre-flight estimate RPC, and there is
+  no display-side commit.
 - The foundation's own tests come in two halves, and a change usually belongs in
   one of them rather than in a plugin's suite. `planRegionFetch.test.ts` is the
   **decision** — given these inputs, fetch this region set — and needs no tree.

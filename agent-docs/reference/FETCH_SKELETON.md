@@ -39,6 +39,18 @@ drifted on whether the `console.error` was currency-guarded — the comparative
 family's pin ("does not let a superseded fetch raise its error") is the
 semantic `handleFetchError` now holds for all of them.
 
+Two rules the skeleton owns that a site kept spelling for itself. **Liveness is
+checked above the `gate`, not only above `prepare`**: teardown mutates the
+observables the body reads before the disposers run, and every gate but the
+breakpoint view's reaches the containing view or track through a parent walk —
+`host.initialized` on the global family, `isMinimized` on the prerequisite reads
+and the lane fetches, `getContainingView` on the sample-list read — each of
+which warns then throws on a detached node. Only the global gate carried its own
+`isAlive` before 2026-08-31. And **`FetchMixin`'s begin/end/error trio is
+`fetchMixinLifecycle`**, one function for the two entries that run a fetch over
+that mixin (`runFetch`, and the global family's declaration, which lends its
+rotation and so owes the same three writes).
+
 What is left per site is the part that genuinely differs, and it is exactly the
 parameter list: the trigger list (which reads wake it, i.e. `prepare` plus
 `gate`), the commit shape (one payload versus N streaming regions), where the

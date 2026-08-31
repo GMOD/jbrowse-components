@@ -752,7 +752,11 @@ gate, it needs a signal the gate never consults, read above the gate, and a test
 that fails when the read is deleted. The fourth row is the general one — the
 prerequisite reads (HiC's header, the multi-sample sample list), the circular
 view's chord fetch and the breakpoint split view's overlay fetch all run on it,
-and it reads the signal for them.
+and it reads the signal for them. The two prerequisite reads share one
+declaration over it, `installPrerequisiteFetch`: one RPC about the adapter
+itself, tracked on the adapter config and keyed on it, gated on minimized, and
+on the display's own status window. They are on opposite fetch foundations,
+which is why that declaration sits beside neither.
 
 **A cancel is durable, and one rule now says how durable.** No fetch trigger
 un-cancels it — the skeleton reads `fetchCanceled` tracked, under the counter

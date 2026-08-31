@@ -62,13 +62,13 @@ function axisOriginBp(
 
 /**
  * The LD matrix fetch, as the three phases `installGlobalFetchAutorun` runs it
- * in. `afterAttach` hands these to the skeleton; a caller wanting one round trip
- * on demand passes them to `runGlobalFetch`. The shared gates — minimized,
- * data-current, the byte measurement the result carries, the signature stamp at
- * commit — live
- * in `runGlobalFetch` (and the region-too-large skip one level up in the
- * skeleton), so what is left here is LD's own: the triangle toggle, the block
- * set, the axis origin, and the budget the worker measures against.
+ * in. `afterAttach` hands these to the skeleton; a test wanting one round trip
+ * on demand passes them to `runGlobalFetchOnce`. Every gate is the installed
+ * declaration's — minimized, view not initialized, the byte-gate skip, and the
+ * signature against the stamp its own commit wrote — as are the byte
+ * measurement the result carries and that stamp, so what is left here is LD's
+ * own: the triangle toggle, the block set, the axis origin, and the budget the
+ * worker measures against.
  */
 export function ldFetchPhases(
   self: LDFetchSelf,

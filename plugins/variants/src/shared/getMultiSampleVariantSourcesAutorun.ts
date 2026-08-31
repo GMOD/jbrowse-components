@@ -1,50 +1,31 @@
 import { getContainingView, getNotificationSink } from '@jbrowse/core/util'
-import { installFetch } from '@jbrowse/core/util/installFetch'
+import { installPrerequisiteFetch } from '@jbrowse/display-kit/installPrerequisiteFetch'
 
 import type { Source } from './types.ts'
-import type { StatusWindow } from '@jbrowse/core/util'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { PrerequisiteFetchHost } from '@jbrowse/display-kit/installPrerequisiteFetch'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getMultiSampleVariantSourcesAutorun(
-  self: IStateTreeNode & {
-    adapterConfig: Record<string, unknown>
-    isMinimized: boolean
-    reloadCounter: number
-    fetchInert: boolean
-    fetchCanceled: boolean
+  self: PrerequisiteFetchHost & {
     setError: (error?: unknown) => void
-    // This display composes the LGV fetch mixins, so it already owns a status
-    // window; it is lent to the skeleton's rotation, which is what keeps this
-    // fetch and the region fetches thinning through ONE of them rather than
-    // two writing the same field.
-    statusWindow: StatusWindow
     setSources: (sources: Source[]) => void
   },
 ) {
-  // The shared skeleton owns what this fetch used to hand-roll: the latest-wins
-  // rotation, the currency-guarded error rule, the clear at the start, the
-  // unconditional reload read, and the slot retirement that keeps a failed scan
-  // from leaving a progress chip up for good. `getSources` has no index to
-  // consult and scans every feature in every region, so all of that is
-  // load-bearing here.
-  //
-  // No `contract`: this is a SECOND fetch on a display whose per-region
-  // foundation already installed both contract checks.
-  installFetch(self, {
-    report: { statusWindow: self.statusWindow },
-    gate: () =>
-      !self.isMinimized &&
-      (getContainingView(self) as LinearGenomeViewModel).initialized,
-    // tracked, because an adapter edited in the config editor has to rescan —
-    // `run`'s own reads are untracked by contract. Keyed on it too, so an
-    // un-minimize over the same file rescans nothing.
-    prepare: () => ({ adapterConfig: self.adapterConfig }),
-    fetchKey: ({ adapterConfig }) => JSON.stringify(adapterConfig),
-    run: (args, ctx) =>
-      ctx.callRpc('MultiSampleVariantGetSources', {
-        adapterConfig: args.adapterConfig,
-      }),
+  // The shared prerequisite-read declaration, which owns the adapter-config
+  // trigger and key, the minimized gate, the lent status window and the reason
+  // there is no `contract` here. What the skeleton under it brings is
+  // load-bearing for this one in particular: `getSources` has no index to
+  // consult and scans every feature in every region, so the latest-wins
+  // rotation, the currency-guarded error rule and the retired status slot are
+  // all doing work.
+  installPrerequisiteFetch(self, {
+    // The view-measured term this read has carried since it was hand-rolled.
+    // It reads no view geometry itself, so nothing here throws before init —
+    // the gate is what keeps a full-file scan from starting ahead of the
+    // display's own first fetch.
+    gate: () => (getContainingView(self) as LinearGenomeViewModel).initialized,
+    run: (adapterConfig, ctx) =>
+      ctx.callRpc('MultiSampleVariantGetSources', { adapterConfig }),
     commit: ({ sources, warnings }) => {
       self.setSources(sources)
       // A `samplesTsv` that matches only some of the VCF's samples still

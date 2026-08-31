@@ -452,9 +452,9 @@ keeps the coverage; one that restates the gate has opted out, and should say
 which test covers it instead.
 
 **The two families classify a run differently, and only that part is per
-family.** The global one reads what `prepare()` returned — `runGlobalFetch`
-answers `undefined` exactly when the display declined — so the classification is
-a return value rather than a second call to the gate. The per-region one has no
+family.** The global one reads what `prepare()` returned — the shared skeleton
+classifies a run by whether its `prepare` answered args — so the classification
+is a return value rather than a second call to the gate. The per-region one has no
 such answer: its gate is block coverage — a `reload()`
 that invalidates nothing leaves `needed` empty — plus a `fetchNeeded` override
 that can decline inside an async body whose return value says nothing. So the

@@ -266,13 +266,21 @@ the fetch:
   // Cancel would be a one-way door with a Retry button on it. Order, not
   // just position: counter first, then this, then the gates.
   const canceled = self.fetchCanceled === true
+  // Above the gate, not only above `prepare`: teardown mutates the
+  // observables this body reads before the disposers run, and every `gate`
+  // in the tree but the breakpoint view's reaches the containing view or
+  // track through a parent walk — `host.initialized`, `isMinimized`,
+  // `getContainingView` — each of which warns then throws on a detached
+  // node. Nothing is reported for a dead one: there is no Retry button left
+  // to be dead, and the check would read three more members to decide it.
+  if (!isAlive(self)) {
+    return false
+  }
   if (canceled || gate?.() === false) {
     noteFetchAutorunRun?.('gated')
     return false
   }
-  // Teardown mutates observables `prepare` reads before the disposers run,
-  // and getContainingView on a detached node warns then throws.
-  const args = isAlive(self) ? prepare() : undefined
+  const args = prepare()
   if (args === undefined) {
     noteFetchAutorunRun?.('declined')
     return false

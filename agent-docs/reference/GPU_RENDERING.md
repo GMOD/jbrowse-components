@@ -1693,16 +1693,18 @@ does the Canvas2D-only version); keep them in step with any change here.
     `RegionTooLargeMixin` plumbing, but **no** fetch autoruns — the display
     installs its own in `afterAttach` via
     `installGlobalFetchAutorun(self, { prepare, run, commit, delay, name })`.
-    The helper owns the skeleton every global trigger shares (read the viewport,
-    `isMinimized`, `rpcProps()` and `reloadCounter` unconditionally; skip a
-    viewport the byte gate already measured; run through `autorunOnReadyView`;
-    debounce); the display supplies the three phases. `prepare` runs
-    synchronously in the autorun and returning `undefined` from it is the
-    display's gate, so what it read to decline stays tracked (HiC declines until
-    `effectiveResolution` lands, LD while `showLDTriangle` is off); `run` owns
-    every await and writes nothing; `commit` writes while the fetch is still
-    current. `runGlobalFetch(self, phases)` is that body without the trigger,
-    for a caller wanting one round trip on demand.
+    The helper declares this family's terms over the shared `installFetch`
+    skeleton (`reloadCounter` and the durable cancel read unconditionally, the
+    freshness gate on `fetchSignature` with its reload epoch, and gates for a
+    view not yet initialized, a minimized track and a viewport the byte gate
+    already measured; then the debounce); the display supplies the three phases.
+    `prepare` runs synchronously in the autorun and returning `undefined` from
+    it is the display's gate, so what it read to decline stays tracked (HiC
+    declines until `effectiveResolution` lands, LD while `showLDTriangle` is
+    off); `run` owns every await and writes nothing; `commit` writes while the
+    fetch is still current. `runGlobalFetchOnce(self, phases)` is the same
+    phases, rotation and lifecycle with no trigger and no gates, for a test
+    wanting one round trip and its promise.
   - Compose `RenderLifecycleMixin()` directly only when neither fetch surface is
     needed (rare).
   - Add a cached `renderState` view.

@@ -60,6 +60,41 @@ function writeStatus(self: unknown) {
   }
 }
 
+/**
+ * The three members {@link fetchMixinLifecycle} calls, as the shape a fetch
+ * outside this mixin's own flow needs of its host. `GlobalFetchHost` names them
+ * again for the same reason every duck-typed host in the tree does: the mixin's
+ * `Instance` type would be circular from inside a file the mixin composes.
+ */
+export interface FetchLifecycleHost {
+  beginFetch: (stopToken: StopToken) => void
+  endFetch: (current: boolean) => void
+  setError: (error?: unknown) => void
+}
+
+/**
+ * This mixin's begin/end/error bookkeeping as the `FetchLifecycle` the shared
+ * skeleton takes, for the two entries that run a fetch over it: `runFetch`
+ * below, and the global
+ * family's `installFetch` declaration, which lends this mixin's rotation and so
+ * owes the same three writes. It was the same object literal in both, which is
+ * one drift axis over a trio whose whole value is that a superseded run and a
+ * current one are treated differently in exactly one place.
+ */
+export function fetchMixinLifecycle(self: FetchLifecycleHost) {
+  return {
+    setError: (error?: unknown) => {
+      self.setError(error)
+    },
+    onBegin: (stopToken: StopToken) => {
+      self.beginFetch(stopToken)
+    },
+    onEnd: (current: boolean) => {
+      self.endFetch(current)
+    },
+  }
+}
+
 // Cancel-safe fetch lifecycle for any display that loads data over RPC.
 //
 // The mixin owns the entire fetch state machine (stop-token rotation,
@@ -509,15 +544,7 @@ export default function FetchMixin() {
           // the work callback commits through `ctx` as each region's payload
           // lands, so this family has no single payload to hand a commit phase
           commit: () => {},
-          setError: e => {
-            self.setError(e)
-          },
-          onBegin: ({ stopToken }) => {
-            self.beginFetch(stopToken)
-          },
-          onEnd: current => {
-            self.endFetch(current)
-          },
+          ...fetchMixinLifecycle(self),
         })
       }),
     }))

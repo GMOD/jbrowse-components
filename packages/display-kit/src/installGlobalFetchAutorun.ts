@@ -1,21 +1,17 @@
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
 import { installFetch, runFetchOnce } from '@jbrowse/core/util/installFetch'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
+import { fetchMixinLifecycle } from './FetchMixin.ts'
 import { autorunOnReadyView } from './displayAutoruns.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
-import { heldDataAnswers } from './regionTooLargeUtils.ts'
 
-import type { FetchContext } from './FetchMixin.ts'
+import type { FetchContext, FetchLifecycleHost } from './FetchMixin.ts'
 import type { GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
-import type {
-  ActiveFetch,
-  StopTokenRotation,
-} from '@jbrowse/core/util/createStopTokenRotation'
+import type { StopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -42,29 +38,19 @@ export interface GlobalFetchPhases<TArgs, TResult> extends Omit<
 // `STNValue<any, …>` to `any`, so extending it silently turns off checking for
 // every member below, and a host missing one of them would compile. See the note
 // on `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
-export interface GlobalFetchHost extends IStateTreeNode {
-  // `FetchMixin`'s: the rotation this family lends the fetch skeleton — so
-  // `cancelFetch` / `cancelFetchByUser` reach the fetch it installs — and the
-  // begin/end bookkeeping (`isLoading` through `activeStopToken`, the
-  // user-cancel clear, `fetchGeneration`) plus where an error lands.
+export interface GlobalFetchHost extends IStateTreeNode, FetchLifecycleHost {
+  // `FetchMixin`'s, beside the begin/end/error trio `FetchLifecycleHost` above
+  // names: the rotation this family lends the fetch skeleton, so `cancelFetch`
+  // and `cancelFetchByUser` reach the fetch it installs rather than a second
+  // rotation they cannot see.
   fetchRotation: StopTokenRotation
-  beginFetch: (stopToken: StopToken) => void
-  endFetch: (current: boolean) => void
-  setError: (error?: unknown) => void
-  isMinimized: boolean
-  // The freshness trio `GlobalFetchMixin` owns: the resolved signature captured
-  // at issue and stamped at commit, the stamp itself (the committed side of the
-  // skeleton's freshness gate), and the derived compare `runGlobalFetch` reads.
-  // The gate, not `dataCurrent`: that one also carries `dataSuperseded`, which
-  // holds the export and must not refetch.
+  // `GlobalFetchMixin`'s freshness pair: the resolved signature of what the
+  // view and settings call for, captured at issue, and the commit that stamps
+  // it in the same transaction as the display's own store. The signature, not
+  // `dataCurrent`: that one also carries `dataSuperseded`, which holds the
+  // export and must not refetch.
   fetchSignature: string | undefined
-  loadedFetchSignature: string | undefined
-  signatureCurrent: boolean
   commitFetchResult: (commit: () => void, signature: string) => void
-  // `RegionTooLargeMixin`'s verdict, which outranks the freshness compare —
-  // see `heldDataAnswers`. A display with no byte gate reads it as a literal
-  // false.
-  regionTooLarge: boolean
   // `RegionTooLargeMixin`'s byte-gate commit pair: the gate as it stood when
   // this fetch was issued, and where the bytes its result reports go. A display
   // that passes no `byteLimit` measures nothing and commits nothing, which is
@@ -88,19 +74,27 @@ export interface GlobalFetchAutorunHost extends GlobalFetchHost {
   // fetching" exemption, and the "a prerequisite fetch has not landed" deferral.
   fetchInert: boolean
   awaitingPrerequisite: boolean
-  // `RegionTooLargeMixin`'s, which `GlobalFetchMixin` composes — so every
-  // display reaching this helper has it, and one that opts into no byte gate
-  // reads `regionTooLarge` as a literal false, which makes this false too. Its
-  // two terms are not listed separately: this helper reads only the combined
-  // one, and naming the parts here would invite the expression back.
+  // The gate's own two, and neither is on the base above: an on-demand round
+  // trip is the caller asking for a fetch, so only the installed trigger judges
+  // whether one is owed. `RegionTooLargeMixin`'s combined skip is not listed as
+  // its two terms — this helper reads only the combined one, and naming the
+  // parts here would invite the expression back. A display that opts into no
+  // byte gate reads `regionTooLarge` as a literal false, which makes it false
+  // too.
+  isMinimized: boolean
   gateSkipsMeasuredViewport: boolean
+  // The committed side of the skeleton's freshness gate, and the verdict that
+  // outranks it: while the banner holds, the stamp reads as absent, because the
+  // banner is hiding that data and this fetch is the only re-measure.
+  loadedFetchSignature: string | undefined
+  regionTooLarge: boolean
   // The hosting view, for the not-yet-initialized gate: view-derived getters
   // (`dynamicBlocks`, `width`) throw before init by design, so the signature
   // must not be computed until this flips — and it is observable, so flipping
   // re-runs the body.
   host: { initialized: boolean }
-  // The stored-hover clear's inputs — `regionTooLarge`, declared on the base
-  // above, is the fourth axis it watches, and `clearHoveredFeature` is
+  // The stored-hover clear's inputs — `regionTooLarge` above is the fourth axis
+  // it watches, and `clearHoveredFeature` is
   // `BaseDisplay`'s no-op default a storer overrides. Installed here for the
   // reason the per-region foundation installs it: a display that forgets keeps
   // naming what used to be under the cursor.
@@ -124,8 +118,8 @@ interface GlobalFetchLanding<TResult> {
  * The family's phases wrapped into the shared skeleton's shape: capture the
  * signature and the gate state at issue, measure-and-refuse or commit-and-stamp
  * at landing. One plan serves both entries — the installed autorun and the
- * on-demand {@link runGlobalFetch} — so the commit rules cannot drift between
- * them.
+ * on-demand {@link runGlobalFetchOnce} — so the commit rules cannot drift
+ * between them.
  */
 function globalFetchPlan<TArgs, TResult>(
   self: GlobalFetchHost,
@@ -164,52 +158,35 @@ function globalFetchPlan<TArgs, TResult>(
   }
 }
 
-/** `FetchMixin`'s begin/end/error bookkeeping, as the skeleton's lifecycle */
-function globalFetchLifecycle(self: GlobalFetchHost) {
-  return {
-    setError: (e?: unknown) => {
-      self.setError(e)
-    },
-    onBegin: ({ stopToken }: ActiveFetch) => {
-      self.beginFetch(stopToken)
-    },
-    onEnd: (current: boolean) => {
-      self.endFetch(current)
-    },
-  }
-}
-
 /**
- * One fetch through the phases on demand, outside the installed autorun: the
- * family's shared gates (minimized, signature not yet computable, held data
- * already answering — with `regionTooLarge` outranking that compare through
- * `heldDataAnswers`, since a refused display's only re-measure is this fetch),
- * then the same plan, rotation and lifecycle the autorun runs. Returns the
- * fetch's promise, or `undefined` when a gate or the display's `prepare`
- * declined.
+ * One fetch through the phases on demand: the same plan, rotation and lifecycle
+ * the installed autorun runs, and **none of its gates** — a caller here is
+ * asking for a round trip, not for the trigger's judgement about whether one is
+ * owed. Returns the fetch's promise, or `undefined` for the one decline that is
+ * the plan's rather than the skeleton's: no computable signature, or the
+ * display's own `prepare` declining.
  *
- * The installed autorun is the production trigger; this is for a caller that
- * wants exactly one round trip and its promise — the per-display fetch tests
- * drive it.
+ * The installed autorun is the production trigger; this is what a caller that
+ * wants exactly one round trip and its promise drives — the per-display fetch
+ * tests. It carried a copy of the family's gates until 2026-08-31, and that copy
+ * is the drift the declaration over `installFetch` exists to close: it had no
+ * reload override, no `initialized` term and no byte-gate skip, so the entry the
+ * LD suite drove and the entry production runs disagreed about three of the four
+ * gates while reading as the same thing. Gate behaviour belongs to
+ * `installGlobalFetchAutorun.test.ts`, which drives the installed autorun.
  */
-export function runGlobalFetch<TArgs, TResult>(
+export function runGlobalFetchOnce<TArgs, TResult>(
   self: GlobalFetchHost,
   phases: GlobalFetchPhases<TArgs, TResult>,
-): Promise<void> | undefined {
+) {
   const plan = globalFetchPlan(self, phases)
-  if (
-    self.isMinimized ||
-    heldDataAnswers(self.regionTooLarge, () => self.signatureCurrent)
-  ) {
-    return undefined
-  }
   const issue = plan.prepare()
   return issue === undefined
     ? undefined
     : runFetchOnce(self, self.fetchRotation.begin(), issue, {
         run: plan.run,
         commit: plan.commit,
-        ...globalFetchLifecycle(self),
+        ...fetchMixinLifecycle(self),
       })
 }
 
@@ -231,13 +208,16 @@ export function runGlobalFetch<TArgs, TResult>(
  *   viewport) is what keeps that to one. Each gate term is an observable that
  *   flips on the transition to wake on, which is what makes a gated decline
  *   safe — see ARCHITECTURE.md §"The global-fetch trigger list must be read
- *   unconditionally".
+ *   unconditionally". Liveness is not a term here: `installFetch` checks it
+ *   above every gate, because `host` is a parent walk and so is nearly every
+ *   other gate in the tree.
  * - **fetchKey / committedKey** — `fetchSignature` (the display's
  *   `viewSignature` plus the serialized `rpcProps()` axis, so the viewport and
  *   every user setting are tracked wherever the compare runs) against the
  *   stamp `commitFetchResult` wrote. While `regionTooLarge` holds, the
- *   committed side reads as absent (`heldDataAnswers`' precedence as a key):
- *   the banner is hiding that data and this fetch is the only re-measure. The
+ *   committed side reads as absent — the precedence the per-region family
+ *   applies through `heldDataAnswers`, here spelled as a key: the banner is
+ *   hiding that data and this fetch is the only re-measure. The
  *   skeleton's reload epoch is what makes Retry override this gate with
  *   nothing to clear — `GlobalFetchMixin.reload()` still drops the stamp so
  *   `dataCurrent` goes false and the overlay shows.
@@ -270,7 +250,6 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     rotation: self.fetchRotation,
     contract: 'installGlobalFetchAutorun',
     gate: () =>
-      isAlive(self) &&
       self.host.initialized &&
       !self.isMinimized &&
       !self.gateSkipsMeasuredViewport,
@@ -278,7 +257,7 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     committedKey: () =>
       self.regionTooLarge ? undefined : self.loadedFetchSignature,
     ...globalFetchPlan(self, opts),
-    ...globalFetchLifecycle(self),
+    ...fetchMixinLifecycle(self),
   })
 
   // The other half of the durability rule, and the per-region family's twin

@@ -1,4 +1,4 @@
-import { runGlobalFetch } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { runGlobalFetchOnce } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { ldFetchPhases } from './ldFetchPhases.ts'
@@ -139,12 +139,15 @@ describe('LD derived regionTooLarge', () => {
   // The release mechanism itself, driven through the fetch rather than through
   // setByteEstimate: `installGlobalFetchAutorun` skips only on `regionTooLarge
   // && !gateMeasurementStale`, so a blocked display still runs one fetch per
-  // settled viewport and that fetch's pre-flight is what re-measures. This
-  // pins that `ldFetchPhases` does not restate the too-large skip itself — when
-  // it did, the gate RPC was never reached and no amount of zooming could clear
-  // the banner (only force-load or chromosome nav could). Driven through the
-  // production runner over the production phases, which is what the autorun
-  // installs, so nothing here is a transcription of either.
+  // settled viewport and that fetch's pre-flight is what re-measures. What
+  // these pin is the phases and the commit — that `ldFetchPhases` does not
+  // restate the too-large skip itself (when it did, the gate RPC was never
+  // reached and no amount of zooming could clear the banner: only force-load or
+  // chromosome nav could), and that the measurement rides in the fetch. The
+  // GATE those phases run under is the installed declaration's, and
+  // `installGlobalFetchAutorun.test.ts` is what drives it —
+  // `runGlobalFetchOnce` deliberately has none, so a decline here would be the
+  // plan's own.
   it('still measures while the banner holds, so a fresh estimate releases it', async () => {
     const { display, view, mockRpcCall } =
       createTestEnvironment().createDisplay()
@@ -172,7 +175,7 @@ describe('LD derived regionTooLarge', () => {
     // counted from here, since the autorun installed above has already run one
     // fetch of its own against the default (undefined-returning) mock
     mockRpcCall.mockClear()
-    await runGlobalFetch(display, ldFetchPhases(display))
+    await runGlobalFetchOnce(display, ldFetchPhases(display))
 
     // one call, not two: the measurement rides in the fetch that would have
     // followed it
@@ -201,7 +204,7 @@ describe('LD derived regionTooLarge', () => {
     mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
       method === 'RenderLDData' ? { bytes: 100_000, ldData: [] } : null,
     )
-    await runGlobalFetch(display, ldFetchPhases(display))
+    await runGlobalFetchOnce(display, ldFetchPhases(display))
     expect(display.dataCurrent).toBe(true)
 
     // out to a viewport the gate refuses
@@ -211,7 +214,7 @@ describe('LD derived regionTooLarge', () => {
         ? { regionTooLarge: true, bytes: 6_000_000 }
         : null,
     )
-    await runGlobalFetch(display, ldFetchPhases(display))
+    await runGlobalFetchOnce(display, ldFetchPhases(display))
     expect(display.regionTooLarge).toBe(true)
 
     // back to the one whose data is still in hand: the banner holds, the
@@ -227,7 +230,7 @@ describe('LD derived regionTooLarge', () => {
       method === 'RenderLDData' ? { bytes: 100_000, ldData: [] } : null,
     )
     mockRpcCall.mockClear()
-    await runGlobalFetch(display, ldFetchPhases(display))
+    await runGlobalFetchOnce(display, ldFetchPhases(display))
 
     // exactly one, and it released the banner
     expect(
@@ -259,7 +262,7 @@ describe('LD derived regionTooLarge', () => {
         : null,
     )
     mockRpcCall.mockClear()
-    await runGlobalFetch(display, ldFetchPhases(display))
+    await runGlobalFetchOnce(display, ldFetchPhases(display))
 
     const calls = mockRpcCall.mock.calls.filter(c => c[1] === 'RenderLDData')
     expect(calls).toHaveLength(1)
@@ -274,9 +277,10 @@ describe('LD derived regionTooLarge', () => {
   })
 
   // `RegionTooLargeMixin`'s own afterAttach drops the cached estimate on
-  // chromosome navigation. Without it, a previous region's
-  // estimate would gate the new region against the wrong stats and, because the
-  // fetch autorun gates on !regionTooLarge, wedge the banner permanently.
+  // chromosome navigation. Without it, a previous region's estimate would gate
+  // the new region against the wrong stats and, because the fetch autorun skips
+  // a viewport whose refusal it has already measured, wedge the banner
+  // permanently.
   it('clears the cached estimate on region navigation so it cannot wedge', async () => {
     const { display, view } = createTestEnvironment().createDisplay()
     // let afterAttach's dynamic import resolve and install its autoruns

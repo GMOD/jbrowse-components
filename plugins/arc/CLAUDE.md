@@ -56,11 +56,14 @@ display except this one.
 
 ## Fetch and readiness
 
-- **`reload()` must invalidate `dataCurrent`, not just bump the counter** —
-  `runGlobalFetch` gates on it, so a bump alone refires into a no-op.
-  `GlobalFetchMixin.reload()` drops `loadedFetchSignature` for the whole family.
-  `features` deliberately survives, so stale arcs stay under the loading overlay
-  instead of blanking.
+- **`reload()`'s bump is enough to refetch, and the invalidation is for the
+  overlay** — the shared skeleton's reload epoch overrides its own freshness
+  gate, so a bump refires into a fetch with nothing to remember to clear (this
+  was the rule the other way around until 2026-08-31, when arc's `reload()`
+  needed the invalidation or the gate declined). `GlobalFetchMixin.reload()`
+  drops `loadedFetchSignature` so `dataCurrent` goes false and the refetch shows
+  as loading; `features` deliberately survives, so stale arcs stay under that
+  overlay instead of blanking.
 - **Two readiness flags, don't conflate**: `svgReady` is the SVG-export terminal
   gate and goes false on a pan past a block boundary; `data-display-drawn` gets
   the looser `painted`, which stays true across a refetch so the testid doesn't

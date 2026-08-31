@@ -303,12 +303,12 @@ is the full account, including the four bugs the predecessor had from an axis
 name claiming a term it did not have.
 
 No display calls the gate by hand. Both fetch runners do it — `fetchRegions` for
-this family and `runGlobalFetch` for the global one — so a display outside the
-per-region chain opts in with the same one getter and nothing else. The commit
-side is shared too: `nextGateState(prev, event)` holds the rules about _order_
-(which of two measurements wins, what a clear leaves behind, what a force-load
-approval outlives), because those are the ones an exhaustive truth table over
-states cannot see.
+this family and `installGlobalFetchAutorun`'s shared phases for the global one —
+so a display outside the per-region chain opts in with the same one getter and
+nothing else. The commit side is shared too: `nextGateState(prev, event)` holds
+the rules about _order_ (which of two measurements wins, what a clear leaves
+behind, what a force-load approval outlives), because those are the ones an
+exhaustive truth table over states cannot see.
 
 ## FetchMixin: cancellation and staleness
 

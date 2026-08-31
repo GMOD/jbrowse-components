@@ -73,7 +73,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
       .actions(self => ({
         /**
          * #action
-         * `runGlobalFetch` stamps the signature these were fetched for
+         * The shared commit stamps the signature these were fetched for
          * (`GlobalFetchMixin.commitFetchResult`) in the same transaction.
          */
         setFeatures(f: Feature[]) {
@@ -106,7 +106,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
       // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases
       // on zoom-in, no flicker on pan): this switch plus the `byteLimit` the
       // fetch passes are the whole opt-in — `ArcGetFeatures` measures before it
-      // downloads and `runGlobalFetch` commits what it measured. Byte-only — no
+      // downloads and the shared commit records what it measured. Byte-only — no
       // density axis. The mixin reads `fetchSizeLimit` / `forceLoad` straight
       // off the display config.
       .views(self => ({
