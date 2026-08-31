@@ -64,7 +64,7 @@ test('a level does not settle while init is still adding its tracks', async () =
   view.setWidth(800)
 
   await when(() => view.levels.length > 0)
-  const level = view.levels[0]
+  const level = view.levels[0]!
   // the shape that settles vacuously: painted, with nothing left to be
   // unsettled by
   level.markCanvasDrawn()

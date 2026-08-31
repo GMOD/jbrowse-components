@@ -7,9 +7,9 @@ import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMat
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // What a lane needs to know about the ribbons drawn beside it. Declared rather
-// than taken off the model, for the reason `ComparativeTrackModel` documents:
-// a level's display array types out as `any`, which switches off checking on
-// everything read from it.
+// than taken off the model so a test can drive this with two fields instead of
+// a level: the display model it would otherwise name imports this package's
+// view, which is the cycle `parentViewDuck.ts` exists to keep cut.
 export interface MarkColorSource {
   linearSyntenyDisplays: {
     // the mode this display actually paints with, 'reference' already resolved

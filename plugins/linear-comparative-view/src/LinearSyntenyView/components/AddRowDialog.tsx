@@ -43,9 +43,9 @@ function rowAssembly(
   return row?.assemblyNames[0] ?? row?.pendingLaunch?.assembly ?? ''
 }
 
-// Exactly what this dialog reads off the band above the bottom row. `levels` is
-// declared IAnyModelType to break a type cycle (see LinearComparativeView's
-// model), so naming the shape here keeps the read checked.
+// Exactly what this dialog reads off the band above the bottom row: two fields
+// of a level, named so the copy below is checked against something smaller than
+// the whole level model.
 interface LevelTracks {
   tracks: { configuration: AnyConfigurationModel }[]
 }

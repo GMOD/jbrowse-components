@@ -87,7 +87,7 @@ function openPair() {
   return {
     session,
     view,
-    display: view.allSyntenyDisplays[0] as LinearSyntenyDisplayModel,
+    display: view.allSyntenyDisplays[0]!,
   }
 }
 
@@ -173,7 +173,7 @@ function openTriple() {
   return {
     session,
     view,
-    displays: view.allSyntenyDisplays as LinearSyntenyDisplayModel[],
+    displays: view.allSyntenyDisplays,
   }
 }
 
@@ -304,7 +304,7 @@ async function openInitializedPair(initExtras: Record<string, unknown> = {}) {
   return {
     session,
     view,
-    display: level.linearSyntenyDisplays[0]! as LinearSyntenyDisplayModel,
+    display: level.linearSyntenyDisplays[0]!,
   }
 }
 

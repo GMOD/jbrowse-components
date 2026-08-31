@@ -28,11 +28,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackContainer } from '@jbrowse/core/util'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
-import type {
-  IAnyModelType,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
@@ -53,13 +49,7 @@ export type SyntenyWarning = ComparativeWarning
  * #stateModel LinearComparativeView
  */
 function stateModelFactory(pluginManager: PluginManager) {
-  // Annotated rather than inferred to break a type cycle that is real but
-  // purely at the type level: this model -> level -> LinearSyntenyDisplay
-  // (which types its `view` getter as LinearSyntenyViewModel) -> this model.
-  // The runtime import is acyclic. This is what makes `levels[i]` untyped at
-  // use sites — not anything about how the level is registered.
-  const LinearSyntenyLevel: IAnyModelType =
-    linearSyntenyViewHelperModelFactory(pluginManager)
+  const LinearSyntenyLevel = linearSyntenyViewHelperModelFactory(pluginManager)
   return types
     .compose(
       'LinearComparativeView',

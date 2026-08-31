@@ -1,7 +1,9 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
+import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -69,8 +71,8 @@ async function setup() {
 }
 
 function hover(
-  level: { setHoveredFeature: (hit: any) => void },
-  display: { displayKey: string },
+  level: LinearSyntenyViewHelperModel,
+  display: LinearSyntenyDisplayModel,
 ) {
   level.setHoveredFeature({ key: display.displayKey, instanceIndex: 3 })
 }

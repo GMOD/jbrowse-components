@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Export MST model instance types as `interface X extends Instance<…> {}`, not `type X = Instance<…>` — the interface form is what lets a view and its display name each other"
+summary: "Export MST model instance types as `interface X extends Instance<…> {}`, not `type X = Instance<…>` — the interface form is what lets a view and its display name each other. Amended 2026-08-31: it does not reach a four-node cycle, where a duck on the display's `view` getter is the link instead"
 ---
 
 # ADR-055: MST model instance types are interfaces, not aliases
@@ -96,16 +96,43 @@ around a compiler limitation the interface form removes outright — and it
 generalizes badly, since the same slice would be owed at every view↔display pair
 that ever grows one. Reverted in favor of the interface form.
 
+> **Amended 2026-08-31: the interface form does not reach a FOUR-node cycle, and
+> there the duck is the fix.** Linear synteny's loop is
+> view → `levels` → level → `linearSyntenyDisplays` → display → `view`, one hop
+> longer than dotplot's mutual pair, and it has no non-inferred link of its own.
+> Measured: with all four instance types written as
+> `interface X extends Instance<…> {}` and the display's getter naming
+> `LinearSyntenyViewModel`, the interfaces do not terminate — they resolve to
+> nothing, and typecheck reports 28 TS2339s for members that plainly exist
+> (`display.featureData`, `view.views`, `level.renderParams`). A different
+> signature from the alias collapse above, and a worse one to read, since it
+> names real members as missing.
+>
+> `LinearSyntenyDisplay.view` returns `ParentViewDuck` instead, which is the
+> link the compiler needs and is a far cheaper erasure than the
+> `IAnyModelType` on `levels` it replaced: it erases only what a display reads
+> off its view, one list in one file, rather than everything reachable through a
+> level. `levels[i]` is fully typed now — verified by a probe, per the
+> "Verified, not assumed" method above — and that recovered four real defects
+> the `any` had been hiding, including a test helper declaring `displayKey` a
+> `string` where the model has a `number`.
+>
+> The rule stands for a mutual pair. Reach for the duck when the loop is longer
+> and nothing on it is annotated.
+
 **Duck-type the display on the view side.** Annotate `dotplotDisplays` with an
 interface. Same trade, moved to the side with more readers: components legitimately
 want the whole display model, so that slice would grow with every component.
 
-**Erase the link with `IAnyModelType`.** What `LinearComparativeView` does today
+**Erase the link with `IAnyModelType`.** What `LinearComparativeView` did
 (`const LinearSyntenyLevel: IAnyModelType`), and the reason synteny's aliases
-compile: its view never structurally contains its display. The cost is that
+compiled: its view never structurally contains its display. The cost is that
 `levels` and everything reached through them is untyped — checking traded away
-across a whole subtree to break one cycle. The interface form breaks the same
-cycle and keeps the types.
+across a whole subtree to break one cycle.
+
+The interface form was expected to break the same cycle and keep the types. It
+does not, on this one — see the amendment above. Erasing at the display's `view`
+getter does, and that annotation is gone as of 2026-08-31.
 
 **A compile-time `IsAny` guard file per package.** Considered because the
 collapse *sounded* silent. It isn't, so a guard would add a hand-maintained list

@@ -136,9 +136,7 @@ export function syntenySettingsMenuItems(
   model: LinearSyntenyViewModel,
 ): MenuItem[] {
   const { cigarMode, hasCigarData } = model
-  const display = model.allSyntenyDisplays[0] as
-    | LinearSyntenyDisplayModel
-    | undefined
+  const display = model.allSyntenyDisplays[0]
   return [
     { type: 'subHeader', label: 'Ribbons' },
     toggleItem(

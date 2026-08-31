@@ -21,21 +21,9 @@ import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay
 import SVGOffscreenMates from './SVGOffscreenMates.tsx'
 import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
-import type { OffscreenMateSource } from '../../LinearSyntenyViewHelper/offscreenMateStrip.ts'
+import type { LinearSyntenyViewHelperModel } from '../../LinearSyntenyViewHelper/stateModelFactory.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
-
-// Exactly what the export reads off a level. `levels` is declared with an
-// explicit IAnyModelType to break a type cycle (see LinearComparativeView's
-// model), so everything read off one is `any` — naming the shape here keeps that
-// out of the layout math below, where an undefined height would silently make
-// the running offset NaN.
-interface SyntenyLevel extends OffscreenMateSource {
-  height: number
-  groundColor: string
-  linearSyntenyDisplays: LinearSyntenyDisplayModel[]
-}
 
 // render a LinearSyntenyView to SVG: N stacked genome views with the synteny
 // ribbon level for each adjacent pair between them
@@ -86,7 +74,7 @@ export async function renderToSvg(
       ),
     ),
     awaitSvgRenders(
-      levels.map((level: SyntenyLevel) =>
+      levels.map(level =>
         awaitSvgRenders(
           level.linearSyntenyDisplays.map(async d => ({
             key: d.id,
@@ -161,7 +149,7 @@ export async function renderToSvg(
         </g>
       ),
     }
-    const level: SyntenyLevel | undefined = levels[i]
+    const level: LinearSyntenyViewHelperModel | undefined = levels[i]
     return level
       ? [
           viewRow,

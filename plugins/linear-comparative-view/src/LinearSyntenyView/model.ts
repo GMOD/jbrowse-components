@@ -46,25 +46,13 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
-import type { Instance, IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   AttributeRange,
   CigarOpMask,
   ComparativeTrackModel,
   LodMode,
 } from '@jbrowse/synteny-core'
-
-/**
- * The two ribbon settings a level resolves for itself, read off
- * `allSyntenyDisplays` (which types out as `any`). Duck-typed rather than
- * imported: LinearSyntenyDisplay's model already imports this file's
- * `LinearSyntenyViewModel`, so naming its model type here would close a type
- * cycle — the trap ADR-055 is about.
- */
-interface SyntenyDisplayRibbonSettings extends IStateTreeNode {
-  effectiveDrawCurves: boolean
-  effectiveDrawLocationMarkers: boolean
-}
 
 // Exported because the settings menu's slider rows carry a reset-to-default
 // button, and a default spelled twice is a reset that silently stops agreeing
@@ -328,7 +316,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * The level the two getters above read the cascade off.
        */
-      get ribbonSettingsSample(): SyntenyDisplayRibbonSettings | undefined {
+      get ribbonSettingsSample() {
         return self.allSyntenyDisplays[0]
       },
       /**
@@ -490,9 +478,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return (
           self.levels
             .flatMap(l => l.tracks)
-            // Annotated for the reason ComparativeTrackModel documents: this
-            // array is `any`, which switched off checking on the getConf call
-            // below until the shape was named.
+            // Annotated for the reason ComparativeTrackModel documents, which is
+            // the PLUGGABLE track array rather than the levels cycle: a level's
+            // `tracks` is `IAnyType[]`, so `t` is `any` and the getConf call
+            // below is unchecked until the shape is named. Cutting the cycle at
+            // the display's `view` getter typed `levels` itself; it did not
+            // reach inside a level's tracks.
             .flatMap((t: ComparativeTrackModel) => {
               const declared = getConf(t, ['adapter', 'attributeColumns']) as
                 | string[]
@@ -507,9 +498,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * into the domain the legend labels its ramp with.
        */
       loadedAttributeRanges(): Record<string, AttributeRange>[] {
-        // The declared return type is what pins these entries:
-        // `allSyntenyDisplays` is one of the untyped model arrays, so `d` is
-        // `any` and the property access alone would infer `any[]`.
         return self.allSyntenyDisplays.map(
           d => d.featureData?.attributeRanges ?? {},
         )

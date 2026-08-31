@@ -2,15 +2,12 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { prepareDiagonalizeAdapter } from '@jbrowse/synteny-core'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type {
   DiagonalizeRunOpts,
   DiagonalizeStats,
 } from '@jbrowse/synteny-core'
-
-type Level = LinearSyntenyViewModel['levels'][number]
 
 // Levels run one after another, each restarting the RPC's phase labels from
 // "Fetching features". On a stacked N-way view that reads as a bar looping
@@ -66,7 +63,7 @@ export async function runDiagonalize(
   let totalReversed = 0
   let totalReordered = 0
   for (let i = 0; i < model.levels.length; i++) {
-    const level: Level = model.levels[i]
+    const level = model.levels[i]!
     const displays = level.linearSyntenyDisplays
     if (displays.length > 0) {
       // Route to the same rpcSessionId the track renders with (it lives on the
@@ -83,7 +80,7 @@ export async function runDiagonalize(
       const referenceRegions = model.views[i]!.displayedRegions
       const currentRegions = model.views[i + 1]!.displayedRegions
       const adapters = await Promise.all(
-        displays.map((d: LinearSyntenyDisplayModel) =>
+        displays.map(d =>
           prepareDiagonalizeAdapter({
             assemblyManager,
             sessionId,

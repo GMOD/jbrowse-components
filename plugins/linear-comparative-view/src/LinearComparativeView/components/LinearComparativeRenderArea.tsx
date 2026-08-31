@@ -10,7 +10,6 @@ import { Fragment } from 'react/jsx-runtime'
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
-import type { LinearSyntenyViewHelperModel } from '../../LinearSyntenyViewHelper/stateModelFactory.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -62,8 +61,7 @@ const LinearComparativeRenderArea = observer(
               element the same way. An `?.` here would not survive a missing
               level either — it spells the key `undefined`, which is React for
               unkeyed, and the band still throws on `level.height` a moment
-              later. `levels` is `any` (a declared `IAnyModelType`, breaking the
-              view/level/display type cycle), so no lint can tell us which. */}
+              later. */}
             {i > 0 ? (
               <LevelSection
                 key={model.levels[i - 1]!.id}
@@ -165,12 +163,10 @@ const Overlays = observer(function Overlays({
   level: number
 }) {
   const { classes } = useStyles()
-  // Annotated, not asserted. `levels` is declared `IAnyModelType` to break a
-  // type cycle (see the view's model), so an element off it is `any` and
-  // everything read from one is too — silently. Naming the type here is what
-  // gets `linearSyntenyDisplays` back as the `LinearSyntenyDisplayModel[]` its
-  // getter already declares, with no cast on the read.
-  const levelImpl: LinearSyntenyViewHelperModel = model.levels[level]
+  // The caller only ever renders one of these per level that exists, so the
+  // index is in range by construction — asserted rather than guarded, as the
+  // neighbouring `views[i]!` reads are.
+  const levelImpl = model.levels[level]!
 
   // The same list the level uploads and renders geometry for, rather than a
   // second walk over `tracks` taking `displays[0]`: those two disagree the

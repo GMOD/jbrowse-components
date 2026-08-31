@@ -35,7 +35,7 @@ import { culledRibbonMateData } from './culledRibbonMates.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { ParentViewDuck } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -565,9 +565,15 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
+       * The LinearSyntenyView this display's level sits in. Duck-typed, and that
+       * is the load-bearing part: this getter is the last edge of the
+       * view -> level -> display -> view cycle, and naming the view's model here
+       * is what made `levels` an `IAnyModelType` and every read off a level
+       * `any`. `parentViewDuck.ts` carries the rest, including why ADR-055's
+       * interface form does not substitute on a four-node loop.
        */
       get view() {
-        return getContainingView(self) as LinearSyntenyViewModel
+        return getContainingView(self) as unknown as ParentViewDuck
       },
       /**
        * #getter
