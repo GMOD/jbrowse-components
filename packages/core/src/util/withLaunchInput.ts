@@ -252,19 +252,13 @@ function classify(
 // view declares at most one, so it is read as that key rather than classified
 // per index — which would name "0" and "1" as unknown keys.
 function legacyInitSnapshot(
-  init: unknown,
+  init: Record<string, unknown>,
   { keys }: LaunchKeyRegistration<unknown>,
 ) {
   const rows = Object.entries(keys).find(
     ([, spec]) => spec.kind === 'rows',
   )?.[0]
-  return Array.isArray(init)
-    ? rows
-      ? { [rows]: init }
-      : {}
-    : isObject(init)
-      ? init
-      : {}
+  return Array.isArray(init) && rows ? { [rows]: init } : init
 }
 
 /**
@@ -299,7 +293,7 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
   registration: LaunchKeyRegistration<Commands>,
 ): LaunchInputModel<M, Commands> {
   const known: ReadonlySet<string> = new Set(Object.keys(model.properties))
-  return model
+  const partitioned = model
     .preProcessSnapshot((snap: unknown) => {
       if (!isObject(snap)) {
         return snap
@@ -311,17 +305,15 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
         unknown: {},
         malformed: {},
       }
-      if (init !== undefined) {
+      if (isObject(init)) {
         // v4's nesting, unwrapped rather than refused: a nested key sorts the
         // same three ways a flat one does, so honoring it costs one more pass
         // and a deprecation warning, where dropping it opens an admin's
-        // `defaultSession` on its defaults. `passThrough` does not carry over —
-        // a legacy spelling the view's own preprocessor converts is written
-        // flat by definition. First, so a snapshot spelling one key both ways
-        // resolves to the flat one the docs teach.
+        // `defaultSession` on its defaults. First, so a snapshot spelling one
+        // key both ways resolves to the flat one the docs teach.
         classify(
           legacyInitSnapshot(init, registration),
-          { ...registration, passThrough: [] },
+          registration,
           known,
           out,
         )
@@ -356,5 +348,25 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
         reportUnknownKeys(self, Object.keys(launch?.unknown ?? {}))
         reportMalformedRows(self, Object.keys(launch?.malformed ?? {}))
       },
-    })) as unknown as LaunchInputModel<M, Commands>
+    }))
+    // `legacyInit` names the SPELLING of the snapshot this view was opened from,
+    // and a saved one does not use it — so persisting the flag makes every later
+    // restore report nesting the snapshot it is reading does not contain,
+    // forever, since nothing clears it (`pendingLaunch` excludes the report
+    // keys, so the launch autorun never runs). `unknown` and `malformed` stay:
+    // those name content that was DISCARDED, which is still true of the saved
+    // snapshot, and the blob is the only record of it.
+    .postProcessSnapshot((snap: Record<string, unknown>) => {
+      const launch = snap[LAUNCH]
+      if (!isObject(launch) || !launch.legacyInit) {
+        return snap
+      }
+      const { legacyInit, ...kept } = launch
+      return Object.keys(kept).length
+        ? { ...snap, [LAUNCH]: kept }
+        : Object.fromEntries(
+            Object.entries(snap).filter(([key]) => key !== LAUNCH),
+          )
+    })
+  return partitioned as unknown as LaunchInputModel<M, Commands>
 }

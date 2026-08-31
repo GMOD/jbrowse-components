@@ -241,6 +241,49 @@ describe('the v4 nested form', () => {
     })
     expect(view.launch).toEqual({ assembly: 'hg38', legacyInit: true })
   })
+
+  // a passThrough key is accepted flat, so reporting it as unknown when nested
+  // would name a key the same snapshot takes one line higher up
+  test('a passThrough key inside it is not reported as unknown', () => {
+    open({ type: 'TestView', init: { legacySpelling: 1 } })
+    expect(warnings()).toEqual([DEPRECATED])
+  })
+
+  // `"init": null` is a thing JSON writes, and it nests nothing
+  test('a null or scalar init says nothing', () => {
+    open({ type: 'TestView', init: null })
+    open({ type: 'TestView', init: 'nonsense' })
+    expect(warnings()).toEqual([])
+  })
+})
+
+describe('what the launch blob persists', () => {
+  // the flag names the spelling of the snapshot the view was OPENED from, and a
+  // saved one does not use it; nothing clears the blob, so persisting the flag
+  // would report nesting on every restore forever
+  test('the deprecation flag is not saved, and a restore does not repeat it', () => {
+    const view = open({ type: 'TestView', init: { assembly: 'hg38' } })
+    const snap = getSnapshot(view)
+    expect(snap.launch).toEqual({ assembly: 'hg38' })
+    warn.mockClear()
+    open(snap)
+    expect(warnings()).toEqual([])
+  })
+
+  test('a blob left holding nothing else leaves the snapshot entirely', () => {
+    const view = open({ type: 'TestView', init: {} })
+    expect(view.launch).toEqual({ legacyInit: true })
+    expect(getSnapshot(view).launch).toBeUndefined()
+  })
+
+  // unlike the flag, these name content that was DISCARDED — still true of the
+  // saved snapshot, and the blob is the only record of it
+  test('a discarded key or row list is still saved', () => {
+    const view = open({ type: 'TestView', asembly: 'hg38' })
+    expect(getSnapshot(view).launch).toEqual({
+      unknown: { asembly: 'hg38' },
+    })
+  })
 })
 
 // The session's view type is a `types.union`, so MST runs every member's

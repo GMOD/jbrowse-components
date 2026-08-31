@@ -69,6 +69,22 @@ test('the nested v4 form reaches the same launch state, deprecated', () => {
   ])
 })
 
+// LGV adds its own postProcessSnapshot after withLaunchInput's, and it keeps
+// `launch` while displayedRegions is empty — so this is where the two compose:
+// the report keys have to be gone from what the outer one re-adds, or a session
+// saved from a v4 config warns about nesting on every later restore.
+test('the deprecation flag is not saved into the session snapshot', () => {
+  const view = open(NESTED)
+  const snap = getSnapshot(view) as { launch?: Record<string, unknown> }
+  expect(snap.launch).toEqual({
+    assembly: 'hg38',
+    loc: 'chr2:134,000,000-137,150,000',
+  })
+  warn.mockClear()
+  open(snap)
+  expect(warnings()).toEqual([])
+})
+
 test('a key naming neither a launch key nor a property is named on attach', () => {
   open({ type: 'LinearGenomeView', assembly: 'hg38', locc: 'chr1' })
   expect(warnings()).toEqual(['LinearGenomeView ignored unknown key(s): locc'])
