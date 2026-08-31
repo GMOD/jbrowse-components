@@ -4,8 +4,8 @@
 // `&session=json-` is the URL form that carries a session SNAPSHOT — jbrowse-web
 // parses it as `{ session }` and hands it to loadImportedSession, the same path
 // a config's defaultSession takes, so a block written for one opens under the
-// other unchanged. (`spec-`, which the figure specs use, is a different shape:
-// launcher keys flat on the view rather than under `init`.)
+// other unchanged. `spec-`, which the figure specs use, wraps the same view
+// objects in a spec the launchers consume instead.
 //
 // The tab is opt-in per fence, via `config=<url>` in the fence meta, because the
 // URL needs something the block does not carry. A defaultSession names trackIds
@@ -28,12 +28,12 @@ export function sessionConfigUrl(meta: string | null | undefined) {
 /**
  * Every trackId and assembly name a session asks for, wherever they sit.
  *
- * Deliberately shape-blind: a session's tracks live under `init.tracks` for a
- * launching view, one array deep per band for a synteny view, and directly on
- * the view for an app-exported snapshot. Enumerating those shapes here would
- * make this a second, worse copy of the launcher; walking for `tracks` arrays
- * and `assembly` keys answers the only question the check asks, which is
- * whether every name the session mentions exists in the config it points at.
+ * Deliberately shape-blind: a session's tracks sit on the view for a launching
+ * view, one array deep per band for a synteny view, and inside built track
+ * snapshots for an app-exported one. Enumerating those shapes here would make
+ * this a second, worse copy of the launcher; walking for `tracks` arrays and
+ * `assembly` keys answers the only question the check asks, which is whether
+ * every name the session mentions exists in the config it points at.
  */
 export function namesInSession(session: unknown) {
   const trackIds = new Set<string>()

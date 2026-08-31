@@ -69,7 +69,7 @@ samples: [
   selection covers, appended to the existing `SubsequenceContextMenu`. Six or
   fewer go inline, more collapse into a submenu.
 - `openSampleInNewView.ts` — launches declaratively via
-  `addView('LinearGenomeView', {init: {assembly, loc}})`, keyed
+  `addView('LinearGenomeView', {assembly, loc})`, keyed
   `<displayId>_<assemblyName>` so following the same species repeatedly
   re-navigates one view. Same pattern as the spreadsheet view's location links.
 
