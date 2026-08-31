@@ -1561,7 +1561,11 @@ export default function stateModelFactory(pm: PluginManager) {
                   ...rest2,
                 },
               ],
-              tracks,
+              // the level between the two rows, which is where a synteny track
+              // lives. `tracks` on the view means trackIds to open, so a built
+              // track snapshot written there is a launch recipe and never
+              // becomes a band.
+              levels: [{ level: 0, tracks }],
             }
 
             session.addView('LinearSyntenyView', viewSnapshot)

@@ -19,7 +19,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(grapePeachGetFile)
 
-async function createSyntenyViewWithInit(init: {
+async function createSyntenyViewWithInit(spec: {
   views: { loc?: string; assembly: string; tracks?: string[] }[]
   tracks?: string[][]
 }) {
@@ -27,10 +27,8 @@ async function createSyntenyViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  // Add a LinearSyntenyView with init property
-  const view = session.addView('LinearSyntenyView', {
-    init,
-  })
+  // every setting written directly on the view object
+  const view = session.addView('LinearSyntenyView', spec)
 
   // Set width to trigger initialization
   view.setWidth(800)
@@ -114,11 +112,11 @@ test('LinearSyntenyView showImportForm is false when init is set', async () => {
   )
 }, 40000)
 
-// Regression: a snapshot taken before views materialize must keep init, so a
-// reload/restore (e.g. autosave firing mid-load) can rebuild the view instead
-// of stranding on the import form. Once views exist, init is redundant and
-// stripped.
-test('snapshot keeps init while views empty, strips it once materialized', async () => {
+// Regression: a snapshot taken before views materialize must keep the launch
+// state, so a reload/restore (e.g. autosave firing mid-load) can rebuild the
+// view instead of stranding on the import form. Once views exist it is
+// redundant and stripped.
+test('snapshot keeps the launch state while views empty, strips it once materialized', async () => {
   const { view } = await createSyntenyViewWithInit({
     views: [
       { loc: 'Pp01:1..1000', assembly: 'peach' },
@@ -127,10 +125,10 @@ test('snapshot keeps init while views empty, strips it once materialized', async
     tracks: [['subset']],
   })
 
-  // mid-load: views not built yet, snapshot must still carry init
+  // mid-load: views not built yet, snapshot must still carry the launch state
   expect(view.views.length).toBe(0)
-  const before: { init?: unknown } = getSnapshot(view)
-  expect(before.init).toBeDefined()
+  const before: { launch?: unknown } = getSnapshot(view)
+  expect(before.launch).toBeDefined()
 
   await waitFor(
     () => {
@@ -139,10 +137,10 @@ test('snapshot keeps init while views empty, strips it once materialized', async
     { timeout: 30000 },
   )
 
-  // materialized: views present, init dropped from the snapshot
+  // materialized: views present, the launch state dropped from the snapshot
   expect(view.views.length).toBe(2)
-  const after: { init?: unknown } = getSnapshot(view)
-  expect(after.init).toBeUndefined()
+  const after: { launch?: unknown } = getSnapshot(view)
+  expect(after.launch).toBeUndefined()
 }, 40000)
 
 test('LinearSyntenyView showImportForm is true when no init and no views', () => {

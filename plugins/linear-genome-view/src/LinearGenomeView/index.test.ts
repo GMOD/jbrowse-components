@@ -2899,9 +2899,11 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     )
   })
 
-  // it belongs on the view object, which is what the deprecation says; nested
-  // it names no launch key, so it reports as one that names nothing
-  test('a view prop nested inside init is not applied, and is named', async () => {
+  // it belongs on the view object, which is what the deprecation says — but a
+  // nested one sorts the same three ways a flat one does, so it lands rather
+  // than reading as a typo. The comparative views' v4 `init` applied a declared
+  // property, and the shipped demos write one.
+  test('a view prop nested inside init still lands on the property', async () => {
     const model = makeModel({
       assembly: 'volvox',
       loc: 'ctgA:1-1000',
@@ -2910,10 +2912,10 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     await waitFor(() => {
       expect(model.init).toBeUndefined()
     })
-    expect(console.warn).toHaveBeenCalledWith(
+    expect(console.warn).not.toHaveBeenCalledWith(
       expect.stringContaining('ignored unknown key(s): colorByCDS'),
     )
-    expect(model.colorByCDS).toBe(false)
+    expect(model.colorByCDS).toBe(true)
   })
 
   test('init.nav false hides the header', async () => {

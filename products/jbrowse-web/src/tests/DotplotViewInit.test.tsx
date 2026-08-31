@@ -128,21 +128,21 @@ test('DotplotView can re-initialize with different assemblies', async () => {
 }, 40000)
 
 // Regression: a snapshot taken before the view materializes (e.g. autosave
-// firing while the init autorun hasn't set assemblyNames yet) must keep init,
-// so a reload/restore rebuilds instead of stranding on the import form. Once
-// assemblyNames are set, init is redundant and stripped.
-test('snapshot keeps init until assemblyNames set, strips it after', async () => {
+// firing while the launch autorun hasn't set assemblyNames yet) must keep the
+// launch state, so a reload/restore rebuilds instead of stranding on the import
+// form. Once assemblyNames are set it is redundant and stripped.
+test('snapshot keeps the launch state until assemblyNames set, strips it after', async () => {
   const { rootModel } = getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('DotplotView', {
-    init: { views: [{ assembly: 'peach' }, { assembly: 'grape' }] },
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
   })
 
-  // no width yet -> init autorun hasn't run
+  // no width yet -> the launch autorun hasn't run
   expect(view.assemblyNames.length).toBe(0)
-  const before: { init?: unknown } = getSnapshot(view)
-  expect(before.init).toBeDefined()
+  const before: { launch?: unknown } = getSnapshot(view)
+  expect(before.launch).toBeDefined()
 
   view.setWidth(800)
   await waitFor(
@@ -153,6 +153,6 @@ test('snapshot keeps init until assemblyNames set, strips it after', async () =>
   )
 
   expect(view.assemblyNames.length).toBe(2)
-  const after: { init?: unknown } = getSnapshot(view)
-  expect(after.init).toBeUndefined()
+  const after: { launch?: unknown } = getSnapshot(view)
+  expect(after.launch).toBeUndefined()
 }, 40000)

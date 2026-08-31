@@ -4,8 +4,9 @@ import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
 // The synthesized config rides on the track that draws it rather than in any
 // session or view-level list, so it goes out with the view.
-function syntenyConf(viewSpec: { tracks: unknown[] }) {
-  return (viewSpec.tracks[0] as { configuration: unknown }).configuration
+function syntenyConf(viewSpec: { levels: { tracks: unknown[] }[] }) {
+  return (viewSpec.levels[0]!.tracks[0] as { configuration: unknown })
+    .configuration
 }
 
 function makeFeature(

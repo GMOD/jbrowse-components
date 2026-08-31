@@ -43,18 +43,23 @@ const syntenySession = {
       linkViews: true,
       interactToggled: false,
       middleComparativeHeight: 174,
-      tracks: [
+      levels: [
         {
-          id: 's1',
-          type: 'SyntenyTrack',
-          configuration: 'volvox_inv_indels',
-          minimized: false,
-          displays: [
+          level: 0,
+          tracks: [
             {
-              id: 's1-display',
-              type: 'LinearSyntenyDisplay',
-              configuration: 'volvox_inv_indels-LinearSyntenyDisplay',
-              height: 100,
+              id: 's1',
+              type: 'SyntenyTrack',
+              configuration: 'volvox_inv_indels',
+              minimized: false,
+              displays: [
+                {
+                  id: 's1-display',
+                  type: 'LinearSyntenyDisplay',
+                  configuration: 'volvox_inv_indels-LinearSyntenyDisplay',
+                  height: 100,
+                },
+              ],
             },
           ],
         },
@@ -255,18 +260,23 @@ const offscreenMateSession = {
     {
       ...syntenySession.views[0],
       showOffscreenMates: true,
-      tracks: [
+      levels: [
         {
-          id: 's1',
-          type: 'SyntenyTrack',
-          configuration: 'volvox_fake_synteny',
-          minimized: false,
-          displays: [
+          level: 0,
+          tracks: [
             {
-              id: 's1-display',
-              type: 'LinearSyntenyDisplay',
-              configuration: 'volvox_fake_synteny-LinearSyntenyDisplay',
-              height: 100,
+              id: 's1',
+              type: 'SyntenyTrack',
+              configuration: 'volvox_fake_synteny',
+              minimized: false,
+              displays: [
+                {
+                  id: 's1-display',
+                  type: 'LinearSyntenyDisplay',
+                  configuration: 'volvox_fake_synteny-LinearSyntenyDisplay',
+                  height: 100,
+                },
+              ],
             },
           ],
         },
