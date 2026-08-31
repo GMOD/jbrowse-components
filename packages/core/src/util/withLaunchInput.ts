@@ -1,4 +1,8 @@
-import { reportUnknownKeys, viewLabel } from './unknownSnapshotKeys.ts'
+import {
+  reportMalformedRows,
+  reportUnknownKeys,
+  viewLabel,
+} from './unknownSnapshotKeys.ts'
 
 import type {
   IAnyModelType,
@@ -44,13 +48,14 @@ export interface LaunchKeyRegistration<Commands> {
  */
 export type LaunchInput<Commands> = Commands & {
   unknown?: Record<string, unknown>
+  malformed?: Record<string, unknown>
   legacyInit?: boolean
 }
 
 // What afterAttach reports rather than applies. They live in the blob so the
 // partition has one place to put everything, and `pendingLaunch` is what keeps
 // them from reading as work to do.
-const REPORTED = new Set(['unknown', 'legacyInit'])
+const REPORTED = new Set(['unknown', 'malformed', 'legacyInit'])
 
 /**
  * The blob when it still holds something to apply, else undefined. A view's
@@ -165,6 +170,7 @@ interface Partitioned {
   state: Record<string, unknown>
   launch: Record<string, unknown>
   unknown: Record<string, unknown>
+  malformed: Record<string, unknown>
 }
 
 function classify(
@@ -184,11 +190,21 @@ function classify(
       out.launch[key] = value
     } else if (spec) {
       const { launch, state } = splitEntries(spec.kind, value)
-      if (launch !== undefined) {
-        out.launch[key] = launch
-      }
-      if (state !== undefined) {
-        out.state[key] = state
+      if (spec.kind === 'rows' && launch !== undefined && state !== undefined) {
+        // A row list indexes against `levels` and `tracks[i]`, so lifting half
+        // of it renumbers the other half. Nothing here can throw — a pure
+        // preprocessor runs against snapshots the union is about to reject — so
+        // the whole list goes to the bucket afterAttach reports and the view
+        // comes up on its import form rather than on a silently misaligned
+        // stack.
+        out.malformed[key] = value
+      } else {
+        if (launch !== undefined) {
+          out.launch[key] = launch
+        }
+        if (state !== undefined) {
+          out.state[key] = state
+        }
       }
     } else if (known.has(key) || passThrough.includes(key)) {
       out.state[key] = value
@@ -236,17 +252,27 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
         return snap
       }
       const { init, ...rest } = snap
-      const out: Partitioned = { state: {}, launch: {}, unknown: {} }
+      const out: Partitioned = {
+        state: {},
+        launch: {},
+        unknown: {},
+        malformed: {},
+      }
       classify(rest, registration, known, out)
       if (isObject(init)) {
-        // v4 nested its launch keys here. Everything inside is a launch key or
-        // a mistake — a declared property in there was never applied — so the
-        // blob's own keys are all this pass has to sort.
-        classify(init, { ...registration, passThrough: [] }, new Set(), out)
+        // v4 nested its launch keys here, and the comparative views' v4 `init`
+        // also applied any declared property it found, so a nested key sorts
+        // the same three ways a flat one does. `passThrough` does not carry
+        // over: a legacy spelling the view's own preprocessor converts is
+        // written flat by definition.
+        classify(init, { ...registration, passThrough: [] }, known, out)
         out.launch.legacyInit = true
       }
       if (Object.keys(out.unknown).length) {
         out.launch.unknown = out.unknown
+      }
+      if (Object.keys(out.malformed).length) {
+        out.launch.malformed = out.malformed
       }
       const persisted = out.state[LAUNCH]
       return Object.keys(out.launch).length
@@ -270,6 +296,7 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
           )
         }
         reportUnknownKeys(self, Object.keys(launch?.unknown ?? {}))
+        reportMalformedRows(self, Object.keys(launch?.malformed ?? {}))
       },
     })) as unknown as LaunchInputModel<M, Commands>
 }

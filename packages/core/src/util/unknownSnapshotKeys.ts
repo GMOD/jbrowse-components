@@ -36,6 +36,26 @@ export function reportUnknownKeys(self: IStateTreeNode, keys: string[]) {
 }
 
 /**
+ * Name the row lists a view refused whole. `withLaunchInput` splits an authored
+ * array into the recipes a launcher resolves and the built snapshots MST
+ * restores, per entry — but a row list is indexed against the view's `levels`
+ * and per-level tracks, so a list holding both kinds has no correct split and
+ * is refused rather than renumbered.
+ */
+export function reportMalformedRows(self: IStateTreeNode, keys: string[]) {
+  if (!keys.length) {
+    return
+  }
+  const message = `${viewLabel(self)} refused ${keys.join(', ')}: the list mixes built view snapshots with recipes to open one, and the rows index against the levels between them. Write all of them one way.`
+  console.warn(message)
+  try {
+    getNotificationSink(self).notify(message, 'warning')
+  } catch {
+    // a view built outside a session has nowhere to put it
+  }
+}
+
+/**
  * Keep the view snapshot keys MST would otherwise drop without a word, so
  * attaching the view can name them. A config authoring
  * `{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr1:1-100' }` renders a

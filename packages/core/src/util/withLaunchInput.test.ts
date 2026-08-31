@@ -157,14 +157,42 @@ describe('the per-entry discriminators', () => {
     expect(view.highlight).toEqual([persisted])
   })
 
-  test('rows: a row carrying a `type` is built, one without it is a recipe', () => {
+  test('rows: a row carrying a `type` is built', () => {
     const built = { type: 'LinearGenomeView' }
+    const view = open({ type: 'TestView', views: [built, built] })
+    expect(view.launch).toBeUndefined()
+    expect(view.views).toEqual([built, built])
+  })
+
+  test('rows: a row without one is a recipe, an empty row included', () => {
+    const view = open({ type: 'TestView', views: [{ assembly: 'hg38' }, {}] })
+    expect(view.launch).toEqual({ views: [{ assembly: 'hg38' }, {}] })
+    expect(view.views).toEqual([])
+  })
+
+  test('rows: a mixed list is refused whole rather than split', () => {
     const view = open({
       type: 'TestView',
-      views: [built, { assembly: 'hg38' }],
+      views: [{ type: 'LinearGenomeView' }, { assembly: 'hg38' }],
     })
-    expect(view.launch).toEqual({ views: [{ assembly: 'hg38' }] })
-    expect(view.views).toEqual([built])
+    expect(view.views).toEqual([])
+    expect(view.launch?.views).toBeUndefined()
+    expect(view.launch).toEqual({
+      malformed: {
+        views: [{ type: 'LinearGenomeView' }, { assembly: 'hg38' }],
+      },
+    })
+    expect(warnings()).toEqual([
+      'TestView refused views: the list mixes built view snapshots with recipes to open one, and the rows index against the levels between them. Write all of them one way.',
+    ])
+  })
+
+  test('rows: a refusal is not work to do', () => {
+    const view = open({
+      type: 'TestView',
+      views: [{ type: 'LinearGenomeView' }, {}],
+    })
+    expect(pendingLaunch(view.launch)).toBeUndefined()
   })
 
   test('replay: the value lands on the property AND rides in the blob', () => {
@@ -186,6 +214,16 @@ describe('the v4 nested form', () => {
   test('a key inside it that names nothing is still reported', () => {
     open({ type: 'TestView', init: { asembly: 'hg38' } })
     expect(warnings()).toContain('TestView ignored unknown key(s): asembly')
+  })
+
+  // the comparative views' v4 `init` applied any declared property it found, so
+  // a nested one lands on the property rather than reading as a typo
+  test('a declared property inside it lands on the property', () => {
+    const view = open({ type: 'TestView', init: { showThing: true } })
+    expect(getSnapshot(view).showThing).toBe(true)
+    expect(warnings()).not.toContain(
+      'TestView ignored unknown key(s): showThing',
+    )
   })
 })
 
