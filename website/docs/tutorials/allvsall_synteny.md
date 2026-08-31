@@ -255,23 +255,16 @@ means four bands, so `tracks` has four entries, all served by the same track:
     "views": [
       {
         "type": "LinearSyntenyView",
-        "init": {
-          "views": [
-            { "assembly": "K12" },
-            { "assembly": "Sakai" },
-            { "assembly": "CFT073" },
-            { "assembly": "NCTC86" },
-            { "assembly": "IAI39" }
-          ],
-          "tracks": [
-            ["ecoli_ava"],
-            ["ecoli_ava"],
-            ["ecoli_ava"],
-            ["ecoli_ava"]
-          ],
-          "minAlignmentLength": 10000,
-          "collapseEmptyRows": true
-        }
+        "views": [
+          { "assembly": "K12" },
+          { "assembly": "Sakai" },
+          { "assembly": "CFT073" },
+          { "assembly": "NCTC86" },
+          { "assembly": "IAI39" }
+        ],
+        "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
+        "minAlignmentLength": 10000,
+        "collapseEmptyRows": true
       }
     ]
   }
@@ -282,8 +275,7 @@ The CLI tab writes the same session into an existing `config.json`. It carries
 the value of `defaultSession`, which is what `set-default-session` takes. The
 URL tab opens it against the hosted copy of this dataset.
 
-Three keys there are worth reading, and each is a one-time load setting that
-goes under `init`:
+Three keys there are worth reading, and each is applied once as the view opens:
 
 - `tracks` is one entry per band: `tracks[0]` connects rows 0-1, `tracks[1]`
   rows 1-2, and so on to `tracks[3]` for rows 3-4, all served by `ecoli_ava`.
@@ -400,19 +392,17 @@ builds from these same five strains, on the same K-12 axis.
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "K12",
-          "loc": "chr:1,443,000-1,466,000",
-          "tracks": [
-            { "trackId": "ecoli_pggb_depth", "height": 60 },
-            {
-              "trackId": "ecoli_ava",
-              "type": "MultiWaySyntenyDisplay",
-              "rowOrder": ["NCTC86", "CFT073", "Sakai", "IAI39"],
-              "height": 340
-            }
-          ]
-        }
+        "assembly": "K12",
+        "loc": "chr:1,443,000-1,466,000",
+        "tracks": [
+          { "trackId": "ecoli_pggb_depth", "height": 60 },
+          {
+            "trackId": "ecoli_ava",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": ["NCTC86", "CFT073", "Sakai", "IAI39"],
+            "height": 340
+          }
+        ]
       }
     ]
   }

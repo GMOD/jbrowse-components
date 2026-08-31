@@ -416,19 +416,14 @@ peach-cacao-grape:
       {
         "type": "LinearSyntenyView",
         "displayName": "Peach - Cacao - Grape (MCScan blocks)",
-        "init": {
-          "views": [
-            { "assembly": "peach" },
-            { "assembly": "cacao" },
-            { "assembly": "grape" }
-          ],
-          "tracks": [
-            ["grape_peach_cacao_blocks"],
-            ["grape_peach_cacao_blocks"]
-          ],
-          "colorBy": "reference",
-          "autoDiagonalize": true
-        }
+        "views": [
+          { "assembly": "peach" },
+          { "assembly": "cacao" },
+          { "assembly": "grape" }
+        ],
+        "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
+        "colorBy": "reference",
+        "autoDiagonalize": true
       }
     ]
   }
@@ -436,9 +431,7 @@ peach-cacao-grape:
 ```
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0-1 (peach-cacao),
-`tracks[1]` rows 1-2 (cacao-grape), both served by the same track. `init` takes
-any declared view property as well as the launch commands, so `displayName`
-works in either place.
+`tracks[1]` rows 1-2 (cacao-grape), both served by the same track.
 
 `autoDiagonalize` reorders and flips each row's chromosomes on load so the
 ribbons run along the diagonal. `colorBy: "reference"` anchors every band on the
@@ -509,31 +502,29 @@ The same thing as a `defaultSession`, which the live link below opens directly:
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "grape",
-          "loc": "11:778,000-866,000",
-          "tracks": [
-            {
-              "trackId": "grape_genes",
-              "type": "LinearBasicDisplay",
-              "showOnlyGenes": true,
-              "displayMode": "compact"
-            },
-            {
-              "trackId": "grape_peach_cacao_blocks",
-              "type": "MultiWaySyntenyDisplay",
-              "rowOrder": [
-                "peach",
-                "cacao",
-                "poplar",
-                "citrus",
-                "arabidopsis",
-                "tomato"
-              ],
-              "height": 340
-            }
-          ]
-        }
+        "assembly": "grape",
+        "loc": "11:778,000-866,000",
+        "tracks": [
+          {
+            "trackId": "grape_genes",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact"
+          },
+          {
+            "trackId": "grape_peach_cacao_blocks",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": [
+              "peach",
+              "cacao",
+              "poplar",
+              "citrus",
+              "arabidopsis",
+              "tomato"
+            ],
+            "height": 340
+          }
+        ]
       }
     ]
   }

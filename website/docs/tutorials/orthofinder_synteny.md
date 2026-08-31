@@ -108,24 +108,22 @@ in that genome's own coordinates.
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "human",
-          "loc": "2:176,090,000-176,290,000",
-          "tracks": [
-            {
-              "trackId": "human_genes",
-              "type": "LinearBasicDisplay",
-              "showOnlyGenes": true,
-              "displayMode": "compact"
-            },
-            {
-              "trackId": "vertebrates_orthogroups",
-              "type": "MultiWaySyntenyDisplay",
-              "rowOrder": ["chicken", "frog", "gar", "zebrafish"],
-              "height": 320
-            }
-          ]
-        }
+        "assembly": "human",
+        "loc": "2:176,090,000-176,290,000",
+        "tracks": [
+          {
+            "trackId": "human_genes",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact"
+          },
+          {
+            "trackId": "vertebrates_orthogroups",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": ["chicken", "frog", "gar", "zebrafish"],
+            "height": 320
+          }
+        ]
       }
     ]
   }
@@ -235,24 +233,22 @@ with the lane's header naming the chromosome that fly keeps these orthologs on.
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "melanogaster",
-          "loc": "3L:5,789,000-5,931,000",
-          "tracks": [
-            {
-              "trackId": "melanogaster_genes",
-              "type": "LinearBasicDisplay",
-              "showOnlyGenes": true,
-              "displayMode": "compact"
-            },
-            {
-              "trackId": "drosophila_orthogroups",
-              "type": "MultiWaySyntenyDisplay",
-              "rowOrder": ["simulans", "yakuba", "pseudoobscura", "virilis"],
-              "height": 320
-            }
-          ]
-        }
+        "assembly": "melanogaster",
+        "loc": "3L:5,789,000-5,931,000",
+        "tracks": [
+          {
+            "trackId": "melanogaster_genes",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact"
+          },
+          {
+            "trackId": "drosophila_orthogroups",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": ["simulans", "yakuba", "pseudoobscura", "virilis"],
+            "height": 320
+          }
+        ]
       }
     ]
   }
@@ -306,25 +302,23 @@ what scale that took.
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "tomato",
-          "loc": "SL4.0ch04:62,880,000-63,037,000",
-          "tracks": [
-            {
-              "trackId": "tomato_genes",
-              "type": "LinearBasicDisplay",
-              "showOnlyGenes": true,
-              "displayMode": "compact",
-              "showLabels": "none"
-            },
-            {
-              "trackId": "solanaceae_orthogroups",
-              "type": "MultiWaySyntenyDisplay",
-              "rowOrder": ["potato", "pepper", "tobacco", "coffee"],
-              "height": 320
-            }
-          ]
-        }
+        "assembly": "tomato",
+        "loc": "SL4.0ch04:62,880,000-63,037,000",
+        "tracks": [
+          {
+            "trackId": "tomato_genes",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact",
+            "showLabels": "none"
+          },
+          {
+            "trackId": "solanaceae_orthogroups",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": ["potato", "pepper", "tobacco", "coffee"],
+            "height": 320
+          }
+        ]
       }
     ]
   }
@@ -369,24 +363,22 @@ a lane per grass, under rice's own gene track.
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "rice",
-          "loc": "3:31,590,000-31,775,000",
-          "tracks": [
-            {
-              "trackId": "rice_genes",
-              "type": "LinearBasicDisplay",
-              "showOnlyGenes": true,
-              "displayMode": "compact"
-            },
-            {
-              "trackId": "grasses_orthogroups",
-              "type": "MultiWaySyntenyDisplay",
-              "rowOrder": ["sorghum", "brachypodium", "setaria", "maize"],
-              "height": 320
-            }
-          ]
-        }
+        "assembly": "rice",
+        "loc": "3:31,590,000-31,775,000",
+        "tracks": [
+          {
+            "trackId": "rice_genes",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact"
+          },
+          {
+            "trackId": "grasses_orthogroups",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": ["sorghum", "brachypodium", "setaria", "maize"],
+            "height": 320
+          }
+        ]
       }
     ]
   }

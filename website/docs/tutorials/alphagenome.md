@@ -115,11 +115,9 @@ the oncogenic _TAL1_ variants above it and no predictions yet.
       {
         "id": "alphagenome_lgv",
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg38",
-          "loc": "chr1:47,189,833..47,259,832",
-          "tracks": ["genes", "tal1_variants"]
-        }
+        "assembly": "hg38",
+        "loc": "chr1:47,189,833..47,259,832",
+        "tracks": ["genes", "tal1_variants"]
       }
     ]
   }

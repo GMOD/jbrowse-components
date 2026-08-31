@@ -186,8 +186,7 @@ encoded in it.
 
 ## In an embedded component
 
-The embedded React components take the same keys through
-`defaultSession.view.init.tracks`:
+The embedded React components take the same keys through the `init` prop:
 
 ```js
 init: {

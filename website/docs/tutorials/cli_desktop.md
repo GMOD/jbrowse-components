@@ -116,11 +116,9 @@ filenames, which are in `config.json`:
   "views": [
     {
       "type": "LinearGenomeView",
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr1:1-100,000",
-        "tracks": ["sample", "variants.vcf"]
-      }
+      "assembly": "hg38",
+      "loc": "chr1:1-100,000",
+      "tracks": ["sample", "variants.vcf"]
     }
   ]
 }

@@ -145,28 +145,26 @@ ignored with no error:
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "UU_Cfam_GSD_1.0",
-          "loc": "chr37:25,570,000-25,580,000",
-          "tracks": [
-            {
-              "trackId": "dog10k_nhej1_svs",
-              "type": "LinearMultiSampleVariantDisplay",
-              "layout": [
-                {
-                  "name": "COLL000001",
-                  "label": "Collie 1",
-                  "color": "#0072B2"
-                },
-                {
-                  "name": "CLUPGR000001",
-                  "label": "Wolf 1",
-                  "color": "#E69F00"
-                }
-              ]
-            }
-          ]
-        }
+        "assembly": "UU_Cfam_GSD_1.0",
+        "loc": "chr37:25,570,000-25,580,000",
+        "tracks": [
+          {
+            "trackId": "dog10k_nhej1_svs",
+            "type": "LinearMultiSampleVariantDisplay",
+            "layout": [
+              {
+                "name": "COLL000001",
+                "label": "Collie 1",
+                "color": "#0072B2"
+              },
+              {
+                "name": "CLUPGR000001",
+                "label": "Wolf 1",
+                "color": "#E69F00"
+              }
+            ]
+          }
+        ]
       }
     ]
   }

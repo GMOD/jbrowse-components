@@ -215,29 +215,27 @@ PanSN `sample#` prefix on every record is how it maps a record to its strain:
 
 To stack the five strains, use a linear synteny view with one panel per strain
 and one `tracks` entry per band, each band naming the same track. Put this in
-the view's `init`, or reach the same state from the UI with **Add → Linear
+the session's `views`, or reach the same state from the UI with **Add → Linear
 synteny view**, whose Quick start fills in a row per assembly the track lists.
 
 ```json
 {
   "type": "LinearSyntenyView",
-  "init": {
-    "views": [
-      { "assembly": "K12" },
-      { "assembly": "Sakai" },
-      { "assembly": "CFT073" },
-      { "assembly": "NCTC86" },
-      { "assembly": "IAI39" }
-    ],
-    "tracks": [
-      ["ecoli_cactus_ava"],
-      ["ecoli_cactus_ava"],
-      ["ecoli_cactus_ava"],
-      ["ecoli_cactus_ava"]
-    ],
-    "minAlignmentLength": 10000,
-    "levelHeights": [110, 110, 110, 110]
-  }
+  "views": [
+    { "assembly": "K12" },
+    { "assembly": "Sakai" },
+    { "assembly": "CFT073" },
+    { "assembly": "NCTC86" },
+    { "assembly": "IAI39" }
+  ],
+  "tracks": [
+    ["ecoli_cactus_ava"],
+    ["ecoli_cactus_ava"],
+    ["ecoli_cactus_ava"],
+    ["ecoli_cactus_ava"]
+  ],
+  "minAlignmentLength": 10000,
+  "levelHeights": [110, 110, 110, 110]
 }
 ```
 

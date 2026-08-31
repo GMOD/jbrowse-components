@@ -1179,33 +1179,31 @@ lane per haplotype:
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg38",
-          "loc": "chr1:196,640,000-196,900,000",
-          "tracks": [
-            {
-              "trackId": "hg38_ncbiRefSeq_ucsc",
-              "type": "LinearBasicDisplay",
-              "showOnlyGenes": true,
-              "displayMode": "compact"
-            },
-            {
-              "trackId": "hprc_cfhr_multiway",
-              "type": "MultiWaySyntenyDisplay",
-              "rowOrder": [
-                "HG00097.1",
-                "HG00099.1",
-                "HG00128.1",
-                "HG00133.1",
-                "HG01109.1",
-                "HG01123.1",
-                "HG01960.1",
-                "HG02055.1"
-              ],
-              "height": 460
-            }
-          ]
-        }
+        "assembly": "hg38",
+        "loc": "chr1:196,640,000-196,900,000",
+        "tracks": [
+          {
+            "trackId": "hg38_ncbiRefSeq_ucsc",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact"
+          },
+          {
+            "trackId": "hprc_cfhr_multiway",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": [
+              "HG00097.1",
+              "HG00099.1",
+              "HG00128.1",
+              "HG00133.1",
+              "HG01109.1",
+              "HG01123.1",
+              "HG01960.1",
+              "HG02055.1"
+            ],
+            "height": 460
+          }
+        ]
       }
     ]
   }
