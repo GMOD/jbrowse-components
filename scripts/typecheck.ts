@@ -1,37 +1,31 @@
 // Picks tsc's checker count instead of letting tsgo derive one from the core
-// count. Measured on 16 cores, whole-repo --noEmit with tsconfig.tsbuildinfo
-// cleared (incremental:true means an uncleared run measures the cache):
+// count, which on 16 cores means 16 and is the worst of the settings measured.
+// Whole-repo cold --noEmit with tsconfig.tsbuildinfo cleared (incremental:true
+// means an uncleared run measures the cache):
 //
-//   cold  default 45.6s 5.98GB   --checkers 1 60.6s 4.40GB
-//   warm  default  1.8s 1.13GB   --checkers 1  2.3s 0.91GB
+//   checkers   1      2      4      8      16 (tsgo default here)
+//   seconds    14.4    9.6    8.5    9.1    10.8
+//   peak RSS   2.9GB  3.1GB  3.7GB  5.0GB   6.6GB
 //
-// One checker trades ~15s cold for 1.6GB. Agents get it because several
-// typecheck and test concurrently, each sizing itself as though alone; CI does
-// not, since wall-clock is its only currency. CLAUDECODE is exported by the
-// Claude Code CLI into every command it runs and is in no shell profile, so it
-// marks agent runs and only agent runs.
+// Four is the knee, and it beats the default on both axes at once, so there is
+// no agent tier to carry: three concurrent runs, the most heavy-run-slot.sh
+// admits, peak at 11GB against the 15GB that one checker each used to.
+// A warm no-op is ~1.0s at any of them.
 import { spawn, spawnSync } from 'node:child_process'
 
-// Reports the source actually used, not merely set: TSC_CHECKERS=abc falls
-// through to the agent tier, and naming it there would blame an unused value.
+// Reports the source actually used, not merely set: TSC_CHECKERS=abc falls back
+// to the default, and naming it as the source would blame an unused value.
 function resolveCheckers() {
   const override = Number(process.env.TSC_CHECKERS)
-  if (Number.isInteger(override) && override > 0) {
-    return { value: String(override), source: 'TSC_CHECKERS' }
-  }
-  return process.env.CLAUDECODE
-    ? { value: '1', source: 'agent session, set TSC_CHECKERS=<n> to override' }
-    : { value: undefined, source: 'tsgo default' }
+  return Number.isInteger(override) && override > 0
+    ? { value: String(override), source: 'TSC_CHECKERS' }
+    : { value: '4', source: 'set TSC_CHECKERS=<n> to override' }
 }
 
 const { value: checkers, source } = resolveCheckers()
-const checkerArgs = checkers ? ['--checkers', checkers] : []
+const checkerArgs = ['--checkers', checkers]
 
-console.error(
-  checkers
-    ? `typecheck: --checkers ${checkers} (${source})`
-    : 'typecheck: tsgo default checkers',
-)
+console.error(`typecheck: --checkers ${checkers} (${source})`)
 
 // The groups `pnpm typecheck` runs, named so package.json spells each list
 // once. Any other bare argument is a project path, and an argument starting
@@ -73,8 +67,9 @@ if (flags.some(f => f === '--watch' || f === '-w')) {
     spawn(process.execPath, tscArgs(project), { stdio: 'inherit' })
   }
 } else {
-  // One checker each still totals one per checkout, and the checkouts cannot
-  // see each other. The slot is machine-wide so they queue instead.
+  // A per-run checker count cannot cap the machine: each checkout picks four
+  // as though it were alone, and the checkouts cannot see each other. The slot
+  // is machine-wide so they queue instead.
   for (const project of projects) {
     const { status } = spawnSync(
       'scripts/heavy-run-slot.sh',
