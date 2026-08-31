@@ -268,11 +268,13 @@ the fetch:
   const canceled = self.fetchCanceled === true
   // Above the gate, not only above `prepare`: teardown mutates the
   // observables this body reads before the disposers run, and every `gate`
-  // in the tree but the breakpoint view's reaches the containing view or
-  // track through a parent walk — `host.initialized`, `isMinimized`,
-  // `getContainingView` — each of which warns then throws on a detached
-  // node. Nothing is reported for a dead one: there is no Retry button left
-  // to be dead, and the check would read three more members to decide it.
+  // but the breakpoint view's reaches the containing view or track through a
+  // parent walk (`host.initialized`, `isMinimized`, `getContainingView`),
+  // which throws once the node has left the tree. This catches the destroyed
+  // node; the detached-and-still-alive window (ADR-069) is covered only by
+  // the walk's own cache. Nothing is reported for a dead node — there is no
+  // Retry button left to be dead, and the check would read three more
+  // members of a corpse to decide it.
   if (!isAlive(self)) {
     return false
   }

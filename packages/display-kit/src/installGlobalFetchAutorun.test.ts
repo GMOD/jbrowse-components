@@ -58,6 +58,9 @@ const TestView = types
     setWidth(n: number) {
       self.width = n
     },
+    setInitialized(flag: boolean) {
+      self.initialized = flag
+    },
     setBlocks(keys: string[]) {
       self.dynamicBlocks = { contentBlocks: keys.map(key => ({ key })) }
       self.visibleRegions = keys.map(key => ({ key }))
@@ -697,8 +700,11 @@ describe('a blocked display still re-measures', () => {
   // it returns to, which is the half `signatureCurrent` used to break: the
   // freshness gate answers "nothing owed" for a span whose data was committed
   // earlier, while the banner is hiding that very data and this fetch is the
-  // only re-measure. `heldDataAnswers` is what makes `regionTooLarge` outrank it, and
-  // `gateSkipsMeasuredViewport` is what keeps it to one.
+  // only re-measure. What makes `regionTooLarge` outrank it is `committedKey`
+  // reading as absent while the banner holds — the same precedence the
+  // per-region family applies through `heldDataAnswers`, spelled here as a key
+  // so the skeleton's reload epoch can override it. `gateSkipsMeasuredViewport`
+  // is what keeps it to one.
   it('fetches a viewport whose data it still holds, and only once', async () => {
     const { view, display, fetched } = await setup(() => true, 'data')
     await settle()
@@ -712,6 +718,47 @@ describe('a blocked display still re-measures', () => {
 
     // that fetch stamped the viewport it measured, so the runs behind it stop
     expect(display.gateMeasurementStale).toBe(false)
+    await settle()
+    expect(fetched.count).toBe(afterFirst + 1)
+  })
+})
+
+// The gate's own two terms, asserted on FETCHES rather than on body runs: the
+// suppression half is what nothing at this level pinned until 2026-08-31, and
+// `packages/display-kit/CLAUDE.md` points at this file for the family's gate
+// behaviour. The skeleton's own suite covers the same shape over its `gate`
+// option; these cover the terms THIS declaration puts in it.
+describe('the gate suppresses a fetch while it is shut', () => {
+  it('does not fetch while minimized, and fetches once on expand', async () => {
+    const { view, display, fetched } = await setup(() => true)
+    await settle()
+    const afterFirst = fetched.count
+
+    display.setMinimized(true)
+    view.setBlocks(['chr1:0-200'])
+    await settle()
+    expect(fetched.count).toBe(afterFirst)
+
+    // the viewport moved under the shut gate, so expanding owes exactly one
+    display.setMinimized(false)
+    await settle()
+    expect(fetched.count).toBe(afterFirst + 1)
+  })
+
+  // `fetchSignature` is computed from view-derived getters that throw before
+  // init by design, so this term is what keeps `prepare` from being reached at
+  // all — and it is observable, which is what makes the decline safe.
+  it('does not fetch before the view is initialized, and fetches once after', async () => {
+    const { view, fetched } = await setup(() => true)
+    await settle()
+    const afterFirst = fetched.count
+
+    view.setInitialized(false)
+    view.setBlocks(['chr1:0-300'])
+    await settle()
+    expect(fetched.count).toBe(afterFirst)
+
+    view.setInitialized(true)
     await settle()
     expect(fetched.count).toBe(afterFirst + 1)
   })

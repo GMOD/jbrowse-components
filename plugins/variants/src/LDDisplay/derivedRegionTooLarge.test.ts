@@ -186,14 +186,18 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-  // The global family's spelling of "a blocked display runs one fetch per
-  // settled viewport": the viewport it returns to is one it already HOLDS data
-  // for, so `dataCurrent` is true from that earlier commit. Held data answers
-  // nothing while the banner hides it and the fetch is the only re-measure, so
-  // `heldDataAnswers` makes `regionTooLarge` outrank it. Declining there left
-  // the phase at `tooLarge` with zero RPCs and no way out but force-load or
-  // chromosome nav — the per-region family's `gateBlocked` outranks `covered`
-  // for the same reason, and this side shipped without it.
+  // A return to a viewport this display already HOLDS data for, so
+  // `signatureCurrent` is true from that earlier commit — and the fetch still
+  // has to reach the RPC, because the banner is hiding that data and the
+  // measurement is the only thing that releases it. What this pins is the LD
+  // side of it: one RPC, carrying the byte limit, and a commit that clears both
+  // the banner and the stale-measurement flag. The PRECEDENCE that lets the run
+  // through is the installed autorun's `committedKey`, which reads as absent
+  // while `regionTooLarge` holds — `installGlobalFetchAutorun.test.ts`'s
+  // 'fetches a viewport whose data it still holds, and only once' is what pins
+  // that, since `runGlobalFetchOnce` here has no gates to consult. Before the
+  // precedence existed this shipped as a display stuck at `tooLarge` with zero
+  // RPCs and no way out but force-load or chromosome nav.
   it('fetches at a viewport whose data it still holds', async () => {
     const { display, view, mockRpcCall } =
       createTestEnvironment().createDisplay()
