@@ -6,10 +6,9 @@ import type { Region } from '@jbrowse/core/util'
 import type {
   FetchContext,
   FetchEachRegionModel,
+  IndexedRegion,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
-
-type IndexedRegion = { region: Region; displayedRegionIndex: number }
 
 interface GatedFetchModel extends FetchEachRegionModel {
   gateFetchState: () => GateFetchState

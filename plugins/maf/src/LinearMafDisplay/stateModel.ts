@@ -123,8 +123,9 @@ import type {
 } from './rowIdentityModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
-import type { Region, UriLocation } from '@jbrowse/core/util'
+import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -2406,9 +2407,7 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
-        fetchNeeded(
-          needed: { region: Region; displayedRegionIndex: number }[],
-        ) {
+        fetchNeeded(needed: IndexedRegion[]) {
           // Zoom-out with a configured summary → cheap per-species summary rows;
           // otherwise the full alignment fetch (subject to the byte gate below).
           return self.showSummary

@@ -41,7 +41,7 @@ import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region } from '@jbrowse/core/util'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
@@ -290,7 +290,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+      fetchNeeded(needed: IndexedRegion[]) {
         const { adapterConfig } = self
         const { bpPerPx } = self.host
         return fetchAllRegions(self, needed, {

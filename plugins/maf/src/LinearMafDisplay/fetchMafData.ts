@@ -16,6 +16,7 @@ import type { Region } from '@jbrowse/core/util'
 import type {
   FetchContext,
   FetchEachRegionModel,
+  IndexedRegion,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
 interface MafFetchSelf extends FetchEachRegionModel {
@@ -37,8 +38,6 @@ interface MafFetchSelf extends FetchEachRegionModel {
   clearAlignmentData: () => void
   setSamples: (arg: SampleSet) => void
 }
-
-type Needed = { region: Region; displayedRegionIndex: number }[]
 
 interface SampleSet {
   samples: Sample[]
@@ -108,7 +107,7 @@ export function unionSampleSets(
  */
 async function fetchMafRegions<R extends SampleSet>(
   self: MafFetchSelf,
-  needed: Needed,
+  needed: IndexedRegion[],
   call: (
     region: Region,
     ctx: FetchContext,
@@ -193,7 +192,7 @@ async function fetchMafRegions<R extends SampleSet>(
  */
 async function fetchAnnotationData(
   self: MafFetchSelf,
-  needed: Needed,
+  needed: IndexedRegion[],
   ctx: FetchContext,
 ) {
   const adapterConfig = self.annotationAdapterConfig
@@ -236,7 +235,10 @@ async function fetchAnnotationData(
   }
 }
 
-export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
+export function fetchMafAlignmentData(
+  self: MafFetchSelf,
+  needed: IndexedRegion[],
+) {
   return fetchMafRegions(
     self,
     needed,
@@ -263,7 +265,10 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
  * full alignment sequence. Drops the alignment `rpcDataMap` so the GPU sequence
  * canvas paints nothing while the summary overlay draws the bars.
  */
-export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
+export function fetchMafSummaryData(
+  self: MafFetchSelf,
+  needed: IndexedRegion[],
+) {
   return fetchMafRegions(
     self,
     needed,

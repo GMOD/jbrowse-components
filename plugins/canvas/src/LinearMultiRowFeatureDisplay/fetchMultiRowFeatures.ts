@@ -4,8 +4,10 @@ import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeat
 
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { Region } from '@jbrowse/core/util'
-import type { FetchEachRegionModel } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type {
+  FetchEachRegionModel,
+  IndexedRegion,
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
 interface FetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
@@ -20,14 +22,20 @@ interface FetchSelf extends FetchEachRegionModel {
 
 export function fetchMultiRowFeatures(
   self: FetchSelf,
-  needed: { region: Region; displayedRegionIndex: number }[],
+  needed: IndexedRegion[],
 ) {
   const byteLimit = self.resolvedByteLimit()
   const props = self.rpcProps()
   // An empty slot means "resolve it from the data", which the worker does off a
   // sample of the region it packs — so a region loaded later can pick a
-  // different attribute than the ones on screen. Once a region has answered,
-  // later ones are told the answer. See `pinnedPartitionField`.
+  // different attribute than the ones on screen. Once a region with features in
+  // it has answered, later ones are told the answer (`pinnedPartitionField`).
+  //
+  // Read once, before a fan-out that is parallel: the regions of the FIRST
+  // batch are all told auto and each resolves on its own, so the pin is not
+  // what keeps them together. `regionHasData` is — a region that answered
+  // something other than the pin reads as holding nothing and is refetched with
+  // the field spelled out.
   const partitionField =
     props.partitionField === AUTO_PARTITION_FIELD
       ? self.pinnedPartitionField

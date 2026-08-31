@@ -58,7 +58,7 @@ import type {
 } from './manhattanRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Region } from '@jbrowse/core/util'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { VisibleEntry } from '@jbrowse/wiggle-core'
@@ -687,9 +687,7 @@ export function stateModelFactory(
         /**
          * #action
          */
-        fetchNeeded(
-          needed: { region: Region; displayedRegionIndex: number }[],
-        ) {
+        fetchNeeded(needed: IndexedRegion[]) {
           const { adapterConfig } = self
           return fetchEachRegion(self, needed, {
             call: (region, ctx) =>

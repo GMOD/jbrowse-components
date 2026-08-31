@@ -206,7 +206,8 @@ import type {
 } from './sectionLayout.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -3983,9 +3984,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          async fetchNeeded(
-            needed: { region: Region; displayedRegionIndex: number }[],
-          ) {
+          async fetchNeeded(needed: IndexedRegion[]) {
             await fetchEachRegion(self, needed, {
               call: (region, ctx) =>
                 fetchFeaturesForRegion(self, self.adapterConfig, region, ctx),

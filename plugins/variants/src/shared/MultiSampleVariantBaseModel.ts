@@ -26,7 +26,6 @@ import MultiRegionDisplayMixin, {
   fetchRegionsBatched,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   RowHeightMixin,
@@ -46,7 +45,11 @@ import {
   VARIANT_FEATURE_WIDGET,
 } from './constants.ts'
 import { buildSampleIndex } from './genotypeCodec.ts'
-import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
+import {
+  expandSourcesToHaplotypes,
+  getSources,
+  resolveSampleName,
+} from './getSources.ts'
 import {
   variantContextMenuItems,
   variantShowSubmenuItems,
@@ -63,7 +66,8 @@ import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
 import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
@@ -93,14 +97,16 @@ export function maybeApplyColorByPalette(
     const colors = paletteColorsByRow(sources, colorBy)
     return sources.map((s, i) => ({ ...s, labelColor: colors[i]! }))
   }
-  warnMissingAttribute('colorBy', colorBy, sources)
   return undefined
 }
 
 // One spelling of "the config names an attribute the metadata doesn't have", for
-// the two settings that take one. Silent on an empty source list: that is the
-// pre-load state, not a bad config, and warning there printed an attribute list
-// that was empty because there was nothing to list yet.
+// the two settings that take one. Called from `applyArrangement` — the action
+// path — and never from the maybe* helpers above it: `rowOrderIsCustom` runs
+// `arrangeSources` inside a computed, and a computed must not console.warn per
+// menu render. Silent on an empty source list: that is the pre-load state, not
+// a bad config, and warning there printed an attribute list that was empty
+// because there was nothing to list yet.
 function warnMissingAttribute(
   setting: string,
   attribute: string,
@@ -227,7 +233,6 @@ export function maybeApplyGroupBy<S extends Record<string, unknown>>(
   if (sources.some(source => groupBy in source)) {
     return sortSourcesByAttribute(sources, groupBy)
   }
-  warnMissingAttribute('groupBy', groupBy, sources)
   return undefined
 }
 
@@ -289,6 +294,12 @@ function applyArrangement(
   if (!sources) {
     return
   }
+  if (colorBy && !sources.some(source => colorBy in source)) {
+    warnMissingAttribute('colorBy', colorBy, sources)
+  }
+  if (groupBy && !sources.some(source => groupBy in source)) {
+    warnMissingAttribute('groupBy', groupBy, sources)
+  }
   if (self.layout.length === 0) {
     // Nothing arranged yet, so adapter order is the thing to arrange. `[]` —
     // what `arrangeSources` returns when neither axis applies — is the right
@@ -321,7 +332,7 @@ function applyArrangement(
 function fetchRegionsForMode(
   view: RegionHost,
   mode: 'regular' | 'matrix',
-): { region: Region; displayedRegionIndex: number }[] {
+): IndexedRegion[] {
   if (mode === 'matrix') {
     return view.visibleRegions.map(vr => ({
       region: {
@@ -540,6 +551,15 @@ export default function MultiSampleVariantBaseModelF(
           return self.cellData?.simplifiedFeatures.map(
             f => new SimpleFeature(f),
           )
+        },
+        /**
+         * #method
+         * The base feature a click enriches, by id — the one spelling of the
+         * lookup all three pointer surfaces (rows, lane, matrix) resolve
+         * through.
+         */
+        featureById(featureId: string) {
+          return this.featuresVolatile?.find(f => f.id() === featureId)
         },
         /**
          * #getter
@@ -805,15 +825,31 @@ export default function MultiSampleVariantBaseModelF(
            */
           setSources(sources: Source[]) {
             if (!deepEqual(sources, self.sourcesVolatile)) {
+              // An arrangement none of whose rows name a current sample is a
+              // previous dataset's: an adapter edit swapped the cohort out from
+              // under the layout, the colorBy palette it holds and the
+              // subtreeFilter naming its rows, and left standing they blank the
+              // display (getSources drops every stale row, the filter matches
+              // nothing). `clearLayout` is the same reset `setPhasedMode` takes
+              // when it renames the rows, and it re-seeds the configured
+              // arrangement against the new cohort. Keyed on total mismatch,
+              // not any mismatch — a partial overlap is the same cohort with
+              // samples added or removed, and the user's order survives that.
+              const names = new Set(sources.map(s => resolveSampleName(s)))
+              const layoutIsStale =
+                self.layout.length > 0 &&
+                !self.layout.some(row => names.has(resolveSampleName(row)))
               self.sourcesVolatile = sources
-              // Seeds the configured colorBy palette and groupBy order on
-              // first load, and only then: an empty layout means the user has
-              // not arranged anything yet, and this fires once per adapter.
-              // Every LATER re-seed is its own action's job — setColorBy,
-              // setGroupBy, clearLayout and setPhasedMode each call
-              // `applyArrangement` themselves precisely because this will not
-              // fire again. Widening the guard here does not give them back.
-              if (self.layout.length === 0) {
+              if (layoutIsStale) {
+                self.clearLayout()
+              } else if (self.layout.length === 0) {
+                // Seeds the configured colorBy palette and groupBy order on
+                // first load, and only then: an empty layout means the user has
+                // not arranged anything yet, and this fires once per adapter.
+                // Every LATER re-seed is its own action's job — setColorBy,
+                // setGroupBy, clearLayout and setPhasedMode each call
+                // `applyArrangement` themselves precisely because this will not
+                // fire again. Widening the guard here does not give them back.
                 applyArrangement(self, self.colorBy, self.groupBy)
               }
             }
@@ -888,21 +924,6 @@ export default function MultiSampleVariantBaseModelF(
            */
           setFitToHeight() {
             setConf(self, 'rowHeight', 0)
-          },
-          /**
-           * #action
-           * Drag-resize the track. In fit-to-display-height mode the new height
-           * flows straight into `autoRowHeight`, so the rows stretch with the
-           * drag. With a fixed `rowHeight` the rows keep the size the user
-           * chose and the drag reveals more of them — scaling that value by the
-           * same ratio instead would keep content and viewport locked together,
-           * so dragging a track taller could not show one extra sample.
-           */
-          resizeHeight(distance: number) {
-            const oldHeight = self.height
-            const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
-            setConf(self, 'height', newHeight)
-            return newHeight - oldHeight
           },
           /**
            * #action
@@ -1738,9 +1759,7 @@ export default function MultiSampleVariantBaseModelF(
         // all visible regions, so partial refetches don't fit. That is why the
         // region list is `fetchRegionsBatched`'s argument: the set this display
         // derives is both what the RPC is sent and what the commits name.
-        async fetchNeeded(
-          _needed: { region: Region; displayedRegionIndex: number }[],
-        ) {
+        async fetchNeeded(_needed: IndexedRegion[]) {
           if (!self.sourcesBase) {
             return
           }

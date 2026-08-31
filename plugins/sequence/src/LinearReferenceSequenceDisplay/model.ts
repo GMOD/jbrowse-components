@@ -43,7 +43,7 @@ import type {
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Region } from '@jbrowse/core/util'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -384,9 +384,7 @@ export function modelFactory(
             b.renderBlocks(self.renderBlocks, regions, self.renderState),
         })
       },
-      async fetchNeeded(
-        needed: { region: Region; displayedRegionIndex: number }[],
-      ) {
+      async fetchNeeded(needed: IndexedRegion[]) {
         // `zoomedOut`, deliberately *not* the wider `rendersCanvas`: a
         // `fetchNeeded` that declines has to be woken by something the
         // FetchVisibleRegions autorun already tracks (see

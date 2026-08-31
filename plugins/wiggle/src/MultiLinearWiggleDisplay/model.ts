@@ -63,7 +63,7 @@ import type { MultiWiggleContextHit } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
-import type { Region } from '@jbrowse/core/util'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
@@ -475,7 +475,7 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+      fetchNeeded(needed: IndexedRegion[]) {
         const view = self.host
         // Always fetch the full (unfiltered, un-reordered) source list. A
         // subtree filter or reorder only affects client-side rendering

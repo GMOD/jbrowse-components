@@ -40,6 +40,10 @@ export {
 } from './fetchEachRegion.ts'
 export type { FetchEachRegionModel } from './fetchEachRegion.ts'
 export { isBlockCovered, planRegionFetch } from './planRegionFetch.ts'
+// The plan's output type, and so every `fetchNeeded` override's parameter.
+// Absent from this re-export until 2026-08-31, which is why all seven plugins
+// spelled it inline and canvas re-declared it.
+export type { IndexedRegion } from './planRegionFetch.ts'
 export type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
 
 /**
