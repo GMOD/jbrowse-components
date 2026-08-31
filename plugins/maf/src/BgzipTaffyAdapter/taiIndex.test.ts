@@ -136,9 +136,9 @@ describe('parseTaiIndex', () => {
   // left chromosomes 10-19 inside the bound.
   test('integer-like chromosome names keep file order, not numeric order', () => {
     const index = parseTaiIndex(
-      ['1', '10', '11', '2', '20', 'X']
+      `${['1', '10', '11', '2', '20', 'X']
         .map((chr, i) => `hg38.${chr}\t0\t${i * 65536}`)
-        .join('\n') + '\n',
+        .join('\n')}\n`,
     )
     expect([...index.keys()]).toEqual(['1', '10', '11', '2', '20', 'X'])
   })

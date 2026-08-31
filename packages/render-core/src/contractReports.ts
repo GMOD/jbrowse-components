@@ -91,7 +91,7 @@ export function contractReportsOn() {
  */
 export function enableContractReports(reason: string) {
   armedBy ??= reason
-  for (const found of unlogged.splice(0, unlogged.length)) {
+  for (const found of unlogged.splice(0)) {
     emit(found, armedBy)
   }
 }
@@ -106,7 +106,7 @@ export function enableContractReports(reason: string) {
 export function setContractReportSink(fn: (report: ContractReport) => void) {
   sink = fn
   if (armedBy !== undefined) {
-    for (const found of undelivered.splice(0, undelivered.length)) {
+    for (const found of undelivered.splice(0)) {
       fn({ ...found, armedBy })
     }
   }
