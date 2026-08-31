@@ -22,12 +22,16 @@ arrays, the selection predicate, the drawn-alpha and click-significance gates
 and the span — or, for a mark on a bp edge, the drawn width and hit tolerance
 that stand in for one — are declared once (`features/mark.ts`, `PileupMark`);
 the packer, the painter and the hit test derive from it, and `paintMarks` /
-`findMarkAt` own the projection and the row scan. Seven passes are converted:
+`findMarkAt` own the projection and the row scan. Nine passes are converted:
 `gap`, `mismatch`, `perBaseQuality`, `perBaseLetter`, `softclipBases`,
-`insertion` and `clip`. `arcs` has its own, for a band-local path rather than a
-pileup span. A pass with all three consumers and no `mark.ts` states its
-geometry three times — `agent-docs/ideas/one-mark-declaration-per-feature.md`
-says which of the rest fit the shape and which deliberately do not.
+`insertion`, `clip`, `overlap` and `modification` — the last two have no
+`findMarkAt` hit test, and `modification`'s stays a Flatbush query because the
+INDEX is the part a row scan cannot supply. `arcs` has its own, for a band-local
+path rather than a pileup span. A pass with all three consumers and no `mark.ts`
+states its geometry three times —
+`agent-docs/ideas/one-mark-declaration-per-feature.md` says which of the rest
+fit the shape and which deliberately do not, including why `connectingLines`
+needs a decision about `paintMarks`'s 1px span floor before it can take one.
 
 **A mark that shares an array declares its own slice of it**
 (`rangeStart`/`rangeEnd`). The three interbase marks are the case: the worker

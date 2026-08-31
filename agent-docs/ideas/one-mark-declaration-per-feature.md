@@ -1,6 +1,6 @@
 ---
 name: one-mark-declaration-per-feature
-description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, seven features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the three shapes needed, where it stops (coverage, modification's hit test), and the two things it must not do.
+description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, nine features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the three shapes needed, where it stops (coverage, modification's hit test, a stroke with no expandMinWidthX), and the two things it must not do.
 ---
 
 # A feature declares its mark once
@@ -17,7 +17,7 @@ the same walk over the same per-feature arrays three times:
 3,335 lines. What a feature actually contains is one array schema, one selection
 predicate, one visibility gate and one shape — written out three times.
 
-**Seven of the twenty are converted**, leaving thirteen. The sections below are
+**Nine of the twenty are converted**, leaving eleven. The sections below are
 the proposal as written;
 [what the shape turned out to be](#status-2026-08-23-two-features-converted-featuresmarkts-is-the-shape)
 is the status further down, and `plugins/alignments/src/features/mark.ts` is the
@@ -255,6 +255,65 @@ One wart, recorded rather than hidden: the insertion packer needs a mark and the
 mark needs a `featureHeight` it has no use for, since the shader sizes its own
 quad. `INSERTION_PACK_MARK` passes 0 and says so.
 
+### Status, 2026-08-31: the two two-consumer passes, and what a `span` costs
+
+`overlap` and `modification` are converted. Both have a packer and a painter and
+no `findMarkAt` hit test, so they are the pack-against-draw pairing the cell rows
+already describe rather than a new shape — `overlap` is the second `span` after
+`gap`, `modification` the fifth `cell`.
+
+| feature | shape | consumers | trio | after, incl. declaration |
+| --- | --- | --- | --- | --- |
+| `overlap` | `span` | pack, draw | 79 | 87 |
+| `modification` | `cell` | pack, draw | 64 | 84 |
+
+Counted the second way (non-blank, non-comment lines over the pass's files), as
+the `point` rows are. **LOC went up on both**, and `modification`'s +20 is the
+honest one to explain: its packer was a three-line delegation to the generated
+`packInstances`, and the mark's walk is what `perBaseQuality` already writes over
+the same shader. What it buys is `selects`, `rangeStart`/`rangeEnd` and the row
+scan reaching a fifth cell layer rather than a fourth — not lines.
+
+`modification`'s hit test is untouched, exactly as this doc predicted: the
+Flatbush query is the index, and `findMarkAt` cannot supply it.
+
+**`overlap`'s alpha is what makes its `span` legal, and that is worth stating
+because the next feature's is not.** `paintMarks` widens a sub-pixel `span` to 1
+CSS px about its midpoint, and the contract calls that the twin of
+`expandMinWidthX`. overlap.slang does not call `expandMinWidthX` — but
+`overlapFade` reaches 0 at `FADE_LO_PX` (1.5 px), so a bar narrow enough to be
+widened has already faded out and the branch is unreachable. The mark says so
+where a reader will look for it.
+
+### `connectingLines` does not fit yet, and the reason is the span's 1px floor
+
+It looks like the smallest thing left — one row per instance, a `[start, end]`
+pair, a constant alpha, no hit test — and it is not convertible without changing
+what it draws:
+
+- **connectingLine.slang has no `expandMinWidthX`**, where gap.slang (the only
+  other `span`) does. A chain whose whole footprint is under a pixel draws a
+  sub-pixel hairline on both backends today; through `paintMarks` Canvas2D would
+  draw a full 1 px and the GPU would not. That is a Canvas2D-only widening with
+  no shader twin, which is the thing `MarkCanvas2D` exists to keep visible and
+  `paintMarks`'s span pivot cannot currently opt out of.
+- **The Canvas2D call changes from `stroke` to `fillRect`.** Pixel-identical for
+  a horizontal 1px butt-capped stroke on an integer row — which is what the
+  painter already snaps to, `floor(rowY + fH/2 - 0.5) + 0.5`, the twin of the
+  shader's `floor(pileupRowCenterPx - 0.5)` — but the SVG export emits a `<rect>`
+  where it emitted a `<path>`.
+
+So the choice is a third `MarkShape` member (a span that states whether it takes
+the floor) or a decision that the floor is right here and the shader should grow
+`expandMinWidthX` too. Both are decisions rather than refactors, which is why
+this was stopped rather than picked.
+
+**`linkedReads` is out for a different and simpler reason**: its instances carry
+TWO rows (`y1`, `y2`, a diagonal between mates), where `MarkCommon.rows` is one
+entry per instance and both `paintMarks` and `findMarkAt` scan a single row. Its
+off-canvas cull already says so — it has to see both endpoints leave on the same
+side before it can skip, where every mark layer tests one `pileupRowY`.
+
 ### The features that do NOT fit, and why
 
 **`coverage` is not a pileup mark at all**, and this is the boundary rather than
@@ -279,22 +338,23 @@ mean nothing.
 
 The others:
 
-- **`modification`** — its hit test is a Flatbush nearest-neighbour query with a
-  bp tolerance. Containment was the objection, and `point` has since made a bp
+- **`modification`'s HIT TEST** — a Flatbush nearest-neighbour query with a bp
+  tolerance. Containment was the objection, and `point` has since made a bp
   tolerance a shape rather than an exception, so what is actually left is the
   INDEX: the query answers out of Hilbert order and picks by distance, where
-  every mark test scans rows backwards. It IS a `cell` painter, so it can still
-  take the mark for its pack and its paint.
+  every mark test scans rows backwards. Its pack and its paint took the mark on
+  2026-08-31.
 - **`indicator`, `arcs`, `read`** — 153 lines of hit test over 26 of paint, a
   band-local path, and a hand-tuned single glyph respectively.
 
-**Thirteen of the twenty directories are unconverted.** Two of them
+**Eleven of the twenty directories are unconverted.** Two of them
 (`sashimi`, `derivativePaths`) are not passes at all — no `packGpu.ts`, React
 SVG overlays — and `coverage`, `snpCoverage`, `modCoverage`, `interbase` and
 `indicator` are the coverage band, which the boundary above rules out. That
-leaves `read`, `overlap`, `connectingLines`, `linkedReads`, `arcs` and
-`modification` as the pileup passes still stating their geometry more than once,
-and `read` is the one that would decide whether the shape holds at the top.
+leaves `read`, `connectingLines`, `linkedReads` and `arcs` as the pileup passes
+still stating their geometry more than once — the middle two for the reasons
+above — and `read` is the one that would decide whether the shape holds at the
+top.
 
 ## Where this sits
 
