@@ -27,11 +27,13 @@ export default function SVGOffscreenMates({
   level,
   width,
   height,
+  groundColor,
   opts,
 }: {
   level: OffscreenMateSource
   width: number
   height: number
+  groundColor: string
   opts?: PaintLayerOpts
 }) {
   const strips = offscreenMateStrips(level)
@@ -46,7 +48,7 @@ export default function SVGOffscreenMates({
         drawOffscreenMates(ctx, strips, {
           width,
           height,
-          ...offscreenMateColors(),
+          ...offscreenMateColors(groundColor),
         })
       }}
     />

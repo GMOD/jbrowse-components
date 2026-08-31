@@ -13,6 +13,7 @@ import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
 import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
+  bandGroundColor,
   bucketBpPerPx,
   comparativeDisplayPhase,
   comparativeFetchFlags,
@@ -639,9 +640,20 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           trackColor: this.trackColor,
           opacityByIdentity,
           drawLocationMarkers: this.effectiveDrawLocationMarkers,
+          groundColor: this.groundColor,
           nameOrder: this.paintedChromosomeOrder,
           attributeRanges: this.view.attributeRanges,
         })
+      },
+      /**
+       * #getter
+       * The band this display paints into — see `bandGroundColor`. Read here as
+       * well as on the level because the location ticks are packed into the
+       * color lane, which is this display's, and the SVG export draws through
+       * `renderSvg` without a level to ask.
+       */
+      get groundColor() {
+        return bandGroundColor(self)
       },
       /**
        * #getter

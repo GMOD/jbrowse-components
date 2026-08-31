@@ -17,14 +17,17 @@ export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 
 // CIGAR operation colors. Kept opaque — consumers pack them (cssColorToABGR /
 // parseCssColor) and apply alpha separately: an alpha uniform in the shader,
-// `a * alpha` in Canvas2D, or blendOverWhite() for a legend chip. A non-opaque
+// `a * alpha` in Canvas2D, or blendOverGround() for a legend chip. A non-opaque
 // literal here would multiply with that alpha and render fainter than intended.
 //
-// Opaque is also what lets the synteny indel wedge be pre-blended with white and
-// written out opaque rather than composited, which is the arrangement
-// `LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear` fixes the band's ground
-// for. These are light-ground colours: `blendOverWhite` below says so in its
-// name, and nothing here resolves against a theme.
+// Opaque is also what lets the synteny indel wedge be pre-blended with the band's
+// ground and written out opaque rather than composited, which is the arrangement
+// `LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear` fixes that ground for.
+//
+// These remain LIGHT-GROUND colours — picked against a white band, and at the
+// 0.2 default alpha they are faint on a dark one. The ground is threaded now,
+// which is what makes a dark band expressible at all; giving these a dark
+// variant, in the `colorPairLRDark` mould, is the separate follow-up.
 export const defaultCigarColors = {
   I: '#ff0',
   N: '#0a0',
@@ -156,27 +159,34 @@ export const LEGEND_CHIP_ALPHA_FLOOR = 0.45
 
 /**
  * #api
- * {@link blendOverWhite} for a legend chip, floored at
+ * {@link blendOverGround} for a legend chip, floored at
  * {@link LEGEND_CHIP_ALPHA_FLOOR}.
  */
-export function legendChipColor(color: string, alpha: number) {
-  return blendOverWhite(color, Math.max(alpha, LEGEND_CHIP_ALPHA_FLOOR))
+export function legendChipColor(color: string, alpha: number, ground: string) {
+  return blendOverGround(
+    color,
+    Math.max(alpha, LEGEND_CHIP_ALPHA_FLOOR),
+    ground,
+  )
 }
 
 /**
  * #api
- * Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
- * synteny canvas draws every ribbon at the view's global alpha over the white
- * page (shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
- * renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
- * shows as salmon, a blue deletion as pale blue. Blending the legend chip the
- * same way keeps the key matched to what's actually on screen.
+ * Composite a CSS color over `ground` by `a`, returning an opaque `rgb(...)`.
+ * The synteny canvas draws every ribbon at the view's global alpha over the
+ * band's ground (shadeFill in syntenyTypes.slang / resolveInstanceFill in the
+ * Canvas2D renderer), so a full-saturation legend swatch reads wrong — a red
+ * match ribbon shows as salmon over a white band, a blue deletion as pale blue.
+ * Blending the legend chip the same way keeps the key matched to what's actually
+ * on screen, which means blending it over the SAME ground the renderers cleared
+ * to rather than over an assumed white.
  */
-export function blendOverWhite(color: string, a: number) {
+export function blendOverGround(color: string, a: number, ground: string) {
   if (a >= 1) {
     return color
   }
   const [r, g, b] = cssColorToRgb(color)
-  const mix = (c: number) => Math.round(c * a + 255 * (1 - a))
-  return `rgb(${mix(r)},${mix(g)},${mix(b)})`
+  const [gr, gg, gb] = cssColorToRgb(ground)
+  const mix = (c: number, g: number) => Math.round(c * a + g * (1 - a))
+  return `rgb(${mix(r, gr)},${mix(g, gg)},${mix(b, gb)})`
 }

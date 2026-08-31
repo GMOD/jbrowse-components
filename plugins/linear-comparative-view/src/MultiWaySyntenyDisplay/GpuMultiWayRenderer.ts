@@ -192,11 +192,14 @@ export class GpuMultiWayRenderer
       this.uploadedPass.set(id, pass)
     }
     const dpr = getDpr()
-    writeSyntenyUniforms(this.uniformF32, ribbonParams(layer, state), 0, data, {
-      width: state.width,
-      height: state.height,
-      dpr,
-    })
+    writeSyntenyUniforms(
+      this.uniformF32,
+      ribbonParams(layer, state),
+      0,
+      data,
+      { width: state.width, height: state.height, dpr },
+      state.groundColor,
+    )
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(pass, id)
   }

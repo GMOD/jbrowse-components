@@ -1,4 +1,4 @@
-import { alpha } from '@jbrowse/core/ui/palette'
+import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -79,29 +79,34 @@ const MAX_LABEL_ROWS = 3
 // palette.
 export const MARK_ALPHA = 0.35
 
-// Constants, not theme values, because the band is opaque white whatever the
-// page theme is — `Canvas2DSyntenyRenderer.clear` is why, and `MARKER_COLOR`
-// makes the same choice for the location ticks.
-//
-// These two ARE MUI's own light-mode `text.secondary` and `background.paper`,
-// which is what they were read from until a dark theme resolved the first to
-// `rgba(255,255,255,0.7)`: the marks went to white at 0.35 alpha on white and
-// vanished, and the labels to near-white text under a `#121212` halo. So
-// nothing moves in the theme this was ever right in.
-const MARK_INK = 'rgba(0, 0, 0, 0.6)'
-const BAND_GROUND = '#fff'
+// The label's weight against the band, where MARK_ALPHA is the marks'. Alpha,
+// not a lighter grey, so one number covers a light band and a dark one — and
+// each is the FINAL alpha, not a factor on the ink's own.
+const LABEL_ALPHA = 0.6
 
+// Derived from the band's own ground, not read off the theme independently:
+// `Canvas2DSyntenyRenderer.clear` is why the band is a known colour at all, and
+// `markerColor` makes the same choice for the location ticks.
+//
+// Reading `text.secondary` and `background.paper` straight off the theme is what
+// this replaces, and it broke the moment the two came apart — a dark theme
+// resolved the first to `rgba(255,255,255,0.7)` over a band still cleared white,
+// so the marks went to white at 0.35 alpha on white and vanished, and the labels
+// to near-white text under a `#121212` halo. Off one ground both move together
+// or neither does.
+//
 // One source for both surfaces: the screen overlay and the SVG export run the
 // same draw, and a figure whose marks are a different grey from the ones the
 // user turned on is a difference nothing would report.
-export function offscreenMateColors() {
+export function offscreenMateColors(groundColor: string) {
+  const ink = getContrastText(groundColor)
   return {
-    markColor: alpha(MARK_INK, MARK_ALPHA),
+    markColor: alpha(ink, MARK_ALPHA),
     // full strength, unlike the marks: the label is the actionable half, it is
     // haloed rather than tinted, and there is one of them per stretch
-    labelColor: MARK_INK,
+    labelColor: alpha(ink, LABEL_ALPHA),
     // the band's own ground, so a label over a ribbon stays readable
-    haloColor: BAND_GROUND,
+    haloColor: groundColor,
   }
 }
 

@@ -18,6 +18,7 @@ function renderLevel() {
           width={800}
           levelHeight={100}
           trackLabelOffset={0}
+          groundColor="#fff"
           rendering={[
             { key: 'a', node: <rect data-testid="ribbons-a" /> },
             { key: 'b', node: <rect data-testid="ribbons-b" /> },

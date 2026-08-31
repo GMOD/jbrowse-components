@@ -99,7 +99,7 @@ function makeState(
   perTrack: [number, SyntenyTrackRenderParams][],
   overdrawPx = 300,
 ): SyntenyRenderState {
-  return { overdrawPx, perTrack: new Map(perTrack) }
+  return { overdrawPx, groundColor: '#fff', perTrack: new Map(perTrack) }
 }
 
 describe('Canvas2DSyntenyRenderer', () => {

@@ -83,6 +83,7 @@ export function drawMultiWay(
         ribbonParams(layer, state),
         state.width,
         0,
+        state.groundColor,
       )
     } else if (layer.kind === 'glyphs' && cell.kind === 'glyphs') {
       drawGlyphLayer(ctx, cell.data, layer, state)
@@ -102,7 +103,7 @@ function ribbonPickState(
       perTrack.set(keyOf(layer.key), ribbonParams(layer, state))
     }
   }
-  return { overdrawPx: 0, perTrack }
+  return { overdrawPx: 0, groundColor: state.groundColor, perTrack }
 }
 
 /**

@@ -59,7 +59,7 @@ function makeParams(
 function makeState(
   perTrack: [number, SyntenyTrackRenderParams][],
 ): SyntenyRenderState {
-  return { overdrawPx: 300, perTrack: new Map(perTrack) }
+  return { overdrawPx: 300, groundColor: '#fff', perTrack: new Map(perTrack) }
 }
 
 describe('GpuSyntenyRenderer CPU pick', () => {

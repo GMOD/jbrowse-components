@@ -18,6 +18,7 @@ export default function SVGSyntenyLevel({
   width,
   levelHeight,
   trackLabelOffset,
+  groundColor,
   rendering,
   offscreenMates,
   legend,
@@ -26,6 +27,7 @@ export default function SVGSyntenyLevel({
   width: number
   levelHeight: number
   trackLabelOffset: number
+  groundColor: string
   rendering: { key: string; node: ReactNode }[]
   // over every display's ribbons, as the screen overlay is, and inside the clip
   // because a mark is laid out in the same overdrawn view coordinates they are
@@ -38,16 +40,15 @@ export default function SVGSyntenyLevel({
     <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
       <SvgClipRect id={clipId} width={width} height={levelHeight}>
         {/* The band's ground, which on screen is the renderers' own clear
-          (`Canvas2DSyntenyRenderer.clear` says why it is white and what depends
-          on it) and here is nothing at all: `renderSvg` paints ribbons through
-          `drawSyntenyTrack` without clearing, and the only other background in
-          the file is `SVGExportRoot`'s full-bleed themed `background.default`.
-          So the export used to disagree with the screen about the one colour
-          all of this is calibrated against — under a dark theme it put opaque
-          white-blended indel wedges, black location ticks and dark off-screen
-          mate marks onto a dark band, none of which is what the reader had
-          just been looking at. */}
-        <rect width={width} height={levelHeight} fill="#fff" />
+          (`Canvas2DSyntenyRenderer.clear` says why it is a known colour and
+          what depends on it) and here is nothing at all: `renderSvg` paints
+          ribbons through `drawSyntenyTrack` without clearing, and the only
+          other background in the file is `SVGExportRoot`'s full-bleed themed
+          `background.default`. So the export used to disagree with the screen
+          about the one colour all of this is calibrated against — it put
+          ground-blended indel wedges, contrast ink and off-screen mate marks
+          onto whatever `background.default` happened to be. */}
+        <rect width={width} height={levelHeight} fill={groundColor} />
         {rendering.map(({ key, node }) => (
           <g key={key}>{node}</g>
         ))}

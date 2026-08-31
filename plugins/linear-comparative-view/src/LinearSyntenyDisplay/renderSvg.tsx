@@ -18,6 +18,8 @@ export interface SyntenySvgModel {
   renderInstanceData: SyntenyInstanceData | undefined
   renderParams: SyntenyTrackRenderParams | undefined
   view: { width: number; overdrawPx: number }
+  /** the band the level cleared to, which the indel wedges are blended against */
+  groundColor: string
 }
 
 // One synteny track's ribbons, drawn into the band its level owns. A failed
@@ -45,7 +47,14 @@ export async function renderSvg(model: SyntenySvgModel, opts?: PaintLayerOpts) {
       height={model.height}
       opts={opts}
       paint={ctx => {
-        drawSyntenyTrack(ctx, data, params, view.width, view.overdrawPx)
+        drawSyntenyTrack(
+          ctx,
+          data,
+          params,
+          view.width,
+          view.overdrawPx,
+          model.groundColor,
+        )
       }}
     />
   ) : null

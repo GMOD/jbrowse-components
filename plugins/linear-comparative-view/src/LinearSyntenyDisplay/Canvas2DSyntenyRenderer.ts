@@ -1,12 +1,15 @@
+import { alpha as withAlpha, getContrastText } from '@jbrowse/core/ui/palette'
 import {
   abgrAlpha,
   abgrBlue,
   abgrGreen,
   abgrRed,
+  cssColorToRgb,
 } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
+import { STROKE_ALPHA } from './shaders/syntenyTypes.generated.ts'
 import {
   fillShade,
   hoverDarken,
@@ -119,11 +122,17 @@ interface ResolvedFill {
 // full unit. It also keeps the float32 constants the generator emits (0.35
 // arrives as 0.34999999403953552) from tipping a product that lands on an exact
 // integer — 255 * 0.35 — down a whole step.
+//
+// `ground` is the 0-255 twin of the shader's `u.ground` — the colour the band
+// was just cleared to, which the CIGAR branch bakes in rather than composites
+// against. Passed in resolved rather than parsed here: the draw loop runs this
+// once per on-screen instance.
 function resolveInstanceFill(
   packed: number,
   isCigar: boolean,
   isHovered: boolean,
   alpha: number,
+  ground: [number, number, number],
 ): ResolvedFill {
   const pa = abgrAlpha(packed) / 255
   const darken = hoverDarken(isHovered)
@@ -131,12 +140,12 @@ function resolveInstanceFill(
   const r = abgrRed(packed) * darken
   const g = abgrGreen(packed) * darken
   const b = abgrBlue(packed) * darken
-  const white = 255 * (1 - shade)
+  const rest = 1 - shade
   return isCigar
     ? {
-        r: Math.round(r * shade + white),
-        g: Math.round(g * shade + white),
-        b: Math.round(b * shade + white),
+        r: Math.round(r * shade + ground[0] * rest),
+        g: Math.round(g * shade + ground[1] * rest),
+        b: Math.round(b * shade + ground[2] * rest),
         a: pa,
       }
     : { r: Math.round(r), g: Math.round(g), b: Math.round(b), a: shade }
@@ -152,7 +161,10 @@ export function drawSyntenyTrack(
   params: SyntenyTrackRenderParams,
   logicalW: number,
   overdrawPx: number,
+  groundColor: string,
 ) {
+  const ground = cssColorToRgb(groundColor)
+  const outlineInk = withAlpha(getContrastText(groundColor), STROKE_ALPHA)
   const transform = computeTransform(params, data)
   const {
     yTop,
@@ -216,7 +228,7 @@ export function drawSyntenyTrack(
       g,
       b,
       a: fa,
-    } = resolveInstanceFill(packed, isCigar, isHovered, alpha)
+    } = resolveInstanceFill(packed, isCigar, isHovered, alpha, ground)
 
     // Sub-pixel handling keys on the ribbon's PERPENDICULAR (visual) thickness,
     // not horizontal span: a steep diagonal can be several px wide horizontally
@@ -267,7 +279,7 @@ export function drawSyntenyTrack(
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
       if (isClicked && !isCigar) {
-        style.strokeLiteral(ctx, 'rgba(0,0,0,0.4)')
+        style.strokeLiteral(ctx, outlineInk)
         strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
       }
     }
@@ -316,21 +328,21 @@ export class Canvas2DSyntenyRenderer
   // device-scale transform the pass runs under — drawSyntenyTrack draws in
   // logical coords and bakes each track's yTop into its y values.
   //
-  // OPAQUE WHITE, NOT THE THEME'S GROUND AND NOT TRANSPARENT, and it is
-  // load-bearing for what the band looks like rather than for what it costs.
-  // Every other backend in the tree clears to (0,0,0,0); this one and its GPU
-  // twin (`beginFrame(1, 1, 1, 1)`) do not, because the two fill branches only
-  // agree over white. `resolveInstanceFill` above is the arithmetic: a BASE
-  // ribbon comes out `rgb*darken` at alpha `shade`, while a CIGAR indel comes
-  // out `rgb*darken*shade + white*(1 - shade)` FULLY OPAQUE — the indel palette
-  // is opaque literals (`colorUtils.ts` warns against a non-opaque one). Those
-  // land on the same pixel only when the destination is white, since
-  // base-over-white is `rgb*shade + 1*(1 - shade)`, the pre-blend byte for
-  // byte. Over any other ground the indel stays white-washed while the base
-  // beside it composites over the real backdrop, so every indel wedge reads as
-  // a bright hole punched in the band. `shadeFill` in syntenyTypes.slang is the
-  // GPU spelling of the same thing, and `blendOverWhite` a third for the legend
-  // chips.
+  // OPAQUE AND KNOWN, NOT TRANSPARENT, and it is load-bearing for what the band
+  // looks like rather than for what it costs. Every other backend in the tree
+  // clears to (0,0,0,0); this one and its GPU twin (`beginFrame`) do not,
+  // because the two fill branches only agree over a ground they both know.
+  // `resolveInstanceFill` above is the arithmetic: a BASE ribbon comes out
+  // `rgb*darken` at alpha `shade`, while a CIGAR indel comes out
+  // `rgb*darken*shade + ground*(1 - shade)` FULLY OPAQUE — the indel palette is
+  // opaque literals (`colorUtils.ts` warns against a non-opaque one). Those land
+  // on the same pixel only when the destination IS `ground`, since
+  // base-over-ground is `rgb*shade + ground*(1 - shade)`, the pre-blend byte for
+  // byte. Over any other backdrop the indel stays blended toward a colour that
+  // is not there while the base beside it composites over the real one, so every
+  // indel wedge reads as a hole punched in the band. `shadeFill` in
+  // syntenyTypes.slang is the GPU spelling of the same thing, and
+  // `blendOverGround` a third for the legend chips.
   //
   // NOT A PERFORMANCE CHOICE, which is worth saying because it looks like one:
   // a clear costs the same whatever the value (`gl.clearColor` + `gl.clear`),
@@ -338,37 +350,39 @@ export class Canvas2DSyntenyRenderer
   // `alphaMode: 'premultiplied'`), so no opaque-layer compositor path is being
   // bought either.
   //
-  // SO INK DRAWN ONTO THE BAND IS A CONSTANT TOO — `MARKER_COLOR` is a packed
-  // opaque black and `drawOffscreenMates`' `MARK_INK` a fixed grey, neither off
-  // the theme. Reading `theme.palette.text.secondary` there is a bug that shows
-  // up only under a dark theme, which is how the off-screen-mate strip shipped
-  // invisible: near-white marks at 0.35 alpha on white.
+  // SO INK DRAWN ONTO THE BAND IS DERIVED FROM THE SAME VALUE, never read off
+  // the theme independently: `getContrastText(groundColor)` is the one source,
+  // and `markerColor`, `drawOffscreenMates`' `offscreenMateColors`, its label
+  // halo and the clicked outline all come off it. Reading `theme.palette.text.secondary`
+  // beside a ground that did not move with it is the bug that shipped the
+  // off-screen-mate strip invisible: near-white marks at 0.35 alpha on white.
   //
-  // A themed band is therefore not a clear-colour change. It is those three
-  // white blends, both ink constants, and the ribbon palettes themselves —
-  // fixed colours picked for a light ground, near invisible on a dark one at
-  // the 0.2 default alpha — plus a cross-backend golden re-shoot.
-  private clear() {
+  // What is STILL a light-ground assumption is the ribbon palettes themselves —
+  // `defaultCigarColors` and the categorical ramps are fixed colours picked for
+  // a white band, and at the 0.2 default alpha they are near invisible on a dark
+  // one. Threading the ground is what makes a dark band expressible; tuning
+  // those is the separate follow-up, in the `colorPairLRDark` mould.
+  private clear(groundColor: string) {
     const dpr = this.dpr
     const ctx = this.ctx
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = '#fff'
+    ctx.fillStyle = groundColor
     ctx.fillRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr)
   }
 
   render(state: SyntenyRenderState) {
     const ctx = this.ctx
     const logicalW = this.canvas.width / this.dpr
+    const { overdrawPx, groundColor } = state
 
-    this.clear()
+    this.clear(groundColor)
 
-    const { overdrawPx } = state
     for (const [key, params] of state.perTrack) {
       const data = this.cache.regions.get(key)
       if (!data || data.instanceCount === 0) {
         continue
       }
-      drawSyntenyTrack(ctx, data, params, logicalW, overdrawPx)
+      drawSyntenyTrack(ctx, data, params, logicalW, overdrawPx, groundColor)
     }
   }
 

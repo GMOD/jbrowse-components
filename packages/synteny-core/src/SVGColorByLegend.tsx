@@ -221,7 +221,11 @@ export function SVGColorByLegend({
                 {...getFillProps(
                   chip.color === undefined
                     ? 'none'
-                    : legendChipColor(chip.color, alpha),
+                    : legendChipColor(
+                        chip.color,
+                        alpha,
+                        theme.palette.background.paper,
+                      ),
                 )}
                 {...getStrokeProps(theme.palette.divider)}
               />

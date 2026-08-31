@@ -22,6 +22,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { bandGroundColor } from '@jbrowse/synteny-core'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import {
@@ -916,6 +917,7 @@ export function stateModelFactory(
           height: self.height,
           dragOffsetPx: self.dragOffsetPx,
           hoveredFeatureId: self.hoveredFeatureId,
+          groundColor: bandGroundColor(self),
           layers: self.renderLayers,
         }
       },

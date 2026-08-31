@@ -20,7 +20,7 @@
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
 //! js-export: isCigarKind, isMarkerKind, isTileKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
-//! export-consts: KIND_CIGAR_MIN, KIND_MARKER, KIND_BASE_TILE
+//! export-consts: KIND_CIGAR_MIN, KIND_MARKER, KIND_BASE_TILE, STROKE_ALPHA
 //! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
 //! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
 //! js-skip: vertCoverage — the top/bottom antialiasing ramp, measured per fragment; Canvas2D gets its edge AA from the rasterizer
@@ -63,7 +63,7 @@ public struct Instance {
 public static const float KIND_CIGAR_MIN = 3.0;
 
 // Distinguishes indel tiles from whole-feature BASE instances for shading only
-// (white pre-blend, no density width-fade); both share the same edge AA.
+// (ground pre-blend, no density width-fade); both share the same edge AA.
 public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 
 // The "location marker" tick: a periodic zero-width vertical line emitted
@@ -154,6 +154,16 @@ public struct Uniforms {
   // getDpr() (capped at MAX_DPR), needed because these shaders measure in CSS
   // px but rasterize on the device-px grid — see antialias.slang.
   public float  devicePixelRatio;
+  // The band's ground: whatever both backends just cleared the canvas to, as
+  // linear 0-1 rgb. shadeFill pre-blends an indel against it and writes opaque,
+  // which agrees with the base ribbon composited beside it only if the
+  // destination really is this colour — `Canvas2DSyntenyRenderer.clear` is the
+  // whole argument, and `writeSyntenyUniforms` is what keeps the two in step.
+  public float3 ground;
+  // Ink for what is drawn ONTO the band rather than composited into it: the
+  // clicked outline here, and the location ticks through their packed color.
+  // `getContrastText(ground)` on the CPU side, so a dark band gets light ink.
+  public float3 ink;
 };
 
 // The four projected corner X positions in CSS-px screen space, held as a plain
@@ -413,8 +423,8 @@ public float hoverDarken(bool isHovered) { return isHovered ? 0.7 : 1.0; }
 // coverage folded into the alpha (straight, not premultiplied — the HAL's
 // default blend is src-alpha / one-minus-src-alpha).
 // CIGAR kinds are indel quads drawn over a visible base block. Non-hovered
-// indels are pre-blended with white at u.alpha and output fully opaque, so
-// they visually fade like they're over a white background while still fully
+// indels are pre-blended with u.ground at u.alpha and output fully opaque, so
+// they visually fade like they're over the band's ground while still fully
 // covering the base block (avoids double-fade against the base block color).
 float4 shadeFill(float4 color, float featureId, float coverage, float kind,
                  Uniforms u) {
@@ -429,17 +439,17 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
   float shade = fillShade(color.a, u.alpha, isHovered);
   float darken = hoverDarken(isHovered);
   if (isCigarKind(kind)) {
-    // Pre-blend with white so the indel fades against white regardless of what
-    // the base block drew, at the same alpha the BASE branch would have used.
-    // Darkening applies inside the blend — darken first, then blend with white
-    // — so the hovered color matches what the pre-shader renderer produced.
+    // Pre-blend with the ground so the indel fades against it regardless of
+    // what the base block drew, at the same alpha the BASE branch would have
+    // used. Darkening applies inside the blend — darken first, then blend — so
+    // the hovered color matches what the pre-shader renderer produced.
     //
-    // This is what makes the band's white clear load-bearing rather than
-    // cosmetic: the branch below composites at `shade` against whatever is
-    // there, this one bakes the same blend in and writes opaque, and the two
-    // agree only when "whatever is there" is white. Both backends guarantee it
-    // — see LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear.
-    rgb = rgb * darken * shade + float3(1.0, 1.0, 1.0) * (1.0 - shade);
+    // This is what makes the band's clear load-bearing rather than cosmetic:
+    // the branch below composites at `shade` against whatever is there, this
+    // one bakes the same blend in and writes opaque, and the two agree only
+    // when "whatever is there" is `u.ground`. Both backends guarantee it — see
+    // LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear.
+    rgb = rgb * darken * shade + u.ground * (1.0 - shade);
     return float4(rgb, color.a * coverage);
   }
   return float4(rgb * darken, shade * coverage);
@@ -451,7 +461,10 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
 // the geometry has to leave — see the geometry functions' extraPerpPx.
 static const float STROKE_HALF_PX = 0.5;
 public static const float STROKE_PERP_PX = 1.0;
-static const float STROKE_ALPHA = 0.4;
+// Exported so the Canvas2D twin strokes its clicked outline at the same weight
+// off the same number. Both now take the colour from `u.ink` / getContrastText,
+// so only the alpha was left to drift.
+public static const float STROKE_ALPHA = 0.4;
 
 // Extra horizontal vertex pad (px) covering perpCoverage's `expand` term, which
 // pushes both edges outward by up to 0.5 PERPENDICULAR px — i.e. up to
@@ -606,7 +619,7 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   if (alpha <= 0.0) {
     discard;
   }
-  return float4(0.0, 0.0, 0.0, alpha);
+  return float4(u.ink, alpha);
 }
 
 // Only the clicked feature's BASE silhouette is outlined — never per-CIGAR-tile

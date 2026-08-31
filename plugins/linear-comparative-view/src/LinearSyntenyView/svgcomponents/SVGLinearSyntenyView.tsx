@@ -33,6 +33,7 @@ import type { ExportSvgOptions } from '../types.ts'
 // the running offset NaN.
 interface SyntenyLevel extends OffscreenMateSource {
   height: number
+  groundColor: string
   linearSyntenyDisplays: LinearSyntenyDisplayModel[]
 }
 
@@ -173,12 +174,14 @@ export async function renderToSvg(
                 width={width}
                 levelHeight={level.height}
                 trackLabelOffset={trackLabelOffset}
+                groundColor={level.groundColor}
                 rendering={renderings[i]!}
                 offscreenMates={
                   <SVGOffscreenMates
                     level={level}
                     width={width}
                     height={level.height}
+                    groundColor={level.groundColor}
                     opts={opts}
                   />
                 }

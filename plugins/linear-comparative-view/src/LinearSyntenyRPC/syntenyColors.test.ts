@@ -1,5 +1,5 @@
 import { category10 } from '@jbrowse/core/ui/colors'
-import { abgrAlpha } from '@jbrowse/core/util/colorBits'
+import { abgrAlpha, abgrRed } from '@jbrowse/core/util/colorBits'
 import { colorSchemes } from '@jbrowse/synteny-core'
 
 import { isInstanceInvisible } from '../LinearSyntenyDisplay/syntenyRibbonPath.ts'
@@ -58,6 +58,7 @@ function abgrOfHex(hex: string) {
 
 describe("computeSyntenyColors colorBy:'track'", () => {
   const colors = computeSyntenyColors({
+    groundColor: '#fff',
     instanceData,
     featureData,
     colorBy: 'track',
@@ -83,6 +84,7 @@ describe("computeSyntenyColors colorBy:'track'", () => {
 
   test('every base instance of the track is the same color', () => {
     const twoFeatures = computeSyntenyColors({
+      groundColor: '#fff',
       instanceData: {
         kinds: new Uint8Array([KIND_BASE, KIND_BASE]),
         instanceFeatureIdx: new Uint32Array([0, 1]),
@@ -99,6 +101,7 @@ describe("computeSyntenyColors colorBy:'track'", () => {
 
   test('a different track color paints differently', () => {
     const other = computeSyntenyColors({
+      groundColor: '#fff',
       instanceData,
       featureData,
       colorBy: 'track',
@@ -121,6 +124,7 @@ describe('the location-marker toggle', () => {
   }
   const paint = (drawLocationMarkers?: boolean) =>
     computeSyntenyColors({
+      groundColor: '#fff',
       instanceData: markerData,
       featureData,
       colorBy: 'track',
@@ -129,11 +133,12 @@ describe('the location-marker toggle', () => {
       attributeRanges: {},
     })
 
-  test('on: a tick is the fixed semi-transparent black, whatever colorBy says', () => {
+  test('on: a tick is the band ink at a fixed alpha, whatever colorBy says', () => {
     const on = paint(true)
     expect(abgrAlpha(on[1]!)).toBe(64)
     expect(
       computeSyntenyColors({
+        groundColor: '#fff',
         instanceData: markerData,
         featureData,
         colorBy: 'strand',
@@ -142,6 +147,25 @@ describe('the location-marker toggle', () => {
         attributeRanges: {},
       })[1],
     ).toBe(on[1])
+  })
+
+  // The tick is the ruler continued through the ribbons, so it contrasts with
+  // the BAND — which is a colour the renderers cleared to, not the page's. Black
+  // on a white band is the value this has always had; a dark band gets the
+  // inverse rather than a tick nothing can see.
+  test('on: the ink follows the band, not the palette it came from', () => {
+    expect(abgrRed(paint(true)[1]!)).toBe(0)
+    const dark = computeSyntenyColors({
+      groundColor: '#121212',
+      instanceData: markerData,
+      featureData,
+      colorBy: 'track',
+      trackColor: TRACK_COLOR,
+      drawLocationMarkers: true,
+      attributeRanges: {},
+    })
+    expect(abgrRed(dark[1]!)).toBe(255)
+    expect(abgrAlpha(dark[1]!)).toBe(64)
   })
 
   test('off: a tick is transparent, and nothing else moves', () => {
@@ -169,6 +193,7 @@ describe('chromosome painting', () => {
     chromosomes.map(
       name =>
         computeSyntenyColors({
+          groundColor: '#fff',
           instanceData: {
             kinds: new Uint8Array([KIND_BASE]),
             instanceFeatureIdx: new Uint32Array([0]),
@@ -235,6 +260,7 @@ test('scaffolds after the chromosomes do not compress the palette', () => {
   const hues = chromosomes.map(
     name =>
       computeSyntenyColors({
+        groundColor: '#fff',
         instanceData: {
           kinds: new Uint8Array([KIND_BASE]),
           instanceFeatureIdx: new Uint32Array([0]),

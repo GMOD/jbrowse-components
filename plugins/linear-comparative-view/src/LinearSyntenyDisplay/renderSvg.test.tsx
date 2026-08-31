@@ -55,6 +55,7 @@ function makeModel(
     // overdrawPx matches the view default, so the per-edge cull is as permissive
     // here as it is in a real export
     view: { width: 800, overdrawPx: 1000 },
+    groundColor: '#fff',
     ...overrides,
   }
 }

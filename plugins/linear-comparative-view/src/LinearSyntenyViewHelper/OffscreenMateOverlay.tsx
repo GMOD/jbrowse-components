@@ -53,7 +53,7 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
 }: {
   model: LinearSyntenyViewHelperModel
 }) {
-  const colors = offscreenMateColors()
+  const colors = offscreenMateColors(model.groundColor)
   const width = model.parentView.width
   const height = model.height
   // read here rather than inside the draw: this is an observer, so what the

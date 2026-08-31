@@ -1,3 +1,5 @@
+import { getContrastText } from '@jbrowse/core/ui/palette'
+import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
@@ -122,12 +124,16 @@ export class GpuSyntenyRenderer
   }
 
   render(state: SyntenyRenderState) {
-    // Opaque white, where every other backend in the tree clears to (0,0,0,0).
-    // `shadeFill` pre-blends a CIGAR indel with white and outputs it opaque, so
-    // it matches the base ribbon beside it — drawn at alpha `shade` — only over
-    // a white destination. `Canvas2DSyntenyRenderer.clear` carries the whole
-    // argument, and the Canvas2D twin of the pre-blend it rests on.
-    this.hal.beginFrame(1, 1, 1, 1)
+    // Opaque, where every other backend in the tree clears to (0,0,0,0).
+    // `shadeFill` pre-blends a CIGAR indel with `u.ground` and outputs it
+    // opaque, so it matches the base ribbon beside it — drawn at alpha `shade`
+    // — only over a destination that IS the ground. This clear and the uniform
+    // below come off the same `state.groundColor`, which is what holds that.
+    // `Canvas2DSyntenyRenderer.clear` carries the whole argument, and the
+    // Canvas2D twin of the pre-blend it rests on.
+    const { groundColor } = state
+    const [gr, gg, gb] = cssColorToRgb(groundColor)
+    this.hal.beginFrame(gr / 255, gg / 255, gb / 255, 1)
     for (const [key, params] of state.perTrack) {
       const data = this.cache.regions.get(key)
       if (!data || data.instanceCount === 0) {
@@ -135,7 +141,7 @@ export class GpuSyntenyRenderer
       }
       const fillPass = params.drawCurves ? PASS_FILL_CURVE : PASS_FILL_STRAIGHT
       this.ensureUploaded(key, fillPass, data)
-      this.writeUniforms(params, state.overdrawPx, data)
+      this.writeUniforms(params, state.overdrawPx, data, groundColor)
       this.hal.drawPass(fillPass, key)
       if (params.clickedFeatureId > 0) {
         // Edge pass outlines only the clicked feature's BASE silhouette, and
@@ -267,13 +273,21 @@ export class GpuSyntenyRenderer
     p: SyntenyTrackRenderParams,
     overdrawPx: number,
     data: SyntenyInstanceData,
+    groundColor: string,
   ) {
     const dpr = getDpr()
-    writeSyntenyUniforms(this.uniformF32, p, overdrawPx, data, {
-      width: this.canvas.width / dpr,
-      height: this.canvas.height / dpr,
-      dpr,
-    })
+    writeSyntenyUniforms(
+      this.uniformF32,
+      p,
+      overdrawPx,
+      data,
+      {
+        width: this.canvas.width / dpr,
+        height: this.canvas.height / dpr,
+        dpr,
+      },
+      groundColor,
+    )
     this.hal.writeUniforms(this.uniformData)
   }
 }
@@ -289,6 +303,7 @@ export function writeSyntenyUniforms(
   overdrawPx: number,
   data: { base0: number; base1: number },
   canvas: { width: number; height: number; dpr: number },
+  groundColor: string,
 ) {
   u[U.resolution] = canvas.width
   u[U.resolution + 1] = canvas.height
@@ -318,6 +333,18 @@ export function writeSyntenyUniforms(
   // they need the ratio to size their AA ramps at one output pixel. Must be
   // the same getDpr() the resolution above is derived from.
   u[U.devicePixelRatio] = canvas.dpr
+  // The band's own two colours, 0-1 rgb. `ground` must be what the caller just
+  // cleared to — shadeFill bakes it into every indel wedge — and `ink` is what
+  // the edge pass strokes the clicked outline in, contrast-derived so a dark
+  // band gets a light outline rather than an invisible black one.
+  const [gr, gg, gb] = cssColorToRgb(groundColor)
+  u[U.ground] = gr / 255
+  u[U.ground + 1] = gg / 255
+  u[U.ground + 2] = gb / 255
+  const [ir, ig, ib] = cssColorToRgb(getContrastText(groundColor))
+  u[U.ink] = ir / 255
+  u[U.ink + 1] = ig / 255
+  u[U.ink + 2] = ib / 255
 }
 
 export { UNIFORMS_SIZE_BYTES as SYNTENY_UNIFORM_BYTE_SIZE }

@@ -30,6 +30,15 @@ export interface SyntenyTrackRenderParams {
 
 export interface SyntenyRenderState {
   overdrawPx: number
+  /**
+   * What both backends clear the band to, and the colour every fill is
+   * calibrated against — the page theme's `background.paper`. The band's, not a
+   * track's: `render` paints it with an empty `perTrack` too, which is the one
+   * frame where it is the only thing drawn. `Canvas2DSyntenyRenderer.clear`
+   * carries why an indel wedge and the base ribbon beside it agree only over a
+   * known ground, and `getContrastText` of this is the ink drawn onto it.
+   */
+  groundColor: string
   /** Per-track render parameters keyed parallel to uploaded geometry. */
   perTrack: Map<number, SyntenyTrackRenderParams>
 }

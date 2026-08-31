@@ -114,6 +114,7 @@ function pickedFeatureAt(
 ) {
   const state: SyntenyRenderState = {
     overdrawPx: 1000,
+    groundColor: '#fff',
     perTrack: new Map([[0, params]]),
   }
   const hit = pickFeatureAtPoint({

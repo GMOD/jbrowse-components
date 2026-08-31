@@ -80,6 +80,7 @@ export {
   strandCigarColors,
 } from './colorUtils.ts'
 export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
+export { bandGroundColor } from './bandGround.ts'
 export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 export { TrackColorsMixin } from './TrackColorsMixin.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'

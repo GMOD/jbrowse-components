@@ -150,6 +150,7 @@ function colorsById(
 ) {
   const { instanceData, ...featureData } = fetched
   const colors = computeSyntenyColors({
+    groundColor: '#fff',
     instanceData,
     featureData,
     colorBy,

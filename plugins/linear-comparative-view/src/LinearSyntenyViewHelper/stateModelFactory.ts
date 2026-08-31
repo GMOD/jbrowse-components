@@ -10,6 +10,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
+  bandGroundColor,
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
   installClearHoverOnSurfaceMove,
@@ -322,8 +323,18 @@ export function linearSyntenyViewHelperModelFactory(
         }
         return {
           overdrawPx: self.parentView.overdrawPx,
+          groundColor: this.groundColor,
           perTrack,
         }
+      },
+      /**
+       * #getter
+       * The band's ground — see `bandGroundColor`, which is the decision. Read
+       * here so the level's clear, its ribbons, its off-screen-mate strip and
+       * its SVG export all take it from one place.
+       */
+      get groundColor() {
+        return bandGroundColor(self)
       },
     }))
     .views(self => ({

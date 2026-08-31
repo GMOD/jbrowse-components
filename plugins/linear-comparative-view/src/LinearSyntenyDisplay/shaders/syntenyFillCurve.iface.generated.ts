@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 48
 
-export const UNIFORMS_SIZE_BYTES = 64
+export const UNIFORMS_SIZE_BYTES = 96
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -27,6 +27,8 @@ export const UNIFORM_OFFSET_F32 = {
   yTop: 12,
   fadeThinAlignments: 13,
   devicePixelRatio: 14,
+  ground: 16,
+  ink: 20,
 } as const
 
 
@@ -45,6 +47,8 @@ export interface Uniforms {
   yTop: number
   fadeThinAlignments: number
   devicePixelRatio: number
+  ground: [number, number, number]
+  ink: [number, number, number]
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -64,6 +68,12 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[12] = uniforms.yTop
   f32[13] = uniforms.fadeThinAlignments
   f32[14] = uniforms.devicePixelRatio
+  f32[16] = uniforms.ground[0]
+  f32[17] = uniforms.ground[1]
+  f32[18] = uniforms.ground[2]
+  f32[20] = uniforms.ink[0]
+  f32[21] = uniforms.ink[1]
+  f32[22] = uniforms.ink[2]
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

@@ -651,8 +651,16 @@ author who lands on a behavior change can find the sentence that explains it.
   serves — `installAssemblySwapCheck` and `legendChipColor` — and their only
   importers were the package's own tests, which now read the source files.
   **Opt-out: `installAssemblySwapCheck(self, …)` for the swap check, and
-  `legendChipColor(color, alpha)` for a chip color**, which is the floored
-  blend the two constants composed.
+  `legendChipColor(color, alpha, ground)` for a chip color**, which is the
+  floored blend the two constants composed.
+
+- **`legendChipColor` takes the band's ground as a third argument**, and the
+  `blendOverWhite` it wraps is now `blendOverGround(color, a, ground)`. A chip
+  matches the ribbon by being composited the way the ribbon is, and the ribbon
+  composites over whatever the synteny band was cleared to — which is
+  `background.paper`, not an assumed white, since the ground became a threaded
+  value rather than a literal. **Opt-out: pass `'#fff'`**, which is what the
+  default light theme resolves to and so is byte-identical to the old call.
 
 - **`RpcClient.call` no longer takes a transfer list.** Transferables flow only
   worker → main, inside a reply's `rpcResult` wrapper; transferring an *argument*

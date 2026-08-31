@@ -1,4 +1,9 @@
-import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
+import { getContrastText } from '@jbrowse/core/ui/palette'
+import {
+  cssColorToABGR,
+  cssColorToRgb,
+  packAbgr,
+} from '@jbrowse/core/util/colorBits'
 import {
   MISSING_VALUE_COLOR,
   colorSchemes,
@@ -43,12 +48,20 @@ export const KIND_CIGAR_I = KIND_CIGAR_MIN + 1
 export const KIND_CIGAR_D = KIND_CIGAR_MIN + 2
 export const KIND_CIGAR_N = KIND_CIGAR_MIN + 3
 
-// Location-marker tick: semi-transparent black, matching the legacy
+// Location-marker tick: the band's contrast ink at the alpha of the legacy
 // rgba(0,0,0,0.25) context lines. Renderers draw KIND_MARKER instances as 1px
 // lines using this packed alpha directly (no colorBy/global-alpha scaling).
-// Black rather than a theme colour because the band under it is opaque white by
-// construction — `Canvas2DSyntenyRenderer.clear` is what fixes that.
-const MARKER_COLOR = packAbgr(0, 0, 0, 64)
+//
+// Contrast-derived rather than either black or a theme text colour: the band is
+// an opaque KNOWN colour by construction (`Canvas2DSyntenyRenderer.clear`), so a
+// tick has to be legible against THAT and not against the page. Reading
+// `text.secondary` while the band said something else is what shipped the
+// off-screen-mate strip invisible.
+const MARKER_ALPHA_BYTE = 64
+function markerColor(groundColor: string) {
+  const [r, g, b] = cssColorToRgb(getContrastText(groundColor))
+  return packAbgr(r, g, b, MARKER_ALPHA_BYTE)
+}
 
 // And what "markers off" is: the same instance, painted to nothing. A zero alpha
 // is below the `isInstanceInvisible` floor the Canvas2D draw loop and the pick
@@ -88,6 +101,7 @@ export function computeSyntenyColors({
   trackColor,
   opacityByIdentity,
   drawLocationMarkers,
+  groundColor,
   nameOrder,
   attributeRanges,
 }: {
@@ -102,6 +116,9 @@ export function computeSyntenyColors({
   // are the ruler continued through the ribbons, not data, so no scheme paints
   // them and none of them can hide them either.
   drawLocationMarkers?: boolean
+  // The band the ticks are drawn onto, which is what they have to contrast
+  // against — see `bandGroundColor`.
+  groundColor: string
   // Chromosome order of the assembly the chromosome-painting modes key on, so a
   // ribbon's color can be that chromosome's position rather than a hash bucket.
   // Only the display knows it — the assembly's refName list is a session fact,
@@ -122,7 +139,9 @@ export function computeSyntenyColors({
     defaultColor: MISSING_VALUE_COLOR,
   })
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
-  const markerColor = drawLocationMarkers ? MARKER_COLOR : MARKER_COLOR_HIDDEN
+  const marker = drawLocationMarkers
+    ? markerColor(groundColor)
+    : MARKER_COLOR_HIDDEN
   // identity fade is a separate channel from the color mode: a track can paint
   // by strand and still fade by identity, so this is read directly rather than
   // through the resolved mode
@@ -132,7 +151,7 @@ export function computeSyntenyColors({
   for (let i = 0; i < instanceCount; i++) {
     const kind = kinds[i]!
     if (kind === KIND_MARKER) {
-      out[i] = markerColor
+      out[i] = marker
     } else if (kind === KIND_CIGAR_I) {
       out[i] = colorI
     } else if (kind === KIND_CIGAR_D) {

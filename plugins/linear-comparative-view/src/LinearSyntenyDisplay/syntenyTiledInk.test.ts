@@ -101,6 +101,7 @@ function render(
     },
     VIEW_W,
     300,
+    '#fff',
   )
   return drawnInk(ctx)
 }

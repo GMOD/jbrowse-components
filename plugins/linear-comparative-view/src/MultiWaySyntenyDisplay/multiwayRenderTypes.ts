@@ -57,6 +57,13 @@ export interface MultiWayRenderState {
   height: number
   dragOffsetPx: number
   hoveredFeatureId: number
+  /**
+   * The stack's ground, which the ribbon gutters share with the linear band:
+   * `drawSyntenyTrack` blends an indel wedge against it and the shaders bake it
+   * into `u.ground`. The same `background.paper` the band cells are painted in
+   * (`bandCell`), so a gutter and the lane above it agree.
+   */
+  groundColor: string
   layers: MultiWayLayer[]
 }
 

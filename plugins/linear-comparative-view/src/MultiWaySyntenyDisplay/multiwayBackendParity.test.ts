@@ -74,6 +74,7 @@ const state: MultiWayRenderState = {
   height: HEIGHT,
   dragOffsetPx: DRAG,
   hoveredFeatureId: 0,
+  groundColor: '#fff',
   layers: [
     { kind: 'ribbons', key: 'ribbons:0', yTop: 30, height: 80, curves: false },
     { kind: 'glyphs', key: 'glyphs:1', scrolled: true },

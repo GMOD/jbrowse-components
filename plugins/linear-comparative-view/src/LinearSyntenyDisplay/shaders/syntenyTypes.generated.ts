@@ -6,3 +6,5 @@ export const KIND_CIGAR_MIN = 3
 export const KIND_MARKER = 2
 
 export const KIND_BASE_TILE = 1
+
+export const STROKE_ALPHA = 0.4

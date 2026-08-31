@@ -1,6 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton, Tooltip, useTheme } from '@mui/material'
 
 import {
   colorByFallbackNote,
@@ -130,15 +130,20 @@ export function ColorByLegend({
   cigarOps?: CigarOpMask
   /** observed span per attribute, which labels an attribute mode's ramp */
   attributeRanges?: Record<string, AttributeRange>
-  // the view's global ribbon alpha — chips are blended over white by it so the
-  // key matches the on-screen (alpha-composited) ribbon colors, subject to
-  // legendChipColor's legibility floor
+  // the view's global ribbon alpha — chips are blended over the band's ground by
+  // it so the key matches the on-screen (alpha-composited) ribbon colors,
+  // subject to legendChipColor's legibility floor
   alpha?: number
   // one chip per overlaid track, for colorBy:'track' — the view supplies these
   trackChips?: ColorChip[]
   onClose: () => void
 }) {
   const { classes } = useStyles()
+  // The ground the chips are blended over: the same `background.paper` the
+  // synteny band is cleared to (`bandGroundColor`), which is what the chips are
+  // matching. Read here rather than passed in — the legend floats over that band
+  // in both views that mount it.
+  const groundColor = useTheme().palette.background.paper
   const swatch =
     colorBy === undefined
       ? ({ kind: 'chips', chips: trackChips ?? [] } as const)
@@ -186,7 +191,7 @@ export function ColorByLegend({
                   background:
                     chip.color === undefined
                       ? 'transparent'
-                      : legendChipColor(chip.color, alpha),
+                      : legendChipColor(chip.color, alpha, groundColor),
                 }}
               />
               <span className={classes.chipLabel} title={chip.label}>

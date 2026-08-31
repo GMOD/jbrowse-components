@@ -10,6 +10,7 @@ function level({ width = 800, height = 100, show = true } = {}) {
   return {
     level: 0,
     height,
+    groundColor: '#fff',
     linearSyntenyDisplays: [
       {
         featureData: {

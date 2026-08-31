@@ -106,7 +106,14 @@ function makeParams(alpha = 1): SyntenyTrackRenderParams {
 /** Did the renderer paint anything at all for this ribbon? */
 function drawnMarks(widthBp: number, alpha?: number) {
   const rec = createDrawCtx()
-  drawSyntenyTrack(rec.ctx, makeData(widthBp), makeParams(alpha), 800, 300)
+  drawSyntenyTrack(
+    rec.ctx,
+    makeData(widthBp),
+    makeParams(alpha),
+    800,
+    300,
+    '#fff',
+  )
   return rec
 }
 
@@ -121,6 +128,7 @@ function isDrawnAsFill(widthBp: number) {
 function isPickable(widthBp: number, alpha?: number) {
   const state: SyntenyRenderState = {
     overdrawPx: 300,
+    groundColor: '#fff',
     perTrack: new Map([[0, makeParams(alpha)]]),
   }
   const hit = pickFeatureAtPoint({
@@ -228,11 +236,15 @@ function makeSlopedData(): SyntenyInstanceData {
 function slopedVerdicts(drawCurves: boolean) {
   const params = { ...makeParams(), drawCurves }
   const rec = createDrawCtx()
-  drawSyntenyTrack(rec.ctx, makeSlopedData(), params, 800, 300)
+  drawSyntenyTrack(rec.ctx, makeSlopedData(), params, 800, 300, '#fff')
   expect(rec.filled + rec.stroked).toBe(1)
   const hit = pickFeatureAtPoint({
     ctx: createGeometricPickCtx(),
-    state: { overdrawPx: 300, perTrack: new Map([[0, params]]) },
+    state: {
+      overdrawPx: 300,
+      groundColor: '#fff',
+      perTrack: new Map([[0, params]]),
+    },
     regions: new Map([[0, makeSlopedData()]]),
     pickIndices: new Map<number, PickIndex>(),
     canvasLogicalWidth: 800,
@@ -252,10 +264,14 @@ test('drawn and pickable stay one boundary in curve mode too', () => {
   for (const w of WIDTHS) {
     const params = { ...makeParams(), drawCurves: true }
     const rec = createDrawCtx()
-    drawSyntenyTrack(rec.ctx, makeData(w), params, 800, 300)
+    drawSyntenyTrack(rec.ctx, makeData(w), params, 800, 300, '#fff')
     const hit = pickFeatureAtPoint({
       ctx: createGeometricPickCtx(),
-      state: { overdrawPx: 300, perTrack: new Map([[0, params]]) },
+      state: {
+        overdrawPx: 300,
+        groundColor: '#fff',
+        perTrack: new Map([[0, params]]),
+      },
       regions: new Map([[0, makeData(w)]]),
       pickIndices: new Map<number, PickIndex>(),
       canvasLogicalWidth: 800,
