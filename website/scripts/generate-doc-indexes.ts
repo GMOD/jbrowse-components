@@ -13,10 +13,18 @@
 // renders the descriptions into one page, and it fails when a doc is missing
 // the frontmatter that would put it there.
 //
-// It deliberately does NOT rank or group. The ADR index sorts by number because
-// ADRs are numbered; these have no such order, and any grouping would be a
-// hand-maintained judgement — the exact thing this is replacing. Alphabetical
-// matches what `ls` shows.
+// It does not rank, and it groups only where the grouping is already a field
+// every doc carries and something else already checks. The ADR index sorts by
+// number because ADRs are numbered; these have no such order, and a grouping
+// invented here would be a hand-maintained judgement — the exact thing this is
+// replacing. `reference/` splits on `audience:`, which is neither invented nor
+// hand-maintained: it is the decision `check-reference-citations.ts` enforces
+// (an internal doc needs no website link, a citeable one does), so the two
+// tables cannot drift away from the checker's idea of which doc is which. That
+// directory reached 79 docs in one alphabetical table where half the rows are a
+// figure harness, a CI gate or an audit and the other half are behaviour a
+// reader can hit, and nothing on the page said so. Within a table, alphabetical,
+// matching `ls`.
 //
 // `ideas/` joined in 2026-08 when OTHER_IDEAS.md was exploded into one file per
 // proposal. Its hand-maintained 104-line index was the very shape agent-docs
@@ -41,12 +49,24 @@ import { repoRoot } from './paths.ts'
 // its own right, so it does not list itself.
 const SELF = 'README.md'
 
+const AUDIENCE_GROUPS = [
+  {
+    title: 'Citeable: behaviour a user or plugin author can hit',
+    match: (doc: Doc) => doc.audience !== 'internal',
+  },
+  {
+    title: 'Internal: the harnesses, gates and audits behind it',
+    match: (doc: Doc) => doc.audience === 'internal',
+  },
+]
+
 const INDEXES = [
   {
     dir: 'reference',
     marker: 'REFERENCE INDEX',
     label: 'Reference index',
     heading: 'Read when',
+    groups: AUDIENCE_GROUPS,
   },
   {
     dir: 'ideas',
@@ -87,6 +107,7 @@ interface Doc {
   file: string
   name: string
   description: string
+  audience: string | undefined
 }
 
 function collectDocs(dir: string, slugFilenames = false): Doc[] {
@@ -114,7 +135,7 @@ function collectDocs(dir: string, slugFilenames = false): Doc[] {
         `${file} (\`name: ${name}\` wants the filename ${name}.md)`,
       )
     } else {
-      docs.push({ file, name, description })
+      docs.push({ file, name, description, audience: fm.audience?.trim() })
     }
   }
   if (unindexable.length) {
@@ -127,19 +148,29 @@ function collectDocs(dir: string, slugFilenames = false): Doc[] {
   return docs.sort((a, b) => a.file.localeCompare(b.file))
 }
 
-for (const { dir, marker, label, heading, slugFilenames } of INDEXES) {
+const tableFor = (docs: Doc[], heading: string) =>
+  markdownTableLines(
+    ['Doc', heading],
+    docs.map(d => `| [${d.name}](${d.file}) | ${d.description} |`),
+  )
+
+for (const { dir, marker, label, heading, slugFilenames, groups } of INDEXES) {
   const indexPath = join(repoRoot, 'agent-docs', dir, SELF)
+  const docs = collectDocs(dir, slugFilenames)
+  const filled = groups?.filter(g => docs.some(g.match))
   checkOrWrite({
     path: indexPath,
     content: spliceGeneratedBlock({
       path: indexPath,
       marker,
-      body: markdownTableLines(
-        ['Doc', heading],
-        collectDocs(dir, slugFilenames).map(
-          d => `| [${d.name}](${d.file}) | ${d.description} |`,
-        ),
-      ),
+      body: filled
+        ? filled.flatMap((group, i) => [
+            ...(i ? [''] : []),
+            `## ${group.title}`,
+            '',
+            ...tableFor(docs.filter(group.match), heading),
+          ])
+        : tableFor(docs, heading),
     }),
     label,
     staleHint: 'run `pnpm autogen`',
