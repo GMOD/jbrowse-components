@@ -90,7 +90,7 @@ for (const dir of workspaceDirs) {
           console.log(`  Tarball size: ${stat.size} bytes`)
         }
         if (tarball) {
-          const newName = tarball.replace(/-\d+\.\d+\.\d+/, '')
+          const newName = tarballName(pkgJson.name)
           packedTarballsByPackageName[pkgJson.name] = newName
           dependenciesByPackageName[pkgJson.name] = pkgJson.dependencies ?? {}
           for (const sub of subDirs) {

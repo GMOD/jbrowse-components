@@ -314,7 +314,7 @@ describe('a fetch answers the retry wherever it started', () => {
     expect(takeFetchStarted(host)).toBe(false)
   })
 
-  it('is a no-op in production', () => {
+  it('still tracks a fetch that starts in production', () => {
     const prev = process.env.NODE_ENV
     const host = makeHost()
     const run = drive(host)
@@ -324,7 +324,7 @@ describe('a fetch answers the retry wherever it started', () => {
     } finally {
       process.env.NODE_ENV = prev
     }
-    expect(takeFetchStarted(host)).toBe(false)
+    expect(takeFetchStarted(host)).toBe(true)
     host.reload()
     expect(run('declined')).toBe(true)
   })
@@ -401,14 +401,14 @@ it('takes its baseline from the counter at install', () => {
   expect(run('declined')).toBe(true)
 })
 
-it('is a no-op in production', () => {
+it('still reports a dead-button decline in production', () => {
   const prev = process.env.NODE_ENV
   process.env.NODE_ENV = 'production'
   try {
     const host = makeHost()
     const run = drive(host)
     host.reload()
-    expect(run('declined')).toBe(false)
+    expect(run('declined')).toBe(true)
   } finally {
     process.env.NODE_ENV = prev
   }

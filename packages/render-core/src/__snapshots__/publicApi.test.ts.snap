@@ -10,6 +10,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./canvas2dUtils",
   "./canvasContext",
   "./colorRampLut",
+  "./contractReports",
   "./coverageBand",
   "./coverageBandBuffers",
   "./createRenderingBackend",
