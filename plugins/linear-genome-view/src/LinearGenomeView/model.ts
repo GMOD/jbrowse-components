@@ -40,7 +40,10 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
-import { withLaunchInput } from '@jbrowse/core/util/withLaunchInput'
+import {
+  pendingLaunch,
+  withLaunchInput,
+} from '@jbrowse/core/util/withLaunchInput'
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
@@ -606,11 +609,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // writes had to move, and they are six actions below.
       /**
        * #getter
-       * v4's name for `launch`, kept while the other six views and the products
-       * that drive them still spell it this way. Deleted with `setInit`.
+       * the launch state that still has something to apply — the gate every
+       * loading and error path below reads. Also v4's name for it, kept while
+       * the other six views and the products that drive them still spell it
+       * this way; deleted with `setInit`.
        */
       get init() {
-        return self.launch
+        return pendingLaunch(self.launch)
       },
       /**
        * #getter

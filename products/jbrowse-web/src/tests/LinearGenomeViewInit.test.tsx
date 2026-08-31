@@ -247,18 +247,19 @@ test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
 // firing while the launch autorun hasn't navigated yet) must keep init, so a
 // reload/restore rebuilds instead of stranding on the import form. Once
 // displayedRegions exist, init is redundant and stripped.
-test('snapshot keeps init while not materialized, strips it once regions load', async () => {
+test('snapshot keeps the launch state while not materialized, strips it once regions load', async () => {
   const { rootModel } = getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
-    init: { loc: 'ctgA:1..1000', assembly: 'volvox' },
+    loc: 'ctgA:1..1000',
+    assembly: 'volvox',
   })
 
   // no width yet -> launch autorun hasn't navigated
   expect(view.displayedRegions.length).toBe(0)
-  const before: { init?: unknown } = getSnapshot(view)
-  expect(before.init).toBeDefined()
+  const before: { launch?: unknown } = getSnapshot(view)
+  expect(before.launch).toBeDefined()
 
   view.setWidth(800)
   await waitFor(
@@ -269,6 +270,6 @@ test('snapshot keeps init while not materialized, strips it once regions load', 
   )
 
   expect(view.displayedRegions.length).toBeGreaterThan(0)
-  const after: { init?: unknown } = getSnapshot(view)
-  expect(after.init).toBeUndefined()
+  const after: { launch?: unknown } = getSnapshot(view)
+  expect(after.launch).toBeUndefined()
 }, 40000)

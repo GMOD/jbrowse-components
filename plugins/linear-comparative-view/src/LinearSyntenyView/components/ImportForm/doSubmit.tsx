@@ -21,22 +21,21 @@ export function doSubmit({
   model: LinearSyntenyViewModel
   session: AssemblyHost & NotificationSink & TrackCatalog
 }) {
-  // each row is a LinearGenomeView built from a declarative `init` — its
+  // each row is a LinearGenomeView with its settings written on it — its
   // afterAttach autorun loads the assembly regions and shows the whole genome,
   // so we don't wait for assemblies or navigate here (see LinearGenomeView
   // model.ts). Width flows in from the comparative view's width autorun.
   model.setViews(
     selectedAssemblyNames.map((assembly, idx) => {
-      // omitted rather than passed as [] when the box is empty: the LGV's init
+      // omitted rather than passed as [] when the box is empty: the LGV
       // branches on the key being present, and an empty list would take the
       // named-regions path with nothing to name
       const names = parseRegionNames(regionNames[idx] ?? '')
       return {
         type: 'LinearGenomeView' as const,
         hideHeader: true,
-        init: names.length
-          ? { assembly, displayedRegionNames: names }
-          : { assembly },
+        assembly,
+        ...(names.length ? { displayedRegionNames: names } : {}),
       }
     }),
   )

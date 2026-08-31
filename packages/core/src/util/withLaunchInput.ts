@@ -47,6 +47,26 @@ export type LaunchInput<Commands> = Commands & {
   legacyInit?: boolean
 }
 
+// What afterAttach reports rather than applies. They live in the blob so the
+// partition has one place to put everything, and `pendingLaunch` is what keeps
+// them from reading as work to do.
+const REPORTED = new Set(['unknown', 'legacyInit'])
+
+/**
+ * The blob when it still holds something to apply, else undefined. A view's
+ * gates ask this rather than the raw property: a snapshot whose only launch
+ * content was a typo has nothing to launch, and a view that thinks otherwise
+ * waits on an assembly nobody named and never leaves the spinner.
+ *
+ * Returns the blob itself, never a copy — the launch autorun clears by
+ * identity, and a fresh object per read strands the init it just applied.
+ */
+export function pendingLaunch<C>(launch: LaunchInput<C> | undefined) {
+  return launch && Object.keys(launch).some(k => !REPORTED.has(k))
+    ? launch
+    : undefined
+}
+
 /**
  * A view's snapshot type, widened to the authored shape: every launch key is
  * accepted beside the declared properties, and a key that is both takes either

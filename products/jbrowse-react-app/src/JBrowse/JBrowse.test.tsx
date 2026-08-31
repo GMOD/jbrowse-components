@@ -49,8 +49,13 @@ test('<JBrowse /> maps the views prop into session.views', () => {
   const { views } = ref.current!.session
   expect(views).toHaveLength(1)
   expect(views[0]!.type).toBe('LinearGenomeView')
-  // the per-view init blob must actually reach the view model, not be dropped
-  expect(views[0]!.init).toEqual({ assembly: 'volvox', loc: 'ctgA:1-10' })
+  // the per-view init blob must actually reach the view model, not be dropped.
+  // toMatchObject because the view also records that the blob arrived nested,
+  // which is deprecated and reported on attach
+  expect(views[0]!.init).toMatchObject({
+    assembly: 'volvox',
+    loc: 'ctgA:1-10',
+  })
 })
 
 test('<JBrowse /> honors sessionName without any views', () => {

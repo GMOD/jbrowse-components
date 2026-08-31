@@ -430,7 +430,7 @@ describe('the dependency set is the contract', () => {
         'FeatureTrack.minimized',
         'FeatureTrackConfigurationSchema.assemblyNames',
         ...viewport,
-        'LinearGenomeView.init',
+        'LinearGenomeView.launch',
         'LinearGenomeView.volatileWidth',
         'PerRegionTestDisplay.byteEstimate',
         'PerRegionTestDisplay.error',
@@ -471,7 +471,7 @@ describe('the dependency set is the contract', () => {
       [
         'DisplayTestSession.assemblyManager',
         'LinearGenomeView.displayedRegions',
-        'LinearGenomeView.init',
+        'LinearGenomeView.launch',
         'LinearGenomeView.volatileWidth',
         'PerRegionTestDisplay.byteEstimate',
         'PerRegionTestDisplay.error',

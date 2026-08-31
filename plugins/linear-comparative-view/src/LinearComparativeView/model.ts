@@ -818,7 +818,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.addView({
           type: 'LinearGenomeView',
           hideHeader: true,
-          init: { assembly, loc },
+          assembly,
+          loc,
         })
         if (syntenyTrackId) {
           self.showTrack(syntenyTrackId, level)

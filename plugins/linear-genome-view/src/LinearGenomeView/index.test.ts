@@ -2899,7 +2899,9 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     )
   })
 
-  test('a view prop nested inside init says where it belongs', async () => {
+  // it belongs on the view object, which is what the deprecation says; nested
+  // it names no launch key, so it reports as one that names nothing
+  test('a view prop nested inside init is not applied, and is named', async () => {
     const model = makeModel({
       assembly: 'volvox',
       loc: 'ctgA:1-1000',
@@ -2909,7 +2911,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
       expect(model.init).toBeUndefined()
     })
     expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining('view prop(s): colorByCDS'),
+      expect.stringContaining('ignored unknown key(s): colorByCDS'),
     )
     expect(model.colorByCDS).toBe(false)
   })
