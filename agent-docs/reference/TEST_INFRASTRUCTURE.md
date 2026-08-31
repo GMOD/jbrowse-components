@@ -244,6 +244,12 @@ found it — its manual import form scans the whole track list for the assembly
 pair it launches, and the local-file tests draw a canvas 74% different without
 the rest of the list, so only `three level` takes the trim there.
 
+**The 449s a run spends outside test bodies is not a per-suite floor**, so the
+lever people reach for next — moving the pure-logic suites off jsdom — is not
+one: an empty suite is 43ms under jsdom and 53ms under `node`, and the 1310
+suites with under 50ms of bodies cost 184s between them. It is module import in
+the ~670 larger suites. REJECTED_IDEAS.md, "Tooling, tests and docs".
+
 What is left, in order of size, is flat: nothing above 18s and the top twenty
 are all real React rendering and painting. `plugins/blat/src/liveIsPcr.test.ts`
 is 18.5s of live UCSC round-trip on any box where `UCSC_API_KEY` is set, 16s of
