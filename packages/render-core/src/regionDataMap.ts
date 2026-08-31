@@ -1,8 +1,8 @@
 import { observable } from 'mobx'
 
-import type { ObservableMap } from 'mobx'
+import { reportContractViolation } from './contractReports.ts'
 
-declare const process: { env: { NODE_ENV?: string } }
+import type { ObservableMap } from 'mobx'
 
 // Maps built here check themselves at the `set`, so the upload seam skips them
 // and a bad entry is reported once, with the field named.
@@ -81,28 +81,30 @@ export function regionDataMap<T extends object>(
   name: string,
 ): ObservableMap<number, T> {
   const map = observable.map<number, T>(undefined, { deep: false, name })
-  if (process.env.NODE_ENV !== 'production') {
-    checkedAtTheStore.add(map)
-    const set = map.set.bind(map)
-    map.set = (key: number, value: T) => {
-      // as `unknown`, because the claim that this is a `T` is the thing in
-      // doubt — checking it against its own declared type narrows to `never`
-      // and checks nothing
-      const stored: unknown = value
-      if (typeof stored !== 'object' || stored === null) {
-        // `console.error`, never `throw`: the store runs inside the fetch's own
-        // result handler, where a throw is caught and reported as a failed
-        // region — which would hide the violation being reported.
-        console.error(
-          `[jbrowse display contract] ${name}: region ${key} stored ` +
-            `\`${stored === null ? 'null' : typeof stored}\`, not a ` +
-            'payload. A fetch RPC answers a payload or a regionTooLarge ' +
-            'refusal; storing anything else leaves every reader of this map ' +
-            'reading through it.',
-        )
-      }
-      return set(key, value)
+  checkedAtTheStore.add(map)
+  const set = map.set.bind(map)
+  // one `typeof` per stored region, which is why it is not gated on the channel
+  // being armed: a violation found in a production build is buffered until
+  // something arms it, where a gate here would have thrown the evidence away
+  map.set = (key: number, value: T) => {
+    // as `unknown`, because the claim that this is a `T` is the thing in
+    // doubt — checking it against its own declared type narrows to `never`
+    // and checks nothing
+    const stored: unknown = value
+    if (typeof stored !== 'object' || stored === null) {
+      // reported and never thrown: the store runs inside the fetch's own result
+      // handler, where a throw is caught and reported as a failed region —
+      // which would hide the violation being reported.
+      reportContractViolation(
+        'display',
+        `${name}: region ${key} stored ` +
+          `\`${stored === null ? 'null' : typeof stored}\`, not a ` +
+          'payload. A fetch RPC answers a payload or a regionTooLarge ' +
+          'refusal; storing anything else leaves every reader of this map ' +
+          'reading through it.',
+      )
     }
+    return set(key, value)
   }
   return map
 }

@@ -109,7 +109,7 @@ export function trackActionItems<C extends { trackId: string }>({
   // visitor is served, one per click since the copy's stamped trackId defeats
   // the dedupe, and a non-admin's lands as the dead `sessionTracks` entry
   // ADR-084 removed the sweep for. Neither is worth offering, so the item says
-  // so instead of producing garbage; the dev-only contract check on the adders
+  // so instead of producing garbage; the contract check on the adders
   // is what found this.
   //
   // Greying a row tells nobody anything, and this reason is one nobody guesses:

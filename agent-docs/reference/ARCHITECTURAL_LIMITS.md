@@ -1065,6 +1065,24 @@ five places") across two additions while the body listed six and a source
 comment citing the heading by title still said four. **Don't put the length of a
 growing list anywhere but the list.**
 
+**The checks are no longer stripped in production** (2026-08-31). Every one that
+costs a `WeakSet` lookup now runs in a production build and reports through
+`@jbrowse/render-core/contractReports`, which is silent until something arms it:
+a plugin loaded from `localhost`, `localStorage.jbrowseDeveloperMode`, or
+`configuration.preferences.developerMode`. Armed, a report is both the
+`console.error` it always was and a session notification — where the host mounts
+a `Snackbar`, which the apps and the embedded products all do and a bring-your-own
+host need not, so that reader still gets the console line and nothing else. **The channel was the
+open half, not the cost** — a `console.error` surviving the build reaches nobody
+either, because nobody has a console open on a page they did not write, so
+un-stripping alone was never the fix it looks like. Two consequences worth
+knowing: a report is queued until something arms the channel AND a host installs
+a sink, because MST attaches a display **before** the session that could show
+its violation; and the two checks with a cost of their own — the figure's
+`MutationObserver`, `installUpload`'s per-frame payload walk — ask
+`contractReportsOn()` instead, so they need the channel armed before the display
+mounts. Public docs: `developer_guides/testing_plugins` §"Developer mode".
+
 One failure shape recurs: behavior depends on an order no type can see, and
 getting it wrong is silent. Two fix shapes answer it, and **which one applies
 turns on whether the violation is a declaration or a state.** A declaration — a
@@ -1104,9 +1122,10 @@ only on a real violation):
 
 - **A renamed gate hook leaves an override reading nothing.** In tree the hook
   table's generator asserts every hook is still declared by the file owning
-  its default; out of tree nothing reports it — the dev-only reporter that
-  did was compatibility scaffolding and went with the one-path gate
-  (2026-08-23). A renamed opt-in is a breaking change.
+  its default; out of tree nothing reports it — the reporter that did was
+  compatibility scaffolding and went with the one-path gate (2026-08-23). A
+  renamed opt-in is a breaking change. **The one entry the developer-mode
+  channel does not reach**, because nothing is left to report it.
 - **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
   lifecycle hooks, so capturing and calling it double-installs all five autoruns
   (`models/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
@@ -1248,9 +1267,10 @@ only on a real violation):
   out of a block body — so the objection held only for the third, a helper
   factory spread into the block, which no display does. The ADR records that.
   What none of the three forms covers is an out-of-tree display, which runs
-  neither our lint nor our tests, and which the production strip already left
-  with nothing
-  ([ideas/contract-checks-out-of-tree.md](../ideas/contract-checks-out-of-tree.md)).
+  neither our lint nor our tests — the gap the developer-mode channel above
+  closes for the *runtime* checks and cannot close for a selector, since a
+  selector reaches an out-of-tree plugin exactly as little as a stripped
+  `console.error` did.
 
 **Still silent:**
 

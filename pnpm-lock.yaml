@@ -570,6 +570,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
       '@mui/icons-material':
         specifier: ^9.3.1
         version: 9.3.1(@mui/material@9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)
@@ -9784,11 +9787,6 @@ packages:
     resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
     engines: {node: '>=6'}
 
-  terser@5.50.0:
-    resolution: {integrity: sha512-CN9BVxWhgS/hRxtUMjtC2uRWSTcSfQFHMDWma6sKKfIivCD91sM+FOPfvwoaRMqCSrUpe1nv3jDamd9eEQ4y+w==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   terser@5.51.0:
     resolution: {integrity: sha512-myiQ6aFnxDOjdiXdTlC8ngVccQD88uHXTx5RUQOSEnarDYgJMjDagwAQszcOusjvmf4YqWsxoD1+MY+oAJRmpw==}
     engines: {node: '>=10'}
@@ -15722,7 +15720,7 @@ snapshots:
       he: 1.2.0
       param-case: 3.0.4
       relateurl: 0.2.7
-      terser: 5.50.0
+      terser: 5.51.0
 
   html-void-elements@3.0.0: {}
 
@@ -18237,13 +18235,6 @@ snapshots:
       fs-constants: 1.0.0
       inherits: 2.0.4
       readable-stream: 3.6.2
-
-  terser@5.50.0:
-    dependencies:
-      '@jridgewell/source-map': 0.3.11
-      acorn: 8.18.0
-      commander: 2.20.3
-      source-map-support: 0.5.21
 
   terser@5.51.0:
     dependencies:

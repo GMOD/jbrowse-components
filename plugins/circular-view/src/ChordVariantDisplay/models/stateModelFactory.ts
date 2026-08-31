@@ -117,7 +117,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * the import form — so a track opened there rests forever in "fetch not
        * started". Two readers, which is why it is one name: the SVG export
        * (`awaitSvgReady` is an unbounded `when`, so it would hang with the
-       * dialog's spinner up and nothing said) and the dev-only retry check the
+       * dialog's spinner up and nothing said) and the retry contract check the
        * fetch skeleton installs, which would otherwise call that decline a dead
        * Retry button.
        */
@@ -270,7 +270,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         // disposer that stops the LAST token (which a rotation written by hand
         // always misses), the unconditional `reloadCounter` read, the
         // currency-guarded error rule, the retired status slot, the leading
-        // edge, and the two dev-only contract checks this fetch went without.
+        // edge, and the two display-contract checks this fetch went without.
         installFetch(self, {
           name: 'ChordVariantDisplayFetch',
           delay: 300,

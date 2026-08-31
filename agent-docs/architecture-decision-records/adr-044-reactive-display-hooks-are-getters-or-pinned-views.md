@@ -103,7 +103,9 @@ argument is in that block however long the block is. Only the third holds: a
 helper factory whose object is spread into `.actions()` puts the declaration in
 another file, and no display does that. What none of the three forms ever
 covered is an out-of-tree display, which runs neither our lint nor our tests, and
-which the production strip already left with nothing.
+which the production strip left with nothing at the time. The runtime checks
+reach it now (ARCHITECTURAL_LIMITS.md §"Ordering is the contract"); a selector
+never will, which is the residual this decision accepted.
 
 **`isAction()` from MobX.** Doesn't work: MST wraps actions with its own
 mechanism, so `isAction(display.isCacheValid)` is `false` for a real MST action.

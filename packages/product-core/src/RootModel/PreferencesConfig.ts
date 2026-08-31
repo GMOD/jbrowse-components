@@ -58,5 +58,20 @@ export function PreferencesConfigSchemaFactory() {
       type: 'boolean',
       defaultValue: false,
     },
+    /**
+     * #slot configuration.preferences.developerMode
+     * when true, the ordering-contract checks a display or plugin can break
+     * report themselves in the app rather than only in a development build.
+     * Off by default and deliberately not in the Preferences dialog: the
+     * messages are about code, and a reader who cannot change the code cannot
+     * act on one. Turn it on for a site that is running a plugin under
+     * development; a plugin author needs nothing here, since a plugin served
+     * from localhost arms the same channel on its own, as does
+     * `localStorage.jbrowseDeveloperMode`. Takes effect on reload.
+     */
+    developerMode: {
+      type: 'boolean',
+      defaultValue: false,
+    },
   })
 }

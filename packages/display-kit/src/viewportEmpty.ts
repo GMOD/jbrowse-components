@@ -20,7 +20,7 @@
  * feed it to every answer a display gives about being finished: the loading term
  * (`computeLoadingTerm`), the export gate (`foundationSvgReady`'s freshness
  * thunk, not its eager terminals — this is a view read), `paintInert`, which is
- * what the on-screen capture gate waits on, and the dev-only retry check, whose
+ * what the on-screen capture gate waits on, and the retry contract check, whose
  * dead-Retry report would otherwise fire on every display in the view at once
  * and name a fix that does not exist.
  *

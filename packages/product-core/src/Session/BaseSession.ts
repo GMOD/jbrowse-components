@@ -7,6 +7,8 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
+import { applyDeveloperMode } from './developerMode.ts'
+
 import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type { HeldNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -528,7 +530,16 @@ export function BaseSessionModel<
       },
     }))
 
-  return types.compose(baseModel, SnackbarModel())
+  return types.compose(baseModel, SnackbarModel()).actions(self => ({
+    // after the compose rather than in the afterAttach above, because the
+    // notices land in the snackbar this line is the first place to hold both
+    // halves of. Web and desktop reach it a second time once the user's stored
+    // overrides are loaded (`PreferencesSessionMixin`), and our MST fork
+    // auto-chains both hooks.
+    afterAttach() {
+      applyDeveloperMode(self)
+    },
+  }))
 }
 
 /** Session mixin MST type for the most basic session */

@@ -268,6 +268,36 @@ Run with `pnpm test:browser` (builds `@jbrowse/web` first) or
 `pnpm test:browser:update` to refresh snapshots. See
 `agent-docs/reference/TEST_INFRASTRUCTURE.md` for the full harness reference.
 
+## Developer mode: the checks that speak up in a built app
+
+Some of what a display can get wrong is an **ordering** no type states and no
+test of yours can see — a `afterAttach` that chains to `super` and so installs
+every fetch autorun twice, a `reload()` that clears the error without
+invalidating anything the fetch gate reads, two live SVG figures of one view
+minting the same ids. Each of those draws a plausible picture and says nothing.
+
+JBrowse checks all of them at runtime and reports each as a sentence naming the
+fix. In a JBrowse you build yourself the report is a `console.error`; in a
+production build of somebody else's app — which is where your plugin usually
+runs — nothing is listening until you say so. Three things turn it on:
+
+- **Loading your plugin from `localhost`.** A plugin served from your own
+  machine into a deployed app can only be one under development, so this needs
+  nothing from you.
+- **`localStorage.jbrowseDeveloperMode = 1`**, then reload. Works on any
+  deployed JBrowse, including one you do not own.
+- **`configuration.preferences.developerMode`** in a site's `config.json`, for a
+  deployment that is running a plugin under development.
+
+A violation then appears as a warning notification in the session the broken
+display is in, alongside the console message. It names the fix, and it says
+which of the three turned it on, because the notice is about your code rather
+than about the reader's data.
+
+If you are building your own chrome rather than using a JBrowse app, the
+notification needs a `<Snackbar session={session} />` somewhere in your tree —
+without one the report still reaches the console, and nothing else.
+
 ## Running tests
 
 - `pnpm test <directory>` - Jest for a subtree (prefer over the full suite while

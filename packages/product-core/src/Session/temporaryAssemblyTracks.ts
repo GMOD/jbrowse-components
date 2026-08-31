@@ -1,15 +1,11 @@
 import { namesTemporaryAssembly } from '@jbrowse/core/util'
+import { reportContractViolation } from '@jbrowse/render-core/contractReports'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-// This ESM package builds without @types/node, but consuming bundlers
-// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
-// reference and give it a minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
-
 /**
- * Dev-only check that a track config being written into a session or config list
- * is one something can still draw tomorrow. No-op in production.
+ * Checks that a track config being written into a session or config list is one
+ * something can still draw tomorrow.
  *
  * A config naming nothing but a temporary assembly is dead the moment its view
  * closes, and no list outside that view has anyone to sweep it — which is the
@@ -26,22 +22,21 @@ declare const process: { env: { NODE_ENV?: string } }
  * `console.error` and never `throw`, matching `assertDisplayContract`: these
  * writes happen inside launchers and menu handlers where an exception is caught
  * and reported as a failed track, which would hide the violation. The jest gate
- * (`config/jest/contractGate.js`) is what listens.
+ * (`config/jest/contractGate.js`) is what listens in tree; out of tree
+ * `contractReports` does, once a host arms it.
  */
 export function assertTrackConfOutlivesItsAssemblies(
   session: unknown,
   trackConf: AnyConfigurationModel | Record<string, unknown>,
   destination: string,
 ) {
-  if (process.env.NODE_ENV === 'production') {
-    return
-  }
   if (!namesTemporaryAssembly(session, trackConf)) {
     return
   }
   const { trackId } = trackConf as { trackId?: string }
-  console.error(
-    `[jbrowse session contract] ${destination} was given "${trackId}", ` +
+  reportContractViolation(
+    'session',
+    `${destination} was given "${trackId}", ` +
       `which names a temporary assembly — one a comparative view synthesized ` +
       `and gives back when it closes, so this config outlives the only ` +
       `assembly that could draw it and nothing sweeps the list it landed in. ` +

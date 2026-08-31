@@ -1,5 +1,5 @@
 /**
- * The dev-only check on what may be stored as a region's payload.
+ * The check on what may be stored as a region's payload.
  *
  * Every per-region display keys its worker results by `displayedRegionIndex` in
  * a map built here, and every reader of one is written for the payload shape. No

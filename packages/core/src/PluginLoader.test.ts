@@ -509,3 +509,41 @@ test('a real no-build plugin installs through jbrequire', async () => {
   })
   expect(color).toBe('green')
 })
+
+// A plugin served from the developer's own machine into a production build is
+// the one arrangement that can only be a plugin under development, so it is
+// what arms the contract channel for the population that has nobody to ask —
+// see `@jbrowse/render-core/contractReports`.
+async function loadFrom(url: string) {
+  const wasNodeEnv = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  jest.resetModules()
+  const { contractReportsOn } =
+    await import('@jbrowse/render-core/contractReports')
+  const { default: FreshPluginLoader } = await import('./PluginLoader.ts')
+  process.env.NODE_ENV = wasNodeEnv
+  const loader = new FreshPluginLoader([], {
+    fetchESM: async () => ({ default: class {} as never }),
+  })
+  await loader.loadPlugin({ esmUrl: url })
+  return contractReportsOn()
+}
+
+test('a plugin served from this machine turns the contract notices on', async () => {
+  await expect(loadFrom('http://localhost:9000/dist/plugin.js')).resolves.toBe(
+    true,
+  )
+})
+
+test('a plugin served from anywhere else leaves them off', async () => {
+  await expect(
+    loadFrom('https://unpkg.com/jbrowse-plugin-something/dist/plugin.js'),
+  ).resolves.toBe(false)
+})
+
+// the shape a hostname could be spoofed into, if the test matched a substring
+test('a host that merely contains localhost is not this machine', async () => {
+  await expect(
+    loadFrom('https://localhost.evil.example.com/plugin.js'),
+  ).resolves.toBe(false)
+})

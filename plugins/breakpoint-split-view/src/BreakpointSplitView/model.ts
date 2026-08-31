@@ -786,7 +786,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // completion for a viewport nobody was looking at. What the skeleton
         // brings beyond the rotation is the leading edge (the first overlay
         // fetch no longer waits out a full second), the currency-guarded error
-        // rule, the retired status slot, and the two dev-only contract checks.
+        // rule, the retired status slot, and the two display-contract checks.
         installFetch(self, {
           name: 'BreakpointFeatureFetcher',
           delay: 1000,

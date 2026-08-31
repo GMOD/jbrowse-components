@@ -1,8 +1,11 @@
+import { enableContractReports } from '@jbrowse/render-core/contractReports'
+
 import { setReExportRegistry } from './ReExports/registry.ts'
 import {
   isCJSPluginDefinition,
   isESMPluginDefinition,
   isUMDPluginDefinition,
+  maybePluginUrl,
   pluginDescriptionString,
 } from './pluginDefinitions.ts'
 import { isElectron } from './util/index.ts'
@@ -144,6 +147,37 @@ function resolvePluginUrl(spec: string, base?: string) {
   return url
 }
 
+// A plugin served from the developer's own machine into an app built for
+// production is the one arrangement that can only be a plugin under
+// development: a shipped site serves its plugins from its own origin, and a
+// developer running the app itself from source already has a development build.
+// So it is the evidence that arms the contract channel without anything for the
+// author to know about first — which is the whole difficulty the channel had,
+// since the population it is written for is the one with nobody to ask. See
+// `@jbrowse/render-core/contractReports`.
+function armIfUnderDevelopment(def: PluginDefinition) {
+  const url = maybePluginUrl(def)
+  if (url !== undefined && servedFromThisMachine(url)) {
+    enableContractReports(`the plugin at ${url} is served from this machine`)
+  }
+}
+
+function servedFromThisMachine(url: string) {
+  try {
+    const { hostname, protocol } = new URL(url)
+    return (
+      (protocol === 'http:' || protocol === 'https:') &&
+      (hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '[::1]')
+    )
+  } catch {
+    // a relative url is a plugin shipped beside this index.html, which is the
+    // site's own rather than one under development
+    return false
+  }
+}
+
 function addCacheBuster(url: string) {
   if (!('__jbrowseCacheBuster' in globalThis)) {
     return url
@@ -229,6 +263,7 @@ export default class PluginLoader {
 
   async loadPlugin(def: PluginDefinition, baseUri?: string) {
     assertSingleKind(def)
+    armIfUnderDevelopment(def)
     let plugin: LoadedPlugin
     if (isCJSPluginDefinition(def)) {
       if (!isElectron) {

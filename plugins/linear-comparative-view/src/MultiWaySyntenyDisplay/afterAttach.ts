@@ -120,7 +120,7 @@ async function fetchEachLane<Spec, Result>(
  *   dead Retry this display shipped once and `installFetch` exists to make
  *   unspellable.
  * - **No `contract`**: both are second fetches on a display whose global
- *   foundation already installed the two dev-only contract checks.
+ *   foundation already installed the two display-contract checks.
  * - **`setError` is a noop.** A lane's extra records are an enhancement over
  *   placement boxes that are already correct, so a lane failure must not reach
  *   the error slot the ortholog fetch owns — least of all through the clear it

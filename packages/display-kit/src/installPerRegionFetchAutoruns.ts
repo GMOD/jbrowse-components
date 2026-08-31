@@ -67,7 +67,7 @@ export interface PerRegionFetchHost extends IStateTreeNode {
  * `untracked` is allowed on two grounds only: a read the body's own effect
  * writes (`ClearBlockingStateOnViewportChange` clears the flags it reads, so
  * tracking them would re-fire it off `setError` and wipe the flag before any
- * viewport change), and a dev-only check that must not alter the production
+ * viewport change), and a contract check that must not alter the production
  * dependency set. Anything else was a perf guard, and the two this file carried
  * (`isLoading`, `loadedRegions`) were measured on 2026-08-23 and removed: a
  * fetch shorter than the 600 ms debounce coalesces the flip into the run

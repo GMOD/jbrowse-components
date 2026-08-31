@@ -8,6 +8,7 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { BaseSessionModel } from './BaseSession.ts'
+import { applyDeveloperMode } from './developerMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -52,6 +53,10 @@ export function PreferencesSessionMixin(pluginManager: PluginManager) {
         // main-thread update would leave the app formatted two ways at once.
         // The dialog says a reload is needed; this is where the reload lands.
         setNumberGrouping(self.numberGrouping)
+        // and the same second pass for the developer-notice channel, whose
+        // admin default BaseSession already read: a user's stored override is
+        // only loaded a line above this
+        applyDeveloperMode(self)
         addDisposer(
           self,
           autorun(

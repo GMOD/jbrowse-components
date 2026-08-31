@@ -1,12 +1,8 @@
 import { getMembers } from '@jbrowse/mobx-state-tree'
+import { reportContractViolation } from '@jbrowse/render-core/contractReports'
 import { untracked } from 'mobx'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-// This ESM package builds without @types/node, but consuming bundlers
-// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
-// reference and give it a minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
 
 // Nodes whose fetch foundation has already installed its autoruns. Keyed on the
 // node rather than the model type: every display of a type would otherwise
@@ -14,16 +10,15 @@ declare const process: { env: { NODE_ENV?: string } }
 const attached = new WeakSet<object>()
 
 function report(message: string) {
-  // `console.error`, never `throw`: an error escaping `afterAttach` is read by
-  // the session loader as an invalid track and the display is silently dropped
-  // — which would hide the very contract violation this is reporting.
-  console.error(`[jbrowse display contract] ${message}`)
+  reportContractViolation('display', message)
 }
 
 /**
- * Dev-only check that a display's fetch foundation attached it exactly once —
- * the one ordering contract here that is a *state* rather than a declaration,
- * so no selector can reach it. No-op in production.
+ * Checks that a display's fetch foundation attached it exactly once — the one
+ * ordering contract here that is a *state* rather than a declaration, so no
+ * selector can reach it. Costs a `WeakSet` lookup, so it runs in a production
+ * build too and reports through `contractReports`, which is silent until
+ * something arms it.
  *
  * Called once per display from **whichever fetch foundation installed its
  * autoruns** — `MultiRegionDisplayMixin`'s `afterAttach` for the per-region
@@ -59,20 +54,18 @@ export function assertDisplayContract(
   self: IAnyStateTreeNode,
   installedBy = "the per-region fetch foundation's afterAttach",
 ) {
-  if (process.env.NODE_ENV !== 'production') {
-    if (attached.has(self)) {
-      report(
-        `${getMembers(self).name}: ${installedBy} ran twice on one display, ` +
-          `so its fetch autoruns are installed twice (double fetches, double ` +
-          `clears). Our MST fork auto-chains lifecycle hooks, so the usual ` +
-          `cause is a superAfterAttach() call in this display's afterAttach — ` +
-          `delete it. Otherwise this display composes two fetch foundations, ` +
-          `or calls an installer it already gets from a mixin. ` +
-          `See agent-docs/ARCHITECTURE.md §"What not to do".`,
-      )
-    } else {
-      attached.add(self)
-    }
+  if (attached.has(self)) {
+    report(
+      `${getMembers(self).name}: ${installedBy} ran twice on one display, ` +
+        `so its fetch autoruns are installed twice (double fetches, double ` +
+        `clears). Our MST fork auto-chains lifecycle hooks, so the usual ` +
+        `cause is a superAfterAttach() call in this display's afterAttach — ` +
+        `delete it. Otherwise this display composes two fetch foundations, ` +
+        `or calls an installer it already gets from a mixin. ` +
+        `See agent-docs/ARCHITECTURE.md §"What not to do".`,
+    )
+  } else {
+    attached.add(self)
   }
 }
 
@@ -137,11 +130,8 @@ interface RetryContractHost {
 const fetchStarted = new WeakSet<object>()
 const ledgers = new WeakMap<object, (outcome: FetchAutorunOutcome) => void>()
 
-/** Called by `FetchMixin.runFetch`. Dev-only. */
+/** Called by `FetchMixin.runFetch`. */
 export function noteFetchStarted(self: object) {
-  if (process.env.NODE_ENV === 'production') {
-    return
-  }
   fetchStarted.add(self)
   ledgers.get(self)?.('fetched')
 }
@@ -152,9 +142,10 @@ export function takeFetchStarted(self: object) {
 }
 
 /**
- * Dev-only check that a display's `reload()` can actually reach a fetch — the
- * retry contract, which `DisplayErrorBar` depends on and which no type can
- * state. No-op in production.
+ * Checks that a display's `reload()` can actually reach a fetch — the retry
+ * contract, which `DisplayErrorBar` depends on and which no type can state.
+ * Costs an `untracked` read per autorun run against a fetch, so it runs in a
+ * production build too and reports through `contractReports`.
  *
  * **The button is the contract.** `DisplayErrorBar`'s only action is
  * `model.reload()`, so every state that can raise the error bar has to be one
@@ -251,9 +242,6 @@ export function takeFetchStarted(self: object) {
 export function makeRetryContractCheck(
   self: IAnyStateTreeNode & RetryContractHost,
 ) {
-  if (process.env.NODE_ENV === 'production') {
-    return () => {}
-  }
   // eslint-disable-next-line no-restricted-syntax -- instrumentation
   let lastCounter = untracked(() => self.reloadCounter)
   function noteRetryContractOutcome(outcome: FetchAutorunOutcome) {

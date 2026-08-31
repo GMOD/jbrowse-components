@@ -1,13 +1,9 @@
 import { getType } from '@jbrowse/mobx-state-tree'
+import { reportContractViolation } from '@jbrowse/render-core/contractReports'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-// This ESM package builds without @types/node, but consuming bundlers still
-// string-replace `process.env.NODE_ENV`, so keep the reference and give it a
-// minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
 
 /**
  * A region a fetch stored, and which fetch stored it.
@@ -87,11 +83,11 @@ export interface RegionFetchContext extends FetchContext {
 }
 
 /**
- * The two dev-only checks on `commitRegion`'s contract, as a pair of no-ops in
- * production — the same shape as `makeSettingsLoopGuard` in `displayAutoruns`,
- * and for the same reason: the mechanism reads as mechanism, and what a
- * violation costs is stated once where the check is rather than inline where it
- * fires.
+ * The two checks on `commitRegion`'s contract, kept together for the same
+ * reason `makeSettingsLoopGuard` in `displayAutoruns` is: the mechanism reads
+ * as mechanism, and what a violation costs is stated once where the check is
+ * rather than inline where it fires. Both are counters, so they run in a
+ * production build too and report through `contractReports`.
  *
  * They cover the two directions a commit can be wrong, and only one of them is
  * still reachable by construction:
@@ -111,14 +107,12 @@ export interface RegionFetchContext extends FetchContext {
  * not.
  */
 export function makeCommitChecks(self: IStateTreeNode) {
-  if (process.env.NODE_ENV === 'production') {
-    return { unknownRegion: () => {}, fetchEnded: () => {} }
-  }
   let emptyFetchRuns = 0
   return {
     unknownRegion(displayedRegionIndex: number, issued: Iterable<number>) {
-      console.error(
-        `[jbrowse display contract] commitRegion(${displayedRegionIndex}) names ` +
+      reportContractViolation(
+        'display',
+        `commitRegion(${displayedRegionIndex}) names ` +
           `a region this fetch did not ask for (it issued ` +
           `${[...issued].join(', ') || 'none'}), so nothing was marked loaded. ` +
           `See RegionFetchContext.`,
@@ -127,8 +121,9 @@ export function makeCommitChecks(self: IStateTreeNode) {
     fetchEnded({ committed, gated }: { committed: number; gated: boolean }) {
       emptyFetchRuns = committed === 0 && !gated ? emptyFetchRuns + 1 : 0
       if (emptyFetchRuns === 3) {
-        console.error(
-          `[jbrowse display contract] ${getType(self).name}: three fetches in a ` +
+        reportContractViolation(
+          'display',
+          `${getType(self).name}: three fetches in a ` +
             `row stored data for no region and nothing is gating them, so the ` +
             `plan will keep asking for the same regions. A work callback that ` +
             `stores a payload must call ` +

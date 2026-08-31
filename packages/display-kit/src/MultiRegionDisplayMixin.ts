@@ -528,7 +528,7 @@ export default function MultiRegionDisplayMixin() {
          *
          * An override must reach this counter, by chaining to super or by
          * bumping it. Missing it doesn't break the retry, which the
-         * `clearAllRpcData` call drives; it turns the dev-only retry check off
+         * `clearAllRpcData` call drives; it turns the retry contract check off
          * for that display, silently. Both overrides in the tree chain now —
          * `MultiSampleVariantBaseModel` always did, canvas's `LinearBasicDisplay`
          * did not, and that took `LinearVariantDisplay` with it — and

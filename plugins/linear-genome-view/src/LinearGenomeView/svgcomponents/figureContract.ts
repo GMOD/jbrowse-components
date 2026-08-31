@@ -1,34 +1,32 @@
 import { useEffect, useRef } from 'react'
 
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import {
+  contractReportsOn,
+  reportContractViolation,
+} from '@jbrowse/render-core/contractReports'
 
 import type { RefObject } from 'react'
 
-// This ESM package builds without @types/node, but consuming bundlers
-// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
-// reference and give it a minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
-
 /**
- * Dev-only checks that a live SVG figure is being used the way it can work.
- * No-ops in production.
+ * Checks that a live SVG figure is being used the way it can work.
  *
  * `useViewSvgFigure` publishes a figure whose two halves are drawn at different
  * moments and only agree by construction, and both ways of breaking that are
  * invisible in the output: the drawing is still a plausible picture of
  * somewhere, just not of one moment or not with its own clips. So the run
  * reports instead, through the `[jbrowse <family> contract]` channel every
- * dev-only check in the tree uses — `config/jest/contractGate.js` fails the test
- * that collects one, and ARCHITECTURAL_LIMITS.md §"Ordering is the contract" is
- * the register. `figure` rather than `svg-figure` because the gate's family
- * pattern is `\w+`, which a hyphen is not.
+ * check in the tree uses — `config/jest/contractGate.js` fails the test that
+ * collects one, and ARCHITECTURAL_LIMITS.md §"Ordering is the contract" is the
+ * register. `figure` rather than `svg-figure` because the gate's family pattern
+ * is `\w+`, which a hyphen is not.
  *
- * `console.error` and never a throw, as the rest of that family: a figure is
- * chrome a host renders beside its own, and taking the host's tree down over a
- * drawing is worse than the drawing being wrong.
+ * Reported and never thrown, as the rest of that family: a figure is chrome a
+ * host renders beside its own, and taking the host's tree down over a drawing
+ * is worse than the drawing being wrong.
  */
 function report(message: string) {
-  console.error(`[jbrowse figure contract] ${message}`)
+  reportContractViolation('figure', message)
 }
 
 // Live figures per view, keyed the way their SVG ids are. A count rather than a
@@ -54,9 +52,6 @@ const figuresPerView = new Map<string, number>()
  */
 export function useOneFigurePerView(view: { id: string }) {
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
-      return undefined
-    }
     // captured, not re-derived on cleanup: by then the view may have left the
     // tree, and `svgNodeId` walks it
     const key = svgNodeId(view)
@@ -115,7 +110,10 @@ export function useFrozenFigureContract(
   rendered.current = snapshot
   useEffect(() => {
     const el = ref.current
-    if (process.env.NODE_ENV === 'production' || !el) {
+    // the one check here with a cost of its own — a `MutationObserver` over the
+    // whole figure subtree — so unlike its neighbour it asks whether the
+    // channel is armed rather than running and reporting into it
+    if (!contractReportsOn() || !el) {
       return undefined
     }
     const observer = new MutationObserver(() => {

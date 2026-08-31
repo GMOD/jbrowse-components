@@ -240,8 +240,8 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
   snapshot: FigureSnapshot
 }) {
   const { width, height, margin, theme } = snapshot
-  // dev-only, and it watches for the one thing this component cannot enforce:
-  // an observer INSIDE the tree, which the memo above is not between
+  // it watches for the one thing this component cannot enforce: an observer
+  // INSIDE the tree, which the memo above is not between
   const ref = useRef<SVGSVGElement>(null)
   useFrozenFigureContract(ref, snapshot)
   return (

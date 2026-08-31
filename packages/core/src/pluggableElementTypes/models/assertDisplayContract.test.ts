@@ -1,5 +1,5 @@
 /**
- * The dev-only double-attach check.
+ * The double-attach check.
  *
  * A fetch foundation installs a display's autoruns from `afterAttach`, so
  * reaching that hook twice on one node installs every one of them twice —

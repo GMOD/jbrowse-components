@@ -1,12 +1,14 @@
 import { getType } from '@jbrowse/mobx-state-tree'
 import { computed } from 'mobx'
 
+import {
+  contractReportsOn,
+  reportContractViolation,
+} from './contractReports.ts'
 import { createMapUploadSync } from './mapUploadSync.ts'
 import { isCheckedAtTheStore } from './regionDataMap.ts'
 
 import type { LifecycleHost } from './RenderLifecycleMixin.ts'
-
-declare const process: { env: { NODE_ENV?: string } }
 
 /**
  * What every backend that takes keyed uploads implements. One cell is one
@@ -101,8 +103,9 @@ function checkPayloads(
       }
       if (!named.has(key)) {
         named.add(key)
-        console.error(
-          `[jbrowse display contract] ${getType(self).name}: cell ${String(key)} ` +
+        reportContractViolation(
+          'display',
+          `${getType(self).name}: cell ${String(key)} ` +
             `handed to installUpload is \`${String(value)}\`. A fetch answers ` +
             'a payload or nothing; leave the key out until it has one.',
         )
@@ -175,7 +178,7 @@ export function installUpload<
       return {
         upload: b => {
           const current = own()
-          if (process.env.NODE_ENV !== 'production') {
+          if (contractReportsOn()) {
             checkPayloads(self, current)
           }
           return sync(b, current)
@@ -190,7 +193,7 @@ export function installUpload<
     return {
       upload: b => {
         const current = cells()
-        if (process.env.NODE_ENV !== 'production') {
+        if (contractReportsOn()) {
           checkPayloads(self, current)
         }
         const p = props ? props.get() : (undefined as Props)
