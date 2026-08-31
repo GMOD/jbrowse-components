@@ -15,6 +15,9 @@ Options:
   --renderer <mode>  Force a rendering backend: "webgl" or "canvas" instead of
                      auto-detecting WebGPU. Useful over X11 / remote desktops
                      where WebGPU is unavailable.
+  --mcp              Run as an MCP stdio server that controls the running
+                     JBrowse Desktop instance (for Claude Desktop and other
+                     MCP clients); opens no window of its own
   -h, --help         Print this help message and exit
   --version          Print the version number and exit
 
@@ -33,6 +36,7 @@ export function cliInfoOutput(argv: readonly string[], version: string) {
 
 export type LaunchMode =
   | { type: 'info'; output: string }
+  | { type: 'mcp' }
   | { type: 'run' }
   | { type: 'duplicate' }
 
@@ -64,9 +68,15 @@ export function resolveLaunchMode(
   acquireSingleInstanceLock: () => boolean,
 ): LaunchMode {
   const output = cliInfoOutput(argv, version)
-  return output === undefined
-    ? acquireSingleInstanceLock()
-      ? { type: 'run' }
-      : { type: 'duplicate' }
-    : { type: 'info', output }
+  // `--mcp`, like the info flags, must never touch the lock: it talks to the
+  // running instance over its bridge socket rather than becoming one, and
+  // acquiring the lock would raise that instance's window on every MCP client
+  // startup
+  return output !== undefined
+    ? { type: 'info', output }
+    : argv.slice(1).includes('--mcp')
+      ? { type: 'mcp' }
+      : acquireSingleInstanceLock()
+        ? { type: 'run' }
+        : { type: 'duplicate' }
 }

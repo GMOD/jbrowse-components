@@ -36,6 +36,7 @@ export const INVOKABLE_CHANNELS = [
   'confirmUntrustedPlugins',
   'openBlatChallenge',
   'blatFetch',
+  'mcpResponse',
 ] as const satisfies readonly (keyof IpcChannels)[]
 
 // A channel added to IpcChannels but not listed above would be rejected by the
