@@ -17,6 +17,9 @@ all of them for hg38, so this page is a click-path.
 
 - nothing to install to read along: every track comes from the hosted hg38
   config, and the one read track is a public CRAM added as a session track
+- a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
+  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
+  needs nothing hosted
 - to re-measure the numbers on this page, the tools listed under
   [Reproduce it end to end](#reproduce-it-end-to-end)
 

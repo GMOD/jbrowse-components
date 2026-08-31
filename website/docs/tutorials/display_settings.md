@@ -15,7 +15,8 @@ them through all three.
 
 ## Prerequisites
 
-- JBrowse Web or JBrowse Desktop. Both are covered at each step.
+- [JBrowse Web](/docs/quickstart_web) or
+  [JBrowse Desktop](/docs/quickstart_desktop). Both are covered at each step.
 - Nothing to download. The volvox demo data is hosted.
 
 ## Open the reads track

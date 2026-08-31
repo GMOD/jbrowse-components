@@ -14,6 +14,9 @@ loads as a structural variant genotyped per mosquito.
 
 ## Prerequisites
 
+- a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
+  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
+  needs nothing hosted
 - [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) (`plink2`), labeled alpha
   for years despite being the version in general use
 - htslib (`bgzip`, `tabix`)
@@ -52,8 +55,8 @@ or a data-access agreement.
 
 Two facts set up the page:
 
-- **Inverted and standard arrangements cannot recombine in a heterozygote**, so
-  wherever both are present the whole segment stays correlated.
+- **Crossing over is suppressed in a 2La heterokaryotype**, so the segment
+  travels as a unit. Gene flux still crosses it, away from the breakpoints.
 - **The 2La inversion in _Anopheles gambiae_ spans roughly 22 Mb** of chromosome
   arm 2L, past what can be computed live from a VCF, so this LD is precomputed
   with PLINK and read through
@@ -203,9 +206,8 @@ karyotype lane, one row per mosquito, 297 from Cameroon and 69 from Gabon.
 
 The block's edges land on the published breakpoint coordinates, and on the
 karyotype lane beneath the heatmap, whose cells are drawn at those same
-coordinates from a different file. Across the block, markers at opposite ends
-are about as correlated as neighbouring ones: correlation holds flat with
-distance over a recombination-suppressed span.
+coordinates from a different file. Markers at opposite ends read about as
+correlated as neighbouring ones, at one variant per 50 kb above a 0.2 MAF floor.
 
 Two more things stand out beyond the 2La block itself:
 
@@ -215,47 +217,19 @@ Two more things stand out beyond the 2La block itself:
   this release was used to survey
   ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)). Gabon shows that
   block too.
-- **Gabon's 2La span reads flat.** 64 of its 69 mosquitoes recombine freely
-  across that span, and the MAF floor both files carry drops the variants
-  tagging the 5 heterozygotes.
+- **Gabon's 2La span reads flat.** It is near-fixed for the standard
+  arrangement, so almost no chromosome pair there is a heterokaryotype and
+  nothing suppresses crossing over across the span. The few 2La chromosomes it
+  does carry fall below the MAF floor with the variants that tag them.
 
-## What an LD block depends on
+## Which metric recovers the breakpoints
 
-Four things decide how strongly a block reads, and the
-[reproduce script](#reproduce-it-end-to-end) prints the numbers behind each:
-
-- **Common-variant density.** A sweep that went to fixation leaves few common
-  variants to correlate. Compare density at the locus against a neutral window
-  in the same panel.
-- **Whether the panel segregates the feature.** Long-range LD inside a candidate
-  span, against an equally distant control, reads as a block only where both
-  arrangements are present.
-- **Background LD.** A bottlenecked panel renders red across the whole arm, so
-  read the absolute background alongside the inside/outside ratio.
-- **Number of haplotypes.** r² is a correlation between two biallelic markers,
-  so several haplotypes at one locus fragment the block: each carries a
-  different background, and no single pair of markers tags them all. A soft
-  sweep leaves a patchier block than its strength suggests.
-
-## Metric and allele-frequency floor
-
-Two metrics read the same block differently:
-
-- **D'** asks whether recombination has been seen between two markers, so it
-  saturates near 1 wherever no recombinant haplotype has turned up. That makes
-  it the read on where recombination stops, and the reproduce script uses it to
-  recover the breakpoints.
-- **r²** asks how well one marker predicts the other, which also requires the
-  two to be at similar frequency, so it draws the sharper boundary and reads on
-  whether a marker can stand in for another.
-
-Switch with [`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the
-script prints both ratios for every panel.
-
-Raising the minor allele frequency filter
-([`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter))
-thins dense callsets to the common, block-tagging variants. High enough, it
-reaches the tagging variants themselves and the block fades.
+D' saturates wherever no recombinant haplotype has turned up, so it reads on
+where crossing over stops rather than on how well one marker predicts another.
+That is what the [reproduce script](#reproduce-it-end-to-end) switches to
+recover the 2La breakpoints from the table, and
+[the guide](/docs/config_guides/variant_track#which-metric-and-how-far-to-thin)
+has both metrics and the allele-frequency floor beside them.
 
 ## Reproduce it end to end
 
@@ -263,7 +237,8 @@ reaches the tagging variants themselves and the block fades.
 does the whole build for you:
 
 - downloads the phased haplotypes
-- runs each check above and prints the result
+- prints the long-range D' profile the breakpoints come off, the 2La score
+  distribution and the karyotype breakdown per population
 - builds the tabix-indexed `.vcor.gz` tracks and the per-mosquito karyotype
   calls
 - writes a `config.json` opening on the inversion

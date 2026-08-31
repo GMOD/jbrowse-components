@@ -20,6 +20,9 @@ class is already in the file, and the display discovers the lanes from it.
 - nothing to install to read along: the RepeatMasker track is already on any
   genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), or on any other
   UCSC/GenArk hub config
+- a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
+  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
+  needs nothing hosted
 - htslib (`bgzip`, `tabix`, `htsfile`), for the check at the end
 - `samtools`, for
   [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)

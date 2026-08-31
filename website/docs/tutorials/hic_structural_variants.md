@@ -18,6 +18,9 @@ and the Philadelphia chromosome in K562.
 
 - nothing to install to read along: every track is a public ENCODE object served
   with CORS and byte ranges
+- a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
+  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
+  needs nothing hosted
 - `java`, which `juicer_tools` needs for the [scan script](#run-the-scan); the
   script downloads `juicer_tools` itself
 - `curl`, for the same [scan script](#run-the-scan)

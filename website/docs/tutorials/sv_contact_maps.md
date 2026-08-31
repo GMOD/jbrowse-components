@@ -21,6 +21,9 @@ the browser beside it.
 ## Prerequisites
 
 - nothing to install to read along: every track below is hosted
+- a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
+  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
+  needs nothing hosted
 - `samtools` and `python3`, for the [one command](#building-the-four-channels)
   that turns your own reads into contact channels
 - `java`, which `juicer_tools` needs. `sv_contact_maps.py` downloads

@@ -203,3 +203,85 @@ portal with no derivative row; 2 is 1.5 d; 4 is 2 d; 5 is 1-2 d.
 - Whether a "Draw as: linear genome view" option in the derivative dialog
   (the multi-region LGV `k562_fusions` hand-builds) ships first, since the
   card's reference row is that view.
+
+## Where this stands
+
+Checked 2026-08-31: **unstarted**, and the two unblocking steps are still the
+two the plan named.
+
+- `sv_multihop.py chains` (`cmd_chains`, `:247`) prints text. No `--json`, and
+  `parse_junctions` still drops the VCF `ID`s a card would key on. Step 1.
+- `jb2export batch` still takes `--vcf` into BEDPE rows, so a row is two loci
+  and a three-hop chain is not expressible. Step 3.
+- `sv_callset_review.md` shipped in the meantime and is the page this lands on.
+  It already carries §"Reading the sheet" (the four things a picture says) and
+  §"Other callers", which is the caller survey below in reader-facing form.
+
+Order 1 → 3 → 2 → 4 → 5 still holds.
+
+## Cards for a callset with no chains
+
+**The plan as written reviews the minority of a callset.** COLO829 is 100
+junctions and 4 chains of ≥3 hops at the defaults — so a chain-per-card portal
+draws about a dozen junctions and silently drops the other ~88. That is the
+wrong shape for the thing the page is actually about, which is reviewing a
+callset.
+
+The repair is to make the chain a **property of a card rather than the
+definition of one**. Every junction gets a card; a junction that belongs to a
+chain gets its chain's other loci as extra panels and a chain id, and the class
+filter (`EVENTTYPE | n-hop | derive-failed`) grows a `single` class that is most
+of the callset. `find_chains` already partitions the junction list, so this is a
+different iteration over the same output rather than new analysis, and it makes
+`--min-hops` a display filter instead of a gate that decides what exists.
+
+It also fixes a sequencing problem in the risks section: "the first portal ships
+with the reference row alone" is currently the same thing as "the first portal
+ships nearly empty", because without `derive` there is no reason to have
+restricted to chains at all.
+
+## Sorting the queue is what makes it finishable
+
+A hundred cards in file order is a hundred cards. `sv_callset_review.md`
+§"Reading the sheet" already lists what a reviewer is looking for, and **every
+item on that list is a count over reads the render is fetching anyway**:
+
+| the page's reading | the number behind it |
+| --- | --- |
+| a fan of curves at both breakends | spanning reads with an SA at both loci |
+| nothing connecting the panels | that count at zero |
+| curves in the normal too | the same count in the matched normal |
+| a dense fan in a region of ragged coverage | mappability of the two flanks |
+
+The first three are `touches_all` and the batch study's existing normal-side
+count, which `SV_MULTIHOP.md` already reports per callset. So the portal can
+ship a **sort key per card at no extra fetch**, and the review becomes: the
+unsupported ones first, then the ones the normal also carries, then everything
+else. That is the difference between a contact sheet and a queue, and it is
+cheaper than the derivative row.
+
+**Mappability is the one new input**, and it is already hosted and already
+documented. `mappability_qc.md` §"the number behind it" gives the exact command
+over the UCSC Umap k100 bigWig, including the trap that a zero-mappability span
+emits no interval at all so an unweighted mean reads high on exactly the regions
+it should condemn. Two `bigWigToBedGraph` calls per junction turns "usually a
+repeat" from a judgement the reviewer makes by eye into a column they sort on,
+and it connects the two SV pages that currently only cross-link.
+
+For an assembly with no published Umap track, the same column falls back to the
+callset's own evidence — the fraction of reads at the breakend with MAPQ 0 —
+which needs no extra file and is what the mappability lane is standing in for.
+
+## What the portal is for, in the docs' terms
+
+Worth stating because it decides the layout. `ideas/tutorial-onboarding-and-accuracy-audit.md`
+measures the corpus's prose problem and finds population genomics writing ~650
+words per figure. A review portal is the extreme opposite end of that axis: it is
+all figure, one verdict column, and no prose at all. So it is not only a feature
+— it is the reference for what "the screenshots speak for themselves" looks like
+when taken to its limit, and the `sv_callset_review` section it lands in should
+be the shortest on the page.
+
+The line `SV_MULTIHOP.md` draws stays where it is: the portal ranks what the
+reads say and the reviewer decides what is true. The verdict column is the
+reviewer's, exported as TSV, and nothing writes a FILTER or a genotype.

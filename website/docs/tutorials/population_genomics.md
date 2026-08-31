@@ -16,6 +16,8 @@ each on its own y-axis, and read where the signals line up against genes.
 ## Prerequisites
 
 - nothing to read along. Everything below is for building the tracks yourself
+- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
+  file by path, [Web](/docs/quickstart_web) through **Add track**
 - `curl`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
@@ -259,7 +261,7 @@ duplication of `Cyp6g1` segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
 number costs a window called sites.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip over the highlighted window against their background either side, the joint trough being the hard-sweep signature. The count under them falls too, but nothing like as far."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side. The count under them falls too, but nothing like as far."/>
 
 Each pair of values reads differently:
 
@@ -330,11 +332,10 @@ karyotype classes contiguous, so each reads as one block.
 
 The genotypes here are the arrangement karyotypes themselves, so the lane
 records which lines carry the inversion, and the two Fst lanes above it quantify
-how far ordinary SNPs across the region co-segregate with it. The plateau
-carries a few megabases past each breakpoint, the margin
-[Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056) report for
-the common _Drosophila_ inversions; the extent at the top of the frame is
-published coordinates.
+how far ordinary SNPs across the region co-segregate with it. Differentiation
+decays outside the breakpoints rather than stopping at them
+([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the
+extent at the top of the frame is published coordinates.
 
 ## Reproduce it end to end
 

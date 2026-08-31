@@ -15,6 +15,9 @@ JBrowse computes the r² triangle in the browser, straight from a phased VCF.
 
 ## Prerequisites
 
+- a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
+  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
+  needs nothing hosted
 - `bcftools` built with libcurl, for the commands on this page and the
   [reproduce script](#reproduce-it-end-to-end)
 - htslib (`tabix`)
@@ -258,8 +261,8 @@ Run the clustering two ways:
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises: 1000 Genomes chromosomes at LCT/MCM6, one row each, clustered by genotype. The pale slab is one cluster of near-identical chromosomes, uniform across the block that fills the triangle above."/>
 
-The highlight across both lanes is the 89 kb of _LCT_ and _MCM6_ that selection
-acted on.
+The highlight is _LCT_ and _MCM6_. `rs4988235` is an enhancer variant in _MCM6_
+intron 13; the haplotype it swept is what the triangle draws.
 
 - **Ordering is what makes a block visible.** In file order the same matrix is a
   plaid at any size, because a block is a set of alleles travelling together and

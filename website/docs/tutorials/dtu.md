@@ -15,6 +15,8 @@ from ENCODE quantifications and gives the track configuration that reads it.
 
 ## Prerequisites
 
+- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
+  file by path, [Web](/docs/quickstart_web) through **Add track**
 - `curl`
 - `python3`
 - htslib (`bgzip`, `tabix`)

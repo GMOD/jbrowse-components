@@ -17,6 +17,8 @@ row.
 ## Prerequisites
 
 - nothing to read along. Everything below is for building the tracks yourself
+- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
+  file by path, [Web](/docs/quickstart_web) through **Add track**
 - the `hg38` assembly set up in JBrowse
   ([assemblies guide](/docs/config_guides/assemblies))
 - Java 8+, for hap-ibd

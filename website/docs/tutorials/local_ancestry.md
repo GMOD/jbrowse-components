@@ -300,16 +300,15 @@ matched against a panel.
 The build script prints a count of wolf blocks with their median and longest,
 one line per animal.
 
-The Tamaskan's wolf assignments are many and short, its longest 1.5 Mb, inside
-the range the Kars, the Eurasier and the Spanish Mastiff reach, none of them a
-cross.
+The Tamaskan's wolf assignments are many and short, its longest inside the range
+the Kars, the Eurasier and the Spanish Mastiff reach, none of them a cross.
 
-The Shiloh Shepherd's longest wolf block on chr1 is 17.5 Mb, against a sweep in
-which every breed but one stops at 2.4 Mb. The Dog10K paper's own D-statistics
-find no significant excess of wolf allele sharing in this breed over German
-Shepherd Dogs, and the collection holds a single Shiloh Shepherd, painted here
-on a single chromosome. A later genome-wide run over the same collection puts it
-among the three dogs with the longest, most recent wolf tracts
+The Shiloh Shepherd carries one wolf block far longer than any other breed dog
+in the sweep. The Dog10K paper's own D-statistics find no significant excess of
+wolf allele sharing in this breed over German Shepherd Dogs, and the collection
+holds a single Shiloh Shepherd, painted here on a single chromosome. A later
+genome-wide run over the same collection puts it among the three dogs with the
+longest, most recent wolf tracts
 ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 The order above comes from FLARE's per-sample summary. The track menu's

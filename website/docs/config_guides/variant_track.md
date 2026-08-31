@@ -341,6 +341,28 @@ Both displays share the same track-menu controls (LD metric, legend,
 fit-to-height). Only the VCF-computed one offers filtering and signed LD, since
 PLINK data carries only the final r²/D' values.
 
+### Which metric, and how far to thin
+
+Two metrics read the same block differently, switched with
+[`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric):
+
+- **D'** asks whether recombination has been seen between two markers, so it
+  saturates near 1 wherever no recombinant haplotype has turned up. It is the
+  read on where crossing over stops, which is what recovers an inversion's
+  breakpoints.
+- **r²** asks how well one marker predicts the other, which also requires the
+  two to be at similar frequency, so it draws the sharper boundary. It is the
+  read on whether one marker can stand in for another.
+
+[`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter)
+thins a dense callset to the common, block-tagging variants. High enough it
+reaches the tagging variants themselves, and the block fades.
+
+r² is a correlation between two biallelic markers, so several haplotypes at one
+locus fragment the block: each carries a different background and no single pair
+of markers tags them all. A soft sweep reads patchier than its strength
+suggests.
+
 ## See also
 
 - [](/docs/user_guides/variant_track)

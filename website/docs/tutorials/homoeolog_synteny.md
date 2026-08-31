@@ -17,6 +17,8 @@ karyotype.
 
 ## Prerequisites
 
+- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
+  file by path, [Web](/docs/quickstart_web) through **Add track**
 - [jcvi](https://github.com/tanghaibao/jcvi)
 - [DIAMOND](https://github.com/bbuchfink/diamond)
 - python3 with [biopython](https://biopython.org/)

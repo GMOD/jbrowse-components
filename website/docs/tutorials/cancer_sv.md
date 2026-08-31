@@ -18,6 +18,8 @@ reference as a synteny view.
 ## Prerequisites
 
 - nothing to read along. Everything below is for rebuilding the data
+- a JBrowse to open them in: [Desktop](/docs/quickstart_desktop) takes a local
+  file by path, [Web](/docs/quickstart_web) through **Add track**
 - [](/docs/cli)
 - [samtools](http://www.htslib.org/) (v1.21 or later)
 - [minimap2](https://github.com/lh3/minimap2)
