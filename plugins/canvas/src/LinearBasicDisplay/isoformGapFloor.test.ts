@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/render-core/shaders/hpmath'
 
 import { packStackedGenes } from '../RenderFeatureDataRPC/testUtils.ts'
+import { isoformGapExtrasPx, isoformGapSpreadPx } from './isoformGapFloor.ts'
 import { computeLaidOutData } from './layout.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -97,17 +98,49 @@ test.each([
   },
 )
 
+// `featureHeight` is a per-feature callback slot, so a transcript can resolve a
+// taller box than the gene that stacks it. Priced off the gene's box alone, the
+// 2.4px/3.6px pair below spread by 1.12px onto a 4.0px pitch — and a 3.6px box
+// draws 5px (the odd-height nudge), so the pair still merged.
+test('a gene whose transcripts resolve their own heights keeps every pixel', () => {
+  const data = laidOut('superCompact', [
+    { ...GENE, heightPx: 8, childHeightsPx: [8, 12, 20] },
+  ])
+  const gaps = rowGaps(data, 'gene1')
+  expect(gaps).toHaveLength(2)
+  for (const gap of gaps) {
+    expect(gap).toBeGreaterThanOrEqual(1)
+  }
+})
+
+// The pitch each pair needs is its own, so one number per gene cannot be right:
+// the 3px box over the 5px one needs 1.52px more than the worker gave, the 5px
+// box over the 6px one 1.22px.
+test('each gap is priced from the pair of boxes it separates', () => {
+  const stack = packStackedGenes([
+    { ...GENE, heightPx: 8, childHeightsPx: [8, 12, 20] },
+  ]).flatbushItems[0]!.isoformStack!
+  const extras = isoformGapExtrasPx(stack, 0.3, undefined)
+  expect(extras[0]).toBeCloseTo(1.52, 2)
+  expect(extras[1]).toBeCloseTo(1.22, 2)
+  expect(isoformGapSpreadPx(stack, 0.3, undefined)).toBeCloseTo(2.74, 2)
+})
+
 // The pack prices the spread through `isoformGapSpreadPx` and the render pass
 // spends it through `applyIsoformGapFloor`. If the two ever disagree the gene
 // grows into the row below it, which is the one thing worse than the merged
-// bar this fixes.
+// bar this fixes. Ten rows at a `featureHeight` the floor spreads by ~1.1px
+// each, because the packer quantizes row tops to a pitch of a few px — a
+// shallower stack rounds the priced and the unpriced row to the same count and
+// the assertion then holds however wrong the price is.
 test('the row a spread gene is given covers what it draws', () => {
   const data = laidOut('superCompact', [
-    GENE,
-    { featureId: 'gene2', startBp: 0, endBp: 1000, isoforms: 2 },
+    { ...GENE, heightPx: 8, isoforms: 10 },
+    { featureId: 'gene2', startBp: 0, endBp: 1000, isoforms: 2, heightPx: 8 },
   ])
   const first = drawnBoxes(data, 'gene1')
   const second = drawnBoxes(data, 'gene2')
+  expect(first).toHaveLength(10)
   const lastDrawn = Math.max(...first.map(box => box.bottom))
   expect(Math.min(...second.map(box => box.top))).toBeGreaterThanOrEqual(
     lastDrawn + 1,

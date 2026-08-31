@@ -103,16 +103,19 @@ Two additions, and they are the two ADR-075's amendment identified as missing:
 - **`IsoformStack`, per gene**, on its `FlatbushItem`: children in drawn order
   with `ordinal`, `rank`, `isoform` (false for a decoration), gene-local
   `yPx`/`heightPx`, `labelRows`, bp extent; plus `isoformCount`, `canonicalTag`,
-  `gapPx` and `collapsedIsoformCount`. `layoutSubfeatures` has all of it in hand
-  already.
+  `boxHeightPx` and `collapsedIsoformCount`. `layoutSubfeatures` has all of it in
+  hand already.
 
 `rank` is on the table because the drawn order is not the ranked order — the
 stack sorts by (canonical, coding) while the ranking also weighs protein length,
 so a trim that dropped a suffix would keep a different set than `longestCoding`
-does at k = 1. `gapPx` ships rather than the ratio behind it, so the trim closes
-the hole with the same number the layout opened it with. `isoformCount` is every
-isoform the gene HAS, so a `longestCoding` gene — which ships one child —
-reports its badge count the same way a trimmed one does.
+does at k = 1. The gene's `boxHeightPx` ships rather than the gap the layout
+spent, and the gap is re-derived from it main-side (`isoformGapPx`): the trim
+needs the number the layout opened the hole with, but the minimum-gap floor also
+needs to know how tall the boxes either side DRAW, and a gap alone cannot answer
+that (`isoformGapFloor.ts`). `isoformCount` is every isoform the gene HAS, so a
+`longestCoding` gene — which ships one child — reports its badge count the same
+way a trimmed one does.
 
 ### What the main thread does with it
 

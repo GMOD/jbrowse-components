@@ -155,6 +155,9 @@ export interface StackedGeneSpec {
   ranks?: number[]
   // bp span per isoform, defaults to the gene's own
   spans?: [number, number][]
+  // box height per isoform, defaults to the gene's own — what a `jexl:`
+  // `featureHeight` resolving against the CHILD ships (see `featureHeightPx`)
+  childHeightsPx?: number[]
 }
 
 export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
@@ -165,15 +168,22 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
   for (const [flatbushIdx, spec] of genes.entries()) {
     const heightPx = spec.heightPx ?? 10
     const gapPx = heightPx * TRANSCRIPT_PADDING_RATIO
-    const children = Array.from({ length: spec.isoforms }, (_, i) => {
+    const childHeights = Array.from(
+      { length: spec.isoforms },
+      (_, i) => spec.childHeightsPx?.[i] ?? heightPx,
+    )
+    const children = childHeights.map((childHeightPx, i) => {
       const [startBp, endBp] = spec.spans?.[i] ?? [spec.startBp, spec.endBp]
       return {
         featureId: `${spec.featureId}-${i}`,
         ordinal: i,
         isoform: true,
         rank: spec.ranks?.[i] ?? i,
-        yPx: i * (heightPx + gapPx),
-        heightPx,
+        // the worker advances by each child's OWN height plus the gene's gap
+        yPx: childHeights
+          .slice(0, i)
+          .reduce((total, above) => total + above + gapPx, 0),
+        heightPx: childHeightPx,
         labelRows: 0,
         startBp,
         endBp,
@@ -184,7 +194,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
         start: child.startBp,
         end: child.endBp,
         y: child.yPx,
-        height: heightPx,
+        height: child.heightPx,
         color: 0xff_80_40_ff,
         colorClass: LITERAL,
         strand: spec.strand ?? 0,
@@ -194,7 +204,8 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
       })
     }
     const totalPx =
-      spec.isoforms * heightPx + Math.max(0, spec.isoforms - 1) * gapPx
+      childHeights.reduce((total, height) => total + height, 0) +
+      Math.max(0, spec.isoforms - 1) * gapPx
     flatbushItems.push(
       makeFlatbushItem({
         featureId: spec.featureId,
