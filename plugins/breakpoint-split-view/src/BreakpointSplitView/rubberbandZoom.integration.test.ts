@@ -27,7 +27,7 @@ async function setup() {
   const session = createTestSession()
   session.addAssemblyConf(assembly)
   const view = session.addView('BreakpointSplitView', {
-    init: [
+    views: [
       { assembly: 'volvox', loc: 'ctgA:1-50000' },
       { assembly: 'volvox', loc: 'ctgB:1-50000' },
     ],

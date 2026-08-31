@@ -33,16 +33,14 @@ export async function locationLinkClick({
     }
     await view.navToLocString(locString, assemblyName)
   } else {
-    // for a brand-new view launch it declaratively via `init` so it shows a
-    // loading spinner (not a flash of the import form) while the assembly
-    // loads, then self-navigates
+    // for a brand-new view, write the launch keys on the view object so it
+    // shows a loading spinner (not a flash of the import form) while the
+    // assembly loads, then self-navigates
     session.addView('LinearGenomeView', {
       id: newViewId,
-      init: {
-        assembly: assemblyName,
-        loc: locString,
-        ...(trackId ? { tracks: [trackId] } : {}),
-      },
+      assembly: assemblyName,
+      loc: locString,
+      ...(trackId ? { tracks: [trackId] } : {}),
     })
   }
 }

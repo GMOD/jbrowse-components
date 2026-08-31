@@ -98,7 +98,7 @@ async function setupRefNames(
     },
   })
   const view = session.addView('CircularView', {
-    init: { assembly: 'test' },
+    assembly: 'test',
     ...viewSnap,
   }) as CircularViewModel
   view.setWidth(800)
@@ -118,7 +118,8 @@ function drainMicrotasks() {
 
 test('the figure geometry is measured after the tracks settle', async () => {
   const { view } = await setup({
-    init: { assembly: 'volvox', tracks: ['sv'] },
+    assembly: 'volvox',
+    tracks: ['sv'],
   })
   await when(() => view.tracks.length > 0)
   const display = view.tracks[0]!.displays[0]!

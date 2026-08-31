@@ -58,11 +58,11 @@ afterEach(() => {
 // which is not just noise — an async rejection with no owner is attributed to
 // whichever test happens to be running, so it turns a clean suite into an
 // intermittently red one somewhere else.
-function createBreakpointView(init: object) {
+function createBreakpointView(views: object[]) {
   const { rootModel } = getPluginManager(configSnapshot)
   rootModel.setSession({ name: 'BreakpointSplitViewInit test' })
   const session = rootModel.session!
-  const view = session.addView('BreakpointSplitView', { init })
+  const view = session.addView('BreakpointSplitView', { views })
   view.setWidth(800)
   return view
 }
@@ -102,7 +102,7 @@ test('BreakpointSplitView loadingMessage reports what the assembly load is downl
   expect(view.loadingProgress).toBeUndefined()
 }, 40000)
 
-test('BreakpointSplitView initializes with init property', async () => {
+test('BreakpointSplitView initializes from the views launch key', async () => {
   const view = createBreakpointView([
     { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
     { loc: 'chr6:56,758,000..56,759,000', assembly: 'hg19' },

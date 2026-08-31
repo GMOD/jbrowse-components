@@ -15,7 +15,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-async function createSpreadsheetViewWithInit(init: {
+async function createSpreadsheetViewWithInit(spec: {
   assembly: string
   uri: string
   fileType?: string
@@ -24,13 +24,13 @@ async function createSpreadsheetViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SpreadsheetView', { init })
+  const view = session.addView('SpreadsheetView', spec)
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
 }
 
-test('SpreadsheetView initializes with init property for vcf.gz', async () => {
+test('SpreadsheetView initializes from a launch key for vcf.gz', async () => {
   const { view } = await createSpreadsheetViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.filtered.vcf.gz',
@@ -47,7 +47,7 @@ test('SpreadsheetView initializes with init property for vcf.gz', async () => {
   expect(view.init).toBeUndefined()
 }, 40000)
 
-test('SpreadsheetView initializes with init property for bed.gz', async () => {
+test('SpreadsheetView initializes from a launch key for bed.gz', async () => {
   const { view } = await createSpreadsheetViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox-bed12.bed.gz',
@@ -82,7 +82,7 @@ test('SpreadsheetView initializes with explicit fileType', async () => {
   expect(view.init).toBeUndefined()
 }, 40000)
 
-test('SpreadsheetView without init shows import form', () => {
+test('SpreadsheetView with no launch keys shows import form', () => {
   const { rootModel } = getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
@@ -103,17 +103,15 @@ test('snapshot persists cached file location synchronously', async () => {
   const session = rootModel.session!
 
   const view = session.addView('SpreadsheetView', {
-    init: {
-      assembly: 'volvox',
-      uri: 'test_data/volvox/volvox.filtered.vcf.gz',
-    },
+    assembly: 'volvox',
+    uri: 'test_data/volvox/volvox.filtered.vcf.gz',
   })
 
   const snap: {
-    init?: unknown
+    launch?: unknown
     importWizard: { cachedFileLocation?: unknown }
   } = getSnapshot(view)
-  expect(snap.init).toBeUndefined()
+  expect(snap.launch).toBeUndefined()
   expect(snap.importWizard.cachedFileLocation).toBeDefined()
 
   // The snapshot assertions above intentionally run before the async load

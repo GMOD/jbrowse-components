@@ -76,7 +76,7 @@ async function setup() {
   }) as typeof rpc.call
 
   const view = session.addView('BreakpointSplitView', {
-    init: [
+    views: [
       { assembly: 'volvox', loc: 'ctgA:1-10000' },
       { assembly: 'volvox', loc: 'ctgA:1-10000' },
     ],

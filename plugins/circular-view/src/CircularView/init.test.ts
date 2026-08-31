@@ -28,7 +28,7 @@ function addVolvoxConf(session: ReturnType<typeof createTestSession>) {
 async function setup(init: Record<string, unknown>) {
   const session = createTestSession()
   addVolvoxConf(session)
-  const view = session.addView('CircularView', { init }) as CircularViewModel
+  const view = session.addView('CircularView', init) as CircularViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('volvox')
   await when(() => view.displayedRegions.length > 0)

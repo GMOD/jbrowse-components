@@ -56,7 +56,8 @@ async function setup() {
   const session = createTestSession()
   addConf(session)
   const view = session.addView('CircularView', {
-    init: { assembly: 'volvox', tracks: ['sv'] },
+    assembly: 'volvox',
+    tracks: ['sv'],
   }) as CircularViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('volvox')

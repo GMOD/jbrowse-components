@@ -23,7 +23,7 @@ afterEach(async () => {
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-function createSvInspectorViewWithInit(init: {
+function createSvInspectorViewWithInit(spec: {
   assembly: string
   uri?: string
   fileType?: string
@@ -32,12 +32,12 @@ function createSvInspectorViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SvInspectorView', { init })
+  const view = session.addView('SvInspectorView', spec)
 
   return { view, session, rootModel, pluginManager }
 }
 
-test('SvInspectorView initializes its spreadsheet from init', async () => {
+test('SvInspectorView initializes its spreadsheet from the launch keys', async () => {
   const { view } = createSvInspectorViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.dup.vcf.gz',
@@ -211,27 +211,28 @@ test('dragging moves the divider by the distance dragged', async () => {
   expect(view.spreadsheetView.width).toBe(before - 100)
 }, 40000)
 
-// Regression: SvInspector clears its own init synchronously after forwarding it
-// to the child spreadsheet (which caches the file location synchronously). So a
-// snapshot taken before the async load finishes carries no init on either node,
-// yet still reloads via the child's persisted cachedFileLocation rather than
-// stranding on the import form. This is why SvInspector can strip init
-// unconditionally where the async-materializing views must keep it.
-test('snapshot forwards init to child spreadsheet synchronously', () => {
+// Regression: SvInspector clears its own launch blob synchronously after
+// forwarding it to the child spreadsheet (which caches the file location just as
+// synchronously). So a snapshot taken before the async load finishes carries no
+// blob on either node, yet still reloads via the child's persisted
+// cachedFileLocation rather than stranding on the import form. This is why
+// SvInspector can strip it unconditionally where the async-materializing views
+// must keep it.
+test('snapshot forwards the launch blob to the child spreadsheet synchronously', () => {
   const { view } = createSvInspectorViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.dup.vcf.gz',
   })
 
   const snap: {
-    init?: unknown
+    launch?: unknown
     spreadsheetView: {
-      init?: unknown
+      launch?: unknown
       importWizard: { cachedFileLocation?: unknown }
     }
   } = getSnapshot(view)
-  expect(snap.init).toBeUndefined()
-  expect(snap.spreadsheetView.init).toBeUndefined()
+  expect(snap.launch).toBeUndefined()
+  expect(snap.spreadsheetView.launch).toBeUndefined()
   expect(snap.spreadsheetView.importWizard.cachedFileLocation).toBeDefined()
 }, 40000)
 

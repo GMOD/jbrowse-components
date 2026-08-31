@@ -603,7 +603,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get hasSomethingToShow() {
-        return self.displayedRegions.length > 0 || !!self.init
+        return self.displayedRegions.length > 0 || !!this.init
       },
 
       /**

@@ -34,7 +34,7 @@ function setup() {
 test('an unloadable assembly reports instead of spinning forever', async () => {
   const session = setup()
   const view = session.addView('BreakpointSplitView', {
-    init: [{ assembly: 'volvox', loc: 'ctgA:1-100' }, { assembly: 'nope' }],
+    views: [{ assembly: 'volvox', loc: 'ctgA:1-100' }, { assembly: 'nope' }],
   }) as BreakpointViewModel
   view.setWidth(800)
 
@@ -53,7 +53,7 @@ test('an unloadable assembly reports instead of spinning forever', async () => {
 test('rows that load leave the view usable', async () => {
   const session = setup()
   const view = session.addView('BreakpointSplitView', {
-    init: [
+    views: [
       { assembly: 'volvox', loc: 'ctgA:1-100' },
       { assembly: 'volvox', loc: 'ctgA:200-300' },
     ],

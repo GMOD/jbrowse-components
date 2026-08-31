@@ -19,7 +19,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-async function createCircularViewWithInit(init: {
+async function createCircularViewWithInit(spec: {
   assembly: string
   tracks?: string[]
 }) {
@@ -27,13 +27,13 @@ async function createCircularViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('CircularView', { init })
+  const view = session.addView('CircularView', spec)
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
 }
 
-test('CircularView initializes with init property', async () => {
+test('CircularView initializes from the assembly launch key', async () => {
   const { view } = await createCircularViewWithInit({
     assembly: 'volvox',
   })
@@ -203,9 +203,7 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
   const session = rootModel.session!
 
   const view = session.addView('CircularView', {
-    init: {
-      assembly: 'nonexistent',
-    },
+    assembly: 'nonexistent',
   })
   view.setWidth(800)
 
@@ -220,21 +218,19 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
 }, 40000)
 
 // Regression: a snapshot taken before the view materializes (e.g. autosave
-// firing while the init autorun hasn't set displayedRegions yet) must keep
-// init, so a reload/restore rebuilds instead of stranding on the import form.
-// Once displayedRegions exist, init is redundant and stripped.
-test('snapshot keeps init while not materialized, strips it once regions load', async () => {
+// firing while the init autorun hasn't set displayedRegions yet) must keep the
+// launch blob, so a reload/restore rebuilds instead of stranding on the import
+// form. Once displayedRegions exist it is redundant and stripped.
+test('snapshot keeps the launch blob while not materialized, strips it once regions load', async () => {
   const { rootModel } = getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('CircularView', {
-    init: { assembly: 'volvox' },
-  })
+  const view = session.addView('CircularView', { assembly: 'volvox' })
 
   // no width yet -> init autorun hasn't set displayedRegions
   expect(view.displayedRegions.length).toBe(0)
-  const before: { init?: unknown } = getSnapshot(view)
-  expect(before.init).toBeDefined()
+  const before: { launch?: unknown } = getSnapshot(view)
+  expect(before.launch).toBeDefined()
 
   view.setWidth(800)
   await waitFor(
@@ -244,6 +240,6 @@ test('snapshot keeps init while not materialized, strips it once regions load', 
     { timeout: 30000 },
   )
 
-  const after: { init?: unknown } = getSnapshot(view)
-  expect(after.init).toBeUndefined()
+  const after: { launch?: unknown } = getSnapshot(view)
+  expect(after.launch).toBeUndefined()
 }, 40000)
