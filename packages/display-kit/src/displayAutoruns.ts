@@ -1,5 +1,6 @@
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { getContainingView } from '@jbrowse/core/util/mstUtils'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
 import type { RegionHost } from './regionHost.ts'
@@ -19,6 +20,10 @@ declare const process: { env: { NODE_ENV?: string } }
  * automatically the moment the view becomes ready. The view is passed in so
  * callers don't re-fetch it.
  *
+ * The body also skips a dead node, which is the fetch skeleton's rule
+ * (`installFetch` checks liveness above every gate) reaching the autoruns that
+ * do not go through it.
+ *
  * **`delay` is leading-edge**, not MobX's trailing-edge `{ delay }`: the first
  * run is one microtask away rather than a full delay, and the debounce arms only
  * once the body returns `true`. A pre-init run therefore costs nothing, which is
@@ -31,6 +36,15 @@ export function autorunOnReadyView(
   { name, delay }: { name: string; delay?: number },
 ) {
   const body = () => {
+    // The skeleton's rule, ported: liveness above the walk, because the walk
+    // IS this body's first read and it warns then throws once the node has
+    // left the tree. `installFetch` checks it above every gate; the per-region
+    // family reaches its gates through here instead, so here is where it has
+    // to be — which covers the other three autoruns that family installs and
+    // every display-level one on this helper besides.
+    if (!isAlive(self)) {
+      return false
+    }
     const view = getContainingView(self) as RegionHost
     return view.initialized ? fn(view) : false
   }

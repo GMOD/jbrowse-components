@@ -54,6 +54,11 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
  *   the scrim is up because nothing is drawn rather than because `isLoading` is,
  *   so `statusMessage` is the only thing that can say what is happening.
  *
+ * `createAdapterMetadataFetch` (core) keys on the same serialized adapter config
+ * and is deliberately NOT one of these: no trigger, no stop token and no status,
+ * because it is fetched lazily when a details widget opens and the widget opens
+ * on the result. A prerequisite read is the one a display's own fetch waits on.
+ *
  * **A declaration, not the skeleton this name used to be.** There was an
  * `installPrerequisiteFetch` until 2026-08-23, and `3c5aa7fce2` deleted it for
  * a good reason: it carried a `runOne` of its own — a fifth copy of begin →

@@ -47,7 +47,12 @@ breakpoint view's reaches the containing view or track through a parent walk —
 and the lane fetches, `getContainingView` on the sample-list read — which throws
 once the node has left the tree. Only the global gate carried its own `isAlive`
 before 2026-08-31, and a gateless fetch with a `contract` (chord) classified a
-dead-node run as `declined`, spending a reload bump on a corpse. And **`FetchMixin`'s begin/end/error trio is
+dead-node run as `declined`, spending a reload bump on a corpse. **The rule is
+ported, not shared**: the per-region family reaches its gates through
+`autorunOnReadyView` rather than through the skeleton, so the check sits there
+too — which is also what covers the other three autoruns that family installs.
+A rule the skeleton grows next is owed the same two lines, and that is cheaper
+than the conversion `REJECTED_IDEAS.md` declines. And **`FetchMixin`'s begin/end/error trio is
 `fetchMixinLifecycle`**, one function for the two entries that run a fetch over
 that mixin (`runFetch`, and the global family's declaration, which lends its
 rotation and so owes the same three writes).
