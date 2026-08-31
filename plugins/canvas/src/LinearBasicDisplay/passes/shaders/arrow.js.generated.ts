@@ -4,6 +4,36 @@
 // Scalar twins of arrow.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _min(a: number, b: number) {
+  return b < a || Number.isNaN(a) ? b : a
+}
+
 export function arrowDraws(featureWidthPx: number): boolean {
   return (featureWidthPx >= 14.0)
+}
+
+function snapBoxHeightPx(heightPx: number): number {
+  let hPx = Math.floor((heightPx + 0.5))
+  let _t0: boolean
+  if (((hPx - (2.0 * Math.floor((hPx * 0.5)))) == 0.0)) {
+    _t0 = (hPx >= 2.0)
+  } else {
+    _t0 = false
+  }
+  if (_t0) {
+    _t0 = (hPx <= 4.0)
+  } else {
+    _t0 = false
+  }
+  let _t1: number
+  if (_t0) {
+    _t1 = (hPx + 1.0)
+  } else {
+    _t1 = hPx
+  }
+  return _t1
+}
+
+export function arrowHeadHalfHeightPx(boxHeightPx: number): number {
+  return _min(2.5, (snapBoxHeightPx(boxHeightPx) * 0.5))
 }

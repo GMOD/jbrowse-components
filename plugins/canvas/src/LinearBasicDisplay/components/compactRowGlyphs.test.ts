@@ -1,10 +1,18 @@
-// A UTR is emitted as a box centered inside its transcript's row at
-// UTR_HEIGHT_FRACTION of the body (centerShrink), so it has to draw inside the
-// rows the CDS beside it draws on. It did not: the rect raster rounded the
-// shrunken top and the shrunken height independently, and `snapBoxHeightPx`'s
-// odd-height nudge grows a thin box downward only — so at superCompact's 3px
-// body the 1.95px UTR came out 3px tall starting a pixel low, hanging below the
-// CDS with the intron line and strand arrow sitting on its top edge.
+// What a compacted transcript row has to keep true: everything drawn on the
+// body stays on the body. Both halves of it broke at superCompact's 3px body,
+// where one pixel is a third of the glyph.
+//
+// The UTR is emitted as a box centered inside the row at UTR_HEIGHT_FRACTION of
+// the body (centerShrink), so it has to draw inside the rows the CDS beside it
+// draws on. It did not: the rect raster rounded the shrunken top and the
+// shrunken height independently, and `snapBoxHeightPx`'s odd-height nudge grows
+// a thin box downward only — so the 1.95px UTR came out 3px tall starting a
+// pixel low, hanging below the CDS with the intron line and strand arrow
+// sitting on its top edge.
+//
+// The strand arrowhead is drawn at a fixed half-height, so at 3px it painted a
+// 5px head on a 3px feature, overhanging a pixel each way. It is clamped to the
+// box it comes off now (arrowHeadHalfHeightPx).
 import {
   UTR_HEIGHT_FRACTION,
   centerShrink,
@@ -43,17 +51,31 @@ const EMPTY = {
 function drawTranscriptRow(rowTop: number, bodyHeight: number) {
   const boxes: { y: number; h: number }[] = []
   let stemY: number | undefined
+  let head: { top: number; bottom: number } | undefined
+  let pathYs: number[] = []
   const ctx = {
     save() {},
     restore() {},
     clip() {},
     rect() {},
-    beginPath() {},
-    moveTo() {},
-    lineTo() {},
+    beginPath() {
+      pathYs = []
+    },
+    moveTo(_x: number, y: number) {
+      pathYs.push(y)
+    },
+    lineTo(_x: number, y: number) {
+      pathYs.push(y)
+    },
     closePath() {},
     stroke() {},
-    fill() {},
+    fill() {
+      // The arrowhead is the only filled path here: three points, no rect or
+      // line primitives in the region.
+      if (pathYs.length === 3) {
+        head = { top: Math.min(...pathYs), bottom: Math.max(...pathYs) }
+      }
+    },
     fillRect(_x: number, y: number, _w: number, h: number) {
       // The arrow paints its stem with fillRect too; it is 1px tall and comes
       // after both boxes, so it is the last call and never one of them.
@@ -103,10 +125,10 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     canvasHeight: 60,
   })
   const [cds, utr] = boxes
-  if (!cds || !utr || stemY === undefined) {
-    throw new Error('expected two boxes and an arrow stem')
+  if (!cds || !utr || stemY === undefined || !head) {
+    throw new Error('expected two boxes and an arrow')
   }
-  return { cds, utr, stemTop: stemY }
+  return { cds, utr, stemTop: stemY, head }
 }
 
 const BODY_HEIGHTS = Object.entries(HEIGHT_MULTIPLIERS).map(
@@ -138,6 +160,17 @@ test.each(BODY_HEIGHTS)(
         expect(stemTop).toBeGreaterThanOrEqual(box.y)
         expect(stemTop + 1).toBeLessThanOrEqual(box.y + box.h)
       }
+    }
+  },
+)
+
+test.each(BODY_HEIGHTS)(
+  'a %s arrowhead is no taller than the feature it marks',
+  (_mode, bodyHeight) => {
+    for (const rowTop of [0, 12, 20.4]) {
+      const { cds, head } = drawTranscriptRow(rowTop, bodyHeight)
+      expect(head.top).toBeGreaterThanOrEqual(cds.y)
+      expect(head.bottom).toBeLessThanOrEqual(cds.y + cds.h)
     }
   },
 )

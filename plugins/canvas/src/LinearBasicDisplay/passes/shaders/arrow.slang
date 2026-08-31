@@ -3,7 +3,7 @@
 // triangle vertices dispatched via vertex ID.
 //! targets: wgsl, glsl
 //! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX
-//! js-export: arrowDraws
+//! js-export: arrowDraws, arrowHeadHalfHeightPx
 
 import hpmath;
 import colorPack;
@@ -38,6 +38,17 @@ static const float ARROW_MIN_FEATURE_WIDTH_PX = 14.0;
 // `>=` vs `>` at exactly 14px that decides it.
 public bool arrowDraws(float featureWidthPx) {
   return featureWidthPx >= ARROW_MIN_FEATURE_WIDTH_PX;
+}
+
+// Half-height of the arrowhead, never more than half the box it comes off.
+// HEAD_HALF_H_PX alone is a fixed 5px head, so on the 3px body superCompact
+// draws at it overhung the feature a pixel top and bottom and read as a marker
+// for something taller than the thing it marks. Measured against the box's DRAWN
+// height (snapBoxHeightPx), which is what paints. A no-op at every drawn height
+// from 5px up, so normal and compact are untouched. Same rule, same reason, as
+// continuation.slang's markerHalfHeight.
+public float arrowHeadHalfHeightPx(float boxHeightPx) {
+  return min(HEAD_HALF_H_PX, snapBoxHeightPx(boxHeightPx) * 0.5);
 }
 
 struct ArrowInstance {
@@ -78,7 +89,7 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
 
   float stemLength = pxToClipW(STEM_LENGTH_PX, u);
   float stemHalf = pxToClipH(STEM_HALF_H_PX, u);
-  float headHalf = pxToClipH(HEAD_HALF_H_PX, u);
+  float headHalf = pxToClipH(arrowHeadHalfHeightPx(inst.height), u);
 
   float dir = flipX(inst.direction, u);
 

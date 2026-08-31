@@ -18,7 +18,10 @@ import {
   snapBoxTopPx,
 } from '@jbrowse/render-core/shaders/hpmath'
 
-import { arrowDraws } from '../passes/shaders/arrow.js.generated.ts'
+import {
+  arrowDraws,
+  arrowHeadHalfHeightPx,
+} from '../passes/shaders/arrow.js.generated.ts'
 import {
   chevronCount,
   chevronFirstVisible,
@@ -49,7 +52,6 @@ import {
   CONT_MIN_OVERHANG_PX,
   CONT_TRI_GAP_PX,
   CONT_TRI_W_PX,
-  HEAD_HALF_H_PX,
   MIN_DENSITY_ALPHA,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
@@ -87,7 +89,7 @@ type BpToScreen = (bp: number) => number
 // implementations they replaced.
 
 // The furthest a glyph reaches outside the box it rides on: chevrons half of
-// CHEVRON_H_PX around the center row, arrowheads HEAD_HALF_H_PX, continuation
+// CHEVRON_H_PX around the center row, arrowheads at most HEAD_HALF_H_PX, continuation
 // triangles `markerHalfHeight`, plus the ≤1px snapBoxCenterYPx snap. 8 clears
 // every one of them, and being generous costs nothing — the test below is only
 // ever decisive for primitives already well off-screen.
@@ -348,9 +350,10 @@ function drawArrows(
     )
 
     const headTipX = cx + STEM_LENGTH_PX * dir
+    const headHalf = arrowHeadHalfHeightPx(region.arrowHeights[i]!)
     ctx.beginPath()
-    ctx.moveTo(stemEndX, y - HEAD_HALF_H_PX)
-    ctx.lineTo(stemEndX, y + HEAD_HALF_H_PX)
+    ctx.moveTo(stemEndX, y - headHalf)
+    ctx.lineTo(stemEndX, y + headHalf)
     ctx.lineTo(headTipX, y)
     ctx.closePath()
     ctx.fill()

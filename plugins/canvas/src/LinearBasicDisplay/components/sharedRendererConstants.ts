@@ -61,9 +61,11 @@ export {
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
 } from '../passes/shaders/chevron.consts.generated.ts'
+// No HEAD_HALF_H_PX: the arrowhead's half-height is a decision now, not a
+// dimension — `arrowHeadHalfHeightPx` clamps it to the box it comes off — and a
+// re-export of the raw ceiling is how a caller reaches past the clamp.
 export {
   ARROW_MIN_FEATURE_WIDTH_PX,
-  HEAD_HALF_H_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
 } from '../passes/shaders/arrow.consts.generated.ts'
