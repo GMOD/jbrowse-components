@@ -33,9 +33,10 @@ export type ViewInit<M extends IAnyModelType, Commands> = Commands &
 
 // Keys that are a view's identity or its plumbing rather than a setting. A
 // launch spec never gets to write these: `type` picks the view, `id` is passed
-// top-level so MST's optional identifier honors it, and `init` inside `init` is
-// the nesting mistake loadSessionSpec already reports.
-export const RESERVED_KEYS = ['id', 'type', 'init'] as const
+// top-level so MST's optional identifier honors it, `launch` is the blob
+// `withLaunchInput`'s partition fills, and `init` inside `init` is the nesting
+// mistake loadSessionSpec already reports.
+export const RESERVED_KEYS = ['id', 'type', 'init', 'launch'] as const
 const RESERVED: ReadonlySet<string> = new Set(RESERVED_KEYS)
 
 export interface InitSettingsReport {
