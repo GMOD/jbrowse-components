@@ -138,12 +138,19 @@ export function solveLabelRoomFactor(
 // names + descriptions, `labels` drops descriptions, `isoforms` trims each
 // gene's transcript stack to the count that fits WITH its names, `decimated`
 // keeps names only on features wide enough to host them (plus
-// pinned/highlighted), `bodies` drops all names and packs boxes edge-to-edge.
+// pinned/highlighted), `bodies` drops all names and packs boxes edge-to-edge,
+// `bare` also drops the `below` subfeature-label rows.
 //
 // `isoforms` sits above `decimated` because the policy is names before
 // isoforms: a gene drawn with 5 of its 10 transcripts and its name on it is the
 // picture the reader can use, and one drawn with all 10 and no name is not.
-type FitLevel = 'full' | 'labels' | 'isoforms' | 'decimated' | 'bodies'
+//
+// `bare` sits below `bodies` because subfeature labels are a config choice, not
+// a fit concession (see renderedShowSubfeatureLabels) — they survive every rung
+// that has another reduction to offer, and are given up only where the
+// alternative is squeezing bodies under rows whose text the squeeze would hide
+// anyway. The rung exists only on a display whose settings reserve those rows.
+type FitLevel = 'full' | 'labels' | 'isoforms' | 'decimated' | 'bodies' | 'bare'
 
 // One rung. Lazy so a rung tighter than the one that fits is never laid out — in
 // the common non-overflowing case only `full` is materialized.

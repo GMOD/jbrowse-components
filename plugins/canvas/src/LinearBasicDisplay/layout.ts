@@ -295,6 +295,12 @@ export interface LayoutInputs {
   // row, and stacking them honestly needs 68px, which costs the band every name
   // through the fit ladder.
   flattenRows?: boolean
+  // Spend the worker's counted `below` subfeature-label rows at zero height —
+  // the fit ladder's `bare` rung, which gives up rows the squeeze was about to
+  // hide the text of anyway. The worker COUNTS these rows and the main thread
+  // SPENDS them at `labelFontPx` (see reservesBelowLabelRow), which is what
+  // makes this a pure layout input rather than a refetch.
+  dropBelowLabelRows?: boolean
 }
 
 // Whether a feature keeps its name under the active decimation policy. `all`
@@ -384,7 +390,10 @@ function paddedLabelWidthPx(
   label: { textWidth: number } | undefined,
   labelFontPx: number,
 ) {
-  return label && label.textWidth > 0
+  // Font 0 is the `bare` rung's "spend nothing" sentinel (dropBelowLabelRows):
+  // no text draws there, so no width — including the fixed padding — may be
+  // reserved for it.
+  return label && label.textWidth > 0 && labelFontPx > 0
     ? renderedTextWidth(label.textWidth, labelFontPx) + LABEL_PADDING_PX
     : 0
 }
@@ -560,10 +569,17 @@ interface DisplayModeMetrics {
   singleRow: boolean
 }
 
-function displayModeMetrics(displayMode: DisplayMode): DisplayModeMetrics {
+function displayModeMetrics(
+  inputs: Pick<LayoutInputs, 'displayMode' | 'dropBelowLabelRows'>,
+): DisplayModeMetrics {
+  const { displayMode } = inputs
   return {
     heightMultiplier: HEIGHT_MULTIPLIERS[displayMode],
-    labelFontPx: labelFontSize(displayMode),
+    // Zero at the `bare` rung, which spends the counted `below` label rows at
+    // no height. Name/description rows are already off on the rung that asks
+    // for this, so the below-row spend is the font size's only remaining job
+    // there — see paddedLabelWidthPx for the width half of that claim.
+    labelFontPx: inputs.dropBelowLabelRows ? 0 : labelFontSize(displayMode),
     rowPadding: ROW_PADDING[displayMode],
     // Labels are already forced off upstream in collapsed mode (model
     // showLabels/showDescriptions), so no row height is reserved for them.
@@ -599,7 +615,7 @@ function layoutRefGroups(
   inputs: LayoutInputs,
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
-  const metrics = displayModeMetrics(inputs.displayMode)
+  const metrics = displayModeMetrics(inputs)
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
   for (const [, regions] of groupRawByRef(rpcDataMap)) {
@@ -706,7 +722,7 @@ function createPackProbe(
   // rows the solve's knob is chosen against are the rows that will render.
   measureIds: ReadonlySet<string> | undefined,
 ) {
-  const metrics = displayModeMetrics(inputs.displayMode)
+  const metrics = displayModeMetrics(inputs)
   const preps = [...groupRawByRef(rpcDataMap).values()].map(regions =>
     prepareRefPack(regions, inputs, metrics),
   )

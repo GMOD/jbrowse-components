@@ -390,9 +390,7 @@ export default function stateModelFactory(
               inertLabelHint(
                 self,
                 self.subfeatureLabels,
-                self.renderedShowSubfeatureLabels
-                  ? undefined
-                  : 'hidden while squeezed to fit',
+                self.renderedShowSubfeatureLabels ? undefined : 'hidden to fit',
               ),
             ),
           ]

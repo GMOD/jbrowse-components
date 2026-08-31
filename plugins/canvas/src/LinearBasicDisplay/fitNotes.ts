@@ -7,6 +7,8 @@ import type { FitStage } from './fitLadder.ts'
 export interface FitDrops {
   names: 'none' | 'some' | 'all'
   descriptions: boolean
+  // the reserved `below` subfeature-label rows are dropped (the `bare` rung)
+  subfeatureLabels: boolean
   // every label kind the settings reserved is gone
   everyLabel: boolean
   // the squeeze as a whole percentage under 100, or undefined when not squeezing
@@ -29,10 +31,14 @@ export function fitDrops(
   // `solveLabelRoomFactor`). Any factor above 0 means fits(0) failed, so at
   // least one name went.
   decimatedFactor: number | undefined,
+  // whether the kept rung dropped the reserved `below` subfeature-label rows —
+  // the `bare` rung only exists where the settings reserve them, so its level
+  // alone answers this and the caller passes exactly that.
+  droppedSubfeatureLabels: boolean,
 ): FitDrops {
   const names = !showLabels
     ? 'none'
-    : stage.level === 'bodies'
+    : stage.level === 'bodies' || stage.level === 'bare'
       ? 'all'
       : stage.level === 'decimated' && (decimatedFactor ?? 0) > 0
         ? 'some'
@@ -42,6 +48,7 @@ export function fitDrops(
   return {
     names,
     descriptions,
+    subfeatureLabels: droppedSubfeatureLabels,
     everyLabel:
       (names === 'all' || (descriptions && !showLabels)) &&
       (descriptions || !showDescriptions),
@@ -49,10 +56,11 @@ export function fitDrops(
   }
 }
 
-function hiddenKinds({ names, descriptions }: FitDrops) {
+function hiddenKinds({ names, descriptions, subfeatureLabels }: FitDrops) {
   return [
     names === 'all' ? 'names' : names === 'some' ? 'some names' : undefined,
     descriptions ? 'descriptions' : undefined,
+    subfeatureLabels ? 'subfeature labels' : undefined,
   ]
     .filter(Boolean)
     .join(' + ')
@@ -78,10 +86,12 @@ export function fitLadderNote(drops: FitDrops) {
 // The note on the selected "Labels" radio: the row names a setting the ladder
 // is not honouring. "hidden to fit" when nothing the row reserved survives,
 // else which part went — same shape as the collapsed-mode note beside it.
+// Subfeature labels are their own radio, so their drop is excluded here and
+// surfaced only in the track-sizing note above.
 export function labelsFitHint(drops: FitDrops) {
   if (drops.everyLabel) {
     return 'hidden to fit'
   }
-  const hidden = hiddenKinds(drops)
+  const hidden = hiddenKinds({ ...drops, subfeatureLabels: false })
   return hidden ? `${hidden} hidden to fit` : undefined
 }

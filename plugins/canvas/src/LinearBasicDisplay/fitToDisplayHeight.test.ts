@@ -140,6 +140,18 @@ function mixedWidthRegionData(count: number) {
   })
 }
 
+// The overlapping stack with one worker-counted `below` subfeature-label row
+// per feature — the rows the `bare` rung exists to give back. Only the
+// flatbush items carry the count: the pack spends `item.labelRows` into the
+// row heights, which is all a stack-height assertion reads.
+function belowLabeledStackedRegionData(rows: number, heightPx: number) {
+  const base = stackedRegionData(rows, heightPx)
+  return makeFeatureData({
+    ...base,
+    flatbushItems: base.flatbushItems.map(f => ({ ...f, labelRows: 1 })),
+  })
+}
+
 // An overlapping stack whose bodies are DIFFERENT heights, so "the shortest body"
 // and "the configured featureHeight" are distinguishable numbers — the fixture
 // the squeeze floor's basis is pinned against.
@@ -962,6 +974,60 @@ describe('canvas display fit escalation ladder', () => {
     display.setHeight(400)
     expect(display.fitScale).toBe(1)
     expect(display.renderedShowSubfeatureLabels).toBe(true)
+  })
+
+  // The `bare` rung: with "Subfeature labels: below" reserving a row per
+  // feature, the ladder's last reduction before a squeeze is to spend those
+  // rows at zero — their text is exactly what a squeeze would have hidden while
+  // still paying for the rows.
+  it('drops the below-label rows before squeezing the bodies', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    setConf(display, 'subfeatureLabels', 'below')
+    display.setRpcData(0, belowLabeledStackedRegionData(8, 10), ctgA)
+    display.setHeightMode('fit')
+
+    const bodiesHeight = maxBottom(display.fitBodiesOnlyLayout)
+    const bareHeight = maxBottom(display.fitBareLayout)
+    // The rows are really in the bodies stack, and the bare pack gives every
+    // one of them back.
+    expect(bareHeight).toBeLessThan(bodiesHeight)
+
+    // A height between the two: bodies overflows, bare fits with no squeeze.
+    display.setHeight(Math.ceil((bareHeight + bodiesHeight) / 2))
+    expect(display.fitStage.level).toBe('bare')
+    expect(display.fitScale).toBe(1)
+    expect(display.hasOverflow).toBe(false)
+    // The rung hides the text whose rows it reclaimed (names went at `bodies`
+    // already), and the track-sizing note owns up to it.
+    expect(display.renderedShowSubfeatureLabels).toBe(false)
+    expect(display.renderedShowLabels).toBe(false)
+    expect(display.fitNote).toContain('subfeature labels hidden')
+  })
+
+  it('squeezes at the bare rung once even the reclaimed rows overflow', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    setConf(display, 'subfeatureLabels', 'below')
+    display.setRpcData(0, belowLabeledStackedRegionData(8, 10), ctgA)
+    display.setHeightMode('fit')
+    display.setHeight(Math.floor(maxBottom(display.fitBareLayout) / 2))
+    expect(display.fitStage.level).toBe('bare')
+    expect(display.fitScale).toBeLessThan(1)
+    expect(display.renderedShowSubfeatureLabels).toBe(false)
+  })
+
+  // Without the reservation there are no rows to give back, so the ladder is
+  // unchanged: the rung would repack a byte-identical `bodies` stack and
+  // report a reduction that reduced nothing.
+  it('has no bare rung while the settings reserve no below-label rows', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, stackedRegionData(8, 10), ctgA)
+    display.setHeightMode('fit')
+    display.setHeight(20)
+    expect(display.reservesBelowLabelRows).toBe(false)
+    expect(display.fitStage.level).toBe('bodies')
   })
 
   // The floor's promise is that NO body squeezes below MIN_FIT_BOX_PX, so it has

@@ -22,6 +22,7 @@ const drops = (
     showDescriptions,
     at.level === 'full',
     decimatedFactor,
+    at.level === 'bare',
   )
 
 describe('fitDrops', () => {
@@ -31,6 +32,7 @@ describe('fitDrops', () => {
     expect(drops(stage('full'), true, true)).toEqual({
       names: 'none',
       descriptions: false,
+      subfeatureLabels: false,
       everyLabel: false,
       squeezePct: undefined,
     })
@@ -43,6 +45,7 @@ describe('fitDrops', () => {
     expect(drops(stage('bodies'), false, false)).toEqual({
       names: 'none',
       descriptions: false,
+      subfeatureLabels: false,
       everyLabel: false,
       squeezePct: undefined,
     })
@@ -52,12 +55,26 @@ describe('fitDrops', () => {
   // labels, so a track that lands there has dropped no label kind at all and
   // the note stays silent.
   it('reports nothing when a fixed track trims isoforms', () => {
-    expect(fitDrops(stage('isoforms'), true, true, true, undefined)).toEqual({
+    expect(
+      fitDrops(stage('isoforms'), true, true, true, undefined, false),
+    ).toEqual({
       names: 'none',
       descriptions: false,
+      subfeatureLabels: false,
       everyLabel: false,
       squeezePct: undefined,
     })
+  })
+
+  // The `bare` rung exists only where the settings reserve `below` label rows,
+  // so landing on it always means both every name and those rows went.
+  it('reports the below-label rows dropped at the bare rung', () => {
+    expect(drops(stage('bare'), true, false)).toMatchObject({
+      names: 'all',
+      subfeatureLabels: true,
+      everyLabel: true,
+    })
+    expect(drops(stage('bare'), false, false).subfeatureLabels).toBe(true)
   })
 
   // The `decimated` rung commits at factor 0 whenever the unseeded pack fits
@@ -119,6 +136,9 @@ describe('fitLadderNote', () => {
     expect(fitLadderNote(drops(stage('bodies', 0.5), false, false))).toBe(
       'squeezed to 50% (taller track shows more)',
     )
+    expect(fitLadderNote(drops(stage('bare'), true, false))).toBe(
+      'names + subfeature labels hidden (taller track shows more)',
+    )
   })
 })
 
@@ -142,5 +162,12 @@ describe('labelsFitHint', () => {
     expect(labelsFitHint(drops(stage('labels'), false, true))).toBe(
       'hidden to fit',
     )
+  })
+
+  // Subfeature labels are their own radio, so their drop never leaks into the
+  // Labels radio's hint — with nothing of the Labels row hidden there is no
+  // hint at all at the bare rung.
+  it('leaves the subfeature-label drop to the track-sizing note', () => {
+    expect(labelsFitHint(drops(stage('bare'), false, false))).toBeUndefined()
   })
 })

@@ -889,6 +889,20 @@ export default function baseStateModelFactory(
         get showsEveryIsoform() {
           return false
         },
+        /**
+         * #getter
+         * Whether the settings reserve `below` subfeature-label rows, which is
+         * what earns the fit ladder its `bare` rung — with nothing reserved
+         * the rung would repack an identical stack. Collapsed mode forces the
+         * labels off in rpcProps, so the worker counted no rows there whatever
+         * the slot says.
+         */
+        get reservesBelowLabelRows() {
+          return (
+            self.displayMode !== 'collapsed' &&
+            resolveConf(self, 'subfeatureLabels') === 'below'
+          )
+        },
       }))
       .views(fitLadderViews)
       .views(self => ({
@@ -935,35 +949,40 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Names are painted at every stage short of `bodies` (and whenever fit is
-         * off), where the packer reserved row height + overhang for the names it
-         * kept so they never overlap — including the `decimated` stage, whose
-         * per-feature pruning happens inside the layout (dropped names are removed
-         * from floatingLabelsData), not via this flag. At the `bodies` stage
-         * nothing is reserved, so all names are hidden rather than drawn on top of
-         * the boxes. Every render-time consumer reads this so hidden names reserve
-         * nothing.
+         * Names are painted at every stage short of `bodies` and `bare` (and
+         * whenever fit is off), where the packer reserved row height + overhang
+         * for the names it kept so they never overlap — including the
+         * `decimated` stage, whose per-feature pruning happens inside the
+         * layout (dropped names are removed from floatingLabelsData), not via
+         * this flag. At `bodies` and below nothing is reserved, so all names
+         * are hidden rather than drawn on top of the boxes. Every render-time
+         * consumer reads this so hidden names reserve nothing.
          */
         get renderedShowLabels() {
-          return self.showLabels && self.fitStage.level !== 'bodies'
+          const { level } = self.fitStage
+          return self.showLabels && level !== 'bodies' && level !== 'bare'
         },
         /**
          * #getter
          * A subfeature label (a transcript name under its gene) is a worker-baked
-         * config choice rather than a fit rung — `showLabels`/`showDescriptions`
-         * govern only the feature's OWN two lines, and the packer reserves this
-         * label's row and overhang unconditionally to match. So it survives every
-         * rung the two flags above drop, including `bodies`.
+         * config choice rather than a fit concession — `showLabels`/
+         * `showDescriptions` govern only the feature's OWN two lines, and the
+         * packer reserves this label's row and overhang to match. So it
+         * survives every rung with another reduction to offer, `bodies`
+         * included — only the `bare` rung, whose whole reduction IS these rows
+         * (spent at zero in the pack), drops it.
          *
-         * What it does NOT survive is the squeeze. The rows it was reserved in are
-         * spent in `bodyHeightPx` and scaled with everything else, while the text
-         * draws at the mode's own font size — so at scale 0.3 a gene's transcript
-         * names are painted over rows a third as tall as the text, on top of each
-         * other and of the boxes. Below 1 they are hidden instead; at 1 (every
-         * non-squeezed rung, and all of fixed/grow) nothing changed.
+         * It does not survive a squeeze either. The reserved rows are spent in
+         * `bodyHeightPx` and scaled with everything else, while the text draws
+         * at the mode's own font size — so at scale 0.3 the names would paint
+         * over rows a third as tall as the text, on top of each other and of
+         * the boxes. On a display that reserves these rows the ladder reaches
+         * `bare` before it squeezes, so the scale guard covers the remaining
+         * squeezable ladders (rows never reserved — nothing real is hidden).
          */
         get renderedShowSubfeatureLabels() {
-          return self.fitStage.scale >= 1
+          const { level, scale } = self.fitStage
+          return scale >= 1 && level !== 'bare'
         },
         /**
          * #getter
@@ -980,6 +999,9 @@ export default function baseStateModelFactory(
             self.fitStage.level === 'decimated'
               ? self.fitDecimatedFactor
               : undefined,
+            // The `bare` rung exists only where the settings reserve the rows,
+            // so its level alone says the reserved labels were dropped.
+            self.fitStage.level === 'bare',
           )
         },
       }))

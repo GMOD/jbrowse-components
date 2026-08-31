@@ -52,12 +52,16 @@ export interface FitLadderHost {
   // "All transcripts": the setting names every isoform, so the rung that would
   // drop one is withheld and the surplus scrolls
   showsEveryIsoform: boolean
+  // whether the settings reserve `below` subfeature-label rows at all — the
+  // `bare` rung exists only where there are rows to give back
+  reservesBelowLabelRows: boolean
   fitTargetHeight: number
   incrementalLayout: IncrementalLayout
   incrementalLayoutLabelsOnly: IncrementalLayout
   incrementalLayoutBodiesOnly: IncrementalLayout
   incrementalLayoutDecimated: IncrementalLayout
   incrementalLayoutIsoforms: IncrementalLayout
+  incrementalLayoutBare: IncrementalLayout
 }
 
 /**
@@ -112,6 +116,12 @@ export function fitLadderVolatiles() {
     incrementalLayoutIsoforms: createIncrementalLayout({
       seedPriorRows: false,
     }),
+    /**
+     * #volatile
+     */
+    // The `bare` rung's memo (bodies with the `below` label rows spent at
+    // zero). No solve chooses it, so it seeds like its `bodies` sibling.
+    incrementalLayoutBare: createIncrementalLayout(),
   }
 }
 
@@ -396,6 +406,23 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
+     * The `bare` stack: `bodies` with the `below` subfeature-label rows spent
+     * at zero height, so the last reduction before a squeeze gives back rows
+     * whose text the squeeze was about to hide anyway. Only ever read through
+     * the rung `fitStage` adds when the settings reserve those rows
+     * (`reservesBelowLabelRows`).
+     */
+    get fitBareLayout(): Map<number, FeatureDataResult> {
+      return self.incrementalLayoutBare(self.rpcDataMap, {
+        ...self.layoutInputs,
+        showLabels: false,
+        showDescriptions: false,
+        maxIsoformsPerGene: this.fitIsoformCount,
+        dropBelowLabelRows: true,
+      })
+    },
+    /**
+     * #getter
      * The unscaled height (px) of the shortest box on screen that the layout
      * actually DRAWS — a UTR at its 0.65 fraction, a transcript rect inside a
      * gene, a plain variant box — which is the one a uniform squeeze takes
@@ -477,15 +504,16 @@ export function fitLadderViews(self: FitLadderHost) {
      * whitespace factor solved to the height (`fitDecimatedSolved` — keeps as
      * many non-overlapping names as fit, filling the space continuously), else
      * `bodies` (drop names too, pack tight) when even the tightest decimation
-     * overflows. The kept rung is then scaled to fill the track: grown up to
-     * `fitMaxScale` when it fits with room to spare, but never past the normal
-     * feature height — so in normal display mode grow is pinned at 1 and spare
-     * space stays whitespace, while a compact mode may enlarge back up to
-     * normal; or — only at the last `bodies` rung — squeezed down to
-     * `fitMinScale` and scrolled if even that overflows. Non-fit modes stay at
-     * `full`, scale 1. Read off the unscaled candidate heights so it can't feed
-     * back on its own `scale`. The ladder walk + scale math live in
-     * `resolveFitLadder`.
+     * overflows, else — only where the settings reserve `below` subfeature
+     * label rows — `bare` (spend those rows at zero too). The kept rung is
+     * then scaled to fill the track: grown up to `fitMaxScale` when it fits
+     * with room to spare, but never past the normal feature height — so in
+     * normal display mode grow is pinned at 1 and spare space stays
+     * whitespace, while a compact mode may enlarge back up to normal; or —
+     * only at the ladder's last rung — squeezed down to `fitMinScale` and
+     * scrolled if even that overflows. Non-fit modes stay at `full`, scale 1.
+     * Read off the unscaled candidate heights so it can't feed back on its own
+     * `scale`. The ladder walk + scale math live in `resolveFitLadder`.
      *
      * Every rung is measured over `fitMeasureFeatureIds` — on screen in fit
      * mode, everything otherwise — so the rung that survives and the squeeze
@@ -518,6 +546,19 @@ export function fitLadderViews(self: FitLadderHost) {
               maxIsoforms: trimmed,
             },
           ]
+      // Only where the settings reserve `below` label rows: with none reserved
+      // the rung would pack a byte-identical copy of `bodies` into a second
+      // memo and report a reduction that reduced nothing — the same reasoning
+      // that withholds the isoform rung under "All transcripts".
+      const bareRung: FitRung[] = self.reservesBelowLabelRows
+        ? [
+            {
+              level: 'bare',
+              layout: () => this.fitBareLayout,
+              maxIsoforms: trimmed,
+            },
+          ]
+        : []
       return resolveFitLadder(
         fit
           ? [
@@ -534,6 +575,7 @@ export function fitLadderViews(self: FitLadderHost) {
                 layout: () => this.fitBodiesOnlyLayout,
                 maxIsoforms: trimmed,
               },
+              ...bareRung,
             ]
           : self.autoHeight
             ? // Grow's height IS its content's, so it gives nothing up.
