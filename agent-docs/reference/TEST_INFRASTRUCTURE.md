@@ -194,24 +194,64 @@ Four things were paying for nothing and no longer do (2026-08-30):
 
 Together: **372s → 216s** for the whole suite, same 20,504 tests green.
 
-What is left, in order of size.
+### The test files, 2026-08-30
 
-**`products/jbrowse-web` is now 47% of the clock**, and it is less trimmable
-than that share suggests. 28 of its suites call `createView` without
-`volvoxConfigWithTracks`; of those, 8 read the track tree itself and 13 name no
-track id at all, which leaves 9 candidates — and `LGVSynteny` is one of them by
-that count while being the file "What a `createView()` actually costs" names as
-the example that cannot be trimmed, because it picks a track out of a listbox by
-name. So the remaining jbrowse-web time is mostly app boot and React rendering
-rather than the 123 rows, and a mechanical sweep over the candidates would be
-wrong in at least one case out of nine.
+The second pass, after the harness one above. Measured the same way and A/B'd
+against itself on the same box within the hour: **Σ per-suite 1305s → 1120s,
+wall clock at four workers 346s → 291s**, 1977 suites green either way. Both
+sides sit ~7% above the table, which was taken on an idle box — the delta is
+what to read, not the totals.
 
-`installPerRegionFetchAutoruns` is 50s of which **48.6s is `(idle)`**: 44 calls
-to a quiescence poller that has to outlast a 600ms debounce, so it holds a
-worker for 50s without using one. Its debounce is a literal that
-`generateFetchAutorunDocs` reads, so the lever is the test's concurrency rather
-than the delay. `plugins/blat/src/liveIsPcr.test.ts` is 18.5s of live UCSC
-round-trip on any box where `UCSC_API_KEY` is set.
+Three levers, and the first two generalise past the files they were used on.
+
+**A debounce is a `setTimeout`, so a suite that only waits for one belongs on a
+fake clock.** `installPerRegionFetchAutoruns` was 50.4s of which 48.6s was
+`(idle)`: 44 calls to a quiescence poller that has to outlast the 600ms
+`FetchVisibleRegions` debounce, holding a worker without using one.
+`jest.useFakeTimers()` plus `jest.advanceTimersByTimeAsync(POLL_MS)` inside the
+poller took it to **2.3s**, and Manhattan's `retryContract`, the same shape,
+**15.9s → 1.9s**. It works because everything those suites wait on is a timer —
+`leadingEdgeAutorun` arms one for its debounce, the harness's `fetchDelayMs` is
+another, and the RPC between them is a resolved promise that
+`advanceTimersByTimeAsync` flushes on the way. Neither poller changed otherwise
+and neither lost its sabotage: dropping the fetch autorun's `fetchGeneration`
+read fails the same three dependency-set cases, dropping its `reloadCounter`
+read the same two.
+
+**A settle has a positive signal, and the signal is nearly always cheaper than
+the guess.** The four synteny-follow suites slept through 63s of their 72s on
+constants picked off the 500ms coarse-blocks debounce. `followSettled`
+(`products/jbrowse-web/src/tests/syntenyFollowSettle.ts`) waits for no row's
+`coarseDynamicBlocks` to be behind its live ones — which is exactly "the
+debounced autorun has run for the viewport as it stands", since
+`setCoarseDynamicBlocks` assigns only on a difference — and then for the
+`SyntenyFollow` autorun to stop running. **85.3s → 26.9s** over the four, and it
+says the pass ran, which a sleep never did. Where the assertion is itself
+something the follow changes, the sleep became a plain `waitFor` on it.
+`waitForRepaintedCanvas` is the same move for a change that repaints without
+moving anything on the model (`BigWigColor`, 6.2s → 3.6s of bodies), which is
+the gap `findSettledDisplay`'s docstring names.
+
+**The `volvoxConfigWithTracks` trim is paid twice, and the second payment is the
+larger one.** Per `createView` it is 0.34s (the A/B is in
+`BookmarkWidget`, below) — but the document it leaves behind is also what every
+later `findByText` / `findByRole` / `findByLabelText` scans, so a suite that
+searches is charged again per query. The two text-search suites went **38.1s →
+13.8s of bodies** on a trim justified by reading `trix/volvox_meta.json`: the
+sixteen tracks the aggregate index names are the only ones a search here can
+land on. Twelve suites took it; the boundary is real and `SyntenyImportForm`
+found it — its manual import form scans the whole track list for the assembly
+pair it launches, and the local-file tests draw a canvas 74% different without
+the rest of the list, so only `three level` takes the trim there.
+
+What is left, in order of size, is flat: nothing above 18s and the top twenty
+are all real React rendering and painting. `plugins/blat/src/liveIsPcr.test.ts`
+is 18.5s of live UCSC round-trip on any box where `UCSC_API_KEY` is set, 16s of
+it the rate limit the file waits out on purpose. The one structural lever left
+is merging sibling suites that differ by an argument — `AlignmentArcs` /
+`AlignmentLinked` / `AlignmentStack`, the six `Launch*View`, the eight
+`*ViewInit` — which returns the ~0.55s median per-suite overhead per file
+removed and costs scheduling flexibility and `pnpm test-related` granularity.
 
 ### A display harness is `createDisplayTestEnvironment`
 
@@ -335,13 +375,33 @@ quadratic here, and jsdom's nwsapi result cache only hides it until the next DOM
 mutation. Prefer `findByTestId` / `findByPlaceholderText` / `findByText` in
 full-app tests; a `ByLabelText` that looks instant in a component test is not.
 
+**The 4-17s is unsettled**: timed at the jsdom level across seven suites on
+2026-08-30 it came back at 0.2-0.5s a call, against one documented measurement,
+on a box whose own docs say a single timing is noise. It matters only as a
+*don't* — the whole `ByLabelText` / `ByRole` category across `products/jbrowse-web`
+is ~4s either way, so the sweep is not worth running and nobody should edit the
+paragraph above until someone re-times `getByLabelText` deliberately.
+
 `volvoxConfigWithTracks(['...'])` in `products/jbrowse-web/src/tests/util.tsx`
 is the lever: a suite names the tracks it opens and stops paying for the rest,
 while keeping the coverage it has (the track is still switched on by clicking
-its row in the real selector). It throws on an unknown trackId. **Don't trim a
-suite that reads the track list itself** — categories, filter text, counts, or
-picking a track out of a listbox by name. `LGVSynteny` is the worked example of
-one that cannot be trimmed.
+its row in the real selector). It throws on an unknown trackId — but not on an
+assembly's own sequence track, which is not in `tracks` at all and survives any
+trim.
+
+**The in-run figure is 0.34s per `createView`, not the ~1.1s the 1.5s → 0.4s
+above implies**, because that pair is a cold isolated measurement. The A/B is
+`BookmarkWidget` at eleven calls: 11.1s of test bodies → 7.4s. Then add the
+second payment — the searches after it — which is the larger half for a suite
+that does any (see "The test files, 2026-08-30").
+
+**Don't trim a suite that reads the track list itself** — categories, filter
+text, counts, picking a track out of a listbox by name, or asserting on what is
+*not* shown. `LGVSynteny` is the worked example of one that cannot be trimmed;
+`SVInspector`'s "Open from track", `CopyAndDelete`'s delete path,
+`BasicLinearGenomeView`'s selector and reorder tests and `SyntenyImportForm`'s
+three import-form tests are the rest of the list. A suite can take the trim per
+call rather than per file, which is how those four keep both.
 
 ### `fireEvent`, not `userEvent`
 
