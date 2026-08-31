@@ -227,9 +227,13 @@ function collapseIsoforms({
     : undefined
 }
 
-// One child of the gene laid out as its own glyph, tagged with whether it spends
-// a `below` label row — which is the parent's to count, not the child's.
-function layoutChild(child: Feature, args: LayoutArgs) {
+// One child of the gene laid out as its OWN glyph — dispatched through
+// `findGlyph`, so a transcript child lays out as a transcript — and tagged with
+// whether it spends a `below` label row, which is the parent's to count.
+//
+// Not `glyphUtils`' exported `layoutChild`, which is the opposite thing: a flat
+// `Box` with no children, for the glyphs whose children are leaves.
+function layoutStackedChild(child: Feature, args: LayoutArgs) {
   const { feature, config } = args
   const layout = findGlyph(
     child,
@@ -358,6 +362,15 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     // has nothing to order, but `longestCoding` also declines to collapse a gene
     // the user EXPANDED, and that gene draws every isoform — reading the mode
     // here left exactly those unordered.
+    //
+    // Two knock-ons, both of which bring `longestCoding` into line with every
+    // other mode rather than inventing an order for it. A gene with a SINGLE
+    // isoform is also uncollapsed, so its coding isoform now sorts above a
+    // decoration beside it (`biological_region`, an NCBI source record) — those
+    // score `canonical: Infinity`, and `Infinity - Infinity` is NaN, so the
+    // comparator falls through to the coding term. And `buildIsoformStack`
+    // re-ranks off the POST-sort `drawn` while `rankIsoforms` breaks a
+    // coding-length tie by index, so tie-broken isoform ranks move here too.
     subfeatures.sort((a, b) => {
       const x = scores.get(a.id())!
       const y = scores.get(b.id())!
@@ -377,7 +390,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   let labelRows = 0
 
   for (const [i, child] of subfeatures.entries()) {
-    const childLayout = layoutChild(child, args)
+    const childLayout = layoutStackedChild(child, args)
 
     childLayout.y = currentYPx
     childLayout.labelRowsAbove = labelRows

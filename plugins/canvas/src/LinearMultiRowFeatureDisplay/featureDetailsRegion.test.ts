@@ -1,5 +1,7 @@
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { waitFor } from '@testing-library/react'
 
+import { featureSpanRegion } from '../shared/fetchCanvasFeatureDetails.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -67,13 +69,37 @@ test('the details fetch asks for the clicked feature span, not the region', asyn
   })
 })
 
-test('a zero-length feature is widened to one base, not an empty query', async () => {
+// Narrowing is only allowed to be cheaper, never to answer differently — so the
+// property is parity with the region query it replaced, run through the
+// predicate every adapter actually keeps features on. Asserting the argument
+// SHAPE instead is what let a narrowing that DROPPED a zero-length feature look
+// correct: the mock answers whatever it is asked.
+//
+// A zero-length feature at position 0 fails `end > queryStart` against any query
+// starting at 0, so neither form returns it and parity is what says so.
+test.each([
+  ['a span', 100, 200],
+  ['a zero-length insertion', 4000, 4000],
+  ['a feature at the contig start', 0, 100],
+  ['a zero-length feature at position 0', 0, 0],
+])(
+  'the narrowed query answers as the region query did for %s',
+  (_label, startBp, endBp) => {
+    const q = featureSpanRegion(ctgA, startBp, endBp)
+    expect(doesIntersect2(startBp, endBp, q.start, q.end)).toBe(
+      doesIntersect2(startBp, endBp, ctgA.start, ctgA.end),
+    )
+    expect(q.start).toBeGreaterThanOrEqual(0)
+  },
+)
+
+test('a zero-length feature straddles rather than growing rightwards', async () => {
   const { display, mockRpcCall } = setup()
 
   display.selectFeatureById('insertion', 0)
 
   expect((await detailsArgs(mockRpcCall)).region).toMatchObject({
-    start: 4000,
+    start: 3999,
     end: 4001,
   })
 })

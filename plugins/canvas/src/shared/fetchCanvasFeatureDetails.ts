@@ -9,14 +9,21 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 // everything overlapping the query, so the unnarrowed one downloaded the whole
 // screen a second time to pick a single row out of.
 //
-// At least one base wide — a zero-length feature (an insertion) is an empty
-// query, which adapters answer with nothing.
+// A zero-length feature (an insertion) is STRADDLED, not grown from its start
+// edge — the same move `renderedSpanPx` makes for the same shape. Adapters keep
+// a feature on `doesIntersect2`, which is `end > queryStart && start <
+// queryEnd`: a query of [pos, pos + 1] fails the first half against a feature
+// whose own end IS pos, so growing rightwards drops exactly the feature it was
+// widened for. The whole-region query it replaced always straddled, so this is
+// the one case narrowing can lose.
 export function featureSpanRegion(
   region: Region,
   startBp: number,
   endBp: number,
 ): Region {
-  return { ...region, start: startBp, end: Math.max(endBp, startBp + 1) }
+  return endBp > startBp
+    ? { ...region, start: startBp, end: endBp }
+    : { ...region, start: Math.max(0, startBp - 1), end: startBp + 1 }
 }
 
 // Re-fetch one full feature by id for the details widget. Both canvas displays
