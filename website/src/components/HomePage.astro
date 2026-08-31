@@ -80,13 +80,17 @@ import btn from '../styles/button.module.css'
           </li>
           <li>Customized portals to help launch comparative views</li>
         </ul>
-        <p class="body-text">
+        <div class="btn-row">
           <a
+            class:list={[btn.btn, btn.btnSecondary]}
             href="https://genomes.jbrowse.org"
             target="_blank"
-            rel="noopener noreferrer">Visit genomes.jbrowse.org ↗</a
+            rel="noopener noreferrer"
           >
-        </p>
+            <Icon name="mdi:open-in-new" width="20" height="20" />
+            genomes.jbrowse.org
+          </a>
+        </div>
       </div>
       <div class="hubs-image">
         <button
