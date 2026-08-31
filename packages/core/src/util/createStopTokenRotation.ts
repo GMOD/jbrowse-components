@@ -156,6 +156,8 @@ export interface ActiveFetch {
  * passes a {@link createStatusChannel}, which is one volatile instead of two
  * fields and an action.
  */
+export type StopTokenRotation = ReturnType<typeof createStopTokenRotation>
+
 export function createStopTokenRotation(
   self: IStateTreeNode,
   report: StatusReporter,
@@ -229,6 +231,13 @@ export function createStopTokenRotation(
         statusCallback: stream.statusCallback,
         end() {
           ended = true
+          // A completed fetch's token is released here, not only on supersede
+          // or cancel — otherwise it pins its AbortSignal controllers (and blob
+          // URL) until the next `begin()`, forever for a one-shot fetch that
+          // succeeds and never reruns. `stopStopToken` is guarded, so the
+          // superseded and cancelled runs that arrive here already-stopped cost
+          // nothing.
+          stopStopToken(stopToken)
           if (openStream === stream) {
             openStream = undefined
           }

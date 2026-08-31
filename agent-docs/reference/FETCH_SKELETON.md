@@ -24,9 +24,9 @@ The pieces underneath it, and who reaches them directly:
 
 | what | where | who runs on it |
 | --- | --- | --- |
-| the whole sequence above, plus the autorun over it | `installFetch` / `runFetchOnce` | every fetch — `FetchMixin.runFetch` holds `runFetchOnce` (it needs the MST flow and a rotation `cancelFetch` can reach), and everything else takes the installer |
-| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them, through the skeleton — `FetchMixin` holds one as a member, `installFetch` one per installation, and `withDiagonalizeProgress` one directly |
-| the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the skeleton and the global family; per-region is deliberately not this shape, see `RegionFetchContext` |
+| the whole sequence above, plus the autorun over it | `installFetch` / `runFetchOnce` | every fetch — `FetchMixin.runFetch` holds `runFetchOnce` for the per-region family (it needs the MST flow, since its trigger is `planRegionFetch`'s autorun), and everything else takes the installer: the global family (`installGlobalFetchAutorun` lends `FetchMixin`'s rotation through the `rotation` option, so `cancelFetch` reaches the fetch it installs), the comparative family, chord, the breakpoint overlay and the prerequisite reads |
+| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080), releasing a completed fetch's token at `end()` | `createStopTokenRotation` | all of them, through the skeleton — `FetchMixin` holds one as a member and lends it to the skeleton for the global family, `installFetch` one per installation otherwise, and `withDiagonalizeProgress` one directly |
+| the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the skeleton, so the global and comparative families with it; per-region is deliberately not this shape, see `RegionFetchContext` |
 | the leading-edge scheduler | `leadingEdgeAutorun` | every installer, plus the dotplot view's region autorun |
 | the non-abort fetch-error rule: an abort is the ordinary end of a superseded fetch and is swallowed, so is any failure of a fetch that is no longer current, and only a current fetch's real failure is logged and published | `handleFetchError` (`@jbrowse/core/util`) | `runFetchOnce`, so all of them |
 

@@ -9,7 +9,6 @@ import {
   statusFraction,
   statusMessageText,
 } from '@jbrowse/core/util/progress'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
@@ -77,11 +76,12 @@ function writeStatus(self: unknown) {
 //   self.statusMessage       — work-in-progress status string.
 //   self.fetchGeneration     — see below.
 //
-// fetchGeneration bumps once at every fetch END (success, error, or cancel).
-// Autoruns read `void self.fetchGeneration` to re-evaluate after a fetch completes;
-// isLoading is not used as a dependency to avoid an extra fire on fetch start.
-// The counter also serves as the staleness epoch in runFetch: captured at start,
-// so a cancelFetch() bump makes isStale() return true in the in-flight flow.
+// fetchGeneration bumps when a CURRENT fetch ends (success or error — a
+// superseded run must not bump for the run that replaced it) and on
+// `cancelFetch`; `cancelFetchByUser` deliberately does not bump, which is what
+// makes that cancel durable. Autoruns read `void self.fetchGeneration` to
+// re-evaluate after a fetch completes; isLoading is not used as a dependency to
+// avoid an extra fire on fetch start.
 //
 // Composed by both per-region (MultiRegionDisplayMixin) and single-data
 // (GlobalFetchMixin) families.
@@ -242,7 +242,7 @@ export default function FetchMixin() {
        * - the SVG export (`computeSvgReady`'s `extraTerminal`), whose
        *   `awaitSvgReady` is an unbounded `when`, so one such display hangs the
        *   whole view's export;
-       * - the dev-only retry check (`makeRetryContractCheck`), which would
+       * - the retry contract check (`makeRetryContractCheck`), which would
        *   otherwise report a dead Retry on a display correctly declining to
        *   load anything.
        *
@@ -270,7 +270,7 @@ export default function FetchMixin() {
 
       /**
        * #getter
-       * Overridable hook (default false), read only by the dev-only retry check
+       * Overridable hook (default false), read only by the retry contract check
        * (`makeRetryContractCheck`): "this run declined because a prerequisite
        * fetch in another autorun has not landed, and its arrival wakes this one
        * again". It **defers** the retry verdict to that later run rather than
@@ -442,18 +442,33 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * The `onBegin` half of a fetch's bookkeeping: publish the in-flight
+       * token (`isLoading`) and clear the durable user-cancel — a load starting
+       * is the single clear point that covers every retrigger path (reload,
+       * viewport change, settings invalidate). An action of its own for the
+       * same reason `endFetch` is: `installFetch`'s lifecycle callbacks run
+       * outside any MST flow this mixin owns.
+       */
+      beginFetch(stopToken: StopToken) {
+        if (self.activeStopToken) {
+          debugStatus(self.fetchGeneration, 'superseded')
+        }
+        debugStatus(self.fetchGeneration, 'fetch-start')
+        self.activeStopToken = stopToken
+        self.fetchCanceled = false
+      },
+      /**
+       * #action
        * The `finally` half of `runFetch`'s bookkeeping, an action of its own
        * because `runFetchOnce`'s `finally` resumes on a microtask the flow does
        * not own — a direct volatile write there is outside the action context,
        * which is the one thing hoisting the sequence into a shared function
-       * costs. The stale branch is a superseded fetch: whoever superseded it —
-       * a newer `begin`, or `cancel` — already released this token.
+       * costs. The stale branch is a superseded fetch, which must not clear the
+       * loading flag the run that replaced it just set. The stop token itself
+       * is released by the rotation's own `end()`, one layer down.
        */
-      endFetch(current: boolean, stopToken: StopToken) {
+      endFetch(current: boolean) {
         if (current) {
-          // Release this fetch's stop token now that it has ended, which drops
-          // the AbortSignal controllers taken against it.
-          stopStopToken(stopToken)
           self.activeStopToken = undefined
           self.fetchGeneration++
           debugStatus(self.fetchGeneration, 'fetch-end')
@@ -482,9 +497,6 @@ export default function FetchMixin() {
         // `reload()` wherever that reload reached it from, including a `reload()`
         // that fetches directly instead of leaving it to a fetch autorun.
         noteFetchStarted(self)
-        if (self.activeStopToken) {
-          debugStatus(self.fetchGeneration, 'superseded')
-        }
         // Rotating IS the supersede: it stops the prior token and opens this
         // fetch's slot before the run being replaced reaches its `finally`,
         // which is what keeps the label the overlay is showing alive across the
@@ -501,15 +513,10 @@ export default function FetchMixin() {
             self.setError(e)
           },
           onBegin: ({ stopToken }) => {
-            debugStatus(self.fetchGeneration, 'fetch-start')
-            self.activeStopToken = stopToken
-            // a load is starting, so the display is no longer in a user-canceled
-            // state — this is the single clear point that covers every retrigger
-            // path (reload, viewport change, settings invalidate)
-            self.fetchCanceled = false
+            self.beginFetch(stopToken)
           },
           onEnd: current => {
-            self.endFetch(current, active.stopToken)
+            self.endFetch(current)
           },
         })
       }),

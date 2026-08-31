@@ -4,10 +4,10 @@
  * remembered.
  *
  * The shared `installFetch` skeleton takes this shape, and so does the LGV
- * global family (`installGlobalFetchAutorun`, over `FetchMixin.runFetch`). It
- * was the same contract declared twice, with the same three rules explained
- * twice, which is a drift axis over rules whose whole value is being the same
- * everywhere.
+ * global family (`installGlobalFetchAutorun`, a declaration over that same
+ * skeleton). It was the same contract declared twice, with the same three rules
+ * explained twice, which is a drift axis over rules whose whole value is being
+ * the same everywhere.
  *
  * `TCtx` is what a family hands its `run`: a `FetchContext` for most of them, a
  * `ComparativeFetchContext` (that plus adapter config and refName rename) for
@@ -56,11 +56,11 @@ export interface FetchPhases<TArgs, TResult, TCtx> {
    * **Nothing it reads is tracked**, so the payload it assembles cannot widen
    * the autorun's dependency set the way calling `rpcProps()` in the body would.
    * Being async is not what buys that — `run` is *called* synchronously, so its
-   * own prefix down to its first `await` runs wherever the caller was. Each
-   * family arranges it: the global one reaches `run` through
-   * `FetchMixin.runFetch`, an MST flow and so an action, which MobX runs
-   * untracked; the comparative one calls its lifecycle inside `untracked`
-   * because it has no action to hide behind.
+   * own prefix down to its first `await` runs wherever the caller was. The
+   * `installFetch` skeleton calls it inside `untracked`, which covers the
+   * global and comparative families with it; the per-region family reaches its
+   * work through `FetchMixin.runFetch`, an MST flow and so an action, which
+   * MobX runs untracked.
    */
   run: (args: TArgs, ctx: TCtx) => Promise<TResult | undefined>
   /**

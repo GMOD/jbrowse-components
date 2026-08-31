@@ -255,19 +255,21 @@ export default function GlobalFetchMixin() {
       /**
        * #action
        * Satisfies the `reload` contract `DisplayChrome` (and the arc SVG chrome)
-       * require of every display. Clears any error, drops the loaded signature
-       * so `dataCurrent` goes false — `runGlobalFetch` gates on it, so a
-       * counter bump alone would re-run the autorun into a decline (the dead
-       * Retry button arc and HiC each fixed with their own override) — and
-       * bumps `reloadCounter` so the fetch autorun re-runs. The data itself
-       * survives, staying on screen under the loading overlay. A subclass whose
-       * reload needs extra teardown can override and chain.
+       * require of every display. Clears any error and bumps `reloadCounter` so
+       * the fetch autorun re-runs — the shared skeleton's reload epoch is what
+       * makes that bump override the freshness gate, even against a fetch that
+       * commits mid-reload, so nothing here has to remember to invalidate for
+       * the retry's sake. Dropping the loaded signature is for the overlay
+       * instead: `dataCurrent` goes false, so the refetch shows as loading
+       * rather than as a display claiming fresh data. The data itself survives,
+       * staying on screen under that overlay. A subclass whose reload needs
+       * extra teardown can override and chain.
        */
       reload() {
         self.setError(undefined)
         // clear the durable user-cancel flag synchronously so the overlay flips
         // from "canceled" to "loading" immediately, rather than lingering until
-        // the debounced fetch autorun runs runFetch (which also clears it)
+        // the debounced fetch autorun's next run clears it at begin
         self.fetchCanceled = false
         self.loadedFetchSignature = undefined
         self.reloadCounter += 1

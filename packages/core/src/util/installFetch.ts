@@ -11,7 +11,11 @@ import { makeFetchContext } from './fetchContext.ts'
 import { isDataCurrent } from './isDataCurrent.ts'
 import { leadingEdgeAutorun } from './leadingEdgeAutorun.ts'
 
-import type { ActiveFetch, StatusReporter } from './createStopTokenRotation.ts'
+import type {
+  ActiveFetch,
+  StatusReporter,
+  StopTokenRotation,
+} from './createStopTokenRotation.ts'
 import type { FetchContext } from './fetchContext.ts'
 import type { FetchPhases } from './fetchPhases.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -143,7 +147,7 @@ export interface FetchSkeletonHost extends IStateTreeNode {
   reloadCounter: number
   /**
    * The states where this host deliberately fetches nothing, read only by the
-   * dev-only retry check. A decline there is not a dead Retry.
+   * retry contract check. A decline there is not a dead Retry.
    */
   fetchInert: boolean
   /**
@@ -161,20 +165,12 @@ export interface FetchSkeletonHost extends IStateTreeNode {
   fetchCanceled?: boolean
 }
 
-export interface InstallFetchOptions<TArgs, TResult>
+interface InstallFetchOptionsBase<TArgs, TResult>
   extends FetchPhases<TArgs, TResult, FetchContext>, FetchLifecycle {
   /** autorun name, for the MobX devtools/spy stream */
   name: string
   /** how long to coalesce reruns once the body has started work once */
   delay: number
-  /**
-   * Where this fetch's status lands. A display passes itself — its status
-   * fields are part of its own API, and one composing `FetchMixin` lends the
-   * model-wide window so this fetch takes a slot on the one field beside the
-   * display's other operations rather than opening a second writer over it.
-   * Anything with one operation to narrate passes a `createStatusChannel`.
-   */
-  report: StatusReporter
   /**
    * An extra skip above `prepare`, reported as `gated` rather than `declined`:
    * the skeleton decided before the family's own gate was consulted, so it is
@@ -226,7 +222,7 @@ export interface InstallFetchOptions<TArgs, TResult>
    */
   committedKey?: () => string | undefined
   /**
-   * Install the two dev-only display-contract checks under this name. Omitted
+   * Install the two display-contract checks under this name. Omitted
    * by a **secondary** fetch on a host whose primary foundation already
    * installed them: `assertDisplayContract` would report the second install as
    * the double-attach it is built to catch, and a second retry check would
@@ -236,7 +232,40 @@ export interface InstallFetchOptions<TArgs, TResult>
 }
 
 /**
- * The two dev-only checks every fetch installer owes, together because they are
+ * The rotation half is either/or: `report` says where a rotation this installer
+ * creates for itself reports, and `rotation` lends the host's own instead — a
+ * display composing `FetchMixin` passes its `fetchRotation`, so `cancelFetch`
+ * and `cancelFetchByUser` reach the fetch this installs rather than a second
+ * rotation they cannot see. A lent rotation already carries its status window,
+ * so `report` would be dead beside it — the same either/or `StatusReporter`
+ * itself is a union for.
+ */
+export type InstallFetchOptions<TArgs, TResult> = InstallFetchOptionsBase<
+  TArgs,
+  TResult
+> &
+  (
+    | {
+        /**
+         * Where this fetch's status lands. A display passes itself — its status
+         * fields are part of its own API, and one composing `FetchMixin` lends
+         * the model-wide window so this fetch takes a slot on the one field
+         * beside the display's other operations rather than opening a second
+         * writer over it. Anything with one operation to narrate passes a
+         * `createStatusChannel`.
+         */
+        report: StatusReporter
+        rotation?: never
+      }
+    | {
+        /** the host's own latest-wins rotation, lent whole — see above */
+        rotation: StopTokenRotation
+        report?: never
+      }
+  )
+
+/**
+ * The two contract checks every fetch installer owes, together because they are
  * the same doctrine: one reports a foundation attached twice, the other reports
  * a `reload()` the gate still declines — the dead Retry button.
  */
@@ -249,15 +278,17 @@ function installContractChecks(self: FetchSkeletonHost, contract: string) {
  * A whole fetch, installed: the rotation, the leading-edge autorun, the
  * unconditional trigger reads, the gates, and {@link runFetchOnce} under them.
  *
- * Every fetch in the tree is this shape except one — the prerequisite reads
- * (HiC's header, the multi-sample sample list), both comparative displays, the
- * circular view's chord fetch, the breakpoint overlay fetch and the multi-way
- * synteny display's two DEPENDENT fetches (lane genes, lane links, each gated on
- * the key its own commit stamps) all take it. The
- * exception is `FetchMixin.runFetch`, the viewport fetch of an LGV display: its
- * rotation is a member rather than a closure (so `cancelFetch` can reach it)
- * and its trigger list is the per-region or global foundation's, so it holds
- * `runFetchOnce` directly and the autorun above it is that foundation's.
+ * Every fetch in the tree is this shape except one family — the prerequisite
+ * reads (HiC's header, the multi-sample sample list), the LGV global family
+ * (`installGlobalFetchAutorun`, which lends `FetchMixin`'s rotation through the
+ * `rotation` option so `cancelFetch` reaches the fetch it installs), both
+ * comparative displays, the circular view's chord fetch, the breakpoint overlay
+ * fetch and the multi-way synteny display's two DEPENDENT fetches (lane genes,
+ * lane links, each gated on the key its own commit stamps) all take it. The
+ * exception is the per-region family's `FetchMixin.runFetch`: its trigger is
+ * `planRegionFetch`'s autorun and its commits stream per region through
+ * `ctx.commitRegion`, so it holds `runFetchOnce` directly and the autorun above
+ * it is that foundation's.
  *
  * What a caller supplies is exactly what differs between them: which reads wake
  * it (`prepare`, plus `gate`), what a round trip commits, where the loading
@@ -269,10 +300,11 @@ function installContractChecks(self: FetchSkeletonHost, contract: string) {
  */
 export function installFetch<TArgs, TResult>(
   self: FetchSkeletonHost,
-  {
+  opts: InstallFetchOptions<TArgs, TResult>,
+) {
+  const {
     name,
     delay,
-    report,
     gate,
     contract,
     fetchKey,
@@ -283,18 +315,26 @@ export function installFetch<TArgs, TResult>(
     setError,
     onBegin,
     onEnd,
-  }: InstallFetchOptions<TArgs, TResult>,
-) {
+  } = opts
   const noteFetchAutorunRun =
     contract === undefined ? undefined : installContractChecks(self, contract)
-  const rotation = createStopTokenRotation(self, report)
+  const rotation =
+    opts.rotation === undefined
+      ? createStopTokenRotation(self, opts.report)
+      : opts.rotation
   // The `reloadCounter` this installation last issued a fetch at. Per
   // installation and per instance, so a host with several fetches gives each its
   // own — and a closure rather than model state, because nothing outside reads
   // it and a volatile would be one more thing a host has to declare.
   let issuedEpoch: number | undefined
-  const stamp = committedKey ? undefined : observable.box<string | undefined>()
-  const heldKey = committedKey ?? (() => stamp!.get())
+  // The skeleton's own stamp exists only where there is a key to stamp — a
+  // fetch with no `fetchKey` never reads it, so allocating one would only feed
+  // it `undefined` on every commit.
+  const stamp =
+    committedKey === undefined && fetchKey !== undefined
+      ? observable.box<string | undefined>()
+      : undefined
+  const heldKey = committedKey ?? (() => stamp?.get())
   const commitAndStamp = stamp
     ? (result: TResult, args: TArgs) => {
         runInAction(() => {
@@ -303,9 +343,12 @@ export function installFetch<TArgs, TResult>(
         })
       }
     : commit
-  addDisposer(self, () => {
-    rotation.dispose()
-  })
+  if (opts.rotation === undefined) {
+    // a lent rotation is the host's to dispose; one created here is ours
+    addDisposer(self, () => {
+      rotation.dispose()
+    })
+  }
 
   leadingEdgeAutorun(
     self,

@@ -1,29 +1,41 @@
-// Direct tests for the `installGlobalFetchAutorun` skeleton shared by arc, HiC
-// and LD.
+// Direct tests for the `installGlobalFetchAutorun` declaration over the shared
+// `installFetch` skeleton, shared by arc, HiC, LD and multi-way synteny.
 //
-// The invariant under test: the trigger reads (viewport, isMinimized,
-// rpcProps(), reloadCounter) happen unconditionally, ABOVE the display's
-// `prepare()`. MobX rebuilds an autorun's dependency set on every run, so a
-// trigger read placed inside a bail-out silently falls out of that set on the
-// first run that decides not to fetch — and can then never wake the autorun
-// again. A display whose `prepare` declines once its data has loaded (arc:
-// `dataCurrent`) hits that on every successful fetch, which is how `reload()`
-// came to be a no-op there.
+// The invariant under test: every state the body can decline in keeps a read
+// that wakes it. MobX rebuilds an autorun's dependency set on every run, so a
+// trigger read that stops happening on a declining run silently falls out of
+// that set — and can then never wake the autorun again. A display whose
+// `prepare` declines once its data has loaded (arc: `dataCurrent`) hits that on
+// every successful fetch, which is how `reload()` came to be a no-op there. The
+// skeleton reads `reloadCounter` and `fetchCanceled` unconditionally; the
+// viewport and the `rpcProps()` axis are tracked through `fetchSignature`,
+// which `prepare` and the freshness gate read on every run the gates let
+// through; and each gate term is an observable that flips on the transition to
+// wake on.
 //
 // So these assert on how often the BODY re-evaluated (prepare call count), not
-// on how often it fetched: re-running the body is the thing the trigger reads
+// on how often it fetched: re-running the body is the thing the tracked reads
 // buy, and a gate that stays shut is allowed to keep declining.
 
+import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
-import { flow, types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { installGlobalFetchAutorun } from './installGlobalFetchAutorun.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
-import type { FetchContext } from './FetchMixin.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
+
+// What the display reads off its view, stated structurally: naming
+// `Instance<typeof TestView>` from inside TestDisplay would be a circular type
+// (the view already reaches the display through `types.late`).
+interface TestViewShape extends IStateTreeNode {
+  initialized: boolean
+  dynamicBlocks: { contentBlocks: { key: string }[] }
+}
 
 // `isViewModel` (core/util/types) duck-types on width + setWidth, which is all
 // `getContainingView` needs to find this from the display below.
@@ -85,9 +97,6 @@ const TestDisplay = types
     // check's reads leak into the autorun's dependency set. See the two
     // dependency-set tests at the bottom.
     prereqPending: false,
-    // what `FetchMixin.runFetch`'s own `isStale` answers once a newer fetch or a
-    // cancel has superseded this one
-    stale: false,
     // every `commitFetchBytes` the runner made, as the per-region list it was
     // handed — the byte gate's whole main-thread surface now that the fetch
     // itself measures
@@ -96,19 +105,32 @@ const TestDisplay = types
     // `signatureCurrent` compares against
     loadedFetchSignature: undefined as string | undefined,
   }))
+  .volatile(self => ({
+    // `FetchMixin`'s rotation, lent to the skeleton — which is also what a test
+    // superseding an in-flight fetch reaches (`fetchRotation.cancel()`)
+    fetchRotation: createStopTokenRotation(self, {
+      setStatusMessage: () => {},
+    }),
+  }))
   .views(self => ({
     rpcProps() {
       void self.consulted
       return { setting: self.setting }
     },
+    // the hosting view, the way `GlobalFetchMixin.host` answers it
+    get host(): TestViewShape {
+      return getParent<TestViewShape>(self)
+    },
+  }))
+  .views(self => ({
     // `GlobalFetchMixin`'s freshness pair, spelled the way that mixin spells
-    // it: the signature the held data was committed under against the one the
-    // view and settings call for now. Constant here, so a commit leaves the
-    // display current until `reload()` drops the stamp — which is the state
-    // `signatureCurrent` had to reach for the too-large tests below to mean
-    // anything, and a hard-stubbed `false` never could.
+    // it: the block set plus the serialized settings axis, so the viewport and
+    // `rpcProps()` are tracked wherever the signature is read — which is now
+    // the whole viewport trigger, the way it is for the real mixin.
     get fetchSignature(): string | undefined {
-      return 'sig'
+      return `${self.host.dynamicBlocks.contentBlocks
+        .map(b => b.key)
+        .join(',')}|${this.rpcPropsCacheKey}`
     },
     get signatureCurrent() {
       return isDataCurrent(self.loadedFetchSignature, this.fetchSignature)
@@ -125,25 +147,21 @@ const TestDisplay = types
     },
     // `FetchMixin`'s, over this fixture's own `rpcProps` above
     get rpcPropsCacheKey() {
-      return serializeRpcProps(this as never)
+      return serializeRpcProps(self as never)
     },
   }))
   .actions(self => ({
     // `BaseDisplay`'s no-op default, which the installer's hover clear calls
     clearHoveredFeature() {},
-    // `FetchMixin.runFetch`, cut down to what the skeleton uses of it: it runs
-    // the work and hands it a context. Cancellation and error capture are that
-    // mixin's own tests' business, not this file's.
-    runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
-      yield work({
-        stopToken: '',
-        isStale: () => self.stale,
-        statusCallback: () => {},
-        callRpc() {
-          throw new Error('callRpc is not stubbed in this test')
-        },
-      })
-    }),
+    // `FetchMixin`'s begin/end/error bookkeeping, cut down to what the skeleton
+    // calls of it. Cancellation and loading-flag mechanics are that mixin's own
+    // tests' business, not this file's.
+    beginFetch(_stopToken: StopToken) {
+      // a load starting clears the durable user-cancel, as the real one does
+      self.fetchCanceled = false
+    },
+    endFetch(_current: boolean) {},
+    setError(_error?: unknown) {},
     // `GlobalFetchMixin.commitFetchResult`
     commitFetchResult(commit: () => void, signature: string) {
       commit()
@@ -198,20 +216,20 @@ const TestDisplay = types
     setViewportEmpty(flag: boolean) {
       self.viewportEmpty = flag
     },
-    setStale(flag: boolean) {
-      self.stale = flag
-    },
     reload() {
       self.reloadCounter += 1
       self.loadedFetchSignature = undefined
     },
-    // `FetchMixin`'s pair, cut down to the flag: the internal reset the
-    // viewport-change autorun runs, and the user gesture the overlay's Cancel
-    // button runs
+    // `FetchMixin`'s pair, cut down to the flag plus the rotation: the internal
+    // reset the viewport-change autorun runs, and the user gesture the
+    // overlay's Cancel button runs — both supersede an in-flight fetch, which
+    // is what the stale-commit test below leans on
     cancelFetch() {
+      self.fetchRotation.cancel()
       self.fetchCanceled = false
     },
     cancelFetchByUser() {
+      self.fetchRotation.cancel()
       self.fetchCanceled = true
     },
   }))
@@ -304,7 +322,9 @@ describe('the phases', () => {
       release = resolve
     })
     const { display, committed } = await setupPhases({ run: () => inFlight })
-    display.setStale(true)
+    // what a newer fetch or a user cancel does: drop the rotation's token, so
+    // the in-flight run stops being the answer
+    display.fetchRotation.cancel()
     release('data')
     await settle()
     expect(committed).toEqual([])
@@ -316,7 +336,7 @@ async function settle() {
   await new Promise(resolve => setTimeout(resolve, DELAY * 6))
 }
 
-// The dev-only contract checks report through `console.error`, and this file's
+// The contract checks report through `console.error`, and this file's
 // fixture drives the violating shapes on purpose. `config/jest/console.js`
 // buffers those reports and the gate fails any test that leaves one unclaimed,
 // so every test here takes them — which is both the opt-in and how they are

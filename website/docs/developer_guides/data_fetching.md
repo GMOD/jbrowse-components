@@ -317,12 +317,12 @@ which owns the stop-token lifecycle. Each `fetchRegions()` mints a fresh
 `stopToken`, signals the previous one to stop so in-flight adapter calls abort,
 and captures `fetchGeneration` as its staleness epoch.
 
-That counter bumps once at every fetch **end** — success, error, or cancel — and
-does two jobs with the one bump:
-
-- `isStale()` compares it against the epoch, so the superseded flow returns true
-  and drops its results.
-- `FetchVisibleRegions` reads it to re-evaluate once the fetch is over.
+That counter bumps when a **current** fetch ends (success or error — a
+superseded run must not bump for the run that replaced it) and on the internal
+`cancelFetch` reset; the user-facing `cancelFetchByUser` deliberately does not
+bump, which is what makes that cancel durable. `FetchVisibleRegions` reads it to
+re-evaluate once the fetch is over; staleness itself is the token rotation's
+`isCurrent`, not this counter.
 
 `isLoading` is `true` while `activeStopToken` is set, and the fetch autorun
 reads it through `untracked(() => self.isLoading)` so guarding on it doesn't
@@ -365,7 +365,7 @@ start and the publish on failure, so a display whose failure has a second
 consequence says so there — the sample-list scan raises a session notification
 too, because a list that will not load leaves the band empty rather than partial
 and nothing else on screen would say so. Pass no `contract`: the display's own
-foundation already installed the two dev-only contract checks, and a second
+foundation already installed the two display-contract checks, and a second
 install is reported as the double-attach it exists to catch.
 
 The viewport fetch then declines until the prerequisite lands, and says so with

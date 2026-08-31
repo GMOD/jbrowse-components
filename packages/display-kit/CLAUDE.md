@@ -18,11 +18,16 @@ existed — arc declining `RenderLifecycleMixin` — is in ARCHITECTURE.md's
 
 **The fetch sequence itself is in core**, not here: `runFetchOnce` /
 `installFetch` (`@jbrowse/core/util/installFetch`) own begin → clear the error →
-run → commit-if-current → `handleFetchError` → end, plus the autorun over it.
-`FetchMixin.runFetch` is the MST-flow wrapper that adds this family's observable
-bookkeeping on top, and it is the only site that holds `runFetchOnce` directly —
-it needs the flow (so a fetch autorun's synchronous prefix runs untracked) and a
-rotation `cancelFetch` can reach.
+run → commit-if-current → `handleFetchError` → end, plus the autorun over it —
+the leading edge, the unconditional `reloadCounter` read, the durable cancel
+gate, the freshness gate with its reload epoch, and both contract checks.
+`installGlobalFetchAutorun` is a declaration over that skeleton (its gates, its
+signature as the freshness key, `FetchMixin`'s rotation lent through the
+`rotation` option so `cancelFetch` reaches the fetch it installs), the same way
+the comparative installer is. `FetchMixin.runFetch` is the MST-flow wrapper the
+per-region family holds `runFetchOnce` through — it needs the flow (so a fetch
+autorun's synchronous prefix runs untracked) because its trigger is
+`planRegionFetch`'s autorun, not the skeleton's.
 
 The composition and fetch rules a display must not break are in
 `agent-docs/ARCHITECTURE.md` ("What not to do"): mixin order, `afterAttach`
@@ -119,6 +124,32 @@ SVG export applies it against the export's canvas width rather than the view's.
 
 `products/jbrowse-web/src/tests/ZoomRenderCensus.test.tsx` is how a per-frame
 re-render like that gets seen at all; INTERACTION_PERF.md has the rest.
+
+## A hit test's index needs an observer, or it is not memoized
+
+A pointer handler runs untracked, so a computed whose only readers are
+`featureAt` / `getHit` / `contextTargetAt` **has no observer — and MobX discards
+an unobserved computed's value as it hands it over**. Every rAF-coalesced mouse
+move then rebuilds it: a Hilbert-sorted Flatbush, a Map over every sample in the
+callset, a row index over every loaded feature. The getter reads as memoized,
+its doc usually says so, and nothing catches it — it typechecks and it tests
+green. Four getters across two plugins were doing this.
+
+The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
+(`CanvasHitIndexes`, `MultiRowHitIndexes`, `MultiSampleVariantHitIndexes`) so
+the set is greppable. **Type the structural `self` with the getters' real
+types**, not `unknown`: a rename otherwise reads `undefined`, establishes no
+dependency, and leaves a keep-alive holding nothing.
+
+**Only hold alive a getter whose dependencies exclude per-frame view geometry.**
+This is the whole decision, and it inverts: subscribing moves the rebuild from
+"the track under the cursor, while hovering" to "every such display, on every
+change to its inputs". Canvas's `flatbushIndexes` is safe because it keys off
+`laidOutDataMap` and the DEBOUNCED `coarseBpPerPx`. `laneFlatbushIndexes` in
+plugin-variants is not, and says so at the getter: it walks `visibleRegions`
+(see the section above), so holding it would have bought a per-pan-frame
+Flatbush build on every variant track in the session. Give a getter canvas's
+dependencies before giving it canvas's autorun.
 
 ## Height and scroll are hooks
 
