@@ -73,11 +73,9 @@ browser, `@jbrowse/capture` drives a real one and knows when it has finished.
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg38",
-          "loc": "chr1:1-100000",
-          "tracks": ["sample_bam"]
-        }
+        "assembly": "hg38",
+        "loc": "chr1:1-100000",
+        "tracks": ["sample_bam"]
       }
     ]
   }
@@ -97,9 +95,10 @@ Four things carry all the weight:
   config declares exactly one assembly the track need not name it either. Write
   a key beside `uri` to override any of them. Reach for the full form when the
   extension is ambiguous or the file needs a slot the guess cannot set.
-- **`defaultSession.views[].init`** is what makes the config open onto something
-  instead of an empty browser. Same fields whether they arrive via config, URL,
-  or embedded props — see `references/session-spec.md`.
+- **A view in `defaultSession.views`** is what makes the config open onto
+  something instead of an empty browser. Every setting goes directly on the view
+  object, the same fields whether they arrive via config, URL, or embedded props
+  — see `references/session-spec.md`.
 - **Relative `uri`s resolve against the config file's location**, so a config
   next to its data files just works.
 
@@ -122,10 +121,10 @@ That is the single most common way an authored config is wrong, and the only
 symptom is "it rendered but not how I asked". The validator's error/warning
 split is drawn on exactly this line:
 
-|             | meaning                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **error**   | JBrowse accepts it and silently does the wrong thing — unknown slot, dangling `trackId`/assembly reference, duplicate `trackId` |
-| **warning** | JBrowse will tell you itself on load — unknown type name, legacy key a migration rewrites                                       |
+|             | meaning                                                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **error**   | JBrowse accepts it and silently does the wrong thing — unknown slot, a key a `defaultSession` view or display does not declare, dangling `trackId`/assembly reference, duplicate `trackId` |
+| **warning** | JBrowse will tell you itself on load — unknown type name, legacy key a migration rewrites                                                                                                  |
 
 So: fix every error. Read the warnings and decide.
 
@@ -192,7 +191,7 @@ without it.
 
 - **A track referencing an assembly that isn't defined** loads and then fails to
   display, with no obvious error. The validator checks this.
-- **`init.tracks` naming a `trackId` that doesn't exist** silently opens
+- **A view's `tracks` naming a `trackId` that doesn't exist** silently opens
   nothing. Also checked.
 - **Duplicate `trackId`** — the later one wins, quietly.
 - **A config that loads fine can still show an empty track**, when the file is

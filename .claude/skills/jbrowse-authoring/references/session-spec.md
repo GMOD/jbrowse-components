@@ -1,13 +1,15 @@
 # The session spec
 
 One description of "what should be open", accepted through four different doors.
-Every door sets the same `init` object on a view, so what you learn once applies
+Every door takes the same view object, so what you learn once applies
 everywhere.
 
 Canonical docs: <https://jbrowse.org/jb2/docs/automating.md> and
 <https://jbrowse.org/jb2/docs/urlparams.md>.
 
-## `init` — what a view opens onto
+## What a view opens onto
+
+Every setting goes directly on the view object, on every door below.
 
 ```typescript
 {
@@ -36,8 +38,9 @@ A `TrackInit` is a `trackId` string, or an object that also sets initial state:
 live on the _display_, not the track, and a menu can't reach them before the
 view exists.
 
-`init` is applied once when the view attaches and then cleared. It is a launch
-instruction, not persistent state, so a saved session never carries it.
+These fields are applied once when the view attaches and then cleared. They are
+launch instructions rather than persistent state, so a saved session never
+carries them.
 
 ## Door 1 — `defaultSession` in a config file
 
@@ -48,8 +51,12 @@ instruction, not persistent state, so a saved session never carries it.
   "defaultSession": {
     "name": "demo",
     "views": [
-      { "type": "LinearGenomeView",
-        "init": { "assembly": "hg38", "loc": "chr1:1-100000", "tracks": ["my_track"] } }
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr1:1-100000",
+        "tracks": ["my_track"]
+      }
     ]
   }
 }
@@ -82,12 +89,11 @@ The JSON is the session, not the config:
 }
 ```
 
-Note the shape difference: on a **view spec** the `init` fields sit flat on the
-view, rather than nested under `init`. Top-level keys:
+Top-level keys:
 
 | key                 | meaning                                                                           |
 | ------------------- | --------------------------------------------------------------------------------- |
-| `views`             | the views to open; each needs `type`, plus the `init` fields flat                 |
+| `views`             | the views to open; each needs `type`, plus the fields above                       |
 | `sessionAssemblies` | assemblies defined by the spec itself — with these, no `config=` is needed at all |
 | `sessionTracks`     | tracks defined by the spec, for data not in the config                            |
 | `layout`            | workspace arrangement (see below)                                                 |
