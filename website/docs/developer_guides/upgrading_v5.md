@@ -307,6 +307,64 @@ Two things did change:
   width threaded in from their caller, and both now say `windowWidthBp: refLen`
   and take no width at all.
 
+## A view says when it does not know a key
+
+v4 dropped an undeclared key on a view snapshot silently: no error, no warning,
+the view rendered its default. A `defaultSession` written with a setting one
+level out from where it belonged therefore shipped looking correct and behaving
+wrong, and several published demos did.
+
+Every view type now reports one. The key is kept rather than discarded, and the
+view names it once on attach, in the console and in a notification:
+
+```
+LinearGenomeView ignored unknown key(s): asembly
+```
+
+Nothing about a correct snapshot changed, and a view whose only unrecognized key
+is a typo still opens — on its import form, saying why, rather than waiting on
+data that is never coming.
+
+## Every setting goes directly on the view object
+
+A view carried two authoring shapes in v4, and which one was correct depended on
+where you were writing. Flat on the view is what a session spec, a URL and a
+jbrowse-img spec took; nested under `init` is what a `defaultSession` took.
+Nothing said so at the point of writing.
+
+v5 keeps the flat shape. `LinearGenomeView`, `LinearSyntenyView` and
+`DotplotView` take every setting directly on the view object:
+
+```json
+{
+  "type": "LinearGenomeView",
+  "assembly": "hg38",
+  "loc": "chr1:1-100000",
+  "tracks": ["genes"]
+}
+```
+
+The same object works in a `defaultSession`, in a `?session=spec-` URL, in
+`addView` and in an embedded `createViewState`. A view snapshot restored from a
+saved session is unaffected: `tracks` holding built track models still restores
+as built track models, and `tracks` holding trackIds is read as the request to
+open them, which is how the two shapes coexist under one name.
+
+`init` still works on a `defaultSession` and warns. On a session-spec URL it is
+refused with an error, as in v4.
+
+Two behavior changes carry no migration:
+
+- **A pre-`levels` `LinearSyntenyView` session** — one with a top-level `tracks`
+  array of built track snapshots, the shape that predates synteny levels — is
+  now read as a request to open those tracks rather than converted to
+  `levels[0]`. Write `levels: [{ "level": 0, "tracks": [...] }]` instead.
+- **`sameScale` re-fits on launch.** Setting it in a spec latched the shared
+  zoom limit without re-zooming the rows, so rows placed by `loc`, and rows
+  after an `autoDiagonalize`, kept a scale the mode said they should not have.
+  Restoring a saved session still only latches, since those rows carry their own
+  window.
+
 ## Extension points changed shape
 
 A point whose `args` are an array is now registered through
