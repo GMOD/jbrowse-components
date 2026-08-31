@@ -6,7 +6,7 @@ import type { Feature } from '@jbrowse/core/util'
 // Absolute-coordinate CDS segments, ascending by genomic start and deduped on
 // start/end. GFF3 files (e.g. Gencode v36) can repeat a CDS row; left in, the
 // duplicated bases stitch into the translated sequence and frameshift the
-// protein. Both the amino-acid overlay (transcriptCDS in collectRenderData) and
+// protein. Both the amino-acid overlay (transcriptCDS in peptideMapping) and
 // the peptide translation (extractCDSRegions in peptideUtils) derive from this
 // single function, so their dedup can never drift — if they disagreed, the
 // rendered residues would misalign with the protein string.

@@ -48,6 +48,7 @@ export interface RenderSvgModel extends SvgExportable {
   // color scheme, which IS the clustering matrix here.
   clusterProvenance?: ClusterProvenance
   showLegend: boolean
+  hasLegendEntries: boolean
   showRowSeparators: boolean
   showRowLabels: boolean
   colorLegend: LegendEntry[]
@@ -125,8 +126,7 @@ function MultiRowSvgBody({
         availableHeight={height}
         clusterProvenance={self.clusterProvenance}
       />
-      {self.showLegend &&
-      (self.colorLegend.length || self.rowGroupLegend.length) ? (
+      {self.showLegend && self.hasLegendEntries ? (
         <MultiRowColorLegend
           entries={self.colorLegend}
           rowGroupItems={self.rowGroupLegend}

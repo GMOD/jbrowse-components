@@ -101,9 +101,14 @@ function spanInWindow(
 // more than 255 labeled isoforms would clamp, which costs alignment on rows
 // nothing can legibly label anyway.
 function labelRowArray(items: { labelRowsAbove: number }[]) {
-  return items.some(i => i.labelRowsAbove > 0)
-    ? new Uint8Array(items.length)
-    : new Uint8Array(0)
+  if (!items.some(i => i.labelRowsAbove > 0)) {
+    return new Uint8Array(0)
+  }
+  const out = new Uint8Array(items.length)
+  for (const [i, item] of items.entries()) {
+    out[i] = item.labelRowsAbove
+  }
+  return out
 }
 
 // Which stack child each primitive belongs to, or LENGTH ZERO when this region
@@ -127,9 +132,14 @@ function childOrdinalArray(items: { childOrdinal?: number }[]) {
 // The main-thread encode reads the empty array as "nothing to resolve here" and
 // hands the worker's color lane back untouched (see resolveColorLane).
 function colorClassArray(items: { colorClass: number }[]) {
-  return items.some(i => i.colorClass !== LITERAL)
-    ? new Uint8Array(items.length)
-    : new Uint8Array(0)
+  if (!items.some(i => i.colorClass !== LITERAL)) {
+    return new Uint8Array(0)
+  }
+  const out = new Uint8Array(items.length)
+  for (const [i, item] of items.entries()) {
+    out[i] = item.colorClass
+  }
+  return out
 }
 
 // Filters a per-feature accumulator down to the visible bp window and packs
@@ -178,12 +188,6 @@ export function packRenderArrays(
     rectColors[i] = rect.color
     rectStrands[i] = rect.strand
     rectFeatureIndices[i] = rect.flatbushIdx
-    if (rectColorClasses.length) {
-      rectColorClasses[i] = rect.colorClass
-    }
-    if (rectLabelRows.length) {
-      rectLabelRows[i] = rect.labelRowsAbove
-    }
   }
 
   const linePositions = new Uint32Array(visibleLines.length * 2)
@@ -204,12 +208,6 @@ export function packRenderArrays(
     lineColors[i] = line.color
     lineDirections[i] = line.direction
     lineFeatureIndices[i] = line.flatbushIdx
-    if (lineColorClasses.length) {
-      lineColorClasses[i] = line.colorClass
-    }
-    if (lineLabelRows.length) {
-      lineLabelRows[i] = line.labelRowsAbove
-    }
   }
 
   const arrowXs = new Uint32Array(visibleArrows.length)
@@ -231,12 +229,6 @@ export function packRenderArrays(
     arrowDirections[i] = arrow.direction
     arrowColors[i] = arrow.color
     arrowFeatureIndices[i] = arrow.flatbushIdx
-    if (arrowColorClasses.length) {
-      arrowColorClasses[i] = arrow.colorClass
-    }
-    if (arrowLabelRows.length) {
-      arrowLabelRows[i] = arrow.labelRowsAbove
-    }
   }
 
   return {

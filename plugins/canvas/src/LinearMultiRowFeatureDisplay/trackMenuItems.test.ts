@@ -3,13 +3,17 @@ import { staysOpenOnClick } from '@jbrowse/core/ui'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
 import type { MultiRowSource } from './sourcesLogic.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 
 // The builder only reads state (the onClick bodies are what reach the model and
 // the session), so a plain object stands in for the display. Structural, like
 // the builder's own `MultiRowMenuSelf`, so a drifted field fails here.
 function makeSelf(
-  overrides: Partial<Parameters<typeof buildMultiRowTrackMenuItems>[0]> = {},
+  overrides: Partial<
+    Parameters<typeof buildMultiRowTrackMenuItems>[0] & {
+      rowGroupLegend: LegendItem[]
+    }
+  > = {},
 ) {
   const rows: MultiRowSource[] = [{ name: 'a' }, { name: 'b' }]
   const self = {
@@ -59,9 +63,15 @@ function makeSelf(
     setFitToHeight: () => {},
     ...overrides,
   }
-  // Derived rather than defaulted, so a case overriding `hiddenCategories` can't
-  // leave the Set behind disagreeing with it — the model derives it the same way.
-  return { ...self, hiddenCategorySet: new Set(self.hiddenCategories) }
+  // Derived rather than defaulted, so a case overriding `hiddenCategories` or
+  // either legend can't leave the derivation behind disagreeing with it — the
+  // model derives both the same way.
+  return {
+    ...self,
+    hiddenCategorySet: new Set(self.hiddenCategories),
+    hasLegendEntries:
+      self.colorLegend.length > 0 || self.rowGroupLegend.length > 0,
+  }
 }
 
 function labels(items: MenuItem[]) {

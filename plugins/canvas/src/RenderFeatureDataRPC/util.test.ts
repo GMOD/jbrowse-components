@@ -1,4 +1,4 @@
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, measureText } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
@@ -9,7 +9,7 @@ import { layoutProcessedTranscript } from './glyphs/processed.ts'
 import { layoutSegments } from './glyphs/segments.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
-import { getBoxColor, isUTR, truncateLabel } from './util.ts'
+import { getBoxColor, isUTR, truncateLabel, truncateToWidth } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -257,6 +257,36 @@ describe('truncateLabel', () => {
     const result = truncateLabel(longLabel)
     expect(result.length).toBe(50)
     expect(result.endsWith('…')).toBe(true)
+  })
+})
+
+describe('truncateToWidth', () => {
+  const FONT = 12
+
+  it('leaves text that already fits alone', () => {
+    expect(truncateToWidth('hello', 1000, FONT)).toBe('hello')
+  })
+
+  it('never returns something wider than its budget', () => {
+    for (const maxWidthPx of [0, 1, 3, 6, 12, 40]) {
+      const result = truncateToWidth('a long description', maxWidthPx, FONT)
+      expect(measureText(result, FONT)).toBeLessThanOrEqual(maxWidthPx)
+    }
+  })
+
+  it('gives up entirely when the ellipsis alone would not fit', () => {
+    expect(truncateToWidth('anything', 1, FONT)).toBe('')
+  })
+
+  it('cuts between characters, not through a surrogate pair', () => {
+    // '𝑥' is two UTF-16 units, so a unit-wise slice can keep half of it — the
+    // orphan renders as the replacement glyph
+    const result = truncateToWidth('𝑥𝑥𝑥𝑥𝑥𝑥𝑥𝑥', 30, FONT)
+    const body = result.slice(0, -1)
+    expect(body.length % 2).toBe(0)
+    expect(body).toBe(
+      Array.from({ length: body.length / 2 }, () => '𝑥').join(''),
+    )
   })
 })
 

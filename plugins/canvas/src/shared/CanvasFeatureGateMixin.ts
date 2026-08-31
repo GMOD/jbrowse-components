@@ -37,10 +37,15 @@ export interface RegionGateMeasurement {
 
 /**
  * The density axis of the region-too-large gate, composed after
- * `MultiRegionDisplayMixin` by the canvas feature displays: how the
- * features-per-pixel number is measured and the worker budget for it. The
- * byte axis is entirely `RegionTooLargeMixin`'s. A display opts in by composing
- * this and calling `commitGateMeasurements` from its fetch's `onComplete`.
+ * `MultiRegionDisplayMixin`: how the features-per-pixel number is measured and
+ * the worker budget for it. The byte axis is entirely `RegionTooLargeMixin`'s. A
+ * display opts in by composing this and calling `commitGateMeasurements` from
+ * its fetch's `onComplete`.
+ *
+ * One display composes it — `LinearBasicDisplay`'s base model. The multi-row
+ * display has no density axis to gate on (see
+ * MultiRowGetFeaturesRPC/rpcTypes.ts), so `shared/` here means "the canvas
+ * plugin's rather than one display's", not "two displays compose it".
  *
  * #stateModel CanvasFeatureGateMixin
  * #category display

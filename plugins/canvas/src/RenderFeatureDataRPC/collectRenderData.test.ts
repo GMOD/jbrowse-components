@@ -12,7 +12,9 @@ import type { Feature } from '@jbrowse/core/util'
 const jexl = createJexlInstance()
 
 function mockFeature(opts: {
-  type: string
+  // optional, because a GFF/BED row without one is what the Box glyph's
+  // untyped-child path exists for
+  type?: string
   id: string
   start: number
   end: number
@@ -546,8 +548,34 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
     })
   })
 
+  // The context menu names what was clicked ("Copy <noun> name"), falling back
+  // to a generic noun when the hit has no type. `''` is not that fallback — it
+  // is a type, as far as `?? 'subfeature'` can tell — so a typeless child ended
+  // up in menu rows with an empty noun in the middle of them.
+  it('leaves a typeless leaf child without a type, not with an empty one', () => {
+    const leaf = mockFeature({ id: 'anon1', start: 150, end: 170 })
+    const gene = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 100,
+      end: 170,
+      subfeatures: [leaf],
+    })
+    const result = collect({
+      feature: gene,
+      glyphType: 'Subfeatures',
+      y: 0,
+      height: 10,
+      children: [{ ...boxLayout(leaf), y: 0 }],
+    })
+
+    expect(
+      result.subfeatureInfos.find(s => s.featureId === 'anon1')?.type,
+    ).toBeUndefined()
+  })
+
   // `Box` is a self-labeling glyph (SELF_LABELING_GLYPHS), so a leaf child of a
-  // gene spends its own `below` label row and `memoizeChildLayouts` marks it
+  // gene spends its own `below` label row and `layoutChild` marks it
   // `ownsLabelRow`. The parent's `labelRows` counts that row, and
   // `applyLayoutToRegion` is what turns the flag into height — so a leaf that
   // arrives here without it gets a hit box one label row short of the row the

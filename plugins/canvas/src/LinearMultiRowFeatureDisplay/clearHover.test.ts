@@ -19,7 +19,7 @@ import type { MultiRowHit } from './model.ts'
 const HIT: MultiRowHit = {
   id: 'f1',
   regionIndex: 0,
-  rowIndex: 0,
+  rowName: 'a',
   name: 'block',
   refName: 'ctgA',
   start: 100,

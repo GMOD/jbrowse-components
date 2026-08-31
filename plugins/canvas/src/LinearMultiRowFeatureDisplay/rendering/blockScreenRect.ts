@@ -20,11 +20,15 @@ const MIN_WIDTH_PX = MULTI_ROW_MIN_CELL_PX + 1
  */
 export function blockScreenRect({
   hit,
+  rowIndex,
   blocks,
   rowHeight,
   rowProportion,
 }: {
-  hit: Pick<MultiRowHit, 'regionIndex' | 'rowIndex' | 'start' | 'end'>
+  hit: Pick<MultiRowHit, 'regionIndex' | 'start' | 'end'>
+  // resolved by the caller off the live row order, never carried on the hit —
+  // see `MultiRowHit.rowName`
+  rowIndex: number
   blocks: RenderBlock[]
   rowHeight: number
   rowProportion: number
@@ -43,7 +47,7 @@ export function blockScreenRect({
       ? {
           left,
           width: right - left,
-          top: hit.rowIndex * rowHeight + offset,
+          top: rowIndex * rowHeight + offset,
           height,
         }
       : undefined

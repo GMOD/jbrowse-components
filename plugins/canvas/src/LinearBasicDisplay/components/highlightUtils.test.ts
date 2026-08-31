@@ -48,6 +48,17 @@ describe('overlayItemRect', () => {
     ).toEqual({ leftPx: 500, width: 0, topPx: 10, heightPx: 10 })
   })
 
+  test('drops a zero-length feature scrolled outside the region', () => {
+    // a selected insertion panned out of view: both edges clamp to the same
+    // region bound from the wrong side, so an unguarded rect has negative width
+    expect(
+      overlayItemRect({ startBp: -500, endBp: -500, ...ROW }, REGION),
+    ).toBeUndefined()
+    expect(
+      overlayItemRect({ startBp: 1500, endBp: 1500, ...ROW }, REGION),
+    ).toBeUndefined()
+  })
+
   test('reversed region mirrors the span but keeps left < right', () => {
     expect(
       overlayItemRect(

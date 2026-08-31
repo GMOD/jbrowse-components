@@ -24,7 +24,7 @@ import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowClusterModel } from './runMultiRowClustering.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { Pin } from '@jbrowse/core/configuration'
-import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
@@ -66,10 +66,10 @@ interface MultiRowMenuSelf
   setColorRowLabels: (f: boolean) => void
   effectiveRowHeight: number
   colorLegend: LegendEntry[]
-  // the display's other color key (see `rowGroupLegend`) — not toggleable
-  // per-category, but covered by the same `showLegend` slot, so the "Show
+  // covers the display's other color key too (see `rowGroupLegend`) — not
+  // toggleable per-category, but under the same `showLegend` slot, so the "Show
   // legend" item has to see it
-  rowGroupLegend: LegendItem[]
+  hasLegendEntries: boolean
   hiddenCategories: readonly string[]
   // the model's derived Set of the above, which is where every other consumer
   // asks whether a category is hidden — the checkbox below has to agree with the
@@ -111,7 +111,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     // color is exactly what makes `buildColorLegend` return nothing — so
     // gating on `colorLegend` alone let a user dismiss the group key with no
     // menu item left to bring it back.
-    ...(self.colorLegend.length || self.rowGroupLegend.length
+    ...(self.hasLegendEntries
       ? [
           showLegendCheckboxItem(
             self.showLegend,

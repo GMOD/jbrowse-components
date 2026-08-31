@@ -16,11 +16,9 @@ display opts in by composing this and calling `commitGateMeasurements` from its
 fetch's `onComplete`.
 
 One display composes it — `LinearBasicDisplay`'s base model. The multi-row
-display has no density axis to gate on: it paints one row-tall block per feature
-at any zoom, so features-per-pixel is not a legibility cliff there the way a
-stacked glyph pack is (see MultiRowGetFeaturesRPC/rpcTypes.ts). It sits in
-`shared/` because `screenDensity` and the region types it reads are the canvas
-plugin's rather than one display's, not because two displays compose it.
+display has no density axis to gate on (see MultiRowGetFeaturesRPC/rpcTypes.ts),
+so `shared/` here means "the canvas plugin's rather than one display's", not
+"two displays compose it".
 
 ## Volatiles
 

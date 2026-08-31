@@ -92,7 +92,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
   // the sidebar reads `labelSources`, which is `sources` plus a derived label
   // tint — an override naming only one of them means both here
   const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
-  return {
+  const model = {
     id: 'test',
     height: 100,
     error: undefined,
@@ -123,7 +123,15 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     colorLegend: [],
     rowGroupLegend: [],
     hiddenCategorySet: new Set<string>(),
+    hasLegendEntries: false,
     ...overrides,
+  }
+  // Derived rather than defaulted, so a case naming either legend cannot leave
+  // the gate behind disagreeing with it — the model derives it the same way.
+  return {
+    ...model,
+    hasLegendEntries:
+      model.colorLegend.length > 0 || model.rowGroupLegend.length > 0,
   }
 }
 

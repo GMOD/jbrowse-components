@@ -84,9 +84,9 @@ reasons above against the code as it stands:
   came from and "the direct children of gene X" is not recoverable by
   grouping. Both are fixed by one
   mechanism — a stack-child ordinal threaded through `GlyphPlacement`.
-- **And the drawn order is not the ranked order.** `keepRanked` keeps the top n
-  of `rankIsoforms` (canonical tag, coding, coding length, index) while the
-  stack is sorted only by (canonical, coding). So a main-thread trim to a
+- **And the drawn order is not the ranked order.** The worker's collapse keeps
+  the head of `rankIsoforms` (canonical tag, coding, coding length, index) while
+  the stack is sorted only by (canonical, coding). So a main-thread trim to a
   smaller n is not "drop a suffix" — it needs a per-isoform rank emitted, or it
   keeps a different set than the worker would at the same cap.
 - **The payload reason was never measured, and it is small.** It is the argument

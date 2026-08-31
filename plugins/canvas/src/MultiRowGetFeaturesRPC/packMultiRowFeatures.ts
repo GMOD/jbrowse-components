@@ -2,8 +2,8 @@ import { isCallbackValue, readConfigValue } from '@jbrowse/core/configuration'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 
 // multi-row's unset-slot fallback is just the generic feature default; unset is
-// also what turns on the per-row palette (resolveRowColors), which paints over
-// this on the main thread, so it's mostly invisible. A pure fallback, never
+// also what turns on the per-row palette (resolveRowColorStrings), which paints
+// over this on the main thread, so it's mostly invisible. A pure fallback, never
 // compared against a stored value (the slot is a `maybeColor`).
 import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 
@@ -51,24 +51,30 @@ export function makeFeatureColorResolver(
   colorConfig: string | undefined,
   jexl: JexlInstance,
 ) {
-  const slotIsUnset = colorConfig === undefined
-  const colorCfg = { color: colorConfig ?? FEATURE_DEFAULT_COLOR }
-  // A slot holding a plain CSS color is the same answer for every feature, so
-  // resolve it once — the same `isCallbackValue` split
-  // `makeFeaturePartitionResolver` makes below, for the same reason. A painting
-  // is half a million features per region, and each one was paying a
-  // `readConfigValue` call plus a fresh result object to be handed back a
-  // constant. Only the callback form needs the per-feature evaluation.
-  if (colorConfig !== undefined && !isCallbackValue(colorConfig)) {
+  // A painting is half a million features per region, so whatever the slot
+  // settles once must not be re-settled per feature — the same
+  // `isCallbackValue` split `makeFeaturePartitionResolver` makes below, for the
+  // same reason. Only the callback form has a per-feature answer: an unset slot
+  // asks the BED and otherwise hands back one constant, and a plain CSS value IS
+  // the answer. Both used to reach `readConfigValue` per feature to be told what
+  // they already knew.
+  if (colorConfig === undefined) {
+    const fallback = { css: FEATURE_DEFAULT_COLOR, fromBed: false }
+    return (feature: Feature) => {
+      const bedColor = featureBedColor(feature)
+      return bedColor === undefined
+        ? fallback
+        : { css: bedColor, fromBed: true }
+    }
+  } else if (isCallbackValue(colorConfig)) {
+    const colorCfg = { color: colorConfig }
+    return (feature: Feature) => ({
+      css: evalColorSlot(colorCfg, feature, jexl),
+      fromBed: false,
+    })
+  } else {
     const constant = { css: colorConfig, fromBed: false }
     return () => constant
-  }
-  return (feature: Feature) => {
-    const bedColor = slotIsUnset ? featureBedColor(feature) : undefined
-    return {
-      css: bedColor ?? evalColorSlot(colorCfg, feature, jexl),
-      fromBed: bedColor !== undefined,
-    }
   }
 }
 
@@ -226,8 +232,8 @@ export function makeFeaturePartitionResolver(
  * per-row palette that would otherwise cover it.
  *
  * Per-ROW color (sampleColorMap / palette / the arrangement dialog) is resolved
- * on the main thread at render time (see resolveRowColors), so it never refetches
- * and isn't this function's concern.
+ * on the main thread at render time (see resolveRowColorStrings), so it never
+ * refetches and isn't this function's concern.
  */
 export function packMultiRowFeatures({
   features,

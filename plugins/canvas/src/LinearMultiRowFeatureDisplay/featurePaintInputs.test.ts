@@ -101,6 +101,21 @@ describe('featurePaintInputs', () => {
     paint.dispose()
   })
 
+  // The hit test reads `drawnFeaturesByRow` out of a React event handler, so
+  // nothing there is tracked and MobX would drop the value as it handed it
+  // over -- every rAF-coalesced mouse move rebuilding every loaded region's row
+  // index, which is the walk the memo exists to avoid. `afterAttach` holds an
+  // observer so the cache survives between pointer frames.
+  it('stays memoized for an untracked reader', () => {
+    const display = makeDisplay()
+
+    const first = display.drawnFeaturesByRow
+    expect(display.drawnFeaturesByRow).toBe(first)
+
+    display.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
+    expect(display.drawnFeaturesByRow).not.toBe(first)
+  })
+
   // `renderState` must keep carrying all three, since the Canvas2D fallback and
   // the SVG export resolve each feature's row from the raw region data at draw
   // time. Spreading is what makes that structural rather than remembered.

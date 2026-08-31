@@ -17,7 +17,8 @@ type Args = Parameters<typeof blockScreenRect>[0]
 
 function rect(overrides: Partial<Args> = {}) {
   return blockScreenRect({
-    hit: { regionIndex: 0, rowIndex: 2, start: 120, end: 130 },
+    hit: { regionIndex: 0, start: 120, end: 130 },
+    rowIndex: 2,
     blocks: [block],
     rowHeight: 10,
     rowProportion: 1,
@@ -87,5 +88,5 @@ test('the widened box anchors where the painter anchors it', () => {
 })
 
 function rowHit(overrides: Partial<Args['hit']>) {
-  return { regionIndex: 0, rowIndex: 2, start: 120, end: 130, ...overrides }
+  return { regionIndex: 0, start: 120, end: 130, ...overrides }
 }

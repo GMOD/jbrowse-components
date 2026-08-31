@@ -1,3 +1,8 @@
+// No `byteLimit`, unlike `MultiRowGetFeatures`, so "Cluster rows by similarity"
+// will download a region the painting itself refused as too large. Deliberate:
+// the gate stops an incidental viewport-driven fetch, and this is a thing the
+// user asked for by name over a locus they chose. Stated because the two
+// fetches sit side by side and the missing argument reads as an oversight.
 export interface MultiRowClusterFeaturesArgs {
   adapterConfig: Record<string, unknown>
   // visible regions to cluster over (renamed to the adapter's refName scheme by

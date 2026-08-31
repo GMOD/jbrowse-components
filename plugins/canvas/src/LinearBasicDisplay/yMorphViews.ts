@@ -48,9 +48,6 @@ export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   displayMode: DisplayMode
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
-  scrollTop: number
-  height: number
-  setScrollTop: (n: number) => void
   beginYMorph: (fromTops: Map<string, number>, fromMaxY: number) => void
   endYMorph: () => void
 }
@@ -243,12 +240,10 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       ) {
         return
       }
-      // scrollTop/height are viewport state, not layout inputs, and
-      // morphFromTops/morphProgress/morphFromMaxY advance every rAF
-      // frame — read all untracked so neither writing scrollTop back
-      // below nor the morph clock can re-trigger this layout autorun.
-      // eslint-disable-next-line no-restricted-syntax -- self-write: scrollTop is written back below, and the morph clock is this layout's own effect
-      const { scrollTop, height, fromTops, fromMaxY } = untracked(() => {
+      // morphFromTops/morphProgress/morphFromMaxY advance every rAF frame —
+      // read untracked so the morph clock can't re-trigger this layout autorun.
+      // eslint-disable-next-line no-restricted-syntax -- self-write: the morph clock is this layout's own effect
+      const { fromTops, fromMaxY } = untracked(() => {
         // A morph still in flight means a second, non-debounced
         // layout change (a pin toggle or region flip — unlike zoom)
         // is interrupting it. Re-seed the next morph from each
@@ -260,8 +255,6 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
         // morphFromTops eases the capture, and endYMorph zeroed the
         // held height.
         return {
-          scrollTop: self.scrollTop,
-          height: self.height,
           fromTops: captureFeatureTops(
             from,
             self.morphFromTops,
@@ -270,20 +263,14 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
           fromMaxY: Math.max(maxBottom(from), self.morphFromMaxY),
         }
       })
-      // Whenever the new layout is shorter than the current scroll
-      // position, clamp back into range so the viewport can't strand
-      // past the content bottom. This happens on same-scale repacks
-      // (zoom-in de-stacking rows) AND on mode/label changes (compact
-      // mode shrinks every row) — so it must run before the branch
-      // below, not only in the same-scale path. Clamp to the incoming
-      // layout's own bottom, NOT self.scrollableHeight/maxY: mid-morph
-      // those are held at the taller of old/new (morphFromMaxY,
-      // anti-clip), so reusing them here would skip clamping to the
-      // shorter incoming content until the morph settles.
-      const maxScroll = Math.max(0, maxBottom(current) - height)
-      if (scrollTop > maxScroll) {
-        self.setScrollTop(maxScroll)
-      }
+      // No scroll clamp here. A shorter layout is one of the geometry changes
+      // TrackHeightMixin's `TrackHeightClampScroll` already pulls the offset
+      // back for, and it clamps harder: its bound is `scrollableHeight`, off the
+      // ON-SCREEN extent, where a clamp written here could only see the whole
+      // buffered pack. The morph hold does not weaken it either — `maxY` is held
+      // at the taller of old/new for the anti-clip, but `scrollExtentMaxY` reads
+      // `settledMaxY` and is not held.
+      //
       // Only a same-scale repack (a zoom step) has comparable rows to
       // pin against; a mode/label change rescales every row, so let it
       // snap without a row morph.

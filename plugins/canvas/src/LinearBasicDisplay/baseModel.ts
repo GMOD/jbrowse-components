@@ -55,7 +55,10 @@ import {
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
-import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
+import {
+  featureSpanRegion,
+  fetchCanvasFeatureDetails,
+} from '../shared/fetchCanvasFeatureDetails.ts'
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
 import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
@@ -1516,10 +1519,6 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-
-          /**
-           * #action
-           */
           setShowOutline(value: boolean) {
             // THEME_DERIVED_COLOR sentinel: the worker resolves it to a
             // theme-appropriate outline so it stays visible on dark tracks too.
@@ -1629,12 +1628,18 @@ export default function baseStateModelFactory(
           if (!region) {
             return undefined
           }
+          // Ask for the clicked feature's own span, not the buffered region the
+          // paint came from — the display already knows where it is, and the
+          // whole region is a second download of everything on screen. Falls
+          // back to the region when the id has no laid-out item, which is the
+          // same miss the RPC's own `find` reports.
+          const item = self.featureIdIndex.get(featureId)
           return fetchCanvasFeatureDetails(
             getSession(self),
             getRpcSessionId(self),
             self.adapterConfig,
             featureId,
-            region,
+            item ? featureSpanRegion(region, item.startBp, item.endBp) : region,
             opts,
           )
         },

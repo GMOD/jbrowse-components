@@ -60,7 +60,7 @@ describe('contextTargetAt', () => {
     expect(display.contextTargetAt(350, 75)).toMatchObject({
       refName: 'ctgA',
       pos: 350,
-      hit: { id: 'f1', rowIndex: 1 },
+      hit: { id: 'f1', rowName: 'b' },
     })
   })
 

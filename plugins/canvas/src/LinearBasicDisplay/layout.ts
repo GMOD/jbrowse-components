@@ -1623,13 +1623,16 @@ function packPreparedRef(
   // as clear and hands it to the next feature overlapping the pile, which then
   // paints into it. One rect per merged span, tall enough to cover the marks
   // sitting in it, and never entered in `layoutMap`: it reserves, it does not
-  // render.
+  // render. The height is the tallest collapsed mark anywhere, so it is one
+  // answer for every span — and the fit solve re-runs this whole pack about ten
+  // times, which is what made re-deriving it per span worth hoisting.
+  const reservedPileHeightPx = pileHeightPx(packed, collapsedFeatureIds)
   for (const [startPx, endPx] of collapsedSpansPx) {
     layout.addRect(
       `${PILE_RESERVATION_ID}${startPx}`,
       startPx,
       endPx,
-      pileHeightPx(packed, collapsedFeatureIds),
+      reservedPileHeightPx,
     )
   }
   // Insertion order = priority for the low rows in greedy first-fit. Features
@@ -1671,11 +1674,10 @@ function packPreparedRef(
       bpPerPx,
     )
     // Through `renderedSpanPx`, the same widening the density collapse measures
-    // with, so the two agree about where a sub-pixel mark sits. The anchor is
-    // what differs: a zero-length span is centered on its coordinate, and
-    // growing it off its start edge here put an unlabeled insertion a pixel
-    // right of where it paints — enough to read as clear of the feature on its
-    // left and then pack into it.
+    // with, so the two agree about where a sub-pixel mark sits. A zero-length
+    // span is centered on its coordinate there; grown off its start edge here it
+    // sat a pixel right of where it paints, read as clear of the feature on its
+    // left, and packed into it.
     const [spanLeftPx, spanRightPx] = renderedSpanPx(
       { startBp: ext.layoutStartBp, endBp: ext.layoutEndBp },
       bpPerPx,

@@ -1,5 +1,4 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 // A row in the painting. `name` is the partition value (the row identity, and
 // the tree leaf name); the rest are user arrangement overrides. `labelColor`
@@ -128,19 +127,6 @@ export function resolveRowColorStrings(
         : undefined)
     )
   })
-}
-
-/** {@link resolveRowColorStrings} in the packed form the painters read. */
-export function resolveRowColors(
-  sources: MultiRowSource[],
-  sampleColorMap: Record<string, string>,
-  colorSlotIsDefault: boolean,
-): (number | undefined)[] {
-  return resolveRowColorStrings(
-    sources,
-    sampleColorMap,
-    colorSlotIsDefault,
-  ).map(css => (css === undefined ? undefined : cssColorToABGR(css)))
 }
 
 /**

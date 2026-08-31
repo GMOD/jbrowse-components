@@ -20,7 +20,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -43,8 +43,13 @@ import {
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { autorun } from 'mobx'
 
-import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
+import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import {
+  featureSpanRegion,
+  fetchCanvasFeatureDetails,
+} from '../shared/fetchCanvasFeatureDetails.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { blockScreenRect } from './rendering/blockScreenRect.ts'
@@ -89,10 +94,11 @@ export interface MultiRowHit {
   // the full feature for the details widget
   id: string
   regionIndex: number
-  // display row the feature paints on. The row's label is NOT carried alongside
-  // it: a hit outlives a row reorder, so a snapshot of both can disagree —
-  // consumers resolve the label through `sources[rowIndex]`.
-  rowIndex: number
+  // the partition value naming the row the feature paints on — its IDENTITY,
+  // not its position. A hit outlives a reorder, a subtree filter or a clustering
+  // run, and a snapshotted index then names whoever moved into it. Consumers
+  // resolve the row through `rowIndexByValue`.
+  rowName: string
   name: string
   refName: string
   start: number
@@ -338,6 +344,25 @@ export default function stateModelFactory(
       get effectivePartitionField(): string {
         const [first] = self.rpcDataMap.values()
         return first === undefined ? 'name' : first.resolvedPartitionField
+      },
+      /**
+       * #getter
+       * What a fetch issued NOW should partition on under auto: the attribute an
+       * already-loaded region resolved, or auto again when none has. Unlike
+       * `effectivePartitionField` there is no display default to fall back to —
+       * this is an instruction to the worker, where "no instruction" is a real
+       * answer.
+       *
+       * The worker resolves auto off a SAMPLE of the region it packs, so a
+       * region panned into later can land on a different attribute. Not an
+       * `rpcProps()` key: keying on the resolved field would refetch every
+       * region the moment the first one answered.
+       */
+      get pinnedPartitionField(): string {
+        const [first] = self.rpcDataMap.values()
+        return first === undefined
+          ? AUTO_PARTITION_FIELD
+          : first.resolvedPartitionField
       },
       /**
        * #getter
@@ -648,6 +673,17 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * Whether either key has a row to draw — the one place the pair is asked
+       * about, by the on-screen legend, the SVG export and the "Show legend"
+       * menu item.
+       */
+      get hasLegendEntries() {
+        return self.colorLegend.length > 0 || self.rowGroupLegend.length > 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Override BaseLinearDisplay.height so the track container matches the
        * rendering canvas (numRows × effectiveRowHeight). In auto-fit mode this
        * resolves to `fitTargetHeight`; in fixed mode it grows with the row
@@ -797,6 +833,10 @@ export default function stateModelFactory(
        * `featurePaintInputs` rather than the whole `renderState`, so that
        * "changes only when the rows, the colors or the data do" is actually
        * true — see there.
+       *
+       * The memo needs an observer to exist at all, which `afterAttach`
+       * installs: the hit test reads this from a React event handler, and MobX
+       * does not cache a computed nobody is watching.
        */
       get drawnFeaturesByRow(): Map<number, DrawnFeaturesByRow> {
         const state = self.featurePaintInputs
@@ -832,7 +872,8 @@ export default function stateModelFactory(
           return undefined
         }
         const targetRow = Math.floor(mouseY / self.effectiveRowHeight)
-        if (!self.sources[targetRow]) {
+        const row = self.sources[targetRow]
+        if (!row) {
           return undefined
         }
         const view = self.view
@@ -866,7 +907,7 @@ export default function stateModelFactory(
           : {
               id: featureIds[i]!,
               regionIndex: p.index,
-              rowIndex: targetRow,
+              rowName: row.name,
               name: featureNames[i]!,
               refName: p.refName,
               start: featureStarts[i]!,
@@ -915,14 +956,29 @@ export default function stateModelFactory(
        */
       get highlightedBlockRect() {
         const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
-        return hit
+        // resolved off the live order rather than trusted from the hit (see
+        // `rowName`); a row since filtered away draws no box
+        const rowIndex = hit && self.rowIndexByValue.get(hit.rowName)
+        return hit && rowIndex !== undefined
           ? blockScreenRect({
               hit,
+              rowIndex,
               blocks: self.renderBlocks,
               rowHeight: self.effectiveRowHeight,
               rowProportion: self.rowProportion,
             })
           : undefined
+      },
+
+      /**
+       * #getter
+       * The row the hovered feature sits on, off the live order — the tooltip's
+       * label, resolved the way `highlightedBlockRect` resolves its row.
+       */
+      get hoveredRow(): MultiRowSource | undefined {
+        const hit = self.hoveredFeature
+        const rowIndex = hit && self.rowIndexByValue.get(hit.rowName)
+        return rowIndex === undefined ? undefined : self.sources[rowIndex]
       },
     }))
     .actions(self => {
@@ -1051,13 +1107,26 @@ export default function stateModelFactory(
         selectFeatureById(featureId: string, displayedRegionIndex: number) {
           void openDetails(async () => {
             const region = self.loadedRegions.get(displayedRegionIndex)
-            return region
+            // Narrowed to the clicked feature's own span, which the packed
+            // arrays already carry — the buffered region is a second download of
+            // everything on screen to pick one row out of.
+            const data = self.rpcDataMap.get(displayedRegionIndex)
+            const i = data ? data.featureIds.indexOf(featureId) : -1
+            const detailsRegion =
+              region && data && i !== -1
+                ? featureSpanRegion(
+                    region,
+                    data.featureStarts[i]!,
+                    data.featureEnds[i]!,
+                  )
+                : region
+            return detailsRegion
               ? fetchCanvasFeatureDetails(
                   getSession(self),
                   getRpcSessionId(self),
                   self.adapterConfig,
                   featureId,
-                  region,
+                  detailsRegion,
                 )
               : undefined
           })
@@ -1203,6 +1272,16 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
+          // What makes `drawnFeaturesByRow` a memo at all: its consumers are
+          // pointer handlers, and MobX drops an unobserved computed's value as
+          // it hands it over — so every mouse-move frame rebuilt every loaded
+          // region's row index. Observing it here holds the cache.
+          addDisposer(
+            self,
+            autorun(() => {
+              void self.drawnFeaturesByRow
+            }),
+          )
           setupTreeSidebarAutoruns(self, {
             name: 'MultiRowFeature',
             sortRows: (refName, pos) => {

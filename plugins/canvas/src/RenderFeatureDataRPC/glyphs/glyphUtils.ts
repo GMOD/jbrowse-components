@@ -91,28 +91,6 @@ export function labelFontSize(displayMode: DisplayMode) {
 // to the standard row rather than to nothing.
 export const FALLBACK_FEATURE_HEIGHT = 10
 
-/**
- * The body height (px, in normal-mode units) the isoform cap charges one row at,
- * from the raw `featureHeight` slot value.
- *
- * The RAW slot value, never `readConfObject`: `featureHeight` declares
- * `contextVariable: ['feature']`, and an arg-less read of a `jexl:` one still
- * evaluates it — against a context where `feature` is undefined, so
- * `get(feature, …)` throws, out of a getter `rpcProps()` reads. Only the worker
- * can resolve a callback per feature, so a callback height assumes the same
- * fallback `featureHeightPx` falls back to.
- *
- * Both halves of the cap read it — the display sizing `maxIsoforms`, and the
- * worker reconstructing that budget over a gene's real children. A worker
- * reconstructing against the gene's OWN resolved height would hand a
- * `jexl:`-height gene a lane the display never gave it.
- */
-export function budgetFeatureHeightPx(rawSlotValue: unknown) {
-  return typeof rawSlotValue === 'number' && rawSlotValue > 0
-    ? rawSlotValue
-    : FALLBACK_FEATURE_HEIGHT
-}
-
 // The body height (px) one feature is laid out at.
 //
 // `featureHeight` is a per-feature callback slot (`contextVariable: ['feature']`,

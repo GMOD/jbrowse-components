@@ -77,7 +77,7 @@ describe('featureAt', () => {
     expect(display.featureAt(350, 75)).toEqual({
       id: 'bottom',
       regionIndex: 0,
-      rowIndex: 1,
+      rowName: 'b',
       name: 'seg',
       refName: 'ctgA',
       start: 300,
@@ -241,6 +241,27 @@ describe('featureAt', () => {
       expect(display.featureAt(150, 10)?.id).toBe('a1')
       expect(display.featureAt(150, 75)).toBeUndefined()
     })
+  })
+
+  // A reorder renumbers the rows with no pointer event to re-run the hit test,
+  // so a hit that snapshotted its row INDEX named whoever moved into it — the
+  // tooltip labelled the wrong sample and the highlight box moved to its row.
+  // The hit carries the row's name instead, and both consumers resolve it live.
+  it('a hover survives a row reorder on the row it was taken on', () => {
+    const { display } = twoRowDisplay(
+      region([
+        { row: 'a', start: 100, end: 200, id: 'top' },
+        { row: 'b', start: 300, end: 400, id: 'bottom' },
+      ]),
+    )
+    display.setHoveredFeature(display.featureAt(350, 75))
+    expect(display.hoveredRow?.name).toBe('b')
+    const before = display.highlightedBlockRect
+
+    display.setLayout([{ name: 'b' }, { name: 'a' }])
+
+    expect(display.hoveredRow?.name).toBe('b')
+    expect(display.highlightedBlockRect?.top).toBeLessThan(before!.top)
   })
 
   // The bound is the sidebar's *interactive* edge (label gutter + resize

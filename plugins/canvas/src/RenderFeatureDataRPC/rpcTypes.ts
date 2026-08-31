@@ -180,7 +180,9 @@ export interface FeatureDataResult {
   // treat that as "may have any kind" rather than as false.
   labelKinds?: LabelKinds
 
-  // Precomputed amino acid overlay items (only when colorByCDS is true)
+  // Precomputed amino acid overlay items. `showAminoAcids` is what produces
+  // them (and only past the zoomThresholds it gates the sequence fetch on) —
+  // `colorByCDS` recolors frames and emits none.
   aminoAcidOverlay?: AminoAcidOverlayItem[]
 
   // Number of top-level features in this region (used for density calculations)
@@ -235,10 +237,11 @@ type PrimitiveArrayKey = Extract<
 export type PackedPrimitives = Pick<FeatureDataResult, PrimitiveArrayKey>
 
 /**
- * What a renderer backend draws one region from. Three families of array are
+ * What a renderer backend draws one region from. Four families of array are
  * excluded on purpose, all main-thread inputs rather than draw inputs: a
  * `*FeatureIndices` maps an element back to its hit-test entry, a `*LabelRows`
- * is spent into the element's Y before a draw ever sees it, and a
+ * is spent into the element's Y before a draw ever sees it, a `*ChildOrdinals`
+ * names which isoform an element belongs to for the main thread's trim, and a
  * `*ColorClasses` is consumed by the encode that produces the color lane a
  * draw does read. Nothing in a draw call reads any of them — and the class
  * lanes in particular must not be reachable there, or a renderer could draw

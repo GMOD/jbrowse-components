@@ -640,7 +640,9 @@ function emitBox(
       {
         feature,
         parentFeatureId: parentFeature.id(),
-        type: featureType(feature),
+        // the raw slot, not featureType(): Box is the glyph a typeless child
+        // lands on, and '' would slip past the context menu's noun fallback
+        type: feature.get('type'),
         topPx: baseTopPx,
         heightPx: height,
         labelRowsAbove,

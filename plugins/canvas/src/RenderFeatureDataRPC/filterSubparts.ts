@@ -137,7 +137,7 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
   }
 
   const allowedTypes = new Set(
-    config.subParts.split(/\s*,\s*/).map(t => t.toLowerCase()),
+    config.subParts.split(',').map(t => t.trim().toLowerCase()),
   )
   return c.filter(child => allowedTypes.has(featureType(child).toLowerCase()))
 }

@@ -27,12 +27,23 @@ export function truncateLabel(text: string) {
     : text
 }
 
+// The unit `truncateToWidth` cuts on. Not UTF-16 units, which split a surrogate
+// pair into halves that draw as the replacement glyph, and not code points,
+// which split a combining sequence or an emoji ZWJ join — either way one visible
+// character becomes two. Built once: it is reached only by labels that overflow,
+// but on a dense annotation that is most of them.
+const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+
 // Truncates text so its rendered width at fontSize never exceeds maxWidthPx,
 // appending an ellipsis when shortened. Returns a string whose
 // measureText(result, fontSize) is guaranteed <= maxWidthPx, so the caller's
 // stored textWidth is bounded by construction and layout reservations match
 // what is drawn. Single pass over the per-char widths; only over-budget strings
 // enter the loop.
+//
+// A budget too small for the ellipsis itself yields nothing rather than a lone
+// '…' — the one input that could return something wider than it was given, and
+// the guarantee above is what the reservation is built on.
 export function truncateToWidth(
   text: string,
   maxWidthPx: number,
@@ -42,17 +53,21 @@ export function truncateToWidth(
     return text
   }
   const budget = maxWidthPx - measureText('…', fontSize)
+  if (budget < 0) {
+    return ''
+  }
+  const chars = [...GRAPHEMES.segment(text)].map(g => g.segment)
   let width = 0
-  let i = 0
-  while (i < text.length) {
-    const next = width + measureText(text[i]!, fontSize)
+  let kept = 0
+  while (kept < chars.length) {
+    const next = width + measureText(chars[kept]!, fontSize)
     if (next > budget) {
       break
     }
     width = next
-    i++
+    kept++
   }
-  return `${text.slice(0, i)}…`
+  return `${chars.slice(0, kept).join('')}…`
 }
 
 // True when the value is a string with at least one non-whitespace character.

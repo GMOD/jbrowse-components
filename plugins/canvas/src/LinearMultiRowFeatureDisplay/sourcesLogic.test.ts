@@ -1,40 +1,38 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { orderPartitionValues, resolveRowColors } from './sourcesLogic.ts'
+import { orderPartitionValues, resolveRowColorStrings } from './sourcesLogic.ts'
 
 const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
 
-test('resolveRowColors: default color slot → palette by display index', () => {
-  expect(resolveRowColors(rows, {}, true)).toEqual([
-    cssColorToABGR(categoricalPalette[0]!),
-    cssColorToABGR(categoricalPalette[1]!),
-    cssColorToABGR(categoricalPalette[2]!),
+test('resolveRowColorStrings: default color slot → palette by display index', () => {
+  expect(resolveRowColorStrings(rows, {}, true)).toEqual([
+    categoricalPalette[0],
+    categoricalPalette[1],
+    categoricalPalette[2],
   ])
 })
 
-test('resolveRowColors: customized color slot → no palette (per-feature wins)', () => {
-  expect(resolveRowColors(rows, {}, false)).toEqual([
+test('resolveRowColorStrings: customized color slot → no palette (per-feature wins)', () => {
+  expect(resolveRowColorStrings(rows, {}, false)).toEqual([
     undefined,
     undefined,
     undefined,
   ])
 })
 
-test('resolveRowColors: sampleColorMap beats palette, per row', () => {
-  expect(resolveRowColors(rows, { dad: 'blue' }, true)).toEqual([
-    cssColorToABGR(categoricalPalette[0]!),
-    cssColorToABGR('blue'),
-    cssColorToABGR(categoricalPalette[2]!),
+test('resolveRowColorStrings: sampleColorMap beats palette, per row', () => {
+  expect(resolveRowColorStrings(rows, { dad: 'blue' }, true)).toEqual([
+    categoricalPalette[0],
+    'blue',
+    categoricalPalette[2],
   ])
 })
 
-test("resolveRowColors: a row's own color (dialog) beats sampleColorMap", () => {
+test("resolveRowColorStrings: a row's own color (dialog) beats sampleColorMap", () => {
   const edited = [{ name: 'mom', color: 'black' }, { name: 'dad' }]
-  expect(resolveRowColors(edited, { mom: 'red', dad: 'blue' }, true)).toEqual([
-    cssColorToABGR('black'),
-    cssColorToABGR('blue'),
-  ])
+  expect(
+    resolveRowColorStrings(edited, { mom: 'red', dad: 'blue' }, true),
+  ).toEqual(['black', 'blue'])
 })
 
 test('empty rowOrder = sorted', () => {

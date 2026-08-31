@@ -47,3 +47,52 @@ describe('partitionField reaches the worker unevaluated', () => {
     expect(display.rpcProps().partitionField).toBe('')
   })
 })
+
+// Auto is resolved per region, off a SAMPLE of the features that region holds,
+// so two regions of one file can land on different attributes — after which the
+// same row name means two things and the rows of one display stop lining up.
+// Once a region has answered, later fetches are told the answer.
+describe('auto resolution is pinned once a region has answered', () => {
+  function regionData(resolvedPartitionField: string) {
+    return {
+      featureStarts: new Uint32Array([0]),
+      featureEnds: new Uint32Array([100]),
+      featureColors: new Uint32Array([0xff0000ff]),
+      featureDeltas: new Int32Array(0),
+      partitionValues: ['LINE'],
+      featurePartitionIndex: new Uint32Array([0]),
+      featureNames: ['L1HS'],
+      featureIds: ['f1'],
+      usedItemRgb: false,
+      partitionCandidates: [],
+      resolvedPartitionField,
+    }
+  }
+
+  it('is the auto sentinel until one has', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    expect(display.pinnedPartitionField).toBe('')
+  })
+
+  it('takes the loaded region answer, not the display default', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, regionData('repClass'))
+
+    expect(display.pinnedPartitionField).toBe('repClass')
+    // still the auto sentinel where it is the invalidation key
+    expect(display.rpcProps().partitionField).toBe('')
+  })
+
+  it('leaves a configured slot alone', () => {
+    const { createDisplay } = createTestEnvironment({
+      displayConfig: { partitionField: 'sample' },
+    })
+    const { display } = createDisplay()
+    display.setRpcData(0, regionData('sample'))
+
+    expect(display.rpcProps().partitionField).toBe('sample')
+  })
+})

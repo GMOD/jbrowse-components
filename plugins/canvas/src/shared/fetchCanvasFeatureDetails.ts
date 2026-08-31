@@ -4,6 +4,21 @@ import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+// The region to ask for one clicked feature: the buffered region the display
+// loaded, narrowed to the feature's own span. The adapter answers with
+// everything overlapping the query, so the unnarrowed one downloaded the whole
+// screen a second time to pick a single row out of.
+//
+// At least one base wide — a zero-length feature (an insertion) is an empty
+// query, which adapters answer with nothing.
+export function featureSpanRegion(
+  region: Region,
+  startBp: number,
+  endBp: number,
+): Region {
+  return { ...region, start: startBp, end: Math.max(endBp, startBp + 1) }
+}
+
 // Re-fetch one full feature by id for the details widget. Both canvas displays
 // paint from slim render arrays that carry no attributes, so the complete
 // feature is fetched on demand.

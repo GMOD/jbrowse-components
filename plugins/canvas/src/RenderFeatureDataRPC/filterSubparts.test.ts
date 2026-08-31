@@ -55,6 +55,21 @@ function transcript(type: string, cdsType = 'CDS') {
   })
 }
 
+// The slot is a comma list a human types, and one written with a space after
+// the comma — or a stray leading one — used to lose whichever type carried the
+// whitespace: every CDS box vanished and the transcript drew as UTR alone.
+describe('getSubparts subParts whitespace', () => {
+  it('keeps a type whose entry is padded', () => {
+    for (const subParts of [' CDS,UTR', 'CDS , UTR', 'CDS,UTR ', '\tCDS,UTR']) {
+      const config = mockDisplayConfig({
+        transcriptTypes: ['mRNA'],
+        subParts,
+      })
+      expect(typesOf(getSubparts(transcript('mRNA'), config))).toContain('CDS')
+    }
+  })
+})
+
 describe('getSubparts implied UTRs', () => {
   const config = mockDisplayConfig({
     transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],

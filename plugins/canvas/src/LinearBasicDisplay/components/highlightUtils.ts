@@ -35,7 +35,9 @@ export function highlightBoxColors(highlightMain: string) {
 // phantom stripe — the padding plus the feature's full label overhang — at the
 // neighbouring region's edge, for a feature drawn entirely in the previous one.
 // A genuinely zero-length feature is kept: zero width is its true extent there
-// rather than the clamp's doing.
+// rather than the clamp's doing — but only where it lands inside the region.
+// One outside it clamps to a rect whose right edge precedes its left, and a
+// negative width paints a phantom box for an insertion scrolled out of view.
 export function overlayItemRect(
   item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
   vr: BpRegionBounds,
@@ -45,7 +47,8 @@ export function overlayItemRect(
   const px2 = toScreen(item.endBp)
   const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
   const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
-  const clampedToNothing = rightPx <= leftPx && item.endBp > item.startBp
+  const clampedToNothing =
+    rightPx < leftPx || (rightPx === leftPx && item.endBp > item.startBp)
   return clampedToNothing
     ? undefined
     : {

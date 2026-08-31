@@ -13,13 +13,12 @@ const MultiRowTooltip = observer(function MultiRowTooltip({
   model: LinearMultiRowFeatureDisplayModel
   mouseState: MouseState
 }) {
-  const { hoveredFeature, sources } = model
   // the row's label comes from the live row order, never from a copy taken when
-  // the hover happened
-  const row = hoveredFeature ? sources[hoveredFeature.rowIndex] : undefined
+  // the hover happened — see `hoveredRow`
+  const { hoveredFeature, hoveredRow } = model
   return (
     <HoverTooltip hit={hoveredFeature} mouseState={mouseState}>
-      {row ? <div>{row.label ?? row.name}</div> : null}
+      {hoveredRow ? <div>{hoveredRow.label ?? hoveredRow.name}</div> : null}
       {hoveredFeature?.name ? (
         <div>
           <SanitizedHTML html={hoveredFeature.name} />

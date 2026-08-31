@@ -31,17 +31,23 @@ function isConfiguredLegendEntry(e: unknown): e is ConfiguredLegendEntry {
 // when the category is encoded only in the block color, so there's no feature
 // attribute to auto-derive from (see buildColorLegend).
 //
-// Labels are deduped first-seen: a label is both the React key and the
-// `hiddenColors` toggle key (see model), so a repeated label would collide and
-// map one toggle to several colors. Matches buildColorLegend's per-label
-// uniqueness.
+// Deduped first-seen on BOTH halves, matching buildColorLegend. A repeated
+// label collides as the React key; a repeated color collides as the toggle key,
+// because hiding a category hides features by color (see `hiddenColors`) — so
+// two labels sharing one color would give a row whose checkbox blanks its
+// neighbour's features while that neighbour keeps a lit swatch.
 export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
   const seenLabels = new Set<string>()
+  const seenColors = new Set<number>()
   const result: LegendEntry[] = []
   for (const e of Array.isArray(entries) ? entries : []) {
-    if (isConfiguredLegendEntry(e) && !seenLabels.has(e.label)) {
-      seenLabels.add(e.label)
-      result.push({ label: e.label, color: cssColorToABGR(e.color) })
+    if (isConfiguredLegendEntry(e)) {
+      const color = cssColorToABGR(e.color)
+      if (!seenLabels.has(e.label) && !seenColors.has(color)) {
+        seenLabels.add(e.label)
+        seenColors.add(color)
+        result.push({ label: e.label, color })
+      }
     }
   }
   return result

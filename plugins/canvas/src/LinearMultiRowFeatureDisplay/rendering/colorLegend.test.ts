@@ -126,6 +126,17 @@ test('configured legend dedupes repeated labels first-seen', () => {
   ).toEqual([{ label: 'Maternal', color: 0xff1c1ae3 }])
 })
 
+test('configured legend dedupes repeated colors first-seen', () => {
+  // the toggle key is the color, so a second row on the same color would blank
+  // the first row's features while leaving its swatch lit
+  expect(
+    resolveConfiguredLegend([
+      { label: 'Maternal', color: 'rgb(227,26,28)' },
+      { label: 'Untransmitted', color: 'rgb(227,26,28)' },
+    ]),
+  ).toEqual([{ label: 'Maternal', color: 0xff1c1ae3 }])
+})
+
 test('too many distinct labels is treated as non-categorical', () => {
   const n = 40
   const many: MultiRowRegionData = {

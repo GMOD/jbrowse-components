@@ -191,24 +191,19 @@ function totalLabelRows(layout: FeatureLayout) {
   return (layout.labelRows ?? 0) + (layout.ownsLabelRow ? 1 : 0)
 }
 
-// The best `kept` of a ranked isoform list, and the curated tag that put the
-// head of it first — the chip names that tag rather than only saying that
-// transcripts are hidden, and `tags[Infinity]` is the annotation that named
-// none, which leaves the pick to protein length.
+// The head of a ranked isoform list, and the curated tag that put it there —
+// the chip names that tag rather than only saying that transcripts are hidden,
+// and `tags[Infinity]` is the annotation that named none, which leaves the pick
+// to protein length.
 //
-// The survivors are a Set, so the caller's filter keeps them in the caller's
-// order and a gene under the cap lays out identically with it on and off.
-//
-function keepRanked(
-  ranked: Feature[],
-  kept: number,
-  scores: Scores,
-  config: DisplayConfig,
-) {
+// The survivor is a Set, so the caller's filter keeps the caller's order and a
+// gene under the cap lays out identically with the collapse on and off.
+function keepBest(ranked: Feature[], scores: Scores, config: DisplayConfig) {
+  const best = ranked[0]!
   return {
-    keep: new Set(ranked.slice(0, kept).map(f => f.id())),
+    keep: new Set([best.id()]),
     canonicalTag:
-      config.canonicalTranscriptTags[scores.get(ranked[0]!.id())!.canonical],
+      config.canonicalTranscriptTags[scores.get(best.id())!.canonical],
   }
 }
 
@@ -228,38 +223,30 @@ function collapseIsoforms({
   config: DisplayConfig
 }) {
   return config.geneGlyphMode === 'longestCoding' && isoforms.length > 1
-    ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config)
+    ? keepBest(rankIsoforms(isoforms, scores), scores, config)
     : undefined
 }
 
-// Every child laid out at most once, however many times the cap and the stacking
-// loop below ask for it. Keyed by object identity rather than `id()`, so a
-// duplicated feature id costs a row instead of aliasing two children together.
-function memoizeChildLayouts(args: LayoutArgs) {
+// One child of the gene laid out as its own glyph, tagged with whether it spends
+// a `below` label row — which is the parent's to count, not the child's.
+function layoutChild(child: Feature, args: LayoutArgs) {
   const { feature, config } = args
-  const cache = new Map<Feature, FeatureLayout>()
-  return (child: Feature) => {
-    let layout = cache.get(child)
-    if (!layout) {
-      layout = findGlyph(
-        child,
-        config,
-        false,
-      )({
-        ...args,
-        feature: child,
-        parentFeature: feature,
-      })
-      layout.ownsLabelRow = reservesBelowLabelRow({
-        feature: child,
-        config,
-        glyphType: layout.glyphType,
-        jexl: args.jexl,
-      })
-      cache.set(child, layout)
-    }
-    return layout
-  }
+  const layout = findGlyph(
+    child,
+    config,
+    false,
+  )({
+    ...args,
+    feature: child,
+    parentFeature: feature,
+  })
+  layout.ownsLabelRow = reservesBelowLabelRow({
+    feature: child,
+    config,
+    glyphType: layout.glyphType,
+    jexl: args.jexl,
+  })
+  return layout
 }
 
 // The gene's children as the main-thread trim sees them: drawn order, with the
@@ -335,8 +322,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const hasMultipleIsoforms = isoforms.length > 1
   const isoformSet = new Set(isoforms)
 
-  const layoutOf = memoizeChildLayouts(args)
-
   // Which isoforms survive `longestCoding`, or undefined when none are dropped.
   // Ranked BEFORE the stack sort below, which is in place and over an array
   // `isoforms` can BE — getIsoforms falls back to the raw subfeatures for a
@@ -362,13 +347,17 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     )
   }
 
-  if (geneGlyphMode !== 'longestCoding') {
-    // Stack the tagged isoform on top, then the coding ones (pointless for
-    // longestCoding, which keeps one). The two terms `rankIsoforms` leads with,
-    // so a capped gene draws first the transcript the chip credits with picking
-    // it. Stable below that, so isoforms tying on both terms keep the order they
-    // would have had — and an annotation that tags nothing, which is most of
-    // them, sorts exactly as before.
+  if (!collapsed) {
+    // Stack the tagged isoform on top, then the coding ones. The two terms
+    // `rankIsoforms` leads with, so a capped gene draws first the transcript the
+    // chip credits with picking it. Stable below that, so isoforms tying on both
+    // terms keep the order they would have had — and an annotation that tags
+    // nothing, which is most of them, sorts exactly as before.
+    //
+    // Gated on the collapse, not on the mode: a collapse leaves one isoform and
+    // has nothing to order, but `longestCoding` also declines to collapse a gene
+    // the user EXPANDED, and that gene draws every isoform — reading the mode
+    // here left exactly those unordered.
     subfeatures.sort((a, b) => {
       const x = scores.get(a.id())!
       const y = scores.get(b.id())!
@@ -388,7 +377,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   let labelRows = 0
 
   for (const [i, child] of subfeatures.entries()) {
-    const childLayout = layoutOf(child)
+    const childLayout = layoutChild(child, args)
 
     childLayout.y = currentYPx
     childLayout.labelRowsAbove = labelRows
