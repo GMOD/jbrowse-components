@@ -18,9 +18,9 @@ export interface JBrowseAppController {
   /** the underlying MST app model */
   readonly viewState: ViewModel
   /**
-   * open another view after launch, same `{ type, init }` shape as `views`.
-   * Returns the view's id — the one you gave, or the one generated for you,
-   * which is otherwise unobtainable and is what `removeView` takes.
+   * open another view after launch, same shape as a `views` entry. Returns the
+   * view's id — the one you gave, or the one generated for you, which is
+   * otherwise unobtainable and is what `removeView` takes.
    */
   addView(view: ManagedView): string
   /** close a view opened at launch or by `addView`; unknown ids are ignored */
@@ -62,11 +62,8 @@ export function createApp(
     get viewState() {
       return viewState
     },
-    addView(view) {
-      return viewState.session.addView(view.type, {
-        id: view.id,
-        init: view.init,
-      }).id
+    addView({ type, ...rest }) {
+      return viewState.session.addView(type, rest).id
     },
     removeView(id) {
       const view = viewState.session.views.find(v => v.id === id)

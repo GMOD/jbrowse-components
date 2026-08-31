@@ -11,15 +11,26 @@ import type { Config, PluginInput, SessionSnapshot } from '../types.ts'
 import type { LocalFileInput } from '@jbrowse/product-core'
 import type { Ref } from 'react'
 
-// one view to open at launch. `init` is the view-type-specific launch blob
-// (LinearGenomeView's InitState, CircularViewInit, synteny's, ...), so across
-// the heterogeneous view list it is an open shape rather than one fixed type.
-// Most views take an object, but BreakpointSplitView takes an array of
-// per-panel init objects instead
+/**
+ * One view to open at launch. `type` picks the view type and every setting is
+ * written directly beside it — a LinearGenomeView's `assembly`/`loc`/`tracks`,
+ * a LinearSyntenyView's or BreakpointSplitView's `views`, and any persisted
+ * property of that view type. The same object a `config.json`'s
+ * `defaultSession.views` entry takes.
+ *
+ * Open-shaped because the list is heterogeneous and a host may open a view type
+ * from its own plugin: what a key means is the view type's business, and an
+ * unrecognized one is reported at runtime by the view it was written on.
+ */
 export interface ManagedView {
   type: string
-  init?: Record<string, unknown> | unknown[]
   id?: string
+  /**
+   * @deprecated nest nothing: write every setting directly on the view object.
+   * Accepted for now, with a warning from the view it opens.
+   */
+  init?: Record<string, unknown> | unknown[]
+  [key: string]: unknown
 }
 
 export interface JBrowseProps {
@@ -46,8 +57,9 @@ export interface JBrowseProps {
   onPluginsUpdated?: CreateViewStateOptions['onPluginsUpdated']
 
   // declarative description of the session to open: the views to show, each
-  // with its own type and view-type `init` blob. mirrors a config.json's
-  // defaultSession.views, so the same shape round-trips through saved sessions
+  // with its type and its settings written directly on it. mirrors a
+  // config.json's defaultSession.views, so the same shape round-trips through
+  // saved sessions
   views?: ManagedView[]
   sessionName?: string
   // a previously serialized session to restore instead — from decodeSession(),
@@ -68,8 +80,8 @@ export interface JBrowseProps {
 /**
  * Uncontrolled, prop-driven wrapper around the `viewState`-based
  * {@link JBrowseApp}. Unlike the single-view products this is session-centric:
- * `views` lists the views to open at launch, each carrying its own view-type
- * `init` blob, or `session` restores a previously serialized one. Props are
+ * `views` lists the views to open at launch, each with its settings written
+ * directly on it, or `session` restores a previously serialized one. Props are
  * initial values; the engine is built once (remount via React `key` to swap
  * assemblies/plugins). For imperative control after launch (session.addView,
  * navToLocString, ...) take a `ref` to the live engine.

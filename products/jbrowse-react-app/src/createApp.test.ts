@@ -36,7 +36,7 @@ test('createApp opens the declarative views', () => {
   const controller = createApp(mount(), {
     assemblies,
     views: [
-      { type: 'LinearGenomeView', init: { assembly: 'volvox' } },
+      { type: 'LinearGenomeView', assembly: 'volvox' },
       { type: 'CircularView', id: 'circ' },
     ],
   })
@@ -46,6 +46,72 @@ test('createApp opens the declarative views', () => {
   expect(views[0]!.type).toBe('LinearGenomeView')
   expect(views[1]!.type).toBe('CircularView')
   expect(views[1]!.id).toBe('circ')
+
+  controller.destroy()
+})
+
+// The `views` prop is the only way a host can describe a view, so a setting it
+// cannot express is a setting the host cannot make. It used to carry `type`,
+// `id` and a nested `init` and nothing else, which left the deprecation warning
+// below unactionable: it asks for the flat shape the prop had no room for.
+test('a launch key and a persisted property both land written flat', () => {
+  const controller = createApp(mount(), {
+    assemblies,
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-10',
+        colorByCDS: true,
+      },
+    ],
+  })
+
+  const view = controller.viewState.session.views[0]!
+  expect(view.launch).toMatchObject({ assembly: 'volvox', loc: 'ctgA:1-10' })
+  expect(view.colorByCDS).toBe(true)
+
+  controller.destroy()
+})
+
+// afterAttach reports on a later tick than createApp returns on
+const settled = () => new Promise(resolve => setTimeout(resolve, 0))
+
+test('a flat view warns about nothing, a nested init still warns', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+  const flat = createApp(mount(), {
+    assemblies,
+    views: [{ type: 'LinearGenomeView', assembly: 'volvox', colorByCDS: true }],
+  })
+  await settled()
+  expect(warn).not.toHaveBeenCalled()
+  flat.destroy()
+
+  const nested = createApp(mount(), {
+    assemblies,
+    views: [{ type: 'LinearGenomeView', init: { assembly: 'volvox' } }],
+  })
+  await settled()
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('"init"'))
+  nested.destroy()
+
+  warn.mockRestore()
+})
+
+test('addView takes the flat shape too', () => {
+  const controller = createApp(mount(), { assemblies })
+
+  const id = controller.addView({
+    type: 'LinearGenomeView',
+    assembly: 'volvox',
+    colorByCDS: true,
+  })
+
+  const view = controller.viewState.session.views[0]!
+  expect(view.id).toBe(id)
+  expect(view.launch).toMatchObject({ assembly: 'volvox' })
+  expect(view.colorByCDS).toBe(true)
 
   controller.destroy()
 })

@@ -110,7 +110,8 @@ export async function openSampleInNewView(
   } else {
     session.addView('LinearGenomeView', {
       id: viewId,
-      init: { assembly: target.assemblyName, loc: locString },
+      assembly: target.assemblyName,
+      loc: locString,
     })
   }
 }

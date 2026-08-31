@@ -59,12 +59,14 @@ export async function navToBookmark(
     if (view) {
       await view.navToLocString(locString, assembly, 0.2)
     } else {
-      // no view open for this assembly: launch a new one declaratively via
-      // `init` so it shows a loading spinner (not a flash of the import form)
-      // while the assembly loads, then self-navigates with the same grow
+      // no view open for this assembly: launch a new one declaratively so it
+      // shows a loading spinner (not a flash of the import form) while the
+      // assembly loads, then self-navigates with the same grow
       session.addView('LinearGenomeView', {
         id: `${model.id}_${assembly}`,
-        init: { assembly, loc: locString, grow: 0.2 },
+        assembly,
+        loc: locString,
+        grow: 0.2,
       })
     }
   } catch (e) {

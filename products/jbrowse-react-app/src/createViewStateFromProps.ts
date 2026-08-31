@@ -6,7 +6,7 @@ import type { SessionObservers, SessionSnapshot } from './types.ts'
 /**
  * A declarative description of the app to mount. This is the framework-agnostic
  * twin of the `<JBrowse>` React component's props: `views` lists the views to
- * open, each carrying its own view-type `init` blob — the same shape a
+ * open, each with its settings written directly on it — the same shape a
  * `config.json`'s `defaultSession.views` uses, so a single vocabulary describes
  * a linear genome view, a synteny view, a dotplot, and so on:
  *
@@ -17,10 +17,8 @@ import type { SessionObservers, SessionSnapshot } from './types.ts'
  *   views: [
  *     {
  *       type: 'LinearSyntenyView',
- *       init: {
- *         views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
- *         tracks: ['hg38_mm39.paf'],
- *       },
+ *       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
+ *       tracks: ['hg38_mm39.paf'],
  *     },
  *   ],
  * })
@@ -38,11 +36,16 @@ export interface CreateAppOptions
 // viewsToSession's mapping is checked. Assignable to SessionSnapshot (whose
 // index signature it inherits), so it drops straight into createViewState.
 export interface AppSessionSnapshot extends SessionSnapshot {
-  views?: { id: string; type: string; init?: ManagedView['init'] }[]
+  views?: (ManagedView & { id: string })[]
 }
 
 // Turn the declarative `views` list into a session snapshot, defaulting each
 // view's id. Pure (no engine/DOM) so the mapping is unit-testable.
+//
+// The entry is carried over whole rather than picked apart: a view's settings
+// live directly on it, so naming the keys here would be this file deciding what
+// each of the seven view types accepts. A key the view does not know is
+// reported by the view, once, on attach.
 export function viewsToSession(
   sessionName: string,
   views: ManagedView[] | undefined,
@@ -52,9 +55,8 @@ export function viewsToSession(
     ...(views?.length
       ? {
           views: views.map((view, i) => ({
+            ...view,
             id: view.id ?? `view-${i}`,
-            type: view.type,
-            init: view.init,
           })),
         }
       : {}),

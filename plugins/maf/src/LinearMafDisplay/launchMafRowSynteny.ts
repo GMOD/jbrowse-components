@@ -118,21 +118,19 @@ export async function launchMafRowSynteny({
       : { trackId: track.configuration.trackId }
   })
   host.addView('LinearSyntenyView', {
-    init: {
-      views: [
-        { assembly: refAssembly, loc: refLoc, tracks: refTracks },
-        {
-          assembly: assemblyName,
-          loc: assembleLocString({
-            refName: synteny.refName,
-            start: synteny.start,
-            end: synteny.end,
-            reversed: synteny.reversed,
-          }),
-          tracks: annotationTracks(host, assemblyName),
-        },
-      ],
-      tracks: [[trackId]],
-    },
+    views: [
+      { assembly: refAssembly, loc: refLoc, tracks: refTracks },
+      {
+        assembly: assemblyName,
+        loc: assembleLocString({
+          refName: synteny.refName,
+          start: synteny.start,
+          end: synteny.end,
+          reversed: synteny.reversed,
+        }),
+        tracks: annotationTracks(host, assemblyName),
+      },
+    ],
+    tracks: [[trackId]],
   })
 }

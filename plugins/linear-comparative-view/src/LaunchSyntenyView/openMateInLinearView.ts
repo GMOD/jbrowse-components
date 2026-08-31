@@ -99,11 +99,9 @@ export function openMateInLinearView({
       } else {
         host.addView('LinearGenomeView', {
           id,
-          init: {
-            assembly: assemblyName,
-            loc,
-            tracks: annotationTracks(host, assemblyName),
-          },
+          assembly: assemblyName,
+          loc,
+          tracks: annotationTracks(host, assemblyName),
         })
       }
     },
