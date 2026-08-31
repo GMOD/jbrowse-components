@@ -124,6 +124,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { IndexedRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -1839,9 +1840,7 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-          fetchNeeded(
-            needed: { region: Region; displayedRegionIndex: number }[],
-          ) {
+          fetchNeeded(needed: IndexedRegion[]) {
             const view = getView(self)
             const bpPerPx = view.bpPerPx
             // Both gate budgets, read once for the whole batch. Not in
