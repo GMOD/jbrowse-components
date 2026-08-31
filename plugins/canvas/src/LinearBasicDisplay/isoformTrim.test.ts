@@ -11,7 +11,7 @@ import type { LayoutInputs, LayoutRegionData } from './layout.ts'
 // a count alone cannot describe and the one this whole table exists for.
 const STACK: IsoformStack = {
   isoformCount: 3,
-  gapPx: 2,
+  boxHeightPx: 10,
   children: [
     { ordinal: 0, isoform: true, rank: 2, yPx: 0 },
     { ordinal: 1, isoform: false, rank: Infinity, yPx: 12 },

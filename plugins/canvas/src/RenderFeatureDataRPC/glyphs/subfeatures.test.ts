@@ -4,6 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import configSchemaFactory from '../../LinearBasicDisplay/configSchema.ts'
 import { trimIsoformStack } from '../../LinearBasicDisplay/isoformTrim.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
+import { isoformGapPx } from './glyphUtils.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -331,10 +332,10 @@ describe('layoutSubfeatures layout', () => {
       expect(layout.isoformStack!.children).toHaveLength(5)
     })
 
-    // The gap after each child, in the gene's own px, so the trim closes the
-    // hole a dropped isoform leaves with the same number the layout opened it
-    // with rather than re-deriving the ratio.
-    it('carries the inter-transcript gap the layout spent', () => {
+    // The box each gap is a fraction of, in the gene's own px, so the trim
+    // closes the hole a dropped isoform leaves with the same number the layout
+    // opened it with.
+    it('carries the box the inter-transcript gap is spent from', () => {
       const layout = layoutSubfeatures({
         feature: makeGeneWithTranscripts(['a', 'b']),
         config: mockDisplayConfig({ geneGlyphMode: 'all' }),
@@ -342,7 +343,7 @@ describe('layoutSubfeatures layout', () => {
       const stack = layout.isoformStack!
       const [first, second] = stack.children
       expect(second!.yPx - (first!.yPx + first!.heightPx)).toBeCloseTo(
-        stack.gapPx,
+        isoformGapPx(stack),
       )
     })
 

@@ -1,5 +1,6 @@
 import { LITERAL } from './colorClasses.ts'
 import { createFeatureFloatingLabels } from './floatingLabels.ts'
+import { TRANSCRIPT_PADDING_RATIO } from './glyphs/glyphUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RectData } from './packRenderArrays.ts'
@@ -145,7 +146,6 @@ export interface StackedGeneSpec {
   name?: string
   strand?: number
   heightPx?: number
-  gapPx?: number
   canonicalTag?: string
   // What the worker's own collapse left, when it left fewer than the gene has.
   // A gene the user expanded ships every isoform and this count as the only
@@ -164,7 +164,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
 
   for (const [flatbushIdx, spec] of genes.entries()) {
     const heightPx = spec.heightPx ?? 10
-    const gapPx = spec.gapPx ?? heightPx * 0.2
+    const gapPx = heightPx * TRANSCRIPT_PADDING_RATIO
     const children = Array.from({ length: spec.isoforms }, (_, i) => {
       const [startBp, endBp] = spec.spans?.[i] ?? [spec.startBp, spec.endBp]
       return {
@@ -208,7 +208,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
           isoformCount: spec.isoforms,
           canonicalTag: spec.canonicalTag,
           collapsedIsoformCount: spec.collapsedIsoformCount,
-          gapPx,
+          boxHeightPx: heightPx,
           children,
         },
       }),

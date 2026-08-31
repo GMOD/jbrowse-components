@@ -1,18 +1,16 @@
 import { reservesBelowLabelRow } from '../labelUtils.ts'
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
-import { featureHeightPx, isCodingFeature } from './glyphUtils.ts'
+import {
+  TRANSCRIPT_PADDING_RATIO,
+  featureHeightPx,
+  isCodingFeature,
+} from './glyphUtils.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { IsoformStack } from '../rpcTypes.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-// Expressed as a fraction of heightPx so the entire within-gene layout scales
-// linearly — main-thread compact scaling (multiplier × all y values) is exact.
-// The gap it produces ships on `IsoformStack.gapPx` so the trim spends the same
-// number rather than re-deriving it.
-const TRANSCRIPT_PADDING_RATIO = 0.2
 
 // Is this child of a gene one of the isoforms it is choosing among — i.e. a
 // transcript-shaped thing that takes a row of its own — rather than a
@@ -275,7 +273,7 @@ function buildIsoformStack({
   isoformSet,
   isoformCount,
   scores,
-  gapPx,
+  boxHeightPx,
   canonicalTag,
   collapsedIsoformCount,
 }: {
@@ -284,7 +282,7 @@ function buildIsoformStack({
   isoformSet: ReadonlySet<Feature>
   isoformCount: number
   scores: Scores
-  gapPx: number
+  boxHeightPx: number
   canonicalTag: string | undefined
   collapsedIsoformCount: number | undefined
 }): IsoformStack {
@@ -298,7 +296,7 @@ function buildIsoformStack({
     isoformCount,
     canonicalTag,
     collapsedIsoformCount,
-    gapPx,
+    boxHeightPx,
     children: drawn.map((child, ordinal) => {
       const layout = children[ordinal]!
       const isoform = isoformSet.has(child)
@@ -431,7 +429,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
             isoformSet,
             isoformCount: isoforms.length,
             scores,
-            gapPx: heightPx * TRANSCRIPT_PADDING_RATIO,
+            boxHeightPx: heightPx,
             canonicalTag: collapsed?.canonicalTag,
             collapsedIsoformCount:
               geneGlyphMode === 'longestCoding' && hasMultipleIsoforms

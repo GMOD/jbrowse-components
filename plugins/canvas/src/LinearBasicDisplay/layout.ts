@@ -19,6 +19,11 @@ import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
 // read the `.consts.generated.ts` directly rather than through the pass barrel,
 // and for the same reason; see the paragraph there.
 import {
+  applyIsoformGapFloor,
+  isoformGapSpreadPx,
+  planIsoformGapFloor,
+} from './isoformGapFloor.ts'
+import {
   applyIsoformTrim,
   moreIsoformsLabel,
   planIsoformTrims,
@@ -604,6 +609,11 @@ function layoutRefGroups(
     }
     const { layoutMap, layoutHeights, droppedLabelIds, trimPlan } =
       packPreparedRef(prep, inputs, metrics, prevYByFeatureId)
+    const gapSpreads = planIsoformGapFloor(
+      prep.stacks,
+      trimPlan.trims,
+      metrics.heightMultiplier,
+    )
     const densityFadeIds = pileupFadeIds(
       prep.features,
       layoutMap,
@@ -620,6 +630,11 @@ function layoutRefGroups(
       // `applyIsoformTrim`).
       applyIsoformTrim(cloned, trimPlan)
       applyHeightScale(cloned, metrics.heightMultiplier, metrics.labelFontPx)
+      // After the scale, because the pixel it promises is a DRAWN one, and the
+      // packer has already reserved the same spread through
+      // `isoformGapSpreadPx` — the two read one formula so the row a gene is
+      // given is the row it fills.
+      applyIsoformGapFloor(cloned, gapSpreads)
       applyLayoutToRegion(
         cloned,
         layoutMap,
@@ -1441,9 +1456,11 @@ function decideLabelReservations(
     // A trimmed gene is shorter, narrower, and carries a badge after its name —
     // all three priced at the count being probed, so the stack the solve
     // measures is the stack the commit draws.
-    const bodyHeightPx = trim
-      ? trim.heightPx * heightMultiplier + trim.labelRows * labelFontPx
-      : geom.bodyHeightPx
+    const bodyHeightPx =
+      (trim
+        ? trim.heightPx * heightMultiplier + trim.labelRows * labelFontPx
+        : geom.bodyHeightPx) +
+      isoformGapSpreadPx(geom.stack, heightMultiplier, trim)
     const startBp = trim ? trim.startBp : geom.startBp
     const endBp = trim ? trim.endBp : geom.endBp
     const badge = trimPlan.badges.get(id)
@@ -1653,11 +1670,18 @@ function packPreparedRef(
       geom,
       bpPerPx,
     )
-    const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
-    const rightPx = Math.max(
-      ext.layoutEndBp / bpPerPx + arrowRight,
-      leftPx + MIN_RECT_WIDTH_PX,
+    // Through `renderedSpanPx`, the same widening the density collapse measures
+    // with, so the two agree about where a sub-pixel mark sits. The anchor is
+    // what differs: a zero-length span is centered on its coordinate, and
+    // growing it off its start edge here put an unlabeled insertion a pixel
+    // right of where it paints — enough to read as clear of the feature on its
+    // left and then pack into it.
+    const [spanLeftPx, spanRightPx] = renderedSpanPx(
+      { startBp: ext.layoutStartBp, endBp: ext.layoutEndBp },
+      bpPerPx,
     )
+    const leftPx = spanLeftPx - arrowLeft
+    const rightPx = spanRightPx + arrowRight
     // A null top means the stack passed GranularRectLayout's own row limit — its
     // `maxHeight` option, which we leave at the 10000px default, NOT the
     // display's `maxHeight` config slot (that clamps the reported content height,

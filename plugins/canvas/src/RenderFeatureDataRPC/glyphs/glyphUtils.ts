@@ -64,6 +64,20 @@ export const ROW_PADDING: Record<DisplayMode, number> = {
   collapsed: 5,
 }
 
+// Gap between two stacked transcripts of one gene, as a fraction of the gene's
+// own box height, so the entire within-gene layout scales linearly — the
+// main-thread compact scale (multiplier × all y values) is then exact.
+export const TRANSCRIPT_PADDING_RATIO = 0.2
+
+// The gap the worker spent inside one gene, from the box height its stack ships.
+// The trim closes a dropped isoform's hole with this, and the gap floor measures
+// against it (isoformGapFloor.ts) — both re-derived from `boxHeightPx` rather
+// than shipped beside it, because a gap alone cannot answer what the floor asks:
+// how tall the boxes either side of it DRAW.
+export function isoformGapPx(stack: { boxHeightPx: number }) {
+  return stack.boxHeightPx * TRANSCRIPT_PADDING_RATIO
+}
+
 // Resolved label font size (px) for a display mode. Single source used by the
 // main-thread row reservation (layout.ts), label positioning, and the DOM/SVG
 // renderers so the reserved height, the name→description gap, and the drawn

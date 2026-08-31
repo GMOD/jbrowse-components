@@ -355,10 +355,8 @@ export interface IsoformStackChild {
 }
 
 // What a gene's stack costs and what it is made of, so the fit ladder can price
-// the gene at any isoform count without re-running the worker's layout. The
-// gap after each child is `heightPx × TRANSCRIPT_PADDING_RATIO` of the GENE's
-// own height, which is `gapPx` here rather than a ratio the main thread would
-// have to re-derive.
+// the gene at any isoform count without re-running the worker's layout. The gap
+// after each child is `isoformGapPx` of `boxHeightPx` below.
 export interface IsoformStack {
   // every isoform the gene HAS, whatever was emitted — a `longestCoding` gene
   // ships one child and counts them all here, so the badge reads the same way
@@ -372,7 +370,12 @@ export interface IsoformStack {
   // only thing that says what it was expanded FROM, which is the count its
   // "show fewer" badge offers to go back to.
   collapsedIsoformCount?: number
-  gapPx: number
+  // The gene's own resolved box height, which the gap between two of its rows is
+  // a fraction of (`isoformGapPx`). The box rather than the gap, because the gap
+  // alone cannot answer what the main thread's minimum-gap floor asks — what
+  // makes two rows touch is how tall the boxes either side of it DRAW, which the
+  // renderer's snapping decides from this (`isoformGapFloor.ts`).
+  boxHeightPx: number
   children: IsoformStackChild[]
 }
 

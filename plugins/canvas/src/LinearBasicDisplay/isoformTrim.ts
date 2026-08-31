@@ -1,4 +1,5 @@
 import { createMoreIsoformsLabel } from '../RenderFeatureDataRPC/floatingLabels.ts'
+import { isoformGapPx } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 import type {
@@ -39,6 +40,7 @@ export function trimIsoformStack(
   stack: IsoformStack,
   maxIsoforms: number,
 ): IsoformTrim {
+  const gapPx = isoformGapPx(stack)
   const keptOrdinals = new Set<number>()
   const shiftPxByOrdinal = new Map<number, number>()
   const shiftLabelRowsByOrdinal = new Map<number, number>()
@@ -56,7 +58,7 @@ export function trimIsoformStack(
       continue
     }
     if (!empty) {
-      cursorPx += stack.gapPx
+      cursorPx += gapPx
     }
     empty = false
     keptOrdinals.add(child.ordinal)
