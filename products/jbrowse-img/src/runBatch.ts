@@ -89,7 +89,7 @@ export async function runBatch(opts: BatchOpts) {
   const { outDir, flank = 500, limit, format = 'png', dryRun } = opts
   // A batch draws the view its junction file describes, so a flag that FIXES the
   // view cannot also be honored — `renderBreakpoint` prefers a spec over the
-  // per-record panels, and `addInitView` adopts a session's view of the same
+  // per-record panels, and `addLaunchView` adopts a session's view of the same
   // type. Refused rather than ignored, because the failure is silent and looks
   // like success: N identical images under N filenames each naming a different
   // junction, and a `wrote N/N` to finish.

@@ -1,7 +1,7 @@
 import {
   breakpointInit,
-  breakpointInitFromSpec,
   breakpointLocs,
+  breakpointPanelsFromSpec,
   breakpointTracks,
 } from './breakpointInit.ts'
 
@@ -151,26 +151,35 @@ describe('breakpointInit', () => {
   })
 })
 
-describe('breakpointInitFromSpec', () => {
-  it('takes the init array as the panels', () => {
-    const init = [
-      { assembly: 'hg38', loc: 'chr1:1-2', tracks: ['t'] },
-      { assembly: 'hg38', loc: 'chr5:1-2', tracks: ['t'] },
-    ]
-    expect(breakpointInitFromSpec({ init })).toEqual(init)
+describe('breakpointPanelsFromSpec', () => {
+  const panels = [
+    { assembly: 'hg38', loc: 'chr1:1-2', tracks: ['t'] },
+    { assembly: 'hg38', loc: 'chr5:1-2', tracks: ['t'] },
+  ]
+
+  it('takes the views array as the panels', () => {
+    expect(breakpointPanelsFromSpec({ views: panels })).toEqual(panels)
   })
 
-  it('refuses a spec whose init is not an array', () => {
-    // The shared initFromSpec would hand `{init: {...}}` over and the view would
-    // read it as no panels, rendering empty instead of failing.
-    expect(() => breakpointInitFromSpec({ init: { loc: 'chr1:1-2' } })).toThrow(
-      /needs an "init" array/,
-    )
+  // a --spec is hand-written JSON with no compiler behind it, and v4 spelled
+  // the same array as a bare `init`
+  it('still takes the v4 init array', () => {
+    expect(breakpointPanelsFromSpec({ init: panels })).toEqual(panels)
+  })
+
+  it('refuses a spec whose panels are not an array', () => {
+    // The shared viewSettingsFromSpec would hand `{views: {...}}` over and the
+    // view would read it as no panels, rendering empty instead of failing.
+    expect(() =>
+      breakpointPanelsFromSpec({ views: { loc: 'chr1:1-2' } }),
+    ).toThrow(/needs a "views" array/)
   })
 
   it('refuses a one-panel spec', () => {
     expect(() =>
-      breakpointInitFromSpec({ init: [{ assembly: 'hg38', loc: 'chr1:1-2' }] }),
+      breakpointPanelsFromSpec({
+        views: [{ assembly: 'hg38', loc: 'chr1:1-2' }],
+      }),
     ).toThrow(/at least two panels/)
   })
 })

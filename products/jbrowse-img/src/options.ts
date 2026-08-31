@@ -550,7 +550,7 @@ export const batchOptionDefs: OptionDef[] = [
 // REFUSED: `--spec` and `--session` FIX the view, and in a batch that is N
 // identical images under N filenames each naming a different junction —
 // `renderBreakpoint` prefers a spec over the per-record panels, and
-// `addInitView` adopts a session's view of the same type. Silent, and wrong in
+// `addLaunchView` adopts a session's view of the same type. Silent, and wrong in
 // the direction that looks like it worked.
 export const batchDroppedOptions = ['out', 'loc']
 export const batchRefusedOptions = ['spec', 'session']

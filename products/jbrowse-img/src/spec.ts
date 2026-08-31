@@ -7,8 +7,8 @@ import type { ViewMode } from './modes.ts'
 
 // A parsed --spec view object: the same shape as a web session-spec view (see
 // urlparams.md). `type` selects the render mode; the remaining fields ARE the
-// view's `init` snapshot (sub-views + level-indexed tracks for comparative
-// views), so they pass straight to addInitView.
+// view's settings (sub-views + level-indexed tracks for comparative views), so
+// they pass straight to addLaunchView.
 export interface ViewSpec {
   type: string
   [key: string]: unknown
@@ -49,8 +49,9 @@ export function specMode(spec: ViewSpec): ViewMode {
   return mode
 }
 
-// The view-init snapshot a comparative renderer feeds to addInitView: the spec
-// minus its `type` discriminator.
-export function initFromSpec({ type, ...init }: ViewSpec) {
-  return init
+// The view snapshot a comparative renderer feeds to addLaunchView: the spec
+// minus its `type` discriminator. Every setting is already written on the view
+// object, which is the one shape a view takes.
+export function viewSettingsFromSpec({ type, ...settings }: ViewSpec) {
+  return settings
 }

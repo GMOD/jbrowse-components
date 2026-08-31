@@ -4,19 +4,17 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg19",
-          "tracks": [
-            {
-              "trackId": "ngmlr_cov",
-              "height": 275,
-              "resolution": 25,
-              "autoscale": "localsd",
-              "defaultRendering": "scatter",
-              "displayCrossHatches": true
-            }
-          ]
-        }
+        "assembly": "hg19",
+        "tracks": [
+          {
+            "trackId": "ngmlr_cov",
+            "height": 275,
+            "resolution": 25,
+            "autoscale": "localsd",
+            "defaultRendering": "scatter",
+            "displayCrossHatches": true
+          }
+        ]
       }
     ]
   }

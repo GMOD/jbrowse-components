@@ -1119,8 +1119,8 @@ the one those ids come from — `data/config.json` here, which defines hg19 and
 the `ngmlr_cov` coverage track that `data/skbr3/session.json` opens.
 
 `data/skbr3/session.json` is also worth reading as the short way to write one by
-hand. A view says where to go and what to open with an `init` block, and each
-track entry carries its own display settings inline:
+hand. A view says where to go and what to open with settings written directly on
+it, and each track entry carries its own display settings inline:
 
 ```json
 {
@@ -1129,16 +1129,14 @@ track entry carries its own display settings inline:
     "views": [
       {
         "type": "LinearGenomeView",
-        "init": {
-          "assembly": "hg19",
-          "tracks": [
-            {
-              "trackId": "ngmlr_cov",
-              "height": 275,
-              "defaultRendering": "scatter"
-            }
-          ]
-        }
+        "assembly": "hg19",
+        "tracks": [
+          {
+            "trackId": "ngmlr_cov",
+            "height": 275,
+            "defaultRendering": "scatter"
+          }
+        ]
       }
     ]
   }

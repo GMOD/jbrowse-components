@@ -21,13 +21,13 @@ import {
   configTrackCategory,
   resolveTrackId,
 } from './applyTrackOpts.ts'
-import { breakpointInit, breakpointInitFromSpec } from './breakpointInit.ts'
+import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
 import { dotplotInit, syntenyInit } from './comparativeInit.ts'
 import { subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
-import { initFromSpec, parseSpec, specMode } from './spec.ts'
+import { parseSpec, specMode, viewSettingsFromSpec } from './spec.ts'
 import { trackType } from './trackFields.ts'
 
 import type { ViewMode } from './modes.ts'
@@ -239,23 +239,23 @@ async function whenViewReady(view: InitView, session: RenderErrorSources) {
 }
 
 // Shared lifecycle for the self-initializing views (dotplot/synteny/circular):
-// add the view from its frozen `init` snapshot, size it, then wait for the init
-// autorun to clear `init` before renderToSvg rasterizes via the global node
-// canvas (setupEnv).
+// add the view from its settings, size it, then wait for the launch autorun to
+// consume them before renderToSvg rasterizes via the global node canvas
+// (setupEnv).
 //
-// `init` is the view's own init interface (DotplotViewInit and friends) or, on
-// the --spec path, the user's JSON — which is unvalidated by construction, so
-// that branch stays a loose record. Each CLI-built init goes through a typed
-// builder below, so a field the view no longer reads fails the build rather than
-// silently doing nothing.
-type SpecInit = Record<string, unknown>
+// The settings are the view's own launch interface (DotplotViewInit and
+// friends) or, on the --spec path, the user's JSON — which is unvalidated by
+// construction, so that branch stays a loose record. Each CLI-built one goes
+// through a typed builder below, so a field the view no longer reads fails the
+// build rather than silently doing nothing.
+type SpecSettings = Record<string, unknown>
 
 // The one gate between "I have a view" and "I can render it": size it, then
 // wait for any `init` blob to be consumed.
 //
 // It belongs to *holding* a view rather than to having just built one, which is
 // the distinction this used to get wrong. A view carries an `init` whether this
-// tool synthesized it from flags (addInitView below) or a `--session` /
+// tool synthesized it from flags (addLaunchView below) or a `--session` /
 // `--defaultSession` supplied one already carrying it — `init` is a persisted
 // prop on LinearGenomeView, DotplotView and LinearSyntenyView alike, applied by
 // the shared `installInitAutorun` state machine. Waiting only in the construct
@@ -288,22 +288,23 @@ function sessionViewType(session: Model['session']): string | undefined {
 // view from CLI flags and rendered that, so a saved synteny session exported a
 // view the user never arranged. `--spec` is the opposite case: it describes a
 // view to construct, so it wins over whatever the session holds.
-async function addInitView<T extends InitView>(
+async function addLaunchView<T extends InitView>(
   ctx: ModeContext,
   viewType: string,
-  init:
-    | SpecInit
+  settings:
+    | SpecSettings
     | DotplotViewInit
     | LinearSyntenyViewInit
     | CircularViewCommands
-    // BreakpointSplitView's own init is an ARRAY, one entry per stacked panel
-    | BreakpointSplitViewInitView[],
+    // one entry per stacked panel, which is what BreakpointSplitView's `views`
+    // takes as a recipe
+    | { views: BreakpointSplitViewInitView[] },
 ) {
   const { session } = ctx.model
   const existing =
     !ctx.spec && sessionViewType(session) === viewType
       ? session.views[0]
-      : session.addView(viewType, { init })
+      : session.addView(viewType, settings)
   return readyView(existing as T, ctx)
 }
 
@@ -431,22 +432,26 @@ const renderLinear: ModeRenderer = async ctx => {
 }
 
 const renderDotplot: ModeRenderer = async ctx => {
-  const init = ctx.spec
-    ? initFromSpec(ctx.spec)
+  const settings = ctx.spec
+    ? viewSettingsFromSpec(ctx.spec)
     : dotplotInit(ctx.data, ctx.opts)
-  const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
+  const view = await addLaunchView<DotplotViewModel>(
+    ctx,
+    'DotplotView',
+    settings,
+  )
   const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
   return svg
 }
 
 const renderSynteny: ModeRenderer = async ctx => {
-  const init = ctx.spec
-    ? initFromSpec(ctx.spec)
+  const settings = ctx.spec
+    ? viewSettingsFromSpec(ctx.spec)
     : syntenyInit(ctx.data, ctx.opts)
-  const view = await addInitView<LinearSyntenyViewModel>(
+  const view = await addLaunchView<LinearSyntenyViewModel>(
     ctx,
     'LinearSyntenyView',
-    init,
+    settings,
   )
   const svg = await renderSyntenyToSvg(view, {
     ...baseSvgOpts(ctx.opts),
@@ -497,8 +502,12 @@ function circularInit(ctx: ModeContext): CircularViewCommands {
 }
 
 const renderCircular: ModeRenderer = async ctx => {
-  const init = ctx.spec ? initFromSpec(ctx.spec) : circularInit(ctx)
-  const view = await addInitView<CircularViewModel>(ctx, 'CircularView', init)
+  const settings = ctx.spec ? viewSettingsFromSpec(ctx.spec) : circularInit(ctx)
+  const view = await addLaunchView<CircularViewModel>(
+    ctx,
+    'CircularView',
+    settings,
+  )
   const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
   return svg
 }
@@ -509,10 +518,10 @@ const renderCircular: ModeRenderer = async ctx => {
 // tracks on them: with no track there is nothing to connect and the export is a
 // stack of empty rulers.
 //
-// The view's `init` is an ARRAY (one entry per panel), which is why this does
-// not go through `initFromSpec` the way the single-init modes do — but it is the
-// same `init` state machine underneath, so `addInitView`/`readyView` wait on it
-// identically.
+// The view's panels are its `views`, one entry per panel, which is why this
+// does not go through `viewSettingsFromSpec` the way the single-blob modes do —
+// but it is the same launch state machine underneath, so
+// `addLaunchView`/`readyView` wait on it identically.
 const renderBreakpoint: ModeRenderer = async ctx => {
   const { data, opts, model } = ctx
   // trackId AND its modifiers: breakpointTracks builds a display snapshot from
@@ -531,17 +540,17 @@ const renderBreakpoint: ModeRenderer = async ctx => {
       }
     },
   )
-  const init = ctx.spec
-    ? breakpointInitFromSpec(ctx.spec)
+  const views = ctx.spec
+    ? breakpointPanelsFromSpec(ctx.spec)
     : breakpointInit(data, opts, showTracks)
-  const view = await addInitView<BreakpointViewModel>(
+  const view = await addLaunchView<BreakpointViewModel>(
     ctx,
     'BreakpointSplitView',
-    init,
+    { views },
   )
-  // A SECOND wait, because this view's `init` is consumed one level above the
-  // one that matters. Its autorun turns the panel array into sub-views and
-  // clears `init` in the same tick, so `readyView` is satisfied the moment the
+  // A SECOND wait, because this view's launch state is consumed one level above
+  // the one that matters. Its autorun turns the panel array into sub-views and
+  // clears it in the same tick, so `readyView` is satisfied the moment the
   // panels EXIST — while each sub-view still carries its own `init` holding the
   // loc and, decisively, the tracks. Rendering there produced two correctly
   // positioned, correctly labelled, completely empty panels: the exact

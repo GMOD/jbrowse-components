@@ -9,12 +9,12 @@
  */
 /**
  * A session may position its view either way: the old form spells out
- * `displayedRegions` (plus offsetPx/bpPerPx), the current one hands the view an
- * `init` blob and lets its autorun navigate. Only the first used to work here —
- * the LGV was the one view type this tool adopts from the session rather than
- * builds, and the wait for `init` lived in the construct path, so the
- * positioned-on-a-region check ran before navigation had happened and the
- * render failed with "has no view positioned on a region".
+ * `displayedRegions` (plus offsetPx/bpPerPx), the current one writes `assembly`
+ * and `loc` on the view and lets its launch autorun navigate. Only the first
+ * used to work here — the LGV was the one view type this tool adopts from the
+ * session rather than builds, and the wait for the launch state lived in the
+ * construct path, so the positioned-on-a-region check ran before navigation had
+ * happened and the render failed with "has no view positioned on a region".
  *
  * Both forms are rendered here against the same local volvox data so the pair
  * can't drift apart again.
@@ -69,13 +69,13 @@ const view = {
 // pixels look like.
 const opts = { config: configFile, assembly: 'volvox', width: 800 }
 
-test('renders a session whose view carries an init blob', async () => {
+test('renders a session whose view carries launch settings', async () => {
   const svg = await renderRegion({
     ...opts,
     noRasterize: true,
     session: writeSession({
-      name: 'init form',
-      views: [{ ...view, init: { assembly: 'volvox', loc: 'ctgA:1-4000' } }],
+      name: 'launch form',
+      views: [{ ...view, assembly: 'volvox', loc: 'ctgA:1-4000' }],
     }),
   })
   expect(svg).toContain('<svg')
@@ -83,12 +83,12 @@ test('renders a session whose view carries an init blob', async () => {
   expect(svg).toContain('ctgA')
 }, 60000)
 
-// What data/skbr3/session.json relies on: an init track entry carries its
-// display settings inline, and `showTrackGeneric` routes the ones that are
-// config slots onto the display config. Written on the display node of a
-// snapshot-form session these would be dropped in silence, so the two forms are
-// not interchangeable and this is the one that works.
-test('applies display settings written inline on an init track', async () => {
+// What data/skbr3/session.json relies on: a track recipe carries its display
+// settings inline, and `showTrackGeneric` routes the ones that are config slots
+// onto the display config. Written on the display node of a snapshot-form
+// session these would be dropped in silence, so the two forms are not
+// interchangeable and this is the one that works.
+test('applies display settings written inline on a track recipe', async () => {
   const renderAtHeight = (height: number) =>
     renderRegion({
       ...opts,
@@ -98,11 +98,9 @@ test('applies display settings written inline on an init track', async () => {
         views: [
           {
             ...view,
-            init: {
-              assembly: 'volvox',
-              loc: 'ctgA:1-4000',
-              tracks: [{ trackId: 'volvox_sv', height }],
-            },
+            assembly: 'volvox',
+            loc: 'ctgA:1-4000',
+            tracks: [{ trackId: 'volvox_sv', height }],
           },
         ],
       }),

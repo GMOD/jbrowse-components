@@ -5,7 +5,7 @@ import type { Config, OpenTrack, Opts } from './types.ts'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { BreakpointSplitViewInitView } from '@jbrowse/plugin-breakpoint-split-view'
 
-// The `init` array a BreakpointSplitView is opened with, built from CLI flags.
+// The `views` array a BreakpointSplitView is opened with, built from CLI flags.
 // Pure, and split out of renderRegion.ts for the reason comparativeInit.ts is:
 // that module imports the plugin renderToSvg chain, whose pure-ESM deps Jest's
 // CJS transform can't load, so the snapshot shape would be untestable there.
@@ -61,7 +61,7 @@ export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
  * **The `--track` MODIFIERS apply here too**, which they did not until this
  * function stopped returning bare trackIds. Every other mode routes them
  * through `applyDisplayOpts`, which calls `view.showTrack` with the built
- * snapshot; a breakpoint panel opens its tracks from its own `init` instead, so
+ * snapshot; a breakpoint panel opens its tracks from its own recipe instead, so
  * that call site does not exist and `height:240 force:true` was parsed,
  * validated, warned about if misspelled — and then dropped. Silently, and in
  * the direction that looks like the setting not working: the two jbrowse-img
@@ -102,29 +102,32 @@ export function breakpointTracks(
 /**
  * The panel array a `--spec` supplies directly.
  *
- * BreakpointSplitView is the one view type here whose `init` is an ARRAY — one
- * entry per panel — so it cannot go through the shared `initFromSpec`, which
- * strips the `type` discriminator and hands the REST of the object over as the
- * init. For this view that would nest the array one level too deep
- * (`{init: {init: [...]}}`), which the init autorun reads as "no panels" and
- * renders as an empty view rather than as an error.
+ * The panels are the view's `views`, one entry per stacked panel. v4 spelled
+ * the same array as a bare `init`, which this still accepts: a spec is
+ * hand-written JSON with no compiler behind it, and the two spellings mean the
+ * same picture.
+ *
+ * Not the shared `viewSettingsFromSpec`, which hands the rest of the object
+ * over whole — for this view that would nest the array a level too deep
+ * (`{views: {views: [...]}}`), which the launch autorun reads as "no panels"
+ * and renders as an empty view rather than as an error.
  */
-export function breakpointInitFromSpec(
+export function breakpointPanelsFromSpec(
   spec: Record<string, unknown>,
 ): BreakpointSplitViewInitView[] {
-  const { init } = spec
-  if (!Array.isArray(init)) {
+  const panels = spec.views ?? spec.init
+  if (!Array.isArray(panels)) {
     throw new Error(
-      'a BreakpointSplitView --spec needs an "init" array, one entry per panel: ' +
-        '{"type":"BreakpointSplitView","init":[{"assembly":"hg38","loc":"chr1:1-2","tracks":["t"]}, ...]}',
+      'a BreakpointSplitView --spec needs a "views" array, one entry per panel: ' +
+        '{"type":"BreakpointSplitView","views":[{"assembly":"hg38","loc":"chr1:1-2","tracks":["t"]}, ...]}',
     )
   }
-  if (init.length < 2) {
+  if (panels.length < 2) {
     throw new Error(
-      `a BreakpointSplitView --spec needs at least two panels in "init" (got ${init.length})`,
+      `a BreakpointSplitView --spec needs at least two panels in "views" (got ${panels.length})`,
     )
   }
-  return init as BreakpointSplitViewInitView[]
+  return panels as BreakpointSplitViewInitView[]
 }
 
 export function breakpointInit(
