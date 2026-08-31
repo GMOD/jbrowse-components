@@ -27,7 +27,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>view: pluginManager.getViewType('CircularView')! .stateModel as…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>view: pluginManager.getViewType('CircularView')!&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;.stateModel as CircularViewStateModel</code></pre></dialog></span> |  | JBrowseReactCircularGenomeViewSessionModel |
+| <span id="property-view">**view**</span><br><code>view: pluginManager.getViewType('CircularView').stateModel</code> |  | JBrowseReactCircularGenomeViewSessionModel |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseSessionModel](../basesessionmodel#property-id) |
 | <span id="property-name">**name**</span><br><code>name: types.string</code> |  | [BaseSessionModel](../basesessionmodel#property-name) |
 | <span id="property-focusedviewid">**focusedViewId**</span><br><code>focusedViewId: types.maybe(types.string)</code> | <span data-pagefind-ignore>used to keep track of which view is in focus</span> | [BaseSessionModel](../basesessionmodel#property-focusedviewid) |

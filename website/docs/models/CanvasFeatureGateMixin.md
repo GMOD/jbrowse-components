@@ -10,10 +10,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
 
 The density axis of the region-too-large gate, composed after
-`MultiRegionDisplayMixin` by the canvas feature displays: how the
-features-per-pixel number is measured and the worker budget for it. The byte
-axis is entirely `RegionTooLargeMixin`'s. A display opts in by composing this
-and calling `commitGateMeasurements` from its fetch's `onComplete`.
+`MultiRegionDisplayMixin`: how the features-per-pixel number is measured and the
+worker budget for it. The byte axis is entirely `RegionTooLargeMixin`'s. A
+display opts in by composing this and calling `commitGateMeasurements` from its
+fetch's `onComplete`.
+
+One display composes it — `LinearBasicDisplay`'s base model. The multi-row
+display has no density axis to gate on: it paints one row-tall block per feature
+at any zoom, so features-per-pixel is not a legibility cliff there the way a
+stacked glyph pack is (see MultiRowGetFeaturesRPC/rpcTypes.ts). It sits in
+`shared/` because `screenDensity` and the region types it reads are the canvas
+plugin's rather than one display's, not because two displays compose it.
 
 ## Volatiles
 
