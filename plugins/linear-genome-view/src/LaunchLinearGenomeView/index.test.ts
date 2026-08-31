@@ -7,10 +7,7 @@ import type { LaunchLinearGenomeViewArgs } from './index.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // The real extension point on a real plugin manager, against a session stubbed
-// down to the one action a launch calls. The plugin itself is registered
-// because the launcher reads the view's declared property names off the
-// registered state model — that IS the list of settable props now, so a manager
-// without the view type has nothing to sort the spec against.
+// down to the one action a launch calls.
 function setup() {
   const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
   pluginManager.createPluggableElements()
@@ -24,7 +21,10 @@ function setup() {
   }
 }
 
-test('resolution keys go to init, plain props to the snapshot, id stays pinned', async () => {
+// The launcher sorts nothing: the view's own preProcessSnapshot partitions the
+// snapshot, which is what makes a spec, a defaultSession view and an addView
+// literal one shape. A launcher that partitioned here would decide it twice.
+test('the spec reaches addView flat, id and all', async () => {
   const { pluginManager, session, addView } = setup()
 
   await pluginManager.evaluateAsyncExtensionPointStrict(
@@ -41,12 +41,10 @@ test('resolution keys go to init, plain props to the snapshot, id stays pinned',
 
   expect(addView).toHaveBeenCalledWith('LinearGenomeView', {
     id: 'pinned-view',
+    assembly: 'volvox',
+    loc: 'ctgA:1-100',
+    tracks: ['gff3tabix_genes'],
     colorByCDS: true,
-    init: {
-      assembly: 'volvox',
-      loc: 'ctgA:1-100',
-      tracks: ['gff3tabix_genes'],
-    },
   })
 })
 
@@ -62,7 +60,9 @@ test('a spec with no assembly throws instead of opening an empty view', async ()
   expect(addView).not.toHaveBeenCalled()
 })
 
-test('a typo warns rather than vanishing into a dropped snapshot key', async () => {
+// A typo is the view's to report, once, when it attaches — the launcher forwards
+// it rather than warning here, which would say the same thing a second time.
+test('a typo is forwarded rather than dropped or reported twice', async () => {
   const { pluginManager, session, addView } = setup()
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
@@ -78,13 +78,10 @@ test('a typo warns rather than vanishing into a dropped snapshot key', async () 
     } as LaunchLinearGenomeViewArgs,
   )
 
-  expect(warn).toHaveBeenCalledWith(
-    expect.stringContaining('ignored unknown key(s): tracksList'),
-  )
-  // the rest of the spec still launches
   expect(addView).toHaveBeenCalledWith('LinearGenomeView', {
-    id: undefined,
-    init: { assembly: 'volvox' },
+    assembly: 'volvox',
+    tracksList: true,
   })
+  expect(warn).not.toHaveBeenCalled()
   warn.mockRestore()
 })
