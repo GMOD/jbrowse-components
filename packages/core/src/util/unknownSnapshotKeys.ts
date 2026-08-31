@@ -81,7 +81,8 @@ export function captureUnknownSnapshotKeys<M extends IAnyModelType>(
       },
     }))
     .postProcessSnapshot((snap: Record<string, unknown>) => {
-      const { [BUCKET]: _captured, ...rest } = snap
+      const rest = { ...snap }
+      delete rest[BUCKET]
       return rest
     }) as unknown as M
 }

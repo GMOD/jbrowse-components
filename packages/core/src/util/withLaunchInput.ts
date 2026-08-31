@@ -86,7 +86,7 @@ export function defineLaunchKeys<Commands>() {
     keys: Record<keyof Commands, LaunchKeySpec>,
     { passThrough = [] }: { passThrough?: readonly string[] } = {},
   ): LaunchKeyRegistration<Commands> => ({
-    keys: keys,
+    keys,
     passThrough,
   })
 }
