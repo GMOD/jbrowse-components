@@ -1,6 +1,11 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { doBeforeEach, doSetupForImportForm, setup } from './util.tsx'
+import {
+  doBeforeEach,
+  doSetupForImportForm,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 setup()
 
@@ -8,10 +13,14 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+// nothing here reaches a track: the form is about assemblies - see
+// volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_filtered_vcf'])
+
 const delay = { timeout: 20000 }
 
 test('nav to volvox2', async () => {
-  const { getInputValue, findByText } = await doSetupForImportForm()
+  const { getInputValue, findByText } = await doSetupForImportForm(config)
   fireEvent.mouseDown(await findByText('volvox'))
   fireEvent.click(await findByText('volvox2'))
   await waitFor(() => {
@@ -25,7 +34,7 @@ test('nav to volvox2', async () => {
 
 test('select volvox404', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
-  const { findByText } = await doSetupForImportForm()
+  const { findByText } = await doSetupForImportForm(config)
   fireEvent.mouseDown(await findByText('volvox'))
   fireEvent.click(await findByText('volvox404'))
   await findByText(/HTTP 404/)
@@ -37,7 +46,8 @@ test('select volvox404', async () => {
 // misc. Nothing clears it by hand: the state is tagged with its assembly and
 // read back only on a match, so this is the tag doing its job.
 test('typing a location then switching assembly drops what was typed', async () => {
-  const { input, getInputValue, findByText } = await doSetupForImportForm()
+  const { input, getInputValue, findByText } =
+    await doSetupForImportForm(config)
   fireEvent.change(input, { target: { value: 'ctgA:100-200' } })
   await waitFor(() => {
     expect(getInputValue()).toBe('ctgA:100-200')
@@ -50,7 +60,7 @@ test('typing a location then switching assembly drops what was typed', async () 
 }, 30000)
 
 test('select misc', async () => {
-  const { getInputValue, findByText } = await doSetupForImportForm()
+  const { getInputValue, findByText } = await doSetupForImportForm(config)
   fireEvent.mouseDown(await findByText('volvox'))
   fireEvent.click(await findByText('misc'))
   await waitFor(() => {

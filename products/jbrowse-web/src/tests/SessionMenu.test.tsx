@@ -2,7 +2,11 @@ import '@testing-library/jest-dom'
 
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach } from './util.tsx'
+import { createView, doBeforeEach, volvoxConfigWithTracks } from './util.tsx'
+
+// nothing here opens or reads a track: these are File-menu items - see
+// volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_filtered_vcf'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -14,7 +18,7 @@ afterEach(() => {
 })
 
 test('duplicate session creates a new session with different id', async () => {
-  const { rootModel, findByText } = await createView()
+  const { rootModel, findByText } = await createView(config)
   const originalSessionId = rootModel.session!.id
 
   // Open File menu and click Duplicate session
@@ -27,7 +31,7 @@ test('duplicate session creates a new session with different id', async () => {
 }, 30000)
 
 test('recent sessions shows no autosaves found when empty', async () => {
-  const { findByText } = await createView()
+  const { findByText } = await createView(config)
 
   // Open File menu, then Recent sessions submenu
   fireEvent.click(await findByText('File'))
@@ -38,7 +42,7 @@ test('recent sessions shows no autosaves found when empty', async () => {
 }, 30000)
 
 test('recent sessions more opens session manager widget', async () => {
-  const { rootModel, findByText } = await createView()
+  const { rootModel, findByText } = await createView(config)
 
   // Mock some saved session metadata so "More..." appears
   // @ts-expect-error
@@ -67,7 +71,7 @@ test('recent sessions more opens session manager widget', async () => {
 }, 30000)
 
 test('import session menu item opens widget', async () => {
-  const { rootModel, findByText } = await createView()
+  const { rootModel, findByText } = await createView(config)
 
   // Open File menu and click Import session
   fireEvent.click(await findByText('File'))

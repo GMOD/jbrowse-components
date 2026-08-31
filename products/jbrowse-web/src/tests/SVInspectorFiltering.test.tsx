@@ -2,7 +2,13 @@ import '@testing-library/jest-dom'
 
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, mockConsoleWarn, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  mockConsoleWarn,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 import type { SvInspectorViewModel } from '@jbrowse/plugin-sv-inspector'
 
@@ -12,12 +18,16 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+// the SV inspector opens its own spreadsheet from a URL and reaches no track
+// in the config - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_filtered_vcf'])
+
 const delay = { timeout: 40000 }
 
 test('opens SVInspector and tests data grid filtering functionality', async () => {
   await mockConsoleWarn(async () => {
     const { session, findByTestId, getByTestId, findByText } =
-      await createView()
+      await createView(config)
 
     fireEvent.click(await findByText('File'))
     fireEvent.click(await findByText('Add'))
@@ -94,7 +104,7 @@ test('SVInspector quick-filter input propagates to visibleRows/features', async 
       getByTestId,
       findByText,
       findByPlaceholderText,
-    } = await createView()
+    } = await createView(config)
 
     fireEvent.click(await findByText('File'))
     fireEvent.click(await findByText('Add'))
@@ -148,7 +158,7 @@ test('SVInspector quick-filter input propagates to visibleRows/features', async 
 test('SVInspector filtering updates circular view accordingly', async () => {
   await mockConsoleWarn(async () => {
     const { session, findByTestId, getByTestId, findByText } =
-      await createView()
+      await createView(config)
 
     fireEvent.click(await findByText('File'))
     fireEvent.click(await findByText('Add'))

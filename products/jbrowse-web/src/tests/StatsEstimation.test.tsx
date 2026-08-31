@@ -9,6 +9,7 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
@@ -16,6 +17,9 @@ setup()
 beforeEach(() => {
   doBeforeEach()
 })
+
+// the two tracks this file gates - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_cram_pileup', 'variant_colors'])
 
 const delay = { timeout: 20000 }
 const o = [{}, delay]
@@ -36,7 +40,7 @@ const o = [{}, delay]
 // display that kept it.
 test('test stats estimation pileup, zooming past the floor keeps the banner', async () => {
   const { view, findAllByText, findByTestId, queryAllByText } =
-    await createView()
+    await createView(config)
   view.setNewView(30, 183)
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
   await findAllByText(/Requested too much data/, ...o)
@@ -67,7 +71,7 @@ test('test stats estimation pileup, zooming past the floor keeps the banner', as
 }, 60000)
 
 test('test stats estimation pileup, force load to see', async () => {
-  const { view, findAllByText, findByTestId } = await createView()
+  const { view, findAllByText, findByTestId } = await createView(config)
   view.setNewView(25.07852564102564, 283)
 
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
@@ -82,7 +86,7 @@ test('test stats estimation pileup, force load to see', async () => {
 }, 60000)
 
 test('test stats estimation on vcf track, zoom in to see', async () => {
-  const { view, findAllByText, findByTestId } = await createView()
+  const { view, findAllByText, findByTestId } = await createView(config)
   view.setNewView(34, 5)
   fireEvent.click(await findByTestId(hts('variant_colors'), ...o))
   await findAllByText(/Zoom in to see features/, ...o)
@@ -116,7 +120,7 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
-  const { view, findAllByText, findByTestId } = await createView()
+  const { view, findAllByText, findByTestId } = await createView(config)
   view.setNewView(34, 5)
   await findAllByText('ctgA', ...o)
   fireEvent.click(await findByTestId(hts('variant_colors'), ...o))

@@ -13,6 +13,7 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
@@ -21,11 +22,16 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+// The two tracks this file opens out of the track list. `volvox_refseq` is the
+// assembly's own sequence track and survives any trim. Two tests below
+// deliberately keep the whole config, and say why - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['bigbed_genes', 'volvox_filtered_vcf'])
+
 const delay = { timeout: 10000 }
 const opts = [{}, delay]
 
 test('access about menu', async () => {
-  const { findByText, findAllByText } = await createView()
+  const { findByText, findAllByText } = await createView(config)
 
   fireEvent.click(await findByText('Help', ...opts))
   fireEvent.click(await findByText('About', ...opts))
@@ -38,7 +44,7 @@ test('access about menu', async () => {
 }, 30000)
 
 test('click and drag to move sideways', async () => {
-  const { view, findByTestId, findAllByText } = await createView()
+  const { view, findByTestId, findAllByText } = await createView(config)
   await findAllByText('ctgA', ...opts)
   const start = view.offsetPx
   const track = await findByTestId('tracksContainer', ...opts)
@@ -51,7 +57,7 @@ test('click and drag to move sideways', async () => {
 }, 30000)
 
 test('click and drag to rubberband', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   const track = await findByTestId('rubberband_controls', ...opts)
   // `bpPerPx` is derived from the stored window (windowWidthBp / width), so it
   // carries a ULP of division residue and is not the literal the zoom was asked
@@ -68,7 +74,7 @@ test('click and drag to rubberband', async () => {
 }, 30000)
 
 test('click and drag rubberband, click get sequence to open sequenceDialog', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   const rubberband = await findByTestId('rubberband_controls', ...opts)
   expect(view.bpPerPx).toBeCloseTo(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
@@ -79,6 +85,8 @@ test('click and drag rubberband, click get sequence to open sequenceDialog', asy
   expect(view.rightOffset).toBeTruthy()
 }, 30000)
 
+// On the whole config, along with the selector test below: both are about the
+// track list itself rather than about a track.
 test('click and drag to reorder tracks', async () => {
   const { view, findByTestId } = await createView()
   fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
@@ -112,7 +120,7 @@ test('click and drag to reorder tracks', async () => {
 }, 30000)
 
 test('click and zoom in and back out', async () => {
-  const { view, findByTestId, findAllByText } = await createView()
+  const { view, findByTestId, findAllByText } = await createView(config)
   await findAllByText('ctgA', ...opts)
 
   // mock requestAnimationFrame and performance.now so the spring
@@ -158,7 +166,7 @@ test('opens track selector', async () => {
 }, 30000)
 
 test('opens reference sequence track and expects zoom in message', async () => {
-  const { view, findByTestId, findAllByText } = await createView()
+  const { view, findByTestId, findAllByText } = await createView(config)
   fireEvent.click(await findByTestId(hts('volvox_refseq'), ...opts))
   view.setNewView(20, 0)
   // `findDisplayPainted`, not a bare `findByTestId`: zoomed past base resolution
@@ -174,7 +182,7 @@ test('opens reference sequence track and expects zoom in message', async () => {
 }, 30000)
 
 test('click to display center line with correct value', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
 
   // opens the view menu and selects show center line
@@ -188,7 +196,7 @@ test('click to display center line with correct value', async () => {
 
 test('test choose option from dropdown refName autocomplete', async () => {
   const { findAllByText, findByPlaceholderText, getByPlaceholderText } =
-    await createView()
+    await createView(config)
 
   await findAllByText('ctgA', ...opts)
   const input = await findByPlaceholderText('Search for location')

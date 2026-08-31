@@ -19,6 +19,7 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -29,6 +30,12 @@ jest.mock('../components/buildShareUrl.ts', () => ({
 
 setup()
 
+// the two tracks this file opens - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks([
+  'volvox_filtered_vcf_assembly_alias',
+  'volvox-long-reads-cram',
+])
+
 const delay = { timeout: 30000 }
 
 beforeEach(() => {
@@ -36,7 +43,7 @@ beforeEach(() => {
 })
 
 test('renders with an empty config', async () => {
-  const { findByText } = await createView()
+  const { findByText } = await createView(config)
   await findByText('Help', {}, delay)
 }, 20000)
 
@@ -67,7 +74,7 @@ test('toplevel configuration', () => {
 })
 
 test('assembly aliases', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(0.05, 5000)
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
@@ -80,7 +87,7 @@ test('test sharing', async () => {
   jest.mocked(buildShareUrl).mockResolvedValue({
     url: 'http://localhost/?session=share-abc&password=123',
   })
-  const { findByLabelText, findByText } = await createView()
+  const { findByLabelText, findByText } = await createView(config)
   fireEvent.click(await findByText('Share'))
   expect(
     ((await findByLabelText('URL', {}, delay)) as HTMLInputElement).value,
@@ -88,7 +95,7 @@ test('test sharing', async () => {
 }, 30000)
 
 test('looks at about this track dialog', async () => {
-  const { findByTestId, findAllByText, findByText } = await createView()
+  const { findByTestId, findAllByText, findByText } = await createView(config)
 
   // load track
   fireEvent.click(await findByTestId(hts('volvox-long-reads-cram'), {}, delay))
