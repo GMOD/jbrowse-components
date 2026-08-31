@@ -2,7 +2,6 @@ import { alpha } from '@jbrowse/core/ui/palette'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { Theme } from '@mui/material'
 
 // A MARK is one short tick at the top of the band, standing for an alignment
 // the level cannot draw a ribbon for. The STRIP is the row of them across the
@@ -73,24 +72,39 @@ const MAX_LABEL_ROWS = 3
 
 // The marks are the BACKGROUND and the labels are the finding, so the marks are
 // washed out to roughly the weight of the ribbons they sit over. Alpha rather
-// than a lighter grey, so the strip recedes against either theme's ground.
+// than a lighter grey, so the strip recedes into the band.
 //
 // Exported because a lane painting its marks by contig
 // (`offscreenMateMarkColorFor`) has to reach the same weight through a different
 // palette.
 export const MARK_ALPHA = 0.35
 
+// THE BAND IS WHITE, WHATEVER THE PAGE THEME IS. Both synteny renderers clear it
+// so — `beginFrame(1, 1, 1, 1)` on the GPU, `#fff` in Canvas2D — because the
+// ribbons' own shading blends toward it (`fillShade` and its Canvas2D twin
+// `resolveInstanceFill`). So the ink drawn on it is a constant of the picture
+// rather than a property of the surrounding page, exactly as a location marker's
+// is (`MARKER_COLOR`, a packed opaque black).
+//
+// Read off `theme.palette.text.secondary` instead, as this was, a dark theme
+// resolves it to `rgba(255,255,255,0.7)`: the marks became white at 0.35 alpha on
+// white and disappeared entirely, and the labels became near-white text with a
+// `#121212` halo over a white band. These are MUI's own LIGHT-mode values, so
+// nothing changes in the theme this was ever right in.
+const MARK_INK = 'rgba(0, 0, 0, 0.6)'
+const BAND_GROUND = '#fff'
+
 // One source for both surfaces: the screen overlay and the SVG export run the
 // same draw, and a figure whose marks are a different grey from the ones the
 // user turned on is a difference nothing would report.
-export function offscreenMateColors(theme: Theme) {
+export function offscreenMateColors() {
   return {
-    markColor: alpha(theme.palette.text.secondary, MARK_ALPHA),
+    markColor: alpha(MARK_INK, MARK_ALPHA),
     // full strength, unlike the marks: the label is the actionable half, it is
     // haloed rather than tinted, and there is one of them per stretch
-    labelColor: theme.palette.text.secondary,
+    labelColor: MARK_INK,
     // the band's own ground, so a label over a ribbon stays readable
-    haloColor: theme.palette.background.paper,
+    haloColor: BAND_GROUND,
   }
 }
 

@@ -1,5 +1,4 @@
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -54,7 +53,7 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
 }: {
   model: LinearSyntenyViewHelperModel
 }) {
-  const colors = offscreenMateColors(useTheme())
+  const colors = offscreenMateColors()
   const width = model.parentView.width
   const height = model.height
   // read here rather than inside the draw: this is an observer, so what the

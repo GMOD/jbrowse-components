@@ -1,5 +1,4 @@
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import { useTheme } from '@mui/material'
 
 import {
   drawOffscreenMates,
@@ -35,7 +34,6 @@ export default function SVGOffscreenMates({
   height: number
   opts?: PaintLayerOpts
 }) {
-  const theme = useTheme()
   const strips = offscreenMateStrips(level)
   // nothing to mark, so no layer at all: the raster branch would otherwise put
   // a full-band transparent PNG in every level of every export
@@ -48,7 +46,7 @@ export default function SVGOffscreenMates({
         drawOffscreenMates(ctx, strips, {
           width,
           height,
-          ...offscreenMateColors(theme),
+          ...offscreenMateColors(),
         })
       }}
     />

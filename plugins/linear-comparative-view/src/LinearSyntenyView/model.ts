@@ -370,38 +370,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The contigs this view has alignments to and cannot draw, largest first.
-       * A locus can be syntenic to a contig you did not stack, and a view
-       * showing no ribbon for it looks exactly like one where it is syntenic to
-       * nothing; the marks along the axis are what says so, and a mark's
-       * tooltip is where this contig's own number appears.
-       *
-       * Summed across levels rather than reported per level, because the answer
-       * a reader wants is about the view: a contig missing from two levels is
-       * one contig to go add. The case for the whole feature, with the numbers,
-       * is agent-docs/ideas/offscreen-synteny-mates.md.
-       */
-      get offscreenMateTally() {
-        const totals = new Map<string, number>()
-        for (const d of self.allSyntenyDisplays) {
-          // BOTH AXES. The second is empty without `bidirectionalFetch`, and
-          // with it the answer is about the view rather than about one row —
-          // "what am I not being shown" has the same answer whichever end of an
-          // alignment the file happened to anchor. Keyed by refName alone, so a
-          // contig name shared across the two assemblies merges into one entry.
-          for (const { refName, count } of [
-            ...d.offscreenMateTally,
-            ...d.targetOffscreenMateTally,
-          ]) {
-            totals.set(refName, (totals.get(refName) ?? 0) + count)
-          }
-        }
-        return [...totals]
-          .map(([refName, count]) => ({ refName, count }))
-          .sort((a, b) => b.count - a.count || (a.refName < b.refName ? -1 : 1))
-      },
-      /**
-       * #getter
        * Union across every loaded synteny display of which CIGAR indel ops are
        * actually drawn on screen. The floating legend lists an indel chip only
        * when a visible-width op of that kind is painted somewhere in the view.

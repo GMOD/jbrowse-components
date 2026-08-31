@@ -222,9 +222,9 @@ export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
  * row doesn't show.
  *
  * ONE ROW PER GENOME, which is why the old per-row compact checkboxes are gone:
- * `isViewCompact` IS the row's `scalebarOnly`, so the checkbox and that row's
- * own "Collapse to ruler" were two spellings of one toggle listed in two
- * submenus, under labels that shared nothing.
+ * a checkbox reading the row's `scalebarOnly` and that row's own "Collapse to
+ * ruler" were two spellings of one toggle listed in two submenus, under labels
+ * that shared nothing.
  */
 export function rowMenuItems(model: RowMenusModel): MenuItem[] {
   return rowLabels(model.views).map((label, idx) => ({

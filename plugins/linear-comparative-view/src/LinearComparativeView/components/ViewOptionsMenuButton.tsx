@@ -30,7 +30,7 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
         {
           label: 'Show...',
           icon: VisibilityIcon,
-          subMenu: [...model.showMenuItems(), ...searchBoxMenuItems(prefs)],
+          subMenu: searchBoxMenuItems(prefs),
         },
       ]}
     >

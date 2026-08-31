@@ -324,12 +324,6 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       */
-      isViewCompact(idx: number) {
-        return self.views[idx]?.scalebarOnly ?? false
-      },
-      /**
-       * #method
        * The level that owns a given track list. This view holds one track list
        * per synteny band rather than one of its own, so the track-selector and
        * add-track widgets target a level through here instead of referencing
@@ -660,15 +654,23 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Every row onto the rows' average bp/px, each staying where it is.
+       *
+       * `zoomTo` anchors at the row's centre — the same call `applySharedScale`
+       * below makes, and the same thing this used to spell as `pxToBp` at the
+       * midpoint, `setNewView`, and `centerAt` back onto that base. That
+       * spelling scrolled to the row's OLD pixel offset in between, which
+       * `centerAt` then undid; a row whose midpoint resolved to no refName
+       * (scrolled past its regions) kept it, and was left at the new scale on
+       * the old offset.
        */
       squareView() {
         const average = avg(self.views.map(v => v.bpPerPx))
         for (const view of self.views) {
-          const center = view.pxToBp(view.width / 2)
-          view.setNewView(average, view.offsetPx)
-          if (center.refName) {
-            view.centerAt(center.coord0, center.refName, center.index)
-          }
+          view.zoomTo(average)
+          // a discrete jump, so the coarse blocks flush rather than waiting out
+          // their debounce — `setNewView`/`centerAt` did this for us before
+          view.settleCoarseBlocks()
         }
       },
       /**
@@ -736,15 +738,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.views = cast([])
         self.levels = cast([])
         self.volatileError = undefined
-      },
-      /**
-       * #action
-       */
-      toggleCompactView(idx: number) {
-        const view = self.views[idx]
-        if (view) {
-          view.setScalebarOnly(!view.scalebarOnly)
-        }
       },
       /**
        * #action
@@ -835,14 +828,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        * offers, and a subclass fills them independently.
        */
       headerMenuItems(): MenuItem[] {
-        return []
-      },
-      /**
-       * #method
-       * items for the "Show..." submenu in the header. overridden by
-       * subclasses to add view-specific toggle options
-       */
-      showMenuItems(): MenuItem[] {
         return []
       },
     }))
