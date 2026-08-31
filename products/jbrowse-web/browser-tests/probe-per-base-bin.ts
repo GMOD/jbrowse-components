@@ -7,7 +7,7 @@
 // (agent-docs/measurements/per-base-wall-bin.json). The claim that buys it is
 // that nothing VISIBLE changes: `binBp <= bpPerPx / 2` while both backends floor
 // a per-base cell to 1 CSS px, so the surviving samples overlap rather than
-// gap. That is arithmetic, and `ideas/maf-subpixel-cells.md` is the in-tree
+// gap. That is arithmetic, and `reference/MAF_SUBPIXEL_CELLS.md` is the in-tree
 // argument for why a sub-pixel claim gets looked at instead of reasoned about.
 //
 // TWO ARMS, one build each. The bin has no runtime switch, so the `before` arm

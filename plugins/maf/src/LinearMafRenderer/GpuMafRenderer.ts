@@ -11,7 +11,6 @@ import {
   writeCoverageBandUniforms,
 } from '@jbrowse/render-core/coverageBand'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import { MIN_DRAWN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
@@ -191,31 +190,18 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     mafShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
-      // minCellDenomPx feeds only the shader's `extendToMinWidthX` X-axis floor;
-      // it never interacts with canvasHeight. Device px here gives a
-      // 1-device-px minimum cell width (0.5 CSS px at dpr 2).
-      //
-      // NOTE: GpuMultiRowRenderer draws the same shared `rowRect` module but
-      // feeds CSS px (scissorW) for a 1-CSS-px floor — it moved off pxW in
-      // e1c2585e4d to match its Canvas2D `Math.max(MIN_DRAWN_CELL_PX, ...)`.
-      // maf has no such Canvas2D floor (drawMafBlocks draws cells at natural
-      // sub-pixel width), so the two are not interchangeable and neither is
-      // obviously wrong. What differs is this uniform, not the constant: both
-      // widen to the shader's MIN_DRAWN_CELL_PX, in different units.
-      //
-      // Device px also means **this floor moves with the monitor** — 0.5 CSS px
-      // at dpr 2 — so MAF renders differently on a retina screen than on a plain
-      // one, and differently from its own Canvas2D fallback at either. That half
-      // is a defect rather than a preference. The other half, what the floor
-      // should be, is an aesthetic call about dense alignments that wants a
-      // capture and not an argument; `agent-docs/ideas/maf-subpixel-cells.md`
-      // has the three candidates, why alignments' `sizeAlpha` is not one of
-      // them, and why fixing the dpr-dependence on its own is the wrong move.
+      // Inert while `minCellPx` is 0, and kept only because the uniform struct
+      // is shared. The unit used to matter and used to be device px, which made
+      // the floor move with the monitor.
       minCellDenomPx: clip.pxW,
-      // The bare drawable-at-all floor. Multi-row asks for more (see
-      // MULTI_ROW_MIN_CELL_PX); MAF's cells tile the row, so a sub-pixel cell is
-      // read as part of the run around it rather than on its own.
-      minCellPx: MIN_DRAWN_CELL_PX,
+      // MAF does not floor. Its cells tile the row, so a sub-pixel cell is read
+      // as part of the run around it, and widening one to a whole pixel paints
+      // ink the alignment does not contain: measured at 2.3x the colour of a
+      // supersampled ground truth, against 1.05x for no floor
+      // (agent-docs/reference/MAF_SUBPIXEL_CELLS.md). The multi-row painter floors
+      // and should — its features are sparse intervals, not a tiling, and
+      // MULTI_ROW_MIN_CELL_PX says why.
+      minCellPx: 0,
       zero: 0,
       rowHeight: state.rowHeight,
       rowProportion: state.rowProportion,

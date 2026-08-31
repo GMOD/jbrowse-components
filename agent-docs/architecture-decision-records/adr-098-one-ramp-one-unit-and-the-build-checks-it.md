@@ -82,7 +82,7 @@ settle.
 **What this does not settle**: `rowRect`'s min-cell floor, whose denominator two
 callers feed in CSS px and one in device px, so MAF's floor moves with the
 reader's monitor. That is a live question with an aesthetic half
-([ideas/maf-subpixel-cells.md](../ideas/maf-subpixel-cells.md)) and fixing the
+([reference/MAF_SUBPIXEL_CELLS.md](../reference/MAF_SUBPIXEL_CELLS.md)) and fixing the
 dpr-dependence alone is the wrong move, so the uniform is named
 `minCellDenomPx` — for the thing that decides its unit — and the disagreement
 now reads at every call site instead of in a comment forty lines away.

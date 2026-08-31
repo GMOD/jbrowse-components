@@ -3,6 +3,4 @@
 
 export const MIN_DRAWN_ROW_PX = 1
 
-export const MIN_DRAWN_CELL_PX = 1
-
 export const MULTI_ROW_MIN_CELL_PX = 2

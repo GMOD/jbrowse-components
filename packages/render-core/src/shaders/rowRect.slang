@@ -11,13 +11,14 @@
 // Row placement comes from uniforms rather than the instance data, so a
 // rowHeight / rowProportion change re-renders without a refetch.
 //
-// What the callers legitimately differ on is the min-width floor: both the
-// width they write into `minCellPx` and the *unit* they measure it in, via
-// `minCellDenomPx` (CSS px vs device px) — see GpuMafRenderer's note. Those are
-// uniform-write decisions, not a reason for two shaders. The unit is also
-// unsettled, and device px additionally makes MAF's floor depend on the
-// reader's monitor: `agent-docs/ideas/maf-subpixel-cells.md`.
-//! export-consts: MIN_DRAWN_ROW_PX, MIN_DRAWN_CELL_PX, MULTI_ROW_MIN_CELL_PX
+// What the callers legitimately differ on is the min-width floor they write
+// into `minCellPx` — a uniform-write decision, not a reason for two shaders.
+// Whether to floor at all turns on whether the caller's marks TILE: MAF's cells
+// do, so a sub-pixel one is read as part of the run around it and widening it
+// paints ink the alignment does not contain (measured, and MAF now passes 0 —
+// `agent-docs/reference/MAF_SUBPIXEL_CELLS.md`). The multi-row painter's features
+// are sparse intervals with nothing beside them, so it floors.
+//! export-consts: MIN_DRAWN_ROW_PX, MULTI_ROW_MIN_CELL_PX
 //! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
 
@@ -36,16 +37,13 @@ public struct RowRectUniforms {
   public float  canvasHeight;  // CSS px
   // The width `minCellPx` is measured against, and so the thing that decides
   // what unit `minCellPx` IS. Named for that rather than for the viewport
-  // because the three callers do not agree: multi-row and wiggle density pass
-  // a CSS width (a 1 CSS px floor), MAF passes a device one (1 device px, so
-  // half a CSS px on a retina screen and a floor that moves with the monitor).
-  // That disagreement is live and parked, not settled —
-  // agent-docs/ideas/maf-subpixel-cells.md — so the name carries it to every
-  // call site instead of a comment forty lines away.
+  // because the callers that floor pass a CSS width. Pass a DEVICE width and
+  // the floor moves with the reader's monitor — MAF did, and rendered
+  // measurably differently on a retina screen until it stopped flooring.
   public float  minCellDenomPx;
-  // Narrowest a cell is painted, in whatever unit `minCellDenomPx` is in.
-  // MIN_DRAWN_CELL_PX is the floor a caller takes when it has no reason to
-  // widen further; the multi-row painter does (see MULTI_ROW_MIN_CELL_PX).
+  // Narrowest a cell is painted, in whatever unit `minCellDenomPx` is in. Zero
+  // is a no-op and is what a tiling caller writes (MAF); the multi-row painter
+  // names its own width, MULTI_ROW_MIN_CELL_PX.
   public float  minCellPx;
   public float  zero;          // always 0.0 — prevents hp-split collapse
   public float  rowHeight;     // CSS px per row
@@ -62,24 +60,16 @@ public struct RowRectVsOut {
   public float4 color    : COLOR0;
 };
 
-// Thinnest a row is ever painted. Vertical twin of MIN_DRAWN_CELL_PX below: a
-// row thinner than a pixel can miss every pixel center and disappear, so
-// without this rows drop out as they get denser instead of just getting
-// thinner. Floored, neighbours overlap instead.
-static const float MIN_DRAWN_ROW_PX = 1.0;
-
-// Thinnest a cell can be painted and still be drawable at all, for the same
-// reason as the row floor above on the other axis. A caller writes this into
-// `minCellPx` when a cell being *visible* is not its problem, only a cell
-// existing; one whose whole encoding is carried by sub-pixel cells asks for
-// more (MULTI_ROW_MIN_CELL_PX).
+// Thinnest a row is ever painted: a row thinner than a pixel can miss every
+// pixel center and disappear, so without this rows drop out as they get denser
+// instead of just getting thinner. Floored, neighbours overlap instead.
 //
-// One caller mirrors it on the Canvas2D side and one deliberately does not: the
-// multi-row painter floors, MAF draws cells at their natural sub-pixel width.
-// That asymmetry is real and parked in `agent-docs/ideas/maf-subpixel-cells.md`;
-// sharing the constant does not decide it, it just stops the value being
-// anonymous in the places that DO agree.
-static const float MIN_DRAWN_CELL_PX = 1.0;
+// There is no X-axis twin. A row is a container the reader is counting, so
+// losing one loses a species; a cell is a sample of a tiling, so losing one to
+// the blend is the honest answer and flooring it invents ink
+// (`agent-docs/reference/MAF_SUBPIXEL_CELLS.md`). The caller that does want an X
+// floor names its own width, below.
+static const float MIN_DRAWN_ROW_PX = 1.0;
 
 // What the multi-row painter ("chromosome painting") writes into `minCellPx`.
 //
@@ -91,9 +81,9 @@ static const float MIN_DRAWN_CELL_PX = 1.0;
 // across two, so neither reaches full opacity — the tick reads as a smudge, and
 // the eye scanning for structure across the rows finds none.
 //
-// Both floors distort width; that is what a floor is. This one distorts more,
-// and only where the alternative was showing nothing legible: a feature wide
-// enough to matter is already past it.
+// A floor distorts width; that is what a floor is. This is the only caller that
+// takes the trade, and only where the alternative was showing nothing legible:
+// a feature wide enough to matter is already past it.
 static const float MULTI_ROW_MIN_CELL_PX = 2.0;
 
 public struct RowBand {

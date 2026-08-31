@@ -36,6 +36,9 @@ it through a translucent fill. Candidate fixes, in the order to try:
   same-coloured cells, so one run is one fill and the pad fires once per run
   rather than once per base.
 
-Either way the cross-backend gate is the check: this gap is in the shipped
-comparison today, spread over the whole rows band, which is exactly the shape
-a 1.5% mean-diff threshold is worst at noticing.
+The cross-backend gate is not the check, and that is half of why this survived:
+`'MAF Track'` is in `CI_GATE_SUITES`, but its tests take no `canvasSnapshot` /
+`dualSnapshot`, so the suite contributes zero pairs and nothing pixel-compares
+MAF's two backends at all. Giving it one snapshot at a sub-pixel zoom is the
+cheapest way to stop the next one — the gap is spread over the whole rows band,
+which is also the shape a mean-diff threshold is worst at noticing.

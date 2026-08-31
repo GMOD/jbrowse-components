@@ -24,7 +24,7 @@ equivalent at every zoom captured. `perBaseLetter` is four widely separated
 hues, so the same change takes the wall from muddy olive to vivid stripes and
 nearly doubles the saturated share. A vivid base colour where the honest answer
 is "mixed" is exactly what
-[maf-subpixel-cells.md](maf-subpixel-cells.md) argues against for tiling cells,
+[MAF_SUBPIXEL_CELLS.md](../reference/MAF_SUBPIXEL_CELLS.md) argues against for tiling cells,
 in as many words.
 
 **Ship as is, document the trade.** Cheapest, and the status quo. The cost is
@@ -75,7 +75,7 @@ apart. So the wall is unbroken iff `binBp <= bpPerPx`, and `binBp` is chosen as
 A single zoom step in is therefore exactly safe. A *multi-octave* zoom-in before
 the debounce settles and the refetch lands draws the wall as stripes, for the
 debounce plus one RPC. That is a new timing-dependent appearance, which
-[maf-subpixel-cells.md](maf-subpixel-cells.md) argues is a defect on its own
+[MAF_SUBPIXEL_CELLS.md](../reference/MAF_SUBPIXEL_CELLS.md) argues is a defect on its own
 terms.
 
 MAF does not have this because it widens the sampled cell to the bin

@@ -1,0 +1,91 @@
+{
+  "id": "maf-subpixel-floor",
+  "published": false,
+  "measured": "2026-08-31",
+  "source": {
+    "kind": "hand",
+    "repro": "Two of these rows are reproducible from the tree and two are not. SHIPPED RULE + CANVAS2D: build products/jbrowse-web, then `node browser-tests/probe-maf-subpixel.ts <outdir>` — it captures ctgA:1-4000 on volvox_maf at deviceScaleFactor 1, 2 and 4, box-downsamples the dpr-4 shot by 4 as the ground truth, and prints truthDist / pctDiffering / chroma / dprDrift over the rows band. It needs a REAL GPU (it passes --use-gl=angle; under swiftshader the numbers are a different rasteriser's). THE TWO CANDIDATE ROWS ARE NOT IN THE TREE — the floor was removed on 2026-08-31, so re-taking them means standing the arms back up: in GpuMafRenderer.ts write `minCellPx` from a URL param instead of 0 (`none` -> 0, `alpha` -> -MIN_DRAWN_CELL_PX, else MIN_DRAWN_CELL_PX) and, for the alpha arm only, teach rowRect.slang that a negative minCellPx means widen to abs(minCellPx) then scale color.a by min(trueSpan/drawnSpan, 1); `pnpm gen:shaders` and check its exit code. All four arms then come out of one build, differing only in the uniform written.",
+    "notes": "Mean per-pixel distance from a ground truth the renderer computes for itself: the same rule shot at dpr 4, where a 1-bp cell is 1.25 device px and nothing is floored away, box-downsampled by 4. That is the base-weighted mix a dpr-1 pixel should hold. It replaces the Canvas2D fallback as the reference, which cannot serve as one here — it over-paints the translucent match tone ~2.3x per pixel and scores worst of everything measured (ideas/maf-canvas2d-overpaints-the-match-tone.md). `chroma` is mean max(r,g,b)-min(r,g,b) over the rows band; the match and gap tones are neutral, so it reads how much MISMATCH ink is on screen, which is what a floor inflates. `dprDrift` is the dpr-2 render box-downsampled to dpr 1 and compared against the dpr-1 render — a rule whose appearance depends on the reader's monitor scores high, and MAF's floor was measured in DEVICE px, so it did. Scene: the MAF browser suite's own locus and track, rowHeight 15 / height 200 so all ten species are on screen, ~3.25 bp/px where subPixelBinBp is 1 and a 1-bp cell is 0.31 CSS px. Machine: MacBook Pro 16\" 2019, ANGLE Metal over Intel UHD 630, WebGL2 with antialias: true — i.e. the 4x MSAA path, which resolved sub-pixel cells correctly rather than dropping them. Load average was 12-35 during the captures; that does not affect pixels and no timing is read off these runs."
+  },
+  "columns": [
+    {
+      "key": "rule",
+      "label": "rule"
+    },
+    {
+      "key": "truthDist",
+      "label": "dist. from truth",
+      "format": "ratio",
+      "align": "right",
+      "absent": "—"
+    },
+    {
+      "key": "pctDiffering",
+      "label": "px differing >30",
+      "format": "percent",
+      "align": "right",
+      "absent": "—"
+    },
+    {
+      "key": "chroma",
+      "label": "mean chroma",
+      "format": "ratio",
+      "align": "right"
+    },
+    {
+      "key": "dprDrift",
+      "label": "cross-dpr drift",
+      "format": "ratio",
+      "align": "right",
+      "absent": "—"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "rule": "no floor",
+        "truthDist": 4.31,
+        "pctDiffering": 15.7,
+        "chroma": 11.23,
+        "dprDrift": 3.67
+      },
+      "emphasize": ["truthDist", "dprDrift"]
+    },
+    {
+      "values": {
+        "rule": "floor + span alpha",
+        "truthDist": 5.53,
+        "pctDiffering": 21.3,
+        "chroma": 9.63,
+        "dprDrift": 4.63
+      }
+    },
+    {
+      "values": {
+        "rule": "floor at 1 device px",
+        "truthDist": 15.05,
+        "pctDiffering": 32.0,
+        "chroma": 24.97,
+        "dprDrift": 11.41
+      }
+    },
+    {
+      "values": {
+        "rule": "Canvas2D as shipped",
+        "truthDist": 26.58,
+        "pctDiffering": 76.0,
+        "chroma": 19.98,
+        "dprDrift": 6.02
+      }
+    },
+    {
+      "values": {
+        "rule": "ground truth (dpr 4, downsampled)",
+        "truthDist": null,
+        "pctDiffering": null,
+        "chroma": 10.64,
+        "dprDrift": null
+      }
+    }
+  ]
+}

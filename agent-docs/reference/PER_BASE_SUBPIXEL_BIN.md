@@ -170,7 +170,7 @@ and what none of the arithmetic above predicts.
 Every **sparse** mark: mismatches, indels, SNP columns, modifications, arcs.
 They are already handled by `featureFrequencyThreshold`, the frequency lerp and
 `extendToMinWidthX`, and
-[ideas/maf-subpixel-cells.md](../ideas/maf-subpixel-cells.md) records alignments'
+[MAF_SUBPIXEL_CELLS.md](MAF_SUBPIXEL_CELLS.md) records alignments'
 own argument for why a point event must stay opaque when a screen holds more
 bases than pixels. Fetch-side object churn elsewhere — Manhattan's per-line
 `Feature` objects, `flatbushItems` / `subfeatureInfos` — is a different thread,
