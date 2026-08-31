@@ -86,8 +86,8 @@
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/text-indexing": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
-    "@mui/icons-material": "^9.3.1",
-    "@mui/material": "^9.3.1",
+    "@mui/icons-material": "^9.4.0",
+    "@mui/material": "^9.4.0",
     "@mui/x-data-grid": "^9.12.0",
     "electron-context-menu": "^4.1.2",
     "electron-debug": "^4.1.0",
@@ -102,10 +102,10 @@
     "@electron/packager": "^20.3.0",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/selenium-webdriver": "^4.35.6",
-    "electron": "^44.0.0",
-    "electron-chromedriver": "^44.0.0",
+    "electron": "^44.1.0",
+    "electron-chromedriver": "^44.1.0",
     "esbuild": "^0.28.2",
-    "selenium-webdriver": "^4.47.0"
+    "selenium-webdriver": "^4.48.0"
   },
   "browserslist": [
     "last 1 chrome version"

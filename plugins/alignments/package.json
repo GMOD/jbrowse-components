@@ -32,7 +32,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bam": "^9.0.0",
+    "@gmod/bam": "^9.0.1",
     "@gmod/cram": "^13.4.2",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
@@ -44,8 +44,8 @@
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
-    "@mui/icons-material": "^9.3.1",
-    "@mui/material": "^9.3.1",
+    "@mui/icons-material": "^9.4.0",
+    "@mui/material": "^9.4.0",
     "generic-filehandle2": "^2.4.0",
     "mobx": "^7.0.3",
     "mobx-react": "^10.0.2",

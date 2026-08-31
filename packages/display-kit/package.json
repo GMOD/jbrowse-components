@@ -85,8 +85,8 @@
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1",
     "@jbrowse/render-core": "workspace:^",
-    "@mui/icons-material": "^9.3.1",
-    "@mui/material": "^9.3.1",
+    "@mui/icons-material": "^9.4.0",
+    "@mui/material": "^9.4.0",
     "mobx": "^7.0.3",
     "mobx-react": "^10.0.2"
   },

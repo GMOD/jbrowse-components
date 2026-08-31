@@ -23,8 +23,17 @@ test.each([
 })
 
 test('a configured tree is not the placeholder', () => {
-  expect(isUnconfiguredNhLocation({ uri: '/data/tree.nh' })).toBe(false)
-  expect(isUnconfiguredNhLocation({ localPath: UNCONFIGURED_NH_URI })).toBe(
-    false,
-  )
+  expect(
+    isUnconfiguredNhLocation({
+      uri: '/data/tree.nh',
+      locationType: 'UriLocation',
+    }),
+  ).toBe(false)
+  // the same string as a local path is a real file someone put there
+  expect(
+    isUnconfiguredNhLocation({
+      localPath: UNCONFIGURED_NH_URI,
+      locationType: 'LocalPathLocation',
+    }),
+  ).toBe(false)
 })

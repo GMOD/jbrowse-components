@@ -32,6 +32,11 @@ blockExoticSubdeps: true
 # from arriving unnoticed.
 disallowWorkspaceCycles: true
 allowBuilds:
+  # Native file-watcher binding; the JS fallback is a polling stat loop. Left at
+  # pnpm's "set this to true or false" placeholder, which fails `pnpm install`
+  # outright — and so every `pnpm <script>`, since they all run a deps check
+  # first.
+  '@parcel/watcher': true
   canvas: true
   electron: true
   electron-chromedriver: true

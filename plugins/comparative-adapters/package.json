@@ -35,7 +35,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1",
     "@jbrowse/synteny-core": "workspace:^",
-    "@mui/material": "^9.3.1",
+    "@mui/material": "^9.4.0",
     "generic-filehandle2": "^2.4.0",
     "mobx": "^7.0.3",
     "mobx-react": "^10.0.2",
