@@ -78,7 +78,7 @@ jbrowse validate myconfig.json
 ```
 error: tracks[0].assemblyNames: assembly "hg19" is not defined in this config — did you mean "hg38"?
 error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"? — JBrowse ignores keys it does not declare, so this setting silently does nothing
-error: defaultSession.views[0].init.tracks[0]: trackId "sample_bem" is not defined in this config — did you mean "sample_bam"?
+error: defaultSession.views[0].tracks[0]: trackId "sample_bem" is not defined in this config — did you mean "sample_bam"?
 
 3 error(s), 0 warning(s) in myconfig.json
 ```
@@ -88,9 +88,9 @@ knows every track, display and adapter type and the slots each accepts, and it
 never opens your data files, so it runs before anything is uploaded. Two levels:
 
 - **error** — JBrowse accepts it and silently does the wrong thing: an unknown
-  slot, a track pointing at an assembly the config never defines, a
-  `defaultSession` naming a `trackId` that does not exist, a duplicate
-  `trackId`.
+  slot, a key a `defaultSession` view or display does not declare, a track
+  pointing at an assembly the config never defines, a `defaultSession` naming a
+  `trackId` that does not exist, a duplicate `trackId`.
 - **warning** — JBrowse will tell you itself on load, or handles it: a type name
   it does not know (which is expected if a plugin registers it), or a legacy key
   a migration rewrites.

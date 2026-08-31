@@ -15,14 +15,14 @@ nothing. That is what this command is mainly for.
 Two levels are reported:
 
   error    JBrowse accepts it and silently does the wrong thing — an unknown
-           slot, a track naming an assembly the config never defines, a
-           defaultSession naming a trackId that does not exist, a duplicate
-           trackId. Exits 1.
+           slot, a key a defaultSession view or display does not declare, a
+           track naming an assembly the config never defines, a defaultSession
+           naming a trackId that does not exist, a duplicate trackId. Exits 1.
 
   warning  JBrowse will complain by itself on load, or handles it — a type name
            the core plugins do not register (expected if one of your plugins
-           registers it), or a legacy key a migration rewrites. Never fails
-           the run.
+           registers it), or a legacy key a migration rewrites, such as a view
+           nesting its settings under "init". Never fails the run.
 
 Types registered by plugins are not known to this command, so they come through
 as warnings rather than errors.`
