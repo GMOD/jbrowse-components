@@ -207,14 +207,17 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
   // ~23 kb from ~9 kb left of the call's edge, so it does not line up with the
   // breakpoints the highlight draws. DEMO_DATASETS.md has the measurement.
   //
-  // `resolutionBias: 2` (750 bp -> 5000 bp) on the depth channel: any one bin
-  // whose depth is off the local baseline paints a full row AND column across
-  // the whole matrix, not just the cell at its own coordinates, because the
-  // channel is |depth[a] - depth[b]| for every OTHER bin b. At 750 bp the
-  // 300x library's own mappability noise puts enough such bins in frame to
-  // draw a plaid that outshines the call. Averaging to 5000 bp bins washes out
-  // those isolated spikes while the ~17 kb call, wide enough to span several
-  // coarse bins, stays a coherent block.
+  // `colorScheme: 'fall'` on the depth channel, not the default juicebox ramp.
+  // juicebox is alpha only -- transparent to opaque red -- so a cell past
+  // roughly half of colorMaxScore is already solid red and everything hotter
+  // reads the same. This channel's own cells run past that everywhere in
+  // frame (any bin off the local baseline paints a full row AND column across
+  // the whole matrix, because the channel is |depth[a] - depth[b]| against
+  // every OTHER bin), so juicebox flattens the native 750 bp texture into a
+  // red-on-white plaid with no way to tell "hot" from "hottest." fall's white
+  // -> yellow -> orange -> red -> black ramp keeps that distinction the whole
+  // way up, so the call's own block still reads as the deepest, most solid
+  // patch without averaging a single bin of the underlying data away.
   {
     mode: 'url',
     name: 'sv_contact_maps/depth_only_duplication',
@@ -226,7 +229,7 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
         calls,
         channel('sv_contacts_depth_difference', DUP_CHANNEL_H, {
           showLegend: true,
-          resolutionBias: 2,
+          colorScheme: 'fall',
         }),
         // A taller coverage band than the inversion's, because the depth step
         // is this figure's subject and 40 px flattens the step into texture.
@@ -288,12 +291,9 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
   // as hard as the duplication does, so the channel comes back a full red plaid
   // with nothing in the frame reading as negative.
   //
-  // 120 kb is as wide as this gets: the slice runs to 175.24-175.48 Mb, and
-  // widening the window past here starts catching OTHER loci whose own
-  // depth-difference peak is as tall as the call's -- unrelated bins with
-  // nothing in the SV track over them, just more of the same mappability
-  // noise a step up in scale. The call's cell stops being the obvious one
-  // once they are in frame too, so wider is not clearer here.
+  // 120 kb is the closest look this page takes at the shape on its own: the
+  // slice runs to 175.24-175.48 Mb, and depth_channel_wide below is the same
+  // channel stepped back to the whole thing.
   //
   // NO HIGHLIGHT on the breakpoints, unlike the figure above: genome-STRiP
   // calls from depth alone, and the previous figure's own callout is that the
@@ -301,10 +301,7 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
   // a figure about depth's own shape would read as endorsing a precision the
   // call does not have; the gold call-track bar still says where they are.
   //
-  // `resolutionBias: 2`, same reason as depth_only_duplication's: at 750 bp
-  // this frame carries several other locally-noisy bins, each striping the
-  // whole matrix, and the call's own crosshair is one plaid pattern among
-  // several rather than the obvious one.
+  // `colorScheme: 'fall'`, same reason as depth_only_duplication's.
   {
     mode: 'url',
     name: 'sv_contact_maps/depth_channel',
@@ -315,7 +312,7 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
         calls,
         channel('sv_contacts_depth_difference', 340, {
           showLegend: true,
-          resolutionBias: 2,
+          colorScheme: 'fall',
         }),
         {
           trackId: 'na12878_300x_reads',
@@ -334,19 +331,12 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
     ...SLOW,
   },
 
-  // THE CONTROL FOR THE CONTROL. depth_channel makes the call's own crosshair
-  // the obvious cell in a 120 kb frame; this one steps back to the whole 236 kb
-  // slice and shows that framing is doing real work. Two other loci out here
-  // swing the ramp about as hard as the call does, with nothing in the SV
-  // track over either one -- the same "mappability is against you" case the
-  // chr17 duplication is, without leaving chromosome 5 to show it.
-  //
-  // `resolutionBias: 3` (25000 bp): at 5000 bp this frame is a plaid of
-  // diagonal stripes, each one some other single noisy bin's row or column,
-  // same mechanism as depth_channel's but with more such bins in view to
-  // stripe it. Coarser still collapses each locus to one or two blocks, which
-  // is the right amount of detail for "this one is not uniquely dark," a
-  // weaker and different claim than depth_channel's own "this one is."
+  // THE CONTROL FOR THE CONTROL. depth_channel's frame holds one obvious block;
+  // this one steps back to the whole 236 kb slice at the same native
+  // resolution and colorScheme, and two OTHER loci out here run just as dark,
+  // with nothing in the SV track over either one -- the same "mappability is
+  // against you" case the chr17 duplication is, without leaving chromosome 5
+  // to show it.
   {
     mode: 'url',
     name: 'sv_contact_maps/depth_channel_wide',
@@ -357,7 +347,7 @@ export const svContactMapsSpecs: ScreenshotSpec[] = [
         calls,
         channel('sv_contacts_depth_difference', 760, {
           showLegend: true,
-          resolutionBias: 3,
+          colorScheme: 'fall',
         }),
         {
           trackId: 'na12878_300x_reads',
