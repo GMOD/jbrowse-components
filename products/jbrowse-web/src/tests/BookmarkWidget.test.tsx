@@ -2,7 +2,12 @@ import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, doBeforeEach, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => {
   return {
@@ -11,6 +16,11 @@ jest.mock('@jbrowse/core/util/FileSaver', () => {
   }
 })
 setup()
+
+// nothing here reads the track list: the one track reference is
+// `findByTestId('tracksContainer')`, which is the LGV's own container - see
+// volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_alignments'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -21,7 +31,7 @@ const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('Open the bookmarks widget from the top level menu', async () => {
-  const { findByText } = await createView()
+  const { findByText } = await createView(config)
 
   fireEvent.click(await findByText('Tools'))
   fireEvent.click(await findByText('Bookmarks/highlights'))
@@ -30,7 +40,7 @@ test('Open the bookmarks widget from the top level menu', async () => {
 }, 60000)
 
 test('Open the bookmarks widget from the view menu', async () => {
-  const { findByTestId, findByText } = await createView()
+  const { findByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmarks/highlights'))
@@ -40,7 +50,7 @@ test('Open the bookmarks widget from the view menu', async () => {
 }, 60000)
 
 test('Create a bookmark using the click and drag rubberband', async () => {
-  const { session, findByTestId, findByText } = await createView()
+  const { session, findByTestId, findByText } = await createView(config)
   const rubberband = await findByTestId('rubberband_controls', {}, delay)
 
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
@@ -53,7 +63,7 @@ test('Create a bookmark using the click and drag rubberband', async () => {
 }, 40000)
 
 test('Create a bookmark using the hotkey to bookmark the current region', async () => {
-  const { session, findByTestId } = await createView()
+  const { session, findByTestId } = await createView(config)
 
   // focus the view to allow the hotkey to work (it has a focus guard).
   // userEvent, not fireEvent: the hotkey has a focus guard, and only a real
@@ -74,7 +84,7 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
 }, 60000)
 
 test('Create a bookmark using the menu button to bookmark the current region', async () => {
-  const { session, findByTestId, findByText } = await createView()
+  const { session, findByTestId, findByText } = await createView(config)
 
   // focus the view to allow the hotkey to work (it has a focus guard).
   // userEvent, not fireEvent: the hotkey has a focus guard, and only a real
@@ -90,7 +100,7 @@ test('Create a bookmark using the menu button to bookmark the current region', a
 }, 40000)
 
 test('Navigate to a bookmark using the embedded link in the widget data grid', async () => {
-  const { view, session, findByTestId, findByText } = await createView()
+  const { view, session, findByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmarks/highlights'))
@@ -113,7 +123,7 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
 }, 40000)
 
 test('Navigate to a bookmark using the hotkey to navigate to the most recently created bookmark', async () => {
-  const { view, session, findByTestId, findByText } = await createView()
+  const { view, session, findByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmarks/highlights'))
@@ -147,7 +157,7 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
 }, 40000)
 
 test('Edit a bookmark label with a single click on the data grid', async () => {
-  const { session, findByText, findAllByRole } = await createView()
+  const { session, findByText, findAllByRole } = await createView(config)
 
   fireEvent.click(await findByText('Tools'))
   fireEvent.click(await findByText('Bookmarks/highlights'))
@@ -172,7 +182,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
 }, 60000)
 
 test('Toggle highlight visibility across all views', async () => {
-  const { session, findByText, findByTestId } = await createView()
+  const { session, findByText, findByTestId } = await createView(config)
 
   session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -215,7 +225,7 @@ test('Toggle highlight visibility across all views', async () => {
 }, 60000)
 
 test('Downloads a BED file correctly', async () => {
-  const { session, findByText, findByTestId } = await createView()
+  const { session, findByText, findByTestId } = await createView(config)
 
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
@@ -246,7 +256,8 @@ test('Downloads a BED file correctly', async () => {
 }, 60000)
 
 test('Downloads a TSV file correctly', async () => {
-  const { session, findByText, findByTestId, getByRole } = await createView()
+  const { session, findByText, findByTestId, getByRole } =
+    await createView(config)
 
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
