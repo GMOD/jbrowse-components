@@ -23,20 +23,26 @@ export interface VariantTooltipFields {
   sampleName: string
   name: string
   featureId: string
+  displayedRegionIndex?: number
 }
 
-// Hover-dedup identity for a hovered cell — same feature+sample+genotype means
-// the same tooltip, so `hoverVariantSurface` skips redundant setHoveredGenotype
-// calls. Shared so both displays key hovers identically, and typed wider than
-// the fields so the model's own hover slot can be keyed too. A variant-lane
-// hover names no sample and carries no genotype, so its key is the record's id
-// alone, which is exactly the identity that lane needs.
+// Hover-dedup identity for a hovered cell — same feature+sample+genotype in the
+// same displayed region means the same tooltip AND the same highlight geometry,
+// so `hoverVariantSurface` skips redundant setHoveredGenotype calls. The region
+// term matters when overlapping displayed regions show two copies of one
+// record: without it, sliding onto the second copy deduped away the `onHover`
+// that moves the highlight box. Shared so both displays key hovers identically,
+// and typed wider than the fields so the model's own hover slot can be keyed
+// too. A variant-lane hover names no sample and carries no genotype, so its key
+// is the record's id plus the region, which is exactly the identity that lane
+// needs.
 export function variantTooltipKey(f: {
   name: string
   genotype: string
   featureId?: unknown
+  displayedRegionIndex?: unknown
 }) {
-  return `${f.name}:${f.genotype}:${f.featureId}`
+  return `${f.name}:${f.genotype}:${f.featureId}:${f.displayedRegionIndex}`
 }
 
 export function buildVariantHit({
@@ -45,12 +51,21 @@ export function buildVariantHit({
   sampleName,
   name,
   featureId,
+  insertedBp,
+  displayedRegionIndex,
 }: {
   info: VariantFeatureInfo
   genotype: string
   sampleName: string
   name: string
   featureId: string
+  // bp of insertion THIS cell reports — the record's count when the sample
+  // carries the alt, 0 for a reference cell, which must not claim the
+  // insertion its column's record makes. The regular display takes this off
+  // the picked cell (`pickVariantCell` zeroes it by `cellAltDosage`); the
+  // matrix derives it from the decoded genotype.
+  insertedBp: number
+  displayedRegionIndex?: number
 }): VariantTooltipFields {
   return {
     genotype,
@@ -63,10 +78,11 @@ export function buildVariantHit({
     // decodes the number rather than leaving it to be guessed against `length`
     // (the reference span, ~1 bp for any insertion). Empty for everything else,
     // which getTooltipRows drops.
-    insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
+    insertion: insertedBp > 0 ? `${insertedBp}bp` : '',
     sampleName,
     name,
     featureId,
+    displayedRegionIndex,
   }
 }
 
@@ -90,9 +106,11 @@ export function buildVariantHit({
 export function buildVariantLaneHit({
   info,
   featureId,
+  displayedRegionIndex,
 }: {
   info: VariantFeatureInfo
   featureId: string
+  displayedRegionIndex?: number
 }): VariantTooltipFields {
   return {
     genotype: '',
@@ -104,5 +122,6 @@ export function buildVariantLaneHit({
     length: getBpDisplayStr(info.length),
     insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
     featureId,
+    displayedRegionIndex,
   }
 }

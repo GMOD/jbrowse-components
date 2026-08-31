@@ -76,7 +76,7 @@ const VariantMatrixDisplayComponent = observer(
         onPointerPosition={state => {
           if (
             state &&
-            state.y > rowsTopOffset &&
+            state.y >= rowsTopOffset &&
             state.x >= treeSidebarRightEdge(model)
           ) {
             hoverVariantSurface(

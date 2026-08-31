@@ -26,6 +26,7 @@ test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
     sampleName: 'HG001',
     name: 'HG001',
     featureId: 'mono1',
+    insertedBp: 0,
   })
   expect(fields.description).toBe('no alternative alleles')
   expect(fields.alleles).toBe('ref(A)|ref(A)')
@@ -73,6 +74,7 @@ describe('a variant-lane hit', () => {
         sampleName: 'HG001',
         name: 'HG001',
         featureId: 'v0',
+        insertedBp: threeAlts.insertedBp,
       }).description,
     ).toBe('multiple ALT alleles')
   })

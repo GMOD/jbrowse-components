@@ -48,6 +48,10 @@ function getHoveredMatrixCell(
   if (!feature) {
     return undefined
   }
+  // Read once, above the loop: this computed has no tracked reader (pointer
+  // handlers run untracked), so MobX discards its value on every read and each
+  // read rebuilds an O(samples) Map.
+  const genotypeSampleIndex = model.genotypeSampleIndex!
   // nearest first: it is the row the cursor is in and the last one painted
   // there, so it is what the reader sees on top
   for (let rowIdx = nearest; rowIdx >= lowest; rowIdx--) {
@@ -58,7 +62,7 @@ function getHoveredMatrixCell(
     const sampleName = source.sampleName
     const genotype = decodeGenotype(
       cellData.genotypeDict,
-      model.genotypeSampleIndex!,
+      genotypeSampleIndex,
       feature.genotypeCodes,
       sampleName,
     )
@@ -70,6 +74,10 @@ function getHoveredMatrixCell(
           sampleName,
           name: source.name,
           featureId: feature.featureId,
+          // the matrix has no per-cell alt flag on hand, so derive it from the
+          // decoded genotype: only a sample carrying the alt reports the
+          // record's inserted bp, matching pickVariantCell's cellAltDosage gate
+          insertedBp: /[1-9]/.test(genotype) ? feature.insertedBp : 0,
         }),
         featureData: feature,
       }
@@ -89,9 +97,7 @@ export function variantMatrixSurface(
     getHit: (x, y) => getHoveredMatrixCell(model, x, y),
     getTooltip: hit => hit.fields,
     enrich: hit => {
-      const baseFeature = model.featuresVolatile?.find(
-        f => f.id() === hit.fields.featureId,
-      )
+      const baseFeature = model.featureById(hit.fields.featureId)
       return baseFeature
         ? enrichFeatureFromClick(baseFeature, hit.featureData, hit.fields)
         : undefined

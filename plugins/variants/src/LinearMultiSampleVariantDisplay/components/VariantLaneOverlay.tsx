@@ -6,6 +6,7 @@ import {
   performMultiRegionHitDetection,
 } from '@jbrowse/plugin-canvas'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { buildVariantLaneHit } from '../../shared/buildVariantHit.ts'
@@ -58,7 +59,14 @@ function getHoveredLaneMark(
   // alternative and says less: for a variant it resolves to the `mouseover`
   // slot, i.e. the ID this table already has a row for.
   return info
-    ? { fields: buildVariantLaneHit({ info, featureId }), hit: result }
+    ? {
+        fields: buildVariantLaneHit({
+          info,
+          featureId,
+          displayedRegionIndex: result.displayedRegionIndex,
+        }),
+        hit: result,
+      }
     : undefined
 }
 
@@ -78,9 +86,7 @@ export function variantLaneSurface(
     // widget opens without the "Sample:" card a cell click adds.
     enrich: hit => {
       const { featureId } = hit.fields
-      const baseFeature = model.featuresVolatile?.find(
-        f => f.id() === featureId,
-      )
+      const baseFeature = model.featureById(featureId)
       return baseFeature
         ? enrichFeatureFromClick(baseFeature, model.laneFeatureInfo(featureId))
         : undefined
@@ -110,14 +116,9 @@ const HoveredMarkHighlight = observer(function HoveredMarkHighlight({
   // The box the layout placed, mapped by the region the pick resolved in — the
   // same numbers the painter drew from, so the box cannot land on a record other
   // than the one under the cursor. `startBp`/`endBp` are absolute.
-  const { start, end, screenStartPx, screenEndPx, reversed } = region
-  const pxPerBp = (screenEndPx - screenStartPx) / (end - start)
-  const edge = (bp: number) =>
-    reversed
-      ? screenEndPx - (bp - start) * pxPerBp
-      : screenStartPx + (bp - start) * pxPerBp
-  const x1 = edge(hit.feature.startBp)
-  const x2 = edge(hit.feature.endBp)
+  const toX = makeBpMapper(region)
+  const x1 = toX(hit.feature.startBp)
+  const x2 = toX(hit.feature.endBp)
   return (
     <div
       data-testid="variant_lane_hover_highlight"

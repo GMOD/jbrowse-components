@@ -113,11 +113,14 @@ describe('GpuVariantRenderer', () => {
     )
 
     const f32 = hal.getLastUniformsF32()!
-    // canvas_height at slot 3, row_height at slot 5, scroll_top at slot 6
-    // (see UNIFORM_OFFSET_F32 in shaders/variant.generated.ts)
+    // slots per UNIFORM_OFFSET_F32 in shaders/variant.iface.generated.ts:
+    // canvasHeight 3, canvasWidth 4 (the FULL width, the snap grid's anchor),
+    // viewportWidth 5 (the clipped block's span), rowHeight 6, scrollTop 7
     expect(f32[3]).toBe(600)
-    expect(f32[5]).toBe(20)
-    expect(f32[6]).toBe(50)
+    expect(f32[4]).toBe(800)
+    expect(f32[5]).toBe(800)
+    expect(f32[6]).toBe(20)
+    expect(f32[7]).toBe(50)
   })
 
   it('prunes stale regions via hal.release', () => {
@@ -180,5 +183,12 @@ describe('GpuVariantRenderer', () => {
     expect(hal.callsOf('drawPass').length).toBe(2)
     expect(hal.callsOf('beginFrame').length).toBe(1)
     expect(hal.callsOf('endFrame').length).toBe(1)
+
+    // A clipped block keeps the FULL canvas width in canvasWidth (slot 4) so
+    // the snap grid matches every CPU painter, while viewportWidth (slot 5)
+    // carries the block's own span for the clip-space conversion.
+    const f32 = hal.getLastUniformsF32()!
+    expect(f32[4]).toBe(800)
+    expect(f32[5]).toBe(400)
   })
 })

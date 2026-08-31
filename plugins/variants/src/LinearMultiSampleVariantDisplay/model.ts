@@ -8,6 +8,7 @@ import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { getPaletteHost } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { autorunOnReadyView } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   HEIGHT_MULTIPLIERS,
@@ -418,8 +419,11 @@ export function stateModelFactory(
           if (!self.showInsertionGlyphs) {
             return undefined
           }
-          const { rowHeight, canvasWidth } = self.renderState
-          const drawnRowHeight = drawnCellHeightPx(rowHeight)
+          // The two geometry terms read directly, never through `renderState`:
+          // that object also carries `scrollTop`, so depending on it walked
+          // every feature again per wheel-scroll frame.
+          const drawnRowHeight = drawnCellHeightPx(self.effectiveRowHeight)
+          const canvasWidth = self.canvasWidthPx
           for (const block of self.renderBlocks) {
             const region = self.perRegionCellMap.get(block.displayedRegionIndex)
             if (
@@ -486,35 +490,46 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The lane's marks as plugin-canvas render data, one entry per visible
+         * The lane's marks as plugin-canvas render data, one entry per fetched
          * region — the payload that display's own RPC produces, built here from
          * records this display already parsed. Empty when the band is off, which
          * is what stops every getter below it from doing any work.
          *
          * See `buildLaneRenderData` for why this is main-thread and costs no
          * second fetch. A MobX computed, so it is rebuilt when the payload or
-         * the label mode changes and not per frame — and the entries' identity
-         * changing is what lets the packer below re-pack.
+         * the label mode changes and not per frame. Keyed off
+         * `perRegionCellMap` with the **displayed regions'** bounds, never
+         * `visibleRegions`: the LGV rebuilds that array fresh on every pan and
+         * zoom FRAME, so reading it here re-ran the whole chain below —
+         * SimpleFeature per record, jexl color eval, packing, label solves —
+         * ~60×/s during a drag. A region scrolled off-screen keeps its entry
+         * until its payload is cleared, which only the painter's own block
+         * clipping ever notices.
          */
         get laneRenderDataMap(): ReadonlyMap<number, LayoutRegionData> {
           const out = new Map<number, LayoutRegionData>()
-          // `canRender` is the mixin's "the view is measured" answer, the same
-          // gate this display's render lifecycle takes — plugin-canvas's
-          // `layoutReady` for the same reason. Without it every getter below
-          // reads `visibleRegions` before the view has blocks.
           if (self.canRender && self.topBands.laneHeight > 0) {
             const config = self.laneDisplayConfig
             const { jexl } = getEnv<{ pluginManager: PluginManager }>(
               self,
             ).pluginManager
-            for (const region of self.visibleRegions) {
-              const data = self.perRegionCellMap.get(
-                region.displayedRegionIndex,
-              )
-              if (data?.featureIdList.length) {
+            const { displayedRegions } = self.view
+            for (const [displayedRegionIndex, data] of self.perRegionCellMap) {
+              const region = displayedRegions[displayedRegionIndex]
+              if (region && data.featureIdList.length) {
                 out.set(
-                  region.displayedRegionIndex,
-                  buildLaneRenderData({ data, region, config, jexl }),
+                  displayedRegionIndex,
+                  buildLaneRenderData({
+                    data,
+                    region: {
+                      displayedRegionIndex,
+                      refName: region.refName,
+                      start: region.start,
+                      end: region.end,
+                    },
+                    config,
+                    jexl,
+                  }),
                 )
               }
             }
@@ -528,16 +543,18 @@ export function stateModelFactory(
          *
          * `coarseBpPerPx`, the 500ms-debounced one, for the reason
          * `LinearBasicDisplay` uses it: row packing must not recompute on every
-         * frame of a smooth zoom.
+         * frame of a smooth zoom. Reversal off `displayedRegions` — stable
+         * across pan frames — for the reason `laneRenderDataMap` gives.
          */
         get laneLayoutInputs(): Omit<
           LayoutInputs,
           'showLabels' | 'showDescriptions'
         > {
           const reversedRegions = new Set<number>()
-          for (const region of self.visibleRegions) {
-            if (region.reversed) {
-              reversedRegions.add(region.displayedRegionIndex)
+          const { displayedRegions } = self.view
+          for (let i = 0; i < displayedRegions.length; i++) {
+            if (displayedRegions[i]!.reversed) {
+              reversedRegions.add(i)
             }
           }
           return {
@@ -696,40 +713,33 @@ export function stateModelFactory(
          * box the pick returns. Its label overhang is part of the hit box there,
          * which is why this reads the RENDERED label flags and not the mode's.
          *
-         * **Deliberately NOT held alive by an autorun**, unlike the genotype
-         * indexes in `setupMultiSampleVariantAutoruns`. Its only reader is the
-         * hit test, so MobX rebuilds it per pointer frame — but it walks
-         * `visibleRegions`, which the LGV rebuilds fresh on every pan and zoom
-         * FRAME (see `contentRightEdgePx` there), and takes its bpPerPx off the
-         * live block width. Subscribing would move a Hilbert-sorted Flatbush
-         * build with a text measurement per mark from "the track under the
-         * cursor, while hovering" to "every one of these displays, every pan
-         * frame". Canvas's `flatbushIndexes` can be held alive because it keys
-         * off `laidOutDataMap` and the DEBOUNCED `coarseBpPerPx` instead; making
-         * this one safe to hold means giving it those dependencies first.
+         * Canvas's `flatbushIndexes` dependencies, on purpose: keyed off
+         * `laneLaidOutDataMap` and the DEBOUNCED `coarseBpPerPx`, never
+         * `visibleRegions` (per-frame fresh) or the live block width — which is
+         * what makes it safe for the `LaneHitIndexes` autorun to hold alive.
+         * Without that subscription its only reader is the hit test, running
+         * untracked in pointer handlers, so MobX would discard the value and
+         * rebuild a Hilbert-sorted Flatbush with a text measurement per mark on
+         * every pointer frame over the band.
          */
         get laneFlatbushIndexes() {
           const { showLabels, showDescriptions } = self.laneRenderedLabels
+          const { reversedRegions } = self.laneLayoutInputs
+          const bpPerPx = self.view.coarseBpPerPx
           const out = new Map<number, FlatbushRegionIndexes>()
-          for (const region of self.visibleRegions) {
-            const data = self.laneLaidOutDataMap.get(
-              region.displayedRegionIndex,
-            )
-            if (data) {
-              out.set(region.displayedRegionIndex, {
-                feature: buildFeatureFlatbushIndex(
-                  data.flatbushItems,
-                  data.floatingLabelsData,
-                  (region.end - region.start) /
-                    (region.screenEndPx - region.screenStartPx),
-                  !!region.reversed,
-                  { showLabels, showDescriptions, fontSize: self.laneFontSize },
-                ),
-                // A VCF record has no subfeatures, so `layoutBox` emits none and
-                // there is no second index to search.
-                subfeature: null,
-              })
-            }
+          for (const [displayedRegionIndex, data] of self.laneLaidOutDataMap) {
+            out.set(displayedRegionIndex, {
+              feature: buildFeatureFlatbushIndex(
+                data.flatbushItems,
+                data.floatingLabelsData,
+                bpPerPx,
+                reversedRegions.has(displayedRegionIndex),
+                { showLabels, showDescriptions, fontSize: self.laneFontSize },
+              ),
+              // A VCF record has no subfeatures, so `layoutBox` emits none and
+              // there is no second index to search.
+              subfeature: null,
+            })
           }
           return out
         },
@@ -756,6 +766,23 @@ export function stateModelFactory(
                 self.renderState,
               ),
           })
+        },
+      }))
+      .actions(self => ({
+        // The MST fork auto-chains lifecycle hooks, so the base's afterAttach
+        // still runs — no super call.
+        afterAttach() {
+          // The hit test reads this only from untracked pointer handlers, so
+          // without an observer MobX discards the computed per read — the
+          // CanvasHitIndexes rule (packages/display-kit/CLAUDE.md), earned
+          // here by the getter's debounced, non-per-frame dependency set.
+          autorunOnReadyView(
+            self,
+            () => {
+              void self.laneFlatbushIndexes
+            },
+            { name: 'LaneHitIndexes' },
+          )
         },
       }))
   )

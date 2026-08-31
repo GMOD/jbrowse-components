@@ -48,7 +48,12 @@ export class GpuVariantRenderer extends GpuPerRegionRenderingBackend<
     variantShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
-      canvasWidth: clip.scissorW,
+      // The FULL width: it anchors the pixel-snap grid, which must be the one
+      // the Canvas2D/SVG painters and the hit test snap against
+      // (snapVariantCellX takes model.canvasWidthPx). The clipped block's own
+      // span is what clip-space x covers, and goes in viewportWidth.
+      canvasWidth: state.canvasWidth,
+      viewportWidth: clip.scissorW,
       rowHeight: state.rowHeight,
       scrollTop: state.scrollTop,
       zero: 0,

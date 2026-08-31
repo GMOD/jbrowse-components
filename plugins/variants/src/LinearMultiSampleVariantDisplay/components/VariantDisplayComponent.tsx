@@ -34,18 +34,24 @@ const VariantDisplayComponent = observer(
         // One pointer source for the whole display: the hover, the tooltip and
         // the crosshairs come off the chrome's single measurement, in one
         // frame. Which surface the pointer is over is the same y test
-        // `PointerLayer`'s `inRows` makes; the sidebar overlays the rows and
-        // owns its own hover, so a pointer over it hovers nothing here.
+        // `PointerLayer`'s `inRows` makes. The sidebar overlays only the ROWS
+        // and owns its own hover there, so its x-gate applies to the rows
+        // branch alone — the lane band spans the full width above it, and its
+        // click handlers take no x-gate either.
         onPointerPosition={state => {
-          if (!state || state.x < treeSidebarRightEdge(model)) {
+          if (!state) {
             model.clearHoveredFeature()
-          } else if (state.y > rowsTopOffset) {
-            hoverVariantSurface(
-              model,
-              variantRowsSurface(model),
-              state.x,
-              state.y - rowsTopOffset,
-            )
+          } else if (state.y >= rowsTopOffset) {
+            if (state.x < treeSidebarRightEdge(model)) {
+              model.clearHoveredFeature()
+            } else {
+              hoverVariantSurface(
+                model,
+                variantRowsSurface(model),
+                state.x,
+                state.y - rowsTopOffset,
+              )
+            }
           } else {
             hoverVariantSurface(
               model,

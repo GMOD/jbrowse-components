@@ -36,6 +36,9 @@ export function PointerLayer({
   rowsTopOffset?: number
   children: (state: MouseState | undefined, inRows: boolean) => ReactNode
 }) {
+  // >=: the rows begin AT the offset (their container sits at
+  // `top: rowsTopOffset`), so the boundary pixel is row 0's top edge — and with
+  // no band above, y=0 is the display's own top edge, not a dead line.
   const state = useMouseState(mouseTracker)
-  return <>{children(state, !!state && state.y > rowsTopOffset)}</>
+  return <>{children(state, !!state && state.y >= rowsTopOffset)}</>
 }

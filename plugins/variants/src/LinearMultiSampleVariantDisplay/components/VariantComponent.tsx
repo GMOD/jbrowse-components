@@ -136,6 +136,8 @@ function getHoveredFeature(
       sampleName: source.sampleName,
       name: source.name,
       featureId,
+      insertedBp,
+      displayedRegionIndex: region.displayedRegionIndex,
     }),
     featureInfo: info,
     cell: {
@@ -160,9 +162,7 @@ export function variantRowsSurface(
     getHit: (x, y) => getHoveredFeature(model, x, y),
     getTooltip: hit => hit.fields,
     enrich: hit => {
-      const baseFeature = model.featuresVolatile?.find(
-        f => f.id() === hit.fields.featureId,
-      )
+      const baseFeature = model.featureById(hit.fields.featureId)
       return baseFeature
         ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
         : undefined

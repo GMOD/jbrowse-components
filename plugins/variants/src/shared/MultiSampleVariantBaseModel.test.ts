@@ -168,10 +168,13 @@ describe('maybeApplyColorByPalette', () => {
     expect(result![0]!.labelColor).not.toBe(result![1]!.labelColor)
   })
 
-  it('returns undefined when the requested attribute is absent from sources', () => {
+  // silently: the warning lives in applyArrangement (the action path), because
+  // rowOrderIsCustom runs this inside a computed and a computed must not
+  // console.warn per menu render
+  it('returns undefined, silently, when the requested attribute is absent', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     expect(maybeApplyColorByPalette('nonexistent', sources)).toBe(undefined)
-    expect(warn).toHaveBeenCalled()
+    expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
   })
 })
@@ -253,10 +256,11 @@ describe('maybeApplyGroupBy', () => {
     ])
   })
 
-  it('returns undefined when the attribute is absent from sources', () => {
+  // silent for the reason maybeApplyColorByPalette's absent case is
+  it('returns undefined, silently, when the attribute is absent', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     expect(maybeApplyGroupBy('nonexistent', sources)).toBeUndefined()
-    expect(warn).toHaveBeenCalled()
+    expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
   })
 })

@@ -158,6 +158,40 @@ describe('a rendering-mode switch renames the rows', () => {
   })
 })
 
+describe('an adapter swap to a new cohort', () => {
+  // A layout none of whose rows name a current sample is a previous dataset's:
+  // getSources drops every stale row and a subtreeFilter keyed on the old names
+  // matches nothing, so left standing they drew a blank display with colorBy
+  // still ticked in the menu.
+  it('resets a stale arrangement, its tree and its subtree filter', () => {
+    const display = clusteredDisplay()
+    display.setSubtreeFilter(['S2', 'S0'])
+    display.setColorBy('population')
+
+    const cohortB = [
+      { name: 'T0', population: 'EAS' },
+      { name: 'T1', population: 'SAS' },
+    ]
+    display.setSources(cohortB)
+
+    expect(display.subtreeFilter).toBeUndefined()
+    expect(display.clusterTree).toBeUndefined()
+    expect(rowNames(display)).toEqual(['T0', 'T1'])
+    // the configured coloring is re-seeded against the new cohort
+    expect(display.sources.every(s => s.labelColor)).toBe(true)
+  })
+
+  it('keeps the arrangement when the cohorts overlap', () => {
+    const display = clusteredDisplay()
+
+    display.setSources([...SOURCES, { name: 'S3', population: 'EUR' }])
+
+    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+    // the layout keeps its order and the new sample appends
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1', 'S3'])
+  })
+})
+
 // The interned payload one variant's worth of genotypes reaches the model as:
 // codes are 1-based indices into `genotypeDict`, aligned to `sampleNames`.
 // Matrix mode rather than regular because its shape is the flat one — the sort
