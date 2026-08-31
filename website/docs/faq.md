@@ -109,9 +109,12 @@ that opens a hub with no setup at all, use
 
 ### How do I convert my JBrowse 1 configuration to JBrowse 2
 
-Convert `trackList.json` into JBrowse 2 track configs once and write them into
-`config.json`; the data files stay where they are.
-[](/docs/config_guides/connections#migrating-a-jbrowse-1-instance)
+[This gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
+is a best-effort script: it reads a JBrowse 1 `trackList.json` and writes the
+resulting tracks into a JBrowse 2 `config.json` once; the data files stay where
+they are. See [](/docs/config_guides/connections#migrating-a-jbrowse-1-instance)
+for what it covers. If your setup needs more than the script handles, we're
+happy to help migrate it, so [contact us](/contact).
 
 ### How can I make a header on a jbrowse-web instance
 
