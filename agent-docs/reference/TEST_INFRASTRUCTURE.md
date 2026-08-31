@@ -234,9 +234,9 @@ the gap `findSettledDisplay`'s docstring names.
 
 **The `volvoxConfigWithTracks` trim is paid twice, and the second payment is the
 larger one.** Per `createView` it is 0.34s (the A/B is in
-`BookmarkWidget`, below) — but the document it leaves behind is also what every
-later `findByText` / `findByRole` / `findByLabelText` scans, so a suite that
-searches is charged again per query. The two text-search suites went **38.1s →
+`BookmarkWidget.test.tsx`, below) — but the document it leaves behind is also
+what every later `findByText` / `findByRole` / `findByLabelText` scans, so a
+suite that searches is charged again per query. The two text-search suites went **38.1s →
 13.8s of bodies** on a trim justified by reading `trix/volvox_meta.json`: the
 sixteen tracks the aggregate index names are the only ones a search here can
 land on. Twelve suites took it; the boundary is real and `SyntenyImportForm`
@@ -391,7 +391,7 @@ trim.
 
 **The in-run figure is 0.34s per `createView`, not the ~1.1s the 1.5s → 0.4s
 above implies**, because that pair is a cold isolated measurement. The A/B is
-`BookmarkWidget` at eleven calls: 11.1s of test bodies → 7.4s. Then add the
+`BookmarkWidget.test.tsx` at eleven calls: 11.1s of test bodies → 7.4s. Then add the
 second payment — the searches after it — which is the larger half for a suite
 that does any (see "The test files, 2026-08-30").
 
