@@ -1,0 +1,32 @@
+---
+// Behavior for the play-button overlay on a <Video> embed, mounted by
+// BaseLayout so every page has it — a clip can land on a doc page or a blog
+// post, and both go through the same markdown pipeline. The markup itself is
+// emitted by remark-video.ts next to the video it belongs to, so this
+// component owns only the part that has to be identical wherever one
+// appears: the click that starts playback and takes the grey overlay away.
+//
+// The CSS is in styles/widgets/video-overlay.css with the rest of the
+// string-emitted markup's styling, imported by BaseLayout.
+---
+
+<script>
+  // Delegated: the .video-frame markup comes from the markdown pipeline, so
+  // there is no fixed list of overlays to bind to at load.
+  document.addEventListener('click', event => {
+    const target = event.target
+    if (target instanceof Element) {
+      const trigger = target.closest('.video-play-overlay')
+      const frame = trigger?.closest('.video-frame')
+      const video = frame?.querySelector('video')
+      if (
+        trigger instanceof HTMLElement &&
+        frame instanceof HTMLElement &&
+        video instanceof HTMLVideoElement
+      ) {
+        frame.classList.add('is-playing')
+        void video.play()
+      }
+    }
+  })
+</script>

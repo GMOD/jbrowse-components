@@ -142,6 +142,14 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         `<video${flags}${size} preload="metadata" poster="${poster}" ` +
         `aria-label="${escapeAttr(attrs.caption ?? '')}" ` +
         `style="max-width:100%;height:auto">${sources}${captions}</video>`
+      // autoplay's clip has no controls and starts on its own, so there is
+      // nothing for a play button to do. A controlled clip stays greyed out
+      // behind one until clicked, same as the poster it replaces.
+      const frameVideo = autoplay
+        ? video
+        : `<div class="video-frame">${video}` +
+          `<button type="button" class="video-play-overlay" aria-label="Play video">` +
+          `<span class="video-play-icon" aria-hidden="true"></span></button></div>`
       const ref = videoLiveRefs[name]
       const live = ref === undefined ? undefined : liveHref(ref)
       // Where the video STARTS, which for one that shows something being added is
@@ -160,7 +168,7 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       if (!videos.some(entry => entry.section === section)) {
         videos.push({ id: anchor, section })
       }
-      return `<figure id="${anchor}">${video}<figcaption>${caption}${link}</figcaption></figure>`
+      return `<figure id="${anchor}">${frameVideo}<figcaption>${caption}${link}</figcaption></figure>`
     }
     visit(tree, node => {
       if (node.type === 'heading' && SECTION_DEPTHS.has(node.depth)) {

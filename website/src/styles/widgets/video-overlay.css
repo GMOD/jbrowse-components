@@ -1,0 +1,67 @@
+/* The play-button overlay on a controlled <Video> embed. Markup: the
+   `.video-frame` wrapper remark-video.ts emits around the <video> for any
+   clip that isn't a silent autoplay loop. Behavior: components/VideoOverlay.astro,
+   mounted globally by BaseLayout since a clip can land on a doc page or a blog
+   post. `.video-frame` has to be sized to the <video> itself (fit-content, not
+   the full prose column) or the overlay button would cover blank space beside a
+   narrower clip instead of the poster. */
+@layer widget {
+  .video-frame {
+    position: relative;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: 1rem auto;
+  }
+  .video-frame video {
+    margin: 0;
+  }
+  /* Dimmed rather than hidden, so the poster frame still reads through the
+     grey while the reader decides whether to play it. */
+  .video-frame:not(.is-playing) video {
+    filter: brightness(0.55) saturate(0.85);
+  }
+  .video-play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .video-play-overlay:hover,
+  .video-play-overlay:focus-visible {
+    background: rgba(0, 0, 0, 0.35);
+  }
+  .video-play-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+    transition: transform 0.15s ease;
+  }
+  .video-play-overlay:hover .video-play-icon,
+  .video-play-overlay:focus-visible .video-play-icon {
+    transform: scale(1.07);
+  }
+  /* A CSS triangle rather than a glyph, so it stays crisp at any size and
+     needs no font to load before it paints. */
+  .video-play-icon::before {
+    content: '';
+    margin-left: 0.35rem;
+    border-style: solid;
+    border-width: 0.85rem 0 0.85rem 1.35rem;
+    border-color: transparent transparent transparent var(--color-accent-dark);
+  }
+  .video-frame.is-playing .video-play-overlay {
+    display: none;
+  }
+}
