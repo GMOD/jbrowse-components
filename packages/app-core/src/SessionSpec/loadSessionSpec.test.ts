@@ -89,11 +89,16 @@ function setup(
     workspaces = true,
     registeredViewTypes = [] as string[],
     registeredConnectionTypes = ['UCSCTrackHubConnection'],
+    acceptedKeys = {},
     connections,
   }: {
     workspaces?: boolean
     registeredViewTypes?: string[]
     registeredConnectionTypes?: string[]
+    // what each view type's registration publishes as writable on the view
+    // object. A type absent here has none, which is the out-of-tree view whose
+    // launcher vocabulary is undeclared — nothing there is classifiable
+    acceptedKeys?: Record<string, string[]>
     // omitted models a session that cannot take connections at all
     connections?: ReturnType<typeof connectionStub>
   } = {},
@@ -126,6 +131,7 @@ function setup(
           : registeredViewTypes
         ).includes(type),
     }),
+    getViewType: (type: string) => ({ acceptedKeys: acceptedKeys[type] }),
     // mirrors the real PluginManager: an extension point with no registered
     // callback resolves to the extendee unchanged rather than throwing
     evaluateAsyncExtensionPointStrict: (
@@ -420,6 +426,78 @@ test('a spec view nesting its settings under init is told where they go', async 
   expect(session.notifyError).toHaveBeenCalledWith(
     expect.stringContaining('nest their settings under "init"'),
   )
+})
+
+// A spec is arguments to a launcher and never becomes a view snapshot, so
+// withLaunchInput's partition never runs over it. Without this the only report a
+// typo produced was the launcher's own downstream symptom, "No assembly
+// provided" — on the surface written by hand, with no compiler behind it.
+describe('an unknown key on a spec view', () => {
+  const lgv = {
+    handlers: {
+      'LaunchView-LinearGenomeView': async (s: { views: StubView[] }) => {
+        s.views.push(stubView('lgv'))
+      },
+    },
+    options: {
+      registeredViewTypes: ['LinearGenomeView'],
+      acceptedKeys: {
+        LinearGenomeView: ['id', 'type', 'displayName', 'assembly', 'loc'],
+      },
+    },
+  }
+
+  test('is named', async () => {
+    const { session, pluginManager } = setup(lgv.handlers, lgv.options)
+
+    await loadSessionSpec(
+      // @ts-expect-error the misspelling being caught
+      { views: [{ type: 'LinearGenomeView', asembly: 'volvox' }] },
+      pluginManager,
+    )
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      'LinearGenomeView ignored unknown key(s): asembly',
+    )
+  })
+
+  test('says nothing when every key is one the view takes', async () => {
+    const { session, pluginManager } = setup(lgv.handlers, lgv.options)
+
+    await loadSessionSpec(
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'volvox',
+            loc: 'ctgA',
+            displayName: 'a view',
+          },
+        ],
+      },
+      pluginManager,
+    )
+
+    expect(session.notifyError).not.toHaveBeenCalled()
+  })
+
+  // A view type that registers no launch keys publishes no vocabulary, so its
+  // launcher's arguments are unclassifiable and every one of them would read as
+  // a typo.
+  test('says nothing about a view type that registers none', async () => {
+    const { session, pluginManager } = setup(
+      { 'LaunchView-GraphGenomeView': async () => {} },
+      { registeredViewTypes: ['GraphGenomeView'] },
+    )
+
+    await loadSessionSpec(
+      // @ts-expect-error a key only that plugin's launcher knows
+      { views: [{ type: 'GraphGenomeView', gfa: 'x.gfa' }] },
+      pluginManager,
+    )
+
+    expect(session.notifyError).not.toHaveBeenCalled()
+  })
 })
 
 // `sessionTracks` names the session whoever is looking, so the spec asks for the

@@ -59,6 +59,29 @@ export default class ViewType extends PluggableElementBase {
     this.extendedName = stuff.extendedName
   }
 
+  /**
+   * Every key this view accepts written on the view object — its declared MST
+   * properties plus the launch keys above. `undefined` for a view that
+   * registers none: nothing there says which of its launcher's arguments are
+   * settings, so a caller must classify nothing rather than call them all typos.
+   *
+   * This is the set `withLaunchInput`'s partition reads off the same two
+   * declarations, published for the surfaces that never build a view snapshot —
+   * a session spec launches straight through `LaunchView-<type>`.
+   */
+  get acceptedKeys() {
+    const properties = this.stateModel.properties as
+      | Record<string, unknown>
+      | undefined
+    return this.launchKeys && properties
+      ? [
+          ...Object.keys(properties),
+          ...Object.keys(this.launchKeys.keys),
+          ...this.launchKeys.passThrough,
+        ]
+      : undefined
+  }
+
   addDisplayType(display: DisplayType) {
     this.displayTypes.push(display)
   }

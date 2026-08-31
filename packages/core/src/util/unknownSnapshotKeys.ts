@@ -17,6 +17,16 @@ export function viewLabel(self: IStateTreeNode) {
 }
 
 /**
+ * What every surface calls this mistake. A session spec launches a view without
+ * ever building a snapshot, so it classifies its own keys and reports them
+ * through its own session rather than through the sink below — one wording, so
+ * a typo reads the same whether it was written in a config or in a URL.
+ */
+export function unknownKeysMessage(label: string, keys: string[]) {
+  return `${label} ignored unknown key(s): ${keys.join(', ')}`
+}
+
+/**
  * Name the keys a view was handed and could not place. Shared with
  * `withLaunchInput`, whose partition subsumes the capture below for any view
  * that registers launch keys, so the two say the same thing about the same
@@ -26,7 +36,7 @@ export function reportUnknownKeys(self: IStateTreeNode, keys: string[]) {
   if (!keys.length) {
     return
   }
-  const message = `${viewLabel(self)} ignored unknown key(s): ${keys.join(', ')}`
+  const message = unknownKeysMessage(viewLabel(self), keys)
   console.warn(message)
   try {
     getNotificationSink(self).notify(message, 'warning')

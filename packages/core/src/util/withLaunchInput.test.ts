@@ -1,5 +1,6 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
+import ViewType from '../pluggableElementTypes/ViewType.ts'
 import {
   defineLaunchKeys,
   pendingLaunch,
@@ -281,4 +282,38 @@ test('the widened snapshot type survives a later processor', () => {
     assembly: 'hg38',
     tracks: ['genes'],
   })
+})
+
+// A session spec launches through `LaunchView-<type>` without ever building a
+// snapshot, so the partition never runs there and the spec path classifies its
+// own keys. It reads the set off the registration, which is what keeps the two
+// surfaces from growing two answers about one key.
+test('a ViewType publishes the accepted set the partition reads', () => {
+  const viewType = new ViewType({
+    name: 'TestView',
+    stateModel: TestView,
+    launchKeys: keys,
+    ReactComponent: () => null,
+  })
+  expect(viewType.acceptedKeys).toEqual(
+    expect.arrayContaining([
+      'type',
+      'showThing',
+      'assembly',
+      'sameScale',
+      'legacySpelling',
+    ]),
+  )
+  expect(viewType.acceptedKeys).not.toContain('asembly')
+})
+
+// Nothing says which of an unregistered view's launcher arguments are settings,
+// so a caller has to classify none of them rather than call them all typos.
+test('a ViewType registering no launch keys publishes no set', () => {
+  const viewType = new ViewType({
+    name: 'TestView',
+    stateModel: TestView,
+    ReactComponent: () => null,
+  })
+  expect(viewType.acceptedKeys).toBeUndefined()
 })

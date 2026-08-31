@@ -2,6 +2,7 @@ import {
   isSessionWithAddAssembly,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
+import { unknownKeysMessage } from '@jbrowse/core/util/withLaunchInput'
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
@@ -355,6 +356,36 @@ export async function loadSessionSpec(
       session?.notifyError(
         `Session spec view(s) ${nested.join(', ')} nest their settings under "init". A spec takes those keys flat (assembly, loc, tracks, …); "init" is the config/defaultSession form.`,
       )
+    }
+
+    // The same classification a view snapshot gets, run here because a spec
+    // never becomes one: `LaunchView-<type>` takes these keys as arguments, so
+    // `withLaunchInput`'s partition never sees them and nothing names a typo.
+    // `{type: 'LinearGenomeView', asembly: 'volvox'}` reported only the
+    // launcher's downstream "No assembly provided", on the one surface written
+    // by hand with no compiler and no editor behind it.
+    //
+    // An ERROR rather than the snapshot path's warning, for the same reason the
+    // nesting diagnostic above is one: this surface's misplaced keys already
+    // report as errors, and the launcher's own failure lands as an error a line
+    // later — a warning under it reads as the lesser of the two, when it is the
+    // cause.
+    //
+    // A view type that registers no launch keys classifies nothing: its
+    // launcher's vocabulary is undeclared, so every argument would read as a
+    // typo.
+    for (const { type, ...view } of views) {
+      const accepted = viewTypes.has(type)
+        ? pluginManager.getViewType(type).acceptedKeys
+        : undefined
+      const unknown = accepted
+        ? Object.keys(view).filter(
+            key => key !== 'init' && !accepted.includes(key),
+          )
+        : []
+      if (unknown.length) {
+        session?.notifyError(unknownKeysMessage(type, unknown))
+      }
     }
 
     // Launch sequentially and record the id each spec view created, so the

@@ -31,6 +31,9 @@ function baseConfig() {
     ],
     defaultSession: {
       name: 'demo',
+      // A v5 view takes every setting flat, and the tests below swap this whole
+      // entry for other view types and shapes, so the element type is the JSON
+      // an author writes rather than this one view's.
       views: [
         {
           type: 'LinearGenomeView',
@@ -38,7 +41,7 @@ function baseConfig() {
           loc: 'chr1:1-1000',
           tracks: ['sample_bam'],
         },
-      ],
+      ] as Record<string, unknown>[],
     },
   }
 }
@@ -214,6 +217,74 @@ describe('validateConfig', () => {
     expect(error?.message).toContain('did you mean "sample_bam"')
   })
 
+  // Same trap as a session display node, one level up: a view has no config
+  // schema at all, so its declared MST properties plus its registered launch
+  // keys are the whole accepted set and everything else is dropped in silence.
+  // Four artifacts shipped broken this way.
+  describe('a session view', () => {
+    it('reports a misspelled launch key, with a suggestion', () => {
+      const config = baseConfig()
+      const view = config.defaultSession.views[0]!
+      delete view.assembly
+      view.asembly = 'hg38'
+      const [error] = errorsOf(config)
+      expect(error?.where).toBe('defaultSession.views[0].asembly')
+      expect(error?.message).toContain('did you mean "assembly"')
+    })
+
+    it('accepts a launch key and a declared property side by side', () => {
+      const config = baseConfig()
+      config.defaultSession.views[0]!.showCytobands = false
+      expect(validateConfig(config).problems).toEqual([])
+    })
+
+    // The key is real and correctly spelled, so no suggestion reaches it —
+    // naming the views that do take it is the only useful thing to say.
+    it('names the view types a misplaced key belongs to', () => {
+      const config = baseConfig()
+      config.defaultSession.views = [{ type: 'DotplotView', assembly: 'hg38' }]
+      const [error] = errorsOf(config)
+      expect(error?.where).toBe('defaultSession.views[0].assembly')
+      expect(error?.message).toContain('is a setting of LinearGenomeView')
+      expect(error?.message).toContain('not of DotplotView')
+    })
+
+    // Deprecated rather than dead: the view's own preprocessor still lifts it.
+    it('warns on the nested init form and checks inside it', () => {
+      const config = baseConfig()
+      config.defaultSession.views = [
+        { type: 'LinearGenomeView', init: { assembly: 'hg38', lo: 'chr1' } },
+      ]
+      const [warning] = warningsOf(config)
+      expect(warning?.where).toBe('defaultSession.views[0].init')
+      expect(warning?.message).toContain('deprecated')
+      expect(errorsOf(config).map(e => e.where)).toEqual([
+        'defaultSession.views[0].init.lo',
+      ])
+    })
+
+    it('checks a row of a comparative view as a view of its own', () => {
+      const config = baseConfig()
+      config.defaultSession.views = [
+        {
+          type: 'LinearSyntenyView',
+          views: [{ type: 'LinearGenomeView', asembly: 'hg38' }],
+        },
+      ]
+      expect(errorsOf(config).map(e => e.where)).toEqual([
+        'defaultSession.views[0].views[0].asembly',
+      ])
+    })
+
+    // A plugin's view type is a warning from resolveType and nothing more: its
+    // keys are unknowable from this manifest.
+    it('says nothing about the keys of a view type it does not know', () => {
+      const config = baseConfig()
+      config.defaultSession.views = [{ type: 'GraphGenomeView', gfa: 'x.gfa' }]
+      expect(errorsOf(config)).toEqual([])
+    })
+  })
+
   it('checks displayDefaults against the track displays, not the track', () => {
     const config = baseConfig()
     // @ts-expect-error shorthand, not a declared track slot
@@ -386,7 +457,6 @@ describe('validateConfig', () => {
     config.defaultSession.views = [
       {
         type: 'LinearGenomeView',
-        // @ts-expect-error the snapshot form, alongside the spec form above
         tracks: [
           {
             type: 'AlignmentsTrack',
@@ -477,7 +547,6 @@ describe('validateConfig', () => {
     config.defaultSession.views = [
       {
         type: 'LinearSyntenyView',
-        // @ts-expect-error a synteny view holds a row of LGVs
         views: [
           {
             type: 'LinearGenomeView',

@@ -4,6 +4,11 @@ import {
   viewLabel,
 } from './unknownSnapshotKeys.ts'
 
+// re-exported here because the surfaces that classify their own keys — a
+// session spec, which launches without ever building a snapshot — reach the
+// partition's vocabulary through this module
+export { unknownKeysMessage } from './unknownSnapshotKeys.ts'
+
 import type {
   IAnyModelType,
   IModelType,
