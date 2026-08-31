@@ -41,13 +41,13 @@ export { default as LevelSyntenyCanvas } from './LinearSyntenyViewHelper/LevelSy
 // value is what gets those back, and it is what JBrowse's own comparative
 // render area does with it.
 export type { LinearSyntenyViewHelperModel } from './LinearSyntenyViewHelper/stateModelFactory.ts'
-// The view's `init` snapshot contract, so a programmatic caller (jbrowse-img,
-// an embedded host) builds it against the same type applyInitSettings reads
-// rather than a hand-copied shape.
+// The view object a programmatic caller (jbrowse-img, an embedded host) writes,
+// derived from the state model rather than hand-copied.
 export type {
   CigarMode,
   FadeThinMode,
   LinearSyntenyViewInit,
+  LinearSyntenyViewSpec,
 } from './LinearSyntenyView/types.ts'
 
 export default class LinearComparativeViewPlugin extends Plugin {
