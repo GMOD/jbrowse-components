@@ -422,15 +422,18 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
       <DisplayUIProvider>
         <div ref={ref}>
           {status.type === 'ready' ? (
-            view.views.map((row, i) => (
-              <div key={row.id}>
-                {i > 0 ? <Ribbons level={view.levels[i - 1]} /> : null}
-                <SyntenyRow
-                  view={row}
-                  label={row.assemblyNames[0] ?? `row ${i + 1}`}
-                />
-              </div>
-            ))
+            view.views.map((row, i) => {
+              const level = view.levels[i - 1]
+              return (
+                <div key={row.id}>
+                  {level ? <Ribbons level={level} /> : null}
+                  <SyntenyRow
+                    view={row}
+                    label={row.assemblyNames[0] ?? `row ${i + 1}`}
+                  />
+                </div>
+              )
+            })
           ) : (
             // A synteny view answers `view.status` with the same four values a
             // linear one does, so this is the gate every other page here
