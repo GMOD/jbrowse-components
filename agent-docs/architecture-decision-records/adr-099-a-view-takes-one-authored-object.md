@@ -1,10 +1,6 @@
 ---
 status: Accepted
-summary:
-  A view carried two authoring shapes, flat on a spec and nested under `init` in
-  a `defaultSession`, and MST dropped the wrong choice in silence; v5 keeps the
-  flat one and resolves the command-vs-property split in the view's own
-  preprocessor instead of asking the author to draw it
+summary: "A view carried two authoring shapes, flat on a spec and nested under `init` in a `defaultSession`, and MST dropped the wrong choice in silence; v5 keeps the flat one and resolves the command-vs-property split in the view's own preprocessor instead of asking the author to draw it"
 ---
 
 # ADR-099: A view takes one authored object
