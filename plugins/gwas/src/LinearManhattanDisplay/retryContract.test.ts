@@ -112,16 +112,19 @@ function setup() {
 // The FetchVisibleRegions autorun carries `delay: 600`, so every run after the
 // first needs the debounce waited out rather than a microtask.
 //
-// `unref` where there is one, so the longest timers in this file can't hold
-// jest's worker open past the run. Optional because there isn't one under jsdom,
-// where `setTimeout` returns a number — the lint rule reads node's types and
-// calls the guard unnecessary, and it is the guard that keeps this from throwing
-// under the environment the suite actually runs in.
+// ON A FAKE CLOCK: that debounce is a `setTimeout` and the RPC is a resolved
+// promise, so advancing runs exactly what elapsing ran. The waits here were 15.8s
+// of a 15.9s suite.
+beforeEach(() => {
+  jest.useFakeTimers()
+})
+
+afterEach(() => {
+  jest.useRealTimers()
+})
+
 function settle() {
-  return new Promise(resolve => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- jsdom's setTimeout returns a number
-    setTimeout(resolve, 800).unref?.()
-  })
+  return jest.advanceTimersByTimeAsync(800)
 }
 
 // The first fetch cycle has to be fully over before a test provokes anything:
