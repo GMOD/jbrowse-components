@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/browser-test-utils",
-  "version": "0.0.0",
+  "version": "5.0.0-beta.1",
   "private": true,
   "type": "module",
   "description": "Internal Puppeteer harness for jbrowse-web browser tests and website screenshot generation. The parts an outside consumer wants live in the published @jbrowse/capture",

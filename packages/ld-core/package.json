@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/ld-core",
-  "version": "4.3.0",
+  "version": "5.0.0-beta.1",
   "type": "module",
   "description": "Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps",
   "keywords": [

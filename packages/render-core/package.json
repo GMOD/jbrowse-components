@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/render-core",
-  "version": "4.3.0",
+  "version": "5.0.0-beta.1",
   "type": "module",
   "description": "GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks",
   "keywords": [

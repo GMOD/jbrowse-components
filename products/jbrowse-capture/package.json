@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/capture",
-  "version": "4.3.0",
+  "version": "5.0.0-beta.1",
   "description": "Drive a JBrowse 2 instance with Puppeteer and screenshot it once it has actually finished rendering",
   "keywords": [
     "jbrowse",

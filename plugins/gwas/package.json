@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gwas",
-  "version": "4.2.1",
+  "version": "5.0.0-beta.1",
   "type": "module",
   "description": "JBrowse 2 GWAS adapters, tracks, and Manhattan plot displays",
   "keywords": [
