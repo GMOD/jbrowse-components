@@ -707,6 +707,9 @@ export default defineConfig(
       // checker whose `log = console.log` default is its reporting channel.
       'products/jbrowse-capture/src/bin.ts',
       'packages/browser-test-utils/**/*',
+      // Demo pipelines: their stdout IS the interface, the same as the script
+      // directories above.
+      'demo/**/*',
     ],
     languageOptions: {
       globals: {

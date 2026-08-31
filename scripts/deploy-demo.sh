@@ -74,9 +74,19 @@ else
   aws s3 cp "$local_file" "s3://jbrowse.org/$s3_key"
 fi
 
-echo "Invalidating CloudFront /$s3_key"
+# `.../index.html` and the `.../` a browser actually asks for are two cache
+# keys, so invalidating only the first leaves every visitor on the old page --
+# a freshly deployed tiberius_review served a 13-hour-old index.html this way,
+# while curl on the explicit filename showed the new one.
+paths="/$s3_key"
+case "$s3_key" in
+  */index.html) paths="$paths /${s3_key%index.html}" ;;
+esac
+
+echo "Invalidating CloudFront $paths"
+# shellcheck disable=SC2086
 aws cloudfront create-invalidation \
   --distribution-id "$distribution_id" \
-  --paths "/$s3_key" \
+  --paths $paths \
   --query 'Invalidation.{Id:Id,Status:Status}' \
   --output table
