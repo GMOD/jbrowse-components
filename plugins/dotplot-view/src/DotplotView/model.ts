@@ -1299,8 +1299,8 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setLaunch(init?: LaunchInput<DotplotViewCommands>) {
-          self.launch = init
+        setLaunch(launch?: LaunchInput<DotplotViewCommands>) {
+          self.launch = launch
         },
 
         /**

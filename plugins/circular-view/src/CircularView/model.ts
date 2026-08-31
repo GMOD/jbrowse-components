@@ -915,8 +915,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLaunch(init?: LaunchInput<CircularViewCommands>) {
-        self.launch = init
+      setLaunch(launch?: LaunchInput<CircularViewCommands>) {
+        self.launch = launch
       },
 
       /**

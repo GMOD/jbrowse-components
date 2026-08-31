@@ -722,8 +722,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLaunch(init?: LaunchInput<BreakpointSplitViewCommands>) {
-        self.launch = init
+      setLaunch(launch?: LaunchInput<BreakpointSplitViewCommands>) {
+        self.launch = launch
       },
 
       /**

@@ -1707,8 +1707,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLaunch(arg?: LaunchInput<InitState>) {
-        self.launch = arg
+      setLaunch(launch?: LaunchInput<InitState>) {
+        self.launch = launch
       },
 
       /**

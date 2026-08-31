@@ -770,8 +770,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setLaunch(init?: LaunchInput<LinearSyntenyViewCommands>) {
-        self.launch = init
+      setLaunch(launch?: LaunchInput<LinearSyntenyViewCommands>) {
+        self.launch = launch
       },
     }))
     .actions(self => {

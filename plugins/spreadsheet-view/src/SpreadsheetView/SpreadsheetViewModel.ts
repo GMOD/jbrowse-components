@@ -154,8 +154,8 @@ export default function stateModelFactory() {
           /**
            * #action
            */
-          setLaunch(init?: LaunchInput<SpreadsheetViewCommands>) {
-            self.launch = init
+          setLaunch(launch?: LaunchInput<SpreadsheetViewCommands>) {
+            self.launch = launch
           },
 
           /**
