@@ -16,6 +16,31 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **Declare the per-region fetch trigger over `installFetch` too, so all four
+  families share one autorun** — scoped and declined 2026-08-31, after
+  `installGlobalFetchAutorun` and `installPrerequisiteFetch` became declarations
+  over the skeleton and this was the last hand-rolled trigger left. The
+  convergence buys **no rule**: `installPerRegionFetchAutoruns` already reads
+  `reloadCounter` unconditionally and `fetchCanceled` tracked, already runs on
+  `leadingEdgeAutorun` through `autorunOnReadyView`, already installs both
+  contract checks, already reaches `runFetchOnce` (through
+  `FetchMixin.runFetch`), and already classifies its runs in the skeleton's own
+  outcome vocabulary through `retryOutcomeForPlan`. Everything the skeleton owns,
+  this family owns already; what differs is the two things it cannot express —
+  a freshness gate that is per-region coverage rather than one key, and
+  `fetchGeneration` as the in-flight trigger, which `installFetch` has no other
+  caller for.
+  
+  The cost is not the trigger, it is the rotation. A lent
+  `rotation: self.fetchRotation` means the skeleton's `begin()` runs first and
+  `runFetch`'s own `begin()` then supersedes the fetch that just started, so
+  `fetchNeeded` would have to take the skeleton's `ctx` instead of opening a
+  fetch of its own — nine overrides, the three fan-out helpers, `fetchRegions`,
+  and the canvas caller that fetches outside the autorun deliberately. That is
+  the streaming-commit contract (`RegionFetchContext`) re-cut for a rename.
+  Revisit only if the skeleton grows a rule this family would otherwise miss.
+
+
 - **Compose a second consumer onto the shared y scale, the way density composed
   the colour ramp** — censused and declined 2026-08-29. The census is
   [ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md);
