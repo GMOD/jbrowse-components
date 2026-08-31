@@ -877,7 +877,7 @@ a sibling RPC arg, and **no caller passes it**: `renameRegionsIfNeeded` already
 resolved the assembly, so it supplies one to every renaming RPC for free.
 `CoreGetRefNames` is the one exception, because it is what renaming calls. Why
 that beats documenting a rule, and the set-once instance field behind it:
-[reference/SEQUENCE_ADAPTER.md](reference/SEQUENCE_ADAPTER.md).
+[reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md#the-rename-also-carries-the-sequence-adapter-and-that-is-why-it-is-derived).
 
 ## GPU rendering architecture
 

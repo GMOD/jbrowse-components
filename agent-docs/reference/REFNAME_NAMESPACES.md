@@ -1,6 +1,6 @@
 ---
 name: refname-namespaces
-description: Why `refName` means two different things either side of the RPC boundary, the one-sentence rule that says when that is safe (an answer about a region you asked for) and when it is not (an answer naming a location you did not), and the six plugins that hit it and invented six different workarounds — including synteny's, which is two renames covering thirteen readers and where the per-site audit table now lives. Also the same defect in ASSEMBLY names, one field over. Read before comparing a fetched refName against anything, or before adding an RPC that returns a refName.
+description: Why `refName` means two different things either side of the RPC boundary, the one-sentence rule that says when that is safe (an answer about a region you asked for) and when it is not (an answer naming a location you did not), and the six plugins that hit it and invented six different workarounds — including synteny's, which is two renames covering thirteen readers and where the per-site audit table now lives. Also the same defect in ASSEMBLY names one field over, and the other thing the rename derives for free: the sequence adapter config a BAM/CRAM decodes against. Read before comparing a fetched refName against anything, or before adding an RPC that returns a refName or decodes against the reference.
 ---
 
 # The two refName namespaces
@@ -79,6 +79,51 @@ nothing in the next.
 above, and canonicalizing an operand compared in the worker breaks exactly the
 aliased tracks the rule exists for. Check which side a comparison runs on;
 alignments layout looks worker-side and is not (ADR-053).
+
+## The rename also carries the sequence adapter, and that is why it is derived
+
+BAM/CRAM decode against the reference (CRAM to reconstruct bases, BAM to compute
+mismatches without an MD tag), but a track's adapter config doesn't carry the
+reference — it belongs to the assembly. So the assembly's sequence adapter config
+rides **alongside** `adapterConfig` as a sibling RPC arg, never spliced into it,
+and is stashed on the resolved adapter instance by `setSequenceAdapterConfig`;
+the adapter lazily builds it through `getSubAdapter` on first
+`getSequenceAdapter()`. `CramAdapter` binds its `seqFetch` into the
+`IndexedCramFile` at construction, which is why the config lives on the instance
+rather than travelling per call.
+
+**No caller passes it.** `renameRegionsIfNeeded` already resolves the assembly a
+fetch is against — the same handle `originalRefName` is a name into — so it
+supplies the config, and every renaming RPC gets one for free. That makes it a
+property of the *call* rather than of any method's payload, like `sessionId` and
+the handles; `RpcRegistry` documents why that distinction is worth keeping.
+
+It was a rule until 2026-08-19, and the rule did not hold: `CoreGetExportData`,
+`BreakpointGetFeatures` and `fetchTrackData`'s `CoreGetFeatures` all omitted it
+and worked only because `CoreGetRefNames` had primed the instance first.
+Forgetting was silent — a CRAM throws mid-decode, a BAM just reports no
+mismatches — so deriving it beats documenting it.
+
+`CoreGetRefNames` is the one exception and still passes its own, because it is
+what renaming CALLS and cannot be fed by it. Its priming is not vestigial: a
+`ReferenceScanAdapter` resolves its sequence *inside its own `getRefNames`*, so
+that call must arrive already primed. What no longer holds is any LATER call
+depending on it — delete the priming outright and `SaveTrackData`'s CRAM case
+stays green, where it used to be the only test in the repo that saw it.
+
+Two tests hold this down. `data_adapters/sequenceAdapterPriming.test.ts` pins
+the priming contract directly — prime through `CoreGetRefNames`, fetch with
+nothing, read the reference back — and the alignments adapters' own suites (20
+tests over 10 files) pin the consumer half, that an adapter uses the config it
+was handed.
+
+`setSequenceAdapterConfig` is set-once: one `??=`, which both refuses to clear
+the field and refuses to replace it. A multi-assembly fetch can therefore prime
+one instance twice with two different configs, and the first wins. That is
+harmless rather than fixed — the adapters fetched across two assemblies are the
+comparative ones, which never read the field. Both the compound cache key and a
+loud conflict were costed and declined; see
+[REJECTED_IDEAS.md](REJECTED_IDEAS.md).
 
 ## Six plugins hit it; six invented a different fix
 
