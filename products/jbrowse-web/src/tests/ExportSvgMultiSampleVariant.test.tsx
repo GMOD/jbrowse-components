@@ -47,15 +47,8 @@ function cellRowYs(svg: string) {
 // fix reads effectiveRowHeight, so the 1094 sample rows spread down the full
 // display height. Asserted on both multi-sample variant display types since
 // each has its own renderSvg.
-async function exportFitModeAndCheck(displayType: 'matrix' | 'regular') {
-  const { view, info } = await openMultiSampleVariantDisplay({
-    displayType,
-  })
-  await findDisplayPainted(info.displayTestId, { timeout: 40000 })
-
-  await view.exportSvg({ rasterizeLayers: false })
-  const { rectCount, distinctY, yMin, yMax } = cellRowYs(getSavedSvg())
-
+function expectFitModeSpread(svg: string) {
+  const { rectCount, distinctY, yMin, yMax } = cellRowYs(svg)
   expect(rectCount).toBeGreaterThan(1000)
   // rows spread down the display rather than collapsing to a single y=0 band
   expect(yMin).toBe(0)
@@ -63,18 +56,16 @@ async function exportFitModeAndCheck(displayType: 'matrix' | 'regular') {
   expect(distinctY).toBeGreaterThan(100)
 }
 
-test(
-  'matrix multi-sample variant SVG export spreads rows in fit mode',
-  () => exportFitModeAndCheck('matrix'),
-  45000,
-)
-
-// The matrix display reserves `lineZoneHeight` at the top for the lines tying
-// each column to its genomic position. The export used to draw neither: rows
-// started at y=0 (20px above where the live canvas and tree sidebar put them,
-// leaving the bottom 20px blank) and the connector lines were missing entirely,
-// even though the component already had an `exportSVG` mode nothing called.
-test('matrix multi-sample variant SVG export draws the connector lines and offsets rows below them', async () => {
+// Both matrix claims off ONE export. Opening this display and painting it is
+// ~8s, and the two ran the same setup and then asserted on the same SVG string.
+//
+// The second half: the matrix display reserves `lineZoneHeight` at the top for
+// the lines tying each column to its genomic position. The export used to draw
+// neither: rows started at y=0 (20px above where the live canvas and tree
+// sidebar put them, leaving the bottom 20px blank) and the connector lines were
+// missing entirely, even though the component already had an `exportSVG` mode
+// nothing called.
+test('the matrix export spreads rows in fit mode, below the connector lines', async () => {
   const { view, info } = await openMultiSampleVariantDisplay({
     displayType: 'matrix',
   })
@@ -85,6 +76,8 @@ test('matrix multi-sample variant SVG export draws the connector lines and offse
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
+
+  expectFitModeSpread(svg)
 
   expect(lineZoneHeight).toBeGreaterThan(0)
   // cells, labels, and dendrogram all live in one row-space group below the
@@ -98,19 +91,7 @@ test('matrix multi-sample variant SVG export draws the connector lines and offse
   expect(connectors?.length).toBeGreaterThan(10)
 }, 45000)
 
-test(
-  'regular multi-sample variant SVG export spreads rows in fit mode',
-  () => exportFitModeAndCheck('regular'),
-  45000,
-)
-
-// The variant lane end to end, through the real adapter and the real model
-// rather than a fixture: the band has to come out of the ROWS (the display
-// height is unchanged, the rows start lower and get shorter) and it has to be
-// painted, not merely reserved. Reserved-but-blank is the failure mode the slot
-// is deliberately kept off the matrix schema to avoid, so it is worth a real
-// assertion rather than a geometry unit test alone.
-test('the variant lane is painted, and takes its height from the rows', async () => {
+test('the regular export spreads rows in fit mode, and the variant lane takes its height from them', async () => {
   const { view, info } = await openMultiSampleVariantDisplay({
     displayType: 'regular',
   })
@@ -129,6 +110,9 @@ test('the variant lane is painted, and takes its height from the rows', async ()
   // two exports in one test, so index rather than getSavedSvg()
   const [withoutLane, svg] = getSavedSvgs() as [string, string]
   const before = cellRowYs(withoutLane)
+
+  // the lane-less export IS the fit-mode one, so the same setup answers both
+  expectFitModeSpread(withoutLane)
 
   // the track did not grow; the rows gave up the band
   expect(laneHeight).toBeGreaterThan(0)
