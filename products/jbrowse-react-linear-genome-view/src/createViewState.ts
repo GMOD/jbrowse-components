@@ -104,9 +104,14 @@ export interface CreateViewStateBaseOptions {
   /**
    * The declarative description of the view to open — where to navigate, which
    * tracks to show, whether to open the track list — minus `assembly`, which is
-   * filled in from the `assembly` option so you never repeat it. The same blob
-   * a saved session and a URL spec carry, so all three round-trip through each
-   * other.
+   * filled in from the `assembly` option so you never repeat it.
+   *
+   * Read ONCE, at create, the way `defaultValue` is: it seeds the view and is
+   * never consulted again, so changing it later moves nothing. That is what the
+   * name is for, and it is why this survived v5 removing `init` as a key ON a
+   * view — there the word named a second authoring shape for settings that now
+   * go directly on the view object (ADR-099), and a saved session or URL spec
+   * carries them flat. This is an argument to a factory, not a snapshot key.
    *
    * Shared by both entry points rather than being the managed component's own
    * input, and that is the point: a host holding its own engine says
