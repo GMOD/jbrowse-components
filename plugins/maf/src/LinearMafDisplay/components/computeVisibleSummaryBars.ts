@@ -1,8 +1,7 @@
 import {
   bpSpanPx,
   eachVisibleRegion,
-  rowBandGeometry,
-  visibleRowRange,
+  rowViewport,
 } from './visibleRegionGeometry.ts'
 
 import type { MafStatus, MafSummaryRecord } from '../../types.ts'
@@ -61,22 +60,9 @@ interface ComputeVisibleSummaryBarsParams extends MafRowGeometryParams {
 export function computeVisibleSummaryBars(
   params: ComputeVisibleSummaryBarsParams,
 ): SummaryBar[] {
-  const {
-    view,
-    summaryDataMap,
-    rowIndexBySrc,
-    rowHeight,
-    rowProportion,
-    scrollTop,
-    viewportHeight,
-  } = params
+  const { view, summaryDataMap, rowIndexBySrc, rowHeight } = params
   const bars: SummaryBar[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    viewportHeight,
-  )
+  const { h, offset, firstRow, endRow } = rowViewport(params)
 
   for (const { data: records, bpToPx, bpLo, bpHi } of eachVisibleRegion(
     view,

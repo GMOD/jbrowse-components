@@ -1,8 +1,7 @@
 import {
   bpSpanPx,
   eachVisibleRegion,
-  rowBandGeometry,
-  visibleRowRange,
+  rowViewport,
 } from './visibleRegionGeometry.ts'
 
 import type { MafStatus } from '../../types.ts'
@@ -25,14 +24,9 @@ export interface EmptyLineSegment {
 export function computeVisibleEmptyLines(
   params: MafOverlayParams,
 ): EmptyLineSegment[] {
-  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop } = params
+  const { view, rpcDataMap, rowHeight } = params
   const segments: EmptyLineSegment[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    params.viewportHeight,
-  )
+  const { h, offset, firstRow, endRow } = rowViewport(params)
 
   // Not `eachVisibleRow`: e-lines are `block.empties`, a species with no
   // aligning sequence here, so there is no aligned row to hang them off.

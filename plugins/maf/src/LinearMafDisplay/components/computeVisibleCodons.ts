@@ -1,4 +1,4 @@
-import { codonTable } from '@jbrowse/core/util'
+import { codonTable, complementTable } from '@jbrowse/core/util'
 
 import { buildColumnForGenomicOffset } from '../../LinearMafRenderer/binning.ts'
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
@@ -6,8 +6,7 @@ import { LOWER_BIT, isNoBaseByte } from '../../util/asciiBytes.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
-  rowBandGeometry,
-  visibleRowRange,
+  rowViewport,
 } from './visibleRegionGeometry.ts'
 
 import type { GenomicColumns } from '../../LinearMafRenderer/binning.ts'
@@ -69,14 +68,6 @@ export interface Codon {
   strand: number
 }
 
-const COMPLEMENT: Record<string, string> = {
-  A: 'T',
-  T: 'A',
-  G: 'C',
-  C: 'G',
-  N: 'N',
-}
-
 /**
  * The three reference-column bytes of a codon as a single triplet string, read
  * in protein (transcription) orientation — reverse-complemented for a `−`-strand
@@ -84,6 +75,13 @@ const COMPLEMENT: Record<string, string> = {
  * position is a gap/space (a gap/deletion in that species, so there's no codon).
  * Non-standard bases (`N`) are kept verbatim, so the triplet stays 3 chars for
  * display while `codonTable` still yields no amino acid for it.
+ *
+ * Core's `complementTable` rather than the local four-base map this carried,
+ * which fell through to `N` for every IUPAC ambiguity code. Not a behavioural
+ * fix, and worth saying so before someone reports it as one: every reader of a
+ * triplet requires `codonTable[triplet]`, which holds only the 64 standard
+ * codons, so an ambiguity code has no amino acid either way. `?? 'N'` stays for
+ * a character that is not a base at all.
  */
 function orientedTriplet(
   b0: number,
@@ -98,7 +96,7 @@ function orientedTriplet(
   const c1 = String.fromCharCode(b1 & ~LOWER_BIT)
   const c2 = String.fromCharCode(b2 & ~LOWER_BIT)
   return strand === -1
-    ? `${COMPLEMENT[c2] ?? 'N'}${COMPLEMENT[c1] ?? 'N'}${COMPLEMENT[c0] ?? 'N'}`
+    ? `${complementTable[c2] ?? 'N'}${complementTable[c1] ?? 'N'}${complementTable[c0] ?? 'N'}`
     : `${c0}${c1}${c2}`
 }
 
@@ -597,14 +595,9 @@ export function computeVisibleCodons(
   codons: readonly LocatedCodon[],
   geometry: MafRowGeometryParams,
 ): CodonMarker[] {
-  const { rowHeight, rowProportion, scrollTop, viewportHeight } = geometry
+  const { rowHeight } = geometry
   const markers: CodonMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    viewportHeight,
-  )
+  const { h, offset, firstRow, endRow } = rowViewport(geometry)
   const hp2 = h / 2
 
   for (const located of codons) {

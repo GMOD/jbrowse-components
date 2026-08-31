@@ -2,11 +2,7 @@ import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
-import {
-  eachVisibleRegion,
-  rowBandGeometry,
-  visibleRowRange,
-} from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
@@ -25,24 +21,11 @@ interface ComputeVisibleLabelsParams extends MafOverlayParams {
 export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
-  const {
-    view,
-    rpcDataMap,
-    rowHeight,
-    rowProportion,
-    scrollTop,
-    viewportHeight,
-    showAllLetters,
-    showAsUpperCase,
-  } = params
+  const { view, rpcDataMap, rowHeight, showAllLetters, showAsUpperCase } =
+    params
 
   const labels: VisibleLabel[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    viewportHeight,
-  )
+  const { h, offset, firstRow, endRow } = rowViewport(params)
   // Gate base/SNP letters on the same zoom + row height as the insertion and
   // deletion count labels, so all row text reveals together (rather than letters
   // showing on rows too short for the insertion/deletion counts to draw).

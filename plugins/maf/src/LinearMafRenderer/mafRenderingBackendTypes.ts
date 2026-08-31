@@ -1,4 +1,4 @@
-import type { AlignmentContext, MafStatus } from '../types.ts'
+import type { AlignmentContext, EmptyRecord } from '../types.ts'
 import type { MafCoverageColors } from './coverageBandColors.ts'
 import type { MafColorPalette } from './util.ts'
 import type {
@@ -207,15 +207,13 @@ export interface MafAlignedRow {
   context?: AlignmentContext
 }
 
-export interface MafEmptyRow {
+// The placed counterpart of an adapter's `EmptyRecord`: the same six fields the
+// `e` line carries, plus the row it landed on. Extending rather than restating
+// them means a field added to the record — the adapters and the wire packer
+// already agree on it — cannot go missing here.
+export interface MafEmptyRow extends EmptyRecord {
   rowIndex: number
   sampleId?: string
-  status: MafStatus
-  chr: string
-  start: number
-  size: number
-  strand: number
-  srcSize: number
 }
 
 export interface MafBlock {

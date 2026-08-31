@@ -93,11 +93,39 @@ export function forwardPos(row: MafAlignedRow, baseOffset: number) {
 }
 
 /**
+ * The block column carrying reference position `targetBp`, or -1 when the
+ * block's reference never reaches it.
+ *
+ * Row-independent — it reads `refSeqBytes` and nothing else — which is the point:
+ * a caller comparing *every* row at one position resolves the column once and
+ * then indexes each row's bytes, where `alignedColumnAt` would re-walk the
+ * block's columns per row. "Sort rows by base here" is that caller.
+ *
+ * `alignedColumnAt` stays a separate walk rather than being written on top of
+ * this, because its `baseOffset` is a count of the row's own bases up to the
+ * column and so needs the row walked anyway.
+ */
+export function refColumnAt(block: MafBlock, targetBp: number) {
+  const ref = block.refSeqBytes
+  let genomicOffset = 0
+  let column = -1
+  for (let i = 0; i < ref.length && column === -1; i++) {
+    if (ref[i] !== DASH) {
+      if (block.startBp + genomicOffset === targetBp) {
+        column = i
+      }
+      genomicOffset++
+    }
+  }
+  return column
+}
+
+/**
  * The aligned byte a row carries in the reference column at `targetBp` — a
  * base, or `DASH`/`SPACE` where the row has a gap there — plus how many of the
  * row's own bases precede it. Undefined when the block's reference never
- * reaches that column. The one walk of a block's columns, shared by the hover
- * and by "Sort rows by base here".
+ * reaches that column. The hover's walk; see `refColumnAt` for the per-row
+ * comparison that does not need `baseOffset`.
  */
 export function alignedColumnAt(
   block: MafBlock,

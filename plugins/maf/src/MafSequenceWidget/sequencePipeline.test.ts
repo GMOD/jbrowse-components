@@ -128,7 +128,18 @@ describe('the MAF sequence widget pipeline, over real adapter output', () => {
     const { rows } = await fasta({ showAllLetters: true })
     const multi = formatFastaSequences(rows, SAMPLES, false)
     expect(multi.startsWith('>volvox\n')).toBe(true)
-    expect(multi.split('\n')).toHaveLength(SAMPLES.length * 2)
+    // Standard FASTA through core's `formatSeqFasta`: one header line per
+    // sample, and the sequence wrapped at 80 columns rather than run out on one
+    // long line that some tools will not read.
+    const multiLines = multi.split('\n')
+    expect(multiLines.filter(l => l.startsWith('>'))).toHaveLength(
+      SAMPLES.length,
+    )
+    const sequenceLines = multiLines.filter(l => !l.startsWith('>'))
+    expect(sequenceLines.every(l => l.length <= 80)).toBe(true)
+    expect(sequenceLines.some(l => l.length === 80)).toBe(true)
+    // every base survives the wrap
+    expect(sequenceLines.join('')).toBe(rows.join(''))
 
     // single-line mode pads the labels to a common width, and the point of the
     // padding is that every record's sequence then begins at the same column —

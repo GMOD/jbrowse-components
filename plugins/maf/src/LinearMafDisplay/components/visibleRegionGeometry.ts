@@ -124,6 +124,23 @@ export function visibleRowRange(
 }
 
 /**
+ * The row geometry every per-row overlay opens with, which eight
+ * `computeVisible*` helpers spelled out identically. Taking the params object
+ * removes the positional argument: the two functions below take `(rowHeight,
+ * rowProportion, scrollTop)` and `(rowHeight, scrollTop, viewportHeight)`, so a
+ * swap type-checks and mis-places every marker by a scroll distance. One call
+ * per overlay per frame — see this file's closing NOTE for why sharing the
+ * per-row *walk* is a different question.
+ */
+export function rowViewport(params: MafRowGeometryParams) {
+  const { rowHeight, rowProportion, scrollTop, viewportHeight } = params
+  return {
+    ...rowBandGeometry(rowHeight, rowProportion, scrollTop),
+    ...visibleRowRange(rowHeight, scrollTop, viewportHeight),
+  }
+}
+
+/**
  * Maps an absolute genomic bp to the left-edge screen px of its cell, for a
  * single visible region. Reversed regions count down from `end`.
  */

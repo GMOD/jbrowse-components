@@ -2,8 +2,7 @@ import { frameColorIndex } from '../../LinearMafRenderer/util.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
-  rowBandGeometry,
-  visibleRowRange,
+  rowViewport,
 } from './visibleRegionGeometry.ts'
 
 import type { MafFrameRecord } from '../../types.ts'
@@ -70,22 +69,9 @@ export function findFrameAt(
 export function computeVisibleAnnotations(
   params: ComputeVisibleAnnotationsParams,
 ): FrameMarker[] {
-  const {
-    view,
-    framesDataMap,
-    rowIndexBySrc,
-    rowHeight,
-    rowProportion,
-    scrollTop,
-    viewportHeight,
-  } = params
+  const { view, framesDataMap, rowIndexBySrc, rowHeight } = params
   const markers: FrameMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    viewportHeight,
-  )
+  const { h, offset, firstRow, endRow } = rowViewport(params)
   // Thin CDS strip pinned to the bottom of the row band.
   const stripH = Math.max(2, Math.round(h * 0.25))
   const stripOffset = offset + h - stripH

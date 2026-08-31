@@ -1,4 +1,5 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { Sample } from '../types.ts'
@@ -43,7 +44,7 @@ export default function SequenceTooltip({
         <div>
           Base: {base}
           {genomicPos !== undefined
-            ? ` | Pos: ${(genomicPos + 1).toLocaleString('en-US')}`
+            ? ` | Pos: ${toLocale(genomicPos + 1)}`
             : null}
         </div>
       ) : null}

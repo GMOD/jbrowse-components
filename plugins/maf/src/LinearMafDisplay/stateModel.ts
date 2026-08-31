@@ -56,6 +56,7 @@ import {
   getFrameLegendItems,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
+import { navigationFields } from '../util/navigationFields.ts'
 import {
   computeVisibleAnnotations,
   findFrameAt,
@@ -129,10 +130,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSource } from '@jbrowse/tree-sidebar'
 
-/**
- * Per-row metadata stored in `sourcesVolatile`. `name` is the sample id
- * (matches the canonical `Sample.id`); `label`/`color` are display-only.
- */
 /**
  * One species row. `RowSource` is the shared vocabulary every display with a
  * dendrogram sidebar draws rows by; this adds the two navigation fields only
@@ -280,10 +277,6 @@ export default function stateModelFactory(
         framesGateBlocked: false,
         /**
          * #volatile
-         */
-        prefersOffset: true,
-        /**
-         * #volatile
          * The worker's authoritative row set, in tree (leaf) order. `layout`
          * overlays any user reorder/relabel on top; `editableSources` merges the
          * two and `sources` narrows that by the subtree filter.
@@ -302,6 +295,20 @@ export default function stateModelFactory(
       .views(self => ({
         get view() {
           return getContainingView(self) as LinearGenomeViewModel
+        },
+        /**
+         * #getter
+         * Offset the track label above the plot rather than overlapping it.
+         * Always true here: a MAF display draws a left y-axis gutter for its
+         * conservation and coverage bands, and an overlapping label would sit on
+         * top of it.
+         *
+         * A getter, not a setterless volatile, because nothing sets it — the
+         * wiggle, variants, GWAS and alignments displays all answer this hook
+         * the same way, several of them conditionally.
+         */
+        get prefersOffset() {
+          return true
         },
         /**
          * #getter
@@ -494,10 +501,7 @@ export default function stateModelFactory(
             name: s.id,
             label: s.label,
             labelColor: s.color,
-            ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
-            ...(s.assemblyConfigLocation
-              ? { assemblyConfigLocation: s.assemblyConfigLocation }
-              : {}),
+            ...navigationFields(s),
           }))
           const next = samplesCanonical
             ? incoming
@@ -899,10 +903,7 @@ export default function stateModelFactory(
             id: s.name,
             label: s.label ?? s.name,
             color: s.labelColor,
-            ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
-            ...(s.assemblyConfigLocation
-              ? { assemblyConfigLocation: s.assemblyConfigLocation }
-              : {}),
+            ...navigationFields(s),
           }))
         },
         /**

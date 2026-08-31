@@ -1,9 +1,5 @@
 import { regionInsertionEvents } from './mafRowEvents.ts'
-import {
-  eachVisibleRegion,
-  rowBandGeometry,
-  visibleRowRange,
-} from './visibleRegionGeometry.ts'
+import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
@@ -60,14 +56,9 @@ export interface InsertionMarker {
 export function computeVisibleInsertions(
   params: MafOverlayParams,
 ): InsertionMarker[] {
-  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop } = params
+  const { view, rpcDataMap, rowHeight } = params
   const markers: InsertionMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    params.viewportHeight,
-  )
+  const { h, offset, firstRow, endRow } = rowViewport(params)
   const merging = view.bpPerPx > 1
   // Indexed by `row - firstRow`, so these are viewport-sized whatever the depth
   // of the alignment. `lastMarker` starts at -1 for "this row has none yet",

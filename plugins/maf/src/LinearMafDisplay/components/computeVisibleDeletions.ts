@@ -7,8 +7,7 @@ import { regionDeletionRunBounds } from './mafRowEvents.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
-  rowBandGeometry,
-  visibleRowRange,
+  rowViewport,
 } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -60,14 +59,9 @@ export interface DeletionMarker {
 export function computeVisibleDeletions(
   params: MafOverlayParams,
 ): DeletionMarker[] {
-  const { view, rpcDataMap, rowHeight, rowProportion, scrollTop } = params
+  const { view, rpcDataMap, rowHeight } = params
   const markers: DeletionMarker[] = []
-  const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    params.viewportHeight,
-  )
+  const { h, offset, firstRow, endRow } = rowViewport(params)
   // A run's screen width is its length over `bpPerPx`, so the label test is a
   // test on LENGTH — which makes both block culls below exact rather than
   // heuristic. The block's own reference span bounds every run in it, answering

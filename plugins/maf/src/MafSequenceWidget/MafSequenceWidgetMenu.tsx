@@ -114,7 +114,7 @@ const MafSequenceWidgetMenu = observer(function MafSequenceWidgetMenu({
           icon: DownloadIcon,
           disabled: loading || !formattedSequence,
           onClick: () => {
-            downloadAsFile(
+            void downloadAsFile(
               formattedSequence,
               'sequence.fasta',
               () => {

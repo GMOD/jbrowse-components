@@ -1,10 +1,17 @@
+import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+
 import type { Sample } from '../types.ts'
 
 /**
  * Build a FASTA-formatted string from per-sample raw sequences.
  * - `singleLine`: each record collapses to one line, with the sample label
- *   padded to a constant width so columns align in monospace.
- * - Otherwise: standard FASTA with `>label` on its own line.
+ *   padded to a constant width so columns align in monospace. Deliberately not
+ *   FASTA — it is the shape you read a column of aligned species in.
+ * - Otherwise: standard FASTA through core's `formatSeqFasta`, which wraps the
+ *   sequence at 80 columns. This used to emit each record as one unwrapped
+ *   line, which the spec does not ask for and some tools will not read — and it
+ *   made the two modes differ only in the label padding, so the "single line"
+ *   option was almost a no-op.
  */
 export function formatFastaSequences(
   rawSequences: string[],
@@ -29,7 +36,7 @@ export function formatFastaSequences(
       })
       .join('\n')
   }
-  return rawSequences
-    .map((r, idx) => `>${samples[idx]!.label}\n${r}`)
-    .join('\n')
+  return formatSeqFasta(
+    rawSequences.map((seq, idx) => ({ header: samples[idx]!.label, seq })),
+  )
 }

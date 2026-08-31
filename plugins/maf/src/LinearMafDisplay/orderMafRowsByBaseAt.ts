@@ -1,8 +1,9 @@
+import { cmpStr } from '@jbrowse/core/util'
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
 import { blockIndexAtBp } from '../LinearMafRenderer/blockAtBp.ts'
 import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
-import { alignedColumnAt } from './components/findRowHover.ts'
+import { refColumnAt } from './components/findRowHover.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
@@ -20,7 +21,10 @@ const GAP = '-'
  * column after every base and the rows with no aligned block at the column
  * after those (`orderRowsByValueAt`'s missing-last rule). Commonest first is a
  * statement a reader can check; ordering by the base's own letter would put
- * the same rows in a different order over an A/T site than over a C/G one.
+ * the same rows in a different order over an A/T site than over a C/G one. The
+ * last tiebreak is `cmpStr`, not `localeCompare`: this order reaches screenshot
+ * renders and worker output, where it has to be reproducible rather than
+ * locale-dependent.
  *
  * `drawnRows` are the rows the region's `rowIndex` numbering names (the
  * display's `sources`), and `rows` are what gets ordered (`editableSources`,
@@ -37,17 +41,24 @@ export function orderMafRowsByBaseAt<T extends { name: string }>(
   const blockIdx = blockIndexAtBp(region.blocks, bp)
   if (blockIdx !== -1) {
     const block = region.blocks[blockIdx]!
-    for (const row of block.rows) {
-      const name = drawnRows[row.rowIndex]?.name
-      const column =
-        name === undefined ? undefined : alignedColumnAt(block, row, bp)
-      if (name !== undefined && column) {
-        baseByName.set(
-          name,
-          column.code === DASH || column.code === SPACE
-            ? GAP
-            : String.fromCharCode(column.code & ~LOWER_BIT),
-        )
+    // Resolved once for the block, not once per row: which column holds `bp` is
+    // a fact about the reference, and this runs over every drawn row of a
+    // deep alignment.
+    const column = refColumnAt(block, bp)
+    if (column !== -1) {
+      for (const row of block.rows) {
+        const name = drawnRows[row.rowIndex]?.name
+        // A malformed file can ship a row shorter than the reference, which has
+        // no byte at the column and so no base to group on.
+        const code = row.alignmentBytes[column]
+        if (name !== undefined && code !== undefined) {
+          baseByName.set(
+            name,
+            code === DASH || code === SPACE
+              ? GAP
+              : String.fromCharCode(code & ~LOWER_BIT),
+          )
+        }
       }
     }
   }
@@ -64,6 +75,6 @@ export function orderMafRowsByBaseAt<T extends { name: string }>(
     (a, b) =>
       Number(a === GAP) - Number(b === GAP) ||
       blockSize.get(b)! - blockSize.get(a)! ||
-      a.localeCompare(b),
+      cmpStr(a, b),
   )
 }
