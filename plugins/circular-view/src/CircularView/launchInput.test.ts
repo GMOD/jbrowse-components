@@ -103,6 +103,16 @@ test('a typo alone leaves nothing pending', () => {
   expect(view.showImportForm).toBe(true)
 })
 
+// A blob naming tracks and no assembly has nothing to wait on. Read as naming
+// one, `initialized` waits on an assembly that does not exist and `error`
+// reports a name nobody wrote.
+test('a launch blob that names no assembly waits on nothing', () => {
+  const view = open({ tracks: ['sv'] })
+  expect(view.launch).toEqual({ tracks: ['sv'] })
+  expect(view.error).toBeUndefined()
+  expect(view.loadingAssembly).toBeUndefined()
+})
+
 describe('the track entries discriminator', () => {
   const built = { type: 'VariantTrack', configuration: 'sv', displays: [] }
 
