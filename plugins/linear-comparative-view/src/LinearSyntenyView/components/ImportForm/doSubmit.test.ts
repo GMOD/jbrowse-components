@@ -13,7 +13,7 @@ const track = (trackId: string, assemblyNames: string[]) =>
   }) as unknown as AnyConfigurationModel
 
 interface Calls {
-  views: { init: { assembly: string } }[]
+  views: { assembly: string }[]
   shown: [string, number][]
   toggled: [string, number][]
   added: { trackId: string }[]
@@ -61,7 +61,7 @@ function setup({
   }
   const model = {
     importFormSyntenyTrackSelections: selections,
-    setViews: (views: { init: { assembly: string } }[]) => {
+    setViews: (views: { assembly: string }[]) => {
       calls.views = views
     },
     showTrack: (trackId: string, level: number) =>
@@ -81,7 +81,7 @@ function setup({
 test('one LinearGenomeView row per assembly, in order', () => {
   const { calls, model, session } = setup({ selections: [] })
   doSubmit({ selectedAssemblyNames: ['hg38', 'mm39', 'rn7'], model, session })
-  expect(calls.views.map(v => v.init.assembly)).toEqual(['hg38', 'mm39', 'rn7'])
+  expect(calls.views.map(v => v.assembly)).toEqual(['hg38', 'mm39', 'rn7'])
   expect(calls.autoScaled).toBe(1)
   expect(calls.cleared).toBe(1)
 })
