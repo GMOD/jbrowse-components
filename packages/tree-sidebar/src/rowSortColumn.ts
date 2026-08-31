@@ -63,6 +63,45 @@ export function loadedRegionIndexAt(
   return undefined
 }
 
+// What the shell below reads off the display: the loaded spans it resolves the
+// column against, the rows it orders, and the one channel a new order is written
+// through.
+export interface RowSortColumnHost<S> {
+  loadedRegions: { entries: () => Iterable<[number, LoadedRegionSpan]> }
+  // `editableSources`, never `sources`: layout-merged (so a user's colors
+  // survive the reorder) and unfiltered by the subtree, so a focused clade
+  // doesn't persist itself as the whole row order and drop everything it was
+  // hiding.
+  editableSources: S[]
+  setLayout: (rows: S[]) => void
+}
+
+/**
+ * The whole of "sort rows by ... here" except the value each row carries, which
+ * stays the display's (`dataAt` names the payload, `order` reads it).
+ *
+ * Declines twice, and neither is a no-op. A column no loaded region covers has
+ * no value to sort by at all — see `loadedRegionIndexAt`. And fewer than two
+ * rows has nothing to order, but `setLayout` drops the cluster tree whenever the
+ * row set changes, so an adapter that reported no sources for the loaded region
+ * would trade a dendrogram for an empty layout. The right-click item is gated on
+ * the same count already; the declarative `sortRowsBy` entry point is not, and
+ * lands here.
+ */
+export function sortRowsAtColumn<S extends { name: string }, D>(
+  self: RowSortColumnHost<S>,
+  refName: string,
+  pos: number,
+  dataAt: (regionIndex: number) => D | undefined,
+  order: (sources: S[], data: D) => S[],
+) {
+  const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+  const data = index === undefined ? undefined : dataAt(index)
+  if (data !== undefined && self.editableSources.length > 1) {
+    self.setLayout(order(self.editableSources, data))
+  }
+}
+
 /**
  * Order `sources` by the value each carries at the column, newly-ranked rows
  * first and valueless rows last.

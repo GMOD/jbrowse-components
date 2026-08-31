@@ -2795,10 +2795,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
-          "name": "maxHeight",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "heightMode",
           "type": "(JexlString | (heightMode | undefined))"
         },
@@ -3737,10 +3733,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "jexlFilters",
           "type": "(JexlString | string[])"
-        },
-        {
-          "name": "maxHeight",
-          "type": "(JexlString | number)"
         },
         {
           "name": "heightMode",

@@ -9,20 +9,26 @@ const VILLAGE = {
 
 describe('applyRowGroups', () => {
   it('tags a matching row with the entry group and swatch color', () => {
-    expect(applyRowGroups([{ name: 'CLUPGR000001' }], [WOLF])).toEqual([
+    expect(
+      applyRowGroups([{ name: 'CLUPGR000001' }], [WOLF], { partition: true }),
+    ).toEqual([
       { name: 'CLUPGR000001', group: 'Wolf', labelColor: 'rgb(27,120,55)' },
     ])
   })
 
   it('leaves an unmatched row untouched, so the majority group draws no ink', () => {
-    expect(applyRowGroups([{ name: 'COLL000001' }], [WOLF, VILLAGE])).toEqual([
-      { name: 'COLL000001' },
-    ])
+    expect(
+      applyRowGroups([{ name: 'COLL000001' }], [WOLF, VILLAGE], {
+        partition: true,
+      }),
+    ).toEqual([{ name: 'COLL000001' }])
   })
 
   it('takes the first matching entry when several match', () => {
     const broad = { match: '^C', group: 'Broad', color: 'red' }
-    const [row] = applyRowGroups([{ name: 'CLUPGR000001' }], [WOLF, broad])
+    const [row] = applyRowGroups([{ name: 'CLUPGR000001' }], [WOLF, broad], {
+      partition: true,
+    })
     expect(row?.group).toBe('Wolf')
   })
 
@@ -30,6 +36,7 @@ describe('applyRowGroups', () => {
     const [row] = applyRowGroups(
       [{ name: 'CLUPGR000001', color: 'rgb(1,2,3)' }],
       [WOLF],
+      { partition: true },
     )
     expect(row?.color).toBe('rgb(1,2,3)')
     expect(row?.labelColor).toBe('rgb(27,120,55)')
@@ -39,6 +46,7 @@ describe('applyRowGroups', () => {
     const [row] = applyRowGroups(
       [{ name: 'CLUPGR000001', labelColor: 'rebeccapurple' }],
       [WOLF],
+      { partition: true },
     )
     expect(row?.labelColor).toBe('rebeccapurple')
     expect(row?.group).toBe('Wolf')
@@ -52,6 +60,7 @@ describe('applyRowGroups', () => {
         { name: 'CLUPRU000001' },
       ],
       [WOLF],
+      { partition: true },
     )
     expect(rows.map(r => r.name)).toEqual([
       'CLUPGR000001',
@@ -62,14 +71,18 @@ describe('applyRowGroups', () => {
 
   it('costs only its own stripe when a pattern is not a valid regex', () => {
     const bad = { match: '([', group: 'Bad', color: 'red' }
-    expect(applyRowGroups([{ name: 'CLUPGR000001' }], [bad, WOLF])).toEqual([
+    expect(
+      applyRowGroups([{ name: 'CLUPGR000001' }], [bad, WOLF], {
+        partition: true,
+      }),
+    ).toEqual([
       { name: 'CLUPGR000001', group: 'Wolf', labelColor: 'rgb(27,120,55)' },
     ])
   })
 
   it('returns the input unchanged when no entries are configured', () => {
     const sources = [{ name: 'a' }]
-    expect(applyRowGroups(sources, [])).toBe(sources)
+    expect(applyRowGroups(sources, [], { partition: true })).toBe(sources)
   })
 
   it('pulls matched rows into one block ahead of the unmatched ones', () => {
@@ -81,6 +94,7 @@ describe('applyRowGroups', () => {
         { name: 'CLUPRU000001' },
       ],
       [WOLF],
+      { partition: true },
     )
     expect(rows.map(r => r.name)).toEqual([
       'CLUPGR000001',
@@ -98,6 +112,7 @@ describe('applyRowGroups', () => {
         { name: 'CLUP000001' },
       ],
       [WOLF, VILLAGE],
+      { partition: true },
     )
     expect(rows.map(r => r.group)).toEqual(['Wolf', 'Village dog', undefined])
   })
@@ -111,6 +126,7 @@ describe('applyRowGroups', () => {
         { name: 'COLLy' },
       ],
       [WOLF],
+      { partition: true },
     )
     expect(rows.map(r => r.name)).toEqual(['CLUPb', 'CLUPa', 'COLLx', 'COLLy'])
   })

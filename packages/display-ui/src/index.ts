@@ -52,6 +52,13 @@ export type {
 export { default as FloatingLegend } from './FloatingLegend.tsx'
 export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
 
+// The <svg> counterpart of that legend, for a display whose key is drawn by an
+// SVG-export path as well as on screen. Beside it for the same reasons — it
+// reaches no UI toolkit, and portaling chrome above the region masks is what
+// this package is — and re-exported by `@jbrowse/plugin-linear-genome-view`, so
+// its published name is unchanged.
+export { FloatingSvgOverlay } from './FloatingSvgOverlay.tsx'
+
 // The hover label every control in here used to delegate to the browser's
 // `title` attribute. The box it draws is `@jbrowse/core`'s `BaseTooltip`, the
 // same one the display tooltips draw, anchored to the control instead of to the

@@ -207,11 +207,11 @@ export { default as HoverPositionHighlight } from './LinearGenomeView/components
 // who otherwise supplies no node at all and gets display chrome buried under
 // their own region masks.
 export {
+  FloatingSvgOverlay,
   TrackOverlayContext,
   TrackOverlayPortal,
   TrackOverlaySlot,
 } from '@jbrowse/display-ui'
-export { FloatingSvgOverlay } from './LinearGenomeView/FloatingSvgOverlay.tsx'
 export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 // for a display that hand-rolls a <clipPath> instead of using SvgClipRect (an

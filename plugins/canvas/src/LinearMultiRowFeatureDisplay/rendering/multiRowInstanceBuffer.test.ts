@@ -1,6 +1,7 @@
 import { buildMultiRowInstanceBuffer } from './multiRowInstanceBuffer.ts'
 import {
   INSTANCE_OFFSET_U32,
+  INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS,
 } from './shaders/multiRow.generated.ts'
 
@@ -13,10 +14,14 @@ interface DecodedInstance {
   color: number
 }
 
-function decode(buffer: ArrayBuffer, count: number): DecodedInstance[] {
+// The encoder returns the bytes alone, so the count is read off them the way
+// the upload reads it — which is also the invariant worth asserting: a buffer
+// right-sized to what was written, never the one-per-feature seed.
+function decode(buffer: ArrayBuffer): DecodedInstance[] {
+  expect(buffer.byteLength % INSTANCE_STRIDE_BYTES).toBe(0)
   const u32 = new Uint32Array(buffer)
   const out: DecodedInstance[] = []
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < buffer.byteLength / INSTANCE_STRIDE_BYTES; i++) {
     const base = i * INSTANCE_STRIDE_WORDS
     out.push({
       startBp: u32[base + INSTANCE_OFFSET_U32.startBp]!,
@@ -65,12 +70,11 @@ test('maps partition values to global row indices', () => {
     ['dadHP1', 0],
     ['momHP0', 1],
   ])
-  const { buffer, count } = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowInstanceBuffer(
     region,
     paintState(rowIndexByValue),
   )
-  expect(count).toBe(3)
-  expect(decode(buffer, count)).toEqual([
+  expect(decode(buffer)).toEqual([
     { startBp: 10, endBp: 15, rowIndex: 1, color: 0xff0000ff },
     { startBp: 20, endBp: 25, rowIndex: 0, color: 0xff00ff00 },
     { startBp: 30, endBp: 35, rowIndex: 1, color: 0xffff0000 },
@@ -79,12 +83,11 @@ test('maps partition values to global row indices', () => {
 
 test('skips features whose partition value has no assigned row', () => {
   const rowIndexByValue = new Map([['momHP0', 0]])
-  const { buffer, count } = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowInstanceBuffer(
     region,
     paintState(rowIndexByValue),
   )
-  expect(count).toBe(2)
-  expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 30])
+  expect(decode(buffer).map(d => d.startBp)).toEqual([10, 30])
 })
 
 test('skips features whose color is a hidden category', () => {
@@ -93,12 +96,11 @@ test('skips features whose color is a hidden category', () => {
     ['dadHP1', 1],
   ])
   // hide 0xff00ff00 (feature 1, on dadHP1); features 0 and 2 remain
-  const { buffer, count } = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowInstanceBuffer(
     region,
     paintState(rowIndexByValue, { hiddenColors: new Set([0xff00ff00]) }),
   )
-  expect(count).toBe(2)
-  expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 30])
+  expect(decode(buffer).map(d => d.startBp)).toEqual([10, 30])
 })
 
 test('a hidden category does not drop features on rows with a color override', () => {
@@ -109,15 +111,14 @@ test('a hidden category does not drop features on rows with a color override', (
   // row 0 (momHP0) is recolored, so it paints the override, not its baked color.
   // hiding 0xff0000ff (feature 0's baked color) must NOT drop feature 0 — that
   // color is not what the row paints and isn't in the legend.
-  const { buffer, count } = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowInstanceBuffer(
     region,
     paintState(rowIndexByValue, {
       rowColorsByIndex: [0xff123456, undefined],
       hiddenColors: new Set([0xff0000ff]),
     }),
   )
-  expect(count).toBe(3)
-  expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 20, 30])
+  expect(decode(buffer).map(d => d.startBp)).toEqual([10, 20, 30])
 })
 
 test('rowColorsByIndex overrides the baked color for that row only', () => {
@@ -126,11 +127,11 @@ test('rowColorsByIndex overrides the baked color for that row only', () => {
     ['dadHP1', 1],
   ])
   // override row 0 (momHP0) only; row 1 keeps its baked feature color
-  const { buffer, count } = buildMultiRowInstanceBuffer(
+  const buffer = buildMultiRowInstanceBuffer(
     region,
     paintState(rowIndexByValue, { rowColorsByIndex: [0xff123456, undefined] }),
   )
-  expect(decode(buffer, count).map(d => d.color)).toEqual([
+  expect(decode(buffer).map(d => d.color)).toEqual([
     0xff123456, // feature 0, row 0 -> overridden
     0xff00ff00, // feature 1, row 1 -> baked
     0xff123456, // feature 2, row 0 -> overridden

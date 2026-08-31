@@ -2,8 +2,8 @@ import { drawnFeatureContext, forEachDrawnFeature } from './featurePainting.ts'
 import { InstanceWriter } from './shaders/multiRow.iface.generated.ts'
 
 import type {
+  MultiRowFeaturePaintInputs,
   MultiRowRegionData,
-  MultiRowRenderState,
 } from './multiRowRenderingBackendTypes.ts'
 
 /**
@@ -18,16 +18,13 @@ import type {
  *
  * Seeded with one instance per feature and right-sized by `finish` to what was
  * actually written — a hidden legend category or a filtered row means fewer
- * instances than features. The returned buffer is therefore exactly `count`
+ * instances than features. The returned buffer is therefore exactly the drawn
  * instances, which is what lets the upload read the count off its bytes.
  */
 export function buildMultiRowInstanceBuffer(
   data: MultiRowRegionData,
-  state: Pick<
-    MultiRowRenderState,
-    'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
-  >,
-): { buffer: ArrayBuffer; count: number } {
+  state: MultiRowFeaturePaintInputs,
+) {
   const { featureStarts, featureEnds } = data
   const out = new InstanceWriter(featureStarts.length)
   forEachDrawnFeature(
@@ -37,5 +34,5 @@ export function buildMultiRowInstanceBuffer(
       out.push(featureStarts[i]!, featureEnds[i]!, rowIndex, color)
     },
   )
-  return { buffer: out.finish(), count: out.count }
+  return out.finish()
 }

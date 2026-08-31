@@ -1478,7 +1478,11 @@ export default function MultiSampleVariantBaseModelF(
           // blank. Not subtree-filtered, so a hidden row keeps its overrides
           // instead of being dropped from `layout` for good.
           const sources = self.editableSources
-          if (cellData && sources.length) {
+          // Fewer than two rows has nothing to order, and the write is not a
+          // harmless no-op: `setLayout` drops the cluster tree whenever the row
+          // set changes. The same decline the other "sort rows here" actions
+          // make in `sortRowsAtColumn`.
+          if (cellData && sources.length > 1) {
             const { featureIds, genotypeCodesByFeatureId } =
               getOrderedGenotypeCodes(cellData)
             const sorted = sortSourcesAroundVariant({

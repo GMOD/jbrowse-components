@@ -13,7 +13,6 @@ import {
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { copyText } from '@jbrowse/core/util/copyText'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -34,20 +33,20 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
-  loadedRegionIndexAt,
   reconcileLayout,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
+  sortRowsAtColumn,
   sortRowsHereMenuItem,
   treeDescribesRows,
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { copyItem } from '../shared/copyMenuItem.ts'
 import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
 import {
   featureSpanRegion,
@@ -80,6 +79,7 @@ import type {
 } from './configSchema.ts'
 import type { DrawnFeaturesByRow } from './rendering/featurePainting.ts'
 import type {
+  MultiRowFeaturePaintInputs,
   MultiRowRegionData,
   MultiRowRenderState,
   MultiRowRenderingBackend,
@@ -789,10 +789,7 @@ export default function stateModelFactory(
        * region's instance buffer (a full pass over every feature, per drag
        * frame) to arrive at byte-identical output.
        */
-      get featurePaintInputs(): Pick<
-        MultiRowRenderState,
-        'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
-      > {
+      get featurePaintInputs(): MultiRowFeaturePaintInputs {
         return {
           rowIndexByValue: self.rowIndexByValue,
           rowColorsByIndex: self.rowColorsByIndex,
@@ -858,12 +855,7 @@ export default function stateModelFactory(
       >()
       // the row count is `state.rowIndexByValue.size`, so it cannot move
       // without the state identity moving with it
-      let heldFor:
-        | Pick<
-            MultiRowRenderState,
-            'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
-          >
-        | undefined
+      let heldFor: MultiRowFeaturePaintInputs | undefined
       return {
         /**
          * #getter
@@ -1122,46 +1114,23 @@ export default function stateModelFactory(
          * feature covering that position on each row. Reads the already-loaded
          * region data (no refetch/RPC) and writes the new order via `layout`.
          *
-         * Declines with fewer than two rows to order, because the empty result is
-         * not a harmless no-op: `setLayout` clears the cluster tree whenever the
-         * row set changes, so writing it discards both the saved arrangement and
-         * the dendrogram a clustering run produced. The rows are DISCOVERED from
+         * The gates and the write are `sortRowsAtColumn`'s, shared with
+         * multi-wiggle's twin; the rows here are additionally DISCOVERED from
          * `rpcDataMap` (see `sourcesWithoutLayout`), which empties whenever the
          * display is panned off its data or blanked by the density gate — so
          * "sorting" a track that is merely not loaded right now used to wipe it.
-         * `sortRowsBy`, the declarative twin, meets the same condition by waiting
-         * for the region instead (see setupRowSortAutorun); a click has nothing to
-         * wait for, so it declines.
-         *
-         * Declines again when no loaded region covers the column, which is the
-         * gate `setupRowSortAutorun` and multi-wiggle's twin already applied and
-         * this did not: it filtered the regions by refName alone, so a position
-         * past the end of the loaded window gave every row "no value" and wrote
-         * back the order it already had. `loadedRegionIndexAt` is the one
-         * predicate all three now ask, and resolving to a single region is also
-         * what stops two loaded windows on one contig from both answering.
          */
         sortRowsByValueAt(refName: string, pos: number) {
-          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
-          const region =
-            index === undefined ? undefined : self.rpcDataMap.get(index)
-          if (!region || self.editableSources.length < 2) {
-            return
-          }
-          // editableSources, not `sources`: layout-merged (so a user's colors
-          // survive the reorder) and unfiltered by the subtree, so a focused
-          // clade doesn't persist itself as the whole row order and drop
-          // everything it was hiding.
-          // the same triple the painters and the hit test resolve "does this
-          // feature paint" from, so a hidden legend category orders the rows the
-          // way it draws them
-          self.setLayout(
-            rowOrderByValueAt(
-              self.editableSources,
-              region,
-              pos,
-              self.featurePaintInputs,
-            ),
+          sortRowsAtColumn(
+            self,
+            refName,
+            pos,
+            index => self.rpcDataMap.get(index),
+            // `featurePaintInputs` is the same triple the painters and the hit
+            // test resolve "does this feature paint" from, so a hidden legend
+            // category orders the rows the way it draws them
+            (sources, region) =>
+              rowOrderByValueAt(sources, region, pos, self.featurePaintInputs),
           )
         },
         /**
@@ -1285,7 +1254,7 @@ export default function stateModelFactory(
               instanceBuffer: buildMultiRowInstanceBuffer(
                 regionData,
                 paintInputs,
-              ).buffer,
+              ),
             }),
             render: b =>
               b.renderBlocks(
@@ -1438,26 +1407,21 @@ export default function stateModelFactory(
                     self.selectFeatureById(hit.id, hit.regionIndex)
                   },
                 },
-                // The same row the feature display offers, for the same
-                // reason: it is the one thing in either menu that gets pasted
-                // somewhere rather than read. A row painting is where a reader
-                // is most likely to want it, since nothing else here names the
-                // block's span.
-                {
-                  label: 'Copy location',
-                  icon: ContentCopyIcon,
-                  onClick: () => {
-                    void copyText(
-                      self,
-                      assembleLocString({
-                        refName: hit.refName,
-                        start: hit.start,
-                        end: hit.end,
-                      }),
-                      'location',
-                    )
-                  },
-                },
+                // The same row the feature display offers, built by the same
+                // helper, for the same reason: it is the one thing in either
+                // menu that gets pasted somewhere rather than read. A row
+                // painting is where a reader is most likely to want it, since
+                // nothing else here names the block's span.
+                copyItem(
+                  self,
+                  'Copy location',
+                  assembleLocString({
+                    refName: hit.refName,
+                    start: hit.start,
+                    end: hit.end,
+                  }),
+                  'location',
+                ),
               ]
             : []),
           // the same item the track menu spreads — one action reachable from

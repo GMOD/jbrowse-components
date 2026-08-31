@@ -1,6 +1,7 @@
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 
-import type { RowPaintInputs, RowValueRegion } from './rowOrderByValueAt.ts'
+import type { MultiRowFeaturePaintInputs } from './rendering/multiRowRenderingBackendTypes.ts'
+import type { RowValueRegion } from './rowOrderByValueAt.ts'
 
 // The rows being ordered: only `name` is read, so this stands in for the
 // display's layout-merged sources.
@@ -16,7 +17,7 @@ function paintInputs(
     hiddenColors?: Set<number>
     rowColorsByIndex?: (number | undefined)[]
   } = {},
-): RowPaintInputs {
+): MultiRowFeaturePaintInputs {
   return {
     rowIndexByValue: new Map(names.map((name, i) => [name, i] as const)),
     rowColorsByIndex: opts.rowColorsByIndex ?? names.map(() => undefined),

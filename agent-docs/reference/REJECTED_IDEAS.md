@@ -62,7 +62,11 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   **Revisit if the streaming-commit contract changes** — if this family ever
   stops committing per region mid-flight, or stops skipping while a fetch is in
   flight, the rotation objection dissolves and this is worth re-scoping. A new
-  rule in the skeleton is not the trigger: port the rule.
+  rule in the skeleton is not the trigger: port the rule. The narrower form — a
+  shared trigger preamble over the two hand-rolled bodies rather than a
+  conversion — is declined separately in `FETCH_SKELETON.md`, on its own
+  grounds: the two consume the same two signals differently, and the liveness
+  skip is not in the per-region body to share.
 
 
 - **Compose a second consumer onto the shared y scale, the way density composed

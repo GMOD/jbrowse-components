@@ -5,14 +5,14 @@
   },
   "plain": {
     "bytes": 115274,
-    "gzipBytes": 40061
+    "gzipBytes": 40060
   },
   "seam": {
     "bytes": 113005,
     "gzipBytes": 39387
   },
   "savedBytes": 312785,
-  "savedGzipBytes": 104093,
+  "savedGzipBytes": 104094,
   "muiKb": 418,
   "plainKb": 113,
   "seamKb": 110,

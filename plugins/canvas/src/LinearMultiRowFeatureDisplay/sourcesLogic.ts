@@ -41,7 +41,10 @@ export interface RowGroup {
  * it off when something else already owns the row order — in practice a cluster
  * tree, which the swatch stripe is then read ACROSS rather than instead of.
  * Grouping and ordering are two questions about one axis, and only ordering can
- * have a second claimant.
+ * have a second claimant. Required rather than defaulted, because the default
+ * that reads as harmless is the one that reintroduces that trade: a caller with
+ * no opinion stated inherits "rowGroups wins" over whatever else ordered the
+ * rows.
  *
  * An entry whose `match` is not a valid regex matches nothing, so one bad config
  * line costs its own stripe rather than the display.
@@ -49,7 +52,7 @@ export interface RowGroup {
 export function applyRowGroups(
   sources: MultiRowSource[],
   rowGroups: RowGroup[],
-  { partition = true }: { partition?: boolean } = {},
+  { partition }: { partition: boolean },
 ): MultiRowSource[] {
   const compiled = rowGroups.flatMap(g => {
     try {

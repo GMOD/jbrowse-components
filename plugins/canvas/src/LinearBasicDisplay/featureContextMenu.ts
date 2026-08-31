@@ -23,6 +23,7 @@ import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
+import { copyItem } from '../shared/copyMenuItem.ts'
 import { featureSpanEndBp } from '../shared/featureSpanBp.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
 
@@ -458,23 +459,6 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
         ]
       : []),
   ]
-}
-
-// One item that copies `text`, naming what landed in both the menu and the
-// confirmation.
-function copyItem(
-  self: FeatureMenuSelf,
-  label: string,
-  text: string,
-  what: string,
-): MenuItem {
-  return {
-    label,
-    icon: ContentCopyIcon,
-    onClick: () => {
-      void copyText(self, text, what)
-    },
-  }
 }
 
 // Attributes as JSON, for one of the two scopes: `subfeature` names the isoform

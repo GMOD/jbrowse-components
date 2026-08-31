@@ -1,7 +1,10 @@
-import { MIN_DRAWN_ROW_PX, drawnRowHeight, rowBand } from './rowBand.ts'
+import { drawnRowHeightPx } from '@jbrowse/render-core/shaders/rowRect'
+import { MIN_DRAWN_ROW_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
+
+import { rowBand } from './rowBand.ts'
 
 // These pin the band geometry, which is now rowRect.slang's own — generated
-// into TS and re-exported by rowBand.ts (adr-051). They used to be a review
+// into TS and called by rowBand.ts (adr-051). They used to be a review
 // gate between two spellings; they are now the behavior pin on the one
 // spelling, and they read the same either way.
 //
@@ -48,6 +51,6 @@ test('flooring the band does not change where rows start', () => {
 })
 
 test('the floor applies after rowProportion, so a gutter cannot erase a row', () => {
-  expect(drawnRowHeight(0.4, 0.5)).toBe(MIN_DRAWN_ROW_PX)
-  expect(drawnRowHeight(4, 0.5)).toBe(2)
+  expect(drawnRowHeightPx(0.4, 0.5)).toBe(MIN_DRAWN_ROW_PX)
+  expect(drawnRowHeightPx(4, 0.5)).toBe(2)
 })

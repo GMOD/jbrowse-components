@@ -49,6 +49,7 @@ export {
   loadedRegionIndexAt,
   orderRowsByValueAt,
   regionCoversColumn,
+  sortRowsAtColumn,
 } from './rowSortColumn.ts'
 export type { LoadedRegionSpan } from './rowSortColumn.ts'
 export {

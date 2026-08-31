@@ -1,6 +1,6 @@
 import type {
+  MultiRowFeaturePaintInputs,
   MultiRowRegionData,
-  MultiRowRenderState,
 } from './multiRowRenderingBackendTypes.ts'
 
 // Resolve each region-local partition value to its global display-row index
@@ -34,10 +34,7 @@ interface DrawnFeatureContext {
 
 export function drawnFeatureContext(
   data: Pick<MultiRowRegionData, 'partitionValues'>,
-  state: Pick<
-    MultiRowRenderState,
-    'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
-  >,
+  state: MultiRowFeaturePaintInputs,
 ): DrawnFeatureContext {
   return {
     rowForLocal: resolveLocalRowIndices(

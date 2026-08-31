@@ -21,8 +21,10 @@ function isConfiguredLegendEntry(e: unknown): e is ConfiguredLegendEntry {
   return (
     typeof e === 'object' &&
     e !== null &&
-    typeof (e as Record<string, unknown>).label === 'string' &&
-    typeof (e as Record<string, unknown>).color === 'string'
+    'label' in e &&
+    typeof e.label === 'string' &&
+    'color' in e &&
+    typeof e.color === 'string'
   )
 }
 

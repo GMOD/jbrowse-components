@@ -1,7 +1,6 @@
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { PointerLayer } from '@jbrowse/display-ui'
-import { FloatingSvgOverlay } from '@jbrowse/plugin-linear-genome-view'
+import { FloatingSvgOverlay, PointerLayer } from '@jbrowse/display-ui'
 import {
   DisplayContextMenu,
   DisplayCrosshairs,

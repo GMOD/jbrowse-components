@@ -52,10 +52,26 @@ ported, not shared**: the per-region family reaches its gates through
 `autorunOnReadyView` rather than through the skeleton, so the check sits there
 too — which is also what covers the other three autoruns that family installs.
 A rule the skeleton grows next is owed the same two lines, and that is cheaper
-than the conversion `REJECTED_IDEAS.md` declines. And **`FetchMixin`'s begin/end/error trio is
-`fetchMixinLifecycle`**, one function for the two entries that run a fetch over
-that mixin (`runFetch`, and the global family's declaration, which lends its
-rotation and so owes the same three writes).
+than the conversion `REJECTED_IDEAS.md` declines.
+
+The narrower move — one preamble helper holding the counter read, the cancel
+read and the liveness skip, called by both hand-rolled bodies — declines for its
+own reason, and it is not the conversion's. The two bodies read the same two
+signals and consume them differently: the skeleton keeps the counter as the
+epoch it stamps at issue and gates on the cancel, while the per-region body
+voids the counter and hands the cancel to `planRegionFetch` beside `error`. And
+liveness is not in that body at all, one altitude up in `autorunOnReadyView`,
+where it covers four autoruns rather than one. A preamble would hand back three
+values for the second caller to use one of, which is a read order shared, not a
+rule. What keeps both honest is a pin: `installFetch.test.ts` re-runs a body
+that declined, and `installPerRegionFetchAutoruns.test.ts` asserts the whole
+dependency set per state (ARCHITECTURE.md §"The global-fetch trigger list must
+be read unconditionally").
+
+And **`FetchMixin`'s begin/end/error trio is `fetchMixinLifecycle`**, one
+function for the two entries that run a fetch over that mixin (`runFetch`, and
+the global family's declaration, which lends its rotation and so owes the same
+three writes).
 
 What is left per site is the part that genuinely differs, and it is exactly the
 parameter list: the trigger list (which reads wake it, i.e. `prepare` plus

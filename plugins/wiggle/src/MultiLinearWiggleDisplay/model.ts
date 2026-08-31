@@ -24,7 +24,6 @@ import {
   clusteringMenuItem,
   computeClusterHierarchy,
   focusRows,
-  loadedRegionIndexAt,
   reconcileLayout,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
@@ -32,6 +31,7 @@ import {
   setupTreeSidebarAutoruns,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
+  sortRowsAtColumn,
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
@@ -449,29 +449,19 @@ export default function stateModelFactory(
        *
        * Named by coordinate rather than by loaded-region index because both
        * entry points are: the right-click hit resolves to one, and a session's
-       * `sortRowsBy` carries one across a reload. The region is looked up
-       * here, and a position no loaded region covers is left alone rather than
-       * sorted against nothing (which would rank every row equally and read as
-       * the sort having silently done nothing).
+       * `sortRowsBy` carries one across a reload. Resolving that region and
+       * refusing the two cases where a sort would only cost a `layout` write
+       * are `sortRowsAtColumn`'s, shared with the multi-row feature display's
+       * twin.
        */
       sortRowsByScoreAt(refName: string, pos: number) {
-        const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
-        const data =
-          index === undefined ? undefined : self.rpcDataMap.get(index)
-        // Fewer than two rows has nothing to order, and the write is not a
-        // harmless no-op: `setLayout` drops the cluster tree whenever the row
-        // set changes, so an adapter that reported no sources for the loaded
-        // region would trade a dendrogram for an empty layout. The
-        // right-click item is already gated on the same count; this is the
-        // declarative `sortRowsBy` entry point, which is not, and the same
-        // guard the multi-row feature display's twin carries.
-        if (data && self.editableSources.length > 1) {
-          // editableSources, not `sources`: layout-merged (so a user's
-          // colors survive the reorder) and unfiltered by the subtree, so a
-          // focused clade doesn't persist itself as the whole row order and
-          // drop everything it was hiding.
-          self.setLayout(sortSourcesByScoreAt(self.editableSources, data, pos))
-        }
+        sortRowsAtColumn(
+          self,
+          refName,
+          pos,
+          index => self.rpcDataMap.get(index),
+          (sources, data) => sortSourcesByScoreAt(sources, data, pos),
+        )
       },
     }))
     .actions(self => ({

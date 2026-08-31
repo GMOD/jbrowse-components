@@ -3,8 +3,8 @@ import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
 
 import type {
+  MultiRowFeaturePaintInputs,
   MultiRowRegionData,
-  MultiRowRenderState,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 
 // Just the arrays the sort reads, off the region the caller already resolved as
@@ -20,21 +20,16 @@ export type RowValueRegion = Pick<
   | 'featurePartitionIndex'
 >
 
-// The same three inputs `featurePainting` answers "does this feature paint" from
-// — the model's `featurePaintInputs` getter satisfies it whole. A sort that
-// grouped rows by a color the painters skip would order the rows by something
-// nobody can see.
-export type RowPaintInputs = Pick<
-  MultiRowRenderState,
-  'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
->
-
 // `drawnRowAt`'s rule, asked by row name rather than by drawn row index: a
 // feature in a legend category the user toggled off paints nothing, unless its
 // row carries a per-row color override — that row paints the override, which
 // the legend never lists, so a baked color coinciding with a hidden category
 // must not hide it.
-function paintsAt(name: string, color: number, paint: RowPaintInputs) {
+function paintsAt(
+  name: string,
+  color: number,
+  paint: MultiRowFeaturePaintInputs,
+) {
   const rowIndex = paint.rowIndexByValue.get(name)
   return (
     (rowIndex !== undefined &&
@@ -49,7 +44,7 @@ function paintsAt(name: string, color: number, paint: RowPaintInputs) {
 function colorsPaintedAt(
   region: RowValueRegion,
   pos: number,
-  paint: RowPaintInputs,
+  paint: MultiRowFeaturePaintInputs,
 ) {
   const byRow = new Map<string, number>()
   for (let i = 0; i < region.featureStarts.length; i++) {
@@ -93,7 +88,7 @@ export function rowOrderByValueAt<T extends { name: string }>(
   sources: T[],
   region: RowValueRegion,
   pos: number,
-  paint: RowPaintInputs,
+  paint: MultiRowFeaturePaintInputs,
 ): T[] {
   const colorByRow = colorsPaintedAt(region, pos, paint)
   // counted over the rows being ordered, not over the data, so a subtree filter

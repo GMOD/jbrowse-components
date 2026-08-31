@@ -1,5 +1,6 @@
-import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
+
+import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
 // Lifts an SVG legend / chrome above the inter-region padding masks: a
 // full-track, pointer-events:none <svg> portaled into the TrackContainer overlay
