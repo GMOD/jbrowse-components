@@ -10,6 +10,7 @@ import {
   GENERATED_NOTICE,
   isDocFile,
   isTsSource,
+  isWebsiteDoc,
   walkFiles,
 } from '../check-utils.ts'
 import { readDoc, writeDoc } from './format.ts'
@@ -2470,10 +2471,11 @@ export function replaceMarkerRegions({
       `${file}: ${starts - regions} \`${startMarker}\` with no matching \`${endMarker}\`. The block between them is never generated, and the generator would report the doc as up to date.`,
     )
   }
+  const notice = isWebsiteDoc(file) ? '' : `${GENERATED_NOTICE}\n\n`
   return text.replace(
     region,
     () =>
-      `${startMarker}\n\n${block ? `${GENERATED_NOTICE}\n\n${block}\n\n` : ''}${endMarker}`,
+      `${startMarker}\n\n${block ? `${notice}${block}\n\n` : ''}${endMarker}`,
   )
 }
 
