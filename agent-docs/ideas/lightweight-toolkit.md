@@ -268,12 +268,17 @@ coordinate-system concepts. That is the differentiator.
    becomes a preset over it. Export the view and session types — all 18 examples
    write `type BrowserView = ReturnType<typeof makeView>['view']` because there
    is no name to import.
-3. ~~**`view.status`**, shaped like `displayPhase`.~~ **Done**, on
-   `LinearGenomeView` and `LinearSyntenyView`. `computeViewStatus` in
+3. ~~**`view.status`**, shaped like `displayPhase`.~~ **Done**, on all four
+   views: `LinearGenomeView` and `LinearSyntenyView` first, then `DotplotView`
+   and `CircularView` on 2026-08-31. `computeViewStatus` in
    `@jbrowse/core/util/viewStatus` holds the precedence and takes the loading
-   term as a thunk, so dotplot and circular — which re-spell the same four
-   getters, `loadingMessage` and `loadingProgress` character-identical across
-   all four — adopt it in eight lines whenever someone touches them.
+   term as a thunk, so each of the last two was an import and one getter
+   delegating to it, with nothing else in the model touched. The estimate held
+   because the getters it reads through really were the same spelling in all
+   four: `loadingMessage` and `loadingProgress` are character-identical, and
+   `error`/`hasSomethingToShow`/`showLoading` differ only in what each view's
+   own `showLoading` folds in — dotplot's auto-diagonalize wait, which the thunk
+   inherits for free.
 
    Two things came out of building it that reading did not. `noRegions` is a
    fourth state, not a rename: `view.ready` is true when nothing has navigated
@@ -303,9 +308,18 @@ coordinate-system concepts. That is the differentiator.
 
 One small item with disproportionate effect: the
 `readSiteMode`/`watchSiteMode`/`useSiteMode` trio is **50 lines in every one of
-the 18 example files**, a fifth of the floor example. If `SessionPaletteProvider`
-read `prefers-color-scheme` itself when given no `mode`, that goes to zero
-everywhere — and unlike the rest of the list it costs nothing but a default.
+the 18 example files**, a fifth of the floor example. `SessionPaletteProvider`
+now reads `prefers-color-scheme` itself when given no `mode` — **landed
+2026-08-31**, and it cost what it looked like it would: `mode` became optional,
+and an absent one resolves through `useSessionPalette`, so the session write the
+worker's baked labels derive from is the same write an explicit mode makes.
+Passing a mode subscribes to nothing and is byte-for-byte what it was.
+
+The remainder is the sweep of the 18 example files, which is deliberately not
+done here: those copies still watch `data-theme` on `<html>` for the site's own
+toggle, which no media query can see, so each one is a judgement about what that
+page is demonstrating rather than a delete. `check-duplication.mjs` expects the
+copies until then.
 
 ## What this is not
 
