@@ -81,13 +81,19 @@ async function hoverAt({ x, y }: { x: number; y: number }) {
 
 const tooltipShowing = () => document.body.textContent.includes('rs2')
 
+// Every test here mounts a real display through `loadedDisplay()` — RPC,
+// canvas measurement, a `hitTest` — and at least one real 60ms hover wait, so
+// each gets the same longer timeout `JBrowseLinearGenomeView.test.tsx` gives a
+// view mount for the same reason: real async work across an RPC + rAF
+// boundary, not a hung test.
+
 test('a hover over a loaded cell names its pair of SNPs', async () => {
   const { cell } = await loadedDisplay()
 
   await hoverAt(cell)
 
   expect(tooltipShowing()).toBe(true)
-})
+}, 30000)
 
 // `isLoadingOrCanceled`, never a bare `isLoading` — the same rule arc's
 // `shared/displayPhase.test.ts` pins for its phase.
@@ -113,14 +119,14 @@ test('a standing cancel takes the hover with it', async () => {
   expect(display.fetchCanceled).toBe(true)
   expect(tooltipShowing()).toBe(false)
 
-  // and the overlay really is the thing the tooltip would have been floating
-  // over. Awaited, because the scrim holds a 250ms anti-flash timer before it
-  // paints anything (DisplayStatusChromeBase).
+  // and the overlay really is the thing the tooltip would have been
+  // floating over. Awaited, because the scrim holds a 250ms anti-flash
+  // timer before it paints anything (DisplayStatusChromeBase).
   await waitFor(() => {
     expect(document.body.textContent).toContain('Loading canceled')
   })
   expect(tooltipShowing()).toBe(false)
-})
+}, 30000)
 
 // ...and the gate holds for a pointer that arrives while the cancel is already
 // standing, which is the same read on a fresh render rather than on a
@@ -132,7 +138,7 @@ test('a hover arriving under a standing cancel finds nothing', async () => {
   await hoverAt(cell)
 
   expect(tooltipShowing()).toBe(false)
-})
+}, 30000)
 
 // The cancel is durable, not permanent: retrying starts a fetch, and once that
 // lands the cells answer the pointer again.
@@ -152,4 +158,4 @@ test('the hover comes back once the retry lands', async () => {
   await hoverAt(cell)
 
   expect(tooltipShowing()).toBe(true)
-})
+}, 60000) // the only test here that drives a second round trip, so it flushes the most tooltip repositions
