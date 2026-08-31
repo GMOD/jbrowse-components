@@ -56,12 +56,16 @@ test('a launch key written on the view object reaches the launch state', () => {
   expect(notify).not.toHaveBeenCalled()
 })
 
-test('the nested v4 form launches nothing and says the key is gone', () => {
+test('the nested v4 form reaches the same launch state, deprecated', () => {
   const view = open(NESTED)
-  expect(view.launch).toEqual({ legacyInit: true })
-  expect(view.pendingLaunch).toBeUndefined()
+  expect(view.launch).toEqual({
+    assembly: 'hg38',
+    loc: 'chr2:134,000,000-137,150,000',
+    legacyInit: true,
+  })
+  expect(view.pendingLaunch).toBeDefined()
   expect(warnings()).toEqual([
-    'LinearGenomeView nests its settings under "init", which v5 removed: write every setting directly on the view object.',
+    'LinearGenomeView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
   ])
 })
 

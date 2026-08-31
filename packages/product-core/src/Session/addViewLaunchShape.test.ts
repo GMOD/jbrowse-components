@@ -2,9 +2,10 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 
 // `addView(type, snapshot)` takes the one authoring shape a view has: every
-// setting written directly on the snapshot. v5 reads nothing under `init`, so a
-// launcher that nests opens a default view — but its own tests cannot tell,
-// because a launcher that nests still produces a view. This is what tells.
+// setting written directly on the snapshot. v5 still unwraps `init`, so a
+// launcher that nests works and warns — and its own tests cannot tell, because
+// the view comes out the same either way. This is what keeps the deprecated
+// spelling out of the tree while it is still read.
 //
 // Four launchers wrote it (grid-bookmark's bookmark navigation, maf's
 // open-sample and row-synteny, the synteny mate opener) plus jbrowse-img's

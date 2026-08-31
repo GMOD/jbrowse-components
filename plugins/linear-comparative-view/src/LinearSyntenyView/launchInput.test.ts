@@ -69,22 +69,26 @@ test('an omitted property keeps its default', () => {
 })
 
 describe('the v4 nested form', () => {
-  const REMOVED =
-    'LinearSyntenyView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+  const DEPRECATED =
+    'LinearSyntenyView nests its settings under "init", which is deprecated: write every setting directly on the view object.'
 
-  test('a nested spec launches nothing and says the key is gone', () => {
+  test('a nested spec launches, and says the spelling is deprecated', () => {
     const nested = open({ init: { views: ROWS, tracks: ['a_track'] } })
-    expect(nested.launch).toEqual({ legacyInit: true })
-    expect(nested.pendingLaunch).toBeUndefined()
-    expect(warnings()).toContain(REMOVED)
+    expect(nested.launch).toEqual({
+      views: ROWS,
+      tracks: ['a_track'],
+      legacyInit: true,
+    })
+    expect(nested.pendingLaunch).toBeDefined()
+    expect(warnings()).toContain(DEPRECATED)
   })
 
   // The v4 demos wrote `"init": { "colorBy": "reference", … }` and v4 applied
-  // it; the codemod moves it out rather than this reading it.
-  test('a declared property nested inside it does not land', () => {
+  // it, so unwrapping has to reach a declared property too.
+  test('a declared property nested inside it lands', () => {
     const view = open({ init: { views: ROWS, colorBy: 'reference' } })
-    expect(view.colorBy).not.toBe('reference')
-    expect(warnings()).toEqual([REMOVED])
+    expect(view.colorBy).toBe('reference')
+    expect(warnings()).toEqual([DEPRECATED])
   })
 })
 

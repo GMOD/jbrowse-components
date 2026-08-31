@@ -336,6 +336,16 @@ export async function loadSessionSpec(
       )
     }
 
+    // v4 nested a view's settings under `init`. A spec never becomes a
+    // snapshot, so `withLaunchInput`'s unwrap never runs on one and this
+    // surface does it itself, in the same order: the flat spelling wins.
+    const specViews = views.map(({ init, ...view }) => {
+      if (init) {
+        console.warn(legacyInitMessage(view.type))
+      }
+      return init ? { ...init, ...view } : view
+    })
+
     // The same classification a view snapshot gets, run here because a spec
     // never becomes one: `LaunchView-<type>` takes these keys as arguments, so
     // `withLaunchInput`'s partition never sees them and nothing names a typo.
@@ -343,29 +353,20 @@ export async function loadSessionSpec(
     // launcher's downstream "No assembly provided", on the one surface written
     // by hand with no compiler and no editor behind it.
     //
-    // An ERROR rather than the snapshot path's warning, for the same reason the
-    // nesting diagnostic above is one: this surface's misplaced keys already
-    // report as errors, and the launcher's own failure lands as an error a line
-    // later — a warning under it reads as the lesser of the two, when it is the
-    // cause.
+    // An ERROR rather than the snapshot path's warning: this surface's
+    // misplaced keys already report as errors, and the launcher's own failure
+    // lands as an error a line later — a warning under it reads as the lesser
+    // of the two, when it is the cause.
     //
     // A view type that registers no launch keys classifies nothing: its
     // launcher's vocabulary is undeclared, so every argument would read as a
     // typo.
-    for (const { type, ...view } of views) {
-      // v4's nesting, which every surface now refuses in the same words. Its own
-      // message rather than a line in the unknown list: it is the one key an
-      // author is most likely to have written on purpose.
-      if ('init' in view) {
-        session?.notifyError(legacyInitMessage(type))
-      }
+    for (const { type, ...view } of specViews) {
       const accepted = viewTypes.has(type)
         ? pluginManager.getViewType(type).acceptedKeys
         : undefined
       const unknown = accepted
-        ? Object.keys(view).filter(
-            key => key !== 'init' && !accepted.includes(key),
-          )
+        ? Object.keys(view).filter(key => !accepted.includes(key))
         : []
       if (unknown.length) {
         session?.notifyError(unknownKeysMessage(type, unknown))
@@ -401,7 +402,7 @@ export async function loadSessionSpec(
     }
 
     const createdViewIds: (string | undefined)[] = []
-    for (const { type, displayName, ...view } of views) {
+    for (const { type, displayName, ...view } of specViews) {
       const before = new Set(session?.views.map(v => v.id))
       // Strict so a launch handler that throws (missing/invalid assembly,
       // unresolved track, ...) surfaces as a snackbar instead of being swallowed

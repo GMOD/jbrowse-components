@@ -59,22 +59,32 @@ test('any declared property lands natively, named nowhere in the launch path', (
 })
 
 describe('the v4 nested form', () => {
-  const REMOVED =
-    'DotplotView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+  const DEPRECATED =
+    'DotplotView nests its settings under "init", which is deprecated: write every setting directly on the view object.'
 
-  test('a nested spec launches nothing and says the key is gone', () => {
+  test('a nested spec launches, and says the spelling is deprecated', () => {
     const nested = open({ init: { views: AXES, tracks: ['a_track'] } })
-    expect(nested.launch).toEqual({ legacyInit: true })
-    expect(nested.pendingLaunch).toBeUndefined()
-    expect(warnings()).toContain(REMOVED)
+    expect(nested.launch).toEqual({
+      views: AXES,
+      tracks: ['a_track'],
+      legacyInit: true,
+    })
+    expect(nested.pendingLaunch).toBeDefined()
+    expect(warnings()).toContain(DEPRECATED)
   })
 
   // `scripts/build_oat_homoeologs.sh` shipped `"init": { …, "colorBy": "dnds" }`
-  // and v4 applied it; the codemod moves it out rather than this reading it.
-  test('a declared property nested inside it does not land', () => {
+  // and v4 applied it, so unwrapping has to reach a declared property too.
+  test('a declared property nested inside it lands', () => {
     const view = open({ init: { views: AXES, colorBy: 'dnds' } })
-    expect(view.colorBy).not.toBe('dnds')
-    expect(warnings()).toEqual([REMOVED])
+    expect(view.colorBy).toBe('dnds')
+    expect(warnings()).toEqual([DEPRECATED])
+  })
+
+  test('the flat spelling wins where both name one key', () => {
+    expect(
+      open({ init: { colorBy: 'dnds' }, colorBy: 'default' }).colorBy,
+    ).toBe('default')
   })
 })
 

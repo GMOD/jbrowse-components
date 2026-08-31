@@ -405,9 +405,12 @@ test('a registered view type with no launcher says that instead', async () => {
 
 // v4's nesting, in the words every surface now uses for it — the LGV would
 // otherwise report "No assembly provided", the downstream symptom
-test('a spec view nesting its settings under init is told the key is gone', async () => {
+test('a spec view nesting its settings under init is launched, and warned about', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const launched: Record<string, unknown>[] = []
   const { session, pluginManager } = setup({
-    'LaunchView-LinearGenomeView': async s => {
+    'LaunchView-LinearGenomeView': async (s, args) => {
+      launched.push(args)
       s.views.push(stubView('lgv'))
     },
   })
@@ -415,16 +418,18 @@ test('a spec view nesting its settings under init is told the key is gone', asyn
   await loadSessionSpec(
     {
       views: [
-        // @ts-expect-error a spec view is flat; this is the slip being caught
         { type: 'LinearGenomeView', init: { assembly: 'volvox', loc: 'ctgA' } },
       ],
     },
     pluginManager,
   )
 
-  expect(session.notifyError).toHaveBeenCalledWith(
-    'LinearGenomeView nests its settings under "init", which v5 removed: write every setting directly on the view object.',
+  expect(warn).toHaveBeenCalledWith(
+    'LinearGenomeView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
   )
+  expect(launched[0]).toMatchObject({ assembly: 'volvox', loc: 'ctgA' })
+  expect(session.notifyError).not.toHaveBeenCalled()
+  warn.mockRestore()
 })
 
 // A spec is arguments to a launcher and never becomes a view snapshot, so

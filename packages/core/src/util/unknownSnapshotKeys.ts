@@ -58,21 +58,19 @@ export function reportMalformedRows(self: IStateTreeNode, keys: string[]) {
 
 /**
  * What every surface calls v4's nested `init`. v5 takes every setting directly
- * on the view object, so the key names no declared property and nothing reads
- * what is under it — the view opens on its defaults, which is why this says
- * more than the generic unknown-key line would.
+ * on the view object and unwraps the nesting on the way in, so the settings
+ * still arrive — this names the spelling to fix while they do.
  */
 export function legacyInitMessage(label: string) {
-  return `${label} nests its settings under "init", which v5 removed: write every setting directly on the view object.`
+  return `${label} nests its settings under "init", which is deprecated: write every setting directly on the view object.`
 }
 
-/** Name a snapshot that still writes v4's nested `init`. */
+/**
+ * Name a snapshot that still writes v4's nested `init`. The console alone,
+ * unlike the two reporters above: the settings were applied, so there is
+ * nothing for a visitor to act on and a warning toast over a working view is
+ * noise. `jbrowse validate` is where the author of the config hears about it.
+ */
 export function reportLegacyInit(self: IStateTreeNode) {
-  const message = legacyInitMessage(viewLabel(self))
-  console.warn(message)
-  try {
-    getNotificationSink(self).notify(message, 'warning')
-  } catch {
-    // a view built outside a session has nowhere to put it
-  }
+  console.warn(legacyInitMessage(viewLabel(self)))
 }

@@ -91,6 +91,12 @@ export type LaunchSnapshotIn<M extends IAnyModelType, Commands> = Omit<
   [K in keyof Commands]?: K extends keyof SnapshotIn<M>
     ? Commands[K] | SnapshotIn<M>[K]
     : Commands[K]
+} & {
+  /**
+   * @deprecated v4's nesting. Write every setting directly on the view object;
+   * this is unwrapped on the way in and warns.
+   */
+  init?: Commands
 }
 
 // Keys that are a view's identity or its plumbing rather than a setting: `type`
@@ -241,6 +247,26 @@ function classify(
   }
 }
 
+// BreakpointSplitView's v4 `init` was a bare array of panels rather than an
+// object of settings. A positional list can only be the view's row list, and a
+// view declares at most one, so it is read as that key rather than classified
+// per index — which would name "0" and "1" as unknown keys.
+function legacyInitSnapshot(
+  init: unknown,
+  { keys }: LaunchKeyRegistration<unknown>,
+) {
+  const rows = Object.entries(keys).find(
+    ([, spec]) => spec.kind === 'rows',
+  )?.[0]
+  return Array.isArray(init)
+    ? rows
+      ? { [rows]: init }
+      : {}
+    : isObject(init)
+      ? init
+      : {}
+}
+
 /**
  * Accept a view's settings written directly on the view object, and move the
  * ones a launcher has to resolve into the internal `launch` property.
@@ -285,14 +311,23 @@ export function withLaunchInput<M extends IAnyModelType, Commands>(
         unknown: {},
         malformed: {},
       }
-      classify(rest, registration, known, out)
       if (init !== undefined) {
-        // v4's nesting, refused rather than unwrapped: it is one key everyone
-        // hits, so it gets its own message instead of reading as a typo. What
-        // is under it is dropped, which is what makes the view come up on its
-        // defaults and the report the only thing saying why.
+        // v4's nesting, unwrapped rather than refused: a nested key sorts the
+        // same three ways a flat one does, so honoring it costs one more pass
+        // and a deprecation warning, where dropping it opens an admin's
+        // `defaultSession` on its defaults. `passThrough` does not carry over —
+        // a legacy spelling the view's own preprocessor converts is written
+        // flat by definition. First, so a snapshot spelling one key both ways
+        // resolves to the flat one the docs teach.
+        classify(
+          legacyInitSnapshot(init, registration),
+          { ...registration, passThrough: [] },
+          known,
+          out,
+        )
         out.launch.legacyInit = true
       }
+      classify(rest, registration, known, out)
       if (Object.keys(out.unknown).length) {
         out.launch.unknown = out.unknown
       }

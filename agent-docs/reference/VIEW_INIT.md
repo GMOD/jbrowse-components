@@ -407,12 +407,14 @@ restatement ever stops being assignable, that is where it fails.
 ## Before v5 there were two shapes
 
 Until v5 the correct shape depended on the surface: flat on the view in a spec, a
-URL and a jbrowse-img spec; nested under `init` in a `defaultSession`. v5 refuses
-`init` on every one of them, in one wording, and applies nothing under it. The
-command-vs-property distinction behind that split is real and the partition still
-draws it — what was wrong was asking an author to draw it, against an MST that
-drops a misplaced key without a word. This doc argued for keeping the two shapes,
-and the mistakes that shipped were following it.
+URL and a jbrowse-img spec; nested under `init` in a `defaultSession`. v5 takes
+the flat one everywhere and unwraps `init` into it, warning in one wording on
+every surface — the settings still apply, and the flat spelling wins where a key
+is written both ways. The command-vs-property distinction behind the old split is
+real and the partition still draws it — what was wrong was asking an author to
+draw it, against an MST that drops a misplaced key without a word. This doc
+argued for keeping the two shapes, and the mistakes that shipped were following
+it.
 
 [ADR-099](../architecture-decision-records/adr-099-a-view-takes-one-authored-object.md)
 is the record: what the split cost, the two alternatives rejected before this one

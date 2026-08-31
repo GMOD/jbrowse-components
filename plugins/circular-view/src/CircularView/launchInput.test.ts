@@ -53,20 +53,24 @@ test('a declared property lands natively, named nowhere in the launch path', () 
 })
 
 describe('the v4 nested form', () => {
-  const REMOVED =
-    'CircularView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+  const DEPRECATED =
+    'CircularView nests its settings under "init", which is deprecated: write every setting directly on the view object.'
 
-  test('a nested spec launches nothing and says the key is gone', () => {
+  test('a nested spec launches, and says the spelling is deprecated', () => {
     const nested = open({ init: { assembly: 'volvox', tracks: ['sv'] } })
-    expect(nested.launch).toEqual({ legacyInit: true })
-    expect(nested.pendingLaunch).toBeUndefined()
-    expect(warnings()).toContain(REMOVED)
+    expect(nested.launch).toEqual({
+      assembly: 'volvox',
+      tracks: ['sv'],
+      legacyInit: true,
+    })
+    expect(nested.pendingLaunch).toBeDefined()
+    expect(warnings()).toContain(DEPRECATED)
   })
 
-  test('a declared property nested inside it does not land', () => {
+  test('a declared property nested inside it lands', () => {
     const view = open({ init: { assembly: 'volvox', paddingPx: 12 } })
-    expect(view.paddingPx).not.toBe(12)
-    expect(warnings()).toEqual([REMOVED])
+    expect(view.paddingPx).toBe(12)
+    expect(warnings()).toEqual([DEPRECATED])
   })
 })
 

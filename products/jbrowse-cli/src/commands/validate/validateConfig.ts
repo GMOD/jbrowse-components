@@ -648,13 +648,18 @@ function checkSessionView(
   checkSessionViewKeys(view, entry, manifest, where, report)
   checkViewReferences(view, where, report, ctx)
 
-  // Not descended into: v5 reads nothing under `init`, so reporting the keys
-  // inside would describe settings that no longer arrive anywhere.
+  // A warning, not an error: v5 unwraps the nesting on the way in, so the
+  // settings do arrive. The keys inside get the same check the flat ones do,
+  // since that is where they land.
   if (view.init !== undefined) {
-    report.error(
+    report.warn(
       `${where}.init`,
-      'settings nested under "init", which v5 removed: write every setting directly on the view object',
+      'settings nested under "init", which is deprecated: write every setting directly on the view object',
     )
+    if (isRecord(view.init)) {
+      checkSessionViewKeys(view.init, entry, manifest, `${where}.init`, report)
+      checkViewReferences(view.init, `${where}.init`, report, ctx)
+    }
   }
 
   // A synteny or breakpoint row is a whole view snapshot of its own. Only a row

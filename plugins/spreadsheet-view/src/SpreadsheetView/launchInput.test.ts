@@ -47,20 +47,20 @@ test('a declared property lands natively, named nowhere in the launch path', () 
 })
 
 describe('the v4 nested form', () => {
-  const REMOVED =
-    'SpreadsheetView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+  const DEPRECATED =
+    'SpreadsheetView nests its settings under "init", which is deprecated: write every setting directly on the view object.'
 
-  test('a nested spec launches nothing and says the key is gone', () => {
+  test('a nested spec launches, and says the spelling is deprecated', () => {
     const view = open({ init: { assembly: 'volvox', fileType: 'BEDPE' } })
-    expect(view.importWizard.selectedAssemblyName).not.toBe('volvox')
-    expect(view.importWizard.fileType).not.toBe('BEDPE')
-    expect(warnings()).toContain(REMOVED)
+    expect(view.importWizard.selectedAssemblyName).toBe('volvox')
+    expect(view.importWizard.fileType).toBe('BEDPE')
+    expect(warnings()).toContain(DEPRECATED)
   })
 
-  test('a declared property nested inside it does not land', () => {
+  test('a declared property nested inside it lands', () => {
     const view = open({ init: { assembly: 'volvox', height: 700 } })
-    expect(view.height).not.toBe(700)
-    expect(warnings()).toEqual([REMOVED])
+    expect(view.height).toBe(700)
+    expect(warnings()).toEqual([DEPRECATED])
   })
 })
 

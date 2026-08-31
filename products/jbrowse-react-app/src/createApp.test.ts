@@ -94,9 +94,9 @@ test('a flat view warns about nothing, a nested init is refused', async () => {
   })
   await settled()
   expect(warn).toHaveBeenCalledWith(
-    'LinearGenomeView nests its settings under "init", which v5 removed: write every setting directly on the view object.',
+    'LinearGenomeView nests its settings under "init", which is deprecated: write every setting directly on the view object.',
   )
-  expect(nested.viewState.session.views[0]!.pendingLaunch).toBeUndefined()
+  expect(nested.viewState.session.views[0]!.pendingLaunch).toBeDefined()
   nested.destroy()
 
   warn.mockRestore()

@@ -15,6 +15,11 @@ export interface ViewSpec {
   // rather than being pre-validated into a generic one here
   assembly?: string
   loc?: string
+  /**
+   * @deprecated v4's nesting. Write every setting directly on the view object;
+   * this is unwrapped on the way in and warns.
+   */
+  init?: Record<string, unknown>
 }
 
 /**

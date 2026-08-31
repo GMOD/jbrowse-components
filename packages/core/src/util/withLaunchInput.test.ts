@@ -204,30 +204,41 @@ describe('the per-entry discriminators', () => {
 })
 
 describe('the v4 nested form', () => {
-  const REMOVED =
-    'TestView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+  const DEPRECATED =
+    'TestView nests its settings under "init", which is deprecated: write every setting directly on the view object.'
 
-  test('it applies nothing and says the key is gone', () => {
+  test('it produces the same launch state, and says it is deprecated', () => {
     const view = open({ type: 'TestView', init: { assembly: 'hg38' } })
-    expect(view.launch).toEqual({ legacyInit: true })
-    expect(pendingLaunch(view.launch)).toBeUndefined()
-    expect(warnings()).toEqual([REMOVED])
+    expect(view.launch).toEqual({ assembly: 'hg38', legacyInit: true })
+    expect(pendingLaunch(view.launch)).toBeDefined()
+    expect(warnings()).toEqual([DEPRECATED])
   })
 
-  // one message, not one per key: what is under `init` is unread, so listing it
-  // would describe settings that arrive nowhere
-  test('what is under it is not classified', () => {
-    open({ type: 'TestView', init: { asembly: 'hg38', showThing: true } })
-    expect(warnings()).toEqual([REMOVED])
+  test('a key inside it that names nothing is still reported', () => {
+    open({ type: 'TestView', init: { asembly: 'hg38' } })
+    expect(warnings()).toContain('TestView ignored unknown key(s): asembly')
   })
 
-  test('a declared property inside it does not land on the property', () => {
+  // the comparative views' v4 `init` applied any declared property it found, so
+  // a nested one lands on the property rather than reading as a typo
+  test('a declared property inside it lands on the property', () => {
     const view = open({ type: 'TestView', init: { showThing: true } })
-    expect(getSnapshot(view).showThing).toBe(false)
+    expect(getSnapshot(view).showThing).toBe(true)
   })
 
   test('the flat keys beside it are still read', () => {
     const view = open({ type: 'TestView', assembly: 'hg38', init: {} })
+    expect(view.launch).toEqual({ assembly: 'hg38', legacyInit: true })
+  })
+
+  // the deprecated spelling loses, so migrating one key at a time cannot make a
+  // view worse than it was
+  test('the flat spelling wins where both name one key', () => {
+    const view = open({
+      type: 'TestView',
+      assembly: 'hg38',
+      init: { assembly: 'mm39' },
+    })
     expect(view.launch).toEqual({ assembly: 'hg38', legacyInit: true })
   })
 })

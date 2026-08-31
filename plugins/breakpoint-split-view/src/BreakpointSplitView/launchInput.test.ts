@@ -56,25 +56,26 @@ test('a declared property lands natively, named nowhere in the launch path', () 
 })
 
 describe('the v4 nested form', () => {
-  const REMOVED =
-    'BreakpointSplitView nests its settings under "init", which v5 removed: write every setting directly on the view object.'
+  const DEPRECATED =
+    'BreakpointSplitView nests its settings under "init", which is deprecated: write every setting directly on the view object.'
 
-  // `init` was a BARE ARRAY here, the one unkeyed blob in the tree. Refused the
-  // same way the keyed form is, rather than keyed onto `views` first.
-  test('a bare array under init opens no panel', () => {
+  // `init` was a BARE ARRAY here, the one unkeyed blob in the tree. A
+  // positional list can only be the row list, so it is read as `views` rather
+  // than classified per index.
+  test('a bare array under init opens its panels', () => {
     const view = open({ init: PANELS })
-    expect(view.views).toHaveLength(0)
-    expect(warnings()).toContain(REMOVED)
+    expect(view.views).toHaveLength(PANELS.length)
+    expect(warnings()).toEqual([DEPRECATED])
   })
 
-  test('the keyed nested form opens none either', () => {
-    expect(open({ init: { views: PANELS } }).views).toHaveLength(0)
+  test('the keyed nested form opens them too', () => {
+    expect(open({ init: { views: PANELS } }).views).toHaveLength(PANELS.length)
   })
 
-  test('a declared property nested inside it does not land', () => {
+  test('a declared property nested inside it lands', () => {
     const view = open({ init: { views: PANELS, height: 900 } })
-    expect(view.height).not.toBe(900)
-    expect(warnings()).toEqual([REMOVED])
+    expect(view.height).toBe(900)
+    expect(warnings()).toEqual([DEPRECATED])
   })
 })
 

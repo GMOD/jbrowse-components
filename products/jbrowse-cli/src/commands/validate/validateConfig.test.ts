@@ -249,17 +249,20 @@ describe('validateConfig', () => {
       expect(error?.message).toContain('not of DotplotView')
     })
 
-    // Nothing reads what is under it, so the keys inside are not reported: a
-    // list of them would describe settings that arrive nowhere.
-    it('errors on the nested init form and does not descend', () => {
+    // The settings under it are unwrapped and applied, so the keys inside get
+    // the same check the flat ones do — the nesting itself is only a warning.
+    it('warns on the nested init form and descends into it', () => {
       const config = baseConfig()
       config.defaultSession.views = [
         { type: 'LinearGenomeView', init: { assembly: 'hg38', lo: 'chr1' } },
       ]
-      expect(errorsOf(config).map(e => e.where)).toEqual([
+      expect(warningsOf(config).map(w => w.where)).toEqual([
         'defaultSession.views[0].init',
       ])
-      expect(errorsOf(config)[0]?.message).toContain('v5 removed')
+      expect(warningsOf(config)[0]?.message).toContain('deprecated')
+      expect(errorsOf(config).map(e => e.where)).toEqual([
+        'defaultSession.views[0].init.lo',
+      ])
     })
 
     it('checks a row of a comparative view as a view of its own', () => {

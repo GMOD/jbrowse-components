@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A view carried two authoring shapes, flat on a spec and nested under `init` in a `defaultSession`, and MST dropped the wrong choice in silence; v5 keeps the flat one and resolves the command-vs-property split in the view's own preprocessor instead of asking the author to draw it"
+summary: "A view carried two authoring shapes, flat on a spec and nested under `init` in a `defaultSession`, and MST dropped the wrong choice in silence; v5 keeps the flat one, deprecates and unwraps the nested one, and resolves the command-vs-property split in the view's own preprocessor instead of asking the author to draw it"
 ---
 
 # ADR-099: A view takes one authored object
@@ -42,8 +42,16 @@ prop written inside `init` landed in a frozen blob nothing reads.
 
 ## Decision
 
-**v5 keeps the flat shape and deletes the other one. Every setting goes directly
-on the view object, on every surface.**
+**v5 keeps the flat shape and deprecates the other one. Every setting goes
+directly on the view object, on every surface.**
+
+`init` is unwrapped into that shape rather than refused, and warns. A
+`defaultSession` in a site's `config.json` is the one surface where nesting was
+the correct v4 answer, so the population that would break is exactly the admins
+who followed the v4 docs — and it would break as "my site came up on its
+defaults", not as an error. The unwrap is one more `classify` pass over the same
+keys, so honoring it costs a pass and a console line; the flat spelling wins
+where a key is written both ways, so a config migrates one key at a time.
 
 The dimorphism has to exist somewhere — a saved session and an authored spec
 arrive through the same door — so it is resolved **once, before any instance
