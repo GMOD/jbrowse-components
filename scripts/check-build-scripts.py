@@ -3,7 +3,9 @@
 silent rot. For each script it runs `bash -n`, `shellcheck` (if installed), and
 validates every embedded quoted heredoc tagged JSON (must be valid JSON) or PY
 (must be syntactically valid Python) — the config.json / session.json blocks and
-the config-patching snippets. It also syntax-checks every standalone helper in
+the config-patching snippets. Every view object those write is checked against
+the generated config manifest, since a key a view does not declare is dropped on
+load and the setting a script wrote is never read. It also syntax-checks every standalone helper in
 scripts/*.py (reroot_maf.py, hapibd_to_bed.py, …), which the scripts invoke as
 real pipeline steps. It downloads no data except juicer_tools, which sv_contact_maps' check needs
 because only juicer can write a .hic (cached in $TMPDIR, or point JUICER_JAR at
@@ -45,6 +47,84 @@ if not scripts:
 have_shellcheck = shutil.which("shellcheck") is not None
 if not have_shellcheck:
     print("note: shellcheck not installed, skipping that check")
+
+# What a defaultSession view accepts, read off the manifest `jbrowse validate`
+# checks against rather than restated: the view's own MST properties plus the
+# launch keys its registration publishes. A key outside that set is dropped by
+# MST on load, so a script writes it, ships it, and nobody ever reads it — the
+# whole reason v5 put every setting directly on the view object. `init` is the
+# deprecated nesting, still lifted, and its contents get the same check.
+MANIFEST = "products/jbrowse-cli/src/commands/validate/configManifest.generated.ts"
+_manifest = open(MANIFEST).read()
+VIEW_KEYS = {
+    name: (set(entry["stateModelProps"]) | set(entry["launchKeys"])
+           | set(entry.get("passThrough", [])) | {"init"})
+    for name, entry in
+    json.loads(_manifest[_manifest.index("= {") + 2:])["views"].items()
+}
+
+
+def json_views(node):
+    """Every view object in a parsed JSON heredoc, as (type, keys)."""
+    if isinstance(node, list):
+        for item in node:
+            yield from json_views(item)
+    elif isinstance(node, dict):
+        kind = node.get("type")
+        if isinstance(kind, str) and kind in VIEW_KEYS:
+            yield kind, set(node)
+            if isinstance(node.get("init"), dict):
+                yield kind, set(node["init"])
+        for value in node.values():
+            yield from json_views(value)
+
+
+def py_views(tree):
+    """The same, out of a PY heredoc's dict literals.
+
+    A dict whose constant `type` names a registered view is a view object
+    wherever it sits, so this reaches the ones built inside a larger config
+    literal as well as the `cfg['defaultSession'] = {...}` assignments. Keys
+    behind a `**` spread are invisible and simply go unchecked.
+    """
+    def entry(node, name):
+        for key, value in zip(node.keys, node.values):
+            if isinstance(key, ast.Constant) and key.value == name:
+                return value
+        return None
+
+    def keys_of(node):
+        return {k.value for k in node.keys
+                if isinstance(k, ast.Constant) and isinstance(k.value, str)}
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Dict):
+            continue
+        kind = entry(node, "type")
+        if not isinstance(kind, ast.Constant) or kind.value not in VIEW_KEYS:
+            continue
+        yield kind.value, keys_of(node)
+        init = entry(node, "init")
+        if isinstance(init, ast.Dict):
+            yield kind.value, keys_of(init)
+
+
+view_objects = 0
+
+
+def dead_view_keys(views, script):
+    global view_objects
+    bad = False
+    for kind, keys in views:
+        view_objects += 1
+        dead = sorted(k for k in keys if k not in VIEW_KEYS[kind])
+        if dead:
+            print(f"FAIL dead view key(s) in {script}: a {kind} is authored "
+                  f"with {', '.join(dead)}, which nothing reads — MST drops a "
+                  f"key the view does not declare, so the setting is written, "
+                  f"shipped and silently does nothing")
+            bad = True
+    return bad
 
 failed = False
 for f in scripts:
@@ -135,13 +215,13 @@ for f in scripts:
     for tag, body in re.findall(r"<<'(\w+)'\n(.*?)\n\1\b", src, re.S):
         if tag == "JSON":
             try:
-                json.loads(body)
+                failed |= dead_view_keys(json_views(json.loads(body)), f)
             except json.JSONDecodeError as e:
                 print(f"FAIL invalid JSON heredoc in {f}: {e}")
                 failed = True
         elif tag == "PY":
             try:
-                ast.parse(body)
+                failed |= dead_view_keys(py_views(ast.parse(body)), f)
             except SyntaxError as e:
                 print(f"FAIL invalid PY heredoc in {f}: {e}")
                 failed = True
@@ -2222,6 +2302,7 @@ if failed:
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
       f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
       f"{runnable} reader-facing docs run no script out of scripts/, "
+      f"{view_objects} authored view objects write only keys a view reads, "
       f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}"
       f"{' (real gfatools)' if gfatools_ran else ' (gfa2bed stubbed)'}, "
       f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}, "
