@@ -89,27 +89,25 @@ JBrowse 2 equivalents on connect. A JBrowse 1 connection serves one assembly, so
 
 #### Migrating a JBrowse 1 instance
 
-A JBrowse 1 connection is also the shortest path off JBrowse 1, since it leaves
-the data files where they are:
+[This gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
+is a standalone script to adapt: it reads a JBrowse 1 data directory's
+`trackList.json` and `tracks.conf`, follows their `include`s, and writes the
+resulting tracks into a JBrowse 2 `config.json` — a one-time conversion. It
+follows the same table as
+[`jb1ToJb2.ts`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ToJb2.ts):
+covers the usual alignment, variant, annotation, quantitative and sequence
+stores, matches an unrecognized `storeClass` on the filename, and leaves a
+placeholder track naming the format where there's no JBrowse 2 equivalent. Check
+the result with `jbrowse validate config.json`.
+
+To keep serving the JBrowse 1 directory itself instead of converting it once,
+add it as a [connection](#jbrowse-1-data-directory):
 
 ```bash
 jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19
 ```
 
-The connection reads `trackList.json` and `tracks.conf`, follows their
-`include`s, and covers the alignment, variant, annotation, quantitative and
-sequence stores a JBrowse 1 instance usually holds; the exact set is one table
-in
-[`jb1ToJb2.ts`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/jb1ToJb2.ts).
-A `storeClass` it does not recognize is matched on the filename instead, and the
-few stores with no JBrowse 2 equivalent arrive as placeholder tracks naming the
-format.
-
-A connection keeps reading the JBrowse 1 directory, which suits a site running
-both. Writing the tracks into `config.json` cuts that tie, and
-[this gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
-is a standalone script along the same lines to adapt. Check either result with
-`jbrowse validate config.json`.
+Same conversion, run on every connect instead of once.
 
 ## Adding a connection with the CLI
 

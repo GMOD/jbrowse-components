@@ -108,8 +108,8 @@ that opens a hub with no setup at all, use
 
 ### How do I convert my JBrowse 1 configuration to JBrowse 2
 
-A JBrowse 1 connection translates its tracks on connect, leaving the data files
-where they are.
+Convert `trackList.json` into JBrowse 2 track configs once and write them into
+`config.json`; the data files stay where they are.
 [](/docs/config_guides/connections#migrating-a-jbrowse-1-instance)
 
 ### How can I make a header on a jbrowse-web instance
