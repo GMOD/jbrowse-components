@@ -36,3 +36,20 @@ To silence an expected warning: add a string check to the `console.warn` filter
 in `console.js` (e.g. `r.includes('your warning text')`). Document in the code
 why it's expected (e.g., "ldToIndex.test.ts: index SNP not found is the expected
 test case").
+
+## Emotion class hashes are normalized out of DOM snapshots
+
+Emotion names a class after a hash of its serialized style text, so any MUI
+release that edits a shared style object renames every class derived from it.
+MUI 9.4.0's `theme.focusVisible` variant on `ButtonBase` reddened all nine DOM
+snapshots in the tree that way, with no structural change in any of them, and
+three of those had been re-diagnosed and dismissed by hand several times over.
+
+`emotionClassSerializer.cjs` rewrites `css-<hash>` to `css-HASH` and leaves the
+rest of the class attribute alone, so the reviewable half —
+`MuiButton-contained`, `Mui-disabled`, the MUI slot suffix — still pins. It is
+in `snapshotSerializers` on every project, and the uppercase token is what makes
+re-serializing an already-normalized string a no-op.
+
+A DOM snapshot recorded before this existed carries raw hashes and fails until
+it is regenerated; `jest -u` scoped to that suite is the whole fix.

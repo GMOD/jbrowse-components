@@ -3,27 +3,27 @@
 exports[`<HelpWidget /> renders 1`] = `
 <div>
   <div
-    class="css-1ynyhby"
+    class="css-HASH"
   >
     <h4
-      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1ya2hdm-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-HASH-MuiTypography-root"
       style="--Typography-textAlign: center;"
     >
       JBrowse 2
     </h4>
     <h6
-      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-84mvft-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter css-HASH-MuiTypography-root"
       style="--Typography-textAlign: center;"
     />
     <p
-      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body1 css-HASH-MuiTypography-root"
     >
       Here are some resources to get help. Please report the version number above when asking questions. Thanks!
     </p>
     <ul>
       <li>
         <a
-          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-HASH-MuiTypography-root-MuiLink-root"
           href="https://github.com/GMOD/jbrowse-components/discussions"
           rel="noopener noreferrer"
           target="_blank"
@@ -32,7 +32,7 @@ exports[`<HelpWidget /> renders 1`] = `
            
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="OpenInNewIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -45,7 +45,7 @@ exports[`<HelpWidget /> renders 1`] = `
       </li>
       <li>
         <a
-          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-HASH-MuiTypography-root-MuiLink-root"
           href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
           rel="noopener noreferrer"
           target="_blank"
@@ -54,7 +54,7 @@ exports[`<HelpWidget /> renders 1`] = `
            
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="OpenInNewIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -67,7 +67,7 @@ exports[`<HelpWidget /> renders 1`] = `
       </li>
       <li>
         <a
-          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-HASH-MuiTypography-root-MuiLink-root"
           href="https://jbrowse.org/jb2/docs/user_guide"
           rel="noopener noreferrer"
           target="_blank"
@@ -76,7 +76,7 @@ exports[`<HelpWidget /> renders 1`] = `
            
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="OpenInNewIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -89,7 +89,7 @@ exports[`<HelpWidget /> renders 1`] = `
       </li>
       <li>
         <a
-          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1orsvah-MuiTypography-root-MuiLink-root"
+          class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-HASH-MuiTypography-root-MuiLink-root"
           href="https://jbrowse.org/jb2/docs/"
           rel="noopener noreferrer"
           target="_blank"
@@ -98,7 +98,7 @@ exports[`<HelpWidget /> renders 1`] = `
            
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-HASH-MuiSvgIcon-root"
             data-testid="OpenInNewIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -111,76 +111,76 @@ exports[`<HelpWidget /> renders 1`] = `
       </li>
     </ul>
     <div
-      class="css-164r41r"
+      class="css-HASH"
     >
       <h6
-        class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h6 css-HASH-MuiTypography-root"
       >
         Keyboard shortcuts
       </h6>
       <p
-        class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body1 css-HASH-MuiTypography-root"
       >
         These act on the focused view. Tab moves between views, or click one; the focused view is the one with the arrow beside its title.
       </p>
       <table
-        class="MuiTable-root css-1xwxv7r-MuiTable-root"
+        class="MuiTable-root css-HASH-MuiTable-root"
       >
         <tbody
-          class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+          class="MuiTableBody-root css-HASH-MuiTableBody-root"
         >
           <tr
-            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+            class="MuiTableRow-root css-HASH-MuiTableRow-root"
           >
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Ctrl/Cmd + ←
             </td>
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Pan left
             </td>
           </tr>
           <tr
-            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+            class="MuiTableRow-root css-HASH-MuiTableRow-root"
           >
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Ctrl/Cmd + →
             </td>
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Pan right
             </td>
           </tr>
           <tr
-            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+            class="MuiTableRow-root css-HASH-MuiTableRow-root"
           >
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Ctrl/Cmd + ↑
             </td>
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Zoom in
             </td>
           </tr>
           <tr
-            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+            class="MuiTableRow-root css-HASH-MuiTableRow-root"
           >
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Ctrl/Cmd + ↓
             </td>
             <td
-              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-HASH-MuiTableCell-root"
             >
               Zoom out
             </td>

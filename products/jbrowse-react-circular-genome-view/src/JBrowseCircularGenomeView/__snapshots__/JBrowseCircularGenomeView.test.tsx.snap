@@ -3,27 +3,27 @@
 exports[`<JBrowseCircularGenomeView /> 1`] = `
 <div>
   <div
-    class="css-12e36at"
+    class="css-HASH"
   >
     <div
-      class="MuiScopedCssBaseline-root css-12wnono-MuiScopedCssBaseline-root"
+      class="MuiScopedCssBaseline-root css-HASH-MuiScopedCssBaseline-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-1dhovzc-MuiPaper-root"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-HASH-MuiPaper-root"
         style="--Paper-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12); --jbrowse-view-header-height: 0px;"
       >
         <div
-          class="css-rpkodz"
+          class="css-HASH"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-14syrzp-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
             data-testid="view_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
               data-testid="MenuIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -34,13 +34,13 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             </svg>
           </button>
           <div
-            class="css-i9gxme"
+            class="css-HASH"
           />
           <div
-            class="css-i9gxme"
+            class="css-HASH"
           />
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -75,20 +75,20 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           </button>
         </div>
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1gtchvp-MuiPaper-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
           style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <div
-            class="css-1gbbpbu"
+            class="css-HASH"
             data-testid="test_view"
             style="width: 808px; height: 400px;"
           >
             <div
-              class="css-1ggxnpa"
+              class="css-HASH"
               style="transform: translate(204px,0px);"
             >
               <svg
-                class="css-1cibtmu css-ehba41 css-1mucw6i"
+                class="css-HASH css-HASH css-HASH"
                 height="400"
                 style="transform: rotate(-1.5707963267948966rad); transform-origin: 200px 200px;"
                 width="400"
@@ -138,17 +138,17 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               </svg>
             </div>
             <div
-              class="css-1tmkrny"
+              class="css-HASH"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Zoom out"
                 type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                   data-testid="ZoomOutIcon"
                   focusable="false"
                   viewBox="0 0 24 24"
@@ -159,14 +159,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Zoom in"
                 type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                   data-testid="ZoomInIcon"
                   focusable="false"
                   viewBox="0 0 24 24"
@@ -180,14 +180,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Rotate counter-clockwise"
                 type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                   data-testid="RotateLeftIcon"
                   focusable="false"
                   viewBox="0 0 24 24"
@@ -198,14 +198,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Rotate clockwise"
                 type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                   data-testid="RotateRightIcon"
                   focusable="false"
                   viewBox="0 0 24 24"
@@ -216,14 +216,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Reset view"
                 type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                   data-testid="CenterFocusStrongIcon"
                   focusable="false"
                   viewBox="0 0 24 24"
@@ -234,14 +234,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Export SVG"
                 type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                   data-testid="PhotoCameraIcon"
                   focusable="false"
                   viewBox="0 0 24 24"
@@ -257,7 +257,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="circular_track_select"
                 tabindex="0"
                 title="Open track selector"
@@ -265,7 +265,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                   focusable="false"
                   viewBox="0 0 24 24"
                 >
@@ -276,7 +276,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               </button>
             </div>
             <div
-              class="css-1c40z4q css-n97jv7 css-1rg10zp css-ogpwni"
+              class="css-HASH css-HASH css-HASH css-HASH"
               data-gesture-owner="true"
             />
           </div>

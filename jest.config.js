@@ -202,6 +202,7 @@ const baseConfig = {
     '<rootDir>/config/jest/contractGate.js',
     '<rootDir>/config/jest/testingLibraryTimeout.js',
   ],
+  snapshotSerializers: ['<rootDir>/config/jest/emotionClassSerializer.cjs'],
   testEnvironmentOptions: { url: 'http://localhost' },
 }
 

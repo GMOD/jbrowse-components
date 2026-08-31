@@ -3,42 +3,42 @@
 exports[`open up a widget 1`] = `
 <div>
   <div
-    class="css-79elbk"
+    class="css-HASH"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1gtchvp-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
       data-testid="alignment-side-drawer"
       style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-9g9pc9-MuiPaper-root-MuiAccordion-root"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-HASH-MuiPaper-root-MuiAccordion-root"
         data-testid="BaseCard-ctgA_3_555_0:0:0_2:0... - match"
         style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
       >
         <h3
-          class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
+          class="MuiAccordion-heading css-HASH-MuiAccordion-heading"
         >
           <button
             aria-expanded="true"
-            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
+            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-HASH-MuiButtonBase-root-MuiAccordionSummary-root"
             tabindex="0"
             type="button"
           >
             <span
-              class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
+              class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
             >
               <span
-                class="MuiTypography-root MuiTypography-button css-l5w3u1-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-button css-HASH-MuiTypography-root"
               >
                 ctgA_3_555_0:0:0_2:0... - match
               </span>
             </span>
             <span
-              class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
+              class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-HASH-MuiAccordionSummary-expandIconWrapper"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                 data-testid="ExpandMoreIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -51,51 +51,51 @@ exports[`open up a widget 1`] = `
           </button>
         </h3>
         <div
-          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
+          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-HASH-MuiCollapse-root"
           style="min-height: 0px;"
         >
           <div
-            class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+            class="MuiCollapse-wrapper MuiCollapse-vertical css-HASH-MuiCollapse-wrapper"
           >
             <div
-              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-HASH-MuiCollapse-wrapperInner"
             >
               <div
-                class="MuiAccordion-region css-at4ued-MuiAccordion-region"
+                class="MuiAccordion-region css-HASH-MuiAccordion-region"
                 role="region"
               >
                 <div
-                  class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
+                  class="MuiAccordionDetails-root css-HASH-MuiAccordionDetails-root"
                 >
                   <span
-                    class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-overline css-HASH-MuiTypography-root"
                   >
                     Core details
                   </span>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
-                      class="css-c392m0"
+                      class="css-HASH"
                     >
                       Position
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       ctgA:3..102 (+)
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
-                      class="css-c392m0"
+                      class="css-HASH"
                     >
                       Name
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <span>
                         ctgA_3_555_0:0:0_2:0:0_102d
@@ -103,15 +103,15 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
-                      class="css-c392m0"
+                      class="css-HASH"
                     >
                       Length
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <span>
                         100
@@ -119,15 +119,15 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
-                      class="css-c392m0"
+                      class="css-HASH"
                     >
                       Type
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <span>
                         match
@@ -135,26 +135,26 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <hr
-                    class="MuiDivider-root MuiDivider-fullWidth css-1jpc804-MuiDivider-root"
+                    class="MuiDivider-root MuiDivider-fullWidth css-HASH-MuiDivider-root"
                   />
                   <span
-                    class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-overline css-HASH-MuiTypography-root"
                   >
                     Attributes
                   </span>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
                       aria-label="SEQ: read bases as stored in the file (reverse-complemented for reverse-strand reads)"
-                      class="css-1yswd44 css-c392m0"
+                      class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
                     >
                       seq
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <div>
                         TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
@@ -162,18 +162,18 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
                       aria-label="MAPQ: mapping quality, phred-scaled probability that the mapping position is wrong"
-                      class="css-1yswd44 css-c392m0"
+                      class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
                     >
                       score
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <div>
                         37
@@ -181,18 +181,18 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
                       aria-label="QUAL: phred-scaled per-base quality scores"
-                      class="css-1yswd44 css-c392m0"
+                      class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
                     >
                       qual
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <button
                         type="button"
@@ -210,16 +210,16 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
-                      class="css-c392m0"
+                      class="css-HASH"
                       style="width: 96px;"
                     >
                       MQ
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <div>
                         37
@@ -227,18 +227,18 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
                       aria-label="CIGAR: alignment operations (M match, I insertion, D deletion, N skip, S/H soft/hard clip)"
-                      class="css-1yswd44 css-c392m0"
+                      class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
                     >
                       CIGAR
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <div>
                         100M
@@ -246,16 +246,16 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
-                      class="css-c392m0"
+                      class="css-HASH"
                       style="width: 96px;"
                     >
                       length_on_ref
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <div>
                         100
@@ -263,18 +263,18 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
                       aria-label="TLEN: signed observed template length (insert size) of a properly paired read"
-                      class="css-1yswd44 css-c392m0"
+                      class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
                     >
                       template_length
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <div>
                         0
@@ -282,18 +282,18 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-2imjyh"
+                    class="css-HASH"
                   >
                     <div
                       aria-label="Length of the read sequence in bases"
-                      class="css-1yswd44 css-c392m0"
+                      class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
                     >
                       seq_length
                     </div>
                     <div
-                      class="css-1rdet1e"
+                      class="css-HASH"
                     >
                       <div>
                         100
@@ -301,13 +301,13 @@ exports[`open up a widget 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-1ebprri"
+                    class="css-HASH"
                   >
                     <div
-                      class="MuiFormControl-root MuiFormControl-marginDense css-1uvyb5m-MuiFormControl-root"
+                      class="MuiFormControl-root MuiFormControl-marginDense css-HASH-MuiFormControl-root"
                     >
                       <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-14l5tz3-MuiButtonBase-root-MuiButton-root"
+                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
                         tabindex="0"
                         type="button"
                       >
@@ -315,13 +315,13 @@ exports[`open up a widget 1`] = `
                       </button>
                     </div>
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
                         data-testid="HelpIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
