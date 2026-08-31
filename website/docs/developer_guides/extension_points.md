@@ -1181,10 +1181,11 @@ comma-joined path of category names from the track's `category` config field, so
 type: async
 
 One point per launchable view type, named `LaunchView-` plus the view type.
-`loadSessionSpec` fires it with the spec's view object flat as its args plus
-`session`, and the launcher sorts those keys into what the view needs. A view
-type with no registered point cannot be launched from a spec, and
-`loadSessionSpec` reports that by name rather than failing silently.
+`loadSessionSpec` fires it with the spec's view object as its args plus
+`session`, and the launcher forwards that object to `addView`, where the view's
+own `preProcessSnapshot` sorts the launch keys from the properties. A view type
+with no registered point cannot be launched from a spec, and `loadSessionSpec`
+reports that by name rather than failing silently.
 
 Register one to make your own view type launchable — see
 [](/docs/developer_guides/creating_view). A second callback on a built-in one

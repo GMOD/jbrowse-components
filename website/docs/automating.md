@@ -177,11 +177,10 @@ view object a spec or a URL does:
 }
 ```
 
-A view therefore moves between a config, a
-[session spec](/docs/urlparams#session-spec) and an `addView` call without being
-reshaped, and the plain view settings — `colorByCDS`, `showAminoAcids`,
-`showCenterLine`, `trackLabels`, `showHighlightChips` — sit beside `loc` and
-`tracks` on the same object.
+One view object therefore serves a config, a
+[session spec](/docs/urlparams#session-spec) and an `addView` call alike, and
+the plain view settings — `colorByCDS`, `showAminoAcids`, `showCenterLine`,
+`trackLabels`, `showHighlightChips` — sit beside `loc` and `tracks` on it.
 
 See [](/docs/config_guides/default_session).
 

@@ -1679,10 +1679,11 @@ Four things govern one written by hand:
   url for this origin. A config's `plugins` are gated the same way, but only
   when the config is cross-origin, which is why a config served beside JBrowse
   never prompts.
-- **A JSON session is state, not spec shorthand.** Opening a plugin's view type
-  this way means writing that view's real snapshot rather than the flat
-  [spec](#plugin-provided-view-types) arguments its launcher takes. Build the
-  session in the app and copy it out of Share → gear → "Plaintext JSON".
+- **A JSON session is state.** A plugin's view type opened this way is
+  instantiated straight from the snapshot, so anything its
+  [launcher](#plugin-provided-view-types) would have resolved has to be written
+  out. Build the session in the app and copy it out of Share → gear → "Plaintext
+  JSON".
 - **These URLs get long.** Put the session
   [in the fragment](#query-string-or-hash-fragment) to stay under the
   request-line limit that answers a long query string with HTTP 414 — and note
