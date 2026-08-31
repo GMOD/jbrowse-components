@@ -138,8 +138,9 @@ decision anyone wrote down:
   - `@jbrowse/core/rpc/coreRpcMethods` — `packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports it relatively; nothing imports it by subpath any more
   - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel
   - `@jbrowse/core/util/mst-reflection` — alive, and still served over `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import path went
+  - `@jbrowse/core/util/unknownSnapshotKeys` — alive, and `withLaunchInput` imports it relatively for the two report helpers; the four views that wrapped a model in `captureUnknownSnapshotKeys` register launch keys now, and the partition subsumes the capture. An out-of-tree view that wants the bare capture has no subpath to reach it by
 
-That is 16 subpaths the published `exports` map no longer serves. The map is
+That is 17 subpaths the published `exports` map no longer serves. The map is
 generated from in-repo import sites, so a subpath leaves it whenever its last
 in-repo importer does — this is a one-time record of the ones that already
 left, not a live check.

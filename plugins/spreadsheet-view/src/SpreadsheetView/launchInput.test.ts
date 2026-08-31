@@ -92,5 +92,8 @@ test('a typo alone leaves nothing pending', () => {
 // The wizard's cached location is the reconstruction source, so the blob has
 // nothing left to say by the time anything can snapshot it.
 test('the launch state is never persisted', () => {
-  expect(getSnapshot(open({ assembly: 'volvox' })).launch).toBeUndefined()
+  const snap = getSnapshot(open({ assembly: 'volvox' })) as {
+    launch?: unknown
+  }
+  expect(snap.launch).toBeUndefined()
 })

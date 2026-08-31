@@ -11,18 +11,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`. The `init` shorthand loads a
-structural-variant file into the spreadsheet and mirrors the rows as arcs in the
-paired circular view; `assembly` resolves coordinates for both:
+Hand-authored under `defaultSession.views`, with every setting written directly
+on the view object. `uri` loads a structural-variant file into the spreadsheet
+and mirrors the rows as arcs in the paired circular view; `assembly` resolves
+coordinates for both:
 
 ```js
 {
   type: 'SvInspectorView',
-  init: {
-    assembly: 'hg38',
-    uri: 'https://example.com/sv.vcf.gz',
-    fileType: 'VCF',
-  },
+  assembly: 'hg38',
+  uri: 'https://example.com/sv.vcf.gz',
+  fileType: 'VCF',
 }
 ```
 
@@ -46,7 +45,7 @@ the whole surface.
 | <span id="property-spreadsheetwidthfraction">**spreadsheetWidthFraction**</span><br><code>spreadsheetWidthFraction: types.stripDefault(types.number, 0.66)</code> | share of the view's width given to the spreadsheet, the rest goes to the circular view. Persisted so dragging the divider survives both a window resize and a session reload | SvInspectorView |
 | <span id="property-spreadsheetview">**spreadsheetView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>spreadsheetView: types.optional(SpreadsheetModel, () =&gt; Spreads…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>spreadsheetView: types.optional(SpreadsheetModel, () =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;SpreadsheetModel.create({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;type: 'SpreadsheetView',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hideVerticalResizeHandle: true,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  | SvInspectorView |
 | <span id="property-circularview">**circularView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>circularView: types.optional(CircularModel, () =&gt; CircularModel…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>circularView: types.optional(CircularModel, () =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;CircularModel.create({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;type: 'CircularView',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hideVerticalResizeHandle: true,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;disableImportForm: true,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  | SvInspectorView |
-| <span id="property-init">**init**</span><br><code>init: types.frozen&lt;SvInspectorViewInit &#124; undefined&gt;()</code> | used for initializing the view from a session snapshot | SvInspectorView |
+| <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt; LaunchInput&lt;SvInspectorViewCommands&gt; &#124; un…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;LaunchInput&lt;SvInspectorViewCommands&gt; &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | transient launch state: the settings written on the view object that need resolving before they can be view state — the file both halves are built from and the assembly it is read against. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun forwards them to the sheet and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. | SvInspectorView |
 | <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
 | <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>collapse the view to its header bar, keeping it in the session rather than closing it</span> | [BaseViewModel](../baseviewmodel#property-minimized) |
 
@@ -65,6 +64,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-init">**init**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>LaunchInput&lt;SvInspectorViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; u…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>LaunchInput&lt;SvInspectorViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; undefined; malformed?: Record&lt;…&gt; &#124; undefined; legacyInit?: boolean &#124; undefined; } &amp; IStateTreeNode&lt;...&gt;&gt; &#124; undefined</code></pre></dialog></span> | the launch state that still has something to apply — what the afterAttach autorun forwards to the sheet. Also v4's name for it, kept while the other views and the products that drive them still spell it this way; deleted with `setInit`. | SvInspectorView |
 | <span id="getter-currentassembly">**currentAssembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promis…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promise&lt;…&gt; &#124; undefined; ... 10 more ...; refNameMismatches: Map&lt;…&gt;; } &amp; ... 13 more ... &amp; IStateTreeNode&lt;...&gt;) &#124; undefined</code></pre></dialog></span> |  | SvInspectorView |
 | <span id="getter-assemblyname">**assemblyName**</span><br><code>string &#124; undefined</code> |  | SvInspectorView |
 | <span id="getter-showcircularview">**showCircularView**</span><br><code>boolean</code> | gated on the same condition the spreadsheet renders its grid on, so the circle never appears alongside the import form | SvInspectorView |
@@ -93,7 +93,7 @@ the whole surface.
 | <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  | SvInspectorView |
 | <span id="action-setonlydisplayrelevantregionsincircularview">**setOnlyDisplayRelevantRegionsInCircularView**</span><br><code>(val: boolean) =&gt; void</code> |  | SvInspectorView |
 | <span id="action-resizespreadsheetwidth">**resizeSpreadsheetWidth**</span><br><code>(distance: number) =&gt; void</code> | move the divider between the two subviews. Stored as a fraction so the width binding can reapply it, rather than resizing the subviews directly and having the next parent resize overwrite it.<br><br>The delta accumulates onto the fraction rather than being read back off spreadsheetView.width: the binding writes a rounded, divider-adjusted width there, so a round trip through it lost a pixel on every drag frame and the divider crept left even while the pointer was still | SvInspectorView |
-| <span id="action-setinit">**setInit**</span><br><code>(init?: SvInspectorViewInit &#124; undefined) =&gt; void</code> |  | SvInspectorView |
+| <span id="action-setinit">**setInit**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(init?: LaunchInput&lt;SvInspectorViewCommands&gt; &#124; undefined) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(init?: LaunchInput&lt;SvInspectorViewCommands&gt; &#124; undefined) =&gt; void</code></pre></dialog></span> |  | SvInspectorView |
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  | SvInspectorView |
 | <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
 | <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; void</code> | <span data-pagefind-ignore>width is an important attribute of the view model, when it becomes set, it often indicates when the app can start drawing to it. certain views like lgv are strict about this because if it tries to draw before it knows the width it should draw to, it may start fetching data for regions it doesn't need to<br><br>setWidth is updated by a ResizeObserver generally, the views often need to know how wide they are to properly draw genomic regions</span> | [BaseViewModel](../baseviewmodel#action-setwidth) |

@@ -145,9 +145,13 @@ describe('the rows discriminator', () => {
 // autosave firing mid-load can still rebuild the view. A refused list is the
 // state that stays empty, so it is what shows the branch.
 test('the launch state persists only while the panels are missing', () => {
+  // postProcessSnapshot narrows `launch` out of the snapshot type, which is the
+  // whole point of it; the cast is what lets the test look for it anyway
+  const launchOf = (view: BreakpointViewModel) =>
+    (getSnapshot(view) as { launch?: unknown }).launch
   const refused = open({
     views: [{ type: 'LinearGenomeView' }, { assembly: 'volvox' }],
   })
-  expect(getSnapshot(refused).launch).toBeDefined()
-  expect(getSnapshot(open({ views: PANELS })).launch).toBeUndefined()
+  expect(launchOf(refused)).toBeDefined()
+  expect(launchOf(open({ views: PANELS }))).toBeUndefined()
 })

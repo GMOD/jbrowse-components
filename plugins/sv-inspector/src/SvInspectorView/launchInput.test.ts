@@ -107,5 +107,8 @@ test('a typo alone leaves nothing pending', () => {
 // Forwarded synchronously, and the sheet caches the file location just as
 // synchronously, so this node's copy has nothing left to reconstruct.
 test('the launch state is never persisted', () => {
-  expect(getSnapshot(open({ assembly: 'volvox' })).launch).toBeUndefined()
+  const snap = getSnapshot(open({ assembly: 'volvox' })) as {
+    launch?: unknown
+  }
+  expect(snap.launch).toBeUndefined()
 })

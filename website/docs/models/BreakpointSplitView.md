@@ -11,14 +11,15 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`. `init` is an array — one entry per
-stacked panel — each declaring the `assembly`, a `loc`, and the `tracks` to
-show. The two panels flank a structural-variant breakpoint:
+Hand-authored under `defaultSession.views`, with every setting written directly
+on the view object. `views` is one entry per stacked panel, each declaring the
+`assembly`, a `loc`, and the `tracks` to show. The two panels flank a
+structural-variant breakpoint:
 
 ```js
 {
   type: 'BreakpointSplitView',
-  init: [
+  views: [
     { assembly: 'hg38', loc: 'chr1:1,000,000-1,100,000', tracks: ['alignments'] },
     { assembly: 'hg38', loc: 'chr5:2,000,000-2,100,000', tracks: ['alignments'] },
   ],
@@ -43,7 +44,7 @@ the whole surface.
 | <span id="property-interactiveoverlay">**interactiveOverlay**</span><br><code>interactiveOverlay: types.stripDefault(types.boolean, true)</code> | make the alignment squiggles drawn between the panels clickable, rather than a static overlay | BreakpointSplitView |
 | <span id="property-showheader">**showHeader**</span><br><code>showHeader: types.stripDefault(types.boolean, true)</code> | show the view's own header bar, above the panels' own | BreakpointSplitView |
 | <span id="property-views">**views**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>views: types.array( pluginManager.getViewType('LinearGenomeView…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>views: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.getViewType('LinearGenomeView')&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;.stateModel as LinearGenomeViewStateModel,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  | BreakpointSplitView |
-| <span id="property-init">**init**</span><br><code>init: types.frozen&lt;BreakpointSplitViewInitView[] &#124; undefined&gt;()</code> | declarative child panels (loc/assembly/tracks) resolved into `views` once the view has a width; used for initializing from a session snapshot. Transient — stripped by postProcessSnapshot. | BreakpointSplitView |
+| <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt; LaunchInput&lt;BreakpointSplitViewCommands&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | transient launch state: the declarative panels written on the view object as `views`, which need a measured width before they can be built rows. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. | BreakpointSplitView |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseViewModel](../baseviewmodel#property-id) |
 | <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
 | <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>collapse the view to its header bar, keeping it in the session rather than closing it</span> | [BaseViewModel](../baseviewmodel#property-minimized) |
@@ -66,6 +67,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere | BreakpointSplitView |
+| <span id="getter-init">**init**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>LaunchInput&lt;BreakpointSplitViewCommands &amp; { unknown?: Record&lt;…&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>LaunchInput&lt;BreakpointSplitViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; undefined; malformed?: Record&lt;…&gt; &#124; undefined; legacyInit?: boolean &#124; undefined; } &amp; IStateTreeNode&lt;…&gt;&gt; &#124; undefined</code></pre></dialog></span> | the launch state that still has something to apply — the gate the loading and import-form paths below read. Also v4's name for it, kept while the other views and the products that drive them still spell it this way; deleted with `setInit`. | BreakpointSplitView |
 | <span id="getter-hassomethingtoshow">**hasSomethingToShow**</span><br><code>boolean</code> |  | BreakpointSplitView |
 | <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  | BreakpointSplitView |
 | <span id="getter-error">**error**</span><br><code>unknown</code> | Resolved, like LGV's and linear-comparative's: it folds in the sub-views, whose assemblies are what `initialized` waits on. Without them a failed assembly leaves `initialized` false forever with nothing to report, and an SVG export waiting on it hangs behind the dialog's spinner instead of raising the error (see `awaitViewInitialized`). | BreakpointSplitView |
@@ -111,7 +113,7 @@ the whole surface.
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | Re-run the overlay-feature fetch with no input change — what the Retry on its failure notification calls. | BreakpointSplitView |
 | <span id="action-reversevieworder">**reverseViewOrder**</span><br><code>() =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-squareview">**squareView**</span><br><code>() =&gt; void</code> |  | BreakpointSplitView |
-| <span id="action-setinit">**setInit**</span><br><code>(init?: BreakpointSplitViewInitView[] &#124; undefined) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-setinit">**setInit**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(init?: LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined) =…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(init?: LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined) =&gt; void</code></pre></dialog></span> |  | BreakpointSplitView |
 | <span id="action-setviews">**setViews**</span><br><code>(viewInits: BreakpointSplitViewInitView[]) =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
 | <span id="action-setbodymounted">**setBodyMounted**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>See `bodyMounted`. Written by the view's container, which is the only thing that knows whether it rendered the body.</span> | [BaseViewModel](../baseviewmodel#action-setbodymounted) |
