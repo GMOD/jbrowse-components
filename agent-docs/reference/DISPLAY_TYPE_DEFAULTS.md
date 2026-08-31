@@ -47,9 +47,12 @@ read one section, read [The cascade](#the-cascade).
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Preferences inventory (`getDisplayTypeDefaults`, list + per-row clear) | `packages/product-core/src/{Session/BaseSession.ts,ui/DisplayDefaultsSection.tsx}` |
-| Pin adornment + row builders | `packages/core/src/ui/{PinAdornment.tsx,promotableMenuItems.ts}` |
+| The `Pin` interface itself (imports nothing, so `MenuTypes.ts` stays React-free) | `packages/core/src/configuration/promotablePin.ts` |
+| Pin adornment + row builders | `packages/core/src/ui/{PinAdornment.tsx,promotableMenuItems.ts,legendMenuItem.ts}` |
+| Promotable slider row (`makePromotableSizeMenu`, its lazily-loaded drawn half) | `packages/core/src/ui/{makeSizeMenu.tsx,SizeSliderRow.tsx}` |
 | Config-editor view of a promotable slot (`SlotFacade.promotedBase`, consumed by `BooleanEditor` / `JsonEditor` / `StringEnumEditor`) | `packages/core/src/configuration/slotFacade.ts`, `plugins/config/src/ConfigurationEditorWidget/components/` |
-| `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
+| `pin` / `endAdornment` menu-row primitives and the one place they resolve | `packages/core/src/ui/{MenuTypes.ts,menuItemAdornment.tsx,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
+| Pin coverage (which promotable slots a built menu offers a pin for) | `packages/core/src/ui/promotablePinCoverage.ts` |
 | Adopters — every display that declares or inherits a promotable slot, and the schema file each slot comes from | [Adopters](#adopters), generated |
 | Shared `heightMode` mixin (canvas + alignments) | `packages/display-kit/src/{HeightModeMixin.ts,heightMode.ts}` |
 
@@ -566,7 +569,7 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | --- | --- | --- |
 | `resolveConf(self, slot)` | the cascaded `.value`; throws on a non-promotable slot. Takes a `ResolvableDisplay`, so a bare `{ configuration }` is a compile error | the display's own value getter |
 | `getConfigSnapshotWithPromotables(self)` | config snapshot with every promotable slot replaced by its resolved value | the worker payload (see [Worker boundary](#adding-a-promotable-slot)) |
-| `makePin(self, slot, onValue)` | `Pin` `{ slot, active, toggle }` on one fixed value — "make arcs the default", independent of what the track shows, so two rows sharing a slot (arcs `'arc'` vs cloud `'cloud'`) stay independent | an always-visible per-value pin |
+| `makePin(self, slot, onValue)` | `Pin` `{ slot, onValue, active, toggle }` on one fixed value — "make arcs the default", independent of what the track shows, so two rows sharing a slot (arcs `'arc'` vs cloud `'cloud'`) stay independent | an always-visible per-value pin |
 | `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | a symmetric or continuous setting with no sensible fixed on-value (wiggle point size, arc line width, `mismatchAlpha`) |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
 | `clearPromotedDefaults(self, slots)` | clears the named promoted defaults for this display's type | badge "clear session default", which passes the slots it listed |
@@ -637,8 +640,9 @@ and cannot express the dedup case; the canary is `PromotedDefaultApply.test.ts`
 in jbrowse-web.
 
 That the click applies and the snackbar promotes, that the override/apply pair
-collapsed into one write, and that the promotion re-derives inside `onClick`
-rather than capturing a decision, are all
+collapsed into one write, and that the promotion closes over the display *type*
+and no decision — so it still lands if the clicked track is closed while the
+snackbar is up — are all
 [ADR-048](../architecture-decision-records/adr-048-the-pin-applies-then-offers-the-default.md).
 It also records what the reversal gave up — the pin is no longer symmetric.
 Read it before making the pin do more.
@@ -829,16 +833,49 @@ it.
 ## UI surface
 
 Every promotable setting renders **one row per value**, and every such row
-carries the same trailing pin — the `PinAdornment` (`PushPin`
-`ToggleButton`) as the menu item's **`endAdornment`**, driven by a
-`Pin`. There is no separate "apply to all tracks" or "make default" row
-anymore; the pin *is* that affordance, and it lives beside the value control on
-the same row. `endAdornment` is a general `BaseMenuItem` field;
-`MenuItemTrailing` renders it in a fixed-width column (reserved on every row when
-any row has one, so value checks stay column-aligned and pins right-align in
-their own column). Pins are **always shown** (discoverable) and their content
-`stopPropagation`s so a click applies the value across the open tracks without
-toggling the row value or dismissing the menu.
+carries the same trailing pin. There is no separate "apply to all tracks" or
+"make default" row anymore; the pin *is* that affordance, and it lives beside
+the value control on the same row. Pins are **always shown** (discoverable) and
+their content `stopPropagation`s so a click applies the value across the open
+tracks without toggling the row value or dismissing the menu.
+
+**A row declares a pin; it does not render one.** `BaseMenuItem` has two
+trailing-content fields and they are not interchangeable:
+
+- **`pin: MenuItemPin`** — `{ control: Pin, label: string }`, a *description*.
+  `menuItemAdornment.tsx` turns it into `PinAdornment` (`PushPin`
+  `ToggleButton`) at the point the menu is drawn. This is the field every
+  promotable builder sets, and the only one `pinnedSlots` counts — a pin is
+  findable precisely because `Pin` carries the `slot` it promotes.
+- **`endAdornment: React.ReactNode`** — an already-built element, the escape
+  hatch for content nothing else can describe (synteny's colour swatch, the
+  wiggle colour dot). It is **deliberately not counted** by `pinnedSlots`: an
+  arbitrary element cannot say which slot it promotes, so a pin written this way
+  is a thing to find, not to accept.
+
+Setting `endAdornment` where `pin` was meant is therefore silent in exactly the
+way the coverage check exists to catch, and it also costs the eager bundle: a
+menu builder is called from state models and menu modules, so constructing the
+element there puts MUI's `ToggleButton`, `Tooltip` and two icons into every
+host's first paint (reference/EAGER_BUNDLE.md; `menuItems.purity.test.ts` holds
+the line). `menuItemAdornment` resolves the two — `endAdornment` first, then
+`pin` — in one place, so the "does any row draw one?" predicate
+(`hasMenuItemAdornment`) and the rendering cannot disagree.
+`MenuItemTrailing` draws whichever it gets in a fixed-width column, reserved on
+every row when any row has one, so value checks stay column-aligned and pins
+right-align in their own column.
+
+**A pin's `active` and `onValue` are captured when the menu is built, so the
+surface has to hand `CascadingMenu` a getter and not an array.** Nothing in
+`Pin` is observable — `PinAdornment` reads two plain fields — and the pin stays
+live only because `CascadingMenu` is an `observer` that calls a
+`MenuItemsGetter` inside its own render, and building a pin reads the slot
+(`resolveSlot`) and the promoted default. A menu passed as a plain `MenuItem[]`
+built outside an observer therefore draws a frozen pin: it keeps the
+filled/outline state and the on-value it had at build time, so a click applies a
+stale value and a filled pin fails to clear. Every pin surface today passes a
+getter — the track menu (`TrackLabelMenu`'s `getMenuItems`) and the synteny
+settings menu, which is a function for the coverage check's sake anyway.
 
 The row builders in `promotableMenuItems.ts`:
 
@@ -849,11 +886,18 @@ of a row can only differ by the pin:
 - **`promotableToggleItem`** — a `type:'checkbox'` row (native
   hover/sizing/keyboard) for a flat boolean setting (`showSoftClipping`,
   `readConnectionsDown`, `showSashimiLabels`). The checkbox toggles the track's
-  value; the pin applies the setting's on-value across the open tracks. Takes a
-  `pin`, per-value —
-  `makePin(self, slot, onValue)`. Row built by `checkboxItem`, so it offers that
-  builder's full option set (`subLabel`, `disabled`, `disabledHelpText`, …); it
-  used to drop three of them.
+  value; the pin applies the setting's on-value across the open tracks. **Which
+  `makePin` form a checkbox row takes follows from its slot, not from its being a
+  checkbox**: a plain `maybeBoolean` slot is symmetric, so the row takes the
+  value-*omitted* `makePin(self, slot)` and its pin carries whichever state the
+  track shows — that is what `PinAdornment`'s boolean copy ("Turn X off for all
+  open tracks") exists for, and it is nearly every such row. The per-value form
+  is for the checkbox rows that *share* a multi-valued slot and each stand for
+  one of its values: `readConnections` is one slot behind an "Arcs" row pinning
+  `'arc'` and a "Read cloud" row pinning `'cloud'`, which stay independent only
+  because each names its own on-value. Row built by `checkboxItem`, so it offers
+  that builder's full option set (`subLabel`, `disabled`, `disabledHelpText`, …);
+  it used to drop three of them.
 - **`promotableRadioItems`** — a whole `type:'radio'` group over a multi-value
   slot, and **the one to reach for**: `radioItems` plus one pin per option, with
   the pin supplied as a factory `value => makePin(self, slot, value)` so it
@@ -881,7 +925,8 @@ customizes, leaving the group untouched follows the default. Don't add one
 reflexively; it's a fourth control on an already-busy row for a state the user
 reaches by not clicking.
 
-The three **slider** rows (wiggle point size, wiggle/arc line width) do have one,
+The three **slider** rows (wiggle point size — shared with the GWAS Manhattan
+plot — and wiggle/arc line width) do have one,
 because a slider has no "untouched" position to leave alone: the reset button is
 enabled off `isSlotCustomized` and writes `undefined`. That reset is the only
 path left that *unsets* a promotable slot — the pin overwrites rather than

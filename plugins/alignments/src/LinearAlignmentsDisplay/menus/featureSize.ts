@@ -116,9 +116,10 @@ export function getFeatureHeightMenuItem(
     type: 'subMenu' as const,
     subMenu: [
       // Size presets: each writes its exact height (preserving grow, dropping fit
-      // back to fixed); the pin promotes that height as the session default. The
-      // rows stay open (promotableRadioItem's default) so size + mode can both be
-      // set in one visit.
+      // back to fixed); the pin applies that height to every open track of the
+      // display type and offers it as that type's default. The rows stay open
+      // (promotableRadioItem's default) so size + mode can both be set in one
+      // visit.
       ...PRESETS.map(preset =>
         needsContent(
           promotableRadioItem({

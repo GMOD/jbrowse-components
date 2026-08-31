@@ -30,14 +30,18 @@ describe('PinAdornment', () => {
   it('renders a labeled pin button', () => {
     const { getByRole } = renderAdornment(fakeControl(false))
     expect(
-      getByRole('button', { name: 'apply this to all open tracks' }),
+      getByRole('button', {
+        name: 'apply this to all open tracks of this type',
+      }),
     ).toBeTruthy()
   })
 
   it('names the pin after its setting so siblings are distinguishable', () => {
     const { getByRole } = renderAdornment(fakeControl(false), 'Compact')
     expect(
-      getByRole('button', { name: 'apply Compact to all open tracks' }),
+      getByRole('button', {
+        name: 'apply Compact to all open tracks of this type',
+      }),
     ).toBeTruthy()
   })
 
@@ -47,7 +51,9 @@ describe('PinAdornment', () => {
   it('names the clear, not the apply, once it is the default', () => {
     const { getByRole } = renderAdornment(fakeControl(true), 'Compact')
     expect(
-      getByRole('button', { name: 'clear the default for Compact' }),
+      getByRole('button', {
+        name: 'clear the default for Compact for all tracks of this type',
+      }),
     ).toBeTruthy()
   })
 
@@ -74,7 +80,7 @@ describe('PinAdornment', () => {
     )
     expect(
       getByRole('button', {
-        name: 'turn Show legend off for all open tracks',
+        name: 'turn Show legend off for all open tracks of this type',
       }),
     ).toBeTruthy()
   })
@@ -85,7 +91,9 @@ describe('PinAdornment', () => {
       'Show legend',
     )
     expect(
-      getByRole('button', { name: 'clear the default for Show legend' }),
+      getByRole('button', {
+        name: 'clear the default for Show legend for all tracks of this type',
+      }),
     ).toBeTruthy()
   })
 

@@ -102,8 +102,9 @@ const pairedEndColorOptions = radioColorOptions('pairedEnd')
 // hid the opt-in list the file's comments keep describing.
 
 // A plain radio that selects a whole color scheme (no extra config). When the
-// display is promotable, each row also carries its own pin (endAdornment) that
-// makes that exact scheme the session-wide default for this display type.
+// display is promotable, each row also carries its own pin, which applies that
+// exact scheme to every open track of this display type and offers to keep it
+// as the display type's default.
 function colorRadio(
   model: AnyColorByModel,
   { label, type }: ColorOption,

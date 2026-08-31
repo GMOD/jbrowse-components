@@ -165,7 +165,7 @@ function createDisplays(
           [displayType]: forType,
         }
       },
-      // present so applyDefaultToggle's session.notify(...) doesn't throw
+      // present so applyPinClick's session.notify(...) doesn't throw
       notify() {},
     }))
   const session = Session.create(
@@ -398,10 +398,13 @@ describe('apply a value to open tracks', () => {
     expect(resolveConf(other, 'customHeight')).toBe(10)
   })
 
-  // The snackbar outlives the click that raised it, and the whole walk hangs off
-  // the clicked display's session — a track the user closes in between leaves a
-  // destroyed node MST throws on.
-  test('"Set as the default" is a no-op once the clicked track is gone', () => {
+  // The snackbar outlives the click that raised it, so the promotion has to
+  // survive the user closing the track in between — a promoted default is keyed
+  // by display type and exists to govern tracks opened LATER, so tying it to the
+  // clicked display being alive discarded an explicit user action in silence.
+  // The type is closed over as a string, which is why no read reaches the
+  // destroyed node.
+  test('"Set as the default" still promotes once the clicked track is gone', () => {
     const { session, displayOf } = createViews([
       [{ customHeight: 20 }],
       [{ customHeight: 30 }],
@@ -416,9 +419,9 @@ describe('apply a value to open tracks', () => {
     expect(() => {
       promote.onClick()
     }).not.toThrow()
-    expect(
-      session.getDisplayTypeDefault('TestDisplay', 'customHeight'),
-    ).toBeUndefined()
+    expect(session.getDisplayTypeDefault('TestDisplay', 'customHeight')).toBe(
+      10,
+    )
   })
 
   // Clicking a filled pin means "stop governing the tracks I open later". The

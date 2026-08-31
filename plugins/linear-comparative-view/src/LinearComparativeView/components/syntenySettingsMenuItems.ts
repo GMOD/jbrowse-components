@@ -59,6 +59,12 @@ const THIN_FADE_HELP =
  * no synteny display yet (the import form, a track still arriving) has no slot
  * to write and no ribbon to draw, so its row is disabled rather than a
  * checkbox that ticks nothing.
+ *
+ * The pin takes the value-omitted `makePin`, not `makePin(display, slot, value)`
+ * over the `value` the row is checked by. The two are the same value — `value`
+ * is `ribbonSettingsSample.effective*`, i.e. `resolveConf` off this very
+ * display — and spelling it a second time only creates a way for them to
+ * disagree, which `makePin` answers by throwing.
  */
 function ribbonToggle({
   display,
@@ -81,7 +87,7 @@ function ribbonToggle({
         onToggle: () => {
           setValue(!value)
         },
-        pin: makePin(display, slot, value),
+        pin: makePin(display, slot),
         ...opts,
       })
     : toggleItem(label, value, setValue, {

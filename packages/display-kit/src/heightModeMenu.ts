@@ -29,10 +29,11 @@ export type HeightModeMenuModel<
 
 // The "Track sizing" radio group (fixed/grow/fit), built identically for every
 // display that exposes the `heightMode` slot: each radio selects the mode for
-// this track, its pin promotes that mode as the session-wide default. Sharing
-// the whole builder — not just the labels — makes the canvas and alignments
-// menus identical by construction rather than by two call sites that happen to
-// agree. `noun` is the singular of what the track holds ('feature', 'read').
+// this track, its pin applies that mode to every open track of the display type
+// and offers it as that type's default. Sharing the whole builder — not just the
+// labels — makes the canvas and alignments menus identical by construction
+// rather than by two call sites that happen to agree. `noun` is the singular of
+// what the track holds ('feature', 'read').
 //
 // Callers render these under a "Track sizing" subHeader inside the per-feature
 // size menu ("Feature height" / "Read height"), so one menu holds both halves

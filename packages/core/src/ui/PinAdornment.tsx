@@ -43,26 +43,32 @@ function pinPredicate(onValue: unknown) {
 
 // The click, which is not the state the pin draws: an outline pin applies the
 // value to the open tracks, a filled one clears the default it stands for.
+//
+// The aria-label carries "of this type" wherever the tooltip does: it used to
+// stop at "for all open tracks", stating a wider blast radius than the control
+// has.
 function pinCopy(label: string, onValue: unknown, isDefault: boolean) {
   return isDefault
     ? {
         title: `${label} is ${pinPredicate(onValue)} for all tracks of this type (click to clear)`,
-        ariaLabel: `clear the default for ${label}`,
+        ariaLabel: `clear the default for ${label} for all tracks of this type`,
       }
     : typeof onValue === 'boolean'
       ? {
           title: `Turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
-          ariaLabel: `turn ${label} ${onValue ? 'on' : 'off'} for all open tracks`,
+          ariaLabel: `turn ${label} ${onValue ? 'on' : 'off'} for all open tracks of this type`,
         }
       : {
           title: `Apply ${label} to all open tracks of this type`,
-          ariaLabel: `apply ${label} to all open tracks`,
+          ariaLabel: `apply ${label} to all open tracks of this type`,
         }
 }
 
-// Trailing pin for a promotable setting, rendered as a menu item's
-// `endAdornment` beside the value check. A ToggleButton (native button a11y + a
-// clear selected tint) with a pin — distinct from the value checkbox.
+// Trailing pin for a promotable setting, drawn beside the value check from the
+// row's `pin` declaration (`menuItemAdornment` builds this; a row never
+// constructs it, which is what keeps MUI out of the eager menu-builder graph). A
+// ToggleButton (native button a11y + a clear selected tint) with a pin —
+// distinct from the value checkbox.
 //
 // **The click and the state are two different things.** One click writes the
 // value into every open track of this display type and raises a snackbar

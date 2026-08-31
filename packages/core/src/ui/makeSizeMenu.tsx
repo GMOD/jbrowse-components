@@ -34,7 +34,8 @@ const SizeSliderRow = lazy(() =>
 const sizeRowFallbackHeight = 46
 
 // One inline menu row: the live value/slider with a reset button and, for a
-// promotable slot, a pin to make the current value the session-wide default.
+// promotable slot, a pin that applies the current value to every open track of
+// the display type and offers it as the display type's default.
 //
 // `getValue` is a thunk, read inside `SizeSliderRow`'s own observer, so the
 // slider tracks the model while the menu stays open. Not because the built row
@@ -118,7 +119,7 @@ export function makeSizeSubMenu(
 // The same row over a **promotable** slot, which derives both halves the plain
 // form takes by hand — the reset button's enablement (`isSlotCustomized`) and
 // the "default for all tracks of this type" pin — from the one slot name. A
-// slider has no fixed on-value, so the pin promotes whatever the track is
+// slider has no fixed on-value, so the pin carries whatever the track is
 // currently showing.
 //
 // Naming the slot once is the point: the call sites used to spell it twice, in

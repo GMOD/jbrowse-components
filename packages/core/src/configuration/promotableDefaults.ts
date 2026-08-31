@@ -312,9 +312,14 @@ export function applySlotToOpenTracks(
  * track is the same write as filling in a follower, and the distinction the two
  * actions drew is not one the user has any reason to see.
  *
- * The snackbar outlives the click that raised it, so the promotion re-derives
- * `self`'s liveness inside `onClick` rather than closing over a decision —
- * ADR-048 has the ways that goes wrong.
+ * The snackbar outlives the click that raised it, so the promotion closes over
+ * the display TYPE — a string — rather than reaching back through `self`. A
+ * promoted default is keyed by display type and governs tracks opened later, so
+ * it has nothing to do with the clicked display still being open; guarding on
+ * `self` instead meant a user who applied a value, closed the track, then took
+ * the offer got a silent no-op. What is still guarded is the session, which owns
+ * the map the write lands in. ADR-048 has the decisions this does not change:
+ * no track set and no apply/promote decision may be closed over.
  */
 function applyPinClick(
   self: ResolvableDisplay,
@@ -323,8 +328,9 @@ function applyPinClick(
   isDefault: boolean,
 ): void {
   const session = getSession(self)
+  const displayType = self.type
   if (isDefault) {
-    session.setDisplayTypeDefault(self.type, slot, undefined)
+    session.setDisplayTypeDefault(displayType, slot, undefined)
     session.notify('Cleared the default', 'info')
   } else {
     const open = openTracksOfType(self)
@@ -335,8 +341,8 @@ function applyPinClick(
       {
         name: 'Set as the default',
         onClick: () => {
-          if (isAlive(self)) {
-            session.setDisplayTypeDefault(self.type, slot, value)
+          if (isAlive(session)) {
+            session.setDisplayTypeDefault(displayType, slot, value)
           }
         },
       },

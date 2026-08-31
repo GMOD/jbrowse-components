@@ -116,7 +116,7 @@ export function storedSlotValue(
  * about a value a caller is about to offer as a pin's on-value.
  *
  * Exists because a pin built over a value the gate refuses is inert in a way
- * nothing reports: `applyDefaultToggle` writes it to the session store happily,
+ * nothing reports: `applyPinClick` writes it to the session store happily,
  * `resolveSlotIn` then drops it and every track keeps resolving to the tier
  * below, and `isPromotableDefault` compares the *raw* stored value, so the pin
  * draws outline forever while a dead key sits in the user's localStorage. See

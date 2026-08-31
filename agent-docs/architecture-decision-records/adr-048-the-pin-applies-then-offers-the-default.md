@@ -76,12 +76,26 @@ discard. It also costs nothing in practice: the pin overwrites open tracks on
 every click, so the redundant copies are corrected by the next pin the user
 touches.
 
-### The action re-derives on click
+### The action closes over the display type, and nothing else
 
-The snackbar outlives the click that raised it, so "Set as the default" checks
-`isAlive(self)` inside `onClick` rather than closing over a decision. The whole
-walk hangs off the clicked display's session, and a display destroyed by the user
-closing its track throws on any read.
+The snackbar outlives the click that raised it, so "Set as the default" must not
+close over a *decision* — not the track set, not whether to apply or promote,
+both of which are answers to "what is open now" and go stale the moment the
+snackbar is left up.
+
+What it does close over is the display TYPE, a plain string read when the
+snackbar is raised. That is not a decision: a promoted default is keyed by
+display type and exists to govern tracks opened *later*, so it has nothing to
+say about whether the clicked display is still open. The action originally
+guarded `isAlive(self)` and reached back through `self.type`, on the reasoning
+that a destroyed display throws on any read — true of the read, but the
+conclusion was to skip the write, so a user who applied a value, closed the
+track, and then took the offer got a silent no-op of an explicit action. Holding
+the string removes the read, and the guard moves to `isAlive(session)`, which is
+what actually owns the map the write lands in.
+
+Canary: `promotableDefaults.test.ts`, `'"Set as the default" still promotes once
+the clicked track is gone'`.
 
 ### The clicked track is always written
 

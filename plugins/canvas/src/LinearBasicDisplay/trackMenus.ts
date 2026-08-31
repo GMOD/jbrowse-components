@@ -251,9 +251,9 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
       label: 'Set feature height',
       icon: HeightIcon,
       subMenu: [
-        // Each preset row carries its own pin (endAdornment): the radio
-        // selects the mode for this track, the pin promotes that preset
-        // as the session-wide default for this display type. displayMode
+        // Each preset row carries its own pin: the radio selects the mode for
+        // this track, the pin applies that preset to every open track of this
+        // display type and offers it as the display type's default. displayMode
         // is a sentinel promotable slot, so every preset — `normal`
         // included — is customizable back over another session default.
         ...promotableRadioItems(

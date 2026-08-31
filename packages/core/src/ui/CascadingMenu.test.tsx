@@ -245,7 +245,9 @@ describe('CascadingMenu endAdornment', () => {
     // rebuild the aria-pressed flip could otherwise pass without
     const pin = (name: string) => getByRole('button', { name })
     expect(
-      pin('apply Compact to all open tracks').getAttribute('aria-pressed'),
+      pin('apply Compact to all open tracks of this type').getAttribute(
+        'aria-pressed',
+      ),
     ).toBe('false')
 
     // the model moves with the menu still mounted — no reopen, no rerender call
@@ -255,7 +257,9 @@ describe('CascadingMenu endAdornment', () => {
       })
     })
     expect(
-      pin('clear the default for Compact').getAttribute('aria-pressed'),
+      pin(
+        'clear the default for Compact for all tracks of this type',
+      ).getAttribute('aria-pressed'),
     ).toBe('true')
   })
 

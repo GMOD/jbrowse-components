@@ -98,11 +98,14 @@ export function radioItem(
 
 // One option of a radio group. Exported so `promotableRadioItems` can take the
 // same array this does and hand it straight through.
-export interface RadioOption<T extends string> {
+//
+// Extends `SettingRowOptions` rather than restating it — it had hand-narrowed to
+// two of the four, so no group could be gated row by row and a caller needing
+// that names its rows itself, which is where `promotableRadioItems`' pin-per-row
+// guarantee is lost.
+export interface RadioOption<T extends string> extends SettingRowOptions {
   value: T
   label: string
-  helpText?: string
-  keepMenuOpen?: boolean
 }
 
 /** #menuBuilder radioItems | a radio group, one row per option */

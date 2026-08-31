@@ -7,6 +7,7 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
 export interface DisplayDefaultsSession {
@@ -38,11 +39,12 @@ function displayTypesByName(pluginManager: PluginManager) {
 // rather than off the session, which holds only what was promoted. Undefined
 // for a display type that is gone, whose row then reads "(default)" like any
 // other unknown.
-function promotedBaseOf(configSchema: unknown, slot: string) {
+function promotedBaseOf(
+  configSchema: AnyConfigurationSchemaType | undefined,
+  slot: string,
+) {
   const def = configSchema
-    ? getConfigurationSchemaDefinition(
-        configSchema as Parameters<typeof getConfigurationSchemaDefinition>[0],
-      )?.[slot]
+    ? getConfigurationSchemaDefinition(configSchema)?.[slot]
     : undefined
   return isSlotDefinitionEntry(def) ? def.promotedBase : undefined
 }
@@ -109,8 +111,9 @@ const DisplayDefaultsSection = observer(function DisplayDefaultsSection({
     </>
   ) : (
     <Typography>
-      None set. The pin beside a setting in a track menu makes that value the
-      default for every track of the same display type.
+      None set. The pin beside a setting in a track menu applies that value to
+      every open track of the same display type, and then offers to keep it as
+      the default for the ones you open later.
     </Typography>
   )
 })
