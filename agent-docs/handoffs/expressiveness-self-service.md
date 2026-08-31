@@ -71,12 +71,12 @@ and set aside by Colin on 2026-08-31; its standing record is
 The two items lightweight-toolkit itself called smallest landed the day this
 opened, and its work list records both:
 
-- `view.status` on all four view types — `7298f136df` adopted
+- `view.status` on all four view types — `05ccdee8ca` adopted
   `computeViewStatus` in the dotplot and circular views, one delegating getter
   each, the estimate holding because the loading getters really were the same
   spelling in all four.
 - `SessionPaletteProvider` follows `prefers-color-scheme` when given no `mode`
-  — `75a5d62377`, resolved inside `useSessionPalette` so the worker-baked
+  — `b936a5f5b9`, resolved inside `useSessionPalette` so the worker-baked
   labels follow the default the same way they follow an explicit mode. The
   18-example site-mode sweep is the remainder, and it is a per-page judgement
   rather than a delete, because the copies also watch the site's own
