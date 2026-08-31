@@ -25,13 +25,14 @@ testing happens in Chrome.
 BAM, CRAM, VCF, GFF3, BED, bigWig, bigBed, PAF, MAF, `.hic`, and many others.
 [](/docs/config_guides/file_types)
 
-### Does JBrowse 2 send my data anywhere
+### Does JBrowse 2 collect usage data
 
-No. Your browser reads your data files directly from wherever they are hosted,
-so reads, variants and annotations never pass through a JBrowse server, and
-JBrowse Desktop works entirely offline. The two things that do use the network
-are a [usage report](/docs/config_guides/disable_analytics), which names no
-files and can be turned off, and the Share button, which
+jbrowse-web and jbrowse-desktop send a
+[usage report](/docs/config_guides/disable_analytics) on load, which
+`disableAnalytics: true` turns off. Your data files are separate: the browser
+reads them directly from wherever they are hosted, so reads, variants and
+annotations never pass through a JBrowse server, and JBrowse Desktop works
+entirely offline. The Share button
 [encrypts the session in your browser first](/docs/urlparams#sessionshare-).
 
 ### Can I open files from my own computer
