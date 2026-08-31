@@ -1,10 +1,7 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
-import {
-  makePileupCellMapper,
-  pileupRowOffCanvas,
-  pileupRowY,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { paintMarks } from '../mark.ts'
+import { MODIFICATION_MARK } from './mark.ts'
 
 import type {
   DrawBlock,
@@ -21,34 +18,26 @@ export function drawModifications(
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  const n = region.modificationPositions.length
-  const fH = state.featureHeight
-  const { cellX, w } = makePileupCellMapper(
-    block,
-    bpLength,
-    fullBlockWidth,
-    false,
-  )
-
   // Reformat the CSS string only when the packed color actually changes. This
   // is the densest array the display produces (one mark per CpG per read on a
   // nanopore pileup) but it draws from a handful of colors — 5mC, 5hmC, the
   // unmodified blue — in per-read runs, so `abgrToCssRgba` goes from once per
   // mark to once per run. The comparison is on the u32, not the string.
   let lastAbgr = -1
-
-  for (let i = 0; i < n; i++) {
-    const yRow = region.modificationYs[i]!
-    const y = pileupRowY(yRow, state)
-    if (pileupRowOffCanvas(y, state)) {
-      continue
-    }
-    const x = cellX(region.modificationPositions[i]!)
-    const abgr = region.modificationColors[i]!
-    if (abgr !== lastAbgr) {
-      lastAbgr = abgr
-      ctx.fillStyle = abgrToCssRgba(abgr)
-    }
-    ctx.fillRect(x, y, w, fH)
-  }
+  let lastCss = ''
+  paintMarks(
+    ctx,
+    MODIFICATION_MARK,
+    region,
+    { block, bpLength, fullBlockWidth },
+    state,
+    (_alpha, data, i) => {
+      const abgr = data.modificationColors[i]!
+      if (abgr !== lastAbgr) {
+        lastAbgr = abgr
+        lastCss = abgrToCssRgba(abgr)
+      }
+      return lastCss
+    },
+  )
 }
