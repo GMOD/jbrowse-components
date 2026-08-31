@@ -54,22 +54,15 @@ structural variants the 1000 Genomes Project called on the same individual
 ## Where the encoding comes from
 
 Cue ([Popic et al. 2023](https://doi.org/10.1038/s41592-023-01799-x)) genotypes
-structural variants with a neural network, and the interesting half of it is
-what the network is shown. A window of the genome becomes an image. Pixel (a, b)
-counts the read pairs and split reads with one end in bin a and the other in bin
-b, so a rearrangement that joins two distant places puts a bright spot off the
-diagonal at exactly those two coordinates. Pairs are sorted into separate
-channels by how their two ends face, because the facing is what says which
-rearrangement it was: an inversion leaves both ends pointing the same way, a
-tandem duplication leaves them pointing outward, a deletion leaves them facing
-each other across a fragment longer than the library makes. A last channel holds
-no pairs at all, only read depth, which is where a copy-number change shows up.
+structural variants with a neural network. A window of the genome becomes an
+image. Pixel (a, b) counts the read pairs and split reads with one end in bin a
+and the other in bin b, so a rearrangement that joins two distant places puts a
+bright spot off the diagonal at exactly those two coordinates. A last channel
+holds no pairs at all, only read depth, which is where a copy-number change
+shows up.
 
-Every one of those channels is a question about a single read pair, and the
-alignments track already answers each of them. Coloring by pair orientation is
-the sort into channels; the read-connection arcs are the marks joining a pair's
-two ends; the coverage band is the depth channel. What this page adds is the
-arrangement: one band per channel, stacked, over one window.
+Coloring by pair orientation is the sort into channels; the read-connection arcs
+are the marks joining a pair's two ends; the coverage band is the depth channel.
 
 ## The four channels as one track
 
@@ -102,11 +95,9 @@ coverage, and hide the pileup:
 **Track menu → Read connections → SV channels (pairs by orientation)** writes
 four of those keys in one click: **Group by → Pair orientation**, **Read
 connections → Show read arcs**, **Arc / read cloud band options → Show
-concordant-pair arcs** unchecked, and **Show... → Show pileup** off. The two
-heights, `linkedReads` and `readConnectionsDown` are framing, and the row leaves
-them to you. `colorBy` is absent on purpose: with the pileup hidden there are no
-read fills to paint, and the arcs take their color from `arcColorByType`, so
-setting it here would change nothing.
+concordant-pair arcs** unchecked, and **Show... → Show pileup** off. `colorBy`
+is absent on purpose: with the pileup hidden there are no read fills to paint,
+and the arcs take their color from `arcColorByType`.
 
 Four bands come out, one per orientation class, each with its own coverage curve
 and its own arcs:
@@ -117,17 +108,13 @@ and its own arcs:
   signature, and Cue's split-read-and-read-pair channel.
 - **RL**, mates pointing away from each other: the tandem-duplication signature.
 - **RR** and **LL**, both mates on one strand: the inversion signature, one band
-  per strand because a fragment crossing an inversion's left breakpoint comes
-  out on one strand and a fragment crossing its right one on the other.
+  per strand.
 
 An arc's feet are on the ruler. It stands on the two places the pair's ends
 aligned, and its width is the distance between them; the height only spreads the
 arcs so they can be told apart, and clamps at the band's edge for a pair wider
-than the band is tall. So the picture carries its scale the way the pileup does,
-and a bundle of arcs at one width is a set of pairs that all say the same two
-coordinates. `linkedReads` also connects a split read's segments, which is the
-other half of Cue's split-read channel; these novoalign alignments carry no `SA`
-tags, so the demo has none to draw.
+than the band is tall. `linkedReads` also connects a split read's segments;
+these novoalign alignments carry no `SA` tags, so the demo has none to draw.
 
 ## Building the four channels
 
@@ -149,9 +136,7 @@ python3 sv_contact_maps.py reads.bam --out sv_contacts \
 `--min-span` is what "discordant" means for a given library, and it is the
 setting to reconsider first on your own data. Below it a pair is just a
 fragment: this library's inserts run to about 850 bp at the 99th percentile, so
-a kilobase is clear of them. Set it too low and every concordant pair in the
-genome lands on the diagonal, which takes the color ramp with it and leaves the
-handful of cells that matter at the bottom of it.
+a kilobase is clear of them.
 
 `--bin` is the resolution each channel is drawn at, and it has to appear in
 `--resolutions`, because the depth channel writes one record per pair of bins
@@ -177,17 +162,15 @@ Four files come out, one per channel, and each loads as an ordinary Hi-C track:
 ```
 
 [`useColorPercentile`](/docs/config/linearhicdisplay/#slot-usecolorpercentile)
-is the one setting these tracks cannot do without. A Hi-C matrix from an actual
-Hi-C experiment fills its whole triangle, and the default ramp is scaled for
-that. A channel built from read pairs is nearly empty, so its brightest cell
-sits far below where a linear ramp expects the top of the scale to be, and the
-track draws as a blank triangle with the answer in it.
+is the one setting these tracks cannot do without. A channel built from read
+pairs is nearly empty, so its brightest cell sits far below where a linear ramp
+expects the top of the scale to be, and the track draws as a blank triangle with
+the answer in it.
 
 A contact track has its own geometry, and it is the arcs' geometry folded. The
 track draws the cell joining bins a and b at the x midway between them and as
 far below the diagonal as half the distance between them, so a cell's two upper
-edges run back up to the diagonal at exactly a and b. Read it as an arc that has
-been squared off and pushed down by its own width.
+edges run back up to the diagonal at exactly a and b.
 
 ## The inversion
 
@@ -198,33 +181,10 @@ channel built from the same reads.
 
 <Figure src="/img/sv_contact_maps/inversion.png" caption="One inversion call in NA12878, with the same-strand contact channel over the four channels as arcs. The RR and LL bands each hold one bundle of arcs spanning the two marked breakpoints and nothing else; the LR band holds the library's scatter of long fragments and RL is empty. Above them, each bundle binned is one cell." links="Open this view=sv_contact_maps/inversion" />
 
-Start in the two same-strand bands. Each holds one bundle of arcs, standing on
-the two marked breakpoints, and the rest of the band is empty. That is what an
-inversion does to a read pair: the sequence between the breakpoints is flipped,
-so a fragment straddling one of them puts its two ends on the same strand
-instead of facing each other. The coverage curve in each of those bands is the
-depth of just those reads, so it is two humps at the arcs' feet and nothing
-between.
-
 The two bundles reach the same right breakpoint, and their left feet sit either
 side of a hole in the coverage of the LR band, a few kilobases the alignment
-carries no reads over. Each orientation class anchors on the side of the hole it
-can align to. The callset says as much in the record's own name: `CINV` is a
-complex inversion, and the call carries a confidence interval on each end.
-
-The LR band holds a scatter of red arcs, each a pair whose ends are farther
-apart than the library's insert size, at no particular pair of coordinates: the
-tail of an ordinary library. Cue's discordant channel takes every one of these,
-whichever way the ends face, and the two bundles with them. Splitting by
-orientation is what separates the bundles from the scatter, and it is why the
-encoding has channels rather than a single image.
-
-The contact channel above the arcs is the RR and LL bands binned into 750 bp
-cells and summed. Each bundle is one cell, at the x midway between its feet and
-as deep as half the distance between them, which for an 18 kb junction at this
-zoom is most of the track. Two cells sit close together because the two bundles
-share their right foot and differ on the left, and the cell's two upper edges
-run back to the bands on the breakpoints the way the arcs' feet do.
+carries no reads over. The callset says as much in the record's own name: `CINV`
+is a complex inversion, and the call carries a confidence interval on each end.
 
 How many pairs a cell holds is a number, and `juicer_tools` will read it back
 out of the file the track is drawing:
@@ -252,33 +212,24 @@ on chromosome 5.
 
 <Figure src="/img/sv_contact_maps/depth_only_duplication.png" caption="A genome-STRiP duplication call with no read-pair evidence under it: the RL band a tandem duplication's junction pairs would fill is empty across the call, and so are both same-strand bands. Depth alone marks it, and the raised block does not line up with the breakpoints." links="Open this view=sv_contact_maps/depth_only_duplication" />
 
-Start with the RL band, because what it does not hold is the point. A fragment
-crossing the junction of a head-to-tail duplication has its two ends facing away
-from each other, so that pair would draw an arc standing on the two marked
-breakpoints. There is none. The same-strand bands are empty across the call too,
-and the LR band's scatter of long fragments is the library's own, no denser here
-than outside it. Every pair channel is blank, and the call rests on depth alone.
+A duplication that landed somewhere else in the genome, or one whose junction
+sits inside a repeat long enough to swallow a fragment, leaves the same trace: a
+copy-number change with no junction under it.
 
-Depth carries it loosely. Coverage rises over the call, but the raised block
-starts left of the first breakpoint and has fallen back toward its surroundings
-before the second, so the step and the record's edges do not line up. The reads
-are in the demo and no pair in them joins those two breakpoints. A duplication
-that landed somewhere else in the genome, or one whose junction sits inside a
-repeat long enough to swallow a fragment, leaves the same trace: a copy-number
-change with no junction under it. The inversion window a section ago is the same
-bands with a junction in them.
-
-<Figure src="/img/sv_contact_maps/depth_channel.png" caption="The depth channel alone over the same duplication, framed four times wider, with the coverage lane under it. The two marked breakpoints stand at the top corners of a pale wedge, with the channel's brightest cells on either side of it." links="Open this view=sv_contact_maps/depth_channel" />
+<Figure src="/img/sv_contact_maps/depth_channel.png" caption="The depth channel alone over the same duplication, framed wider, with the coverage lane under it. The call's own breakpoints stand at the top corners of a pale wedge, with the channel's brightest cells on either side of it." links="Open this view=sv_contact_maps/depth_channel" />
 
 Cue's depth channel is not the coverage curve but its self-comparison: cell (a,
-b) is the difference in depth between bin a and bin b. Framed wider, the channel
-has a shape rather than a bright patch, and the shape is what that encoding
-produces. A bin inside an interval of changed copy number differs from the bins
-outside it and least from the bins inside it with it, which fills the two fields
-either side and leaves the wedge between the breakpoints pale. The demo carries
-a second depth-only duplication on chromosome 17 to open the same way; it sits
-in a field of pseudogenes whose own depth swings as hard as the call does, which
-is what this channel looks like where mappability is against you.
+b) is the difference in depth between bin a and bin b. A bin inside an interval
+of changed copy number differs from the bins outside it and least from the bins
+inside it with it, which fills the two fields either side and leaves the wedge
+between the breakpoints pale.
+
+<Figure src="/img/sv_contact_maps/depth_channel_wide.png" caption="The same channel across the whole slice. Two other loci swing the ramp about as hard as the call, with nothing in the SV track over either one." links="Open this view=sv_contact_maps/depth_channel_wide" />
+
+The demo carries a second depth-only duplication on chromosome 17 to open the
+same way; it sits in a field of pseudogenes whose own depth swings as hard as
+the call does, which is what this channel looks like where mappability is
+against you throughout, not just at one other locus.
 
 ## Back to the reads
 
