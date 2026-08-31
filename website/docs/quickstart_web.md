@@ -20,14 +20,32 @@ Desktop as well. See [](/docs/tutorials/cli_desktop).
 
 ## TLDR
 
-- Install Node.js 18+, samtools, tabix
-- `npm install -g @jbrowse/cli`
-- `jbrowse create jbrowse2 && cd jbrowse2`
-- `samtools faidx genome.fa && jbrowse add-assembly genome.fa --load copy`
-- `samtools index file.bam && jbrowse add-track file.bam --load copy`
-- `bgzip file.vcf && tabix file.vcf.gz && jbrowse add-track file.vcf.gz --load copy`
-- `jbrowse text-index`
-- `npx serve -S .`
+Adding an assembly or a track writes an entry to `config.json` and copies the
+data file next to it, so the folder JBrowse creates ends up as a self-contained
+static site: no database, no server-side code, just files a web server hands
+out. The commands below install the CLI, download that folder, add a FASTA
+assembly, a BAM alignments track, and a VCF variant track, then build a search
+index and serve the folder locally. They need Node.js 18+, samtools, and tabix
+installed first, and use placeholder filenames (`genome.fa`, `file.bam`,
+`file.vcf`) that you swap for your own.
+
+```bash
+npm install -g @jbrowse/cli
+jbrowse create jbrowse2 && cd jbrowse2
+
+samtools faidx genome.fa
+jbrowse add-assembly genome.fa --load copy
+
+samtools index file.bam
+jbrowse add-track file.bam --load copy
+
+bgzip file.vcf
+tabix file.vcf.gz
+jbrowse add-track file.vcf.gz --load copy
+
+jbrowse text-index
+npx serve -S .
+```
 
 ## Reproduce it end to end
 
