@@ -13,8 +13,9 @@ and [ADR-090](adr-090-a-mark-is-a-shape-plus-its-channels.md) with it. The
 factory (`defineDisplay`), the mark system (`display-kit/marks`,
 `render-core/marks/bar`) and `example-plugins/score-example`'s spec form are
 removed; the example plugin is back on the hand-composed stack it had before
-ADR-089, and the developer guides teach that again. Written against
-the plan measured in [display-complexity-census](../reference/DISPLAY_COMPLEXITY_CENSUS.md), whose one surviving level landed in the narrow form
+ADR-089, and the developer guides teach that again. Written against the plan
+measured by the 2026-08-24 display-complexity census, whose one surviving level
+landed in the narrow form
 [ADR-096](adr-096-a-bands-contract-is-a-type-its-allocator-is-a-function.md)
 records — the band contract as a type, the allocators still functions.
 
@@ -32,6 +33,21 @@ turns on the shape of what the port needed, which the surviving `defineDisplay`
 at `f0d8cf4e39` still half shows, and on the eager closure.
 
 ## Context
+
+**The census that asked the question found three things called complexity, with
+opposite answers.** Drawing is already the healthiest layer — one HAL, two
+rendering backends, the shape modules shared. Layout is five independent
+placement implementations, bespoke and mostly correctly so. The declaration —
+the config slots, volatiles and getters across the four big display models, plus
+the five surfaces hand-written against them (track menus, dialogs, legends, hit
+tests, renderer classes) — is where the cost actually sits. That ordering is why
+the render-path proposals that survived moved out as a *factoring* exercise
+rather than a simplification one
+([ADR-095](adr-095-a-shape-composes-a-scale-at-compile-time.md)), why the
+placement half was retired outright on a re-census, and why the declaration half
+is what this ADR went on to measure. The census's own line counts were a
+2026-08-24 snapshot that had drifted within four days, so the magnitudes are the
+argument and the digits are not evidence; re-measure before quoting one.
 
 ADR-089 made a track type a spec handed to one factory, and ADR-090 let that
 spec name a mark instead of a painter. Both were gauged on `score-example`: two

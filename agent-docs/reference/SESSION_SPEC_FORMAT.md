@@ -154,10 +154,9 @@ grammar to carry it.
 ## What the grammars do, precisely
 
 A mark count needs its denominator stated, or two correct censuses disagree —
-which is exactly what happened between this doc and
-[display-complexity-census](DISPLAY_COMPLEXITY_CENSUS.md); the
-counts below were re-taken 2026-08-28 at gosling 1.0.7 (`35bbabc`) and
-genome-spy v0.85.0 (`9d32a48`). Both competitors are Vega-Lite descendants and
+which is exactly what happened between this doc and an earlier count of the same
+two libraries; the counts below were re-taken 2026-08-28 at gosling 1.0.7
+(`35bbabc`) and genome-spy v0.85.0 (`9d32a48`). Both competitors are Vega-Lite descendants and
 both put the genomics into **transforms over rows already in memory**:
 
 - **Gosling** — the `Mark` spec union has 14 members (`point`, `line`, `area`,
@@ -187,10 +186,8 @@ both put the genomics into **transforms over rows already in memory**:
   `getScaled_<channel>()` accessors over a shared scale-primitive library,
   with domains wired to uniforms so pan and zoom never touch a vertex buffer.
 
-So the earlier claim in
-[display-complexity-census](DISPLAY_COMPLEXITY_CENSUS.md) that
-GenomeSpy "has no pileup" is wrong as stated; it has one as a per-view
-transform. What it does not have is the part that costs this codebase its
+So the earlier claim that GenomeSpy "has no pileup" is wrong as stated; it has
+one as a per-view transform. What it does not have is the part that costs this codebase its
 lines: a layout that is stable across region boundaries under pan, a
 level-of-detail tier that changes what is fetched, and the worker-side packing
 those need. GenomeSpy's own BAM example
@@ -213,9 +210,10 @@ eliminated zero getters, because what the getters hold is layout, tiering,
 fetch shape and per-display meaning — alignments' `colorBy` is a six-variant
 union carrying a six-field `modifications` object, and no channel table holds
 that without a nested escape hatch. ADR-091 measured the declaration half only.
-The transform half is an inference from where the lines sit — the census in
-[display-complexity-census](DISPLAY_COMPLEXITY_CENSUS.md) puts
-`sortLayout.ts` at 1,096 lines and `layout.ts` at 1,741 — and a rewrite as
+The transform half is an inference from where the lines sit —
+`plugins/alignments/src/RenderAlignmentDataRPC/sortLayout.ts` is 1,158 lines and
+`plugins/canvas/src/LinearBasicDisplay/layout.ts` is 1,946 (2026-08-31; they
+were 1,096 and 1,741 a week earlier, so take your own count) — and a rewrite as
 marks plus transforms would move that layout into named `pileup`, `coverage`
 and `flattenCigar` transforms, which is where GenomeSpy keeps its own. The
 paper's framing is the one
