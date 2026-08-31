@@ -111,6 +111,34 @@ Each step lands independently.
    That doc's beside-`init` doctrine predates `applyInitSettings` and is what
    the shipped mistakes were following.
 
+## What a browser run found that jsdom could not
+
+All three migrated views open and paint from a flat spec, a flat
+`defaultSession` and a nested `init`, and per view type the canvas pixel census
+is identical across the three — the surface an author writes does not change the
+picture. Two gaps came out of the same run.
+
+**A typo on a session-spec URL is never named.** `loadSessionSpec` launches
+without building a view snapshot, so the partition never runs and nothing
+reports the unknown key: `{type: 'LinearGenomeView', asembly: 'volvox'}` yields
+only `No assembly provided`. The `defaultSession` surface names the key and
+raises a snackbar; the URL surface, which is hand-written JSON with no compiler
+behind it, says nothing useful. Closing this means running the same
+classification on the spec path, and it belongs with the validator work rather
+than after it.
+
+**`jbrowse-react-app` cannot express what the deprecation asks for.**
+`ManagedView` declares `{type, init?, id?}` and `viewsToSession` maps every
+entry to `{id, type, init}`, so the nested form is the only form the prop has —
+the warning tells a host to write settings directly on the view object while the
+type gives them nowhere to write them. The prop has to widen in the same step
+that stops accepting `init`, or the message is unactionable.
+
+**Nested `init` is surface-dependent, and saying "still accepted" is wrong.** It
+is deprecated with a warning on a `defaultSession` and *refused with an error*
+on a spec URL. Deliberate, and it matches `loadSessionSpec`, but the deprecation
+story has to state both.
+
 ## Known limits
 
 `CustomC` replaces the creation type, so a `.props()` added after the widening
