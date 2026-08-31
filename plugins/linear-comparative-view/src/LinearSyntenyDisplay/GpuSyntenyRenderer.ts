@@ -122,6 +122,11 @@ export class GpuSyntenyRenderer
   }
 
   render(state: SyntenyRenderState) {
+    // Opaque white, where every other backend in the tree clears to (0,0,0,0).
+    // `shadeFill` pre-blends a CIGAR indel with white and outputs it opaque, so
+    // it matches the base ribbon beside it — drawn at alpha `shade` — only over
+    // a white destination. `Canvas2DSyntenyRenderer.clear` carries the whole
+    // argument, and the Canvas2D twin of the pre-blend it rests on.
     this.hal.beginFrame(1, 1, 1, 1)
     for (const [key, params] of state.perTrack) {
       const data = this.cache.regions.get(key)

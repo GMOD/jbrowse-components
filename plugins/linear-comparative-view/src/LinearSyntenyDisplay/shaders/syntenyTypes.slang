@@ -433,6 +433,12 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
     // the base block drew, at the same alpha the BASE branch would have used.
     // Darkening applies inside the blend — darken first, then blend with white
     // — so the hovered color matches what the pre-shader renderer produced.
+    //
+    // This is what makes the band's white clear load-bearing rather than
+    // cosmetic: the branch below composites at `shade` against whatever is
+    // there, this one bakes the same blend in and writes opaque, and the two
+    // agree only when "whatever is there" is white. Both backends guarantee it
+    // — see LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear.
     rgb = rgb * darken * shade + float3(1.0, 1.0, 1.0) * (1.0 - shade);
     return float4(rgb, color.a * coverage);
   }

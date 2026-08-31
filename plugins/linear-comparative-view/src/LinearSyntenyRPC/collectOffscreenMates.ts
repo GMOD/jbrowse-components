@@ -155,18 +155,3 @@ export function renameOffscreenMates(
   }
   return { ...data, mateRefNameDict: dict, mateRefNameIds: ids, counts }
 }
-
-/**
- * The per-contig tally, largest first — what a reader is shown, and what names
- * the rows worth offering to add.
- *
- * Built on the main thread off the transferred lanes rather than shipped as
- * objects: `counts` is one entry per contig, so the sort is over a scaffold
- * count and not a feature count.
- */
-export function offscreenMateTally(data: OffscreenMateData) {
-  return data.mateRefNameDict
-    .map((refName, id) => ({ refName, count: data.counts[id] ?? 0 }))
-    .filter(entry => entry.count > 0)
-    .sort((a, b) => b.count - a.count || (a.refName < b.refName ? -1 : 1))
-}

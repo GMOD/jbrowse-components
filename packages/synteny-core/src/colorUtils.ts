@@ -19,6 +19,12 @@ export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 // parseCssColor) and apply alpha separately: an alpha uniform in the shader,
 // `a * alpha` in Canvas2D, or blendOverWhite() for a legend chip. A non-opaque
 // literal here would multiply with that alpha and render fainter than intended.
+//
+// Opaque is also what lets the synteny indel wedge be pre-blended with white and
+// written out opaque rather than composited, which is the arrangement
+// `LinearSyntenyDisplay/Canvas2DSyntenyRenderer.clear` fixes the band's ground
+// for. These are light-ground colours: `blendOverWhite` below says so in its
+// name, and nothing here resolves against a theme.
 export const defaultCigarColors = {
   I: '#ff0',
   N: '#0a0',

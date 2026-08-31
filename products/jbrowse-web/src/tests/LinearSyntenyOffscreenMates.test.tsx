@@ -1,6 +1,9 @@
 import { waitFor } from '@testing-library/react'
 
-import { offscreenMateStrips } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyViewHelper/offscreenMateStrip.ts'
+import {
+  offscreenMateCount,
+  offscreenMateStrips,
+} from '../../../../plugins/linear-comparative-view/src/LinearSyntenyViewHelper/offscreenMateStrip.ts'
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
 import type { OffscreenMateSource } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyViewHelper/offscreenMateStrip.ts'
@@ -21,13 +24,26 @@ interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
-  offscreenMateTally: { refName: string; count: number }[]
   showOffscreenMates: boolean
   bidirectionalFetch: boolean
   offscreenMateMode: 'off' | 'query' | 'both'
   setWidth: (n: number) => void
-  setShowOffscreenMates: (arg: boolean) => void
   setOffscreenMateMode: (mode: 'off' | 'query' | 'both') => void
+}
+
+// The two surfaces the band itself reads — what gets a strip, and what a mark's
+// tooltip prints. Asserted through these rather than through a model getter of
+// their own, so a change that stops the marks appearing fails here.
+function level(view: SyntenyView) {
+  return view.levels[0] as unknown as OffscreenMateSource
+}
+
+function strips(view: SyntenyView) {
+  return offscreenMateStrips(level(view))
+}
+
+function count(view: SyntenyView, refName: string) {
+  return offscreenMateCount(level(view), refName, 'top')
 }
 
 async function openSyntenyView() {
@@ -48,13 +64,12 @@ async function openSyntenyView() {
 }
 
 // The half that makes marking-by-default cheap: a view with nothing hidden
-// claims nothing, whatever the setting says, so the default only changes the
-// views that WERE hiding something. What it draws in that state — nothing, for
-// want of a strip — is `offscreenMateStrip.test.ts`'s.
+// mounts no strip at all, whatever the setting says, so the default only
+// changes the views that WERE hiding something.
 test('both rows showing every contig hides nothing', async () => {
   const view = await openSyntenyView()
   expect(view.showOffscreenMates).toBe(true)
-  expect(view.offscreenMateTally).toEqual([])
+  expect(strips(view)).toEqual([])
 })
 
 // The complaint the feature answers: a locus syntenic to a contig you did not
@@ -67,10 +82,10 @@ test('a row narrowed to one contig reports what it can no longer pair', async ()
   await target!.navToLocString('ctgA')
 
   await waitFor(() => {
-    expect(view.offscreenMateTally.length).toBeGreaterThan(0)
+    expect(strips(view).length).toBe(1)
   }, timeout)
-  expect(view.offscreenMateTally.map(e => e.refName)).toEqual(['ctgB'])
-  expect(view.offscreenMateTally[0]!.count).toBeGreaterThan(0)
+  expect(strips(view)[0]!.side).toBe('top')
+  expect(count(view, 'ctgB')).toBeGreaterThan(0)
 })
 
 // ON BY DEFAULT, which is the whole decision: a locus syntenic to a contig the
@@ -81,7 +96,7 @@ test('and marks them by default', async () => {
   const [, target] = view.views
   await target!.navToLocString('ctgA')
   await waitFor(() => {
-    expect(view.offscreenMateTally.length).toBeGreaterThan(0)
+    expect(strips(view).length).toBe(1)
   }, timeout)
 
   expect(view.offscreenMateMode).toBe('query')
@@ -103,12 +118,8 @@ test('searching the other row is a step further in, not the default', async () =
   expect(view.bidirectionalFetch).toBe(false)
 })
 
-function strips(view: SyntenyView) {
-  return offscreenMateStrips(view.levels[0] as unknown as OffscreenMateSource)
-}
-
 // THE OTHER HALF, and the one stacked whole assemblies are made of. Both rows
-// display every contig, so the worker's tally is empty by construction — and
+// display every contig, so the worker's own lane is empty by construction — and
 // `overdrawPx` still culls every ribbon whose mate has scrolled out of the band,
 // which is most of them the moment the rows are not over each other. The band
 // drew almost nothing and said nothing about it.
@@ -127,7 +138,6 @@ test('a row scrolled off its mate marks what it can no longer pair', async () =>
   await waitFor(() => {
     expect(strips(view).length).toBe(1)
   }, timeout)
-  expect(view.offscreenMateTally).toEqual([])
   expect(strips(view)[0]!.side).toBe('top')
 })
 

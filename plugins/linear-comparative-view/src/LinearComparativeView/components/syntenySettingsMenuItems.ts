@@ -267,8 +267,11 @@ export function syntenySettingsMenuItems(
       step: 1,
       scale: 'log',
       format: n => `${toLocale(n)}bp`,
-      // raising the filter re-runs the geometry stage, so the model is
-      // written when the drag ends rather than on every pixel of it
+      // A render parameter, like Opacity above — it never reaches the worker,
+      // and the shader and the Canvas2D draw loop each cull on it per instance.
+      // So what a drag costs is a repaint of the band per step, and this is
+      // written on release because the band can be half a million ribbons where
+      // Opacity's slider is usually read against a handful.
       commitOnRelease: true,
       getValue: () => model.minAlignmentLength,
       isDefault: model.minAlignmentLength === DEFAULT_MIN_ALIGNMENT_LENGTH,

@@ -37,6 +37,17 @@ export default function SVGSyntenyLevel({
   return (
     <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
       <SvgClipRect id={clipId} width={width} height={levelHeight}>
+        {/* The band's ground, which on screen is the renderers' own clear
+          (`Canvas2DSyntenyRenderer.clear` says why it is white and what depends
+          on it) and here is nothing at all: `renderSvg` paints ribbons through
+          `drawSyntenyTrack` without clearing, and the only other background in
+          the file is `SVGExportRoot`'s full-bleed themed `background.default`.
+          So the export used to disagree with the screen about the one colour
+          all of this is calibrated against — under a dark theme it put opaque
+          white-blended indel wedges, black location ticks and dark off-screen
+          mate marks onto a dark band, none of which is what the reader had
+          just been looking at. */}
+        <rect width={width} height={levelHeight} fill="#fff" />
         {rendering.map(({ key, node }) => (
           <g key={key}>{node}</g>
         ))}

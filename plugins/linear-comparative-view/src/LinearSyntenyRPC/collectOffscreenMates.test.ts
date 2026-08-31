@@ -2,7 +2,6 @@ import { buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import {
   createOffscreenMateCollector,
-  offscreenMateTally,
   renameOffscreenMates,
 } from './collectOffscreenMates.ts'
 
@@ -96,14 +95,14 @@ test('a reversed span comes out ascending', () => {
   expect([...out.ends]).toEqual([400])
 })
 
-test('nothing dropped is an empty tally, not a zero row', () => {
-  expect(
-    offscreenMateTally(createOffscreenMateCollector(index).finish()),
-  ).toEqual([])
+test('nothing dropped leaves no contig behind', () => {
+  const out = createOffscreenMateCollector(index).finish()
+  expect(out.mateRefNameDict).toEqual([])
+  expect([...out.counts]).toEqual([])
 })
 
 // The names here are the file's, and every reader they meet — the strip's
-// labels, the hamburger tally, `navToLocString` on a click — is canonical.
+// labels, a mark's tooltip count, `navToLocString` on a click — is canonical.
 const aliases = (map: Record<string, string>) => (name: string) =>
   map[name] ?? name
 
@@ -116,7 +115,7 @@ test('the mate contigs are renamed into the assembly namespace', () => {
 })
 
 // A file spelling one contig two ways leaves as one contig, so the strip labels
-// one stretch rather than two and the tally reports one row — the same
+// one stretch rather than two and a mark's tooltip counts one number — the same
 // re-interning `renameDictLane` does for the per-feature lanes, plus the thing
 // only this lane has: a per-contig `counts` that has to be SUMMED, not
 // reindexed.
@@ -129,10 +128,6 @@ test('two spellings of one contig collapse, and their counts add', () => {
   expect(out.mateRefNameDict).toEqual(['grape1', 'grape2'])
   expect([...out.counts]).toEqual([2, 1])
   expect([...out.mateRefNameIds]).toEqual([0, 0, 1])
-  expect(offscreenMateTally(out)).toEqual([
-    { refName: 'grape1', count: 2 },
-    { refName: 'grape2', count: 1 },
-  ])
 })
 
 // The placed marks are untouched by any of this: a rename moves names, and the
@@ -153,18 +148,4 @@ test('a name the assembly does not know is left alone', () => {
     renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
       .mateRefNameDict,
   ).toEqual(['grapeX'])
-})
-
-test('the tally is largest first, ties by name', () => {
-  const c = createOffscreenMateCollector(index)
-  c.add('chr1', 0, 1, 'small', 0, 100)
-  c.add('chr1', 0, 1, 'zeta', 0, 100)
-  c.add('chr1', 0, 1, 'alpha', 0, 100)
-  c.add('chr1', 0, 1, 'alpha', 0, 100)
-  c.add('chr1', 0, 1, 'alpha', 0, 100)
-  expect(offscreenMateTally(c.finish())).toEqual([
-    { refName: 'alpha', count: 3 },
-    { refName: 'small', count: 1 },
-    { refName: 'zeta', count: 1 },
-  ])
 })

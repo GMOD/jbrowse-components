@@ -656,12 +656,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setShowOffscreenMates(arg: boolean) {
-        self.showOffscreenMates = arg
-      },
-      /**
-       * #action
-       */
       setBidirectionalFetch(arg: boolean) {
         self.bidirectionalFetch = arg
       },

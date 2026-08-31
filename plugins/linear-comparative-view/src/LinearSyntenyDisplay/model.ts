@@ -25,7 +25,6 @@ import {
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
-import { offscreenMateTally } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { cappedMeanWidthPx } from '../LinearSyntenyView/fadeThin.ts'
@@ -320,33 +319,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0
-      },
-      /**
-       * #getter
-       * The contigs this level fetched alignments to but cannot draw a ribbon
-       * for, largest first, because the facing row is not displaying them.
-       *
-       * A getter rather than shipped as objects: the tally is one entry per
-       * contig, so sorting it is over a scaffold count, while the lanes it is
-       * built from are one entry per contig too. What the reader is shown, and
-       * what names the rows worth offering to add.
-       */
-      get offscreenMateTally() {
-        const { featureData } = self
-        return featureData ? offscreenMateTally(featureData.offscreenMates) : []
-      },
-      /**
-       * #getter
-       * The same, for the row below: contigs of the QUERY assembly that the row
-       * above is not displaying, which alignments anchored on the target axis
-       * run to. Always empty without the bidirectional fetch, since those
-       * alignments are never requested.
-       */
-      get targetOffscreenMateTally() {
-        const { featureData } = self
-        return featureData
-          ? offscreenMateTally(featureData.targetOffscreenMates)
-          : []
       },
       /**
        * #getter
@@ -857,17 +829,37 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The target axis's (v1) fetch window, or [] unless the view asked for the
-       * bidirectional fetch — in which case the worker queries it too, and
-       * recovers the alignments anchored there whose query end is on a contig
-       * the row above is not displaying. Empty is the signal, so the RPC
-       * argument carries nothing when the setting is off.
+       * The target axis's (v1) snapped fetch window, whether or not the fetch
+       * sends it.
+       *
+       * IT IS IN THE KEY EITHER WAY, which is the reason this is separate from
+       * `targetFetchRegions` below rather than the same getter read twice. The
+       * fetch is one-dimensional, but the worker's whole-feature cull and
+       * `buildSyntenyGeometry`'s emit culls are both sized against the LOWER
+       * row's viewport, so a pan of that row past its buffer stales the held
+       * geometry exactly as a pan of the upper one does. What the bidirectional
+       * setting decides is only whether the window is also QUERIED.
+       *
+       * THE CULLS, not the projection: corners are stored base-relative and the
+       * `panPx` uniforms compensate a pan at draw time, which is the whole
+       * reason panning does not inherently need a refetch. And "the lower row"
+       * rather than `v1`, which the worker spells the other way round —
+       * `executeSyntenyFeaturesAndPositions` binds `v1 = queryView`.
+       */
+      get targetWindowRegions() {
+        const connected = this.connectedViews
+        return connected ? syntenyFetchRegions(connected.v1) : []
+      },
+      /**
+       * #getter
+       * The same window, or [] unless the view asked for the bidirectional fetch
+       * — in which case the worker queries it too, and recovers the alignments
+       * anchored there whose query end is on a contig the row above is not
+       * displaying. Empty is the signal, so the RPC argument carries nothing
+       * when the setting is off.
        */
       get targetFetchRegions() {
-        const connected = this.connectedViews
-        return connected && this.view.bidirectionalFetch
-          ? syntenyFetchRegions(connected.v1)
-          : []
+        return this.view.bidirectionalFetch ? this.targetWindowRegions : []
       },
       /**
        * #getter
@@ -882,7 +874,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       get fetchRegionsKey() {
         const connected = this.connectedViews
         return connected
-          ? [this.fetchRegions, syntenyFetchRegions(connected.v1)]
+          ? [this.fetchRegions, this.targetWindowRegions]
               .map(fetchWindowSignature)
               .join('_')
           : undefined

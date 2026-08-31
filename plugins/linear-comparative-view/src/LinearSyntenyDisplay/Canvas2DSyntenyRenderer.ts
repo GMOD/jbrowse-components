@@ -315,6 +315,39 @@ export class Canvas2DSyntenyRenderer
   // Background wipe, and the start of every render pass. Sets the one
   // device-scale transform the pass runs under — drawSyntenyTrack draws in
   // logical coords and bakes each track's yTop into its y values.
+  //
+  // OPAQUE WHITE, NOT THE THEME'S GROUND AND NOT TRANSPARENT, and it is
+  // load-bearing for what the band looks like rather than for what it costs.
+  // Every other backend in the tree clears to (0,0,0,0); this one and its GPU
+  // twin (`beginFrame(1, 1, 1, 1)`) do not, because the two fill branches only
+  // agree over white. `resolveInstanceFill` above is the arithmetic: a BASE
+  // ribbon comes out `rgb*darken` at alpha `shade`, while a CIGAR indel comes
+  // out `rgb*darken*shade + white*(1 - shade)` FULLY OPAQUE — the indel palette
+  // is opaque literals (`colorUtils.ts` warns against a non-opaque one). Those
+  // land on the same pixel only when the destination is white, since
+  // base-over-white is `rgb*shade + 1*(1 - shade)`, the pre-blend byte for
+  // byte. Over any other ground the indel stays white-washed while the base
+  // beside it composites over the real backdrop, so every indel wedge reads as
+  // a bright hole punched in the band. `shadeFill` in syntenyTypes.slang is the
+  // GPU spelling of the same thing, and `blendOverWhite` a third for the legend
+  // chips.
+  //
+  // NOT A PERFORMANCE CHOICE, which is worth saying because it looks like one:
+  // a clear costs the same whatever the value (`gl.clearColor` + `gl.clear`),
+  // and both HALs configure the context with alpha on (`premultipliedAlpha`,
+  // `alphaMode: 'premultiplied'`), so no opaque-layer compositor path is being
+  // bought either.
+  //
+  // SO INK DRAWN ONTO THE BAND IS A CONSTANT TOO — `MARKER_COLOR` is a packed
+  // opaque black and `drawOffscreenMates`' `MARK_INK` a fixed grey, neither off
+  // the theme. Reading `theme.palette.text.secondary` there is a bug that shows
+  // up only under a dark theme, which is how the off-screen-mate strip shipped
+  // invisible: near-white marks at 0.35 alpha on white.
+  //
+  // A themed band is therefore not a clear-colour change. It is those three
+  // white blends, both ink constants, and the ribbon palettes themselves —
+  // fixed colours picked for a light ground, near invisible on a dark one at
+  // the 0.2 default alpha — plus a cross-backend golden re-shoot.
   private clear() {
     const dpr = this.dpr
     const ctx = this.ctx

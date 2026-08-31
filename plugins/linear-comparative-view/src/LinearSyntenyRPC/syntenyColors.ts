@@ -46,6 +46,8 @@ export const KIND_CIGAR_N = KIND_CIGAR_MIN + 3
 // Location-marker tick: semi-transparent black, matching the legacy
 // rgba(0,0,0,0.25) context lines. Renderers draw KIND_MARKER instances as 1px
 // lines using this packed alpha directly (no colorBy/global-alpha scaling).
+// Black rather than a theme colour because the band under it is opaque white by
+// construction — `Canvas2DSyntenyRenderer.clear` is what fixes that.
 const MARKER_COLOR = packAbgr(0, 0, 0, 64)
 
 // And what "markers off" is: the same instance, painted to nothing. A zero alpha

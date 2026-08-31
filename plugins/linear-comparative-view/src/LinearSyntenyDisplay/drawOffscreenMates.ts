@@ -79,18 +79,15 @@ const MAX_LABEL_ROWS = 3
 // palette.
 export const MARK_ALPHA = 0.35
 
-// THE BAND IS WHITE, WHATEVER THE PAGE THEME IS. Both synteny renderers clear it
-// so — `beginFrame(1, 1, 1, 1)` on the GPU, `#fff` in Canvas2D — because the
-// ribbons' own shading blends toward it (`fillShade` and its Canvas2D twin
-// `resolveInstanceFill`). So the ink drawn on it is a constant of the picture
-// rather than a property of the surrounding page, exactly as a location marker's
-// is (`MARKER_COLOR`, a packed opaque black).
+// Constants, not theme values, because the band is opaque white whatever the
+// page theme is — `Canvas2DSyntenyRenderer.clear` is why, and `MARKER_COLOR`
+// makes the same choice for the location ticks.
 //
-// Read off `theme.palette.text.secondary` instead, as this was, a dark theme
-// resolves it to `rgba(255,255,255,0.7)`: the marks became white at 0.35 alpha on
-// white and disappeared entirely, and the labels became near-white text with a
-// `#121212` halo over a white band. These are MUI's own LIGHT-mode values, so
-// nothing changes in the theme this was ever right in.
+// These two ARE MUI's own light-mode `text.secondary` and `background.paper`,
+// which is what they were read from until a dark theme resolved the first to
+// `rgba(255,255,255,0.7)`: the marks went to white at 0.35 alpha on white and
+// vanished, and the labels to near-white text under a `#121212` halo. So
+// nothing moves in the theme this was ever right in.
 const MARK_INK = 'rgba(0, 0, 0, 0.6)'
 const BAND_GROUND = '#fff'
 
