@@ -16,13 +16,21 @@ import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
 import { installAutoFadeLatch } from './installAutoFadeLatch.ts'
-import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
+import { normalizeTrackLevels } from './util/initHelpers.ts'
 
 import type { LinearSyntenyViewModel } from './model.ts'
-import type { LinearSyntenyViewInit } from './types.ts'
+import type { LinearSyntenyViewCommands } from './types.ts'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 import type { Region } from '@jbrowse/core/util/types'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// The launch blob as the steps below work with it: `views` defaulted, since a
+// spec naming only a setting partitions into a blob with no rows at all and
+// that is the import form rather than a case to guard at each read.
+type SyntenyLaunch = LaunchInput<LinearSyntenyViewCommands> & {
+  views: NonNullable<LinearSyntenyViewCommands['views']>
+}
 
 // The regions one genome row opens on: its assembly's whole set, or the subset
 // `displayedRegionNames` picks out. Resolved here rather than left to the row's
@@ -65,7 +73,7 @@ function rowRegions(
 // what lets the catch below keep `init` for a retry.
 async function buildViews(
   self: LinearSyntenyViewModel,
-  init: LinearSyntenyViewInit,
+  init: SyntenyLaunch,
   superseded: () => boolean,
 ) {
   const session = getSession(self)
@@ -151,7 +159,7 @@ async function navRowToLoc(
 // concurrently.
 async function applyInitViewLocsAndTracks(
   self: LinearSyntenyViewModel,
-  init: LinearSyntenyViewInit,
+  init: SyntenyLaunch,
 ) {
   await Promise.all(
     init.views.map(async (viewInit, idx) => {
@@ -203,7 +211,7 @@ async function applyInitViewLocsAndTracks(
 // views[i] and views[i+1]), so a 3-way view has two entries.
 function applyInitSyntenyTracks(
   self: LinearSyntenyViewModel,
-  init: LinearSyntenyViewInit,
+  init: SyntenyLaunch,
 ) {
   if (init.tracks) {
     for (const [i, ids] of normalizeTrackLevels(init.tracks).entries()) {
@@ -233,11 +241,33 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
   })
 }
 
+// The launch keys whose destination is neither the view's own state nor a row:
+// `levelHeights` lands after the auto-scale pass it is allowed to override, and
+// the two ribbon settings are promotable config slots on every synteny display
+// this launch opened, so applying them is a fan-out write.
+function applyLaunchSettings(
+  self: LinearSyntenyViewModel,
+  init: SyntenyLaunch,
+) {
+  if (init.levelHeights) {
+    for (const [i, h] of init.levelHeights.entries()) {
+      self.levels[i]?.setHeight(h)
+    }
+  }
+  if (init.drawCurves !== undefined) {
+    self.setDrawCurves(init.drawCurves)
+  }
+  if (init.drawLocationMarkers !== undefined) {
+    self.setDrawLocationMarkers(init.drawLocationMarkers)
+  }
+}
+
 async function applyInit(
   self: LinearSyntenyViewModel,
-  init: LinearSyntenyViewInit,
+  blob: LaunchInput<LinearSyntenyViewCommands>,
   { superseded }: InitApplyContext,
 ) {
+  const init: SyntenyLaunch = { ...blob, views: blob.views ?? [] }
   // Naming no assembly means "open a synteny view and let me choose", which is
   // the only route to the import form from a session spec: a launch has to pass
   // two rows to clear launchSyntenyView's `< 2` guard, and two EMPTY rows used
@@ -264,21 +294,22 @@ async function applyInit(
   applyInitSyntenyTracks(self, init)
   // split the band budget across however many levels this view has, so a
   // multi-way stack doesn't spend the whole viewport on ribbons. A no-op at two
-  // levels (a pairwise view keeps the 100px default), and applyInitSettings
-  // runs after, so an explicit init.levelHeights wins.
+  // levels (a pairwise view keeps the 100px default), and applyLaunchSettings
+  // runs after, so an explicit `levelHeights` wins.
   self.autoScaleLevelHeights()
-  applyInitSettings(self, init)
+  applyLaunchSettings(self, init)
   if (init.autoDiagonalize) {
     await runAutoDiagonalize(self)
   }
-  // after the diagonalize, which rewrites a reordered row's displayedRegions
-  // and re-centers it — this leaves every row centered on the shared scale,
-  // where the reverse order would leave the reordered ones re-fitted. The
-  // shared scale itself now survives either order: it is a raised zoom-out
-  // limit (`sameScale`), not a value written past one.
-  if (init.sameScale) {
+  // The replay step, last as it always was: after the diagonalize, which
+  // rewrites a reordered row's displayedRegions and re-centers it. The PROPERTY
+  // is what is read — `sameScale` already landed on it, however it was
+  // spelled — and what a launch adds is the zoom the write alone does not do.
+  // A plain session restore runs none of this, and its rows keep the scale they
+  // were saved at.
+  if (self.sameScale) {
     // the ceiling, not the regions: the rows were just placed by
-    // `init.views[].loc` above, and "show all regions" would throw those away
+    // `views[].loc` above, and "show all regions" would throw those away
     self.applySharedScale()
   }
 }

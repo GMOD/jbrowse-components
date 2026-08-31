@@ -41,11 +41,12 @@ function setup() {
 
 const views = [{ assembly: 'small' }, { assembly: 'large' }]
 
-async function launch(init: Record<string, unknown>) {
+async function launch(spec: Record<string, unknown>) {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
-    init,
-  }) as LinearSyntenyViewModel
+  const view = session.addView(
+    'LinearSyntenyView',
+    spec,
+  ) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.init === undefined)
   return view
@@ -150,7 +151,7 @@ test('show all regions hands each row back its own fit', async () => {
   )
 })
 
-test('init.sameScale applies the shared scale on load', async () => {
+test('a flat sameScale applies the shared scale on load', async () => {
   const view = await launch({ views, sameScale: true })
   const [small, large] = view.views
 
@@ -158,6 +159,58 @@ test('init.sameScale applies the shared scale on load', async () => {
   expect(small!.displayedRegionsTotalPx).toBeCloseTo(
     (800 * 0.9 * SMALL_BP) / LARGE_BP,
   )
+})
+
+// `sameScale` is a `replay` launch key: the flag lands on the declared property
+// whichever way it is written, and the zoom onto the shared scale is the
+// imperative half a launch adds. Flat used to give the latch and skip the zoom
+// — the wrong picture, said nowhere — because only `init.sameScale` was read.
+test('the nested and flat spellings produce the same scale', async () => {
+  // the nested spelling warns that it is deprecated, which is the point of the
+  // spelling still working at all
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const flat = await launch({ views, sameScale: true })
+  const nested = await launch({ init: { views, sameScale: true } })
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('deprecated'))
+  warn.mockRestore()
+
+  expect(nested.sameScale).toBe(true)
+  expect(nested.views[0]!.bpPerPx).toBeCloseTo(flat.views[0]!.bpPerPx)
+  expect(nested.views[1]!.bpPerPx).toBeCloseTo(flat.views[1]!.bpPerPx)
+})
+
+// The replay runs only where a launch blob does. Restoring a saved session
+// means the rows are already where the user left them, and re-zooming them onto
+// the shared scale would throw that away on every reload.
+test('a restored session with the mode on is not re-zoomed', async () => {
+  const session = setup()
+  const view = session.addView('LinearSyntenyView', {
+    sameScale: true,
+    views: [
+      {
+        type: 'LinearGenomeView',
+        bpPerPx: 4,
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: SMALL_BP, assemblyName: 'small' },
+        ],
+      },
+      {
+        type: 'LinearGenomeView',
+        bpPerPx: 4,
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: LARGE_BP, assemblyName: 'large' },
+        ],
+      },
+    ],
+  }) as LinearSyntenyViewModel
+
+  view.setWidth(800)
+  await when(() => view.views.every(v => v.initialized))
+
+  expect(view.sameScale).toBe(true)
+  // the saved zoom, not the shared ceiling the mode implies
+  expect(view.views[0]!.bpPerPx).toBe(4)
+  expect(view.views[0]!.maxBpPerPx).toBeGreaterThan(4)
 })
 
 // The mode is a property, so it is restored from the snapshot at attach — where
@@ -354,11 +407,11 @@ test('the two show-all-regions modes differ only in scale', async () => {
   expect(small!.bpPerPx).toBeCloseTo(ownFit)
 })
 
-// `init.sameScale` sits beside `init.views[].loc` in the same block, and the
-// locs are applied first. Running the menu command there — which resets every
-// row to its whole assembly, correctly, because its label says "show all
-// regions" — discarded the locations the same init block had just asked for.
-test('init.sameScale keeps the rows where init.views put them', async () => {
+// `sameScale` is applied after `views[].loc`. Running the menu command there —
+// which resets every row to its whole assembly, correctly, because its label
+// says "show all regions" — discarded the locations the same spec had just
+// asked for.
+test('sameScale keeps the rows where views[].loc put them', async () => {
   const view = await launch({
     views: [
       { assembly: 'small', loc: 'ctgB' },

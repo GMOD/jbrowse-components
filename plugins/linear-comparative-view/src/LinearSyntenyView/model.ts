@@ -2,8 +2,11 @@ import { lazy } from 'react'
 
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getDialogHost, getSession } from '@jbrowse/core/util'
-import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
+import {
+  pendingLaunch,
+  withLaunchInput,
+} from '@jbrowse/core/util/withLaunchInput'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
@@ -19,6 +22,7 @@ import { observable } from 'mobx'
 import baseModel from '../LinearComparativeView/model.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import { FADE_AUTO_MIN_FEATURES, fadesThinAt } from './fadeThin.ts'
+import { linearSyntenyLaunchKeys } from './launchKeys.ts'
 import {
   autoScaleMenuItems,
   compactViewsMenuItems,
@@ -41,6 +45,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance, IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   AttributeRange,
@@ -79,25 +84,22 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  * #stateModel LinearSyntenyView
  *
  * #example
- * Hand-authored under `defaultSession.views`. `init.views` declares the two
- * member assemblies (stacked as linear views) and `tracks` the synteny feature
- * track connecting them with a ribbon:
+ * Hand-authored under `defaultSession.views`, with every setting written
+ * directly on the view object. `views` declares the member assemblies (stacked
+ * as linear views) and `tracks` the synteny feature track connecting them with
+ * a ribbon:
  * ```js
  * {
  *   type: 'LinearSyntenyView',
- *   init: {
- *     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
- *     tracks: ['hg38_vs_mm10.paf'],
- *     drawCurves: true,
- *   },
+ *   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+ *   tracks: ['hg38_vs_mm10.paf'],
+ *   drawCurves: true,
+ *   colorBy: 'query',
  * }
  * ```
- * `init` also takes the launch commands (`levelHeights`, `autoDiagonalize`,
- * `sameScale`, `collapseEmptyRows`, `drawCurves`, `drawLocationMarkers`) and
- * ANY property below — `colorBy`, `alpha`, `minAlignmentLength`, … . There is
- * no list to join: `applyInitSettings` matches an init key against this
- * model's own properties, and `LinearSyntenyViewInit` is derived from its
- * snapshot type.
+ * The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
+ * `sameScale`, `collapseEmptyRows`, `drawCurves` and `drawLocationMarkers`;
+ * everything else is a property below and needs no list to join.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const model = types
@@ -218,22 +220,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * used for initializing the view from a session snapshot. tracks is
-         * 2D — outer index is the level (the gap between views[i] and
-         * views[i+1]), so a 3-way view has two entries.
-         * example:
-         * ```json
-         * {
-         *   views: [
-         *     { loc: "chr1:1-100", assembly: "hg38", tracks: ["genes"] },
-         *     { loc: "chr1:1-100", assembly: "mm39" },
-         *     { loc: "chr1:1-100", assembly: "rn7" }
-         *   ],
-         *   tracks: [["hg38_vs_mm39_synteny"], ["mm39_vs_rn7_synteny"]]
-         * }
-         * ```
+         * transient launch state: the settings written on the view object that
+         * need resolving before they can be view state — the genome rows to
+         * open, the synteny tracks per level, the shared scale.
+         * `preProcessSnapshot` moves them here off the snapshot, the afterAttach
+         * autorun applies them and clears this, so a saved session never
+         * retains it. Not written by hand: author every setting directly on the
+         * view.
          */
-        init: types.frozen<LinearSyntenyViewCommands | undefined>(),
+        launch: types.frozen<
+          LaunchInput<LinearSyntenyViewCommands> | undefined
+        >(),
       }),
     )
     .volatile(() => ({
@@ -253,9 +250,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * the launch state that still has something to apply — the gate the
+       * loading and import-form paths below read. Also v4's name for it, kept
+       * while the other views and the products that drive them still spell it
+       * this way; deleted with `setInit`.
+       */
+      get init() {
+        return pendingLaunch(self.launch)
+      },
+      /**
+       * #getter
        */
       get hasSomethingToShow() {
-        return self.views.length > 0 || !!self.init
+        return self.views.length > 0 || !!this.init
       },
       /**
        * #getter
@@ -271,7 +278,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * `showLoading`; it used to share this name.
        */
       get initPending() {
-        return !!self.init
+        return !!this.init
       },
       /**
        * #getter
@@ -563,7 +570,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return assemblyManager.loadingAssembly(
           self.views.length > 0
             ? self.views.flatMap(v => v.assemblyNames)
-            : (self.init?.views.map(v => v.assembly) ?? []),
+            : (self.init?.views?.map(v => v.assembly) ?? []),
         )
       },
       /**
@@ -765,8 +772,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: LinearSyntenyViewCommands) {
-        self.init = init
+      setInit(init?: LaunchInput<LinearSyntenyViewCommands>) {
+        self.launch = init
       },
     }))
     .actions(self => {
@@ -905,10 +912,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  // `tracks` as legacy: LinearComparativeView converts a pre-`levels` snapshot's
-  // top-level tracks, and a composed base's preprocessor runs after everything
-  // added here, so the capture cannot see that conversion.
-  return captureUnknownSnapshotKeys(model, { legacy: ['tracks'] })
+  return withLaunchInput(model, linearSyntenyLaunchKeys)
     .preProcessSnapshot<
       ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
     >(snap => {
@@ -925,13 +929,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      // init is transient: once views have materialized it's redundant, so we
-      // strip it. But while views is still empty (a snapshot taken mid-load,
-      // or an init that errored before building views) init is the ONLY thing
+      // launch is transient: once views have materialized it's redundant, so
+      // we strip it. But while views is still empty (a snapshot taken mid-load,
+      // or a launch that errored before building views) it is the ONLY thing
       // that can rebuild the view -> keep it so a reload/restore resumes
       // instead of falling back to the import form.
       if (snap.views.length) {
-        const { init, ...rest } = snap
+        const { launch, ...rest } = snap
         return rest as typeof snap
       }
       return snap

@@ -19,7 +19,10 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { captureUnknownSnapshotKeys } from '@jbrowse/core/util/unknownSnapshotKeys'
+import {
+  pendingLaunch,
+  withLaunchInput,
+} from '@jbrowse/core/util/withLaunchInput'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -50,6 +53,7 @@ import {
   tickLines,
   truncateRefNames,
 } from './components/util.ts'
+import { dotplotLaunchKeys } from './launchKeys.ts'
 import { DRAG_THRESHOLD_PX, HOVER_SLACK_PX, LS_CURSOR_MODE } from './types.ts'
 
 import type { DotplotPlotPickHit } from '../DotplotDisplay/dotplotPickEngine.ts'
@@ -70,6 +74,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
@@ -223,24 +228,22 @@ export interface ExportSvgOptions {
  * #category view
  *
  * #example
- * Hand-authored under `defaultSession.views`. `init.views` lists the two
- * assemblies on the axes and `tracks` the synteny track(s) to plot
- * (self-vs-self is allowed):
+ * Hand-authored under `defaultSession.views`, with every setting written
+ * directly on the view object. `views` lists the two assemblies on the axes and
+ * `tracks` the synteny track(s) to plot (self-vs-self is allowed):
  * ```js
  * {
  *   type: 'DotplotView',
- *   init: {
- *     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
- *     tracks: ['hg38_vs_mm10.paf'],
- *     colorBy: 'query',
- *   },
+ *   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+ *   tracks: ['hg38_vs_mm10.paf'],
+ *   colorBy: 'query',
  * }
  * ```
- * Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
- * `loc` on each `views` entry — see the `init` property below.
+ * `autoDiagonalize` and a per-axis `loc` on each `views` entry are the other
+ * launch keys; everything else is a property below.
  */
 export default function stateModelFactory(pm: PluginManager) {
-  return captureUnknownSnapshotKeys(
+  return withLaunchInput(
     types
       .compose(
         'DotplotView',
@@ -361,9 +364,14 @@ export default function stateModelFactory(pm: PluginManager) {
 
           /**
            * #property
-           * used for initializing the view from a session snapshot
+           * transient launch state: the settings written on the view object
+           * that need resolving before they can be view state — the two axis
+           * assemblies, track recipes, highlights. `preProcessSnapshot` moves
+           * them here off the snapshot, the afterAttach autorun applies them
+           * and clears this, so a saved session never retains it. Not written
+           * by hand: author every setting directly on the view.
            */
-          init: types.frozen<DotplotViewCommands | undefined>(),
+          launch: types.frozen<LaunchInput<DotplotViewCommands> | undefined>(),
         }),
       )
       .volatile(() => ({
@@ -467,6 +475,16 @@ export default function stateModelFactory(pm: PluginManager) {
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         * the launch state that still has something to apply — the gate every
+         * loading and import-form path below reads. Also v4's name for it, kept
+         * while the other views and the products that drive them still spell it
+         * this way; deleted with `setInit`.
+         */
+        get init() {
+          return pendingLaunch(self.launch)
+        },
         /**
          * #getter
          */
@@ -612,7 +630,7 @@ export default function stateModelFactory(pm: PluginManager) {
           return assemblyManager.loadingAssembly(
             self.assemblyNames.length > 0
               ? self.assemblyNames
-              : (self.init?.views.map(v => v.assembly) ?? []),
+              : (self.init?.views?.map(v => v.assembly) ?? []),
           )
         },
         /**
@@ -1242,10 +1260,10 @@ export default function stateModelFactory(pm: PluginManager) {
           self.vview.setDisplayedRegions([])
           self.assemblyNames = cast([])
           self.tracks.clear()
-          // An init that never finished applying still counts towards
+          // A launch that never finished applying still counts towards
           // hasSomethingToShow, so leaving it here means "return to import form"
           // doesn't. Dropping the request is what returning to the form means.
-          self.init = undefined
+          self.launch = undefined
           // Highlights are (assemblyName, refName, start, end) against the pair
           // being cleared. Kept, they reappear over whatever pair is picked
           // next whenever it reuses one of these assemblies — and the chips
@@ -1283,8 +1301,8 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setInit(init?: DotplotViewCommands) {
-          self.init = init
+        setInit(init?: LaunchInput<DotplotViewCommands>) {
+          self.launch = init
         },
 
         /**
@@ -1701,19 +1719,21 @@ export default function stateModelFactory(pm: PluginManager) {
         if (!snap) {
           return snap
         }
-        // init is transient: redundant once assemblyNames are set (the autorun's
-        // first materialization step), so strip it then. While assemblyNames is
-        // still empty, init is the only thing that can rebuild the view -> keep
-        // it so a reload/restore resumes instead of dropping to the import form.
-        // assemblyNames is stripDefault, so it's absent (not []) when empty —
-        // the optional chain is runtime-necessary despite the non-nullish type.
+        // launch is transient: redundant once assemblyNames are set (the
+        // autorun's first materialization step), so strip it then. While
+        // assemblyNames is still empty it is the only thing that can rebuild
+        // the view -> keep it so a reload/restore resumes instead of dropping
+        // to the import form. assemblyNames is stripDefault, so it's absent
+        // (not []) when empty — the optional chain is runtime-necessary despite
+        // the non-nullish type.
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (snap.assemblyNames?.length) {
-          const { init, ...rest } = snap
+          const { launch, ...rest } = snap
           return rest as typeof snap
         }
         return snap
       }),
+    dotplotLaunchKeys,
   )
 }
 

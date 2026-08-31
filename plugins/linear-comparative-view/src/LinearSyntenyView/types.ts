@@ -6,7 +6,7 @@ import type {
   LinearGenomeViewLaunchProps,
   TrackLabelMode,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
+import type { SyntenyViewSharedCommands } from '@jbrowse/synteny-core'
 import type React from 'react'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
@@ -16,10 +16,11 @@ export type { CigarMode } from './cigarModes.ts'
 export type FadeThinMode = 'auto' | 'on' | 'off'
 
 /**
- * The init keys `LinearSyntenyView` writes code for — things to DO rather than
- * state to hold, plus the names that mean something here other than what the
- * model's property of the same name means. `LINEAR_SYNTENY_INIT_COMMANDS` is
- * the runtime twin of this list.
+ * The launch keys `LinearSyntenyView` writes code for — things to DO rather
+ * than state to hold, plus the names that mean something here other than what
+ * the model's property of the same name means. `linearSyntenyLaunchKeys`
+ * registers exactly these, and the Record it takes makes an unregistered one a
+ * compile error.
  *
  * A new display setting does not belong here — see `LinearSyntenyViewInit` —
  * unless, like `drawCurves`, it lives on the synteny DISPLAYS' config rather
@@ -30,10 +31,13 @@ export type FadeThinMode = 'auto' | 'on' | 'off'
  * comment above each field is what that table shows, so a field added without
  * one fails the docs build rather than rendering a blank cell.
  */
-export interface LinearSyntenyViewCommands extends SyntenyViewSharedInit {
-  // a row is an LGV, so it takes the LGV's own launch props (trackLabels,
-  // showAminoAcids, colorByCDS, …) alongside what to show
-  views: ({
+export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
+  // The genome rows, top to bottom; a row is an LGV, so it takes the LGV's own
+  // launch props (trackLabels, showAminoAcids, colorByCDS, …) alongside what to
+  // show. Optional because hand-authored JSON is what fills this and a spec
+  // naming only a setting partitions into a launch blob with no rows at all;
+  // `applyInit` reads that as the import form.
+  views?: ({
     loc?: string
     assembly: string
     // a bare trackId string, or { trackId, ...displayOptions } to configure the
@@ -88,21 +92,25 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedInit {
 }
 
 /**
- * What a `LinearSyntenyView` can be launched with — a session spec's flat args,
- * a config `defaultSession` view's `init` blob, a share link.
+ * What a `LinearSyntenyView` can be launched with — a session spec, a config
+ * `defaultSession` view, a share link, all one shape.
  *
  * The commands above — `drawCurves` and `drawLocationMarkers` among them, which
  * are commands writing a display config slot rather than view properties —
- * plus every declared property of the view (`cigarMode`, `alpha`,
+ * plus every declared property of the view (`colorBy`, `cigarMode`, `alpha`,
  * `opacityByIdentity`, `lodMode`, and whatever the model grows next), each in
- * its own type. None of them is
- * listed anywhere: the type comes off the state model and the runtime asks the
- * model too, so declaring a property is the whole of making it authorable.
+ * its own type. None of them is listed anywhere: the type comes off the state
+ * model, so declaring a property is the whole of making it authorable.
  */
 export type LinearSyntenyViewInit = ViewInit<
   LinearSyntenyViewStateModel,
   LinearSyntenyViewCommands
 >
+
+/** the same, from a builder that always names its rows */
+export type LinearSyntenyViewSpec = LinearSyntenyViewInit & {
+  views: NonNullable<LinearSyntenyViewCommands['views']>
+}
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean

@@ -64,7 +64,7 @@ function buildFrom({
 }
 
 function locs(built: ReturnType<typeof buildSyntenyViewSpec>) {
-  return built.init.views.map(v => v.loc)
+  return built.views.map(v => v.loc)
 }
 
 test('whole-block launch emits 1-based inclusive locstrings', () => {
@@ -102,8 +102,8 @@ test('assemblies and the track come through for the two rows', () => {
     anchorAssembly: 'volvox',
     flipReversedMates: false,
   })
-  expect(spec.init.views.map(v => v.assembly)).toEqual(['volvox', 'volvox2'])
-  expect(spec.init.tracks).toEqual([['t1']])
+  expect(spec.views.map(v => v.assembly)).toEqual(['volvox', 'volvox2'])
+  expect(spec.tracks).toEqual([['t1']])
 })
 
 test('horizontal flip marks the mate row reversed', () => {
@@ -293,13 +293,13 @@ test('several mates at one locus become one panel each', () => {
     anchorAssembly: 'volvox',
     flipReversedMates: false,
   })
-  expect(spec.init.views.map(v => v.assembly)).toEqual([
+  expect(spec.views.map(v => v.assembly)).toEqual([
     'volvox',
     'volvox2',
     'volvox3',
     'volvox4',
   ])
-  expect(spec.init.tracks).toEqual([['t1'], ['t1'], ['t1']])
+  expect(spec.tracks).toEqual([['t1'], ['t1'], ['t1']])
 })
 
 // A band is drawn between adjacent panels only, so on a reference-anchored
@@ -318,12 +318,12 @@ test('the anchor opens where the dialog put it', () => {
     anchorAssembly: 'volvox',
     flipReversedMates: false,
   })
-  expect(spec.init.views.map(v => v.assembly)).toEqual([
+  expect(spec.views.map(v => v.assembly)).toEqual([
     'volvox2',
     'volvox',
     'volvox3',
   ])
-  expect(spec.init.tracks).toEqual([['t1'], ['t1']])
+  expect(spec.tracks).toEqual([['t1'], ['t1']])
 })
 
 test('an anchor index past the last mate puts it at the bottom', () => {
@@ -335,7 +335,7 @@ test('an anchor index past the last mate puts it at the bottom', () => {
     anchorAssembly: 'volvox',
     flipReversedMates: false,
   })
-  expect(spec.init.views.map(v => v.assembly)).toEqual(['volvox2', 'volvox'])
+  expect(spec.views.map(v => v.assembly)).toEqual(['volvox2', 'volvox'])
 })
 
 test('only the mates on the minus strand open reversed', () => {
@@ -410,16 +410,15 @@ describe('several blocks of one mate', () => {
   test('are one panel spanning all of them', () => {
     const spec = buildFrom({ ...args, features: fragments, region })
     expect(locs(spec)).toEqual(['ctgA:1,001..5,000', 'ctgB:5,001..9,000'])
-    expect(spec.init.views.map(v => v.assembly)).toEqual(['volvox', 'volvox2'])
-    expect(spec.init.tracks).toEqual([['t1']])
+    expect(spec.views.map(v => v.assembly)).toEqual(['volvox', 'volvox2'])
+    expect(spec.tracks).toEqual([['t1']])
   })
 
   // one panel, so a fragmented pairwise launch is still the two-row case the
   // "collapse empty rows" default is about
   test('do not read as a multi-way launch', () => {
     expect(
-      buildFrom({ ...args, features: fragments, region }).init
-        .collapseEmptyRows,
+      buildFrom({ ...args, features: fragments, region }).collapseEmptyRows,
     ).toBe(false)
   })
 
@@ -463,7 +462,7 @@ describe('several blocks of one mate', () => {
         region,
         flipReversedMates: true,
         features: minusMost,
-      }).init.views[1]!.loc,
+      }).views[1]!.loc,
     ).toBe('ctgB:5,001..9,000[rev]')
   })
 })
@@ -476,7 +475,7 @@ test('the anchor panel uses the passed assembly, not the feature field', () => {
     anchorAssembly: 'volvox_alias',
     flipReversedMates: false,
   })
-  expect(spec.init.views[0]!.assembly).toBe('volvox_alias')
+  expect(spec.views[0]!.assembly).toBe('volvox_alias')
 })
 
 // The launched panels carry no tracks, so the view opens them as rulers on a
@@ -492,18 +491,18 @@ test('multi-way launch collapses empty rows, pairwise does not', () => {
     flipReversedMates: false,
   }
   const twoMates = [makeFeature(), makeFeature({ mateAssembly: 'volvox3' })]
+  expect(buildFrom({ ...args, features: twoMates }).collapseEmptyRows).toBe(
+    true,
+  )
   expect(
-    buildFrom({ ...args, features: twoMates }).init.collapseEmptyRows,
-  ).toBe(true)
-  expect(
-    buildFrom({ ...args, features: [makeFeature()] }).init.collapseEmptyRows,
+    buildFrom({ ...args, features: [makeFeature()] }).collapseEmptyRows,
   ).toBe(false)
   expect(
     buildFrom({
       ...args,
       features: twoMates,
       collapseEmptyRows: false,
-    }).init.collapseEmptyRows,
+    }).collapseEmptyRows,
   ).toBe(false)
 })
 
@@ -518,7 +517,7 @@ test('anchor tracks go on the anchor panel only, wherever it sits in the stack',
     flipReversedMates: false,
     anchorTracks: [{ trackId: 'genes' }],
   }
-  expect(buildFrom(args).init.views.map(v => v.tracks)).toEqual([
+  expect(buildFrom(args).views.map(v => v.tracks)).toEqual([
     [{ trackId: 'genes' }],
     undefined,
     undefined,
@@ -526,7 +525,7 @@ test('anchor tracks go on the anchor panel only, wherever it sits in the stack',
   // anchorIndex moves the anchor down the stack; the tracks follow it rather
   // than staying on row 0
   expect(
-    buildFrom({ ...args, anchorIndex: 1 }).init.views.map(v => v.tracks),
+    buildFrom({ ...args, anchorIndex: 1 }).views.map(v => v.tracks),
   ).toEqual([undefined, [{ trackId: 'genes' }], undefined])
 })
 
@@ -541,10 +540,10 @@ test('no anchor tracks leaves the panel without a tracks key', () => {
     anchorAssembly: 'volvox',
     flipReversedMates: false,
   }
-  expect(buildFrom(args).init.views[0]).not.toHaveProperty('tracks')
-  expect(
-    buildFrom({ ...args, anchorTracks: [] }).init.views[0],
-  ).not.toHaveProperty('tracks')
+  expect(buildFrom(args).views[0]).not.toHaveProperty('tracks')
+  expect(buildFrom({ ...args, anchorTracks: [] }).views[0]).not.toHaveProperty(
+    'tracks',
+  )
 })
 
 // A whole-chromosome launch against an HSP or gene-anchor table is one row per

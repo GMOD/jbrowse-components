@@ -6,23 +6,25 @@ import type {
 } from '@jbrowse/core/util'
 
 // Both synteny LaunchView handlers do the same two things: reject a spec with
-// fewer than two views, then open the view with its assembled init block. Kept
-// in one place so the "needs at least 2 views" contract and the addView call
-// stay identical between the linear and dotplot launchers.
+// fewer than two views, then open the view on it. Kept in one place so the
+// "needs at least 2 views" contract and the addView call stay identical between
+// the linear and dotplot launchers.
 //
-// `id` is the spec's optional view-id pin, passed top-level so MST's optional
-// identifier honors it (undefined falls back to an auto-generated id). It must
-// not ride inside `init`, where the view's init autorun would ignore it.
+// `spec` is a view object — every setting written directly on it, the way a
+// `defaultSession` view and an `addView` literal are. The view's own
+// `preProcessSnapshot` sorts the launch keys from the properties, so nothing is
+// partitioned here. `id` rides along so MST's optional identifier honors the
+// spec's pin; undefined falls back to an auto-generated one.
 export function launchSyntenyView<T extends { views: unknown[] }>({
   session,
   viewType,
-  init,
+  spec,
   id,
   replacing,
 }: {
   session: AbstractViewContainer
   viewType: string
-  init: T
+  spec: T
   id?: string
   // The view this launch came out of, when the launcher offered to swap it for
   // the result instead of appending below it. A session that can't replace a
@@ -30,13 +32,13 @@ export function launchSyntenyView<T extends { views: unknown[] }>({
   // caller never has to ask twice.
   replacing?: AbstractViewModel
 }) {
-  if (init.views.length < 2) {
+  if (spec.views.length < 2) {
     throw new Error(`${viewType} requires at least 2 views to be specified`)
   }
   return addOrReplaceView({
     session,
     typeName: viewType,
-    initialState: { id, init },
+    initialState: { id, ...spec },
     replacing,
   })
 }

@@ -142,7 +142,10 @@ export type {
   ColorChip,
   GradientStop,
 } from './colorLegend.ts'
-export type { SyntenyViewSharedInit } from './SyntenyViewInit.ts'
+export type {
+  SyntenyViewSharedCommands,
+  SyntenyViewSharedInit,
+} from './SyntenyViewInit.ts'
 export { launchSyntenyView } from './launchSyntenyView.ts'
 export { default as HelpTooltip } from './HelpTooltip.tsx'
 export { default as DiagonalizeLoadingScreen } from './DiagonalizeLoadingScreen.tsx'

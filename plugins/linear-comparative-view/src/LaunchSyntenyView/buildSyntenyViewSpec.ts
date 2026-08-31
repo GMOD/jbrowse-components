@@ -3,7 +3,7 @@ import { launchSyntenyView } from '@jbrowse/synteny-core'
 import { paddedLocString } from './paddedLocString.ts'
 import { anchorSpanOfPanels, resolveFeaturePanels } from './resolvePanel.ts'
 
-import type { LinearSyntenyViewInit } from '../LinearSyntenyView/types.ts'
+import type { LinearSyntenyViewSpec } from '../LinearSyntenyView/types.ts'
 import type { RegionOfInterest, ResolvedPanel } from './resolvePanel.ts'
 import type {
   AbstractViewContainer,
@@ -60,7 +60,7 @@ export function buildSyntenyViewSpec({
   flipReversedMates,
   collapseEmptyRows,
   anchorTracks,
-}: BuildSyntenyViewSpecArgs): { init: LinearSyntenyViewInit } {
+}: BuildSyntenyViewSpecArgs): LinearSyntenyViewSpec {
   if (!panels.length) {
     throw new Error('No alignments to launch a synteny view on')
   }
@@ -90,18 +90,16 @@ export function buildSyntenyViewSpec({
   }))
 
   return {
-    init: {
-      collapseEmptyRows: collapseEmptyRows ?? panels.length > 1,
-      views: [
-        ...mateViews.slice(0, anchorIndex),
-        anchorView,
-        ...mateViews.slice(anchorIndex),
-      ],
-      // One synteny strip per gap between panels. The same track serves every
-      // level: the view passes each level's two assemblies down to the adapter,
-      // and an all-vs-all adapter resolves the pair from them.
-      tracks: panels.map(() => [trackId]),
-    },
+    collapseEmptyRows: collapseEmptyRows ?? panels.length > 1,
+    views: [
+      ...mateViews.slice(0, anchorIndex),
+      anchorView,
+      ...mateViews.slice(anchorIndex),
+    ],
+    // One synteny strip per gap between panels. The same track serves every
+    // level: the view passes each level's two assemblies down to the adapter,
+    // and an all-vs-all adapter resolves the pair from them.
+    tracks: panels.map(() => [trackId]),
   }
 }
 
@@ -118,7 +116,7 @@ export function launchSyntenyViewForPanels({
     session,
     viewType: 'LinearSyntenyView',
     replacing,
-    ...buildSyntenyViewSpec(rest),
+    spec: buildSyntenyViewSpec(rest),
   })
 }
 

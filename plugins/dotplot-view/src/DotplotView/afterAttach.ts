@@ -6,10 +6,6 @@ import {
   parseLocString,
   resolveNamedRegions,
 } from '@jbrowse/core/util'
-import {
-  applyInitSettings,
-  warnInitSettings,
-} from '@jbrowse/core/util/applyInitSettings'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
@@ -23,12 +19,20 @@ import { autorun, when } from 'mobx'
 import { LS_CURSOR_MODE } from './types.ts'
 
 import type { DotplotViewModel } from './model.ts'
-import type { DotplotViewInit } from './types.ts'
+import type { DotplotViewCommands } from './types.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
+import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 
 type AssemblyManager = ReturnType<typeof getSession>['assemblyManager']
+
+// The launch blob as the steps below work with it: `views` defaulted, since a
+// spec naming only a track partitions into a blob with no axes at all and that
+// is the import form rather than a case to guard at each read.
+type DotplotLaunch = LaunchInput<DotplotViewCommands> & {
+  views: NonNullable<DotplotViewCommands['views']>
+}
 
 // Resolve init.highlight entries to HighlightType objects. Each entry is a loc
 // string ("ctgA:100-200") or a JSON object carrying color/label — the same
@@ -145,7 +149,7 @@ async function waitForInit(
   await when(() => superseded() || cond() || !!self.error)
 }
 
-function applyInitTracks(self: DotplotViewModel, init: DotplotViewInit) {
+function applyInitTracks(self: DotplotViewModel, init: DotplotLaunch) {
   // showTrack surfaces its own failures via showTrackGeneric's notifyError
   if (init.tracks) {
     for (const trackId of init.tracks) {
@@ -154,33 +158,7 @@ function applyInitTracks(self: DotplotViewModel, init: DotplotViewInit) {
   }
 }
 
-// The init keys this view writes code for; everything else is matched against
-// the view's own declared properties and applied verbatim. See
-// `applyInitSettings` in core — and note what the hand-written switchboard this
-// replaced actually covered: showColorLegend, colorBy and minAlignmentLength,
-// out of a model that also declares alpha, drawCigar, lineWidth,
-// lockAspectRatio, lodMode and height. Those six were never authorable at all.
-const DOTPLOT_INIT_COMMANDS = [
-  // the spec's `views` is a per-axis {assembly, loc, displayedRegionNames}
-  // pair; the model has no such property, and `tracks` means trackIds here
-  // rather than the built track models
-  'views',
-  'tracks',
-  'highlight',
-  'autoDiagonalize',
-] as const
-
-function applyInitDisplaySettings(
-  self: DotplotViewModel,
-  init: DotplotViewInit,
-) {
-  warnInitSettings(
-    'DotplotView init',
-    applyInitSettings(self, init, { commands: DOTPLOT_INIT_COMMANDS }),
-  )
-}
-
-function applyInitHighlights(self: DotplotViewModel, init: DotplotViewInit) {
+function applyInitHighlights(self: DotplotViewModel, init: DotplotLaunch) {
   if (init.highlight) {
     const session = getSession(self)
     const { highlights, errors } = parseInitHighlights(
@@ -237,7 +215,7 @@ async function runAutoDiagonalize(
 // before autoDiagonalize so the reorder only ever sees the restricted set.
 function applyInitDisplayedRegions(
   self: DotplotViewModel,
-  init: DotplotViewInit,
+  init: DotplotLaunch,
 ) {
   const session = getSession(self)
   const axes = [self.hview, self.vview]
@@ -290,7 +268,7 @@ function namedRegionSummary(regions: { refName: string }[]) {
 
 // region-based linking: navigate each axis to its requested loc. Assumes the
 // view is already initialized (caller waits) so displayed regions exist.
-function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
+function navigateInitLocs(self: DotplotViewModel, init: DotplotLaunch) {
   const session = getSession(self)
   const axes = [self.hview, self.vview]
   for (const [i, v] of init.views.entries()) {
@@ -331,9 +309,10 @@ function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
 // is unexpected — installInitAutorun's backstop reports it.
 async function applyInit(
   self: DotplotViewModel,
-  init: DotplotViewInit,
+  blob: LaunchInput<DotplotViewCommands>,
   { superseded }: InitApplyContext,
 ) {
+  const init: DotplotLaunch = { ...blob, views: blob.views ?? [] }
   // A dotplot plots one assembly against another, so the only question an init
   // has to answer is whether it names both. Counting views answers a different
   // question, and answers it wrong: `views: [{}, {}]` is two views naming
@@ -362,7 +341,6 @@ async function applyInit(
     self.beginAutoDiagonalize(!!init.autoDiagonalize)
     self.setAssemblyNames(target, query)
     applyInitTracks(self, init)
-    applyInitDisplaySettings(self, init)
     // must land before autoDiagonalize: the reorder is computed over whatever
     // the axes currently display, so restricting afterwards would diagonalize
     // the full assembly and then throw most of it away
