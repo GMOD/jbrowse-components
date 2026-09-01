@@ -222,6 +222,33 @@ where each residue sits in the folded structure.
 See the [proteins tutorial](/docs/tutorials/genomes_proteins) for the launch
 routes, installation and connected-view examples.
 
+## A whole chromosome of genes
+
+Zoomed out far enough, a gene track stops fetching and shows a "region too
+large" message with a **Force load** button, because drawing every gene on a
+chromosome would pull more of the file than a browser can hold. A track can
+carry a small sidecar instead: a bigWig of feature counts per kilobase, built
+once from the file, that the track draws as a band wherever its features are too
+many to fetch and drops the moment they fit. The band names its peak in its
+corner, and hovering it reads the count under the cursor.
+
+<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes and three RepeatMasker families, each drawn from its density sidecar. Each band is that track's features per kilobase, scaled to its own peak." />
+
+`jbrowse make-density` writes the sidecar beside the file, and
+`jbrowse add-track` attaches one it finds there; `--density` names one
+elsewhere. What it writes is the `densityAdapter` slot on the track's adapter:
+
+```bash
+jbrowse make-density genes.gff3.gz --chrom-sizes hg38.chrom.sizes
+jbrowse add-track genes.gff3.gz --load copy
+```
+
+The track menu's **Density tier** submenu holds the band or drops it by hand:
+**Automatic** swaps where the fetch would be too large, **Features only** keeps
+the message, **Density only** always draws the band. The
+[gene density tutorial](/docs/tutorials/gene_density) walks the whole thing
+through on hg38.
+
 ## See also
 
 - [](/docs/user_guides/sequence_track)

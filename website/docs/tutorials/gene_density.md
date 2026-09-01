@@ -146,9 +146,10 @@ band can be held or dropped by hand.
 
 ## Checking the band against the file
 
-The bands are counts, so the file answers the same question. Take one megabase
-under the tallest run of the gene band, at 155 Mb, and one under a trough, at 60
-Mb, and count what starts in each:
+The bands are counts, so the file answers the same question. Each band names its
+peak in its corner, and hovering it reads the sidecar's value under the cursor.
+Take one megabase under the tallest run of the gene band, at 155 Mb, and one
+under a trough, at 60 Mb, and count what starts in each:
 
 ```bash
 tabix Alu.bed.gz chr1:155,000,000-156,000,000 | wc -l
