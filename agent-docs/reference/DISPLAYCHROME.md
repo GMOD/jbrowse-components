@@ -244,9 +244,16 @@ on an overlay that owns its own menu, or on nothing falls through instead of
 being a dead zone. On a canvas, suppressing it and showing nothing costs the
 reader "Save image as…".
 
-`ContextMenu` renders nothing for an empty item list, so an anchor with no items
-is invisible either way — but that is one layer too late to decide the
-`preventDefault`, which is why the decision is the hit's and not the menu's.
+The handler's shared half is `openContextMenuFromEvent` (beside
+`DisplayContextMenu`): open at the anchor, close again and let the browser menu
+through if the items come back empty, otherwise `preventDefault` and clear the
+hover. Five components wrote that sequence by hand and had drifted on the hover
+clear and on the empty-menu case; what stays per display is resolving the
+anchor. `ContextMenu` renders nothing for an empty item list, so an anchor with
+no items is invisible either way — but that is one layer too late to decide the
+`preventDefault`, which is why the opener asks the items before it suppresses.
+The canvas base and the pileup keep their own handlers: both hit-test on a
+borderless canvas and cancel a queued hover frame on the way.
 
 **What stays highlighted while the menu is up is a per-display answer**, and the
 four displays give three different ones — the canvas base makes its hover setters
@@ -376,7 +383,10 @@ pairing the shared error bar's retry would be dead.
 **The retry affordance is a contract, and `reload()` is the display's half of
 it.** `DisplayErrorBar`'s only action is `model.reload()`, so every state that
 can raise the error bar must be one `reload()` actually undoes — otherwise the
-button is present, looks live, and does nothing. Two shapes have failed it:
+button is present, looks live, and does nothing. The three writes every retry
+owes — clear the error, clear the durable cancel, bump `reloadCounter` — are
+`FetchMixin.reload`, which both foundations chain and add their own invalidation
+to (the loaded signature, the full per-region reset). Two shapes have failed it:
 
 - **A gate `reload()` doesn't clear.** Arc, above: the fetch declines while
   `dataCurrent`, so a bare `reloadCounter` bump refires the autorun into a no-op
