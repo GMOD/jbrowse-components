@@ -1,7 +1,7 @@
 import net from 'node:net'
 import readline from 'node:readline'
 
-import { MCP_TOOLS } from './toolDefinitions.ts'
+import { MCP_TOOLS, SERVER_INSTRUCTIONS } from './toolDefinitions.ts'
 
 // An MCP server over stdio (newline-delimited JSON-RPC 2.0), relaying every
 // tools/call to the running app's bridge socket. Hand-rolled rather than the
@@ -169,6 +169,7 @@ export function runMcpStdioServer({
               typeof requested === 'string' ? requested : PROTOCOL_VERSION,
             capabilities: { tools: {} },
             serverInfo: { name: 'jbrowse-desktop', version },
+            instructions: SERVER_INSTRUCTIONS,
           },
         })
         break
