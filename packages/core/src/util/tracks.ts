@@ -18,11 +18,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
 
-import {
-  isConfigurationSlot,
-  preProcessSlotValues,
-  readConfObject,
-} from '../configuration/index.ts'
+import { readConfObject } from '../configuration/index.ts'
 import {
   getFileHandle,
   storeFileHandle,
@@ -1039,29 +1035,19 @@ export function showTrackGeneric(
 
     // Display settings (height, color, …) are config slots now, not display
     // instance props — passed in the display snapshot they'd be dropped as
-    // unknown MST keys. Route the ones that are real slots onto the persistent
-    // display config so they take effect and survive hide/retick (#5591). Runs
-    // after the push so the display's config reference can resolve.
-    //
-    // preProcessSlotValues first, so a display schema's shorthand expansions
-    // and legacy-key migrations reach this path too: a session spec, share
-    // link, or embed writes slots here rather than creating a config from a
-    // snapshot, and those two surfaces are meant to speak the same vocabulary.
+    // unknown MST keys. applyDisplaySettings routes the ones that are real
+    // slots onto the persistent display config so they take effect and
+    // survive hide/retick (#5591), running the schema's preProcessSnapshot
+    // first so shorthand expansions and legacy-key migrations reach this path
+    // too — a session spec, share link, or embed writes slots here rather
+    // than creating a config from a snapshot, and those surfaces are meant to
+    // speak the same vocabulary. Runs after the push so the display's config
+    // reference can resolve. Keys that are neither slots nor snapshot props
+    // but name a display setter apply through it, where they used to drop.
     const display = track.displays[0] as {
-      configuration: AnyConfigurationModel
+      applyDisplaySettings: (settings: Record<string, unknown>) => unknown
     }
-    const displaySlots = preProcessSlotValues(
-      display.configuration,
-      displayInitialSnapshot,
-    )
-    for (const [key, value] of Object.entries(displaySlots)) {
-      if (key !== 'type' && isConfigurationSlot(display.configuration, key)) {
-        // the key comes from a snapshot at runtime, and setConf's slot name is
-        // a compile-time type
-        // eslint-disable-next-line no-restricted-syntax
-        display.configuration.setSlot(key, value)
-      }
-    }
+    display.applyDisplaySettings(displayInitialSnapshot)
     // if this track came from a connection, persist its config so it survives
     // reload without re-establishing the connection (no-op otherwise)
     session.captureConnectionTrack?.(trackId)

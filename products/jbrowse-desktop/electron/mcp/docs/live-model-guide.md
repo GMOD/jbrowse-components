@@ -15,9 +15,11 @@ app's renderer. What you `return` is serialized back to you. In scope:
   - `jb.listTracks(search?)` — the track catalog with trackIds
   - `jb.loadSessionSpec(spec)` — build views declaratively (docs topic
     "session-spec"); replaces the open views, settles, returns the summary
-  - `jb.applyDisplaySettings(trackModel, settings)` — in-place styling with the
-    same slot routing and legacy-key handling the track menu uses; returns {
-    applied, unapplied }
+  - `track.applyDisplaySettings(settings)` — a model ACTION on every track:
+    in-place styling of the track's `activeDisplay` with the same slot routing
+    and legacy-key handling a session spec's inline keys get; returns { applied,
+    unapplied }. (Each display also has it, for addressing a non-active display
+    — settings vocabularies are per display type.)
   - `jb.addTrack({ location, index?, assembly?, name?, show? })` — local path or
     URL, format inferred from the extension
   - `jb.getFeatures({ trackId, loc? })` — the track's data as live Feature
@@ -88,16 +90,16 @@ session.tracks.map(t => ({
 MST rules: reads are plain property/getter access; **mutations only through
 actions** (`view.setWidth(800)` works, `view.width = 800` throws). Snapshots
 (`jb.mst.getSnapshot(node)`) omit computed getters — read getters off the live
-node. Write display settings with
-`jb.applyDisplaySettings(trackModel, settings)` — it routes each key through the
-same slot machinery the track menu uses (legacy keys included) and reports what
-applied — and `jb.describeSlots(display.configuration)` lists the slots that
-exist before you write one.
+node. Write display settings with `track.applyDisplaySettings(settings)` — it
+targets the track's `activeDisplay`, routes each key through the same slot
+machinery a session spec's inline keys get (legacy keys included), and reports
+what applied — and `jb.describeSlots(display.configuration)` lists the slots
+that exist before you write one.
 
 ```js
 // make every shown track compact
 for (const t of session.views.flatMap(v => v.tracks ?? [])) {
-  jb.applyDisplaySettings(t, { displayMode: 'compact' })
+  t.applyDisplaySettings({ displayMode: 'compact' })
 }
 return jb.waitReady(30000)
 ```
