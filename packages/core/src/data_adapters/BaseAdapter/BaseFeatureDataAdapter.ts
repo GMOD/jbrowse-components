@@ -5,12 +5,25 @@ import { createStatusFanOut } from '../../util/progress.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 import { BaseAdapter } from './BaseAdapter.ts'
 import { aggregateQuantitativeStats } from './stats.ts'
+import { isFeatureAdapter } from './util.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
+import type { FeatureDensity } from './featureDensity.ts'
 import type { BaseOptions } from './types.ts'
 import type { Observable } from 'rxjs'
+
+function isAdapterConfigSnapshot(
+  value: unknown,
+): value is Record<string, unknown> & { type: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof value.type === 'string'
+  )
+}
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -186,6 +199,42 @@ export abstract class BaseFeatureDataAdapter<
     _opts?: BaseOptions,
   ): Promise<number | undefined> {
     return undefined
+  }
+
+  /**
+   * Features per bin over each region, at the view's `bpPerPx`, for the density
+   * tier the display draws where the region-too-large gate refused the
+   * features. The default reads the `densityAdapter` sidecar slot
+   * (`densityAdapterConfigSchemaFields`) through `getSubAdapter`; `undefined`
+   * means no tier, and the banner stands. An indexed adapter may override this
+   * with an estimate from its index, marked `exact: false`.
+   */
+  async getFeatureDensity(
+    regions: Region[],
+    opts: BaseOptions & { bpPerPx: number },
+  ): Promise<FeatureDensity[] | undefined> {
+    const sidecar: unknown = this.getConf(['densityAdapter'])
+    const resolved =
+      isAdapterConfigSnapshot(sidecar) && this.getSubAdapter
+        ? (await this.getSubAdapter(sidecar)).dataAdapter
+        : undefined
+    return resolved && isFeatureAdapter(resolved)
+      ? Promise.all(
+          regions.map(async region => {
+            const features = await resolved.getFeaturesArray(region, opts)
+            const starts = new Uint32Array(features.length)
+            const ends = new Uint32Array(features.length)
+            const scores = new Float32Array(features.length)
+            features.forEach((feature, i) => {
+              const score = feature.get('score')
+              starts[i] = feature.get('start')
+              ends[i] = feature.get('end')
+              scores[i] = score === undefined ? 0 : score
+            })
+            return { starts, ends, scores, exact: true }
+          }),
+        )
+      : undefined
   }
 
   async getSources(

@@ -20,6 +20,10 @@ export type {
 export { BaseAdapter } from './BaseAdapter.ts'
 export { cachedSetup } from '../../util/cachedSetup.ts'
 export { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
+export {
+  type FeatureDensity,
+  densityAdapterConfigSchemaFields,
+} from './featureDensity.ts'
 export { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'
 export type { BaseTextSearchAdapter } from './BaseTextSearchAdapter.ts'
 export type {

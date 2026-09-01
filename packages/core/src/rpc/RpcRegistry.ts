@@ -1,3 +1,4 @@
+import type { FeatureDensity } from '../data_adapters/BaseAdapter/featureDensity.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { UnwrapRpcResult } from '../util/rpc.ts'
 import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
@@ -62,6 +63,17 @@ export interface RpcRegistry {
       headers?: Record<string, string>
     }
     return: number | undefined
+  }
+  CoreGetFeatureDensity: {
+    args: {
+      adapterConfig: Record<string, unknown>
+      regions: RegionLike[]
+      bpPerPx: number
+      headers?: Record<string, string>
+    }
+    // one entry per region in `regions` order; undefined when the adapter has
+    // no density source, which is the banner's case
+    return: FeatureDensity[] | undefined
   }
   // A file header/metadata block is whatever the format carries — adapters
   // declare `getHeader`/`getMetadata` as `unknown` and callers narrow (a VCF

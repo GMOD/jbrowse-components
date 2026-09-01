@@ -24,6 +24,7 @@ const DIR = 'packages/core/src/data_adapters/BaseAdapter'
 const NOT_A_BASE = new Set([
   'BaseAdapter.ts',
   'cachedSetup.ts',
+  'featureDensity.ts',
   'getAdapterId.ts',
   'index.ts',
   'stats.ts',
