@@ -20,7 +20,10 @@ const mcpDir = path.join(__dirname, '../../electron/mcp')
 const copies = {
   instructions: SERVER_INSTRUCTIONS,
   toolDescriptions: MCP_TOOLS.map(t => t.description).join('\n'),
-  guide: fs.readFileSync(path.join(mcpDir, 'docs/live-model-guide.md'), 'utf8'),
+  guide: fs.readFileSync(
+    path.join(mcpDir, '../../../../website/docs/agents_live_model.md'),
+    'utf8',
+  ),
   skill: fs.readFileSync(
     path.join(mcpDir, '../../../../.claude/skills/jbrowse-mcp/SKILL.md'),
     'utf8',

@@ -2815,6 +2815,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * navigating to the locstring
        * @param grow - optional multiplier to expand the region by (e.g., 0.2
        * adds 20% padding on each side)
+       * @param opts - `showHitTrack: false` keeps a text-search hit from also
+       * showing the track its index was built from
        * @returns whether the view moved. A multi-hit search raises the picker
        * instead of navigating, and both resolve — see `handleSelectedRegion`.
        */
@@ -2825,6 +2827,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         input: string,
         optAssemblyName?: string,
         grow?: number,
+        opts?: { showHitTrack?: boolean },
       ): Promise<boolean> {
         const { assemblyNames } = self
         const session = getSession(self)
@@ -2840,6 +2843,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           input,
           assemblyName,
           grow,
+          showHitTrack: opts?.showHitTrack,
           model: self as LinearGenomeViewModel,
         })
       },

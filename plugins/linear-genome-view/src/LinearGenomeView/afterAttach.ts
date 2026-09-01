@@ -125,7 +125,11 @@ async function navigateInit(
       // navToLocString waits for the assembly itself, and this autorun only
       // runs once `initialized` confirms init.assembly has loaded regions, so
       // no explicit waitForAssembly is needed here
-      await self.navToLocString(init.loc, init.assembly, init.grow)
+      // a spec that listed its tracks gets those tracks; one that only named
+      // a gene gets the track the gene was found in, as the search box would
+      await self.navToLocString(init.loc, init.assembly, init.grow, {
+        showHitTrack: asArray(init.tracks).length === 0,
+      })
     } else if (init.displayedRegionNames?.length) {
       // an explicit region list is a navigation request just like `loc`, so it
       // applies even when regions already exist (URL params layered onto a

@@ -1,7 +1,15 @@
-# Driving the live JBrowse session from `run_javascript`
+---
+title: Driving the live JBrowse session
+sidebar_label: Live model guide
+description:
+  The working reference for code that runs against a live JBrowse session, from
+  Desktop's run_javascript MCP tool or a browser agent on JBrowse Web
+---
 
-The `run_javascript` tool runs an async JavaScript function body inside the
-app's renderer. What you `return` is serialized back to you. In scope:
+Desktop's `run_javascript` MCP tool runs an async JavaScript function body
+inside the app's renderer, and what you `return` is serialized back to you. A
+browser agent on JBrowse Web runs the same code in the page, where the value is
+the last expression (see [](/docs/agents_web)). In scope either way:
 
 - `session` — the live MST session model (views, tracks, assemblies, dialogs)
 - `rootModel` — its parent (jbrowse config, menus, `session` itself)
@@ -22,8 +30,9 @@ app's renderer. What you `return` is serialized back to you. In scope:
     `docs topic:"config:BamAdapter"`; every name: `docs topic:"types"`
   - `jb.listTracks(search?, limit?)` — the track catalog with trackIds
     (connection/hub tracks included; default cap 100)
-  - `jb.loadSessionSpec(spec)` — build views declaratively (docs topic
-    "session-spec"); replaces the open views, settles, returns the summary. It
+  - `jb.loadSessionSpec(spec, settleMs?)` — build views declaratively (docs
+    topic "session-spec"); replaces the open views, settles for `settleMs`
+    (default 30000, reporting what is still not ready), returns the summary. It
     REPLACES the session, so the `session` argument you were given is a dead
     node afterwards — every `jb` helper re-reads the live one for you, and
     `jb.session` is it if you need to rebind: `session = jb.session`
@@ -34,6 +43,10 @@ app's renderer. What you `return` is serialized back to you. In scope:
     URL, format inferred from the extension
   - `jb.getFeatures({ trackId, loc? })` — the track's data as live Feature
     objects (see below)
+  - `await jb.visibleRegions(viewId?)` — the visible region as numbers
+    (`{ assemblyName, refName, start, end }`), the same regions `getFeatures`
+    reads by default; use it to bin or recompute over exactly what is on screen
+  - `jb.rootModel` — the root model (`jbrowse` config, menus, `session`)
   - `jb.waitReady(timeoutMs)` — resolves when tracks finish loading/drawing. Its
     result carries `notifications` (the session's error toasts) and `notReady`:
     tracks whose display settled without drawing anything, each with its `phase`

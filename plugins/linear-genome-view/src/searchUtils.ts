@@ -201,12 +201,14 @@ export async function showSearchResults({
   model,
   assemblyName,
   grow,
+  showHitTrack,
 }: {
   results: BaseResult[]
   query: string
   model: LinearGenomeViewModel
   assemblyName: string
   grow?: number
+  showHitTrack?: boolean
 }) {
   const session = getSession(model)
   const unanimous = unanimousResult({
@@ -216,7 +218,13 @@ export async function showSearchResults({
     assembly: session.assemblyManager.get(assemblyName),
   })
   if (unanimous) {
-    await navToOption({ option: unanimous, model, assemblyName, grow })
+    await navToOption({
+      option: unanimous,
+      model,
+      assemblyName,
+      grow,
+      showHitTrack,
+    })
     return true
   } else {
     model.setSearchResults(results, query, assemblyName)
@@ -229,16 +237,22 @@ export async function showSearchResults({
 // padding gets that instead.
 const SEARCH_HIT_GROW = 0.2
 
+// A hit lands with the track its index came from shown, which is what a name
+// typed into the search box wants. A session spec that named its own tracks
+// passes false: it asked for those tracks, and a hosted config's full RefSeq
+// appearing beside the curated one it listed read as a bug.
 export async function navToOption({
   option,
   model,
   assemblyName,
   grow,
+  showHitTrack = true,
 }: {
   model: LinearGenomeViewModel
   option: BaseResult
   assemblyName: string
   grow?: number
+  showHitTrack?: boolean
 }) {
   // getLocation() can be an empty string when a result reports hasLocation()
   // but carries no coordinates; treat that as "no location" and fall back to
@@ -254,7 +268,7 @@ export async function navToOption({
     assemblyName,
     grow ?? SEARCH_HIT_GROW,
   )
-  if (trackId && isAlive(model)) {
+  if (showHitTrack && trackId && isAlive(model)) {
     model.showTrack(trackId)
   }
 
@@ -307,11 +321,13 @@ export async function handleSelectedRegion({
   model,
   assemblyName,
   grow,
+  showHitTrack,
 }: {
   input: string
   model: LinearGenomeViewModel
   assemblyName: string
   grow?: number
+  showHitTrack?: boolean
 }) {
   const { assemblyManager, textSearchManager } = getSession(model)
   // resolves only once regions/aliases are loaded, which isValidRefName needs
@@ -415,6 +431,7 @@ export async function handleSelectedRegion({
         model,
         assemblyName,
         grow,
+        showHitTrack,
       })
     } else if (results.length === 1) {
       // `grow` reached the locstring branch above but not this one, so a
@@ -426,6 +443,7 @@ export async function handleSelectedRegion({
         model,
         assemblyName,
         grow,
+        showHitTrack,
       })
       return true
     } else {

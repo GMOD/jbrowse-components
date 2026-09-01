@@ -791,6 +791,9 @@ export function createJbApi(pluginManager: PluginManager) {
     get session() {
       return live()
     },
+    get rootModel() {
+      return pluginManager.rootModel
+    },
     require: pluginManager.jbrequire,
     ensureRequire: ensureReExports,
     mst,
@@ -811,8 +814,9 @@ export function createJbApi(pluginManager: PluginManager) {
     listTracks: (search?: string, limit?: number) =>
       listTracks(live(), search, limit),
     trackModel: (trackId: string) => shownTrackModel(live(), trackId),
-    loadSessionSpec: (spec: Record<string, unknown>) =>
-      loadSpec(pluginManager, { spec }),
+    visibleRegions: (viewId?: string) => visibleRegionsOf(live(), viewId),
+    loadSessionSpec: (spec: Record<string, unknown>, settleMs?: number) =>
+      loadSpec(pluginManager, { spec, settleMs }),
     addTrack: (opts: Record<string, unknown>) =>
       addTrack(pluginManager, live(), opts),
     getFeatures: async (fetchArgs: {
@@ -912,9 +916,14 @@ async function addTrack(
   return { ...summary, ...settle, shownInView: view.id }
 }
 
+// Under the 45 s one evaluation gets from the Claude in Chrome extension: a
+// cold hosted config settling for the full minute answered nothing there,
+// while the settle result already names what is still not ready
+const SPEC_SETTLE_DEFAULT_MS = 30_000
+
 async function loadSpec(
   pluginManager: PluginManager,
-  args: Record<string, unknown>,
+  args: { spec: unknown; settleMs?: number },
 ) {
   const spec = args.spec
   const valid =
@@ -930,7 +939,10 @@ async function loadSpec(
   )
   // the session was REPLACED by the spec load — settle against the new one
   const session = sessionOf(pluginManager)
-  const settle = await waitReady(60_000, session)
+  const settle = await waitReady(
+    args.settleMs ?? SPEC_SETTLE_DEFAULT_MS,
+    session,
+  )
   return {
     ...settle,
     ...(session ? { session: sessionSummary(session) } : {}),

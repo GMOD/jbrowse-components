@@ -95,7 +95,8 @@
         "agents_hosted_data",
         "agents_capture",
         "agents_mcp",
-        "agents_web"
+        "agents_web",
+        "agents_live_model"
       ]
     },
     "embedded_components",

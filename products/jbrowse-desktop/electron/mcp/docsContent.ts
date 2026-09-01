@@ -2,10 +2,10 @@
 // time (esbuild `.md` loader) so the packaged app and the standalone stdio
 // server both carry it. Loaded lazily from stdioServer so jest, which has no
 // .md loader, never resolves these imports.
+import liveModelGuide from '../../../../website/docs/agents_live_model.md'
 import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
 import { readDocSection } from './docSections.ts'
-import liveModelGuide from './docs/live-model-guide.md'
 import typePages from './docs/typeDocs.generated.json'
 import { lookupTypeDoc, typeIndex } from './typeDocs.ts'
 
