@@ -10,9 +10,9 @@ import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 import { GRAPH_DRAWN } from '../specs/graph-fixtures.ts'
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
 import { syntenyVideoFixtures } from '../specs/synteny.ts'
-import { LOCATION_BOX, RUBBERBAND, trackMenu } from './shared.ts'
+import { RUBBERBAND, trackMenu } from './shared.ts'
 
-import type { VideoSpec } from '../video-spec-types.ts'
+import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
 const {
   allVsAllLanes,
@@ -35,7 +35,7 @@ const {
   strains,
   unorderedDotplot,
 } = syntenyVideoFixtures
-const { driftedPanels, followPanLoc, maternalGlob, noViews, paternalGlob } =
+const { followScrollPanels, maternalGlob, noViews, paternalGlob } =
   hg002VideoFixtures
 
 // The form's assembly dropdowns carry no test id, but each is labelled, so the
@@ -65,6 +65,28 @@ const chromosomeBox = (axis: 'x' | 'y') =>
 // The palette button both comparative headers render (ColorBySelector). Its
 // testid rides through CascadingMenuButton's `...rest` onto the IconButton.
 const COLOR_BY_MENU = '[data-testid="color_by_menu"]'
+
+// One sideways drag across the HG002 tour's top panel, named by the two
+// maternal coordinates it grabs and releases at. `track` puts the press inside
+// the gene lane's own rendering container: the LGV's click-drag pan skips a
+// press that lands on a resize handle, which is what the strip between two lanes
+// is, and the tracks container's own midpoint is one of those.
+const panMaternal = (from: string, to: string, say?: string): VideoStep => ({
+  type: 'drag',
+  fromAnchor: {
+    locus: `chr8_MATERNAL:${from}`,
+    track: 'hg002_genes_mat',
+    view: [0, 0],
+  },
+  toAnchor: {
+    locus: `chr8_MATERNAL:${to}`,
+    track: 'hg002_genes_mat',
+    view: [0, 0],
+  },
+  dragMs: 2200,
+  hold: 400,
+  ...(say === undefined ? {} : { say }),
+})
 
 // The rubberband menu's Launch submenu, and the entry under it that opens the
 // multi-panel launch dialog. By testid rather than by text: the synteny track's
@@ -542,31 +564,34 @@ export const syntenyVideos: VideoSpec[] = [
   // the panels together, and both of those are equally true of the right-click
   // item beside it -- "Move other panel to the matching region" produces the
   // second frame from the first in one click. What separates the toggle from it
-  // is the third state: the reader navigates AGAIN, touches nothing else, and
-  // the panel below arrives at the matching sequence on its own. There is no
-  // still of that, because the evidence is a move nobody made.
+  // is what happens next: the reader keeps moving, touches nothing else, and the
+  // panel below stays on the matching sequence. There is no still of that,
+  // because the evidence is a move nobody made.
   //
-  // The two panels open on the same numbers, which is what a reader does first
-  // on a self-alignment and is the state the whole section is about: the same
-  // coordinate is not the same sequence, so the paternal panel's chain lane is
-  // empty and the ribbon leaves the frame.
+  // So the payoff here is the SCROLL, not the click. The top panel is dragged
+  // sideways three times over ~2.4 Mb and the bottom one holds register through
+  // every frame of it: the follow's frame pass replans off live geometry rather
+  // than waiting for the 500ms settle, which is a claim only a moving picture
+  // can make.
   //
-  // The pan is typed into the maternal panel's location box rather than dragged.
-  // Both are followed -- the frame pass tracks a drag and the exact pass lands
-  // it -- but a locstring is what the page's own instructions use, and it puts
-  // the two windows' numbers on screen where the reader can read the offset the
-  // follow resolved instead of taking it from the ribbon's slant.
+  // Dragged rather than typed, and that is the change from the first take. A
+  // locstring puts two windows' numbers on screen and demonstrates one jump; the
+  // question readers actually have (discussion #5610) is whether the mode keeps
+  // up while they work, and a jump answers it the same way the right-click item
+  // would.
+  //
+  // The session is `followScrollPanels` and its comment carries the framing: 2 Mb
+  // out, both panels on the same coordinates, ~241 kb out of register, with the
+  // gene lanes and the ribbon's location markers as the two things on screen that
+  // say so.
   {
     name: 'synteny/hg002_follow_panels',
     description:
-      "One genome's two haplotypes drifting apart and being pulled back: the header's follow toggle, the paternal panel moving to the matching sequence, and a second navigation followed with nothing else clicked",
-    url: driftedPanels,
-    // The figure of the same session measured 445 at the figures' width, which
-    // is the app exactly; the caption chip sits 20px off the frame's bottom
-    // rather than the app's, so a frame that tight puts every line of the
-    // caption track over the paternal chain lane -- the one lane that goes from
-    // empty to populated here.
-    viewportHeight: 520,
+      "One genome's two haplotypes nearly lined up and then held there: the header's follow toggle putting the gene lanes into register, and the top panel dragged sideways with the bottom one keeping pace",
+    url: followScrollPanels,
+    // Two lanes a panel rather than the follow figure's one, plus the caption
+    // chip's strip under the app.
+    viewportHeight: 700,
     readySelector: displayPainted('synteny_canvas'),
     // A whole-genome chain read in one go, which is the figures' own budget for
     // this session.
@@ -577,55 +602,48 @@ export const syntenyVideos: VideoSpec[] = [
       // view is the maternal panel's own ruler -- and the view writes what is
       // under the pointer into its title bar.
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // The state the toggle exists for, held long enough to read both location
-      // boxes: the same numbers in each, one chain lane drawn and one empty.
-      { type: 'delay', ms: 4500, say: 'Both panels on the same coordinates' },
+      // The state the toggle exists for, held long enough to find the same gene
+      // names in both lanes and see that they are not under each other.
+      { type: 'delay', ms: 5000, say: 'Both panels on the same coordinates' },
       {
         type: 'click',
         selector: '[data-testid="follow-synteny-toggle"]',
         say: 'Follow the matching region',
         hold: 600,
       },
-      // ON CAMERA, and this is the payoff of the first half: the follow's exact
-      // pass is an RPC per level off the anchor's SETTLED window, so the move
-      // arrives a beat after the click rather than with it, and a
-      // `waitForAppSettled` on its own can return before the settle debounce
-      // has even asked. Filmed at 9s the move landed inside the first two and
-      // the run reported the rest as a step nothing happened in.
+      // ON CAMERA: the follow's exact pass is an RPC per level off the anchor's
+      // SETTLED window, so the move arrives a beat after the click rather than
+      // with it, and a `waitForAppSettled` on its own can return before the
+      // settle throttle has even asked.
       { type: 'delay', ms: 3000 },
       // The toggle's own tooltip names the mode and the anchor row, which is
-      // worth a beat and not worth twelve seconds -- the pointer stays on the
-      // button otherwise, and the tooltip sits over the maternal panel's title
-      // for the whole of the next state.
+      // worth a beat and not worth the whole of the next state -- the pointer
+      // stays on the button otherwise, and the tooltip sits over the maternal
+      // panel's title.
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'waitForAppSettled', timeout: 120000 },
       {
         type: 'delay',
         ms: 3000,
-        say: 'The paternal panel is on the matching sequence',
+        say: 'The gene lanes are now under each other',
       },
-      // The half that is the mode rather than the move. `clear: true` because
-      // the box already holds the window the session opened at, and only the
-      // MATERNAL box is typed into -- the first location box on the page is the
-      // top panel's, and the point of the beat is that nothing touches the one
-      // below it.
-      {
-        type: 'type',
-        selector: LOCATION_BOX,
-        value: followPanLoc,
-        clear: true,
-        say: followPanLoc,
-        hold: 1600,
-      },
-      { type: 'press', key: 'Enter' },
-      // Left on camera for the same reason as the toggle: the maternal panel
-      // moves on the keypress and the paternal one follows a beat later, and
-      // that gap between the two moves IS the thing being demonstrated.
-      { type: 'delay', ms: 4500 },
+      // THE SCROLL. Three drags on the maternal panel's gene lane, each 800 kb
+      // of the same collinear chain, each slow enough to watch the row below
+      // move with it rather than after it -- `dragMs` over the 700ms default,
+      // which at this width is a flick.
+      //
+      // Both ends of every drag are LOCI in the panel being dragged, so each
+      // sweep is 800 kb whatever the frame is; a measured x would be a distance
+      // only at the width it was written at. They step forward with the window,
+      // since a locus the pan has already carried off the frame resolves to a
+      // point outside the viewport and fails the drag.
+      panMaternal('14,400,000', '13,600,000', 'Drag the top panel sideways'),
+      panMaternal('15,200,000', '14,400,000'),
+      panMaternal('16,000,000', '15,200,000'),
       { type: 'waitForAppSettled', timeout: 120000 },
-      // Ends on the followed pair, which is also the tallest state -- nothing
-      // in this tour grows the app -- so the poster is the state the section
-      // describes.
+      // Ends on the followed pair 2.4 Mb along, which is the tallest state --
+      // nothing in this tour grows the app -- so the poster is the state the
+      // section describes.
       {
         type: 'delay',
         ms: 3500,

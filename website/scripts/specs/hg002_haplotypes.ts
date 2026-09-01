@@ -288,12 +288,13 @@ function haplotypeSession(
   patLoc: string,
   matTracks: PanelTracks = [],
   patTracks: PanelTracks = matTracks,
-  // The view's own props, for the two frames that open ALREADY FOLLOWING.
-  // `followSynteny` and `followAnchorIndex` are model props the view restores
-  // natively (urlparams.md lists both), so a frame of a follow's steady state
-  // needs no clicks to reach — which also means it needs no wait on a click's
-  // RPC to have landed before the shot.
-  follow: Record<string, unknown> = {},
+  // The view's own props: `followSynteny` / `followAnchorIndex` for the two
+  // frames that open ALREADY FOLLOWING, `levelHeights` where the ribbon is what
+  // the figure is about. All of them are model props the view restores natively
+  // (urlparams.md lists them), so a frame of a follow's steady state needs no
+  // clicks to reach — which also means it needs no wait on a click's RPC to
+  // have landed before the shot.
+  viewProps: Record<string, unknown> = {},
 ) {
   return sessionSpec(HG002_CONFIG, {
     sessionTracks: [
@@ -310,7 +311,7 @@ function haplotypeSession(
         colorBy: 'strand',
         drawCurves: true,
         tracks: [['hg002v1.2_mat_vs_pat']],
-        ...follow,
+        ...viewProps,
         views: [
           { assembly: 'hg002v1.2', loc: matLoc, tracks: matTracks },
           { assembly: 'hg002v1.2', loc: patLoc, tracks: patTracks },
@@ -366,16 +367,37 @@ const DRIFTED_PANELS = haplotypeSession(
   [CHAIN_BLOCKS],
 )
 
-// WHERE THE TOUR PANS TO ONCE THE FOLLOW IS ON, which is the half of the
-// setting no still can carry: the figure above is a before and an after, and
-// what separates this mode from the right-click's one-shot move is that the
-// second navigation is followed too, with nothing clicked in between.
+// THE TOUR'S OWN SESSION, AND IT IS NOT THE FIGURE'S. A still can say "these
+// coordinates do not correspond" with one empty lane; a clip has to keep saying
+// it while both panels move, and the 70 kb frame above has nothing on screen
+// that does. At any zoom a whole-genome chain fills the ribbon edge to edge, so
+// the slab looks the same however far out of register the two windows are.
 //
-// Half a window right of DRIFT_WINDOW_MAT and still inside the same collinear
-// block, whose maternal end is 7,824,569 (the block's paternal end 7,681,207
-// plus its own 143,362 offset) -- so the walk stays exact and the paternal
-// panel lands on sequence rather than holding where it was.
-const FOLLOW_PAN_MAT = 'chr8_MATERNAL:7,735,000-7,805,000'
+// 2 Mb inside the collinear chain past the inversion (MAT
+// 12,122,837-25,080,663 <-> PAT 12,376,717-25,320,055), where the haplotypes
+// run ~241 kb apart: an eighth of the window, which reads as nearly lined up
+// and is visibly not. Both panels take the same coordinates, as the figure's
+// do, and there is 10 Mb of the same chain to the right to scroll through.
+//
+// What carries it is the gene lanes and the location markers. The Liftoff lane
+// names the same genes in both panels here and draws them a quarter megabase
+// apart, and the markers cross the ribbon as a fan of curves; the follow puts
+// the names under each other and stands the markers upright. Both hold while
+// the top panel is dragged, which is the half of the mode a before-and-after
+// cannot reach.
+//
+// Gene names correspond at THIS locus, which is what the 8p23.1 windows could
+// not promise -- the figure above dropped its gene lanes partly because Liftoff
+// names each haplotype's copies of that duplication array after different hg38
+// paralogs. This sits 5 Mb clear of it.
+const FOLLOW_SCROLL_RANGE = '13,000,000-15,000,000'
+const FOLLOW_SCROLL_PANELS = haplotypeSession(
+  `chr8_MATERNAL:${FOLLOW_SCROLL_RANGE}`,
+  `chr8_PATERNAL:${FOLLOW_SCROLL_RANGE}`,
+  [CHAIN_BLOCKS, geneLane('MAT', { height: 60 })],
+  [CHAIN_BLOCKS, geneLane('PAT', { height: 60 })],
+  { drawLocationMarkers: true },
+)
 
 // WHERE THE FOLLOW HAS NOTHING TO DO, which is a state the linear synteny view
 // guide asserts and nothing pictures: the toggle changes to a warning form
@@ -467,14 +489,12 @@ const WHOLE_GENOME_AXES = [
 // the state the page's first instruction is given from. The import-form figure
 // opens the form directly instead, because a still of a menu is a second figure.
 //
-// `driftedPanels` is hg002_haplotypes_follow_panel's own session, shared rather
-// than written again: the follow tour is that figure's two frames plus the pan
-// between and after them, so a session of its own would be the one place the
-// two could disagree about which windows "drifted" means.
+// `followScrollPanels` is the one fixture here the figures do not share, and
+// the comment on it says why: the follow figure's 70 kb frame pictures a state
+// it can hold still, and the tour needs one that survives being scrolled.
 export const hg002VideoFixtures = {
   noViews: sessionSpec(HG002_CONFIG, { views: [] }),
-  driftedPanels: DRIFTED_PANELS,
-  followPanLoc: FOLLOW_PAN_MAT,
+  followScrollPanels: FOLLOW_SCROLL_PANELS,
   maternalGlob: MATERNAL_GLOB,
   paternalGlob: PATERNAL_GLOB,
 }
@@ -869,12 +889,17 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       MARKER_WINDOW_PAT_BEFORE,
       [CHAIN_BLOCKS],
       [CHAIN_BLOCKS],
+      // the markers are drawn down the ribbon, so the ribbon is the figure and
+      // the default strip is too thin a band to read a pairing off. It also
+      // fills the frame the menu below needs
+      { levelHeights: [190] },
     ),
-    // the same height as the figure above, whose end state this continues from,
-    // plus the room the settings menu needs below the header: the annotation
-    // anchors on a row partway down it, and at 445 it landed 0.42px past the
-    // frame
-    viewportHeight: 500,
+    // The settings menu is ~390 CSS px of rows, and MUI drops it below its
+    // trigger only while the whole thing fits above the viewport's bottom
+    // margin -- short of that it shifts up over the button this figure circles.
+    // So the frame is the header plus the menu's full height rather than the
+    // height of the figure above, whose end state it otherwise continues.
+    viewportHeight: 560,
     hideTooltip: true,
     actions: [
       { type: 'click', selector: '[data-testid="follow-synteny-toggle"]' },

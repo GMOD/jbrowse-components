@@ -171,7 +171,7 @@ matching region**, which does the same walk once.
 
 <Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks on each haplotype's own coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="The two panels on the same coordinates, where the paternal chain lane is empty, then the header's follow button, and a second maternal window typed into the top panel's box alone. The panel below moves both times." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Two zoomed-out panels on the same coordinates, where the same genes sit near each other but not under each other, then the header's follow button, then the top panel dragged sideways. The panel below is never touched." />
 
 **Location markers**, in the header's settings menu, reads the alignment inside
 a ribbon. It draws lines through the ribbon at regularly spaced positions, each

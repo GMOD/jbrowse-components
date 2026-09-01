@@ -23,6 +23,11 @@ export interface VideoStep extends ScreenshotAction {
   // ms to hold the finished frame before the next step runs. The default reads
   // a menu opening; raise it where the result needs looking at.
   hold?: number
+  // How long a `drag` takes from press to release. The default reads as a
+  // flick, which is right for a rubberband and wrong where the TRAVEL is the
+  // subject: a pan the reader is meant to watch a second row keep pace with
+  // has to move slowly enough that both rows are seen moving together.
+  dragMs?: number
   // Take the camera off while this step's wait runs, and put it back when the
   // wait is over.
   //

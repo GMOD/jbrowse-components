@@ -102,13 +102,16 @@ export async function dragCursor(
   page: Page,
   from: { x: number; y: number },
   to: { x: number; y: number },
-  { steps = 24, ms = 700 }: { steps?: number; ms?: number } = {},
+  { steps, ms = 700 }: { steps?: number; ms?: number } = {},
 ) {
+  // ~30ms a frame, so a drag stretched out to be watched moves as smoothly as
+  // the default one rather than in 24 jumps however long it is given
+  const frames = steps ?? Math.max(24, Math.round(ms / 30))
   await moveCursor(page, from.x, from.y)
   await page.mouse.down()
-  for (let i = 1; i <= steps; i++) {
-    const x = from.x + ((to.x - from.x) * i) / steps
-    const y = from.y + ((to.y - from.y) * i) / steps
+  for (let i = 1; i <= frames; i++) {
+    const x = from.x + ((to.x - from.x) * i) / frames
+    const y = from.y + ((to.y - from.y) * i) / frames
     await page.evaluate(
       (id, cx, cy) => {
         const c = document.getElementById(id)
@@ -124,7 +127,7 @@ export async function dragCursor(
       y,
     )
     await page.mouse.move(x, y)
-    await delay(ms / steps)
+    await delay(ms / frames)
   }
   await page.mouse.up()
   await page.evaluate(

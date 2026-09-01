@@ -254,7 +254,7 @@ async function filmStep(
     // supposed to be drawing. Both ends come from the same resolver the drag
     // itself uses, so an anchored rubberband is drawn where it is dragged.
     const { from, to } = await dragPoints(page, step)
-    await dragCursor(page, from, to)
+    await dragCursor(page, from, to, { ms: step.dragMs })
   } else {
     if (POINTED.has(step.type)) {
       const point = await actionTargetPoint(page, step)
