@@ -42,6 +42,14 @@ describe('readDocSection', () => {
     expect(text).not.toContain('Alpha body.')
   })
 
+  it('drops frontmatter and indents from the shallowest heading present', () => {
+    const fm = `---\ntitle: T\n---\n\nIntro.\n\n## Only\n\nBody.\n\n### Child\n\n${'x'.repeat(30_000)}\n`
+    const { text } = readDocSection(fm, '')
+    expect(text!.startsWith('Intro.')).toBe(true)
+    expect(text).not.toContain('title: T')
+    expect(text).toContain('\n- Only\n  - Child')
+  })
+
   it('returns a section with its subsections, matched case-insensitively', () => {
     const { text } = readDocSection(doc, 'alpha')
     expect(text).toContain('Alpha body.')

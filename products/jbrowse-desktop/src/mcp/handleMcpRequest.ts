@@ -204,7 +204,12 @@ async function evaluate(
     json = safeJson(value)
   } catch (e) {
     throw new Error(
-      `the returned value could not be serialized (${e instanceof Error ? e.message : String(e)}). A live model node or a rendering backend serializes its whole object graph — return a summary you built from it instead of the object.`,
+      codeErrorMessage(
+        new Error(
+          `the returned value could not be serialized (${e instanceof Error ? e.message : String(e)}). A live model node or a rendering backend serializes its whole object graph — return a summary you built from it instead of the object.`,
+        ),
+        logs,
+      ),
       { cause: e },
     )
   }
@@ -231,6 +236,19 @@ export async function handleMcpRequest(
           session,
         )
       : { settled: true, note: 'no session is open (start screen)' }
+  }
+  // the crop box for a screenshot: pixels are the main process's, but where a
+  // view sits on the page is only known here
+  if (tool === 'measure') {
+    const selector = typeof args.selector === 'string' ? args.selector : ''
+    const element = document.querySelector(selector)
+    if (!element) {
+      throw new Error(
+        `nothing on the page matches "${selector}" — a view's element is [data-testid="view-container-<view.id>"]`,
+      )
+    }
+    const { x, y, width, height } = element.getBoundingClientRect()
+    return { x, y, width, height }
   }
   if (!pluginManager || !session) {
     throw new Error(

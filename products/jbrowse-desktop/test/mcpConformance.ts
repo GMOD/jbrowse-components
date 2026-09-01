@@ -426,6 +426,33 @@ try {
     (shotImage?.data?.length ?? 0) > 20_000,
     shot.map(c => c.type),
   )
+  const pngWidth = (data: string | undefined) =>
+    data === undefined ? 0 : Buffer.from(data, 'base64').readUInt32BE(16)
+  const viewId = (await run('return session.views[0].id')).value as string
+  const cropped = await client.callAll('screenshot', {
+    selector: `[data-testid="view-container-${viewId}"]`,
+  })
+  const croppedImage = cropped.find(c => c.type === 'image')
+  check(
+    'screenshot crops to the selected view',
+    croppedImage !== undefined &&
+      pngWidth(croppedImage.data) < pngWidth(shotImage?.data) &&
+      JSON.parse(cropped.find(c => c.type === 'text')?.text ?? '{}').cropped
+        ?.width > 0,
+    cropped.map(c => (c.type === 'image' ? pngWidth(c.data) : c.text)),
+  )
+  const missed = await client
+    .callAll('screenshot', { selector: '#no-such-thing' })
+    .then(
+      () => '',
+      (e: Error) => e.message,
+    )
+  check(
+    'a screenshot selector that matches nothing is an error, not a full frame',
+    missed.includes('nothing on the page matches'),
+    missed,
+  )
+
   check(
     'screenshot also returns the settle result the docs promise',
     shotText !== undefined && shotText.text?.includes('settled') === true,

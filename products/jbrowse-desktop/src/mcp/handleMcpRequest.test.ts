@@ -72,6 +72,37 @@ describe('codeErrorMessage', () => {
   })
 })
 
+describe('measure', () => {
+  afterEach(() => {
+    document.body.replaceChildren()
+  })
+
+  it('reports the box of the first matching element', async () => {
+    document.body.innerHTML = '<div data-testid="view-container-v1"></div>'
+    const el = document.querySelector('[data-testid="view-container-v1"]')!
+    el.getBoundingClientRect = () =>
+      ({ x: 10.5, y: 20, width: 300, height: 200 }) as DOMRect
+    const out = await handleMcpRequest(
+      {
+        id: 1,
+        tool: 'measure',
+        args: { selector: '[data-testid="view-container-v1"]' },
+      },
+      undefined,
+    )
+    expect(out).toEqual({ x: 10.5, y: 20, width: 300, height: 200 })
+  })
+
+  it('says what a view is called when nothing matches', async () => {
+    await expect(
+      handleMcpRequest(
+        { id: 1, tool: 'measure', args: { selector: '#nope' } },
+        undefined,
+      ),
+    ).rejects.toThrow(/nothing on the page matches "#nope".*view-container/)
+  })
+})
+
 describe('run_javascript envelope', () => {
   it('carries logs beside the value', async () => {
     const { pluginManager } = fakeApp()

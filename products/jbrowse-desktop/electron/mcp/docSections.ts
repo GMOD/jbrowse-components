@@ -45,10 +45,18 @@ function sectionWithChildren(sections: DocSection[], index: number) {
 }
 
 function tableOfContents(sections: DocSection[]) {
-  return sections
-    .filter(s => s.level > 0)
-    .map(s => `${'  '.repeat(s.level - 1)}- ${s.heading}`)
+  const headed = sections.filter(s => s.level > 0)
+  const top = Math.min(...headed.map(s => s.level))
+  return headed
+    .map(s => `${'  '.repeat(s.level - top)}- ${s.heading}`)
     .join('\n')
+}
+
+// the docusaurus frontmatter is for the website's sidebar, not the reader
+function withoutFrontmatter(preamble: string) {
+  return preamble.startsWith('---\n')
+    ? preamble.slice(preamble.indexOf('\n---\n', 4) + 5).trimStart()
+    : preamble
 }
 
 export function readDocSection(
@@ -61,7 +69,7 @@ export function readDocSection(
   const sections = splitSections(markdown)
   if (!section) {
     return {
-      text: `${sections[0]!.text}\nThis topic is ${markdown.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections)}\n`,
+      text: `${withoutFrontmatter(sections[0]!.text)}\nThis topic is ${markdown.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections)}\n`,
     }
   }
   const wanted = section.trim().toLowerCase()

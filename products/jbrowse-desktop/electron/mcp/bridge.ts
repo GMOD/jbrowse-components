@@ -18,7 +18,7 @@ import type {
 } from '../ipc/channelTypes.ts'
 import type { AppPaths } from '../paths.ts'
 import type { BridgeToolResult } from './stdioServer.ts'
-import type { BrowserWindow } from 'electron'
+import type { BrowserWindow, Rectangle } from 'electron'
 
 const RENDERER_TIMEOUT_MS = 150_000
 const SCREENSHOT_WAIT_MS = 30_000
@@ -206,8 +206,11 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
           }
         }
         if (listening.phase === 'session') {
+          // the first call every agent makes: a cold volvox load on a busy
+          // machine passed 30s and answered settled:false over a session that
+          // was fine, and the loop below exits the moment it is ready anyway
           const settled = await relayToRenderer('wait_ready', {
-            timeoutMs: 30_000,
+            timeoutMs: 60_000,
           })
           return {
             result: { opened, ...(settled.result as object | undefined) },
@@ -240,6 +243,45 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     return openAndWait({ type: 'file', path: target }, target)
   }
 
+  function isRect(value: unknown): value is Rectangle {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      ['x', 'y', 'width', 'height'].every(
+        k => typeof (value as Record<string, unknown>)[k] === 'number',
+      )
+    )
+  }
+
+  // capturePage takes integer DIP coordinates inside the page; a CSS rect off
+  // the renderer is fractional and may hang past the window edge
+  function clampRect(rect: Rectangle, bounds: Rectangle): Rectangle {
+    const x = Math.max(0, Math.floor(rect.x))
+    const y = Math.max(0, Math.floor(rect.y))
+    return {
+      x,
+      y,
+      width: Math.max(1, Math.min(Math.ceil(rect.width), bounds.width - x)),
+      height: Math.max(1, Math.min(Math.ceil(rect.height), bounds.height - y)),
+    }
+  }
+
+  async function cropRect(
+    args: Record<string, unknown>,
+    bounds: Rectangle,
+  ): Promise<{ rect?: Rectangle; error?: string }> {
+    const selector = typeof args.selector === 'string' ? args.selector : ''
+    if (selector) {
+      const measured = await relayToRenderer('measure', { selector }, 30_000)
+      return measured.error !== undefined
+        ? { error: measured.error }
+        : isRect(measured.result)
+          ? { rect: clampRect(measured.result, bounds) }
+          : { error: 'the page did not report a rectangle for the selector' }
+    }
+    return isRect(args.rect) ? { rect: clampRect(args.rect, bounds) } : {}
+  }
+
   async function screenshot(
     args: Record<string, unknown>,
   ): Promise<BridgeToolResult> {
@@ -260,9 +302,17 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     if (!win) {
       return { error: 'JBrowse Desktop has no window open' }
     }
-    const image = await win.webContents.capturePage()
+    const { width, height } = win.getContentBounds()
+    const crop = await cropRect(args, { x: 0, y: 0, width, height })
+    if (crop.error !== undefined) {
+      return { error: crop.error }
+    }
+    const image = await win.webContents.capturePage(crop.rect)
+    const settle = settled.error
+      ? { warning: settled.error }
+      : (settled.result as object | undefined)
     return {
-      result: settled.error ? { warning: settled.error } : settled.result,
+      result: crop.rect ? { ...settle, cropped: crop.rect } : settle,
       image: { data: image.toPNG().toString('base64'), mimeType: 'image/png' },
     }
   }

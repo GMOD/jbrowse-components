@@ -27,7 +27,8 @@ discipline for using it.
   carried over from an earlier turn — the user can click around between your
   calls.
 - After building or changing anything, **`screenshot` and actually read the
-  image**. A wrong trackId, an empty region, or a dropped settings key all
+  image** — cropped to the view with `selector` when it is one track you are
+  judging. A wrong trackId, an empty region, or a dropped settings key all
   render as a plausible-looking browser with something quietly missing.
 - Verify data claims with `jb.getFeatures` aggregations, never from the picture
   alone. Every result carries `logs` (the code's console output) and

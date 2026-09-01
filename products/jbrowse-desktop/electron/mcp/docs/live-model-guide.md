@@ -73,7 +73,10 @@ app's renderer. What you `return` is serialized back to you. In scope:
 State persists between `run_javascript` calls in the same app run: stash your
 own helpers on `globalThis` (`globalThis.myHelpers = {...}`) and reuse them.
 `session` can be REPLACED by the open tool or `jb.loadSessionSpec` — re-read it
-per call, never cache it on globalThis.
+per call, never cache it on globalThis. One exception to persistence: the `open`
+tool with NO session open (the start screen) loads a new page, and `globalThis`
+starts empty on it. With a session open it swaps in place and your helpers
+survive.
 
 What a call answers with, besides `value`:
 
@@ -276,6 +279,18 @@ Long synchronous loops block the UI thread — chunk big work with
 `jb.sessionSummary()` reports each view's `height` and each track's display
 `height`, so compare the sum against the view before capturing anything.
 
+## Looking closely
+
+A whole-window screenshot spends most of its pixels on chrome. `screenshot`
+takes `selector` to crop to one element — a view is
+`[data-testid="view-container-<view.id>"]` with the id from
+`jb.sessionSummary()` — or `rect` with a box you measured:
+
+```js
+const el = document.querySelector(`[data-testid="view-container-${view.id}"]`)
+return el.getBoundingClientRect().toJSON()
+```
+
 ## Beyond the app: shell tools and files
 
 This is an Electron renderer with nodeIntegration, so the machine's tools are
@@ -290,6 +305,11 @@ const run = promisify(execFile)
 const { stdout } = await run('samtools', ['idxstats', '/data/sample.bam'])
 return stdout.split('\n').slice(0, 5)
 ```
+
+A `fetch` from here carries a browser Origin and obeys CORS, and some hosts
+refuse it (NCBI's acc.cgi answers 403; eutils does not). A plain Node request
+carries neither — `window.require('https')`, or
+`window.require('child_process')` for `curl` — and reads the same bytes.
 
 `globalThis` dies with the app. A helper worth keeping across restarts goes in a
 file: write it with `window.require('fs')` as a CommonJS module and load it with

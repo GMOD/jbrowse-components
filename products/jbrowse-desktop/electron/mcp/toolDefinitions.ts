@@ -108,7 +108,7 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
     name: 'screenshot',
     handledBy: 'main',
     description:
-      "Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing. The text part of the result carries the session's error notifications and any tracks that settled without drawing; the image is the second part. Use it after every change worth verifying — then actually read both.",
+      'Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing. The text part of the result carries the session\'s notifications since your previous call and any tracks that settled without drawing; the image is the second part. Use it after every change worth verifying — then actually read both. To look closely at one view or track, crop: selector takes a CSS selector (a view is [data-testid="view-container-<view.id>"]; view ids come from jb.sessionSummary()), or rect takes page coordinates in CSS pixels.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -116,6 +116,23 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
           type: 'number',
           description:
             'Max ms to wait for rendering to settle before capturing anyway (default 30000, capped at 120000)',
+        },
+        selector: {
+          type: 'string',
+          description:
+            'Crop to the first element matching this CSS selector, e.g. [data-testid="view-container-<view.id>"]',
+        },
+        rect: {
+          type: 'object',
+          description:
+            'Crop to this box in CSS pixels of the page: { x, y, width, height } (as getBoundingClientRect reports)',
+          properties: {
+            x: { type: 'number' },
+            y: { type: 'number' },
+            width: { type: 'number' },
+            height: { type: 'number' },
+          },
+          required: ['x', 'y', 'width', 'height'],
         },
       },
     },
