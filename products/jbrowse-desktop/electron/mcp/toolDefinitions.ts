@@ -2,6 +2,18 @@
 // bridge (routing). Import-free of electron and of the renderer, like
 // channelTypes.ts, so all three processes can agree on it.
 
+// Injected into every MCP client's context via the initialize response — the
+// one delivery channel that reaches all clients automatically. The full
+// version of this discipline is the docs tool and, for Claude Code sessions in
+// this repo, .claude/skills/jbrowse-mcp.
+export const SERVER_INSTRUCTIONS = `JBrowse Desktop (genome browser) control.
+
+Workflow: read docs topic "live-model" before your first evaluate call. Call inspect_session (no path) before acting — never assume state carried over. After building or changing anything, screenshot AND read the image: a wrong trackId, empty region, or dropped settings key renders as a plausible browser with something quietly missing. Verify data claims with get_features or an evaluate aggregation, not from the picture.
+
+Introspect, never guess: trackIds come from list_tracks; a display's settings keys come from evaluate with jb.describeSlots(view.tracks[0].displays[0].configuration) — an unknown key in a spec or track update is dropped SILENTLY.
+
+Traps: data files may spell refNames differently than the assembly ("ctgA" vs "contigA"); get_features handles it, raw adapter code in evaluate must call jb.renameRegionsIfNeeded first. A freshly created view throws "width undefined" from region getters until it mounts (await jb.mobx.when(() => view.initialized)). track action "show" on an already-shown track applies nothing — use action "update". Aggregate large results inside evaluate; do not return thousands of raw features.`
+
 export interface McpToolDefinition {
   name: string
   // 'stdio' is answered inside the stdio server itself, without the app
