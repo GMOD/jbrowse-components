@@ -126,3 +126,41 @@ describe('addTrack in a browser', () => {
     ).rejects.toThrow(/local path/)
   })
 })
+
+// The roster is as public as the members are. jbrowse-web publishes this object
+// as `window.jb` and JBrowse Desktop hands the same one to `run_javascript`, so
+// a rename or a removal breaks agent code nobody in this repo can see — the
+// same reason pluginFacingSessionApi.test.ts pins the shape reached through
+// `window.JBrowseSession`, and the same rule as the plugin ABI: a member may be
+// ADDED freely, and this list updated, but taking one away is a breaking change
+// that has to be a decision rather than a refactor's side effect.
+describe('the jb roster', () => {
+  it('is the documented 21 members', () => {
+    const jb = createJbApi({
+      rootModel: {},
+    } as unknown as PluginManager)
+    expect(Object.keys(jb).sort()).toEqual([
+      'addTrack',
+      'createStopToken',
+      'describeSlots',
+      'getConf',
+      'getFeatureAdapterOrThrow',
+      'getFeatures',
+      'getRpcSessionId',
+      'inspect',
+      'listTracks',
+      'loadSessionSpec',
+      'mobx',
+      'mst',
+      'parseLocString',
+      'readConfObject',
+      'renameRegionsIfNeeded',
+      'require',
+      'session',
+      'sessionSummary',
+      'stopStopToken',
+      'trackModel',
+      'waitReady',
+    ])
+  })
+})
