@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // One-off probe: with follow on, zoom a non-anchor row by hand and check that
-// the snackbar says why the row came back.
+// the gesture made it the anchor, with nothing snapping back and no snackbar.
 //
 //   node products/jbrowse-web/browser-tests/follow-nudge-probe.ts [out.png]
 import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
@@ -86,10 +86,15 @@ try {
   await inPage(page, `const row = view.views[2]; row.zoomTo(row.bpPerPx * 8)`)
   await settle(8000)
 
-  const after = await inPage<{ rowThree: string; snackbars: unknown[] }>(
+  const after = await inPage<{
+    rowThree: string
+    anchor: number
+    snackbars: unknown[]
+  }>(
     page,
     `return {
       rowThree: view.views[2].coarseVisibleLocStrings + ' @' + view.views[2].bpPerPx,
+      anchor: view.followAnchorIndex,
       snackbars: window.JBrowseRootModel.session.snackbarMessages.map(s => ({
         message: s.message,
         actions: (s.actions || []).map(a => a.name),
@@ -97,6 +102,7 @@ try {
     }`,
   )
   console.log(`row three after zoom-out: ${after.rowThree}`)
+  console.log(`anchor after zoom-out: ${after.anchor}`)
   console.log(`snackbars: ${JSON.stringify(after.snackbars, null, 2)}`)
 
   await page.screenshot({ path: outPath })

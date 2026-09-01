@@ -144,8 +144,10 @@ export async function movePanelsToSpan({
   // the clicked panel for the LGV display, the one that stayed for a band
   followNote: string
 }) {
+  // held, or the navigation of each panel would take the anchor back off the
+  // one the click just gave it to
   const settled = await Promise.allSettled(
-    panels.map(panel => navToResolvedSpan(panel, span)),
+    panels.map(panel => anchor.hold(() => navToResolvedSpan(panel, span))),
   )
   const outcomes: SpanNavOutcome[] = []
   for (const result of settled) {

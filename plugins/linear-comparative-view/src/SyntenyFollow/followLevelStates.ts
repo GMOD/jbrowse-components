@@ -8,7 +8,6 @@ import type {
 } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyCigarMapResult } from '../LinearSyntenyRPC/SyntenyGetCigarMap.ts'
 import type { FollowAnswerCache } from './followAnswerCache.ts'
-import type { LevelWindows } from './followHandNudge.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { SpreadDecision } from './spreadDecision.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -82,10 +81,6 @@ export interface FollowLevelState {
   // user flips by hand afterwards stays flipped until the decision changes,
   // which is what keeps the manual flip from needing an anchor take.
   orientedKey?: string
-  lastWindows?: LevelWindows
-  followMovedRow?: boolean
-  // the anchor the hand-nudge snackbar was last shown for on this level
-  nudgeReportedFor?: number
 }
 
 /**

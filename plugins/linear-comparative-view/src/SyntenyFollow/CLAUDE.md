@@ -347,27 +347,42 @@ against where the row actually is, with a tolerance; and the per-level answer
 promise is shared by key, so all three ride one `SyntenyResolveMatchingRegion`.
 The integration suite asserts that count.
 
-## Re-asserting over a hand nudge is reported
+## A gesture on a followed row takes the anchor
 
-`handNudged` — the row moved, its input row did not, and the follow did not move
-it. Two things it got wrong first, both invisible from the code:
+The rows follow whichever row the reader is driving, which is the symmetry the
+pixel lock already has. The exact pass re-asserts the follow over any row that
+moved, and it cannot tell a drag from a navigation some feature made; the
+snackbar that used to explain the snap-back offered "Anchor this row" one drag
+too late, and the heuristic behind it (`handNudged`, gone) had a documented
+false positive it could not test for.
 
-- **Over EVERY window of the moving row**, where `alreadyShowing` wants the
-  widest. Zooming a whole-genome row onto its widest contig leaves that contig's
-  window exactly as it was, so by the widest alone the loudest nudge available
-  is the one the check cannot see.
-- **The multi-contig rung measures whether it moved the row.** It re-places
-  every pass and most of those write the numbers already there, so a flag raised
-  on the placement never came down and the next real nudge read as the follow's
-  own work.
+**The trigger is the gesture, not the settle.** MST middleware on the stack,
+installed with the follow: a **root** action from `ROW_GESTURES` on a row that
+is not the anchor takes the anchor onto it, before the action runs, so the first
+`horizontalScroll` of a drag switches and the rest arrive from the anchor. The
+set is what a person's own gesture on a row produces — drag and wheel, rubber
+band and ruler label, the search box, the row's own menu.
 
-The snackbar is once per level **per anchor** (`nudgeReportedFor`): the second
-telling is one the reader has read, until the anchor moves and which row is
-pulled back to which is a new sentence.
+**The follow tells a gesture from its own work by root action alone.** Its frame
+pass places rows through `zoomTo`/`scrollTo` sixty times a second and its exact
+pass through `navTo`/`navToLocString`, indistinguishable by name from a wheel or
+a search box — so every placement runs inside the host's `holdFollowAnchor`
+action, which makes them NESTED actions the middleware never sees. The explicit
+moves take the same route through `FollowAnchorTake.hold`: a band move anchors
+the row it does not navigate, and the navigation of the row it does would
+otherwise take the anchor straight back. Neither `showRegions` nor
+`navToLocations` is in the set, since `navToLocString` reaches for them after an
+await, as fresh roots, on the follow's own behalf; nor `horizontallyFlip`, since
+a hand flip of a followed row is meant to stand. The view-wide zooms
+(`squareView`, `showAllRegionsAcrossRows`) are the stack's own actions and nest
+the rows' zooms under them.
 
-**Untested: the frame pass moves the row and touches neither field.** If the
-moving row's coarse-block debounce ever fires while the anchor's has not, that
-is a false nudge. The unit harness has no debounce and so cannot see it.
+**Nothing in the middleware may register as a dependency.** It also sees the
+follow's own root actions, some dispatched from inside its autoruns, so its
+reads are `untracked`. `gestureTakesAnchor.integration.test.ts` holds all of
+this on a real stack; the unit harness's rows are not the host's children and
+see no middleware, which is what lets it still test the exact pass re-asserting
+over a row something other than a gesture moved.
 
 ## That convergence is load-bearing, and nothing else damps it
 
@@ -579,14 +594,14 @@ message dedup, so nothing downstream absorbs the repeats.
 
 ## Navigating a followed row from elsewhere in the view takes the anchor
 
-The exact pass re-asserts the follow over a row the user dragged, and it cannot
-tell that drag from a navigation some other feature made on the user's behalf —
-so anything that navigates a row the follow MOVES has to take the anchor as
-well, or it changes nothing and says it did. `showOffscreenMateContig` is the
-case that found this: the click ran, posted its snackbar, and the row came
-straight back to the anchor's mapping. Its undo puts the anchor back with the
-regions, because the anchor is a persisted view-wide setting rather than an
-implementation detail of the navigation.
+The exact pass re-asserts the follow over any row that moved, and the gesture
+middleware above only knows a gesture from its action name — so anything that
+navigates a row the follow MOVES has to take the anchor as well, explicitly and
+onto the right row, or it changes nothing and says it did.
+`showOffscreenMateContig` is the case that found this: the click ran, posted its
+snackbar, and the row came straight back to the anchor's mapping. Its undo puts
+the anchor back with the regions, because the anchor is a persisted view-wide
+setting rather than an implementation detail of the navigation.
 `LinearSyntenyOffscreenMateFollow.test.tsx` holds it, on a PAF and both clocks —
 a model-level test cannot see it, since with no alignments there is nothing to
 re-assert.

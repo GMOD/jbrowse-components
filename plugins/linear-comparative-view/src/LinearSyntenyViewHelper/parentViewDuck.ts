@@ -82,7 +82,9 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   // The follow state (`FollowHost`) is read by the off-screen mate click,
   // which navigates a row: a row the follow MOVES is re-asserted onto the
   // anchor's mapping the moment it settles, so a click on one of its marks
-  // would post its snackbar and change nothing.
+  // would post its snackbar and change nothing. `holdFollowAnchor` runs a
+  // navigation as the follow's own rather than as a gesture that takes it.
+  holdFollowAnchor: <T>(fn: () => T) => T
   //
   // Also read by that click, to decide whether it may FLY to the contig rather
   // than jump: with the rows locked in pixels, the flight's zoom-out arc is

@@ -29,6 +29,7 @@ interface SyntenyView {
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
   followApproximate: boolean
   followUnaligned: boolean
+  followAnchorIndex: number
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
   setFollowAnchorIndex: (idx: number) => void
@@ -294,11 +295,15 @@ test('a row narrowed onto an unaligned stretch is still moved', async () => {
 })
 
 // The mode's promise, at the zoom the mode is least obviously doing anything:
-// the rows agree, so a followed row zoomed by hand goes back to the overview
-// rather than sitting there with following still reported as on.
-test('a followed row zoomed away from an overview by hand is put back', async () => {
+// a followed row zoomed by hand is the row the reader is driving, so it takes
+// the anchor and keeps its zoom, rather than the zoom being undone under the
+// reader with following still reported as on. This file's alignment covers
+// the first 6kb of ctgA alone, so the zoom itself lands over nothing and the
+// old anchor honestly holds; navigated onto the aligned part, it comes to the
+// swapped mate.
+test('a followed row zoomed away from an overview by hand leads', async () => {
   const view = await openTwoContigView()
-  const [, target] = view.views
+  const [query, target] = view.views
   view.setRowSyncMode('follow')
   await waitFor(() => {
     expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
@@ -306,10 +311,19 @@ test('a followed row zoomed away from an overview by hand is put back', async ()
 
   // its own regions, kept — this is a zoom, not a navigation
   target!.zoomTo(target!.bpPerPx / 8)
+  expect(view.followAnchorIndex).toBe(1)
   expect(shownBy(target!).bp).toBeLessThan(WHOLE_GENOME_BP / 4)
+  await followSettled(view.views)
+  expect(shownBy(target!).bp).toBeLessThan(WHOLE_GENOME_BP / 4)
+  expect(view.followUnaligned).toBe(true)
 
+  await target!.navToLocString('ctgA:1..6079', TARGET_ASM)
+  // a one-base sliver of ctgA can sit at the window's edge, so the contig
+  // list is not asserted exact
   await waitFor(() => {
-    expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
+    expect(shownBy(query!).contigs).toContain('ctgB')
+    expect(shownBy(query!).bp).toBeGreaterThan(5500)
+    expect(shownBy(query!).bp).toBeLessThan(6600)
   }, timeout)
 })
 
@@ -444,11 +458,11 @@ test('the settle does not move a row the frame pass already placed', async () =>
   expect(Math.abs(windowOf(target!).start - beforeSettle)).toBeLessThan(2)
 })
 
-test('a followed row dragged away by hand is put back', async () => {
-  // The guard against redundant navigation compares against where the row
-  // ACTUALLY is, not against what the follow last asked for. Remembering only
-  // its own request left a hand-nudged row sitting there, with following still
-  // reported as on — the mode silently not doing the one thing it is named for.
+test('a followed row navigated by hand leads, and the old anchor follows it', async () => {
+  // A gesture on a followed row takes the anchor: the row the reader is
+  // driving is the one the others should follow, whichever row was driving
+  // before. The search box is such a gesture, and the take lands before the
+  // navigation does.
   const view = await openSyntenyView()
   const [query, target] = view.views
   view.setRowSyncMode('follow')
@@ -458,15 +472,18 @@ test('a followed row dragged away by hand is put back', async () => {
     expect(windowOf(target!).start).toBeGreaterThan(29500)
   }, timeout)
 
-  // far enough to cross the snapped fetch window, which is what wakes the
-  // follow again without the anchor having moved
-  await target!.navToLocString('ctgA:10000..11000', TARGET_ASM)
+  const landing = target!.navToLocString('ctgA:10000..11000', TARGET_ASM)
+  expect(view.followAnchorIndex).toBe(1)
+  await landing
 
   await waitFor(() => {
-    const win = windowOf(target!)
-    expect(win.start).toBeGreaterThan(29500)
-    expect(win.end).toBeLessThan(32000)
+    const win = windowOf(query!)
+    expect(win.start).toBeGreaterThan(9000)
+    expect(win.end).toBeLessThan(12000)
   }, timeout)
+  const win = windowOf(target!)
+  expect(win.start).toBeGreaterThan(9500)
+  expect(win.end).toBeLessThan(11500)
 })
 
 // The exact pass reads the MOVED row's debounced window too, and

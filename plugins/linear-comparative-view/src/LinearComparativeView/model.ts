@@ -382,6 +382,18 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Run a navigation of a row as the follow's own placement rather than as
+       * a gesture. While following, a gesture on any row makes that row the
+       * anchor, and the follow tells a gesture from its own work by root
+       * action alone: whatever `fn` navigates is a NESTED action of this one.
+       * The follow's passes and the explicit moves that take the anchor run
+       * their navigations through here.
+       */
+      holdFollowAnchor<T>(fn: () => T) {
+        return fn()
+      },
+      /**
+       * #action
        * Reconcile the levels array to the views array: exactly one synteny
        * level per gap between adjacent views (N views -> N-1 levels). Grows or
        * shrinks from the end, preserving existing levels and their tracks. The

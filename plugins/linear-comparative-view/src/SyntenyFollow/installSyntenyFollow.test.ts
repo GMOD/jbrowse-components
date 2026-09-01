@@ -4,7 +4,7 @@ import {
   moveTo,
 } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { followAnchorWindows } from './followAnchorWindow.ts'
@@ -17,7 +17,6 @@ import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
 import type { FollowReport } from './followHost.ts'
 import type { FollowPair } from './installSyntenyFollow.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
-import type { NotificationLevel, SnackAction } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./requestCigarMap.ts', () => ({
@@ -196,8 +195,8 @@ const Host = types
     setFollowAnchorIndex(idx: number) {
       self.followAnchorIndex = idx
     },
-    setRowSyncMode(mode: 'independent' | 'link' | 'follow') {
-      self.followSynteny = mode === 'follow'
+    holdFollowAnchor<T>(fn: () => T) {
+      return fn()
     },
   }))
 
@@ -208,19 +207,8 @@ const Session = types
   .volatile(() => ({
     rpcManager: {},
     configuration: {},
-    notifications: [] as { message: string; actions: SnackAction[] }[],
   }))
-  .actions(self => ({
-    notify(
-      message: string,
-      _level?: NotificationLevel,
-      action?: SnackAction | SnackAction[],
-    ) {
-      self.notifications.push({
-        message,
-        actions: action ? (Array.isArray(action) ? action : [action]) : [],
-      })
-    },
+  .actions(() => ({
     notifyError(message: string) {
       throw new Error(message)
     },
@@ -231,11 +219,6 @@ function hostFor(assemblies = ['a', 'b', 'c']) {
   session.host.setViews(assemblies.map(name => ({ assemblyNames: [name] })))
   return session.host
 }
-
-const notificationsOf = (node: ReturnType<typeof hostFor>) =>
-  getParent<{ notifications: { message: string; actions: SnackAction[] }[] }>(
-    node,
-  ).notifications
 
 // put the row on an interval of its own layout, in bp
 function place(view: ReturnType<typeof row>, start: number, end: number) {
@@ -510,45 +493,18 @@ describe('a whole-genome row zoomed by hand', () => {
     expect(shown(rows[1]!)).toHaveLength(CONTIGS)
   })
 
-  test('says so, once, naming both rows', async () => {
-    const { rows, host } = await wholeGenome()
-    expect(notificationsOf(host)).toHaveLength(0)
-    place(rows[1]!, 0, CONTIG)
-    expect(notificationsOf(host).map(n => n.message)).toEqual([
-      'b is following a, so it moved back to the matching region',
-    ])
-    place(rows[1]!, CONTIG, CONTIG * 2)
-    expect(notificationsOf(host)).toHaveLength(1)
-  })
-
-  test('an anchor pan places the row and reports nothing', async () => {
-    const { rows, host } = await wholeGenome()
+  test('an anchor pan places the row', async () => {
+    const { rows } = await wholeGenome()
     place(rows[0]!, 0, CONTIG * 3)
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1', 'chr2', 'chr3'])
-    expect(notificationsOf(host)).toHaveLength(0)
-  })
-
-  test('the message offers to anchor the row that was moved', async () => {
-    const { rows, host } = await wholeGenome()
-    place(rows[1]!, 0, CONTIG)
-    const [anchorHere] = notificationsOf(host)[0]!.actions
-    expect(anchorHere!.name).toBe('Anchor this row')
-    anchorHere!.onClick()
-    expect(host.followAnchorIndex).toBe(1)
-  })
-
-  test('and to stop following', async () => {
-    const { rows, host } = await wholeGenome()
-    place(rows[1]!, 0, CONTIG)
-    const [, stop] = notificationsOf(host)[0]!.actions
-    expect(stop!.name).toBe('Stop following')
-    stop!.onClick()
-    expect(host.followSynteny).toBe(false)
   })
 })
 
-// the other rung, which navigates rather than positions
+// the other rung, which navigates rather than positions. The rows here are
+// not the host's children, so no gesture middleware sees the nudge: this is
+// the exact pass re-asserting over a row something other than a gesture
+// moved, which `gestureTakesAnchor.integration.test.ts` is the other half of
 describe('a row nudged off a single-contig answer', () => {
   const settle = () => new Promise(resolve => setTimeout(resolve, 0))
 
@@ -572,25 +528,13 @@ describe('a row nudged off a single-contig answer', () => {
     return { rows, host }
   }
 
-  test('is reported, having been put back', async () => {
-    const { rows, host } = await placed()
-    expect(notificationsOf(host)).toHaveLength(0)
+  test('is put back', async () => {
+    const { rows } = await placed()
     const before = rows[1]!.offsetPx
     place(rows[1]!, 0, CONTIG * CONTIGS)
     await settle()
     await settle()
     expect(rows[1]!.offsetPx).toBe(before)
-    expect(notificationsOf(host).map(n => n.message)).toEqual([
-      'b is following a, so it moved back to the matching region',
-    ])
-  })
-
-  test('an anchor pan is not', async () => {
-    const { rows, host } = await placed()
-    place(rows[0]!, 100_000, CONTIG)
-    await settle()
-    await settle()
-    expect(notificationsOf(host)).toHaveLength(0)
   })
 })
 

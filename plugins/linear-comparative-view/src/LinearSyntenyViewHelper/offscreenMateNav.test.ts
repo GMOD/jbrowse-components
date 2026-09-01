@@ -110,6 +110,9 @@ describe('takeFollowAnchor', () => {
       setFollowAnchorIndex(idx: number) {
         self.followAnchorIndex = idx
       },
+      holdFollowAnchor<T>(fn: () => T) {
+        return fn()
+      },
       removeRow(idx: number) {
         self.views.splice(idx, 1)
         self.followAnchorIndex = Math.min(

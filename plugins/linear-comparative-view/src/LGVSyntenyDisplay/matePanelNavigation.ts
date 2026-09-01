@@ -13,7 +13,7 @@ import { getCigar } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { FollowHost } from '../SyntenyFollow/followHost.ts'
+import type { FollowAnchorHost } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   AbstractViewModel,
@@ -30,7 +30,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // panels and a panel has no idea which kind of stack it is in. A view model,
 // not merely a node with a `views` array: `containingPanelStack` tests
 // `isViewModel`, which is what lets a launch offer to replace the stack.
-export interface PanelStack extends AbstractViewModel, Partial<FollowHost> {
+export interface PanelStack
+  extends AbstractViewModel, Partial<Omit<FollowAnchorHost, 'views'>> {
   views: LinearGenomeViewModel[]
   // The synteny bands between adjacent panels, each with its own tracks —
   // present on a LinearSyntenyView and a LinearComparativeView, absent on a
@@ -51,13 +52,14 @@ export interface PanelStack extends AbstractViewModel, Partial<FollowHost> {
  * `takeFollowAnchor`'s decision and stays there — this only answers whether
  * there is anything to ask.
  */
-type FollowingStack = PanelStack & FollowHost
+type FollowingStack = PanelStack & FollowAnchorHost
 
 function isFollowingStack(stack: PanelStack): stack is FollowingStack {
   return (
     typeof stack.followSynteny === 'boolean' &&
     typeof stack.followAnchorIndex === 'number' &&
-    typeof stack.setFollowAnchorIndex === 'function'
+    typeof stack.setFollowAnchorIndex === 'function' &&
+    typeof stack.holdFollowAnchor === 'function'
   )
 }
 

@@ -53,6 +53,10 @@ export function navSpan(
 export interface FollowAnchorHost extends IStateTreeNode, FollowHost {
   // identity only, so `unknown` is all `release` needs from a row
   views: readonly unknown[]
+  // runs a navigation as the follow's own rather than as a gesture: a gesture
+  // on a followed row takes the anchor, and a move that anchored the row it
+  // does NOT navigate must not have that undone by the row it does
+  holdFollowAnchor: <T>(fn: () => T) => T
 }
 
 /**
@@ -63,6 +67,7 @@ export interface FollowAnchorHost extends IStateTreeNode, FollowHost {
 export interface FollowAnchorTake {
   taken: boolean
   release: () => void
+  hold: <T>(fn: () => T) => T
 }
 
 /**
@@ -73,6 +78,7 @@ export function noFollowAnchor(): FollowAnchorTake {
   return {
     taken: false,
     release() {},
+    hold: fn => fn(),
   }
 }
 
@@ -103,6 +109,7 @@ export function takeFollowAnchor(
   }
   return {
     taken,
+    hold: fn => host.holdFollowAnchor(fn),
     release() {
       // By node, not by index: a removal renumbers the rows, and
       // `reconcileLevels` clamps the anchor, so the original `row` stops naming

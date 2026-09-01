@@ -1,8 +1,7 @@
 import { getNotificationSink } from '@jbrowse/core/util'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, addMiddleware, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
-import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
 import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { alreadyShowing } from './alreadyShowing.ts'
 import {
@@ -12,11 +11,6 @@ import {
 } from './followAnchorWindow.ts'
 import { logFollowSpread, logFollowStep } from './followDebug.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
-import {
-  followWindowSignature,
-  handNudged,
-  handNudgeMessage,
-} from './followHandNudge.ts'
 import { EMPTY_FOLLOW_REPORT } from './followHost.ts'
 import { createFollowLevelStates } from './followLevelStates.ts'
 import { followRung } from './followRung.ts'
@@ -59,10 +53,30 @@ export interface SyntenyFollowHost extends IStateTreeNode, FollowHost {
   followMatchOrientation: boolean
   followPairs: FollowPair[]
   setFollowReport: (report: Partial<FollowReport>) => void
-  // the two below are `reportHandNudge`'s and nothing else
-  views: { assemblyNames: string[] }[]
-  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  // identity only: which row a gesture landed on
+  views: readonly unknown[]
+  // an action, so that every navigation run inside it is a NESTED action and
+  // the gesture middleware below, which reads root actions alone, lets it by
+  holdFollowAnchor: <T>(fn: () => T) => T
 }
+
+// The root actions a person's own gesture on a row produces: a drag or a
+// wheel (`horizontalScroll`, `zoomTo`, `scrollTo`), a rubber band, a ruler
+// label or a feature's "navigate" (`moveTo`, `navTo`, `centerAt`), the row's
+// search box (`navToLocString`) and its own menu (`showAllRegions`). NOT
+// `showRegions` or `navToLocations`, which `navToLocString` reaches for after
+// an await, as fresh roots, on the follow's own behalf; and not
+// `horizontallyFlip`, since a hand flip of a followed row is meant to stand.
+const ROW_GESTURES = new Set([
+  'horizontalScroll',
+  'zoomTo',
+  'scrollTo',
+  'moveTo',
+  'navTo',
+  'centerAt',
+  'navToLocString',
+  'showAllRegions',
+])
 
 // One level's placement, with the observables the async half needs already read
 // off the tree. `movingWindow` is `alreadyShowing`'s operand — where the row
@@ -88,8 +102,6 @@ interface FollowWork {
   // the anchor's orientation as it stands, so the flip decision is relative: a
   // reversed anchor inside a forward block wants a reversed mate
   anchorOrientation: RegionsOrientation
-  handNudged: boolean
-  movingIndex: number
   seq: number
   generation: number
 }
@@ -122,8 +134,6 @@ interface SpreadWork {
   level: FollowLevel
   movingView: LinearGenomeViewModel
   spans: ResolvedSpan[]
-  handNudged: boolean
-  movingIndex: number
 }
 
 // One level's share of a settled pass: what to resolve, and what the header
@@ -134,12 +144,6 @@ interface FollowPlan extends Omit<FollowReport, 'partial'> {
   // set when the multi-contig rung had an answer and refused it as mostly
   // filler, naming the region the rows follow and the ones they do not
   partial?: FollowReport['partial']
-}
-
-function liveWindowSignature(view: LinearGenomeViewModel) {
-  return followWindowSignature(
-    followAnchorWindows(view.dynamicBlocks.contentBlocks),
-  )
 }
 
 // One navigation, as "from where" and "to where". Both halves matter: the same
@@ -162,9 +166,38 @@ function navSignature(from: FollowWindow | undefined, to: ResolvedSpan) {
  * and a per-frame one that fills in the motion between those. Without the
  * second the row does not lag, it sits still through a drag and jumps once half
  * a second later.
+ *
+ * And a gesture on any followed row makes that row the anchor, so the rows
+ * follow whichever one the reader is driving — the same symmetry the pixel
+ * lock has. The follow's own placements run inside `holdFollowAnchor` and so
+ * never read as one.
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = createFollowLevelStates<FollowLevel>()
+
+  addDisposer(
+    self,
+    addMiddleware(self, (call, next) => {
+      if (
+        call.type === 'action' &&
+        call.id === call.rootId &&
+        ROW_GESTURES.has(call.name)
+      ) {
+        // the middleware also sees the follow's own root actions, some
+        // dispatched from inside its autoruns, so nothing here may register
+        // as a dependency of the pass that dispatched it
+        // eslint-disable-next-line no-restricted-syntax -- effect input: a gesture's row, read where an autorun may be the caller
+        const row = untracked(() =>
+          self.followSynteny ? self.views.indexOf(call.context) : -1,
+        )
+        // eslint-disable-next-line no-restricted-syntax -- as above
+        if (row !== -1 && row !== untracked(() => self.followAnchorIndex)) {
+          self.setFollowAnchorIndex(row)
+        }
+      }
+      next(call)
+    }),
+  )
 
   async function execute({
     level,
@@ -174,8 +207,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     movingMinWidthBp,
     matchOrientation,
     anchorOrientation,
-    handNudged,
-    movingIndex,
     seq,
     generation,
   }: FollowWork) {
@@ -251,9 +282,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       const nav = navSignature(movingWindow, span)
       if (nav !== state.lastNav) {
         state.lastNav = nav
-        state.followMovedRow = true
-        reportHandNudge(state, movingIndex, handNudged)
-        await navToResolvedSpan(movingView, span)
+        await self.holdFollowAnchor(() => navToResolvedSpan(movingView, span))
         if (stale()) {
           return
         }
@@ -283,21 +312,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * a pick standing kept placing the row through a single alignment this rung
    * has just decided does not describe the window.
    */
-  function executeSpread({
-    level,
-    movingView,
-    spans,
-    movingIndex,
-    handNudged,
-  }: SpreadWork) {
+  function executeSpread({ level, movingView, spans }: SpreadWork) {
     const state = levelStates.get(level)
     state.pick = undefined
-    reportHandNudge(state, movingIndex, handNudged)
-    // measured, not assumed: this rung re-places every pass and most of those
-    // write the numbers already there
-    const before = liveWindowSignature(movingView)
-    const placed = positionViewOnSpans(movingView, spans)
-    state.followMovedRow = liveWindowSignature(movingView) !== before
+    const placed = self.holdFollowAnchor(() =>
+      positionViewOnSpans(movingView, spans),
+    )
     if (placed) {
       state.lastNav = undefined
       return
@@ -312,9 +332,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const nav = `spread>${widest.refName}:${widest.start}-${widest.end}`
     if (nav !== state.lastNav) {
       state.lastNav = nav
-      navToResolvedSpan(movingView, widest).catch((e: unknown) => {
-        reportError(level, e)
-      })
+      self
+        .holdFollowAnchor(() => navToResolvedSpan(movingView, widest))
+        .catch((e: unknown) => {
+          reportError(level, e)
+        })
     }
   }
 
@@ -433,45 +455,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       })
   }
 
-  // Once per level per anchor: an actionable snackbar does not dedup on its
-  // own, and the second telling is one the reader has read — until the anchor
-  // moves, when which row is pulled back to which is a new sentence.
-  function reportHandNudge(
-    state: FollowLevelState,
-    movingIndex: number,
-    nudged: boolean,
-  ) {
-    const anchorIndex = self.followAnchorIndex
-    if (nudged && state.nudgeReportedFor !== anchorIndex && isAlive(self)) {
-      const labels = rowLabels(self.views)
-      const moving = labels[movingIndex]
-      const anchor = labels[anchorIndex]
-      if (moving !== undefined && anchor !== undefined) {
-        state.nudgeReportedFor = anchorIndex
-        getNotificationSink(self).notify(
-          handNudgeMessage(moving, anchor),
-          'info',
-          [
-            {
-              // not the row's name: the message has it, and a snackbar button
-              // sized by an assembly name wraps
-              name: 'Anchor this row',
-              onClick: () => {
-                self.setFollowAnchorIndex(movingIndex)
-              },
-            },
-            {
-              name: 'Stop following',
-              onClick: () => {
-                self.setRowSyncMode('independent')
-              },
-            },
-          ],
-        )
-      }
-    }
-  }
-
   function reportError(level: FollowLevel, e: unknown) {
     // an RPC outliving its view rejects into here, and getSession throws on a
     // node with no parent
@@ -506,14 +489,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     pair,
     windows,
     carried,
-    nudged,
     state,
     placed,
   }: {
     pair: FollowPair
     windows: FollowWindow[]
     carried: boolean
-    nudged: boolean
     state: FollowLevelState
     placed: PlacedWindows
   }) {
@@ -564,8 +545,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
               level,
               movingView,
               spans,
-              movingIndex: pair.movingIndex,
-              handNudged: nudged,
             }
           : undefined,
         unaligned:
@@ -625,27 +604,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
 
     // READ BEFORE ANY RUNG, which makes the moving row a dependency of every
-    // one of them: that is what re-asserts the follow over a row nudged by
-    // hand. The multi-contig rung used to skip it and waited on the level's
-    // refetch instead, ~1s on `volvox_contig_swap`; a placement that writes the
-    // same numbers settles the same block keys, so the re-entry converges.
-    const movingBlocks = movingView.coarseDynamicBlocks
-    const movingWindow = followAnchorWindow(movingBlocks)
-    // Decided here because only a pass that reads both rows can tell: past
-    // `execute`'s first await a placement has no provenance.
-    const nowWindows = {
-      inputRow: followWindowSignature(windows),
-      // every window, where `alreadyShowing` wants the widest: zooming a
-      // whole-genome row onto its widest contig leaves that window unchanged
-      followedRow: followWindowSignature(followAnchorWindows(movingBlocks)),
-    }
-    const nudged = handNudged({
-      now: nowWindows,
-      previous: state.lastWindows,
-      movedByFollow: !!state.followMovedRow || state.lastNav !== undefined,
-    })
-    state.lastWindows = nowWindows
-    state.followMovedRow = false
+    // one of them: that is what re-asserts the follow over a row something
+    // other than a gesture moved — a session arriving mid-placement, a plugin
+    // writing the row's regions. The multi-contig rung used to skip it and
+    // waited on the level's refetch instead, ~1s on `volvox_contig_swap`; a
+    // placement that writes the same numbers settles the same block keys, so
+    // the re-entry converges.
+    const movingWindow = followAnchorWindow(movingView.coarseDynamicBlocks)
 
     // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
     // than one it is the envelope of what lies under the window — and wider
@@ -660,7 +625,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             pair,
             windows,
             carried: !!carried,
-            nudged,
             state,
             placed,
           })
@@ -704,8 +668,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
         matchOrientation,
         anchorOrientation: stayingView.displayedRegionsOrientation,
-        handNudged: nudged,
-        movingIndex: pair.movingIndex,
         seq,
         generation: levelStates.generation,
       },
@@ -842,7 +804,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             })
             if (spans.length) {
               placed.set(movingView, followPlacedWindows(spans))
-              positionViewOnSpans(movingView, spans)
+              self.holdFollowAnchor(() =>
+                positionViewOnSpans(movingView, spans),
+              )
             }
             continue
           }
@@ -869,7 +833,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             map: levelStates.mapFor(level, pick.feat.id),
             incumbentTarget: pick.target,
           })
-          if (span && positionViewOnSpan(movingView, span)) {
+          if (
+            span &&
+            self.holdFollowAnchor(() => positionViewOnSpan(movingView, span))
+          ) {
             written.add(movingView)
           }
         }

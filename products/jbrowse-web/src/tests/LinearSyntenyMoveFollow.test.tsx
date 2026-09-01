@@ -142,12 +142,11 @@ test('a band move hands the follow anchor to the panel that stays', async () => 
   expect(view.followAnchorIndex).toBe(1)
 }, 60000)
 
-// ...and the anchor is not bookkeeping: it decides which row the next pan
-// leads from. With the anchor left on row 0, panning row 0 moved row 1; with it
-// handed to row 1, panning row 0 is a followed row drifting, which the exact
-// pass pulls back while row 1 holds. This is the half a model-level test cannot
-// reach, and the half that says the take was worth making.
-test('...so the next pan is led by the panel that stayed', async () => {
+// ...and the anchor is not bookkeeping: it decides which row leads. The move
+// hands it to row 1, and a gesture on row 0 afterwards is a gesture on a
+// followed row, which takes it straight back — so row 1 follows the pan
+// rather than holding. This is the half a model-level test cannot reach.
+test('...and a gesture on the panel that moved leads again', async () => {
   const { view, row0, row1 } = await followingSwap()
   const display = view.levels[0]!.linearSyntenyDisplays[0]!
   const feat = bandFeature(display, 'ctgB')
@@ -171,7 +170,8 @@ test('...so the next pan is led by the panel that stayed', async () => {
 
   const held = windowOf(row1)
   await row0.navToLocString('ctgB:1000-2000', ASM)
+  expect(view.followAnchorIndex).toBe(0)
   await followSettled(view.views)
 
-  expect(windowOf(row1)).toBe(held)
+  expect(windowOf(row1)).not.toBe(held)
 }, 60000)
