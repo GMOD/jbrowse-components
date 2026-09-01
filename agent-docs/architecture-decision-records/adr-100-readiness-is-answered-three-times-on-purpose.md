@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: '"Has JBrowse finished rendering" is implemented three times — the app''s phase attributes, jb.waitReady, and @jbrowse/capture — and stays that way, because capture serializes its readers into the page and cannot import; what is shared is the selector contract, pinned by a test'
+summary: '"Has JBrowse finished rendering" is implemented three times — the phase attributes the app publishes, jb.waitReady, and @jbrowse/capture — and stays that way, because capture serializes its readers into the page and cannot import; what is shared is the selector contract, pinned by a test'
 ---
 
 # ADR-100: Readiness is answered three times, on purpose
