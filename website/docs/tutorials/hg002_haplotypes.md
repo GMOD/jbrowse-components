@@ -26,8 +26,9 @@ the chain between them, so there is nothing to align.
 ## Where the data comes from
 
 T2T-HG002 v1.2, the [Q100 project](https://github.com/marbl/HG002)'s diploid
-assembly and its own maternal-to-paternal chain, plus JHU Liftoff v0.6 gene
-models built on v1.1.
+assembly and its own maternal-to-paternal chain
+([Hansen _et al._ 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
+Liftoff v0.6 gene models built on v1.1.
 
 - the diploid assembly, `chr1_MATERNAL` and `chr1_PATERNAL` and the rest of both
   haplotypes in one FASTA:
@@ -190,6 +191,9 @@ joining a point on the top row to the point it maps to on the bottom.
 
 - The Q100 / T2T-HG002 assembly releases, including v1.2 and the chains between
   the haplotypes. https://github.com/marbl/HG002
+- Hansen, N. F. _et al._ A complete diploid human genome benchmark for
+  personalized genomics. _Cell_ (2026).
+  https://doi.org/10.1016/j.cell.2026.06.016
 - Bosch, N. _et al._ Nucleotide, cytogenetic and expression impact of the human
   chromosome 8p23.1 inversion polymorphism. _PLOS ONE_ 4, e8269 (2009).
   https://doi.org/10.1371/journal.pone.0008269
