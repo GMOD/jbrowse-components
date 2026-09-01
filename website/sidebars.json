@@ -91,7 +91,12 @@
       "type": "category",
       "label": "AI agents",
       "overview": "agents",
-      "items": ["agents_hosted_data", "agents_capture", "agents_mcp"]
+      "items": [
+        "agents_hosted_data",
+        "agents_capture",
+        "agents_mcp",
+        "agents_web"
+      ]
     },
     "embedded_components",
     "jbrowser",

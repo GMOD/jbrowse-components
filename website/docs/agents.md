@@ -20,7 +20,9 @@ config" and "the config shows the thing" — see [](/docs/agents_capture).
 JBrowse Desktop can also be driven the other way round, as an
 [MCP](https://modelcontextprotocol.io) server, so an agent changes the session
 that is already open instead of writing a new one from a file: see
-[](/docs/agents_mcp).
+[](/docs/agents_mcp). JBrowse Web publishes the same helper library on `window`
+for an agent running inside the browser, with no server and nothing to install:
+see [](/docs/agents_web).
 
 Every tutorial on this site was written with an agent in the loop: fetching and
 subsetting the data, authoring the config, rendering the figure, then reading

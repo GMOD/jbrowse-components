@@ -1,0 +1,95 @@
+---
+title: Driving JBrowse Web from a browser agent
+sidebar_label: Browser agents
+description:
+  JBrowse Web publishes its live session and a helper library on window, so an
+  agent running in the browser can build views, restyle tracks and read feature
+  data out of the page it is looking at
+---
+
+JBrowse Web publishes three things on `window`, unconditionally and in
+production: `window.JBrowseSession` is the live session model,
+`window.JBrowseRootModel` the root model above it, and `window.jb` the helper
+library.
+
+An agent that can run JavaScript in the page, such as a browser extension,
+already has everything it needs. Nothing has to be installed and no server is
+involved, because the page it is reading is the app.
+
+This is the same `jb` library JBrowse Desktop serves over
+[MCP](/docs/agents_mcp). The two pages describe one surface reached two ways, so
+what a session looks like and what to ask for are documented there rather than
+repeated here. What follows is what differs in a browser.
+
+## What is the same
+
+Everything in [](/docs/agents_mcp) under "What the agent gets" and "A session".
+Orient with `jb.sessionSummary()`, find track ids with `jb.listTracks()`, build
+views with `jb.loadSessionSpec()`, restyle through
+`jb.trackModel(id).applyDisplaySettings({...})`, read data with
+`jb.getFeatures({trackId})`, and settle with `jb.waitReady()`.
+
+The [four traps](/docs/agents_mcp#four-traps) are the same traps, and they are
+the reason to use the library rather than walking the session by hand. Each of
+them renders as a plausible looking browser with something quietly missing.
+
+## What is different
+
+**There is no Node, so there are no local files.** A browser cannot run
+samtools, build an index, or read a path. `jb.addTrack` takes a URL and refuses
+a local path rather than adding a track that cannot read. Work that needs a real
+file belongs in [JBrowse Desktop](/docs/agents_mcp) or in a shell, and
+[](/docs/agents_hosted_data) covers what is already loadable with no setup at
+all.
+
+**The data host has to allow the request.** A tab is subject to CORS where an
+Electron app is not, so a file that loads in Desktop may be unreachable from a
+page. This is a property of the host serving the data, not of JBrowse.
+
+**A read runs on the thread that draws.** `jb.getFeatures` uses the main thread
+adapter deliberately, because the alternative serializes every feature across
+the worker boundary before any limit can apply. The page therefore stops
+repainting while a large read runs. Aggregate in code and return the answer
+rather than the features.
+
+**A read has a size gate, like a display does.** A display refuses to fetch over
+its own limit and paints the reason. `jb.getFeatures` asks the same index-only
+question first and throws rather than returning a short answer that looks like a
+whole one:
+
+```
+region too large for jb.getFeatures: the largest region is ~8200000 bytes
+against a limit of 5000000. Narrow the region, or pass an explicit byteLimit
+if you mean to pull this much.
+```
+
+Narrow the region, or raise the ceiling for a read you mean to be big by passing
+`byteLimit` alongside `trackId` and `loc`.
+
+**`jb.require` needs waking first.** It serves the pinned ABI module names
+external plugins link against, and that registry is loaded lazily because
+installing it eagerly would put most of the UI toolkit into every page load.
+Call `await jb.ensureRequire()` once before the first `jb.require(...)`.
+
+A session that already loaded a runtime plugin has the registry installed
+already, so this costs nothing there.
+
+**`jb.loadSessionSpec` replaces the session.** In Desktop that is the same as
+opening a file. In a browser it also rewrites the URL and stores a new session,
+and the session it replaced is not recoverable from the page. Prefer adding to
+the open session where that will do.
+
+## Is this safe
+
+`window.jb` grants no privilege the page did not already have. It runs at the
+page's own origin with the user's own session, and every byte of it is in the
+bundle regardless. Anything it does, script on that origin could already do
+through `window.JBrowseSession`.
+
+What it does change is how easy the app is to drive on purpose, and that cuts
+both ways. A hostile track description, or a hostile page in another tab, can
+try to instruct an agent that is reading it, and a convenient library makes an
+injected instruction more likely to succeed. That risk arrives with the agent
+rather than with this library, and the mitigation is the same as for any code
+executing agent tool: your client's approval prompts, and not pointing an agent
+with write access at data you do not trust.
