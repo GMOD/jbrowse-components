@@ -2767,4 +2767,4 @@ re-attempt without genuinely new data.
   and it is a published CLI whose one runtime dependency is puppeteer. The
   contract is shared and now pinned by `scripts/readinessContract.test.ts`.
   Reasoning, and the table of what deliberately differs, in
-  [ADR-100](../architecture-decision-records/adr-100-readiness-is-answered-three-times-on-purpose.md).
+  [ADR-101](../architecture-decision-records/adr-101-readiness-is-answered-three-times-on-purpose.md).
