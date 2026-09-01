@@ -152,10 +152,17 @@ function pruneSeparators(items: MenuItemConstructorOptions[]) {
   return kept
 }
 
-function showMenu(window: BrowserWindow, params: ContextMenuParams) {
-  const template = pruneSeparators(
-    buildTemplate(window.webContents, params).filter(item => item !== false),
+export function buildContextMenuTemplate(
+  webContents: WebContents,
+  params: ContextMenuParams,
+) {
+  return pruneSeparators(
+    buildTemplate(webContents, params).filter(item => item !== false),
   )
+}
+
+function showMenu(window: BrowserWindow, params: ContextMenuParams) {
+  const template = buildContextMenuTemplate(window.webContents, params)
   if (template.length > 0) {
     Menu.buildFromTemplate(template).popup({ window })
   }
