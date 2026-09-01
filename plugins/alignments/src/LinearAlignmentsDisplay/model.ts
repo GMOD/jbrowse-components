@@ -41,6 +41,7 @@ import MultiRegionDisplayMixin, {
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { densityBinSize } from '@jbrowse/display-kit/densityBins'
+import { resolveFetchSuspended } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
 import { foundationSvgReady } from '@jbrowse/display-kit/foundationSvgReady'
@@ -4108,6 +4109,20 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * `DensityTierMixin`'s hook over this display's own stand-in term: with
+         * the coverage band hidden there is no band, so the reads are fetched
+         * and drawn as they always were.
+         */
+        get fetchSuspended() {
+          return resolveFetchSuspended({
+            standsIn: this.densityBandActive,
+            mode: self.densityTierMode,
+            regionTooLarge: self.regionTooLarge,
+          })
+        },
+
+        /**
+         * #getter
          * The band is standing in and holds nothing yet — where the banner's
          * "nothing is coming" is the wrong answer. False on a failed read as
          * well as on a filled one, so neither the scrim nor the export gate can
@@ -4136,14 +4151,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The phase, post-processed for the density tier: where the gate
-         * refused the reads and the band stands in for them the display is not
-         * too large — `tooLarge` replaces the whole subtree with the banner,
-         * and there is a band to draw. The verdict itself is untouched, so the
-         * feature fetch still stops at the gate.
+         * The phase, post-processed for the density tier: with the band
+         * standing in for the reads the display is drawing the band and
+         * nothing else, so neither the banner (whose verdict is untouched
+         * underneath) nor the read fetch (which `fetchSuspended` stops where
+         * the gate was not already stopping it) is its loading question. The
+         * band's own read is.
          *
-         * Everything else passes through, the render error and the fetch error
-         * included.
+         * The two failure terminals pass through, the render error and the
+         * fetch error, and so does a standing cancel: its Retry chrome is the
+         * way back, and the export gate fails on it after the wait.
          */
         get displayPhase(): DisplayPhase {
           // The base is recomputed rather than captured — a view has no super —
@@ -4154,7 +4171,10 @@ export default function stateModelFactory(
             () => self.viewportWithinLoadedData && !self.dataSuperseded,
             () => self.host.effectiveBodyMounted,
           )
-          return base === 'tooLarge' && this.densityBandActive
+          return this.densityBandActive &&
+            !self.fetchCanceled &&
+            base !== 'error' &&
+            base !== 'renderError'
             ? this.densityBandPending
               ? 'loading'
               : 'ready'
@@ -4163,13 +4183,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The export gate, with the tier's own read added: `regionTooLarge` is
-         * a terminal in `computeSvgReady` because nothing is coming, and under
-         * the tier something is — an export sampling it before the bins land
+         * The export gate under the same swap: `regionTooLarge` is a terminal
+         * in `computeSvgReady` because nothing is coming, and `dataCurrent`
+         * waits on a read fetch that is not running, so with the band up the
+         * bins are what the export waits for — sampled before they land, it
          * writes the band empty.
          */
         get svgReady(): boolean {
-          return foundationSvgReady(self) && !this.densityBandPending
+          return this.densityBandActive
+            ? !!self.error || self.fetchCanceled || !this.densityBandPending
+            : foundationSvgReady(self)
         },
       }))
       .views(self => ({

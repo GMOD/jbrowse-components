@@ -51,6 +51,9 @@ import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeat
 import { copyItem } from '../shared/copyMenuItem.ts'
 import {
   densityBandDisplayPhase,
+  densityBandReadout,
+  densityBandSvgReady,
+  densityHoverAt,
   displayDensityBandLayer,
 } from '../shared/densityBandViews.ts'
 import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
@@ -79,6 +82,7 @@ import {
 } from './sourcesLogic.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
+import type { DensityHover } from '../shared/densityBandViews.ts'
 import type {
   LinearMultiRowFeatureDisplayConfig,
   LinearMultiRowFeatureDisplayConfigModel,
@@ -192,6 +196,25 @@ export default function stateModelFactory(
       hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
       // #endregion
     }))
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Where the cursor is over the density band, for its readout.
+       */
+      densityHover: undefined as DensityHover | undefined,
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * The cursor's view px over the band, or nothing when it leaves.
+       */
+      setDensityHoverPx(px?: number) {
+        self.densityHover = densityHoverAt(
+          getContainingView(self) as LinearGenomeViewModel,
+          px,
+        )
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -206,6 +229,18 @@ export default function stateModelFactory(
        */
       get densityBandLayer() {
         return displayDensityBandLayer(self)
+      },
+      /**
+       * #getter
+       * The band's line of text: its peak, and the source's value under the
+       * cursor while there is one.
+       */
+      get densityReadout() {
+        return densityBandReadout(
+          this.densityBandLayer,
+          self.densityBins,
+          self.densityHover,
+        )
       },
     }))
     .views(self => ({
@@ -226,6 +261,13 @@ export default function stateModelFactory(
        */
       get displayPhase(): DisplayPhase {
         return densityBandDisplayPhase(self)
+      },
+      /**
+       * #getter
+       * The export gate with the same swap — see `densityBandSvgReady`.
+       */
+      get svgReady(): boolean {
+        return densityBandSvgReady(self)
       },
       /**
        * #getter

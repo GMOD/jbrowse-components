@@ -71,6 +71,7 @@ function inputs(over: Partial<RegionFetchInputs> = {}): RegionFetchInputs {
     error: undefined,
     fetchCanceled: false,
     gateSkipsMeasuredViewport: false,
+    suspended: false,
     gateBlocked: false,
     isLoading: () => false,
     minimized: () => false,
@@ -97,6 +98,16 @@ describe('idle reasons and their precedence', () => {
     ['a user cancel', { fetchCanceled: true }],
   ])('%s blocks', (_label, over) => {
     expect(plan(over)).toEqual({ kind: 'idle', reason: 'blocked' })
+  })
+
+  test('a display drawing a stand-in fetches nothing', () => {
+    expect(plan({ suspended: true })).toEqual({
+      kind: 'idle',
+      reason: 'suspended',
+    })
+    expect(retryOutcomeForPlan({ kind: 'idle', reason: 'suspended' })).toBe(
+      'gated',
+    )
   })
 
   test('a too-large verdict measured at this viewport stops the fetch', () => {

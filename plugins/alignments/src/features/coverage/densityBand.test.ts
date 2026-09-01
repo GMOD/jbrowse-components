@@ -12,15 +12,11 @@ function decode(buffer: ArrayBuffer) {
   }))
 }
 
-function density(
-  intervals: [start: number, end: number, score: number][],
-  exact = true,
-) {
+function density(intervals: [start: number, end: number, score: number][]) {
   return {
     starts: Uint32Array.from(intervals.map(i => i[0])),
     ends: Uint32Array.from(intervals.map(i => i[1])),
     scores: Float32Array.from(intervals.map(i => i[2])),
-    exact,
   }
 }
 

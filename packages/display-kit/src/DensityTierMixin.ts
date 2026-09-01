@@ -8,6 +8,7 @@ import {
   densityZoomBucket,
   isDensityTierMode,
   resolveDensityTier,
+  resolveFetchSuspended,
 } from './densityTier.ts'
 import { onDisplayedRegionsChange } from './displayAutoruns.ts'
 
@@ -139,6 +140,21 @@ export default function DensityTierMixin() {
           regionTooLarge: host(self).regionTooLarge,
           bpPerPx: v.initialized ? v.coarseBpPerPx : undefined,
           thresholdBpPerPx: self.densityTierThresholdBpPerPx,
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `FetchMixin`'s hook, from `resolveFetchSuspended` over the tier's
+       * verdict. A display whose band needs somewhere to draw (alignments,
+       * whose coverage band can be hidden) overrides it with that term.
+       */
+      get fetchSuspended() {
+        return resolveFetchSuspended({
+          standsIn: self.densityTierActive,
+          mode: self.densityTierMode,
+          regionTooLarge: host(self).regionTooLarge,
         })
       },
     }))

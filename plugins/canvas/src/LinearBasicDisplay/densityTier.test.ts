@@ -1,5 +1,10 @@
 import { setConf } from '@jbrowse/core/configuration'
 
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+  packFixtureRects,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -38,7 +43,6 @@ const BINS: FeatureDensity = {
   starts: new Uint32Array([0, 12_700]),
   ends: new Uint32Array([12_700, 25_400]),
   scores: new Float32Array([3000, 5000]),
-  exact: true,
 }
 
 describe('the density tier stands in for the too-large banner', () => {
@@ -113,6 +117,87 @@ describe('the density tier stands in for the too-large banner', () => {
     setConf(display, 'densityTier', 'features')
     expect(display.densityTierActive).toBe(false)
     expect(display.displayPhase).toBe('tooLarge')
+  })
+})
+
+const REGION = {
+  refName: 'ctgA',
+  start: 0,
+  end: 50_000,
+  assemblyName: 'volvox',
+}
+
+function loadFeatures(display: RefusableDisplay) {
+  const spans = [
+    { startBp: 1000, endBp: 2000 },
+    { startBp: 5000, endBp: 6000 },
+  ]
+  display.setRpcData(
+    0,
+    makeFeatureData({
+      ...packFixtureRects(spans),
+      flatbushItems: spans.map((span, i) =>
+        makeFlatbushItem({
+          featureId: `f${i}`,
+          ...span,
+          topPx: 0,
+          bottomPx: 10,
+        }),
+      ),
+      featureCount: spans.length,
+    }),
+    REGION,
+  )
+}
+
+describe('the band stands alone, and fetches nothing', () => {
+  it('empties what the painters read while holding what was loaded', () => {
+    const { display } = refusableDisplay(DENSITY_ADAPTER)
+    loadFeatures(display)
+    expect(display.laidOutDataMap.size).toBe(1)
+
+    setConf(display, 'densityTier', 'density')
+    expect(display.laidOutDataMap.size).toBe(0)
+    expect(display.rpcDataMap.size).toBe(1)
+
+    setConf(display, 'densityTier', 'features')
+    expect(display.laidOutDataMap.size).toBe(1)
+  })
+
+  it('suspends the feature fetch under a forced density, refused or not', () => {
+    const { display } = refusableDisplay(DENSITY_ADAPTER)
+    expect(display.fetchSuspended).toBe(false)
+
+    setConf(display, 'densityTier', 'density')
+    expect(display.fetchSuspended).toBe(true)
+
+    refuseOnBytes(display)
+    expect(display.fetchSuspended).toBe(true)
+  })
+
+  it('keeps the measurement pass a refused auto owes', () => {
+    const { display } = refusableDisplay(DENSITY_ADAPTER)
+    // the band from 1 bp/px outward, so auto is active with no refusal
+    setConf(display, 'densityTierBpPerPx', 1)
+    expect(display.densityTierActive).toBe(true)
+    expect(display.fetchSuspended).toBe(true)
+
+    // a refused viewport keeps its fetch, which stops at the gate and
+    // re-measures: that is what the gate releases through
+    refuseOnBytes(display)
+    expect(display.fetchSuspended).toBe(false)
+  })
+
+  it('waits on the band, for the phase and for the export', () => {
+    const { display } = refusableDisplay(DENSITY_ADAPTER)
+    setConf(display, 'densityTier', 'density')
+    expect(display.regionTooLarge).toBe(false)
+    expect(display.displayPhase).toBe('loading')
+    expect(display.svgReady).toBe(false)
+
+    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], 'k')
+    expect(display.displayPhase).toBe('ready')
+    expect(display.svgReady).toBe(true)
   })
 })
 

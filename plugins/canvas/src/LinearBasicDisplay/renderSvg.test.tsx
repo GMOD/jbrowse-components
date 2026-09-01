@@ -95,6 +95,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     drawsWhenTooLarge: false,
     densityBandActive: false,
     densityBandLayer: { regions: new Map(), maxDepth: 0 },
+    densityBins: new Map(),
     svgReady: true,
     laidOutDataMap: new Map([[0, makeData([{ startBp: 1100, endBp: 1200 }])]]),
     highlightedFeatureIdSet: new Set<string>(),

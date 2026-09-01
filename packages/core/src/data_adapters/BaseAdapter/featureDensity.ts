@@ -3,14 +3,12 @@
  * tier that stands in for the features a gated fetch refused: features per bin
  * for a `make-density` sidecar, whatever the bigWig measures otherwise, each
  * value a level over its span so a zoomed read means the same thing. Absolute
- * genomic coordinates; `exact` says whether the bins were counted (a sidecar)
- * or estimated (an index).
+ * genomic coordinates.
  */
 export interface FeatureDensity {
   starts: Uint32Array
   ends: Uint32Array
   scores: Float32Array
-  exact: boolean
 }
 
 /**

@@ -57,7 +57,6 @@ function densitySources(): AlignmentsSources {
             starts: Uint32Array.from([REGION_START, REGION_START + 50]),
             ends: Uint32Array.from([REGION_START + 50, REGION_START + 100]),
             scores: Float32Array.from([10, 40]),
-            exact: true,
           },
           10,
         ),

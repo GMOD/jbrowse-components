@@ -305,6 +305,26 @@ export default function FetchMixin() {
 
       /**
        * #getter
+       * Overridable hook (default false), read by the per-region fetch plan:
+       * the display is drawing something in the features' place and wants no
+       * fetch while it does. `DensityTierMixin` says it while the band is up
+       * and the gate is not blocking, so a track forced to `density` never
+       * downloads the features it will not draw, while a refused viewport
+       * keeps its measurement pass and the gate can still release.
+       *
+       * Not `fetchInert`: that one suppresses the scrim and ends the export
+       * wait, and a display saying this still has its stand-in to load.
+       *
+       * Read by the per-region plan alone: the global and comparative fetch
+       * families do not consult it, so a display of theirs composing the tier
+       * would get the band and keep fetching.
+       */
+      get fetchSuspended(): boolean {
+        return false
+      },
+
+      /**
+       * #getter
        * Overridable hook (default false), read only by the retry contract check
        * (`makeRetryContractCheck`): "this run declined because a prerequisite
        * fetch in another autorun has not landed, and its arrival wakes this one

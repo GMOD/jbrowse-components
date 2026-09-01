@@ -21,11 +21,35 @@ function refusedDisplay(densityAdapter?: Record<string, unknown>) {
   return { display, view }
 }
 
+function unrefusedDisplay(densityAdapter?: Record<string, unknown>) {
+  const { display, view } = createTestEnvironment({
+    densityAdapter,
+  }).createDisplay()
+  view.zoomTo(100)
+  return { display, view }
+}
+
+function oneRow() {
+  return {
+    featureStarts: new Uint32Array(0),
+    featureEnds: new Uint32Array(0),
+    featureColors: new Uint32Array(0),
+    featureDeltas: new Int32Array(0),
+    partitionValues: ['row0'],
+    featurePartitionIndex: new Uint32Array(0),
+    featureNames: [],
+    featureIds: [],
+    usedItemRgb: false,
+    partitionCandidates: [],
+    legendCandidates: [],
+    resolvedPartitionField: 'name',
+  }
+}
+
 const BINS: FeatureDensity = {
   starts: new Uint32Array([0, 100_000]),
   ends: new Uint32Array([100_000, 200_000]),
   scores: new Float32Array([40, 90]),
-  exact: true,
 }
 
 describe('the density tier stands in for the too-large banner', () => {
@@ -81,6 +105,32 @@ describe('the density tier stands in for the too-large banner', () => {
     setConf(display, 'densityTier', 'density')
     expect(display.regionTooLarge).toBe(false)
     expect(display.densityTierActive).toBe(true)
+  })
+})
+
+describe('the band stands alone, and fetches nothing', () => {
+  it('empties what the painters and the sidebar read while holding what was loaded', () => {
+    const { display } = unrefusedDisplay(DENSITY_ADAPTER)
+    display.setRpcData(0, oneRow())
+    expect(display.drawnRegionData.size).toBe(1)
+    expect(display.fetchSuspended).toBe(false)
+
+    setConf(display, 'densityTier', 'density')
+    expect(display.drawnRegionData.size).toBe(0)
+    expect(display.rpcDataMap.size).toBe(1)
+    expect(display.fetchSuspended).toBe(true)
+    expect(display.displayPhase).toBe('loading')
+    expect(display.svgReady).toBe(false)
+
+    display.setDensityBins([{ displayedRegionIndex: 0, bins: BINS }], 'k')
+    expect(display.displayPhase).toBe('ready')
+    expect(display.svgReady).toBe(true)
+  })
+
+  it('keeps the measurement pass where the gate is blocking', () => {
+    const { display } = refusedDisplay(DENSITY_ADAPTER)
+    expect(display.densityTierActive).toBe(true)
+    expect(display.fetchSuspended).toBe(false)
   })
 })
 

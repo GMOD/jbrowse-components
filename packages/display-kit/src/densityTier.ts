@@ -44,3 +44,23 @@ export function resolveDensityTier({
 export function densityZoomBucket(bpPerPx: number) {
   return Math.round(Math.log2(Math.max(1, bpPerPx)))
 }
+
+/**
+ * Whether the feature fetch stands down while the band stands in. `standsIn`
+ * is the display's own term — the tier's verdict, or on alignments the verdict
+ * plus somewhere to draw it. A refused viewport in `auto` keeps its fetch,
+ * which stops at the gate and re-measures, because that measurement is how the
+ * gate releases; a forced `density` has nothing to release, so it fetches
+ * nothing whatever the gate says.
+ */
+export function resolveFetchSuspended({
+  standsIn,
+  mode,
+  regionTooLarge,
+}: {
+  standsIn: boolean
+  mode: DensityTierMode
+  regionTooLarge: boolean
+}) {
+  return standsIn && (mode === 'density' || !regionTooLarge)
+}

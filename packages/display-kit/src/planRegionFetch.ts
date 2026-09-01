@@ -78,6 +78,15 @@ export interface RegionFetchInputs {
    */
   gateSkipsMeasuredViewport: boolean
   /**
+   * `FetchMixin.fetchSuspended`: the display is drawing something in the
+   * features' place and does not want them fetched, the density band under a
+   * forced mode or a bp/px threshold. Tracked in the autorun, so the flip back
+   * to false is what re-fires the fetch — an override declining inside
+   * `fetchNeeded` runs untracked and would leave the display empty until the
+   * next pan.
+   */
+  suspended: boolean
+  /**
    * The banner is up. Past `gateSkipsMeasuredViewport` that also means the
    * measurement behind it describes a viewport the user has left, so this run
    * owes a re-measure — and the ordinary fetch IS the re-measure, there being no
@@ -117,6 +126,8 @@ export interface RegionFetchInputs {
 export type RegionFetchIdleReason =
   /** a fetch failed or was canceled; only a viewport change clears it */
   | 'blocked'
+  /** the display is drawing a stand-in (the density band) and asked for no fetch */
+  | 'suspended'
   /** the gate says too large, and it measured that at this very viewport */
   | 'measured'
   | 'inFlight'
@@ -213,6 +224,7 @@ export function planRegionFetch({
   error,
   fetchCanceled,
   gateSkipsMeasuredViewport,
+  suspended,
   gateBlocked,
   isLoading,
   minimized,
@@ -220,6 +232,9 @@ export function planRegionFetch({
 }: RegionFetchInputs): RegionFetchPlan {
   if (error || fetchCanceled) {
     return { kind: 'idle', reason: 'blocked' }
+  }
+  if (suspended) {
+    return { kind: 'idle', reason: 'suspended' }
   }
   if (gateSkipsMeasuredViewport) {
     return { kind: 'idle', reason: 'measured' }

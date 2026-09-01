@@ -38,6 +38,7 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
   isLoading: boolean
   awaitingPrerequisite: boolean
   gateSkipsMeasuredViewport: boolean
+  fetchSuspended: boolean
   /** read by the hover-clear reaction, which the too-large banner also fires */
   regionTooLarge: boolean
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
@@ -182,6 +183,8 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
         error: self.error,
         fetchCanceled: self.fetchCanceled,
         gateSkipsMeasuredViewport: self.gateSkipsMeasuredViewport,
+        // tracked: the flip back to false is the fetch's wake
+        suspended: self.fetchSuspended,
         // tracked, and above the coverage read: while the banner is up this
         // run owes a re-measure, and the flip back to false has to re-fire
         // the autorun or the release lands a viewport late

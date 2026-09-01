@@ -59,6 +59,9 @@ import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThres
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import {
   densityBandDisplayPhase,
+  densityBandReadout,
+  densityBandSvgReady,
+  densityHoverAt,
   displayDensityBandLayer,
 } from '../shared/densityBandViews.ts'
 import {
@@ -115,6 +118,7 @@ import type {
   FeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { DensityHover } from '../shared/densityBandViews.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -349,6 +353,22 @@ export default function baseStateModelFactory(
       }))
       .volatile(fitLadderVolatiles)
       .volatile(yMorphVolatiles)
+      .volatile(() => ({
+        /**
+         * #volatile
+         * Where the cursor is over the density band, for its readout.
+         */
+        densityHover: undefined as DensityHover | undefined,
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * The cursor's view px over the band, or nothing when it leaves.
+         */
+        setDensityHoverPx(px?: number) {
+          self.densityHover = densityHoverAt(getContainingView(self) as LGV, px)
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -364,6 +384,18 @@ export default function baseStateModelFactory(
         get densityBandLayer() {
           return displayDensityBandLayer(self)
         },
+        /**
+         * #getter
+         * The band's line of text: its peak, and the source's value under the
+         * cursor while there is one.
+         */
+        get densityReadout() {
+          return densityBandReadout(
+            this.densityBandLayer,
+            self.densityBins,
+            self.densityHover,
+          )
+        },
       }))
       .views(self => ({
         /**
@@ -373,6 +405,13 @@ export default function baseStateModelFactory(
          */
         get displayPhase(): DisplayPhase {
           return densityBandDisplayPhase(self)
+        },
+        /**
+         * #getter
+         * The export gate with the same swap — see `densityBandSvgReady`.
+         */
+        get svgReady(): boolean {
+          return densityBandSvgReady(self)
         },
         /**
          * #getter

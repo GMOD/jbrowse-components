@@ -65,7 +65,6 @@ function bins(starts: number[], ends: number[], scores: number[]) {
     starts: Uint32Array.from(starts),
     ends: Uint32Array.from(ends),
     scores: Float32Array.from(scores),
-    exact: true,
   }
 }
 
@@ -181,4 +180,43 @@ test('a forced density tier stands in with no refusal at all', () => {
   )
   expect(display.awaitingDependentData).toBe(false)
   expect(display.densityCoverageRegions.size).toBe(1)
+})
+
+describe('the band fetches nothing where the gate is not blocking', () => {
+  it('suspends the read fetch under a forced mode, not under a refusal', () => {
+    const { display } = densityDisplay({ withSource: true, refused: false })
+    expect(display.fetchSuspended).toBe(false)
+
+    setConf(display, 'densityTier', 'density')
+    expect(display.fetchSuspended).toBe(true)
+
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      viewport: display.gateViewport!,
+    })
+    expect(display.fetchSuspended).toBe(true)
+  })
+
+  it('keeps the measurement pass a refused auto owes', () => {
+    const { display } = densityDisplay({ withSource: true, refused: false })
+    setConf(display, 'densityTierBpPerPx', 1)
+    expect(display.densityTierActive).toBe(true)
+    expect(display.fetchSuspended).toBe(true)
+
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      viewport: display.gateViewport!,
+    })
+    expect(display.fetchSuspended).toBe(false)
+  })
+
+  it('fetches the reads where the coverage band is hidden, since there is no band', () => {
+    const { display } = densityDisplay({ withSource: true, refused: false })
+    setConf(display, 'densityTier', 'density')
+    expect(display.fetchSuspended).toBe(true)
+
+    display.setShowCoverage(false)
+    expect(display.densityBandActive).toBe(false)
+    expect(display.fetchSuspended).toBe(false)
+  })
 })

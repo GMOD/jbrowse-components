@@ -1,10 +1,12 @@
 import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
+import { foundationSvgReady } from '@jbrowse/display-kit/foundationSvgReady'
 
-import { densityBandLayer } from './densityBand.ts'
+import { densityBandLayer, formatDensity } from './densityBand.ts'
 
 import type { DensityBandLayer } from './densityBand.ts'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { DisplayPhaseFoundation } from '@jbrowse/display-kit/foundationDisplayPhase'
+import type { SvgReadyFoundation } from '@jbrowse/display-kit/foundationSvgReady'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -13,7 +15,8 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
  * read and its swap decision, plus the phase foundation's own terms so the
  * override below post-processes the base rather than restating it.
  */
-export interface DensityBandHost extends DisplayPhaseFoundation {
+export interface DensityBandHost
+  extends DisplayPhaseFoundation, SvgReadyFoundation {
   host: RegionHost
   densityBins: ReadonlyMap<number, FeatureDensity>
   densityBinsKey: string | undefined
@@ -46,11 +49,14 @@ export function densityBandPending(self: DensityBandHost) {
 }
 
 /**
- * The gate's banner, swapped for the band. Only the `tooLarge` terminal is
- * post-processed — the display really is over budget and really is fetching no
- * features, so the verdict stays exactly what `RegionTooLargeMixin` derived and
- * this changes only what the chrome does about it. Both of the gate's axes reach
- * here, since both are terms of that one verdict.
+ * The phase with the band standing in. Where the tier is active the display is
+ * drawing the band and nothing else, so the base's fetch terms are not its
+ * loading question: not the banner, whose verdict is untouched underneath, and
+ * not the feature fetch, which `fetchSuspended` has stopped where the gate was
+ * not already stopping it. The band's own read is, so the phase is `loading`
+ * until it lands and `ready` after. The two failure terminals pass through,
+ * and so does a standing cancel: its Retry chrome is the way back, and the
+ * export gate fails on it after the wait.
  */
 export function densityBandDisplayPhase(self: DensityBandHost): DisplayPhase {
   const base = foundationDisplayPhase(
@@ -58,9 +64,83 @@ export function densityBandDisplayPhase(self: DensityBandHost): DisplayPhase {
     () => self.viewportWithinLoadedData && !self.dataSuperseded,
     () => self.host.effectiveBodyMounted,
   )
-  return base === 'tooLarge' && self.densityTierActive
+  return self.densityTierActive &&
+    !self.fetchCanceled &&
+    base !== 'error' &&
+    base !== 'renderError'
     ? densityBandPending(self)
       ? 'loading'
       : 'ready'
     : base
+}
+
+/**
+ * The export gate under the same swap: `regionTooLarge` is a terminal in
+ * `computeSvgReady` because nothing is coming, and `dataCurrent` waits on a
+ * feature fetch that is not running, so with the band up the bins are what the
+ * export waits for.
+ */
+export function densityBandSvgReady(self: DensityBandHost) {
+  return self.densityTierActive
+    ? !!self.error || self.fetchCanceled || !densityBandPending(self)
+    : foundationSvgReady(self)
+}
+
+/** Where the cursor is over the band, in the density read's own coordinates. */
+export interface DensityHover {
+  displayedRegionIndex: number
+  bp: number
+}
+
+/**
+ * The cursor's place in the density read, or nothing off the ends of the view.
+ * `coord0` rather than `coord`: the read's intervals are absolute 0-based, the
+ * worker's uint32 contract.
+ */
+export function densityHoverAt(
+  view: {
+    initialized: boolean
+    pxToBp: (px: number) => { index: number; coord0: number; oob: boolean }
+  },
+  px: number | undefined,
+): DensityHover | undefined {
+  if (px === undefined || !view.initialized) {
+    return undefined
+  }
+  const at = view.pxToBp(px)
+  return at.oob ? undefined : { displayedRegionIndex: at.index, bp: at.coord0 }
+}
+
+/** The source's value over `bp`, or undefined where no interval covers it. */
+export function densityValueAt(
+  bins: ReadonlyMap<number, FeatureDensity>,
+  { displayedRegionIndex, bp }: DensityHover,
+) {
+  const density = bins.get(displayedRegionIndex)
+  if (density) {
+    const { starts, ends, scores } = density
+    for (let i = 0; i < starts.length; i++) {
+      if (starts[i]! <= bp && bp < ends[i]!) {
+        return scores[i]!
+      }
+    }
+  }
+  return undefined
+}
+
+/**
+ * The band's one line of text: the peak it is scaled to, and the source's
+ * value under the cursor while there is one. The value is the sidecar's own
+ * (features per bin for a `make-density` file), so no unit is claimed.
+ */
+export function densityBandReadout(
+  layer: DensityBandLayer,
+  bins: ReadonlyMap<number, FeatureDensity>,
+  hover: DensityHover | undefined,
+) {
+  const value = hover ? densityValueAt(bins, hover) : undefined
+  const peak = `peak ${formatDensity(layer.maxDepth)}`
+  return value === undefined
+    ? peak
+    : `${formatDensity(value)} at cursor, ${peak}`
 }

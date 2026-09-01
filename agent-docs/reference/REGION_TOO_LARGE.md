@@ -346,10 +346,10 @@ the parts:
 
 - **The swap is the verdict, plus an optional threshold.** `densityTierActive`
   is `hasSource && (mode === 'density' || (mode === 'auto' && (regionTooLarge || pastThreshold)))`.
-  Nothing above in this file changes: the feature fetch still stops at the
-  measurement and `regionTooLarge` still reads true. Only the `tooLarge` phase
-  terminal is post-processed, to `loading` until the first read lands and
-  `ready` after, and only the chrome and the drawing differ.
+  Nothing above in this file changes: a refused fetch still stops at the
+  measurement and `regionTooLarge` still reads true. With the tier active the
+  phase is the band's own read, `loading` until it lands and `ready` after,
+  and only the chrome and the drawing differ.
 - **A bin is a level, not a count.** A bigWig's zoom levels are means over the
   bases their rows cover, so `make-density` writes every base of every
   reference (a run of empty bins as one row) and `densityToUniformBins` takes
@@ -358,10 +358,19 @@ the parts:
   depth. A sidecar with its empty bins omitted reads, zoomed out, as the mean
   over the bins that held something: on the hg38 RefSeq genes that was 1.0 in
   every 3 Mb bin where the true counts ran 23 to 117.
-- **The stand-in is total.** Alignments empties `lanes`, canvas
-  `laidOutDataMap`, multi-row `drawnRegionData`, so a track forced to
-  `density` over data it already holds draws the band alone rather than over
-  the features. The fetch itself still runs where the gate allows.
+- **The stand-in is total, and it fetches nothing.** Alignments empties
+  `lanes`, canvas `laidOutDataMap`, multi-row `drawnRegionData`, so a track
+  forced to `density` over data it already holds draws the band alone rather
+  than over the features. `DensityTierMixin.fetchSuspended` answers
+  `resolveFetchSuspended` into the fetch plan: the display's stand-in term
+  (the verdict, or on alignments the verdict plus a visible coverage band)
+  and `mode === 'density' || !regionTooLarge`. A forced `density` downloads
+  nothing whatever the gate says; `auto` under a refusal keeps its measurement
+  pass, which is what the gate releases through. The plan reads
+  the hook tracked, so the flip back to `features` is itself the fetch's wake.
+  With the band up the phase is the band's own read (`loading` until it lands,
+  `ready` after) and so is the export gate; the two failure terminals pass
+  through.
 - **The bins never touch the fetch tiers.** They live in their own
   `regionDataMap`, keyed by zoom bucket, cleared on chromosome navigation, and
   the mode is a config slot (`densityTier`) that never enters `rpcProps()`, so

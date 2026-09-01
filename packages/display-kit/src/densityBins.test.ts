@@ -5,7 +5,6 @@ function density(rows: [number, number, number][]) {
     starts: new Uint32Array(rows.map(r => r[0])),
     ends: new Uint32Array(rows.map(r => r[1])),
     scores: new Float32Array(rows.map(r => r[2])),
-    exact: true,
   }
 }
 

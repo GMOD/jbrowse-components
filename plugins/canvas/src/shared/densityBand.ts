@@ -103,9 +103,14 @@ export function drawDensityBand(
   ctx: Ctx2D,
   blocks: readonly RenderBlock[],
   layer: DensityBandLayer,
-  state: { canvasWidth: number; bandHeight: number; color: string },
+  state: {
+    canvasWidth: number
+    bandHeight: number
+    color: string
+    readout?: string
+  },
 ) {
-  const { canvasWidth, bandHeight, color } = state
+  const { canvasWidth, bandHeight, color, readout } = state
   const { regions, maxDepth } = layer
   if (maxDepth > 0) {
     const normalize = (depth: number) => depth / maxDepth
@@ -130,5 +135,23 @@ export function drawDensityBand(
         )
       },
     )
+    if (readout) {
+      ctx.font = `${READOUT_FONT_PX}px sans-serif`
+      ctx.textBaseline = 'top'
+      ctx.fillStyle = color
+      ctx.fillText(readout, READOUT_PAD_PX, READOUT_PAD_PX)
+    }
   }
+}
+
+const READOUT_FONT_PX = 11
+const READOUT_PAD_PX = 4
+
+/** Two figures for a mean under 10, whole numbers above: `0.034`, `3.1`, `120`. */
+export function formatDensity(value: number) {
+  return value >= 10
+    ? String(Math.round(value))
+    : value >= 1
+      ? value.toFixed(1)
+      : value.toPrecision(2)
 }

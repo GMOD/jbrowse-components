@@ -8,6 +8,7 @@ import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { drawDensityBand } from '../shared/densityBand.ts'
+import { densityBandReadout } from '../shared/densityBandViews.ts'
 import {
   drawFeatureBlocks,
   drawHighlightBoxes,
@@ -25,6 +26,7 @@ import { resolveMapColors } from './components/resolveRegionColors.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DensityBandLayer } from '../shared/densityBand.ts'
+import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -40,6 +42,7 @@ export interface RenderSvgModel extends SvgExportable {
   drawsWhenTooLarge: boolean
   densityBandActive: boolean
   densityBandLayer: DensityBandLayer
+  densityBins: ReadonlyMap<number, FeatureDensity>
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   highlightedFeatureIdSet: ReadonlySet<string>
   renderedShowLabels: boolean
@@ -128,6 +131,11 @@ function CanvasFeaturesSvgBody({
               canvasWidth,
               bandHeight: height,
               color: palette.text.secondary,
+              readout: densityBandReadout(
+                model.densityBandLayer,
+                model.densityBins,
+                undefined,
+              ),
             })
           }}
         />

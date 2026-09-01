@@ -309,6 +309,7 @@ const FeatureBody = observer(function FeatureBody({
     if (!isAlive(model)) {
       return
     }
+    model.setDensityHoverPx(model.densityBandActive ? canvasX : undefined)
     const result = hitTestAt(canvasX, canvasY)
     if (isHitFeature(result)) {
       model.setHover(
@@ -388,6 +389,7 @@ const FeatureBody = observer(function FeatureBody({
   const handleMouseLeave = useEventCallback(() => {
     hover.cancel()
     model.clearHover()
+    model.setDensityHoverPx(undefined)
   })
 
   const onLabelMouseOver = useCallback(

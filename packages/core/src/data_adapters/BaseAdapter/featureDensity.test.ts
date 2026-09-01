@@ -57,7 +57,7 @@ class Main extends BaseFeatureDataAdapter {
 
 const region = { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }
 
-test('reads the sidecar at the view bp/px and marks the bins exact', async () => {
+test('reads the sidecar at the view bp/px', async () => {
   const sidecar = new Sidecar(schema.create({}))
   const main = new Main(
     schema.create({ densityAdapter: { type: 'BigWigAdapter' } }),
@@ -69,7 +69,6 @@ test('reads the sidecar at the view bp/px and marks the bins exact', async () =>
     starts: new Uint32Array([0, 500]),
     ends: new Uint32Array([500, 1000]),
     scores: new Float32Array([7, 0]),
-    exact: true,
   })
   expect(sidecar.seen[0]?.bpPerPx).toBe(20)
 })

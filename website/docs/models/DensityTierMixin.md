@@ -34,6 +34,7 @@ after `RegionTooLargeMixin`; the display decides how the bins are drawn.
 | <span id="getter-densitytierthresholdbpperpx">**densityTierThresholdBpPerPx**</span><br><code>number</code> |  |
 | <span id="getter-hasdensitysource">**hasDensitySource**</span><br><code>boolean</code> |  |
 | <span id="getter-densitytieractive">**densityTierActive**</span><br><code>boolean</code> | Whether the band stands in for features right now. |
+| <span id="getter-fetchsuspended">**fetchSuspended**</span><br><code>boolean</code> | `FetchMixin`'s hook, from `resolveFetchSuspended` over the tier's verdict. A display whose band needs somewhere to draw (alignments, whose coverage band can be hidden) overrides it with that term. |
 
 ## Actions
 

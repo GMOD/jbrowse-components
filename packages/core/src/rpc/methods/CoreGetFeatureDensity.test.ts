@@ -32,7 +32,6 @@ test('hands the view bp/px to the feature adapter and returns its bins', async (
       starts: new Uint32Array([0]),
       ends: new Uint32Array([1000]),
       scores: new Float32Array([3]),
-      exact: true,
     },
   ]
   const getFeatureDensity = jest.fn(async () => bins)

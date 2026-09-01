@@ -63,13 +63,15 @@ mid-gesture fires `SettingsInvalidate` and drops every loaded region.
 - **A user override is a config slot**, `densityTier: auto | features |
   density`, written by the track menu through `setConf`, so it persists with
   the track and needs no second volatile beside `forceLoadTrack`.
-- **An index estimate is the fallback, and it waits on a measurement.** A BAI's
-  `indexCov` and a tabix linear index can both estimate records per 16 kb bin
-  for free, but that floor is coarse: a 30x BAM banners at roughly 100 kb, where
-  16 kb bins are six bars. The sidecar is exact and multi-resolution. The
-  estimate ships only once it has been measured against a sidecar on the hosted
-  hg38 RefSeq GFF3 and a 30x BAM, and then labelled as an estimate
-  (`FeatureDensity.exact`).
+- **No index estimate.** A BAI's `indexCov` and a tabix linear index can both
+  answer per 16 kb bin for free, and both were measured before shipping. The
+  tabix answer is bytes per bin resolved to whole BGZF blocks: on the hg38
+  RefSeq genes it was nonzero in 12,537 of chr1's 15,196 empty bins and
+  correlated with the exact sidecar at 0.37 even coarsened to 262 kb. The BAI
+  answer, on a hosted 35x PacBio BAM over a flat 640 kb of chr1, correlated
+  with counted read starts at 0.28 per bin. Neither is a density a band can
+  draw, so the sidecar is the only source and `FeatureDensity` carries no
+  exactness flag.
 
 ## Consequences
 
@@ -78,9 +80,11 @@ mid-gesture fires `SettingsInvalidate` and drops every loaded region.
 - `fetchEachRegion`'s first-refusal cancel is unaffected: the tier's bins come
   from a separate read over the whole visible set, so nothing needs the
   refused siblings' payloads.
-- A forced `density` mode over a region the gate would have allowed still
-  fetches the features and does not draw them: alignments empties `lanes`,
-  canvas `laidOutDataMap` and multi-row `drawnRegionData`, so the band stands
-  alone. Skipping that fetch is a follow-up, not a correctness issue.
+- A forced `density` mode over a region the gate would have allowed draws the
+  band alone and fetches nothing: alignments empties `lanes`, canvas
+  `laidOutDataMap` and multi-row `drawnRegionData`, and
+  `DensityTierMixin.fetchSuspended` stops the feature fetch wherever the tier
+  is active and the gate is not blocking, so the measurement pass a refused
+  viewport owes still runs.
 - The CLI produces the sidecar (`jbrowse make-density`, `add-track --density`)
   so the tier is reachable without hand-building a bigWig.

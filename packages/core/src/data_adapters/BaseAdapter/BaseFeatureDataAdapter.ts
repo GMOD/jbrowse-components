@@ -206,8 +206,8 @@ export abstract class BaseFeatureDataAdapter<
    * tier the display draws where the region-too-large gate refused the
    * features. The default reads the `densityAdapter` sidecar slot
    * (`densityAdapterConfigSchemaFields`) through `getSubAdapter`; `undefined`
-   * means no tier, and the banner stands. An indexed adapter may override this
-   * with an estimate from its index, marked `exact: false`.
+   * means no tier, and the banner stands. ADR-102 records why no index
+   * estimate stands in for a missing sidecar.
    */
   async getFeatureDensity(
     regions: Region[],
@@ -231,7 +231,7 @@ export abstract class BaseFeatureDataAdapter<
               ends[i] = feature.get('end')
               scores[i] = score === undefined ? 0 : score
             })
-            return { starts, ends, scores, exact: true }
+            return { starts, ends, scores }
           }),
         )
       : undefined

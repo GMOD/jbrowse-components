@@ -1,4 +1,8 @@
-import { densityZoomBucket, resolveDensityTier } from './densityTier.ts'
+import {
+  densityZoomBucket,
+  resolveDensityTier,
+  resolveFetchSuspended,
+} from './densityTier.ts'
 
 const base = {
   mode: 'auto' as const,
@@ -42,4 +46,35 @@ test('one bucket per doubling of bp/px, floored at 1 bp/px', () => {
   expect(densityZoomBucket(1)).toBe(0)
   expect(densityZoomBucket(1000)).toBe(densityZoomBucket(1100))
   expect(densityZoomBucket(1000)).not.toBe(densityZoomBucket(2500))
+})
+
+test('the fetch stands down under the band, except for the measurement a refused auto owes', () => {
+  expect(
+    resolveFetchSuspended({
+      standsIn: true,
+      mode: 'auto',
+      regionTooLarge: false,
+    }),
+  ).toBe(true)
+  expect(
+    resolveFetchSuspended({
+      standsIn: true,
+      mode: 'auto',
+      regionTooLarge: true,
+    }),
+  ).toBe(false)
+  expect(
+    resolveFetchSuspended({
+      standsIn: true,
+      mode: 'density',
+      regionTooLarge: true,
+    }),
+  ).toBe(true)
+  expect(
+    resolveFetchSuspended({
+      standsIn: false,
+      mode: 'density',
+      regionTooLarge: false,
+    }),
+  ).toBe(false)
 })

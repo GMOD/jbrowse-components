@@ -10,6 +10,7 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 export interface DensityBandDisplay {
   densityBandActive: boolean
   densityBandLayer: DensityBandLayer
+  densityReadout: string
   renderBlocks: RenderBlock[]
   canvasWidthPx: number
   height: number
@@ -37,7 +38,13 @@ const DensityBandCanvas = observer(function DensityBandCanvas({
   model: DensityBandDisplay
 }) {
   const palette = usePalette()
-  const { densityBandLayer, renderBlocks, canvasWidthPx, height } = model
+  const {
+    densityBandLayer,
+    densityReadout,
+    renderBlocks,
+    canvasWidthPx,
+    height,
+  } = model
   return (
     <OverlayCanvas
       width={canvasWidthPx}
@@ -48,6 +55,7 @@ const DensityBandCanvas = observer(function DensityBandCanvas({
           canvasWidth: canvasWidthPx,
           bandHeight: height,
           color: palette.text.secondary,
+          readout: densityReadout,
         })
         // the feature canvas under this one draws nothing while the tier is
         // active, so the band is the display's first paint

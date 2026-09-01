@@ -2,7 +2,9 @@ import {
   densityBandLayer,
   densityBandRegion,
   drawDensityBand,
+  formatDensity,
 } from './densityBand.ts'
+import { densityBandReadout, densityValueAt } from './densityBandViews.ts'
 
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -15,7 +17,6 @@ function density(
     starts: new Uint32Array(intervals.map(i => i.start)),
     ends: new Uint32Array(intervals.map(i => i.end)),
     scores: new Float32Array(intervals.map(i => i.score)),
-    exact: true,
   }
 }
 
@@ -168,5 +169,44 @@ describe('drawDensityBand', () => {
       },
     )
     expect(fills).toEqual([])
+  })
+})
+
+describe('the readout', () => {
+  const bins = new Map([
+    [
+      0,
+      {
+        starts: Uint32Array.from([0, 1000, 2000]),
+        ends: Uint32Array.from([1000, 2000, 3000]),
+        scores: Float32Array.from([3, 0.5, 120]),
+      },
+    ],
+  ])
+
+  test('reads the source interval under the cursor, and nothing in a gap', () => {
+    expect(densityValueAt(bins, { displayedRegionIndex: 0, bp: 1500 })).toBe(
+      0.5,
+    )
+    expect(densityValueAt(bins, { displayedRegionIndex: 0, bp: 3000 })).toBe(
+      undefined,
+    )
+    expect(densityValueAt(bins, { displayedRegionIndex: 1, bp: 10 })).toBe(
+      undefined,
+    )
+  })
+
+  test('names the peak, and the value while there is a cursor', () => {
+    const layer = densityBandLayer(bins, 10)
+    expect(densityBandReadout(layer, bins, undefined)).toBe('peak 120')
+    expect(
+      densityBandReadout(layer, bins, { displayedRegionIndex: 0, bp: 10 }),
+    ).toBe('3.0 at cursor, peak 120')
+  })
+
+  test('formats a mean to what a band can show', () => {
+    expect(formatDensity(0.0341)).toBe('0.034')
+    expect(formatDensity(3.14)).toBe('3.1')
+    expect(formatDensity(119.6)).toBe('120')
   })
 })
