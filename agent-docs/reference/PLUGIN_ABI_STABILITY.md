@@ -69,6 +69,17 @@ deleted, kept as a plain historical record rather than a live check.
 duck-typed caller exactly as deleting the member would, so plugin-facing
 arguments may be added **optional** and never made required.
 
+One published signature was changed rather than widened, deliberately and while
+still pre-release: `calculateRedispatchRange`'s second parameter is a predicate
+over lines, where it took a `Set` of GFF3 type names. The type set could only
+approximate the question the bound actually asks — "can this record have
+children?" — and core cannot answer that for a format it should not know about,
+so admitting a `Set` too would have kept the shape that was wrong in the name of
+a caller shape nobody outside the tree is known to use. A plugin passing a `Set`
+gets `expands is not a function`, which is loud. The bar it was weighed against:
+a surface that cannot express the in-tree adapters natively is not kept for
+plugins either.
+
 **The exemplar plugin's imports are part of that derivation, deliberately.**
 `example-plugins/score-example` is the hand-composed stack an external author
 copies (ADR-030), built against the published subpaths and nothing else, so what

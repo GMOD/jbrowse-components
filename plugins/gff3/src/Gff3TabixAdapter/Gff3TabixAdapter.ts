@@ -13,10 +13,12 @@ import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
 import { parseRecordsLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
+import { hasIdAttribute } from './hasIdAttribute.ts'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { TabixLine } from '@jbrowse/core/util/tabix'
 import type { Region } from '@jbrowse/core/util/types'
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAdapterConfig> {
@@ -72,10 +74,24 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
     return ObservableCreate<Feature>(async observer => {
       try {
         const { gff, dontRedispatchSet } = await this.configure(opts)
+        // The bound exists to reach a record's children, so what disqualifies a
+        // record is having none. `ID` answers that exactly — nothing can name a
+        // parent that has no name — and the type list covers what it cannot: a
+        // record carrying an `ID` that nothing references, which hosted hg19
+        // RefSeq's chromosome-long `region` is.
+        const canHaveChildren = (line: TabixLine) =>
+          hasIdAttribute(line.line) && !dontRedispatchSet.has(line.type)
         const lines = await readTabixLinesRedispatched(
           gff,
           query,
-          dontRedispatchSet,
+          // A caller reading only top-level features is owed nothing by the
+          // flanks and pays for them anyway: they complete SUBFEATURE lists, and
+          // a top-level feature overlapping the query is in the query's own read
+          // already, since tabix returns every overlapping line and a child is
+          // contained in its parent. On an NCBI `GCF_*_genomic.gff.gz`, whose
+          // chromosome-long `match` widens the bound at every window, that is
+          // 193,008 lines parsed to keep 3 features — 2734 ms against 8 ms.
+          opts.topLevelOnly ? () => false : canHaveChildren,
           opts,
         )
 

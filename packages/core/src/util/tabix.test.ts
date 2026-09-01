@@ -163,7 +163,7 @@ describe('readTabixLinesRedispatched', () => {
     const lines = await readTabixLinesRedispatched(
       source,
       { refName: 'ctgA', start: 0, end: 100 },
-      new Set(),
+      () => true,
     )
     expect(source.reads).toEqual([[0, 100]])
     expect(lines).toHaveLength(1)
@@ -178,7 +178,7 @@ describe('readTabixLinesRedispatched', () => {
     await readTabixLinesRedispatched(
       source,
       { refName: 'ctgA', start: 100, end: 200 },
-      new Set(),
+      () => true,
     )
     expect(source.reads).toEqual([
       [100, 200],
@@ -192,7 +192,7 @@ describe('readTabixLinesRedispatched', () => {
     await readTabixLinesRedispatched(
       source,
       { refName: 'ctgA', start: 100, end: 200 },
-      new Set(),
+      () => true,
     )
     expect(source.reads).toEqual([
       [100, 200],
@@ -207,7 +207,7 @@ describe('readTabixLinesRedispatched', () => {
     await readTabixLinesRedispatched(
       source,
       { refName: 'ctgA', start: 100, end: 200 },
-      new Set(),
+      () => true,
     )
     expect(source.reads).toHaveLength(3)
   })
@@ -223,13 +223,13 @@ describe('readTabixLinesRedispatched', () => {
     const lines = await readTabixLinesRedispatched(
       source,
       { refName: 'ctgA', start: 100, end: 200 },
-      new Set(),
+      () => true,
     )
     expect(lines.map(l => l.offset)).toEqual([0, 1])
     expect(lines.map(l => l.type)).toEqual(['gene', 'mRNA'])
   })
 
-  it('leaves a dontRedispatch type out of the bounds', async () => {
+  it('leaves a line the predicate excludes out of the bounds', async () => {
     const source = overhangingSource([
       { type: 'chromosome', start: 0, end: 1_000_000 },
       { type: 'gene', start: 120, end: 180 },
@@ -237,11 +237,24 @@ describe('readTabixLinesRedispatched', () => {
     const lines = await readTabixLinesRedispatched(
       source,
       { refName: 'ctgA', start: 100, end: 200 },
-      new Set(['chromosome']),
+      line => line.type !== 'chromosome',
     )
     expect(source.reads).toEqual([[100, 200]])
     // the chromosome line is still returned, just not allowed to widen the read
     expect(lines).toHaveLength(2)
+  })
+
+  // Not reading the flanks is a value of the one control rather than a second
+  // one beside it: this is what an adapter honouring `topLevelOnly` passes.
+  it('reads the query and stops when nothing may expand the bound', async () => {
+    const source = overhangingSource([{ type: 'gene', start: 50, end: 5000 }])
+    const lines = await readTabixLinesRedispatched(
+      source,
+      { refName: 'ctgA', start: 100, end: 200 },
+      () => false,
+    )
+    expect(source.reads).toEqual([[100, 200]])
+    expect(lines).toHaveLength(1)
   })
 })
 

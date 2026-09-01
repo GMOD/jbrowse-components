@@ -70,10 +70,21 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
     return ObservableCreate<Feature>(async observer => {
       try {
         const { gtf, dontRedispatchSet } = await this.configure(opts)
+        // The type list alone, and `opts.topLevelOnly` is deliberately not
+        // honoured — both for the same reason. A GTF line has no `ID`/`Parent`,
+        // so there is no cheap "can this have children"; and a GTF top-level
+        // feature is not a line at all, it is synthesized by
+        // `aggregateGtfFeatures` from the transcripts in the FETCHED set, whose
+        // span it takes from them. So the argument that lets GFF3 skip the
+        // flanks — a top-level feature overlapping the query is already in the
+        // query's own read — does not transfer, and a narrower bound could draw
+        // a gene short rather than merely flat. Nothing is lost by declining:
+        // no GTF record shape makes this bound expensive (the fixtures top out
+        // at 19 kb, against GFF3's chromosome-long `match`).
         const lines = await readTabixLinesRedispatched(
           gtf,
           query,
-          dontRedispatchSet,
+          line => !dontRedispatchSet.has(line.type),
           opts,
         )
 

@@ -179,7 +179,11 @@ export async function samplePreFetchDensity({
 }): Promise<RegionTooLargeResult | undefined> {
   const { featureDensity } = await calculateFeatureDensityStats(
     region,
-    (r, o) => dataAdapter.getFeatures(r, o),
+    // `topLevelOnly`: this counts and draws nothing, so it does not need the
+    // subfeature completion a tabix GFF3/GTF read pays flanks for — and on an
+    // NCBI GFF3 those flanks are most of the probe's cost. See
+    // `readTabixLinesRedispatched`.
+    (r, o) => dataAdapter.getFeatures(r, { ...o, topLevelOnly: true }),
     {
       stopToken,
       statusCallback,

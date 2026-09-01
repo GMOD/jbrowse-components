@@ -49,7 +49,7 @@ unsolvable bit is a connector line crossing the seam — JBrowse never lays out 
 glyph across a region boundary). The only real new code is a **circular adapter
 decorator** (parameterized by `L`): re-emit any feature with `end > L` as two
 halves, issue a modular wrap-fetch of `[L-margin, L]` when querying near the
-origin (same muscle as `Gff3TabixAdapter.ts:84` redispatch), and key both halves
+origin (same muscle as `readTabixLinesRedispatched` in `packages/core/src/util/tabix.ts`), and key both halves
 by canonical `pos mod L` so copies/halves reconcile. De-risk cheaply: **Step 0 is
 zero code** — hand-set displayedRegions to the contig twice with seam padding
 zeroed on pneumobrowse to eyeball the UX before building the decorator. Confirm

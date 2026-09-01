@@ -57,9 +57,15 @@ export function doesIntersect2(
 /**
  * Compute the expanded fetch range a tabix adapter must "redispatch" to when
  * features found in a query extend past the requested window. Returns the union
- * of the query with the bounds of every feature whose type is not in
- * `dontRedispatchSet`, or `undefined` when nothing extends past the query (no
- * redispatch needed).
+ * of the query with the bounds of every line `expands` admits, or `undefined`
+ * when nothing extends past the query (no redispatch needed).
+ *
+ * **A predicate, not a set of types**, because the useful question is not what a
+ * record is called. The bound exists to reach a record's *children*, so what
+ * disqualifies a record is having none — and in GFF3 that is answerable exactly,
+ * from whether the record carries an `ID` for a `Parent` to reference. A type
+ * blocklist can only ever approximate it, and it is the caller's format that
+ * knows how: this file reads no column but the coordinates.
  *
  * Feature coordinates arrive interbase, matching the query: @gmod/tabix applies
  * the index's coordinate offset before invoking the line callback, so a GFF/GTF
@@ -67,20 +73,21 @@ export function doesIntersect2(
  *
  * Seeding the accumulator with the query bounds is what makes the result a
  * union rather than just the feature bounds. A redispatch narrower than the
- * original window would drop a dontRedispatch-typed feature that the first
- * fetch found inside the query but that falls outside the expanded range, since
- * those types are deliberately excluded from the bounds.
+ * original window would drop an excluded line that the first fetch found inside
+ * the query but that falls outside the expanded range.
  */
-export function calculateRedispatchRange(
-  features: { start: number; end: number; type: string }[],
-  dontRedispatchSet: Set<string>,
+export function calculateRedispatchRange<
+  T extends { start: number; end: number },
+>(
+  features: T[],
+  expands: (feature: T) => boolean,
   queryStart: number,
   queryEnd: number,
 ): { start: number; end: number } | undefined {
   let minStart = queryStart
   let maxEnd = queryEnd
   for (const feature of features) {
-    if (!dontRedispatchSet.has(feature.type)) {
+    if (expands(feature)) {
       if (feature.start < minStart) {
         minStart = feature.start
       }

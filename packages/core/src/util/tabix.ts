@@ -102,9 +102,15 @@ export function readTabixLines(
  * Read a region's tabix lines, then — if any feature found there extends past
  * the query — read the overhang on either side, so a parent line's children (a
  * gene's exons, a transcript's CDS) outside the original window are pulled in
- * and the parent/child tree resolves fully. Types in `dontRedispatchSet` are
- * excluded from the bounds, so one chromosome-spanning record can't force a
- * whole-chromosome refetch.
+ * and the parent/child tree resolves fully. `expands` decides which lines widen
+ * the bound, so one chromosome-spanning record can't force a whole-chromosome
+ * refetch; {@link calculateRedispatchRange} says why that is a predicate.
+ *
+ * **There is one control, and skipping the expansion is a value of it**: an
+ * `expands` that admits nothing reads the query and stops. A caller that wants
+ * that says so to its adapter, which is the layer that knows whether its format
+ * can honour it — see `Gff3TabixAdapter`, and `GtfTabixAdapter` for a format
+ * that cannot.
  *
  * **The flanks, not the union.** Re-reading `[minStart, maxEnd]` returns
  * everything the first read already had — a second full read of the query range
@@ -134,7 +140,7 @@ export async function readTabixLinesRedispatched(
   // the region's locus only — kept structural, like TabixLineSource above, so
   // this module stays free of the `types` barrel and its MST models
   query: { refName: string; start: number; end: number },
-  dontRedispatchSet: Set<string>,
+  expands: (line: TabixLine) => boolean,
   opts: { statusCallback?: StatusCallback; stopToken?: StopToken } = {},
 ): Promise<TabixLine[]> {
   const { statusCallback, stopToken } = opts
@@ -146,7 +152,7 @@ export async function readTabixLinesRedispatched(
   const lines = await read(query.start, query.end, statusCallback)
   const redispatch = calculateRedispatchRange(
     lines,
-    dontRedispatchSet,
+    expands,
     query.start,
     query.end,
   )

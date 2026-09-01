@@ -197,6 +197,18 @@ reads and 238 kb, so no ladder tuning gets a region under a few hundred kb. The
 byte axis reads a `.tbi` already in memory and costs nothing, which is why the
 batch short circuit above matters more than either constant here.
 
+**That floor is the window read alone, and for a tabix GFF3/GTF it only became
+the whole cost once the probe stopped redispatching.** `readTabixLinesRedispatched`
+normally reads two more flanks to complete subfeature lists, bounded by the
+widest record the query returned — and on an NCBI `GCF_*_genomic.gff.gz`, whose
+every reference opens with a chromosome-long `match` record, that bound is the
+chromosome. One 1 kb probe there parsed 193,008 lines to keep 3 features:
+2734 ms against 8 ms. The probe now passes `topLevelOnly`, which skips the
+expansion, because the flanks provably cannot change a top-level count — see
+`readTabixLinesRedispatched` for the argument and
+[the adapter's `hasIdAttribute`](../../plugins/gff3/src/Gff3TabixAdapter/hasIdAttribute.ts)
+for what bounds the expansion on the paths that still take it.
+
 That chunk granularity is also why the probe is a *sample* rather than an
 incremental exact count, which is the obvious thing to reach for instead — count
 admitted features as the observable emits and stop at the budget, with no fixed

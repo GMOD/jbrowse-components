@@ -332,6 +332,16 @@ export interface BaseOptions {
   // Resolving it here instead hides a fetch input from that key, which is how a
   // zoom across the threshold came to leave a view holding the wrong tier.
   lodMode?: 'fine' | 'coarse'
+  // "I read only top-level features", so an adapter may skip work that exists
+  // to complete SUBFEATURE lists. A request, not an instruction: only the
+  // adapter knows whether its format's top-level set is even a function of the
+  // lines it read — `Gff3TabixAdapter` honours it by dropping the redispatch
+  // flanks, `GtfTabixAdapter` declines because it synthesizes genes from the
+  // transcripts it fetched, and both say why at the call.
+  //
+  // Set by the pre-fetch density probe, which counts and draws nothing. Not a
+  // rendering mode: a caller that will lay features out wants the whole tree.
+  topLevelOnly?: boolean
 }
 ```
 
