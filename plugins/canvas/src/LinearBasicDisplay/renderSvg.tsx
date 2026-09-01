@@ -136,6 +136,7 @@ function CanvasFeaturesSvgBody({
                 model.densityBins,
                 undefined,
               ),
+              backing: palette.background.paper,
             })
           }}
         />

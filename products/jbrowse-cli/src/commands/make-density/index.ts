@@ -128,8 +128,8 @@ export async function run(args?: string[]) {
     )
   }
 
-  // A file that yielded nothing writes a valid, empty bigWig that draws a flat
-  // band, which reads as "no features here" rather than as "wrong file"
+  // A file that yielded nothing is refused rather than written as a flat
+  // band, which would read as "no features here" rather than "wrong file"
   const binCount = [...bins.values()].reduce(
     (sum, perRef) => sum + perRef.size,
     0,
@@ -163,12 +163,22 @@ export async function run(args?: string[]) {
     rmSync(tmpDir, { recursive: true, force: true })
   }
 
+  // The slot lives on the indexed adapters, so a plain text file has to be
+  // bgzipped and tabix-indexed before the track can carry the sidecar
+  const indexed = /\.b?gz$/i.test(file)
+  const preset = format === 'bed' ? 'bed' : format === 'vcf' ? 'vcf' : 'gff'
+  const trackFile = indexed ? file : `${file}.gz`
+  const indexFirst = indexed
+    ? ''
+    : `  bgzip ${file} && tabix -p ${preset} ${trackFile}\n`
   const nextCommand =
     outputFile === densitySidecarPath(file)
       ? 'Next, add the track it summarizes — a sidecar under this name is picked up automatically:\n' +
-        `  jbrowse add-track ${file} --load copy`
+        indexFirst +
+        `  jbrowse add-track ${trackFile} --load copy`
       : 'Next, add the track it summarizes, naming this sidecar:\n' +
-        `  jbrowse add-track ${file} --load copy --density ${outputFile}`
+        indexFirst +
+        `  jbrowse add-track ${trackFile} --load copy --density ${outputFile}`
   console.log(
     `Created ${outputFile}: ${records} feature start(s) in ${binCount} non-empty ${binSize}bp bin(s)\n\n${nextCommand}`,
   )

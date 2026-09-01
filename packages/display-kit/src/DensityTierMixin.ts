@@ -5,6 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
 import {
+  densityBinsCover,
   densityZoomBucket,
   isDensityTierMode,
   resolveDensityTier,
@@ -26,6 +27,7 @@ import type { StatusWindow } from '@jbrowse/core/util/progress'
 export interface DensityTierHost extends FetchSkeletonHost {
   configuration: DensityTierConfigModel
   regionTooLarge: boolean
+  setError: (error?: unknown) => void
   byteGateAdapterPath: string[]
   byteGateAdapterConfig: Record<string, unknown>
   isMinimized: boolean
@@ -85,8 +87,17 @@ export default function DensityTierMixin() {
       densityBinsKey: undefined as string | undefined,
       /**
        * #volatile
+       * What the held bins were read over: the buffered regions, the zoom
+       * bucket and the adapter, so a pan or a zoom inside them re-reads
+       * nothing.
        */
-      densityError: undefined as unknown,
+      densityBinsRead: undefined as
+        | {
+            regions: BufferedVisibleRegion[]
+            bucket: number
+            adapterKey: string
+          }
+        | undefined,
       /**
        * #volatile
        */
@@ -165,12 +176,18 @@ export default function DensityTierMixin() {
       setDensityBins(
         entries: { displayedRegionIndex: number; bins: FeatureDensity }[],
         key: string,
+        read?: {
+          regions: BufferedVisibleRegion[]
+          bucket: number
+          adapterKey: string
+        },
       ) {
         self.densityBins.clear()
         for (const { displayedRegionIndex, bins } of entries) {
           self.densityBins.set(displayedRegionIndex, bins)
         }
         self.densityBinsKey = key
+        self.densityBinsRead = read
       },
       /**
        * #action
@@ -178,12 +195,7 @@ export default function DensityTierMixin() {
       clearDensityBins() {
         self.densityBins.clear()
         self.densityBinsKey = undefined
-      },
-      /**
-       * #action
-       */
-      setDensityError(error?: unknown) {
-        self.densityError = error
+        self.densityBinsRead = undefined
       },
       /**
        * #action
@@ -206,13 +218,23 @@ export default function DensityTierMixin() {
           delay: 300,
           report: { statusWindow: host(self).statusWindow },
           gate: () => self.densityTierActive && !host(self).isMinimized,
+          // nothing to read while the held bins still cover the screen at
+          // this zoom bucket for this adapter, so a pan or a small zoom
+          // inside the buffered read draws what is held
           prepare: () => {
             const v = view(self)
-            return v.initialized
+            const adapterConfig = host(self).byteGateAdapterConfig
+            const read = self.densityBinsRead
+            const covered =
+              read !== undefined &&
+              read.bucket === densityZoomBucket(v.coarseBpPerPx) &&
+              read.adapterKey === JSON.stringify(adapterConfig) &&
+              densityBinsCover(read.regions, v.visibleRegions)
+            return v.initialized && !covered
               ? {
                   regions: v.bufferedVisibleRegions,
                   bpPerPx: v.coarseBpPerPx,
-                  adapterConfig: host(self).byteGateAdapterConfig,
+                  adapterConfig,
                 }
               : undefined
           },
@@ -231,10 +253,17 @@ export default function DensityTierMixin() {
                 return bins ? [{ displayedRegionIndex, bins }] : []
               }),
               densityIssueKey(issue),
+              {
+                regions: issue.regions,
+                bucket: densityZoomBucket(issue.bpPerPx),
+                adapterKey: JSON.stringify(issue.adapterConfig),
+              },
             )
           },
+          // the display's own error, so the banner and its Retry are the ones
+          // the reads already have
           setError: error => {
-            self.setDensityError(error)
+            host(self).setError(error)
           },
           onBegin: () => {
             self.setDensityLoading(true)

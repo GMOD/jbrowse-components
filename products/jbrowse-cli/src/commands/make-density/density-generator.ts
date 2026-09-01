@@ -31,7 +31,8 @@ export function densityFormat(file: string): DensityFormat {
  * The reference name and 0-based start of one record, or undefined for a line
  * that contributes nothing: a header, a directive, a short line, or — in GFF3 —
  * a child feature, whose start would count its parent's locus a second time.
- * GTF, BED and VCF have no parent link to follow, so every record counts.
+ * A GTF row says whether it is a `transcript`, the record its track draws;
+ * BED and VCF have no parent link to follow, so every record counts.
  */
 function parseRecord(line: string, format: DensityFormat) {
   const columns = line.split('\t')
@@ -45,14 +46,20 @@ function parseRecord(line: string, format: DensityFormat) {
   }
   if (format === 'bed') {
     const start = columns[1]
-    return start === undefined ? undefined : { refName, start: +start }
+    return start === undefined
+      ? undefined
+      : { refName, start: +start, transcript: false }
   }
   const start = columns[format === 'vcf' ? 1 : 3]
   const attributes = columns[8]
   const isChild = format === 'gff3' && attributes?.includes('Parent=')
   return start === undefined || isChild
     ? undefined
-    : { refName, start: +start - 1 }
+    : {
+        refName,
+        start: +start - 1,
+        transcript: format === 'gtf' && columns[2] === 'transcript',
+      }
 }
 
 export interface DensityCounts {
@@ -88,9 +95,14 @@ export async function countFeatureStarts({
   binSize: number
   chromSizes: Map<string, number>
 }): Promise<DensityCounts> {
-  const bins = new Map<string, Map<number, number>>()
+  // A GTF's transcripts are tallied apart from its exons and CDS rows: where a
+  // file has transcript rows they are the count, and a file with none (an
+  // exon-only GTF) counts every row.
+  const all = new Map<string, Map<number, number>>()
+  const transcripts = new Map<string, Map<number, number>>()
   const unknownRefNames = new Set<string>()
   let records = 0
+  let transcriptRecords = 0
   const source = createReadStream(file)
   const lines = createInterface({
     input: /\.b?gz$/i.test(file) ? source.pipe(createGunzip()) : source,
@@ -104,17 +116,24 @@ export async function countFeatureStarts({
     const record = parseRecord(line, format)
     if (record && Number.isFinite(record.start)) {
       records++
+      transcriptRecords += record.transcript ? 1 : 0
       const length = chromSizes.get(record.refName)
       if (length === undefined) {
         unknownRefNames.add(record.refName)
       } else if (record.start >= 0 && record.start < length) {
-        tally(bins, record.refName, Math.floor(record.start / binSize))
+        const bin = Math.floor(record.start / binSize)
+        tally(all, record.refName, bin)
+        if (record.transcript) {
+          tally(transcripts, record.refName, bin)
+        }
       }
     }
   }
   lines.close()
   source.destroy()
-  return { bins, records, unknownRefNames }
+  return transcriptRecords > 0
+    ? { bins: transcripts, records: transcriptRecords, unknownRefNames }
+    : { bins: all, records, unknownRefNames }
 }
 
 /**

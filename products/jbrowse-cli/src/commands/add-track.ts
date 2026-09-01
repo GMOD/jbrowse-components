@@ -297,6 +297,11 @@ export async function run(args?: string[]) {
     density: flags.density,
     makeLocation: mapLocation,
   })
+  if (densityFile !== undefined && !load) {
+    throw new Error(
+      `--density names a local file (${densityFile}); pass --load to say how it is placed beside the config`,
+    )
+  }
 
   const baseConfigObj = config ? parseConfigFlag(config) : undefined
   const displayDefaults = mergeDisplayDefaults({

@@ -48,7 +48,8 @@ mid-gesture fires `SettingsInvalidate` and drops every loaded region.
 - **Bins are their own state.** `DensityTierMixin` holds them in a
   `regionDataMap` keyed by `displayedRegionIndex`, stamped with a key that
   includes the zoom bucket (one per doubling of bp/px), fetched through the
-  shared `installFetch` skeleton on its own rotation. They never enter
+  shared `installFetch` skeleton on its own rotation, and re-read only when a
+  visible block leaves the span they were read over. They never enter
   `loadedRegions` (`maf-tiers-share-one-loaded-span.md` is what sharing one
   span between two tiers costs) and the mode never enters `rpcProps()`.
 - **A bin is a level, not a count, and the sidecar covers every base.** A

@@ -64,3 +64,34 @@ export function resolveFetchSuspended({
 }) {
   return standsIn && (mode === 'density' || !regionTooLarge)
 }
+
+interface HeldSpan {
+  region: { refName: string; start: number; end: number }
+  displayedRegionIndex: number
+}
+
+/**
+ * Whether bins read over `held` still answer for what is on screen, so a pan
+ * or a zoom inside the buffered read re-uses them rather than re-reading. The
+ * same question the feature fetch asks with `isBlockCovered`: every visible
+ * block sits inside the held span of its own displayed region.
+ */
+export function densityBinsCover(
+  held: readonly HeldSpan[],
+  visible: readonly {
+    refName: string
+    start: number
+    end: number
+    displayedRegionIndex: number
+  }[],
+) {
+  return visible.every(block =>
+    held.some(
+      h =>
+        h.displayedRegionIndex === block.displayedRegionIndex &&
+        h.region.refName === block.refName &&
+        h.region.start <= Math.floor(block.start) &&
+        h.region.end >= Math.ceil(block.end),
+    ),
+  )
+}

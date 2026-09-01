@@ -372,9 +372,14 @@ the parts:
   `ready` after) and so is the export gate; the two failure terminals pass
   through.
 - **The bins never touch the fetch tiers.** They live in their own
-  `regionDataMap`, keyed by zoom bucket, cleared on chromosome navigation, and
-  the mode is a config slot (`densityTier`) that never enters `rpcProps()`, so
-  the swap drops no loaded region.
+  `regionDataMap`, cleared on chromosome navigation, and the mode is a config
+  slot (`densityTier`) that never enters `rpcProps()`, so the swap drops no
+  loaded region. The read's `prepare` declines while the held bins still cover
+  every visible block at the same zoom bucket for the same adapter
+  (`densityBinsCover`, the tier's `isBlockCovered`), so a pan or a small zoom
+  inside the buffered read draws what is held rather than re-reading and
+  scrimming. A failed read lands on the display's own `error`, so the banner
+  and its Retry are the ones the features already have.
 
 ## Force-load
 

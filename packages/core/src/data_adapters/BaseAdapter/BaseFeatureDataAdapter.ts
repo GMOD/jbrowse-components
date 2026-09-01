@@ -218,7 +218,12 @@ export abstract class BaseFeatureDataAdapter<
       isAdapterConfigSnapshot(sidecar) && this.getSubAdapter
         ? (await this.getSubAdapter(sidecar)).dataAdapter
         : undefined
-    return resolved && isFeatureAdapter(resolved)
+    if (resolved && !isFeatureAdapter(resolved)) {
+      throw new Error(
+        `densityAdapter ${isAdapterConfigSnapshot(sidecar) ? sidecar.type : ''} is not a feature adapter`,
+      )
+    }
+    return resolved
       ? Promise.all(
           regions.map(async region => {
             const features = await resolved.getFeaturesArray(region, opts)

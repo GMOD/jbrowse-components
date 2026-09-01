@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '../../configuration/index.ts'
 import { ObservableCreate } from '../../util/rxjs.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
+import { BaseAdapter } from './BaseAdapter.ts'
 import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 import { densityAdapterConfigSchemaFields } from './featureDensity.ts'
 
@@ -55,6 +56,10 @@ class Main extends BaseFeatureDataAdapter {
   freeResources() {}
 }
 
+class NotFeatures extends BaseAdapter {
+  freeResources() {}
+}
+
 const region = { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }
 
 test('reads the sidecar at the view bp/px', async () => {
@@ -80,4 +85,17 @@ test('no sidecar means no density', async () => {
   await expect(
     main.getFeatureDensity([region], { bpPerPx: 20 }),
   ).resolves.toBeUndefined()
+})
+
+test('a sidecar that is not a feature adapter is an error, not a silent no-tier', async () => {
+  const main = new Main(
+    schema.create({ densityAdapter: { type: 'NotAFeatureAdapter' } }),
+    async () => ({
+      dataAdapter: new NotFeatures(schema.create({})),
+      sessionIds: new Set<string>(),
+    }),
+  )
+  await expect(
+    main.getFeatureDensity([region], { bpPerPx: 20 }),
+  ).rejects.toThrow('not a feature adapter')
 })

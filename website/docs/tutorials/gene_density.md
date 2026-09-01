@@ -133,8 +133,8 @@ its sidecar.
 ## Zooming in gives the features back
 
 Zoom to 10 Mb over 1q21 to 1q23. The gene track's fetch now fits, so its band is
-gone and the genes are drawn. The Alu and L1 tracks would still each pull tens
-of thousands of records for this window, so they keep their bands.
+gone and the genes are drawn. The Alu and L1 tracks would still each pull
+thousands of records for this window, so they keep their bands.
 
 <Figure src="/img/gene_density_1q21.png" caption="10 Mb of chromosome 1 from 150 to 160 Mb. The RefSeq genes are back as features; the Alu and L1 tracks, still over budget at this width, keep their bands. The Alu band peaks under the densest run of genes, and the L1 band is fullest where the genes thin out." />
 
@@ -149,9 +149,11 @@ band can be held or dropped by hand.
 The bands are counts, so the file answers the same question. Each band names its
 peak in its corner, and hovering it reads the sidecar's value under the cursor.
 Take one megabase under the tallest run of the gene band, at 155 Mb, and one
-under a trough, at 60 Mb, and count what starts in each:
+under a trough, at 60 Mb, and count what falls in each. A gene's transcripts and
+exons carry `Parent=`, so the gene line drops them and counts each gene once:
 
 ```bash
+tabix genes.gff.gz chr1:155,000,000-156,000,000 | grep -vc 'Parent='
 tabix Alu.bed.gz chr1:155,000,000-156,000,000 | wc -l
 tabix L1.bed.gz chr1:155,000,000-156,000,000 | wc -l
 ```

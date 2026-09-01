@@ -136,7 +136,13 @@ export function withDensityAdapter({
     location !== undefined && fs.existsSync(densitySidecarPath(location))
       ? densitySidecarPath(location)
       : undefined
-  const file = density === undefined ? probed : density
+  if (probed !== undefined && !supported) {
+    console.warn(
+      `Warning: ${probed} sits beside the track file but ${adapter.type} has no densityAdapter slot, so it is not attached. The adapters carrying one are indexed: bgzip and tabix the file, then add it.`,
+    )
+  }
+  const file =
+    density === undefined ? (supported ? probed : undefined) : density
   return file === undefined
     ? { adapter }
     : {

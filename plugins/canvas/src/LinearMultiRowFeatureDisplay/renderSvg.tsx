@@ -113,6 +113,7 @@ function MultiRowSvgBody({
                   self.densityBins,
                   undefined,
                 ),
+                backing: exportPalette.background.paper,
               })
             }
             drawMultiRowBlocks(ctx, self.drawnRegionData, renderBlocks, state)

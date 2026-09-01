@@ -52,6 +52,7 @@ import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   ScoreScaleMixin,
   domainFromStats,
+  getNiceDomain,
   resolveSymlogConstant,
   scaleTypeFromString,
   visibleStatsDomain,
@@ -1056,13 +1057,25 @@ export default function stateModelFactory(
          * repack is a per-region allocation, so it must not land on anything
          * that moves per frame of a pan.
          */
+        /**
+         * #getter
+         * Whether the band stands in for the reads: the tier's verdict AND
+         * somewhere to draw it. "Show coverage" off collapses the band to
+         * nothing, so with it off the reads are fetched and drawn as they
+         * always were. Every term below that empties the pileup reads this,
+         * so the band and the reads never both go missing.
+         */
+        get densityStandsIn() {
+          return self.densityTierActive && self.showCoverage
+        },
+
         get densityCoverageRegions(): ReadonlyMap<
           number,
           CoverageRegionFields
         > {
           const regions = new Map<number, CoverageRegionFields>()
           const { view } = self
-          if (self.densityTierActive && view.initialized) {
+          if (this.densityStandsIn && view.initialized) {
             const binSize = densityBinSize(view.coarseBpPerPx)
             for (const [displayedRegionIndex, bins] of self.densityBins) {
               regions.set(
@@ -1101,15 +1114,20 @@ export default function stateModelFactory(
          * scale exists to give.
          *
          * While the density tier stands in, the axis is the bins' own: a count
-         * of features per bin rather than a read depth, undefined until some
-         * region holds one so the depth-scaled layers stay gated on the same
+         * of features per bin rather than a read depth, under the same min/max
+         * bounds the Coverage menu writes, undefined until some region holds
+         * one so the depth-scaled layers stay gated on the same
          * `hasCoverageScale` question they always were.
          */
         get coverageDomain(): [number, number] | undefined {
           const hidden = self.hiddenGroupKeys
-          return self.densityTierActive
+          return this.densityStandsIn
             ? this.densityDepthMax > 0
-              ? [0, this.densityDepthMax]
+              ? getNiceDomain({
+                  domain: [0, this.densityDepthMax],
+                  bounds: [self.minScoreBound, self.maxScoreBound],
+                  scaleType: self.scaleType,
+                })
               : undefined
             : visibleStatsDomain({
                 active: self.showCoverage,
@@ -2214,7 +2232,7 @@ export default function stateModelFactory(
           // question is asked of the pass holding both halves
           // (`inkGroupKeys`) — this directory's `hasArcBandInk`-not-`numArcs`
           // rule met one level up.
-          return self.densityTierActive
+          return self.densityStandsIn
             ? []
             : buildLanes({
                 order: self.groupOrder,
@@ -4096,15 +4114,12 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Whether the band is standing in for the features right now: the
-         * tier's verdict AND somewhere to draw it. `showCoverage` off collapses
-         * the band to nothing, so replacing the banner there would leave an
-         * empty display and no way back.
+         * Whether the band is standing in for the features right now — see
+         * `densityStandsIn`, the one term the pileup, the axis and the fetch
+         * all read.
          */
         get densityBandActive() {
-          return (
-            self.densityTierActive && self.belowCoverageBands.coverageHeight > 0
-          )
+          return self.densityStandsIn
         },
 
         /**
@@ -4124,16 +4139,14 @@ export default function stateModelFactory(
         /**
          * #getter
          * The band is standing in and holds nothing yet — where the banner's
-         * "nothing is coming" is the wrong answer. False on a failed read as
-         * well as on a filled one, so neither the scrim nor the export gate can
-         * latch on a source that will not answer.
+         * "nothing is coming" is the wrong answer. A failed read lands on the
+         * display's own `error`, which outranks this, so neither the scrim nor
+         * the export gate can latch on a source that will not answer.
          */
         get densityBandPending() {
           return (
             this.densityBandActive &&
-            (self.densityLoading ||
-              (self.densityError === undefined &&
-                self.densityCoverageRegions.size === 0))
+            (self.densityLoading || self.densityCoverageRegions.size === 0)
           )
         },
 

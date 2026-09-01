@@ -90,6 +90,16 @@ test('covers every base of every reference, empty runs as single rows', async ()
   expect(lines).toContain('ctgA\t2000\t3000\t0\n')
 })
 
+test('a GTF counts its transcripts, not their exons', async () => {
+  const counts = await countFeatureStarts({
+    file: path.join(base, 'demo.gtf'),
+    format: 'gtf',
+    binSize: 1_000_000,
+    chromSizes: new Map([['GeneScaffold_1', 1_000_000]]),
+  })
+  expect(counts.records).toBe(2)
+})
+
 test('clips the last bin to the reference length', async () => {
   const { lines } = await binsOf(gffGz, 40000)
   expect(lines).toContain('ctgA\t40000\t50001\t46\n')

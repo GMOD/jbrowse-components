@@ -21,7 +21,6 @@ export interface DensityBandHost
   densityBins: ReadonlyMap<number, FeatureDensity>
   densityBinsKey: string | undefined
   densityLoading: boolean
-  densityError: unknown
   densityTierActive: boolean
   viewportWithinLoadedData: boolean
   dataSuperseded: boolean
@@ -40,12 +39,10 @@ export function displayDensityBandLayer(
  * on navigation with the bins, so it cannot answer for a region the user has
  * left, and a read that committed nothing for a region still ends the wait —
  * an empty band is the honest answer there, where 'loading' would never lift.
+ * A failed read lands on the display's own `error`, which outranks this.
  */
 export function densityBandPending(self: DensityBandHost) {
-  return (
-    self.densityLoading ||
-    (self.densityBinsKey === undefined && self.densityError === undefined)
-  )
+  return self.densityLoading || self.densityBinsKey === undefined
 }
 
 /**

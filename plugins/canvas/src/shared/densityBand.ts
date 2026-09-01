@@ -108,9 +108,11 @@ export function drawDensityBand(
     bandHeight: number
     color: string
     readout?: string
+    /** the page behind the band, haloed round the readout where a bar is */
+    backing?: string
   },
 ) {
-  const { canvasWidth, bandHeight, color, readout } = state
+  const { canvasWidth, bandHeight, color, readout, backing } = state
   const { regions, maxDepth } = layer
   if (maxDepth > 0) {
     const normalize = (depth: number) => depth / maxDepth
@@ -138,6 +140,12 @@ export function drawDensityBand(
     if (readout) {
       ctx.font = `${READOUT_FONT_PX}px sans-serif`
       ctx.textBaseline = 'top'
+      if (backing) {
+        ctx.strokeStyle = backing
+        ctx.lineWidth = 3
+        ctx.lineJoin = 'round'
+        ctx.strokeText(readout, READOUT_PAD_PX, READOUT_PAD_PX)
+      }
       ctx.fillStyle = color
       ctx.fillText(readout, READOUT_PAD_PX, READOUT_PAD_PX)
     }
