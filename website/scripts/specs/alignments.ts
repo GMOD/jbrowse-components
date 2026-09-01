@@ -785,10 +785,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
-      // "Filter by..." is a single item, not a submenu — it opens the
-      // flag/tag/read-name dialog directly (menus/filters.ts).
-      { type: 'waitForText', text: 'Filter by...' },
-      { type: 'click', text: 'Filter by...' },
+      // The four read categories share the group, so "Filter by..." is always a
+      // submenu here and the dialog is its first row (menus/filters.ts).
+      ...menuCascade(['Filter by...', 'Edit filters...']),
+      { type: 'click', text: 'Edit filters...' },
       { type: 'waitForText', text: 'Filter options' },
       { type: 'delay', ms: 1000 },
     ],

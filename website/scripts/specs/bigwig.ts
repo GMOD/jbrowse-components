@@ -291,8 +291,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'bigwig/whole_genome_coverage',
     // start at a single chromosome so the figure can walk through the setup
-    // (show how to build this view). Stage 1 opens the View → Navigation
-    // menu with "Show all regions in assembly" boxed; stage 2 is the result.
+    // (show how to build this view). Stage 1 opens the view menu with "Show all
+    // regions in assembly" boxed; stage 2 is the result.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr10',
@@ -326,12 +326,12 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     viewportHeight: 680,
     stages: [
       {
-        // top frame: single chromosome, View → Navigation submenu open with
-        // "Show all regions in assembly" boxed — the one click that zooms the
-        // view out to the whole genome
+        // top frame: single chromosome, view menu open with "Show all regions in
+        // assembly" boxed — the one click that zooms the view out to the whole
+        // genome. Top-level since the Navigation group flattened (menuItems.ts).
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Navigation', 'Show all regions in assembly']),
+          ...menuCascade(['Show all regions in assembly']),
           // The menu's popover layers land on top of an already-painted view,
           // and a previous run captured this frame with the whole view body
           // white behind them. The DOM was all there (assertViewsRendered
@@ -345,9 +345,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          // box the "Navigation" parent item plus the sub-item it reveals so
-          // the whole menu path reads at a glance
-          ...cascadeBoxes(['Navigation', 'Show all regions in assembly']),
+          ...cascadeBoxes(['Show all regions in assembly']),
         ],
       },
       {

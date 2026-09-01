@@ -1542,7 +1542,18 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
                   jexlFiltersSetting: ['jexl:feature.inversion'],
                   height: 60,
                 },
-                hprcSegmentsLane(INV_REGION),
+                // Bounded where the other pages let it grow: this is the one
+                // figure whose lane shares a fixed budget with two more rows
+                // below it, and a grown lane is 595 px here (ADR-037 reserves
+                // the min-width clamp, so sub-pixel segments stack as deep as
+                // their deepest pile), which puts the non-carrier row's genes
+                // 460 px past the bottom of the capture. `fit` squeezes the
+                // same segments into the height instead of cutting them off.
+                {
+                  ...hprcSegmentsLane(INV_REGION),
+                  heightMode: 'fit',
+                  height: 45,
+                },
               ],
             },
             {

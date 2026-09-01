@@ -2250,7 +2250,8 @@ export const uiSpecs: ScreenshotSpec[] = [
           ...openFeatureHeightSubmenu(),
           {
             type: 'click',
-            selector: '[aria-label="apply Compact to all open tracks"]',
+            selector:
+              '[aria-label="apply Compact to all open tracks of this type"]',
           },
           { type: 'waitForText', text: 'Applied to 1 open track' },
           // the second click, which is the one that makes it a default at all
@@ -2271,7 +2272,16 @@ export const uiSpecs: ScreenshotSpec[] = [
             text: 'Filter tracks',
             value: 'volvox-long reads with SV',
           },
-          { type: 'click', text: 'volvox-long reads with SV' },
+          // By the row's own testid, NOT by its text. A text click matches an
+          // <input>'s VALUE too, and the step above just typed this string into
+          // the filter box above the list — so the click landed there, the track
+          // never opened, and the badge this spec is about could not exist. The
+          // testid's tail is the trackId, which also tells the two SV rows apart
+          // where the name is a prefix of the cram one's.
+          {
+            type: 'click',
+            selector: '[data-testid$=",volvox-long-reads-sv-bam"]',
+          },
           {
             type: 'waitForSelector',
             selector: '[data-testid="track_session_default_badge"]',

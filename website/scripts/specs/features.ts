@@ -216,7 +216,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
           {
             type: 'circle',
             anchor: {
-              selector: '[aria-label="apply Compact to all open tracks"]',
+              selector:
+                '[aria-label="apply Compact to all open tracks of this type"]',
             },
           },
           {
@@ -240,7 +241,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
         actions: [
           {
             type: 'click',
-            selector: '[aria-label="apply Compact to all open tracks"]',
+            selector:
+              '[aria-label="apply Compact to all open tracks of this type"]',
           },
           { type: 'waitForText', text: 'Applied to 2 open tracks' },
           ...dismissMenus(),

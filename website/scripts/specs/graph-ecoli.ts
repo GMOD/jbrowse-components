@@ -1222,7 +1222,15 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
               // integer ids at this width, and the halves have to be read the
               // same way for the density difference to be the only difference
               showLabels: 'none',
-              heightMode: 'grow',
+              // Bounded, and squeezed rather than clipped. The packer reserves
+              // the min-width clamp now (ADR-037), so a lane of sub-pixel
+              // segments is as many rows deep as its deepest pile: `grow` took
+              // this one to 800 px and pushed the graph pane — the figure's
+              // subject — off a 1060 px viewport. `fit` spends the height the
+              // lane is worth and still draws every segment, which a pinned
+              // `fixed` height would have cut off behind a scrollbar.
+              heightMode: 'fit',
+              height: 70,
               color: referencePositionColor(RESOLUTION_LANE_DOMAIN),
               // The pggb lane is ~2,400 segments over this span, which is past
               // the default density gate (1 feature per screen px) and draws the

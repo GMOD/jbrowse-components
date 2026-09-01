@@ -1,4 +1,4 @@
-import { displayPainted } from '@jbrowse/browser-test-utils'
+import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import {
   PARK_CURSOR,
@@ -126,7 +126,11 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '540,000',
+    // The MAF lane's own phase, not a ruler tick. This gated on '540,000' until
+    // the scalebar started hiding a coordinate that would sit under the sticky
+    // refName label — the window opens at chr:4,539,975, so that label is a
+    // fraction of a pixel from the left edge and never drawn.
+    readySelector: displaySettled('maf-display'),
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the variant lane plus one MAF row per sample and the coverage band

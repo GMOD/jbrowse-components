@@ -437,6 +437,13 @@ export const cgiabVideoFixtures = {
   }),
 }
 
+// A drawn chord, which is the half of an SV inspector that arrives last. Both
+// specs below used to ready on 'CHROM', a spreadsheet column header that is
+// painted before the sheet has rows and says nothing at all about the circle —
+// so the capture raced the chord track and landed on its loading hatch.
+const CHORDS_DRAWN =
+  '[data-testid="structuralVariantChordRenderer"] [data-testid^="chord-"]'
+
 export const svSpecs: ScreenshotSpec[] = [
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
@@ -452,7 +459,7 @@ export const svSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'CHROM',
+    readySelector: CHORDS_DRAWN,
     readyTimeout: 60000,
     settleMs: 15000,
     // the view is its default 550px tall and the run reported 185 css px of
@@ -479,7 +486,7 @@ export const svSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'CHROM',
+    readySelector: CHORDS_DRAWN,
     readyTimeout: 60000,
     settleMs: 15000,
     actions: [
