@@ -144,6 +144,29 @@ function trackRank(
   }
 }
 
+// The pick is a stable minimum, so a linear scan rather than a sort: only the
+// best rung is taken, and keeping the first strictly-lowest one is what leaves
+// an agreeing group with nothing to choose between in the order the ranking
+// handed it. Ranked once per hit for the reason `destinations` above it is:
+// `trackRank` reaches `session.getTrackById`, and a comparator asks O(n log n)
+// times for an answer that does not vary.
+function bestRanked(
+  results: BaseResult[],
+  model: LinearGenomeViewModel,
+  session: TrackCatalog,
+) {
+  let best = results[0]!
+  let bestRank = trackRank(best, model, session)
+  for (let i = 1; i < results.length; i++) {
+    const rank = trackRank(results[i]!, model, session)
+    if (rank < bestRank) {
+      best = results[i]!
+      bestRank = rank
+    }
+  }
+  return best
+}
+
 // The picker exists to disambiguate, and hits that name one feature at one
 // place are not ambiguous — they are several indexes having found it. An
 // instance carrying a handful of gene tracks turns every gene search into a
@@ -166,13 +189,7 @@ export function unanimousResult({
   const agree =
     destinations[0] !== undefined &&
     destinations.every(d => d === destinations[0])
-  // stable, so an agreeing group with nothing to choose between keeps the
-  // order the ranking handed it
-  return agree
-    ? [...results].sort(
-        (a, b) => trackRank(a, model, session) - trackRank(b, model, session),
-      )[0]!
-    : undefined
+  return agree ? bestRanked(results, model, session) : undefined
 }
 
 // Every multi-hit result set reaches the picker through here, so the two

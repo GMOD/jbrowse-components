@@ -245,6 +245,18 @@ describe('unanimousResult', () => {
     expect(pick(results, ['other_genes'])).toBe(results[1])
   })
 
+  // the pick is a stable minimum, and the linear scan that replaced the sort
+  // keeps that only because it takes the first *strictly* lowest rung: the best
+  // rung here is shared, and it is not the first hit
+  it('keeps the earlier of two hits whose tracks are both open', () => {
+    const results = [
+      hit('ctgA:1049..9000', 'missing'),
+      hit('ctgA:1049..9000', 'genes'),
+      hit('ctgA:1049..9000', 'other_genes'),
+    ]
+    expect(pick(results, ['genes', 'other_genes'])).toBe(results[1])
+  })
+
   it('skips a hit indexed under a track no config claims', () => {
     const results = [
       hit('ctgA:1049..9000', 'missing'),

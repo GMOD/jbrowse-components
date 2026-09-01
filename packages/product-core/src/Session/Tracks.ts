@@ -39,6 +39,14 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       // here; hydration to MST nodes happens lazily in TrackConfigurationReference
       // on first access. Cached, so the N per-id lookups below share one rebuild
       // per change rather than each re-scanning.
+      //
+      // `keepAlive` is what makes that last sentence true, and it is load
+      // bearing: an unobserved computed re-derives on EVERY read, and this one
+      // walks every track, assembly and connection the session can resolve. A
+      // reader inside a reaction or an MST action was already fine — MobX
+      // caches within a batch, which is why the resolvers and `showTrackGeneric`
+      // never showed it. Ranking search hits is the caller that is neither, and
+      // it cost 33ms per search on a 2000-track config against 0.07ms held.
       const tracksByIdRecord = computed<Record<string, AnyConfigurationModel>>(
         () => {
           const temporaryAssemblies =
@@ -75,6 +83,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             ]),
           ])
         },
+        { keepAlive: true },
       )
       // Per-id computed cache backing getTrackById. Resolving one track's config
       // subscribes only to that id's computed, so editing track A leaves track
