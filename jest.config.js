@@ -272,13 +272,19 @@ export default {
       roots: ['<rootDir>'],
     },
     {
-      // Pure helpers behind the docs autogeneration scripts
+      // Pure helpers behind the docs autogeneration scripts, plus the
+      // astro:content-free pure helpers in website/src/lib (everything else
+      // there depends on astro:content, which isn't mocked here, so is
+      // untested by this project).
       displayName: 'docs',
-      testMatch: ['<rootDir>/website/scripts/**/*.test.ts'],
+      testMatch: [
+        '<rootDir>/website/scripts/**/*.test.ts',
+        '<rootDir>/website/src/lib/**/*.test.ts',
+      ],
       testEnvironment: 'node',
       ...baseConfig,
       id: 'jbrowse-docs',
-      roots: ['<rootDir>/website/scripts'],
+      roots: ['<rootDir>/website/scripts', '<rootDir>/website/src/lib'],
     },
     {
       // Release tooling: the blog-post render/parse contract

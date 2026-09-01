@@ -6,12 +6,11 @@ import type { Plugin } from 'unified'
 interface GuideRef {
   title: string
   url: string
+  kind: string
 }
 
 function headingText(heading: Heading): string {
-  return heading.children
-    .map(c => (c.type === 'text' ? c.value : ''))
-    .join('')
+  return heading.children.map(c => (c.type === 'text' ? c.value : '')).join('')
 }
 
 // The generator-written "## Related links" list on config pages (see
@@ -33,9 +32,13 @@ function linkNode({ title, url }: GuideRef): Link {
   return { type: 'link', url, children: [{ type: 'text', value: title }] }
 }
 
-// One bullet per guide, prefixed "Guide:" — matches the "**Kind:** link"
-// convention the generator uses for its own entries (Track/Adapter/Display/
-// ...) in the same list, so the merged list reads as one consistent style.
+// One bullet per guide, prefixed with its kind — "Guide:" matches the
+// "**Kind:** link" convention the generator uses for its own entries
+// (Track/Adapter/Display/...) in the same list, so the merged list reads as
+// one consistent style. A guide whose title collides with another guide's
+// (config_guides/hic_track.md and user_guides/hic_track.md are both titled
+// "Hi-C track") gets its directory as the kind instead, so the two bullets
+// read as distinct rather than as the same link twice.
 function guideListItem(ref: GuideRef): ListItem {
   return {
     type: 'listItem',
@@ -44,7 +47,10 @@ function guideListItem(ref: GuideRef): ListItem {
       {
         type: 'paragraph',
         children: [
-          { type: 'strong', children: [{ type: 'text', value: 'Guide:' }] },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: `${ref.kind}:` }],
+          },
           { type: 'text', value: ' ' },
           linkNode(ref),
         ],
