@@ -51,12 +51,18 @@ function selfWith(
   loaded: number[] = [],
   bytes: (number | undefined)[][] = [],
   cancels: number[] = [],
+  partials: boolean[] = [],
 ) {
   let canceled = false
   return {
     gateFetchState: () => ISSUED,
-    commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
+    commitFetchBytes: (
+      perRegionBytes: (number | undefined)[],
+      _issued: GateFetchState,
+      partial?: boolean,
+    ) => {
       bytes.push(perRegionBytes)
+      partials.push(partial ?? false)
     },
     cancelFetch: () => {
       canceled = true
@@ -410,4 +416,48 @@ test('commits once even if cancelFetch leaves the batch running', async () => {
   expect(bytes).toHaveLength(1)
   expect(completed).toBe(1)
   expect(cancels).toEqual([1])
+})
+
+// `partial` is a claim about the NUMBER, not about the refusal: it says the max
+// is over whichever regions won the race rather than over the set, and
+// `nextByteEstimate` drops such a reading as zoom evidence because comparing
+// chr1's bytes to chr4's is not a comparison. So it has to be false whenever
+// every region did report — a refusal from the last region to land, and every
+// refusal on a single-region display, is ordinary evidence, and marking it
+// partial would silently stop `zoomIneffective` ever accumulating.
+test('a refusal is only partial when a region never reported', async () => {
+  const run = async (refuseOn: string) => {
+    const partials: boolean[] = []
+    await fetchEachRegion(
+      selfWith(
+        {
+          stopToken: 'tok',
+          isStale: () => false,
+          statusCallback: () => {},
+          callRpc() {
+            throw new Error('callRpc is not stubbed in this test')
+          },
+        },
+        [],
+        [],
+        [],
+        partials,
+      ),
+      NEEDED,
+      {
+        call: region =>
+          Promise.resolve(
+            region.refName === refuseOn
+              ? { regionTooLarge: true as const, bytes: 9e9 }
+              : { bytes: 10, value: region.refName },
+          ),
+        onResult: () => {},
+      },
+    )
+    return partials
+  }
+  // ctgA is first, so ctgB never reported
+  expect(await run('ctgA')).toEqual([true])
+  // ctgB is last, so the batch measured everything before it stopped
+  expect(await run('ctgB')).toEqual([false])
 })

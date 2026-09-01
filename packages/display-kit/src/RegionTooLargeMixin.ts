@@ -394,6 +394,7 @@ export default function RegionTooLargeMixin() {
       commitFetchBytes(
         perRegionBytes: (number | undefined)[],
         issued: GateFetchState,
+        partial: boolean = false,
       ) {
         if (self.gateEnabled && perRegionBytes.length > 0) {
           applyGateEvent(self, {
@@ -401,6 +402,7 @@ export default function RegionTooLargeMixin() {
             issued,
             currentTierKey: self.byteGateAdapterKey,
             bytes: largestRegionBytes(perRegionBytes),
+            partial,
           })
         }
       },

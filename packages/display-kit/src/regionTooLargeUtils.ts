@@ -75,6 +75,11 @@ export type GateEvent =
       currentTierKey: string | undefined
       /** absent when the fetch measured no bytes */
       bytes?: number
+      /**
+       * The batch stopped early, so `bytes` is the max over whichever regions
+       * landed first rather than over the region set. See `zoomIneffective`.
+       */
+      partial?: boolean
     }
   | { kind: 'invalidated' }
   | { kind: 'forceLoad'; approved: boolean }
@@ -120,7 +125,11 @@ export function nextGateState(prev: GateState, event: GateEvent): GateState {
         byteEstimate:
           bytes === undefined
             ? prev.byteEstimate
-            : nextByteEstimate(prev.byteEstimate, { bytes, viewport }),
+            : nextByteEstimate(
+                prev.byteEstimate,
+                { bytes, viewport },
+                event.partial,
+              ),
       }
     }
   }
@@ -134,6 +143,7 @@ export function nextGateState(prev: GateState, event: GateEvent): GateState {
 export function nextByteEstimate(
   previous: ByteEstimate | undefined,
   measurement: { bytes: number; viewport: GateViewport },
+  partial = false,
 ): ByteEstimate {
   const { bytes, viewport } = measurement
   const base = { bytes, measuredSpanBp: viewport.spanBp }
@@ -148,9 +158,16 @@ export function nextByteEstimate(
     viewport.spanBp / previous.measuredSpanBp <= ZOOM_EVIDENCE_SPAN_RATIO
   return {
     ...base,
-    zoomIneffective: zoomedInMaterially
-      ? bytes / previous.bytes > ZOOM_EVIDENCE_BYTE_RATIO
-      : previous.zoomIneffective,
+    // A partial measurement is not evidence about zoom. The comparison assumes
+    // two readings of the same thing, and a batch that stopped at its first
+    // refusal reports whichever regions won the race — so zooming from one
+    // refusing viewport to another could compare chr1's bytes to chr4's, clear
+    // the 90% bar on that alone, and drop the "zoom in" advice from the banner
+    // in exactly the case where zooming in would have worked.
+    zoomIneffective:
+      zoomedInMaterially && !partial
+        ? bytes / previous.bytes > ZOOM_EVIDENCE_BYTE_RATIO
+        : previous.zoomIneffective,
   }
 }
 

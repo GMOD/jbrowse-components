@@ -65,13 +65,17 @@ export function aggregateQuantitativeStats(
   })
 }
 
-// A sample window of `interval` bp centered ~25% into the region, so the sample
-// avoids the region edges where coverage often tapers. Clamped to the region
-// bounds so it never samples features outside the region being measured (the
-// left edge clamps to the region start, not to the chromosome origin).
-function sampleWindow(region: Region, interval: number) {
+// Where the probe samples, as a fraction into the region. The primary point
+// avoids the region edges, where coverage often tapers.
+const DENSITY_SAMPLE_POINT = 0.25
+const DENSITY_CONFIRM_POINT = 0.7
+
+// A sample window of `interval` bp centered `at` into the region. Clamped to the
+// region bounds so it never samples features outside the region being measured
+// (the left edge clamps to the region start, not to the chromosome origin).
+function sampleWindow(region: Region, interval: number, at: number) {
   const { start, end } = region
-  const sampleCenter = start * 0.75 + end * 0.25
+  const sampleCenter = start + (end - start) * at
   return {
     start: Math.max(start, Math.round(sampleCenter - interval / 2)),
     end: Math.min(end, Math.round(sampleCenter + interval / 2)),
@@ -108,27 +112,62 @@ export async function calculateFeatureDensityStats(
     gate?.initialInterval ?? 0,
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (true) {
-    const { start, end } = sampleWindow(region, interval)
-    const sampledBp = end - start
+  const sampleAt = async (at: number) => {
+    const { start, end } = sampleWindow(region, interval, at)
     const features = await firstValueFrom(
       getFeatures({ ...region, start, end }, opts).pipe(toArray()),
     )
-    const admitted = admit ? features.filter(admit).length : features.length
+    return {
+      sampledBp: end - start,
+      raw: features.length,
+      admitted: admit ? features.filter(admit).length : features.length,
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  while (true) {
+    const { sampledBp, raw, admitted } = await sampleAt(DENSITY_SAMPLE_POINT)
 
     // The verdict is already decided by a margin, so a precise density would
     // only make it more decided. Tested on the admitted count, which is the
     // population the caller judges — the raw count below governs window growth
     // for the reason in the note above, and the two must not be swapped.
-    if (gate?.settled(admitted, sampledBp)) {
-      return { featureDensity: admitted / sampledBp }
+    //
+    // A second point has to agree before the probe answers a verdict the old
+    // ladder could not have reached — and `raw` is exactly what separates the
+    // two. A window already holding DENSITY_SAMPLE_MIN_FEATURES is one the exit
+    // below would have answered from anyway, so there is nothing new to confirm
+    // and this falls through to it for the same number. Under that count the
+    // ladder would have kept widening, diluting a local cluster, and answering
+    // here instead is what lets a sparse track with a cluster at the fixed
+    // sample point read as dense and banner at that zoom until the user
+    // force-loads.
+    //
+    // So the confirmation is owed only by the case that is new, which is also
+    // the case that is cheap: every dense annotation track measured clears
+    // DENSITY_SAMPLE_MIN_FEATURES in its first window and pays nothing. A
+    // disagreement is not a verdict — the ladder simply carries on.
+    if (
+      gate?.settled(admitted, sampledBp) &&
+      raw < DENSITY_SAMPLE_MIN_FEATURES
+    ) {
+      const other = await sampleAt(DENSITY_CONFIRM_POINT)
+      if (gate.settled(other.admitted, other.sampledBp)) {
+        // the lower of two agreeing readings, so the count the banner quotes is
+        // never the high one of a pair
+        return {
+          featureDensity: Math.min(
+            admitted / sampledBp,
+            other.admitted / other.sampledBp,
+          ),
+        }
+      }
     }
 
     // Enough features to be meaningful, or the window already spans the whole
     // region (growing further can't sample more) — report density over the bp
     // actually sampled, not the nominal interval.
-    if (features.length >= DENSITY_SAMPLE_MIN_FEATURES || sampledBp >= refLen) {
+    if (raw >= DENSITY_SAMPLE_MIN_FEATURES || sampledBp >= refLen) {
       return { featureDensity: admitted / sampledBp }
     }
 

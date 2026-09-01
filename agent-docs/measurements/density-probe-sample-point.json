@@ -1,0 +1,76 @@
+{
+  "id": "density-probe-sample-point",
+  "published": false,
+  "measured": "2026-09-01",
+  "source": {
+    "kind": "hand",
+    "repro": "Top-level features from `Gff3TabixAdapter`'s read sequence (`@gmod/tabix` getLines + `gff-nostream` parseRecordsLazy, overlap-filtered) over the shipped 2px probe window, sliding the sample point from 5% to 95% of each chromosome in 5% steps, against `https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz`. Truth is every top-level feature on the chromosome over its width in px. Settling counts offsets meeting both of `settled`'s terms at DENSITY_SETTLE_FEATURES=8 and DENSITY_SETTLE_MARGIN=4.",
+    "notes": "Why the settling exit confirms at a second point rather than answering from one window. At whole-genome zoom the verdict is robust to the offset (18-19/19), so the confirmation changes no verdict on real annotation data and costs one read on the refusing path; at whole-chromosome zoom it is offset-dependent, and a disagreement there drops back to the ladder, which is what ran before the exit existed. The spread is the argument: the shipped 25% point reads anywhere from 5% low to 2x high, so a single window is not evidence a permanent banner can rest on."
+  },
+  "columns": [
+    { "key": "case", "label": "chromosome / zoom" },
+    { "key": "truth", "label": "truth (feat/px)" },
+    { "key": "at25", "label": "at the 25% point" },
+    { "key": "spread", "label": "min / median / max over offsets" },
+    { "key": "settles", "label": "offsets settling" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "case": "chr1 whole-genome",
+        "truth": 103.4,
+        "at25": 95.5,
+        "spread": "0.5 / 96.0 / 203.5",
+        "settles": "18/19"
+      },
+      "emphasize": ["settles"]
+    },
+    {
+      "values": {
+        "case": "chr10 whole-genome",
+        "truth": 94.4,
+        "at25": 78.5,
+        "spread": "33.0 / 90.5 / 150.0",
+        "settles": "19/19"
+      },
+      "emphasize": ["settles"]
+    },
+    {
+      "values": {
+        "case": "chr17 whole-genome",
+        "truth": 166.6,
+        "at25": 157.5,
+        "spread": "46.0 / 159.0 / 299.0",
+        "settles": "19/19"
+      },
+      "emphasize": ["settles"]
+    },
+    {
+      "values": {
+        "case": "chr1 whole-chromosome",
+        "truth": 8.3,
+        "at25": 10.5,
+        "spread": "0.5 / 7.5 / 17.0",
+        "settles": "15/19"
+      }
+    },
+    {
+      "values": {
+        "case": "chr10 whole-chromosome",
+        "truth": 4.1,
+        "at25": 2.5,
+        "spread": "1.0 / 4.0 / 13.5",
+        "settles": "9/19"
+      }
+    },
+    {
+      "values": {
+        "case": "chr17 whole-chromosome",
+        "truth": 4.5,
+        "at25": 9.5,
+        "spread": "0.5 / 4.5 / 27.5",
+        "settles": "12/19"
+      }
+    }
+  ]
+}

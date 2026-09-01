@@ -120,16 +120,61 @@ function gateAt(perBp: number, minFeatures = 8) {
 
 test('starts at the window the gate asks for rather than the fixed floor', async () => {
   // Sparse enough that the 1000bp floor would ladder ~10 times to reach 70
-  // features. The gate's window settles it in one.
+  // features. The gate's window settles it in one rung — two reads, the sample
+  // and its confirmation, at one interval rather than ten.
   const { getFeatures, queries } = makeGetFeatures(10_000_000, 5000)
   const { featureDensity } = await calculateFeatureDensityStats(
     region(0, 10_000_000),
     getFeatures,
     { gate: gateAt(1 / 10_000) },
   )
-  expect(queries).toHaveLength(1)
-  expect(queries[0]!.end - queries[0]!.start).toBe(80_000)
+  expect(queries).toHaveLength(2)
+  for (const q of queries) {
+    expect(q.end - q.start).toBe(80_000)
+  }
+  // two different points, not the same window twice
+  expect(queries[0]!.start).not.toBe(queries[1]!.start)
   expect(featureDensity).toBeCloseTo(1 / 5000)
+})
+
+// The class the settling exit adds, and the reason it asks a second point.
+//
+// A track with fewer than 70 features in the whole region could never take the
+// 70-raw exit: the old ladder widened until the window spanned the region and
+// reported the true density. The settling exit can answer from 8 features in one
+// window — so a sparse track with a cluster at the fixed sample point reads 31x
+// its real density and is refused at that zoom until the user force-loads.
+// Silent, permanent, and on the user's own file.
+test('does not settle a sparse region from a cluster at the sample point', async () => {
+  // 40 features in 10Mb — under the 70-raw exit — with 10 of them inside the
+  // 80kb window at the 25% point and the rest spread across the region.
+  const clustered = Array.from({ length: 10 }, (_, i) => 2_465_000 + i * 7000)
+  const spread = Array.from({ length: 30 }, (_, i) => 5_000_000 + i * 160_000)
+  const all = [...clustered, ...spread].map(
+    (start, i) =>
+      new SimpleFeature({
+        uniqueId: `f${i}`,
+        refName: 'chr1',
+        start,
+        end: start + 1,
+      }),
+  )
+  const queries: { start: number; end: number }[] = []
+  const getFeatures = (r: Region) => {
+    queries.push({ start: r.start, end: r.end })
+    return from(
+      all.filter(f => f.get('start') >= r.start && f.get('start') < r.end),
+    )
+  }
+  const { featureDensity } = await calculateFeatureDensityStats(
+    region(0, 10_000_000),
+    getFeatures,
+    { gate: gateAt(1 / 10_000) },
+  )
+  // it asked a second point, disagreed, and carried on laddering
+  expect(queries.length).toBeGreaterThan(2)
+  // the answer is the region's density, not the cluster's 10/80_000
+  expect(featureDensity).toBeCloseTo(40 / 10_000_000, 5)
 })
 
 test('never starts below the fixed floor, so a narrow gate window is the old behavior', async () => {

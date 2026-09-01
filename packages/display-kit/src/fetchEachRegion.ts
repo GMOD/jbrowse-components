@@ -26,6 +26,8 @@ export interface FetchEachRegionModel extends IStateTreeNode {
   commitFetchBytes: (
     perRegionBytes: (number | undefined)[],
     issued: GateFetchState,
+    /** the batch stopped early, so these are not the whole region set */
+    partial?: boolean,
   ) => void
   /**
    * `FetchMixin`'s, which every display on these helpers composes.
@@ -102,13 +104,20 @@ function gateBatch(
 ) {
   const issued = self.gateFetchState()
   const bytes: (number | undefined)[] = new Array(size)
+  let landed = 0
   let settled = false
   const finish = (refused: boolean) => {
     if (!settled) {
       settled = true
-      // a copy: a refusal commits while siblings are still landing, and would
-      // otherwise hand the gate an array that goes on changing under it
-      self.commitFetchBytes([...bytes], issued)
+      // a copy, because a refusal commits while siblings are still landing and
+      // would otherwise hand the gate an array that goes on changing under it.
+      //
+      // `partial` is that same fact as a claim about the number: it is the max
+      // over whichever regions won the race rather than over the set — but only
+      // when some region really did not report. A refusal from the last region
+      // to land, and every refusal on a single-region display, measured the
+      // whole set and is ordinary evidence.
+      self.commitFetchBytes([...bytes], issued, landed < size)
       onComplete?.(issued)
       if (refused) {
         self.cancelFetch()
@@ -117,6 +126,7 @@ function gateBatch(
   }
   return {
     measured(i: number, result: unknown) {
+      landed++
       bytes[i] = measuredBytes(result)
     },
     /** This region is over budget, so the batch is answered: stop the rest. */

@@ -1,0 +1,75 @@
+digraph region_too_large_gate {
+  rankdir=TB
+  nodesep=0.35
+  ranksep=0.4
+  node [shape=box fontname=monospace fontsize=10]
+  edge [fontname=monospace fontsize=9]
+  { node [shape=diamond] overBytes; gated; settles; enough; agrees; grown; overExact }
+
+  subgraph cluster_worker {
+    label="  one region, in the worker  "
+    fontname=monospace fontsize=10 style=dashed color=gray50
+
+    bytes [label="stage 1: measureRegionBytes\nthe index only, no features"]
+    overBytes [label="over byteLimit"]
+    refuseBytes [label="refuse:\nRequested too much data", style=bold]
+
+    gated [label="maxFeatureDensity set"]
+    probe [label="stage 1.5: sample the probe window\ndensityProbeGate sizes the first one\nfrom the budget, floored at 1kb"]
+    settles [label="settles the verdict\nby the margin"]
+    enough [label="raw >= 70 here"]
+    confirm [label="sample a second point"]
+    agrees [label="it settles too"]
+    refuseDensity [label="refuse:\nToo many features", style=bold]
+
+    grow [label="double the window"]
+    grown [label="70 raw, spans the region,\nor out of time"]
+    report [label="report the sampled density"]
+
+    fetch [label="stage 2: getFeaturesArray\nthe whole region"]
+    overExact [label="exact count over"]
+    payload [label="payload", style=bold]
+  }
+
+  bytes -> overBytes
+  overBytes -> refuseBytes [label=" yes"]
+  overBytes -> gated [label=" no"]
+  gated -> fetch [label=" no"]
+  gated -> probe [label=" yes"]
+
+  probe -> settles
+  settles -> grown [label=" no"]
+  settles -> enough [label=" yes"]
+
+  // The confirmation, and the one question that asks for it: is this a verdict
+  // the ladder below could have reached anyway?
+  enough -> report [label=" yes: the exit below\l answers the same\l from this window\l"]
+  enough -> confirm [label=" no: this is a claim\l the ladder could\l not have made\l"]
+  confirm -> agrees
+  agrees -> refuseDensity [label=" yes, on the lower\l of the two readings\l"]
+  agrees -> grown [label=" no: not a verdict"]
+
+  grown -> report [label=" yes"]
+  grown -> grow [label=" no"]
+  grow -> probe
+
+  report -> refuseDensity [label=" over"]
+  report -> fetch [label=" under"]
+
+  fetch -> overExact
+  overExact -> refuseDensity [label=" yes"]
+  overExact -> payload [label=" no"]
+
+  subgraph cluster_batch {
+    label="  the batch, on the main thread: gateBatch  "
+    fontname=monospace fontsize=10 style=dashed color=gray50
+    commit [label="commit the verdict\nbytes, then density via onComplete", style=bold]
+    cancel [label="cancelFetch: abort the siblings\nin flight, refuse the undispatched"]
+    banner [label="tooLarge replaces\nthe display subtree", style=bold]
+    commit -> cancel [label=" and only then\l"]
+    cancel -> banner
+  }
+
+  refuseBytes -> commit [label=" the first refusal\l ends the batch\l" style=dashed]
+  refuseDensity -> commit [style=dashed]
+}

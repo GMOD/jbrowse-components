@@ -27,6 +27,8 @@ file), a `derivedRegionTooLarge.test.ts` per gated display, and the fetch
 runners' own files for the commit and the refusal skip. History, and the bugs
 each rule closed: [HISTORICAL.md](HISTORICAL.md).
 
+![What one gated fetch decides, and what the first refusal does to the batch](diagrams/region-too-large-gate.svg)
+
 ## How the verdict is built
 
 A display opts in with two lines: override `gateEnabled` to `true`, and pass
@@ -145,47 +147,75 @@ asks for a proportionally wider one — `maxFeatureScreenDensity: 0.01` wants
 downloads what the probe exists to avoid. The cap costs nothing where it binds:
 a tighter budget makes the settling threshold easier to clear, so a genuinely
 dense region still refuses at the first window, and only the marginal case
-ladders. A budget that cannot size a window at all — `0`, or a NaN out of a
+ladders. The reason is worth stating exactly, because the intuitive one is
+backwards: it is not that a tighter budget makes `settled` easier — it is that
+of `settled`'s two terms only the **count** binds once the cap is reached. At any
+budget at or under 1 feature/px the derived window and the cap coincide, so the
+rule reduces to a constant, "`DENSITY_SETTLE_FEATURES` admitted features in
+`DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN` screen pixels" — 4 features per
+pixel, which is over any such budget by construction. The two names are one dial
+in every default configuration; the derivation only does work above 1/px. A budget that cannot size a window at all — `0`, or a NaN out of a
 jexl-computed slot — yields no gate and the plain ladder, rather than an
 infinite or NaN interval.
 
-**8 features raises the bar, it does not remove it.** A region whose whole raw
-count is under 70 always grew to span the region under the old ladder and was
-admitted; now, 8 admitted features inside the 2 px window at the fixed 25% point
-reading `DENSITY_SETTLE_MARGIN` over budget refuse it. So an otherwise sparse
-track with a tight cluster of 8-69 features near that point banners at that
-zoom until the user zooms or force-loads. The class is narrower than the old
-one — a cluster of 70 was already refused the same way — but it is the same
-class, and it is the price of not paying 13 round trips for every verdict.
+**A settled verdict is confirmed at a second point before it is answered, and
+only where that verdict is new.** The sample point is fixed at 25% into the
+region, so one window is one draw from the table above — where the 25% point
+reads anywhere from 5% low to 2x high. The growth exits tolerate that because
+they widen until they hold `DENSITY_SAMPLE_MIN_FEATURES`, which dilutes a local
+cluster; the settling exit answers from the window in front of it, which does
+not. A track with fewer than 70 features in the whole region could never reach
+the 70-raw exit at all — the old ladder widened until the window spanned the
+region and reported the truth — so answering from 8 features lets a sparse track
+with a cluster at the mark read many times its real density and banner at that
+zoom until the user force-loads. Silent, permanent, and on the user's own file.
 
-The old ladder started at 1 kb and doubled to a 70-feature exit, which at
-whole-genome zoom is 13 rungs to answer a question the first one settled
-thousands of times over: 291 probe fetches across hg38's 24 content blocks,
-2816 ms, and a `DENSITY_SAMPLE_TIMEOUT_MS` cliff at 5 s where the estimate
-returns `Infinity`, `densityTooLargeResult` declines to gate on a non-finite
-count, and the fetch falls through to `getFeaturesArray` of the whole
-chromosome. Sizing the first rung is 23-25 fetches and ~1400 ms, and it settles
-long before the cliff.
+So `calculateFeatureDensityStats` samples `DENSITY_CONFIRM_POINT` and refuses
+only if that point settles too, on the lower of the two readings. A disagreement
+is not a verdict: the ladder carries on exactly as it would have. **The raw count
+is what scopes it, so there is no second constant** — a window already holding
+`DENSITY_SAMPLE_MIN_FEATURES` is one the 70-raw exit would have answered from
+anyway, so it claims nothing new and falls straight through to that exit for the
+same number. Only under that count is the confirmation owed. Every dense
+annotation track measured clears 70 in its first window, so the common path pays
+nothing: the whole-genome density-only scenario runs the same single probe with
+the confirmation as without it.
 
-**8 features and 4x, and the feature count is the half that guards
-correctness.** The sample point is fixed, so a *sparse* file with a cluster
-there — a few hundred peaks genome-wide, some of them near the mark — would
-refuse a whole-genome view that renders fine, permanently, if two features were
-enough. Eight in a 2 px window settles every chromosome of an hg38 RefSeq GFF3
-at the first window and reads within 7% of the truth (chr10: 78.5/px sampled
-against 73.9/px over the whole chromosome), where two extrapolated from half a
-pixel read 3088/px. The margin only has to absorb clustering: a whole-genome
-view of an annotation track sits 60-100x over budget, while the same file at
-whole-chromosome zoom is 1.2-7x over and takes no early exit at all — which is
-right, since that is where the precision is needed and where the ladder is
-cheap.
+**8 features, and the count is what guards correctness.** An earlier draft
+settled on two, which is half a screen pixel's worth of evidence: the table above
+shows the 25% point reading anywhere from 5% low to 2x high, and two features
+extrapolated from that window read thousands per pixel whatever the truth is.
+Eight in a 2 px window is 4 features/px, over any budget at or under 1/px by
+construction, and it is the term that binds — see the cap's note above. The
+confirmation at a second point is what makes it safe rather than merely
+unlikely; the count is what keeps the confirmation from being asked on noise.
 
 **Shrinking the window is not what makes the probe cheap; not running it is.**
 A probe's floor is one bgzf chunk, and chunk size is a property of the file: on
-the hg38 RefSeq GFF3 a 1 kb window and a 4 Mb window on chr1 both cost 6 reads
-and 238 kb, so no ladder tuning gets a region under a few hundred kb. The byte
-axis reads a `.tbi` already in memory and costs nothing, which is why the batch
-short circuit above matters more than either constant here.
+the hosted hg38 RefSeq GFF3 a 1 kb window and a 4 Mb window on chr1 both cost 6
+reads and 238 kb, so no ladder tuning gets a region under a few hundred kb. The
+byte axis reads a `.tbi` already in memory and costs nothing, which is why the
+batch short circuit above matters more than either constant here.
+
+That chunk granularity is also why the probe is a *sample* rather than an
+incremental exact count, which is the obvious thing to reach for instead — count
+admitted features as the observable emits and stop at the budget, with no fixed
+point, no extrapolation and no constants. It cannot work over a tabix reader:
+the read is not incremental at the transport. Whole chr1 is 2 reads and its
+5,542,779 bytes are in the buffer before the first feature is emitted, so there
+is nothing left to abort by the time counting could start. Sampling is the only
+way to ask a cheap question of a chunk-granular reader.
+
+**The byte estimate is exact for the regions this view fetches.**
+`bytesForRegions` sums `optimizeChunks(blocksForRange(…))`, and `getLines` reads
+that same chunk list, so the two agree unless the line scan early-returns before
+consuming it (`tabixIndexedFile.ts` — "offers 7 chunks and reads 1" on a sparse
+file). Measured against actual bytes read on the hosted RefSeq GFF3: 1.00x at
+1 kb, 100 kb, 6.18 Mb and whole-chromosome. The 3.57x in
+[REJECTED_IDEAS.md](REJECTED_IDEAS.md) is the gap to `@gmod/bam`'s tighter *cut*
+forecast on a file where that early return fires, not an over-report of this
+file's download — chr1 really does cost 5,542,779 bytes against its 5 Mb
+budget.
 
 **"Zoom in to see features" is measured too.** An index quotes whole blocks,
 so whether zooming shrinks a file's fetch is a property of the file:
