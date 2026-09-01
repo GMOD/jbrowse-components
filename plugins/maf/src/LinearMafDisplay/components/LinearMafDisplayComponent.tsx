@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import {
   DisplayContextMenu,
   DisplayCrosshairs,
@@ -58,25 +59,23 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       openInsertionWidgetOnClick(model, x, y)
     },
   })
-  // preventDefault only when a menu actually opens, so a right-click over the
-  // bands, the sidebar (which owns its own node menu) or the inter-region
-  // gutter falls through to the browser's menu instead of being a dead zone
+  // the bands, the sidebar (which owns its own node menu) and the inter-region
+  // gutter resolve to nothing, so the browser's menu falls through there
   function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
     const { x, y } = eventPoint(e)
-    if (x < treeSidebarRightEdge(model)) {
-      return
-    }
     const { pos, baseBp, inBands } = mafPointerAt(model, x, y)
-    if (pos.oob || inBands) {
-      return
-    }
-    e.preventDefault()
-    model.openContextMenu({
-      clientX: e.clientX,
-      clientY: e.clientY,
-      refName: pos.refName,
-      pos: baseBp,
-    })
+    openContextMenuFromEvent(
+      model,
+      e,
+      x >= treeSidebarRightEdge(model) && !pos.oob && !inBands
+        ? {
+            clientX: e.clientX,
+            clientY: e.clientY,
+            refName: pos.refName,
+            pos: baseBp,
+          }
+        : undefined,
+    )
   }
   return (
     <DisplayChrome

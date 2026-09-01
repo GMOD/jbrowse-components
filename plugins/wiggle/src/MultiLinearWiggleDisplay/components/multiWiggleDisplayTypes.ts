@@ -63,6 +63,7 @@ export interface MultiWiggleDisplayModel
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
+  clearHoveredFeature: () => void
   selectFeature: (feat: WiggleHoveredFeature) => void
   contextMenuInfo?: ContextMenuAnchor & MultiWiggleContextHit
   openContextMenu: (info: ContextMenuAnchor & MultiWiggleContextHit) => void

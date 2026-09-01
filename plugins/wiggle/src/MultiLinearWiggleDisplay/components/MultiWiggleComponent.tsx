@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayContextMenu,
@@ -55,35 +56,22 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
 
   // Resolved from the click, like `onClick` above, rather than from the hover a
-  // previous frame recorded — the viewport moves under a stationary cursor.
+  // previous frame recorded — the viewport moves under a stationary cursor. An
+  // overlay rendering with no row order written has no items, which is the
+  // case `openContextMenuFromEvent`'s empty-menu close exists for.
   function onContextMenu(event: React.MouseEvent) {
     const hit = findMultiWiggleContextHit(
       model,
       model.host.visibleRegions,
       eventPoint(event).x,
     )
-    if (!hit) {
-      return
-    }
-    // Opened first, then asked what it holds: the items are built from the
-    // position, so there is no answer before the position is set. An overlay
-    // rendering with no row order written has neither item — closing again and
-    // letting the browser menu through beats suppressing it to show nothing,
-    // which on a canvas costs the reader "Save image as...". Same reason the
-    // `hit` guard above exists for the inter-region gutter and the tree
-    // sidebar, which overlays this container and owns its own node menu.
-    model.openContextMenu({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      ...hit,
-    })
-    if (model.contextMenuItems().length === 0) {
-      model.closeContextMenu()
-    } else {
-      event.preventDefault()
-      // the tooltip and crosshair would otherwise sit behind the menu
-      model.setHoveredFeature(undefined)
-    }
+    openContextMenuFromEvent(
+      model,
+      event,
+      hit
+        ? { clientX: event.clientX, clientY: event.clientY, ...hit }
+        : undefined,
+    )
   }
 
   return (

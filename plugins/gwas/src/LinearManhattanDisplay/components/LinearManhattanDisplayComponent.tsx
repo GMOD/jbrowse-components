@@ -3,7 +3,10 @@ import { useCallback } from 'react'
 import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
+import {
+  DisplayContextMenu,
+  openContextMenuFromEvent,
+} from '@jbrowse/display-kit/DisplayContextMenu'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
@@ -62,16 +65,13 @@ const LinearManhattanDisplayComponent = observer(
       // and the hover resolve the same hit
       const { x, y } = eventPoint(event)
       const hit = computeHit(x, y)
-      if (hit) {
-        event.preventDefault()
-        // clear the hover tooltip so it doesn't stay stuck behind the menu
-        model.clearHoveredFeature()
-        model.openContextMenu({
-          clientX: event.clientX,
-          clientY: event.clientY,
-          hit,
-        })
-      }
+      openContextMenuFromEvent(
+        model,
+        event,
+        hit
+          ? { clientX: event.clientX, clientY: event.clientY, hit }
+          : undefined,
+      )
     }
 
     return (

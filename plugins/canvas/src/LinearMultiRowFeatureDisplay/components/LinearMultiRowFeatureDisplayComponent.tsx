@@ -1,5 +1,6 @@
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { FloatingSvgOverlay, PointerLayer } from '@jbrowse/display-ui'
 import {
   DisplayContextMenu,
@@ -139,20 +140,17 @@ const LinearMultiRowFeatureDisplayComponent = observer(
     }
     function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
       const { x, y } = eventPoint(e)
-      // preventDefault only when a menu actually opens, so a right-click in the
-      // inter-region gutter, or on the tree sidebar that overlays this container
-      // and owns its own menu, falls through instead of being a dead zone. What
-      // counts as either is `contextTargetAt`'s to say.
+      // the inter-region gutter and the tree sidebar that overlays this
+      // container resolve to nothing; what counts as either is
+      // `contextTargetAt`'s to say
       const target = model.contextTargetAt(x, y)
-      if (target) {
-        e.preventDefault()
-        model.setHoveredFeature(undefined)
-        model.openContextMenu({
-          clientX: e.clientX,
-          clientY: e.clientY,
-          ...target,
-        })
-      }
+      openContextMenuFromEvent(
+        model,
+        e,
+        target
+          ? { clientX: e.clientX, clientY: e.clientY, ...target }
+          : undefined,
+      )
     }
     return (
       <DisplayChrome
