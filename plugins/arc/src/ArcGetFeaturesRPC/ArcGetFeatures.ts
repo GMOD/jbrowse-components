@@ -1,7 +1,10 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
+import type {
+  GatedFetchArgs,
+  RegionTooLargeResult,
+} from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
@@ -18,17 +21,12 @@ export interface ArcFeaturesResult {
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     ArcGetFeatures: {
-      args: {
+      args: GatedFetchArgs & {
         adapterConfig: Record<string, unknown>
         // supplied by renameRegionsIfNeeded during serialization, never by a
         // caller
         sequenceAdapter?: Record<string, unknown>
         regions: Region[]
-        /**
-         * `resolvedByteLimit()`. Absent means the gate may not act, and this
-         * RPC then measures nothing at all.
-         */
-        byteLimit?: number
       }
       return: ArcFeaturesResult | RegionTooLargeResult
     }

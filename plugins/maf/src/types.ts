@@ -2,6 +2,7 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { Observable } from 'rxjs'
 
@@ -16,18 +17,15 @@ import type { Observable } from 'rxjs'
  * `renameRegionsIfNeeded`. A bare region would silently skip that rename and
  * fetch nothing when the assembly and adapter disagree on chromosome names
  * (e.g. `5` vs `chr5`).
+ *
+ * Every tier takes the shared `byteLimit`, and each measures the file it is
+ * about to read — the alignment index on the detail path, the `summaryAdapter`
+ * sub-adapter on the summary one — so the number the banner quotes always
+ * describes the download that was actually refused.
  */
-export interface BaseMafRpcArgs {
+export interface BaseMafRpcArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  /**
-   * `resolvedByteLimit()`. Both tiers take it, and each measures the file it is
-   * about to read — the alignment index on the detail path, the
-   * `summaryAdapter` sub-adapter on the summary one — so the number the banner
-   * quotes always describes the download that was actually refused. Absent
-   * means the gate may not act, and the executor then measures nothing.
-   */
-  byteLimit?: number
 }
 
 /**

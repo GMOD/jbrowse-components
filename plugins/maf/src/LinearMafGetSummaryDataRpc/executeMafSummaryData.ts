@@ -86,7 +86,7 @@ export async function executeMafSummaryData({
         stopToken,
         statusCallback,
       })
-    : { bytes: undefined, tooLarge: undefined }
+    : {}
   if (tooLarge) {
     return tooLarge
   }

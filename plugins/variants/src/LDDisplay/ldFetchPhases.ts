@@ -1,5 +1,6 @@
 import type { RenderLDDataArgs } from '../RenderLDDataRPC/RenderLDData.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
+import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
@@ -15,7 +16,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  */
 export type LDRpcProps = Omit<
   RenderLDDataArgs,
-  'adapterConfig' | 'regions' | 'originBp' | 'byteLimit'
+  'adapterConfig' | 'regions' | 'originBp' | keyof GatedFetchArgs
 >
 
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and

@@ -3,10 +3,13 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 import type { LDMethodRequest, LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
+import type {
+  GatedFetchArgs,
+  RegionTooLargeResult,
+} from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 
-export interface RenderLDDataArgs {
+export interface RenderLDDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   /**
@@ -33,11 +36,6 @@ export interface RenderLDDataArgs {
   jexlFilters: string[]
   signedLD: boolean
   useGenomicPositions: boolean
-  /**
-   * `resolvedByteLimit()`. Absent means the gate may not act, and the executor
-   * then measures nothing.
-   */
-  byteLimit?: number
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

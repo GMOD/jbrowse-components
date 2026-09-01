@@ -2,6 +2,7 @@ import { SimpleFeature, getRpcSessionId, getSession } from '@jbrowse/core/util'
 
 import type { RenderAlignmentDataArgs } from '../RenderAlignmentDataRPC/types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
@@ -91,7 +92,7 @@ export async function fetchFeatureDetails(
 export interface FetchFeaturesSelf {
   rpcProps: () => Omit<
     RenderAlignmentDataArgs,
-    'adapterConfig' | 'sequenceAdapter' | 'regions' | 'byteLimit'
+    'adapterConfig' | 'sequenceAdapter' | 'regions' | keyof GatedFetchArgs
   >
   // `RegionTooLargeMixin`'s: the budget the worker enforces, and the same one
   // the banner compares against. Passed at the call rather than through

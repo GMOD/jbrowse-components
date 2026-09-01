@@ -1,6 +1,9 @@
 import type { IsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
-import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
+import type {
+  GatedFetchArgs,
+  RegionTooLargeResult,
+} from '@jbrowse/core/rpc/byteBudget'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {
@@ -9,7 +12,7 @@ export interface LabelItem {
   textWidth: number
 }
 
-export interface RenderFeatureDataArgs {
+export interface RenderFeatureDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   displayConfig: DisplayConfig
   // start/end MUST be integer bp positions. The on-screen producer is LGV's
@@ -57,11 +60,6 @@ export interface RenderFeatureDataArgs {
   // to. Matched against feature.id(), like solo/hidden above.
   expandedGeneIds?: string[]
   maxFeatureDensity?: number
-  // Compressed-byte budget for this region. When set and the adapter offers a
-  // cheap index estimate (getRegionByteSize), the fetch short-circuits before
-  // downloading features if the estimate exceeds it. Undefined disables the
-  // byte gate (i.e. after force-load).
-  byteLimit?: number
 }
 
 export interface GetFeatureDetailsArgs {

@@ -11,6 +11,16 @@ import type { AugmentedRegion } from '../util/types/data.ts'
  */
 export type ByteEstimateScope = 'largestRegion' | 'wholeRequest'
 
+/**
+ * The one spelling of a gated feature RPC's budget argument: the number the
+ * worker measures against, undefined when the gate declined to act and nothing
+ * is measured. A call-site argument, never part of `rpcProps`, because it
+ * swings at 20kb and on force-load.
+ */
+export interface GatedFetchArgs {
+  byteLimit?: number
+}
+
 export interface ByteMeasurableAdapter {
   getRegionByteSize: (
     regions: AugmentedRegion[],

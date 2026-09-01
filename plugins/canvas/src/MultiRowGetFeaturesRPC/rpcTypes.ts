@@ -1,7 +1,16 @@
 import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { LegendCandidate } from '@jbrowse/core/util/legendCandidates'
 
-export interface MultiRowGetFeaturesArgs {
+/**
+ * Byte-gated and byte-only on purpose: multi-row paints into fixed lanes, so a
+ * high feature count is a download cost, not a per-glyph render cost, and the
+ * display composes no density axis (`CanvasFeatureGateMixin` is the base canvas
+ * display's alone). There is deliberately no `maxFeatureDensity` here — adding
+ * that axis has to fail at this call site rather than silently pass an argument
+ * the worker ignores. See agent-docs/reference/REGION_TOO_LARGE.md.
+ */
+export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   // start/end are integer bp (LGV's bufferedVisibleRegions already rounds).
   region: {
@@ -10,17 +19,6 @@ export interface MultiRowGetFeaturesArgs {
     end: number
     assemblyName: string
   }
-  // compressed-byte budget; a region whose index-only estimate exceeds it
-  // short-circuits before any feature download. Undefined = no byte gate (below
-  // the force-load zone, or force-loaded).
-  //
-  // Byte-only on purpose: multi-row paints into fixed lanes, so a high feature
-  // count is a download cost, not a per-glyph render cost, and the display
-  // composes no density axis (`CanvasFeatureGateMixin` is the base canvas
-  // display's alone). There is deliberately no `maxFeatureDensity` here —
-  // adding that axis has to fail at this call site rather than silently pass
-  // an argument the worker ignores. See agent-docs/reference/REGION_TOO_LARGE.md.
-  byteLimit?: number
   // feature attribute whose value assigns each feature to a row. Empty is the
   // auto sentinel — the worker picks one off the columns the data turns out to
   // carry, and reports the pick back as `resolvedPartitionField`. See

@@ -31,9 +31,9 @@ export interface LinearMafGetAnnotationDataResult {
  * Gated like the other two tiers, against the frames file itself: one record
  * per CDS exon **per species**, so on a deep alignment the read grows with the
  * span times the species count exactly as the alignment does, and the summary
- * tier carries it out to whole-genome spans. The refusal is silent — no `bytes`
- * to quote — because the display's banner is about the alignment it measured,
- * and this is a private bound on an auxiliary overlay that simply declines.
+ * tier carries it out to whole-genome spans. The refusal carries the frames
+ * file's own measurement, like every other executor's; the display's banner
+ * quotes the tier it measured itself, so nothing else reads this number.
  */
 export async function executeMafAnnotationData({
   pluginManager,
@@ -57,7 +57,7 @@ export async function executeMafAnnotationData({
     stopToken,
   })
   if (tooLarge) {
-    return { regionTooLarge: true }
+    return tooLarge
   }
 
   const records: MafFrameRecord[] = []

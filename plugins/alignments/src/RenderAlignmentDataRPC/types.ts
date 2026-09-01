@@ -11,6 +11,7 @@ import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKeys } from '../shared/readIdentity.ts'
 import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
@@ -22,7 +23,7 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 // doesn't refetch for a value this worker will discard. Every read filter rides
 // `filterBy`, the grouped-by-read-name chain ones included, and applies in both
 // modes.
-export interface RenderAlignmentDataArgs {
+export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   // supplied by renameRegionsIfNeeded during serialization, never by a caller
   sequenceAdapter?: Record<string, unknown>
@@ -57,11 +58,6 @@ export interface RenderAlignmentDataArgs {
   // not on every zoom step.
   lodMode?: BaseOptions['lodMode']
   linkedReads?: 'off' | 'normal'
-  /**
-   * `resolvedByteLimit()`. Absent means the gate may not act, and the executor
-   * then measures nothing.
-   */
-  byteLimit?: number
   /**
    * `subPixelBinBp` off the display's debounced zoom: genomic bp one per-base
    * cell stands for, and so the stride the two per-base color modes sample the

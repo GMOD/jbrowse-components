@@ -1,5 +1,6 @@
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 
 interface BaseVariantRpcArgs {
@@ -32,7 +33,7 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
 // not.
 export type ClusterGenotypeMatrixArgs = GetGenotypeMatrixArgs
 
-export interface GetCellDataArgs extends BaseVariantRpcArgs {
+export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // Which samples get rows, as a SET — never an order. The worker builds its own
   // canonical row list (see `buildCanonicalRows`), names it in `rowNames`, and
   // the client places those names against the rows it draws. Sent sorted so a
@@ -49,11 +50,6 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   featureColor?: string
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
-  /**
-   * `resolvedByteLimit()`. Absent means the gate may not act, and the executor
-   * then measures nothing.
-   */
-  byteLimit?: number
 }
 
 export interface MultiSampleVariantGetSourcesArgs {
