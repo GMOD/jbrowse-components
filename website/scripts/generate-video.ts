@@ -117,6 +117,19 @@ function log(msg: string) {
     `[video ${new Date().toISOString().slice(11, 23)}] ${msg}\n`,
   )
 }
+
+function buildJbrowseWeb() {
+  log('Building jbrowse-web')
+  try {
+    execFileSync('pnpm', ['--filter', 'jbrowse-web', 'build'], {
+      stdio: 'inherit',
+    })
+  } catch {
+    log('ERROR: pnpm build failed — could not build jbrowse-web')
+    process.exit(1)
+  }
+}
+
 process.on('unhandledRejection', (reason: unknown) => {
   log(`UNHANDLED REJECTION: ${reason instanceof Error ? reason.stack : reason}`)
 })
@@ -599,6 +612,8 @@ async function main() {
     console.error(`no video spec matches ${values.filter?.join(', ')}`)
     process.exit(1)
   }
+
+  buildJbrowseWeb()
 
   const failures: string[] = []
   await withHarness(

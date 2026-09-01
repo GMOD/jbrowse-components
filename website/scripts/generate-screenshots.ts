@@ -567,6 +567,19 @@ function buildWorkspaceEsm() {
   }
 }
 
+function buildJbrowseWeb() {
+  console.log('Building jbrowse-web')
+  try {
+    execFileSync('pnpm', ['--filter', 'jbrowse-web', 'build'], {
+      cwd: repoRoot,
+      stdio: 'inherit',
+    })
+  } catch {
+    console.error('pnpm build failed — could not build jbrowse-web')
+    process.exit(1)
+  }
+}
+
 // jb2export renders the products/jbrowse-img/README example images straight
 // to PNG via React SSR (see CliSpec in screenshot-specs.ts) — no browser
 // involved, so this bypasses the puppeteer pipeline entirely. `suffix` keeps
@@ -846,10 +859,7 @@ async function main() {
 
   if (needsLocalServer) {
     if (!externalPort && !fs.existsSync(buildPath)) {
-      console.error(
-        `Build not found at ${buildPath}. Run "pnpm build" in products/jbrowse-web first, or pass --port=N to use an existing server.`,
-      )
-      process.exit(1)
+      buildJbrowseWeb()
     }
     server = await createTestServer(servePort, {
       jbrowseWebRoot: testDataRoot,
