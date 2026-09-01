@@ -1,10 +1,12 @@
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
+import AnchorIcon from '@mui/icons-material/Anchor'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
 
 import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
 
+import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LodTier } from '@jbrowse/synteny-core'
 
@@ -38,17 +40,14 @@ export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
     : []
 }
 
-interface NavigationModel {
+interface NavigationModel extends FollowHost {
   views: { assemblyNames: string[] }[]
   squareView: () => void
   showAllRegionsAcrossRows: (sameScale: boolean) => void
   sameScale: boolean
   linkViews: boolean
-  followSynteny: boolean
-  followAnchorIndex: number
   followMatchOrientation: boolean
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
-  setFollowAnchorIndex: (idx: number) => void
   setFollowMatchOrientation: (arg: boolean) => void
 }
 
@@ -133,7 +132,10 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
       model.showAllRegionsAcrossRows(m === 'same')
     }),
     makeRadioSubMenu({
-      label: 'Link views',
+      // "Sync rows" over "Link views": the group holds all three couplings,
+      // and someone looking for the follow does not open a menu named after
+      // the pixel lock
+      label: 'Sync rows',
       icon: LinkIcon,
       value: followSynteny ? 'follow' : linkViews ? 'link' : 'independent',
       options: ROW_SYNC_MODES,
@@ -188,7 +190,7 @@ export function autoScaleMenuItems(model: AutoScaleModel): MenuItem[] {
     : []
 }
 
-interface RowMenusModel {
+interface RowMenusModel extends FollowHost {
   views: { assemblyNames: string[]; menuItems: () => MenuItem[] }[]
   compactAllViews: () => void
   expandAllViews: () => void
@@ -225,11 +227,32 @@ export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
  * a checkbox reading the row's `scalebarOnly` and that row's own "Collapse to
  * ruler" were two spellings of one toggle listed in two submenus, under labels
  * that shared nothing.
+ *
+ * While following, each row's menu leads with taking the anchor and the anchor
+ * row wears the mark: switching which row drives is otherwise a radio in the
+ * sync submenu, two levels away from the row being looked at.
  */
 export function rowMenuItems(model: RowMenusModel): MenuItem[] {
+  const { followSynteny, followAnchorIndex } = model
   return rowLabels(model.views).map((label, idx) => ({
     label,
-    subMenu: model.views[idx]!.menuItems(),
+    icon: followSynteny && idx === followAnchorIndex ? AnchorIcon : undefined,
+    subMenu: [
+      ...(followSynteny
+        ? ([
+            {
+              type: 'radio',
+              label: 'Anchor the follow on this row',
+              checked: idx === followAnchorIndex,
+              onClick: () => {
+                model.setFollowAnchorIndex(idx)
+              },
+            },
+            { type: 'divider' },
+          ] satisfies MenuItem[])
+        : []),
+      ...model.views[idx]!.menuItems(),
+    ],
   }))
 }
 

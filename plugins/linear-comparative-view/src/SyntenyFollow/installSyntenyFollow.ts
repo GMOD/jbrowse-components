@@ -17,7 +17,9 @@ import {
   handNudged,
   handNudgeMessage,
 } from './followHandNudge.ts'
+import { EMPTY_FOLLOW_REPORT } from './followHost.ts'
 import { createFollowLevelStates } from './followLevelStates.ts'
+import { followRung } from './followRung.ts'
 import { followSpreadSpans } from './followSpreadSpans.ts'
 import { followTransform } from './followTransform.ts'
 import { planFollowStep } from './planFollowStep.ts'
@@ -31,6 +33,7 @@ import { decideSpread } from './spreadDecision.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
+import type { FollowHost, FollowReport } from './followHost.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -52,33 +55,12 @@ export interface FollowPair {
   movingIndex: number
 }
 
-/**
- * A level that refused its multi-contig answer, in the two names the header
- * needs: the anchor region the rows are following, and the ones whose answers
- * are not on screen.
- *
- * Named regions rather than a bare flag because that is the whole difference
- * between a silent loss and a reachable one — the reader gets to the other
- * answer by scrolling the anchor onto the region that carries it, which is an
- * ordinary navigation of the row they are already driving, needing no button
- * and no undo. What they cannot do is guess that the region is there.
- */
-export interface FollowPartialReport {
-  following: string
-  elsewhere: string[]
-}
-
-export interface SyntenyFollowHost extends IStateTreeNode {
-  followSynteny: boolean
+export interface SyntenyFollowHost extends IStateTreeNode, FollowHost {
   followMatchOrientation: boolean
   followPairs: FollowPair[]
-  setFollowUnaligned: (arg: boolean) => void
-  setFollowApproximate: (arg: boolean) => void
-  setFollowPartial: (arg: FollowPartialReport | undefined) => void
-  // the four below are `reportHandNudge`'s and nothing else
-  followAnchorIndex: number
+  setFollowReport: (report: Partial<FollowReport>) => void
+  // the two below are `reportHandNudge`'s and nothing else
   views: { assemblyNames: string[] }[]
-  setFollowAnchorIndex: (idx: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
 }
 
@@ -91,6 +73,7 @@ export interface SyntenyFollowHost extends IStateTreeNode {
 // the display and `toMate`, and the staying row is the one thing a settled
 // answer must never re-read.
 interface FollowWork {
+  kind: 'resolve'
   level: FollowLevel
   movingView: LinearGenomeViewModel
   step: FollowStep
@@ -135,6 +118,7 @@ type PlacedWindows = Map<LinearGenomeViewModel, FollowWindow[]>
 // no block: the answer is the union of what those contigs map to, and the row
 // is placed across the interval of its own layout that covers it.
 interface SpreadWork {
+  kind: 'spread'
   level: FollowLevel
   movingView: LinearGenomeViewModel
   spans: ResolvedSpan[]
@@ -144,16 +128,12 @@ interface SpreadWork {
 
 // One level's share of a settled pass: what to resolve, and what the header
 // should say if there is nothing to.
-interface FollowPlan {
+interface FollowPlan extends Omit<FollowReport, 'partial'> {
   // absent when nothing loaded covers the anchor's window
-  work?: FollowWork
-  // the rung above `work`, and never set alongside it
-  spread?: SpreadWork
-  unaligned: boolean
-  approximate: boolean
+  placement?: FollowWork | SpreadWork
   // set when the multi-contig rung had an answer and refused it as mostly
   // filler, naming the region the rows follow and the ones they do not
-  partial?: FollowPartialReport
+  partial?: FollowReport['partial']
 }
 
 function liveWindowSignature(view: LinearGenomeViewModel) {
@@ -200,19 +180,18 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     generation,
   }: FollowWork) {
     const state = levelStates.get(level)
-    const { span, approximate } = await state.answer(step)
-    // Switching the mode off bumps no seq, so it needs its own check — and
-    // switching it back on again defeats that one, since `state` is then the
-    // object the drop orphaned rather than the one the new pass minted. Its
+    // Switching the mode off bumps no seq, so `generation` is its own check —
+    // and switching it back on again defeats `seq` alone, since `state` is then
+    // the object the drop orphaned rather than the one the new pass minted. Its
     // `seq` is whatever this work left it at, so latest-wins says yes and the
     // row lands on a window two navigations ago.
-    if (
+    const stale = () =>
       seq !== state.seq ||
       generation !== levelStates.generation ||
       !isAlive(self) ||
-      !isAlive(movingView) ||
-      !self.followSynteny
-    ) {
+      !isAlive(movingView)
+    const { span, approximate } = await state.answer(step)
+    if (stale() || !self.followSynteny) {
       return
     }
     // A WALK THAT COLLAPSES TO A POINT IS NOT A PLACE. `resolveAlignmentSpan`
@@ -230,7 +209,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       // measured over a window it had already left, which nothing later
       // corrects while the answers keep collapsing.
       state.pick = undefined
-      self.setFollowUnaligned(true)
+      self.setFollowReport({ unaligned: true })
       return
     }
     state.lastErrorMessage = undefined
@@ -239,7 +218,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // walk with a block that carries none and comes back empty. Raised, never
     // lowered — the plan's own pass owns the reset.
     if (approximate) {
-      self.setFollowApproximate(true)
+      self.setFollowReport({ approximate: true })
     }
     state.pick = {
       feat: step.feat,
@@ -275,12 +254,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         state.followMovedRow = true
         reportHandNudge(state, movingIndex, handNudged)
         await navToResolvedSpan(movingView, span)
-        if (
-          seq !== state.seq ||
-          generation !== levelStates.generation ||
-          !isAlive(self) ||
-          !isAlive(movingView)
-        ) {
+        if (stale()) {
           return
         }
       }
@@ -385,12 +359,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     if (step.wantReversed === undefined) {
       return
     }
-    // the same fallback the placement takes: with no envelope the row is placed
-    // by interpolating across the picked block (`resolveFollowSpan`), so that
-    // block is the decision
-    const decision = step.windowInsideFeat
-      ? step.feat.id
-      : (step.envelope?.refName ?? step.feat.id)
+    // the contig the envelope answered on, else the block: inside one block
+    // there is no envelope, and with no envelope the row is placed by
+    // interpolating across the picked block (`resolveFollowSpan`)
+    const decision = step.envelope?.refName ?? step.feat.id
     const key = `${decision}|${step.wantReversed}|${anchorOrientation}`
     if (key === state.orientedKey) {
       return
@@ -461,19 +433,21 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       })
   }
 
-  // Once per level per follow-on: an actionable snackbar does not dedup on its
-  // own, and the second telling is one the reader has read.
+  // Once per level per anchor: an actionable snackbar does not dedup on its
+  // own, and the second telling is one the reader has read — until the anchor
+  // moves, when which row is pulled back to which is a new sentence.
   function reportHandNudge(
     state: FollowLevelState,
     movingIndex: number,
     nudged: boolean,
   ) {
-    if (nudged && !state.nudgeReported && isAlive(self)) {
+    const anchorIndex = self.followAnchorIndex
+    if (nudged && state.nudgeReportedFor !== anchorIndex && isAlive(self)) {
       const labels = rowLabels(self.views)
       const moving = labels[movingIndex]
-      const anchor = labels[self.followAnchorIndex]
+      const anchor = labels[anchorIndex]
       if (moving !== undefined && anchor !== undefined) {
-        state.nudgeReported = true
+        state.nudgeReportedFor = anchorIndex
         getNotificationSink(self).notify(
           handNudgeMessage(moving, anchor),
           'info',
@@ -575,18 +549,18 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       spans,
       decision,
     })
-    if (!decision.spreading) {
-      return {
-        window: windows.find(w => w.refName === decision.onto),
-      }
+    const rung = followRung(windows, decision)
+    if (rung?.kind !== 'spread') {
+      return { window: rung?.window }
     }
     if (spans.length) {
       placed.set(movingView, followPlacedWindows(spans))
     }
     return {
       plan: {
-        spread: spans.length
+        placement: spans.length
           ? {
+              kind: 'spread' as const,
               level,
               movingView,
               spans,
@@ -598,6 +572,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           !spans.length && level.linearSyntenyDisplays.some(d => d.featureData),
         // an interpolation over several alignments at once, never a walk
         approximate: spans.length > 0,
+        noSyntenyTrack: !level.linearSyntenyDisplays.length,
       } satisfies FollowPlan,
     }
   }
@@ -630,6 +605,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const windows =
       carried ?? followAnchorWindows(stayingView.coarseDynamicBlocks)
     const widest = windows[0]
+    const noSyntenyTrack = !level.linearSyntenyDisplays.length
     // A DECISION ABOUT SEVERAL CONTIGS SAYS NOTHING ABOUT ONE, and
     // `state.spread` is only ever written by the rung that makes it. The rung is
     // out of reach below two windows, so `planSpread` does not run and a refusal
@@ -645,7 +621,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
     if (!widest) {
       // an anchor with no window says nothing about alignment either way
-      return { unaligned: false, approximate: false }
+      return { unaligned: false, approximate: false, noSyntenyTrack }
     }
 
     // READ BEFORE ANY RUNG, which makes the moving row a dependency of every
@@ -719,7 +695,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       target: state.pick?.target,
     })
     return {
-      work: step && {
+      placement: step && {
+        kind: 'resolve',
         level,
         movingView,
         step,
@@ -735,6 +712,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       // a level still fetching has no answer YET rather than no answer
       unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),
       approximate: !!step && (!step.windowInsideFeat || !step.hasCigar),
+      noSyntenyTrack,
       partial:
         state.spread?.spreading === false && state.spread.onto
           ? {
@@ -757,21 +735,22 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     autorun(
       function syntenyFollowAutorun() {
         if (!self.followSynteny) {
-          self.setFollowUnaligned(false)
-          self.setFollowApproximate(false)
-          self.setFollowPartial(undefined)
+          self.setFollowReport(EMPTY_FOLLOW_REPORT)
           levelStates.clear()
           return
         }
         const placed: PlacedWindows = new Map()
         const plans = self.followPairs.map(pair => planLevel(pair, placed))
-        // written, never read here: reading either would make the autorun a
+        // written, never read here: reading it would make the autorun a
         // dependency of its own write
-        self.setFollowUnaligned(plans.some(p => p.unaligned))
-        self.setFollowApproximate(plans.some(p => p.approximate))
-        // the first level that refused, since one sentence is what the header
-        // has and a second one would say the same thing about another pair
-        self.setFollowPartial(plans.find(p => p.partial)?.partial)
+        self.setFollowReport({
+          unaligned: plans.some(p => p.unaligned),
+          approximate: plans.some(p => p.approximate),
+          noSyntenyTrack: plans.some(p => p.noSyntenyTrack),
+          // the first level that refused, since one sentence is what the
+          // header has and a second would say the same about another pair
+          partial: plans.find(p => p.partial)?.partial,
+        })
         // UNTRACKED, because `execute` runs synchronously up to its first
         // `await` and so still inside this reaction. `FollowStep` is meant to
         // be everything it needs, but the resolve reaches the display for
@@ -782,13 +761,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // (the envelope scan included) per settle.
         // eslint-disable-next-line no-restricted-syntax -- effect input: execute consumes the display's adapterConfig and lodTier, the plans are the decision
         untracked(() => {
-          for (const { work, spread } of plans) {
-            if (spread) {
-              executeSpread(spread)
-            }
-            if (work) {
-              execute(work).catch((e: unknown) => {
-                reportError(work.level, e)
+          for (const { placement } of plans) {
+            if (placement?.kind === 'spread') {
+              executeSpread(placement)
+            } else if (placement) {
+              execute(placement).catch((e: unknown) => {
+                reportError(placement.level, e)
               })
             }
           }
@@ -848,10 +826,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // cached to steer by. Whether to take the rung at all is the settle's
           // to decide: the two placements are the furthest apart this subsystem
           // can put a row, and a per-frame re-decision flips between them across
-          // a threshold the user is panning along.
-          const spread =
-            windows.length > 1 ? levelStates.spreadFor(level) : undefined
-          if (windows.length > 1 && spread?.spreading !== false) {
+          // a threshold the user is panning along. `followRung` is the same rule
+          // the settle applied, and the demoted level's window it names is the
+          // kept contig, or the widest once a pan has carried that off screen.
+          const rung = followRung(windows, levelStates.spreadFor(level))
+          if (!rung) {
+            continue
+          }
+          if (rung.kind === 'spread') {
             const { spans } = followSpreadSpans({
               displays: level.linearSyntenyDisplays,
               windows,
@@ -864,27 +846,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             }
             continue
           }
-          // The demoted level's kept contig, and the WIDEST WINDOW when the
-          // anchor has since scrolled off it. A refusal names a contig out of
-          // the window set it was measured over, and the settle that would
-          // re-measure is half a second away — so a pan that carries the kept
-          // contig off screen left the row frozen for the rest of the drag,
-          // where the same fall-through the settle takes places it from the
-          // window the reader is now mostly looking at. The DECISION is still
-          // the settle's; this is only which window carries it out.
-          const window =
-            windows.find(w => w.refName === spread?.onto) ?? windows[0]
+          const { window } = rung
           // the block the last settle chose, rather than re-picking one per
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since
           // hiding a synteny track destroys it and reading featureData throws.
           const pick = levelStates.pickFor(level)
-          if (
-            !window ||
-            !pick ||
-            pick.toMate !== toMate ||
-            !isAlive(pick.display)
-          ) {
+          if (!pick || pick.toMate !== toMate || !isAlive(pick.display)) {
             continue
           }
           const data = pick.display.featureData

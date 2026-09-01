@@ -11,13 +11,37 @@ test('on, it names the row that is driving and how to stop', () => {
   // which row drives is the thing a user has to know while it is running, and
   // the button is the only place outside a menu that can say so
   expect(
-    followToggleTitle({ followSynteny: true, anchorAssembly: 'hg002mat' }),
+    followToggleTitle({ followSynteny: true, anchorLabel: 'hg002mat' }),
   ).toBe('Following hg002mat — click to stop')
 })
 
 test('a row still loading its assembly does not leak an undefined', () => {
   expect(followToggleTitle({ followSynteny: true })).toBe(
     'Following the anchor row — click to stop',
+  )
+})
+
+test('with one row there is nothing to follow, on or off', () => {
+  expect(followToggleTitle({ followSynteny: false, rows: 1 })).toBe(
+    'Add a second row to follow the matching region',
+  )
+  expect(followToggleTitle({ followSynteny: true, rows: 1 })).toBe(
+    'Add a second row to follow the matching region',
+  )
+})
+
+// the state a freshly built view is in, and the one every other sentence is
+// untrue under: the mode was on, the tooltip said so, and nothing moved
+test('a level with no synteny track says the rows have nothing to follow by', () => {
+  expect(
+    followToggleTitle({
+      followSynteny: true,
+      noSyntenyTrack: true,
+      unaligned: true,
+      anchorLabel: 'hg002mat',
+    }),
+  ).toBe(
+    'Following hg002mat — a level has no synteny track, so its row has nothing to follow by',
   )
 })
 
@@ -28,7 +52,7 @@ test('over unaligned sequence it says why the rows stopped moving', () => {
     followToggleTitle({
       followSynteny: true,
       unaligned: true,
-      anchorAssembly: 'hg002mat',
+      anchorLabel: 'hg002mat',
     }),
   ).toBe(
     'Following hg002mat — nothing aligns here, so the other rows are holding',
@@ -48,7 +72,7 @@ test('it says when the row was placed proportionally rather than walked', () => 
     followToggleTitle({
       followSynteny: true,
       approximate: true,
-      anchorAssembly: 'hg002mat',
+      anchorLabel: 'hg002mat',
     }),
   ).toBe(
     'Following hg002mat — no per-base alignment at this zoom, so positions are approximate',
@@ -61,7 +85,7 @@ test('holding beats estimating, since a held row was never placed', () => {
       followSynteny: true,
       unaligned: true,
       approximate: true,
-      anchorAssembly: 'hg002mat',
+      anchorLabel: 'hg002mat',
     }),
   ).toBe(
     'Following hg002mat — nothing aligns here, so the other rows are holding',
@@ -81,7 +105,7 @@ test('a refused multi-contig answer names both sides', () => {
     followToggleTitle({
       followSynteny: true,
       partial: { following: 'chr1', elsewhere: ['chr9'] },
-      anchorAssembly: 'peach',
+      anchorLabel: 'peach',
     }),
   ).toBe(
     'Following peach on chr1 — chr9 aligns too far away to show at once, so scroll onto it to follow that instead',
@@ -96,7 +120,7 @@ test('it outranks the approximate wording', () => {
       followSynteny: true,
       approximate: true,
       partial: { following: 'chr1', elsewhere: ['chr9'] },
-      anchorAssembly: 'peach',
+      anchorLabel: 'peach',
     }),
   ).toMatch(/scroll onto it/)
 })
@@ -108,7 +132,7 @@ test('but not the unaligned wording', () => {
       followSynteny: true,
       unaligned: true,
       partial: { following: 'chr1', elsewhere: ['chr9'] },
-      anchorAssembly: 'peach',
+      anchorLabel: 'peach',
     }),
   ).toMatch(/nothing aligns here/)
 })

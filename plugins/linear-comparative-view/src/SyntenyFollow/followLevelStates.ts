@@ -84,7 +84,8 @@ export interface FollowLevelState {
   orientedKey?: string
   lastWindows?: LevelWindows
   followMovedRow?: boolean
-  nudgeReported?: boolean
+  // the anchor the hand-nudge snackbar was last shown for on this level
+  nudgeReportedFor?: number
 }
 
 /**

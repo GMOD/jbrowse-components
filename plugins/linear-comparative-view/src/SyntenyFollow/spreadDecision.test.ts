@@ -267,4 +267,26 @@ describe('the decision', () => {
       }),
     ).toMatchObject({ onto: 'chr1', elsewhere: ['chr2'] })
   })
+
+  // Refused onto the widest window regardless, an unaligned contig owning half
+  // the panel left the rung below with nothing to place from: every row held,
+  // and the header said nothing aligned while naming two contigs that did.
+  test('it is refused onto a contig that answered, not the widest unaligned one', () => {
+    expect(
+      decideSpread({
+        ...straddle,
+        blocks: [block('chr1', 400), block('chr2', 200), block('chr3', 200)],
+        windows: [
+          win('chr1', 100, 1100),
+          win('chr2', 100, 600),
+          win('chr3', 100, 600),
+        ],
+        mapped: new Set(['chr2', 'chr3']),
+        spans: [
+          { refName: 'chr1', start: 0, end: 1000 },
+          { refName: 'chr5', start: 0, end: 1000 },
+        ],
+      }),
+    ).toMatchObject({ spreading: false, onto: 'chr2', elsewhere: ['chr3'] })
+  })
 })

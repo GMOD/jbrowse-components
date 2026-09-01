@@ -6,6 +6,7 @@ import {
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { AnimationMode, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -49,12 +50,9 @@ export function navSpan(
 
 // The view-wide follow state a mark's navigation borrows. A state tree node
 // because `release` has to know THIS is still alive — it is what gets written.
-export interface FollowAnchorHost extends IStateTreeNode {
-  followSynteny: boolean
-  followAnchorIndex: number
+export interface FollowAnchorHost extends IStateTreeNode, FollowHost {
   // identity only, so `unknown` is all `release` needs from a row
   views: readonly unknown[]
-  setFollowAnchorIndex: (idx: number) => void
 }
 
 /**

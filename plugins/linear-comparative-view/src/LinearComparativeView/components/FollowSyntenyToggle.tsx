@@ -4,6 +4,9 @@ import SyncProblemIcon from '@mui/icons-material/SyncProblem'
 import { ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { rowLabels } from '../rowLabel.ts'
+
+import type { FollowReport } from '../../SyntenyFollow/followHost.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 
 // No height, and `fontSize="small"` on the icons below: this is the same MUI
@@ -24,7 +27,10 @@ const useStyles = makeStyles()({
  * render, and separate because it is the only place the mode explains itself
  * outside a menu.
  *
- * The unaligned case is the one that most needs saying. Over a
+ * A level with no synteny track comes first: it is the state a freshly built
+ * view is in, and with nothing to follow by every other sentence is untrue.
+ *
+ * The unaligned case is the one that most needs saying after that. Over a
  * haplotype-specific insertion or a centromere there is nothing to follow, so
  * the other rows hold position — and a row that stops tracking with nothing
  * said looks exactly like a broken follow.
@@ -32,24 +38,33 @@ const useStyles = makeStyles()({
  * The approximate case yields to it, since a row that is holding was never
  * placed at all, and beats "click to stop", since nothing else in the view
  * distinguishes a proportional placement from a walked one.
+ *
+ * `anchorLabel` is the row's label rather than its bare assembly name: a stack
+ * can hold one assembly twice, and "Following hg38" says nothing there.
  */
 export function followToggleTitle({
   followSynteny,
   unaligned,
   approximate,
+  noSyntenyTrack,
   partial,
-  anchorAssembly,
-}: {
+  anchorLabel,
+  rows = 2,
+}: Partial<FollowReport> & {
   followSynteny: boolean
-  unaligned?: boolean
-  approximate?: boolean
-  partial?: { following: string; elsewhere: string[] }
-  anchorAssembly?: string
+  anchorLabel?: string
+  rows?: number
 }) {
+  if (rows < 2) {
+    return 'Add a second row to follow the matching region'
+  }
   if (!followSynteny) {
     return 'Follow the matching region'
   }
-  const anchor = anchorAssembly ?? 'the anchor row'
+  const anchor = anchorLabel ?? 'the anchor row'
+  if (noSyntenyTrack) {
+    return `Following ${anchor} — a level has no synteny track, so its row has nothing to follow by`
+  }
   if (unaligned) {
     return `Following ${anchor} — nothing aligns here, so the other rows are holding`
   }
@@ -91,45 +106,44 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const {
-    followSynteny,
-    followUnaligned,
-    followApproximate,
-    followPartial,
-    views,
-    followAnchorIndex,
-  } = model
-  const stalled = followSynteny && followUnaligned
+  const { followSynteny, followReport, views, followAnchorIndex } = model
+  // the icon, not only the wording, for the two states in which the rows are
+  // not moving at all; approximate is the normal condition of a zoomed-out
+  // view, and an icon lit most of the time reports nothing
+  const stalled =
+    followSynteny && (followReport.unaligned || followReport.noSyntenyTrack)
   return (
     <Tooltip
       title={followToggleTitle({
         followSynteny,
-        unaligned: followUnaligned,
-        // wording, not a second icon state: approximate is the normal condition
-        // of a zoomed-out view, and an icon lit most of the time reports nothing
-        approximate: followApproximate,
-        partial: followPartial,
-        anchorAssembly: views[followAnchorIndex]?.assemblyNames[0],
+        ...followReport,
+        anchorLabel: rowLabels(views)[followAnchorIndex],
+        rows: views.length,
       })}
     >
-      <ToggleButton
-        // The button's only stable handle: everything else about it is the
-        // tooltip, whose wording is a function of four pieces of state.
-        data-testid="follow-synteny-toggle"
-        value="followSynteny"
-        selected={followSynteny}
-        onChange={() => {
-          model.setRowSyncMode(followSynteny ? 'independent' : 'follow')
-        }}
-        className={classes.button}
-        size="small"
-      >
-        {stalled ? (
-          <SyncProblemIcon fontSize="small" />
-        ) : (
-          <SyncAltIcon fontSize="small" />
-        )}
-      </ToggleButton>
+      {/* a disabled button fires no pointer events, so the tooltip needs an
+        element around it that does */}
+      <span>
+        <ToggleButton
+          // The button's only stable handle: everything else about it is the
+          // tooltip, whose wording is a function of the report.
+          data-testid="follow-synteny-toggle"
+          value="followSynteny"
+          selected={followSynteny}
+          disabled={views.length < 2}
+          onChange={() => {
+            model.setRowSyncMode(followSynteny ? 'independent' : 'follow')
+          }}
+          className={classes.button}
+          size="small"
+        >
+          {stalled ? (
+            <SyncProblemIcon fontSize="small" />
+          ) : (
+            <SyncAltIcon fontSize="small" />
+          )}
+        </ToggleButton>
+      </span>
     </Tooltip>
   )
 })

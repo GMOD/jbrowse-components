@@ -19,11 +19,12 @@ import { autorun } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
 import { followDirection } from '../SyntenyFollow/followDirection.ts'
+import { EMPTY_FOLLOW_REPORT } from '../SyntenyFollow/followHost.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 import { sharedFit } from './sharedFit.ts'
 
-import type { FollowPartialReport } from '../SyntenyFollow/installSyntenyFollow.ts'
+import type { FollowReport } from '../SyntenyFollow/followHost.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackContainer } from '@jbrowse/core/util'
@@ -142,35 +143,41 @@ function stateModelFactory(pluginManager: PluginManager) {
       volatileError: undefined as unknown,
       /**
        * #volatile
-       * The follow found no alignment over the anchor row's window on its last
-       * pass, so the other rows are holding position. What the header's follow
-       * button reports; without it the rows simply stop tracking, which is the
-       * same picture as a broken follow. Volatile because it describes the
-       * current window, not the session.
+       * What the follow's last settled pass has to say about itself, for the
+       * header's follow button: whether the rows are holding because nothing
+       * aligns under the anchor, whether a row was placed proportionally
+       * rather than by a CIGAR walk, whether a level has no synteny track to
+       * follow by, and which multi-contig answer was refused as mostly filler
+       * (naming the region followed and the ones whose answers are off
+       * screen). Without it a holding row is the same picture as a broken
+       * follow. Volatile because it describes the current window, not the
+       * session.
        */
-      followUnaligned: false,
-      /**
-       * #volatile
-       * The follow placed a row by mapping the anchor window proportionally
-       * rather than by walking a CIGAR, so its position is close but not
-       * base-exact — a window wider than one alignment, or a tier carrying no
-       * CIGAR. What the header's follow tooltip reports; nothing else in the
-       * view distinguishes the two.
-       */
-      followApproximate: false,
-      /**
-       * #volatile
-       * The follow had a multi-contig answer and refused it: placing a row on
-       * two regions that are not neighbours in its layout puts every contig
-       * between them on screen too, and past a point that is nearly all of what
-       * the reader is looking at. The rows are on one of the anchor's regions
-       * instead, and this names it and the ones whose answers are therefore off
-       * screen — enough for the header to say which region to scroll onto to
-       * see those instead. Read only by the header's follow tooltip.
-       */
-      followPartial: undefined as FollowPartialReport | undefined,
+      followReport: EMPTY_FOLLOW_REPORT,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * nothing aligns under the anchor's window, so the other rows are holding
+       */
+      get followUnaligned() {
+        return self.followReport.unaligned
+      },
+      /**
+       * #getter
+       * a row was placed proportionally rather than by a CIGAR walk
+       */
+      get followApproximate() {
+        return self.followReport.approximate
+      },
+      /**
+       * #getter
+       * the multi-contig answer refused as mostly filler, naming the region
+       * followed and the ones whose answers are off screen
+       */
+      get followPartial() {
+        return self.followReport.partial
+      },
       /**
        * #getter
        * scroll-to-zoom is a global, personal preference resolved from the
@@ -337,29 +344,16 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        * Written by the follow's autorun and read only by the header, which is
        * what keeps it from being a dependency of the very pass that writes it.
+       * A partial report merges, since a settled resolve can only raise a flag
+       * the plan could not see.
        *
        * In THIS block, ahead of afterAttach, rather than with the other follow
        * actions below: a later block's actions are not on the `self` an earlier
        * one sees, so anything afterAttach calls has to be declared before it —
        * the same reason `reconcileLevels` is here.
        */
-      setFollowUnaligned(arg: boolean) {
-        self.followUnaligned = arg
-      },
-      /**
-       * #action
-       * Same terms as setFollowUnaligned above: written by the autorun, read
-       * only by the header.
-       */
-      setFollowApproximate(arg: boolean) {
-        self.followApproximate = arg
-      },
-      /**
-       * #action
-       * Same terms again: written by the autorun, read only by the header.
-       */
-      setFollowPartial(arg: FollowPartialReport | undefined) {
-        self.followPartial = arg
+      setFollowReport(report: Partial<FollowReport>) {
+        self.followReport = { ...self.followReport, ...report }
       },
       /**
        * #action
@@ -370,7 +364,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * visibly jumps twice.
        *
        * Here rather than beside `setLinkViews` for the reason above
-       * setFollowUnaligned: the follow's own snackbar offers this as the way out
+       * setFollowReport: the follow's own snackbar offers this as the way out
        * of a row it moved back, so afterAttach's `installSyntenyFollow` has to
        * see it on `self`.
        */

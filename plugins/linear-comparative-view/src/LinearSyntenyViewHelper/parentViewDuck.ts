@@ -1,3 +1,4 @@
+import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
@@ -33,7 +34,7 @@ import type {
 // non-inferred link does not.
 //
 // So a member belongs HERE rather than in an import.
-export interface ParentViewDuck extends IStateTreeNode {
+export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   width: number
   // measured + every row initialized; the level's `canRender` precondition,
   // because reading `width` before first layout throws
@@ -78,12 +79,11 @@ export interface ParentViewDuck extends IStateTreeNode {
   // slot in the view's palette, both keyed by trackId.
   resolveColorBy: (trackId: string) => SyntenyColorBy
   trackColorFor: (trackId: string) => string
-  // Read by the off-screen mate click, which navigates a row: a row the follow
-  // MOVES is re-asserted onto the anchor's mapping the moment it settles, so a
-  // click on one of its marks would post its snackbar and change nothing.
-  followSynteny: boolean
-  followAnchorIndex: number
-  setFollowAnchorIndex: (idx: number) => void
+  // The follow state (`FollowHost`) is read by the off-screen mate click,
+  // which navigates a row: a row the follow MOVES is re-asserted onto the
+  // anchor's mapping the moment it settles, so a click on one of its marks
+  // would post its snackbar and change nothing.
+  //
   // Also read by that click, to decide whether it may FLY to the contig rather
   // than jump: with the rows locked in pixels, the flight's zoom-out arc is
   // replayed onto every row by `installLinkedViewSync` while its pan is not, so

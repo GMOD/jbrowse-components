@@ -783,7 +783,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * every render setting is in the header's settings menu, and
          * `SyntenySettingsMenu` states that division from the other side.
          *
-         * A group in THIS menu names a CHOICE ("Link views") or what varies
+         * A group in THIS menu names a CHOICE ("Sync rows") or what varies
          * with row count ("Rows"), never a topic: the "Navigation" group that
          * used to hold the zoom commands was named after what the whole menu is
          * about, and charged a popup for it. LGV's menu had one too, and it

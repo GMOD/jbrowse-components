@@ -8,11 +8,13 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { followAnchorWindows } from './followAnchorWindow.ts'
+import { EMPTY_FOLLOW_REPORT } from './followHost.ts'
 import { installSyntenyFollow } from './installSyntenyFollow.ts'
 import { requestCigarMap } from './requestCigarMap.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
+import type { FollowReport } from './followHost.ts'
 import type { FollowPair } from './installSyntenyFollow.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { NotificationLevel, SnackAction } from '@jbrowse/core/util/types'
@@ -162,14 +164,21 @@ const Host = types
   .volatile(() => ({
     followSynteny: true,
     followMatchOrientation: true,
-    followUnaligned: false,
-    followApproximate: false,
+    followReport: EMPTY_FOLLOW_REPORT,
     followAnchorIndex: 0,
-    followPartial: undefined as
-      | { following: string; elsewhere: string[] }
-      | undefined,
     followPairs: [] as FollowPair[],
     views: [] as { assemblyNames: string[] }[],
+  }))
+  .views(self => ({
+    get followUnaligned() {
+      return self.followReport.unaligned
+    },
+    get followApproximate() {
+      return self.followReport.approximate
+    },
+    get followPartial() {
+      return self.followReport.partial
+    },
   }))
   .actions(self => ({
     setFollowPairs(pairs: FollowPair[]) {
@@ -181,16 +190,8 @@ const Host = types
     setFollowMatchOrientation(arg: boolean) {
       self.followMatchOrientation = arg
     },
-    setFollowUnaligned(arg: boolean) {
-      self.followUnaligned = arg
-    },
-    setFollowApproximate(arg: boolean) {
-      self.followApproximate = arg
-    },
-    setFollowPartial(
-      arg: { following: string; elsewhere: string[] } | undefined,
-    ) {
-      self.followPartial = arg
+    setFollowReport(report: Partial<FollowReport>) {
+      self.followReport = { ...self.followReport, ...report }
     },
     setFollowAnchorIndex(idx: number) {
       self.followAnchorIndex = idx

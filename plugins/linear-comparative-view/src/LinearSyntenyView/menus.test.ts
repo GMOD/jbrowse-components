@@ -1,4 +1,8 @@
-import { displayCanShowCigar, navigationMenuItems } from './menus.ts'
+import {
+  displayCanShowCigar,
+  navigationMenuItems,
+  rowMenuItems,
+} from './menus.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -37,7 +41,7 @@ describe('navigationMenuItems', () => {
       setFollowAnchorIndex: idx => calls.push(idx),
       setFollowMatchOrientation: arg => calls.push(['orient', arg]),
     })
-    return { items, calls, linkViews: subMenuOf(items, 'Link views') }
+    return { items, calls, linkViews: subMenuOf(items, 'Sync rows') }
   }
 
   function subMenuOf(items: MenuItem[], label: string) {
@@ -62,7 +66,7 @@ describe('navigationMenuItems', () => {
   test('the coupling is the one group, and the zoom commands are not in it', () => {
     const { items } = build({ followSynteny: true })
     expect(items.flatMap(i => ('subMenu' in i ? [i.label] : []))).toEqual([
-      'Link views',
+      'Sync rows',
     ])
   })
 
@@ -207,6 +211,65 @@ describe('navigationMenuItems', () => {
     const { linkViews, calls } = build({ followSynteny: true })
     labelled(linkViews, 'hg002pat')?.onClick?.()
     expect(calls).toEqual([1])
+  })
+})
+
+// Switching which row drives is otherwise a radio in the sync submenu, two
+// levels away from the row being looked at.
+describe('rowMenuItems', () => {
+  function build(followSynteny: boolean, followAnchorIndex = 0) {
+    const calls: unknown[] = []
+    const items = rowMenuItems({
+      views: [
+        {
+          assemblyNames: ['hg002mat'],
+          menuItems: () => [{ label: 'Own', onClick: () => {} }],
+        },
+        {
+          assemblyNames: ['hg002pat'],
+          menuItems: () => [{ label: 'Own', onClick: () => {} }],
+        },
+      ],
+      compactAllViews: () => {},
+      expandAllViews: () => {},
+      followSynteny,
+      followAnchorIndex,
+      setFollowAnchorIndex: idx => calls.push(idx),
+    })
+    return { items, calls }
+  }
+
+  function subMenu(items: MenuItem[], idx: number) {
+    const item = items[idx]!
+    return 'subMenu' in item ? item.subMenu : []
+  }
+
+  test('off, each row is its own menu and nothing more', () => {
+    const { items } = build(false)
+    expect(items.map(i => ('label' in i ? i.label : ''))).toEqual([
+      'hg002mat',
+      'hg002pat',
+    ])
+    expect(items.every(i => !('icon' in i && i.icon))).toBe(true)
+    expect(subMenu(items, 0).map(i => ('label' in i ? i.label : ''))).toEqual([
+      'Own',
+    ])
+  })
+
+  test('following, the anchor row wears the mark and every row offers the take', () => {
+    const { items, calls } = build(true, 1)
+    expect(items.map(i => 'icon' in i && !!i.icon)).toEqual([false, true])
+    const take = subMenu(items, 0)[0]!
+    expect(take).toMatchObject({
+      type: 'radio',
+      label: 'Anchor the follow on this row',
+      checked: false,
+    })
+    expect(subMenu(items, 1)[0]).toMatchObject({ checked: true })
+    if ('onClick' in take) {
+      take.onClick()
+    }
+    expect(calls).toEqual([0])
   })
 })
 

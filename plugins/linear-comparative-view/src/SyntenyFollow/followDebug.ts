@@ -12,6 +12,7 @@
 import { untracked } from 'mobx'
 
 import { followAnchorWindows } from './followAnchorWindow.ts'
+import { coversContig, partialShare, pxByRefName } from './spreadDecision.ts'
 
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
@@ -35,10 +36,7 @@ const bp = (spans: FollowWindow[]) =>
 
 // what the anchor panel actually has on screen, in px, before any floor
 function panel(view: LinearGenomeViewModel) {
-  const widths = new Map<string, number>()
-  for (const b of view.coarseDynamicBlocks) {
-    widths.set(b.refName, (widths.get(b.refName) ?? 0) + b.widthPx)
-  }
+  const widths = pxByRefName(view.coarseDynamicBlocks)
   const widest = Math.max(...widths.values())
   return [...widths.entries()]
     .sort((a, b2) => b2[1] - a[1])
@@ -49,27 +47,21 @@ function panel(view: LinearGenomeViewModel) {
     .join(', ')
 }
 
-// WHOLE or PARTIAL against the region it sits in, px-weighted. The candidate
-// discriminator: an overview's windows are whole contigs, a locus straddle's are
-// proper subintervals on both sides of a junction.
+// WHOLE or PARTIAL against the region it sits in, px-weighted, by the very
+// rule the decision applies — a second spelling printed "partial" for a window
+// the decision had judged whole, which is the log disagreeing with the thing it
+// exists to explain.
 function wholeness(view: LinearGenomeViewModel, windows: FollowWindow[]) {
-  const px = new Map<string, number>()
-  for (const b of view.coarseDynamicBlocks) {
-    px.set(b.refName, (px.get(b.refName) ?? 0) + b.widthPx)
-  }
-  let partialPx = 0
-  let totalPx = 0
-  const parts = windows.map(w => {
-    const region = view.displayedRegions.find(r => r.refName === w.refName)
-    const whole = !!region && w.start <= region.start && w.end >= region.end
-    const widthPx = px.get(w.refName) ?? 0
-    totalPx += widthPx
-    if (!whole) {
-      partialPx += widthPx
-    }
-    return `${w.refName} ${whole ? 'WHOLE' : 'partial'}`
+  const regions = view.displayedRegions
+  const parts = windows.map(
+    w => `${w.refName} ${coversContig(w, regions) ? 'WHOLE' : 'partial'}`,
+  )
+  const share = partialShare({
+    blocks: view.coarseDynamicBlocks,
+    regions,
+    windows,
   })
-  return `${parts.join(', ')} — partial by px: ${Math.round((partialPx / totalPx) * 100)}%`
+  return `${parts.join(', ')} — partial by px: ${Math.round(share * 100)}%`
 }
 
 // visible bp of a row, which for a spread placement is the interval the union

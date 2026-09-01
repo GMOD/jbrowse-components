@@ -46,12 +46,21 @@ export interface SpreadDecision {
   coverage?: number
 }
 
-function pxByRefName(blocks: ContentBlock[]) {
+export function pxByRefName(blocks: ContentBlock[]) {
   const px = new Map<string, number>()
   for (const b of blocks) {
     px.set(b.refName, (px.get(b.refName) ?? 0) + b.widthPx)
   }
   return px
+}
+
+// Whether a window shows its whole contig, to the tolerance above. Exported so
+// the debug log judges a window by the same rule the decision does.
+export function coversContig(w: FollowWindow, regions: Region[]) {
+  const region = regions.find(r => r.refName === w.refName)
+  return (
+    !!region && w.end - w.start >= (region.end - region.start) * WHOLE_ENOUGH
+  )
 }
 
 /**
@@ -81,13 +90,9 @@ export function partialShare({
   let partial = 0
   let total = 0
   for (const w of windows) {
-    const region = regions.find(r => r.refName === w.refName)
     const width = px.get(w.refName) ?? 0
     total += width
-    if (
-      !region ||
-      w.end - w.start < (region.end - region.start) * WHOLE_ENOUGH
-    ) {
+    if (!coversContig(w, regions)) {
       partial += width
     }
   }
@@ -179,7 +184,12 @@ export function decideSpread({
     return { spreading: true, coverage }
   }
   const px = pxByRefName(blocks)
-  const candidates = windows.map(w => ({
+  // Among the contigs that ANSWERED, so the rung below has something to place
+  // from: refused onto the widest window regardless, an unaligned contig owning
+  // half the panel left every row holding, and the header saying nothing
+  // aligned while `elsewhere` named two contigs that did.
+  const answered = windows.filter(w => mapped.has(w.refName))
+  const candidates = (answered.length ? answered : windows).map(w => ({
     refName: w.refName,
     overlap: px.get(w.refName) ?? 0,
   }))

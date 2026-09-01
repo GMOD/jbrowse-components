@@ -4,6 +4,8 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ColorByLegend } from '@jbrowse/synteny-core'
+import AnchorIcon from '@mui/icons-material/Anchor'
+import { Chip, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
@@ -25,12 +27,48 @@ const useStyles = makeStyles()({
   wrapper: {
     position: 'relative',
   },
+  // beside the row's floating zoom controls (LGV `MiniControls`, five small
+  // icon buttons at the row's top right), not over them
+  anchorBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 150,
+    zIndex: 100,
+  },
 })
 
 const View = observer(function View({ view }: { view: LinearGenomeViewModel }) {
   const { pluginManager } = getEnv(view)
   const { ReactComponent } = pluginManager.getViewType(view.type)
   return <ReactComponent model={view} />
+})
+
+/**
+ * The anchor row, marked on the row itself. Rows in a synteny stack are
+ * launched with their LGV header hidden, so without this the only places that
+ * say which row drives are the header toggle's tooltip and a radio two menus
+ * deep — and the row that keeps moving on its own is the one the reader is
+ * trying to identify.
+ */
+const AnchorBadge = observer(function AnchorBadge({
+  model,
+  row,
+}: {
+  model: LinearComparativeViewModel
+  row: number
+}) {
+  const { classes } = useStyles()
+  return model.followSynteny && model.followAnchorIndex === row ? (
+    <Tooltip title="Anchor row: the other rows follow this one">
+      <Chip
+        className={classes.anchorBadge}
+        size="small"
+        color="primary"
+        icon={<AnchorIcon />}
+        label="Anchor"
+      />
+    </Tooltip>
+  ) : null
 })
 
 const LinearComparativeRenderArea = observer(
@@ -69,7 +107,10 @@ const LinearComparativeRenderArea = observer(
                 levelIdx={i - 1}
               />
             ) : null}
-            <View view={view} />
+            <div className={classes.wrapper}>
+              <View view={view} />
+              <AnchorBadge model={model} row={i} />
+            </div>
           </Fragment>
         ))}
       </div>

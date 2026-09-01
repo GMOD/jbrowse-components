@@ -161,17 +161,17 @@ widest window — which is what the settle keeps too, since `decideSpread` picks
 `onto` by pixel and an incumbent no window reaches cannot hold it — so the
 decision is still the settle's and only the window carrying it out is current.
 
-**`followPartial` is the third header flag**, on the terms the other two keep:
-written in `planLevel`, read only by the header. A row that is not showing
-everything the anchor aligns to has to say so, or the demotion is a silent loss.
-It carries **both region names, not a boolean**, and that is what makes the
-refused answer reachable: scrolling the anchor onto the other region makes it
-the widest window, so the rows follow it — an ordinary navigation of the row the
-reader is already driving, needing no button, no anchor take and no undo. The
-only thing they cannot do is guess the region is there. A control that navigated
-for them would be one, since it would move a row the follow moves and owe the
-whole `showOffscreenMateContig` dance. `followDebug` prints the whole decision
-per settle under `localStorage.debugSyntenyFollow`, and
+**`partial` is the third field of the header's `FollowReport`**, on the terms
+the other two keep: written in `planLevel`, read only by the header. A row that
+is not showing everything the anchor aligns to has to say so, or the demotion is
+a silent loss. It carries **both region names, not a boolean**, and that is what
+makes the refused answer reachable: scrolling the anchor onto the other region
+makes it the widest window, so the rows follow it — an ordinary navigation of
+the row the reader is already driving, needing no button, no anchor take and no
+undo. The only thing they cannot do is guess the region is there. A control that
+navigated for them would be one, since it would move a row the follow moves and
+owe the whole `showOffscreenMateContig` dance. `followDebug` prints the whole
+decision per settle under `localStorage.debugSyntenyFollow`, and
 `browser-tests/follow-spread-probe.ts` drives a live session with it.
 
 **Both halves of that sentence are only true while the panel it describes is on
@@ -292,9 +292,18 @@ frame. Tracked, one settled resolve made the moving row's zoom a dependency of
 the debounced pass.
 
 Same rule: `FollowLevelState` is a plain object, not MST or a MobX box, since
-the exact pass writes it every pass. And `followUnaligned` / `followApproximate`
-are **written here and read only by the header**; a third such flag must keep
-that.
+the exact pass writes it every pass. And the `FollowReport` (`unaligned`,
+`approximate`, `noSyntenyTrack`, `partial`) is **written here and read only by
+the header**, through one merging setter; a new flag goes on the report, not
+beside it.
+
+**Which rung a level is on is `followRung`, read by both clocks.** The exact
+pass decides whether to spread; the frame pass follows that decision, and the
+one function turns the windows and the decision into the rung so the two cannot
+be spelled differently. And a refusal lands **on a contig that answered**: the
+widest window regardless was, on a panel half filled by an unaligned contig, a
+level with nothing to place from — every row held, and the header said nothing
+aligned while `elsewhere` named two contigs that did.
 
 ## `seq` is bumped per PASS, not per resolve
 
@@ -351,6 +360,10 @@ it. Two things it got wrong first, both invisible from the code:
   every pass and most of those write the numbers already there, so a flag raised
   on the placement never came down and the next real nudge read as the follow's
   own work.
+
+The snackbar is once per level **per anchor** (`nudgeReportedFor`): the second
+telling is one the reader has read, until the anchor moves and which row is
+pulled back to which is a new sentence.
 
 **Untested: the frame pass moves the row and touches neither field.** If the
 moving row's coarse-block debounce ever fires while the anchor's has not, that
