@@ -203,7 +203,7 @@ JBrowse reads two tabix-indexed BED projections of the graph. We host them, so a
 view; the adapter resolves `<uri>.segs.bed.gz`, `<uri>.links.bed.gz`, and both
 `.tbi` files:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "hprc_minigraph_segments",
@@ -260,7 +260,7 @@ The ramp is two numbers and a midpoint, so a linear track can paint the same
 colors. This is the segments track above with the ramp in place of its rank
 colors, so a block above and its node below are the same color:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "hprc_minigraph_segments",
@@ -665,7 +665,7 @@ chr17.
 A bubble is where haplotypes diverge and rejoin. The bubble track reports where
 the graph varies and by how much, in one file:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "hprc_minigraph_bubbles",
@@ -899,10 +899,10 @@ does not mean the earlier haplotypes lacked the sequence. Carriage is
 ## The variant callset
 
 The `wave.vcf.gz` ships its index beside it, so JBrowse reads only the slice you
-are viewing out of the 2.3 GB file. Paste the S3 URL into a `VariantTrack` and
-pick the multi-sample display:
+are viewing out of the 2.3 GB file. The S3 URL is the whole of the adapter, on a
+`VariantTrack` with the multi-sample display:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "hprc2_wave_grch38",
@@ -1004,7 +1004,7 @@ also publishes the undecomposed form, one record per **snarl**, in the
 `hprc_v2.0_mc_grch38_index` submission. Read it when the question is who carries
 a given bubble: its rows and the graph's alleles are the same objects.
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "hprc2_pgbi_grch38",
@@ -1047,7 +1047,7 @@ haplotypes, beside a `.tai` index written by
 [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The index makes it
 addressable, so a locus is a ranged read rather than a download:
 
-```json
+```json addtrack
 {
   "type": "MafTrack",
   "trackId": "hprc_v2_0_mc_grch38",

@@ -394,7 +394,7 @@ Load it as a [`VariantTrack`](/docs/config_guides/variant_track) on K12 and pick
 the multi-sample display, which draws one row per sample with each variant at
 its genomic position:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "ecoli_pggb_variants",
@@ -521,7 +521,7 @@ in_pggb odgi similarity -i "/data/$og" -D '#' -p 1 > ecoli_pggb_similarity.tsv
 python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 ```
 
-```json
+```json addtrack
 {
   "type": "MafTrack",
   "trackId": "ecoli_pggb_maf",
@@ -684,7 +684,7 @@ Same windows as the depth curve, so the two lanes line up. The output is one row
 per window per path (`chrom start end name group pav`), where `group` is the
 PanSN path and `pav` the fraction, which is what the loop splits on.
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "ecoli_pggb_pav",
@@ -821,7 +821,7 @@ Load it as one `FeatureTrack` pointed at the shared prefix, the same shape the
 [graph view tutorial](/docs/user_guides/graph_genome_view#route-1-a-graph-track-browsable-by-locus)
 uses for an rGFA:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_pggb_segments",
@@ -905,7 +905,7 @@ alternative is its own node, which over 20 kb is hundreds of them. At 50 those
 are absorbed into the backbone and every indel is kept, taking the whole 4.64 Mb
 graph to about a thousand nodes, so a far wider window becomes drawable:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_pggb_tier50",

@@ -20,6 +20,10 @@ The same document is what every surface takes:
 | [](/docs/jbrowser) and [](/docs/jbrowse_anywidget) | what the helper functions assemble for you                      |
 | [@jbrowse/img](/docs/jbrowse-img)                  | `--config`, and `--spec` for a whole session                    |
 
+A running JBrowse also takes the document a piece at a time, an assembly or a
+track at once, with no file to edit. Every config block in these docs carries
+that route beside the file and the CLI command, on its own tab.
+
 ## What a session document contains
 
 The genome, a track, and the view to open on:

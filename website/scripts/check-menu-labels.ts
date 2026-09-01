@@ -26,6 +26,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { DESKTOP_UI_LABELS } from '../src/lib/derive-desktop-steps.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
 import {
@@ -240,6 +241,25 @@ for (const file of docFiles(docsDir)) {
     para.push(line.trim())
   })
   flush()
+}
+
+// The Desktop tab on every `addtrack`/`addassembly` fence walks a reader
+// through the same menus doc prose does, and it is generated, so no page
+// carries the text for the scan above to reach. Held to the same bar here.
+for (const label of Object.values(DESKTOP_UI_LABELS)) {
+  const missing = label
+    .split('→')
+    .map(s => s.trim())
+    .filter(
+      s => !STRUCTURAL_MENU_NAMES.has(norm(s)) && !REPO_LABELS.has(norm(s)),
+    )
+  if (missing.length > 0) {
+    errorLines.push(
+      `  src/lib/derive-desktop-steps.ts — no source renders ${missing
+        .map(s => JSON.stringify(s))
+        .join(', ')}\n      in DESKTOP_UI_LABELS ${JSON.stringify(label)}`,
+    )
+  }
 }
 
 for (const page of EXTERNAL_PLUGIN_PAGES.keys()) {

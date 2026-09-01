@@ -13,7 +13,7 @@ one display. Use the `bigWigs` array for quick absolute-URL setups, or
 
 Example MultiQuantitativeTrack config:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "microarray_multi",
@@ -63,7 +63,7 @@ The `subadapters` slot also supports:
 
 Example:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "microarray_multi_groups",

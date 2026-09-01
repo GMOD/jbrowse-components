@@ -28,7 +28,7 @@ derived from that name:
 
 A per-track config looks like this:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "mytrack",

@@ -58,9 +58,10 @@ estimates are per _paralog_.
 ## Load the panel as one track
 
 The whole panel goes in as one track, so the display, the clustering and the
-color settings are declared once. Add hg38 first, then the track:
+color settings are declared once. It sits on hg38, so set that assembly up first
+if you haven't:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "pur_copynumber_1000g",

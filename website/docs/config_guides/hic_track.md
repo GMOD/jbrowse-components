@@ -85,7 +85,7 @@ BEDPE loop/interaction calls load as a `VariantTrack` with a
 sets the arc stroke width in pixels (also draggable from the track menu). This
 example draws only the high-scoring calls, in dark red, as thin arcs:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "hic_loops",

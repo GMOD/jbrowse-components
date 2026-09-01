@@ -135,7 +135,7 @@ and the ordering can't be misread.
 Or set the adapter's named `queryAssembly`/`targetAssembly` fields, which spell
 out the direction so it can't be read in the wrong order:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "alignment",

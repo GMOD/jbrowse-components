@@ -146,7 +146,7 @@ tabix index:
 Coloring points by LD to the index SNP. Swap `PlinkLDAdapter` for
 `PlinkLDTabixAdapter` when the `.ld` file is bgzipped and tabix-indexed:
 
-```json
+```json addtrack
 {
   "type": "GWASTrack",
   "trackId": "sle_gwas",

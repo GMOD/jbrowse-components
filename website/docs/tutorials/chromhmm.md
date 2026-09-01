@@ -118,7 +118,7 @@ Add a `FeatureTrack` with a `BedTabixAdapter`, and give it a
 track references the `hg19` assembly, so set that up first if you haven't, see
 the [assemblies configuration guide](/docs/config_guides/assemblies):
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "broad_chromhmm_multirow_hg19",
@@ -217,7 +217,7 @@ mnemonics (`12_EnhBiv`, `14_ReprPCWk`), and fifteen `{label, color}` entries
 spell them out and fix their order at 1 to 15. The merged 127-epigenome file is
 hosted, so the whole track is:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "roadmap_chromhmm_multirow_hg19",

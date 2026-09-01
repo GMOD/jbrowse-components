@@ -6,8 +6,10 @@ description:
   labels, tooltips, tracks, themes, and more'
 ---
 
-Short, copy-paste recipes for the `config.json` settings people reach for most.
-Most run against the `volvox` sample data JBrowse ships
+Short, copy-paste recipes for the settings people reach for most. Each one is a
+config object rather than a destination, so it lands the same way in
+`config.json`, through the CLI, or pasted into a running JBrowse. Most run
+against the `volvox` sample data JBrowse ships
 ([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox));
 the synteny recipes and every figure use real datasets. For the full reference,
 see the [config guide](/docs/config_guide).
@@ -568,7 +570,7 @@ stripe:
 Arcs suit interactions, breakpoints, and paired features. The arc display isn't
 a `FeatureTrack`'s default, so you select it with a `displays` array:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "interactions_arcs",
@@ -620,8 +622,8 @@ assembly the track is displayed against, so the same track config works on any
 assembly.
 
 The [sequence search guide](/docs/user_guides/sequence_search) drives all three
-from the view's menu, which is the right tool for a one-off question. Write them
-into config.json when the track should be there for everyone.
+from the view's menu, which is the right tool for a one-off question. A
+configured track is what puts them there for everyone.
 
 ### Restriction enzyme sites
 
@@ -794,7 +796,7 @@ slots.
 
 ### Multiple signals on one track, each its own color
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "multiwig",
@@ -866,7 +868,7 @@ them:
 Multi-sample VCFs open in the standard variant display. For genotypes as a grid,
 switch from the track menu or name the display in the config:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "cohort_matrix",
@@ -897,7 +899,7 @@ Getting the two assemblies backwards is the most common mistake here. minimap2
 takes its inputs target first (`minimap2 grape.fa peach.fa` makes grape the
 target), so name them explicitly:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach_synteny",
@@ -930,7 +932,7 @@ reuse it:
 jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
 ```
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach_synteny_pif",

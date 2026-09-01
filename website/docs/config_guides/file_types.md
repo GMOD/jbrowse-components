@@ -351,7 +351,7 @@ band, per-row identity, and codon-view options.
 
 <!-- FILE_TYPES maf END -->
 
-```json
+```json addtrack
 {
   "type": "MafTrack",
   "trackId": "my_maf",

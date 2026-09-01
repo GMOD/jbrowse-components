@@ -55,9 +55,8 @@ followed to the copy of the genome it came from.
 This page uses the phased VCF above, the Kinh-Vietnamese trio HG02024, chr1
 only.
 
-Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
-"Add track" workflow, both covered in the
-[variant track guide](/docs/config_guides/variant_track).
+Everything here is on `hg38`, and the VCF loads as an ordinary `VariantTrack`,
+covered in the [variant track guide](/docs/config_guides/variant_track).
 
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 
@@ -185,7 +184,7 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 - a BED carrying `itemRgb` is painted with it automatically, no extra color
   config needed
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "khv_trio_hapibd",

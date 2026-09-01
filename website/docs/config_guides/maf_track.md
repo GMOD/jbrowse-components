@@ -267,7 +267,7 @@ its `multiz470waySummary.bb` (zoom-out) and `multiz470wayFrames.bb` (CDS frames
 / codon view): the same three pieces as the smaller examples, pointed at the
 UCSC downloads.
 
-```json
+```json addtrack
 {
   "type": "MafTrack",
   "trackId": "multiz470way",

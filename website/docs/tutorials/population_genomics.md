@@ -195,10 +195,9 @@ chromosomes where a line contributes one.
 You need a dm6 assembly loaded, ideally with a FlyBase or RefSeq gene track so
 gene-name search works. See
 [configuring assemblies](/docs/config_guides/assemblies) and
-[gene tracks](/docs/user_guides/gene_track). Each scan loads as an ordinary
-[quantitative track](/docs/user_guides/quantitative_track), which auto-scales to
-its own data. Add each track object below to the `tracks` array of your
-`config.json` (or paste it via the add-track JSON editor in the app):
+[gene tracks](/docs/user_guides/gene_track). Each scan is an ordinary
+[quantitative track](/docs/user_guides/quantitative_track) over its bigWig,
+which auto-scales to its own data:
 
 ```json addtrack
 {
@@ -222,7 +221,7 @@ A multi-wiggle suits rows on the same scale, such as the same statistic across
 groups. The per-group π bigWigs (`pi_INV.bw`/`pi_STD.bw`) share a scale, so
 inverted and standard diversity load as one track on one shared y-domain:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "pi_by_arrangement",
@@ -301,7 +300,7 @@ Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
 `LinearMultiSampleVariantDisplay` that both orders (`groupBy`) and colors
 (`colorBy`) its rows by the `karyotype` column:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "dgrp_In2Lt_sv",

@@ -5,12 +5,14 @@
 //     config ```json addassembly, and a lone `defaultSession` ```json session,
 //     so each renders the Config/CLI tab pair (scripts/check-config-cli.ts then
 //     proves the derived command runs).
-//     Only configs the CLI can actually express are flagged: the tag exists to
-//     render that tab, so a config `deriveAddTrack`/`deriveAddAssembly` returns
-//     null for (a synteny adapter's query/target slots, MultiWiggleAdapter
-//     subadapters, any custom `displays`) has no tab to render and nothing to
-//     fix. Flagging those would leave the author no remedy but an ALLOWED
-//     entry, which records nothing a reader or a later change can use;
+//     Every whole track config is flagged, because every one has tabs to
+//     render: a config `deriveAddTrack` returns null for (a synteny adapter's
+//     query/target slots, MultiWiggleAdapter subadapters, any custom
+//     `displays`) still gets the verbatim `add-track-json` command and the
+//     Desktop paste, which is the route a reader owning no config.json has.
+//     An ASSEMBLY the derivation refuses is exempt, and has to be: there is no
+//     `add-assembly-json` to fall back on, so tagging it renders no widget at
+//     all and only leaves the author an ALLOWED entry that records nothing;
 //   * no block presents a bare adapter or display object at the top level. Such
 //     a blob reads as a track config — it even has a `type` — but pasting it
 //     into `tracks` loads nothing. Nest it in the track/assembly it belongs to,
@@ -39,7 +41,6 @@ import { visit } from 'unist-util-visit'
 
 import { validateConfig } from '../../products/jbrowse-cli/src/commands/validate/validateConfig.ts'
 import { deriveAddAssembly } from '../src/lib/derive-add-assembly.ts'
-import { deriveAddTrack } from '../src/lib/derive-add-track.ts'
 import { defaultSessionObject } from '../src/lib/derive-set-default-session.ts'
 import {
   isAddassembly,
@@ -117,6 +118,10 @@ const ALLOWED = new Map([
   [
     'tutorials/cli_desktop.md#sample',
     'shows what the CLI already wrote, not a track to add',
+  ],
+  [
+    'config_guides/authentication.md#private_bam',
+    'its subject is the internetAccountId, and the account it names is declared in a top-level internetAccounts array no fence can carry. A paste route would read the file unauthenticated, which is the failure the section explains',
   ],
 ])
 
@@ -207,10 +212,13 @@ for (const { file, text } of docsMatching(docsDir, JSON_FENCE)) {
       }
     }
     if ((kind === 'track' || kind === 'assembly') && !tagged) {
-      const derivable =
-        kind === 'track'
-          ? deriveAddTrack(parsed) !== null
-          : deriveAddAssembly(parsed) !== null
+      // A track always has a tab to render: `deriveAddTrack` refusing it only
+      // picks the `add-track-json` label, and the Desktop tab is the same
+      // pasted JSON whatever the CLI can express. So the tag is required for
+      // every whole track config, and only an assembly is exempt when the
+      // derivation refuses it, since `add-assembly` has no JSON fallback and a
+      // tag there renders no widget at all.
+      const derivable = kind === 'track' || deriveAddAssembly(parsed) !== null
       if (derivable && !ALLOWED.has(`${rel}#${String(id)}`)) {
         problems.push(
           `  ${where}`,

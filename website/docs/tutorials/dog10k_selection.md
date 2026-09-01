@@ -66,7 +66,7 @@ settings, so naming the column is enough: Fst is already on the scale the plot
 draws. [](/docs/tutorials/bxd_qtl) loads a LOD column through the same two
 slots.
 
-```json
+```json addtrack
 {
   "type": "GWASTrack",
   "trackId": "dog10k_size_fst",

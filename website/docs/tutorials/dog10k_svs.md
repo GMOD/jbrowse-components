@@ -228,7 +228,7 @@ the base.
 
 The window holds nine SV records, and the figure filters to this one:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "dog10k_nhej1_svs",
@@ -398,7 +398,7 @@ trait Parker et al. mapped, two spaniel breeds, two standard-proportioned breeds
 with no reported association, and the Greek gray wolves. Labelled through a
 samples TSV as above, with `colorBy` on the breed group.
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "dog10k_fgf4_svs",
@@ -460,7 +460,7 @@ minimap2 -x splice -c parent.fa FGF4retro-CFA12.fa > FGF4retro-CFA12.paf
 Load each retrocopy as a one-contig assembly and its alignment as a
 `SyntenyTrack`:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "dog10k_fgf4_retro_cfa12",

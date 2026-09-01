@@ -17,11 +17,11 @@ the chain between them, so there is nothing to align.
 
 ## Prerequisites
 
-- to build the config yourself: a JBrowse instance to load it into (the
+- a JBrowse instance to load the config into (the
   [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop)), plus the
-  [JBrowse CLI](/docs/cli) if you take the CLI tab under each config below
-  rather than editing `config.json` by hand
+  [desktop quickstart](/docs/quickstart_desktop)). Every file here is a URL, so
+  Desktop needs nothing hosted. The [JBrowse CLI](/docs/cli) is needed only for
+  the CLI tab under each config below
 
 ## Where the data comes from
 
@@ -45,12 +45,10 @@ The Q100 project serves both the assembly and the alignment between the
 haplotypes, and JBrowse reads each from its published URL, so there is nothing
 to download.
 
-We'll start by loading the assembly, one entry under `assemblies` that you paste
-into `config.json` or write with the CLI tab's command below, and that JBrowse
-Desktop builds for you from **Open new genome** → **Open from a URL** given the
-same FASTA URL. A name and that URL are everything it needs, since JBrowse picks
-the adapter from the file extension and finds the `.fai` and `.gzi` sitting
-beside the FASTA the same way.
+We'll start by loading the assembly, one entry under `assemblies`. A name and
+the FASTA URL are everything it carries, since JBrowse picks the adapter from
+the file extension and reads the `.fai` and `.gzi` sitting beside it. The tabs
+below are the three ways to apply it.
 
 ```json addassembly
 {

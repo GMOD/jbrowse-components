@@ -150,7 +150,7 @@ One `MultiQuantitativeTrack` holds the whole set, one `BigWigAdapter` subadapter
 per cell type, each carrying the row's `name`, `color`, and `group`. The nine
 rows in the figure below are nine such entries; here are the first three:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "pbmc5k_scrna_pseudobulk",

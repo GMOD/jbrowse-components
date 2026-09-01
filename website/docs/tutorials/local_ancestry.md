@@ -31,8 +31,8 @@ all of it, and the packaged `bcftools` is linked against libcurl, so it can
 slice the panel over HTTP. `flare.jar` is a single download from FLARE's
 [releases page](https://github.com/browning-lab/flare/releases). The painted BED
 the build writes is a local file, so [JBrowse Desktop](/docs/quickstart_desktop)
-opens it by path with no web server, and on JBrowse Web it goes in through **Add
-track** or a `config.json`.
+opens it by path with no web server, while JBrowse Web reads it over HTTP and
+needs it served.
 
 ## Where the data comes from
 
@@ -228,7 +228,7 @@ adapter, so the track config below carries no `columnNames`.
 haplotype, and `rowOrder` sets their top-to-bottom order. A BED carrying
 `itemRgb` is painted with it automatically.
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "dog10k_wolfdog_named",

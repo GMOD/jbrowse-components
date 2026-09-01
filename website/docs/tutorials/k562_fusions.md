@@ -126,7 +126,7 @@ That is the `NUP214--XKR3` side of the pair, and `BCR--ABL1` takes the rest of
 this page in the same layout, off the STAR-Fusion calls the build script adds as
 this track:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "K562_star_fusion",

@@ -14,7 +14,7 @@ plugin.
 
 Here is an example track with a formatter:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "genes",

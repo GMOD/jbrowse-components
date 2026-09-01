@@ -47,7 +47,7 @@ function inferredSequenceType(uri: string) {
 // aliases slot is derivable when it is a plain uri shorthand or that adapter
 // over one. A custom alias adapter (NcbiSequenceReportAliasAdapter) needs
 // `--refNameAliasesType custom` with inline JSON, and is left undrivable.
-function aliasesUri(refNameAliases: unknown) {
+export function aliasesUri(refNameAliases: unknown) {
   const slot = asRecord(refNameAliases)
   const adapter = asRecord(slot.adapter)
   return (

@@ -153,8 +153,9 @@ supported by few reads.
 
 ## Loading your own RNA-seq data
 
-An aligned, sorted and indexed BAM or CRAM loads from **Add track** in JBrowse
-Web, or as an `AlignmentsTrack` in a config:
+An aligned, sorted and indexed BAM or CRAM is an `AlignmentsTrack`, and the
+`uri` shorthand resolves the `.bai` or `.crai` beside it, so the adapter names
+one file:
 
 ```json addtrack
 {

@@ -408,9 +408,8 @@ later one phases the normal with Arima Hi-C alongside the HiFi reads:
 `HG008_HiFi_HiC_copynumbers_segments.bed` and `HG008_HiFi_HiC_loh_segments.bed`,
 both of them URL tracks.
 
-The copy-number file is worth a few more lines of config than `add-track`
-writes. It is long format, one row per haplotype, and its column-name line
-carries no `#`:
+The copy-number file needs its columns spelled out. It is long format, one row
+per haplotype, and its column-name line carries no `#`:
 
 ```
 chr	start	end	copynumber_state	coverage	haplotype
@@ -428,7 +427,7 @@ track: set
 [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
 to `haplotype` and it paints one row per parental copy.
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "hg008_wakhan_haplotype",
@@ -537,7 +536,7 @@ The fix goes on the adapter, with
 It scales the bases-per-bin the adapter asks for, and a small enough value keeps
 the fetch on the raw per-site values at the zoom levels these figures use:
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "HG008-T_baf",
@@ -755,8 +754,8 @@ of its two copies, and at ~1.8 kb over two exons it reads base by base in a
 pileup.
 
 Whether anyone has submitted a CNV here is a lane of its own: **ClinVar CNVs**
-carries the submitted copy-number variants and their clinical significance. Add
-it from UCSC:
+carries the submitted copy-number variants and their clinical significance,
+which UCSC serves as a bigBed:
 
 ```json addtrack
 {

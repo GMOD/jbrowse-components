@@ -71,10 +71,9 @@ of samples.
 
 ## Load the segments into JBrowse
 
-Two commands set the whole thing up, an assembly and a track. Start with hg38,
-where the one thing to watch is naming: the hosted FASTA calls its contigs bare
-(`1`) while the BED uses `chr1`, so pass the alias file alongside it and both
-resolve.
+The assembly comes first. The one thing to watch there is naming: the hosted
+FASTA calls its contigs bare (`1`) while the BED uses `chr1`, so pass the alias
+file alongside it and both resolve.
 
 ```bash
 export OUT=/var/www/html/jbrowse2
@@ -85,10 +84,10 @@ jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz 
   --out $OUT
 ```
 
-The track goes in as JSON rather than a second command line, since `add-track`'s
-flags do not reach inside a display:
+The segments themselves are a `FeatureTrack` whose
+`LinearMultiRowFeatureDisplay` carries the row and color settings:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "tcga_brca_cnv",
@@ -174,7 +173,7 @@ chr16   89200000   89300000   3.26   -46.38
 file carries both. Loss is written negative so that a wiggle's `bicolorPivot` at
 0 draws gains up in `posColor` and losses down in `negColor`.
 
-```json
+```json addtrack
 {
   "type": "QuantitativeTrack",
   "trackId": "tcga_brca_cnv_recurrence",
@@ -234,7 +233,7 @@ The eight columns arrive as eight signals from that one file, and a
 [`MultiQuantitativeTrack`](/docs/config_guides/multiquantitative_track) draws
 one row each:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "tcga_brca_cnv_recurrence_by_subtype",

@@ -149,7 +149,7 @@ These displays are not a track's default, so name them in a `displays` array
 rather than using `displayDefaults`. Each display type has its own block, so to
 preset both the linear and matrix displays, set the slot on each:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "diversity_panel",
@@ -189,7 +189,7 @@ and
 
 Consequence impact, via the `impactColor` helper:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "diversity_panel",
@@ -210,7 +210,7 @@ Consequence impact, via the `impactColor` helper:
 
 SV type, via the literal value `svType`, on the same track:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "diversity_panel",
@@ -250,7 +250,7 @@ SAMPLE004	EAS	Pacific	case
 Then set `colorBy` on the display to one of those column names. Each distinct
 value gets its own color from the palette:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "population_vcf",
@@ -298,7 +298,7 @@ files are needed, and because the raw genotypes are present, the filtering
 (minor allele frequency, HWE, call rate, jexl) and signed-LD options are
 available:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "variants_ld",
@@ -317,7 +317,7 @@ large to compute in the browser, or when you want to publish a fixed matrix. Its
 adapter is `PlinkLDAdapter` for a plain `.ld` or `PlinkLDTabixAdapter` for a
 bgzipped, tabix-indexed `.ld.gz` (which fetches only the visible region):
 
-```json
+```json addtrack
 {
   "type": "LDTrack",
   "trackId": "ld_plink",

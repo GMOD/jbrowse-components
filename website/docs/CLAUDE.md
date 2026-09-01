@@ -67,6 +67,15 @@ check by fixing the manifest, not by removing a skip.
 - **Show a whole track config, not a fragment**, tagged ```json addtrack —
   however small the point. A bare `{ "color": … }` blob is the one shape a
   reader cannot paste. `check-config-blocks` enforces it.
+- **A tagged fence renders its own routes, so don't narrate them.** The widget
+  carries a Desktop tab beside the config and the CLI
+  (`derive-desktop-steps.ts`) — pasted JSON for a track, the add-genome form for
+  an assembly. So the prose says what the config IS and the tabs say how to
+  apply it: "add this to the `tracks` array", "run the CLI command below" and
+  "in Desktop use Open new genome" each duplicate a tab, and each reads to the
+  other two thirds of the audience as the only way in. An assembly the form has
+  no input for (`aliases`, `geneticCodes`, a non-sibling index) silently gets no
+  such tab, which is the signal that the page owes that reader a sentence.
 - **A `defaultSession` gets its own fence, tagged ```json session**, and must be
   its only top-level key, since `set-default-session` writes that key and
   nothing else.

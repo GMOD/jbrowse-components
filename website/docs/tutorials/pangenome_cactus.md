@@ -258,7 +258,7 @@ Load `mc/ecoli.vcf.gz` as a [`VariantTrack`](/docs/config_guides/variant_track)
 on K12 and pick the matrix display, one column per variant and one row per
 sample:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "ecoli_cactus_variants",
@@ -310,7 +310,7 @@ converts this MAF too and streams while it does it, which matters at
 whole-genome scale; see
 [producing the tabix BED](/docs/config_guides/maf_track#producing-the-tabix-bed-from-a-maf).
 
-```json
+```json addtrack
 {
   "type": "MafTrack",
   "trackId": "ecoli_cactus_maf",
@@ -496,7 +496,7 @@ projection tracks the build script already wrote. The `uri` below is our hosted
 copy of that pair; a local build swaps in the `ecoli_cactus` prefix the command
 above wrote.
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_cactus_segments",

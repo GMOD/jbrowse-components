@@ -9,7 +9,7 @@ guide_category: Core configuration
 `{ "name": "hg38", "uri": "hg38.fa.gz" }`. JBrowse infers the adapter from the
 file extension and fills in the rest. See the
 [BaseAssembly config docs](/docs/config/baseassembly/) for the full slot
-reference, or run `jbrowse add-assembly` to generate this for you.
+reference.
 
 ## Shorthand forms
 
@@ -137,11 +137,14 @@ aliasing, so `chrM` still applies if your FASTA calls it `MT`. A sidecar TSV
 `refName<TAB>geneticCodeId`, `#` comment lines allowed) can supply the same map;
 an inline entry wins if both are present.
 
-## Adding an assembly with the CLI
+## Loading an assembly without writing the config
 
-`jbrowse add-assembly` generates this config and copies the files into place;
-see the [web quick start](/docs/quickstart_web/) or the
-[CLI guide](/docs/cli/#jbrowse-add-assembly).
+`jbrowse add-assembly` generates this entry and copies the data files into place
+beside it, which is the part the config itself does not describe. See the
+[web quick start](/docs/quickstart_web/) or the
+[CLI guide](/docs/cli/#jbrowse-add-assembly). JBrowse Desktop builds the same
+entry from a genome's URL and a name, with no config file involved, as the
+[desktop quick start](/docs/quickstart_desktop/) shows.
 
 ## Sequence adapters
 

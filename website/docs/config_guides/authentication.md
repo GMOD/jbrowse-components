@@ -350,7 +350,7 @@ aws s3 presign s3://mybucket/sample.bam.bai --expires-in 604800
 Both signed URLs then go in the track, spelled out rather than using the
 [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand):
 
-```json
+```json addtrack
 {
   "type": "AlignmentsTrack",
   "trackId": "private_sample",

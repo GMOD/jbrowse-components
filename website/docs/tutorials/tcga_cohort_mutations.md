@@ -92,10 +92,9 @@ reports the tumors it could not match when the track loads.
 
 ## Load the cohort VCF into JBrowse
 
-Two commands set the whole thing up, an assembly and a track. Start with hg38,
-where the one thing to watch is naming: the hosted FASTA calls its contigs bare
-(`1`) while the VCF uses `chr1`, so pass the alias file alongside it and both
-resolve.
+The assembly comes first. The one thing to watch there is naming: the hosted
+FASTA calls its contigs bare (`1`) while the VCF uses `chr1`, so pass the alias
+file alongside it and both resolve.
 
 ```bash
 export OUT=/var/www/html/jbrowse2
@@ -106,10 +105,10 @@ jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz 
   --out $OUT
 ```
 
-The track goes in as JSON rather than a second command line, since `add-track`'s
-flags do not reach inside a display:
+The cohort itself is a `VariantTrack` whose adapter carries the clinical TSV,
+with the matrix display on top of it:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
@@ -162,7 +161,7 @@ of rows.
 puts the matching color strip in the gutter, so each band is labeled. `colorBy`
 is also **Color by... → Samples** in the track menu; `groupBy` is config only.
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
@@ -267,7 +266,7 @@ and the same display read it: `BedGraphTabixAdapter` takes every column past
 [`MultiQuantitativeTrack`](/docs/config_guides/multiquantitative_track) draws
 one row per group.
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "tcga_brca_mutation_recurrence_by_subtype",

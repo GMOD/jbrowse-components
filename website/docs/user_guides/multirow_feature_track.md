@@ -34,7 +34,7 @@ To fix the column in config rather than picking it per session, set
 [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
 in the track config:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "chromhmm",
@@ -132,7 +132,7 @@ Four sources of color, in precedence order:
 Binning a numeric column onto a diverging scale is the common jexl case, e.g.
 segment mean copy number:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "tcga_brca_cnv",

@@ -136,7 +136,7 @@ per context, and they render as three labeled rows, the Aggregate methylation
 track in the figures below. This is the same mechanism as the
 [DNA methylation tutorial's aggregate section](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl).
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "arabidopsis_wgbs_methyldackel",

@@ -167,9 +167,9 @@ swapped:
 }
 ```
 
-Both BEDs are `jbrowse add-track` flags, which is the CLI tab on each block
-above: `--bed1` and `--bed2` beside the anchors file, and `--load copy` copies
-all three into the config's directory.
+An anchors file names gene pairs and carries no coordinates, which is what
+`bed1` and `bed2` supply, one per genome in the order `assemblyNames` lists
+them.
 
 Both adapters read the whole file into memory, which suits MCScan's scale. PAF's
 indexed [PIF](/docs/config_guides/synteny_track) has no MCScan equivalent.
@@ -182,12 +182,11 @@ both.
 
 <Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks. The marks along the top of the band are anchors whose grape gene is on a chromosome this panel is not showing. Most of this peach chromosome has counterparts elsewhere in grape." src="/img/mcscan_anchors.png" />
 
-The block track is drawn here as an `LGVSyntenyDisplay`: a synteny track in an
-ordinary linear genome view row, drawn as features. No `add-track` flag covers
-the `displays` array, so this goes in with `jbrowse add-track-json`, which
-copies no data files.
+The block track is drawn here as an `LGVSyntenyDisplay`, a synteny track in an
+ordinary linear genome view row, drawn as features. Naming a display type takes
+the full `displays` array rather than `displayDefaults`.
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach_anchors_simple",

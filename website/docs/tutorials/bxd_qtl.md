@@ -129,7 +129,7 @@ on the `sample` column and colors each block from its `itemRgb` field. Both
 tracks reference the `mm10` assembly, so set that up first if you haven't. See
 the [assemblies configuration guide](/docs/config_guides/assemblies).
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "bxd_chromosome_painting_mm10",

@@ -148,7 +148,7 @@ reference. It is absent from every wolf and every coyote in the collection.
 
 Three neighbours sit inside the same 101 bp, and the display filters them out:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "dog10k_cyp1a2_snvs",

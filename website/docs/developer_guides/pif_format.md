@@ -199,7 +199,7 @@ tier switch.
 
 ## JBrowse configuration
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "my_synteny",

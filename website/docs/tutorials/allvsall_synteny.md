@@ -154,17 +154,15 @@ pair:
 }
 ```
 
+`AllVsAllPAFAdapter` has to be named. A `.paf` guessed from its extension alone
+comes out as the pairwise `PAFAdapter`, which reads only the first two assembly
+names.
+
 If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
 `assemblyNameToPanSN` slot (e.g. if you named the assembly `Ecoli_K12` but its
 PanSN prefix is `K12`, use `{ "Ecoli_K12": "K12" }`). A name matching no sample
 in the file raises an error listing the samples the file does hold, so the
 mapping can be written from what the error reports.
-
-The CLI tab on the block above adds the same track. It spells the adapter out
-with `--adapterType`, because a `.paf` extension on its own is inferred as the
-pairwise `PAFAdapter`, which reads only the first two assembly names. One
-`--assemblyNames` fills in both the track's and the adapter's, in any order: it
-is the full set of assemblies the file covers.
 
 ### Haplotype-resolved genomes
 
@@ -225,8 +223,8 @@ straight across are too small to see.
 
 ## Stacking the genomes
 
-With the track in your config, you can stack the five strains from the UI, or
-declaratively so the view opens on load.
+With the track loaded, the five strains stack from the UI, or declaratively so
+the view opens on load.
 
 ### From the UI
 
@@ -246,9 +244,9 @@ had selected.
 
 ### Declaratively with defaultSession
 
-To open the stacked view automatically on load, add a top-level `defaultSession`
-key to your `config.json` holding a `LinearSyntenyView` snapshot. Five rows
-means four bands, so `tracks` has four entries, all served by the same track:
+A top-level `defaultSession` key holding a `LinearSyntenyView` snapshot opens
+the stacked view as JBrowse loads. Five rows means four bands, so `tracks` has
+four entries, all served by the same track:
 
 ```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
@@ -272,10 +270,6 @@ means four bands, so `tracks` has four entries, all served by the same track:
   }
 }
 ```
-
-The CLI tab writes the same session into an existing `config.json`. It carries
-the value of `defaultSession`, which is what `set-default-session` takes. The
-URL tab opens it against the hosted copy of this dataset.
 
 Three keys there are worth reading, and each is applied once as the view opens:
 

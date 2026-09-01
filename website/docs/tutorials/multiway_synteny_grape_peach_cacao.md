@@ -374,7 +374,7 @@ view tells the adapter which pair each band draws. `blockAssemblies` names every
 column in order (column 0 first) and `bedLocations` gives the matching
 per-column BED:
 
-```json
+```json addtrack
 {
   "type": "SyntenyTrack",
   "trackId": "grape_peach_cacao_blocks",
@@ -394,10 +394,8 @@ per-column BED:
 }
 ```
 
-Neither `bedLocations` nor `blockAssemblies` is expressible as a
-`jbrowse add-track` flag, so this goes in with `jbrowse add-track-json`. That
-writes the config and copies no data files, so the table and BEDs have to
-already sit where their `uri`s point.
+`bedLocations` and `blockAssemblies` are read as written, so the table and the
+BEDs have to already sit where their `uri`s point.
 
 ## Stacking the three genomes
 

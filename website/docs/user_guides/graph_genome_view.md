@@ -129,7 +129,7 @@ The plain-GFA walk makes four choices worth knowing:
 Both write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their tabix
 indexes, and both load through one adapter:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_minigraph_segments",
@@ -324,7 +324,7 @@ To paint a segments track in the same colors as the graph, put the matching
 expression on the track. Reference position, over the 50 kb window from
 4,050,000 that the figures above are cut from:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_minigraph_segments",
@@ -446,7 +446,7 @@ bash build_minigraph_paths.sh ecoli_minigraph.rgfa ecoli_minigraph_paths \
 The reference goes first, because its path through a bubble _is_ the reference
 allele the others are scored against. Load the result with one row per strain:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_minigraph_paths",

@@ -19,7 +19,7 @@ optional, and any extra attribute is readable from a
 [jexl callback](/docs/config_guides/jexl). Use it with any feature track type,
 such as a `FeatureTrack`:
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "inline_features",

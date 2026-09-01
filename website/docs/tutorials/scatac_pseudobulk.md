@@ -124,41 +124,12 @@ In JBrowse, all the per-cell-type BigWigs go into one track: a
 per file. Each subadapter carries a `name` (the row label), an optional `color`,
 and an optional `group`.
 
-### Via the UI
+`assemblyNames` names an assembly already configured in JBrowse, `hg38` here,
+which is what the BigWigs above were built against. See the
+[assemblies configuration guide](/docs/config_guides/assemblies) if it is not
+set up yet. Minimal three-cell-type example:
 
-From the "Add track" workflow, switch to "Add multi-wiggle track" and paste your
-BigWig URLs one per line (or a JSON array of subadapter objects). JBrowse builds
-the `MultiQuantitativeTrack` for you, and exporting the session gets the JSON
-config back out. On JBrowse Desktop the same workflow loads the `.bw` files
-straight from local disk with no web server.
-
-### Via the CLI
-
-`jbrowse add-track --multiwig` takes the whole set of BigWigs in place of the
-usual single positional file, and builds the `MultiQuantitativeTrack` from them.
-The row labels come from the filenames, which the pseudobulk step already named
-after the groups:
-
-```bash
-jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
-  --name "scATAC by cell type" --assemblyNames hg38 \
-  --load copy --subDir bw --out /var/www/html/jbrowse2
-```
-
-`--load copy --subDir bw` copies local files in beside `config.json`; drop both
-for BigWigs already served over HTTP. To carry per-row names, colors, and
-groups, pass a `.json` file of subadapter objects (the same objects as the
-config below) instead of the comma list.
-
-### Via config JSON
-
-Add a track object to your config's `tracks` array. Its `assemblyNames` must
-match an assembly already configured in JBrowse (the BigWigs above were built
-against `hg38`). If you don't have it set up yet, see the
-[assemblies configuration guide](/docs/config_guides/assemblies). Minimal
-three-cell-type example against hg38:
-
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "scatac_pseudobulk",
@@ -206,7 +177,7 @@ Three things in that list are worth writing by hand:
 If you don't need per-row names, colors or groups, the `bigWigs` shorthand takes
 a plain array of URLs and derives each row's label from its filename:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "scatac_pseudobulk_simple",
@@ -241,6 +212,32 @@ lists every mode, and the track menu switches between them live. `multirowxy`
 Loaded, the twelve rows put the marker check in one frame:
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
+
+### Building the subadapter list from files
+
+Two workflows write the list for you, from a set of files rather than one entry
+at a time.
+
+"Add multi-wiggle track", in the "Add track" workflow, takes the BigWig URLs one
+per line, or a JSON array of subadapter objects, and builds the
+`MultiQuantitativeTrack` from them. Exporting the session gets the JSON config
+back out. On JBrowse Desktop it reads the `.bw` files straight from local disk
+with no web server.
+
+`jbrowse add-track --multiwig` takes the whole set of BigWigs in place of the
+usual single positional file. The row labels come from the filenames, which the
+pseudobulk step already named after the groups:
+
+```bash
+jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
+  --name "scATAC by cell type" --assemblyNames hg38 \
+  --load copy --subDir bw --out /var/www/html/jbrowse2
+```
+
+`--load copy --subDir bw` copies local files in beside `config.json`, and both
+drop out for BigWigs already served over HTTP. To carry per-row names, colors,
+and groups, pass a `.json` file of subadapter objects, the same objects as the
+config above, instead of the comma list.
 
 ## Reproduce it end to end
 

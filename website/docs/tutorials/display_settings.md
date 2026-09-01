@@ -98,10 +98,11 @@ The [config schema docs](/docs/config_guide) list the same names per display
 [](/docs/config/linearwiggledisplay)) with what each one accepts, which is where
 to go for a setting you have not clicked yet.
 
-## Put the settings in config.json
+## Put the settings in displayDefaults
 
-A session remembers settings for one session. To have the track open this way
-for everyone, every time, put the same keys in its `displayDefaults`:
+A session remembers settings for one session. The same keys in a track's
+`displayDefaults` travel with the track, so it opens that way every time it is
+loaded, and from a served `config.json` it does so for every visitor:
 
 ```json addtrack
 {
@@ -128,8 +129,7 @@ out the full `displays` array when you are _selecting_ a non-default display
 type (`LinearMultiSampleVariantDisplay`, `LDDisplay`, and so on); see
 [configuring tracks](/docs/config_guides/tracks) for both forms.
 
-Reload with that config and the track opens paired, colored and soft-clipped,
-with no clicking.
+The track then opens paired, colored and soft-clipped, with no clicking.
 
 ## Precedence when config and session disagree
 

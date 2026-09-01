@@ -2,6 +2,10 @@ import { visit } from 'unist-util-visit'
 
 import { deriveAddAssembly } from './derive-add-assembly.ts'
 import { deriveAddTrack, deriveAddTrackJson } from './derive-add-track.ts'
+import {
+  desktopAssemblyNodes,
+  desktopTrackNodes,
+} from './derive-desktop-steps.ts'
 import { deriveSessionUrl } from './derive-session-url.ts'
 import { deriveSetDefaultSession } from './derive-set-default-session.ts'
 
@@ -11,8 +15,11 @@ import type { Plugin } from 'unified'
 // A ```json block tagged `addtrack` (a track config), `addassembly` (an
 // assembly config) or `session` (a `defaultSession`) renders as a tabbed
 // widget: "Config file" (the JSON, unchanged) beside every other way to apply
-// the same thing, each derived from that same JSON so they can't drift. A
-// `session` fence carrying `config=<url>` gets a third tab, a live link.
+// the same thing, each derived from that same JSON so they can't drift. The tab
+// strip is what routes a reader who owns no config.json — a Desktop user's only
+// route is the GUI one, and a page that names it in prose instead leaves a
+// stray JSON block under a paragraph they cannot act on. A `session` fence
+// carrying `config=<url>` gets a live-link tab.
 // Invalid JSON degrades to a plain block with a build-time warning, as does an
 // `addassembly` or `session` config no command can express (unlike tracks,
 // neither has a verbatim-JSON fallback command).
@@ -51,7 +58,7 @@ function cliTab(config: Record<string, unknown>, json: string) {
   const command = deriveAddTrack(config)
   return {
     label: command === null ? 'CLI (add-track-json)' : 'CLI (add-track)',
-    node: bash(command ?? deriveAddTrackJson(json)),
+    nodes: [bash(command ?? deriveAddTrackJson(json))],
   }
 }
 
@@ -61,7 +68,7 @@ function assemblyCliTab(config: Record<string, unknown>) {
   const command = deriveAddAssembly(config)
   return command === null
     ? undefined
-    : { label: 'CLI (add-assembly)', node: bash(command) }
+    : { label: 'CLI (add-assembly)', nodes: [bash(command)] }
 }
 
 // Same shape as the assembly tab, and refused for the same reason: a block
@@ -70,7 +77,7 @@ function sessionCliTab(config: Record<string, unknown>, json: string) {
   const command = deriveSetDefaultSession(config, json)
   return command === null
     ? undefined
-    : { label: 'CLI (set-default-session)', node: bash(command) }
+    : { label: 'CLI (set-default-session)', nodes: [bash(command)] }
 }
 
 function bash(value: string) {
@@ -85,10 +92,12 @@ function bash(value: string) {
 function urlTab(url: string): Tab {
   return {
     label: 'URL',
-    node: raw(
-      `<p><a href="${url.replaceAll('&', '&amp;')}" target="_blank" rel="noopener">` +
-        `Open this session in JBrowse</a></p>`,
-    ),
+    nodes: [
+      raw(
+        `<p><a href="${url.replaceAll('&', '&amp;')}" target="_blank" rel="noopener">` +
+          `Open this session in JBrowse</a></p>`,
+      ),
+    ],
   }
 }
 
@@ -117,12 +126,12 @@ function tabWidget(gid: string, tabs: Tab[]) {
       `<div class="spec-tabs config-cli-tabs">\n${inputs.join('\n')}\n` +
         `<div class="spec-panel spec-panel-1">`,
     ),
-    tabs[0]!.node,
+    ...tabs[0]!.nodes,
     ...tabs
       .slice(1)
-      .flatMap(({ node }, i) => [
+      .flatMap(({ nodes }, i) => [
         raw(`</div>\n<div class="spec-panel spec-panel-${i + 2}">`),
-        node,
+        ...nodes,
       ]),
     raw(`</div>\n</div>`),
   ]
@@ -130,7 +139,7 @@ function tabWidget(gid: string, tabs: Tab[]) {
 
 interface Tab {
   label: string
-  node: RootContent
+  nodes: RootContent[]
 }
 
 interface TagEntry {
@@ -153,15 +162,27 @@ const TAGS: TagEntry[] = [
   {
     tag: 'addtrack',
     matches: isAddtrack,
-    build: (config, json) => [cliTab(config, json)],
+    build: (config, json) => [
+      cliTab(config, json),
+      { label: 'JBrowse Desktop', nodes: desktopTrackNodes(json) },
+    ],
     refusal: '',
   },
   {
     tag: 'addassembly',
     matches: isAddassembly,
+    // the GUI tab is absent rather than refusing the widget, the way the
+    // session tag's live link is: an assembly the add-genome form has no input
+    // for still has a config file and a command.
     build: config => {
       const tab = assemblyCliTab(config)
-      return tab && [tab]
+      const desktop = desktopAssemblyNodes(config)
+      return (
+        tab && [
+          tab,
+          ...(desktop ? [{ label: 'JBrowse Desktop', nodes: desktop }] : []),
+        ]
+      )
     },
     refusal:
       'has no add-assembly equivalent (see derive-add-assembly.ts); leave it untagged',
@@ -205,7 +226,7 @@ const remarkConfigCliTabs: Plugin<[], Root> = () => {
             file.message(`${entry.tag} block ${entry.refusal}`, node)
           } else {
             const nodes = tabWidget(`cfgtab-${(widgets += 1)}`, [
-              { label: 'Config file', node },
+              { label: 'Config file', nodes: [node] },
               ...tabs,
             ])
             parent.children.splice(index, 1, ...nodes)

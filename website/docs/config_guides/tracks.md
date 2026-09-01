@@ -153,7 +153,7 @@ choosing which display is the default, or setting an explicit `displayId`), pass
 optional and defaults to `{trackId}-{displayType}`. The two forms combine, and
 an explicit entry wins over `displayDefaults` for any setting it names itself.
 
-```json
+```json addtrack
 {
   "type": "FeatureTrack",
   "trackId": "repeats_hg19",
