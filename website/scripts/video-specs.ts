@@ -60,6 +60,32 @@ export const videoSpecs: VideoSpec[] = [
   ...genomesBasicsVideos,
 ]
 
+// Clips this generator cannot film, because what they show is not a
+// jbrowse-web page under puppeteer.
+//
+// The MCP screencast is JBrowse Desktop being driven over its MCP socket by a
+// real Claude Code session, captured through the app's own screenshot tool: no
+// url to load, no steps to run, and no live session to hand a reader, since the
+// session is one an agent built during the take. So a VideoSpec cannot describe
+// it and `pnpm video` cannot reproduce it.
+//
+// What it still needs from this file is a name check-video-specs will accept on
+// an embed, and its frame, which remark-video reserves the player's box from.
+// Everything else a tour gets — the live link, the caption track, the re-film —
+// it does without.
+//
+// Add one only where the same is true. A clip that CAN be filmed by the
+// generator belongs in videoSpecs, where a stale one is one `--filter` away
+// from being current again.
+export interface ExternalClip {
+  name: string
+  width: number
+  height: number
+  description: string
+}
+
+export const externalClips: ExternalClip[] = []
+
 // The track configs a tour TYPES into the app, paired with the page that prints
 // them, for `check-paste-configs`.
 //

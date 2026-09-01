@@ -85,7 +85,7 @@ import {
   validateVideoSpecs,
   videoFrame,
 } from './video-spec-rules.ts'
-import { pastedTrackConfigs, videoSpecs } from './video-specs.ts'
+import { externalClips, pastedTrackConfigs, videoSpecs } from './video-specs.ts'
 
 import type { VideoSpec, VideoStep } from './video-specs.ts'
 import type { Page } from 'puppeteer'
@@ -606,10 +606,24 @@ async function main() {
         `${spec.name}  ${width}×${height}, ${spec.steps.length} steps\n    ${spec.description}`,
       )
     }
+    for (const clip of externalClips) {
+      console.log(
+        `${clip.name}  ${clip.width}×${clip.height}, filmed elsewhere\n    ${clip.description}`,
+      )
+    }
     return
   }
   if (!selected.length) {
-    console.error(`no video spec matches ${values.filter?.join(', ')}`)
+    // Naming one of those and being told nothing matched reads as a typo in the
+    // name, which is the one thing it is not.
+    const external = externalClips.filter(c =>
+      matchesFilterTokens(c.name, tokens, false),
+    )
+    console.error(
+      external.length
+        ? `${external.map(c => c.name).join(', ')} is filmed outside this generator and cannot be re-filmed by it — see externalClips in video-specs.ts`
+        : `no video spec matches ${values.filter?.join(', ')}`,
+    )
     process.exit(1)
   }
 

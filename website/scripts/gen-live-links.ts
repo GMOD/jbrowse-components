@@ -26,7 +26,7 @@ import {
   specs,
 } from './screenshot-specs.ts'
 import { videoFrame } from './video-spec-rules.ts'
-import { videoSpecs } from './video-specs.ts'
+import { externalClips, videoSpecs } from './video-specs.ts'
 
 const figureLiveRefs = Object.fromEntries(
   specs.flatMap(spec => {
@@ -41,9 +41,15 @@ const videoLiveRefs = Object.fromEntries(
   videoSpecs.map(spec => [spec.name, spec.url] as const),
 )
 
-const videoFrames = Object.fromEntries(
-  videoSpecs.map(spec => [spec.name, videoFrame(spec)] as const),
-)
+// Both kinds of clip, because remark-video reserves every player's box from
+// this — an externally filmed one has no spec to compute a frame from, so it
+// states its own.
+const videoFrames = Object.fromEntries([
+  ...videoSpecs.map(spec => [spec.name, videoFrame(spec)] as const),
+  ...externalClips.map(
+    clip => [clip.name, { width: clip.width, height: clip.height }] as const,
+  ),
+])
 
 // Read off the spec rather than off the disk, for the reason the whole file is
 // generated: a checkout that has not pulled the media corpus would answer "no

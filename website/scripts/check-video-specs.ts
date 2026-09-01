@@ -25,7 +25,7 @@ import {
   validateVideoSpecs,
   videoEmbedsIn,
 } from './video-spec-rules.ts'
-import { pastedTrackConfigs, videoSpecs } from './video-specs.ts'
+import { externalClips, pastedTrackConfigs, videoSpecs } from './video-specs.ts'
 
 const embeds = docFiles(docsDir).flatMap(file =>
   videoEmbedsIn(readFileSync(file, 'utf8'), docRelative(file)),
@@ -36,14 +36,17 @@ const problems = [
     videoSpecs,
     pastedTrackConfigs.map(pair => pair.video),
   ),
-  ...validateVideoEmbeds(
-    embeds,
-    videoSpecs.map(spec => spec.name),
-  ),
+  // Externally filmed clips join the name check in both directions: an embed
+  // may name one, and one nothing embeds is a clip published with nothing
+  // playing it, exactly as for a tour.
+  ...validateVideoEmbeds(embeds, [
+    ...videoSpecs.map(spec => spec.name),
+    ...externalClips.map(clip => clip.name),
+  ]),
   ...validatePastePages(embeds, pastedTrackConfigs),
 ]
 
 reportProblems(
   problems.map(problem => `  ${problem}`),
-  `${videoSpecs.length} video spec(s) and ${embeds.length} doc embed(s) pair up`,
+  `${videoSpecs.length} video spec(s), ${externalClips.length} external clip(s) and ${embeds.length} doc embed(s) pair up`,
 )
