@@ -93,16 +93,6 @@ function ContactAxisGuides({
   )
 }
 
-// Thin outer: owns the chrome. There is no inner positioning div — the chrome
-// already IS the `position:relative` box its own overlays need
-// (DisplayStatusChromeBase), so sizing it here rather than nesting a second
-// identically-sized container is what lets `mouseState` be measured against the
-// same element the canvas fills.
-//
-// The pointer measurement is the chrome's now. This display used to hand-guard
-// the case where `HicOverlayPanel` — portaled out of the container — bubbles its
-// React events here despite not being a DOM descendant; that guard is in
-// `useMouseTracking` and applies to every display with a portaled overlay.
 const LinearHicReactComponent = observer(function LinearHicReactComponent({
   model,
 }: {
@@ -139,8 +129,6 @@ const HicBody = observer(function HicBody({
   mouseTracker: MouseTracker
   width: number
 }) {
-  // read here rather than beside the handlers, so a mousemove re-renders this
-  // body instead of the whole DisplayChrome above it
   const mouseState = useMouseState(mouseTracker)
   const { height, yScalar } = model
   // Derived rather than stored beside the coordinates: one measurement per

@@ -232,11 +232,6 @@ function EmptyState() {
   )
 }
 
-// Thin outer: owns the chrome and the pointer measurement bound to its
-// container. There is no inner positioning div — the chrome already IS the
-// `position:relative` box its own overlays need (DisplayStatusChromeBase), so
-// sizing it here rather than nesting a second identically-sized container is
-// what lets `mouseState` be measured against the same element the canvas fills.
 const LDDisplayComponent = observer(function LDDisplayComponent({
   model,
 }: {

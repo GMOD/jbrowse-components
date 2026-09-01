@@ -117,8 +117,6 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   height: number
   mouseTracker: MouseTracker
 }) {
-  // read here rather than beside the handlers, so a mousemove re-renders this
-  // body instead of the whole DisplayChrome above it
   const mouseState = useMouseState(mouseTracker)
   const { yTop, plotHeight } = model.plotGeometry
   const labelOffset = treeSidebarOffset(model)
