@@ -135,6 +135,7 @@ test_data/jb2bench_link/
 !.claude/skills/jbrowse-authoring/
 !.claude/skills/jbrowse-capture/
 !.claude/skills/jbrowse-hosted-data/
+!.claude/skills/jbrowse-mcp/
 
 # component_tests install npm packages without a committed lockfile (see
 # .github/workflows/push.yml); yarn.lock here is a local-only generated artifact

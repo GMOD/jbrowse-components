@@ -55,12 +55,16 @@ readers, direct adapter data access, refName renaming, the readiness wait), and
 `docs` serves the raw documentation (`live-model`, `session-spec`, `automating`)
 — bundled at build time, readable while the app is closed.
 
-The rest are shortcuts over the same surface: `open`, `list_recent_sessions`,
-`get_session`, `inspect_session` (live-model path walks, getters included),
-`list_tracks`, `load_session_spec`, `navigate`, `show_track`, `update_track`
-(in-place display settings, single/match/all selectors), `hide_track`,
-`add_track`, `get_features` (main-thread adapter read of the visible region),
-`screenshot` — see `toolDefinitions.ts` for the contracts. `load_session_spec`
-takes the same spec JSON as JBrowse Web's `&session=spec-` URLs
-(website/docs/urlparams.md); `screenshot` waits on the capture readiness
+The rest are shortcuts over the same surface: `open` (config/session/link; bare
+lists recent sessions), `inspect_session` (no path: overview; path: live model
+walks, getters included), `list_tracks`, `load_session_spec`, `navigate`,
+`track` (show / in-place update with single/match/all selectors / hide),
+`add_track`, `get_features` (main-thread adapter read of the visible region,
+refNames renamed), `screenshot` — see `toolDefinitions.ts` for the contracts.
+`load_session_spec` takes the same spec JSON as JBrowse Web's `&session=spec-`
+URLs (website/docs/urlparams.md); `screenshot` waits on the capture readiness
 contract (`[data-app-phase="ready"]`) before capturing.
+
+`pnpm test:mcp` (after `pnpm build && pnpm build:electron-main`) launches the
+built app and runs the conformance suite in `test/mcpConformance.ts` against
+volvox; agent-side working discipline lives in `.claude/skills/jbrowse-mcp/`.

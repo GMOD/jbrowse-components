@@ -12,6 +12,10 @@ renderer. What you `return` is serialized back to you. In scope:
   - `jb.mobx` — `autorun`, `when`, `runInAction`, `observable`
   - `jb.readConfObject(conf, 'slotName')` / `jb.getConf(model, 'slotName')` —
     read config slots (plain property access on a config model does NOT work)
+  - `jb.describeSlots(confNode)` — every config slot the node's schema defines,
+    with type/description/default. Introspect instead of guessing: an unknown
+    settings key is dropped SILENTLY. e.g.
+    `jb.describeSlots(session.views[0].tracks[0].displays[0].configuration)`
   - `jb.parseLocString(str, refName => true)` — locstring parsing
   - `jb.getFeatureAdapterOrThrow({ pluginManager, sessionId, adapterConfig })` —
     direct data access, see below
@@ -56,8 +60,10 @@ MST rules: reads are plain property/getter access; **mutations only through
 actions** (`view.setWidth(800)` works, `view.width = 800` throws). Snapshots
 (`jb.mst.getSnapshot(node)`) omit computed getters — read getters off the live
 node. To write a display config slot in place:
-`display.configuration.setSlot('displayMode', 'compact')` (the update_track tool
-does this with legacy-key handling; prefer it unless you need more).
+`display.configuration.setSlot('displayMode', 'compact')` (the track tool's
+"update" action does this with legacy-key handling; prefer it unless you need
+more), and `jb.describeSlots(display.configuration)` lists the slots that exist
+before you write one.
 
 ## Reading data directly (fast path)
 

@@ -83,6 +83,9 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     args: Record<string, unknown>,
   ): Promise<BridgeToolResult> {
     const target = typeof args.target === 'string' ? args.target : ''
+    if (!target) {
+      return listRecentSessions()
+    }
     if (/^https?:\/\//.test(target)) {
       await openTarget({ type: 'link', url: target })
       return { result: { opened: target } }
@@ -125,8 +128,6 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     switch (tool) {
       case 'open':
         return openTool(args)
-      case 'list_recent_sessions':
-        return listRecentSessions()
       case 'screenshot':
         return screenshot(args)
       default:

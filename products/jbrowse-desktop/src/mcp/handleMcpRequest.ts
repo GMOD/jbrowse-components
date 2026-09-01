@@ -1,7 +1,9 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
 import {
   getConf,
+  getConfigurationSchemaDefinition,
   isConfigurationSlot,
+  isSlotDefinitionEntry,
   preProcessSlotValues,
   readConfObject,
 } from '@jbrowse/core/configuration'
@@ -378,7 +380,7 @@ function hideTrack(
   session: AbstractSessionModel,
   args: Record<string, unknown>,
 ) {
-  const trackId = typeof args.trackId === 'string' ? args.trackId : ''
+  const trackId = typeof args.track === 'string' ? args.track : ''
   const view = pickView(session, args, 'hideTrack')
   const hidden = viewSelf(view).hideTrack!(trackId)
   return { hidden, view: view.id }
@@ -661,6 +663,29 @@ function fileLocation(spec: string): FileLocation {
     : { localPath: spec, locationType: 'LocalPathLocation' }
 }
 
+// Vocabulary introspection: every config slot a live config node's schema
+// defines, so code never has to guess which settings keys exist — an unknown
+// key is otherwise dropped silently, which is this format's known failure mode.
+function describeSlots(conf: AnyConfigurationModel) {
+  const definition = getConfigurationSchemaDefinition(conf) ?? {}
+  return Object.fromEntries(
+    Object.entries(definition).flatMap(([name, def]) =>
+      isSlotDefinitionEntry(def)
+        ? [
+            [
+              name,
+              {
+                type: def.type,
+                ...(def.description ? { description: def.description } : {}),
+                defaultValue: def.defaultValue,
+              },
+            ],
+          ]
+        : [],
+    ),
+  )
+}
+
 // The raw primitive under all of the above: Claude-authored code against the
 // live model graph. The renderer already runs with nodeIntegration and the
 // bridge socket is user-only, so this grants what the surface as a whole
@@ -680,6 +705,7 @@ async function evaluate(
     mobx: { autorun, observable, runInAction, when },
     readConfObject,
     getConf,
+    describeSlots,
     parseLocString,
     getFeatureAdapterOrThrow,
     getRpcSessionId,
@@ -801,26 +827,34 @@ export async function handleMcpRequest(
   }
   if (!pluginManager || !session) {
     throw new Error(
-      'No session is open. Use the open tool with a config/session file or URL, or list_recent_sessions to find one.',
+      'No session is open. Use the open tool with a config/session file or URL, or bare to list recent sessions.',
     )
   }
   switch (tool) {
-    case 'get_session':
-      return sessionSummary(session)
     case 'inspect_session':
-      return inspectSession(session, args)
+      return typeof args.path === 'string' && args.path
+        ? inspectSession(session, args)
+        : {
+            ...sessionSummary(session),
+            note: 'pass path to drill into the live model, e.g. "views.0" or "views.0.visibleLocStrings"',
+          }
     case 'list_tracks':
       return listTracks(session, args)
     case 'load_session_spec':
       return loadSpec(pluginManager, args)
     case 'navigate':
       return navigate(session, args)
-    case 'show_track':
-      return showTrack(session, args)
-    case 'update_track':
-      return updateTrack(session, args)
-    case 'hide_track':
-      return hideTrack(session, args)
+    case 'track':
+      switch (args.action) {
+        case 'show':
+          return showTrack(session, args)
+        case 'update':
+          return updateTrack(session, args)
+        case 'hide':
+          return hideTrack(session, args)
+        default:
+          throw new Error('track needs an action: "show", "update", or "hide"')
+      }
     case 'add_track':
       return addTrack(session, args)
     case 'get_features':

@@ -163,7 +163,7 @@ test('a bridge error outcome is an isError tool result, not a protocol error', a
   server.send({
     id: 1,
     method: 'tools/call',
-    params: { name: 'get_session', arguments: {} },
+    params: { name: 'inspect_session', arguments: {} },
   })
   const call = await server.next()
   expect(call.result?.isError).toBe(true)
@@ -178,7 +178,7 @@ test('the app not running reads as a launch hint, not a stack trace', async () =
   server.send({
     id: 1,
     method: 'tools/call',
-    params: { name: 'get_session', arguments: {} },
+    params: { name: 'inspect_session', arguments: {} },
   })
   const call = await server.next()
   expect(call.result?.isError).toBe(true)
