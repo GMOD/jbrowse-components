@@ -2,7 +2,7 @@
 title: Driving JBrowse Desktop over MCP
 sidebar_label: MCP server
 description:
-  Let an MCP client such as Claude Desktop drive a running JBrowse Desktop:
+  Let an MCP client such as Claude Desktop drive a running JBrowse Desktop, to
   open sessions, build views, restyle tracks, read feature data, and screenshot
   the result
 ---
