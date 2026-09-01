@@ -6,12 +6,16 @@ description: What was established about driving JBrowse from a real Claude clien
 # Driving JBrowse from a real Claude client
 
 The work these findings belong to is filed:
-[land-the-agent-client-demo-videos](../todo/land-the-agent-client-demo-videos.md),
-[prove-window-jb-against-a-real-browser-agent](../todo/prove-window-jb-against-a-real-browser-agent.md).
-This file is what was learned getting there, because every item below was a dead
-end first and none of it is recorded in the tree.
+[land-the-agent-client-demo-videos](../todo/land-the-agent-client-demo-videos.md).
+The other row, proving `window.jb` against a real browser agent, landed on
+2026-09-01: `scripts/agent-demos/webDemo.mjs` drove a local jbrowse-web build
+through the extension for the four desktop demo turns with no improvisation
+past what `website/docs/agents_web.md` now documents, and its transcript is
+`web-take1-transcript.txt` beside the harness. This file is what was learned
+getting there, because every item below was a dead end first and none of it is
+recorded in the tree.
 
-Delete this when both rows land.
+Delete this when the videos row lands.
 
 ## What the Chrome extension actually is
 
@@ -32,6 +36,16 @@ Delete this when both rows land.
   is not the blocker there that it is for some hosts.
 - The extension can read `file://` URLs if granted, and that is the whole extent
   of its local reach: no writes, no child process, no indexing.
+- **Naming the browser is two calls**, `list_connected_browsers` then
+  `select_browser` with its `deviceId`; a headless run has to be told the id in
+  its prompt, since the tool description asks for `AskUserQuestion` otherwise.
+- **`javascript_tool` returns the last expression**, not a `return`; caps one
+  evaluation at 45 s (`Runtime.evaluate timed out`) while the code runs on;
+  and sanitizes results: depth-truncated objects, clipped strings, and any
+  string that looks like base64 replaced with `[BLOCKED: Base64 encoded data]`,
+  which hit a display type name. Those are the agent-facing facts on the
+  website page; they are repeated here because the harness prompt has to work
+  around them too.
 
 ## The macOS automation that films it
 

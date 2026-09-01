@@ -80,7 +80,8 @@ return jb.sessionSummary()
 
 Build a view from the same spec JSON that `&session=spec-` URLs take, documented
 at [](/docs/urlparams). Find track ids with `jb.listTracks` rather than guessing
-them, since one that does not exist opens nothing and reports nothing:
+them, since one that does not exist opens nothing and reports nothing. It
+answers `{ total, tracks }`, with each track's `trackId`, name and type:
 
 ```js
 return jb.loadSessionSpec({
@@ -94,6 +95,11 @@ return jb.loadSessionSpec({
   ],
 })
 ```
+
+A `loc` that is a gene name goes through text search, and landing on a search
+hit also shows the track its index was built from. On a hosted config that is
+the full RefSeq track, so a spec asking for the curated one gets both; hide the
+extra with `view.hideTrack(trackId)`.
 
 Read the underlying data rather than describing the picture. Features come back
 as live objects, so aggregate in code and return only the answer:

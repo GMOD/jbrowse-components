@@ -160,6 +160,7 @@ describe('the jb roster', () => {
       'addTrack',
       'createStopToken',
       'describeSlots',
+      'ensureRequire',
       'getConf',
       'getFeatureAdapterOrThrow',
       'getFeatures',

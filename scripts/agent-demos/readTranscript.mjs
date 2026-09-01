@@ -10,12 +10,17 @@ for (const ev of events) {
       }
       if (b.type === 'tool_use') {
         const arg = String(
-          b.input?.code ?? b.input?.target ?? b.input?.topic ?? '',
+          b.input?.code ??
+            b.input?.text ??
+            b.input?.target ??
+            b.input?.topic ??
+            b.input?.url ??
+            '',
         )
           .trim()
           .replaceAll(/\s+/g, ' ')
         console.log(
-          `  -> ${b.name.replace('mcp__jbrowse__', '')} ${arg.slice(0, 260)}`,
+          `  -> ${b.name.replace(/^mcp__[\w-]+?__/, '')} ${arg.slice(0, 260)}`,
         )
       }
     }

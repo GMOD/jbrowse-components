@@ -792,6 +792,7 @@ export function createJbApi(pluginManager: PluginManager) {
       return live()
     },
     require: pluginManager.jbrequire,
+    ensureRequire: ensureReExports,
     mst,
     mobx,
     readConfObject,

@@ -79,6 +79,35 @@ opening a file. In a browser it also rewrites the URL and stores a new session,
 and the session it replaced is not recoverable from the page. Prefer adding to
 the open session where that will do.
 
+## From the Claude in Chrome extension
+
+The extension's JavaScript tool evaluates in the page's own world, so
+`window.jb` is simply there. A session that opened hg38 at a gene, added a
+four-sample GEO bigWig set as one stacked track, derived a ratio track from it
+and audited a zoom used nothing but `jb`, the live session and the page's own
+`fetch`. What the extension changes is the calling convention:
+
+- **The value is the last expression.** The examples on the MCP page are
+  function bodies. In the extension, end the snippet with the value, or wrap the
+  body in `(async () => { ... })()`.
+- **One evaluation has a fixed time budget**, about 45 seconds, and the code
+  keeps running when it expires. `jb.loadSessionSpec` settles the new session
+  before it answers, which on a cold hosted config can outlive the budget. Call
+  it on its own, and read `jb.sessionSummary()` on the next call.
+- **Results are sanitized on the way back.** Nested objects are cut off past a
+  few levels, long strings are clipped, and a string that looks like base64 is
+  replaced. Return flat, pre-sliced values, or a `JSON.stringify` of what you
+  need.
+- **Its screenshot knows nothing about rendering.** Call `jb.waitReady()` first,
+  then screenshot, and read `notReady` from the settle result for the tracks a
+  picture cannot show as missing.
+- **Wait for the page.** The app assigns `window.jb` after its first render, so
+  poll for it after navigating.
+
+Anything `jb.addTrack` cannot express, such as several files under one
+`MultiWiggleAdapter`, is a hand-written config through
+`session.addSessionTrackConf`, the same as in Desktop.
+
 ## Is this safe
 
 `window.jb` grants no privilege the page did not already have. It runs at the
