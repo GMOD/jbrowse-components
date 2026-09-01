@@ -206,6 +206,26 @@ export const formats: FormatEntry[] = [
     },
   },
   {
+    // `.bedGraph` is UCSC's own spelling and what bedGraphToBigWig is pointed
+    // at, so it turns up far more often than the `.bg` short form below
+    regex: /\.bedgraph\.b?gz$/i,
+    spec: {
+      kind: 'indexed',
+      adapterType: 'BedGraphTabixAdapter',
+      locField: 'bedGraphGzLocation',
+      suffix: '.tbi',
+      indexType: 'TBI',
+    },
+  },
+  {
+    regex: /\.bedgraph$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'BedGraphAdapter',
+      locField: 'bedGraphLocation',
+    },
+  },
+  {
     regex: /\.bg\.b?gz$/i,
     spec: {
       kind: 'indexed',
