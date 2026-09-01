@@ -257,7 +257,9 @@ const startedAt = performance.now()
 
 const matched =
   filters.length > 0
-    ? GENERATORS.filter(g => filters.some(f => g.name.includes(f)))
+    ? GENERATORS.filter(g =>
+        filters.some(f => g.name.toLowerCase().includes(f.toLowerCase())),
+      )
     : GENERATORS
 if (matched.length === 0) {
   console.error(`No generator matches ${filters.join(', ')}`)
@@ -274,6 +276,7 @@ if (figureSkipped.length > 0) {
       .map(g => g.name)
       .join(', ')}`,
   )
+  skipped.push(...figureSkipped.map(g => g.name))
 }
 const selected = matched.filter(g => !figureSkipped.includes(g))
 

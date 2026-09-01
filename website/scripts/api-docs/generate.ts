@@ -246,16 +246,16 @@ async function main() {
   )
   const leftover = pruneUnwritten()
 
-  if (check) {
-    const stale = [...staleDocs(), ...leftover]
-    if (stale.length > 0) {
-      console.error(
-        `${stale.length} config/model/api doc(s) out of date — run \`pnpm autogen\`:\n${stale
-          .map(f => `  ${f}`)
-          .join('\n')}`,
-      )
-      process.exit(1)
-    }
+  // Under --check the marker assertion below still runs before exiting, so a
+  // stale page and a marker nobody renders are reported by the same run.
+  const stale = check ? [...staleDocs(), ...leftover] : []
+  if (stale.length > 0) {
+    console.error(
+      `${stale.length} config/model/api doc(s) out of date — run \`pnpm autogen\`:\n${stale
+        .map(f => `  ${f}`)
+        .join('\n')}`,
+    )
+  } else if (check) {
     console.log(`${writtenDocs().length} config/model/api docs are up to date`)
   } else {
     // Exactly the files spliced into above, not a list of directories to keep
@@ -276,6 +276,9 @@ async function main() {
   // does not repair them — it regenerates the same bytes, sees the file already
   // holds them, and so never writes (and never formats) it again.
   assertMarkersAndDocsAgree()
+  if (stale.length > 0) {
+    process.exit(1)
+  }
 }
 
 // The three directories this script owns outright — every `.md` in them is

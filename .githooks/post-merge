@@ -128,7 +128,7 @@ mkdir "$lock" 2>/dev/null || exit 0
   # The figure-dependent generators derive from the corpus on disk while CI
   # derives from figures.lock, so they answer a different question whenever the
   # two disagree -- which on a machine that shoots figures is the normal state,
-  # not the exception. Drop those three rather than report a difference that is
+  # not the exception. Drop those rather than report a difference that is
   # about the corpus. Same reasoning, and the same two cases, as pre-push.
   flags=
   if [ ! -d website/static/img ] || [ ! -d products/jbrowse-img/img ] ||

@@ -224,7 +224,7 @@ status=0
 # `pnpm figures:check` settles the second in ~2s, which is worth it to keep the
 # 34s answer trustworthy.
 #
-# When it is NOT trustworthy, drop the three generators that read a figure and
+# When it is NOT trustworthy, drop the generators that read a figure and
 # regenerate the other fifteen — `--skip-figure-dependent`, which names what it
 # skipped. Running them anyway would be worse than not running them: they would
 # derive from the corpus on disk and write artifacts CI, deriving from the lock,
