@@ -64,9 +64,10 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
       soleVideo ? (
         <nav class="video-jump" aria-label="Video on this page">
           <span class="video-jump-lead">
-            <span class="video-jump-play" aria-hidden="true">
-              ▶
-            </span>
+            <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
+              <path d="M10 8.3v7.4l6.5-3.7z" />
+            </svg>
             Video
           </span>
           <a class="video-jump-link" href={`#${soleVideo.id}`}>
@@ -76,9 +77,10 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
       ) : (
         videos.length > 1 && (
           <p class="video-jump">
-            <span class="video-jump-play" aria-hidden="true">
-              ▶
-            </span>
+            <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
+              <path d="M10 8.3v7.4l6.5-3.7z" />
+            </svg>
             {videos.length} videos in this tutorial
           </p>
         )
@@ -162,7 +164,11 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
     color: var(--color-accent-dark);
   }
   .video-jump-play {
-    font-size: 0.75em;
+    width: 0.85em;
+    height: 0.85em;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: currentColor;
   }
   .video-jump-link {
     color: var(--color-text);
