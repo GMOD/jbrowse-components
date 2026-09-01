@@ -141,13 +141,19 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const video =
         `<video${flags}${size} preload="metadata" poster="${poster}" ` +
         `aria-label="${escapeAttr(attrs.caption ?? '')}" ` +
-        `style="max-width:100%;height:auto">${sources}${captions}</video>`
+        `style="max-width:100%${autoplay ? ';height:auto' : ''}">${sources}${captions}</video>`
+      // The frame's own shape, as numbers rather than an aspect-ratio: the box
+      // the CSS builds is the clip PLUS a strip for the player's control bar,
+      // and a ratio cannot carry that constant. video-overlay.css.
+      const frameVars = frame
+        ? ` style="--video-w:${frame.width};--video-h:${frame.height}"`
+        : ''
       // autoplay's clip has no controls and starts on its own, so there is
       // nothing for a play button to do. A controlled clip stays greyed out
       // behind one until clicked, same as the poster it replaces.
       const frameVideo = autoplay
         ? video
-        : `<div class="video-frame">${video}` +
+        : `<div class="video-frame"${frameVars}>${video}` +
           `<button type="button" class="video-play-overlay" aria-label="Play video">` +
           `<span class="video-play-icon" aria-hidden="true"></span></button></div>`
       const ref = videoLiveRefs[name]

@@ -112,7 +112,60 @@ async function checkTabGroups(page: Page, scope: string) {
   })
 }
 
+// The strip the clip's box carries under the picture for the browser's own
+// control bar. Without it the bar sits on the clip and covers the step label
+// the tour burns into its lower left, which is the state this shipped in — and
+// nothing about it fails a build, since the video is there and plays.
+async function checkVideoGutter(page: Page) {
+  const gutter = await page.evaluate(() => {
+    const frame = document.querySelector('.video-frame')
+    if (!(frame instanceof HTMLElement)) {
+      return null
+    }
+    const style = getComputedStyle(frame)
+    // the same fallback shape the CSS uses for a clip of unknown size
+    const dimension = (name: string, fallback: number) =>
+      Number(style.getPropertyValue(name)) || fallback
+    const ratio = dimension('--video-h', 1080) / dimension('--video-w', 1920)
+    return (
+      Number.parseFloat(style.paddingBottom) -
+      frame.getBoundingClientRect().width * ratio
+    )
+  })
+  if (gutter === null || Number.isNaN(gutter)) {
+    return ['    .video-frame — no frame, or its --video-w/--video-h are gone']
+  }
+  return gutter > 40
+    ? []
+    : [
+        `    .video-frame leaves ${Math.round(gutter)}px under the picture — the control bar needs ~48px`,
+      ]
+}
+
 const WIDGETS: Widget[] = [
+  {
+    // src/lib/remark-video.ts, styled by styles/widgets/video-overlay.css
+    name: 'video embed',
+    find: 'class="video-frame"',
+    check: async page => [
+      ...(await checkVideoGutter(page)),
+      // The picture rides at the top of that taller box rather than filling it.
+      ...(await expectStyle(
+        page,
+        '.video-frame video',
+        'object-fit',
+        'contain',
+        'a stretched clip would put the label back under the bar',
+      )),
+      ...(await expectStyle(
+        page,
+        '.video-frame video',
+        'object-position',
+        '50% 0%',
+        'the gutter belongs under the picture, not split around it',
+      )),
+    ],
+  },
   {
     // src/lib/remark-config-cli-tabs.ts
     name: 'Config/CLI tabs',

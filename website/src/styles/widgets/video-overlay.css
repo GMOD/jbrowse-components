@@ -2,19 +2,35 @@
    `.video-frame` wrapper remark-video.ts emits around the <video> for any
    clip that isn't a silent autoplay loop. Behavior: components/VideoOverlay.astro,
    mounted globally by BaseLayout since a clip can land on a doc page or a blog
-   post. `.video-frame` has to be sized to the <video> itself (fit-content, not
-   the full prose column) or the overlay button would cover blank space beside a
-   narrower clip instead of the poster. */
+   post. `.video-frame` takes its size from the clip rather than from the prose
+   column, or the overlay button would cover blank space beside a narrower clip
+   instead of the poster. */
 @layer widget {
   .video-frame {
+    /* The clip's frame plus a strip for the browser's control bar, which is
+       ~48 CSS px at any size while the step label the tour burns into the
+       clip's lower left scales with the clip — so the bar covered the label
+       outright. The picture letterboxes to the top of the taller box and the
+       bar sits over black. --video-w/--video-h come from remark-video.ts; the
+       fallback keeps a clip of unknown size from collapsing the box. */
+    --video-controls: 3rem;
     position: relative;
     display: block;
-    width: fit-content;
-    max-width: 100%;
+    width: min(100%, calc(var(--video-w, 1920) * 1px));
     margin: 1rem auto;
+    padding-bottom: calc(
+      var(--video-h, 1080) / var(--video-w, 1920) * 100% + var(--video-controls)
+    );
+    background: #000;
   }
   .video-frame video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     margin: 0;
+    object-fit: contain;
+    object-position: top;
   }
   /* Dimmed rather than hidden, so the frame under it still reads through the
      grey — the poster while the reader decides whether to play it, and the
@@ -28,7 +44,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    /* covers the control strip too, so a click anywhere starts the clip, but
+       the button itself centers on the picture rather than on the taller box */
+    padding: 0 0 var(--video-controls);
     border: none;
     background: rgba(0, 0, 0, 0.2);
     cursor: pointer;
