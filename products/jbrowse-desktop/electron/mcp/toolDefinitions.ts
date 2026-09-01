@@ -17,6 +17,8 @@ Read docs topic "live-model" before your first run_javascript call. Start by ori
 
 Introspect, never guess: jb.listTracks() for trackIds; jb.describeSlots(jb.trackModel('x').activeDisplay.configuration) for a display's settings keys — an unknown settings key is dropped SILENTLY. Settle results carry "notifications" (the session's own error toasts) AND "notReady" (tracks whose display is not drawing — over the fetch-size gate, or errored; these raise no toast and look fine in a screenshot): read both.
 
+A track too tall for the window is a height STRATEGY, not displayMode: many displays take heightMode "fit" (squash the content into the height slot) or "grow"; displayMode "compact" only shrinks each feature and will not tame a deep stack. describeSlots lists both.
+
 Traps: mutate the MST model only via actions; write display settings with track.applyDisplaySettings(settings) (never raw assignment). view.showTrack on an already-shown track silently applies nothing — applyDisplaySettings is the update path. Data files may spell refNames differently than the assembly ("ctgA" vs "contigA"): jb.getFeatures handles it; raw adapter code must call jb.renameRegionsIfNeeded first. A freshly created view throws "width undefined" from region getters until it mounts (await jb.mobx.when(() => view.initialized)). Aggregate large results in code; do not return thousands of raw features.`
 
 export interface McpToolDefinition {
