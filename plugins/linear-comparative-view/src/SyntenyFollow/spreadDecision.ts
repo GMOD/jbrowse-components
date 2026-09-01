@@ -1,5 +1,5 @@
+import { preferIncumbent } from '../syntenyHysteresis.ts'
 import { followPlacedWindows } from './followAnchorWindow.ts'
-import { preferIncumbent } from './pickFollowFeature.ts'
 import { spanBounds } from './positionViewOnSpan.ts'
 
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'

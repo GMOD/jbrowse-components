@@ -3,7 +3,7 @@ import { followToggleTitle } from './FollowSyntenyToggle.tsx'
 test('off, the tooltip says what turning it on does', () => {
   // the same words as the menu row, so the two read as one setting
   expect(followToggleTitle({ followSynteny: false })).toBe(
-    'Follow the matching region',
+    'Follow - other rows track the anchor through the alignment',
   )
 })
 
@@ -23,10 +23,10 @@ test('a row still loading its assembly does not leak an undefined', () => {
 
 test('with one row there is nothing to follow, on or off', () => {
   expect(followToggleTitle({ followSynteny: false, rows: 1 })).toBe(
-    'Add a second row to follow the matching region',
+    'Add a second row to follow the anchor through the alignment',
   )
   expect(followToggleTitle({ followSynteny: true, rows: 1 })).toBe(
-    'Add a second row to follow the matching region',
+    'Add a second row to follow the anchor through the alignment',
   )
 })
 
@@ -61,7 +61,7 @@ test('over unaligned sequence it says why the rows stopped moving', () => {
 
 test('the unaligned wording is only reachable while following', () => {
   expect(followToggleTitle({ followSynteny: false, unaligned: true })).toBe(
-    'Follow the matching region',
+    'Follow - other rows track the anchor through the alignment',
   )
 })
 
@@ -94,7 +94,7 @@ test('holding beats estimating, since a held row was never placed', () => {
 
 test('the approximate wording is only reachable while following', () => {
   expect(followToggleTitle({ followSynteny: false, approximate: true })).toBe(
-    'Follow the matching region',
+    'Follow - other rows track the anchor through the alignment',
   )
 })
 

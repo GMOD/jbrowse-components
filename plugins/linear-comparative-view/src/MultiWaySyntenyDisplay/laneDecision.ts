@@ -1,12 +1,11 @@
 import { clamp } from '@jbrowse/core/util'
 
-import { preferIncumbent } from '../SyntenyFollow/pickFollowFeature.ts'
-import { NEARLY_ALL } from '../SyntenyFollow/planFollowStep.ts'
 import {
   OUTLIER_REACH,
   keepNearMedian,
   weightedMedian,
 } from '../keepNearMedian.ts'
+import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
 import { groupRunsOnRow, rowFrameX } from './layoutMultiWay.ts'
 
 import type {

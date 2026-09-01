@@ -33,6 +33,11 @@ import type { MultiWaySyntenyDisplayModel } from './model.ts'
  * rather than racing a fetch that has no worker behind it.
  */
 export function createDisplay() {
+  return createDisplayWithSession().display
+}
+
+/** the same display, with the harness session it lives in for its snackbars */
+export function createDisplayWithSession() {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory()
 
@@ -137,6 +142,10 @@ export function createDisplay() {
         // fail on a TypeError a lane's own error handling then swallows
         waitForAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: () => undefined,
+        // a re-anchor is `navToLocString` on the hosting view, which asks
+        // this to tell a refName from a locstring; always-true reads every
+        // locstring as ambiguous
+        isValidRefName: (refName: string) => refName === 'ctgA',
       },
       getTrackById: (id: string) =>
         id === 'multiway_track' ? syntenyTrack : undefined,
@@ -161,5 +170,8 @@ export function createDisplay() {
   view.setDisplayedRegions([
     { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
   ])
-  return view.tracks[0]!.displays[0]! as MultiWaySyntenyDisplayModel
+  return {
+    display: view.tracks[0]!.displays[0]! as MultiWaySyntenyDisplayModel,
+    session,
+  }
 }

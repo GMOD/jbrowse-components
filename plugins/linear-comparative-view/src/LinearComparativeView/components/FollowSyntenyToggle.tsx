@@ -56,10 +56,10 @@ export function followToggleTitle({
   rows?: number
 }) {
   if (rows < 2) {
-    return 'Add a second row to follow the matching region'
+    return 'Add a second row to follow the anchor through the alignment'
   }
   if (!followSynteny) {
-    return 'Follow the matching region'
+    return 'Follow - other rows track the anchor through the alignment'
   }
   const anchor = anchorLabel ?? 'the anchor row'
   if (noSyntenyTrack) {

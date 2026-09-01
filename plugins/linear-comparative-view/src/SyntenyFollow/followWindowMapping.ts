@@ -1,5 +1,5 @@
+import { preferIncumbent } from '../syntenyHysteresis.ts'
 import { followAxes } from './followAxes.ts'
-import { preferIncumbent } from './pickFollowFeature.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'

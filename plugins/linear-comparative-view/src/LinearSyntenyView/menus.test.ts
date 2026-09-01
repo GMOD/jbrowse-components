@@ -146,7 +146,7 @@ describe('navigationMenuItems', () => {
     const modes = [
       'Independent',
       'Locked together - rows move together pixel-by-pixel',
-      'Follow - auto-aligns views together based on visible features',
+      'Follow - other rows track the anchor through the alignment',
     ]
     for (const [state, expected] of [
       [{}, 'Independent'],
@@ -156,7 +156,7 @@ describe('navigationMenuItems', () => {
       ],
       [
         { followSynteny: true },
-        'Follow - auto-aligns views together based on visible features',
+        'Follow - other rows track the anchor through the alignment',
       ],
     ] as const) {
       const { linkViews } = build(state)
@@ -202,7 +202,7 @@ describe('navigationMenuItems', () => {
     const { linkViews, calls } = build()
     labelled(
       linkViews,
-      'Follow - auto-aligns views together based on visible features',
+      'Follow - other rows track the anchor through the alignment',
     )?.onClick?.()
     expect(calls).toEqual(['follow'])
   })

@@ -76,7 +76,7 @@ const ROW_SYNC_MODES = [
     // "matching", not "syntenic", because at whole-genome zoom a CIGAR-less
     // tier is interpolated across the block rather than walked — close enough
     // to follow by, not a base-level correspondence
-    'Follow - auto-aligns views together based on visible features',
+    'Follow - other rows track the anchor through the alignment',
   ],
 ] as const
 

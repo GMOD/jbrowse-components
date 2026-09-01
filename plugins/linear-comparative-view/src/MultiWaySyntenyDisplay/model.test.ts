@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 
-import { createDisplay } from './testEnv.ts'
+import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 // The lane genes and lane links are a SECOND fetch, dependent on the ortholog
 // fetch that draws the placement boxes.
@@ -132,4 +133,26 @@ describe('the anchor lane pair stays ordered', () => {
     // the pair descends, and that descent is the orientation the ribbon draws
     expect(span[0]).toBeGreaterThan(span[1])
   })
+})
+
+// Re-anchoring replaces the hosting view's regions with another genome's, and
+// what it discarded may be a region list built over several navigations, so
+// the snackbar carries the same Undo the stacked view's moves offer.
+test('re-anchoring offers an undo that puts the view back where it was', async () => {
+  const { display, session } = createDisplayWithSession()
+  const view = display.lgv
+  const windowOf = () => ({
+    regions: view.displayedRegions.map(r => ({ ...r })),
+    start: view.windowStartBp,
+    width: view.windowWidthBp,
+  })
+  const before = windowOf()
+  display.reanchor('volvox', 'ctgA:1-100')
+  for (let i = 0; i < 50 && !session.notifications.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+  expect(session.notifications.at(-1)?.message).toBe('Re-anchored on volvox')
+  expect(windowOf()).not.toEqual(before)
+  takeSnackbarAction(session, 'Undo')
+  expect(windowOf()).toEqual(before)
 })

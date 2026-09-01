@@ -1,7 +1,8 @@
 import { getFeatureAtIndex } from '../LinearSyntenyDisplay/model.ts'
+import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
 import { followReverseShare } from './followReverseShare.ts'
 import { followWindowMapping } from './followWindowMapping.ts'
-import { pickFollowFeature, preferIncumbent } from './pickFollowFeature.ts'
+import { pickFollowFeature } from './pickFollowFeature.ts'
 import { windowInsideFeat } from './windowInsideFeat.ts'
 
 import type {
@@ -33,11 +34,6 @@ export interface FollowStep {
   // ribbons ARE the picture of a rearrangement.
   wantReversed: boolean | undefined
 }
-
-// A vote past this share in either direction orients the row; anything between
-// is a window showing both orientations, and flipping it would hide half. The
-// multi-way lanes mirror on the same share, for the same reason.
-export const NEARLY_ALL = 0.9
 
 function wantReversedFor(share: number | undefined) {
   if (share === undefined) {

@@ -1,4 +1,4 @@
-import { preferIncumbent } from './SyntenyFollow/pickFollowFeature.ts'
+import { preferIncumbent } from './syntenyHysteresis.ts'
 
 // how far, in multiples of the anchor's window, an item may sit from the
 // length-weighted median and still shape a lane's frame or a launched panel
