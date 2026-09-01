@@ -560,26 +560,46 @@ export default class PluginManager {
   // clobber warning is emitted once per point per app
   warnedClobber = new Set<string>()
 
+  #trackConfigHydrationCache = new WeakMap<object, WeakMap<object, unknown>>()
+
   /**
-   * Lazy-hydration cache for `TrackConfigurationReference`/
-   * `DisplayConfigurationReference` (configuration/configurationSchema.ts).
-   * `jbrowse.tracks` is `types.frozen` for large-tracklist performance, so a
-   * track config is a plain JS object until first referenced; hydrating it
-   * into an MST node is deferred to that read. MST's custom-reference
-   * `getValue` has no memoization of its own — it reruns on every property
-   * access — so without this cache, every read of `track.configuration` would
-   * fabricate a fresh, non-identical MST node. Keyed by schemaType (each track
-   * type's config schema is rebuilt fresh per PluginManager instance, see
-   * addTrackType) then by the frozen object itself, so a cache hit can only
-   * ever come from this same PluginManager instance and this same track type.
-   * See ADR-031.
+   * The lazily-hydrated MST config node for one frozen track config, built by
+   * `build` on first ask and returned by identity after that.
+   * `configuration/configurationSchema.ts` is the only caller.
    *
-   * This node is never mutated: admin edits replace the frozen entry (new
+   * `jbrowse.tracks` is `types.frozen` for large-tracklist performance, so a
+   * track config is a plain JS object until first referenced; hydrating it into
+   * an MST node is deferred to that read. MST's custom-reference `getValue` has
+   * no memoization of its own — it reruns on every property access — so without
+   * this, every read of `track.configuration` would fabricate a fresh,
+   * non-identical node. Keyed by schemaType (each track type's config schema is
+   * rebuilt fresh per PluginManager instance, see addTrackType) then by the
+   * frozen object, so a hit can only ever come from this same instance and this
+   * same track type. See ADR-031.
+   *
+   * The node is never mutated: admin edits replace the frozen entry (new
    * identity drops the WeakMap entry), and a non-admin's edits go to a private
    * session working copy, not here (ADR-032). Both levels are `WeakMap`s so
-   * entries collect normally — no manual invalidation needed.
+   * entries collect normally — no manual invalidation needed, which is why this
+   * is a memo and not a cache with a lifecycle to expose.
    */
-  trackConfigHydrationCache = new WeakMap<object, WeakMap<object, unknown>>()
+  hydratedTrackConfig(
+    schemaType: IAnyType,
+    frozen: object,
+    build: () => unknown,
+  ) {
+    let byFrozen = this.#trackConfigHydrationCache.get(schemaType)
+    if (!byFrozen) {
+      byFrozen = new WeakMap()
+      this.#trackConfigHydrationCache.set(schemaType, byFrozen)
+    }
+    let node = byFrozen.get(frozen)
+    if (!node) {
+      node = build()
+      byFrozen.set(frozen, node)
+    }
+    return node
+  }
 
   constructor(
     initialPlugins: (

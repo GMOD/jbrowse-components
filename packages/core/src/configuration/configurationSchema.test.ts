@@ -1052,15 +1052,15 @@ describe('ConfigurationReference', () => {
       // PluginManager instances (e.g. two createViewState() calls on one page)
       // that happen to be handed the identical frozen track object — the
       // schemaType each one builds for "TestFrozenTrack" differs even though
-      // the model name is the same string, but the cache lives on
-      // pluginManager.trackConfigHydrationCache, so isolation holds
-      // structurally rather than depending on that.
+      // the model name is the same string, but the memo lives on
+      // pluginManager.hydratedTrackConfig, so isolation holds structurally
+      // rather than depending on that.
       const pluginManagerA = new PluginManager([]).createPluggableElements()
       pluginManagerA.configure()
       const pluginManagerB = new PluginManager([]).createPluggableElements()
       pluginManagerB.configure()
 
-      const { Session } = buildFrozenTrackEnv()
+      const { TrackConfig, Session } = buildFrozenTrackEnv()
       const sharedFrozenTrack = { trackId: 'shared', name: 'orig' }
 
       const sessionA = Session.create(
@@ -1076,9 +1076,26 @@ describe('ConfigurationReference', () => {
       const resolvedB = sessionB.holder.ref
 
       expect(resolvedA).not.toBe(resolvedB)
-      expect(pluginManagerA.trackConfigHydrationCache).not.toBe(
-        pluginManagerB.trackConfigHydrationCache,
-      )
+      // and each instance's memo holds only its own node for that (schemaType,
+      // frozen object) pair — a throwing build proves the entry was already
+      // there rather than rebuilt to match
+      const unreached = () => {
+        throw new Error('hydration memo missed')
+      }
+      expect(
+        pluginManagerA.hydratedTrackConfig(
+          TrackConfig,
+          sharedFrozenTrack,
+          unreached,
+        ),
+      ).toBe(resolvedA)
+      expect(
+        pluginManagerB.hydratedTrackConfig(
+          TrackConfig,
+          sharedFrozenTrack,
+          unreached,
+        ),
+      ).toBe(resolvedB)
     })
   })
 

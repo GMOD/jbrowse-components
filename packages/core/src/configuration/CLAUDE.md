@@ -100,12 +100,6 @@ the three entry points, so downstream never defends against it.
 `showTrackGeneric` catches its own failures and returns `undefined` — don't wrap
 it in a try/catch that re-notifies.
 
-`TrackConfigurationReference` keeps one complication for a view holding a track
-config nothing else can draw: the union accepts a string id **or a full
-config**, and such a view writes the config rather than an id, so it lives on
-the track and goes out with it. `SVInspector.test.tsx` and `ReadVsRef.test.tsx`
-are the canaries; `showTrackGeneric`'s `inlineConf` is the same thing for a
-track opened by an action. **A config parked in a list that outlives the view
-instead needs someone to sweep it, and nobody does** — the session list that
-used to hold these grew a separate cleanup at each of its three call sites
-(ADR-084). Don't add `as SCHEMATYPE` to the return value.
+Why `ConfigurationReference`'s union accepts a full config as well as an id,
+which of the three resolvers you get, and why none of it takes an
+`as SCHEMATYPE`: ADR-084 and the doc comments on the resolvers themselves.

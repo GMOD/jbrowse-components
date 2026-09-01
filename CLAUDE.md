@@ -101,7 +101,7 @@ survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
   React Compiler stands in for the `memo` you deleted.
   `pnpm test-ci-no-react-compiler` is the run that sees it, and the only one
   covering what `build:esm` publishes. `reference/COMPILER_TERNARY_FINDING.md`.
-- Bare `pnpm format` is fine; never name `agent-docs` (`.prettierignore`).
+- Formatting is oxfmt (`pnpm format`/`check-format`); `npx prettier` fights it.
 - `pnpm autogen` answers any "X is out of date". Shaders: `pnpm gen:shaders`,
   and **check its exit code** — a failed compile leaves the stale
   `.generated.ts` and tsc/jest pass off it.

@@ -1,8 +1,11 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import { getFileHandle, verifyPermission } from './fileHandleStore.ts'
 import {
   findFileHandleIds,
+  getConfAssemblyNames,
+  getConfAssemblyNamesOrNone,
   getFileName,
   getRpcSessionId,
   getTrackName,
@@ -495,5 +498,41 @@ describe('restoreFileHandles', () => {
       check.answer(true)
     }
     expect((await all).map(r => r.success)).toEqual([true, true, true])
+  })
+})
+
+describe('confAssemblyNames', () => {
+  // A ReferenceSequenceTrack's schema deliberately omits `assemblyNames`: the
+  // assembly config holding it IS its assembly. That makes the answer
+  // positional, and every hydration path — `hydrateTrackConfig`, and the
+  // working copy a non-admin's edits would go to (ADR-032) — produces a config
+  // with no position.
+  const SequenceConfig = ConfigurationSchema(
+    'TestSequenceTrack',
+    { sequenceType: { type: 'string', defaultValue: 'dna' } },
+    { explicitIdentifier: 'trackId', explicitlyTyped: true },
+  )
+  const AssemblyConfig = ConfigurationSchema('TestAssembly', {
+    name: { type: 'string', defaultValue: '' },
+    sequence: SequenceConfig,
+  })
+
+  test('reads the name off the containing assembly', () => {
+    const assembly = AssemblyConfig.create({
+      name: 'volvox',
+      sequence: { trackId: 'volvox_refseq' },
+    })
+    expect(getConfAssemblyNames(assembly.sequence)).toEqual(['volvox'])
+    expect(getConfAssemblyNamesOrNone(assembly.sequence)).toEqual(['volvox'])
+  })
+
+  test('a detached copy answers unknown rather than raising MST', () => {
+    const detached = SequenceConfig.create({ trackId: 'volvox_refseq' })
+    // the whole contract of the OrNone reader: its caller is
+    // `BaseTrackModel.refNameMismatch`, on every render of every track label
+    expect(getConfAssemblyNamesOrNone(detached)).toEqual([])
+    expect(() => getConfAssemblyNames(detached)).toThrow(
+      'unknown assembly names',
+    )
   })
 })

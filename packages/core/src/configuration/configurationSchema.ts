@@ -412,42 +412,20 @@ export function ConfigurationSchema<
   ) as AnyConfigurationSchemaType
 }
 
-// The hydration cache lives on the PluginManager instance (see
-// trackConfigHydrationCache's doc comment there and ADR-031), not as a
-// module-level singleton: it must never hand a track resolved on one
-// PluginManager instance a node built with another instance's env, and
-// scoping it to the instance rules that out structurally rather than by
-// convention. Nested a second level by schemaType, since one PluginManager
-// registers a distinct schemaType per track type.
-function frozenTrackHydrationCache(
-  pluginManager: PluginManager,
-  schemaType: IAnyType,
-) {
-  const byType = pluginManager.trackConfigHydrationCache
-  let cache = byType.get(schemaType)
-  if (!cache) {
-    cache = new WeakMap()
-    byType.set(schemaType, cache)
-  }
-  return cache
-}
-
 // The frozen -> live half of TrackConfigurationReference's `get`, shared with
-// hydrateTrackConfig below so there is one hydration and one cache rather than
-// two that can drift on which env or which key they use.
+// hydrateTrackConfig below so there is one hydration rather than two that can
+// drift on which env they build with. The memo it goes through belongs to the
+// PluginManager instance (ADR-031): a node built with one instance's env must
+// never be handed to another, and `pluginManager.hydratedTrackConfig` scopes
+// that structurally rather than by convention.
 function hydrateInto(
   pluginManager: PluginManager,
   schemaType: IAnyType,
   frozen: object,
 ) {
-  const cache = frozenTrackHydrationCache(pluginManager, schemaType)
-  const cached = cache.get(frozen)
-  if (cached) {
-    return cached
-  }
-  const model = schemaType.create(frozen, { pluginManager })
-  cache.set(frozen, model)
-  return model
+  return pluginManager.hydratedTrackConfig(schemaType, frozen, () =>
+    schemaType.create(frozen, { pluginManager }),
+  )
 }
 
 /**
@@ -510,6 +488,15 @@ export function hydrateTrackConfig(
 // disambiguates. Shared by TrackConfigurationReference/DisplayConfigurationReference,
 // and by neither accident nor oversight NOT by the plain branch — see the note
 // on it in `ConfigurationReference`.
+//
+// One consequence, because both refs' `set` callbacks read as if it were not
+// true: assigning a config **node** here does not store a reference to it. The
+// dispatcher sees a non-string and picks `schemaType`, so MST tries to adopt the
+// node as an inline child — which throws if it already has a parent. `set` is
+// therefore unreachable on both refs (checked by making it throw: 231 suites
+// stayed green), and exists only because MST rejects a custom reference
+// declaring `get` without it. The plain branch, with no dispatcher, does the
+// opposite and stores the reference.
 function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
   return types.union(
     {
@@ -534,7 +521,7 @@ function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
  * to just the object branch, forcing callers to wrap string ids in
  * `@ts-expect-error`. The inferred union SnapshotIn is `string | SnapshotIn<schema>`.
  */
-export function TrackConfigurationReference(schemaType: IAnyType) {
+function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
       const session = getSession(parent)
@@ -604,7 +591,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
  * `displays` array. It stays because it costs nothing and because dropping it
  * narrows `SnapshotIn` for every caller.
  */
-export function DisplayConfigurationReference(schemaType: IAnyType) {
+function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
       // track.configuration is a hydrated MST node (hydrated lazily via

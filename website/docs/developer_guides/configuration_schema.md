@@ -442,10 +442,15 @@ The resolution dispatch is based on `explicitIdentifier` in the schema options:
 - `'displayId'` → `DisplayConfigurationReference`
 - anything else → plain reference
 
-`ConfigurationReference` types `self.configuration` as `any`, so reads off it
-are unchecked. Displays that care add a `conf` getter typed off the concrete
-schema (`get conf(): LinearPairedArcDisplayConfig`) and read through that — the
-same move as `BaseAdapter<CONF>`.
+`ConfigurationReference` carries the schema through to `self.configuration`, so
+`getConf(self, slot)` and `readConfObject(self.configuration, slot)` check the
+slot name and return its real value type — **but only when the schema is
+concrete**. Type the state model factory's `configSchema` parameter to the
+schema's own type, not to `AnyConfigurationSchemaType`, or the reads degrade to
+`any` with no compile error to say so. A `conf` getter typed off the concrete
+schema (`get conf(): LinearPairedArcDisplayConfig`) is still the tidy way to
+name it once, the same move as `BaseAdapter<CONF>`, but it is no longer what
+buys the checking.
 
 ## Frozen track hydration
 

@@ -13,6 +13,7 @@ export { getRpcSessionId } from './parentWalk.ts'
 import {
   getParent,
   getSnapshot,
+  hasParent,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
@@ -152,6 +153,13 @@ export function isSameAssemblyName(
  * `ReferenceSequenceTrack` does not — its schema omits the slot deliberately
  * (see `createReferenceSeqTrackConfig`), because the assembly config holding it
  * IS its assembly, so the name is read off the parent instead.
+ *
+ * That makes a sequence track's assembly **positional**, so a copy of one that
+ * is not inside its assembly cannot answer at all — and a detached config is
+ * what every hydration path produces (`hydrateTrackConfig`, and the working
+ * copy a non-admin's edits would go to, ADR-032). `hasParent` is the guard:
+ * without it the walk raises MST's "Failed to find the parent" from a helper
+ * whose other two failure modes are a plain `undefined`.
  */
 function confAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
@@ -159,6 +167,9 @@ function confAssemblyNames(conf: AnyConfigurationModel) {
     | undefined
   if (trackAssemblyNames) {
     return trackAssemblyNames
+  }
+  if (!hasParent(conf)) {
+    return undefined
   }
   const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(conf)
   return 'sequence' in parent
