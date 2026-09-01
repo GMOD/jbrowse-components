@@ -7,7 +7,11 @@ import { isAutosave } from '../paths.ts'
 import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
 import { MCP_TOOLS } from './toolDefinitions.ts'
 
-import type { LaunchTarget, RecentSession } from '../ipc/channelTypes.ts'
+import type {
+  LaunchTarget,
+  McpReadyState,
+  RecentSession,
+} from '../ipc/channelTypes.ts'
 import type { AppPaths } from '../paths.ts'
 import type { BridgeToolResult } from './stdioServer.ts'
 import type { BrowserWindow } from 'electron'
@@ -50,7 +54,7 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
   // webContents.send to a page with no listener is discarded with no queue and
   // no retry — so a push issued in that gap costs the whole relay timeout and
   // answers nothing. The renderer says when it is listening; relays wait here.
-  let listening: { install: string } | undefined
+  let listening: McpReadyState | undefined
   let waiters: (() => void)[] = []
 
   ipcHandle('mcpReady', (_event, state) => {
@@ -174,6 +178,13 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
   // waits for the renderer to announce a new install. NOT the session's own id:
   // that is persisted with the session, so reopening a saved one restores the
   // id it was saved under and would never look like a change.
+  //
+  // A new install id is where the wait STARTS, not where it ends. Loading a
+  // link with nothing open navigates the window, and the page that lands
+  // announces on mount with an id of its own before it has fetched a byte — so
+  // the id alone answered every agent's first `open` in a quarter second, with
+  // a blank app and `settled: true`. The phase is what says the session
+  // arrived, and it says so for the load that failed too.
   async function openAndWait(
     target: Parameters<BridgeDeps['openTarget']>[0],
     opened: string,
@@ -185,10 +196,19 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     while (Date.now() < deadline) {
       watchWindow()
       if (listening && listening.install !== before) {
-        const settled = await relayToRenderer('wait_ready', {
-          timeoutMs: 30_000,
-        })
-        return { result: { opened, ...(settled.result as object | undefined) } }
+        if (listening.phase === 'startScreen') {
+          return {
+            error: `${opened} did not load — the app fell back to the start screen. Its error notification says why.`,
+          }
+        }
+        if (listening.phase === 'session') {
+          const settled = await relayToRenderer('wait_ready', {
+            timeoutMs: 30_000,
+          })
+          return {
+            result: { opened, ...(settled.result as object | undefined) },
+          }
+        }
       }
       await delay(250)
     }

@@ -173,9 +173,12 @@ try {
   if (!attach) {
     rendererServer = await serveRendererBuild()
     const require = createRequire(import.meta.url)
+    // no config in argv: the app comes up on the start screen, so the first
+    // `open` below runs the cold path — a page load rather than an in-place
+    // session swap, which is the route an agent's first call always takes
     app = spawn(
       require('electron') as unknown as string,
-      ['.', '--no-sandbox', volvoxConfig],
+      ['.', '--no-sandbox'],
       {
         cwd: desktopRoot,
         stdio: 'ignore',
@@ -191,21 +194,33 @@ try {
   mcp = client
   await client.rpc('initialize', { protocolVersion: '2025-06-18' })
 
-  // the bridge listens from app-ready, before the window and its session exist
-  const sessionDeadline = Date.now() + 120_000
+  // the bridge listens from app-ready, before the window exists, so the first
+  // open may arrive before there is anything to navigate
+  const openDeadline = Date.now() + 120_000
+  let cold
   for (;;) {
     try {
-      await client.callJson('run_javascript', {
-        code: 'return jb.sessionSummary()',
-      })
+      cold = await client.callJson('open', { target: volvoxConfig })
       break
     } catch (e) {
-      if (Date.now() > sessionDeadline) {
+      if (Date.now() > openDeadline) {
         throw e
       }
       await new Promise(resolve => setTimeout(resolve, 2000))
     }
   }
+  check('open from the start screen reports a settled session', cold.settled)
+  // No delay. A page announces its MCP listener on mount, before it has loaded
+  // anything, so `open` used to answer here in a quarter second with a blank
+  // app — and this call was the one that found out.
+  const coldRead = await client.callJson('run_javascript', {
+    code: 'return jb.sessionSummary()',
+  })
+  check(
+    'a call straight after open sees the opened session',
+    coldRead.value?.assemblyNames?.includes('volvox') === true,
+    coldRead.value,
+  )
 
   const listed = await client.rpc('tools/list', {})
   const names = (

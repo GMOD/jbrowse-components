@@ -118,6 +118,16 @@ export interface McpBridgeResponse {
   error?: string
 }
 
+/**
+ * What the renderer is showing, as the bridge needs to read it: `loading` is a
+ * page that has a target and no session yet, and is the state `open` must not
+ * answer from — it looks identical to success from the main process.
+ */
+export interface McpReadyState {
+  install: string
+  phase: 'loading' | 'session' | 'startScreen'
+}
+
 export interface IpcChannels {
   quit: { args: []; return: void }
   userData: { args: []; return: string }
@@ -202,6 +212,8 @@ export interface IpcChannels {
   // timeout on a message nobody received. `install` is a fresh id per installed
   // plugin manager, giving `open` something that changes on every load — the
   // session's own id is persisted, so reopening a saved session restores it
-  // unchanged and says nothing about whether the load happened.
-  mcpReady: { args: [state: { install: string }]; return: void }
+  // unchanged and says nothing about whether the load happened. `phase` is the
+  // other half: a page announces on mount, so a changed `install` alone means
+  // the navigation happened, not that anything loaded.
+  mcpReady: { args: [state: McpReadyState]; return: void }
 }

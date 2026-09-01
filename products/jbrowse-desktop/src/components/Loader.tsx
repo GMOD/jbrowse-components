@@ -170,12 +170,20 @@ const LoaderContents = observer(function LoaderContents() {
     }),
   })
 
-  useMcpRequests(() => installedRef.current, install)
-
   // What the main process asked this window to open, if anything. buildAppUrl
   // writes one param or the other, never both, so one load covers both routes
   // and `config` decides which of the two it is.
   const target = config ?? specLink
+
+  useMcpRequests(
+    () => installedRef.current,
+    install,
+    pluginManager?.rootModel?.session
+      ? 'session'
+      : target
+        ? 'loading'
+        : 'startScreen',
+  )
 
   const loadTarget = useEventCallback((source: string) =>
     config ? loadPluginManager(source) : openSpecLink(source),
