@@ -33,6 +33,7 @@ for (const f of frames) {
 }
 
 const FRAME = 0.22
+// see encode.mjs: only binds when HOLD is raised above it
 const MIN = 0.8
 const held = g => Math.min(Math.max(g.count * FRAME, MIN), HOLD)
 

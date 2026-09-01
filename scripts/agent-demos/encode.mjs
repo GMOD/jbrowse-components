@@ -31,7 +31,11 @@ for (const file of files) {
 }
 
 const FRAME = 0.25 // roughly what the camera loop achieved per shot
-const MIN = 0.8 // a caption has to be readable even if the state was brief
+// a caption has to be readable even if the state was brief — but this only
+// binds when HOLD is raised above it, and HOLD defaults to 0.6, so by default
+// every distinct state gets exactly HOLD. Raise both together to slow a clip
+// down; raising HOLD alone past 0.8 is what turns this back on.
+const MIN = 0.8
 const held = g => Math.min(Math.max(g.count * FRAME, MIN), HOLD)
 const lines = []
 for (const g of groups) {

@@ -38,19 +38,25 @@ there is no url to load, no steps to run and no live session to hand a reader �
 then the `<Video>` embed, `pnpm figures:push`, commit `media.lock`, then
 `pnpm autogen`. That order is in `website/CLAUDE.md` and no check enforces it.
 
-## The Chrome side panel take — blocked on one thing
+## The Chrome side panel take — ready to re-shoot
+
+The point of this one is to show a reader **how to use the Claude extension
+themselves**, not to demonstrate automation, so the questions are written the
+way a viewer would type them and the first says out loud that `window.jb`
+exists — an agent cannot guess that, and it is the tip the whole clip exists to
+pass on.
 
 The harness types into the real side panel and the panel really drives
-jbrowse.org. What does not work is knowing when a turn ended.
+jbrowse.org. The turn-completion problem that stopped the first two takes is
+**no longer worth solving precisely**: pixel quiet fired 16s into turn 1 and
+typed the next question over a turn still running, but the fix is simply to
+wait far longer, because the encoder collapses any static stretch to 0.6s. A
+three-minute overshoot costs half a second of finished clip. The threshold is
+now 90s, and being clever here is what broke it.
 
-Watching the conversation column for pixel quiet **fired 16 seconds into turn 1
-on both runs**, which is wrong for a turn that opens a view and loads tracks —
-so the harness typed turn 2 while Claude was still working on turn 1. The panel
-streams in bursts with long gaps, so "quiet" and "done" are not the same thing,
-and a longer quiet threshold only trades one wrong answer for a slower one.
-**Solve that before re-shooting.** The panel is a `chrome-extension://` page, so
-the extension's own `javascript_tool` cannot read it — host permissions are
-http/https.
+Still true: the panel is a `chrome-extension://` page, so the extension's own
+`javascript_tool` cannot read it — host permissions are http/https. Any
+cleverer detection has to come from pixels.
 
 ## Claude Desktop — not started
 

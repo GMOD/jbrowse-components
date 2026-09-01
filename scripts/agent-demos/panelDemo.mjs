@@ -1,13 +1,14 @@
 // Films Chrome while the questions are typed into the real Claude side panel.
 //
-// **`waitIdle` BELOW IS KNOWN WRONG. Do not film with this as it stands.**
-// Everything else here works: the typing lands, the panel drives the page, the
-// frames are clean. What does not work is knowing when a turn ended. Watching
-// the conversation column for pixel quiet fired 16s into turn 1 on both takes,
-// so the harness typed turn 2 over a turn still in progress. The panel streams
-// in bursts with long gaps, so "quiet" and "done" are not the same thing and a
-// longer threshold only makes the wrong answer slower. Solve that first —
-// agent-docs/todo/land-the-agent-client-demo-videos.md.
+// Waiting too long is FREE and waiting too little ruins the take, so the quiet
+// threshold is deliberately enormous. The first two takes used 15s, and the
+// panel's own thinking gaps beat that: it fired 16s into turn 1 and typed the
+// next question over a turn still running. Nothing recovers from that.
+//
+// The asymmetry is the encoder's doing — it collapses any static stretch to
+// HOLD (0.6s), so a three-minute wait costs about half a second of finished
+// clip. There is therefore no reason to be clever here, and being clever is
+// what broke it.
 //
 // Nothing here is an API into the panel: the questions go in on the keyboard
 // and the answers are whatever the extension does with them. The panel is a
@@ -55,15 +56,22 @@ const COMPOSER = { x: 1409, y: 871 }
 // the conversation column in capture pixels, composer excluded
 const CONVO = { top: 250, left: 2460, w: 740, h: 1400 }
 
+// Written as a viewer would type them, because the clip is teaching someone to
+// do this themselves rather than showing off automation. The first line is the
+// one tip that makes the rest work - an agent cannot guess that window.jb is
+// there - so it is said out loud on camera instead of hidden in a preamble.
+//
+// ASCII only. These are typed through System Events, where anything outside
+// ASCII is unreliable, and a mistyped question is visible in every frame.
 const TURNS =
   process.argv[3] === 'rehearse'
     ? [
-        'This page is JBrowse, a genome browser. It puts its live session on window.JBrowseSession. Read it and tell me which assemblies are configured and how many views are open.',
+        'This page is JBrowse, a genome browser. It gives you a helper library on window.jb - call jb.sessionSummary() and tell me which assemblies it has and how many views are open.',
       ]
     : [
-        'This page is JBrowse, a genome browser. It puts its live MobX-State-Tree session on window.JBrowseSession, so you can drive it with JavaScript instead of clicking. Open hg38 at CDKN1A, with the RefSeq genes track and both vertebrate conservation tracks turned on.',
+        'This page is JBrowse, a genome browser. It gives you a helper library on window.jb - jb.sessionSummary() says what is open and jb.listTracks() searches the catalog. Open hg38 at CDKN1A with the RefSeq genes track and both vertebrate conservation tracks on.',
         'Add the four human ATAC-seq samples from GEO series GSE217032 - two DMSO vehicle, two Nutlin-3a - as one stacked multi-wiggle track.',
-        'Zoom to about 20kb around the biggest nutlin-versus-vehicle difference, then check that every track really drew rather than trusting the picture.',
+        'Zoom to about 20kb around the biggest nutlin-versus-vehicle difference, then use jb.waitReady() and jb.getFeatures() to check that every track really drew rather than trusting the picture.',
       ]
 
 const delay = ms => new Promise(r => setTimeout(r, ms))
@@ -234,7 +242,9 @@ try {
     input('key', 36)
     await delay(6000)
     pushCaption(turn, 'Claude is working in the page')
-    await waitIdle({ quietMs: 15000, maxMs: 480000, label: `turn ${i + 1}` })
+    // 90s of stillness, not 15: a thinking gap is not the end of a turn, and
+    // the cost of overshooting is 0.6s of clip
+    await waitIdle({ quietMs: 90_000, maxMs: 600_000, label: `turn ${i + 1}` })
     pushCaption(turn, 'turn complete')
     await delay(i === TURNS.length - 1 ? 6000 : 3000)
   }
