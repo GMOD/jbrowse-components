@@ -19,11 +19,15 @@ const CAPTION_ID = '__tour_caption'
 export async function injectOverlay(page: Page) {
   await page.evaluate(
     (cursorId, captionId, glideMs) => {
+      // 40px in a 1920 frame, for the reason the caption is 32px: an arrow at
+      // the size a pointer is on the machine that filmed it is a few pixels
+      // wide by the time the clip is played in a docs column, and a tour whose
+      // pointer cannot be followed is a UI operating itself again.
       const cursor = document.createElement('div')
       cursor.id = cursorId
-      cursor.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24">
+      cursor.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24">
         <path d="M5 3l14 7-6 1.5L9.5 19 5 3z" fill="#fff"
-          stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg>`
+          stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>`
       Object.assign(cursor.style, {
         position: 'fixed',
         left: '0',
@@ -32,7 +36,7 @@ export async function injectOverlay(page: Page) {
         pointerEvents: 'none',
         transform: 'translate(-100px, -100px)',
         transition: `transform ${glideMs}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-        filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45))',
+        filter: 'drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5))',
       })
       document.body.append(cursor)
 
@@ -48,23 +52,33 @@ export async function injectOverlay(page: Page) {
       style.textContent = `#${captionId}::after { content: attr(data-say); }`
       document.head.append(style)
 
-      // Bottom left, where no JBrowse view puts a control, and dark rather than
-      // themed: it belongs to the film and not to the app, and a chip in the
-      // app's own palette reads as a UI element the reader should look for.
+      // Bottom centre, where a reader already looks for subtitles, and dark
+      // rather than themed: it belongs to the film and not to the app, and a
+      // chip in the app's own palette reads as a UI element the reader should
+      // look for.
+      //
+      // THE TYPE IS SIZED FOR THE EMBED, NOT THE FRAME. A tour is filmed at
+      // 1920 wide and played in a column around a third of that, so a caption
+      // set at a comfortable 17px on the capture arrives at the reader near
+      // 6px.
       const caption = document.createElement('div')
       caption.id = captionId
       Object.assign(caption.style, {
         position: 'fixed',
-        left: '20px',
-        bottom: '20px',
+        left: '50%',
+        bottom: '32px',
+        transform: 'translateX(-50%)',
+        maxWidth: 'calc(100% - 120px)',
+        textAlign: 'center',
         zIndex: '2147483646',
         pointerEvents: 'none',
-        padding: '7px 14px',
-        borderRadius: '6px',
-        background: 'rgba(17, 17, 17, 0.86)',
+        padding: '12px 26px',
+        borderRadius: '10px',
+        background: 'rgba(17, 17, 17, 0.88)',
         color: '#fff',
-        font: '500 17px/1.3 system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        font: '600 32px/1.3 system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
         letterSpacing: '0.01em',
+        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.4)',
         opacity: '0',
         transition: 'opacity 220ms ease',
       })
@@ -84,6 +98,8 @@ export async function moveCursor(page: Page, x: number, y: number) {
       const c = document.getElementById(id)
       if (c) {
         c.style.transform = `translate(${cx}px, ${cy}px)`
+        c.dataset.x = String(cx)
+        c.dataset.y = String(cy)
       }
     },
     CURSOR_ID,
@@ -120,6 +136,8 @@ export async function dragCursor(
           // rather than sent somewhere
           c.style.transition = 'none'
           c.style.transform = `translate(${cx}px, ${cy}px)`
+          c.dataset.x = String(cx)
+          c.dataset.y = String(cy)
         }
       },
       CURSOR_ID,
@@ -142,8 +160,11 @@ export async function dragCursor(
   )
 }
 
-// An expanding ring where a click is about to land, so the click is legible on
-// camera. Fired before the real click rather than after: the click can navigate,
+// An expanding red ring where a click is about to land, so the click is legible
+// on camera. Red because it is the one mark on screen that has to read as the
+// film's and not the app's, and nothing in JBrowse's chrome is that colour.
+//
+// Fired before the real click rather than after: the click can navigate,
 // open a menu over the point, or start a fetch that blocks the main thread, and
 // a ripple queued behind any of those plays late or not at all.
 export async function clickPulse(page: Page, x: number, y: number) {
@@ -154,12 +175,14 @@ export async function clickPulse(page: Page, x: number, y: number) {
         position: 'fixed',
         left: `${cx}px`,
         top: `${cy}px`,
-        width: '14px',
-        height: '14px',
-        marginLeft: '-7px',
-        marginTop: '-7px',
+        width: '26px',
+        height: '26px',
+        marginLeft: '-13px',
+        marginTop: '-13px',
         borderRadius: '50%',
-        border: '2px solid #1e88e5',
+        border: '4px solid #e53935',
+        background: 'rgba(229, 57, 53, 0.35)',
+        boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.6)',
         pointerEvents: 'none',
         zIndex: '2147483646',
       })
@@ -167,10 +190,11 @@ export async function clickPulse(page: Page, x: number, y: number) {
       ring
         .animate(
           [
-            { transform: 'scale(0.4)', opacity: 0.9 },
-            { transform: 'scale(3.2)', opacity: 0 },
+            { transform: 'scale(0.3)', opacity: 1 },
+            { transform: 'scale(1.9)', opacity: 1, offset: 0.55 },
+            { transform: 'scale(2.9)', opacity: 0 },
           ],
-          { duration: 450, easing: 'ease-out' },
+          { duration: 550, easing: 'ease-out' },
         )
         .addEventListener('finish', () => {
           ring.remove()
@@ -178,6 +202,57 @@ export async function clickPulse(page: Page, x: number, y: number) {
     },
     x,
     y,
+  )
+}
+
+// A keycap where the pointer is, for the steps that press a key.
+//
+// A press is the one action with nothing on screen behind it: the cursor does
+// not move, no ripple lands, and the app just changes — a locus box that
+// navigates on Enter reads as having navigated by itself, and an Escape that
+// closes a menu reads as the menu giving up. The cap is drawn beside the
+// pointer's last position rather than in a corner, so it belongs to the hand
+// that has been doing everything else.
+export async function keyPress(page: Page, key: string) {
+  await page.evaluate(
+    (cursorId, label) => {
+      const cursor = document.getElementById(cursorId)
+      const x = Number(cursor?.dataset.x ?? window.innerWidth / 2)
+      const y = Number(cursor?.dataset.y ?? window.innerHeight / 2)
+      const cap = document.createElement('div')
+      cap.textContent = label
+      Object.assign(cap.style, {
+        position: 'fixed',
+        left: `${x + 26}px`,
+        top: `${Math.max(12, y - 52)}px`,
+        zIndex: '2147483646',
+        pointerEvents: 'none',
+        padding: '6px 14px',
+        borderRadius: '8px',
+        border: '2px solid #111',
+        borderBottomWidth: '5px',
+        background: '#fff',
+        color: '#111',
+        font: '600 24px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
+      })
+      document.body.append(cap)
+      cap
+        .animate(
+          [
+            { transform: 'translateY(6px)', opacity: 0 },
+            { transform: 'translateY(0)', opacity: 1, offset: 0.12 },
+            { transform: 'translateY(0)', opacity: 1, offset: 0.75 },
+            { transform: 'translateY(-8px)', opacity: 0 },
+          ],
+          { duration: 900, easing: 'ease-out' },
+        )
+        .addEventListener('finish', () => {
+          cap.remove()
+        })
+    },
+    CURSOR_ID,
+    key,
   )
 }
 

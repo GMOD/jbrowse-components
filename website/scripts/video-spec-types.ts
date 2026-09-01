@@ -5,9 +5,13 @@
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
 
 export interface VideoStep extends ScreenshotAction {
-  // One short line held in the frame's lower left while this step plays, in the
-  // app's own words: a menu path, a control's label. It names what is being
-  // done, the way a diagram's labels name its nodes.
+  // One short line held across the frame's lower centre while this step plays,
+  // in the app's own words: a menu path, a control's label. It names what is
+  // being done, the way a diagram's labels name its nodes.
+  //
+  // The line sets the step's hold as well as its words: a sentence is held long
+  // enough to read, where a control's name is held for the beat a menu takes to
+  // open.
   //
   // Use it where the app does not say it itself. A click lands in a quarter of a
   // second and a reader watching a cursor cross a toolbar has no way back to
@@ -55,8 +59,10 @@ export interface VideoSpec {
   // Session URL, the same form as a screenshot spec's: a query string served
   // against the local jbrowse-web build, or an absolute url.
   url: string
-  // Capture viewport in CSS px. Filmed at deviceScaleFactor 2, so app text
-  // survives being played back in a docs column.
+  // Capture viewport in CSS px. Filmed at deviceScaleFactor 1 — `page.screencast`
+  // hands back frames at the viewport's CSS size whatever the page was laid out
+  // at, so legibility in a docs column is bought by choosing this, and the
+  // overlay's own type is sized against it.
   viewportWidth?: number
   viewportHeight?: number
   // Gates before the camera starts. Everything a tour opens with loads off

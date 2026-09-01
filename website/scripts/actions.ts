@@ -450,7 +450,7 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     } else {
       await el?.click()
     }
-    await page.keyboard.type(action.value ?? '')
+    await page.keyboard.type(action.value ?? '', { delay: action.typeDelayMs })
   } else if (action.type === 'drag') {
     const { from, to } = await dragPoints(page, action)
     await page.mouse.move(from.x, from.y)

@@ -122,9 +122,10 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       // since a <track> whose src 404s leaves the control on with nothing behind
       // it.
       //
-      // NOT `default`. The clip already draws each line into its own lower left,
-      // so a track that came on by itself would put the same words on screen
-      // twice, in the same corner. What the element is for is that the text
+      // NOT `default`. The clip already draws each line across its own lower
+      // centre, which is where a player puts its cues too, so a track that came
+      // on by itself would put the same words on screen twice, on top of each
+      // other. What the element is for is that the text
       // EXISTS — selectable, readable by a screen reader, and offered by the
       // player's own captions control to anyone who wants it larger.
       const captions = videoCaptioned.includes(name)

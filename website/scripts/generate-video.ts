@@ -70,6 +70,7 @@ import {
   injectOverlay,
   clickPulse,
   dragCursor,
+  keyPress,
   moveCursor,
   parkCursor,
   scrollPage,
@@ -162,11 +163,51 @@ const HOLD_MS = 900
 // a menu item teleport into a graph.
 const PRE_CUT_MS = 1200
 const TAIL_MS = 2500
+// What a line of caption is given to be read, per word, when it is longer than
+// a control's name. HOLD_MS reads a menu opening, which is what a step saying
+// `Submit` needs; a step saying `Cluster rows by similarity` is a sentence, and
+// the same beat leaves it on screen for less time than it takes to finish it.
+const SAY_MS_PER_WORD = 260
+// A typed value is filmed keystroke by keystroke, stretched to about this much
+// however long it is, so a locus and a URL both read as typing rather than one
+// arriving as a flicker and the other as a minute of it.
+const TYPING_BUDGET_MS = 1200
+const TYPING_MS_RANGE = { min: 12, max: 55 }
+// Past this a value is not typing, it is a paste — the pangenome tour's whole
+// track config is 2 KB, and a hand does not enter that a character at a time.
+const TYPING_MAX_CHARS = 160
+
 // Past this, a step the camera stayed on is a stretch of spinner in the finished
 // clip. Reported rather than cut automatically: which waits are worth watching
 // is the spec's call, and a slow render the tour is ABOUT would be the one thing
 // an automatic cut removed.
 const SLOW_STEP_MS = 6000
+
+function typeDelayMs(value: string) {
+  const { min, max } = TYPING_MS_RANGE
+  return value.length > TYPING_MAX_CHARS
+    ? 0
+    : Math.min(max, Math.max(min, Math.round(TYPING_BUDGET_MS / value.length)))
+}
+
+// A `type` step as it is filmed. Off camera — a `cut` step, or the boot of a
+// tour that follows a tab — the keystrokes are wall clock nobody watches, so
+// only the on-camera ones are animated.
+function filmedAction(step: VideoStep) {
+  return step.type === 'type' && !step.cut && step.typeDelayMs === undefined
+    ? { ...step, typeDelayMs: typeDelayMs(step.value ?? '') }
+    : step
+}
+
+// How long the finished frame is held. A step that says something holds for as
+// long as its line takes to read, unless the spec named a number itself.
+function holdMs(step: VideoStep) {
+  const say = step.say && !step.cut ? step.say.split(' ').length : 0
+  return (
+    step.hold ??
+    (UNHELD.has(step.type) ? 0 : Math.max(HOLD_MS, SAY_MS_PER_WORD * say))
+  )
+}
 
 // A step, in whatever it gave the report to point at. `say` first because it is
 // the line the reader saw while the step was on screen.
@@ -278,9 +319,12 @@ async function filmStep(
         }
       }
     }
-    await runAction(page, step)
+    if (step.type === 'press' && step.key) {
+      await keyPress(page, step.key)
+    }
+    await runAction(page, filmedAction(step))
   }
-  await delay(step.hold ?? (UNHELD.has(step.type) ? 0 : HOLD_MS))
+  await delay(holdMs(step))
 }
 
 // The tab a step opened, once it exists. Armed BEFORE the click that opens it,

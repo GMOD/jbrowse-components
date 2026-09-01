@@ -55,6 +55,12 @@ export interface ScreenshotAction {
   value?: string
   // for 'type': triple-click the field to select existing content first
   clear?: boolean
+  // for 'type': ms between keystrokes. Unset types the whole value in one go,
+  // which is what a screenshot wants — a still of a filled field is the same
+  // still however the characters got there. generate-video sets it, because a
+  // field that fills in a single frame is the one thing in a tour that no hand
+  // could have done.
+  typeDelayMs?: number
   // for 'drag': start/end points in viewport CSS px (used for rubberband drags).
   // 'click'/'rightclick'/'hover' also accept `from` alone, to act on a bare
   // viewport coordinate (canvas-drawn features have no DOM node to target).
