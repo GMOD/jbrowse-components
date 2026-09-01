@@ -16,7 +16,7 @@ export const MCP_TOOLS: McpToolDefinition[] = [
   {
     name: 'evaluate',
     handledBy: 'renderer',
-    description: `The raw primitive: run an async JavaScript function body inside the app against the LIVE session — everything the other tools do is expressible here, and anything they don't cover is too. In scope: "session" (the mobx-state-tree session model), "rootModel", "pluginManager", and "jb" ({ mst: full mobx-state-tree API, mobx: { autorun, when, runInAction, observable }, readConfObject, getConf, parseLocString, getFeatureAdapterOrThrow, getRpcSessionId, createStopToken, stopStopToken, waitReady }), plus the DOM and Node via window.require. Whatever you "return" comes back serialized (size-capped). Invent your own utilities: state persists between calls on globalThis (but re-read "session" each call — it is replaced when a new config loads). MST rules: read via properties and getters (snapshots omit getters), mutate ONLY via actions, read config slots with jb.readConfObject. READ docs topic "live-model" FIRST — it is a short orientation with working examples (model layout, direct adapter data access, waiting on renders).`,
+    description: `The raw primitive: run an async JavaScript function body inside the app against the LIVE session — everything the other tools do is expressible here, and anything they don't cover is too. In scope: "session" (the mobx-state-tree session model), "rootModel", "pluginManager", and "jb" ({ mst: full mobx-state-tree API, mobx: { autorun, when, runInAction, observable }, readConfObject, getConf, describeSlots, parseLocString, getFeatureAdapterOrThrow, getRpcSessionId, renameRegionsIfNeeded, createStopToken, stopStopToken, waitReady }), plus the DOM and Node via window.require. Whatever you "return" comes back serialized (size-capped). Invent your own utilities: state persists between calls on globalThis (but re-read "session" each call — it is replaced when a new config loads). MST rules: read via properties and getters (snapshots omit getters), mutate ONLY via actions, read config slots with jb.readConfObject, never guess settings keys — jb.describeSlots(display.configuration) lists them. READ docs topic "live-model" FIRST — it is a short orientation with working examples (model layout, direct adapter data access, refName renaming, waiting on renders).`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -50,37 +50,22 @@ export const MCP_TOOLS: McpToolDefinition[] = [
     name: 'open',
     handledBy: 'main',
     description:
-      'Open a JBrowse config file (config.json), a saved session (.jbrowse), or a JBrowse Web URL (a share link or a ?config=...&session=spec-... link) in JBrowse Desktop. Replaces the currently open session, flushing its autosave first. Use this to switch to a different dataset/config; use load_session_spec to build views on the already-open config.',
+      'Open a JBrowse config file (config.json), a saved session (.jbrowse), or a JBrowse Web URL (a share link or a ?config=...&session=spec-... link) in JBrowse Desktop. Replaces the currently open session, flushing its autosave first. Use this to switch to a different dataset/config; use load_session_spec to build views on the already-open config. With NO target, lists the recently opened sessions instead (name, file path, last-updated) — any listed path can then be opened.',
     inputSchema: {
       type: 'object',
       properties: {
         target: {
           type: 'string',
           description:
-            'Absolute path to a .json config or .jbrowse session file, or an http(s) JBrowse Web URL',
+            'Absolute path to a .json config or .jbrowse session file, or an http(s) JBrowse Web URL. Omit to list recent sessions.',
         },
       },
-      required: ['target'],
     },
-  },
-  {
-    name: 'list_recent_sessions',
-    handledBy: 'main',
-    description:
-      'List recently opened JBrowse Desktop sessions (name, file path, last-updated time). Any listed path can be reopened with the open tool.',
-    inputSchema: { type: 'object', properties: {} },
-  },
-  {
-    name: 'get_session',
-    handledBy: 'renderer',
-    description:
-      'Describe the currently open session: its name, the assemblies available, and each open view (id, type, visible region, shown tracks). Call this first to see what is on screen and to get view ids for navigate/show_track.',
-    inputSchema: { type: 'object', properties: {} },
   },
   {
     name: 'inspect_session',
     handledBy: 'renderer',
-    description: `Inspect the LIVE session model by dot-path — both raw state and the computed getters that a session snapshot filters out. Examples: path "views.0" (one view: its state plus a "getters" list naming what else it can answer), "views.0.visibleLocStrings" or "views.0.coarseVisibleLocStrings" (what region is on screen), "views.0.tracks.0.displays.0" (a live display's state), "views.0.totalBp", "" (session root). Large values come back as a keys/summary listing to drill into; property reads only, nothing is mutated. Use get_session for a quick overview and this for depth.`,
+    description: `Inspect the open session. With NO path: a compact overview — session name, assemblies, each open view with its visible region and shown tracks (call this first). With a path: walk the LIVE session model — both raw state and the computed getters a snapshot filters out. Examples: "views.0" (one view: its state plus a "getters" list naming what else it can answer), "views.0.visibleLocStrings" (what region is on screen), "views.0.tracks.0.displays.0" (a live display's state), "views.0.totalBp". Large values come back as a keys/summary listing to drill into; property reads only, nothing is mutated.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -101,7 +86,7 @@ export const MCP_TOOLS: McpToolDefinition[] = [
     name: 'list_tracks',
     handledBy: 'renderer',
     description:
-      'List the tracks available in the open session/config: trackId, name, track type, adapter type, and assembly names. Use the returned trackId values in session specs and show_track. Large configs are capped; pass search to filter by name/id substring.',
+      'List the tracks available in the open session/config: trackId, name, track type, adapter type, and assembly names. Use the returned trackId values in session specs and the track tool. Large configs are capped; pass search to filter by name/id substring.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -170,57 +155,36 @@ ${TRACK_ENTRY_DOC}
     },
   },
   {
-    name: 'show_track',
+    name: 'track',
     handledBy: 'renderer',
-    description: `Show a track in an open view (the given viewId or the first view that can show tracks). On a track that is ALREADY shown this is a no-op — settings are not re-applied; use update_track for that. ${TRACK_ENTRY_DOC}`,
+    description: `Show, update, or hide tracks in an open view.
+
+action "show": open a track — "track" is a trackId string or an entry object with inline display settings. On a track ALREADY shown this is a no-op (settings are not re-applied; use "update").
+action "update": change display settings of shown tracks IN PLACE — no reload, the display re-renders reactively. "settings" is required; select ONE track with "track" (exact trackId), a GROUP with "match" (case-insensitive substring of trackId or name), or EVERY shown track by passing neither — e.g. action "update", settings {"displayMode": "compact"} with no selector makes all tracks compact. The response reports per track which keys applied and which could not (changing the display "type" itself needs hide then show).
+action "hide": remove a shown track — "track" is its trackId.
+
+${TRACK_ENTRY_DOC} "settings" speaks that same vocabulary — any config slot of the track's display works; when unsure which keys a display takes, introspect it (docs topic "live-model" shows jb.describeSlots).`,
     inputSchema: {
       type: 'object',
       properties: {
+        action: { type: 'string', enum: ['show', 'update', 'hide'] },
         track: {
           description:
-            'A trackId string, or a track entry object with inline display settings',
+            'trackId string (show/update/hide), or for show an entry object with inline display settings',
           anyOf: [{ type: 'string' }, { type: 'object' }],
         },
-        viewId: { type: 'string' },
-      },
-      required: ['track'],
-    },
-  },
-  {
-    name: 'update_track',
-    handledBy: 'renderer',
-    description: `Change display settings of tracks that are already shown, in place — no session or track reload, the display re-renders reactively. Select ONE track with "track" (exact trackId), a GROUP with "match" (case-insensitive substring of trackId or name), or EVERY shown track by passing neither — e.g. settings {"displayMode": "compact"} with no selector makes all tracks compact. Optionally scope to one view with viewId.
-
-"settings" speaks the same vocabulary as show_track's inline keys and session-spec track entries: height, displayMode ("compact"/"collapse"), showLabels, featureHeight, minScore/maxScore/autoscale, color, colorBy (e.g. {"type": "tag", "tag": "HP"} on alignments), defaultRendering, jexlFilters, and any other config slot of the track's display. The response reports per track which keys were applied and which could not be (changing the display "type" itself needs hide_track then show_track).`,
-    inputSchema: {
-      type: 'object',
-      properties: {
-        settings: {
-          type: 'object',
-          description: 'Display settings to apply (see tool description)',
-        },
-        track: { type: 'string', description: 'Exact trackId to update' },
         match: {
           type: 'string',
           description:
-            'Update all shown tracks whose trackId or name contains this (case-insensitive)',
+            'update only: select all shown tracks whose trackId or name contains this (case-insensitive)',
+        },
+        settings: {
+          type: 'object',
+          description: 'update only: display settings to apply',
         },
         viewId: { type: 'string' },
       },
-      required: ['settings'],
-    },
-  },
-  {
-    name: 'hide_track',
-    handledBy: 'renderer',
-    description: 'Hide a track currently shown in a view.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        trackId: { type: 'string' },
-        viewId: { type: 'string' },
-      },
-      required: ['trackId'],
+      required: ['action'],
     },
   },
   {
@@ -287,7 +251,7 @@ ${TRACK_ENTRY_DOC}
     name: 'screenshot',
     handledBy: 'main',
     description:
-      'Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing. Use it to verify what a load_session_spec/navigate/show_track call actually produced and to inspect the data shown.',
+      'Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing. Use it to verify what a load_session_spec/navigate/track call actually produced and to inspect the data shown.',
     inputSchema: {
       type: 'object',
       properties: {
