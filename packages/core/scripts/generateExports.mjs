@@ -21,6 +21,14 @@ const preservedExports = [
   '@jbrowse/core/configuration/configurationSchema',
   // Referenced as string literals in ReExports runtime module registry
   '@jbrowse/core/util/layouts',
+  // The registry a plugin's jbrequire resolves against, and the module bag it
+  // is filled from. In-repo only handleMcpRequest.ts names either by subpath —
+  // PluginManager and PluginLoader reach the registry by relative path, which
+  // this scan does not count — so both would un-publish the moment that one
+  // importer moves or stops spelling them this way, taking the ABI a runtime
+  // plugin links against with them.
+  '@jbrowse/core/ReExports/registry',
+  '@jbrowse/core/ReExports/modules',
   // jest.mock target for stable adapter ids in tests
   '@jbrowse/core/data_adapters/BaseAdapter/getAdapterId',
   // util/index.ts <-> offscreenCanvasPonyfill.ts re-export each other; only
