@@ -86,15 +86,19 @@ whole-genome "Show all regions", 24 content blocks: the banner moves from
 2816 ms and 10.4 MB of downloaded-then-discarded features to 47 ms and none,
 because chr1's index answers over budget before any region reads a feature.
 
-**Commit before cancelling, and `fetchEachRegion.test.ts` pins the order.**
-Cancelling first strands the verdict: the aborts reject the batch, its tail
-never commits, `handleFetchError` swallows the abort as a superseded fetch's
-ordinary end, and `cancelFetch`'s `fetchGeneration` bump re-runs the autorun
-against a gate holding no measurement — `nextGateState` stamps
-`gateMeasuredViewportKey` only on a committed one, so `gateSkipsMeasuredViewport`
-reads false and the plan re-issues every region, forever. The density axis has
-the same trap one level up, its measurements committing in
-`fetchGatedRegions`'s `onComplete`.
+**Commit before cancelling — `gateBatch` is where that is enforced**, as one
+`refuse()` with no order for a runner to invert. Cancelling first strands the
+verdict: the aborts reject the batch, its tail never commits, `handleFetchError`
+swallows the abort as a superseded fetch's ordinary end, and `cancelFetch`'s
+`fetchGeneration` bump re-runs the autorun against a gate holding no
+measurement — `nextGateState` stamps `gateMeasuredViewportKey` only on a
+committed one, so `gateSkipsMeasuredViewport` reads false and the plan re-issues
+every region, forever. The density axis has the same trap one level up, its
+measurements committing in `fetchGatedRegions`'s `onComplete`. `gateBatch` also
+holds the commit to one per batch itself rather than inferring it from
+`cancelFetch` closing the rotation's guard, so several regions refusing in one
+batch — the ordinary case at whole-genome zoom — is one `fetchGeneration` bump
+rather than one per refusal, whatever a given display's cancel does.
 
 Two consequences worth knowing. The banner may quote the **first** refusing
 region's bytes rather than the largest, since the batch stops before the rest
@@ -131,8 +135,28 @@ screen pixels of it, 2 px — and the probe stops as soon as an *admitted* count
 in that window reads `DENSITY_SETTLE_MARGIN` times over budget. Growth still
 tests the raw count, for the reason `stats.ts` gives; only the settling exit is
 admitted, so a filtered view is not refused on a population it filters away.
-Below `bpPerPx` ~500 the window this asks for is under the probe's own 1 kb
-floor and the ladder is exactly what it always was.
+
+The window is bounded at both ends. Below `bpPerPx` ~500 at the default budget
+(the floor binds while `bpPerPx < 500 * maxFeatureScreenDensity`) it is under the
+probe's own 1 kb floor and the ladder is exactly what it always was; above, it is capped
+at the width the default budget asks for, because a budget below 1 feature/px
+asks for a proportionally wider one — `maxFeatureScreenDensity: 0.01` wants
+200 px, half a gigabase at whole-genome zoom, which clamps to the chromosome and
+downloads what the probe exists to avoid. The cap costs nothing where it binds:
+a tighter budget makes the settling threshold easier to clear, so a genuinely
+dense region still refuses at the first window, and only the marginal case
+ladders. A budget that cannot size a window at all — `0`, or a NaN out of a
+jexl-computed slot — yields no gate and the plain ladder, rather than an
+infinite or NaN interval.
+
+**8 features raises the bar, it does not remove it.** A region whose whole raw
+count is under 70 always grew to span the region under the old ladder and was
+admitted; now, 8 admitted features inside the 2 px window at the fixed 25% point
+reading `DENSITY_SETTLE_MARGIN` over budget refuse it. So an otherwise sparse
+track with a tight cluster of 8-69 features near that point banners at that
+zoom until the user zooms or force-loads. The class is narrower than the old
+one — a cluster of 70 was already refused the same way — but it is the same
+class, and it is the price of not paying 13 round trips for every verdict.
 
 The old ladder started at 1 kb and doubled to a 70-feature exit, which at
 whole-genome zoom is 13 rungs to answer a question the first one settled

@@ -102,27 +102,41 @@ export function exactDensityTooLargeResult(
 
 // How far over `maxFeatureDensity` a sampled window has to read, and how many
 // admitted features it has to read it from, before the probe stops laddering and
-// refuses. Together they fix the first window at 2 screen pixels, since
-// `admitted / sampledBp * bpPerPx >= margin * maxFeatureDensity` rearranges to
-// `admitted >= margin * maxFeatureDensity * (sampledBp / bpPerPx)` and the
-// parenthesis is the window in pixels. The feature count is the half that guards
-// against refusing a sparse file with a cluster at the fixed sample point; both
-// numbers are argued from measurements in
+// refuses. `DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN` is also the first
+// window's width in screen pixels, which is where the cap below comes from.
+// Both numbers are argued from measurements in
 // agent-docs/reference/REGION_TOO_LARGE.md.
 export const DENSITY_SETTLE_MARGIN = 4
 export const DENSITY_SETTLE_FEATURES = 8
 
-// The probe's stopping rule, built from the budget the fetch was issued under.
-// Below `bpPerPx` ~500 it asks for a window narrower than the probe's own floor,
-// and the ladder is exactly what it was.
+const PROBE_WINDOW_PX = DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN
+
+// The probe's stopping rule, built from the budget the fetch was issued under,
+// or undefined for a budget that cannot size a window — which then leaves the
+// ladder exactly as it was rather than deriving a bound from it. That is not
+// defensive throat-clearing: `maxFeatureScreenDensity` is a config slot, so 0
+// (`8 / 0`, an infinite window that clamps to the whole region) and NaN (a
+// jexl-computed value; NaN bounds on every rung until the sample timeout) both
+// reach here, and `executeRenderFeatureData` only guards the slot against
+// `undefined`. Neither could hurt the old fixed 1 kb start.
+//
+// The cap is the other half. A budget below 1/px asks for a proportionally wider
+// window — `maxFeatureScreenDensity: 0.01`, a plausible way to gate hard, asks
+// for 200 px, half a gigabase at whole-genome zoom. It costs nothing where it
+// binds, because a tighter budget makes `settled` easier to clear, not harder.
 export function densityProbeGate(bpPerPx: number, maxFeatureDensity: number) {
   const settlingPerBp = (DENSITY_SETTLE_MARGIN * maxFeatureDensity) / bpPerPx
-  return {
-    initialInterval: DENSITY_SETTLE_FEATURES / settlingPerBp,
-    settled: (admitted: number, sampledBp: number) =>
-      admitted >= DENSITY_SETTLE_FEATURES &&
-      admitted / sampledBp >= settlingPerBp,
-  }
+  return settlingPerBp > 0 && Number.isFinite(settlingPerBp)
+    ? {
+        initialInterval: Math.min(
+          DENSITY_SETTLE_FEATURES / settlingPerBp,
+          PROBE_WINDOW_PX * bpPerPx,
+        ),
+        settled: (admitted: number, sampledBp: number) =>
+          admitted >= DENSITY_SETTLE_FEATURES &&
+          admitted / sampledBp >= settlingPerBp,
+      }
+    : undefined
 }
 
 // Cheap pre-fetch density gate: sample a small window to estimate density
@@ -166,9 +180,12 @@ export async function samplePreFetchDensity({
   const { featureDensity } = await calculateFeatureDensityStats(
     region,
     (r, o) => dataAdapter.getFeatures(r, o),
-    { stopToken, statusCallback },
-    admit,
-    densityProbeGate(bpPerPx, maxFeatureDensity),
+    {
+      stopToken,
+      statusCallback,
+      admit,
+      gate: densityProbeGate(bpPerPx, maxFeatureDensity),
+    },
   )
   checkStopTokenThrottled(stopTokenCheck)
   return densityTooLargeResult(

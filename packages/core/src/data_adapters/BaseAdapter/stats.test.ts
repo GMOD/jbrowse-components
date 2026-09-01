@@ -87,8 +87,7 @@ test('counts only admitted features when an admit predicate is given', async () 
   const { featureDensity } = await calculateFeatureDensityStats(
     region(0, 1_000_000),
     getFeatures,
-    undefined,
-    f => f.get('start') % 40 === 0,
+    { admit: f => f.get('start') % 40 === 0 },
   )
   expect(featureDensity).toBeCloseTo(0.025)
 })
@@ -103,8 +102,7 @@ test('grows the window on the raw count, not the admitted count', async () => {
   const { featureDensity } = await calculateFeatureDensityStats(
     region(0, 1_000_000),
     getFeatures,
-    undefined,
-    f => f.get('start') === 0,
+    { admit: f => f.get('start') === 0 },
   )
   expect(queries).toHaveLength(1)
   expect(featureDensity).toBeCloseTo(1 / 1000)
@@ -127,9 +125,7 @@ test('starts at the window the gate asks for rather than the fixed floor', async
   const { featureDensity } = await calculateFeatureDensityStats(
     region(0, 10_000_000),
     getFeatures,
-    undefined,
-    undefined,
-    gateAt(1 / 10_000),
+    { gate: gateAt(1 / 10_000) },
   )
   expect(queries).toHaveLength(1)
   expect(queries[0]!.end - queries[0]!.start).toBe(80_000)
@@ -140,13 +136,9 @@ test('never starts below the fixed floor, so a narrow gate window is the old beh
   // At low bpPerPx the gate's window is sub-kilobase; the probe must not sample
   // narrower than it always has.
   const { getFeatures, queries } = makeGetFeatures(1_000_000, 10)
-  await calculateFeatureDensityStats(
-    region(0, 1_000_000),
-    getFeatures,
-    undefined,
-    undefined,
-    gateAt(1 / 10),
-  )
+  await calculateFeatureDensityStats(region(0, 1_000_000), getFeatures, {
+    gate: gateAt(1 / 10),
+  })
   expect(queries[0]!.end - queries[0]!.start).toBe(1000)
 })
 
@@ -157,9 +149,7 @@ test('keeps laddering when the sample does not clear the settling margin', async
   const { featureDensity } = await calculateFeatureDensityStats(
     region(0, 1_000_000),
     getFeatures,
-    undefined,
-    undefined,
-    gateAt(1 / 500),
+    { gate: gateAt(1 / 500) },
   )
   expect(queries.length).toBeGreaterThan(1)
   expect(featureDensity).toBeCloseTo(1 / 2000)
@@ -176,9 +166,7 @@ test('settles on the admitted count, so a filtered view is not refused early', a
   const { featureDensity } = await calculateFeatureDensityStats(
     region(0, 1_000_000),
     getFeatures,
-    undefined,
-    f => f.get('start') % 800 === 0,
-    gateAt(1 / 200),
+    { admit: f => f.get('start') % 800 === 0, gate: gateAt(1 / 200) },
   )
   expect(queries.length).toBeGreaterThan(1)
   expect(featureDensity).toBeCloseTo(1 / 800)
@@ -191,9 +179,7 @@ test('a gate that never settles leaves the timeout path unchanged', async () => 
   const { featureDensity } = await calculateFeatureDensityStats(
     region(0, 100_000),
     getFeatures,
-    undefined,
-    undefined,
-    gateAt(1 / 1000),
+    { gate: gateAt(1 / 1000) },
   )
   expect(featureDensity).toBe(0)
 })

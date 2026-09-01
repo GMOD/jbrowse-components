@@ -225,14 +225,14 @@ describe('densityProbeGate', () => {
   it('asks for a window of DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN pixels', () => {
     const px = DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN
     for (const bpPerPx of [1000, 100_000, 3_088_000]) {
-      const { initialInterval } = densityProbeGate(bpPerPx, 1)
+      const { initialInterval } = densityProbeGate(bpPerPx, 1)!
       expect(initialInterval / bpPerPx).toBeCloseTo(px)
     }
   })
 
   it('settles exactly at the margin, on the count and the density together', () => {
     // whole-genome-ish: 3.088e6 bp/px against a budget of 1/px
-    const { initialInterval, settled } = densityProbeGate(3_088_000, 1)
+    const { initialInterval, settled } = densityProbeGate(3_088_000, 1)!
     // the window is sized so DENSITY_SETTLE_FEATURES in it is exactly the margin
     expect(settled(DENSITY_SETTLE_FEATURES, initialInterval)).toBe(true)
     expect(settled(DENSITY_SETTLE_FEATURES - 1, initialInterval)).toBe(false)
@@ -243,9 +243,44 @@ describe('densityProbeGate', () => {
   // A looser budget is reached by fewer bp, so the window that can settle it is
   // narrower — the window tracks the question, not the zoom alone.
   it('narrows the window as the budget loosens', () => {
-    expect(densityProbeGate(100_000, 10).initialInterval).toBeCloseTo(
-      densityProbeGate(100_000, 1).initialInterval / 10,
+    expect(densityProbeGate(100_000, 10)!.initialInterval).toBeCloseTo(
+      densityProbeGate(100_000, 1)!.initialInterval / 10,
     )
+  })
+
+  // A tighter budget asks for a proportionally wider window, and uncapped that
+  // runs past what a sample can mean: `maxFeatureScreenDensity: 0.01` at
+  // whole-genome zoom asks for half a gigabase, which clamps to the whole
+  // chromosome and downloads exactly what the probe exists to avoid.
+  it('never asks for a wider window than the default budget does', () => {
+    const bpPerPx = 3_088_000
+    const atDefault = densityProbeGate(bpPerPx, 1)!.initialInterval
+    for (const tight of [0.5, 0.01, 1e-6]) {
+      expect(densityProbeGate(bpPerPx, tight)!.initialInterval).toBe(atDefault)
+    }
+  })
+
+  // and the cap does not cost the verdict: a dense region still settles in that
+  // window, because a tighter budget makes the threshold easier to clear
+  it('still settles a dense region against a tight budget in the capped window', () => {
+    const bpPerPx = 3_088_000
+    const gate = densityProbeGate(bpPerPx, 0.01)!
+    expect(gate.settled(DENSITY_SETTLE_FEATURES, gate.initialInterval)).toBe(
+      true,
+    )
+  })
+
+  // `maxFeatureScreenDensity` is a config slot, so these reach the sizing
+  // arithmetic. 0 divides to an infinite window that clamps to the whole region
+  // — the download the probe exists to avoid — and NaN poisons every bound until
+  // the sample timeout, per region. Neither could hurt the old fixed start, so
+  // the answer is no gate and the plain ladder, not a derived bound.
+  it('declines to size a window from a budget that cannot size one', () => {
+    for (const bad of [0, Number.NaN, Number.POSITIVE_INFINITY, -1]) {
+      expect(densityProbeGate(3_088_000, bad)).toBeUndefined()
+    }
+    expect(densityProbeGate(0, 1)).toBeUndefined()
+    expect(densityProbeGate(Number.NaN, 1)).toBeUndefined()
   })
 
   // A whole-chromosome view of an annotation track sits a few times over budget,
@@ -253,7 +288,7 @@ describe('densityProbeGate', () => {
   // the settling exit must not fire there, leaving the 70-feature ladder to it.
   it('does not settle on a near-threshold density', () => {
     const bpPerPx = 133_797
-    const { settled } = densityProbeGate(bpPerPx, 1)
+    const { settled } = densityProbeGate(bpPerPx, 1)!
     // 3.2 features/px — genuinely over budget, but only 3.2x
     const sampledBp = 1_000_000
     const admitted = Math.round((3.2 * sampledBp) / bpPerPx)

@@ -249,13 +249,12 @@ that display waits out `awaitSvgReady`'s backstop instead of failing.
   state captured at issue and what the two canvas displays commit their DENSITY
   measurements from — that, not a second loop, is what a hand-rolled
   `Promise.all` was buying.
-- **The first refusal ends a `fetchEachRegion` batch, and the verdict commits
-  BEFORE the cancel.** The gate is a display-wide max, so no sibling can change
-  a refusal and none is drawn under the banner. Cancel first and the aborts
-  reject the batch, the commit never lands, and the `fetchGeneration` bump
-  re-runs the autorun against an unstamped gate that re-issues every region
-  forever. REGION_TOO_LARGE.md, and the order is pinned in
-  `fetchEachRegion.test.ts`.
+- **The first refusal ends a `fetchEachRegion` batch**, because the gate is a
+  display-wide max: no sibling can change a refusal and none is drawn under the
+  banner. The two rules that makes the batch owe — commit at most once, and
+  commit before cancelling — are `gateBatch`'s, not a runner's to remember;
+  `refuse()` and `settle()` are the whole surface. Why each rule exists, and
+  what it cost to get wrong, is at `gateBatch` and in REGION_TOO_LARGE.md.
 - **`loadedRegions` is written where the payload is stored**, through
   `ctx.commitRegion(displayedRegionIndex)` — the helpers above call it for you,
   and skip a region the worker refused for size (`isRegionRefused`). It takes an

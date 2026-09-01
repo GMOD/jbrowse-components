@@ -27,7 +27,16 @@ export interface FetchEachRegionModel extends IStateTreeNode {
     perRegionBytes: (number | undefined)[],
     issued: GateFetchState,
   ) => void
-  /** `FetchMixin`'s, which every display on these helpers composes. */
+  /**
+   * `FetchMixin`'s, which every display on these helpers composes.
+   *
+   * It carries a contract with `fetchRegions` that the types cannot state:
+   * calling this makes the running work callback's `ctx.isStale()` answer true.
+   * {@link gateBatch} deliberately does not depend on that for its own commit
+   * count, so a cancel that left the guard open would not corrupt the gate —
+   * but the siblings still in flight would go on storing payloads and marking
+   * regions loaded behind a banner that hides them.
+   */
   cancelFetch: () => void
 }
 
@@ -64,6 +73,64 @@ export function callEachRegion<R>(
 }
 
 /**
+ * The gate bookkeeping one per-region batch owes, as an object rather than two
+ * statements in the runner, because both of its rules are the kind a reader
+ * restores wrongly and no type catches:
+ *
+ * - **The commit happens at most once.** Several regions refusing in one batch
+ *   is the ordinary case at whole-genome zoom, and a commit per refusal is a
+ *   `fetchGeneration` bump per refusal — a burst of autorun re-runs where one is
+ *   owed. Held here rather than inferred from `ctx.isStale()`, which would make
+ *   the count depend on `cancelFetch` closing the rotation's guard: true of
+ *   `FetchMixin`, but a cross-member contract nothing checks.
+ * - **A refusal commits before it cancels.** The other order strands the
+ *   verdict: the aborts reject the batch, the commit never lands,
+ *   `nextGateState` stamps `gateMeasuredViewportKey` only on a committed
+ *   measurement, so `gateSkipsMeasuredViewport` reads false and the plan
+ *   re-issues every region off the cancel's own generation bump — forever.
+ *   `refuse()` is one call, so there is no order to invert.
+ *
+ * `issued` is captured on construction, before anything is issued, so the
+ * measurements this batch brings back are judged against the viewport and the
+ * tier they were asked for rather than whatever the view moved to during the
+ * round trip.
+ */
+function gateBatch(
+  self: FetchEachRegionModel,
+  size: number,
+  onComplete?: (issued: GateFetchState) => void,
+) {
+  const issued = self.gateFetchState()
+  const bytes: (number | undefined)[] = new Array(size)
+  let settled = false
+  const finish = (refused: boolean) => {
+    if (!settled) {
+      settled = true
+      // a copy: a refusal commits while siblings are still landing, and would
+      // otherwise hand the gate an array that goes on changing under it
+      self.commitFetchBytes([...bytes], issued)
+      onComplete?.(issued)
+      if (refused) {
+        self.cancelFetch()
+      }
+    }
+  }
+  return {
+    measured(i: number, result: unknown) {
+      bytes[i] = measuredBytes(result)
+    },
+    /** This region is over budget, so the batch is answered: stop the rest. */
+    refuse: () => {
+      finish(true)
+    },
+    /** Every region landed. */
+    settle: () => {
+      finish(false)
+    },
+  }
+}
+
+/**
  * Run one RPC `call` per needed region, in parallel, under a single
  * stale-guarded `fetchRegions` wrapper. Centralizes the fan-out plus the two
  * `ctx.isStale()` guards every per-region display repeated by hand: skip a
@@ -84,11 +151,10 @@ export function callEachRegion<R>(
  * to justify a hand-rolled `Promise.all`: the per-region commits and the
  * atomic one are different granularities, not different loops.
  *
- * **The first refusal ends the batch, and commits the verdict before it
- * cancels.** The gate is a display-wide max, so no sibling can change a refusal
- * or be drawn under the banner it raises; cancelling before the commit lands
- * spins the fetch autorun instead. Both halves, and what they measured, are in
- * agent-docs/reference/REGION_TOO_LARGE.md.
+ * **The first refusal ends the batch** — the gate is a display-wide max, so no
+ * sibling can change a refusal or be drawn under the banner it raises. The two
+ * rules that makes the batch owe are {@link gateBatch}'s, not this loop's.
+ * What they measured is in agent-docs/reference/REGION_TOO_LARGE.md.
  */
 export async function fetchEachRegion<R>(
   self: FetchEachRegionModel,
@@ -103,21 +169,11 @@ export async function fetchEachRegion<R>(
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
-  // Captured before anything is issued, so the byte measurements this batch
-  // brings back are judged against the viewport and the tier they were asked
-  // for rather than whatever the view moved to during the round trip.
-  const issued = self.gateFetchState()
+  const batch = gateBatch(self, needed.length, opts.onComplete)
   await self.fetchRegions(needed, async ctx => {
     // per-region guard, not one around the batch: a region that arrives before
     // the user moves on still commits
     const perRegion = fanOutStatus(ctx, needed.length)
-    const bytes: (number | undefined)[] = new Array(needed.length)
-    // a copy, because the refusal path commits while siblings are still landing
-    // and would otherwise hand the gate an array that goes on changing under it
-    const commitBatch = () => {
-      self.commitFetchBytes([...bytes], issued)
-      opts.onComplete?.(issued)
-    }
     await Promise.all(
       needed.map(async ({ region, displayedRegionIndex }, i) => {
         const result = await opts.call(
@@ -125,10 +181,7 @@ export async function fetchEachRegion<R>(
           perRegion[i]!,
           displayedRegionIndex,
         )
-        bytes[i] = measuredBytes(result)
-        // `cancelFetch` below closes the rotation's guard, so this staleness
-        // check is also what keeps the batch's commit to exactly one: a second
-        // refusal, and the tail, both read stale and return.
+        batch.measured(i, result)
         if (ctx.isStale()) {
           return
         }
@@ -136,8 +189,7 @@ export async function fetchEachRegion<R>(
           // A refused region stored nothing, so neither the display's store nor
           // `loadedRegions` may claim it — the viewport would read as covered
           // against a payload nobody received. See RegionFetchContext.
-          commitBatch()
-          self.cancelFetch()
+          batch.refuse()
         } else {
           opts.onResult(displayedRegionIndex, result)
           ctx.commitRegion(displayedRegionIndex)
@@ -145,7 +197,7 @@ export async function fetchEachRegion<R>(
       }),
     )
     if (!ctx.isStale()) {
-      commitBatch()
+      batch.settle()
     }
   })
 }

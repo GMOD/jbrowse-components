@@ -178,8 +178,12 @@ moved the mark to whoever writes the data.
 ### A refusal used to refuse the set
 
 Alignments refused every region in a
-multi-region view on its largest region's bytes; the per-region helpers now skip
-the refused region and draw its neighbours.
+multi-region view on its largest region's bytes; the per-region helpers stopped
+storing the refused region and kept its neighbours' payloads. What survives of
+that today is the "kept": since the batch short circuit, the first refusal ends
+the fan-out, so only the neighbours that already landed are kept — the point was
+always that a refusal never wrongly claims or blanks a sibling, never that the
+siblings go on downloading behind a banner that hides them.
 
 ### The density comparison was not shared
 

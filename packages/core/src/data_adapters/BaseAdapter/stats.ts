@@ -32,6 +32,22 @@ export interface DensityProbeGate {
   settled: (admitted: number, sampledBp: number) => boolean
 }
 
+/**
+ * The adapter options a probe forwards, plus the two things only its caller
+ * knows. Named rather than trailing positionals: `BaseOptions` has no required
+ * member, so every one of its slots structurally accepts anything, and an
+ * `admit` handed to the `opts` slot typechecks and then never filters.
+ */
+export interface DensityProbeOptions extends BaseOptions {
+  /**
+   * The caller's feature-admission predicate (config filters, type gates, ...).
+   * See the note on the growth/report asymmetry below.
+   */
+  admit?: (feature: Feature) => boolean
+  /** Stop as soon as the verdict is decided rather than when it is precise. */
+  gate?: DensityProbeGate
+}
+
 export function aggregateQuantitativeStats(
   stats: RectifiedQuantitativeStats[],
 ) {
@@ -83,9 +99,7 @@ function sampleWindow(region: Region, interval: number) {
 export async function calculateFeatureDensityStats(
   region: Region,
   getFeatures: (region: Region, opts?: BaseOptions) => Observable<Feature>,
-  opts?: BaseOptions,
-  admit?: (feature: Feature) => boolean,
-  gate?: DensityProbeGate,
+  { admit, gate, ...opts }: DensityProbeOptions = {},
 ): Promise<{ featureDensity: number }> {
   const refLen = region.end - region.start
   const t0 = performance.now()

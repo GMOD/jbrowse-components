@@ -432,7 +432,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
   "plugins": [
     {
       "name": "UMDUrlPlugin",
-      "umdUrl": "umd_plugin.js",
+      "umdLoc": {
+        "uri": "umd_plugin.js",
+      },
     },
   ],
   "preConfiguredSessions": [],

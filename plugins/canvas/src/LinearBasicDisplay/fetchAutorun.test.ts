@@ -790,8 +790,8 @@ describe('byte estimate pre-check', () => {
     })
     expect(display.loadedRegions.size).toBe(0)
 
+    // forceLoad() reloads on its own
     display.forceLoad()
-    display.reload()
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 

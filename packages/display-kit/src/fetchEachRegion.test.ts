@@ -272,6 +272,10 @@ test('the first refusal commits the verdict, then cancels the rest of the batch'
 // zoom, and the second must not re-commit or re-cancel: `cancelFetch` bumps
 // `fetchGeneration`, so a bump per refused region is a burst of autorun re-runs
 // where one is owed.
+//
+// The stub below flips its own staleness, as the real `cancelFetch` does. The
+// test after it removes that, which is the point of `gateBatch` holding the
+// count itself.
 test('a batch where several regions refuse commits and cancels exactly once', async () => {
   const bytes: (number | undefined)[][] = []
   const cancels: number[] = []
@@ -362,4 +366,48 @@ test('call receives the region, its own ctx and the displayed region index', asy
     ['ctgA', true, false, 2],
     ['ctgB', true, false, 5],
   ])
+})
+
+// The once-ness is `gateBatch`'s, not a consequence of `cancelFetch` closing the
+// rotation's guard. That guard does close in production and `FetchMixin.test.ts`
+// pins it — but it is a contract between two members of a duck-typed interface
+// that no type states, so a display implementing it differently, or a refactor
+// of the rotation, would otherwise turn a documented invariant into a silent
+// double commit. Here `cancelFetch` is inert and every region refuses.
+test('commits once even if cancelFetch leaves the batch running', async () => {
+  const bytes: (number | undefined)[][] = []
+  const cancels: number[] = []
+  let completed = 0
+  const self = {
+    gateFetchState: () => ISSUED,
+    commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
+      bytes.push(perRegionBytes)
+    },
+    cancelFetch: () => {
+      cancels.push(bytes.length)
+    },
+    fetchRegions: (
+      _needed: typeof NEEDED,
+      work: (ctx: RegionFetchContext) => Promise<void>,
+    ) =>
+      work({
+        stopToken: 'tok',
+        isStale: () => false,
+        statusCallback: () => {},
+        callRpc() {
+          throw new Error('callRpc is not stubbed in this test')
+        },
+        commitRegion: () => {},
+      }),
+  }
+  await fetchEachRegion(self, NEEDED, {
+    call: () => Promise.resolve({ regionTooLarge: true as const, bytes: 9e9 }),
+    onResult: () => {},
+    onComplete: () => {
+      completed++
+    },
+  })
+  expect(bytes).toHaveLength(1)
+  expect(completed).toBe(1)
+  expect(cancels).toEqual([1])
 })
