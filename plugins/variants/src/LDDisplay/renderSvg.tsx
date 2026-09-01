@@ -2,6 +2,7 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { svgLegendAreaReserved } from '@jbrowse/display-kit/types'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
@@ -18,9 +19,6 @@ export async function renderSvg(
   self: SharedLDModel,
   opts: ExportSvgDisplayOptions,
 ) {
-  // renderDisplaySvg's awaitSvgReady (GlobalFetchMixin) waits out an
-  // in-place refetch — which holds stale rpcData until the new result commits —
-  // so exports never capture a partial or stale viewport.
   return renderDisplaySvg(self, opts, LdSvgBody)
 }
 
@@ -87,10 +85,7 @@ function LdSvgBody({
           width={visibleWidth}
           signedLD={effectiveSignedLD}
           idSuffix={self.id}
-          // >0 means the container reserved a legend area to the right (it
-          // maxes svgLegendWidth() across tracks). Absent/0 — a container that
-          // reserves nothing — floats the legend over the plot instead.
-          positionOutside={(opts?.legendWidth ?? 0) > 0}
+          positionOutside={svgLegendAreaReserved(opts)}
         />
       ) : null}
     </>

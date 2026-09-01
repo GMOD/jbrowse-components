@@ -50,5 +50,15 @@ export interface ExportSvgOptions {
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   theme?: ThemeOptions
+  /**
+   * The legend area the export container reserved to the right of every
+   * track, the max of `svgLegendWidth()` across them. Absent or 0 — the
+   * synteny and breakpoint exports reserve none — and a display floats its
+   * legend over the plot instead; see {@link svgLegendAreaReserved}.
+   */
   legendWidth?: number
+}
+
+export function svgLegendAreaReserved(opts?: ExportSvgDisplayOptions) {
+  return (opts?.legendWidth ?? 0) > 0
 }

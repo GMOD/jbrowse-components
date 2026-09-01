@@ -30,9 +30,6 @@ export async function renderSvg(
   model: MatrixRenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // renderDisplaySvg's awaitSvgReady waits for every visible region to load (not
-  // just the first datum) and goes false during an in-place refetch, so exports
-  // never capture a partial or stale viewport.
   return renderDisplaySvg(model, opts, VariantMatrixSvgBody)
 }
 

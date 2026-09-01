@@ -2,6 +2,7 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { svgLegendAreaReserved } from '@jbrowse/display-kit/types'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
@@ -19,9 +20,6 @@ export async function renderSvg(
   self: LinearHicDisplayModel,
   opts: ExportSvgDisplayOptions,
 ) {
-  // renderDisplaySvg's awaitSvgReady (GlobalFetchMixin) waits out an
-  // in-place refetch — which holds stale rpcData until the new result commits —
-  // so exports never capture a partial or stale viewport.
   return renderDisplaySvg(self, opts, HicSvgBody)
 }
 
@@ -73,11 +71,7 @@ function HicSvgBody({
           colorScheme={colorScheme}
           useLogScale={useLogScale}
           width={visibleWidth}
-          // >0 means the container reserved a legend area to the right (it
-          // maxes svgLegendWidth() across tracks). Absent/0 — e.g. the synteny
-          // and breakpoint exports, which don't reserve any — floats the legend
-          // over the plot instead.
-          positionOutside={(opts?.legendWidth ?? 0) > 0}
+          positionOutside={svgLegendAreaReserved(opts)}
           idSuffix={self.id}
         />
       ) : null}

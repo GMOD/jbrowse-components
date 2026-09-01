@@ -47,9 +47,6 @@ export async function renderSvg(
   model: LinearMafDisplayModel,
   opts: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  // renderDisplaySvg's awaitSvgReady waits for every visible region to load (not
-  // just sources to resolve) and goes false during an in-place refetch, so
-  // exports never capture a partial or stale viewport.
   return renderDisplaySvg(model, opts, MafSvgBody)
 }
 
