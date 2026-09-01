@@ -61,8 +61,9 @@ export function postVerdict(
   entry: ReviewEntry,
   status: Verdict['status'],
   note: string,
+  endpoint = '/api/verdict',
 ) {
-  return postJson('/api/verdict', {
+  return postJson(endpoint, {
     name: entry.name,
     status,
     note,
@@ -71,8 +72,11 @@ export function postVerdict(
   })
 }
 
-export function postClearVerdict(entry: ReviewEntry) {
-  return postJson('/api/verdict/clear', {
+export function postClearVerdict(
+  entry: ReviewEntry,
+  endpoint = '/api/verdict',
+) {
+  return postJson(`${endpoint}/clear`, {
     name: entry.name,
     ifReviewedAt: precondition(entry),
   })

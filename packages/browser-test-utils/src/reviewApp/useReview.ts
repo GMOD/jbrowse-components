@@ -48,11 +48,16 @@ export interface UseReviewOptions {
   // how this tool says an image moved on disk under the reviewer, e.g. 'this
   // figure was regenerated'. Reads mid-sentence in the 409 message.
   imageMovedPhrase: string
+  // where verdicts are written. One server can host more than one review — the
+  // website's figures and its video tours are separate name spaces with
+  // separate reports — and each needs its own pair of routes.
+  endpoint?: string
 }
 
 export function useReview<E extends ReviewEntry>({
   draftsKey,
   imageMovedPhrase,
+  endpoint = '/api/verdict',
 }: UseReviewOptions) {
   const drafts = useMemo(() => new DraftStore(draftsKey), [draftsKey])
 
@@ -181,7 +186,7 @@ export function useReview<E extends ReviewEntry>({
           return
         }
         try {
-          const result = await postVerdict(entry, status, note)
+          const result = await postVerdict(entry, status, note, endpoint)
           if (result.conflict) {
             adopt(name, result)
             setMessage(name, conflictText(result, imageMovedPhrase), 'warn')
@@ -203,6 +208,7 @@ export function useReview<E extends ReviewEntry>({
     [
       adopt,
       entryOf,
+      endpoint,
       imageMovedPhrase,
       patch,
       press,
@@ -242,7 +248,12 @@ export function useReview<E extends ReviewEntry>({
           // without it, typing a note would quietly re-bless one that had been
           // rewritten since, and clear its 'changed since review' flag with
           // nobody having looked.
-          const result = await postVerdict(entry, entry.verdict.status, note)
+          const result = await postVerdict(
+            entry,
+            entry.verdict.status,
+            note,
+            endpoint,
+          )
           if (result.conflict) {
             adopt(name, result)
             setMessage(
@@ -262,7 +273,15 @@ export function useReview<E extends ReviewEntry>({
         reconcileDraft(name)
       })
     },
-    [adopt, entryOf, imageMovedPhrase, patch, reconcileDraft, setMessage],
+    [
+      adopt,
+      endpoint,
+      entryOf,
+      imageMovedPhrase,
+      patch,
+      reconcileDraft,
+      setMessage,
+    ],
   )
 
   const clearVerdict = useCallback(
@@ -277,7 +296,7 @@ export function useReview<E extends ReviewEntry>({
           return
         }
         try {
-          const result = await postClearVerdict(entry)
+          const result = await postClearVerdict(entry, endpoint)
           if (result.conflict) {
             adopt(name, result)
             setMessage(name, conflictText(result, imageMovedPhrase), 'warn')
@@ -291,7 +310,16 @@ export function useReview<E extends ReviewEntry>({
         unpress(name, null)
       })
     },
-    [adopt, entryOf, imageMovedPhrase, patch, press, setMessage, unpress],
+    [
+      adopt,
+      endpoint,
+      entryOf,
+      imageMovedPhrase,
+      patch,
+      press,
+      setMessage,
+      unpress,
+    ],
   )
 
   return {

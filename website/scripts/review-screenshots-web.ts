@@ -7,6 +7,7 @@ import {
   createReviewBundle,
   createVerdictRoutes,
   isVerdictStale,
+  loadReport as loadReportFile,
   sendJson,
   serveReviewBundle,
 } from '@jbrowse/browser-test-utils'
@@ -32,6 +33,12 @@ import {
 // generator run (see the header of screenshot-run-report.ts)
 import { type RunReport, runReportPath } from './screenshot-run-report.ts'
 import { screenshotLiveUrls, specs } from './screenshot-specs.ts'
+import {
+  clipStamp,
+  collectClips,
+  serveClipBytes,
+  type Clip,
+} from './video-review-lib.ts'
 
 import type { FigureState, SpecEntry, SpecRunState } from './review-payload.ts'
 
@@ -42,6 +49,10 @@ const { values } = parseArgs({
     help: { type: 'boolean', short: 'h', default: false },
     port: { type: 'string' },
     'app-port': { type: 'string' },
+    // Directories scanned for clips the Videos tab offers. The media corpus by
+    // default; a shoot writing somewhere else names it here rather than copying
+    // takes into a store directory a bare `figures:push` would then publish.
+    clips: { type: 'string', multiple: true },
   },
 })
 
@@ -58,10 +69,27 @@ const appPortVal = values['app-port'] ? Number(values['app-port']) : Number.NaN
 const appPort = Number.isFinite(appPortVal) ? appPortVal : 3000
 const localCodeBase = `http://localhost:${appPort}/`
 
+const clipRoots = (
+  values.clips?.length
+    ? values.clips
+    : [path.resolve(websiteDir, 'static', 'media')]
+).map(dir => path.resolve(dir))
+
+// Clips get their own report rather than sharing the figures': the two name
+// spaces are unrelated, and a verdict is stamped with a different thing in each.
+// Up here because --help prints it, and --help runs before anything below.
+const videoReportPath = path.resolve(import.meta.dirname, 'video-review.json')
+
 if (values.help) {
-  console.log(`Review website screenshots in a web UI.
+  console.log(`Review website screenshots and video clips in a web UI.
 
 Usage: pnpm review-screenshots-web [--port=3335] [--app-port=3000]
+                                  [--clips=<dir>]...
+
+Two tabs. Figures is below; Videos plays every clip found under --clips (the
+media corpus by default) with the questions its shoot asked, and takes the same
+approve/deny/note verdicts. Name the directory a shoot wrote to rather than
+copying takes into the media corpus, which a bare figures:push would publish.
 
 Each figure is shown against the same figure on origin/main, with where the
 docs use it, and approve/deny/note controls. Four ways to look at the pair,
@@ -83,7 +111,8 @@ The local one is \`pnpm start\` in products/jbrowse-web, and is what to use when
 the figure is about a change the hosted build does not have yet — otherwise the
 link opens a different app from the one the picture came out of.
 
-Verdicts are written to ${path.relative(process.cwd(), reportPath)}.
+Verdicts are written to ${path.relative(process.cwd(), reportPath)},
+and the clips' to ${path.relative(process.cwd(), videoReportPath)}.
 `)
   process.exit(0)
 }
@@ -367,6 +396,70 @@ function serveImage(
   stream.pipe(res)
 }
 
+let clipsByName = new Map<string, Clip>()
+const refreshClips = () => {
+  clipsByName = new Map(collectClips(clipRoots).map(clip => [clip.name, clip]))
+  return clipsByName
+}
+
+const videoRoutes = createVerdictRoutes({
+  reportPath: videoReportPath,
+  hashOf: name => clipStamp(clipsByName.get(name)),
+  statuses: ['good', 'bad', 'answered'],
+})
+
+function buildVideoPayload() {
+  const report = loadReportFile(videoReportPath)
+  return [...refreshClips().values()].map(clip => {
+    const verdict = report[clip.name]
+    const stamp = clipStamp(clip)
+    return {
+      name: clip.name,
+      bytes: clip.bytes,
+      modified: clip.modified,
+      duration: clip.duration,
+      hasPoster: Boolean(clip.poster),
+      src: `/clip/${encodeURI(clip.name)}.mp4`,
+      ...(clip.poster
+        ? { poster: `/clip/${encodeURI(clip.name)}.poster` }
+        : {}),
+      ...(clip.transcript
+        ? { transcript: `/clip/${encodeURI(clip.name)}.transcript` }
+        : {}),
+      verdict,
+      stale: isVerdictStale(verdict, stamp),
+      imageHash: stamp ?? null,
+    }
+  })
+}
+
+function serveClip(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  pathname: string,
+) {
+  const rest = decodeURI(pathname.slice('/clip/'.length))
+  const dot = rest.lastIndexOf('.')
+  const clip = clipsByName.get(rest.slice(0, dot))
+  const kind = rest.slice(dot + 1)
+  if (!clip) {
+    sendNotFound(res)
+  } else if (kind === 'mp4') {
+    serveClipBytes(req, res, clip.file, 'video/mp4')
+  } else if (kind === 'poster' && clip.poster) {
+    serveClipBytes(
+      req,
+      res,
+      clip.poster,
+      clip.poster.endsWith('.png') ? 'image/png' : 'image/jpeg',
+    )
+  } else if (kind === 'transcript' && clip.transcript) {
+    serveClipBytes(req, res, clip.transcript, 'application/json')
+  } else {
+    sendNotFound(res)
+  }
+}
+
 const { handleVerdict, handleClearVerdict } = createVerdictRoutes({
   reportPath,
   hashOf: imageHash,
@@ -417,6 +510,21 @@ const server = http.createServer((req, res) => {
       })
     } else if (pathname.startsWith('/img/')) {
       serveImage(res, pathname, v)
+    } else if (pathname === '/api/videos') {
+      sendJson(res, 200, buildVideoPayload())
+    } else if (pathname === '/api/video-verdict' && req.method === 'POST') {
+      videoRoutes.handleVerdict(req, res).catch((err: unknown) => {
+        sendJson(res, 500, { error: `${err}` })
+      })
+    } else if (
+      pathname === '/api/video-verdict/clear' &&
+      req.method === 'POST'
+    ) {
+      videoRoutes.handleClearVerdict(req, res).catch((err: unknown) => {
+        sendJson(res, 500, { error: `${err}` })
+      })
+    } else if (pathname.startsWith('/clip/')) {
+      serveClip(req, res, pathname)
     } else {
       sendNotFound(res)
     }

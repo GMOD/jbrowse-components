@@ -815,3 +815,122 @@ button:disabled {
   line-height: 1.5;
   white-space: pre-wrap;
 }
+
+/* Videos tab. A clip is watched, not compared, so a card is the player, the
+   questions the shoot asked, and the same two buttons a figure gets. */
+.toptabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px 0;
+}
+.toptabs button {
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 14px;
+  border: 1px solid ButtonBorder;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: ButtonFace;
+  cursor: pointer;
+}
+.toptabs button.pressed {
+  background: Canvas;
+  font-weight: 600;
+}
+.clip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 16px;
+}
+.clip-card {
+  border: 1px solid ButtonBorder;
+  border-radius: 8px;
+  padding: 12px;
+  background: Canvas;
+}
+.clip-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.clip-head h2 {
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+.clip-meta {
+  color: GrayText;
+  font-size: 12px;
+}
+/* Capped rather than free: the take is 1400x800, and a card that fills a tall
+   screen puts its own Approve button below the fold. */
+.clip-video {
+  width: 100%;
+  max-height: 70vh;
+  background: #000;
+  border-radius: 4px;
+}
+.clip-questions {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: CanvasText;
+}
+.clip-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.clip-controls button {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 12px;
+  border: 1px solid ButtonBorder;
+  border-radius: 6px;
+  background: ButtonFace;
+  cursor: pointer;
+}
+.clip-controls button.pressed {
+  background: AccentColor;
+  color: AccentColorText;
+  border-color: AccentColor;
+  font-weight: 600;
+}
+.clip-stale {
+  color: #b45309;
+  font-size: 12px;
+}
+.clip-msg.error {
+  color: #b91c1c;
+  font-size: 12px;
+}
+.clip-msg.warn {
+  color: #b45309;
+  font-size: 12px;
+}
+.clip-hint {
+  color: #b45309;
+  font-size: 12px;
+}
+.clip-note {
+  width: 100%;
+  margin-top: 8px;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid ButtonBorder;
+  border-radius: 6px;
+  background: Field;
+  color: FieldText;
+  resize: vertical;
+  min-height: 3em;
+}
+.clip-empty {
+  color: GrayText;
+  font-size: 14px;
+  padding: 24px 16px;
+}
