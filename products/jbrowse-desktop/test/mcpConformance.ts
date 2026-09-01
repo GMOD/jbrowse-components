@@ -257,11 +257,11 @@ try {
   const updated = await run(`
     const results = session.views
       .flatMap(v => v.tracks ?? [])
-      .map(t => jb.applyDisplaySettings(t, { displayMode: 'compact' }))
+      .map(t => t.applyDisplaySettings({ displayMode: 'compact' }))
     const settle = await jb.waitReady(30000)
     return { results, ...settle }`)
   check(
-    'bulk applyDisplaySettings makes every shown track compact',
+    'the track model action makes every shown track compact',
     updated.value?.results?.length === 2 &&
       updated.value.results.every((r: { applied?: string[] }) =>
         r.applied?.includes('displayMode'),

@@ -3,9 +3,7 @@ import { setReExportRegistry } from '@jbrowse/core/ReExports/registry'
 import {
   getConf,
   getConfigurationSchemaDefinition,
-  isConfigurationSlot,
   isSlotDefinitionEntry,
-  preProcessSlotValues,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
@@ -343,44 +341,6 @@ function pickView(
   return view
 }
 
-function applyDisplaySettings(
-  track: TrackSelf,
-  settings: Record<string, unknown>,
-) {
-  const applied = new Set<string>()
-  const unapplied = new Set<string>()
-  for (const display of track.displays ?? []) {
-    const slots = preProcessSlotValues(display.configuration, settings)
-    for (const [key, value] of Object.entries(slots)) {
-      if (key === 'type') {
-        unapplied.add(
-          'type (changing the display type needs track action "hide" then "show")',
-        )
-      } else if (isConfigurationSlot(display.configuration, key)) {
-        // the key comes from runtime JSON; setConf's slot name is a
-        // compile-time type
-        // eslint-disable-next-line no-restricted-syntax
-        display.configuration.setSlot(key, value)
-        applied.add(key)
-      } else {
-        const setter = display[`set${key[0]!.toUpperCase()}${key.slice(1)}`]
-        if (typeof setter === 'function') {
-          ;(setter as (value: unknown) => void)(value)
-          applied.add(`${key} (via setter)`)
-        } else {
-          unapplied.add(
-            `${key} (not a config slot or settable prop on ${display.type})`,
-          )
-        }
-      }
-    }
-  }
-  return {
-    applied: [...applied],
-    ...(unapplied.size ? { unapplied: [...unapplied] } : {}),
-  }
-}
-
 function firstAssemblyName(conf: AnyConfigurationModel) {
   const names = readConfObject(conf, 'assemblyNames') as string[]
   return names[0]
@@ -612,7 +572,6 @@ async function evaluate(
       inspectSession(session, { path, maxBytes: maxInspectBytes }),
     listTracks: (search?: string) => listTracks(session, search),
     trackModel: (trackId: string) => shownTrackModel(session, trackId),
-    applyDisplaySettings,
     loadSessionSpec: (spec: Record<string, unknown>) =>
       loadSpec(pluginManager, { spec }),
     addTrack: (opts: Record<string, unknown>) => addTrack(session, opts),

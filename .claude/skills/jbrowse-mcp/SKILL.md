@@ -47,9 +47,9 @@ discipline for using it.
   ("ctgA" vs "contigA", "1" vs "chr1") matches nothing and reads as "no data
   here". `jb.getFeatures` handles it; raw adapter code must run
   `jb.renameRegionsIfNeeded` first (the live-model doc shows how).
-- **Mutations go through actions and `jb.applyDisplaySettings`** — raw
-  assignment throws, and `view.showTrack` on an already-shown track applies
-  nothing (applyDisplaySettings is the update path).
+- **Mutations go through actions** — raw assignment throws. Display settings go
+  through `track.applyDisplaySettings(settings)`, and `view.showTrack` on an
+  already-shown track applies nothing (applyDisplaySettings is the update path).
 - **A freshly created view throws "width undefined"** from region getters until
   it mounts — `await jb.mobx.when(() => view.initialized)`.
 - **Big returns**: don't return thousands of raw features; aggregate in code, or

@@ -1,6 +1,10 @@
 import { hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import { getConf } from '../../configuration/index.ts'
+import {
+  getConf,
+  isConfigurationSlot,
+  preProcessSlotValues,
+} from '../../configuration/index.ts'
 import {
   getContainingTrack,
   getEnv,
@@ -241,6 +245,49 @@ function stateModelFactory() {
        * base display reload does nothing, see specialized displays for details
        */
       reload() {},
+
+      /**
+       * #action
+       * Apply a bag of display settings to the LIVE display, and report what
+       * landed. Each key runs through the display config schema's
+       * `preProcessSnapshot` (shorthand expansions, legacy-key migrations —
+       * the same lowering a session spec's inline track keys get in
+       * `showTrackGeneric`), then writes the matching config slot, else calls
+       * a conventionally named `set<Key>` action. Keys matching neither come
+       * back in `unapplied` rather than vanishing: the settings vocabulary's
+       * historical failure mode is the silently dropped key.
+       */
+      applyDisplaySettings(settings: Record<string, unknown>) {
+        // configuration is the reference every concrete display adds at
+        // instantiation (see DisplayModel below); the base model composes
+        // before it exists, hence the cast rather than a prop
+        const { configuration } = self as unknown as DisplayModel
+        const applied: string[] = []
+        const unapplied: string[] = []
+        const slots = preProcessSlotValues(configuration, settings)
+        for (const [key, value] of Object.entries(slots)) {
+          if (key === 'type') {
+            unapplied.push('type (switch the display type instead)')
+          } else if (isConfigurationSlot(configuration, key)) {
+            // the key arrives from runtime JSON; setConf's slot name is a
+            // compile-time type
+            // eslint-disable-next-line no-restricted-syntax
+            configuration.setSlot(key, value)
+            applied.push(key)
+          } else {
+            const setter = (self as unknown as Record<string, unknown>)[
+              `set${key[0]!.toUpperCase()}${key.slice(1)}`
+            ]
+            if (typeof setter === 'function') {
+              ;(setter as (value: unknown) => void)(value)
+              applied.push(`${key} (via setter)`)
+            } else {
+              unapplied.push(key)
+            }
+          }
+        }
+        return { applied, unapplied }
+      },
     }))
 }
 
