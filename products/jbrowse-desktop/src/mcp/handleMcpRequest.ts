@@ -60,6 +60,7 @@ interface ViewSelf {
   displayName?: string
   assemblyNames?: string[]
   coarseVisibleLocStrings?: string
+  height?: number
   tracks?: TrackSelf[]
   trackContainers?: { tracks?: TrackSelf[] }[]
   views?: AbstractViewModel[]
@@ -152,6 +153,9 @@ function viewSummary(view: AbstractViewModel): Record<string, unknown> {
     ...(v.coarseVisibleLocStrings
       ? { visibleRegion: v.coarseVisibleLocStrings }
       : {}),
+    // the stack's own height, beside each track's below it: "does this all fit
+    // on screen" is then arithmetic rather than three rounds of screenshotting
+    ...(typeof v.height === 'number' ? { height: v.height } : {}),
     ...(viewTracks(view).length
       ? {
           tracks: viewTracks(view).map(t => ({
