@@ -115,10 +115,10 @@ return jb.trackModel('hg38-clinvarMain').applyDisplaySettings({
 
 A track the agent computed needs no file behind it: a `FromConfigAdapter` in
 `session.addSessionTrackConf` carries the features in the track config, so the
-derived track saves and reopens with the session. Everything lives in the
-session, so the scale that fits is a window of bins or a list of hits, and at
-genome scale the agent should run the tool that does the job and load what it
-wrote.
+derived track saves and reopens with the session. Plan for a few thousand
+features and no more, because that array is held in memory and re-serialized by
+every autosave. Above that the agent should run the tool that does the job,
+write a real indexed file, and load that.
 
 ## Four traps
 

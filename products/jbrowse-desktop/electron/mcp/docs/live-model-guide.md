@@ -10,8 +10,12 @@ app's renderer. What you `return` is serialized back to you. In scope:
   - `jb.sessionSummary()` — views, tracks, assemblies, visible regions; the
     orientation call
   - `jb.inspect(path?, maxBytes?)` — walk the live model by dot-path
-    (`'views.0.visibleLocStrings'`); an object result lists its getters, the
-    high-value state a snapshot filters out
+    (`'views.0'`): the value, its getters (the high-value state a snapshot
+    filters out) and **the actions it takes**. Reach for it before deciding a
+    model cannot do something: MST attaches actions as NON-ENUMERABLE
+    properties, so `Object.keys(view)` lists none of them, and a view that has
+    `moveTrack`, `moveTrackUp` and `moveTrackToTop` looks like it has no way to
+    reorder a track
   - `jb.listTracks(search?, limit?)` — the track catalog with trackIds
     (connection/hub tracks included; default cap 100)
   - `jb.loadSessionSpec(spec)` — build views declaratively (docs topic
@@ -141,7 +145,10 @@ as "no data here"), and derive the adapter-cache `sessionId` from the shown
 track (`jb.getRpcSessionId(jb.trackModel(trackId))`) so you share the parsed
 indexes the display already warmed.
 
-Mind the sizes: don't `return` thousands of raw features — aggregate, slice, or
+Mind the sizes. A base-level quantitative track (phastCons, a bigWig at full
+resolution) is one feature per base, so a 160 kb window is ~160k of them: reduce
+with a loop, never `Math.max(...scores)`, which blows the call stack on an array
+that size. And don't `return` thousands of raw features — aggregate, slice, or
 put them on screen as a track (next section).
 
 ## Showing something you derived
@@ -177,16 +184,25 @@ return jb.waitReady(60000)
 is hashed instead. `addSessionTrackConf` is the destination for a track you
 stood up on the user's behalf — `session.tracks` is the site's catalog.
 
-Everything lives in the session, so the scale this fits is a window of bins, a
-peak list, a set of hits. For anything genome-scale, run the real tool and load
-what it wrote: computing in the renderer holds the whole input in the process
-that is also drawing the view.
+**Plan for a few thousand features, not more.** The array lives in the track
+config, so it is held in memory, written into the session snapshot, and
+re-serialized by every autosave from then on. That fits a window of bins, a peak
+list, a set of hits, and nothing bigger. Above it, run the tool that does the
+job (`bigwigCompare`, `bedGraphToBigWig`, deeptools), write a real indexed file
+and load that with `jb.addTrack` — computing in the renderer holds the whole
+input in the process that is also drawing the view.
 
 ## Waiting on the app
 
 Model mutations render asynchronously. After navigating or adding tracks,
 `await jb.waitReady(30000)` before reading render state or screenshotting.
 `jb.mobx.when(() => predicate)` awaits any observable condition.
+
+To prove a track really drew rather than settled empty, pair the empty
+`notReady` with a `jb.getFeatures` count over the visible region. Do NOT go
+looking for pixels: displays render into offscreen canvases and paint the
+result, so the `<canvas>` elements in the page measure 0x0 and a DOM hunt for
+them proves nothing either way.
 
 A freshly created view THROWS "width undefined" from region-dependent getters
 (`visibleRegions`, `visibleLocStrings`, `dynamicBlocks`) until its component
