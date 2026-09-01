@@ -4,7 +4,7 @@ import readline from 'node:readline'
 
 import { ipcHandle, ipcSend } from '../ipc/channels.ts'
 import { isAutosave } from '../paths.ts'
-import { defaultSocketPath } from './socketPath.ts'
+import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
 import { MCP_TOOLS } from './toolDefinitions.ts'
 
 import type { LaunchTarget, RecentSession } from '../ipc/channelTypes.ts'
@@ -15,6 +15,10 @@ import type { BrowserWindow } from 'electron'
 const RENDERER_TIMEOUT_MS = 150_000
 const SCREENSHOT_WAIT_MS = 30_000
 const OPEN_WAIT_MS = 90_000
+// How long a relay waits for the renderer to subscribe. Must stay well under
+// OPEN_WAIT_MS: openAndWait polls in a loop, and a single wait longer than its
+// deadline would let the loop exit having polled exactly once.
+const READY_WAIT_MS = 20_000
 
 const delay = (ms: number) =>
   new Promise<void>(resolve => {
@@ -42,23 +46,82 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     }
   })
 
+  // A window exists well before its page subscribes to mcpRequest, and
+  // webContents.send to a page with no listener is discarded with no queue and
+  // no retry — so a push issued in that gap costs the whole relay timeout and
+  // answers nothing. The renderer says when it is listening; relays wait here.
+  let listening: { install: string } | undefined
+  let waiters: (() => void)[] = []
+
+  ipcHandle('mcpReady', (_event, state) => {
+    listening = state
+    const pending = waiters
+    waiters = []
+    for (const wake of pending) {
+      wake()
+    }
+  })
+
+  function stopListening() {
+    listening = undefined
+  }
+
+  // A page load tears the subscription down without telling anyone, so the
+  // bridge has to notice for itself or it would keep trusting the outgoing
+  // page's announcement. Attached per window, once.
+  let watchedContents: number | undefined
+  function watchWindow() {
+    const win = getWindow()
+    if (!win || win.webContents.id === watchedContents) {
+      return
+    }
+    watchedContents = win.webContents.id
+    win.webContents.on('did-start-loading', stopListening)
+    win.webContents.on('destroyed', stopListening)
+  }
+
+  async function awaitListening(timeoutMs: number) {
+    if (listening) {
+      return true
+    }
+    return new Promise<boolean>(resolve => {
+      const wake = () => {
+        clearTimeout(timer)
+        resolve(true)
+      }
+      const timer = setTimeout(() => {
+        waiters = waiters.filter(w => w !== wake)
+        resolve(false)
+      }, timeoutMs)
+      waiters.push(wake)
+    })
+  }
+
   async function relayToRenderer(
     tool: string,
     args: Record<string, unknown>,
+    timeoutMs = RENDERER_TIMEOUT_MS,
   ): Promise<BridgeToolResult> {
-    const win = getWindow()
-    if (!win) {
+    if (!getWindow()) {
       return {
         error:
           'JBrowse Desktop has no window open. Use the open tool or launch a session first.',
       }
+    }
+    watchWindow()
+    if (!(await awaitListening(Math.min(timeoutMs, READY_WAIT_MS)))) {
+      return { error: `The app was still loading when "${tool}" was sent` }
+    }
+    const win = getWindow()
+    if (!win) {
+      return { error: 'JBrowse Desktop has no window open' }
     }
     const id = relayId++
     return new Promise(resolve => {
       const timer = setTimeout(() => {
         relays.delete(id)
         resolve({ error: `The app did not answer "${tool}" in time` })
-      }, RENDERER_TIMEOUT_MS)
+      }, timeoutMs)
       relays.set(id, response => {
         clearTimeout(timer)
         resolve(response)
@@ -85,34 +148,30 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     }
   }
 
-  async function currentSessionId() {
-    const response = await relayToRenderer('session_id', {})
-    return response.error
-      ? null
-      : ((response.result as { id?: string | null } | undefined)?.id ?? null)
-  }
-
   // openTarget resolves when the launch is HANDED OVER (a push, or a page
   // load), not when the new session is up — and a load that fails leaves the
   // old session open by design. Answering then would let the very next call
   // read the previous config's tracks as if they were the new one's, so this
-  // waits for the session identity to actually change.
+  // waits for the renderer to announce a new install. NOT the session's own id:
+  // that is persisted with the session, so reopening a saved one restores the
+  // id it was saved under and would never look like a change.
   async function openAndWait(
     target: Parameters<BridgeDeps['openTarget']>[0],
     opened: string,
   ): Promise<BridgeToolResult> {
-    const before = await currentSessionId()
+    watchWindow()
+    const before = listening?.install
     await openTarget(target)
     const deadline = Date.now() + OPEN_WAIT_MS
     while (Date.now() < deadline) {
-      const now = await currentSessionId()
-      if (now !== null && now !== before) {
+      watchWindow()
+      if (listening && listening.install !== before) {
         const settled = await relayToRenderer('wait_ready', {
           timeoutMs: 30_000,
         })
         return { result: { opened, ...(settled.result as object | undefined) } }
       }
-      await delay(1000)
+      await delay(250)
     }
     return {
       result: {
@@ -180,6 +239,7 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     }
   }
 
+  ensureSocketDir()
   const socketPath = defaultSocketPath()
   if (process.platform !== 'win32' && fs.existsSync(socketPath)) {
     // a leftover from a crashed instance; the single-instance lock says no
@@ -189,20 +249,57 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
 
   const server = net.createServer(socket => {
     const rl = readline.createInterface({ input: socket })
+    // Everything in here runs in the MAIN process, where an uncaught throw
+    // takes the app down with the user's unsaved session — so nothing off the
+    // socket is trusted, `null` and arrays included (JSON.parse accepts both),
+    // and the whole body is guarded. A line with no numeric id has nobody to
+    // answer: the client matches responses by id and would leave the reply
+    // pending, so that one is dropped.
     rl.on('line', line => {
-      let request: { id: number; tool: string; args?: Record<string, unknown> }
       try {
-        request = JSON.parse(line) as typeof request
-      } catch {
-        return
-      }
-      void dispatch(request.tool, request.args ?? {})
-        .catch((e: unknown) => ({ error: String(e) }))
-        .then(outcome => {
+        let parsed: unknown
+        try {
+          parsed = JSON.parse(line)
+        } catch {
+          return
+        }
+        if (
+          typeof parsed !== 'object' ||
+          parsed === null ||
+          Array.isArray(parsed)
+        ) {
+          return
+        }
+        const request = parsed as {
+          id?: unknown
+          tool?: unknown
+          args?: unknown
+        }
+        if (typeof request.id !== 'number') {
+          return
+        }
+        const { id } = request
+        const answer = (outcome: BridgeToolResult) => {
           if (!socket.destroyed) {
-            socket.write(`${JSON.stringify({ id: request.id, ...outcome })}\n`)
+            socket.write(`${JSON.stringify({ id, ...outcome })}\n`)
           }
-        })
+        }
+        if (typeof request.tool !== 'string') {
+          answer({ error: 'Invalid request: "tool" must be a string' })
+          return
+        }
+        const args =
+          typeof request.args === 'object' &&
+          request.args !== null &&
+          !Array.isArray(request.args)
+            ? (request.args as Record<string, unknown>)
+            : {}
+        void dispatch(request.tool, args)
+          .catch((e: unknown) => ({ error: String(e) }))
+          .then(answer)
+      } catch (e) {
+        console.error('MCP bridge dropped a malformed line:', e)
+      }
     })
     socket.on('error', () => {})
   })

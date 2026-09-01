@@ -1,7 +1,9 @@
 // The routing contract of BaseDisplay.applyDisplaySettings: slots apply, the
 // `type` key and unknown keys report as unapplied instead of vanishing, state
-// setters fire only behind the allowSetters opt-in, and a throwing setter
-// costs its own key rather than the rest of the bag.
+// setters fire only behind the allowSetters opt-in, and a write that throws
+// costs its own key rather than the rest of the bag — landing in `failed`,
+// which is separate from `unapplied` because only `failed` means the caller
+// got something wrong.
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -14,6 +16,18 @@ const configSchema = ConfigurationSchema(
   'TestDisplay',
   {
     height: { type: 'number', defaultValue: 100 },
+    // a slot whose preProcess rejects a bad value, to exercise the throwing
+    // SLOT path — the one showTrackGeneric notifies on
+    label: {
+      type: 'string',
+      defaultValue: '',
+      preProcess: (value: unknown) => {
+        if (typeof value !== 'string') {
+          throw new Error('label must be a string')
+        }
+        return value
+      },
+    },
   },
   { explicitIdentifier: 'displayId' },
 )
@@ -49,7 +63,7 @@ test('a slot key applies to the config and reports as applied', () => {
   const display = makeDisplay()
   const report = display.applyDisplaySettings({ height: 55 })
   expect(readConfObject(display.configuration, 'height')).toBe(55)
-  expect(report).toEqual({ applied: ['height'], unapplied: [] })
+  expect(report).toEqual({ applied: ['height'], unapplied: [], failed: [] })
 })
 
 test('type, unknown, and empty keys report as unapplied instead of vanishing', () => {
@@ -90,7 +104,25 @@ test('a throwing setter costs its key, not the rest of the bag', () => {
   )
   expect(readConfObject(display.configuration, 'height')).toBe(60)
   expect(report.applied).toEqual(['height'])
-  expect(report.unapplied).toHaveLength(1)
-  expect(report.unapplied[0]).toContain('explosive')
-  expect(report.unapplied[0]).toContain('boom')
+  expect(report.unapplied).toEqual([])
+  expect(report.failed).toHaveLength(1)
+  expect(report.failed[0]!.key).toBe('explosive')
+  expect(report.failed[0]!.error).toContain('boom')
+})
+
+test('a throwing SLOT lands in failed, separately from unapplied', () => {
+  const display = makeDisplay()
+  const report = display.applyDisplaySettings({
+    label: 42,
+    nonsense: 1,
+    height: 70,
+  })
+  // the rest of the bag still applied
+  expect(readConfObject(display.configuration, 'height')).toBe(70)
+  expect(report.applied).toEqual(['height'])
+  // a key that is simply not a slot is NOT a failure — showTrackGeneric sees
+  // MST display props here on every correct call
+  expect(report.unapplied).toEqual(['nonsense'])
+  expect(report.failed).toHaveLength(1)
+  expect(report.failed[0]!.key).toBe('label')
 })

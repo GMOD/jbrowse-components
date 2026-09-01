@@ -15,18 +15,28 @@ app's renderer. What you `return` is serialized back to you. In scope:
   - `jb.listTracks(search?, limit?)` — the track catalog with trackIds
     (connection/hub tracks included; default cap 100)
   - `jb.loadSessionSpec(spec)` — build views declaratively (docs topic
-    "session-spec"); replaces the open views, settles, returns the summary
+    "session-spec"); replaces the open views, settles, returns the summary. It
+    REPLACES the session, so the `session` argument you were given is a dead
+    node afterwards — every `jb` helper re-reads the live one for you, and
+    `jb.session` is it if you need to rebind: `session = jb.session`
   - `track.applyDisplaySettings(settings)` — a model ACTION on every track:
     in-place styling of the track's `activeDisplay` with the same slot routing
     and legacy-key handling a session spec's inline keys get; returns { applied,
-    unapplied }. (Each display also has it, for addressing a non-active display
+    unapplied, failed }. `failed` is a key whose write threw — the one that
+    means you got it wrong; `unapplied` also collects keys that are simply not
+    config slots. (Each display also has it, for addressing a non-active display
     — settings vocabularies are per display type.)
   - `jb.addTrack({ location, index?, assembly?, name?, show? })` — local path or
     URL, format inferred from the extension
   - `jb.getFeatures({ trackId, loc? })` — the track's data as live Feature
     objects (see below)
-  - `jb.waitReady(timeoutMs)` — resolves when tracks finish loading/drawing; its
-    result carries the session's own error notifications
+  - `jb.waitReady(timeoutMs)` — resolves when tracks finish loading/drawing. Its
+    result carries `notifications` (the session's error toasts) and `notReady`:
+    tracks whose display settled without drawing anything, each with its `phase`
+    (`tooLarge`, `error`, `renderError`, `loading`). A display over the
+    fetch-size gate raises NO toast and replaces its own subtree, so this is the
+    only way to tell it apart from a track that drew — the screenshot looks fine
+    either way
 
   Lower level:
   - `jb.require(name)` — the same module registry external plugins link against,

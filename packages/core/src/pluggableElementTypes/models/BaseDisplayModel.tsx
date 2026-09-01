@@ -265,9 +265,17 @@ function stateModelFactory() {
        * call multi-argument setters with one argument. A caller that wants a
        * specific action can also simply call it.
        *
-       * Per-key errors land in `unapplied` instead of aborting the rest of
-       * the bag — a caller mid-`showTrack` has already pushed the track, and
-       * one rejected value must not strand a half-configured track.
+       * A key whose write THREW is reported separately, in `failed` — it is the
+       * only one of the three that means the caller got something wrong, and
+       * the only one worth a notification. `unapplied` is not: at the
+       * `showTrackGeneric` call site it also collects keys that surface
+       * consumed itself (`type`) and MST display props the display snapshot
+       * already applied (`resolution`), so treating it as "dropped" would
+       * report a correct call as broken.
+       *
+       * Per-key errors do not abort the rest of the bag — a caller
+       * mid-`showTrack` has already pushed the track, and one rejected value
+       * must not strand a half-configured track.
        */
       applyDisplaySettings(
         settings: Record<string, unknown>,
@@ -279,6 +287,7 @@ function stateModelFactory() {
         const { configuration } = self as unknown as DisplayModel
         const applied: string[] = []
         const unapplied: string[] = []
+        const failed: { key: string; error: string }[] = []
         const slots = preProcessSlotValues(configuration, settings)
         for (const [key, value] of Object.entries(slots)) {
           if (!key || key === 'type') {
@@ -310,10 +319,10 @@ function stateModelFactory() {
               )
             }
           } catch (e) {
-            unapplied.push(`${key} (${e})`)
+            failed.push({ key, error: `${e}` })
           }
         }
-        return { applied, unapplied }
+        return { applied, unapplied, failed }
       },
     }))
 }

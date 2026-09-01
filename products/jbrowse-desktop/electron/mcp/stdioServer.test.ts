@@ -143,8 +143,12 @@ test('initialize, tools/list, and a relayed tools/call', async () => {
   bridge.close()
 })
 
-test('an image outcome becomes MCP image content', async () => {
+// The settle result and the image BOTH have to survive: screenshot is the tool
+// whose docs promise the session's error notifications, and returning only the
+// image meant an agent screenshotting an errored track was told nothing.
+test('an image outcome keeps the settle result alongside the image', async () => {
   const bridge = await startFakeBridge(() => ({
+    result: { settled: false, notifications: ['track failed'] },
     image: { data: 'aGk=', mimeType: 'image/png' },
   }))
   const server = startServer(bridge.socketPath)
@@ -154,7 +158,11 @@ test('an image outcome becomes MCP image content', async () => {
     params: { name: 'screenshot', arguments: {} },
   })
   const call = await server.next()
-  expect(call.result?.content?.[0]).toEqual({
+  expect(JSON.parse(call.result?.content?.[0]?.text ?? '')).toEqual({
+    settled: false,
+    notifications: ['track failed'],
+  })
+  expect(call.result?.content?.[1]).toEqual({
     type: 'image',
     data: 'aGk=',
     mimeType: 'image/png',

@@ -15,11 +15,11 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
-  UNKNOWN,
   allSessionTracks,
-  guessAdapter,
-  guessTrackType,
-  stripFileExtension,
+  guessTrackConfForLocation,
+  isSameAssemblyName,
+  viewCanDisplayTrack,
+  viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
 import * as mst from '@jbrowse/mobx-state-tree'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -39,13 +39,18 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // duck-types the session: the concrete view models live in plugins this module
 // must not import, so members are optional and presence is the capability
 // check.
+interface DisplaySelf {
+  type: string
+  configuration: AnyConfigurationModel
+  displayPhase?: string
+  regionTooLargeReason?: string
+  error?: unknown
+}
+
 interface TrackSelf extends IStateTreeNode {
   type: string
   configuration: AnyConfigurationModel & { trackId: string }
-  displays?: (Record<string, unknown> & {
-    type: string
-    configuration: AnyConfigurationModel
-  })[]
+  displays?: (Record<string, unknown> & DisplaySelf)[]
 }
 
 interface ViewSelf {
@@ -55,6 +60,7 @@ interface ViewSelf {
   assemblyNames?: string[]
   coarseVisibleLocStrings?: string
   tracks?: TrackSelf[]
+  trackContainers?: { tracks?: TrackSelf[] }[]
   views?: AbstractViewModel[]
   initialized?: boolean
   visibleRegions?: {
@@ -86,6 +92,46 @@ function allViews(session: AbstractSessionModel): AbstractViewModel[] {
   })
 }
 
+// A synteny view holds its tracks on per-band containers INSTEAD of a `tracks`
+// array, so a walk of view.tracks alone reaches none of them — see
+// AbstractViewModel.trackContainers.
+function viewTracks(view: AbstractViewModel): TrackSelf[] {
+  const v = viewSelf(view)
+  return [
+    ...(v.tracks ?? []),
+    ...(v.trackContainers ?? []).flatMap(c => c.tracks ?? []),
+  ]
+}
+
+function allTracks(session: AbstractSessionModel): TrackSelf[] {
+  return allViews(session).flatMap(v => viewTracks(v))
+}
+
+// The drawn display's on-screen state. `displayPhase` is the tree's own
+// single-sourced vocabulary (render-core/displayPhase.ts) and the same one
+// AppReadyMarker reads; `tooLarge` and `renderError` replace the display
+// subtree rather than raising a snackbar, so a settle reporting only
+// notifications calls them ready.
+function displayState(track: TrackSelf) {
+  const display = track.displays?.[0]
+  if (!display) {
+    return {}
+  }
+  try {
+    const phase = display.displayPhase
+    return {
+      display: display.type,
+      ...(phase === undefined || phase === 'ready' ? {} : { phase }),
+      ...(phase === 'tooLarge' && display.regionTooLargeReason
+        ? { reason: display.regionTooLargeReason }
+        : {}),
+      ...(display.error ? { error: String(display.error) } : {}),
+    }
+  } catch (e) {
+    return { display: display.type, error: String(e) }
+  }
+}
+
 function sessionOf(pluginManager: PluginManager | undefined) {
   return (
     pluginManager?.rootModel as { session?: AbstractSessionModel } | undefined
@@ -102,11 +148,12 @@ function viewSummary(view: AbstractViewModel): Record<string, unknown> {
     ...(v.coarseVisibleLocStrings
       ? { visibleRegion: v.coarseVisibleLocStrings }
       : {}),
-    ...(v.tracks
+    ...(viewTracks(view).length
       ? {
-          tracks: v.tracks.map(t => ({
+          tracks: viewTracks(view).map(t => ({
             trackId: t.configuration.trackId,
-            display: t.type,
+            trackType: t.type,
+            ...displayState(t),
           })),
         }
       : {}),
@@ -128,23 +175,32 @@ function sessionSummary(session: AbstractSessionModel) {
 // can stringify whatever it lands on; the replacer guards what a snapshot
 // cannot contain but a getter's return can.
 function safeJson(value: unknown) {
-  const seen = new WeakSet<object>()
+  // the ANCESTOR chain, not every object seen: MST snapshots are cached and
+  // structurally shared, so the same frozen object legitimately appears at two
+  // paths, and a visited-set reports the second one as a cycle that is not
+  // there. `this` is the holder JSON.stringify is currently walking, which is
+  // what lets the chain unwind on the way back up — so this must stay a
+  // `function`, not an arrow.
+  const chain: unknown[] = []
   // typed by hand: JSON.stringify's declared return is string, but a bare
   // Symbol/undefined at the top level really does yield undefined at runtime
   const json = JSON.stringify(
     isStateTreeNode(value) ? getSnapshot(value) : value,
-    (_key, v: unknown) => {
+    function (_key, v: unknown) {
+      while (chain.length > 0 && chain.at(-1) !== this) {
+        chain.pop()
+      }
       if (typeof v === 'function') {
         return '[function]'
       }
       if (typeof v === 'bigint') {
         return `${v}`
       }
-      if (v !== null && typeof v === 'object' && !isStateTreeNode(v)) {
-        if (seen.has(v)) {
+      if (v !== null && typeof v === 'object') {
+        if (chain.includes(v)) {
           return '[circular]'
         }
-        seen.add(v)
+        chain.push(v)
       }
       return v
     },
@@ -278,9 +334,18 @@ async function waitReady(timeoutMs: number, session?: AbstractSessionModel) {
           .map(m => m.message)
           .slice(-5)
       : []
+  // A display that refuses to draw — over the fetch-size gate, or errored —
+  // replaces its own subtree instead of raising a snackbar, so notifications
+  // alone report a clean settle over a browser with a blank track in it.
+  const notReady = session
+    ? allTracks(session)
+        .map(t => ({ trackId: t.configuration.trackId, ...displayState(t) }))
+        .filter(t => 'phase' in t || 'error' in t)
+    : []
   return {
     ...outcome,
     ...(messages.length ? { notifications: messages } : {}),
+    ...(notReady.length ? { notReady } : {}),
   }
 }
 
@@ -326,23 +391,65 @@ function pickView(
   session: AbstractSessionModel,
   args: Record<string, unknown>,
   capability: 'navToLocString' | 'showTrack' | 'hideTrack',
+  wants?: {
+    assembly?: string
+    trackType?: string
+    pluginManager?: PluginManager
+  },
 ) {
   const viewId = typeof args.viewId === 'string' ? args.viewId : ''
   const candidates = allViews(session)
-  const view = viewId
-    ? candidates.find(v => v.id === viewId)
-    : candidates.find(v => typeof viewSelf(v)[capability] === 'function')
-  if (!view) {
+  if (viewId) {
+    const named = candidates.find(v => v.id === viewId)
+    if (!named) {
+      throw new Error(
+        `No view with id "${viewId}". Open views: ${candidates.map(v => `${v.id} (${v.type})`).join(', ')}`,
+      )
+    }
+    if (typeof viewSelf(named)[capability] !== 'function') {
+      throw new Error(`View ${named.id} (${named.type}) does not support this`)
+    }
+    return named
+  }
+  const able = candidates.filter(
+    v => typeof viewSelf(v)[capability] === 'function',
+  )
+  if (!able.length) {
     throw new Error(
-      viewId
-        ? `No view with id "${viewId}". Open views: ${candidates.map(v => `${v.id} (${v.type})`).join(', ')}`
-        : `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — jb.loadSessionSpec can open one.`,
+      `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — jb.loadSessionSpec can open one.`,
     )
   }
-  if (typeof viewSelf(view)[capability] !== 'function') {
-    throw new Error(`View ${view.id} (${view.type}) does not support this`)
+  // A view on another assembly would show the track and render nothing, with a
+  // successful-looking result — the same silent mismatch visibleRegionsOf
+  // guards against for reads
+  const onAssembly = wants?.assembly
+    ? able.filter(v =>
+        viewSelf(v).assemblyNames?.some(name =>
+          isSameAssemblyName(name, wants.assembly, session.assemblyManager),
+        ),
+      )
+    : able
+  if (!onAssembly.length) {
+    throw new Error(
+      `No open view is on assembly "${wants!.assembly}" (open views: ${able.map(v => `${v.id} on ${viewSelf(v).assemblyNames?.join(', ')}`).join('; ')}) — open one, or pass show: false`,
+    )
   }
-  return view
+  const canDisplay =
+    wants?.trackType && wants.pluginManager
+      ? onAssembly.filter(v =>
+          viewCanDisplayTrack(
+            wants.pluginManager!,
+            viewDisplayNames(wants.pluginManager!, v.type),
+            wants.trackType!,
+          ),
+        )
+      : onAssembly
+  if (!canDisplay.length) {
+    throw new Error(
+      `No open view can display a ${wants!.trackType} (open views: ${onAssembly.map(v => v.type).join(', ')})`,
+    )
+  }
+  return canDisplay[0]!
 }
 
 function firstAssemblyName(conf: AnyConfigurationModel) {
@@ -358,9 +465,7 @@ interface McpRegion {
 }
 
 function shownTrackModel(session: AbstractSessionModel, trackId: string) {
-  return allViews(session)
-    .flatMap(v => viewSelf(v).tracks ?? [])
-    .find(t => t.configuration.trackId === trackId)
+  return allTracks(session).find(t => t.configuration.trackId === trackId)
 }
 
 async function locToRegion(
@@ -486,11 +591,13 @@ async function fetchFeatures(
   const stopTimer = setTimeout(() => {
     stopStopToken(stopToken)
   }, 120_000)
-  const features = []
+  let features: Awaited<ReturnType<typeof dataAdapter.getFeaturesArray>> = []
   try {
     for (const region of renamed.regions) {
-      features.push(
-        ...(await dataAdapter.getFeaturesArray(region, { stopToken })),
+      // not push(...array): a dense region returns hundreds of thousands of
+      // features, and spreading them as call arguments is a RangeError
+      features = features.concat(
+        await dataAdapter.getFeaturesArray(region, { stopToken }),
       )
     }
   } finally {
@@ -552,7 +659,22 @@ async function evaluate(
     throw new Error('run_javascript needs code (an async function body)')
   }
   const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 50_000
+  // Resolved per call, never captured: jb.loadSessionSpec REPLACES the session,
+  // and a helper bound to the old one keeps answering from a detached tree —
+  // which reads as stale data rather than throwing, so the agent is told about
+  // a session that no longer exists. The `session` argument below cannot be
+  // rebound from here; `jb.session` is how code re-reads it after a spec load.
+  const live = () => {
+    const current = sessionOf(pluginManager)
+    if (!current) {
+      throw new Error('No session is open')
+    }
+    return current
+  }
   const jb = {
+    get session() {
+      return live()
+    },
     require: pluginManager.jbrequire,
     mst,
     mobx,
@@ -565,16 +687,17 @@ async function evaluate(
     renameRegionsIfNeeded,
     createStopToken,
     stopStopToken,
-    waitReady: (timeoutMs: number) => waitReady(timeoutMs, session),
-    sessionSummary: () => sessionSummary(session),
+    waitReady: (timeoutMs: number) => waitReady(timeoutMs, live()),
+    sessionSummary: () => sessionSummary(live()),
     inspect: (path?: string, maxInspectBytes?: number) =>
-      inspectSession(session, { path, maxBytes: maxInspectBytes }),
+      inspectSession(live(), { path, maxBytes: maxInspectBytes }),
     listTracks: (search?: string, limit?: number) =>
-      listTracks(session, search, limit),
-    trackModel: (trackId: string) => shownTrackModel(session, trackId),
+      listTracks(live(), search, limit),
+    trackModel: (trackId: string) => shownTrackModel(live(), trackId),
     loadSessionSpec: (spec: Record<string, unknown>) =>
       loadSpec(pluginManager, { spec }),
-    addTrack: (opts: Record<string, unknown>) => addTrack(session, opts),
+    addTrack: (opts: Record<string, unknown>) =>
+      addTrack(pluginManager, live(), opts),
     getFeatures: async (fetchArgs: {
       trackId: string
       loc?: string
@@ -582,6 +705,7 @@ async function evaluate(
       regions?: McpRegion[]
       viewId?: string
     }) => {
+      const session = live()
       const conf = session.getTrackById(fetchArgs.trackId)
       if (!conf) {
         throw new Error(`No track with trackId "${fetchArgs.trackId}"`)
@@ -633,6 +757,7 @@ async function evaluate(
 }
 
 async function addTrack(
+  pluginManager: PluginManager,
   session: AbstractSessionModel,
   args: Record<string, unknown>,
 ) {
@@ -642,15 +767,6 @@ async function addTrack(
   const location = typeof args.location === 'string' ? args.location : ''
   if (!location) {
     throw new Error('jb.addTrack needs a location (local path or URL)')
-  }
-  const file = fileLocation(location)
-  const index =
-    typeof args.index === 'string' ? fileLocation(args.index) : undefined
-  const adapter = guessAdapter(file, index, undefined, session)
-  if (adapter.type === UNKNOWN) {
-    throw new Error(
-      `Could not infer a data format from "${location}" — is the extension a supported format (BAM/CRAM/VCF/BED/GFF3/bigWig/...)?`,
-    )
   }
   const assembly =
     typeof args.assembly === 'string' ? args.assembly : session.assemblyNames[0]
@@ -662,21 +778,31 @@ async function addTrack(
       `Assembly "${assembly}" is not in this session (has: ${session.assemblyNames.join(', ')})`,
     )
   }
-  const fileName = location.split(/[/\\]/).at(-1) ?? location
-  const trackId = `${stripFileExtension(fileName)}-${Date.now()}`
+  const conf = guessTrackConfForLocation(
+    fileLocation(location),
+    typeof args.index === 'string' ? fileLocation(args.index) : undefined,
+    pluginManager,
+    assembly,
+  )
   session.addSessionTrackConf({
-    type: guessTrackType(adapter.type, session, file),
-    trackId,
-    name: typeof args.name === 'string' ? args.name : fileName,
-    assemblyNames: [assembly],
-    adapter,
+    ...conf,
+    ...(typeof args.name === 'string' ? { name: args.name } : {}),
   })
-  const summary = { trackId, adapterType: adapter.type, assembly }
+  const summary = {
+    trackId: conf.trackId,
+    trackType: conf.type,
+    adapterType: conf.adapter.type,
+    assembly,
+  }
   if (args.show === false) {
     return summary
   }
-  const view = pickView(session, args, 'showTrack')
-  viewSelf(view).showTrack!(trackId)
+  const view = pickView(session, args, 'showTrack', {
+    assembly,
+    trackType: conf.type,
+    pluginManager,
+  })
+  viewSelf(view).showTrack!(conf.trackId)
   const settle = await waitReady(30_000, session)
   return { ...summary, ...settle, shownInView: view.id }
 }
@@ -719,9 +845,6 @@ export async function handleMcpRequest(
           session,
         )
       : { settled: true, note: 'no session is open (start screen)' }
-  }
-  if (tool === 'session_id') {
-    return { id: session?.id ?? null }
   }
   if (!pluginManager || !session) {
     throw new Error(

@@ -123,15 +123,18 @@ function startMcpClient() {
     )
     return new Promise<JsonRpcResponse>(resolve => waiters.push(resolve))
   }
-  async function call(name: string, args: Record<string, unknown> = {}) {
+  async function callAll(name: string, args: Record<string, unknown> = {}) {
     const response = await rpc('tools/call', { name, arguments: args })
-    const content = response.result?.content?.[0]
+    const content = response.result?.content ?? []
     if (response.error ?? response.result?.isError) {
       throw new Error(
-        `${name}: ${response.error?.message ?? content?.text ?? 'tool error'}`,
+        `${name}: ${response.error?.message ?? content[0]?.text ?? 'tool error'}`,
       )
     }
     return content
+  }
+  async function call(name: string, args: Record<string, unknown> = {}) {
+    return (await callAll(name, args))[0]
   }
   async function callJson(name: string, args: Record<string, unknown> = {}) {
     return JSON.parse((await call(name, args))?.text ?? 'null') as Record<
@@ -143,6 +146,7 @@ function startMcpClient() {
   return {
     rpc,
     call,
+    callAll,
     callJson,
     stop: () => {
       child.stdin!.end()
@@ -161,6 +165,10 @@ function check(name: string, condition: boolean, detail?: unknown) {
 
 let app: ChildProcess | undefined
 let rendererServer: { port: number; close: () => void } | undefined
+// declared out here so the finally can end it: a failed check throws, and the
+// live child's stdin kept the event loop open — the run hung instead of
+// reporting, which is the one case CI needs it to report
+let mcp: ReturnType<typeof startMcpClient> | undefined
 try {
   if (!attach) {
     rendererServer = await serveRendererBuild()
@@ -179,14 +187,15 @@ try {
     )
   }
   await waitForBridge(attach ? 5000 : 90_000)
-  const mcp = startMcpClient()
-  await mcp.rpc('initialize', { protocolVersion: '2025-06-18' })
+  const client = startMcpClient()
+  mcp = client
+  await client.rpc('initialize', { protocolVersion: '2025-06-18' })
 
   // the bridge listens from app-ready, before the window and its session exist
   const sessionDeadline = Date.now() + 120_000
   for (;;) {
     try {
-      await mcp.callJson('run_javascript', {
+      await client.callJson('run_javascript', {
         code: 'return jb.sessionSummary()',
       })
       break
@@ -198,7 +207,7 @@ try {
     }
   }
 
-  const listed = await mcp.rpc('tools/list', {})
+  const listed = await client.rpc('tools/list', {})
   const names = (
     listed.result as unknown as { tools: { name: string }[] }
   ).tools.map(t => t.name)
@@ -209,14 +218,14 @@ try {
     names,
   )
 
-  const guide = await mcp.call('docs', { topic: 'live-model' })
+  const guide = await client.call('docs', { topic: 'live-model' })
   check(
     'docs live-model carries the renaming contract',
     Boolean(guide?.text?.includes('renameRegionsIfNeeded')),
   )
 
   async function run(code: string) {
-    return mcp.callJson('run_javascript', { code })
+    return client.callJson('run_javascript', { code })
   }
 
   const loaded = await run(`
@@ -267,6 +276,30 @@ try {
         r.applied?.includes('displayMode'),
       ),
     updated,
+  )
+
+  // jb.addTrack shipped throwing "no session model found!" for every input,
+  // with the whole suite green — nothing here called it. It also has to be
+  // idempotent: the trackId is a content hash, so an agent re-running its own
+  // script must not accumulate duplicates.
+  const bam = path.join(repoRoot, 'test_data/volvox/volvox-sorted.bam')
+  const added = await run(
+    `return jb.addTrack({ location: ${JSON.stringify(bam)} })`,
+  )
+  check(
+    'jb.addTrack infers the format and shows the track',
+    added.value?.adapterType === 'BamAdapter' &&
+      added.value?.trackType === 'AlignmentsTrack' &&
+      typeof added.value?.shownInView === 'string',
+    added,
+  )
+  const readded = await run(
+    `return jb.addTrack({ location: ${JSON.stringify(bam)}, show: false })`,
+  )
+  check(
+    'jb.addTrack is idempotent on the same file',
+    readded.value?.trackId === added.value?.trackId,
+    { first: added.value?.trackId, second: readded.value?.trackId },
   )
 
   const inspected = await run(`return jb.inspect('views.0.visibleLocStrings')`)
@@ -345,17 +378,26 @@ try {
     return { hidden: view.hideTrack('volvox_test_vcf') }`)
   check('hideTrack removes the track', hidden.value?.hidden >= 1, hidden)
 
-  const shot = await mcp.call('screenshot', {})
+  // both parts: the settle result was being dropped, so an agent screenshotting
+  // an errored or undrawn track was told nothing was wrong
+  const shot = await client.callAll('screenshot', {})
+  const shotImage = shot.find(c => c.type === 'image')
+  const shotText = shot.find(c => c.type === 'text')
   check(
     'screenshot returns a real image',
-    shot?.type === 'image' && (shot.data?.length ?? 0) > 20_000,
-    shot?.type,
+    (shotImage?.data?.length ?? 0) > 20_000,
+    shot.map(c => c.type),
+  )
+  check(
+    'screenshot also returns the settle result the docs promise',
+    shotText !== undefined && shotText.text?.includes('settled') === true,
+    shotText?.text?.slice(0, 200),
   )
 
-  const recent = await mcp.callJson('open')
+  const recent = await client.callJson('open')
   check('bare open lists recent sessions', Array.isArray(recent), recent)
 
-  const reopened = await mcp.callJson('open', { target: volvoxConfig })
+  const reopened = await client.callJson('open', { target: volvoxConfig })
   check(
     'open waits for the new session before answering',
     reopened.opened === volvoxConfig && reopened.note === undefined,
@@ -369,9 +411,9 @@ try {
     fresh,
   )
 
-  mcp.stop()
   console.log(process.exitCode ? 'FAILED' : 'PASSED')
 } finally {
+  mcp?.stop()
   app?.kill()
   rendererServer?.close()
 }

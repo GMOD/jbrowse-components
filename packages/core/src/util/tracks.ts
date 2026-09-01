@@ -571,11 +571,12 @@ export function guessTrackType(
   file?: FileLocation,
 ): string {
   if (model) {
-    const session = getSession(model)
-
-    const trackTypeGuesser = getEnv(
-      session,
-    ).pluginManager.evaluateExtensionPoint(
+    // getEnv(model), not getEnv(getSession(model)): the env is tree-wide, so
+    // the session hop only narrowed what may be passed here — a session itself
+    // has no session ancestor, so guessAdapter above accepted one and this
+    // threw on it
+    const { pluginManager } = getEnv(model)
+    const trackTypeGuesser = pluginManager.evaluateExtensionPoint(
       /** #extensionPoint Core-guessTrackTypeForLocation | sync | Guess a track type from a file location */
       'Core-guessTrackTypeForLocation',
       () => undefined,
@@ -613,32 +614,54 @@ export function guessTrackConf(
 ) {
   const { uri, index, ...extra } =
     typeof input === 'string' ? { uri: input } : input
-  const file = { uri, locationType: 'UriLocation' } as const
-  const indexLocation = index
-    ? ({ uri: index, locationType: 'UriLocation' } as const)
-    : undefined
+  return {
+    ...guessTrackConfForLocation(
+      { uri, locationType: 'UriLocation' },
+      index ? { uri: index, locationType: 'UriLocation' } : undefined,
+      pluginManager,
+      assemblyName,
+    ),
+    ...extra,
+  }
+}
+
+/**
+ * {@link guessTrackConf} over an already-built {@link FileLocation}, for a
+ * caller holding a location the loose `{ uri }` vocabulary cannot spell — a
+ * desktop local path. Kept separate so `LooseTrackInput` stays URI-only: it
+ * sits on the track-config union and the root config's `tracks`, where a
+ * local path would be a config a web deployment could not open.
+ *
+ * The `trackId` is a content hash of the adapter, not a timestamp, so adding
+ * the same file twice is idempotent — `addToSession` dedupes on it.
+ */
+export function guessTrackConfForLocation(
+  file: FileLocation,
+  index: FileLocation | undefined,
+  pluginManager: PluginManager,
+  assemblyName?: string,
+) {
   const adapterGuesser = pluginManager.evaluateExtensionPoint(
     'Core-guessAdapterForLocation',
     () => undefined,
   )
-  const adapter = adapterGuesser(file, indexLocation, undefined)
+  const adapter = adapterGuesser(file, index, undefined)
+  const name = getFileName(file)
   if (!adapter || adapter.type === UNKNOWN) {
     throw new Error(
-      `could not infer a track type from "${uri}"; pass a full track config instead`,
+      `could not infer a track type from "${name}"; pass a full track config instead`,
     )
   }
   const trackTypeGuesser = pluginManager.evaluateExtensionPoint(
     'Core-guessTrackTypeForLocation',
     () => undefined,
   )
-  const name = getFileName(file)
   return {
     trackId: `${name}-${objectHash(adapter).slice(0, 8)}`,
     type: trackTypeGuesser(adapter.type, file) ?? 'FeatureTrack',
     name,
     assemblyNames: assemblyName ? [assemblyName] : [],
     adapter,
-    ...extra,
   }
 }
 
@@ -1045,11 +1068,31 @@ export function showTrackGeneric(
     // reference can resolve. Slots only, deliberately: this is the
     // declarative surface, and `allowSetters` stays off so a spec key cannot
     // reach internal display actions.
-    ;(
+    //
+    // `type` is dropped first because this function already consumed it
+    // (pickDisplayForView above), and only `failed` — a key whose write threw —
+    // is notified: `unapplied` here also holds the MST display props the
+    // snapshot spread above already applied, so notifying on it would report a
+    // correct call as broken. A throwing slot value used to reach the outer
+    // catch and raise a snackbar; per-key catching kept the track intact but
+    // took the message away with it.
+    const displaySettings = Object.fromEntries(
+      Object.entries(displayInitialSnapshot).filter(([key]) => key !== 'type'),
+    )
+    const report = (
       track as {
-        applyDisplaySettings: (settings: Record<string, unknown>) => unknown
+        applyDisplaySettings: (settings: Record<string, unknown>) => {
+          failed: { key: string; error: string }[]
+        }
       }
-    ).applyDisplaySettings(displayInitialSnapshot)
+    ).applyDisplaySettings(displaySettings)
+    if (report.failed.length) {
+      session.notifyError(
+        `Track "${trackId}" rejected ${report.failed
+          .map(f => `${f.key}: ${f.error}`)
+          .join('; ')}`,
+      )
+    }
     // if this track came from a connection, persist its config so it survives
     // reload without re-establishing the connection (no-op otherwise)
     session.captureConnectionTrack?.(trackId)

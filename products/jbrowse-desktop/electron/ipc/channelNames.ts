@@ -37,6 +37,7 @@ export const INVOKABLE_CHANNELS = [
   'openBlatChallenge',
   'blatFetch',
   'mcpResponse',
+  'mcpReady',
 ] as const satisfies readonly (keyof IpcChannels)[]
 
 // A channel added to IpcChannels but not listed above would be rejected by the

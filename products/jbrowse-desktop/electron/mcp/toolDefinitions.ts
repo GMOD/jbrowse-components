@@ -15,7 +15,7 @@ export const SERVER_INSTRUCTIONS = `JBrowse Desktop (genome browser) control. On
 
 Read docs topic "live-model" before your first run_javascript call. Start by orienting: return jb.sessionSummary() — never assume state carried over. After changing anything, screenshot AND read the image: a wrong trackId, empty region, or dropped settings key renders as a plausible browser with something quietly missing. Verify data claims with jb.getFeatures, not from the picture.
 
-Introspect, never guess: jb.listTracks() for trackIds; jb.describeSlots(jb.trackModel('x').activeDisplay.configuration) for a display's settings keys — an unknown settings key is dropped SILENTLY. Settle results carry "notifications" (the session's own error toasts): read them.
+Introspect, never guess: jb.listTracks() for trackIds; jb.describeSlots(jb.trackModel('x').activeDisplay.configuration) for a display's settings keys — an unknown settings key is dropped SILENTLY. Settle results carry "notifications" (the session's own error toasts) AND "notReady" (tracks whose display is not drawing — over the fetch-size gate, or errored; these raise no toast and look fine in a screenshot): read both.
 
 Traps: mutate the MST model only via actions; write display settings with track.applyDisplaySettings(settings) (never raw assignment). view.showTrack on an already-shown track silently applies nothing — applyDisplaySettings is the update path. Data files may spell refNames differently than the assembly ("ctgA" vs "contigA"): jb.getFeatures handles it; raw adapter code must call jb.renameRegionsIfNeeded first. A freshly created view throws "width undefined" from region getters until it mounts (await jb.mobx.when(() => view.initialized)). Aggregate large results in code; do not return thousands of raw features.`
 
@@ -34,11 +34,11 @@ export const MCP_TOOLS: McpToolDefinition[] = [
     description: `Run an async JavaScript function body inside JBrowse Desktop against the LIVE session. This is the whole interface — inspecting state, building views, adding data, styling tracks, reading feature data are all code. Whatever you "return" comes back serialized (size-capped); state persists between calls on globalThis (but re-read "session" each call — it is replaced when a new config loads).
 
 In scope: "session" (the live mobx-state-tree session model), "rootModel", "pluginManager", and the helper library "jb":
-- orientation: jb.sessionSummary() (views, tracks, assemblies, visible regions); jb.inspect(path?, maxBytes?) walks the live model by dot-path ("views.0.visibleLocStrings") and lists each node's getters — the high-value state a snapshot filters out
-- tracks: jb.listTracks(search?) (the catalog, with trackIds); jb.trackModel(trackId) (the shown track's live model); jb.describeSlots(conf) (every settings key a display accepts — introspect, unknown keys are dropped silently); track.applyDisplaySettings(settings) — a model action targeting the track's activeDisplay — for in-place styling with legacy-key handling (e.g. { displayMode: "compact" }); it reports { applied, unapplied }; jb.addTrack({ location, index?, assembly?, name?, show? }) (local path or URL, format inferred)
+- orientation: jb.sessionSummary() (views, tracks with their trackType/display type and render phase, assemblies, visible regions); jb.session (the live session — re-read it after loadSessionSpec, which replaces the one the "session" argument names); jb.inspect(path?, maxBytes?) walks the live model by dot-path ("views.0.visibleLocStrings") and lists each node's getters — the high-value state a snapshot filters out
+- tracks: jb.listTracks(search?) (the catalog, with trackIds); jb.trackModel(trackId) (the shown track's live model); jb.describeSlots(conf) (every settings key a display accepts — introspect, unknown keys are dropped silently); track.applyDisplaySettings(settings) — a model action targeting the track's activeDisplay — for in-place styling with legacy-key handling (e.g. { displayMode: "compact" }); it reports { applied, unapplied, failed } — "failed" is the one that means you got it wrong, "unapplied" also lists keys that are not config slots; jb.addTrack({ location, index?, assembly?, name?, show? }) (local path or URL, format inferred)
 - views: jb.loadSessionSpec(spec) builds views declaratively (docs topic "session-spec" is the full reference; e.g. { views: [{ type: "LinearGenomeView", assembly, loc, tracks: [...] }] }); view.navToLocString("BRCA1") navigates (gene names go through text search); view.showTrack(id) / view.hideTrack(id)
 - data: jb.getFeatures({ trackId, loc? }) returns the track's live Feature objects (visible region by default; refNames renamed, adapter cache shared with the display) — aggregate in code, return only the answer
-- waiting: await jb.waitReady(ms) after mutations, before reading render state (its result carries the session's own error notifications)
+- waiting: await jb.waitReady(ms) after mutations, before reading render state (its result carries the session's error notifications and a "notReady" list of tracks that settled without drawing)
 - lower level: jb.mst and jb.mobx (the full mobx-state-tree and mobx APIs), jb.readConfObject/jb.getConf (config slots are NOT plain properties), jb.parseLocString, jb.getFeatureAdapterOrThrow, jb.renameRegionsIfNeeded, jb.getRpcSessionId, stop tokens; anything else core serves comes from jb.require(name) with the same module names plugins use (e.g. jb.require('@jbrowse/core/util'), '@jbrowse/core/configuration', '@jbrowse/core/ui') — plus the DOM and Node via window.require.
 
 READ docs topic "live-model" FIRST: a short orientation with working examples. Mutate the model only through actions.`,
@@ -91,7 +91,7 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
     name: 'screenshot',
     handledBy: 'main',
     description:
-      "Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing (the result also carries the session's own error notifications). Use it after every change worth verifying — then actually read the image.",
+      "Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing. The text part of the result carries the session's error notifications and any tracks that settled without drawing; the image is the second part. Use it after every change worth verifying — then actually read both.",
     inputSchema: {
       type: 'object',
       properties: {

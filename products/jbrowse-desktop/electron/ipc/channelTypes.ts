@@ -196,4 +196,12 @@ export interface IpcChannels {
   }
   // The renderer's answer to an mcpRequest push
   mcpResponse: { args: [response: McpBridgeResponse]; return: void }
+  // The renderer announcing that its mcpRequest listener is subscribed. A push
+  // to a page with no listener is discarded silently and never retried, so the
+  // bridge holds relays until this arrives rather than spending the whole relay
+  // timeout on a message nobody received. `install` is a fresh id per installed
+  // plugin manager, giving `open` something that changes on every load — the
+  // session's own id is persisted, so reopening a saved session restores it
+  // unchanged and says nothing about whether the load happened.
+  mcpReady: { args: [state: { install: string }]; return: void }
 }

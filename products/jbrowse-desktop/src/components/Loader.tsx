@@ -3,6 +3,7 @@ import { Suspense, lazy, useMemo, useRef, useState } from 'react'
 import { deleteQueryParams, useQueryParam } from '@jbrowse/app-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { CssBaseline, LinearProgress, ThemeProvider } from '@mui/material'
@@ -77,6 +78,10 @@ const LoaderContents = observer(function LoaderContents() {
   // can resolve before a re-render, and the second must still see what the
   // first installed.
   const installedRef = useRef<PluginManager | undefined>(undefined)
+  // Changes on every install, including back to the start screen. The MCP
+  // bridge watches it to tell "the app is showing something new" from "the same
+  // session was restored with the id it was saved under".
+  const [install, setInstall] = useState(() => nanoid(10))
 
   // Install a manager, tearing down whatever it replaces so its worker pool and
   // autosave loop don't leak. undefined installs nothing, which is what
@@ -88,6 +93,7 @@ const LoaderContents = observer(function LoaderContents() {
     }
     installedRef.current = pm
     setPluginManager(pm)
+    setInstall(nanoid(10))
     // The main process holds the window's close only while there is a session
     // to flush, so this has to be told both ways round — including on the way
     // back to the start screen, or closing from there would wait for a flush
@@ -164,7 +170,7 @@ const LoaderContents = observer(function LoaderContents() {
     }),
   })
 
-  useMcpRequests(() => installedRef.current)
+  useMcpRequests(() => installedRef.current, install)
 
   // What the main process asked this window to open, if anything. buildAppUrl
   // writes one param or the other, never both, so one load covers both routes

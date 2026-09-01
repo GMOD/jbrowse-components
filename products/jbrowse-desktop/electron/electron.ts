@@ -289,18 +289,6 @@ function runApp() {
       registerPluginHandlers()
       registerDownloadHandler()
       setupAutoUpdater(autoUpdater)
-      // JBROWSE_DISABLE_MCP for deployments that don't want a code-executing
-      // control socket at all (shared workstations, kiosk installs); see
-      // electron/mcp/README.md for the threat model the default accepts
-      if (!process.env.JBROWSE_DISABLE_MCP) {
-        const stopMcpBridge = startMcpBridge({
-          paths,
-          getWindow: () => wm.current,
-          openTarget: target => wm.ensureWindow(target),
-        })
-        app.on('will-quit', stopMcpBridge)
-      }
-
       // Register app-level event handlers before any await so a second-instance
       // launch or macOS open-file/open-url that fires during filesystem init is
       // not dropped for lack of a listener
@@ -325,6 +313,27 @@ function runApp() {
       app.on('activate', () => {
         wm.ensureWindow().catch(logError)
       })
+
+      // After the listeners above, and guarded: an optional control endpoint
+      // must not be able to stop the app from starting. ensureSocketDir throws
+      // on a socket directory this account does not exclusively own, and that
+      // throw would otherwise reach the fatal-error dialog below with no window
+      // ever opened. JBROWSE_DISABLE_MCP turns the endpoint off entirely, for
+      // deployments that don't want a code-executing socket at all (shared
+      // workstations, kiosk installs) — see electron/mcp/README.md for the
+      // threat model the default accepts.
+      if (!process.env.JBROWSE_DISABLE_MCP) {
+        try {
+          const stopMcpBridge = startMcpBridge({
+            paths,
+            getWindow: () => wm.current,
+            openTarget: target => wm.ensureWindow(target),
+          })
+          app.on('will-quit', stopMcpBridge)
+        } catch (e) {
+          console.error('MCP bridge not started:', e)
+        }
+      }
 
       await initializeFileSystem(paths)
       await openTarget(await initialTarget)

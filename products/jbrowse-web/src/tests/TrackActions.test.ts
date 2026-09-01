@@ -40,6 +40,28 @@ test('showTrack passes displayInitialSnapshot state to the display', () => {
   expect(track!.displays[0]!.resolution).toBe(5)
 })
 
+// The notification contract of the shared spec/share-link/embed path. A key
+// showTrackGeneric consumed itself, and an MST display prop the snapshot
+// already applied, both land in applyDisplaySettings' `unapplied` on a
+// perfectly correct call — so only a key whose WRITE THREW may raise a toast.
+test('a correct displayInitialSnapshot raises no notification', () => {
+  const { session, view } = getTestSession()
+  view.showTrack(TRACK_ID, {}, { resolution: 5, height: 123 })
+  expect(session.snackbarMessages).toHaveLength(0)
+})
+
+test('a display setting that throws is reported instead of dropped', async () => {
+  await mockConsole(async () => {
+    const { session, view } = getTestSession()
+    const track = view.showTrack(TRACK_ID, {}, { height: 'not-a-number' })
+    // the track still opened — one rejected value must not strand it
+    expect(track).toBeDefined()
+    expect(view.tracks).toHaveLength(1)
+    expect(session.snackbarMessages).toHaveLength(1)
+    expect(session.snackbarMessages[0]!.message).toContain('height')
+  })
+})
+
 test('hideTrack returns true and removes the track when shown', () => {
   const view = getView()
   view.showTrack(TRACK_ID)

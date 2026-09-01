@@ -129,22 +129,20 @@ function toolCallContent(outcome: BridgeToolResult) {
       isError: true,
     }
   }
-  if (outcome.image) {
-    return {
-      content: [
-        {
-          type: 'image',
-          data: outcome.image.data,
-          mimeType: outcome.image.mimeType,
-        },
-      ],
-    }
-  }
-  if (outcome.text !== undefined) {
-    return { content: [{ type: 'text', text: outcome.text }] }
-  }
+  // additive, not three exclusive returns: screenshot carries BOTH the settle
+  // result (its notifications are the only place an errored track is named)
+  // and the image, and dropping either silently contradicts what the tool
+  // description promises. Text first, so a client that truncates long content
+  // keeps the part the agent has to act on.
+  const text = outcome.text ?? JSON.stringify(outcome.result ?? {}, null, 2)
+  const image = outcome.image
   return {
-    content: [{ type: 'text', text: JSON.stringify(outcome.result, null, 2) }],
+    content: [
+      { type: 'text', text },
+      ...(image
+        ? [{ type: 'image', data: image.data, mimeType: image.mimeType }]
+        : []),
+    ],
   }
 }
 
