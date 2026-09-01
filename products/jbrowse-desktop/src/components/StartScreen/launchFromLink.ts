@@ -20,15 +20,47 @@ export interface LaunchFromLinkDeps {
   createPluginManager: (config?: JBrowseConfig) => Promise<PluginManager>
 }
 
+// A url whose path ends in .json is a config, not a link to a view of one:
+// a hub's own `config.json`, or one of genomes.jbrowse.org's per-assembly
+// files. It describes no session, which is why parseSessionSpecUrl reports
+// that it has none — true, and no use to someone whose link is the config.
+// Checked only after that parse fails, so `config.json?session=spec-...` is
+// still read as the spec link it is.
+function namesAConfig(link: string) {
+  try {
+    return new URL(link).pathname.endsWith('.json')
+  } catch {
+    return false
+  }
+}
+
 export async function launchFromLink(
   link: string,
   { fetchConfig, createPluginManager }: LaunchFromLinkDeps,
 ): Promise<PluginManager> {
-  const { configUrl, spec, sessionName } = parseSessionSpecUrl(link)
-  // a spec carrying its own sessionAssemblies needs no config; anything else
-  // resolves its assembly/track names against the config the link points at
-  const config = configUrl ? await fetchConfig(configUrl) : undefined
-  const pluginManager = await createPluginManager(config)
-  await loadSessionSpec({ ...spec, sessionName }, pluginManager)
-  return pluginManager
+  let parsed
+  try {
+    parsed = parseSessionSpecUrl(link)
+  } catch (e) {
+    if (!namesAConfig(link)) {
+      throw e
+    }
+  }
+  if (parsed) {
+    // a spec carrying its own sessionAssemblies needs no config; anything else
+    // resolves its assembly/track names against the config the link points at
+    const config = parsed.configUrl
+      ? await fetchConfig(parsed.configUrl)
+      : undefined
+    const pluginManager = await createPluginManager(config)
+    await loadSessionSpec(
+      { ...parsed.spec, sessionName: parsed.sessionName },
+      pluginManager,
+    )
+    return pluginManager
+  } else {
+    // no spec to run: the config's own defaultSession is the session, the same
+    // as opening that config from a file
+    return createPluginManager(await fetchConfig(link))
+  }
 }

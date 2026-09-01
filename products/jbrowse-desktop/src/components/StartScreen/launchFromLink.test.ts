@@ -104,6 +104,53 @@ test('a link only its own instance can open fails before anything is built', asy
   expect(mockLoadSessionSpec).not.toHaveBeenCalled()
 })
 
+test('a url that is itself a config opens it, with no spec to run', async () => {
+  const fetchConfig = jest.fn().mockResolvedValue(config)
+  const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
+
+  const result = await launchFromLink(
+    'https://jbrowse.org/ucsc/hg38/config.json',
+    { fetchConfig, createPluginManager },
+  )
+
+  expect(fetchConfig).toHaveBeenCalledWith(
+    'https://jbrowse.org/ucsc/hg38/config.json',
+  )
+  expect(createPluginManager).toHaveBeenCalledWith(config)
+  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(result).toBe(pluginManager)
+})
+
+test('a spec on a .json url is still read as the spec link it is', async () => {
+  const fetchConfig = jest.fn().mockResolvedValue(config)
+  const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
+
+  await launchFromLink(
+    `https://jbrowse.org/ucsc/hg38/config.json?session=spec-${encodeURIComponent(JSON.stringify(spec))}`,
+    { fetchConfig, createPluginManager },
+  )
+
+  expect(fetchConfig).not.toHaveBeenCalled()
+  expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+    { ...spec, sessionName: undefined },
+    pluginManager,
+  )
+})
+
+test('a link naming neither a config nor a view still reports why', async () => {
+  const fetchConfig = jest.fn()
+  const createPluginManager = jest.fn()
+
+  await expect(
+    launchFromLink('https://jbrowse.org/code/jb2/main/', {
+      fetchConfig,
+      createPluginManager,
+    }),
+  ).rejects.toThrow(/no session in it/)
+
+  expect(fetchConfig).not.toHaveBeenCalled()
+})
+
 test('a failed config fetch surfaces rather than building an empty session', async () => {
   const fetchConfig = jest.fn().mockRejectedValue(new Error('404 not found'))
   const createPluginManager = jest.fn()

@@ -77,14 +77,14 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
     name: 'open',
     handledBy: 'main',
     description:
-      'Open a JBrowse config file (config.json), a saved session (.jbrowse), or a JBrowse Web URL in JBrowse Desktop, replacing the open session; returns once the new session is up (or says so if it is still loading). The recovery path when no session is open or the current one is broken — it works where run_javascript cannot. With NO target, lists the recently opened sessions instead; any listed path can then be opened.',
+      'Open a JBrowse config in JBrowse Desktop, replacing the open session; returns once the new session is up (or says so if it is still loading). Takes a local config.json or .jbrowse session file, the URL of a hosted config.json (jbrowse.org/ucsc/<db>/config.json and the rest of genomes.jbrowse.org), or a JBrowse Web URL carrying a session spec or an &assembly=/&loc= shorthand. The recovery path when no session is open or the current one is broken — it works where run_javascript cannot. With NO target, lists the recently opened sessions instead; any listed path can then be opened.',
     inputSchema: {
       type: 'object',
       properties: {
         target: {
           type: 'string',
           description:
-            'Absolute path to a .json config or .jbrowse session file, or an http(s) JBrowse Web URL. Omit to list recent sessions.',
+            'Absolute path to a .json config or .jbrowse session file, the http(s) URL of a hosted config.json, or a JBrowse Web URL. Omit to list recent sessions.',
         },
       },
     },
