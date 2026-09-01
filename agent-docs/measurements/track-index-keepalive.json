@@ -1,0 +1,37 @@
+{
+  "id": "track-index-keepalive",
+  "measured": "2026-09-01",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "Jest probe under products/jbrowse-web/src/tests: getPluginManager() over a synthetic config of 2000 FeatureTrack entries on one assembly, 50 result ids of which every third names no configured track so the ranks are mixed, ranking through session.getTrackById outside any reaction. Arms interleaved in one process, median of 7.",
+    "notes": "The two rows are the two independent changes, so each row's speedup is its own. Absolute ms drift with machine load — this box is shared and was at load ~10 — while the interleaved ratio holds. A third, diagnostic arm: the same per-hit scan wrapped in runInAction measured 0.75ms, which is what identified the cache as the remaining cost rather than the call count."
+  },
+  "columns": [
+    { "key": "change", "label": "change" },
+    { "key": "beforeMs", "label": "before", "format": "ms" },
+    { "key": "afterMs", "label": "after", "format": "ms" },
+    {
+      "key": "speedup",
+      "label": "speedup",
+      "format": "x",
+      "derived": "beforeMs / afterMs"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "change": "rank once per hit, not once per comparison",
+        "beforeMs": 290.94,
+        "afterMs": 33.49
+      }
+    },
+    {
+      "values": {
+        "change": "index kept alive, so it caches off a reaction",
+        "beforeMs": 33.49,
+        "afterMs": 0.07
+      }
+    }
+  ]
+}
