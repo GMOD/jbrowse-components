@@ -477,6 +477,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.71, 1],
     position: 'left',
   },
+  gene_density: {
+    // The four whole-chromosome bands, below the app header and the view's
+    // toolbar: the gene and Alu bands sharing their peaks is the card.
+    src: 'gene_density_chr1.png',
+    band: [0.18, 0.8],
+    // the track labels and the 1p arm, where the gene and Alu peaks sit; a
+    // centred crop lands on the centromere gap
+    position: 'left',
+  },
 }
 
 const WIDTH = 600
