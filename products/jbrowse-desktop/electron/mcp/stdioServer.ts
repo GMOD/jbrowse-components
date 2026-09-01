@@ -32,6 +32,7 @@ export interface BridgeToolResult {
 
 function connectBridge(socketPath: string) {
   let socket: net.Socket | undefined
+  let connecting: Promise<net.Socket> | undefined
   let nextId = 0
   const pending = new Map<
     number,
@@ -50,12 +51,22 @@ function connectBridge(socketPath: string) {
     if (socket) {
       return socket
     }
-    return new Promise<net.Socket>((resolve, reject) => {
+    if (connecting) {
+      return connecting
+    }
+    connecting = new Promise<net.Socket>((resolve, reject) => {
       const s = net.createConnection(socketPath, () => {
         socket = s
         const rl = readline.createInterface({ input: s })
         rl.on('line', line => {
-          const msg = JSON.parse(line) as BridgeToolResult & { id: number }
+          // a killed app can leave a truncated final line (a screenshot is one
+          // multi-MB line); it must fail that call, not the whole server
+          let msg: (BridgeToolResult & { id: number }) | undefined
+          try {
+            msg = JSON.parse(line) as BridgeToolResult & { id: number }
+          } catch {
+            return
+          }
           const entry = pending.get(msg.id)
           if (entry) {
             pending.delete(msg.id)
@@ -81,6 +92,11 @@ function connectBridge(socketPath: string) {
         }
       })
     })
+    try {
+      return await connecting
+    } finally {
+      connecting = undefined
+    }
   }
 
   return async function call(tool: string, args: Record<string, unknown>) {
@@ -162,11 +178,12 @@ export function runMcpStdioServer({
     }
     switch (method) {
       case 'initialize': {
-        const requested = params.protocolVersion
+        // always PROTOCOL_VERSION: echoing an arbitrary requested revision
+        // claims semantics (e.g. JSON-RPC batching) this server does not
+        // implement; per spec the client then decides whether to proceed
         respond(id, {
           result: {
-            protocolVersion:
-              typeof requested === 'string' ? requested : PROTOCOL_VERSION,
+            protocolVersion: PROTOCOL_VERSION,
             capabilities: { tools: {} },
             serverInfo: { name: 'jbrowse-desktop', version },
             instructions: SERVER_INSTRUCTIONS,
@@ -225,13 +242,24 @@ export function runMcpStdioServer({
   const inFlight = new Set<Promise<void>>()
   rl.on('line', line => {
     if (line.trim()) {
-      let msg: JsonRpcRequest
+      let parsed: unknown
       try {
-        msg = JSON.parse(line) as JsonRpcRequest
+        parsed = JSON.parse(line)
       } catch {
         respond(null, { error: { code: -32700, message: 'Parse error' } })
         return
       }
+      if (
+        typeof parsed !== 'object' ||
+        parsed === null ||
+        Array.isArray(parsed)
+      ) {
+        respond(null, {
+          error: { code: -32600, message: 'Invalid request (no batching)' },
+        })
+        return
+      }
+      const msg = parsed as JsonRpcRequest
       const work = handle(msg).catch((e: unknown) => {
         if (msg.id !== undefined && msg.id !== null) {
           respond(msg.id, {
@@ -248,7 +276,18 @@ export function runMcpStdioServer({
   })
   rl.on('close', () => {
     // drain before exiting: a one-shot pipe closes stdin the moment it has
-    // written its requests, while their answers are still being fetched
-    void Promise.allSettled([...inFlight]).then(onExit)
+    // written its requests, while their answers are still being fetched — and
+    // the final write (a screenshot is multi-MB) must reach the pipe before
+    // the process dies
+    void Promise.allSettled([...inFlight]).then(() => {
+      const out = output as NodeJS.WritableStream & {
+        writableNeedDrain?: boolean
+      }
+      if (out.writableNeedDrain) {
+        out.once('drain', onExit)
+      } else {
+        onExit()
+      }
+    })
   })
 }

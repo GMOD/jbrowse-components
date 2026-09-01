@@ -1,10 +1,10 @@
 // MCP conformance: launches the built app (renderer served from build/, main
 // from build/electron.js), connects the stdio server to its bridge socket, and
-// exercises every tool against the volvox test config — including the
-// regressions found while building this surface: refName renaming (a VCF
-// spelling contigA must answer a ctgA query), bulk in-place track updates,
-// live-getter inspection, evaluate's globalThis persistence, and the stdio
-// server draining in-flight calls.
+// exercises the four tools against the volvox test config. The scenarios are
+// the regressions found while building this surface: refName renaming (a VCF
+// spelling contigA must answer a ctgA query), bulk in-place display settings,
+// live-getter inspection, run_javascript globalThis persistence, gene-name
+// navigation, and open waiting for the new session identity.
 //
 // Prereqs: `pnpm build && pnpm build:electron-main`. With another JBrowse
 // Desktop instance running, the single-instance lock forwards the launch there
@@ -186,7 +186,9 @@ try {
   const sessionDeadline = Date.now() + 120_000
   for (;;) {
     try {
-      await mcp.callJson('inspect_session')
+      await mcp.callJson('run_javascript', {
+        code: 'return jb.sessionSummary()',
+      })
       break
     } catch (e) {
       if (Date.now() > sessionDeadline) {
@@ -200,21 +202,12 @@ try {
   const names = (
     listed.result as unknown as { tools: { name: string }[] }
   ).tools.map(t => t.name)
-  for (const expected of [
-    'evaluate',
-    'docs',
-    'open',
-    'inspect_session',
-    'list_tracks',
-    'load_session_spec',
-    'navigate',
-    'track',
-    'add_track',
-    'get_features',
-    'screenshot',
-  ]) {
-    check(`tools/list has ${expected}`, names.includes(expected))
-  }
+  check(
+    'tools/list is exactly the four-tool surface',
+    JSON.stringify(names) ===
+      JSON.stringify(['run_javascript', 'docs', 'open', 'screenshot']),
+    names,
+  )
 
   const guide = await mcp.call('docs', { topic: 'live-model' })
   check(
@@ -222,8 +215,12 @@ try {
     Boolean(guide?.text?.includes('renameRegionsIfNeeded')),
   )
 
-  const loaded = await mcp.callJson('load_session_spec', {
-    spec: {
+  async function run(code: string) {
+    return mcp.callJson('run_javascript', { code })
+  }
+
+  const loaded = await run(`
+    return jb.loadSessionSpec({
       sessionName: 'MCP conformance',
       views: [
         {
@@ -236,105 +233,99 @@ try {
           ],
         },
       ],
-    },
-  })
-  check('spec load settles', loaded.settled === true, loaded)
+    })`)
+  check('spec load settles', loaded.value?.settled === true, loaded)
   check(
     'spec load shows both tracks',
-    loaded.session?.views?.[0]?.tracks?.length === 2,
-    loaded.session,
+    loaded.value?.session?.views?.[0]?.tracks?.length === 2,
+    loaded.value?.session,
   )
 
-  const updated = await mcp.callJson('track', {
-    action: 'update',
-    settings: { displayMode: 'compact' },
-  })
+  const navigated = await run(`
+    const view = session.views[0]
+    const moved = await view.navToLocString('Apple3')
+    const settle = await jb.waitReady(30000)
+    return { moved: moved !== false, ...settle, visible: view.visibleLocStrings }`)
   check(
-    'bulk update applies displayMode to every shown track',
-    updated.updated?.length === 2 &&
-      updated.updated.every((u: { applied?: string[] }) =>
-        u.applied?.includes('displayMode'),
+    'gene-name navigation lands on a region',
+    navigated.value?.moved === true &&
+      typeof navigated.value?.visible === 'string' &&
+      navigated.value.visible.includes(':'),
+    navigated,
+  )
+
+  const updated = await run(`
+    const results = session.views
+      .flatMap(v => v.tracks ?? [])
+      .map(t => jb.applyDisplaySettings(t, { displayMode: 'compact' }))
+    const settle = await jb.waitReady(30000)
+    return { results, ...settle }`)
+  check(
+    'bulk applyDisplaySettings makes every shown track compact',
+    updated.value?.results?.length === 2 &&
+      updated.value.results.every((r: { applied?: string[] }) =>
+        r.applied?.includes('displayMode'),
       ),
     updated,
   )
 
-  const overview = await mcp.callJson('inspect_session')
-  check('inspect overview lists views', overview.views?.length === 1, overview)
-  const visible = await mcp.callJson('inspect_session', {
-    path: 'views.0.visibleLocStrings',
-  })
+  const inspected = await run(`return jb.inspect('views.0.visibleLocStrings')`)
   check(
     'inspect reads a live getter',
-    typeof visible.value === 'string' && visible.value.includes(':'),
-    visible,
+    typeof inspected.value?.value === 'string' &&
+      inspected.value.value.includes(':'),
+    inspected,
   )
 
-  const genes = await mcp.callJson('get_features', {
-    trackId: 'gff3tabix_genes',
-    limit: 2,
-  })
-  check('get_features reads the visible region', genes.total > 0, genes)
-
-  const variants = await mcp.callJson('get_features', {
-    trackId: 'volvox_test_vcf',
-    loc: 'ctgA:1-30,000',
-    limit: 1,
-  })
+  const summary = await run('return jb.sessionSummary()')
   check(
-    'get_features renames refNames (contigA file answers ctgA query)',
-    variants.total > 0,
+    'sessionSummary lists the view',
+    summary.value?.views?.length === 1,
+    summary,
+  )
+
+  const variants = await run(`
+    const feats = await jb.getFeatures({
+      trackId: 'volvox_test_vcf',
+      loc: 'ctgA:1-30,000',
+    })
+    globalThis.mcpConformanceCount = feats.length
+    return {
+      variants: feats.length,
+      displayModeSlot:
+        'displayMode' in
+        jb.describeSlots(jb.trackModel('gff3tabix_genes').activeDisplay.configuration),
+    }`)
+  check(
+    'getFeatures renames refNames (contigA file answers ctgA query)',
+    variants.value?.variants > 0,
     variants,
-  )
-
-  const evaluated = await mcp.callJson('evaluate', {
-    code: `
-      const conf = session.getTrackById('gff3tabix_genes')
-      const track = session.views
-        .flatMap(v => v.tracks ?? [])
-        .find(t => t.configuration.trackId === 'gff3tabix_genes')
-      const renamed = await jb.renameRegionsIfNeeded(session.assemblyManager, {
-        regions: [{ assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 }],
-        adapterConfig: jb.readConfObject(conf, 'adapter'),
-        sessionId: jb.getRpcSessionId(track),
-      })
-      const adapter = await jb.getFeatureAdapterOrThrow({
-        pluginManager,
-        sessionId: jb.getRpcSessionId(track),
-        adapterConfig: renamed.adapterConfig,
-        sequenceAdapter: renamed.sequenceAdapter,
-      })
-      const feats = await adapter.getFeaturesArray(renamed.regions[0])
-      globalThis.mcpConformanceCount = feats.length
-      const display = track.activeDisplay
-      return {
-        features: feats.length,
-        displayModeSlot: 'displayMode' in jb.describeSlots(display.configuration),
-      }`,
-  })
-  check(
-    'evaluate fetches through a warmed adapter',
-    evaluated.value?.features > 0,
-    evaluated,
   )
   check(
     'describeSlots names displayMode',
-    evaluated.value?.displayModeSlot === true,
-    evaluated,
+    variants.value?.displayModeSlot === true,
+    variants,
   )
-  const persisted = await mcp.callJson('evaluate', {
-    code: 'return globalThis.mcpConformanceCount',
-  })
+  const persisted = await run('return globalThis.mcpConformanceCount')
   check(
-    'globalThis persists between evaluate calls',
-    persisted.value === evaluated.value?.features,
+    'globalThis persists between run_javascript calls',
+    persisted.value === variants.value?.variants,
     persisted,
   )
 
-  const hidden = await mcp.callJson('track', {
-    action: 'hide',
-    track: 'volvox_test_vcf',
-  })
-  check('track hide removes the track', hidden.hidden >= 1, hidden)
+  const genes = await run(`
+    const feats = await jb.getFeatures({ trackId: 'gff3tabix_genes' })
+    return { visibleRegionFeatures: feats.length }`)
+  check(
+    'getFeatures defaults to the visible region',
+    genes.value?.visibleRegionFeatures > 0,
+    genes,
+  )
+
+  const hidden = await run(`
+    const view = session.views[0]
+    return { hidden: view.hideTrack('volvox_test_vcf') }`)
+  check('hideTrack removes the track', hidden.value?.hidden >= 1, hidden)
 
   const shot = await mcp.call('screenshot', {})
   check(
@@ -345,6 +336,20 @@ try {
 
   const recent = await mcp.callJson('open')
   check('bare open lists recent sessions', Array.isArray(recent), recent)
+
+  const reopened = await mcp.callJson('open', { target: volvoxConfig })
+  check(
+    'open waits for the new session before answering',
+    reopened.opened === volvoxConfig && reopened.note === undefined,
+    reopened,
+  )
+  const fresh = await run('return jb.sessionSummary()')
+  check(
+    'the session after open is the reopened config',
+    Array.isArray(fresh.value?.assemblyNames) &&
+      fresh.value.assemblyNames.includes('volvox'),
+    fresh,
+  )
 
   mcp.stop()
   console.log(process.exitCode ? 'FAILED' : 'PASSED')

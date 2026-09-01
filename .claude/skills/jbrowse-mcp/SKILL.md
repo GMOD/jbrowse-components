@@ -2,63 +2,58 @@
 name: jbrowse-mcp
 description:
   Use when driving JBrowse Desktop through its MCP server (the "jbrowse" MCP —
-  tools like evaluate, docs, inspect_session, load_session_spec, track,
-  get_features, screenshot). Covers the working discipline the tool
-  descriptions cannot: read the bundled docs first, verify visually, introspect
-  instead of guessing, and where the silent failure modes are.
+  run_javascript, docs, open, screenshot). Covers the working discipline the
+  tool descriptions cannot: read the bundled docs first, verify visually,
+  introspect instead of guessing, and where the silent failure modes are.
 ---
 
 # Driving JBrowse Desktop over MCP
 
-The knowledge lives in the APP, not here: the `docs` tool serves documentation
-bundled into the running version, so it cannot drift from the model you are
-driving. This skill is only the discipline for using it.
+One interface: `run_javascript` executes your code against the live session,
+with `jb` as the standard library; `open`, `screenshot`, and `docs` cover the
+three things code inside the app cannot do. The knowledge lives in the APP, not
+here — the `docs` tool serves documentation bundled into the running version, so
+it cannot drift from the model you are driving. This skill is only the
+discipline for using it.
 
 ## The loop
 
-- **`docs topic:"live-model"` before your first `evaluate`**, and
-  `docs topic:"session-spec"` before composing a nontrivial spec. They carry
-  working examples for exactly the traps below.
-- **`inspect_session` (no path) before acting** — what is open, which views,
-  which tracks. Never assume state carried over from an earlier turn: the user
-  can click around between your calls.
+- **`docs topic:"live-model"` before your first `run_javascript`**, and
+  `docs topic:"session-spec"` before composing a nontrivial
+  `jb.loadSessionSpec`. They carry working examples for exactly the traps below.
+- **Orient before acting**: `return jb.sessionSummary()`. Never assume state
+  carried over from an earlier turn — the user can click around between your
+  calls.
 - After building or changing anything, **`screenshot` and actually read the
   image**. A wrong trackId, an empty region, or a dropped settings key all
   render as a plausible-looking browser with something quietly missing.
-- Verify data claims with `get_features` or an `evaluate` aggregation — never
-  from the picture alone.
+- Verify data claims with `jb.getFeatures` aggregations, never from the picture
+  alone. Settle results carry `notifications` — the session's own error toasts —
+  so read them.
 
 ## Introspect, never guess
 
-- trackIds come from `list_tracks`, not from memory of similar configs.
-- Settings keys come from the display itself: `evaluate` →
-  `jb.describeSlots(view.tracks.find(t => t.configuration.trackId === 'x').activeDisplay.configuration)`
-  (select the track by id — a view shows many). An unknown key in a spec or
-  `track update` is **dropped silently** — that is this format's known failure
-  mode.
-- What a live view can answer comes from `inspect_session path:"views.0"` — the
-  `getters` list names things (visibleLocStrings, totalBp, ...) that session
-  snapshots filter out.
+- trackIds come from `jb.listTracks()`, not from memory of similar configs.
+- Settings keys come from the display itself:
+  `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`. An unknown
+  key is **dropped silently** — that is this format's known failure mode.
+- What a live view can answer comes from `jb.inspect('views.0')` — the `getters`
+  list names things (visibleLocStrings, totalBp, ...) that session snapshots
+  filter out.
 
 ## The silent failure modes
 
 - **refName namespaces**: querying a file with the assembly's canonical name
   ("ctgA" vs "contigA", "1" vs "chr1") matches nothing and reads as "no data
-  here". `get_features` handles it; raw adapter code in `evaluate` must run
+  here". `jb.getFeatures` handles it; raw adapter code must run
   `jb.renameRegionsIfNeeded` first (the live-model doc shows how).
+- **Mutations go through actions and `jb.applyDisplaySettings`** — raw
+  assignment throws, and `view.showTrack` on an already-shown track applies
+  nothing (applyDisplaySettings is the update path).
 - **A freshly created view throws "width undefined"** from region getters until
   it mounts — `await jb.mobx.when(() => view.initialized)`.
-- **`track show` on an already-shown track applies nothing** — use
-  `track update`.
-- **Big returns**: don't return thousands of raw features from `evaluate`;
-  aggregate in place, or write a file and return the path.
-
-## Scale of change → tool
-
-One field: `track update` / `navigate`. A fresh arrangement of views:
-`load_session_spec`. A different dataset: `open`. Anything the verbs cannot say:
-`evaluate` — and helpers you build there persist on `globalThis` for the rest of
-the app run.
+- **Big returns**: don't return thousands of raw features; aggregate in code, or
+  write a file with `window.require('fs')` and return the path.
 
 Setup and architecture: `products/jbrowse-desktop/electron/mcp/README.md`.
 Conformance check: `pnpm --filter @jbrowse/desktop test:mcp` (launches the built
