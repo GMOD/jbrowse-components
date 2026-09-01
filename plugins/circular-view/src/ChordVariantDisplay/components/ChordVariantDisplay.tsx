@@ -11,24 +11,25 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
 }: {
   display: ChordDisplayModel
 }) {
-  // `ready`, not just `features`: blocksForRefs falls back to untranslated
-  // refNames while the map is in flight, so drawing as soon as the features
-  // land flashes a chordless circle whenever the adapter's names differ from
-  // the assembly's (`1` vs `chr1`)
-  return display.error ? (
-    <DisplayError
-      model={display}
-      onClick={() => {
-        display.openErrorDialog()
-      }}
-      onRetry={() => {
-        display.reload()
-      }}
-    />
-  ) : display.ready ? (
-    <Chords display={display} />
-  ) : (
-    <Loading model={display} />
+  const phase = display.displayPhase
+  return (
+    <g data-display-phase={phase}>
+      {phase === 'error' ? (
+        <DisplayError
+          model={display}
+          onClick={() => {
+            display.openErrorDialog()
+          }}
+          onRetry={() => {
+            display.reload()
+          }}
+        />
+      ) : phase === 'loading' ? (
+        <Loading model={display} />
+      ) : (
+        <Chords display={display} />
+      )}
+    </g>
   )
 })
 

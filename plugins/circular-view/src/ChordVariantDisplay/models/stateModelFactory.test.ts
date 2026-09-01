@@ -94,9 +94,11 @@ test('a region change re-requests the refName map, not just the features', async
   // answer, so a stale map left in place would wave a render through
   await when(() => display.refNameMap === undefined)
   expect(display.features).toBeUndefined()
+  expect(display.displayPhase).toBe('loading')
 
   await when(() => display.ready)
   expect(display.refNameMap).toEqual({ ctgA: 'ctgA' })
+  expect(display.displayPhase).toBe('ready')
 }, 20000)
 
 // After a fetch error every other input of the fetch autorun is unchanged, so
@@ -106,6 +108,7 @@ test('reload() rewakes the fetch after an error', async () => {
   const { display } = await setup()
 
   display.setError(new Error('adapter fell over'))
+  expect(display.displayPhase).toBe('error')
   display.reload()
 
   // the rewoken run clears the error at its start — the skeleton's rule, not

@@ -1070,6 +1070,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core

@@ -612,8 +612,10 @@ distinct reasons, not to be conflated:
 - **Main-thread SVG, own radial banners:** `circular-view` (ChordVariant) is not
   a GPU display at all, having no `useRenderingBackend`, `RenderLifecycleMixin`
   or `canvasDrawn`. It renders SVG chords (`Chords`, in
-  `plugins/circular-view/src/chords/`) with a plain ternary over `display.error`
-  → `display.ready` → loading. **`ready`, not `features`**: `blocksForRefs` falls
+  `plugins/circular-view/src/chords/`) switched on the model's own
+  `displayPhase` — `computeDisplayStatusPhase` over `error` and `!ready`, the
+  ranking every other display publishes, carried as `data-display-phase` on the
+  chord group so the census sees it. **`ready`, not `features`**: `blocksForRefs` falls
   back to untranslated refNames while the refName map is in flight, so drawing as
   soon as the features land flashes a chordless circle whenever the adapter's
   names differ from the assembly's (`1` vs `chr1`). It keeps its own `Loading`

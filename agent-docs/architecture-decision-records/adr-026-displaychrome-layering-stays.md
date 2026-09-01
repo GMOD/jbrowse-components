@@ -7,7 +7,14 @@ summary: "DisplayChrome's layering stays — the split maps to concern boundarie
 
 ## Status
 
-Accepted, with one rejected alternative later **reversed** (2026-06): the
+Accepted. The chrome lives in `packages/display-kit/src/DisplayChrome.tsx`
+now, not under `plugins/linear-genome-view`, and the first bullet under
+Consequences is **superseded by
+[ADR-065](adr-065-display-readiness-selectors.md)**: the `-done` testid suffix
+it describes is gone, readiness being `data-display-drawn` on the one chrome
+element. The layering decision itself stands.
+
+One rejected alternative was later **reversed** (2026-06): the
 `useRenderer` / `useRenderingBackend` split was collapsed into a single
 `useRenderingBackend` hook as part of an explicit GPU public-API
 simplification pass that accepted breaking changes. See "Merge `useRenderer`

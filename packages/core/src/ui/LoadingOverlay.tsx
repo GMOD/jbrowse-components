@@ -31,7 +31,7 @@ const flashDelayMs = 250
  * construction never appears. Deriving the flag from a comparison instead means
  * one `setTimeout` per loading pulse, which is the floor for these semantics.
  */
-function useDelayedFlag(active: boolean, delayMs: number) {
+export function useDelayedFlag(active: boolean, delayMs: number) {
   const [previous, setPrevious] = useState(active)
   const [activation, setActivation] = useState(0)
   if (previous !== active) {

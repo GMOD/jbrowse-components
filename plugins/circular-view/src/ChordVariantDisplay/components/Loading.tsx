@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-
+import { useDelayedFlag } from '@jbrowse/core/ui/LoadingOverlay'
 import { radToDeg } from '@jbrowse/core/util'
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
@@ -38,16 +37,7 @@ const Loading = observer(function Loading({
   const { classes } = useStyles()
   const theme = useTheme()
 
-  // only show the loading message after 400ms to prevent excessive flickering
-  const [shown, setShown] = useState(false)
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setShown(true)
-    }, 400)
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
+  const shown = useDelayedFlag(true, 400)
 
   return !shown ? null : (
     <HatchCircle

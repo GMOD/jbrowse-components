@@ -17,6 +17,7 @@ import {
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 import type {
   CircularViewModel,
@@ -25,6 +26,7 @@ import type {
 import type { Slice } from '../../CircularView/slices.ts'
 import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ThemeOptions } from '@mui/material'
 
 const ErrorMessageStackTraceDialog = lazy(
@@ -159,6 +161,21 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             fetchCanceled: false,
           },
           () => this.ready,
+        )
+      },
+
+      /**
+       * #getter
+       * The same ranking every LGV display publishes, on the model so the
+       * component cannot disagree with it: error over loading over ready. No
+       * `regionTooLarge` state and no rendering backend, so the backend-free
+       * `DisplayStatusPhase`. Loading is `!ready` — features and refName map
+       * both landed — minus `fetchInert`, where nothing is coming.
+       */
+      get displayPhase(): DisplayStatusPhase {
+        return computeDisplayStatusPhase(
+          { regionTooLarge: false, error: self.error },
+          () => !this.fetchInert && !this.ready,
         )
       },
 
