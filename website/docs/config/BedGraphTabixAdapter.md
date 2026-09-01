@@ -23,10 +23,7 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 }
 ```
 
-`signal.bedGraph.gz` infers `BedGraphTabixAdapter` and `QuantitativeTrack` on
-its own, and `name` defaults to the file name. In a config declaring one
-assembly, `assemblyNames` comes from there too — see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`signal.bedGraph.gz` infers `BedGraphTabixAdapter` and `QuantitativeTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {

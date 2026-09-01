@@ -742,8 +742,8 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   reads as a backlog and mostly isn't: narrowing all nine widened display
   factories moved it by **6 reads**, 61% to 62% of the surface — both readings
   taken 2026-08-04, and the ADR carries the live table. Most of the residue is a
-  handful of slot names, 77<!--m:config-read-gap-populations.track-or-assembly-schema.reads-->
-  of the 131<!--m:config-read-type-gaps.source.unchecked--> unchecked source
+  handful of slot names, 79<!--m:config-read-gap-populations.track-or-assembly-schema.reads-->
+  of the 133<!--m:config-read-type-gaps.source.unchecked--> unchecked source
   reads, and they are against the *track* or *assembly* schema, which the
   baseline groups under whichever display file contains them — so they look like
   display debt and no display narrowing can reach them. The split is in
