@@ -137,6 +137,23 @@ return {
 }
 ```
 
+**To find out what a remote file holds before adding it as a track, build its
+adapter and ask.** An adapter needs no track and no session, so this answers
+"which assembly is this bigWig on" in one call rather than by fetching the
+file's header and parsing it by hand:
+
+```js
+const adapter = jb.getFeatureAdapterOrThrow({
+  pluginManager,
+  sessionId: 'probe',
+  adapterConfig: {
+    type: 'BigWigAdapter',
+    bigWigLocation: { uri: url, locationType: 'UriLocation' },
+  },
+})
+return (await adapter.getRefNames()).slice(0, 5)
+```
+
 `jb.getFeatures` does two things raw adapter code gets wrong silently, so if you
 drop to `jb.getFeatureAdapterOrThrow` yourself, do both by hand: translate
 canonical refNames into the file's own spelling with `jb.renameRegionsIfNeeded`
