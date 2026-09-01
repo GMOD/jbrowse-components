@@ -49,7 +49,6 @@ import { qtlSpecs } from './specs/qtl.ts'
 import { scatacSpecs } from './specs/scatac.ts'
 import { scrnaSpecs } from './specs/scrna.ts'
 import { svSpecs } from './specs/sv.ts'
-import { svContactMapsSpecs } from './specs/sv_contact_maps.ts'
 import { syntenySpecs } from './specs/synteny.ts'
 import { tcgaSpecs } from './specs/tcga.ts'
 import { trioSpecs } from './specs/trio.ts'
@@ -76,7 +75,6 @@ export const specs: ScreenshotSpec[] = [
   ...scrnaSpecs,
   ...svSpecs,
   ...cancerSvSpecs,
-  ...svContactMapsSpecs,
   ...tcgaSpecs,
   ...cnv1000gSpecs,
   ...gwasSpecs,

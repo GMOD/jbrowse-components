@@ -161,11 +161,9 @@ orientation class becomes its own band with its own coverage curve and its own
 arcs, the concordant pairs drop out of the arcs, and the pileup goes away.
 
 The bands are the rows of the orientation table above, and the
-[signatures below](#sv-type-signatures) are the key to reading them. An
-inversion lights the two same-strand bands on the same pair of breakpoints. A
-tandem duplication lights the outward-pointing band. A band that stays empty
-under a call is a call with no read-pair evidence behind it, which is as much of
-a finding as a band that fills.
+[signatures below](#sv-type-signatures) are the key to reading them.
+
+<Figure caption="The same variant, in the same place, through each band. Which band fills is what names the rearrangement, and a band that stays empty under a call is a call with no read-pair evidence behind it." src="/img/sv_channels_bands.png" />
 
 <Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles standing on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty." src="/img/sv_channels.png" />
 

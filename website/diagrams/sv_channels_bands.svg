@@ -1,0 +1,111 @@
+<!--
+  What "Group by pair orientation" buys: the same reads, taken apart into one
+  band per orientation class, and which band a rearrangement lands in.
+
+  A GRID, BECAUSE THE ARGUMENT IS A GRID, and the empty cells are the half that
+  carries it. The section this sits in already says a band staying empty under a
+  call is as much of a finding as one that fills; this is that sentence drawn.
+  A figure showing only the bands that fill would be an illustration rather than
+  an argument, which is why every cell is present at the same size and the three
+  quiet ones say "no arcs here" instead of being left blank.
+
+  ARC BANDS, NOT CONTACT TRIANGLES. An earlier version of this drew each cell as
+  a Hi-C style upper triangle, which is how the same information reaches a
+  binned contact matrix — and it was rejected in review for the reason that
+  matters here: a reader cannot hold four triangles in their head, and the thing
+  being documented draws ARCS. The picture has to be the picture the app makes.
+
+  ONE EVENT, IN THE SAME PLACE IN EVERY CELL, at 30-66% of each band and marked
+  on the reference bar in the column's colour. Holding it fixed is what makes
+  the column-to-column difference about the CHANNEL rather than about where the
+  variant happens to sit.
+
+  INVERSION GETS TWO ROWS AND EACH HOLDS ONE FOOT. LL and RR anchor on opposite
+  sides of the junction rather than both spanning it, which is why those two
+  cells draw short arcs at opposite ends where RL draws arcs spanning the whole
+  event. Drawing both as full spans would have been tidier and wrong.
+
+  Colours are the app's own pair-orientation palette, read off the COLOR_TABLE
+  in sv_visualization.md so a reader carries them from the table straight into
+  the bands: RL #0099bb, LL #4d9a4d, RR #5555bb. LR is drawn a shade darker than
+  the palette's #d3d3d3, which is invisible on white at this stroke width.
+
+  Hand-authored SVG rather than graphviz: a grid at fixed pitch has nothing for
+  a layout engine to decide.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="700" viewBox="0 0 1180 700" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1180" height="700" fill="#ffffff"/>
+  <text x="590" y="42" text-anchor="middle" font-size="20" fill="#222222">Grouping by pair orientation puts each rearrangement in its own band</text>
+  <text x="590" y="70" text-anchor="middle" font-size="13.5" fill="#666666">the same reads, taken apart; which band fills is what names the variant</text>
+  <text x="590" y="128" text-anchor="middle" font-size="13" fill="#555555">Each panel is one orientation band. An arc stands on the two places a pair's ends aligned, so a pair straddling a junction</text>
+  <text x="590" y="148" text-anchor="middle" font-size="13" fill="#555555">spans the event, and the bands with nothing in them are as much of a finding as the bands that fill.</text>
+  <text x="430" y="212" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3f7cac">DELETION</text>
+  <text x="700" y="212" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#8c2d04">TANDEM DUPLICATION</text>
+  <text x="970" y="212" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3f7a3f">INVERSION</text>
+  <text x="290" y="266" text-anchor="end" font-size="13.5" font-weight="bold" fill="#222222">LR</text><text x="290" y="282" text-anchor="end" font-size="11.5" fill="#7a6d5c">normal facing</text>
+  <text x="290" y="366" text-anchor="end" font-size="13.5" font-weight="bold" fill="#222222">RL</text><text x="290" y="382" text-anchor="end" font-size="11.5" fill="#7a6d5c">mates point away</text>
+  <text x="290" y="466" text-anchor="end" font-size="13.5" font-weight="bold" fill="#222222">LL</text><text x="290" y="482" text-anchor="end" font-size="11.5" fill="#7a6d5c">both mates forward</text>
+  <text x="290" y="566" text-anchor="end" font-size="13.5" font-weight="bold" fill="#222222">RR</text><text x="290" y="582" text-anchor="end" font-size="11.5" fill="#7a6d5c">both mates reverse</text>
+  <rect x="298" y="236" width="7" height="76" fill="#8f8f8f"/>
+  <rect x="298" y="336" width="7" height="76" fill="#0099bb"/>
+  <rect x="298" y="436" width="7" height="76" fill="#4d9a4d"/>
+  <rect x="298" y="536" width="7" height="76" fill="#5555bb"/>
+    <rect x="315" y="236" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="321" y="245" width="218" height="4" fill="#d9dde1"/>
+  <rect x="384" y="245" width="82.8" height="4" fill="#3f7cac"/>
+  <path d="M370 251 Q425.4 326 480.8 251" fill="none" stroke="#8f8f8f" stroke-width="1.8" opacity="0.9"/>
+  <path d="M367 251 Q425.4 320 483.8 251" fill="none" stroke="#8f8f8f" stroke-width="1.8" opacity="0.9"/>
+  <path d="M364 251 Q425.4 314 486.8 251" fill="none" stroke="#8f8f8f" stroke-width="1.8" opacity="0.9"/>
+  <rect x="585" y="236" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="591" y="245" width="218" height="4" fill="#d9dde1"/>
+  <rect x="654" y="245" width="82.8" height="4" fill="#8c2d04"/>
+  <text x="700" y="284" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="855" y="236" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="861" y="245" width="218" height="4" fill="#d9dde1"/>
+  <rect x="924" y="245" width="82.8" height="4" fill="#3f7a3f"/>
+  <text x="970" y="284" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="315" y="336" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="321" y="345" width="218" height="4" fill="#d9dde1"/>
+  <rect x="384" y="345" width="82.8" height="4" fill="#3f7cac"/>
+  <text x="430" y="384" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="585" y="336" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="591" y="345" width="218" height="4" fill="#d9dde1"/>
+  <rect x="654" y="345" width="82.8" height="4" fill="#8c2d04"/>
+  <path d="M654 351 Q695.4 426 736.8 351" fill="none" stroke="#0099bb" stroke-width="1.8" opacity="0.9"/>
+  <path d="M651 351 Q695.4 420 739.8 351" fill="none" stroke="#0099bb" stroke-width="1.8" opacity="0.9"/>
+  <path d="M648 351 Q695.4 414 742.8 351" fill="none" stroke="#0099bb" stroke-width="1.8" opacity="0.9"/>
+  <rect x="855" y="336" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="861" y="345" width="218" height="4" fill="#d9dde1"/>
+  <rect x="924" y="345" width="82.8" height="4" fill="#3f7a3f"/>
+  <text x="970" y="384" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="315" y="436" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="321" y="445" width="218" height="4" fill="#d9dde1"/>
+  <rect x="384" y="445" width="82.8" height="4" fill="#3f7cac"/>
+  <text x="430" y="484" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="585" y="436" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="591" y="445" width="218" height="4" fill="#d9dde1"/>
+  <rect x="654" y="445" width="82.8" height="4" fill="#8c2d04"/>
+  <text x="700" y="484" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="855" y="436" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="861" y="445" width="218" height="4" fill="#d9dde1"/>
+  <rect x="924" y="445" width="82.8" height="4" fill="#3f7a3f"/>
+  <path d="M898 451 Q922 526 946 451" fill="none" stroke="#4d9a4d" stroke-width="1.8" opacity="0.9"/>
+  <path d="M895 451 Q919 520 943 451" fill="none" stroke="#4d9a4d" stroke-width="1.8" opacity="0.9"/>
+  <path d="M892 451 Q916 514 940 451" fill="none" stroke="#4d9a4d" stroke-width="1.8" opacity="0.9"/>
+  <rect x="315" y="536" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="321" y="545" width="218" height="4" fill="#d9dde1"/>
+  <rect x="384" y="545" width="82.8" height="4" fill="#3f7cac"/>
+  <text x="430" y="584" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="585" y="536" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="591" y="545" width="218" height="4" fill="#d9dde1"/>
+  <rect x="654" y="545" width="82.8" height="4" fill="#8c2d04"/>
+  <text x="700" y="584" text-anchor="middle" font-size="11.5" fill="#b3a893">no arcs here</text>
+  <rect x="855" y="536" width="230" height="76" fill="#fbf8f2" stroke="#e2d9c8"/>
+  <rect x="861" y="545" width="218" height="4" fill="#d9dde1"/>
+  <rect x="924" y="545" width="82.8" height="4" fill="#3f7a3f"/>
+  <path d="M984.8 551 Q1008.8 626 1032.8 551" fill="none" stroke="#5555bb" stroke-width="1.8" opacity="0.9"/>
+  <path d="M987.8 551 Q1011.8 620 1035.8 551" fill="none" stroke="#5555bb" stroke-width="1.8" opacity="0.9"/>
+  <path d="M990.8 551 Q1014.8 614 1038.8 551" fill="none" stroke="#5555bb" stroke-width="1.8" opacity="0.9"/>
+  <text x="590" y="664" text-anchor="middle" font-size="13" fill="#333333">An inversion lights the two same-strand bands, each holding one end of the junction; a tandem duplication lights the outward band;</text>
+  <text x="590" y="686" text-anchor="middle" font-size="13" fill="#333333">a deletion leaves ordinary-facing pairs that are simply too far apart. A call with every band empty has no read-pair evidence behind it.</text>
+</svg>
