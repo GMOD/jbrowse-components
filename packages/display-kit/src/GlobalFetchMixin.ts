@@ -257,42 +257,39 @@ export default function GlobalFetchMixin() {
         )
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * The commit half of this family's fetch: run the display's own store in
-       * the same transaction as the signature stamp, so no observer can see fresh
-       * data under a stale signature or the reverse. Being the only writer of
-       * `loadedFetchSignature` is what makes `dataCurrent` derivable — a
-       * display cannot commit without stamping.
-       */
-      commitFetchResult(commit: () => void, signature: string) {
-        commit()
-        self.loadedFetchSignature = signature
-      },
-      /**
-       * #action
-       * Satisfies the `reload` contract `DisplayChrome` (and the arc SVG chrome)
-       * require of every display. Clears any error and bumps `reloadCounter` so
-       * the fetch autorun re-runs — the shared skeleton's reload epoch is what
-       * makes that bump override the freshness gate, even against a fetch that
-       * commits mid-reload, so nothing here has to remember to invalidate for
-       * the retry's sake. Dropping the loaded signature is for the overlay
-       * instead: `dataCurrent` goes false, so the refetch shows as loading
-       * rather than as a display claiming fresh data. The data itself survives,
-       * staying on screen under that overlay. A subclass whose reload needs
-       * extra teardown can override and chain.
-       */
-      reload() {
-        self.setError(undefined)
-        // clear the durable user-cancel flag synchronously so the overlay flips
-        // from "canceled" to "loading" immediately, rather than lingering until
-        // the debounced fetch autorun's next run clears it at begin
-        self.fetchCanceled = false
-        self.loadedFetchSignature = undefined
-        self.reloadCounter += 1
-      },
-    }))
+    .actions(self => {
+      const superReload = self.reload
+      return {
+        /**
+         * #action
+         * The commit half of this family's fetch: run the display's own store in
+         * the same transaction as the signature stamp, so no observer can see fresh
+         * data under a stale signature or the reverse. Being the only writer of
+         * `loadedFetchSignature` is what makes `dataCurrent` derivable — a
+         * display cannot commit without stamping.
+         */
+        commitFetchResult(commit: () => void, signature: string) {
+          commit()
+          self.loadedFetchSignature = signature
+        },
+        /**
+         * #action
+         * `FetchMixin.reload` (error, cancel, counter — the shared skeleton's
+         * reload epoch is what makes that bump override the freshness gate, even
+         * against a fetch that commits mid-reload, so nothing here has to
+         * remember to invalidate for the retry's sake) plus this family's one
+         * addition, for the overlay rather than the refetch: dropping the loaded
+         * signature sends `dataCurrent` false, so the refetch shows as loading
+         * rather than as a display claiming fresh data. The data itself survives,
+         * staying on screen under that overlay. A subclass whose reload needs
+         * extra teardown can override and chain.
+         */
+        reload() {
+          superReload()
+          self.loadedFetchSignature = undefined
+        },
+      }
+    })
 }
 
 export type GlobalFetchMixinType = ReturnType<typeof GlobalFetchMixin>

@@ -92,6 +92,7 @@ test('the scan finds the reload declarations it is about', () => {
   // directly through the shared fetch skeleton, so its override is gone too.)
   const files = declarations.map(d => d.where.split(':')[0])
   for (const expected of [
+    'packages/display-kit/src/FetchMixin.ts',
     'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     'packages/display-kit/src/GlobalFetchMixin.ts',
     'plugins/canvas/src/LinearBasicDisplay/baseModel.ts',

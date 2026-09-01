@@ -508,42 +508,45 @@ export default function MultiRegionDisplayMixin() {
          */
         clearDisplaySpecificData() {},
       }))
-      .actions(self => ({
-        /**
-         * #action
-         * full reset: cancels fetch, clears error, loadedRegions,
-         * display-specific data, and the canvas-drawn flag. The too-large gate is
-         * derived (a pure function of the cached estimate × viewport), so it needs
-         * no explicit clear here — the fetch autorun re-measures at the new
-         * viewport and the verdict follows.
-         */
-        clearAllRpcData() {
-          self.cancelFetch()
-          self.setError(undefined)
-          self.loadedRegions.clear()
-          self.clearDisplaySpecificData()
-          self.resetCanvasDrawn()
-        },
+      .actions(self => {
+        const superReload = self.reload
+        return {
+          /**
+           * #action
+           * full reset: cancels fetch, clears error, loadedRegions,
+           * display-specific data, and the canvas-drawn flag. The too-large gate is
+           * derived (a pure function of the cached estimate × viewport), so it needs
+           * no explicit clear here — the fetch autorun re-measures at the new
+           * viewport and the verdict follows.
+           */
+          clearAllRpcData() {
+            self.cancelFetch()
+            self.setError(undefined)
+            self.loadedRegions.clear()
+            self.clearDisplaySpecificData()
+            self.resetCanvasDrawn()
+          },
 
-        /**
-         * #action
-         * Default reload: full reset. Subclasses with extra teardown can
-         * override (and chain to `clearAllRpcData` directly if needed).
-         *
-         * An override must reach this counter, by chaining to super or by
-         * bumping it. Missing it doesn't break the retry, which the
-         * `clearAllRpcData` call drives; it turns the retry contract check off
-         * for that display, silently. Both overrides in the tree chain now —
-         * `MultiSampleVariantBaseModel` always did, canvas's `LinearBasicDisplay`
-         * did not, and that took `LinearVariantDisplay` with it — and
-         * `reloadReachesCounter.test.ts` reads every `reload()` in the tree
-         * rather than leaving the next one to this paragraph.
-         */
-        reload() {
-          self.reloadCounter++
-          this.clearAllRpcData()
-        },
-      }))
+          /**
+           * #action
+           * `FetchMixin.reload` (error, cancel, counter) plus the full reset.
+           * Subclasses with extra teardown override and chain.
+           *
+           * An override must reach this counter, by chaining to super or by
+           * bumping it. Missing it doesn't break the retry, which the
+           * `clearAllRpcData` call drives; it turns the retry contract check off
+           * for that display, silently. Both overrides in the tree chain now —
+           * `MultiSampleVariantBaseModel` always did, canvas's `LinearBasicDisplay`
+           * did not, and that took `LinearVariantDisplay` with it — and
+           * `reloadReachesCounter.test.ts` reads every `reload()` in the tree
+           * rather than leaving the next one to this paragraph.
+           */
+          reload() {
+            superReload()
+            this.clearAllRpcData()
+          },
+        }
+      })
       .actions(_self => ({
         /**
          * #action

@@ -477,6 +477,23 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * The display's half of the retry contract (DISPLAYCHROME.md), in the
+       * one mixin every fetching LGV display composes: clear the error the
+       * banner is showing, clear the durable user-cancel synchronously so the
+       * overlay flips from "canceled" to "loading" now rather than when the
+       * debounced fetch begins, and bump the counter every fetch trigger reads
+       * unconditionally. Each foundation chains this and adds the one
+       * invalidation its own freshness gate needs; a display with extra
+       * teardown chains the foundation's. `reloadReachesCounter.test.ts` reads
+       * every `reload()` in the tree for the override that forgets.
+       */
+      reload() {
+        self.setError(undefined)
+        self.fetchCanceled = false
+        self.reloadCounter += 1
+      },
+      /**
+       * #action
        * Release an in-flight fetch's stop token on teardown. Without this, a
        * display destroyed mid-fetch (track/view closed while loading) never
        * signals the worker to abort the now-useless work, and its in-flight HTTP

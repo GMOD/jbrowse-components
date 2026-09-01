@@ -17,12 +17,13 @@ import MultiRegionDisplayMixin, {
   fetchEachRegion,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   WiggleScoreConfigMixin,
   makePointSizeSubMenu,
 } from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   SCALE_TYPE_LINEAR,
@@ -38,7 +39,6 @@ import {
 } from '@jbrowse/wiggle-core'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { autorun } from 'mobx'
 
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
@@ -769,9 +769,9 @@ export function stateModelFactory(
             // only once a batch fully resolves, making topSnp a fixpoint here, so
             // adopting it costs one recolor fetch and converges. The && chain also
             // keeps the topSnp rescan off the 'normal' coloring path.
-            addDisposer(
+            namedAutorun(
               self,
-              autorun(() => {
+              () => {
                 if (
                   self.colorBy === 'ld' &&
                   !self.indexSnpPinned &&
@@ -782,7 +782,8 @@ export function stateModelFactory(
                 ) {
                   self.setIndexSnp(self.topSnp)
                 }
-              }),
+              },
+              { name: 'ManhattanAdoptTopSnp' },
             )
           },
         }
