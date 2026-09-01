@@ -64,6 +64,15 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
 
   function stopListening() {
     listening = undefined
+    // The page these were sent to is gone, so no mcpResponse is ever coming.
+    // Without this they sit until RENDERER_TIMEOUT_MS — a 150s hang for a call
+    // that was already unanswerable, which is what a screenshot taken across a
+    // navigation used to cost.
+    const orphaned = [...relays.values()]
+    relays.clear()
+    for (const settle of orphaned) {
+      settle({ error: 'the page reloaded before the app answered; try again' })
+    }
   }
 
   // A page load tears the subscription down without telling anyone, so the
@@ -76,7 +85,14 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
       return
     }
     watchedContents = win.webContents.id
-    win.webContents.on('did-start-loading', stopListening)
+    // did-start-navigation, not did-start-loading: the latter also toggles for
+    // load activity that leaves the subscription intact, and clearing on it
+    // made every relay pay the ready wait on a busy page
+    win.webContents.on('did-start-navigation', details => {
+      if (details.isMainFrame && !details.isSameDocument) {
+        stopListening()
+      }
+    })
     win.webContents.on('destroyed', stopListening)
   }
 
@@ -109,8 +125,11 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
       }
     }
     watchWindow()
+    // Answering fast beats sending into the void: a push to a page that has not
+    // subscribed is discarded silently, so proceeding anyway would buy nothing
+    // and cost the whole relay timeout. The caller can retry cheaply.
     if (!(await awaitListening(Math.min(timeoutMs, READY_WAIT_MS)))) {
-      return { error: `The app was still loading when "${tool}" was sent` }
+      return { error: `the app was still loading when "${tool}" was sent` }
     }
     const win = getWindow()
     if (!win) {
@@ -206,7 +225,13 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
       typeof args.timeoutMs === 'number' ? args.timeoutMs : SCREENSHOT_WAIT_MS,
       120_000,
     )
-    const settled = await relayToRenderer('wait_ready', { timeoutMs })
+    // budget the relay against the wait actually requested: a timeoutMs: 0
+    // screenshot must not be able to block for RENDERER_TIMEOUT_MS
+    const settled = await relayToRenderer(
+      'wait_ready',
+      { timeoutMs },
+      Math.max(timeoutMs + 15_000, 30_000),
+    )
     const win = getWindow()
     if (!win) {
       return { error: 'JBrowse Desktop has no window open' }
