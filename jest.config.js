@@ -192,7 +192,6 @@ const baseConfig = {
     '<rootDir>/config/jest/pointerEvents.js',
     '<rootDir>/config/jest/requestIdleCallback.js',
     '<rootDir>/config/jest/scrollIntoView.js',
-    '<rootDir>/config/jest/topLayer.js',
   ],
   // In every project, not only the one that instantiates displays: the gate is
   // two hooks over a buffer `console.js` fills, so it costs nothing where no
