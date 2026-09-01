@@ -41,18 +41,13 @@ export const tcgaVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(tcgaVideoFixtures.trackId),
-        say: 'Track menu',
+        say: 'Cluster the 1104 tumors by their profile',
         hold: 1800,
       },
       { type: 'waitForText', text: 'Clustering' },
-      { type: 'click', text: 'Clustering', say: 'Clustering', hold: 1600 },
+      { type: 'click', text: 'Clustering', hold: 1600 },
       { type: 'waitForText', text: 'Cluster rows by similarity' },
-      {
-        type: 'click',
-        text: 'Cluster rows by similarity',
-        say: 'Cluster rows by similarity',
-        hold: 1200,
-      },
+      { type: 'click', text: 'Cluster rows by similarity', hold: 1200 },
       // The camera comes off for the run itself. Clustering ships the matrix to
       // an RPC worker and then repaints 1104 rows in one pass, which under
       // swiftshader is seconds of a frozen frame rather than an animation.
@@ -102,21 +97,15 @@ export const tcgaVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         text: tcgaMutationVideoFixtures.gene,
-        say: `Right-click ${tcgaMutationVideoFixtures.gene}`,
+        say: `Reshape ${tcgaMutationVideoFixtures.gene} to its coding exons`,
         hold: 1800,
       },
       { type: 'waitForText', text: 'Collapse introns' },
-      {
-        type: 'click',
-        text: 'Collapse introns',
-        say: 'Collapse introns',
-        hold: 1600,
-      },
+      { type: 'click', text: 'Collapse introns', hold: 1600 },
       { type: 'waitForText', text: 'Replace current view' },
       {
         type: 'click',
         selector: 'button::-p-text(Replace current view)',
-        say: 'Replace current view',
       },
       { type: 'waitForText', text: 'Replace current view', hidden: true },
       // Off camera for the refetch. Reshaping the view refetches every track,

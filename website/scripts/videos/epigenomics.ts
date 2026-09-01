@@ -78,23 +78,23 @@ const leaveTheMenu: VideoStep[] = [
 // One trip through the cascade to set one cytosine context, ending on the
 // recolored pileup with nothing over it.
 const pickContext = (label: string): VideoStep[] => [
-  { type: 'click', selector: WGBS_MENU, say: 'Track menu', hold: 1200 },
+  {
+    type: 'click',
+    selector: WGBS_MENU,
+    say: `Color the reads by the ${label} context`,
+    hold: 1200,
+  },
   { type: 'waitForSelector', selector: COLOR_BY },
-  { type: 'click', selector: COLOR_BY, say: 'Color by...', hold: 1200 },
+  { type: 'click', selector: COLOR_BY, hold: 1200 },
   { type: 'waitForSelector', selector: BISULFITE },
   // The submenu this tour is about, held: the four contexts with the current
   // one checked, and under them the "Show unmethylated (blue)" checkbox that
   // only exists once bisulfite is the scheme in force.
-  {
-    type: 'click',
-    selector: BISULFITE,
-    say: 'Bisulfite / EM-seq',
-    hold: 2500,
-  },
+  { type: 'click', selector: BISULFITE, hold: 2500 },
   { type: 'waitForSelector', selector: CONTEXT(label) },
   // The radio mark moving, before the menu goes: that is the only frame saying
   // which of the four is now in force.
-  { type: 'click', selector: CONTEXT(label), say: label, hold: 1400 },
+  { type: 'click', selector: CONTEXT(label), hold: 1400 },
   ...leaveTheMenu,
   // The recolor itself, on camera. Nothing is refetched — the reads are
   // loaded and the context is a render prop — so what plays here is the same
@@ -205,22 +205,17 @@ export const epigenomicsVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: CHROMHMM_MENU,
-        say: 'Track menu',
+        say: 'Cluster the epigenomes by similarity',
         hold: 1800,
       },
       { type: 'waitForText', text: 'Clustering' },
-      { type: 'click', text: 'Clustering', say: 'Clustering', hold: 1600 },
+      { type: 'click', text: 'Clustering', hold: 1600 },
       { type: 'waitForText', text: 'Cluster rows by similarity' },
       // No ellipsis and no dialog on this display: the item sets the trigger and
       // the run starts on the autorun's next tick, 500ms later. The hold is that
       // tick plus the chip's own 250ms anti-flash delay, so the chip is seen to
       // come up rather than the frame cutting from a menu to a finished tree.
-      {
-        type: 'click',
-        text: 'Cluster rows by similarity',
-        say: 'Cluster rows by similarity',
-        hold: 1400,
-      },
+      { type: 'click', text: 'Cluster rows by similarity', hold: 1400 },
       // The menu dismisses on that click (a plain row, not a radio), and this is
       // what says so — the click below has to land on the wordmark rather than on
       // a modal backdrop still closing.

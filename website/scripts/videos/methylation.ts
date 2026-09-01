@@ -42,13 +42,13 @@ export const methylationVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(readsTrackId),
-        say: 'Track menu',
+        say: 'Group the pileup by the HP tag',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Group by...' },
-      { type: 'click', text: 'Group by...', say: 'Group by...', hold: 1200 },
+      { type: 'click', text: 'Group by...', hold: 1200 },
       { type: 'waitForText', text: 'Tag...' },
-      { type: 'click', text: 'Tag...', say: 'Tag...' },
+      { type: 'click', text: 'Tag...' },
       { type: 'waitForText', text: 'Group by tag' },
       { type: 'delay', ms: 1200 },
       {
@@ -79,7 +79,7 @@ export const methylationVideos: VideoSpec[] = [
         say: 'Keep the modification coloring',
         hold: 1800,
       },
-      { type: 'click', text: 'Submit', say: 'Submit' },
+      { type: 'click', text: 'Submit' },
       // Grouping REFETCHES rather than re-laying-out what is loaded -- the frame
       // says "Downloading alignments.." -- so this is off camera for the reason
       // every slow step here is. `displayPainted` alone would not hold it: the

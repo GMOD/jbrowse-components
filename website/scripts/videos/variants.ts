@@ -51,22 +51,13 @@ export const variantVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(vcfTrackId),
-        say: 'Track menu',
+        say: 'Redraw the lane as one row per sample',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Display types' },
-      {
-        type: 'click',
-        text: 'Display types',
-        say: 'Display types',
-        hold: 1200,
-      },
+      { type: 'click', text: 'Display types', hold: 1200 },
       { type: 'waitForText', text: 'Multi-sample variant display (matrix)' },
-      {
-        type: 'click',
-        text: 'Multi-sample variant display (matrix)',
-        say: 'Multi-sample variant display (matrix)',
-      },
+      { type: 'click', text: 'Multi-sample variant display (matrix)' },
       // The matrix asks for every genotype in the window rather than re-laying
       // out what the lane had, so this is a fetch. Off camera, and the click
       // ahead of it stays on.
@@ -78,18 +69,13 @@ export const variantVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(vcfTrackId),
-        say: 'Track menu',
+        say: 'Split each sample into its two haplotypes',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Rendering mode' },
-      {
-        type: 'click',
-        text: 'Rendering mode',
-        say: 'Rendering mode',
-        hold: 1200,
-      },
+      { type: 'click', text: 'Rendering mode', hold: 1200 },
       { type: 'waitForText', text: 'Phased' },
-      { type: 'click', text: 'Phased', say: 'Phased' },
+      { type: 'click', text: 'Phased' },
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
       // Six rows: child, mother, father, each split into hap1 above hap2. The
       // beat the whole page rests on.

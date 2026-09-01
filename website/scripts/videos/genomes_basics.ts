@@ -81,11 +81,11 @@ export const genomesBasicsVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(gnomadTrackId),
-        say: 'Track menu',
+        say: 'Keep only the predicted loss-of-function variants',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Filter by...' },
-      { type: 'click', text: 'Filter by...', say: 'Filter by...' },
+      { type: 'click', text: 'Filter by...' },
       { type: 'waitForText', text: 'Add track filters' },
       // The dialog opens EMPTY on this track, which is the state the page's
       // "the dialog takes one jexl expression per line" describes and the thing
@@ -101,7 +101,7 @@ export const genomesBasicsVideos: VideoSpec[] = [
       { type: 'delay', ms: 1200 },
       // The button reads SUBMIT and the DOM says Submit: MUI uppercases it in
       // CSS, so the match is the string and the chip is the label.
-      { type: 'click', text: 'Submit', say: 'SUBMIT' },
+      { type: 'click', text: 'Submit' },
       { type: 'waitForText', text: 'Add track filters', hidden: true },
       // The pointer is where SUBMIT was, which is over the lane the moment the
       // dialog goes — and this track's mouseover is nine lines of allele
@@ -161,7 +161,11 @@ export const genomesBasicsVideos: VideoSpec[] = [
       // One gene track, which is what the section before this one leaves on
       // screen.
       { type: 'delay', ms: 2000 },
-      { type: 'click', selector: OPEN_SELECTOR, say: 'Open track selector' },
+      {
+        type: 'click',
+        selector: OPEN_SELECTOR,
+        say: 'Find a conservation track in the hg38 catalog',
+      },
       {
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
@@ -174,14 +178,14 @@ export const genomesBasicsVideos: VideoSpec[] = [
       // Every phyloP track UCSC publishes for hg38, in the one category, with
       // the names as the only thing telling them apart.
       { type: 'delay', ms: 2500 },
-      { type: 'click', text: phylopTrackName, say: phylopTrackName },
+      { type: 'click', text: phylopTrackName },
       {
         type: 'waitForSelector',
         selector: displayReady(`${phylopTrackId}-LinearWiggleDisplay`),
         timeout: 180000,
       },
       { type: 'delay', ms: 3000 },
-      { type: 'click', selector: CLOSE_SELECTOR, say: 'Close track selector' },
+      { type: 'click', selector: CLOSE_SELECTOR },
       // An LGV holds its window in BP across a resize rather than its bp/px, so
       // the drawer was a zoom rather than a pan and closing it draws the same
       // span back over the ~384px it was using. Both lanes re-render at the

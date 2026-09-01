@@ -75,6 +75,16 @@ refilm and none of which the run reports.
   `ui/bulk_add_tracks` shipped four captions for five `say` lines and no check
   saw it. Name the beat AFTER the cut instead, on a delay the camera is back
   for, which is also where the `hold` belongs.
+- **One line per PHASE, not one per click.** A caption stays up until another
+  step replaces it, so a cascade needs one line on its first step and silence
+  after it. The line is the route a reader cannot read off the frame --
+  `Add the graph track by pasting its config` over **File → Open track... → the
+  workflow select → Submit** -- and the labels themselves are already in the
+  frame, under a 40px cursor and a red ripple. Written a step at a time it comes
+  out as the menu item spelled twice: 100 of the corpus's 244 captions were once
+  the exact text of the row being clicked, and at 32px across the bottom centre
+  that reads as a billboard repeating the cursor. The line still has to be true
+  when the step STARTS, which an intent is and a result is not.
 - **A `say` goes up when its step STARTS.** So a line describing what the step
   produces is wrong for the whole time it runs — `hic/two_regions` said the
   wedge was chr9 against chr22 over a box that still held one window. Name the
@@ -91,12 +101,13 @@ refilm and none of which the run reports.
   row above the items the tour is for -- the launch still works, since the menu
   is built from the feature either way, but the frame then shows a row the page
   never mentions. Move the locus onto a plain stretch of the block.
-- **The caption chip is fixed 20px off the frame's BOTTOM, not off the app's.**
-  A frame sized exactly to the app therefore puts every caption over the last
-  ~56px of the last state, which is usually the half the caption is about (an
-  empty mate panel, the bottom row of a stack). `video-report` allows 120px of
-  slack before it says anything, so a frame with the chip's strip under the app
-  reports clean.
+- **The caption chip is fixed 32px off the frame's BOTTOM, not off the app's,
+  and centred.** A frame sized exactly to the app therefore puts every caption
+  over the last ~100px of the last state -- the chip is 32px type in a 12px
+  padding now, for the docs column rather than for the capture -- and that is
+  usually the half the caption is about (an empty mate panel, the bottom row of
+  a stack). `video-report` allows 120px of slack before it says anything, so a
+  frame with the chip's strip under the app reports clean.
 - **A tour that PASTES its track films the defaults, not the figures' display.**
   A session spec pins a lane's height, its colour jexl and its labels; a pasted
   fence carries only what a reader would copy, so the lane arrives at the

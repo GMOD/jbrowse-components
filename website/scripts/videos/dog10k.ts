@@ -60,20 +60,15 @@ export const dog10kVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: IGF1_MATRIX_MENU,
-        say: 'Track menu',
+        say: 'Cluster the breeds by genotype',
         hold: 700,
       },
       { type: 'waitForText', text: 'Clustering' },
-      { type: 'click', text: 'Clustering', say: 'Clustering', hold: 700 },
+      { type: 'click', text: 'Clustering', hold: 700 },
       { type: 'waitForText', text: 'Cluster rows by genotype...' },
-      {
-        type: 'click',
-        text: 'Cluster rows by genotype...',
-        say: 'Cluster rows by genotype...',
-        hold: 900,
-      },
+      { type: 'click', text: 'Cluster rows by genotype...', hold: 900 },
       { type: 'waitForText', text: 'Run clustering' },
-      { type: 'click', text: 'Run clustering', say: 'Run clustering' },
+      { type: 'click', text: 'Run clustering' },
       // 167 rows over the core's columns, hclust in an RPC worker under a
       // software rasterizer. `cut` because a film of a spinner is not a film of
       // anything, and the camera comes back on the reordered rows.

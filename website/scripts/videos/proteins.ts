@@ -67,15 +67,11 @@ export const proteinVideos: VideoSpec[] = [
           // menu with no feature items in it
           fracY: 0.2,
         },
-        say: 'Right-click the gene',
+        say: 'Open this gene as its AlphaFold structure',
         hold: 900,
       },
       { type: 'waitForText', text: 'Launch protein view' },
-      {
-        type: 'click',
-        text: 'Launch protein view',
-        say: 'Launch protein view',
-      },
+      { type: 'click', text: 'Launch protein view' },
       // OFF CAMERA. The dialog opens empty and fills itself from three round
       // trips — UniProt ID mapping, the isoform's protein sequences, AlphaFold's
       // structure URL — and a film of a form filling in is a film of a spinner.
@@ -92,7 +88,6 @@ export const proteinVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="protein-launch-button"]',
-        say: 'Launch',
       },
       {
         type: 'waitForSelector',
@@ -201,15 +196,11 @@ export const proteinVideos: VideoSpec[] = [
           locus: 'chr17:7,676,000',
           fracY: 0.2,
         },
-        say: 'Right-click the gene',
+        say: 'Line the gene up against its orthologs',
         hold: 900,
       },
       { type: 'waitForText', text: 'Launch MSA view' },
-      {
-        type: 'click',
-        text: 'Launch MSA view',
-        say: 'Launch MSA view',
-      },
+      { type: 'click', text: 'Launch MSA view' },
       { type: 'waitForText', text: 'Orthologs (fast)' },
       // Fewer than the dialog's own default of 100: this clip's point is the
       // tiling, not the aligner queue, and a smaller alignment also reads
@@ -230,11 +221,7 @@ export const proteinVideos: VideoSpec[] = [
         timeout: 120000,
         cut: true,
       },
-      {
-        type: 'click',
-        selector: 'button::-p-text(Submit)',
-        say: 'Submit',
-      },
+      { type: 'click', selector: 'button::-p-text(Submit)' },
       // OFF CAMERA again, for the aligner queue: NCBI's ortholog lookup answers
       // immediately and EBI's Clustal Omega run is the wait, about half a
       // second a row. The alignment view mounts its toolbar only once
@@ -248,9 +235,9 @@ export const proteinVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: 'button[tooltip="Fit / zoom options"]',
-        say: 'Fit / zoom options',
+        say: 'Fit the alignment to its panel',
       },
-      { type: 'click', text: 'Fit horizontally', say: 'Fit horizontally' },
+      { type: 'click', text: 'Fit horizontally' },
       { type: 'delay', ms: 1500 },
       {
         type: 'rightclick',
@@ -259,15 +246,11 @@ export const proteinVideos: VideoSpec[] = [
           locus: 'chr17:7,676,000',
           fracY: 0.2,
         },
-        say: 'Right-click the gene again',
+        say: 'And the same gene as a structure, beside it',
         hold: 900,
       },
       { type: 'waitForText', text: 'Launch protein view' },
-      {
-        type: 'click',
-        text: 'Launch protein view',
-        say: 'Launch protein view',
-      },
+      { type: 'click', text: 'Launch protein view' },
       // OFF CAMERA, the same three round trips (UniProt ID mapping, the
       // isoform's protein sequence, AlphaFold's structure url) the other two
       // protein tours cut here for.
@@ -278,11 +261,7 @@ export const proteinVideos: VideoSpec[] = [
         cut: true,
       },
       { type: 'delay', ms: 2000 },
-      {
-        type: 'click',
-        selector: 'button::-p-text(Launch)',
-        say: 'Launch',
-      },
+      { type: 'click', selector: 'button::-p-text(Launch)' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="protein-view-ready"]',
@@ -300,12 +279,11 @@ export const proteinVideos: VideoSpec[] = [
         // of their own parent, so the tablist has to be excluded structurally.
         selector:
           '[data-tab-strip] > div:not([role="tablist"]) button:first-of-type',
-        say: 'Panel menu',
+        say: 'Tile the three views side by side',
       },
       {
         type: 'click',
         text: 'Global: tile horizontally',
-        say: 'Tile horizontally',
         hold: 1000,
       },
       { type: 'waitForAppSettled' },
@@ -389,15 +367,11 @@ export const proteinVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: proteinLaunchFixtures.geneAnchor,
-        say: 'Right-click the gene',
+        say: 'Open a view whose genome is the protein itself',
         hold: 900,
       },
       { type: 'waitForText', text: 'Launch protein view' },
-      {
-        type: 'click',
-        text: 'Launch protein view',
-        say: 'Launch protein view',
-      },
+      { type: 'click', text: 'Launch protein view' },
       // OFF CAMERA, for the reason the other protein tour cuts here: the dialog
       // opens empty and fills itself from UniProt's ID mapping, the isoform's
       // protein sequences and AlphaFold's structure url, and a film of a form
@@ -416,14 +390,10 @@ export const proteinVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: 'button[aria-label="More launch options"]',
-        say: 'More launch options',
+        say: 'Two destinations, not one',
         hold: 2500,
       },
-      {
-        type: 'click',
-        text: 'Launch 1D protein annotation view',
-        say: 'Launch 1D protein annotation view',
-      },
+      { type: 'click', text: 'Launch 1D protein annotation view' },
       // The assembly protein3d registers here is the amino-acid chain itself, so
       // the view has to navigate a genome that did not exist when the tour
       // started. `No tracks active` is its own empty state and gates on both:
@@ -445,16 +415,11 @@ export const proteinVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Open track selector',
-        say: 'Open track selector',
+        say: 'Four of its tracks, in residue coordinates',
       },
       // The list opens with its categories collapsed, and everything protein3d
       // added is under this one — which is the answer to "where did they go".
-      {
-        type: 'click',
-        text: 'Session tracks',
-        say: 'Session tracks',
-        hold: 1500,
-      },
+      { type: 'click', text: 'Session tracks', hold: 1500 },
       // The last of them to be added, so its row is the selector having finished
       // filling in.
       { type: 'waitForText', text: 'AlphaMissense scores', timeout: 120000 },
@@ -485,7 +450,6 @@ export const proteinVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: 'button[aria-label="Close drawer"]',
-        say: 'Close the track selector',
       },
       { type: 'waitForAppSettled' },
     ],

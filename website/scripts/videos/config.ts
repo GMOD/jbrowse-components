@@ -72,7 +72,7 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(trackId),
-        say: 'Track menu',
+        say: 'Three settings off one open menu',
         hold: 1200,
       },
       // Three picks off ONE open menu. Each row here is a checkbox or a radio,
@@ -86,26 +86,27 @@ export const configVideos: VideoSpec[] = [
       // mode, so taking pairs first left the tour opening a menu to pick a
       // radio the app had already filled in — the reader watching would see
       // nothing happen and no still would ever show it.
-      { type: 'click', text: 'Color by...', say: 'Color by...', hold: 1000 },
+      {
+        type: 'click',
+        text: 'Color by...',
+        say: 'Color the reads by insert size and orientation',
+        hold: 1000,
+      },
       // `Paired end` is a level the page did not have. The pairing schemes are
       // a group of their own under Color by... (`group: 'pairedEnd'` in
       // shared/colorSchemes.ts), so a reader following "Color by... → Insert
       // size and orientation" lands on a list of six basic schemes with no such
       // row in it. The first take of this tour is what found that.
       { type: 'waitForText', text: 'Paired end' },
-      { type: 'click', text: 'Paired end', say: 'Paired end', hold: 1000 },
+      { type: 'click', text: 'Paired end', hold: 1000 },
       { type: 'waitForText', text: 'Insert size and orientation' },
-      {
-        type: 'click',
-        text: 'Insert size and orientation',
-        say: 'Insert size and orientation',
-      },
+      { type: 'click', text: 'Insert size and orientation' },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 700 },
       {
         type: 'click',
         text: 'Read connections',
-        say: 'Read connections',
+        say: 'Link each read to its mate',
         hold: 1000,
       },
       {
@@ -115,17 +116,17 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'View as pairs / link supplementary alignments',
-        say: 'View as pairs / link supplementary alignments',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 700 },
-      { type: 'click', text: 'Show...', say: 'Show...', hold: 1000 },
-      { type: 'waitForText', text: 'Show soft clipping' },
       {
         type: 'click',
-        text: 'Show soft clipping',
-        say: 'Show soft clipping',
+        text: 'Show...',
+        say: 'Put the soft-clipped bases back on',
+        hold: 1000,
       },
+      { type: 'waitForText', text: 'Show soft clipping' },
+      { type: 'click', text: 'Show soft clipping' },
       // Soft clipping invalidates every fetched region rather than restyling
       // what is drawn, so this one is a re-read of the CRAM rather than a
       // relayout of what is loaded, and it is six seconds of a pileup holding
@@ -148,7 +149,7 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="share-button"]',
-        say: 'Share',
+        say: 'Hand the session back with the settings readable',
         hold: 800,
       },
       { type: 'waitForText', text: 'Copy the URL below' },
@@ -167,11 +168,11 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: SHARE_MODE_MENU,
-        say: 'Session sharing settings',
+        say: 'The share dialog grows a control as it is used',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Plaintext JSON' },
-      { type: 'click', text: 'Plaintext JSON', say: 'Plaintext JSON' },
+      { type: 'click', text: 'Plaintext JSON' },
       // A radio writes its setting and leaves the menu standing, here as
       // everywhere else, and this one stands over the control it just brought
       // into existence. Escape reaches it while focus is in the list; the
@@ -182,11 +183,7 @@ export const configVideos: VideoSpec[] = [
       // The dialog is a control taller than it was a second ago.
       { type: 'waitForText', text: 'Show readable JSON' },
       { type: 'delay', ms: 900 },
-      {
-        type: 'click',
-        text: 'Show readable JSON',
-        say: 'Show readable JSON',
-      },
+      { type: 'click', text: 'Show readable JSON' },
       // The end of the route: a readable session where a `share-<id>` was.
       //
       // The tour does NOT scroll it, and three takes went into deciding that.

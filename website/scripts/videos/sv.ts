@@ -91,17 +91,17 @@ export const svVideos: VideoSpec[] = [
     settleMs: 4000,
     steps: [
       { type: 'delay', ms: 1800 },
-      { type: 'click', text: 'Add', say: 'Add', hold: 900 },
-      { type: 'waitForText', text: 'SV inspector' },
-      { type: 'click', text: 'SV inspector', say: 'SV inspector' },
-      { type: 'waitForText', text: 'Open file from URL or local computer' },
-      { type: 'delay', ms: 1200 },
       {
         type: 'click',
-        selector: ASSEMBLY_SELECT,
-        say: 'Assembly',
+        text: 'Add',
+        say: 'Open the SV inspector on a callset of its own',
         hold: 900,
       },
+      { type: 'waitForText', text: 'SV inspector' },
+      { type: 'click', text: 'SV inspector' },
+      { type: 'waitForText', text: 'Open file from URL or local computer' },
+      { type: 'delay', ms: 1200 },
+      { type: 'click', selector: ASSEMBLY_SELECT, hold: 900 },
       { type: 'click', selector: assemblyOption(assembly), hold: 1400 },
       // The page's own file. Typed rather than pasted, so the field is seen to
       // be a URL field.
@@ -109,7 +109,7 @@ export const svVideos: VideoSpec[] = [
         type: 'type',
         selector: '[data-testid="urlInput"]',
         value: callsetUrl,
-        say: 'Open file from URL',
+        say: 'The SKBR3 VCF, by URL',
         hold: 1600,
       },
       // By its testid, not by its label: `::-p-text(Open)` matches the first
@@ -120,7 +120,6 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="open_spreadsheet"]',
-        say: 'Open',
       },
       // A whole callset parsed and a genome's worth of chords drawn, off camera.
       { type: 'waitForText', text: 'CHROM', timeout: 180000, cut: true },
@@ -137,7 +136,7 @@ export const svVideos: VideoSpec[] = [
         selector: 'input[placeholder^="Search"]',
         value: 'X',
         clear: true,
-        say: 'X',
+        say: 'Filter the table to X, either end',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 3500 },
@@ -195,20 +194,16 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(readsTrackId),
-        say: 'Track menu',
+        say: 'Let the reads reconstruct the derivative allele',
         hold: 1200,
       },
       // Clicked rather than hovered: CascadingSubmenu opens on either, and the
       // pileup re-lays-out as reads stream, which can move a hovered row out
       // from under the cursor.
       { type: 'waitForText', text: 'Launch' },
-      { type: 'click', text: 'Launch', say: 'Launch', hold: 1200 },
+      { type: 'click', text: 'Launch', hold: 1200 },
       { type: 'waitForText', text: 'Reconstruct derivative allele...' },
-      {
-        type: 'click',
-        text: 'Reconstruct derivative allele...',
-        say: 'Reconstruct derivative allele...',
-      },
+      { type: 'click', text: 'Reconstruct derivative allele...' },
       // The pass walks every read's SA chain over the whole pileup, and the
       // figures on this route give it three minutes. Off camera, with the menu
       // item held first so the dialog is not seen to teleport in.
@@ -245,11 +240,7 @@ export const svVideos: VideoSpec[] = [
       // The destination the docs and the figures take. The other button opens
       // the same view below the one it was launched from, which leaves a second
       // copy of the chr3 window with the same tracks one scroll above the answer.
-      {
-        type: 'click',
-        text: 'Replace current view',
-        say: 'Replace current view',
-      },
+      { type: 'click', text: 'Replace current view' },
       // Four panels, each a 10 kb window centred on the junction its segment
       // carries, and each carrying the launching view's whole track list — so
       // this is four pileup fetches. A film of that is a film of four spinners.
@@ -339,11 +330,11 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: { track: matrixTrackId, locus: deletionSpan, fracY: 0.5 },
-        say: 'Right-click the deletion',
+        say: 'Order the callset by genotype at the deletion',
         hold: 1800,
       },
       { type: 'waitForText', text: 'Sort by genotype' },
-      { type: 'click', text: 'Sort by genotype', say: 'Sort by genotype' },
+      { type: 'click', text: 'Sort by genotype' },
       // ON CAMERA, deliberately. `sortByGenotype` is synchronous over cell data
       // already in memory — no fetch, no worker — so this wait is the app
       // answering again rather than a spinner, and the frame it holds is the one
@@ -362,17 +353,13 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(matrixTrackId),
-        say: 'Track menu',
+        say: 'Re-key the same rows on the whole window',
         hold: 1800,
       },
       { type: 'waitForText', text: 'Clustering' },
-      { type: 'click', text: 'Clustering', say: 'Clustering', hold: 1600 },
+      { type: 'click', text: 'Clustering', hold: 1600 },
       { type: 'waitForText', text: 'Cluster rows by genotype...' },
-      {
-        type: 'click',
-        text: 'Cluster rows by genotype...',
-        say: 'Cluster rows by genotype...',
-      },
+      { type: 'click', text: 'Cluster rows by genotype...' },
       // The ellipsis is the app saying this row opens a dialog, which the other
       // clustering tour's item does not. Held, because the dialog is where the
       // route stops being obvious: it names the matrix it is about to build and
@@ -385,7 +372,6 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: 'button::-p-text(Run clustering)',
-        say: 'Run clustering',
       },
       // Off camera for the run, which ships the genotype matrix to a worker and
       // hclusts 3202 rows: a progress bar inside the dialog rather than an
@@ -459,14 +445,13 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: cgiabCoverageMenu,
-        say: 'Track menu',
+        say: 'Pin the score axis by hand',
         hold: 1400,
       },
       { type: 'waitForSelector', selector: cascade('submenu', 'Score') },
       {
         type: 'click',
         selector: cascade('submenu', 'Score'),
-        say: 'Score',
         hold: 1200,
       },
       {
@@ -476,7 +461,6 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: cascade('menuitem', 'Set min/max score...'),
-        say: 'Set min/max score...',
       },
       { type: 'waitForText', text: 'Set min/max score for track' },
       { type: 'delay', ms: 1500 },
@@ -495,7 +479,7 @@ export const svVideos: VideoSpec[] = [
       { type: 'delay', ms: 1200 },
       // MUI uppercases the button in CSS, so the match is the string the DOM
       // carries and the chip is the label a reader sees.
-      { type: 'click', text: 'Submit', say: 'SUBMIT' },
+      { type: 'click', text: 'Submit' },
       {
         type: 'waitForText',
         text: 'Set min/max score for track',
@@ -508,21 +492,19 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: cgiabCoverageMenu,
-        say: 'Track menu',
+        say: 'Draw the two rows on one axis, as points',
         hold: 1200,
       },
       { type: 'waitForSelector', selector: cascade('submenu', 'Plot type') },
       {
         type: 'click',
         selector: cascade('submenu', 'Plot type'),
-        say: 'Plot type',
         hold: 1400,
       },
       { type: 'waitForSelector', selector: cascade('submenu', 'Overlapping') },
       {
         type: 'click',
         selector: cascade('submenu', 'Overlapping'),
-        say: 'Overlapping',
         hold: 1400,
       },
       { type: 'waitForSelector', selector: cascade('menuitem', 'Scatter') },
@@ -531,7 +513,6 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: cascade('menuitem', 'Scatter'),
-        say: 'Scatter',
         hold: 1400,
       },
       ...leaveTheMenu,

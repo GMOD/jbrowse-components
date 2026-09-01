@@ -176,9 +176,14 @@ const HIGHLIGHT_ITEM = 'Highlight in hg38'
 // track landing is the caller's own display id.
 function pasteTrackSteps(json: string): VideoStep[] {
   return [
-    { type: 'click', text: 'File', say: 'File', hold: 700 },
+    {
+      type: 'click',
+      text: 'File',
+      say: 'Add the graph track by pasting its config',
+      hold: 700,
+    },
     { type: 'waitForText', text: 'Open track...' },
-    { type: 'click', text: 'Open track...', say: 'Open track...' },
+    { type: 'click', text: 'Open track...' },
     { type: 'waitForText', text: 'Enter track data' },
     // The workflow select, by the option it is showing. Only one element
     // carries that text until the menu opens, and by then the item this clicks
@@ -186,11 +191,10 @@ function pasteTrackSteps(json: string): VideoStep[] {
     {
       type: 'click',
       text: 'Add a track from file or URL',
-      say: 'Choose how to add a track',
       hold: 700,
     },
     { type: 'waitForText', text: PASTE_WORKFLOW },
-    { type: 'click', text: PASTE_WORKFLOW, say: PASTE_WORKFLOW },
+    { type: 'click', text: PASTE_WORKFLOW },
     { type: 'waitForSelector', selector: PASTE_BOX },
     // OFF CAMERA, because what a reader does here is paste. `type` sends the
     // config a keystroke at a time through a controlled MUI field, which is both
@@ -200,7 +204,7 @@ function pasteTrackSteps(json: string): VideoStep[] {
     { type: 'type', selector: PASTE_BOX, value: json, cut: true },
     // the filled box, held long enough to be read as the page's own block
     { type: 'delay', ms: 2600 },
-    { type: 'click', text: 'Submit', say: 'Submit' },
+    { type: 'click', text: 'Submit' },
   ]
 }
 
@@ -231,16 +235,15 @@ function launchGraphSteps(trackId: string): VideoStep[] {
     {
       type: 'click',
       selector: trackMenu(trackId),
-      say: 'Track menu',
+      say: 'Cut the window on screen out as a subgraph',
       hold: 700,
     },
     { type: 'waitForText', text: 'Launch' },
-    { type: 'click', text: 'Launch', say: 'Launch', hold: 700 },
+    { type: 'click', text: 'Launch', hold: 700 },
     { type: 'waitForText', text: 'Graph genome view (this region)' },
     {
       type: 'click',
       text: 'Graph genome view (this region)',
-      say: 'Graph genome view (this region)',
     },
   ]
 }
@@ -426,21 +429,17 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'hover',
         anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
-        say: 'Hover the bubble',
+        say: 'Hover a node for the segments it collapses',
         hold: 3200,
       },
       {
         type: 'rightclick',
         anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
-        say: 'Right-click the bubble',
+        say: 'Take the bubble down to the fine index',
         hold: 900,
       },
       { type: 'waitForText', text: 'Open in K12' },
-      {
-        type: 'click',
-        text: 'Open in K12',
-        say: 'Open in K12 — around this node',
-      },
+      { type: 'click', text: 'Open in K12' },
       // The banner going away is the app's own answer, and the display's ready
       // phase is not: a gated display reports ready while it is refusing to
       // fetch, so waiting on that alone would put the camera back on the lane
@@ -502,13 +501,14 @@ export const pangenomeVideos: VideoSpec[] = [
       // the rows held still long enough to be read against the MAF lane above
       // them, which is what the paragraph before the embed is about
       { type: 'delay', ms: 2500 },
-      { type: 'click', selector: LAYOUT_SELECT, say: 'Layout', hold: 800 },
-      { type: 'waitForText', text: 'Force-directed layout' },
       {
         type: 'click',
-        text: 'Force-directed layout',
-        say: 'Force-directed layout',
+        selector: LAYOUT_SELECT,
+        say: 'Re-lay the same rows out with the force engine',
+        hold: 800,
       },
+      { type: 'waitForText', text: 'Force-directed layout' },
+      { type: 'click', text: 'Force-directed layout' },
       {
         type: 'waitForSelector',
         selector: FORCE_DRAWN,
@@ -582,9 +582,14 @@ export const pangenomeVideos: VideoSpec[] = [
       // The re-layout, on the human graph: every x becomes a GRCh38 coordinate,
       // so each allele drops under the place it attaches and the drawing lines
       // up with the segments lane above it.
-      { type: 'click', selector: LAYOUT_SELECT, say: 'Layout', hold: 800 },
+      {
+        type: 'click',
+        selector: LAYOUT_SELECT,
+        say: 'Lay the alleles out on GRCh38 coordinates',
+        hold: 800,
+      },
       { type: 'waitForText', text: 'Anchored' },
-      { type: 'click', text: 'Anchored', say: 'Anchored' },
+      { type: 'click', text: 'Anchored' },
       {
         type: 'waitForSelector',
         selector: TOOLBAR_READY,
@@ -600,11 +605,11 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: { view: 1, graphNode: TOUR_NODE },
-        say: 'Right-click a node',
+        say: 'Find where this node attaches in hg38',
         hold: 900,
       },
       { type: 'waitForText', text: HIGHLIGHT_ITEM },
-      { type: 'click', text: HIGHLIGHT_ITEM, say: HIGHLIGHT_ITEM },
+      { type: 'click', text: HIGHLIGHT_ITEM },
       { type: 'delay', ms: 2000 },
     ],
     // THE FORCE DRAWING, not the last frame. A poster is what a reader sees
@@ -644,11 +649,11 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: { view: 0, graphNode: PGGB_STRAIN_NODE },
-        say: 'Right-click the CFT073 allele',
+        say: 'Open this allele on the CFT073 assembly',
         hold: 900,
       },
       { type: 'waitForText', text: 'Open in CFT073' },
-      { type: 'click', text: 'Open in CFT073', say: 'Open in CFT073' },
+      { type: 'click', text: 'Open in CFT073' },
       // Gate on the launched view's own gene lane, not on a delay: the launch
       // carries the session's annotation for the assembly it opens, and the
       // whole point of the clip is that CFT073 arrives carrying its own genes.
@@ -689,18 +694,17 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(hprcClusterFixtures.trackId),
-        say: 'Track menu',
+        say: 'Cluster the 464 haplotypes by genotype',
         hold: 700,
       },
       ...menuCascade(['Clustering', 'Cluster rows by genotype...']),
       {
         type: 'click',
         text: 'Cluster rows by genotype...',
-        say: 'Clustering → Cluster rows by genotype...',
       },
       { type: 'waitForText', text: 'Run clustering' },
       { type: 'delay', ms: 1500 },
-      { type: 'click', text: 'Run clustering', say: 'Run clustering' },
+      { type: 'click', text: 'Run clustering' },
       // The dialog closing says the run started; the dendrogram says it landed.
       // Waiting on the first alone would put the camera back on a lane that has
       // not reordered yet.

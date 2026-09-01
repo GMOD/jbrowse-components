@@ -68,37 +68,23 @@ export const uiVideos: VideoSpec[] = [
         type: 'drag',
         fromAnchor: { locus: bookmarkSpan.start, band: RUBBERBAND },
         toAnchor: { locus: bookmarkSpan.end, band: RUBBERBAND },
-        say: 'Drag across the scalebar',
+        say: 'Bookmark the span on screen',
         hold: 600,
       },
       { type: 'waitForText', text: 'Bookmark region' },
-      {
-        type: 'click',
-        text: 'Bookmark region',
-        say: 'Bookmark region',
-        hold: 1800,
-      },
+      { type: 'click', text: 'Bookmark region', hold: 1800 },
       // The highlight is now on the view and the bookmark is in a widget nobody
       // has opened. The menu path to it is the half the page states in prose.
       {
         type: 'click',
         selector: '[data-testid="view_menu_icon"]',
-        say: 'View menu',
+        say: 'Open the bookmark widget from the view menu',
         hold: 800,
       },
       { type: 'waitForText', text: 'Bookmarks/highlights' },
-      {
-        type: 'click',
-        text: 'Bookmarks/highlights',
-        say: 'Bookmarks/highlights',
-        hold: 800,
-      },
+      { type: 'click', text: 'Bookmarks/highlights', hold: 800 },
       { type: 'waitForText', text: 'Open bookmark widget' },
-      {
-        type: 'click',
-        text: 'Open bookmark widget',
-        say: 'Open bookmark widget',
-      },
+      { type: 'click', text: 'Open bookmark widget' },
       { type: 'waitForText', text: 'Add label...' },
       { type: 'delay', ms: 1200 },
       // One click puts the cell in edit mode, which is the thing the label
@@ -132,7 +118,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: BOOKMARK_LINK_CELL,
-        say: 'Bookmark link',
+        say: 'Click the saved row to navigate back',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
     ],
@@ -166,16 +152,21 @@ export const uiVideos: VideoSpec[] = [
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
-      { type: 'click', text: 'File', say: 'File', hold: 900 },
+      {
+        type: 'click',
+        text: 'File',
+        say: 'Open a track from a URL',
+        hold: 900,
+      },
       { type: 'waitForText', text: 'Open track...' },
-      { type: 'click', text: 'Open track...', say: 'Open track...' },
+      { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Enter track data' },
       { type: 'delay', ms: 1200 },
       {
         type: 'type',
         selector: '[data-testid="urlInput"]',
         value: addTrackUrl,
-        say: 'Enter URL',
+        say: 'Paste the bigwig URL',
         // long enough to see the second step appear under the field, which is
         // the form answering
         hold: 2200,
@@ -183,7 +174,6 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="addTrackNextButton"]',
-        say: 'Next',
         hold: 1800,
       },
       // Same button, now reading Add: the confirm step is the name and the
@@ -192,7 +182,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="addTrackNextButton"]',
-        say: 'Add',
+        say: 'The name and adapter the form resolved',
       },
       { type: 'waitForAppSettled', timeout: 60000 },
       { type: 'delay', ms: 2500 },
@@ -231,22 +221,12 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         anchor: sequencePanelGene,
-        say: 'Click the transcript',
+        say: 'Open the transcript details',
         hold: 1400,
       },
       { type: 'waitForText', text: 'Show feature sequence' },
-      {
-        type: 'click',
-        text: 'Show feature sequence',
-        say: 'Show feature sequence',
-        hold: 2200,
-      },
-      {
-        type: 'click',
-        selector: SEQUENCE_TYPE,
-        say: 'Sequence type',
-        hold: 1200,
-      },
+      { type: 'click', text: 'Show feature sequence', hold: 2200 },
+      { type: 'click', selector: SEQUENCE_TYPE, hold: 1200 },
       { type: 'click', selector: sequenceType('cds'), say: 'CDS', hold: 3000 },
       { type: 'click', selector: SEQUENCE_TYPE, hold: 900 },
       {
@@ -299,16 +279,11 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="view_menu_icon"]',
-        say: 'View menu',
+        say: 'Scan the reference itself for motifs',
         hold: 900,
       },
       { type: 'waitForText', text: 'Sequence search' },
-      {
-        type: 'click',
-        text: 'Sequence search',
-        say: 'Sequence search',
-        hold: 1800,
-      },
+      { type: 'click', text: 'Sequence search', hold: 1800 },
       // The dialog opens on Sequence pattern, so the toggle is a real move
       // rather than a formality.
       { type: 'waitForText', text: 'Motif list' },
@@ -362,17 +337,17 @@ export const uiVideos: VideoSpec[] = [
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
-      { type: 'click', text: 'File', say: 'File', hold: 900 },
-      { type: 'waitForText', text: 'Open track...' },
-      { type: 'click', text: 'Open track...', say: 'Open track...' },
-      { type: 'waitForText', text: 'Add multiple tracks at once' },
-      { type: 'delay', ms: 1200 },
       {
         type: 'click',
-        text: 'Add multiple tracks at once',
-        say: 'Add multiple tracks at once',
-        hold: 1600,
+        text: 'File',
+        say: 'Add four files in one go, in any order',
+        hold: 900,
       },
+      { type: 'waitForText', text: 'Open track...' },
+      { type: 'click', text: 'Open track...' },
+      { type: 'waitForText', text: 'Add multiple tracks at once' },
+      { type: 'delay', ms: 1200 },
+      { type: 'click', text: 'Add multiple tracks at once', hold: 1600 },
       // NO `say` HERE, and nothing to hold on. The whole step runs off camera,
       // its `hold` included, so a line named here reaches neither the frame nor
       // the caption track: `captionTrack` closes a cue at the on-camera clock,
@@ -435,29 +410,19 @@ export const uiVideos: VideoSpec[] = [
     settleMs: 3000,
     steps: [
       { type: 'delay', ms: 1800 },
-      { type: 'click', text: 'Tools', say: 'Tools', hold: 900 },
+      {
+        type: 'click',
+        text: 'Tools',
+        say: 'Give a JBrowse with no genome one',
+        hold: 900,
+      },
       { type: 'waitForText', text: 'Assembly manager' },
-      {
-        type: 'click',
-        text: 'Assembly manager',
-        say: 'Assembly manager',
-        hold: 1600,
-      },
+      { type: 'click', text: 'Assembly manager', hold: 1600 },
       { type: 'waitForText', text: 'Add new assembly' },
-      {
-        type: 'click',
-        text: 'Add new assembly',
-        say: 'Add new assembly',
-        hold: 1400,
-      },
+      { type: 'click', text: 'Add new assembly', hold: 1400 },
       // The pane opens on its drop zone; the URL box is behind this link.
       { type: 'waitForText', text: 'Open from a URL' },
-      {
-        type: 'click',
-        text: 'Open from a URL',
-        say: 'Open from a URL',
-        hold: 1200,
-      },
+      { type: 'click', text: 'Open from a URL', hold: 1200 },
       {
         type: 'type',
         selector: '[data-testid="genome-urls"]',
@@ -487,7 +452,7 @@ export const uiVideos: VideoSpec[] = [
         say: 'hg38',
         hold: 1600,
       },
-      { type: 'click', text: 'Submit', say: 'Submit' },
+      { type: 'click', text: 'Submit' },
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
       { type: 'delay', ms: 3000 },
     ],

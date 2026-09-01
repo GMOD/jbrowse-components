@@ -39,15 +39,11 @@ export const qtlVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: { track: paintingTrackId, locus: peakLocus, fracY: 0.25 },
-        say: 'Right-click the painting under the peak',
+        say: 'Sort the strains by genotype under the peak',
         hold: 1600,
       },
       { type: 'waitForText', text: 'Sort rows by color here' },
-      {
-        type: 'click',
-        text: 'Sort rows by color here',
-        say: 'Sort rows by color here',
-      },
+      { type: 'click', text: 'Sort rows by color here' },
       // The sort runs over features already loaded, so this is a repaint rather
       // than a fetch — but it is 198 rows of run-length blocks across 156 Mb,
       // which under a software rasterizer is a held frame rather than an

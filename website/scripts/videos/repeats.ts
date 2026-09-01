@@ -47,22 +47,13 @@ export const repeatVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(rmskTrackId),
-        say: 'Track menu',
+        say: 'Redraw the packed lane as a painting',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Display types' },
-      {
-        type: 'click',
-        text: 'Display types',
-        say: 'Display types',
-        hold: 1200,
-      },
+      { type: 'click', text: 'Display types', hold: 1200 },
       { type: 'waitForText', text: 'Multi-row feature display (painting)' },
-      {
-        type: 'click',
-        text: 'Multi-row feature display (painting)',
-        say: 'Multi-row feature display (painting)',
-      },
+      { type: 'click', text: 'Multi-row feature display (painting)' },
       // The switch re-fetches through the multi-row RPC, which packs the
       // features into rows on the way back.
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
@@ -72,14 +63,13 @@ export const repeatVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(rmskTrackId),
-        say: 'Track menu',
+        say: 'Partition the rows by a column of the file',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Partition by...' },
       {
         type: 'click',
         text: 'Partition by...',
-        say: 'Partition by...',
         // long enough to read the list, which is the file's own columns rather
         // than anything the config named
         hold: 3000,

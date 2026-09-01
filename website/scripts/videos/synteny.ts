@@ -188,7 +188,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="zoom_out"]',
-        say: 'Zoom out',
         hold: 600,
       },
       { type: 'waitForAppSettled', timeout: 120000 },
@@ -196,7 +195,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="zoom_out"]',
-        say: 'Zoom out',
         hold: 600,
       },
       { type: 'waitForAppSettled', timeout: 120000 },
@@ -255,7 +253,7 @@ export const syntenyVideos: VideoSpec[] = [
         type: 'click',
         selector:
           '[data-testid="track_menu_icon"][data-trackid="grasses_orthogroups"]',
-        say: 'Track settings',
+        say: 'Launch a stacked view, one panel per grass',
         hold: 1400,
       },
       { type: 'waitForText', text: 'Launch stacked synteny view' },
@@ -267,7 +265,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Launch stacked synteny view (visible region)',
-        say: 'Launch stacked synteny view (visible region)',
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       // The rows arrive from the worker's mate discovery, which re-reads the
@@ -285,7 +282,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Replace current view',
-        say: 'Replace current view',
       },
       // Camera stays on: the lane view being replaced by the five-row stack
       // IS the payoff, and the bands read the file the lanes already pulled.
@@ -330,7 +326,12 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'delay', ms: 1200 },
       // Quick start is the default because the config ships synteny tracks, and
       // it launches ONE pair. Manual is where a third row is reachable at all.
-      { type: 'click', text: 'Manual', say: 'Manual', hold: 1500 },
+      {
+        type: 'click',
+        text: 'Manual',
+        say: 'Build the stack a row at a time',
+        hold: 1500,
+      },
       {
         type: 'waitForText',
         text: 'Select assemblies for linear synteny view',
@@ -369,7 +370,7 @@ export const syntenyVideos: VideoSpec[] = [
         say: 'CHC155 against J99',
         hold: 2100,
       },
-      { type: 'click', text: 'Launch', say: 'Launch' },
+      { type: 'click', text: 'Launch' },
       // Three genomes and two alignment indexes, off camera: a film of that is a
       // film of an empty view.
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
@@ -398,7 +399,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Open track selector',
-        say: 'OPEN TRACK SELECTOR',
         hold: 700,
       },
       {
@@ -410,7 +410,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Open track selector',
-        say: 'OPEN TRACK SELECTOR',
         hold: 500,
       },
       {
@@ -422,7 +421,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Open track selector',
-        say: 'OPEN TRACK SELECTOR',
         hold: 500,
       },
       {
@@ -436,7 +434,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: 'button[aria-label="Close drawer"]',
-        say: 'Close the track selector',
         hold: 300,
       },
       // OFF CAMERA, and gated on the banner rather than on a paint: each lane
@@ -494,14 +491,19 @@ export const syntenyVideos: VideoSpec[] = [
     settleMs: 4000,
     steps: [
       { type: 'delay', ms: 1800 },
-      { type: 'click', text: 'Add', say: 'Add', hold: 900 },
+      {
+        type: 'click',
+        text: 'Add',
+        say: 'Plot one genome against itself',
+        hold: 900,
+      },
       { type: 'waitForText', text: 'Dotplot view' },
-      { type: 'click', text: 'Dotplot view', say: 'Dotplot view' },
+      { type: 'click', text: 'Dotplot view' },
       // Held before the toggle, so the mode the form actually opens in is on
       // screen long enough to read.
       { type: 'waitForText', text: 'Quick start' },
       { type: 'delay', ms: 2000 },
-      { type: 'click', text: 'Manual', say: 'Manual', hold: 1600 },
+      { type: 'click', text: 'Manual', hold: 1600 },
       { type: 'waitForText', text: 'Select assemblies for dotplot view' },
       { type: 'delay', ms: 2200, say: 'One assembly on both axes' },
       {
@@ -527,7 +529,7 @@ export const syntenyVideos: VideoSpec[] = [
         say: `Y axis: ${paternalGlob}`,
         hold: 2000,
       },
-      { type: 'click', text: 'Launch', say: 'Launch' },
+      { type: 'click', text: 'Launch' },
       // The assembly's 47 contigs and then a whole-genome chain, read in one go.
       // Off camera: the click ahead of it stays on.
       {
@@ -540,10 +542,15 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'delay', ms: 3500 },
       // Short hold: the button's own tooltip opens under it, over the top of the
       // menu, until the cursor leaves for the row below.
-      { type: 'click', selector: COLOR_BY_MENU, say: 'Color by', hold: 500 },
+      {
+        type: 'click',
+        selector: COLOR_BY_MENU,
+        say: 'Color the plot by strand',
+        hold: 500,
+      },
       { type: 'waitForText', text: 'Strand' },
       { type: 'hover', text: 'Strand', hold: 1600 },
-      { type: 'click', text: 'Strand', say: 'Strand' },
+      { type: 'click', text: 'Strand' },
       { type: 'waitForAppSettled', timeout: 120000 },
       // A radio that only writes a setting keeps its menu up, and this one
       // stands over the corner the diagonal starts in. Escape reaches it while
@@ -700,14 +707,13 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: DOTPLOT_VIEW_MENU,
-        say: 'Dotplot header ⋮',
+        say: 'Re-order the vertical axis on demand',
         hold: 1600,
       },
       { type: 'waitForText', text: 'Re-order chromosomes' },
       {
         type: 'click',
         text: 'Re-order chromosomes',
-        say: 'Re-order chromosomes',
       },
       // The dialog is lazy, so this waits on the chunk as well as on the open.
       // Matched on its description rather than on its title, which is the menu
@@ -720,7 +726,7 @@ export const syntenyVideos: VideoSpec[] = [
         ms: 3000,
         say: 'The vertical axis, against the fixed horizontal one',
       },
-      { type: 'click', text: 'Start', say: 'Start' },
+      { type: 'click', text: 'Start' },
       // ON CAMERA, deliberately, and this is the step where that is a choice.
       // The reorder is a whole-file RPC, which is the shape of thing the corpus
       // cuts -- but a cut here would take out the only frames in which the app
@@ -741,7 +747,7 @@ export const syntenyVideos: VideoSpec[] = [
       // The summary line, which counts the regions it moved and the ones it
       // flipped -- a number the plot behind the dialog cannot show.
       { type: 'delay', ms: 3000 },
-      { type: 'click', text: 'Close', say: 'Close' },
+      { type: 'click', text: 'Close' },
       { type: 'waitForText', text: 'Re-order chromosomes', hidden: true },
       // The dialog sits centred OVER the plot, so Close leaves the pointer on
       // the canvas, where DotplotTooltips follows it. The logo is a bare `<g>`
@@ -822,7 +828,7 @@ export const syntenyVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
-      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1200 },
+      { type: 'click', selector: LAUNCH_SUBMENU, hold: 1200 },
       { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
       { type: 'delay', ms: 700 },
       {
@@ -853,7 +859,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Replace current view',
-        say: 'Replace current view',
       },
       // Camera stays on: the re-layout IS the payoff here, and both bands read
       // the file the lanes and the mate discovery have already pulled into the
@@ -938,7 +943,7 @@ export const syntenyVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
-      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1200 },
+      { type: 'click', selector: LAUNCH_SUBMENU, hold: 1200 },
       { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
       { type: 'delay', ms: 700 },
       {
@@ -980,7 +985,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Replace current view',
-        say: 'Replace current view',
       },
       // Camera stays on: the stack arriving IS the payoff, and all four bands
       // read the file the lanes and the mate discovery have already pulled into
@@ -1072,7 +1076,7 @@ export const syntenyVideos: VideoSpec[] = [
           fracY: 0,
           dy: 8,
         },
-        say: 'Right-click a chain block',
+        say: 'Open this chain block as a two-panel view',
         hold: 1000,
       },
       // The launch item is appended a fetch after the menu opens: it needs the
@@ -1088,7 +1092,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Launch synteny view for this position',
-        say: 'Launch synteny view for this position',
       },
       // The dialog is lazy, so this waits on the chunk as well as on the open.
       // Matched on the checkbox rather than on the title, which is the menu item
@@ -1116,7 +1119,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Replace current view',
-        say: 'Replace current view',
       },
       // Camera stays on: the linear view being replaced by the two-panel one IS
       // the payoff, and both panels read the chain the display above has already
@@ -1189,7 +1191,7 @@ export const syntenyVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
-      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1200 },
+      { type: 'click', selector: LAUNCH_SUBMENU, hold: 1200 },
       { type: 'waitForText', text: 'Graph genome view (this selection)' },
       { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
       {
@@ -1212,7 +1214,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Replace current view',
-        say: 'Replace current view',
       },
       {
         type: 'waitForSelector',
@@ -1229,16 +1230,15 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(segmentsTrackId),
-        say: 'The segments lane: Track menu',
+        say: 'The lane cuts a graph of its own, from here',
         hold: 700,
       },
       { type: 'waitForText', text: 'Launch' },
-      { type: 'click', text: 'Launch', say: 'Launch', hold: 700 },
+      { type: 'click', text: 'Launch', hold: 700 },
       { type: 'waitForText', text: 'Graph genome view (this region)' },
       {
         type: 'click',
         text: 'Graph genome view (this region)',
-        say: 'Graph genome view (this region)',
       },
       { type: 'waitForSelector', selector: GRAPH_DRAWN, timeout: 180000 },
       { type: 'waitForAppSettled', timeout: 180000 },
@@ -1263,7 +1263,7 @@ export const syntenyVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
-      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1000 },
+      { type: 'click', selector: LAUNCH_SUBMENU, hold: 1000 },
       { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
       {
         type: 'click',
@@ -1280,7 +1280,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Replace current view',
-        say: 'Replace current view',
       },
       {
         type: 'waitForSelector',
@@ -1346,7 +1345,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Launch synteny view, K12 vs...',
-        say: 'Launch synteny view, K12 vs...',
         hold: 1200,
       },
       { type: 'waitForSelector', selector: MAF_NCTC86_ENTRY },
