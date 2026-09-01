@@ -41,12 +41,27 @@
     display: block;
   }
 
-  /* The Config/CLI variant sits in prose rather than in a dialog, so it keeps
-     the page's own code-block styling and needs nothing but its own spacing. */
+  /* The Config/CLI variant sits in prose rather than in a dialog, so a tab
+     that is a lone code block keeps the page's own code-block styling and
+     needs nothing here but its own spacing. The Desktop tab is not that: its
+     steps mix paragraphs and a list around the code, none of which the page's
+     `pre` rule reaches, so derive-desktop-steps.ts wraps them in
+     `.desktop-steps` for a box of their own. */
   .config-cli-tabs {
     margin: 1rem 0;
   }
   .config-cli-tabs > .spec-tab-label {
     font-size: 0.85rem;
+  }
+  .spec-tabs .desktop-steps {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+  }
+  .spec-tabs .desktop-steps > *:first-child {
+    margin-top: 0;
+  }
+  .spec-tabs .desktop-steps > *:last-child {
+    margin-bottom: 0;
   }
 }

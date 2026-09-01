@@ -29,6 +29,10 @@ function paragraph(children: PhrasingContent[]) {
   return { type: 'paragraph', children } satisfies Paragraph
 }
 
+function raw(value: string): RootContent {
+  return { type: 'html', value }
+}
+
 function bullets(items: PhrasingContent[][]) {
   return {
     type: 'list',
@@ -72,6 +76,7 @@ function moreOption(label: string, value: string) {
 
 export function desktopTrackNodes(json: string): RootContent[] {
   return [
+    raw('<div class="desktop-steps">'),
     paragraph([
       text(
         'In JBrowse Desktop, or in any running JBrowse Web session, open a view on this track’s assembly, then ',
@@ -82,6 +87,7 @@ export function desktopTrackNodes(json: string): RootContent[] {
       text(', and paste:'),
     ]),
     { type: 'code', lang: 'json', value: json } satisfies Code,
+    raw('</div>'),
   ]
 }
 
@@ -167,6 +173,7 @@ export function desktopAssemblyNodes(
   const display = nonEmpty(displayName)
   return resolved
     ? [
+        raw('<div class="desktop-steps">'),
         paragraph([
           text('In JBrowse Desktop, '),
           strong(DESKTOP_UI_LABELS.openGenome),
@@ -204,6 +211,7 @@ export function desktopAssemblyNodes(
             ? [moreOption(DESKTOP_UI_LABELS.cytobands, cytobandFile)]
             : []),
         ]),
+        raw('</div>'),
       ]
     : undefined
 }
