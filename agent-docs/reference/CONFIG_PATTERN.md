@@ -323,13 +323,22 @@ config via `ConfigurationReference(schemaType)`, dispatched on the schema's
 | -------------------- | ------------------------------- |
 | `'trackId'`          | `TrackConfigurationReference`   |
 | `'displayId'`        | `DisplayConfigurationReference` |
-| anything else        | plain MST-identifier reference  |
+| anything else        | plain `types.union(ref, schema)` |
 
 Authoritative docs (with named canary tests) live alongside the code at
 `packages/core/src/configuration/CLAUDE.md`. Highlights:
 
-- All three branches are the same `types.union(ref, schema)`: an id string, or
-  a full inline config held as an owned instance.
+- All three branches union the same two members — an id string, or a full
+  inline config — but **only the first two carry `idOrSnapshotUnion`'s
+  dispatcher**, and that asymmetry is load-bearing rather than an oversight the
+  plain branch never caught up on. With the dispatcher, a non-string goes to
+  the schema member and is adopted as an owned instance (which throws if it
+  already has a parent). Undispatched, `BaseReferenceType.isAssignableFrom`
+  defers to its target type and a live in-tree node goes to the *reference*
+  member instead — which is what `initializeInternetAccount` needs when it
+  pushes `jbrowse.internetAccounts[i]` straight through. Adding the dispatcher
+  to the plain branch breaks it; `configurationSchema.test.ts` pins it at the
+  union, `InternetAccounts.test.ts` five suites away.
 - **TrackConfigurationReference** resolves an id through
   `session.getTrackById(id)` (a per-id computed — resolving one track's config
   subscribes only to that id) and throws if it misses. The union's second
@@ -348,14 +357,18 @@ Authoritative docs (with named canary tests) live alongside the code at
   `parent.type`, inside the containing track config's `displays`. The
   type-match path always succeeds at runtime because
   `baseTrackConfig.preProcessSnapshot` injects a stub display entry for every
-  registered displayType on the track — and it is **reached**, by every session
-  saved before a `DisplayType` was renamed: the `aliases` entry rewrites both
-  `type`s, nothing rewrites the saved `configuration` id, and the injected stub
-  is named for the new type. `DisplaySnapshotShape.test.tsx` pins it.
-- `ConfigurationReference`'s return is left unannotated. Adding
-  `as SCHEMATYPE` narrows `SnapshotIn` to just the object branch and breaks
-  string-id callers; the inferred union `SnapshotIn` is
-  `string | SnapshotIn<schema>`.
+  registered displayType on the track — and it is **reached**, by a session
+  saved before a `DisplayType` was renamed against a track whose config does
+  not itself declare the old entry: the stub is named for the new type, the
+  display model's `preProcessSnapshot` rewrites the state model's `type`, and
+  nothing rewrites the saved `configuration` id. A config that *does* declare
+  the old entry keeps its old `displayId` through the alias rewrite and wins
+  the first-wins dedupe, so that session resolves by id and never reaches the
+  fallback. `DisplaySnapshotShape.test.tsx` pins the reached case.
+- `ConfigurationReference`'s return carries an `IConfigurationReference`
+  annotation but no `as SCHEMATYPE` **cast**. The cast narrows `SnapshotIn` to
+  just the object branch and breaks string-id callers; the union `SnapshotIn`
+  the annotation preserves is `string | SnapshotIn<schema>`.
 - **A subclass that adds its own config slots must redeclare
   `configuration: ConfigurationReference(configSchema)` in its `types.compose`**,
   or `getConf` still types against the base factory's schema. `types.compose`

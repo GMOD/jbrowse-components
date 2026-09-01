@@ -951,9 +951,18 @@ export function showTrackGeneric(
   // snackbars. Config is validated before the push so the open set never holds
   // a broken track.
   try {
-    const rawConf =
-      (inlineConf && expandLooseTrackConfig(inlineConf, pluginManager)) ??
-      session.getTrackById(trackId)
+    // `trackId` seeds the expansion because `guessTrackConf` otherwise
+    // synthesizes one from the filename, and the dedupe above and
+    // `hideTrackGeneric` both look the track up by the id the caller passed.
+    // Only for the loose form: spreading a live MST node (SvInspector's
+    // circular track) would flatten it out of the `isStateTreeNode` branch.
+    const inlineRawConf = isLooseTrackConfig(inlineConf)
+      ? expandLooseTrackConfig<Record<string, unknown>>(
+          { trackId, ...inlineConf },
+          pluginManager,
+        )
+      : inlineConf
+    const rawConf = inlineRawConf ?? session.getTrackById(trackId)
     if (!rawConf) {
       throw new Error(`Could not resolve identifier "${trackId}"`)
     }

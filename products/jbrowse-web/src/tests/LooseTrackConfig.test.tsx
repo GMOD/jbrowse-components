@@ -111,3 +111,55 @@ test('a loose config passed to showTrack as an inline conf expands too', () => {
   // and it is the track's own config, resolvable by nothing else (ADR-084)
   expect(session.getTrackById('loose_inline')).toBeUndefined()
 })
+
+// The loose form need not carry a `trackId` — `guessTrackConf` synthesizes one
+// from the filename. That id used to land in the stored config while the
+// caller's stayed the handle, and everything that looks a track up
+// (`showTrackGeneric`'s own dedupe, `hideTrackGeneric`) goes through
+// `configuration.trackId`: the track opened, then could not be closed and
+// stacked a fresh copy on every re-show.
+test('a loose inline conf with no trackId takes the one showTrack was given', () => {
+  const { rootModel } = getPluginManager(config)
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    assembly: 'volvox',
+    loc: 'ctgA:1..1000',
+  }) as LinearGenomeViewModel
+  const inline = { uri: 'volvox.filtered.vcf.gz', assemblyNames: ['volvox'] }
+
+  const track = view.showTrack('no_id_inline', {}, {}, inline)
+  expect(session.snackbarMessages).toEqual([])
+  expect(getSnapshot(track!.configuration)).toMatchObject({
+    type: 'VariantTrack',
+    trackId: 'no_id_inline',
+  })
+
+  expect(view.showTrack('no_id_inline', {}, {}, inline)).toBe(track)
+  expect(view.tracks).toHaveLength(1)
+  expect(view.hideTrack('no_id_inline')).toBe(true)
+  expect(view.tracks).toHaveLength(0)
+})
+
+// but a trackId written beside `uri` still wins, the same way every other
+// inferred default gives way to a key the loose form names
+test('an explicit trackId in the loose conf wins over the argument', () => {
+  const { rootModel } = getPluginManager(config)
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    assembly: 'volvox',
+    loc: 'ctgA:1..1000',
+  }) as LinearGenomeViewModel
+  const track = view.showTrack(
+    'ignored',
+    {},
+    {},
+    {
+      trackId: 'explicit_id',
+      uri: 'volvox.filtered.vcf.gz',
+      assemblyNames: ['volvox'],
+    },
+  )
+  expect(getSnapshot(track!.configuration)).toMatchObject({
+    trackId: 'explicit_id',
+  })
+})

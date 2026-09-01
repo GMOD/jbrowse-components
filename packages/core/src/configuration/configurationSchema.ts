@@ -576,13 +576,17 @@ function TrackConfigurationReference(schemaType: IAnyType) {
  * Step 2 is the safety net because `baseTrackConfig.preProcessSnapshot`
  * already injects a stub display for every registered displayType on the
  * track, so a same-type lookup always succeeds at runtime for properly
- * loaded tracks. It is what carries a **renamed display type** across: a
- * DisplayType `aliases` entry rewrites the config's `type` and the display
- * model's own `preProcessSnapshot` rewrites the state model's, but the saved
+ * loaded tracks. It is what carries a **renamed display type** across for a
+ * catalog track: the injected stub is named for the new type, the display
+ * model's own `preProcessSnapshot` rewrites the state model's, and the saved
  * `configuration` id still spells the old name, so only the type match
- * reconnects them. An older third step auto-created a *detached* config when
- * neither matched — that produced an orphaned MST node whose edits silently
- * didn't persist. Removed in favor of a clear throw.
+ * reconnects them. Not every pre-rename session reaches it — a track config
+ * that itself declares the old display entry keeps that entry's `displayId`
+ * through the alias rewrite (`{ ...d, type: canonical }`) and wins the
+ * first-wins dedupe, so its session resolves by id. An older third step
+ * auto-created a *detached* config when neither matched — that produced an
+ * orphaned MST node whose edits silently didn't persist. Removed in favor of a
+ * clear throw.
  *
  * The union's schemaType branch is symmetry with `TrackConfigurationReference`
  * rather than a path anything in tree takes: the two production writers,
