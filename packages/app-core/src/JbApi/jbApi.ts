@@ -35,6 +35,7 @@ import { loadSessionSpec } from '../SessionSpec/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import type {
   AbstractSessionModel,
   AbstractViewModel,
@@ -397,14 +398,14 @@ export async function waitReady(
   }
 }
 
-function trackEntry(conf: AnyConfigurationModel) {
-  const adapter = readConfObject(conf, 'adapter') as { type?: string }
+function trackEntry(conf: BaseTrackConfig) {
+  const adapter = readConfObject(conf, 'adapter')
   return {
-    trackId: readConfObject(conf, 'trackId') as string,
-    name: readConfObject(conf, 'name') as string,
+    trackId: conf.trackId,
+    name: readConfObject(conf, 'name'),
     type: conf.type,
     ...(adapter.type ? { adapterType: adapter.type } : {}),
-    assemblyNames: readConfObject(conf, 'assemblyNames') as string[],
+    assemblyNames: readConfObject(conf, 'assemblyNames'),
   }
 }
 
@@ -500,9 +501,8 @@ function pickView(
   return canDisplay[0]!
 }
 
-function firstAssemblyName(conf: AnyConfigurationModel) {
-  const names = readConfObject(conf, 'assemblyNames') as string[]
-  return names[0]
+function firstAssemblyName(conf: BaseTrackConfig) {
+  return readConfObject(conf, 'assemblyNames')[0]
 }
 
 interface JbRegion {
@@ -626,7 +626,7 @@ async function fetchFeatures(
     : (session.id ?? 'mcp')
   const renamed = await renameRegionsIfNeeded(session.assemblyManager, {
     regions,
-    adapterConfig: readConfObject(conf, 'adapter') as Record<string, unknown>,
+    adapterConfig: readConfObject(conf, 'adapter'),
     sessionId,
   })
   const dataAdapter = await getFeatureAdapterOrThrow({
