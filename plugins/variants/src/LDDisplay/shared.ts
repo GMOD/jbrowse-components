@@ -4,16 +4,13 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import {
-  getContainingView,
-  getNotificationSink,
-  getSession,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import {
   activeJexlFilters,
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
+import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import GlobalFetchMixin, {
   blockKeySignature,
 } from '@jbrowse/display-kit/GlobalFetchMixin'
@@ -800,16 +797,10 @@ export default function sharedModelFactory(
     })
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
-          } catch (e) {
-            console.error(e)
-            getNotificationSink(self).notifyError(`${e}`, e)
-          }
-        })()
+        runLazyAfterAttach(
+          self,
+          async () => (await import('./afterAttach.ts')).doAfterAttach,
+        )
       },
     }))
 }

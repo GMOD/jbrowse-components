@@ -20,6 +20,7 @@ import {
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
+import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin, {
@@ -1821,22 +1822,12 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const { setupMultiSampleVariantAutoruns } =
-                await import('./setupMultiSampleVariantAutoruns.ts')
-              if (!isAlive(self)) {
-                return
-              }
-              setupMultiSampleVariantAutoruns(self)
-            } catch (e) {
-              if (isAlive(self)) {
-                console.error(e)
-                getNotificationSink(self).notifyError(`${e}`, e)
-              }
-            }
-          })()
+          runLazyAfterAttach(
+            self,
+            async () =>
+              (await import('./setupMultiSampleVariantAutoruns.ts'))
+                .setupMultiSampleVariantAutoruns,
+          )
         },
       }))
   )

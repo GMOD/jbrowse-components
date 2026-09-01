@@ -14,6 +14,7 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -1115,16 +1116,10 @@ export function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self as MultiWaySyntenyDisplayModel)
-          } catch (e) {
-            console.error(e)
-            self.setError(e)
-          }
-        })()
+        runLazyAfterAttach(
+          self as MultiWaySyntenyDisplayModel,
+          async () => (await import('./afterAttach.ts')).doAfterAttach,
+        )
       },
       /**
        * #action
