@@ -1,12 +1,7 @@
 import * as ts from 'typescript'
 
 import { resolvedProperties } from './generateStateModelDocs.ts'
-import {
-  markdownTable,
-  parseSourceFileSyntactic,
-  proseCell,
-  rewriteGroupedMarkerBlocks,
-} from './util.ts'
+import { markdownTable, proseCell, rewriteGroupedMarkerBlocks } from './util.ts'
 
 import type { StateModel } from './generateStateModelDocs.ts'
 import type { SourceCorpus } from './util.ts'
@@ -176,11 +171,27 @@ function stringArrayOf(decl: ts.VariableDeclaration) {
     : undefined
 }
 
+// Two generators ask for this scan off the same corpus — the URL parameters
+// tables here and the LaunchView point table, which wants `launchArgs` alone —
+// and it syntactically parses all ~3,900 sources, which cost a run 2.8s the
+// second time. Keyed on the corpus because that is what the answer is a
+// function of, and a corpus is built once per run and never written to.
+const scans = new WeakMap<SourceCorpus, Scan>()
+
 /**
  * Walk every source file once, collecting the tagged buckets, every interface
  * (so extends clauses resolve), and the tagged value lists.
  */
 export function scanSpecKeys(corpus: SourceCorpus): Scan {
+  let scan = scans.get(corpus)
+  if (!scan) {
+    scan = walkSpecKeys(corpus)
+    scans.set(corpus, scan)
+  }
+  return scan
+}
+
+function walkSpecKeys(corpus: SourceCorpus): Scan {
   const buckets: TaggedBucket[] = []
   const interfaces = new Map<string, SpecKey[]>()
   const valueLists = new Map<string, string[]>()
@@ -189,7 +200,7 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
   const omitted = new Map<string, Set<string>>()
 
   for (const file of corpus.files) {
-    const source = parseSourceFileSyntactic(file, corpus.read(file))
+    const source = corpus.parse(file)
     const text = source.getFullText()
     const walk = (node: ts.Node) => {
       // `'LaunchView-<type>': { args: LaunchXViewArgs; result: ... }` inside a

@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
-import { writeDoc } from './format.ts'
+import { writeDoc, writePage } from './format.ts'
 import {
   codeBlock,
   exampleSection,
@@ -106,7 +106,7 @@ export function writeApiDocs(byGroup: Record<string, ApiGroup>) {
   const dir = 'website/docs/api'
   fs.mkdirSync(dir, { recursive: true })
   for (const grp of Object.values(byGroup)) {
-    writeDoc(`${dir}/${grp.id}.md`, renderGroup(grp))
+    writePage(`${dir}/${grp.id}.md`, renderGroup(grp))
   }
 }
 

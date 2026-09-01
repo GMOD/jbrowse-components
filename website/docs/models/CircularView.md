@@ -4,16 +4,13 @@ title: CircularView
 sidebar_label: View -> CircularView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`circular-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts).
 
 ## Example usage
 
-Hand-authored under `defaultSession.views`, with every setting written directly
-on the view object. `assembly` picks the genome, a `tracks` entry may carry
-display config inline, and `displayedRegionNames` keeps an assembly's
+Hand-authored under `defaultSession.views`, with every setting written
+directly on the view object. `assembly` picks the genome, a `tracks` entry may
+carry display config inline, and `displayedRegionNames` keeps an assembly's
 alt/unplaced contigs off the circle:
 
 ```js
@@ -25,8 +22,7 @@ alt/unplaced contigs off the circle:
 }
 ```
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

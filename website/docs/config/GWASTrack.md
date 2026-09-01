@@ -4,15 +4,13 @@ title: GWASTrack
 sidebar_label: Track -> GWASTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASTrack/configSchema.ts).
 
 ## Example usage
 
 `GWASAdapter` is a `BedTabixAdapter` that defaults `scoreColumn` to
 `neg_log_pvalue`. If your BED holds a raw p-value (not -log10 p), point
-`scoreColumn` at that column _and_ set `scoreTransform: 'negLog10'` so it's
+`scoreColumn` at that column *and* set `scoreTransform: 'negLog10'` so it's
 converted into the Manhattan -log10 p value (use `negLog10FromLn` for a
 natural-log p-value, or a `jexl:...` expression of `score` such as
 `jexl:-log10(score)` for anything else):
@@ -38,18 +36,13 @@ used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
 
 ## Related links
 
-- **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
-  ([state model](../../models/linearmanhattandisplay))
+- **Display:** [LinearManhattanDisplay](../linearmanhattandisplay) ([state model](../../models/linearmanhattandisplay))
 - **Adapter:** [GWASAdapter](../gwasadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

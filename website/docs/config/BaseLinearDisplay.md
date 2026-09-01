@@ -4,21 +4,18 @@ title: BaseLinearDisplay
 sidebar_label: Display -> BaseLinearDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/configSchema.ts).
 
 ## Overview
 
 Shared base config for linear displays — its slots (`height`,
 `maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
-common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config extends
-it, and third-party plugins extend it too.
+common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config
+extends it, and third-party plugins extend it too.
 
 ### BaseLinearDisplay - Identifier
 
-Every BaseLinearDisplay has a unique `displayId`, a required top-level field
-that identifies it (not one of the config slots below).
+Every BaseLinearDisplay has a unique `displayId`, a required top-level field that identifies it (not one of the config slots below).
 
 ## Related links
 
@@ -28,8 +25,7 @@ that identifies it (not one of the config slots below).
 - **Extended by:** [LinearHicDisplay](../linearhicdisplay)
 - **Extended by:** [LinearMafDisplay](../linearmafdisplay)
 - **Extended by:** [LinearManhattanDisplay](../linearmanhattandisplay)
-- **Extended by:**
-  [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+- **Extended by:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Extended by:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Extended by:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 - **Extended by:** [SharedLDDisplay](../sharedlddisplay)
@@ -37,13 +33,7 @@ that identifies it (not one of the config slots below).
 
 ## Config slots
 
-`BaseLinearDisplay` is a shared base schema, not a type you name in a config.
-Set these slots on one of the configs under **Extended by** above, each of which
-lists them as inherited and shows the shape in its own example. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+`BaseLinearDisplay` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

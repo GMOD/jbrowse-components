@@ -4,16 +4,13 @@ title: LinearMultiSampleVariantDisplay
 sidebar_label: Display -> LinearMultiSampleVariantDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `variants`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.ts).
 
 ## Example usage
 
-Minimal `VariantTrack` config selecting this display type. The `displays` array
-form is required here (rather than the object shorthand) because this is a
-non-default display type — see
+Minimal `VariantTrack` config selecting this display type. The `displays`
+array form is required here (rather than the object shorthand) because
+this is a non-default display type — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
@@ -36,11 +33,11 @@ non-default display type — see
 
 Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
 whose first column is the sample name and whose other columns are per-sample
-attributes (e.g. `population`), then `colorBy` one of those attributes to color
-the sidebar rows on load. `showReferenceAlleles: false` paints the background
-solid grey and draws only ALT alleles on top, which makes overlapping structural
-variants easier to see. This is the 1000 Genomes "colored by population" demo
-config:
+attributes (e.g. `population`), then `colorBy` one of those attributes to
+color the sidebar rows on load. `showReferenceAlleles: false` paints the
+background solid grey and draws only ALT alleles on top, which makes
+overlapping structural variants easier to see. This is the 1000 Genomes
+"colored by population" demo config:
 
 ```js
 {
@@ -64,10 +61,10 @@ config:
 }
 ```
 
-Phased haplotype rows, two per sample. Sample colors and group labels come from
-the adapter's `samplesTsvLocation` above — the display's own `layout` holds the
-row arrangement the user drags into place, so it is session state rather than a
-config slot:
+Phased haplotype rows, two per sample. Sample colors and group labels come
+from the adapter's `samplesTsvLocation` above — the display's own `layout`
+holds the row arrangement the user drags into place, so it is session state
+rather than a config slot:
 
 ```js
 {
@@ -103,13 +100,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearMultiSampleVariantDisplay", ... }]`, or in the
-track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays)
-when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are
-explained in the [config slot types reference](/docs/config_guides/slot_types).
-Slots a base configuration contributes are listed here too, so this table is the
-whole surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearMultiSampleVariantDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

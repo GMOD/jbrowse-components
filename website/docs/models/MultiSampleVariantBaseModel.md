@@ -4,17 +4,14 @@ title: MultiSampleVariantBaseModel
 sidebar_label: Display -> MultiSampleVariantBaseModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`variants` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiSampleVariantBaseModel.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiSampleVariantBaseModel.ts).
 
 ## Example usage
 
 `renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots
-(see `SharedVariantConfigSchema`) read at runtime through `getConf` and written
-through `self.configuration.setSlot` — they are NOT plain MST properties. Set
-them in a track's `displays` array to change the default:
+(see `SharedVariantConfigSchema`) read at runtime through `getConf` and
+written through `self.configuration.setSlot` — they are NOT plain MST
+properties. Set them in a track's `displays` array to change the default:
 
 ```js
 displays: [
@@ -40,8 +37,7 @@ displays: [
 ]
 ```
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

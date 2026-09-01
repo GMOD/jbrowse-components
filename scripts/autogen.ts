@@ -43,6 +43,29 @@ interface Generator {
   // report. Nothing DERIVED from a figure belongs in this list — those left
   // autogen entirely (see the tutorial-card note below).
   figureDependent?: boolean
+  // Rewrite scheduling, which is decided by what a generator WRITES.
+  //
+  // `exclusive` rewrites a package.json. That file is not addressed to one
+  // reader — every node process resolves modules through it — so it runs with
+  // nothing else in flight rather than beside a process that would read it
+  // half-written.
+  //
+  // `independent` writes only files no other generator writes OR READS, so it
+  // runs alongside the ordered chain below instead of in line with it. The
+  // entry's comment names its output. Everything without either flag splices
+  // blocks into `website/docs` and `agent-docs`, where two generators
+  // rewriting one page at once lose one of the two blocks, and so keeps this
+  // list's order.
+  exclusive?: boolean
+  independent?: boolean
+  // Generators whose OUTPUT this one reads, so a rewrite starts it only once
+  // they have finished. Order in this list already says it for two chain
+  // neighbours; this is for the pair the scheduler would otherwise run at once.
+  needs?: string[]
+  // A rewrite skips this generator when the named one is also running, because
+  // that one redoes the whole job. `--check` still runs it: there it is what
+  // names the stale artifact.
+  redundantWith?: string
   // The figure corpus this generator needs on disk. When the worktree holds
   // none of what figures.lock lists under it, the generator is SKIPPED with a
   // warning instead of run — the asset-shaped version of verify.ts's
@@ -65,8 +88,10 @@ const api = (script: string) => web(`api-docs/${script}`)
 
 const GENERATORS: Generator[] = [
   {
+    // Writes packages/core/package.json.
     name: 'core exports',
     argv: ['node', 'packages/core/scripts/generateExports.mjs'],
+    exclusive: true,
   },
   {
     // The other half of the same job for the packages whose `exports` map is a
@@ -79,25 +104,30 @@ const GENERATORS: Generator[] = [
       '--experimental-strip-types',
       'scripts/generate-publish-exports.ts',
     ],
+    exclusive: true,
   },
   {
     // The bring-your-own-overlays docs quote what the chrome layer costs. This
     // bundles both entry points for real so the claim is measured rather than
-    // remembered, and the byo landing page imports the result.
+    // remembered, and the byo landing page imports the result from
+    // scripts/chromeBundleSizes.json.
     name: 'chrome bundle sizes',
     argv: [
       'node',
       '--experimental-strip-types',
       'scripts/measureChromeBundle.ts',
     ],
+    independent: true,
   },
   {
+    // Writes tsconfig.build.json and each package's tsconfig.build.esm.json.
     name: 'tsconfig references',
     argv: [
       'node',
       '--experimental-strip-types',
       'scripts/generate-tsconfig-references.ts',
     ],
+    independent: true,
   },
   {
     // Only component_tests/*/packed/ is uploaded to the component-test job,
@@ -105,22 +135,27 @@ const GENERATORS: Generator[] = [
     // manifests and pack.ts's rewrite never reaches it. Without this, a new
     // cross-package dependency edge falls through to the npm registry for an
     // unpublished version and only surfaces when that job fails, one missing
-    // name per run.
+    // name per run. Writes component_tests/*/package.json and their
+    // pnpm-workspace.yaml.
     name: 'component-test pins',
     argv: [
       'node',
       '--experimental-strip-types',
       'scripts/gen-component-test-pins.ts',
     ],
+    independent: true,
   },
   {
-    // Writes spec-recipe-unmapped.txt, and on the way round-trips every
-    // figure's jbrowse:// link through Desktop's parseProtocolUrl and
-    // app-core's parseSessionSpecUrl. A broken link fails either way; the list
-    // regenerates here so a new unmapped field is a one-file commit rather
-    // than a docs check telling you which command to run.
+    // Writes spec-recipe-unmapped.txt — and recipe-path-labels.ts, when an
+    // exemption there has stopped covering anything — and on the way
+    // round-trips every figure's jbrowse:// link through Desktop's
+    // parseProtocolUrl and app-core's parseSessionSpecUrl. A broken link fails
+    // either way; the list regenerates here so a new unmapped field is a
+    // one-file commit rather than a docs check telling you which command to
+    // run.
     name: 'spec recipe unmapped list',
     argv: web('check-spec-recipes.ts'),
+    independent: true,
   },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
@@ -207,8 +242,13 @@ const GENERATORS: Generator[] = [
   },
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'jbrowse-capture doc', argv: web('generate-capture-doc.ts') },
-  { name: 'gallery links', argv: web('gen-gallery-links.ts') },
-  { name: 'live links', argv: web('gen-live-links.ts') },
+  // Both write one file under website/src/lib and read no doc.
+  {
+    name: 'gallery links',
+    argv: web('gen-gallery-links.ts'),
+    independent: true,
+  },
+  { name: 'live links', argv: web('gen-live-links.ts'), independent: true },
   // The tutorial cards and homepage images used to be gated here. They are
   // cropped from other figures, so a figure republished without them left this
   // check failing on bytes nobody had written — the fix was always the same
@@ -232,6 +272,7 @@ const GENERATORS: Generator[] = [
     // missing.
     name: 'social card image',
     argv: web('generate-og-image.ts'),
+    independent: true,
     figureDependent: true,
     figureRoot: 'website/static/img',
   },
@@ -274,6 +315,7 @@ const GENERATORS: Generator[] = [
     // against gendocs' whole-repo program.
     name: 'marker tables',
     argv: api('markers.ts'),
+    redundantWith: 'config/model/api docs',
   },
   {
     // The adapter -> track type map the add-track guessers and `jbrowse
@@ -286,6 +328,7 @@ const GENERATORS: Generator[] = [
       '--experimental-strip-types',
       'scripts/generateTrackTypeMap.ts',
     ],
+    independent: true,
     diffPaths: ['packages/add-track-core/src/trackTypes.generated.ts'],
   },
   {
@@ -295,16 +338,20 @@ const GENERATORS: Generator[] = [
     // broken — the failure that makes a checker worth ignoring. Also emits the
     // jbrowse-authoring skill's config-types.md index.
     //
-    // Runs BEFORE the doc generators below, not after: generateConfigDocs
-    // reads the shorthand keys out of this manifest, so generating it second
-    // would document the previous run's answer and leave `pnpm autogen`
-    // needing two passes to settle after a normalizer changes.
+    // Finishes BEFORE the doc generators below, which the `needs` on gendocs
+    // says now that a rewrite no longer runs this list in one sequence:
+    // generateConfigDocs reads the shorthand keys out of this manifest, so
+    // generating it second would document the previous run's answer and leave
+    // `pnpm autogen` needing two passes to settle after a normalizer changes.
     name: 'config schema manifest',
     argv: [
       'node',
       '--experimental-strip-types',
       'scripts/generateConfigManifest.ts',
     ],
+    independent: true,
+    // It bundles the live source tree, add-track-core's generated map included.
+    needs: ['adapter track type map'],
     diffPaths: [
       'products/jbrowse-cli/src/commands/validate/configManifest.generated.ts',
       '.claude/skills/jbrowse-authoring/references/config-types.md',
@@ -339,6 +386,8 @@ const GENERATORS: Generator[] = [
     // package's `#api` exports into its README between API_DOCS markers.
     name: 'config/model/api docs',
     argv: ['pnpm', 'gendocs'],
+    // generateConfigDocs reads the shorthand keys out of the manifest.
+    needs: ['config schema manifest'],
     diffPaths: [
       // the generated pages, plus every hand-written guide a marker block
       // landed in — including `urlparams.md`'s SPEC_KEYS blocks, what a session
@@ -357,29 +406,41 @@ const GENERATORS: Generator[] = [
   },
 ]
 
-function run(argv: string[], extra: string[] = []) {
-  return spawnSync(argv[0]!, [...argv.slice(1), ...extra], {
-    cwd: root,
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-  })
-}
-
 // V8's code cache, shared by every child below. Each of these is a fresh node
 // compiling the same TypeScript module graphs from source, which is most of
 // what the cheap ones cost at all. Nothing about what runs changes: a stale
 // entry is recompiled and a missing directory is written on the first run.
 const compileCache = join(root, 'node_modules/.cache/node-compile')
 
-// The same, captured rather than inherited, for the pooled `--check` runs below
-// — interleaved output from six processes at once is unreadable, so each one's
-// is held and printed whole when it finishes.
+const childEnv = { ...process.env, NODE_COMPILE_CACHE: compileCache }
+
+// Inherited stdio, so this lane's generator streams as it works. Async rather
+// than spawnSync even though the lane is a sequence: spawnSync blocks the event
+// loop, which leaves the pooled children beside it unread — their output fills
+// a 64KB pipe nobody is draining and they stop there until the sequence ends.
+function run(argv: string[], extra: string[] = []) {
+  return new Promise<number | null>(resolve => {
+    const child = spawn(argv[0]!, [...argv.slice(1), ...extra], {
+      cwd: root,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+      env: childEnv,
+    })
+    child.on('error', () => {
+      resolve(1)
+    })
+    child.on('close', resolve)
+  })
+}
+
+// The same, captured rather than inherited, for the pooled runs below — each
+// one's output is held and printed whole when it finishes.
 function runCaptured(argv: string[], extra: string[] = []) {
   return new Promise<{ status: number | null; output: string }>(resolve => {
     const child = spawn(argv[0]!, [...argv.slice(1), ...extra], {
       cwd: root,
       shell: process.platform === 'win32',
-      env: { ...process.env, NODE_COMPILE_CACHE: compileCache },
+      env: childEnv,
     })
     let output = ''
     for (const stream of [child.stdout, child.stderr]) {
@@ -509,77 +570,157 @@ function skipsForMissingFigures({ name, figureRoot }: Generator) {
   return missing
 }
 
+// A rewrite skips a generator whose whole job another selected generator redoes
+// (see `redundantWith`). Named rather than dropped silently: a run that says
+// "regenerated" while a table was never written is what this file exists to
+// prevent.
+const superseded = check
+  ? []
+  : selected.filter(
+      g =>
+        g.redundantWith !== undefined &&
+        selected.some(other => other.name === g.redundantWith),
+    )
+for (const { name, redundantWith } of superseded) {
+  console.log(`Skipping ${name}: ${redundantWith} rewrites the same tables`)
+}
+const running = selected.filter(g => !superseded.includes(g))
+
+const workers = Math.min(6, Math.max(1, availableParallelism() - 2))
+
+// Run `queue` through `runOne`, `workers` at a time. A generator's `needs` name
+// an entry earlier in the list, so a worker blocked on one is never blocked on
+// one still queued behind it.
+async function pool(
+  queue: Generator[],
+  runOne: (g: Generator) => Promise<void>,
+) {
+  const pending = [...queue]
+  await Promise.all(
+    Array.from({ length: workers }, async () => {
+      while (pending.length > 0) {
+        await runOne(pending.shift()!)
+      }
+    }),
+  )
+}
+
+// One generator with its output streaming, for the lane where the order of the
+// output is the order the work happened in.
+async function runInline(generator: Generator) {
+  const { name, argv, diffPaths } = generator
+  if (!skipsForMissingFigures(generator)) {
+    console.log(`\n=== ${name}`)
+    const started = performance.now()
+    if (diffPaths) {
+      // A generator with no --check has to write to be compared, so anything
+      // already modified when it started is not evidence of staleness — without
+      // this, a local --check over a work-in-progress tree reports every
+      // uncommitted doc edit. CI runs off a clean checkout, so `before` is empty
+      // there and nothing is excluded.
+      const before = new Set(check ? changedFiles(diffPaths) : [])
+      const status = await run(argv)
+      if (status !== 0) {
+        crashed.push({ name, status })
+      } else if (check) {
+        const after = changedFiles(diffPaths).filter(f => !before.has(f))
+        if (after.length > 0) {
+          showDiff(after)
+          stale.push(name)
+        }
+        // Unconditionally, not just when stale: a generator can rewrite a file
+        // to byte-identical content and still leave it looking touched to
+        // tooling that stats rather than diffs.
+        restore(after)
+      }
+    } else if ((await run(argv, check ? ['--check'] : [])) !== 0) {
+      stale.push(name)
+    }
+    timings.push({ name, ms: performance.now() - started })
+  }
+}
+
+// One generator with its output captured and printed whole, for the pooled
+// lanes: interleaved output from six processes at once is unreadable.
+async function runPooled(generator: Generator, extra: string[] = []) {
+  if (!skipsForMissingFigures(generator)) {
+    const { name, argv, diffPaths } = generator
+    const started = performance.now()
+    const { status, output } = await runCaptured(argv, extra)
+    if (status !== 0) {
+      // A rewrite that exits nonzero produced nothing to commit; only a
+      // generator that ran to completion can have left an artifact behind.
+      if (diffPaths && !check) {
+        crashed.push({ name, status })
+      } else {
+        stale.push(name)
+      }
+    }
+    console.log(`\n=== ${name}\n${output}`.trimEnd())
+    timings.push({ name, ms: performance.now() - started })
+  }
+}
+
 // A generator with its own `--check` writes nothing, so in check mode there is
 // nothing for one to race another over and they run pooled. The `diffPaths`
 // ones write to be compared, so they stay in sequence AND stay after the pool:
 // what they rewrite (the docs, the manifest) is what the pool reads.
-//
-// A REWRITE run keeps every generator in sequence. Ordering is load-bearing
-// there — the manifest feeds gendocs, the measurement tables feed the page that
-// publishes them — and two generators rewriting one doc at once would lose one
-// of the two.
-const pooled = check ? selected.filter(g => !g.diffPaths) : []
-const sequential = selected.filter(g => !pooled.includes(g))
-
-const queue = [...pooled]
-await Promise.all(
-  Array.from(
-    { length: Math.min(6, Math.max(1, availableParallelism() - 2)) },
-    async () => {
-      while (queue.length > 0) {
-        const generator = queue.shift()!
-        if (!skipsForMissingFigures(generator)) {
-          const started = performance.now()
-          const { status, output } = await runCaptured(generator.argv, [
-            '--check',
-          ])
-          if (status !== 0) {
-            stale.push(generator.name)
-          }
-          console.log(`\n=== ${generator.name}\n${output}`.trimEnd())
-          timings.push({
-            name: generator.name,
-            ms: performance.now() - started,
-          })
-        }
-      }
-    },
-  ),
-)
-
-for (const generator of sequential) {
-  const { name, argv, diffPaths } = generator
-  if (skipsForMissingFigures(generator)) {
-    continue
+async function checkAll() {
+  await pool(
+    running.filter(g => !g.diffPaths),
+    generator => runPooled(generator, ['--check']),
+  )
+  for (const generator of running.filter(g => g.diffPaths)) {
+    await runInline(generator)
   }
-  console.log(`\n=== ${name}`)
-  const started = performance.now()
-  if (diffPaths) {
-    // A generator with no --check has to write to be compared, so anything
-    // already modified when it started is not evidence of staleness — without
-    // this, a local --check over a work-in-progress tree reports every
-    // uncommitted doc edit. CI runs off a clean checkout, so `before` is empty
-    // there and nothing is excluded.
-    const before = new Set(check ? changedFiles(diffPaths) : [])
-    const { status } = run(argv)
-    if (status !== 0) {
-      crashed.push({ name, status })
-    } else if (check) {
-      const after = changedFiles(diffPaths).filter(f => !before.has(f))
-      if (after.length > 0) {
-        showDiff(after)
-        stale.push(name)
-      }
-      // Unconditionally, not just when stale: a generator can rewrite a file to
-      // byte-identical content and still leave it looking touched to tooling
-      // that stats rather than diffs.
-      restore(after)
-    }
-  } else if (run(argv, check ? ['--check'] : []).status !== 0) {
-    stale.push(name)
-  }
-  timings.push({ name, ms: performance.now() - started })
 }
+
+// A rewrite writes, so what runs beside what is decided by what each generator
+// writes — `exclusive` and `independent` on the interface above say which is
+// which. The exclusive ones go first, alone; then two lanes at once, the
+// ordered doc chain and a pool of the generators writing nothing another one
+// reads. This used to be one sequence, which meant the whole run waited on the
+// chain.
+async function rewriteAll() {
+  const gate = new Map(
+    running.map(g => [g.name, Promise.withResolvers<void>()]),
+  )
+  // A needed generator the filters left out of this run is not in `gate`, and
+  // is nothing to wait for: it is not going to write anything either.
+  const afterNeeds = async ({ needs = [] }: Generator) => {
+    await Promise.all(
+      needs.flatMap(name => {
+        const gated = gate.get(name)
+        return gated === undefined ? [] : [gated.promise]
+      }),
+    )
+  }
+  for (const generator of running.filter(g => g.exclusive)) {
+    await afterNeeds(generator)
+    await runInline(generator)
+    gate.get(generator.name)!.resolve()
+  }
+  const rest = running.filter(g => !g.exclusive)
+  await Promise.all([
+    pool(
+      rest.filter(g => g.independent),
+      async generator => {
+        await afterNeeds(generator)
+        await runPooled(generator)
+        gate.get(generator.name)!.resolve()
+      },
+    ),
+    (async () => {
+      for (const generator of rest.filter(g => !g.independent)) {
+        await afterNeeds(generator)
+        await runInline(generator)
+        gate.get(generator.name)!.resolve()
+      }
+    })(),
+  ])
+}
+
+await (check ? checkAll() : rewriteAll())
 
 console.log('\ntimings (ms):')
 for (const { name, ms } of [...timings].sort((a, b) => b.ms - a.ms)) {

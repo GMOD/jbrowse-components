@@ -4,16 +4,13 @@ title: NCListAdapter
 sidebar_label: Adapter -> NCListAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`legacy-jbrowse` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
 
 ## Example usage
 
 Reads a JBrowse 1 NCList store in place, so an existing JBrowse 1 instance's
-data serves JBrowse 2 without re-processing. `{refseq}` in the URL template is
-substituted per sequence, which is how the store is laid out on disk:
+data serves JBrowse 2 without re-processing. `{refseq}` in the URL template
+is substituted per sequence, which is how the store is laid out on disk:
 
 ```js
 {
@@ -42,13 +39,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "NCListAdapter", ... }`. This adapter has no `uri`
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
-location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "NCListAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

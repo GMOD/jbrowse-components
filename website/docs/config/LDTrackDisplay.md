@@ -4,10 +4,7 @@ title: LDTrackDisplay
 sidebar_label: Display -> LDTrackDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `variants`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/configSchemaLDTrack.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/configSchemaLDTrack.ts).
 
 ## Example usage
 
@@ -35,8 +32,8 @@ The pre-computed heatmap, with the legend on so the R² ramp is labelled:
 
 _See the **Config slots** section below for all available configuration fields._
 
-Linkage disequilibrium heatmap read from an `LDTrack`'s pre-computed file (e.g.
-PLINK `--r2` output), rather than computed from genotypes. Use
+Linkage disequilibrium heatmap read from an `LDTrack`'s pre-computed file
+(e.g. PLINK `--r2` output), rather than computed from genotypes. Use
 [](/docs/config/lddisplay) instead to compute LD from a `VariantTrack`'s own
 VCF.
 
@@ -45,7 +42,8 @@ The genotype-derived filters the shared base declares
 nothing to act on here — the file's rows are already computed — so they are
 inherited but inert.
 
-Every slot comes from the shared base below; this display adds none of its own.
+Every slot comes from the shared base below; this display adds none of its
+own.
 
 ## Related links
 
@@ -55,13 +53,7 @@ Every slot comes from the shared base below; this display adds none of its own.
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LDTrackDisplay", ... }]`, or in the track's
-[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
-is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

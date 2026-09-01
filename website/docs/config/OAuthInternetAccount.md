@@ -4,28 +4,18 @@ title: OAuthInternetAccount
 sidebar_label: Internet Account -> OAuthInternetAccount
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`authentication` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/configSchema.ts).
 
 ## Related links
 
 - **Extended by:** [DropboxOAuthInternetAccount](../dropboxoauthinternetaccount)
-- **Extended by:**
-  [GoogleDriveOAuthInternetAccount](../googledriveoauthinternetaccount)
+- **Extended by:** [GoogleDriveOAuthInternetAccount](../googledriveoauthinternetaccount)
 - **State model:** [runtime API](../../models/oauthinternetaccount)
 - **Base config:** [BaseInternetAccount](../baseinternetaccount)
 
 ## Config slots
 
-`OAuthInternetAccount` is a shared base schema, not a type you name in a config.
-Set these slots on one of the configs under **Extended by** above, each of which
-lists them as inherited and shows the shape in its own example. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+`OAuthInternetAccount` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

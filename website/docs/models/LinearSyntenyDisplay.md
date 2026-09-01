@@ -4,15 +4,12 @@ title: LinearSyntenyDisplay
 sidebar_label: Display -> LinearSyntenyDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-comparative-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts).
 
 ## Example usage
 
-A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs the
-query (first) and target (second) assembly names, matched by the track's
+A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs
+the query (first) and target (second) assembly names, matched by the track's
 `assemblyNames`:
 
 ```js
@@ -36,16 +33,14 @@ query (first) and target (second) assembly names, matched by the track's
 }
 ```
 
-Pure-data model. The containing LinearSyntenyView owns the shared GPU backend,
-the upload autorun (which watches every display's `instanceData` and keys it by
-`displayKey`), and the render autorun. This display only carries per-track state
-and the `renderParams` the view reads out.
+Pure-data model. The containing LinearSyntenyView owns the shared GPU
+backend, the upload autorun (which watches every display's `instanceData`
+and keys it by `displayKey`), and the render autorun. This display only
+carries per-track state and the `renderParams` the view reads out.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearsyntenydisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearsyntenydisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

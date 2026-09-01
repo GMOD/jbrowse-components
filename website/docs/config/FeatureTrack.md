@@ -4,15 +4,12 @@ title: FeatureTrack
 sidebar_label: Track -> FeatureTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`linear-genome-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/FeatureTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/FeatureTrack/configSchema.ts).
 
 ## Example usage
 
-A minimal hand-authored entry in the top-level `tracks` array — `adapter` points
-at the data file, and the track opens with a `LinearBasicDisplay`:
+A minimal hand-authored entry in the top-level `tracks` array — `adapter`
+points at the data file, and the track opens with a `LinearBasicDisplay`:
 
 ```js
 {
@@ -27,10 +24,7 @@ at the data file, and the track opens with a `LinearBasicDisplay`:
 }
 ```
 
-`genes.sorted.gff.gz` infers `Gff3TabixAdapter` and `FeatureTrack` on its own,
-and `name` defaults to the file name. In a config declaring one assembly,
-`assemblyNames` comes from there too — see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`genes.sorted.gff.gz` infers `Gff3TabixAdapter` and `FeatureTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -40,11 +34,11 @@ and `name` defaults to the file name. In a config declaring one assembly,
 }
 ```
 
-The same track, colored. Rather than writing out the full `displays` array, you
-can put appearance settings in a `displayDefaults` object — JBrowse works out
-which display they belong to and applies them for you (here, the track's
-`LinearBasicDisplay`), so you don't have to know display names. A `jexl:` value
-gives per-feature coloring:
+The same track, colored. Rather than writing out the full `displays` array,
+you can put appearance settings in a `displayDefaults` object — JBrowse works
+out which display they belong to and applies them for you (here, the track's
+`LinearBasicDisplay`), so you don't have to know display names. A `jexl:`
+value gives per-feature coloring:
 
 ```js
 {
@@ -68,19 +62,14 @@ used for basic gene and feature tracks, generally used with LinearBasicDisplay
 
 ### FeatureTrack - Identifier
 
-Every FeatureTrack has a unique `trackId`, a required top-level field that
-identifies it (not one of the config slots below).
+Every FeatureTrack has a unique `trackId`, a required top-level field that identifies it (not one of the config slots below).
 
 ## Related links
 
-- **Display:** [LinearArcDisplay](../lineararcdisplay)
-  ([state model](../../models/lineararcdisplay))
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-  ([state model](../../models/linearbasicdisplay))
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-  ([state model](../../models/linearmultirowfeaturedisplay))
-- **Display:** [LinearScoreDisplay](../linearscoredisplay)
-  ([state model](../../models/linearscoredisplay))
+- **Display:** [LinearArcDisplay](../lineararcdisplay) ([state model](../../models/lineararcdisplay))
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay) ([state model](../../models/linearbasicdisplay))
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay) ([state model](../../models/linearmultirowfeaturedisplay))
+- **Display:** [LinearScoreDisplay](../linearscoredisplay) ([state model](../../models/linearscoredisplay))
 - **Adapter:** [BedAdapter](../bedadapter)
 - **Adapter:** [BedTabixAdapter](../bedtabixadapter)
 - **Adapter:** [BigBedAdapter](../bigbedadapter)
@@ -97,11 +86,7 @@ identifies it (not one of the config slots below).
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

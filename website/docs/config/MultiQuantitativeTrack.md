@@ -4,15 +4,12 @@ title: MultiQuantitativeTrack
 sidebar_label: Track -> MultiQuantitativeTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `wiggle`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiQuantitativeTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiQuantitativeTrack/configSchema.ts).
 
 ## Example usage
 
-Overlays several bigwig files as one track. `bigWigs` is the shorthand form of
-`MultiWiggleAdapter` — equivalent to a `subadapters` array of individual
+Overlays several bigwig files as one track. `bigWigs` is the shorthand form
+of `MultiWiggleAdapter` — equivalent to a `subadapters` array of individual
 `BigWigAdapter` configs, one per source/sample:
 
 ```js
@@ -35,18 +32,13 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay)
-  ([state model](../../models/multilinearwiggledisplay))
+- **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay) ([state model](../../models/multilinearwiggledisplay))
 - **Adapter:** [MultiWiggleAdapter](../multiwiggleadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

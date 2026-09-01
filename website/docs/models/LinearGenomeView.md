@@ -4,10 +4,7 @@ title: LinearGenomeView
 sidebar_label: View -> LinearGenomeView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-genome-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
 
 ## Example usage
 
@@ -30,12 +27,13 @@ defaultSession: {
 }
 ```
 
-`assembly`, `loc`, `tracks`, `tracklist`, `nav` and `highlight` need on-attach
-resolution and are captured into the `launch` property below; `colorByCDS`,
-`showAminoAcids`, `showCenterLine`, `trackLabels` and `showHighlightChips` are
-plain view props MST restores natively. Both are written the same way. At
-runtime the same model is driven imperatively — every property and action below
-is reachable on `viewState.session.views[0]`:
+`assembly`, `loc`, `tracks`, `tracklist`, `nav` and `highlight` need
+on-attach resolution and are captured into the `launch` property below;
+`colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels` and
+`showHighlightChips` are plain view props MST restores natively. Both are
+written the same way.
+At runtime the same model is driven imperatively — every property and action
+below is reachable on `viewState.session.views[0]`:
 
 ```js
 const view = viewState.session.views[0]
@@ -44,8 +42,7 @@ view.showTrack('alignments')
 view.zoomTo(view.bpPerPx * 2) // zoom out 2x
 ```
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

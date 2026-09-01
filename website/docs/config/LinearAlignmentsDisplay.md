@@ -4,16 +4,13 @@ title: LinearAlignmentsDisplay
 sidebar_label: Display -> LinearAlignmentsDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts).
 
 ## Example usage
 
 Minimal BAM track — no display override needed for defaults. See the
-[alignments track guide](/docs/config_guides/alignments_track) for all adapter
-and display options:
+[alignments track guide](/docs/config_guides/alignments_track) for all
+adapter and display options:
 
 ```js
 {
@@ -27,9 +24,9 @@ and display options:
 
 CRAM colored by CpG methylation (modBAM MM/ML tags). The `displayDefaults`
 object shorthand applies settings without spelling out the display `type` or
-`displayId` — equivalent to
-`displays: [{ type: 'LinearAlignmentsDisplay', displayId: '...', colorBy: ... }]`.
-See [configuring displays](/docs/config_guides/tracks#configuring-displays):
+`displayId` — equivalent to `displays: [{ type: 'LinearAlignmentsDisplay',
+displayId: '...', colorBy: ... }]`. See
+[configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
 {
@@ -44,8 +41,8 @@ See [configuring displays](/docs/config_guides/tracks#configuring-displays):
 }
 ```
 
-Long reads — taller track, soft-clipping shown, split/chimeric reads connected
-by arcs:
+Long reads — taller track, soft-clipping shown, split/chimeric reads
+connected by arcs:
 
 ```js
 {
@@ -77,13 +74,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearAlignmentsDisplay", ... }]`, or in the track's
-[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
-is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

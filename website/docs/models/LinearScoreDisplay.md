@@ -4,14 +4,12 @@ title: LinearScoreDisplay
 sidebar_label: Display -> LinearScoreDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/example-plugins/score-example/src/LinearScoreDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/example-plugins/score-example/src/LinearScoreDisplay/model.ts).
 
 ## Example usage
 
-The display attaches to any `FeatureTrack`, so a track naming it in `displays`
-gets it in place of the stock linear one:
+The display attaches to any `FeatureTrack`, so a track naming it in
+`displays` gets it in place of the stock linear one:
 
 ```js
 {
@@ -37,11 +35,9 @@ gets it in place of the stock linear one:
 The worked-example score display: one value per feature, drawn as a scatter
 along the genome. The developer guides walk through this model.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearscoredisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearscoredisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

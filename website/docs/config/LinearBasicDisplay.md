@@ -4,16 +4,13 @@ title: LinearBasicDisplay
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `canvas`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
 
 ## Example usage
 
 A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
-`tracks`. `displayMode` sets the feature height preset (`normal`, `compact`, or
-`superCompact`), or `collapsed` for a single-row overview:
+`tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
+or `superCompact`), or `collapsed` for a single-row overview:
 
 ```js
 {
@@ -41,10 +38,10 @@ _See the **Config slots** section below for all available configuration fields._
 configuration for the basic linear feature display (genes, BED, GFF, etc.)
 
 Color slots are display-level: set them inside a track's `displays` array.
-`color` is the main feature fill; use a plain CSS color, or a `jexl:` expression
-to color per-feature. (`connectorColor` and `utrColor` set the intron lines and
-UTR fill. The legacy `color1`/`color2`/`color3` names still work and map onto
-these.)
+`color` is the main feature fill; use a plain CSS color, or a `jexl:`
+expression to color per-feature. (`connectorColor` and `utrColor` set the
+intron lines and UTR fill. The legacy `color1`/`color2`/`color3` names still
+work and map onto these.)
 
 ```json
 {
@@ -91,13 +88,7 @@ Color by an attribute with a jexl expression:
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearBasicDisplay", ... }]`, or in the track's
-[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
-is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

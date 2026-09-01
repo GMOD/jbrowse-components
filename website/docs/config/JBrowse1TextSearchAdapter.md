@@ -4,16 +4,13 @@ title: JBrowse1TextSearchAdapter
 sidebar_label: Adapter -> JBrowse1TextSearchAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`legacy-jbrowse` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
 
 ## Example usage
 
-An entry in `aggregateTextSearchAdapters`, pointing at the `names/` directory
-JBrowse 1's `generate-names.pl` wrote — so an existing instance's search index
-is reused rather than rebuilt with `jbrowse text-index`:
+An entry in `aggregateTextSearchAdapters`, pointing at the `names/`
+directory JBrowse 1's `generate-names.pl` wrote — so an existing instance's
+search index is reused rather than rebuilt with `jbrowse text-index`:
 
 ```js
 {
@@ -38,18 +35,11 @@ note: metadata about tracks and assemblies covered by text search adapter
 
 ### JBrowse1TextSearchAdapter - Identifier
 
-Every JBrowse1TextSearchAdapter has a unique `textSearchAdapterId`, a required
-top-level field that identifies it (not one of the config slots below).
+Every JBrowse1TextSearchAdapter has a unique `textSearchAdapterId`, a required top-level field that identifies it (not one of the config slots below).
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "JBrowse1TextSearchAdapter", ... }`. This adapter has no
-`uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it
-the location slots below. Slot types (`fileLocation`, `frozen`, ...) are
-explained in the [config slot types reference](/docs/config_guides/slot_types).
-Slots a base configuration contributes are listed here too, so this table is the
-whole surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "JBrowse1TextSearchAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

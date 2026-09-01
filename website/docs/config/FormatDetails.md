@@ -4,15 +4,13 @@ title: FormatDetails
 sidebar_label: Root -> FormatDetails
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatDetailsConfigSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatDetailsConfigSchema.ts).
 
 ## Example usage
 
 On a track. The callback returns an object merged over the feature: a new key
-adds a row, an existing key rewrites it, and `undefined` hides it. A bare URL is
-turned into a link for you, so no `<a>` markup is needed:
+adds a row, an existing key rewrites it, and `undefined` hides it. A bare URL
+is turned into a link for you, so no `<a>` markup is needed:
 
 ```js
 {
@@ -34,17 +32,14 @@ _See the **Config slots** section below for all available configuration fields._
 
 jexl callbacks that add, rewrite or hide fields in the feature-details panel.
 The same schema hangs off every track and off the session as
-`configuration.formatDetails`, which applies to every track at once. Where both
-are set, the callbacks merge with the track's object over the session's, so a
-track can override individual keys the global callback added, and the numeric
-slots take the track's value when the track sets one.
+`configuration.formatDetails`, which applies to every track at once. Where
+both are set, the callbacks merge with the track's object over the session's,
+so a track can override individual keys the global callback added, and the
+numeric slots take the track's value when the track sets one.
 
 ## Config slots
 
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

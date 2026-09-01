@@ -4,9 +4,7 @@ title: GtfAdapter
 sidebar_label: Adapter -> GtfAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -25,10 +23,7 @@ The `uri` shorthand works for plain or gzipped GTF:
 }
 ```
 
-`genes.gtf` infers `GtfAdapter` and `FeatureTrack` on its own, and `name`
-defaults to the file name. In a config declaring one assembly, `assemblyNames`
-comes from there too — see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`genes.gtf` infers `GtfAdapter` and `FeatureTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -53,14 +48,7 @@ into memory, so prefer the GtfTabixAdapter for large files.
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "GtfAdapter", ... }`. It also accepts the
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
-`baseUri` in place of writing a location slot out. Slot types (`fileLocation`,
-`frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "GtfAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

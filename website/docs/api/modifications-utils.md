@@ -4,8 +4,8 @@ title: modifications-utils
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See
-[imports and re-exports](/docs/developer_guides/imports_and_reexports) for how
-to import these from a plugin.
+[imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
+import these from a plugin.
 
 ## getMethBins
 
@@ -33,8 +33,8 @@ Parse MM tag to extract modification positions on the read sequence.
 
 ## getModProbabilities
 
-Reads the ML tag from a feature and returns per-call modification probabilities
-scaled to 0..1.
+Reads the ML tag from a feature and returns per-call modification
+probabilities scaled to 0..1.
 
 ```js
 // type signature
@@ -48,12 +48,12 @@ scaled to 0..1.
 The ML tag as its raw 0..255 bytes, without the scaling `getModProbabilities`
 applies.
 
-The byte is a LOSSLESS stand-in for the probability — every value on this path
-is exactly `(N + 0.5) / 256` — and it is monotonic in it, so anything that only
-compares probabilities (picking the most likely call at a position, testing a
-threshold) can work in bytes and divide once, at the end, for the few calls that
-survive. A caller that needs the numbers themselves still wants
-`getModProbabilities`.
+The byte is a LOSSLESS stand-in for the probability — every value on this
+path is exactly `(N + 0.5) / 256` — and it is monotonic in it, so anything
+that only compares probabilities (picking the most likely call at a
+position, testing a threshold) can work in bytes and divide once, at the end,
+for the few calls that survive. A caller that needs the numbers themselves
+still wants `getModProbabilities`.
 
 ```js
 // type signature
@@ -67,11 +67,11 @@ survive. A caller that needs the numbers themselves still wants
 The modification types an MM tag declares, from its headers alone.
 
 `getModPositions` answers this too, but on the way to placing every call: it
-walks the delta list against the read sequence, which is the expensive half and
-is only needed to DRAW marks. Anything that just wants to know what is in the
-file — which types to offer in a menu, whether a track carries modifications at
-all — wants this instead, and pays neither the walk nor the sequence decode that
-feeds it.
+walks the delta list against the read sequence, which is the expensive half
+and is only needed to DRAW marks. Anything that just wants to know what is in
+the file — which types to offer in a menu, whether a track carries
+modifications at all — wants this instead, and pays neither the walk nor the
+sequence decode that feeds it.
 
 ```js
 // type signature
@@ -82,8 +82,8 @@ feeds it.
 
 ## getTag
 
-Read a single tag by name, using the feature's targeted tag accessor when it has
-one (BAM) and the full tags object otherwise (CRAM/synteny).
+Read a single tag by name, using the feature's targeted tag accessor when it
+has one (BAM) and the full tags object otherwise (CRAM/synteny).
 
 ```js
 // type signature
@@ -101,8 +101,8 @@ Prefers the feature's own one-pass alias lookup when it has one. The plain
 `getTag(tag) ?? getTag(alt)` form walks the record's whole tag block TWICE
 whenever neither name is present — which is every read in a file without base
 modifications, and this is called per read on every render. On jb2bench's
-1000x.shortread that pair of walks was 12.9% of the whole BAM query, more than
-the CIGAR/SEQ/MD reads the pileup actually uses.
+1000x.shortread that pair of walks was 12.9% of the whole BAM query, more
+than the CIGAR/SEQ/MD reads the pileup actually uses.
 
 ```js
 // type signature
@@ -116,11 +116,11 @@ the CIGAR/SEQ/MD reads the pileup actually uses.
 The modification types the methylation walk below paints — 5mC and 5hmC, the
 pair that compete for one cytosine.
 
-Stated once because two functions have to agree on it and they are in different
-packages: this walk claims those types, and `extractModifications` has to skip
-exactly them in the fill view so a cytosine gets one mark rather than two. A
-second spelling would either double-paint or, as it did, drop every OTHER type
-the read declares.
+Stated once because two functions have to agree on it and they are in
+different packages: this walk claims those types, and
+`extractModifications` has to skip exactly them in the fill view so a
+cytosine gets one mark rather than two. A second spelling would either
+double-paint or, as it did, drop every OTHER type the read declares.
 
 ```js
 // type signature
@@ -140,17 +140,17 @@ where the template runs backwards and complemented, so we read backwards from
 `pos` and complement each base before matching.
 
 **Char codes, not characters, and that is the whole shape of this function.**
-Folding case with `& ~0x20` on the code and comparing numbers keeps a probe to
-arithmetic, where lower-casing the character and the pattern base beside it is
-two string operations per base. It is asked at that volume: the fill-unmarked
-methylation walk asks up to twice for every aligned base of every read
-(getMethBins), and bisulfite asks at every candidate cytosine. What it is worth
-in the phase it sits in — which is not what it is worth on its own — is
-`plugins/alignments/benches/modFillView.bench.ts`.
+Folding case with `& ~0x20` on the code and comparing numbers keeps a probe
+to arithmetic, where lower-casing the character and the pattern base beside
+it is two string operations per base. It is asked at that volume: the
+fill-unmarked methylation walk asks up to twice for every aligned base of
+every read (getMethBins), and bisulfite asks at every candidate cytosine.
+What it is worth in the phase it sits in — which is not what it is worth on
+its own — is `plugins/alignments/benches/modFillView.bench.ts`.
 
 `charCodeAt` past either end of the string is NaN and `NaN & ~0x20` is 0 — an
-index no pattern base equals and the complement table holds -1 at — so the walk
-runs off the read as a non-match with no bounds test of its own.
+index no pattern base equals and the complement table holds -1 at — so the
+walk runs off the read as a non-match with no bounds test of its own.
 `features/modCoverage/readBaseCounts.ts` folds case the same way and says so.
 
 ```js
@@ -178,8 +178,8 @@ interleaved per position.
 
 ## parseModHeader
 
-Parses one MM-tag modification header (e.g. `C+m`) into its base, strand, type
-string, and modification code.
+Parses one MM-tag modification header (e.g. `C+m`) into its base, strand,
+type string, and modification code.
 
 ```js
 // type signature

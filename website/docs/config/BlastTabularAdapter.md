@@ -4,15 +4,13 @@ title: BlastTabularAdapter
 sidebar_label: Adapter -> BlastTabularAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`comparative-adapters` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts).
 
 ## Example usage
 
 The default `columns` are BLAST's own `-outfmt 6` order, so a file produced
-without custom columns needs only the two assemblies naming which side is which:
+without custom columns needs only the two assemblies naming which side is
+which:
 
 ```js
 {
@@ -63,13 +61,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "BlastTabularAdapter", ... }`. This adapter has no `uri`
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
-location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "BlastTabularAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

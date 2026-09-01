@@ -4,10 +4,7 @@ title: AlignmentsTrack
 sidebar_label: Track -> AlignmentsTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts).
 
 ## Example usage
 
@@ -27,10 +24,7 @@ CRAM:
 }
 ```
 
-`sample.bam` infers `BamAdapter` and `AlignmentsTrack` on its own, and `name`
-defaults to the file name. In a config declaring one assembly, `assemblyNames`
-comes from there too — see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+`sample.bam` infers `BamAdapter` and `AlignmentsTrack` on its own, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
 
 ```js
 {
@@ -41,9 +35,9 @@ comes from there too — see
 ```
 
 The same track with appearance settings in place. Rather than writing out the
-full `displays` array, you can list them in a `displayDefaults` object — JBrowse
-works out which display they belong to and applies them for you (here, the
-`LinearAlignmentsDisplay`), so you don't have to know display names:
+full `displays` array, you can list them in a `displayDefaults` object —
+JBrowse works out which display they belong to and applies them for you (here,
+the `LinearAlignmentsDisplay`), so you don't have to know display names:
 
 ```js
 {
@@ -65,8 +59,7 @@ has very little config; most config and state logic is on the display
 
 ## Related links
 
-- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-  ([state model](../../models/linearalignmentsdisplay))
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay) ([state model](../../models/linearalignmentsdisplay))
 - **Adapter:** [BamAdapter](../bamadapter)
 - **Adapter:** [CramAdapter](../cramadapter)
 - **Adapter:** [HtsgetBamAdapter](../htsgetbamadapter)
@@ -75,11 +68,7 @@ has very little config; most config and state logic is on the display
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

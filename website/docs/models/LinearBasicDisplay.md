@@ -4,16 +4,13 @@ title: LinearBasicDisplay
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`canvas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/model.ts).
 
 ## Example usage
 
 A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
-`tracks`. `displayMode` sets the feature height preset (`normal`, `compact`, or
-`superCompact`), or `collapsed` for a single-row overview:
+`tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
+or `superCompact`), or `collapsed` for a single-row overview:
 
 ```js
 {
@@ -36,16 +33,15 @@ A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
 }
 ```
 
-GPU-accelerated feature display with gene-specific UI on top of the shared
-canvas base display (`LinearCanvasBaseDisplay`). This is the GPU stack — despite
-the name it does NOT extend `BaseLinearDisplay` (the legacy block stack). See
+GPU-accelerated feature display with gene-specific UI on top of the
+shared canvas base display (`LinearCanvasBaseDisplay`). This is the GPU
+stack — despite the name it does NOT extend `BaseLinearDisplay` (the legacy
+block stack). See
 [display stacks](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks).
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearbasicdisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearbasicdisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

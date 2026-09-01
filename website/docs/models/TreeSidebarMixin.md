@@ -4,34 +4,23 @@ title: TreeSidebarMixin
 sidebar_label: Mixin -> TreeSidebarMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
-#crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display
-rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run`
-callback naming its own clustering RPC and the `sortRows` callback naming what a
-row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` /
-`treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` /
-`showRowLabels` getters and setters over those slots, the `runClustering` /
-`clusterRegion` and `sortRowsBy` declarative launch specs
-`setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and
-`rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the
-shared sidebar draws through Adds a dendrogram sidebar to a display: stores the
-leaf layout, newick cluster tree, sidebar width and subtree filter, plus the
-hover/canvas volatile state used while drawing the tree.
+#crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
+tree, sidebar width and subtree filter, plus the hover/canvas volatile state
+used while drawing the tree.
 
 **The three toggles are declared here because this package reads them.**
 `treeSidebarGeometry` reads `showTree`, `treeMenuItems` reads all three and
-`setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so a display
-composing this mixin and not supplying them would compile and then fail at the
-first menu click. They were four hand-written `getConf` / `setConf` copies,
-which is the same shape the config half was in before
+`setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so a
+display composing this mixin and not supplying them would compile and then
+fail at the first menu click. They were four hand-written `getConf` /
+`setConf` copies, which is the same shape the config half was in before
 `treeSidebarConfigSchemaFields`: that set had already drifted, three displays
-spelling the labels toggle `showRowLabels` and the fourth `showSidebarLabels`,
-so `"showRowLabels": false` on a multi-sample variant track was dropped in
-silence. Slots and accessors now move together.
+spelling the labels toggle `showRowLabels` and the fourth
+`showSidebarLabels`, so `"showRowLabels": false` on a multi-sample variant
+track was dropped in silence. Slots and accessors now move together.
 
 ## Properties
 

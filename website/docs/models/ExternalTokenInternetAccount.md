@@ -4,21 +4,17 @@ title: ExternalTokenInternetAccount
 sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`authentication` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/model.tsx).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/model.tsx).
 
 Internet account that authenticates requests with a user-supplied external
-token, prompting for the token via a dialog and optionally validating it with a
-HEAD request. See [TokenEntryInternetAccount](../tokenentryinternetaccount) for
-the shared behavior.
+token, prompting for the token via a dialog and optionally validating it with
+a HEAD request. See
+[TokenEntryInternetAccount](../tokenentryinternetaccount) for the shared
+behavior.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/externaltokeninternetaccount).
+The configuration slots for this model are documented on its [config schema page](../../config/externaltokeninternetaccount).
 
-ExternalTokenInternetAccount declares no members of its own — it composes the
-models below, and everything here is theirs.
+ExternalTokenInternetAccount declares no members of its own — it composes the models below, and everything here is theirs.
 
 ## Properties
 

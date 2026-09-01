@@ -4,16 +4,13 @@ title: ChordVariantDisplay
 sidebar_label: Display -> ChordVariantDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`circular-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts).
 
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
-translocations are drawn as chords across the circle. The track config below is
-what creates it; its colors are the config slots on
+translocations are drawn as chords across the circle. The track config below
+is what creates it; its colors are the config slots on
 [](/docs/config/chordvariantdisplay):
 
 ```js
@@ -35,17 +32,15 @@ what creates it; its colors are the config slots on
 }
 ```
 
-`bezierRadiusRatio` below is a property of this model rather than a config slot:
-it sets the deepest bow toward the center, which a chord straight across the
-circle reaches, and a shorter-range one bows in proportion to its span. Nothing
-in the UI sets it and a track config drops it, so today only a hand-edited
-session carries a value other than the default.
+`bezierRadiusRatio` below is a property of this model rather than a config
+slot: it sets the deepest bow toward the center, which a chord straight across
+the circle reaches, and a shorter-range one bows in proportion to its span.
+Nothing in the UI sets it and a track config drops it, so today only a
+hand-edited session carries a value other than the default.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/chordvariantdisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/chordvariantdisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

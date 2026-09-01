@@ -14,7 +14,7 @@ import {
   slotFieldConstantPairs,
   slotFieldFactoryPairs,
 } from './enumConstants.ts'
-import { writeDoc } from './format.ts'
+import { writePage } from './format.ts'
 import {
   assertSingleHeader,
   assertUniquePages,
@@ -1892,7 +1892,7 @@ export function writeConfigDocs(
     extendedBy,
   }
   for (const cfg of withHeader) {
-    writeDoc(
+    writePage(
       `${dir}/${cfg.header.name}.md`,
       renderConfig(cfg, collectBaseConfigs(cfg, index), links),
     )

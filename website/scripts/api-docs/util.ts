@@ -2308,19 +2308,42 @@ export function listSources(dir: string): string[] {
 export interface SourceCorpus {
   files: string[]
   read: (file: string) => string
+  // The file's syntax tree. A caller holding a TypeScript program hands its
+  // already-parsed sources to `sourceCorpus`, since parsing the corpus a second
+  // time to answer a syntactic question cost a `gendocs` run 2.7s.
+  parse: (file: string) => ts.SourceFile
 }
 
-export function sourceCorpus(files: string[]): SourceCorpus {
+// The corpus's own file list, which `createDocProgram`'s roots are also built
+// from — so a program built beside a corpus has parsed exactly these.
+export function corpusFiles(files: string[]) {
+  return files.filter(f => isTsSource(f.split('/').at(-1)!))
+}
+
+export function sourceCorpus(
+  files: string[],
+  parsed: readonly ts.SourceFile[] = [],
+): SourceCorpus {
   const texts = new Map<string, string>()
+  const trees = new Map(parsed.map(sf => [path.resolve(sf.fileName), sf]))
+  const read = (file: string) => {
+    let text = texts.get(file)
+    if (text === undefined) {
+      text = readSourceIfPresent(file) ?? ''
+      texts.set(file, text)
+    }
+    return text
+  }
   return {
-    files: files.filter(f => isTsSource(f.split('/').at(-1)!)),
-    read(file) {
-      let text = texts.get(file)
-      if (text === undefined) {
-        text = readSourceIfPresent(file) ?? ''
-        texts.set(file, text)
+    files: corpusFiles(files),
+    read,
+    parse(file) {
+      let tree = trees.get(path.resolve(file))
+      if (tree === undefined) {
+        tree = parseSourceFileSyntactic(file, read(file))
+        trees.set(path.resolve(file), tree)
       }
-      return text
+      return tree
     },
   }
 }

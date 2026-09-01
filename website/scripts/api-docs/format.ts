@@ -4,14 +4,15 @@ import { promisify } from 'util'
 
 import { oxfmtBin } from '../check-utils.ts'
 
-// Generated pages are written raw and formatted in one `formatWithOxfmt` sweep
-// at the end of the run (see generate.ts). Every path written here has to appear
-// in that sweep or a page ships unformatted and `pnpm format` fights the next
-// regen, so the sweep is fed from this list rather than from a hardcoded set of
-// directories: the marker-block generators splice tables into hand-written
-// guides anywhere under website/docs, and the package READMEs writeApiReadmes
-// touches are outside website/docs entirely.
+// Every path written this run, whether spliced into a doc or written whole.
 const written = new Set<string>()
+
+// The subset written whole — the pages under the three directories generate.ts
+// owns outright. They are the ones `pnpm format` skips (`ignorePatterns` in
+// .oxfmtrc.json names the same three), so they are the ones the sweep below
+// leaves alone. Tracked here rather than matched by directory at the sweep,
+// because what makes a page exempt is that a run WROTE it whole.
+const pages = new Set<string>()
 
 // Every doc read this run. Each marker generator sweeps the whole doc tree for
 // its own pair, so a `markers.ts` run read 17,640 files to see 588 distinct
@@ -36,21 +37,79 @@ export function readDoc(file: string) {
   return text
 }
 
+// A splice into a file a person also edits: a marker block in a guide, an
+// API_DOCS section in a README. Formatted at the end of the run, because the
+// rest of the file is hand-written and stays under `pnpm check-format`.
 export function writeDoc(file: string, content: string) {
   fs.writeFileSync(file, content)
   docText.set(file, content)
   written.add(file)
 }
 
-// Every path written this run, for the caller that formats them.
+// A page this run owns outright. Not formatted, and not `pnpm format`'s to
+// format either: nobody edits one by hand, and its prose is docstrings quoted
+// verbatim, so rewrapping it to 80 columns only means a one-word source change
+// reflows a whole paragraph on the page. Formatting all 263 written docs cost
+// 4.2s and 47s of CPU a run; the ~15 that are spliced cost 1.3s of it.
+//
+// So the emitter owes what the formatter used to repair: `blankLinesAroundFences`
+// is the one thing oxfmt did to these pages that was not wrapping.
+export function writePage(file: string, content: string) {
+  writeDoc(file, blankLinesAroundFences(content))
+  pages.add(file)
+}
+
+// A fenced block reads as its own paragraph, and the `#example` blocks quoted
+// out of JSDoc routinely open one directly under the sentence introducing it.
+// CommonMark lets a fence interrupt a paragraph, so this is not what makes them
+// render — it is what keeps the committed page the shape every hand-written doc
+// in the tree has. Only fences in column 0, so an indented one inside a list
+// item is left alone, where a blank line would end the list.
+export function blankLinesAroundFences(text: string) {
+  const lines = text.split('\n')
+  const out: string[] = []
+  let open: string | undefined
+  for (const [i, line] of lines.entries()) {
+    const ticks = /^(`{3,})/.exec(line)?.[1]
+    if (open === undefined && ticks !== undefined) {
+      if (out.length > 0 && out[out.length - 1]!.trim() !== '') {
+        out.push('')
+      }
+      open = ticks
+      out.push(line)
+    } else if (
+      open !== undefined &&
+      ticks !== undefined &&
+      ticks.length >= open.length &&
+      line.trim() === ticks
+    ) {
+      open = undefined
+      out.push(line)
+      const next = lines[i + 1]
+      if (next !== undefined && next.trim() !== '') {
+        out.push('')
+      }
+    } else {
+      out.push(line)
+    }
+  }
+  return out.join('\n')
+}
+
+// Every path written this run, for the caller that prunes what it didn't write.
 export function writtenDocs() {
   return [...written]
 }
 
-// Run the repo formatter over already-written files. Generated markdown is
-// hand-authored prose (docstrings) reassembled by code, so its wrapping doesn't
-// match what `pnpm format` produces; the marker-block generators additionally
-// splice raw tables into the hand-written guides, which nothing else re-wraps.
+// The written docs a person also owns, which is what the format sweep gets.
+export function splicedDocs() {
+  return [...written].filter(file => !pages.has(file))
+}
+
+// Run the repo formatter over the docs a run spliced into. Their marker blocks
+// arrive as raw tables and prose callouts, and nothing else re-wraps them —
+// while the rest of each file is hand-written, so leaving one unformatted puts
+// `pnpm check-format` and the next hand edit at odds.
 //
 // oxfmt is the repo's formatter (`pnpm format`), so running it is what actually
 // decides the committed bytes. This used to be prettier — per page as it was

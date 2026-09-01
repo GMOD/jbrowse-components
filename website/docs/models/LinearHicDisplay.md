@@ -4,15 +4,12 @@ title: LinearHicDisplay
 sidebar_label: Display -> LinearHicDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`hic` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/model.ts).
 
 ## Example usage
 
-A complete `HicTrack` config to paste into `tracks`. `resolutionBias` nudges the
-auto-picked binsize (negative = finer, positive = coarser):
+A complete `HicTrack` config to paste into `tracks`. `resolutionBias` nudges
+the auto-picked binsize (negative = finer, positive = coarser):
 
 ```js
 {
@@ -34,11 +31,9 @@ auto-picked binsize (negative = finer, positive = coarser):
 
 Hi-C display that renders contact matrix using WebGL
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearhicdisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearhicdisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

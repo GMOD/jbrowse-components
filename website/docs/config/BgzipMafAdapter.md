@@ -4,9 +4,7 @@ title: BgzipMafAdapter
 sidebar_label: Adapter -> BgzipMafAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipMafAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipMafAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -29,10 +27,10 @@ _See the **Config slots** section below for all available configuration fields._
 
 A bgzip-compressed MAF with a Taffy `.tai` index — the form whole-genome
 multiple alignments are actually distributed in. HPRC release 2 publishes
-`hprc-v2.1-mc-grch38.full.maf.gz` (53 GB, 464 haplotypes) with a sibling `.tai`,
-and Cactus/taffy write the pair for any HAL export. The index gives random
-access, so a locus is a small ranged read rather than a download: a 10 kb query
-against HPRC's own index resolves to about 924 KB.
+`hprc-v2.1-mc-grch38.full.maf.gz` (53 GB, 464 haplotypes) with a sibling
+`.tai`, and Cactus/taffy write the pair for any HAL export. The index gives
+random access, so a locus is a small ranged read rather than a download: a
+10 kb query against HPRC's own index resolves to about 924 KB.
 
 Use `BgzipTaffyAdapter` for TAF (taffy's own, more compact format),
 `MafTabixAdapter` for a `maf2bed` BED, and `BigMafAdapter` for bigMaf.
@@ -44,14 +42,7 @@ Use `BgzipTaffyAdapter` for TAF (taffy's own, more compact format),
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "BgzipMafAdapter", ... }`. It also accepts the
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
-`baseUri` in place of writing a location slot out. Slot types (`fileLocation`,
-`frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "BgzipMafAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

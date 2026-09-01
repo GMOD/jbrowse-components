@@ -4,19 +4,17 @@ title: RegionTooLargeMixin
 sidebar_label: Mixin -> RegionTooLargeMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/RegionTooLargeMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/RegionTooLargeMixin.ts).
 
 The region-too-large gate: a display opts in by overriding `gateEnabled` and
-passing `byteLimit: self.resolvedByteLimit()` to its fetch RPC. The RPC measures
-the index before it downloads and answers a refusal when a region is over
-budget; the fetch runners commit what it measured, and `regionTooLarge` is
-derived from that last measurement. While the banner is up the fetch runs once
-per settled viewport and settings, which is the re-measure. Composed by
-`MultiRegionDisplayMixin` and `GlobalFetchMixin`. The rules and the numbers
-behind them: agent-docs/reference/REGION_TOO_LARGE.md.
+passing `byteLimit: self.resolvedByteLimit()` to its fetch RPC. The RPC
+measures the index before it downloads and answers a refusal when a region
+is over budget; the fetch runners commit what it measured, and
+`regionTooLarge` is derived from that last measurement. While the banner is
+up the fetch runs once per settled viewport and settings, which is the
+re-measure.
+Composed by `MultiRegionDisplayMixin` and `GlobalFetchMixin`. The rules and
+the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
 
 ## Volatiles
 

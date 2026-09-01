@@ -4,21 +4,18 @@ title: CanvasFeatureGateMixin
 sidebar_label: Mixin -> CanvasFeatureGateMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`canvas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
 
 The density axis of the region-too-large gate, composed after
-`MultiRegionDisplayMixin`: how the features-per-pixel number is measured and the
-worker budget for it. The byte axis is entirely `RegionTooLargeMixin`'s. A
-display opts in by composing this and calling `commitGateMeasurements` from its
-fetch's `onComplete`.
+`MultiRegionDisplayMixin`: how the features-per-pixel number is measured and
+the worker budget for it. The byte axis is entirely `RegionTooLargeMixin`'s. A
+display opts in by composing this and calling `commitGateMeasurements` from
+its fetch's `onComplete`.
 
 One display composes it — `LinearBasicDisplay`'s base model. The multi-row
-display has no density axis to gate on (see MultiRowGetFeaturesRPC/rpcTypes.ts),
-so `shared/` here means "the canvas plugin's rather than one display's", not
-"two displays compose it".
+display has no density axis to gate on (see
+MultiRowGetFeaturesRPC/rpcTypes.ts), so `shared/` here means "the canvas
+plugin's rather than one display's", not "two displays compose it".
 
 ## Volatiles
 

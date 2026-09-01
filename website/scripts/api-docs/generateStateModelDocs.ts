@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
-import { writeDoc } from './format.ts'
+import { writePage } from './format.ts'
 import {
   assertSingleHeader,
   assertUniquePages,
@@ -480,7 +480,7 @@ export function writeModelDocs(
   }
   for (const model of withHeader) {
     const ancestors = collectAncestors(model, index)
-    writeDoc(
+    writePage(
       `${dir}/${model.header.name}.md`,
       renderModel(model, ancestors, configNames),
     )

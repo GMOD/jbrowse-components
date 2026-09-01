@@ -1,7 +1,7 @@
 import fs from 'fs'
 
 import { buildEnumConstantIndex } from './enumConstants.ts'
-import { formatWithOxfmt, writtenDocs } from './format.ts'
+import { formatWithOxfmt, splicedDocs, writtenDocs } from './format.ts'
 import {
   accumulateApi,
   writeApiDocs,
@@ -24,6 +24,7 @@ import { MARKER_GENERATORS } from './markerGenerators.ts'
 import {
   assertEveryDisplayTypeIsDocumented,
   assertMarkersAndDocsAgree,
+  corpusFiles,
   createDocProgram,
   extractWithComment,
   getAllFiles,
@@ -88,7 +89,12 @@ async function main() {
   const api: Record<string, ApiGroup> = {}
   const displayLinks: DisplayTrackLink[] = []
   const files = await getAllFiles()
-  const docProgram = createDocProgram(files)
+  // Roots are the corpus's own files — no test files, which carry no tags and
+  // are imported by nothing, so they only ever cost the program their parse.
+  // The corpus then reads its syntax trees off the program rather than parsing
+  // the same 3,900 sources a second time.
+  const docProgram = createDocProgram(corpusFiles(files))
+  const corpus = sourceCorpus(files, docProgram.sources)
   // enum tables first: the config generator resolves `[...NAME]` spreads in
   // stringEnum models against this while rendering slots
   buildEnumConstantIndex(docProgram.sources)
@@ -157,7 +163,7 @@ async function main() {
   // half of what a spec can set on a view is the model's composed-in
   // properties. After writeModelDocs, so the pages its rows link into exist by
   // the time anything checks them.
-  writeSpecKeyDocs(models, sourceCorpus(files))
+  writeSpecKeyDocs(models, corpus)
   writeCoverageGaps([
     {
       title: 'configs with no #example',
@@ -221,7 +227,6 @@ async function main() {
   writeApiReadmes(api)
   // The program-independent marker tables, from the one list markers.ts also
   // runs — so the set can't drift between a full run and the `--check` gate.
-  const corpus = sourceCorpus(files)
   for (const { write } of MARKER_GENERATORS) {
     write(corpus, { check: false })
   }
@@ -236,15 +241,18 @@ async function main() {
   )
   pruneUnwritten()
 
-  // Exactly the files written above, not a list of directories to keep in sync
-  // with them: the generated pages, the package READMEs, and whichever
-  // hand-written guides a marker block landed in (FILE_TYPES, DISPLAY_TYPES,
-  // GOTCHA, COLOR_TABLE, EXTENSION_POINTS_INDEX, DISPLAY_FOUNDATIONS,
-  // PROMOTABLE_SLOTS). The tables carry `prettier-ignore` and stay compact, but
-  // the gotcha callouts are prose and must be rewrapped or every regen would
-  // fight `pnpm format` — which is what a guide outside the old six directories
-  // would silently have done.
-  await formatWithOxfmt(writtenDocs())
+  // Exactly the files spliced into above, not a list of directories to keep in
+  // sync with them: the package READMEs and whichever hand-written guides a
+  // marker block landed in (FILE_TYPES, DISPLAY_TYPES, GOTCHA, COLOR_TABLE,
+  // EXTENSION_POINTS_INDEX, DISPLAY_FOUNDATIONS, PROMOTABLE_SLOTS). The tables
+  // carry `prettier-ignore` and stay compact, but the gotcha callouts are prose
+  // and must be rewrapped or every regen would fight `pnpm format` — which is
+  // what a guide outside the old six directories would silently have done.
+  //
+  // The pages under GENERATED_DIRS are NOT in this list; `writePage` says why,
+  // and .oxfmtrc.json exempts the same three directories so `pnpm format`
+  // agrees.
+  await formatWithOxfmt(splicedDocs())
 
   // After the formatter, not before it: this fails on marker bookkeeping rather
   // than on a page's content, and everything above it is already written. A

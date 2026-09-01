@@ -4,31 +4,27 @@ title: EmbeddedSessionMixin
 sidebar_label: Mixin -> EmbeddedSessionMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/embedded-core/src/EmbeddedSessionMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/embedded-core/src/EmbeddedSessionMixin.ts).
 
 Everything the two single-view embedded products' sessions
-(react-linear-genome-view, react-circular-genome-view) share: the mixin set they
-compose and the three getters that read the root model. The twin of
+(react-linear-genome-view, react-circular-genome-view) share: the mixin set
+they compose and the three getters that read the root model. The twin of
 createEmbeddedRootModel one level down.
 
 A mixin the product composes, deliberately, rather than a factory taking the
-product's view type and tracks mixin as parameters. That factory is the obvious
-shape and it does not work: `types.compose`'s overloads are declared over
-`IModelType<P, O, FC, FS>`, so a model handed in as a naked type parameter has
-nothing to infer those four from and the composed result degrades —
-`session.view` becomes `any`, which typechecks at every embedder call site and
-is caught by nothing. Keeping every argument to `compose` concrete is what keeps
-the products' views typed.
+product's view type and tracks mixin as parameters. That factory is the
+obvious shape and it does not work: `types.compose`'s overloads are declared
+over `IModelType<P, O, FC, FS>`, so a model handed in as a naked type
+parameter has nothing to infer those four from and the composed result
+degrades — `session.view` becomes `any`, which typechecks at every embedder
+call site and is caught by nothing. Keeping every argument to `compose`
+concrete is what keeps the products' views typed.
 
 So each product still spells out its own tracks mixin, `view` prop, and the
 `views`/`addView`/`removeView` members that read `self.view` — those are the
 ones that need its concrete view type.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 
