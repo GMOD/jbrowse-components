@@ -12,6 +12,10 @@
 //   node browser-tests/bundle-size-by-version.ts --all           # every version
 //   node browser-tests/bundle-size-by-version.ts --versions v4.3.0,v3.0.0
 //   node browser-tests/bundle-size-by-version.ts --min v2.0.0    # floor
+//   node browser-tests/bundle-size-by-version.ts --track volvox_bam --loc ctgA:1000-3000
+//     # a different track (default gff3tabix_genes) writes its own
+//     # bundle-size-by-version-<track>.json/.svg instead of the committed
+//     # baseline's files
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
@@ -121,14 +125,20 @@ interface Sample {
   rendered: boolean
 }
 
-async function measureVersion(version: string): Promise<Sample> {
-  return measureDir(version, ensureCreated(version))
+async function measureVersion(
+  version: string,
+  track: string,
+  loc: string,
+): Promise<Sample> {
+  return measureDir(version, ensureCreated(version), undefined, track, loc)
 }
 
 async function measureDir(
   version: string,
   dir: string,
-  testDataRoot?: string,
+  testDataRoot: string | undefined,
+  track: string,
+  loc: string,
 ): Promise<Sample> {
   const server = await startServer(dir, PORT, testDataRoot)
   const browser = await launch({ headless: true, args: BASE_CHROME_ARGS })
@@ -141,23 +151,24 @@ async function measureDir(
     const u = new URL(`http://localhost:${PORT}/`)
     u.searchParams.set('config', 'test_data/volvox/config.json')
     u.searchParams.set('assembly', 'volvox')
-    u.searchParams.set('loc', 'ctgA:1-50,000')
-    u.searchParams.set('tracks', 'gff3tabix_genes')
+    u.searchParams.set('loc', loc)
+    u.searchParams.set('tracks', track)
     await page.goto(u.href, { waitUntil: 'networkidle0', timeout: 90000 })
 
-    // Version-agnostic "track painted" signal: the gene track's rendering
-    // container holds real feature content. New versions paint <canvas>; older
-    // ones (LinearBasicDisplay) emit <svg>/<image>. Never fatal — bytes are
+    // Version-agnostic "track painted" signal: the track's rendering
+    // container holds real content. New versions paint <canvas>; older ones
+    // (LinearBasicDisplay) emit <svg>/<image>. Never fatal — bytes are
     // already captured by networkidle0.
     const rendered = await page
       .waitForFunction(
-        () => {
+        trackId => {
           const c = document.querySelector(
-            '[data-testid^="trackRenderingContainer"][data-testid*="gff3tabix_genes"]',
+            `[data-testid^="trackRenderingContainer"][data-testid*="${CSS.escape(trackId)}"]`,
           )
           return !!c?.querySelector('canvas, svg, image, img')
         },
         { timeout: 20000 },
+        track,
       )
       .then(() => true)
       .catch(() => false)
@@ -199,6 +210,8 @@ function parseArgs(argv: string[]) {
     local: localIdx >= 0,
     localLabel:
       afterLocal && !afterLocal.startsWith('--') ? afterLocal : undefined,
+    track: get('--track') ?? 'gff3tabix_genes',
+    loc: get('--loc') ?? 'ctgA:1-50,000',
   }
 }
 
@@ -237,7 +250,7 @@ function listVersions() {
     .filter(l => /^v\d+\.\d+\.\d+$/.test(l)) // drop betas/headers
 }
 
-function renderSvg(samples: Sample[]) {
+function renderSvg(samples: Sample[], track: string) {
   const k = (n: number) => Math.round(n / 1024)
   const W = 1100
   const barH = 26
@@ -261,7 +274,7 @@ function renderSvg(samples: Sample[]) {
     .join('\n')
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" font-family="sans-serif">
 <rect width="${W}" height="${H}" fill="white"/>
-<text x="${padL}" y="30" font-size="20" font-weight="bold">JS bytes over the wire: boot LGV + open gene track (volvox)</text>
+<text x="${padL}" y="30" font-size="20" font-weight="bold">JS bytes over the wire: boot LGV + open ${track} (volvox)</text>
 <text x="${padL}" y="48" font-size="12" fill="#555">green = track rendered, red = render not detected. gzipped JS encodedDataLength (real over-the-wire transfer).</text>
 ${rows}
 </svg>`
@@ -288,8 +301,11 @@ const log1 = (s: Sample) => {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2))
-  const jsonPath = join(HERE, 'bundle-size-by-version.json')
-  const svgPath = join(HERE, 'bundle-size-by-version.svg')
+  // The committed baseline stays at the un-suffixed name; any other track
+  // gets its own files so a --track run never clobbers it.
+  const suffix = args.track === 'gff3tabix_genes' ? '' : `-${args.track}`
+  const jsonPath = join(HERE, `bundle-size-by-version${suffix}.json`)
+  const svgPath = join(HERE, `bundle-size-by-version${suffix}.svg`)
 
   // Pre-existing results merged into, so `--local` can append without
   // re-measuring every release.
@@ -318,7 +334,7 @@ async function main() {
     for (const v of versions) {
       console.log(`==> ${v}`)
       try {
-        const s = await measureVersion(v)
+        const s = await measureVersion(v, args.track, args.loc)
         byVersion.set(v, s)
         log1(s)
       } catch (e) {
@@ -331,7 +347,13 @@ async function main() {
     const label = args.localLabel || `${gitBranch()} (local)`
     console.log(`==> ${label} (build dir ${LOCAL_BUILD})`)
     if (existsSync(join(LOCAL_BUILD, 'index.html'))) {
-      const s = await measureDir(label, LOCAL_BUILD, JBROWSE_WEB_ROOT)
+      const s = await measureDir(
+        label,
+        LOCAL_BUILD,
+        JBROWSE_WEB_ROOT,
+        args.track,
+        args.loc,
+      )
       byVersion.set(label, s)
       log1(s)
     } else {
@@ -345,7 +367,7 @@ async function main() {
     cmpVersion(a.version, b.version),
   )
   writeFileSync(jsonPath, JSON.stringify(samples, null, 2))
-  writeFileSync(svgPath, renderSvg(samples))
+  writeFileSync(svgPath, renderSvg(samples, args.track))
   console.log(`\n${asciiChart(samples)}\n`)
   console.log(`wrote ${jsonPath}`)
   console.log(`wrote ${svgPath}`)

@@ -1,8 +1,13 @@
 #!/usr/bin/env Rscript
-# Plot the JS-bytes-over-the-wire trend (boot LGV + open a gene track) across
-# JBrowse versions, from bundle-size-by-version.json. Run after the harness:
+# Plot the JS-bytes-over-the-wire trend (boot LGV + open a track) across
+# JBrowse versions, from <basename>.json. Run after the harness:
 #   node browser-tests/bundle-size-by-version.ts
 #   Rscript browser-tests/bundle-size-by-version.R
+#
+# A non-default harness track (--track volvox_bam, say) writes its own
+# bundle-size-by-version-volvox_bam.json; pass that basename as this script's
+# one argument to plot it instead of the committed gff3tabix_genes baseline:
+#   Rscript browser-tests/bundle-size-by-version.R bundle-size-by-version-volvox_bam
 suppressPackageStartupMessages({
   library(ggplot2)
   library(jsonlite)
@@ -11,7 +16,10 @@ suppressPackageStartupMessages({
 here <- dirname(sub("--file=", "", grep("--file=", commandArgs(FALSE), value = TRUE)))
 if (length(here) == 0) here <- "."
 
-d <- fromJSON(file.path(here, "bundle-size-by-version.json"))
+argv <- commandArgs(trailingOnly = TRUE)
+basename <- if (length(argv) >= 1) argv[1] else "bundle-size-by-version"
+
+d <- fromJSON(file.path(here, paste0(basename, ".json")))
 d$jsMB <- d$jsBytes / 1024 / 1024
 
 # Released versions (vX.Y.Z) sort by semver; any non-semver label (the local
@@ -31,6 +39,9 @@ d$major <- ifelse(grepl("^v\\d", as.character(d$version)),
 d$major <- factor(d$major, levels = c(sort(unique(grep("^v", d$major, value = TRUE))), "local build"))
 d$isLocal <- d$major == "local build"
 
+track <- sub("^bundle-size-by-version-?", "", basename)
+if (track == "") track <- "gff3tabix_genes"
+
 p <- ggplot(d, aes(version, jsMB, group = 1)) +
   geom_line(color = "grey60", linewidth = 0.6) +
   geom_point(aes(color = major, size = isLocal, shape = isLocal)) +
@@ -44,7 +55,7 @@ p <- ggplot(d, aes(version, jsMB, group = 1)) +
                      labels = function(x) sprintf("%.1f MB", x)) +
   labs(
     title = "JBrowse initial-load JS over the wire by version",
-    subtitle = "Boot a Linear Genome View + open the volvox gff3tabix gene track (raw, uncompressed)",
+    subtitle = sprintf("Boot a Linear Genome View + open the %s track (volvox assembly, gzip, over the wire)", track),
     x = NULL, y = "Total JS bytes over the wire", color = "Release"
   ) +
   theme_minimal(base_size = 13) +
@@ -54,6 +65,6 @@ p <- ggplot(d, aes(version, jsMB, group = 1)) +
     plot.title = element_text(face = "bold")
   )
 
-out <- file.path(here, "bundle-size-trend.png")
+out <- file.path(here, paste0(sub("^bundle-size-by-version", "bundle-size-trend", basename), ".png"))
 ggsave(out, p, width = 11, height = 5.5, dpi = 130)
 cat("wrote", out, "\n")
