@@ -2759,3 +2759,46 @@ re-attempt without genuinely new data.
   browser and no network. Build it if the review loop starts re-flagging fixed
   figures again; the sweep, and same-day regeneration, are what keep it from
   happening now.
+
+- **Consolidating the three implementations of "has JBrowse finished
+  rendering"** — proposed 2026-09-01, after `jb.waitReady` landed in
+  `packages/app-core/src/JbApi/` and made a third. The other two are
+  `@jbrowse/capture` (`sessionGate.ts`, `waits.ts`) and the `data-*-phase`
+  attributes the app publishes. Three readers of one contract that can drift is
+  a real smell, and it is still the wrong thing to merge.
+
+  **The logic cannot be shared, and capture's own source says so three times.**
+  Every in-page function there is handed to `page.evaluate`, which stringifies
+  it — so it "can only call what it declares inside itself"
+  (`sessionGate.ts:53-58`, `:73-78`, `waits.ts:340-342`). That is why
+  `BUSY_SELECTOR` is exported *and* re-typed inside `isPageBusyInPage`, and why
+  `readViews` is inlined rather than imported. A shared module import is exactly
+  the thing that does not survive the trip into the page.
+
+  **The dependency would run the wrong way.** `@jbrowse/capture` is a published
+  CLI whose only runtime dependency is puppeteer. Importing `@jbrowse/app-core`
+  would pull `@jbrowse/core`, MST, mobx and React into it, and
+  `scripts/workspaceLayering.test.ts` records exactly one lib→product runtime
+  edge today — it fails on a new one.
+
+  **The divergence is mostly deliberate, not drift.** Capture defaults to
+  `jb2/latest`, which publishes none of the phase attributes; roughly half of
+  `capture.ts` is the fallback chain for builds older than the marker, and
+  `capture.ts:166-168` says it can be deleted "the day the oldest supported build
+  has it". `jb.waitReady` answers for the build it ships inside. One of them
+  asking a question the other cannot is the design.
+
+  **What actually differs**, for anyone comparing them: capture's pending census
+  is the DOM (`[data-display-drawn="false"]`), which cannot see `tooLarge` or
+  `renderError` because those replace the subtree; `jb`'s is the session model,
+  which sees them but reads only `displays[0]`. Capture's gate recurses `views`
+  to any depth; `jb`'s `allViews` flattens exactly one level. Capture is
+  document-wide; `jb.waitReady` takes a `root` because react-app2 can mount two
+  apps. Neither is a bug in the other.
+
+  **What keeps it honest instead**: the contract is `AppReadyMarker`'s, which
+  says so in its own comment, and
+  `products/jbrowse-web/src/tests/pluginFacingSessionApi.test.ts` already pins
+  the session walk from inside jbrowse-web *because* capture performs it from
+  outside. That is the seam to strengthen — a pin on the shared selector strings
+  — not a shared module.

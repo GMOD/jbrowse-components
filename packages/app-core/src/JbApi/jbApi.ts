@@ -334,11 +334,16 @@ const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
-// The capture readiness contract: AppReadyMarker publishes data-app-phase from
-// the session (ready = no view resolving an assembly, no display fetching),
-// and it has to HOLD past the fetch debounce — one sample taken right after a
-// navigation reads the pre-navigation frame as finished. See
-// products/jbrowse-capture/src/waits.ts.
+// The readiness contract is AppReadyMarker's, not this file's: it publishes
+// data-app-phase from the session (ready = no view resolving an assembly, no
+// display fetching), and says so in its own comment.
+//
+// The hold is why the number is a second: `ready` has to survive past the
+// ~600ms FetchVisibleRegions debounce, or one sample taken right after a
+// navigation reads the pre-navigation frame as finished. Same reasoning and
+// same constant as `waitForAppSettled` in products/jbrowse-capture/src/waits.ts
+// (APP_SETTLED_HOLD_MS) — reached independently there, and measured; see
+// REJECTED_IDEAS under "Waiting out a screenshot action's work".
 const READY_HOLD_MS = 1000
 
 export async function waitReady(
