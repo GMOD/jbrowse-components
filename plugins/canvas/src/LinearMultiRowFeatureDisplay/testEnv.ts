@@ -1,3 +1,4 @@
+import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
@@ -23,6 +24,9 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
 // assembly declares.
 export function createTestEnvironment(opts?: {
   adapterFetchSizeLimit?: number
+  // The sidecar the density tier draws from. Only its presence is read here —
+  // nothing resolves it — so any object stands in for one.
+  densityAdapter?: Record<string, unknown>
   // Display config slots, which the harness writes into the track config's own
   // `displays` entry — the long form of the `displayDefaults` shorthand, and the
   // only way to reach a slot with no setter (`rowGroups`). The shorthand itself
@@ -30,15 +34,20 @@ export function createTestEnvironment(opts?: {
   // doesn't install, so spell it out.
   displayConfig?: Record<string, unknown>
 }) {
+  const densityAdapter = opts?.densityAdapter
   const env = createDisplayTestEnvironment<LinearMultiRowFeatureDisplayModel>({
     plugins: [new LinearGenomeViewPlugin()],
     trackType: 'FeatureTrack',
     adapter: {
       name: 'TestFeatureAdapter',
-      slots: { fetchSizeLimit: { type: 'number', defaultValue: 0 } },
+      slots: {
+        fetchSizeLimit: { type: 'number', defaultValue: 0 },
+        ...densityAdapterConfigSchemaFields,
+      },
       config: {
         type: 'TestFeatureAdapter',
         fetchSizeLimit: opts?.adapterFetchSizeLimit ?? 0,
+        ...(densityAdapter === undefined ? {} : { densityAdapter }),
       },
     },
     displayName: 'LinearMultiRowFeatureDisplay',

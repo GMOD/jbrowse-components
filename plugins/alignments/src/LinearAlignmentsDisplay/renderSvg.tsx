@@ -137,6 +137,7 @@ function AlignmentsSvgBody({
               ctx,
               {
                 sections: model.sourceSections,
+                densityRegions: model.densityCoverageRegions,
                 readConnectionsLineWidth: model.readConnectionsLineWidth,
               },
               renderBlocks,

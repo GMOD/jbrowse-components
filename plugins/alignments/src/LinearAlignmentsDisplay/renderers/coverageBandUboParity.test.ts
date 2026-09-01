@@ -89,6 +89,7 @@ function bandUniforms(state: RenderState, depth?: number) {
         arcsRpcDataMap: new Map(),
       },
     ],
+    densityRegions: new Map(),
     readConnectionsLineWidth: 1,
   }
   renderer.upload('sources', sources)

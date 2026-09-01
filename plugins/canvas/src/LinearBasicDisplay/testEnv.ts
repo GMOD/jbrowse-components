@@ -1,3 +1,4 @@
+import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
@@ -15,9 +16,25 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // takes extra display-snapshot props so tests can seed persistent state (e.g.
 // pinned or hidden features) that a display would otherwise have to be clicked
 // into.
-export function createTestEnvironment(opts?: {
+export function createTestEnvironment({
+  adapterFetchSizeLimit,
+  densityAdapter,
+}: {
   adapterFetchSizeLimit?: number
-}) {
+  // The sidecar the density tier draws from. Only its presence is read here —
+  // nothing resolves it — so any object stands in for one.
+  densityAdapter?: Record<string, unknown>
+} = {}) {
+  const adapterConfig =
+    adapterFetchSizeLimit === undefined && densityAdapter === undefined
+      ? undefined
+      : {
+          type: 'TestAdapter',
+          ...(adapterFetchSizeLimit === undefined
+            ? {}
+            : { fetchSizeLimit: adapterFetchSizeLimit }),
+          ...(densityAdapter === undefined ? {} : { densityAdapter }),
+        }
   const env = createDisplayTestEnvironment<LinearBasicDisplayModel>({
     trackType: 'FeatureTrack',
     // Config-only: the RPC is mocked, so this display only ever reads the
@@ -25,11 +42,11 @@ export function createTestEnvironment(opts?: {
     adapter: {
       name: 'TestAdapter',
       configOnly: true,
-      slots: { fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 } },
-      config:
-        opts?.adapterFetchSizeLimit === undefined
-          ? undefined
-          : { type: 'TestAdapter', fetchSizeLimit: opts.adapterFetchSizeLimit },
+      slots: {
+        fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
+        ...densityAdapterConfigSchemaFields,
+      },
+      config: adapterConfig,
     },
     displayName: 'LinearBasicDisplay',
     configSchema: pm => configSchemaFactory(pm),

@@ -98,8 +98,11 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     height: 100,
     error: undefined,
     regionTooLarge: false,
+    drawsWhenTooLarge: false,
+    densityBandActive: false,
+    densityBandLayer: { regions: new Map(), maxDepth: 0 },
     svgReady: true,
-    rpcDataMap: new Map([[0, makeRegionData()]]),
+    drawnRegionData: new Map([[0, makeRegionData()]]),
     renderState: {
       canvasWidth: 800,
       canvasHeight: 100,

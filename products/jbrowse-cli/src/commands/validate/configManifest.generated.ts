@@ -31,6 +31,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
+        },
+        {
           "name": "useSliceWorkerPool",
           "type": "(JexlString | boolean)"
         },
@@ -75,6 +79,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": [
@@ -116,6 +124,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "htsgetTrackId",
           "type": "(JexlString | string)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": []
@@ -141,6 +153,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "disableGeneHeuristic",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": [
@@ -267,6 +283,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "disableGeneHeuristic",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": [
@@ -476,6 +496,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "aggregateField",
           "type": "(JexlString | string)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": [
@@ -511,6 +535,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "dontRedispatch",
           "type": "(JexlString | string[])"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": [
@@ -852,6 +880,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": [
@@ -885,6 +917,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "fetchSizeLimit",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": []
@@ -1565,6 +1601,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "disableGeneHeuristic",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "densityAdapter",
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "scoreTransform",

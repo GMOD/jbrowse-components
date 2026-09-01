@@ -64,7 +64,7 @@ exports[`can use --force to overwrite an existing connection 1`] = `
 
 exports[`fails if data directory is not an url 1`] = `
 "Error: Unknown command "add-connection ."
-Available commands: create, add-assembly, add-track, validate, text-index, admin-server, upgrade, make-pif, sort-gff, sort-bed, add-connection, add-track-json, remove-track, set-default-session"
+Available commands: create, add-assembly, add-track, validate, text-index, admin-server, upgrade, make-pif, make-density, sort-gff, sort-bed, add-connection, add-track-json, remove-track, set-default-session"
 `;
 
 exports[`fails to add a duplicate connection 1`] = `"Error: Cannot add connection with connectionId newConnectionId, a connection with that connectionId already exists"`;

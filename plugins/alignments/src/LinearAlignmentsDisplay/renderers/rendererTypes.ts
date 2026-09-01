@@ -10,6 +10,7 @@ import { readIdAt } from '../../shared/readIdentity.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ReadIdentity } from '../../shared/readIdentity.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
@@ -196,6 +197,11 @@ export interface AlignmentsSources {
   // One entry per stacked group, in stacking order. Ungrouped = single entry
   // (groupKey ''). Parallel to `RenderState.sections`.
   sections: SectionSource[]
+  // The density tier's stand-in for the pileup: features per bin by region
+  // index, drawn by the coverage band's own depth-bar layer. Empty whenever the
+  // tier is off, and the model empties `sections` whenever it is on, so the two
+  // never contend for a region key.
+  densityRegions: ReadonlyMap<number, CoverageRegionFields>
   // The configured arc stroke width — the same number `RenderState` carries,
   // and deliberately in both places. The GPU resolves each arc's width from its
   // read support when it PACKS the instance (`packArcs`), so for that backend

@@ -327,6 +327,46 @@ never overwrites a stored estimate. `overByteBudget` and `overDensityBudget`
 are the shared comparisons, so the worker's refusal and the banner cannot
 disagree at the boundary.
 
+## The density tier
+
+Where the verdict refuses, a display whose adapter carries a `densityAdapter`
+sidecar draws features per bin in the banner's place. ADR-102 has the decision;
+the parts:
+
+| Piece                                                                                   | Where                                                             |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `densityAdapterConfigSchemaFields` — the slot the nine indexed feature adapters spread   | `packages/core/src/data_adapters/BaseAdapter/featureDensity.ts`   |
+| `BaseFeatureDataAdapter.getFeatureDensity` — reads the sidecar at the view's bp/px      | `packages/core/src/data_adapters/BaseAdapter/BaseFeatureDataAdapter.ts` |
+| `CoreGetFeatureDensity` — the RPC, one answer per region                                | `packages/core/src/rpc/methods/CoreGetFeatureDensity.ts`          |
+| `DensityTierMixin` — the swap decision, the bins, the read on its own rotation          | `packages/display-kit/src/DensityTierMixin.ts`                    |
+| `densityToUniformBins` — the resampler onto screen-pixel bins                           | `packages/display-kit/src/densityBins.ts`                         |
+| the canvas band, one painter for both feature displays and their SVG export             | `plugins/canvas/src/shared/densityBand.ts`                        |
+| the alignments band, the coverage band's own depth-bar pass over the bins               | `plugins/alignments/src/features/coverage/densityBand.ts`         |
+| `jbrowse make-density`, `add-track --density`                                           | `products/jbrowse-cli/src/commands/make-density/`                 |
+
+- **The swap is the verdict, plus an optional threshold.** `densityTierActive`
+  is `hasSource && (mode === 'density' || (mode === 'auto' && (regionTooLarge || pastThreshold)))`.
+  Nothing above in this file changes: the feature fetch still stops at the
+  measurement and `regionTooLarge` still reads true. Only the `tooLarge` phase
+  terminal is post-processed, to `loading` until the first read lands and
+  `ready` after, and only the chrome and the drawing differ.
+- **A bin is a level, not a count.** A bigWig's zoom levels are means over the
+  bases their rows cover, so `make-density` writes every base of every
+  reference (a run of empty bins as one row) and `densityToUniformBins` takes
+  the area-weighted mean per screen bin. The band then reads as features per
+  sidecar bin at every zoom, and a coverage bigWig on the same slot reads as
+  depth. A sidecar with its empty bins omitted reads, zoomed out, as the mean
+  over the bins that held something: on the hg38 RefSeq genes that was 1.0 in
+  every 3 Mb bin where the true counts ran 23 to 117.
+- **The stand-in is total.** Alignments empties `lanes`, canvas
+  `laidOutDataMap`, multi-row `drawnRegionData`, so a track forced to
+  `density` over data it already holds draws the band alone rather than over
+  the features. The fetch itself still runs where the gate allows.
+- **The bins never touch the fetch tiers.** They live in their own
+  `regionDataMap`, keyed by zoom bucket, cleared on chromosome navigation, and
+  the mode is a config slot (`densityTier`) that never enters `rpcProps()`, so
+  the swap drops no loaded region.
+
 ## Force-load
 
 One volatile boolean for the whole track, `forceLoadTrack`, ORed with the

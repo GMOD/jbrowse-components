@@ -127,6 +127,7 @@ function sources(): AlignmentsSources {
         ]),
       },
     ],
+    densityRegions: new Map(),
     readConnectionsLineWidth: 1,
   }
 }

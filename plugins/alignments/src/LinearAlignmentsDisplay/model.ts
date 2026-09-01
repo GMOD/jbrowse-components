@@ -31,6 +31,7 @@ import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HeightModeMixin, {
   installGrowExitBake,
 } from '@jbrowse/display-kit/HeightModeMixin'
@@ -39,6 +40,10 @@ import MultiRegionDisplayMixin, {
   fetchEachRegion,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { densityBinSize } from '@jbrowse/display-kit/densityBins'
+import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
+import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
+import { foundationSvgReady } from '@jbrowse/display-kit/foundationSvgReady'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
@@ -62,6 +67,7 @@ import {
 import { computeReadChains } from '../features/arcs/arcChains.ts'
 import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
 import { computeArcsByGroup } from '../features/arcs/compute.ts'
+import { densityCoverageFields } from '../features/coverage/densityBand.ts'
 import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
 import {
   bezierConnectionLegendItems,
@@ -172,6 +178,7 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
+import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type {
   DerivativeCandidate,
   DerivativePathEvidence,
@@ -212,6 +219,7 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
 // dependency onto the startup path; the consumer renders it inside a Suspense
@@ -353,6 +361,10 @@ export default function stateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
+        // Where the byte gate refuses the reads, the coverage band draws the
+        // adapter's density sidecar instead of the banner — see
+        // `densityCoverageRegions`.
+        DensityTierMixin(),
         // The coverage band's score axis, shared with the wiggle family so the
         // wiggle-core score menu / SetMinMaxDialog consume this model directly.
         ScoreScaleMixin(),
@@ -1033,29 +1045,85 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The density tier's bins as the coverage band's own per-region payload
+         * — one entry per region holding bins, empty while the tier is off.
+         * Both backends and the SVG export read this one map, so the band that
+         * draws read depth draws features per bin with no second renderer.
+         *
+         * Its dependencies are `densityBins` and the DEBOUNCED zoom, and both
+         * halves are deliberate: the bins are cached by zoom bucket, and the
+         * repack is a per-region allocation, so it must not land on anything
+         * that moves per frame of a pan.
+         */
+        get densityCoverageRegions(): ReadonlyMap<
+          number,
+          CoverageRegionFields
+        > {
+          const regions = new Map<number, CoverageRegionFields>()
+          const { view } = self
+          if (self.densityTierActive && view.initialized) {
+            const binSize = densityBinSize(view.coarseBpPerPx)
+            for (const [displayedRegionIndex, bins] of self.densityBins) {
+              regions.set(
+                displayedRegionIndex,
+                densityCoverageFields(bins, binSize),
+              )
+            }
+          }
+          return regions
+        },
+
+        /**
+         * #getter
+         * The tallest bin across every region the tier holds, 0 while it holds
+         * none. One domain for all of them, for the reason `coverageDomain`
+         * spans every shown group: bands the eye compares have to share a
+         * scale.
+         */
+        get densityDepthMax() {
+          let max = 0
+          for (const {
+            coverageMaxDepth,
+          } of this.densityCoverageRegions.values()) {
+            max = coverageMaxDepth > max ? coverageMaxDepth : max
+          }
+          return max
+        },
+
+        /**
+         * #getter
          * The autoscaled depth domain, spanning every SHOWN group (each block
          * contributes one entry per group's coverage): a shared scale is what
          * makes stacked sections visually comparable, and ungrouped is the
          * one-group case. Hidden lanes are excluded — sizing the visible lanes'
          * axis against a lane the user hid is exactly the comparability this
          * scale exists to give.
+         *
+         * While the density tier stands in, the axis is the bins' own: a count
+         * of features per bin rather than a read depth, undefined until some
+         * region holds one so the depth-scaled layers stay gated on the same
+         * `hasCoverageScale` question they always were.
          */
-        get coverageDomain() {
+        get coverageDomain(): [number, number] | undefined {
           const hidden = self.hiddenGroupKeys
-          return visibleStatsDomain({
-            active: self.showCoverage,
-            view: self.view,
-            payloadFor: index => self.rpcDataMap.get(index),
-            itemsFor: grouped =>
-              grouped.groups
-                .filter(({ key }) => !hidden.has(key))
-                .map(({ data }) => data),
-            accumulate: entries => computeVisibleCoverageStats(entries),
-            range: stats =>
-              domainFromStats(stats, self.autoscaleType, self.numStdDev),
-            bounds: [self.minScoreBound, self.maxScoreBound],
-            scaleType: self.scaleType,
-          })
+          return self.densityTierActive
+            ? this.densityDepthMax > 0
+              ? [0, this.densityDepthMax]
+              : undefined
+            : visibleStatsDomain({
+                active: self.showCoverage,
+                view: self.view,
+                payloadFor: index => self.rpcDataMap.get(index),
+                itemsFor: grouped =>
+                  grouped.groups
+                    .filter(({ key }) => !hidden.has(key))
+                    .map(({ data }) => data),
+                accumulate: entries => computeVisibleCoverageStats(entries),
+                range: stats =>
+                  domainFromStats(stats, self.autoscaleType, self.numStdDev),
+                bounds: [self.minScoreBound, self.maxScoreBound],
+                scaleType: self.scaleType,
+              })
         },
 
         /**
@@ -2125,6 +2193,14 @@ export default function stateModelFactory(
          * A projection, not a store: every field is read from the computed that
          * owns it, so the fetch/layout/recolor tiers upstream are untouched and
          * this adds no state to keep in step.
+         *
+         * Empty while the density tier stands in, which is what makes "no
+         * features drawn" total rather than canvas-deep: every overlay — the
+         * sashimi and bezier arcs, the read labels, the group chips — walks
+         * `renderSections`, so a track forced to `density` over data it already
+         * holds would otherwise draw them over the band. `drawnLanes` turns the
+         * empty list into the synthetic no-data lane, which is the same shape a
+         * refused fetch leaves behind.
          */
         get lanes(): AlignmentLane[] {
           // Both below-coverage strips are reserved per lane: grouping routinely
@@ -2137,19 +2213,21 @@ export default function stateModelFactory(
           // question is asked of the pass holding both halves
           // (`inkGroupKeys`) — this directory's `hasArcBandInk`-not-`numArcs`
           // rule met one level up.
-          return buildLanes({
-            order: self.groupOrder,
-            rawByGroup: self.rawDataByGroup,
-            laidOutByGroup: self.laidOutByGroup,
-            arcsByGroup: self.arcsByGroup,
-            crossRegionArcsByGroup: self.crossRegionArcsByGroup,
-            arcInkKeys: self.arcsResult.inkGroupKeys,
-            sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
-            collapsedKeys: self.collapsedGroups,
-            heightOverridesPx: self.groupHeightOverrides,
-            showPileup: self.showPileup,
-            fitHeightToDisplay: self.fitHeightToDisplay,
-          })
+          return self.densityTierActive
+            ? []
+            : buildLanes({
+                order: self.groupOrder,
+                rawByGroup: self.rawDataByGroup,
+                laidOutByGroup: self.laidOutByGroup,
+                arcsByGroup: self.arcsByGroup,
+                crossRegionArcsByGroup: self.crossRegionArcsByGroup,
+                arcInkKeys: self.arcsResult.inkGroupKeys,
+                sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
+                collapsedKeys: self.collapsedGroups,
+                heightOverridesPx: self.groupHeightOverrides,
+                showPileup: self.showPileup,
+                fitHeightToDisplay: self.fitHeightToDisplay,
+              })
         },
 
         /**
@@ -3850,6 +3928,7 @@ export default function stateModelFactory(
             cells: () =>
               oneCell('sources', {
                 sections: self.sourceSections,
+                densityRegions: self.densityCoverageRegions,
                 // Read inside the upload autorun, not lifted into an action:
                 // arc instances are packed at this width (arcLineWidth ×
                 // support), so a change to it has to reach the pack.
@@ -3862,8 +3941,12 @@ export default function stateModelFactory(
             // region with no reads partitions to zero groups, so the first group's
             // map is empty even though the fetch is done — gating on that left the
             // loading overlay up forever (and hung any test waiting on first paint).
+            //
+            // The density tier fetches nothing into `rpcDataMap`, so its bins
+            // are the other way first paint can be earned.
             render: b =>
-              self.rpcDataMap.size === 0
+              self.rpcDataMap.size === 0 &&
+              self.densityCoverageRegions.size === 0
                 ? false
                 : b.renderBlocks(self.renderBlocks, self.renderState),
           })
@@ -4011,6 +4094,86 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         /**
+         * #getter
+         * Whether the band is standing in for the features right now: the
+         * tier's verdict AND somewhere to draw it. `showCoverage` off collapses
+         * the band to nothing, so replacing the banner there would leave an
+         * empty display and no way back.
+         */
+        get densityBandActive() {
+          return (
+            self.densityTierActive && self.belowCoverageBands.coverageHeight > 0
+          )
+        },
+
+        /**
+         * #getter
+         * The band is standing in and holds nothing yet — where the banner's
+         * "nothing is coming" is the wrong answer. False on a failed read as
+         * well as on a filled one, so neither the scrim nor the export gate can
+         * latch on a source that will not answer.
+         */
+        get densityBandPending() {
+          return (
+            this.densityBandActive &&
+            (self.densityLoading ||
+              (self.densityError === undefined &&
+                self.densityCoverageRegions.size === 0))
+          )
+        },
+
+        /**
+         * #getter
+         * `FetchMixin`'s hook: the band the display is drawing instead of the
+         * reads has not filled yet. Carries the scrim, and holds an export off
+         * an empty band, wherever the phase is not the banner's — a track
+         * forced to `density` reaches the tier with no refusal at all, so the
+         * ranking below never sees that case.
+         */
+        get awaitingDependentData(): boolean {
+          return this.densityBandPending
+        },
+
+        /**
+         * #getter
+         * The phase, post-processed for the density tier: where the gate
+         * refused the reads and the band stands in for them the display is not
+         * too large — `tooLarge` replaces the whole subtree with the banner,
+         * and there is a band to draw. The verdict itself is untouched, so the
+         * feature fetch still stops at the gate.
+         *
+         * Everything else passes through, the render error and the fetch error
+         * included.
+         */
+        get displayPhase(): DisplayPhase {
+          // The base is recomputed rather than captured — a view has no super —
+          // so the staleness argument is `MultiRegionDisplayMixin`'s, spelled
+          // the way that mixin spells it.
+          const base = foundationDisplayPhase(
+            self,
+            () => self.viewportWithinLoadedData && !self.dataSuperseded,
+            () => self.host.effectiveBodyMounted,
+          )
+          return base === 'tooLarge' && this.densityBandActive
+            ? this.densityBandPending
+              ? 'loading'
+              : 'ready'
+            : base
+        },
+
+        /**
+         * #getter
+         * The export gate, with the tier's own read added: `regionTooLarge` is
+         * a terminal in `computeSvgReady` because nothing is coming, and under
+         * the tier something is — an export sampling it before the bins land
+         * writes the band empty.
+         */
+        get svgReady(): boolean {
+          return foundationSvgReady(self) && !this.densityBandPending
+        },
+      }))
+      .views(self => ({
+        /**
          * #method
          * Track menu items
          */
@@ -4056,6 +4219,7 @@ export default function stateModelFactory(
               disabledHelpText: 'Turn on "Show pileup" to change read height',
             }),
             getCoverageMenuItem(self),
+            ...densityTierMenuItems(self),
             getReadConnectionsMenuItem(self),
             getSashimiMenuItem(self),
           ] satisfies MenuItem[]

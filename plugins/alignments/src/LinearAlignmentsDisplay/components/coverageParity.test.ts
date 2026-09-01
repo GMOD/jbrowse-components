@@ -182,6 +182,7 @@ function oneRegion(
     ],
     // Matches the render state below: the GPU packs arc instances at this
     // width, so the two have to agree for the backends to be comparable.
+    densityRegions: new Map(),
     readConnectionsLineWidth: 1,
   }
 }
@@ -259,6 +260,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           arcsRpcDataMap: new Map(),
         },
       ],
+      densityRegions: new Map(),
       readConnectionsLineWidth: 1,
     })
 
@@ -297,6 +299,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           arcsRpcDataMap: new Map(),
         },
       ],
+      densityRegions: new Map(),
       readConnectionsLineWidth: 1,
     })
 
@@ -329,6 +332,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           arcsRpcDataMap: new Map(),
         },
       ],
+      densityRegions: new Map(),
       readConnectionsLineWidth: 1,
     })
 
@@ -476,7 +480,11 @@ describe('GPU sync rebuild transaction', () => {
     gpu.upload('sources', oneRegion(makeMinimalPileupResult(cov)))
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
 
-    gpu.upload('sources', { sections: [], readConnectionsLineWidth: 1 })
+    gpu.upload('sources', {
+      sections: [],
+      densityRegions: new Map(),
+      readConnectionsLineWidth: 1,
+    })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
 })
@@ -569,7 +577,11 @@ describe('GPU sync skips regions whose data is unchanged', () => {
 
     // Scrolled out: the departed-key sweep deleted its buffers, so the memo
     // must forget it.
-    gpu.upload('sources', { sections: [], readConnectionsLineWidth: 1 })
+    gpu.upload('sources', {
+      sections: [],
+      densityRegions: new Map(),
+      readConnectionsLineWidth: 1,
+    })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
 
     gpu.upload('sources', oneRegion(data))

@@ -3,6 +3,7 @@ import {
   expandTabixShorthand,
   tabixIndexFields,
 } from '@jbrowse/core/configuration'
+import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -76,6 +77,7 @@ const GtfTabixAdapter = ConfigurationSchema(
         'attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id',
       defaultValue: 'gene_name',
     },
+    ...densityAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

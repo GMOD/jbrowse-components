@@ -40,3 +40,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "HtsgetBamAda
 | --- | --- |
 | <span id="slot-htsgetbase">**htsgetBase**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '', locationType: 'UriLocation' }</code> | The endpoint tickets are requested from. `htsgetTrackId` is appended to it, so a trailing slash produces a doubled one in the request path. |
 | <span id="slot-htsgettrackid">**htsgetTrackId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the trackId, which is appended to the base URL |
+| <span id="slot-densityadapter">**densityAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it |

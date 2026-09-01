@@ -3,6 +3,7 @@ import {
   expandTabixShorthand,
   tabixIndexFields,
 } from '@jbrowse/core/configuration'
+import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -81,6 +82,7 @@ const BedTabixAdapter = ConfigurationSchema(
         'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
       defaultValue: false,
     },
+    ...densityAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

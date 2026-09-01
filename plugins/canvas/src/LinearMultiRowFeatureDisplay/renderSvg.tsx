@@ -6,11 +6,13 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
+import { drawDensityBand } from '../shared/densityBand.ts'
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
+import type { DensityBandLayer } from '../shared/densityBand.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type {
   MultiRowRegionData,
@@ -33,7 +35,12 @@ import type {
 export interface RenderSvgModel extends SvgExportable {
   id: string
   height: number
-  rpcDataMap: { get: (key: number) => MultiRowRegionData | undefined }
+  // `renderDisplaySvg`'s hook: the band is drawn in the too-large terminal, so
+  // the note that would replace this whole body must not
+  drawsWhenTooLarge: boolean
+  densityBandActive: boolean
+  densityBandLayer: DensityBandLayer
+  drawnRegionData: { get: (key: number) => MultiRowRegionData | undefined }
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
   // `sources` with the per-row painted color folded into `labelColor` when the
@@ -80,7 +87,7 @@ function MultiRowSvgBody({
   // From the user-selected export theme rather than the live on-screen palette,
   // so a light export of a dark session stays light — plugin-maf's rule for the
   // same glyph.
-  const insertionColor = resolvePalette({ configTheme: opts?.theme }).insertion
+  const exportPalette = resolvePalette({ configTheme: opts?.theme })
   return (
     <>
       <SvgClipRect
@@ -93,15 +100,22 @@ function MultiRowSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            drawMultiRowBlocks(ctx, self.rpcDataMap, renderBlocks, state)
+            if (self.densityBandActive) {
+              drawDensityBand(ctx, renderBlocks, self.densityBandLayer, {
+                canvasWidth,
+                bandHeight: height,
+                color: exportPalette.text.secondary,
+              })
+            }
+            drawMultiRowBlocks(ctx, self.drawnRegionData, renderBlocks, state)
             // Same layer, after the blocks, so the export stacks them the way
             // the on-screen overlay composites over the canvas.
             drawMultiRowIndelGlyphs(
               ctx,
-              self.rpcDataMap,
+              self.drawnRegionData,
               renderBlocks,
               state,
-              insertionColor,
+              exportPalette.insertion,
             )
           }}
         />

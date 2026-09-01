@@ -15,12 +15,14 @@ import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin, {
   autorunOnReadyView,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
+import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
@@ -47,6 +49,10 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { copyItem } from '../shared/copyMenuItem.ts'
+import {
+  densityBandDisplayPhase,
+  displayDensityBandLayer,
+} from '../shared/densityBandViews.ts'
 import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
 import {
   featureSpanRegion,
@@ -90,7 +96,10 @@ import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type React from 'react'
+
+const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
 
 export interface MultiRowHit {
   // adapter feature id + the region it was found in, so a click can re-fetch
@@ -136,6 +145,10 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      // After the foundation, whose region-too-large verdict it keys off: where
+      // the gate refuses the features, a track with a density sidecar draws
+      // features per bin in the banner's place.
+      DensityTierMixin(),
       LegendMixin(),
       RowHeightMixin(),
       TreeSidebarMixin<MultiRowSource>(),
@@ -178,6 +191,50 @@ export default function stateModelFactory(
        */
       hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
       // #endregion
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the band stands in for the features here — the tier's own
+       * decision, plus the view geometry the draw is mapped through.
+       */
+      get densityBandActive() {
+        return self.densityTierActive && self.host.initialized
+      },
+      /**
+       * #getter
+       */
+      get densityBandLayer() {
+        return displayDensityBandLayer(self)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * What the painters, the hit test, the sidebar's rows and the export read:
+       * the loaded regions, or nothing while the band stands in for them, so
+       * the swap is total and a track forced to `density` over data it already
+       * holds draws the band alone.
+       */
+      get drawnRegionData(): ReadonlyMap<number, MultiRowRegionData> {
+        return self.densityBandActive ? EMPTY_REGION_DATA : self.rpcDataMap
+      },
+      /**
+       * #getter
+       * The foundation's phase with the too-large banner swapped for the band —
+       * see `densityBandDisplayPhase`.
+       */
+      get displayPhase(): DisplayPhase {
+        return densityBandDisplayPhase(self)
+      },
+      /**
+       * #getter
+       * `renderDisplaySvg`'s hook: the export paints the band in place of the
+       * too-large note, the same swap the chrome makes on screen.
+       */
+      get drawsWhenTooLarge() {
+        return self.densityBandActive
+      },
     }))
     .views(self => ({
       /**
@@ -304,7 +361,7 @@ export default function stateModelFactory(
       // MultiLinearWiggleDisplay's `sourcesWithoutLayout`.
       const sourcesWithoutLayout = stableIdentityComputed(() => {
         const values = new Set<string>()
-        for (const data of self.rpcDataMap.values()) {
+        for (const data of self.drawnRegionData.values()) {
           for (const v of data.partitionValues) {
             values.add(v)
           }
@@ -330,7 +387,9 @@ export default function stateModelFactory(
          * would otherwise paint over those colors.
          */
         get usedItemRgb(): boolean {
-          return [...self.rpcDataMap.values()].some(data => data.usedItemRgb)
+          return [...self.drawnRegionData.values()].some(
+            data => data.usedItemRgb,
+          )
         },
         /**
          * #getter
@@ -354,7 +413,7 @@ export default function stateModelFactory(
          * `regionHasData`) instead of being averaged in here.
          */
         get answeredPartitionField(): string | undefined {
-          return [...self.rpcDataMap.values()].find(
+          return [...self.drawnRegionData.values()].find(
             data => data.partitionValues.length > 0,
           )?.resolvedPartitionField
         },
@@ -409,7 +468,7 @@ export default function stateModelFactory(
          */
         get partitionCandidates(): string[] {
           const names = new Set<string>()
-          for (const data of self.rpcDataMap.values()) {
+          for (const data of self.drawnRegionData.values()) {
             for (const name of data.partitionCandidates) {
               names.add(name)
             }
@@ -557,7 +616,7 @@ export default function stateModelFactory(
         return configured.length
           ? configured
           : buildColorLegend(
-              self.rpcDataMap.values(),
+              self.drawnRegionData.values(),
               self.rowIndexByValue,
               self.rowColorsByIndex,
             )
@@ -825,7 +884,7 @@ export default function stateModelFactory(
        */
       get indelGlyphRegions() {
         return self.lengthField
-          ? new Map<number, MultiRowRegionData>(self.rpcDataMap.entries())
+          ? new Map<number, MultiRowRegionData>(self.drawnRegionData.entries())
           : undefined
       },
       /**
@@ -891,7 +950,7 @@ export default function stateModelFactory(
             held.clear()
           }
           const byRegion = new Map<number, DrawnFeaturesByRow>()
-          for (const [index, data] of self.rpcDataMap.entries()) {
+          for (const [index, data] of self.drawnRegionData.entries()) {
             const prev = held.get(index)
             const entry =
               prev?.data === data
@@ -944,7 +1003,7 @@ export default function stateModelFactory(
         if (p.oob) {
           return undefined
         }
-        const region = self.rpcDataMap.get(p.index)
+        const region = self.drawnRegionData.get(p.index)
         if (!region) {
           return undefined
         }
@@ -1125,7 +1184,7 @@ export default function stateModelFactory(
             self,
             refName,
             pos,
-            index => self.rpcDataMap.get(index),
+            index => self.drawnRegionData.get(index),
             // `featurePaintInputs` is the same triple the painters and the hit
             // test resolve "does this feature paint" from, so a hidden legend
             // category orders the rows the way it draws them
@@ -1159,7 +1218,7 @@ export default function stateModelFactory(
             // Narrowed to the clicked feature's own span, which the packed
             // arrays already carry — the buffered region is a second download of
             // everything on screen to pick one row out of.
-            const data = self.rpcDataMap.get(displayedRegionIndex)
+            const data = self.drawnRegionData.get(displayedRegionIndex)
             const i = data ? data.featureIds.indexOf(featureId) : -1
             const detailsRegion =
               region && data && i !== -1
@@ -1242,7 +1301,7 @@ export default function stateModelFactory(
          */
         startRenderingBackend(backend: MultiRowRenderingBackend) {
           installUpload(self, backend, {
-            cells: () => self.rpcDataMap,
+            cells: () => self.drawnRegionData,
             // `featurePaintInputs`, never `renderState`: the instance buffer holds
             // {startBp,endBp,rowIndex,color} and no geometry — the row height and
             // canvas box reach the shader as uniforms, and both move on every
@@ -1259,7 +1318,7 @@ export default function stateModelFactory(
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,
-                self.rpcDataMap,
+                self.drawnRegionData,
                 self.renderState,
               ),
           })
@@ -1440,6 +1499,7 @@ export default function stateModelFactory(
           return [
             ...superTrackMenuItems(),
             ...buildMultiRowTrackMenuItems(self),
+            ...densityTierMenuItems(self),
           ]
         },
       }

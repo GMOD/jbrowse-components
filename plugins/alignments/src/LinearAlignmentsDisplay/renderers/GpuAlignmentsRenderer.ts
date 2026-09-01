@@ -64,6 +64,7 @@ import {
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
@@ -473,6 +474,10 @@ interface UploadedRegion {
   tagColors: Uint32Array | undefined
   colorCategories: Uint8Array | undefined
   arcs: ArcsUploadData | undefined
+  // The density tier's packed bins, when this key is a density region rather
+  // than a pileup one. Also what tells the two apart in the memo, so a swap
+  // either way rebuilds rather than trusting matching `undefined` layouts.
+  density: ArrayBuffer | undefined
   // The arc stroke width those buffers were packed at. Not a uniform any more:
   // each arc carries its own width, resolved from its read support at pack time
   // (packArcs), so identical arc data at a new configured width is genuinely
@@ -799,6 +804,13 @@ export class GpuAlignmentsRenderer
         }
       }
     })
+    // The density tier's bins go to section 0's keys, and only the depth-bar
+    // pass has anything to upload for them.
+    for (const [regionIdx, coverage] of sources.densityRegions) {
+      const idx = sectionRegionKey(0, regionIdx)
+      seen.add(idx)
+      this.syncDensityRegion(idx, coverage)
+    }
     // Sweep keys that went away — the HAL's buffers, and the memo entry, so a
     // region that later returns with a reference-identical payload re-uploads
     // instead of trusting buffers this sweep destroyed.
@@ -846,11 +858,13 @@ export class GpuAlignmentsRenderer
       tagColors: data?.readTagColors,
       colorCategories: data?.readColorCategories,
       arcs,
+      density: undefined,
       arcLineWidth,
     })
 
     if (
       prev &&
+      prev.density === undefined &&
       prev.layout === data?.readYs &&
       prev.arcs === arcs &&
       prev.arcLineWidth === arcLineWidth
@@ -884,6 +898,33 @@ export class GpuAlignmentsRenderer
       for (const pass of ARC_PASSES) {
         uploadPass(this.hal, idx, pass, { arcs, baseWidth: arcLineWidth })
       }
+    }
+  }
+
+  /**
+   * Upload one density-tier region: the depth-bar pass alone, off the buffer
+   * the model packed from the density bins. Every other pass is left with no
+   * buffer for this key, which is how the arcs-only region above draws no
+   * pileup either.
+   */
+  private syncDensityRegion(idx: number, coverage: CoverageRegionFields) {
+    this.regions.set(idx, {
+      ...emptyRegion(),
+      maxDepth: coverage.coverageMaxDepth,
+      binSize: coverage.coverageBinSize,
+    })
+    const prev = this.uploaded.get(idx)
+    this.uploaded.set(idx, {
+      layout: undefined,
+      tagColors: undefined,
+      colorCategories: undefined,
+      arcs: undefined,
+      density: coverage.coveragePackedBuffer,
+      arcLineWidth: 0,
+    })
+    if (prev?.density !== coverage.coveragePackedBuffer) {
+      this.hal.deleteRegion(idx)
+      uploadPass(this.hal, idx, COVERAGE_PASS, coverage)
     }
   }
 

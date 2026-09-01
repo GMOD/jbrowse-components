@@ -121,6 +121,7 @@ function oneRegion(): AlignmentsSources {
         arcsRpcDataMap: new Map(),
       },
     ],
+    densityRegions: new Map(),
     readConnectionsLineWidth: 1,
   }
 }

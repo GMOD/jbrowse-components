@@ -57,6 +57,12 @@ const registry: {
     load: () => import('./commands/make-pif/index.ts').then(m => m.run),
   },
   {
+    name: 'make-density',
+    summary:
+      'Counts feature starts per bin into a bigWig density sidecar, with bedGraphToBigWig',
+    load: () => import('./commands/make-density/index.ts').then(m => m.run),
+  },
+  {
     name: 'sort-gff',
     summary: 'Sort a GFF/GTF for tabix: sort -k1,1 -k4,4n, header kept on top',
     load: () => import('./commands/sort-gff.ts').then(m => m.run),

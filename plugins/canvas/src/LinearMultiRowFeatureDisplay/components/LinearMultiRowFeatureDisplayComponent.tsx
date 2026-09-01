@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
 import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
 import { SEPARATOR_OPACITY } from '../rendering/rowBand.ts'
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
@@ -62,6 +63,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           top: 0,
         }}
       />
+      <DensityBandOverlay model={model} />
       <MultiRowIndelGlyphOverlay model={model} />
       {/* inline rather than portaled through FloatingSvgOverlay: the tree
           sidebar is a later sibling and its panel is opaque, so drawing the

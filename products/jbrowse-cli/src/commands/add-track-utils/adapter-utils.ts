@@ -8,6 +8,9 @@ import {
   trackTypeForAdapter,
 } from '@jbrowse/add-track-core'
 
+import { isURL } from '../../types/common.ts'
+import { densitySidecarPath } from '../shared/density.ts'
+
 import type { AdapterSpec } from '@jbrowse/add-track-core'
 
 interface UriLocation {
@@ -87,6 +90,65 @@ export function siblingSidecar(location: string, suffix: string) {
     ...(stripped && strippedName !== location ? [strippedName] : []),
   ]
   return candidates.find(c => fs.existsSync(c)) ?? candidates[0]!
+}
+
+// The feature adapters whose schema spreads
+// `densityAdapterConfigSchemaFields`, so a `densityAdapter` written onto one
+// resolves to a slot rather than being dropped. Change one, change the other.
+const densityAdapterTypes = new Set([
+  'BamAdapter',
+  'CramAdapter',
+  'HtsgetBamAdapter',
+  'Gff3TabixAdapter',
+  'GtfTabixAdapter',
+  'BedTabixAdapter',
+  'BigBedAdapter',
+  'VcfTabixAdapter',
+  'SplitVcfTabixAdapter',
+])
+
+/**
+ * The adapter with its density sidecar attached, and the local file to load
+ * beside the config when there is one.
+ *
+ * An explicit `--density` is taken as given, since a URL cannot be probed;
+ * otherwise the conventional `<file>.density.bw` counts only when it is
+ * actually there, the way `siblingSidecar` probes an index.
+ */
+export function withDensityAdapter({
+  adapter,
+  location,
+  density,
+  makeLocation,
+}: {
+  adapter: Adapter
+  location?: string
+  density?: string
+  makeLocation: (l: string) => Location
+}): { adapter: Adapter; file?: string } {
+  const supported = densityAdapterTypes.has(adapter.type)
+  if (density !== undefined && !supported) {
+    throw new Error(
+      `--density has no slot on ${adapter.type}. The adapters carrying a density sidecar are: ${[...densityAdapterTypes].join(', ')}`,
+    )
+  }
+  const probed =
+    location !== undefined && fs.existsSync(densitySidecarPath(location))
+      ? densitySidecarPath(location)
+      : undefined
+  const file = density === undefined ? probed : density
+  return file === undefined
+    ? { adapter }
+    : {
+        adapter: {
+          ...adapter,
+          densityAdapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: makeLocation(file),
+          },
+        },
+        file: isURL(file) ? undefined : file,
+      }
 }
 
 interface SpecContext {

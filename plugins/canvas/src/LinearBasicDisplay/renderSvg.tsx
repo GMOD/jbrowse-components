@@ -7,6 +7,7 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
+import { drawDensityBand } from '../shared/densityBand.ts'
 import {
   drawFeatureBlocks,
   drawHighlightBoxes,
@@ -23,6 +24,7 @@ import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import { resolveMapColors } from './components/resolveRegionColors.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { DensityBandLayer } from '../shared/densityBand.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -33,6 +35,11 @@ export interface RenderSvgModel extends SvgExportable {
   height: number
   scrollTop: number
   regionTooLarge: boolean
+  // `renderDisplaySvg`'s hook: the band is drawn in the too-large terminal, so
+  // the note that would replace this whole body must not
+  drawsWhenTooLarge: boolean
+  densityBandActive: boolean
+  densityBandLayer: DensityBandLayer
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   highlightedFeatureIdSet: ReadonlySet<string>
   renderedShowLabels: boolean
@@ -111,6 +118,20 @@ function CanvasFeaturesSvgBody({
       width={canvasWidth}
       height={height}
     >
+      {model.densityBandActive ? (
+        <PaintLayer
+          width={canvasWidth}
+          height={height}
+          opts={opts}
+          paint={ctx => {
+            drawDensityBand(ctx, renderBlocks, model.densityBandLayer, {
+              canvasWidth,
+              bandHeight: height,
+              color: palette.text.secondary,
+            })
+          }}
+        />
+      ) : null}
       <PaintLayer
         width={canvasWidth}
         height={height}

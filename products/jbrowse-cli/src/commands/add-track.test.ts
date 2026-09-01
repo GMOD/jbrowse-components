@@ -1059,3 +1059,74 @@ test('reports the missing config when --out names a nonexistent directory', asyn
     expect(error?.message).toContain(path.join('not', 'a', 'real', 'dir'))
   })
 })
+
+test('attaches a density sidecar sitting beside the track file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const dataDir = path.join(ctx.dir, 'data')
+    fs.mkdirSync(dataDir)
+    await copyFile(simpleGffGz, path.join(dataDir, 'volvox.sort.gff3.gz'))
+    await copyFile(
+      `${simpleGffGz}.tbi`,
+      path.join(dataDir, 'volvox.sort.gff3.gz.tbi'),
+    )
+    await writeFile(
+      path.join(dataDir, 'volvox.sort.gff3.density.bw'),
+      'stand-in for a bigWig',
+    )
+    await runCommand([
+      'add-track',
+      path.join(dataDir, 'volvox.sort.gff3.gz'),
+      '--load',
+      'copy',
+    ])
+    expect(readConf(ctx).tracks[0].adapter.densityAdapter).toEqual({
+      type: 'BigWigAdapter',
+      bigWigLocation: {
+        uri: 'volvox.sort.gff3.density.bw',
+        locationType: 'UriLocation',
+      },
+    })
+    expect(exists(ctxDir(ctx, 'volvox.sort.gff3.density.bw'))).toBe(true)
+  })
+})
+
+test('leaves densityAdapter off when no sidecar is beside the file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleGffGz, '--load', 'copy'])
+    expect(readConf(ctx).tracks[0].adapter.densityAdapter).toBe(undefined)
+  })
+})
+
+test('--density attaches a sidecar that cannot be probed', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
+      'add-track',
+      'https://mywebsite.com/genes.gff3.gz',
+      '--density',
+      'https://mywebsite.com/genes.gff3.density.bw',
+    ])
+    expect(readConf(ctx).tracks[0].adapter.densityAdapter).toEqual({
+      type: 'BigWigAdapter',
+      bigWigLocation: {
+        uri: 'https://mywebsite.com/genes.gff3.density.bw',
+        locationType: 'UriLocation',
+      },
+    })
+  })
+})
+
+test('--density fails on an adapter with no density slot', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      'https://mywebsite.com/coverage.bw',
+      '--density',
+      'https://mywebsite.com/coverage.density.bw',
+    ])
+    expect(error?.message).toContain('--density has no slot on BigWigAdapter')
+  })
+})

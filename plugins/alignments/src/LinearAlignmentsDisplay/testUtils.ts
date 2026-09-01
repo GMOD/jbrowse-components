@@ -415,16 +415,22 @@ export function bootAlignmentsDisplay({
  * build several independent ones against one registration, and the spy so a
  * case can read what the display asked for.
  *
- * `register` reaches `bootAlignmentsDisplay`'s, so a menu contribution can be
- * installed against the same world — a track-menu item that reads the view's
- * blocks needs the measured view this builds, not a bare model.
+ * `register` and `trackConfig` reach `bootAlignmentsDisplay`'s, so a menu
+ * contribution can be installed against the same world — a track-menu item that
+ * reads the view's blocks needs the measured view this builds, not a bare model
+ * — and a case about the adapter (a density sidecar, say) can state one.
  */
 export function createRpcTestEnvironment({
   register,
+  trackConfig,
 }: {
   register?: (pluginManager: PluginManager) => void
+  trackConfig?: Record<string, unknown>
 } = {}) {
-  const { baseSession, mount } = bootAlignmentsDisplay({ register })
+  const { baseSession, mount } = bootAlignmentsDisplay({
+    register,
+    trackConfig,
+  })
   const mockRpcCall = jest.fn(() =>
     Promise.resolve(makeEmptyAlignmentsResult()),
   )

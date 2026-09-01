@@ -1,0 +1,84 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Density tier",
+    "views": [
+      {
+        "id": "density_tier_test",
+        "type": "LinearGenomeView",
+        "loc": "ctgA",
+        "assembly": "volvox",
+        "tracks": ["gff3tabix_genes_density"]
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_density",
+      "name": "GFF3Tabix genes (density sidecar)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "densityAdapter": {
+          "type": "BigWigAdapter",
+          "bigWigLocation": {
+            "uri": "volvox.sort.gff3.density.bw",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3tabix_genes_density-LinearBasicDisplay",
+          "fetchSizeLimit": 1000
+        }
+      ]
+    }
+  ]
+}

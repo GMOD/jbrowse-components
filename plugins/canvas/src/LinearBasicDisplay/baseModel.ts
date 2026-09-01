@@ -26,6 +26,7 @@ import {
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HeightModeMixin, {
   installGrowExitBake,
 } from '@jbrowse/display-kit/HeightModeMixin'
@@ -35,6 +36,7 @@ import MultiRegionDisplayMixin, {
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -55,6 +57,10 @@ import {
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
+import {
+  densityBandDisplayPhase,
+  displayDensityBandLayer,
+} from '../shared/densityBandViews.ts'
 import {
   featureSpanRegion,
   fetchCanvasFeatureDetails,
@@ -131,8 +137,11 @@ import type {
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 type LGV = LinearGenomeViewModel
+
+const EMPTY_LAID_OUT_DATA: ReadonlyMap<number, FeatureDataResult> = new Map()
 
 // Region identity (regionKey/reversed) is stored alongside the data so layout
 // grouping derives from rpcDataMap directly. Deriving it from loadedRegions
@@ -216,6 +225,10 @@ export default function baseStateModelFactory(
         // axis and its `resolvedByteLimit()` budget are RegionTooLargeMixin's,
         // reached through MultiRegionDisplayMixin above.
         CanvasFeatureGateMixin(),
+        // The density tier: where the verdict above refuses the features, a
+        // track with a density sidecar draws features per bin in the banner's
+        // place. After both gate mixins, since it keys off their verdict.
+        DensityTierMixin(),
         ContextMenuMixin<FeatureContextMenuInfo>(),
         types.model({
           /**
@@ -336,6 +349,40 @@ export default function baseStateModelFactory(
       }))
       .volatile(fitLadderVolatiles)
       .volatile(yMorphVolatiles)
+      .views(self => ({
+        /**
+         * #getter
+         * Whether the band stands in for the features here — the tier's own
+         * decision, plus the view geometry the draw is mapped through.
+         */
+        get densityBandActive() {
+          return self.densityTierActive && self.host.initialized
+        },
+        /**
+         * #getter
+         */
+        get densityBandLayer() {
+          return displayDensityBandLayer(self)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The foundation's phase with the too-large banner swapped for the
+         * band — see `densityBandDisplayPhase`.
+         */
+        get displayPhase(): DisplayPhase {
+          return densityBandDisplayPhase(self)
+        },
+        /**
+         * #getter
+         * `renderDisplaySvg`'s hook: the export paints the band in place of the
+         * too-large note, the same swap the chrome makes on screen.
+         */
+        get drawsWhenTooLarge() {
+          return self.densityBandActive
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -923,10 +970,18 @@ export default function baseStateModelFactory(
          * back up against the top instead of jumping to a re-centered offset.
          * Returned by reference off the untransformed path (scale 1) so the
          * incremental-layout upload diff and Y-morph idle check stay intact.
+         * Empty while the density band stands in for the features, which is
+         * what makes that swap total: every painter, hit test and label reads
+         * this, so a track forced to `density` over data it already holds
+         * draws the band alone.
          */
         get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
-          return scale === 1 ? layout : scaleLaidOutData(layout, scale)
+          return self.densityBandActive
+            ? EMPTY_LAID_OUT_DATA
+            : scale === 1
+              ? layout
+              : scaleLaidOutData(layout, scale)
         },
         /**
          * #getter
@@ -2073,7 +2128,7 @@ export default function baseStateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
-          return canvasTrackMenuItems(self)
+          return [...canvasTrackMenuItems(self), ...densityTierMenuItems(self)]
         },
       }))
   )

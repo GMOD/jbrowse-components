@@ -59,6 +59,7 @@ COMMANDS
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
+  make-density         Counts feature starts per bin into a bigWig density sidecar, with bedGraphToBigWig
   sort-gff             Sort a GFF/GTF for tabix: sort -k1,1 -k4,4n, header kept on top
   sort-bed             Sort a BED for tabix: sort -k1,1 -k2,2n, header kept on top
   add-connection       Add a connection to a JBrowse 2 configuration
@@ -307,6 +308,11 @@ Options:
 
       --bed2                 Used only for mcscan anchors/simpleAnchors types
 
+      --density              Path or URL of a features-per-bin bigWig (jbrowse
+                             make-density) to attach as the adapter's
+                             densityAdapter. A local <file>.density.bw beside
+                             the track file is attached without this flag
+
 Notes:
 
 --load controls how the data file is placed relative to config.json: copy, move,
@@ -333,6 +339,14 @@ the positional track argument: pass a comma-separated list of BigWig files/URLs,
 or a .json file with an array of BigWig locations or subadapter objects (each
 carrying its own name/color/group). With --load, local list entries are copied
 like any other track file.
+
+--density attaches a features-per-bin bigWig (jbrowse make-density) as the
+adapter's densityAdapter, the band a display draws where the region is too large
+to fetch features. A local <file>.density.bw beside the track file is attached
+without the flag; a URL cannot be probed, so a remote sidecar needs it. The
+adapters carrying the slot are BamAdapter, CramAdapter, HtsgetBamAdapter,
+Gff3TabixAdapter, GtfTabixAdapter, BedTabixAdapter, BigBedAdapter,
+VcfTabixAdapter and SplitVcfTabixAdapter.
 
 For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target
 — the reverse of the minimap2/nucmer input order. For the all-vs-all adapters
@@ -368,6 +382,9 @@ $ jbrowse add-track --multiwig a.bw,b.bw,c.bw --load copy --name "Coverage"
 
 # ...or from a sources.json carrying per-row name/color for each BigWig
 $ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"
+
+# attach a remote density sidecar (a local genes.gff3.density.bw needs no flag)
+$ jbrowse add-track https://mywebsite.com/genes.gff3.gz --density https://mywebsite.com/genes.gff3.density.bw
 ```
 
 ## jbrowse validate
@@ -394,14 +411,14 @@ nothing. That is what this command is mainly for.
 Two levels are reported:
 
   error    JBrowse accepts it and silently does the wrong thing — an unknown
-       slot, a track naming an assembly the config never defines, a
-defaultSession naming a trackId that does not exist, a duplicate
-trackId. Exits 1.
+       slot, a key a defaultSession view or display does not declare, a
+  track naming an assembly the config never defines, a defaultSession
+naming a trackId that does not exist, a duplicate trackId. Exits 1.
 
   warning  JBrowse will complain by itself on load, or handles it — a type name
           the core plugins do not register (expected if one of your plugins
-      registers it), or a legacy key a migration rewrites. Never fails
- the run.
+      registers it), or a legacy key a migration rewrites, such as a view
+    nesting its settings under "init". Never fails the run.
 
 Types registered by plugins are not known to this command, so they come through
 as warnings rather than errors.
@@ -460,6 +477,11 @@ Options:
       --exclude              Comma separated list of feature types to exclude
                              from indexing [default: CDS,exon]
 
+      --include              Comma separated list of feature types to index,
+                             dropping every other type. Unset by default, which
+                             indexes every type --exclude does not name. GFF3
+                             only
+
       --prefixSize           Specify the prefix size for the ixx index. We
                              attempt to automatically calculate this, but you
                              can manually specify this too. If many genes have
@@ -490,6 +512,17 @@ with other adapter types are skipped automatically.
 
 GTF has no Name/ID attributes, so the default --attributes also match their GTF
 spellings (gene_name, transcript_name, gene_id, transcript_id).
+
+--exclude names types not to index; --include names the only types to index.
+Reach for --include when the file draws from a vocabulary you do not control: an
+NCBI RefSeq GFF3 uses 115 feature types, 80 of them leaf records with no name to
+search (a match is labelled with a bare UUID, a cDNA_match with an MD5, every
+biological_region with the string "biological region"), so a deny list leaks
+whichever type is added next while the allow list — gene, pseudogene and the
+transcript types — does not grow. Both may be given: --include admits, --exclude
+then narrows. Either can also be set per track in config.json as
+textSearching.indexingFeatureTypesToInclude / indexingFeatureTypesToExclude,
+which takes precedence over the flag.
 
 Examples:
 
@@ -647,6 +680,61 @@ $ jbrowse make-pif input.paf --coarse 0
 
 # emit only the per-row CIGAR fine tier, skipping the coarse tier
 $ jbrowse make-pif input.paf --no-coarse
+```
+
+## jbrowse make-density
+
+```
+Counts feature starts per bin into a bigWig, the density sidecar a track draws
+where the region is too large to fetch its features
+
+Usage: jbrowse make-density <file> [options]
+
+Options:
+  -h, --help                 Show help
+
+      --bin                  Width of each bin, in bp [default: 1000]
+
+      --chrom-sizes          Two-column reference name and length table for the
+                             assembly the file is on
+
+      --assembly             FASTA of the assembly the file is on; its .fai
+                             supplies the reference lengths, in place of
+                             --chrom-sizes
+
+      --out                  Where to write the bigWig. Defaults to
+                             <file>.density.bw beside the input, which is where
+                             add-track looks for it
+
+Notes:
+
+The sidecar is attached to a track through its adapter's densityAdapter slot,
+which BamAdapter, CramAdapter, HtsgetBamAdapter, Gff3TabixAdapter,
+GtfTabixAdapter, BedTabixAdapter, BigBedAdapter, VcfTabixAdapter and
+SplitVcfTabixAdapter declare. add-track attaches it on its own when the default
+<file>.density.bw sits beside the track file, so building it before adding the
+track is all it takes; --density attaches one by path or URL.
+
+GFF3 counts only top-level features — a line whose attributes carry no Parent= —
+so a gene is one count rather than one per exon. GTF, BED and VCF have no parent
+link to follow, so every record counts.
+
+BAM and CRAM are out of scope: read depth is not feature density, and the tools
+that compute it already write bigWig. Point add-track --density at what they
+produce.
+
+Requires bedGraphToBigWig (UCSC) on the PATH.
+
+Examples:
+
+# writes genes.gff3.density.bw beside the input, in 1kb bins
+$ jbrowse make-density genes.gff3.gz --chrom-sizes hg38.chrom.sizes
+
+# take the reference lengths from the assembly FASTA index instead
+$ jbrowse make-density variants.vcf.gz --assembly hg38.fa
+
+# coarser bins, and a name of your own
+$ jbrowse make-density genes.gff3.gz --assembly hg38.fa --bin 10000 --out genes.10kb.bw
 ```
 
 ## jbrowse sort-gff

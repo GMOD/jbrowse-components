@@ -1,8 +1,10 @@
 /**
- * Features per bin over one region, the payload of the density tier that
- * stands in for the features a gated fetch refused. Absolute genomic
- * coordinates; `exact` says whether the bins were counted (a sidecar) or
- * estimated (an index).
+ * A density source's intervals over one region, the payload of the density
+ * tier that stands in for the features a gated fetch refused: features per bin
+ * for a `make-density` sidecar, whatever the bigWig measures otherwise, each
+ * value a level over its span so a zoomed read means the same thing. Absolute
+ * genomic coordinates; `exact` says whether the bins were counted (a sidecar)
+ * or estimated (an index).
  */
 export interface FeatureDensity {
   starts: Uint32Array

@@ -9,18 +9,18 @@ function density(rows: [number, number, number][]) {
   }
 }
 
-test('a source bin wider than the screen bin is spread as a rate', () => {
+test('a source bin wider than the screen bin is read as its level', () => {
   const bins = densityToUniformBins(
     density([[0, 1000, 100]]),
     { start: 0, end: 1000 },
     250,
   )
-  expect([...bins.depths]).toEqual([25, 25, 25, 25])
-  expect(bins.maxDepth).toBe(25)
+  expect([...bins.depths]).toEqual([100, 100, 100, 100])
+  expect(bins.maxDepth).toBe(100)
   expect(bins.binCount).toBe(4)
 })
 
-test('source bins narrower than the screen bin sum into it', () => {
+test('source bins narrower than the screen bin average into it, gaps as 0', () => {
   const bins = densityToUniformBins(
     density([
       [0, 100, 3],
@@ -30,17 +30,26 @@ test('source bins narrower than the screen bin sum into it', () => {
     { start: 0, end: 400 },
     200,
   )
-  expect([...bins.depths]).toEqual([8, 1])
+  expect([...bins.depths]).toEqual([4, 0.5])
 })
 
-test('a partial overlap contributes its share and the total is conserved', () => {
+test('a partial overlap contributes its share of the bin', () => {
   const bins = densityToUniformBins(
     density([[150, 350, 20]]),
     { start: 100, end: 500 },
     100,
   )
-  expect([...bins.depths]).toEqual([5, 10, 5, 0])
+  expect([...bins.depths]).toEqual([10, 20, 10, 0])
   expect(bins.startOffset).toBe(100)
+})
+
+test('a short last bin is averaged over its own width', () => {
+  const bins = densityToUniformBins(
+    density([[0, 150, 10]]),
+    { start: 0, end: 150 },
+    100,
+  )
+  expect([...bins.depths]).toEqual([10, 10])
 })
 
 test('intervals outside the region and empty scores are ignored', () => {

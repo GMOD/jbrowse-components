@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -60,6 +61,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: 5_000_000,
       advanced: true,
     },
+    ...densityAdapterConfigSchemaFields,
 
     /**
      * #slot useSliceWorkerPool

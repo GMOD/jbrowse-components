@@ -22,6 +22,7 @@ import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
 import { MORPH_DURATION_MS, morphClockMs } from '../yMorph.ts'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
@@ -417,6 +418,11 @@ const FeatureBody = observer(function FeatureBody({
             cursor: model.hoveredFeature ? 'pointer' : 'default',
           }}
         />
+
+        {/* over the feature canvas rather than inside the scrolled panel's
+            overlay layer: the band replaces the features entirely, so there is
+            nothing under it to scroll with */}
+        <DensityBandOverlay model={model} />
 
         <OverlayScrollLayer model={model}>
           <HighlightLayer model={model} view={view} />

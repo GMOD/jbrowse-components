@@ -3,6 +3,7 @@ import {
   expandTabixShorthand,
   tabixIndexFields,
 } from '@jbrowse/core/configuration'
+import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -67,6 +68,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
         'scaffold',
       ],
     },
+    ...densityAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

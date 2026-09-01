@@ -88,6 +88,7 @@ function fullyPopulated(): Canvas2DRegionData {
         arcsRpcDataMap: new Map(),
       },
     ],
+    densityRegions: new Map(),
     readConnectionsLineWidth: 1,
   }).get(0)!
 }

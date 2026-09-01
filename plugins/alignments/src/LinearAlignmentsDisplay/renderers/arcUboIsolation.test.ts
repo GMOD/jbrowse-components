@@ -70,6 +70,7 @@ function sources(): AlignmentsSources {
       laidOutPileupMap: region(),
       arcsRpcDataMap: new Map(),
     })),
+    densityRegions: new Map(),
     readConnectionsLineWidth: 1,
   }
 }

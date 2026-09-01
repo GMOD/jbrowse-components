@@ -16,6 +16,14 @@ import type React from 'react'
  */
 export interface LgvSvgExportable extends SvgExportable {
   height: number
+  /**
+   * Whether the display paints its own body in the too-large terminal instead
+   * of `SvgChrome`'s note. Optional, and absent means it does not: only a
+   * display that draws something in the place of the features the gate refused
+   * — canvas's density band — answers `true`, and for it the note would be the
+   * one thing on screen the export left out.
+   */
+  drawsWhenTooLarge?: boolean
 }
 
 /**
@@ -83,7 +91,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   const height = model.height
   return (
     <SvgChrome
-      regionTooLarge={model.regionTooLarge}
+      regionTooLarge={model.regionTooLarge && !model.drawsWhenTooLarge}
       width={view.width}
       height={height}
     >

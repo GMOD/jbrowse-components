@@ -233,6 +233,15 @@ export function buildAlignmentsRegionMap(sources: AlignmentsSources) {
       }
     }
   })
+  // The density tier's bins, into section 0's keys — every other field empty,
+  // so the pileup layers paint nothing and the band's depth-bar layer paints
+  // the bins.
+  for (const [regionIdx, coverage] of sources.densityRegions) {
+    regions.set(sectionRegionKey(0, regionIdx), {
+      ...EMPTY_PILEUP_FIELDS,
+      ...coverage,
+    })
+  }
   return regions
 }
 
