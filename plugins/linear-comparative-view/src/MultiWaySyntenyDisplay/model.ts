@@ -27,6 +27,7 @@ import {
   syntenyRegionMenuItems,
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
+import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import { axisPlacement, axisSpan } from './anchorAxis.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
@@ -206,6 +207,15 @@ export function stateModelFactory(
       laneDecisions: new Map<string, LaneDecision | undefined>(),
       /**
        * #volatile
+       * the contig the reader pinned a lane onto from its header menu, which
+       * outranks the lane's own vote while the window still places anything
+       * on it. Volatile like the decisions it steers: a pin is a choice about
+       * this window, and the lane falls back to choosing once the pinned
+       * contig explains nothing here
+       */
+      pinnedLaneContigs: new Map<string, string>(),
+      /**
+       * #volatile
        * the view's scroll offset the stack is laid out against, refreshed with
        * the decisions. Between refreshes a pan is one translate of the whole
        * stack (`dragOffsetPx`), not a relayout of every lane
@@ -248,6 +258,20 @@ export function stateModelFactory(
       ) {
         self.renderOriginPx = originPx
         self.laneDecisions = decisions
+      },
+      /**
+       * #action
+       * pin a lane onto one of its contigs, or `undefined` to let it choose
+       * again. A fresh map, so the decision autorun sees the write
+       */
+      pinLaneContig(assemblyName: string, refName: string | undefined) {
+        const pins = new Map(self.pinnedLaneContigs)
+        if (refName === undefined) {
+          pins.delete(assemblyName)
+        } else {
+          pins.set(assemblyName, refName)
+        }
+        self.pinnedLaneContigs = pins
       },
       /**
        * #action
@@ -415,6 +439,12 @@ export function stateModelFactory(
           assemblyManager.getCanonicalAssemblyName(assemblyName) ??
             assemblyName,
         )
+      },
+      /**
+       * #method
+       */
+      pinnedContigOf(assemblyName: string) {
+        return self.pinnedLaneContigs.get(assemblyName)
       },
       /**
        * #getter
@@ -1061,9 +1091,26 @@ export function stateModelFactory(
        */
       reanchor(assemblyName: string, loc: string) {
         const session = getSession(self)
-        self.lgv.navToLocString(loc, assemblyName).catch((e: unknown) => {
-          session.notifyError(`${e}`, e)
-        })
+        const view = self.lgv
+        // the same undo the stacked view's moves offer: the navigation
+        // replaces the view's regions with another genome's, and what it
+        // discarded may be a region list built over several navigations
+        const restore = captureStackViewports([view])
+        view
+          .navToLocString(loc, assemblyName)
+          .then(landed => {
+            if (landed) {
+              session.notify(`Re-anchored on ${assemblyName}`, 'info', {
+                name: 'Undo',
+                onClick: () => {
+                  restore()
+                },
+              })
+            }
+          })
+          .catch((e: unknown) => {
+            session.notifyError(`${e}`, e)
+          })
       },
       /**
        * #action

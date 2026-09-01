@@ -75,7 +75,13 @@ per lane, so a genome holding two homoeologous copies of the anchor window
 shows only the better-populated one. The worked example is maize's WGD in the
 grasses demo (`orthofinder_synteny/grasses_maize_wgd` draws it as two stacked
 rows in the synteny view: maize `1:286.7M` AND `5:6.3M` for one rice window).
-The lane model that fixes it is lane-per-REGION rather than lane-per-assembly —
+Since 2026-09-01 the other copy is at least NAMED and reachable: `pickContig`
+returns the contigs explaining a comparable share of the window (`alsoOn`, half
+the drawn one's anchor bp), the lane header says "also on 5", and the header
+menu offers "Show 5 in this lane", a per-lane pin (`pinnedLaneContigs`) that
+outranks the vote until the reader lets the lane choose again — the synteny
+follow's refused-spread report, applied to a lane. That is one copy at a time.
+The lane model that shows both is lane-per-REGION rather than lane-per-assembly —
 cluster a lane's placements (the median-reach filter already computes the
 cluster it keeps; the change is keeping the runners-up as additional lanes with
 the same assembly label). That also unlocks the wheat homoeolog case, which is

@@ -19,6 +19,8 @@ export interface LaneHeaderModel extends LaneOrderModel {
   holdsAssembly: (assemblyName: string) => boolean
   openInNewView: (assemblyName: string, loc: string) => void
   reanchor: (assemblyName: string, loc: string) => void
+  pinnedContigOf: (assemblyName: string) => string | undefined
+  pinLaneContig: (assemblyName: string, refName: string | undefined) => void
 }
 
 export type HeaderLane = Pick<
@@ -128,7 +130,13 @@ export function laneLocString(lane: HeaderLane) {
  * does by navigating there — the anchor lane reads off the view's first
  * assembly, so the old anchor drops into a mate lane on its own. Either hop is
  * dead while the lane places nothing, and re-anchoring also while the session
- * does not hold the genome
+ * does not hold the genome.
+ *
+ * Then the lane's other contigs, one row each: the frame shows the contig
+ * explaining most of the anchor window, and a genome holding two homoeologous
+ * copies of it shows one — the same silent loss the synteny follow's refused
+ * spread had, answered the same way, by naming the other and offering it. A
+ * pin outranks the vote until the reader lets the lane choose again.
  */
 export function laneHeaderMenuItems(
   model: LaneHeaderModel,
@@ -164,7 +172,39 @@ export function laneHeaderMenuItems(
         model.reanchor(name, loc!)
       },
     },
+    ...laneContigMenuItems(model, lane),
   ]
+}
+
+function laneContigMenuItems(
+  model: LaneHeaderModel,
+  lane: HeaderLane,
+): MenuItem[] {
+  const name = lane.assemblyName
+  const pinned = model.pinnedContigOf(name)
+  const alsoOn = lane.frame?.alsoOn ?? []
+  const offers = alsoOn.map(
+    refName =>
+      ({
+        label: `Show ${lane.canon(refName)} in this lane`,
+        onClick: () => {
+          model.pinLaneContig(name, refName)
+        },
+      }) satisfies MenuItem,
+  )
+  const release =
+    pinned === undefined
+      ? []
+      : [
+          {
+            label: `Let the lane choose its contig (pinned to ${lane.canon(pinned)})`,
+            onClick: () => {
+              model.pinLaneContig(name, undefined)
+            },
+          } satisfies MenuItem,
+        ]
+  const items = [...offers, ...release]
+  return items.length ? [{ type: 'divider' }, ...items] : []
 }
 
 /**

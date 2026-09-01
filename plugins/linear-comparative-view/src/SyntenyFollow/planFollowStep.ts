@@ -35,8 +35,9 @@ export interface FollowStep {
 }
 
 // A vote past this share in either direction orients the row; anything between
-// is a window showing both orientations, and flipping it would hide half.
-const NEARLY_ALL = 0.9
+// is a window showing both orientations, and flipping it would hide half. The
+// multi-way lanes mirror on the same share, for the same reason.
+export const NEARLY_ALL = 0.9
 
 function wantReversedFor(share: number | undefined) {
   if (share === undefined) {

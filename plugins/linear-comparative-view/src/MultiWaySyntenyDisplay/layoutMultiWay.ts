@@ -39,6 +39,10 @@ export interface RowFrame {
   // the freedom `decideLaneFrames` works in
   fitMin: number
   fitMax: number
+  // the lane's other contigs explaining a comparable share of the anchor
+  // window — a second homoeologous copy, most often — which the frame shows
+  // nothing of. Named so the reader can pin the lane onto one.
+  alsoOn: string[]
 }
 
 interface FeatureMate extends MultiWayPlacement {

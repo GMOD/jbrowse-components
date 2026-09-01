@@ -1,6 +1,7 @@
 import { clamp } from '@jbrowse/core/util'
 
 import { preferIncumbent } from '../SyntenyFollow/pickFollowFeature.ts'
+import { NEARLY_ALL } from '../SyntenyFollow/planFollowStep.ts'
 import {
   OUTLIER_REACH,
   keepNearMedian,
@@ -36,6 +37,7 @@ export interface LaneDecision {
   pivotLaneBp: number
   fitMin: number
   fitMax: number
+  alsoOn: string[]
 }
 
 // The scales a lane's frame is allowed to sit at, as multiples of the anchor's
@@ -49,13 +51,16 @@ export const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
 // unused, so a fit hovering at a rung boundary does not rescale on every step
 const SHRINK_ROOM = 0.85
 const MIN_SHARED_FOR_ORIENTATION = 3
-// the share of the shared weight that has to read the other way before a lane
-// mirrors itself — the follow's NEARLY_ALL, for the same reason: a mixed
-// window shows both orientations and flipping it would hide half — and the
-// groups it has to be measured over, since three genes all reversed is one
-// small inversion and not a lane reading backwards
-const ORIENTATION_SWITCH_SHARE = 0.9
+// the groups a lane's mirror vote has to be measured over, since three genes
+// all reversed is one small inversion and not a lane reading backwards; the
+// share it needs is the follow's `NEARLY_ALL`
 const MIN_SHARED_TO_SWITCH = 5
+// a contig explaining at least this share of what the drawn one explains is
+// named beside the lane rather than dropped: a genome holding two homoeologous
+// copies of the anchor window shows one, and the other is the reader's to ask
+// for. Well under the switch margin, so a copy the lane will never choose on
+// its own is still named.
+const ALSO_ON_SHARE = 0.5
 // a lane keeps its placement while its frame still shows this much of the
 // placed weight: content that came in with the anchor is drawn where it
 // arrived, and the lane re-aligns only once what it should show has left it
@@ -78,6 +83,7 @@ function pickContig(
   groups: MultiWayGroup[],
   assemblyName: string,
   incumbent: string | undefined,
+  pinned: string | undefined,
 ) {
   const byRef = new Map<string, MultiWayPlacement[]>()
   const anchorBp = new Map<string, number>()
@@ -103,11 +109,24 @@ function pickContig(
     incumbent !== undefined && anchorBp.has(incumbent)
       ? { refName: incumbent, overlap: anchorBp.get(incumbent)! }
       : undefined
-  const chosen = preferIncumbent(best, held)
+  // a pin is the reader's choice and outranks the vote, for as long as the
+  // window still places anything on it
+  const chosen =
+    pinned !== undefined && anchorBp.has(pinned)
+      ? { refName: pinned, overlap: anchorBp.get(pinned)! }
+      : preferIncumbent(best, held)
   return (
     chosen && {
       refName: chosen.refName,
       placements: byRef.get(chosen.refName)!,
+      alsoOn: [...anchorBp]
+        .filter(
+          ([refName, overlap]) =>
+            refName !== chosen.refName &&
+            overlap >= chosen.overlap * ALSO_ON_SHARE,
+        )
+        .sort((a, b) => b[1] - a[1])
+        .map(([refName]) => refName),
     }
   )
 }
@@ -170,7 +189,7 @@ export function computeRowFrame(
   unitBp = 0,
   incumbent?: FitIncumbent,
 ): RowFrame | undefined {
-  return fitLane(groups, assemblyName, unitBp, incumbent)?.frame
+  return fitLane(groups, assemblyName, unitBp, incumbent, undefined)?.frame
 }
 
 type FitIncumbent = Pick<LaneDecision, 'refName' | 'rung' | 'fitMin' | 'fitMax'>
@@ -180,8 +199,9 @@ function fitLane(
   assemblyName: string,
   unitBp: number,
   incumbent: FitIncumbent | undefined,
+  pinned: string | undefined,
 ) {
-  const contig = pickContig(groups, assemblyName, incumbent?.refName)
+  const contig = pickContig(groups, assemblyName, incumbent?.refName, pinned)
   if (!contig) {
     return undefined
   }
@@ -204,6 +224,7 @@ function fitLane(
       flipped: anchorOrderSign(groups, assemblyName, contig.refName) < 0,
       fitMin: lo,
       fitMax: hi,
+      alsoOn: contig.alsoOn,
     },
   }
 }
@@ -283,7 +304,7 @@ function decideOrientation(
     return incumbent
   }
   const share = vote.backwards ? vote.share : 1 - vote.share
-  return share >= ORIENTATION_SWITCH_SHARE ? vote.backwards : incumbent
+  return share >= NEARLY_ALL ? vote.backwards : incumbent
 }
 
 // the frame slid so its shared groups sit under the lane above's, by the
@@ -357,6 +378,7 @@ export function frameFromDecision(
     flipped,
     fitMin: d.fitMin,
     fitMax: d.fitMax,
+    alsoOn: d.alsoOn,
   }
 }
 
@@ -376,6 +398,8 @@ export interface DecideLaneFramesOpts {
   // to the anchor's order, so the screen orientation is the two together
   anchorReversed?: boolean
   previous: ReadonlyMap<string, LaneDecision | undefined>
+  // the contig the reader pinned each lane onto, which outranks its vote
+  pinned?: ReadonlyMap<string, string>
 }
 
 function sameDecision(a: LaneDecision, b: LaneDecision) {
@@ -387,7 +411,9 @@ function sameDecision(a: LaneDecision, b: LaneDecision) {
     a.pivotAnchor.refName === b.pivotAnchor.refName &&
     a.pivotAnchor.coord === b.pivotAnchor.coord &&
     a.fitMin === b.fitMin &&
-    a.fitMax === b.fitMax
+    a.fitMax === b.fitMax &&
+    a.alsoOn.length === b.alsoOn.length &&
+    a.alsoOn.every((name, i) => name === b.alsoOn[i])
   )
 }
 
@@ -411,12 +437,19 @@ export function decideLaneFrames({
   width,
   anchorReversed = false,
   previous,
+  pinned,
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   let upperX = anchorX
   for (const assemblyName of assemblyNames) {
     const prev = previous.get(assemblyName)
-    const fit = fitLane(groups, assemblyName, unitBp, prev)
+    const fit = fitLane(
+      groups,
+      assemblyName,
+      unitBp,
+      prev,
+      pinned?.get(assemblyName),
+    )
     if (fit === undefined || unitBp <= 0 || width <= 0) {
       out.set(assemblyName, undefined)
       continue
@@ -457,6 +490,7 @@ export function decideLaneFrames({
         rung,
         fitMin: aligned.fitMin,
         fitMax: aligned.fitMax,
+        alsoOn: aligned.alsoOn,
       }
       const heldFrame = frameFromDecision(
         carried,
@@ -489,6 +523,7 @@ export function decideLaneFrames({
           pivotLaneBp: laneBpAt(aligned, pivotPx, width),
           fitMin: aligned.fitMin,
           fitMax: aligned.fitMax,
+          alsoOn: aligned.alsoOn,
         }
         if (prev && sameDecision(prev, decision)) {
           decision = prev

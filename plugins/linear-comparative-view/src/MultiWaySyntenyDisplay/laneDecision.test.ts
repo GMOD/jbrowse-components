@@ -195,6 +195,36 @@ describe('the contig', () => {
     const previous = new Map([['peach', settle(twoContigs(130, 100))]])
     expect(settle(twoContigs(100, 160), previous).refName).toBe('Pp2')
   })
+
+  // a second homoeologous copy is a contig the lane will never choose on its
+  // own once the first clearly wins, and the reader has to be told it exists
+  test('names a contig explaining a comparable share, and not a repeat hit', () => {
+    expect(settle(twoContigs(200, 130)).alsoOn).toEqual(['Pp2'])
+    expect(settle(twoContigs(200, 60)).alsoOn).toEqual([])
+  })
+
+  test('a pin outranks the vote while the window still places on it', () => {
+    const pinned = new Map([['peach', 'Pp2']])
+    const groups = twoContigs(200, 60)
+    const decision = decideLaneFrames({
+      groups,
+      assemblyNames: ['peach'],
+      anchorX: new Map(
+        groups.map(g => [g.key, px((g.anchor.start + g.anchor.end) / 2)]),
+      ),
+      anchorCoordOf: g => ({
+        refName: g.anchor.refName,
+        coord: (g.anchor.start + g.anchor.end) / 2,
+      }),
+      pxOfAnchor: c => px(c.coord),
+      unitBp: SPAN_BP,
+      width: WIDTH,
+      previous: new Map(),
+      pinned,
+    }).get('peach')!
+    expect(decision.refName).toBe('Pp2')
+    expect(decision.alsoOn).toEqual(['Pp1'])
+  })
 })
 
 describe('the orientation', () => {

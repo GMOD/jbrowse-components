@@ -73,11 +73,17 @@ export function laneHeaderRows(
       ? anchorWhere
       : lane.frame &&
         `${lane.canon(lane.frame.refName)}:${toLocale(Math.round(lane.frame.min))}${lane.frame.flipped ? ' [rev]' : ''}`
+    // the contigs the lane is NOT showing, named so the reader knows a second
+    // copy exists and can pin the lane onto it from its menu
+    const alsoOn = lane.frame?.alsoOn.length
+      ? `· also on ${lane.frame.alsoOn.map(ref => lane.canon(ref)).join(', ')}`
+      : undefined
     return {
       assemblyName: lane.assemblyName,
       label: [
         lane.assemblyName,
         where,
+        alsoOn,
         lane.hasAnnotation ? undefined : '· no annotation',
       ]
         .filter(part => !!part)

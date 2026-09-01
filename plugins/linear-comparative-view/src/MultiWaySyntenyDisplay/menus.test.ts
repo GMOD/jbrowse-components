@@ -149,7 +149,7 @@ test('one lane still has a menu while another is hidden', () => {
   expect(labelsOf(subMenuOf(items[0]))).toContain('Show cacao')
 })
 
-function headerModel(held = true) {
+function headerModel(held = true, pinned?: string) {
   const calls: string[] = []
   const model = {
     rowAssemblies: ['peach', 'cacao'],
@@ -171,6 +171,10 @@ function headerModel(held = true) {
     },
     reanchor: (name: string, loc: string) => {
       calls.push(`reanchor ${name} ${loc}`)
+    },
+    pinnedContigOf: () => pinned,
+    pinLaneContig: (name: string, refName: string | undefined) => {
+      calls.push(`pin ${name} ${refName}`)
     },
   }
   return { model, calls }
@@ -216,9 +220,48 @@ const peach = {
     flipped: false,
     fitMin: 100,
     fitMax: 2000,
+    alsoOn: [],
   },
   canon: (ref: string) => ref.replace('pp', 'Pp'),
 }
+
+// The frame shows the contig explaining most of the window, and a genome with
+// two homoeologous copies of it shows one: the other is named and offered, and
+// a pin is undone from the same menu.
+test('a lane names its other contigs and offers each, and a pin offers its release', () => {
+  const twoCopies = {
+    ...peach,
+    frame: { ...peach.frame, alsoOn: ['pp5', 'pp7'] },
+  }
+  const { model, calls } = headerModel()
+  const items = laneHeaderMenuItems(model, twoCopies)
+  expect(labelsOf(items).slice(6)).toEqual([
+    '—',
+    'Show Pp5 in this lane',
+    'Show Pp7 in this lane',
+  ])
+  click(items[7])
+  expect(calls).toEqual(['pin peach pp5'])
+
+  const pinnedModel = headerModel(true, 'pp5')
+  const pinnedItems = laneHeaderMenuItems(pinnedModel.model, {
+    ...twoCopies,
+    frame: { ...twoCopies.frame, refName: 'pp5', alsoOn: ['pp1'] },
+  })
+  expect(labelsOf(pinnedItems).slice(6)).toEqual([
+    '—',
+    'Show Pp1 in this lane',
+    'Let the lane choose its contig (pinned to Pp5)',
+  ])
+  click(pinnedItems[8])
+  expect(pinnedModel.calls).toEqual(['pin peach undefined'])
+})
+
+test('a lane with one contig and no pin offers nothing past the two hops', () => {
+  expect(
+    labelsOf(laneHeaderMenuItems(headerModel().model, peach)),
+  ).toHaveLength(6)
+})
 
 test("a mate lane's frame becomes a locstring in the lane assembly's own names", () => {
   expect(laneLocString(peach)).toBe('Pp1:100-2,000')
