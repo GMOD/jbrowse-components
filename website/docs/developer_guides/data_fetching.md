@@ -153,10 +153,23 @@ await fetchRegionsBatched(self, needed, {
     // status field directly is last-writer-wins between them, and the
     // annotation branch's rows are a small fraction of the alignment's.
     const slot = createStatusFanOut(ctx.statusCallback)
-    const [results] = await Promise.all([
-      callEachRegion(regions, { ...ctx, statusCallback: slot() }, call),
-      fetchAnnotationData(self, regions, { ...ctx, statusCallback: slot() }),
+    const scope = refusalScope(ctx)
+    const results = await Promise.all([
+      callEachRegion(
+        regions,
+        { ...scope.ctx, statusCallback: slot() },
+        (region, regionCtx, displayedRegionIndex) =>
+          scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
+      ),
+      fetchAnnotationData(self, regions, {
+        ...scope.ctx,
+        statusCallback: slot(),
+      }),
     ])
+      .then(([answered]) => landed(answered))
+      .finally(() => {
+        scope.dispose()
+      })
     // The batch's own byte number, whichever way it goes: the budget is what
     // one region may cost, so the largest is what was judged and what the
     // banner quotes.
@@ -300,13 +313,15 @@ The verdict has two axes, and they stop gating for different reasons:
 is the full account, including the four bugs the predecessor had from an axis
 name claiming a term it did not have.
 
-No display calls the gate by hand. Both fetch runners do it — `fetchRegions` for
-this family and `installGlobalFetchAutorun`'s shared phases for the global one —
-so a display outside the per-region chain opts in with the same one getter and
-nothing else. The commit side is shared too: `nextGateState(prev, event)` holds
-the rules about _order_ (which of two measurements wins, what a clear leaves
-behind, what a force-load approval outlives), because those are the ones an
-exhaustive truth table over states cannot see.
+No display calls the gate by hand. Both fetch runners do it — the three helpers
+in `fetchEachRegion.ts` (`fetchEachRegion`, `fetchAllRegions`,
+`fetchRegionsBatched`) for this family and `installGlobalFetchAutorun`'s shared
+phases for the global one — so a display outside the per-region chain opts in
+with the same one getter and nothing else. The commit side is shared too:
+`nextGateState(prev, event)` holds the rules about _order_ (which of two
+measurements wins, what a clear leaves behind, what a force-load approval
+outlives), because those are the ones an exhaustive truth table over states
+cannot see.
 
 ## FetchMixin: cancellation and staleness
 

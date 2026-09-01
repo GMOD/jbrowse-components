@@ -3,7 +3,13 @@ import {
   largestRegionBytes,
   measuredBytes,
 } from '@jbrowse/core/rpc/byteBudget'
-import { createStatusFanOut } from '@jbrowse/core/util'
+import {
+  createStatusFanOut,
+  createStopToken,
+  isAbortException,
+  stopStopToken,
+  stopTokenSignal,
+} from '@jbrowse/core/util'
 import {
   callEachRegion,
   fetchRegionsBatched,
@@ -83,6 +89,57 @@ export function unionSampleSets(
 }
 
 /**
+ * A stop token for one fan-out under `ctx`, stopped by the parent's or by the
+ * first refusal it sees. `fetchRegionsBatched` holds the whole payload until
+ * every region lands, so without this a refusal at chr1 would let every sibling
+ * download in full and then be discarded; with it the siblings abort at the
+ * socket. `guard` wraps each region's call: a refusal stops the scope, and an
+ * abort the scope itself caused reads as "did not land" rather than an error.
+ * A parent cancel still rejects.
+ */
+function refusalScope(ctx: FetchContext) {
+  const stopToken = createStopToken()
+  const parent = stopTokenSignal(ctx.stopToken)
+  const stop = () => {
+    stopStopToken(stopToken)
+  }
+  if (parent.signal.aborted) {
+    stop()
+  } else {
+    parent.signal.addEventListener('abort', stop)
+  }
+  let refused = false
+  return {
+    ctx: { ...ctx, stopToken },
+    async guard<R>(call: () => Promise<R | RegionTooLargeResult>) {
+      try {
+        const result = await call()
+        if (isRegionRefused(result)) {
+          refused = true
+          stop()
+        }
+        return result
+      } catch (e) {
+        if (refused && isAbortException(e)) {
+          return undefined
+        } else {
+          throw e
+        }
+      }
+    },
+    dispose: parent.dispose,
+  }
+}
+
+function landed<R>(
+  results: { displayedRegionIndex: number; result: R | undefined }[],
+) {
+  return results.flatMap(({ displayedRegionIndex, result }) =>
+    result === undefined ? [] : [{ displayedRegionIndex, result }],
+  )
+}
+
+/**
  * Shared per-region fetch skeleton for both the detail and summary paths: call
  * one RPC per buffered region, bail on staleness, push the (config-derived)
  * `samples` + tree once, then hand the per-region results to `commit`.
@@ -93,9 +150,11 @@ export function unionSampleSets(
  * derived from a superseded viewport. Every region is marked loaded together,
  * and **one refused region refuses the batch** for the same reason: the sample
  * union is a decision over all of them, so a set derived from the regions that
- * happened to fit is not the set this viewport has. The largest measurement
- * still goes back to the gate, which is what puts a size in the banner and
- * releases it once the user zooms.
+ * happened to fit is not the set this viewport has. The first refusal also
+ * aborts the siblings still in flight (`refusalScope`), since their payloads
+ * would only be discarded. The largest measurement among the regions that
+ * landed still goes back to the gate, which is what puts a size in the banner
+ * and releases it once the user zooms.
  *
  * The RPC payload carries no color/style settings — worker output is purely
  * data-dependent and the main thread encodes from it plus `gpuProps()`, so
@@ -134,10 +193,23 @@ async function fetchMafRegions<R extends SampleSet>(
       // status field directly is last-writer-wins between them, and the
       // annotation branch's rows are a small fraction of the alignment's.
       const slot = createStatusFanOut(ctx.statusCallback)
-      const [results] = await Promise.all([
-        callEachRegion(regions, { ...ctx, statusCallback: slot() }, call),
-        fetchAnnotationData(self, regions, { ...ctx, statusCallback: slot() }),
+      const scope = refusalScope(ctx)
+      const results = await Promise.all([
+        callEachRegion(
+          regions,
+          { ...scope.ctx, statusCallback: slot() },
+          (region, regionCtx, displayedRegionIndex) =>
+            scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
+        ),
+        fetchAnnotationData(self, regions, {
+          ...scope.ctx,
+          statusCallback: slot(),
+        }),
       ])
+        .then(([answered]) => landed(answered))
+        .finally(() => {
+          scope.dispose()
+        })
       // The batch's own byte number, whichever way it goes: the budget is what
       // one region may cost, so the largest is what was judged and what the
       // banner quotes.
@@ -199,16 +271,21 @@ async function fetchAnnotationData(
   if (!self.annotationDataActive || !adapterConfig) {
     return
   }
+  const scope = refusalScope(ctx)
   try {
-    const results = await callEachRegion(needed, ctx, (region, regionCtx) =>
-      regionCtx.callRpc('LinearMafGetAnnotationData', {
-        adapterConfig,
-        regions: [region],
-        // undefined is the gate declining to act at all — force-load exempts
-        // the track on every axis, so one click covers this read too rather
-        // than leaving the overlay mysteriously off
-        byteLimit: self.resolvedByteLimit(),
-      }),
+    const results = landed(
+      await callEachRegion(needed, scope.ctx, (region, regionCtx) =>
+        scope.guard(() =>
+          regionCtx.callRpc('LinearMafGetAnnotationData', {
+            adapterConfig,
+            regions: [region],
+            // undefined is the gate declining to act at all — force-load
+            // exempts the track on every axis, so one click covers this read
+            // too rather than leaving the overlay mysteriously off
+            byteLimit: self.resolvedByteLimit(),
+          }),
+        ),
+      ),
     )
     const kept: { displayedRegionIndex: number; records: MafFrameRecord[] }[] =
       []
@@ -229,9 +306,12 @@ async function fetchAnnotationData(
       }
     }
   } catch (e) {
-    if (!ctx.isStale()) {
+    // an abort here is the main batch's refusal cutting the overlay short
+    if (!ctx.isStale() && !isAbortException(e)) {
       console.error('MAF CDS-frame annotation fetch failed', e)
     }
+  } finally {
+    scope.dispose()
   }
 }
 

@@ -1,3 +1,5 @@
+import { isStopped, stopTokenSignal } from '@jbrowse/core/util'
+
 import {
   fetchMafAlignmentData,
   fetchMafSummaryData,
@@ -247,6 +249,34 @@ describe('the byte gate rides in the tier fetch', () => {
 
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
+  })
+
+  // The refusal stops the batch's own token, so a sibling still downloading
+  // aborts at the socket and is simply absent from what the gate is handed; the
+  // fetch's token, which the display's cancel owns, is left alone.
+  test('the first refusal aborts the siblings still in flight', async () => {
+    const { self, loadedIndices, committedBytes } = makeSelf()
+    const siblingTokens: string[] = []
+    mockRpcCall.mockImplementation((_s: string, _m: string, args: any) => {
+      if (args.regions[0].refName === 'ctgA') {
+        return Promise.resolve({ regionTooLarge: true, bytes: 9e9 })
+      }
+      siblingTokens.push(args.stopToken)
+      return new Promise((_resolve, reject) => {
+        stopTokenSignal(args.stopToken).signal.addEventListener('abort', () => {
+          reject(new Error('aborted'))
+        })
+      })
+    })
+
+    await fetchMafAlignmentData(self as any, NEEDED)
+
+    expect(loadedIndices).toEqual([])
+    expect(committedBytes).toEqual([[9e9]])
+    expect(siblingTokens).toHaveLength(1)
+    expect(siblingTokens[0]).not.toBe('tok')
+    expect(isStopped(siblingTokens[0])).toBe(true)
+    expect(isStopped('tok')).toBe(false)
   })
 })
 
