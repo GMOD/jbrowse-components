@@ -67,6 +67,13 @@ own palette. `StyleThemeProvider` (the whole thing, from `session.styleTheme`)
 is what our products mount. `util/tss-react/muiFree.test.ts` fails if
 `makeStyles` reaches `@mui/*`.
 
+**An `sx` cannot override a `makeStyles` class on the same element.** Emotion
+merges a styled component's incoming `className` AFTER the `sx` it serialized,
+so the tss class wins whatever the specificity looks like, silently. A variant
+of a `makeStyles` rule is a second rule composed with `cx`, never an `sx` — the
+leading `subHeader` in `CascadingMenu` shipped its rule-off for six weeks that
+way.
+
 **`palette.ts` is the single source of truth for colors**; `theme.ts` builds the
 MUI theme over it and holds none of its own. Colors shared with RPC workers are
 plain `export const` CSS strings — import them directly, never a fallback copy

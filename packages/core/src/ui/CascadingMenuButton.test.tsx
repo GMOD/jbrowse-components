@@ -334,4 +334,20 @@ describe('CascadingMenuButton', () => {
     expect(await screen.findByText('Section')).toBeTruthy()
     expect(screen.getByRole('separator')).toBeTruthy()
   })
+
+  it('should not rule off a subHeader that opens the menu', async () => {
+    const user = await setup([
+      { type: 'subHeader', label: 'First' },
+      { label: 'Item 1', onClick: () => {} },
+      { type: 'subHeader', label: 'Second' },
+      { label: 'Item 2', onClick: () => {} },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    const first = await screen.findByText('First')
+    expect(getComputedStyle(first).borderTopWidth).toBe('0px')
+    expect(getComputedStyle(first).marginTop).toBe('0px')
+    expect(getComputedStyle(screen.getByText('Second')).borderTopWidth).toBe(
+      '1px',
+    )
+  })
 })

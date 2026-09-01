@@ -49,6 +49,12 @@ const useStyles = makeStyles()(theme => ({
     borderTop: `1px solid ${theme.palette.divider}`,
     marginTop: 4,
   },
+  // a leading subHeader has no rows above it to divide from, so the rule and
+  // its space would float against the menu's top edge
+  leadingSubHeader: {
+    borderTopWidth: 0,
+    marginTop: 0,
+  },
 }))
 
 /**
@@ -570,7 +576,7 @@ function CascadingMenuList({
   // root level where there is nothing to go back to
   onNavigateBack?: () => void
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const hover = useSubmenuHover()
   // every row a pointer can rest on asks for the open panel to go away; only a
   // row that owns a submenu, or the panel itself, keeps one up. Whether the ask
@@ -611,11 +617,11 @@ function CascadingMenuList({
           return (
             <ListSubheader
               key={`subHeader-${item.label}`}
-              className={classes.subHeader}
+              className={cx(
+                classes.subHeader,
+                idx === 0 && classes.leadingSubHeader,
+              )}
               onMouseEnter={closeOnHover}
-              // a leading subHeader has no rows above it to divide from, so drop
-              // the divider rule that would otherwise float at the menu's top edge
-              sx={idx === 0 ? { borderTop: 'none', marginTop: 0 } : undefined}
             >
               {item.label}
             </ListSubheader>
