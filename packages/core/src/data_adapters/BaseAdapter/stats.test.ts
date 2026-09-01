@@ -109,3 +109,91 @@ test('grows the window on the raw count, not the admitted count', async () => {
   expect(queries).toHaveLength(1)
   expect(featureDensity).toBeCloseTo(1 / 1000)
 })
+
+// A gate shaped like the canvas one: settle at `perBp` with at least
+// `minFeatures` admitted, and start at the window that many features would fill.
+function gateAt(perBp: number, minFeatures = 8) {
+  return {
+    initialInterval: minFeatures / perBp,
+    settled: (admitted: number, sampledBp: number) =>
+      admitted >= minFeatures && admitted / sampledBp >= perBp,
+  }
+}
+
+test('starts at the window the gate asks for rather than the fixed floor', async () => {
+  // Sparse enough that the 1000bp floor would ladder ~10 times to reach 70
+  // features. The gate's window settles it in one.
+  const { getFeatures, queries } = makeGetFeatures(10_000_000, 5000)
+  const { featureDensity } = await calculateFeatureDensityStats(
+    region(0, 10_000_000),
+    getFeatures,
+    undefined,
+    undefined,
+    gateAt(1 / 10_000),
+  )
+  expect(queries).toHaveLength(1)
+  expect(queries[0]!.end - queries[0]!.start).toBe(80_000)
+  expect(featureDensity).toBeCloseTo(1 / 5000)
+})
+
+test('never starts below the fixed floor, so a narrow gate window is the old behavior', async () => {
+  // At low bpPerPx the gate's window is sub-kilobase; the probe must not sample
+  // narrower than it always has.
+  const { getFeatures, queries } = makeGetFeatures(1_000_000, 10)
+  await calculateFeatureDensityStats(
+    region(0, 1_000_000),
+    getFeatures,
+    undefined,
+    undefined,
+    gateAt(1 / 10),
+  )
+  expect(queries[0]!.end - queries[0]!.start).toBe(1000)
+})
+
+test('keeps laddering when the sample does not clear the settling margin', async () => {
+  // 1 feature/2000bp against a gate that settles at 1/500bp: four times short,
+  // so the verdict is not decided and the probe grows exactly as before.
+  const { getFeatures, queries } = makeGetFeatures(1_000_000, 2000)
+  const { featureDensity } = await calculateFeatureDensityStats(
+    region(0, 1_000_000),
+    getFeatures,
+    undefined,
+    undefined,
+    gateAt(1 / 500),
+  )
+  expect(queries.length).toBeGreaterThan(1)
+  expect(featureDensity).toBeCloseTo(1 / 2000)
+})
+
+test('settles on the admitted count, so a filtered view is not refused early', async () => {
+  // 1 feature/100bp with admission keeping one in eight. The gate's own window
+  // holds 16 raw features and 2 admitted, against a threshold of 8: settling on
+  // the raw count would decide the verdict there and refuse a view whose drawn
+  // population is an eighth of what it measured. The raw count stays under 70,
+  // so that exit can't stand in for the gate's and hide the difference — a probe
+  // settling on the wrong count returns after one window instead of laddering.
+  const { getFeatures, queries } = makeGetFeatures(1_000_000, 100)
+  const { featureDensity } = await calculateFeatureDensityStats(
+    region(0, 1_000_000),
+    getFeatures,
+    undefined,
+    f => f.get('start') % 800 === 0,
+    gateAt(1 / 200),
+  )
+  expect(queries.length).toBeGreaterThan(1)
+  expect(featureDensity).toBeCloseTo(1 / 800)
+})
+
+test('a gate that never settles leaves the timeout path unchanged', async () => {
+  // An empty reference: no window ever admits anything, so neither the gate nor
+  // the 70-feature exit fires and the region-spanning exit still ends it.
+  const { getFeatures } = makeGetFeatures(0, 10)
+  const { featureDensity } = await calculateFeatureDensityStats(
+    region(0, 100_000),
+    getFeatures,
+    undefined,
+    undefined,
+    gateAt(1 / 1000),
+  )
+  expect(featureDensity).toBe(0)
+})

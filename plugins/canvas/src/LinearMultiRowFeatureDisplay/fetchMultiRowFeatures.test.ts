@@ -32,10 +32,17 @@ function makeSelf() {
   // what `fetchEachRegion` marked loaded: a region the worker refused is
   // deliberately absent, so `loadedRegions` never claims a span nothing stored
   const loadedIndices: number[] = []
+  // the first refusal ends the batch, and `cancelFetch` is how: the real one
+  // closes the rotation's guard, so every later `isStale()` in the same batch
+  // answers true
+  let canceled = false
   return {
     reported,
     loadedIndices,
     self: {
+      cancelFetch: () => {
+        canceled = true
+      },
       adapterConfig: {},
       // the whole settings payload, exactly as the model hands it over — the
       // fetch spreads this rather than re-reading the slots, so the bytes sent
@@ -52,7 +59,7 @@ function makeSelf() {
         Promise.resolve(
           work({
             stopToken: 'tok',
-            isStale: () => false,
+            isStale: () => canceled,
             statusCallback: (s: RpcStatus) => reported.push(s),
             // the real envelope, over this file's mocked rpcManager, so the
             // fetch under test exercises the same injection production does
@@ -136,17 +143,20 @@ describe('fetchMultiRowFeatures', () => {
   // fetch that IS the gate's re-measure never runs again. Invisible on a region
   // fetched for the first time, permanent on one the reader already had data
   // for. See `RegionFetchContext`.
+  //
+  // The refusal is the second region, so this also covers the half the batch's
+  // short circuit must leave alone: a region that landed first keeps its commit.
   test('marks the regions that stored data, and only those', async () => {
     const { self, loadedIndices } = makeSelf()
     mockRpcCall.mockImplementation((_s, _m, args: any) =>
       Promise.resolve(
-        args.region.start === NEEDED[0]!.region.start
+        args.region.start === NEEDED[1]!.region.start
           ? { regionTooLarge: true, bytes: 9_000_000 }
           : { bytes: 42, featureCount: 7 },
       ),
     )
     await fetchMultiRowFeatures(self as any, NEEDED)
 
-    expect(loadedIndices).toEqual([NEEDED[1]!.displayedRegionIndex])
+    expect(loadedIndices).toEqual([NEEDED[0]!.displayedRegionIndex])
   })
 })

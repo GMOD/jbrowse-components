@@ -117,6 +117,28 @@ describe('FetchMixin: cancellation', () => {
     expect(m.fetchGeneration).toBe(before + 1)
   })
 
+  // `fetchEachRegion` cancels its own batch on the first refused region, and
+  // relies on this to keep the batch's gate commit to exactly one: after the
+  // cancel, the still-running siblings and the batch tail all read stale and
+  // return. A `cancelFetch` that left the guard open would double-commit the
+  // verdict silently.
+  it('cancelFetch makes the running work callback stale to itself', async () => {
+    const m = makeModel()
+    let seen: FetchContext | undefined
+    let release = () => {}
+    m.runFetch(ctx => {
+      seen = ctx
+      return new Promise<void>(resolve => {
+        release = resolve
+      })
+    })
+    expect(seen!.isStale()).toBe(false)
+    m.cancelFetch()
+    expect(seen!.isStale()).toBe(true)
+    release()
+    await tick()
+  })
+
   it('cancelFetch mid-flight clears stop token, bumps signal, isLoading=false', () => {
     const m = makeModel()
     m.runFetch(() => new Promise<void>(() => {})) // never resolves

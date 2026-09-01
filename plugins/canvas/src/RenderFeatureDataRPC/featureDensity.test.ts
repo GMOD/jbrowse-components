@@ -2,6 +2,9 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { of } from 'rxjs'
 
 import {
+  DENSITY_SETTLE_FEATURES,
+  DENSITY_SETTLE_MARGIN,
+  densityProbeGate,
   densityTooLargeResult,
   featuresPerPx,
   overDensityBudget,
@@ -212,5 +215,49 @@ describe('samplePreFetchDensity', () => {
       admit: f => f.get('gbkey') !== 'Src',
     })
     expect(result?.regionTooLarge).toBe(true)
+  })
+})
+
+// The probe's stopping rule, which decides both what the first sample window
+// costs and when the ladder stops. Its whole content is that a window is asked
+// for in *pixels* rather than bp, so the same rule holds at every zoom.
+describe('densityProbeGate', () => {
+  it('asks for a window of DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN pixels', () => {
+    const px = DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN
+    for (const bpPerPx of [1000, 100_000, 3_088_000]) {
+      const { initialInterval } = densityProbeGate(bpPerPx, 1)
+      expect(initialInterval / bpPerPx).toBeCloseTo(px)
+    }
+  })
+
+  it('settles exactly at the margin, on the count and the density together', () => {
+    // whole-genome-ish: 3.088e6 bp/px against a budget of 1/px
+    const { initialInterval, settled } = densityProbeGate(3_088_000, 1)
+    // the window is sized so DENSITY_SETTLE_FEATURES in it is exactly the margin
+    expect(settled(DENSITY_SETTLE_FEATURES, initialInterval)).toBe(true)
+    expect(settled(DENSITY_SETTLE_FEATURES - 1, initialInterval)).toBe(false)
+    // and a count that clears the threshold in too wide a window does not
+    expect(settled(DENSITY_SETTLE_FEATURES, initialInterval * 2)).toBe(false)
+  })
+
+  // A looser budget is reached by fewer bp, so the window that can settle it is
+  // narrower — the window tracks the question, not the zoom alone.
+  it('narrows the window as the budget loosens', () => {
+    expect(densityProbeGate(100_000, 10).initialInterval).toBeCloseTo(
+      densityProbeGate(100_000, 1).initialInterval / 10,
+    )
+  })
+
+  // A whole-chromosome view of an annotation track sits a few times over budget,
+  // not a hundred, and that verdict has to be measured rather than extrapolated:
+  // the settling exit must not fire there, leaving the 70-feature ladder to it.
+  it('does not settle on a near-threshold density', () => {
+    const bpPerPx = 133_797
+    const { settled } = densityProbeGate(bpPerPx, 1)
+    // 3.2 features/px — genuinely over budget, but only 3.2x
+    const sampledBp = 1_000_000
+    const admitted = Math.round((3.2 * sampledBp) / bpPerPx)
+    expect(admitted).toBeGreaterThan(DENSITY_SETTLE_FEATURES)
+    expect(settled(admitted, sampledBp)).toBe(false)
   })
 })

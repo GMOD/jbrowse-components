@@ -68,11 +68,40 @@ call-site arguments, never in `rpcProps()`, where a swing would be a full
 refetch. Raising a budget releases the verdict and refetches the refused
 region; lowering one re-banners from the stored measurement with no RPC.
 
-**A refusal refuses what the fetch is granular in.** Per-region runners skip
-the refused region and draw its neighbours; a batched fetch (variants, MAF, LD,
-arc) refuses the whole payload. The banner quotes the largest region's bytes
-labelled with the whole visible span — a label, never a denominator: dividing
-by span releases a region the worker still refuses.
+**A refusal refuses what the fetch is granular in.** Per-region runners store
+nothing for the refused region and keep what its neighbours already stored; a
+batched fetch (variants, MAF, LD, arc) refuses the whole payload. The banner
+quotes the largest region's bytes labelled with the whole visible span — a
+label, never a denominator: dividing by span releases a region the worker still
+refuses.
+
+**The first refusal ends the batch.** The verdict is a display-wide max on both
+axes and `tooLarge` replaces the whole subtree, so no sibling can change the
+answer and no sibling payload is drawn under the banner — and held data does not
+survive to be reused either, `heldDataAnswers` voiding coverage for as long as
+`gateBlocked`. `fetchEachRegion` therefore commits the verdict and calls
+`cancelFetch`, which aborts the in-flight siblings at the socket and refuses the
+ones the worker pool has not dispatched. Measured on an hg38 RefSeq GFF3 at
+whole-genome "Show all regions", 24 content blocks: the banner moves from
+2816 ms and 10.4 MB of downloaded-then-discarded features to 47 ms and none,
+because chr1's index answers over budget before any region reads a feature.
+
+**Commit before cancelling, and `fetchEachRegion.test.ts` pins the order.**
+Cancelling first strands the verdict: the aborts reject the batch, its tail
+never commits, `handleFetchError` swallows the abort as a superseded fetch's
+ordinary end, and `cancelFetch`'s `fetchGeneration` bump re-runs the autorun
+against a gate holding no measurement — `nextGateState` stamps
+`gateMeasuredViewportKey` only on a committed one, so `gateSkipsMeasuredViewport`
+reads false and the plan re-issues every region, forever. The density axis has
+the same trap one level up, its measurements committing in
+`fetchGatedRegions`'s `onComplete`.
+
+Two consequences worth knowing. The banner may quote the **first** refusing
+region's bytes rather than the largest, since the batch stops before the rest
+report; `zoomIneffective`'s consecutive-commit comparison inherits the same
+noise. And a sibling's real (non-abort) error is swallowed once the batch is
+cancelled, which is `handleFetchError`'s existing rule for a fetch that is no
+longer current, not a new one.
 
 ## Measurement follows the viewport
 
@@ -81,12 +110,58 @@ taken, and the answer is always "the fetch takes it". Ungated, every fetch
 measures before it downloads. Gated, the fetch skeletons skip only on
 `gateSkipsMeasuredViewport` — the banner is up *and* the measurement already
 describes the viewport on screen — so a blocked display runs one fetch per
-settled viewport that stops at the gate: an index read on the byte axis, the
-1 kb density probe on canvas. Skipping unconditionally freezes the estimate;
+settled viewport that stops at the gate: an index read on the byte axis, one
+density probe on canvas. Skipping unconditionally freezes the estimate;
 never skipping spins on the `fetchGeneration` bump.
 
 A force-loaded fetch carries no budget, measures nothing, and stamps no
 viewport; density stats still commit, so zooming back out re-gates.
+
+## The density probe samples toward the verdict, not toward precision
+
+`calculateFeatureDensityStats` grows a window from a fixed point 25% into the
+region until it has enough features to report a density. Two things decide how
+much that costs, and neither used to have anything to do with the question being
+asked.
+
+**The first window is sized from the budget.** `densityProbeGate` asks for the
+narrowest window whose count can settle the verdict —
+`DENSITY_SETTLE_FEATURES / (DENSITY_SETTLE_MARGIN * maxFeatureScreenDensity)`
+screen pixels of it, 2 px — and the probe stops as soon as an *admitted* count
+in that window reads `DENSITY_SETTLE_MARGIN` times over budget. Growth still
+tests the raw count, for the reason `stats.ts` gives; only the settling exit is
+admitted, so a filtered view is not refused on a population it filters away.
+Below `bpPerPx` ~500 the window this asks for is under the probe's own 1 kb
+floor and the ladder is exactly what it always was.
+
+The old ladder started at 1 kb and doubled to a 70-feature exit, which at
+whole-genome zoom is 13 rungs to answer a question the first one settled
+thousands of times over: 291 probe fetches across hg38's 24 content blocks,
+2816 ms, and a `DENSITY_SAMPLE_TIMEOUT_MS` cliff at 5 s where the estimate
+returns `Infinity`, `densityTooLargeResult` declines to gate on a non-finite
+count, and the fetch falls through to `getFeaturesArray` of the whole
+chromosome. Sizing the first rung is 23-25 fetches and ~1400 ms, and it settles
+long before the cliff.
+
+**8 features and 4x, and the feature count is the half that guards
+correctness.** The sample point is fixed, so a *sparse* file with a cluster
+there — a few hundred peaks genome-wide, some of them near the mark — would
+refuse a whole-genome view that renders fine, permanently, if two features were
+enough. Eight in a 2 px window settles every chromosome of an hg38 RefSeq GFF3
+at the first window and reads within 7% of the truth (chr10: 78.5/px sampled
+against 73.9/px over the whole chromosome), where two extrapolated from half a
+pixel read 3088/px. The margin only has to absorb clustering: a whole-genome
+view of an annotation track sits 60-100x over budget, while the same file at
+whole-chromosome zoom is 1.2-7x over and takes no early exit at all — which is
+right, since that is where the precision is needed and where the ladder is
+cheap.
+
+**Shrinking the window is not what makes the probe cheap; not running it is.**
+A probe's floor is one bgzf chunk, and chunk size is a property of the file: on
+the hg38 RefSeq GFF3 a 1 kb window and a 4 Mb window on chr1 both cost 6 reads
+and 238 kb, so no ladder tuning gets a region under a few hundred kb. The byte
+axis reads a `.tbi` already in memory and costs nothing, which is why the batch
+short circuit above matters more than either constant here.
 
 **"Zoom in to see features" is measured too.** An index quotes whole blocks,
 so whether zooming shrinks a file's fetch is a property of the file:

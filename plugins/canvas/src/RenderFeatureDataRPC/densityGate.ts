@@ -100,6 +100,31 @@ export function exactDensityTooLargeResult(
     : undefined
 }
 
+// How far over `maxFeatureDensity` a sampled window has to read, and how many
+// admitted features it has to read it from, before the probe stops laddering and
+// refuses. Together they fix the first window at 2 screen pixels, since
+// `admitted / sampledBp * bpPerPx >= margin * maxFeatureDensity` rearranges to
+// `admitted >= margin * maxFeatureDensity * (sampledBp / bpPerPx)` and the
+// parenthesis is the window in pixels. The feature count is the half that guards
+// against refusing a sparse file with a cluster at the fixed sample point; both
+// numbers are argued from measurements in
+// agent-docs/reference/REGION_TOO_LARGE.md.
+export const DENSITY_SETTLE_MARGIN = 4
+export const DENSITY_SETTLE_FEATURES = 8
+
+// The probe's stopping rule, built from the budget the fetch was issued under.
+// Below `bpPerPx` ~500 it asks for a window narrower than the probe's own floor,
+// and the ladder is exactly what it was.
+export function densityProbeGate(bpPerPx: number, maxFeatureDensity: number) {
+  const settlingPerBp = (DENSITY_SETTLE_MARGIN * maxFeatureDensity) / bpPerPx
+  return {
+    initialInterval: DENSITY_SETTLE_FEATURES / settlingPerBp,
+    settled: (admitted: number, sampledBp: number) =>
+      admitted >= DENSITY_SETTLE_FEATURES &&
+      admitted / sampledBp >= settlingPerBp,
+  }
+}
+
 // Cheap pre-fetch density gate: sample a small window to estimate density
 // before downloading the whole region, returning a too-large result on a
 // confident over-threshold estimate, else undefined so the caller proceeds to
@@ -143,6 +168,7 @@ export async function samplePreFetchDensity({
     (r, o) => dataAdapter.getFeatures(r, o),
     { stopToken, statusCallback },
     admit,
+    densityProbeGate(bpPerPx, maxFeatureDensity),
   )
   checkStopTokenThrottled(stopTokenCheck)
   return densityTooLargeResult(

@@ -14,6 +14,24 @@ const DENSITY_SAMPLE_INITIAL_INTERVAL = 1000
 const DENSITY_SAMPLE_MIN_FEATURES = 70
 const DENSITY_SAMPLE_TIMEOUT_MS = 5000
 
+/**
+ * What a caller that will *judge* the density knows and the probe does not: how
+ * wide a window has to be before its count can settle that judgement, and when
+ * a count has settled it. Supplying it turns the ladder below from "grow until
+ * the estimate is precise" into "grow until the verdict is decided", which at
+ * whole-genome zoom is one window instead of thirteen.
+ *
+ * The probe stays ignorant of what the budget means — `plugins/canvas`'s
+ * `densityProbeGate` owns both numbers, so the comparison that refuses a region
+ * lives beside the one the banner re-derives rather than in a second copy here.
+ */
+export interface DensityProbeGate {
+  /** First window to sample: the narrowest one whose count can settle it. */
+  initialInterval: number
+  /** Whether this many admitted features in this many bp decides the verdict. */
+  settled: (admitted: number, sampledBp: number) => boolean
+}
+
 export function aggregateQuantitativeStats(
   stats: RectifiedQuantitativeStats[],
 ) {
@@ -67,10 +85,14 @@ export async function calculateFeatureDensityStats(
   getFeatures: (region: Region, opts?: BaseOptions) => Observable<Feature>,
   opts?: BaseOptions,
   admit?: (feature: Feature) => boolean,
+  gate?: DensityProbeGate,
 ): Promise<{ featureDensity: number }> {
   const refLen = region.end - region.start
   const t0 = performance.now()
-  let interval = DENSITY_SAMPLE_INITIAL_INTERVAL
+  let interval = Math.max(
+    DENSITY_SAMPLE_INITIAL_INTERVAL,
+    gate?.initialInterval ?? 0,
+  )
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
@@ -80,6 +102,14 @@ export async function calculateFeatureDensityStats(
       getFeatures({ ...region, start, end }, opts).pipe(toArray()),
     )
     const admitted = admit ? features.filter(admit).length : features.length
+
+    // The verdict is already decided by a margin, so a precise density would
+    // only make it more decided. Tested on the admitted count, which is the
+    // population the caller judges — the raw count below governs window growth
+    // for the reason in the note above, and the two must not be swapped.
+    if (gate?.settled(admitted, sampledBp)) {
+      return { featureDensity: admitted / sampledBp }
+    }
 
     // Enough features to be meaningful, or the window already spans the whole
     // region (growing further can't sample more) — report density over the bp

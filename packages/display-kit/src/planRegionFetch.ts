@@ -207,7 +207,7 @@ export function retryOutcomeForPlan(
  * stays in `needed`, and the `fetchGeneration` bump after each attempt re-fires
  * the autorun. So it runs once per settled viewport while blocked, stopping at
  * whichever gate rejected it — an index read and no features on the byte axis,
- * canvas's 1kb density probe on the other.
+ * canvas's density probe on the other.
  */
 export function planRegionFetch({
   error,

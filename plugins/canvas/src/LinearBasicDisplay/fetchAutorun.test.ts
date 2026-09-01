@@ -710,6 +710,120 @@ describe('byte estimate pre-check', () => {
 
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
   })
+
+  // The multi-region twin of the test above. A refusal here ends the batch
+  // early, and `cancelFetch` bumps `fetchGeneration`, so the autorun re-runs at
+  // once — against a gate that has to be holding the verdict and the viewport
+  // stamp already, or the plan re-issues every region forever.
+  //
+  // What this pins is that outcome, not the commit-before-cancel order that
+  // produces it: the mocked RPC resolves rather than aborting, so a batch that
+  // cancelled first would still reach its commit here. `fetchEachRegion.test.ts`
+  // is where the order itself is pinned.
+  it('does not loop after a refusal ends a multi-region batch early', async () => {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 1_500_000, refName: 'ctgA' },
+      {
+        assemblyName: 'volvox',
+        start: 1_500_000,
+        end: 3_000_000,
+        refName: 'ctgA',
+      },
+      {
+        assemblyName: 'volvox',
+        start: 3_000_000,
+        end: 4_500_000,
+        refName: 'ctgA',
+      },
+    ])
+    view.showAllRegions()
+
+    // 200 bytes/bp × 1.5Mbp = 300MB per region, so the first to land refuses
+    env.mockRpcCall.mockImplementation(makeByteGatedRender(200))
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    // the banner is up and nothing was stored behind it
+    expect(display.loadedRegions.size).toBe(0)
+
+    const callCount = env.mockRpcCall.mock.calls.length
+    jest.advanceTimersByTime(5000)
+    await jest.runAllTimersAsync()
+
+    expect(env.mockRpcCall.mock.calls.length).toBe(callCount)
+  })
+
+  // Force-load is the other way out, and the one a cancelled batch could
+  // plausibly have broken: the regions it never issued hold no data and are not
+  // marked loaded, so the exempt refetch has to ask for all of them again.
+  it('force load refetches every region a cancelled batch skipped', async () => {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 1_500_000, refName: 'ctgA' },
+      {
+        assemblyName: 'volvox',
+        start: 1_500_000,
+        end: 3_000_000,
+        refName: 'ctgA',
+      },
+      {
+        assemblyName: 'volvox',
+        start: 3_000_000,
+        end: 4_500_000,
+        refName: 'ctgA',
+      },
+    ])
+    view.showAllRegions()
+
+    env.mockRpcCall.mockImplementation(makeByteGatedRender(200))
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    expect(display.loadedRegions.size).toBe(0)
+
+    display.forceLoad()
+    display.reload()
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBe(3)
+    })
+  })
+
+  // Zooming in is the way out of the banner, and the short circuit must not
+  // block it: the cancelled batch stamped the viewport it measured, so a new
+  // viewport reads as unmeasured and re-fetches.
+  it('releases the banner when a later viewport fits', async () => {
+    const { display, view, mockRpcCall } = createLargeDisplay()
+
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    mockRpcCall.mockImplementation(makeByteGatedRender(1))
+    view.zoomTo(1)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
+  })
 })
 
 // The byte gate must honor an adapter-declared fetchSizeLimit above the display

@@ -27,6 +27,8 @@ export interface FetchEachRegionModel extends IStateTreeNode {
     perRegionBytes: (number | undefined)[],
     issued: GateFetchState,
   ) => void
+  /** `FetchMixin`'s, which every display on these helpers composes. */
+  cancelFetch: () => void
 }
 
 /**
@@ -81,6 +83,12 @@ export function callEachRegion<R>(
  * display commits its gate measurements there. That is the whole of what used
  * to justify a hand-rolled `Promise.all`: the per-region commits and the
  * atomic one are different granularities, not different loops.
+ *
+ * **The first refusal ends the batch, and commits the verdict before it
+ * cancels.** The gate is a display-wide max, so no sibling can change a refusal
+ * or be drawn under the banner it raises; cancelling before the commit lands
+ * spins the fetch autorun instead. Both halves, and what they measured, are in
+ * agent-docs/reference/REGION_TOO_LARGE.md.
  */
 export async function fetchEachRegion<R>(
   self: FetchEachRegionModel,
@@ -103,26 +111,41 @@ export async function fetchEachRegion<R>(
     // per-region guard, not one around the batch: a region that arrives before
     // the user moves on still commits
     const perRegion = fanOutStatus(ctx, needed.length)
-    const results = await Promise.all(
+    const bytes: (number | undefined)[] = new Array(needed.length)
+    // a copy, because the refusal path commits while siblings are still landing
+    // and would otherwise hand the gate an array that goes on changing under it
+    const commitBatch = () => {
+      self.commitFetchBytes([...bytes], issued)
+      opts.onComplete?.(issued)
+    }
+    await Promise.all(
       needed.map(async ({ region, displayedRegionIndex }, i) => {
         const result = await opts.call(
           region,
           perRegion[i]!,
           displayedRegionIndex,
         )
-        // A refused region stored nothing, so neither the display's store nor
-        // `loadedRegions` may claim it — the viewport would read as covered
-        // against a payload nobody received. See RegionFetchContext.
-        if (!ctx.isStale() && !isRegionRefused(result)) {
+        bytes[i] = measuredBytes(result)
+        // `cancelFetch` below closes the rotation's guard, so this staleness
+        // check is also what keeps the batch's commit to exactly one: a second
+        // refusal, and the tail, both read stale and return.
+        if (ctx.isStale()) {
+          return
+        }
+        if (isRegionRefused(result)) {
+          // A refused region stored nothing, so neither the display's store nor
+          // `loadedRegions` may claim it — the viewport would read as covered
+          // against a payload nobody received. See RegionFetchContext.
+          commitBatch()
+          self.cancelFetch()
+        } else {
           opts.onResult(displayedRegionIndex, result)
           ctx.commitRegion(displayedRegionIndex)
         }
-        return result
       }),
     )
     if (!ctx.isStale()) {
-      self.commitFetchBytes(results.map(measuredBytes), issued)
-      opts.onComplete?.(issued)
+      commitBatch()
     }
   })
 }

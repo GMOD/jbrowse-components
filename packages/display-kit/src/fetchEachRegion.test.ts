@@ -40,15 +40,27 @@ const ISSUED: GateFetchState = {
 // the gate's two commit members, which the helper calls for every display.
 // Running `work` directly with a ctx the test controls isolates the guards from
 // that machinery.
+//
+// `cancelFetch` stands in for the real one's *observable* effect rather than its
+// bookkeeping: `stopActiveFetch` closes the rotation's guard, so every later
+// read of `ctx.isStale()` in the same batch answers true. A stub that only
+// counted calls would let a cancelled batch go on committing siblings, which is
+// the half of the contract worth pinning.
 function selfWith(
   ctx: FetchContext,
   loaded: number[] = [],
   bytes: (number | undefined)[][] = [],
+  cancels: number[] = [],
 ) {
+  let canceled = false
   return {
     gateFetchState: () => ISSUED,
     commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
       bytes.push(perRegionBytes)
+    },
+    cancelFetch: () => {
+      canceled = true
+      cancels.push(bytes.length)
     },
     fetchRegions: (
       _needed: typeof NEEDED,
@@ -56,6 +68,7 @@ function selfWith(
     ) =>
       work({
         ...ctx,
+        isStale: () => canceled || ctx.isStale(),
         commitRegion: idx => {
           loaded.push(idx)
         },
@@ -162,6 +175,9 @@ test('a region that arrived before the move still commits; a later one does not'
 // payload path and a marker is not a payload — and reaches the GATE instead,
 // through `commitFetchBytes`, which is what raises the banner and what lets it
 // release once the user zooms.
+// The refusing region is the second one, so this also pins the half the short
+// circuit below must not break: a region that landed before the refusal keeps
+// the commit it already made.
 test('a region the worker refused is neither stored nor marked loaded, and its bytes still reach the gate', async () => {
   const loaded: number[] = []
   const bytes: (number | undefined)[][] = []
@@ -184,15 +200,109 @@ test('a region the worker refused is neither stored nor marked loaded, and its b
     {
       call: region =>
         Promise.resolve(
-          region.refName === 'ctgA' ? refused : { bytes: 10, value: 'ctgB' },
+          region.refName === 'ctgB' ? refused : { bytes: 10, value: 'ctgA' },
         ),
       onResult: (idx, result) => committed.push([idx, result]),
     },
   )
-  expect(committed).toEqual([[5, { bytes: 10, value: 'ctgB' }]])
-  expect(loaded).toEqual([5])
+  expect(committed).toEqual([[2, { bytes: 10, value: 'ctgA' }]])
+  expect(loaded).toEqual([2])
   // max, not sum: the budget is what one region may cost
-  expect(bytes).toEqual([[9e9, 10]])
+  expect(bytes).toEqual([[10, 9e9]])
+})
+
+// The gate's verdict is display-wide and monotone: once one region is over
+// budget, `tooLarge` replaces the whole subtree and no sibling can change that
+// or be seen under it. So the siblings' downloads are pure cost, and the batch
+// stops.
+//
+// The commit has to land BEFORE the cancel, and this is the pin for it. Cancel
+// first and the aborts reject the batch, the tail never commits, and the
+// `fetchGeneration` bump re-runs an autorun against a gate holding no
+// measurement and no viewport stamp — `gateSkipsMeasuredViewport` false, the
+// plan re-issues, forever. Asserting the ORDER is what catches that: a
+// commit-after-cancel implementation still commits, just uselessly.
+test('the first refusal commits the verdict, then cancels the rest of the batch', async () => {
+  const loaded: number[] = []
+  const bytes: (number | undefined)[][] = []
+  const cancels: number[] = []
+  const committed: [number, unknown][] = []
+  let completed = 0
+  await fetchEachRegion(
+    selfWith(
+      {
+        stopToken: 'tok',
+        isStale: () => false,
+        statusCallback: () => {},
+        callRpc() {
+          throw new Error('callRpc is not stubbed in this test')
+        },
+      },
+      loaded,
+      bytes,
+      cancels,
+    ),
+    NEEDED,
+    {
+      call: region =>
+        Promise.resolve(
+          region.refName === 'ctgA'
+            ? { regionTooLarge: true as const, bytes: 9e9 }
+            : { bytes: 10, value: 'ctgB' },
+        ),
+      onResult: (idx, result) => committed.push([idx, result]),
+      onComplete: () => {
+        completed++
+      },
+    },
+  )
+  // the sibling resolved, and was dropped rather than stored: the cancel made
+  // the ctx stale before its continuation ran
+  expect(committed).toEqual([])
+  expect(loaded).toEqual([])
+  // the refusal's own bytes, committed with the sibling still unmeasured
+  expect(bytes).toEqual([[9e9, undefined]])
+  // one commit and one density commit, both before the single cancel, and the
+  // batch tail adds no second pair
+  expect(cancels).toEqual([1])
+  expect(completed).toBe(1)
+})
+
+// Two regions refusing in the same batch is the ordinary case at whole-genome
+// zoom, and the second must not re-commit or re-cancel: `cancelFetch` bumps
+// `fetchGeneration`, so a bump per refused region is a burst of autorun re-runs
+// where one is owed.
+test('a batch where several regions refuse commits and cancels exactly once', async () => {
+  const bytes: (number | undefined)[][] = []
+  const cancels: number[] = []
+  let completed = 0
+  await fetchEachRegion(
+    selfWith(
+      {
+        stopToken: 'tok',
+        isStale: () => false,
+        statusCallback: () => {},
+        callRpc() {
+          throw new Error('callRpc is not stubbed in this test')
+        },
+      },
+      [],
+      bytes,
+      cancels,
+    ),
+    NEEDED,
+    {
+      call: () =>
+        Promise.resolve({ regionTooLarge: true as const, bytes: 9e9 }),
+      onResult: () => {},
+      onComplete: () => {
+        completed++
+      },
+    },
+  )
+  expect(bytes).toEqual([[9e9, undefined]])
+  expect(cancels).toEqual([1])
+  expect(completed).toBe(1)
 })
 
 // The gate state is captured before the first RPC goes out, never re-read at

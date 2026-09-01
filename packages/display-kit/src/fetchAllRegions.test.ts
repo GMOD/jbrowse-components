@@ -57,6 +57,11 @@ function selfWith(
     commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
       bytes.push(perRegionBytes)
     },
+    // these runners issue one call, so there is no sibling to cancel and
+    // nothing here calls it — declared to satisfy the shared model shape
+    cancelFetch: () => {
+      throw new Error('a single-call runner has no batch to cancel')
+    },
     fetchRegions: (
       _needed: typeof NEEDED,
       work: (ctx: RegionFetchContext) => Promise<void>,
