@@ -305,7 +305,7 @@ try {
       })
       const feats = await adapter.getFeaturesArray(renamed.regions[0])
       globalThis.mcpConformanceCount = feats.length
-      const display = track.displays[0]
+      const display = track.activeDisplay
       return {
         features: feats.length,
         displayModeSlot: 'displayMode' in jb.describeSlots(display.configuration),

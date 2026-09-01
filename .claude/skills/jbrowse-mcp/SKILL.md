@@ -32,9 +32,10 @@ driving. This skill is only the discipline for using it.
 
 - trackIds come from `list_tracks`, not from memory of similar configs.
 - Settings keys come from the display itself: `evaluate` →
-  `jb.describeSlots(session.views[0].tracks[0].displays[0].configuration)`. An
-  unknown key in a spec or `track update` is **dropped silently** — that is this
-  format's known failure mode.
+  `jb.describeSlots(view.tracks.find(t => t.configuration.trackId === 'x').activeDisplay.configuration)`
+  (select the track by id — a view shows many). An unknown key in a spec or
+  `track update` is **dropped silently** — that is this format's known failure
+  mode.
 - What a live view can answer comes from `inspect_session path:"views.0"` — the
   `getters` list names things (visibleLocStrings, totalBp, ...) that session
   snapshots filter out.

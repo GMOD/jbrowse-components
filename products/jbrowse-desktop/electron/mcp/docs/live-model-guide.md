@@ -14,8 +14,8 @@ renderer. What you `return` is serialized back to you. In scope:
     read config slots (plain property access on a config model does NOT work)
   - `jb.describeSlots(confNode)` — every config slot the node's schema defines,
     with type/description/default. Introspect instead of guessing: an unknown
-    settings key is dropped SILENTLY. e.g.
-    `jb.describeSlots(session.views[0].tracks[0].displays[0].configuration)`
+    settings key is dropped SILENTLY. Select the track you mean by id, e.g.
+    `jb.describeSlots(view.tracks.find(t => t.configuration.trackId === 'x').activeDisplay.configuration)`
   - `jb.parseLocString(str, refName => true)` — locstring parsing
   - `jb.getFeatureAdapterOrThrow({ pluginManager, sessionId, adapterConfig })` —
     direct data access, see below
@@ -46,7 +46,11 @@ view.assemblyNames
 view.navToLocString('BRCA1') // async; gene names go through text search
 view.showTrack('mytrack', {}, { height: 300, displayMode: 'compact' })
 view.hideTrack('mytrack')
-view.tracks[0].displays[0] // the live display model (its getters are rich)
+// a shown track's live display model (getters are rich) — find by trackId,
+// view.tracks is every shown track; activeDisplay is the one being drawn
+const display = view.tracks.find(
+  t => t.configuration.trackId === 'mytrack',
+)?.activeDisplay
 
 // track catalog (config models — use jb.readConfObject)
 session.tracks.map(t => ({
