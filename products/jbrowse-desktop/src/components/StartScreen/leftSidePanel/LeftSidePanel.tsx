@@ -1,9 +1,9 @@
-import { LoadingEllipses } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
+import SessionLoadingScreen from '../../SessionLoadingScreen.tsx'
 import { useUpdateStatus } from '../../useUpdateStatus.ts'
 import { mergeConfigInputs } from '../configInputs.ts'
 import defaultFavs from '../defaultFavs.ts'
@@ -65,7 +65,7 @@ export default function LeftSidePanel({
   return (
     <div className={classes.form}>
       {status ? (
-        <LoadingEllipses variant="h6" message={status} />
+        <SessionLoadingScreen message={status} />
       ) : (
         <>
           <OpenSequencePanel

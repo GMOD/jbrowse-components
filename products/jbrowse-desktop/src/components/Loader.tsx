@@ -1,7 +1,7 @@
 import { Suspense, lazy, useMemo, useRef, useState } from 'react'
 
 import { deleteQueryParams, useQueryParam } from '@jbrowse/app-core'
-import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
@@ -12,6 +12,7 @@ import { invokeIpc } from '../ipc.ts'
 import { useIpc } from '../useIpc.ts'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
+import SessionLoadingScreen from './SessionLoadingScreen.tsx'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import {
   destroyPluginManager,
@@ -184,7 +185,7 @@ const LoaderContents = observer(function LoaderContents() {
     handleTargetError,
   )
 
-  const loading = <LoadingEllipses variant="h6" message="Loading session" />
+  const loading = <SessionLoadingScreen fullscreen />
 
   return (
     <>
