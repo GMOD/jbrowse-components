@@ -1015,6 +1015,9 @@ export const svSpecs: ScreenshotSpec[] = [
               readConnections: 'arc',
               readConnectionsDown: true,
               drawProperPairArcs: false,
+              // arcColorByType stays the default insertSizeAndOrientation, so
+              // the legend is what says what the four bands' arc colors mean.
+              showLegend: true,
               coverageHeight: 60,
               readConnectionsHeight: 90,
               // the four bands' own stack, so the track box ends where the LL
