@@ -12,6 +12,7 @@ import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { StopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
+import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -54,17 +55,15 @@ export interface GlobalFetchHost
   commitFetchResult: (commit: () => void, signature: string) => void
 }
 
-export interface GlobalFetchAutorunHost extends GlobalFetchHost {
-  // `FetchMixin`'s, read by the fetch skeleton itself: the pure "go again"
-  // signal, the durable user-cancel flag, and the internal reset the
-  // viewport-change clear beside it runs.
-  reloadCounter: number
+export interface GlobalFetchAutorunHost
+  extends GlobalFetchHost, FetchSkeletonHost {
+  // `FetchMixin`'s: the durable user-cancel flag the viewport-change clear
+  // reads (required here where the skeleton leaves it optional, since this
+  // family has the Cancel button), and the internal reset that clear runs.
   fetchCanceled: boolean
   cancelFetch: () => void
-  // Both `FetchMixin`'s, which `GlobalFetchMixin` composes, and both read only
-  // by the retry contract check the skeleton installs: the "deliberately not
-  // fetching" exemption, and the "a prerequisite fetch has not landed" deferral.
-  fetchInert: boolean
+  // `FetchMixin`'s, read only by the retry contract check the skeleton
+  // installs: "a prerequisite fetch has not landed" defers the verdict.
   awaitingPrerequisite: boolean
   // The gate's own two, and neither is on the base above: an on-demand round
   // trip is the caller asking for a fetch, so only the installed trigger judges

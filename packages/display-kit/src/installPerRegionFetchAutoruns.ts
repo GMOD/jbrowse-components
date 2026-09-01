@@ -21,8 +21,8 @@ import {
 } from './planRegionFetch.ts'
 
 import type { IndexedRegion } from './planRegionFetch.ts'
+import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
 import type { Region } from '@jbrowse/core/util/types/data'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * What the per-region fetch autoruns read and call. Duck-typed rather than the
@@ -30,13 +30,12 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * installer, so a nominal type would be circular, and naming the members here
  * is also the list of what the autoruns are allowed to touch.
  */
-export interface PerRegionFetchHost extends IStateTreeNode {
+export interface PerRegionFetchHost extends FetchSkeletonHost {
   error: unknown
+  // required where the skeleton leaves it optional: the plan takes it as a term
   fetchCanceled: boolean
   fetchGeneration: number
-  reloadCounter: number
   isLoading: boolean
-  fetchInert: boolean
   awaitingPrerequisite: boolean
   gateSkipsMeasuredViewport: boolean
   /** read by the hover-clear reaction, which the too-large banner also fires */
