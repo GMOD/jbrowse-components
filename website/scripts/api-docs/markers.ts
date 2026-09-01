@@ -51,9 +51,10 @@ for (const { label, write } of selected) {
   )
 }
 
-// Only the generated-but-rendered-nowhere half: this run invokes 22 of the
-// generators, so a marker pair it never wrote is not evidence that nothing
-// writes it. `generate.ts` runs them all and checks both directions.
+// Only the generated-but-rendered-nowhere half: this run invokes the
+// program-independent generators alone, so a marker pair it never wrote is not
+// evidence that nothing writes it. `generate.ts` runs them all and checks both
+// directions.
 try {
   assertMarkersAndDocsAgree({ both: false })
 } catch (e) {

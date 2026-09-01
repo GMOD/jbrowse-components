@@ -303,7 +303,7 @@ and is verified by `markers.ts --check` (one process for all of them, through
 `pnpm autogen`); `generate.ts` calls the same list, so the two cannot disagree
 about the set. The five that need the whole-repo program — `DISPLAY_TYPES`,
 `DISPLAY_VIEW_TYPES`, `GOTCHA`, `PROMOTABLE_SLOTS`, `SPEC_KEYS` — are called
-from `generate.ts` directly and gated by the `pnpm gendocs` diff instead.
+from `generate.ts` directly and gated by its own `--check` instead.
 
 Either way `assertMarkersAndDocsAgree` holds the two ends together: a marker no
 doc renders, and a doc block no generator writes, are both errors. Neither was

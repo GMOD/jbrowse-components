@@ -2,7 +2,7 @@ import { execFile } from 'child_process'
 import fs from 'fs'
 import { promisify } from 'util'
 
-import { oxfmtBin } from '../check-utils.ts'
+import { check, formatMarkdown, oxfmtBin } from '../check-utils.ts'
 
 // Every path written this run, whether spliced into a doc or written whole.
 const written = new Set<string>()
@@ -12,7 +12,7 @@ const written = new Set<string>()
 // .oxfmtrc.json names the same three), so they are the ones the sweep below
 // leaves alone. Tracked here rather than matched by directory at the sweep,
 // because what makes a page exempt is that a run WROTE it whole.
-const pages = new Set<string>()
+const unformatted = new Set<string>()
 
 // Every doc read this run. Each marker generator sweeps the whole doc tree for
 // its own pair, so a `markers.ts` run read 17,640 files to see 588 distinct
@@ -40,10 +40,21 @@ export function readDoc(file: string) {
 // A splice into a file a person also edits: a marker block in a guide, an
 // API_DOCS section in a README. Formatted at the end of the run, because the
 // rest of the file is hand-written and stays under `pnpm check-format`.
+//
+// Under `--check` nothing reaches disk: the content goes into the cache, so a
+// later splice into the same doc builds on it exactly as a write run would, and
+// `staleDocs` compares the final text against what is committed.
 export function writeDoc(file: string, content: string) {
-  fs.writeFileSync(file, content)
+  if (!check) {
+    fs.writeFileSync(file, content)
+  }
   docText.set(file, content)
   written.add(file)
+}
+
+export function writeUnformatted(file: string, content: string) {
+  writeDoc(file, content)
+  unformatted.add(file)
 }
 
 // A page this run owns outright. Not formatted, and not `pnpm format`'s to
@@ -55,8 +66,7 @@ export function writeDoc(file: string, content: string) {
 // So the emitter owes what the formatter used to repair: `blankLinesAroundFences`
 // is the one thing oxfmt did to these pages that was not wrapping.
 export function writePage(file: string, content: string) {
-  writeDoc(file, blankLinesAroundFences(content))
-  pages.add(file)
+  writeUnformatted(file, blankLinesAroundFences(content))
 }
 
 // A fenced block reads as its own paragraph, and the `#example` blocks quoted
@@ -103,7 +113,32 @@ export function writtenDocs() {
 
 // The written docs a person also owns, which is what the format sweep gets.
 export function splicedDocs() {
-  return [...written].filter(file => !pages.has(file))
+  return [...written].filter(file => !unformatted.has(file))
+}
+
+function onDisk(file: string) {
+  try {
+    return fs.readFileSync(file, 'utf8')
+  } catch {
+    return undefined
+  }
+}
+
+// The docs whose committed bytes differ from what this run would have written.
+// A spliced doc is compared after formatting, since that is what the write run
+// commits, but only when the raw text already disagrees: raw text equal to a
+// formatted file is formatted.
+export function staleDocs() {
+  return [...written].filter(file => {
+    const content = docText.get(file)!
+    const committed = onDisk(file)
+    return (
+      committed !== content &&
+      (unformatted.has(file) ||
+        committed === undefined ||
+        formatMarkdown(content, file) !== committed)
+    )
+  })
 }
 
 // Run the repo formatter over the docs a run spliced into. Their marker blocks

@@ -38,9 +38,8 @@ import type { SourceCorpus } from './util.ts'
 // same writers.
 //
 // Keeping a `--check` of their own is still right, though no longer because
-// nothing else would gate them (`gendocs`'s autogen entry diffs all of
-// `website/docs` and `agent-docs` now). It is what names the stale table:
-// gendocs' diff can only say "config/model/api docs". `markers.ts <label>`
+// nothing else would gate them (`generate.ts --check` covers every doc it
+// writes). It is what names the stale table by label, `markers.ts <label>`
 // narrows a development loop to one table, and the whole set costs one
 // TypeScript load rather than gendocs' whole-repo program.
 export interface MarkerGenerator {

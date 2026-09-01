@@ -43,8 +43,8 @@
 #
 # HOW YOU HEAR ABOUT IT. The background run leaves `autogen-stale` in the common
 # git dir -- named for the check it started as, kept because that path is what
-# pre-commit and autogen.ts both reach for -- and pre-commit prints it on your
-# next commit for the cost of one stat. That is deliberately not a terminal
+# pre-commit reaches for -- and pre-commit prints it on your next commit for the
+# cost of one stat. That is deliberately not a terminal
 # message from here: by the time the check finishes, the shell that ran the
 # merge has moved on, and writing to its tty would land in the middle of
 # whatever is there now.
@@ -56,8 +56,11 @@
 # `git log -S` to find out otherwise. `autogen-stale-since` holds the head the
 # nag FIRST fired at, so a persisting one can say how far back it goes and say
 # outright that this land is not what staled it. The pair is cleared together,
-# here on a clean check and in autogen.ts when someone regenerates; leaving the
-# anchor behind would age the next unrelated drift by this one's lifetime.
+# here on a clean check and nowhere else: `pnpm autogen` used to clear it, from
+# when the marker reported artifacts alone, and kept doing so after typecheck
+# and the linters joined -- a regenerate wiped a nag about a type error, and a
+# filtered `pnpm autogen gallery` wiped one about anything. Leaving the anchor
+# behind would age the next unrelated drift by this one's lifetime.
 #
 # READ-ONLY, because the primary checkout is shared. `--check`, `--noEmit` and a
 # bare `lint:eslint` all report and write nothing, so this can never rewrite
@@ -102,7 +105,7 @@ common=$(git rev-parse --git-common-dir)
 marker=$common/autogen-stale
 # The head the check FIRST failed at, kept across lands so a persisting
 # staleness can say how old it is instead of restamping itself onto whatever
-# landed most recently. Cleared with the marker, here and by `pnpm autogen`.
+# landed most recently. Cleared with the marker.
 since=$common/autogen-stale-since
 lock=$common/autogen-check.lock
 

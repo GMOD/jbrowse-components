@@ -49,7 +49,7 @@
 # said before that pass beside it — every one that moved was a serial loop over
 # independent processes, or a process pool recompiling the same modules, not
 # work that had grown:
-#   pnpm autogen --check    46s   (118s sequential; the rewrite still is)
+#   pnpm autogen --check    46s   (118s sequential)
 #   pnpm check-docs         50s   (344s, of which one validator was 218s)
 #                                 — and 50s is what an idle machine gives; the
 #                                 CPU behind it, 247s to 85s, is the stable half
@@ -248,13 +248,12 @@ if [ -n "$autogen_skipped" ]; then
   echo "pre-push: skipping the figure-dependent generators, because $autogen_skipped" >&2
 fi
 
-# ASKS BEFORE IT WRITES. `--check` is the pooled run — every generator that has
-# its own check mode writes nothing, so those go concurrently and the pass costs
-# about half what the rewrite does. On the push where nothing is stale, which is
-# most of them, that is the whole of the autogen cost. The rewrite is sequential
-# (ordering between generators is load-bearing, and two of them splice into one
-# doc), so it is only paid when there is something to regenerate — the push this
-# hook exists for, and the one already paying for a commit.
+# ASKS BEFORE IT WRITES. `--check` writes nothing and runs every generator
+# pooled, so it costs about half what the rewrite does. On the push where
+# nothing is stale, which is most of them, that is the whole of the autogen
+# cost. The rewrite keeps the doc chain in order (two generators splice into
+# one doc), so it is only paid when there is something to regenerate — the
+# push this hook exists for, and the one already paying for a commit.
 astatus=0
 pnpm autogen --check $autogen_flags >"$tmp/autogen.log" 2>&1 || astatus=$?
 if [ "$astatus" != 0 ]; then
