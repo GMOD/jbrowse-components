@@ -700,10 +700,18 @@ function fileLocation(spec: string): FileLocation {
   return { localPath: spec, locationType: 'LocalPathLocation' }
 }
 
+interface SlotDescription {
+  type: string
+  description?: string
+  defaultValue: unknown
+}
+
 // Vocabulary introspection: every config slot a live config node's schema
 // defines, so code never has to guess which settings keys exist — an unknown
 // key is otherwise dropped silently, which is this format's known failure mode.
-function describeSlots(conf: AnyConfigurationModel) {
+function describeSlots(
+  conf: AnyConfigurationModel,
+): Record<string, SlotDescription> {
   const definition = getConfigurationSchemaDefinition(conf) ?? {}
   return Object.fromEntries(
     Object.entries(definition).flatMap(([name, def]) =>
