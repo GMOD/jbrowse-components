@@ -16,8 +16,9 @@
   .video-frame video {
     margin: 0;
   }
-  /* Dimmed rather than hidden, so the poster frame still reads through the
-     grey while the reader decides whether to play it. */
+  /* Dimmed rather than hidden, so the frame under it still reads through the
+     grey — the poster while the reader decides whether to play it, and the
+     last frame once the clip has run, where the button is a replay. */
   .video-frame:not(.is-playing) video {
     filter: brightness(0.55) saturate(0.85);
   }

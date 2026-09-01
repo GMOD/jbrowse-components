@@ -4,7 +4,9 @@
 // post, and both go through the same markdown pipeline. The markup itself is
 // emitted by remark-video.ts next to the video it belongs to, so this
 // component owns only the part that has to be identical wherever one
-// appears: the click that starts playback and takes the grey overlay away.
+// appears: the click that starts playback and takes the grey overlay away,
+// and the end of the clip, which puts it back over the last frame so the
+// reader is looking at a replay button rather than a stopped picture.
 //
 // The CSS is in styles/widgets/video-overlay.css with the rest of the
 // string-emitted markup's styling, imported by BaseLayout.
@@ -29,4 +31,35 @@
       }
     }
   })
+
+  // Media events don't bubble, so the delegated listener has to run in the
+  // capture phase, where it still sees them on the way down.
+  document.addEventListener(
+    'ended',
+    event => {
+      const video = event.target
+      if (video instanceof HTMLVideoElement) {
+        const frame = video.closest('.video-frame')
+        const trigger = frame?.querySelector('.video-play-overlay')
+        if (frame instanceof HTMLElement && trigger instanceof HTMLElement) {
+          frame.classList.remove('is-playing')
+          trigger.setAttribute('aria-label', 'Replay video')
+        }
+      }
+    },
+    true,
+  )
+
+  // A reader who scrubs back or hits play on the native controls is watching
+  // again, so the overlay that ended put back has to go away again.
+  document.addEventListener(
+    'play',
+    event => {
+      const video = event.target
+      if (video instanceof HTMLVideoElement) {
+        video.closest('.video-frame')?.classList.add('is-playing')
+      }
+    },
+    true,
+  )
 </script>
