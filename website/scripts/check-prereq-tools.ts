@@ -185,7 +185,7 @@ for (const file of readdirSync(tutorials).sort()) {
     continue
   }
   pages++
-  const fences = [...src.matchAll(/```(\w+)\n([\s\S]*?)```/g)]
+  const fences = [...src.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)```/g)]
   const runnable = fences
     .filter(f => /^(bash|python|r)$/i.test(f[1]!))
     .map(f => f[2]!)
