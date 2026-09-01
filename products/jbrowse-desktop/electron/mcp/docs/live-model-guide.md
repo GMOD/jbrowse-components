@@ -142,7 +142,45 @@ track (`jb.getRpcSessionId(jb.trackModel(trackId))`) so you share the parsed
 indexes the display already warmed.
 
 Mind the sizes: don't `return` thousands of raw features — aggregate, slice, or
-write to a file with `window.require('fs')` and return the path.
+put them on screen as a track (next section).
+
+## Showing something you derived
+
+A track built from values you just computed does not need a file.
+`FromConfigAdapter` carries the features in the track's own config, so the
+derived track is part of the session: it survives a save and reopen, and it
+needs no filesystem at all.
+
+```js
+session.addSessionTrackConf({
+  type: 'QuantitativeTrack', // FeatureTrack for non-numeric features
+  trackId: 'nutlin-log2',
+  name: 'log2(nutlin / DMSO)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'FromConfigAdapter',
+    adapterId: 'nutlin-log2',
+    features: bins.map((score, i) => ({
+      uniqueId: 'bin' + i,
+      refName: 'chr6', // the assembly's canonical spelling
+      start: start + i * BIN,
+      end: start + (i + 1) * BIN,
+      score,
+    })),
+  },
+})
+session.views[0].showTrack('nutlin-log2')
+return jb.waitReady(60000)
+```
+
+`adapterId` is the adapter cache key; leave it out and the whole feature array
+is hashed instead. `addSessionTrackConf` is the destination for a track you
+stood up on the user's behalf — `session.tracks` is the site's catalog.
+
+Everything lives in the session, so the scale this fits is a window of bins, a
+peak list, a set of hits. For anything genome-scale, run the real tool and load
+what it wrote: computing in the renderer holds the whole input in the process
+that is also drawing the view.
 
 ## Waiting on the app
 

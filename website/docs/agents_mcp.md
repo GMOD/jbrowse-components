@@ -7,26 +7,21 @@ description:
   the result
 ---
 
-The other pages in this section describe an agent that writes a config and opens
-it. This one describes the other direction: JBrowse Desktop runs an
-[MCP](https://modelcontextprotocol.io) server, so a client such as Claude
-Desktop or Claude Code can drive the app that is already open. The session is
-not rebuilt from a file each time. The agent reads and changes the live model.
+JBrowse Desktop runs an [MCP](https://modelcontextprotocol.io) server, so a
+client such as Claude Desktop or Claude Code can drive the app you already have
+open. The agent reads and changes the live session rather than rebuilding one
+from a file each time.
 
-This exists only in JBrowse Desktop. It is safe because of where it runs, a
-user-only local socket in a desktop app, and the same surface behind anything
-network-reachable would be a remote code execution hole. See
-[Turning it off](#turning-it-off) below.
+Desktop only. It is safe because of where it runs, a local socket only your own
+account can reach, and the same surface behind anything network reachable would
+be a remote code execution hole. See [Turning it off](#turning-it-off).
 
-## Setup
+## Connect a client
 
-JBrowse Desktop must be running. It serves the socket; the client spawns a thin
-stdio process that connects to it. Tool calls made while the app is closed
-answer with a message saying to launch it.
+Leave JBrowse Desktop running, and point the client at the app binary with
+`--mcp`, which opens no window of its own.
 
-Add one of these to your Claude Desktop config, then restart the client.
-
-Packaged app on macOS:
+Claude Desktop, under Settings, Developer, Edit Config:
 
 ```json
 {
@@ -39,78 +34,53 @@ Packaged app on macOS:
 }
 ```
 
-Development checkout, after `pnpm build && pnpm build:electron-main`:
+Claude Code:
 
-```json
-{
-  "mcpServers": {
-    "jbrowse": {
-      "command": "node",
-      "args": [
-        "/path/to/jbrowse-components/products/jbrowse-desktop/build/mcpServer.js"
-      ]
-    }
-  }
-}
+```bash
+claude mcp add jbrowse -s user -- "/Applications/JBrowse 2.app/Contents/MacOS/JBrowse 2" --mcp
 ```
 
-## The four tools
+Any other MCP client takes the same command and argument. On Windows the binary
+is `%LOCALAPPDATA%\Programs\JBrowse 2\jbrowse-desktop.exe` and on Linux it is
+the AppImage you downloaded. From a source checkout, run
+`node <checkout>/products/jbrowse-desktop/build/mcpServer.js` instead.
+
+Restart the client, then ask it to open JBrowse with no target. It lists your
+recent sessions, which is the shortest round trip that proves the whole path.
+
+## What the agent gets
 
 `run_javascript` is the interface. It runs an async function body inside the app
-against the live [session model](/docs/models), and whatever you return comes
-back serialized. Everything else an agent needs is code.
-
-The other three exist because renderer JavaScript cannot express them:
-
-- `screenshot` captures the window after waiting for tracks to finish drawing.
-  Pixels live in the main process. The result carries the settle status
-  alongside the image.
-- `open` loads a config file, a saved `.jbrowse` session, or a JBrowse Web URL,
-  replacing the current session. It is the recovery path when nothing is open or
-  the session is broken. Called with no target, it lists recent sessions.
-- `docs` serves the bundled reference (`live-model`, `session-spec`,
-  `automating`). It is version locked to the running binary and readable while
-  the app is closed.
-
-## The `jb` standard library
-
-`run_javascript` gets `session`, `rootModel`, `pluginManager`, and `jb`. State
-persists on `globalThis` between calls, so an agent can build up its own helpers
-across a conversation.
+against the live [session model](/docs/models), with `jb` as a standard library:
 
 ```js
 jb.sessionSummary() // views, tracks, assemblies, visible regions
-jb.inspect(path) // walk the live model, including getters a snapshot omits
-jb.listTracks(search) // the catalog, connection and hub tracks included
-jb.trackModel(trackId) // the shown track's live model
-jb.describeSlots(conf) // every settings key a display accepts
+jb.listTracks(search) // the catalog, with trackIds
+jb.trackModel(trackId) // a shown track's live model
+jb.getFeatures({ trackId }) // its data, as Feature objects
 jb.loadSessionSpec(spec) // build views declaratively
-jb.addTrack({ location }) // local path or URL, format inferred
-jb.getFeatures({ trackId }) // the track's data as Feature objects
-jb.waitReady(ms) // wait for drawing to settle, and report what did not
-jb.require(name) // the module registry plugins link against
+jb.describeSlots(conf) // every setting a display accepts
+jb.waitReady(ms) // wait for drawing, and report what did not draw
 ```
 
-`jb.mst` and `jb.mobx` are the full mobx-state-tree and mobx APIs, and
-`window.require` reaches the DOM and Node.
+Three more tools exist because renderer JavaScript cannot express them.
+`screenshot` captures the window, whose pixels live in the main process. `open`
+loads a config, a saved session, a [hosted config](/docs/agents_hosted_data) URL
+or a JBrowse Web link, and is the recovery path when nothing is open or the
+session is broken. `docs` serves the bundled reference, which is readable while
+the app is closed.
 
-## A worked session
+## A session
 
-Orient first. Never assume state carried over from a previous call.
+Orient first, and never assume state carried over from a previous call:
 
 ```js
 return jb.sessionSummary()
 ```
 
-Find track ids rather than guessing them. A trackId that does not exist opens
-nothing and reports nothing.
-
-```js
-return jb.listTracks('clinvar')
-```
-
-Build a view declaratively. This is the same spec JSON that `&session=spec-`
-URLs take, documented in full at [](/docs/urlparams):
+Build a view from the same spec JSON that `&session=spec-` URLs take, documented
+at [](/docs/urlparams). Find track ids with `jb.listTracks` rather than guessing
+them, since one that does not exist opens nothing and reports nothing:
 
 ```js
 return jb.loadSessionSpec({
@@ -125,37 +95,16 @@ return jb.loadSessionSpec({
 })
 ```
 
-Gene names work through the text search index, so navigation takes a symbol:
-
-```js
-await session.views[0].navToLocString('TP53')
-return jb.waitReady(30000)
-```
-
 Read the underlying data rather than describing the picture. Features come back
 as live objects, so aggregate in code and return only the answer:
 
 ```js
 const feats = await jb.getFeatures({ trackId: 'hg38-clinvarMain' })
-const counts = {}
-for (const f of feats) {
-  const k = f.get('clinSign') ?? 'unstated'
-  counts[k] = (counts[k] ?? 0) + 1
-}
-return { total: feats.length, counts }
+return Object.groupBy(feats, f => f.get('clinSign') ?? 'unstated')
 ```
 
-## Changing how a track looks
-
-Display settings are config slots, not plain properties, and the vocabulary is
-per display type. Ask what a display accepts before writing to it:
-
-```js
-const track = jb.trackModel('hg38-clinvarMain')
-return jb.describeSlots(track.activeDisplay.configuration)
-```
-
-Then write them with the model action, which reports what landed:
+Restyle in place with the track's own action, which reports what landed as
+`{ applied, unapplied, failed }`:
 
 ```js
 return jb.trackModel('hg38-clinvarMain').applyDisplaySettings({
@@ -164,39 +113,17 @@ return jb.trackModel('hg38-clinvarMain').applyDisplaySettings({
 })
 ```
 
-The return value is `{ applied, unapplied, failed }`. `failed` means a value was
-rejected and is the one worth acting on. `unapplied` also collects keys that are
-simply not config slots for that display.
-
-A track too tall for the window is a height strategy rather than a display mode.
-Many displays take `heightMode: 'fit'`, which squashes the content into the
-height slot, or `heightMode: 'grow'`. `displayMode: 'compact'` only shrinks each
-feature and will not tame a deep stack.
-
-## Verifying what you built
-
-A wrong trackId, an empty region, or a dropped settings key all render as a
-plausible looking browser with something quietly missing. Two habits catch it.
-
-Read the settle result, not just the image. `jb.waitReady` and `screenshot` both
-report `notifications`, the session's own error toasts, and `notReady`, the
-tracks whose display settled without drawing anything:
-
-```js
-const settle = await jb.waitReady(30000)
-return {
-  notifications: settle.notifications ?? [],
-  notDrawn: (settle.notReady ?? []).map(t => `${t.trackId} (${t.phase})`),
-}
-```
-
-A display over the fetch size limit reports `phase: 'tooLarge'`. It raises no
-error toast and replaces its own contents, so a screenshot of it looks fine.
-Lift it with the `forceLoad` slot or by zooming in.
-
-Then screenshot, and actually read the image back.
+A track the agent computed needs no file behind it: a `FromConfigAdapter` in
+`session.addSessionTrackConf` carries the features in the track config, so the
+derived track saves and reopens with the session. Everything lives in the
+session, so the scale that fits is a window of bins or a list of hits, and at
+genome scale the agent should run the tool that does the job and load what it
+wrote.
 
 ## Four traps
+
+Each of these renders as a plausible looking browser with something quietly
+missing.
 
 **Data files may spell reference names differently from the assembly.** A file
 using `1` where the assembly says `chr1` answers nothing, silently.
@@ -204,15 +131,17 @@ using `1` where the assembly says `chr1` answers nothing, silently.
 `jb.renameRegionsIfNeeded` first. See [](/docs/config_guide) for refName
 aliasing.
 
-**An unknown settings key is dropped.** Use `jb.describeSlots` rather than
-guessing, and read the `applied`/`failed` report.
+**An unknown settings key is dropped.** Use `jb.describeSlots` to see what a
+display accepts, and read the `failed` list that comes back.
 
-**`view.showTrack` on an already shown track applies nothing.** Use
-`applyDisplaySettings` to change a track that is already open.
+**A track over the fetch size limit raises no error.** It replaces its own
+contents, so the screenshot looks fine. `jb.waitReady` and `screenshot` both
+report it under `notReady` with `phase: 'tooLarge'`, which is why the settle
+result is worth reading alongside the image.
 
-**`jb.loadSessionSpec` replaces the session.** The `session` argument your code
+**`jb.loadSessionSpec` replaces the session.** The `session` argument the code
 was given is a dead node afterwards. The `jb` helpers re-read the live session
-for you; use `jb.session` if you need to rebind it yourself.
+for you, and `jb.session` rebinds it.
 
 ## Turning it off
 
