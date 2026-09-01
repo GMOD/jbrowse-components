@@ -120,6 +120,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'CORE_UTIL_AUDIT names the layout serialization type deleted with MultiLayout/PrecomputedLayout',
   ],
   ['SerializedLayout', 'CORE_UTIL_AUDIT, the same sentence'],
+  [
+    'viewTrackConfigs',
+    'CONFIG_PATTERN names it under ADR-084, which deleted it',
+  ],
 ])
 
 const LADDER = ['~128', '~512', '~2048']

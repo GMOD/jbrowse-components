@@ -156,6 +156,34 @@ const state = createViewState({
 For full track control at launch, provide a `defaultSession` whose view names
 its tracks. See [](/docs/tutorials/embed_linear_genome_view).
 
+`createViewState` also takes `localFiles` — `name -> bytes` — for a host whose
+data lives in a process rather than at a URL: a notebook kernel, an R session,
+anywhere with no web server and no CORS. `tracks` can then refer to a registered
+name as if it were a URL; register an index under its conventional sibling name
+(`peaks.bed.gz` + `peaks.bed.gz.tbi`) and the file stays indexed, so only the
+bytes the current view needs are read.
+
+Two more options are the embedded LGV's own chrome, off by default because an
+embedded view is the chrome a host asked for and nothing more: `menuBar` draws
+the app-shaped `File` menu bar above the view, with the two items an embed can
+honour (open track, open connection), and `disableAddTracks` empties that menu
+back out and removes the track selector's own add-track affordances. (`height`
+now covers what `drawerViewHeight` used to — pass `height` instead.)
+
+### Non-React controllers
+
+The imperative `createLinearGenomeView` (see
+[non-React hosts](/docs/embedded_components#non-react-hosts)) takes callbacks in
+place of the props a React component would use: `onLocationChange` fires with
+the visible region as the user pans or zooms, `onFeatureSelect` fires with the
+clicked feature, `onSessionChange` fires with the view's layout whenever it
+settles (for a host offering "save this view"), and `onError` fires when the
+build itself fails — a genome that won't resolve, a plugin that won't fetch —
+since building is asynchronous and that throw can't reach your own call to it.
+`createApp`'s `onPluginsUpdated` fires instead when something changes the
+running plugin set (the plugin store widget, `session.addSessionPlugin`), with
+what a rebuild needs to remount the app on the new set.
+
 ## Config / session files
 
 A `defaultSession` in config.json (or any session snapshot) carries the same

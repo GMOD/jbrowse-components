@@ -71,7 +71,9 @@ Every package also exports an imperative controller — `createLinearGenomeView`
 to manage. It's what the [Python anywidget](/docs/jbrowse_anywidget), R
 htmlwidgets, and plain `<script>` pages are built on. See the vanillajs rows in
 [bundler examples](#bundler-examples) below for a working reference
-implementation of each.
+implementation of each. Driving one from your own code — reading state back out,
+local in-process data, the controller's callbacks — is covered in
+[](/docs/automating).
 
 ## Bundler examples
 
