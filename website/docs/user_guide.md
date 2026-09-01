@@ -129,3 +129,4 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/tutorials/cli_desktop)
+- [](/docs/tutorials/gene_density)

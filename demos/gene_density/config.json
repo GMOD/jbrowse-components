@@ -1,0 +1,123 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/demos/gene_density/hg38.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_genes",
+      "name": "RefSeq curated genes",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz.tbi"
+          }
+        },
+        "densityAdapter": {
+          "type": "BigWigAdapter",
+          "bigWigLocation": {
+            "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw"
+          }
+        }
+      },
+      "displayDefaults": { "densityTierBpPerPx": 50000 }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_Alu",
+      "name": "RepeatMasker Alu",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.tbi"
+          }
+        },
+        "densityAdapter": {
+          "type": "BigWigAdapter",
+          "bigWigLocation": {
+            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_L1",
+      "name": "RepeatMasker L1",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/L1.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gene_density/L1.bed.gz.tbi"
+          }
+        },
+        "densityAdapter": {
+          "type": "BigWigAdapter",
+          "bigWigLocation": {
+            "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_Simple_repeat",
+      "name": "RepeatMasker simple repeats",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz.tbi"
+          }
+        },
+        "densityAdapter": {
+          "type": "BigWigAdapter",
+          "bigWigLocation": {
+            "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
+          }
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Gene density",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr1",
+        "tracks": ["hg38_genes", "hg38_Alu", "hg38_L1", "hg38_Simple_repeat"]
+      }
+    ]
+  }
+}

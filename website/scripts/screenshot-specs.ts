@@ -25,6 +25,7 @@ import { dtuSpecs } from './specs/dtu.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
+import { geneDensitySpecs } from './specs/gene_density.ts'
 import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
 // the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
 import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
@@ -78,6 +79,7 @@ export const specs: ScreenshotSpec[] = [
   ...tcgaSpecs,
   ...cnv1000gSpecs,
   ...gwasSpecs,
+  ...geneDensitySpecs,
   ...hg002HaplotypeSpecs,
   ...hicSpecs,
   ...qtlSpecs,

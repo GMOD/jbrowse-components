@@ -89,6 +89,10 @@ const PLUMBING = new Set([
 // reasons — that case is a fence to write.
 const ALLOWED = new Map([
   [
+    'gene_density.md#bedGraphToBigWig',
+    'jbrowse make-density runs it internally; the page shows the make-density invocation',
+  ],
+  [
     'cancer_sv.md#minimap2',
     'sv_multihop.py runs it internally; the page shows the python invocation',
   ],
