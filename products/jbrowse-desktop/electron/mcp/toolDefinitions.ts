@@ -15,11 +15,17 @@ export const SERVER_INSTRUCTIONS = `JBrowse Desktop (genome browser) control. On
 
 Read docs topic "live-model" before your first run_javascript call. Start by orienting: return jb.sessionSummary() — never assume state carried over. After changing anything, screenshot AND read the image: a wrong trackId, empty region, or dropped settings key renders as a plausible browser with something quietly missing. Verify data claims with jb.getFeatures, not from the picture.
 
-Introspect, never guess: jb.listTracks() for trackIds; jb.describeSlots(jb.trackModel('x').activeDisplay.configuration) for a display's settings keys — an unknown settings key is dropped SILENTLY. Settle results carry "notifications" (the session's own error toasts) AND "notReady" (tracks whose display is not drawing — over the fetch-size gate, or errored; these raise no toast and look fine in a screenshot): read both.
+Introspect, never guess: jb.listTracks() for trackIds; jb.describeSlots(jb.trackModel('x').activeDisplay.configuration) for a display's settings keys — an unknown settings key is dropped SILENTLY. Every result carries "logs" (what the code console.logged) and "notifications" (toasts the session raised since your previous call, with level — each reported once); settle results add "notReady" (tracks whose display is not drawing — over the fetch-size gate, or errored; these raise no toast and look fine in a screenshot): read all three. A thrown error names the line in your code and the output printed before it.
 
 A track too tall for the window is a height STRATEGY, not displayMode: many displays take heightMode "fit" (squash the content into the height slot) or "grow"; displayMode "compact" only shrinks each feature and will not tame a deep stack. describeSlots lists both.
 
 Traps: mutate the MST model only via actions; write display settings with track.applyDisplaySettings(settings) (never raw assignment). view.showTrack on an already-shown track silently applies nothing — applyDisplaySettings is the update path. Data files may spell refNames differently than the assembly ("ctgA" vs "contigA"): jb.getFeatures handles it; raw adapter code must call jb.renameRegionsIfNeeded first. A freshly created view throws "width undefined" from region getters until it mounts (await jb.mobx.when(() => view.initialized)). Aggregate large results in code; do not return thousands of raw features.`
+
+// run_javascript's own deadline, raced inside the renderer so a runaway call
+// answers with what it printed instead of a bare relay timeout. The bridge
+// budgets its relay from the same number (see bridge.ts).
+export const CODE_TIMEOUT_DEFAULT_MS = 120_000
+export const CODE_TIMEOUT_MAX_MS = 150_000
 
 export interface McpToolDefinition {
   name: string
@@ -33,7 +39,7 @@ export const MCP_TOOLS: McpToolDefinition[] = [
   {
     name: 'run_javascript',
     handledBy: 'renderer',
-    description: `Run an async JavaScript function body inside JBrowse Desktop against the LIVE session. This is the whole interface — inspecting state, building views, adding data, styling tracks, reading feature data are all code. Whatever you "return" comes back serialized (size-capped); state persists between calls on globalThis (but re-read "session" each call — it is replaced when a new config loads).
+    description: `Run an async JavaScript function body inside JBrowse Desktop against the LIVE session. This is the whole interface — inspecting state, building views, adding data, styling tracks, reading feature data are all code. Whatever you "return" comes back serialized (size-capped), with "logs" (everything the code console.logged) and "notifications" (toasts the session raised since the last call, with their level). A thrown error comes back with the line and column in YOUR code and the console output before it. State persists between calls on globalThis (but re-read "session" each call — it is replaced when a new config loads).
 
 In scope: "session" (the live mobx-state-tree session model), "rootModel", "pluginManager", and the helper library "jb":
 - orientation: jb.sessionSummary() (views, tracks with their trackType/display type and render phase, assemblies, visible regions); jb.session (the live session — re-read it after loadSessionSpec, which replaces the one the "session" argument names); jb.inspect(path?, maxBytes?) walks the live model by dot-path ("views.0.visibleLocStrings") and lists each node's getters — the high-value state a snapshot filters out
@@ -41,7 +47,7 @@ In scope: "session" (the live mobx-state-tree session model), "rootModel", "plug
 - views: jb.loadSessionSpec(spec) builds views declaratively (docs topic "session-spec" is the full reference; e.g. { views: [{ type: "LinearGenomeView", assembly, loc, tracks: [...] }] }); view.navToLocString("BRCA1") navigates (gene names go through text search); view.showTrack(id) / view.hideTrack(id)
 - data: jb.getFeatures({ trackId, loc? }) returns the track's live Feature objects (visible region by default; refNames renamed, adapter cache shared with the display) — aggregate in code, return only the answer
 - waiting: await jb.waitReady(ms) after mutations, before reading render state (its result carries the session's error notifications and a "notReady" list of tracks that settled without drawing)
-- lower level: jb.mst and jb.mobx (the full mobx-state-tree and mobx APIs), jb.readConfObject/jb.getConf (config slots are NOT plain properties), jb.parseLocString, jb.getFeatureAdapterOrThrow, jb.renameRegionsIfNeeded, jb.getRpcSessionId, stop tokens; anything else core serves comes from jb.require(name) with the same module names plugins use (e.g. jb.require('@jbrowse/core/util'), '@jbrowse/core/configuration', '@jbrowse/core/ui') — plus the DOM and Node via window.require.
+- lower level: jb.mst and jb.mobx (the full mobx-state-tree and mobx APIs), jb.readConfObject/jb.getConf (config slots are NOT plain properties), jb.parseLocString, await jb.getFeatureAdapterOrThrow (async), jb.renameRegionsIfNeeded, jb.getRpcSessionId, stop tokens; anything else core serves comes from jb.require(name) with the same module names plugins use (e.g. jb.require('@jbrowse/core/util'), '@jbrowse/core/configuration', '@jbrowse/core/ui') — plus the DOM and Node via window.require.
 
 READ docs topic "live-model" FIRST: a short orientation with working examples. Mutate the model only through actions.`,
     inputSchema: {
@@ -57,6 +63,10 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
           description:
             'Largest serialized result to return whole before truncating to a preview (default 50000)',
         },
+        timeoutMs: {
+          type: 'number',
+          description: `Ms the code may run before the call answers with an error and its console output so far; the code keeps running in the app (default ${CODE_TIMEOUT_DEFAULT_MS}, max ${CODE_TIMEOUT_MAX_MS}). A long job should be started, parked on globalThis and awaited from a later call instead.`,
+        },
       },
       required: ['code'],
     },
@@ -65,11 +75,16 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
     name: 'docs',
     handledBy: 'stdio',
     description:
-      'Read the raw JBrowse automation documentation. Topics: "live-model" (driving the live session from run_javascript — read this before your first call), "session-spec" (the full session spec / URL params reference, every view type and launch key), "automating" (overview). Call with no topic to list them. Works even while the app is closed.',
+      'Read the raw JBrowse automation documentation. Topics: "live-model" (driving the live session from run_javascript — read this before your first call), "session-spec" (the full session spec / URL params reference, every view type and launch key), "automating" (overview). Call with no topic to list them. A long topic answers with its table of contents; pass section (a heading, matched case-insensitively) to read one part, or section "all" for the whole text. Works even while the app is closed.',
     inputSchema: {
       type: 'object',
       properties: {
         topic: { type: 'string' },
+        section: {
+          type: 'string',
+          description:
+            'A heading of the topic to read (e.g. "Linear genome view"), or "all" for the entire document',
+        },
       },
     },
   },

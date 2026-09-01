@@ -4,6 +4,7 @@
 // .md loader, never resolves these imports.
 import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
+import { readDocSection } from './docSections.ts'
 import liveModelGuide from './docs/live-model-guide.md'
 
 import type { BridgeToolResult } from './stdioServer.ts'
@@ -30,9 +31,10 @@ export function docsToolResult(
   args: Record<string, unknown>,
 ): BridgeToolResult {
   const topic = typeof args.topic === 'string' ? args.topic : ''
+  const section = typeof args.section === 'string' ? args.section : ''
   const entry = TOPICS[topic]
   if (entry) {
-    return { text: entry.text }
+    return readDocSection(entry.text, section)
   }
   const listing = Object.entries(TOPICS)
     .map(([name, t]) => `- ${name}: ${t.summary}`)

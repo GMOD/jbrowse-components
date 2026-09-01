@@ -95,6 +95,23 @@ describe('waitReady', () => {
     expect(await waitReady(5000, session)).toMatchObject({ settled: true })
   })
 
+  it('delivers each toast once, with its level, and never a stale one twice', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const toasts = [{ message: 'track x failed', level: 'error' }]
+    const noisy = {
+      views: [],
+      snackbarMessages: toasts,
+    } as unknown as AbstractSessionModel
+    expect(await waitReady(5000, noisy)).toMatchObject({
+      notifications: [{ level: 'error', message: 'track x failed' }],
+    })
+    expect(await waitReady(5000, noisy)).not.toHaveProperty('notifications')
+    toasts.push({ message: 'track added', level: 'info' })
+    expect(await waitReady(5000, noisy)).toMatchObject({
+      notifications: [{ level: 'info', message: 'track added' }],
+    })
+  })
+
   // react-app2 embeds the app in a host page, so a second mounted app must not
   // be able to answer for this one
   it('answers for the root it is given, not the document', async () => {

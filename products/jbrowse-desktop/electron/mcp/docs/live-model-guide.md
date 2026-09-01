@@ -75,6 +75,31 @@ own helpers on `globalThis` (`globalThis.myHelpers = {...}`) and reuse them.
 `session` can be REPLACED by the open tool or `jb.loadSessionSpec` — re-read it
 per call, never cache it on globalThis.
 
+What a call answers with, besides `value`:
+
+- `logs` — everything the code passed to `console.log/info/warn/error/debug`, in
+  order. Print intermediate state instead of returning it.
+- `notifications` — toasts the session raised since the previous call, each with
+  its `level`. A toast is reported ONCE, on the first call after it fired, so an
+  error from a track you added two calls ago arrives on this one.
+- a thrown error comes back as its message plus `at code line L, column C`
+  counted in YOUR code, followed by the console output printed before it. A
+  compile error has no line (V8 gives none for a function body): look for an
+  unbalanced bracket or an `await` inside a non-async callback.
+- a call that outlives `timeoutMs` (default 120 s) answers with an error and the
+  logs so far, and the code KEEPS RUNNING. For a long job, park the promise and
+  come back for it:
+
+```js
+// call 1: start it and return at once
+globalThis.job = (async () => {
+  /* minutes of work */
+  return result
+})()
+return 'started'
+// call 2 (later): await globalThis.job
+```
+
 ## The model, oriented
 
 ```js
@@ -143,7 +168,7 @@ adapter and ask.** An adapter needs no track and no session, so this answers
 file's header and parsing it by hand:
 
 ```js
-const adapter = jb.getFeatureAdapterOrThrow({
+const adapter = await jb.getFeatureAdapterOrThrow({
   pluginManager,
   sessionId: 'probe',
   adapterConfig: {
@@ -201,6 +226,24 @@ return jb.waitReady(60000)
 is hashed instead. `addSessionTrackConf` is the destination for a track you
 stood up on the user's behalf — `session.tracks` is the site's catalog.
 
+**Recomputed the values? Delete, re-add, and change the `adapterId`.** Both
+halves fail silently otherwise: `addSessionTrackConf` returns the EXISTING conf
+when the trackId is already known, so re-adding with new features keeps the old
+ones; and the adapter cache is keyed on `adapterId`, so the same id with new
+features keeps serving the first array it saw.
+
+```js
+const old = session.sessionTracks.find(t => t.trackId === 'nutlin-log2')
+if (old) {
+  session.deleteTrackConf(old)
+}
+session.addSessionTrackConf({
+  ...conf,
+  adapter: { ...conf.adapter, adapterId: `nutlin-log2-${Date.now()}` },
+})
+session.views[0].showTrack('nutlin-log2')
+```
+
 **Plan for a few thousand features, not more.** The array lives in the track
 config, so it is held in memory, written into the session snapshot, and
 re-serialized by every autosave from then on. That fits a window of bins, a peak
@@ -228,3 +271,27 @@ reading them on a view you just made.
 
 Long synchronous loops block the UI thread — chunk big work with
 `await new Promise(r => setTimeout(r))` between batches.
+
+"Does it all fit in the window" is arithmetic, not a screenshot:
+`jb.sessionSummary()` reports each view's `height` and each track's display
+`height`, so compare the sum against the view before capturing anything.
+
+## Beyond the app: shell tools and files
+
+This is an Electron renderer with nodeIntegration, so the machine's tools are
+one `window.require` away — the route for a client with no shell of its own. A
+real pipeline step (`bigwigCompare`, `samtools`, `bedGraphToBigWig`) runs here
+and its output loads with `jb.addTrack`:
+
+```js
+const { execFile } = window.require('child_process')
+const { promisify } = window.require('util')
+const run = promisify(execFile)
+const { stdout } = await run('samtools', ['idxstats', '/data/sample.bam'])
+return stdout.split('\n').slice(0, 5)
+```
+
+`globalThis` dies with the app. A helper worth keeping across restarts goes in a
+file: write it with `window.require('fs')` as a CommonJS module and load it with
+`window.require('/path/to/helpers.js')` (`delete window.require.cache[path]`
+first to pick up an edit).

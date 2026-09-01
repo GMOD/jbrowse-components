@@ -19,8 +19,10 @@ discipline for using it.
 ## The loop
 
 - **`docs topic:"live-model"` before your first `run_javascript`**, and
-  `docs topic:"session-spec"` before composing a nontrivial
-  `jb.loadSessionSpec`. They carry working examples for exactly the traps below.
+  `docs topic:"session-spec"` before composing a nontrivial `jb.loadSessionSpec`
+  — it answers with a table of contents; read
+  `section:"Fields every view takes"` and the section for your view type. They
+  carry working examples for exactly the traps below.
 - **Orient before acting**: `return jb.sessionSummary()`. Never assume state
   carried over from an earlier turn — the user can click around between your
   calls.
@@ -28,8 +30,10 @@ discipline for using it.
   image**. A wrong trackId, an empty region, or a dropped settings key all
   render as a plausible-looking browser with something quietly missing.
 - Verify data claims with `jb.getFeatures` aggregations, never from the picture
-  alone. Settle results carry `notifications` — the session's own error toasts —
-  so read them.
+  alone. Every result carries `logs` (the code's console output) and
+  `notifications` (the session's own toasts since your previous call, each
+  reported once, with level), so read them. A thrown error names the line in
+  your code.
 
 ## Introspect, never guess
 
@@ -54,6 +58,8 @@ discipline for using it.
   it mounts — `await jb.mobx.when(() => view.initialized)`.
 - **Big returns**: don't return thousands of raw features; aggregate in code, or
   write a file with `window.require('fs')` and return the path.
+- **Long jobs**: a call outliving `timeoutMs` (default 120 s) errors but keeps
+  running. Park the promise on `globalThis` and await it from a later call.
 
 Setup and architecture: `products/jbrowse-desktop/electron/mcp/README.md`.
 Conformance check: `pnpm --filter @jbrowse/desktop test:mcp` (launches the built

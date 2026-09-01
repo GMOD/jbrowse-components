@@ -78,7 +78,12 @@ against the live session/MST model graph, with `jb` as the standard library
 (orientation, track catalog, declarative view specs, in-place display settings
 with slot routing, main-thread feature access with refName renaming, the
 readiness wait, and the full mobx-state-tree/mobx APIs underneath). Every
-correctness rule lives in `jb`, not in tool plumbing.
+correctness rule lives in `jb`, not in tool plumbing. The envelope is what a
+shell would give: the value, `logs` (the code's console output), the session's
+`notifications` since the previous call (each delivered once, with its level),
+and on a throw the line and column in the submitted code plus the output printed
+before it. A call outliving `timeoutMs` answers with that and keeps running; the
+bridge budgets its relay from the same number.
 
 The other three exist only because renderer JavaScript cannot express them:
 `screenshot` (pixels live in the main process; waits on the capture readiness
@@ -86,7 +91,8 @@ contract and reports the session's error notifications), `open` (recovery path
 that works with no session or a broken renderer; waits for the new session
 identity before answering; bare form lists recent sessions), and `docs`
 (`live-model`, `session-spec`, `automating` — bundled at build time, readable
-while the app is closed).
+while the app is closed; a long topic answers with its headings and takes a
+`section`).
 
 `pnpm test:mcp` (after `pnpm build && pnpm build:electron-main`) launches the
 built app and runs the conformance suite in `test/mcpConformance.ts` against

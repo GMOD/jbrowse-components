@@ -5,7 +5,11 @@ import readline from 'node:readline'
 import { ipcHandle, ipcSend } from '../ipc/channels.ts'
 import { isAutosave } from '../paths.ts'
 import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
-import { MCP_TOOLS } from './toolDefinitions.ts'
+import {
+  CODE_TIMEOUT_DEFAULT_MS,
+  CODE_TIMEOUT_MAX_MS,
+  MCP_TOOLS,
+} from './toolDefinitions.ts'
 
 import type {
   LaunchTarget,
@@ -272,7 +276,15 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
       return { error: `Unknown tool: ${tool}` }
     }
     if (definition.handledBy === 'renderer') {
-      return relayToRenderer(tool, args)
+      // budgeted past the code's own deadline, so the renderer's answer (the
+      // error with the console output so far) wins over the relay's silence
+      const codeTimeoutMs = Math.min(
+        typeof args.timeoutMs === 'number'
+          ? args.timeoutMs
+          : CODE_TIMEOUT_DEFAULT_MS,
+        CODE_TIMEOUT_MAX_MS,
+      )
+      return relayToRenderer(tool, args, codeTimeoutMs + 15_000)
     }
     switch (tool) {
       case 'open':

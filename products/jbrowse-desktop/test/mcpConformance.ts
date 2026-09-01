@@ -265,6 +265,29 @@ try {
     loaded.value?.session,
   )
 
+  const printed = await run(`
+    console.log('probe', { n: 2 })
+    return 'done'`)
+  check(
+    'console output comes back in the envelope',
+    printed.value === 'done' && printed.logs?.[0] === 'probe {"n":2}',
+    printed,
+  )
+
+  const thrown = await client
+    .call('run_javascript', {
+      code: 'const a = 1\nconsole.log("before")\nthrow new Error("boom")',
+    })
+    .then(
+      () => '',
+      (e: Error) => e.message,
+    )
+  check(
+    'a thrown error names its line in the submitted code and the output before it',
+    thrown.includes('at code line 3') && thrown.includes('before'),
+    thrown,
+  )
+
   const navigated = await run(`
     const view = session.views[0]
     const moved = await view.navToLocString('Apple3')

@@ -3,6 +3,7 @@ export {
   ensureReExports,
   safeJson,
   sessionOf,
+  undeliveredNotifications,
   waitReady,
 } from './jbApi.ts'
 

@@ -347,6 +347,38 @@ const delay = (ms: number) =>
 // REJECTED_IDEAS under "Waiting out a screenshot action's work".
 const READY_HOLD_MS = 1000
 
+interface SnackbarEntry {
+  message: string
+  level?: string
+}
+
+// An error toast stays up until a human dismisses it, and an info toast leaves
+// on its own — so "the last five messages" repeated one stale error in every
+// settle result for the rest of a run and named no level for the rest. Each
+// toast is delivered to the caller once, by identity: the mobx array keeps the
+// object it was pushed as, and removeSnackbarMessage relies on that too.
+const deliveredNotifications = new WeakMap<object, WeakSet<object>>()
+
+export function undeliveredNotifications(session: AbstractSessionModel) {
+  const entries =
+    'snackbarMessages' in session
+      ? (session.snackbarMessages as SnackbarEntry[])
+      : []
+  const known = deliveredNotifications.get(session)
+  const delivered = known ?? new WeakSet<object>()
+  if (!known) {
+    deliveredNotifications.set(session, delivered)
+  }
+  const fresh = entries.filter(m => !delivered.has(m))
+  for (const m of fresh) {
+    delivered.add(m)
+  }
+  return fresh.map(m => ({
+    level: m.level ?? 'info',
+    message: m.message,
+  }))
+}
+
 export async function waitReady(
   timeoutMs: number,
   session?: AbstractSessionModel,
@@ -374,15 +406,7 @@ export async function waitReady(
       await delay(200)
     }
   }
-  // An errored track renders as a plausible frame, and a snackbar that fired
-  // before an evaluate ran is unreachable from it — so every settle result
-  // carries what the session is showing the human.
-  const messages =
-    session && 'snackbarMessages' in session
-      ? (session.snackbarMessages as { message: string }[])
-          .map(m => m.message)
-          .slice(-5)
-      : []
+  const messages = session ? undeliveredNotifications(session) : []
   // A display that refuses to draw — over the fetch-size gate, or errored —
   // replaces its own subtree instead of raising a snackbar, so notifications
   // alone report a clean settle over a browser with a blank track in it.

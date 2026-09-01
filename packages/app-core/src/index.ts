@@ -62,6 +62,7 @@ export {
   ensureReExports,
   safeJson,
   sessionOf,
+  undeliveredNotifications,
   waitReady,
 } from './JbApi/index.ts'
 export type { JbApi } from './JbApi/index.ts'
