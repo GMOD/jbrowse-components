@@ -284,6 +284,24 @@ try {
     summary,
   )
 
+  const required = await run(`
+    const util = jb.require('@jbrowse/core/util')
+    return {
+      sameParse: util.parseLocString === jb.parseLocString,
+      catalog: jb.listTracks().total,
+      vcfListed: jb.listTracks('volvox_test_vcf').total,
+    }`)
+  check(
+    'jb.require serves the plugin ABI registry',
+    required.value?.sameParse === true,
+    required,
+  )
+  check(
+    'listTracks reads the full catalog',
+    required.value?.catalog > 10 && required.value?.vcfListed >= 1,
+    required,
+  )
+
   const variants = await run(`
     const feats = await jb.getFeatures({
       trackId: 'volvox_test_vcf',
