@@ -17,6 +17,11 @@ download — see [](/docs/agents_hosted_data). And a finished view can be
 **captured and looked at**, which closes the loop between "the agent wrote a
 config" and "the config shows the thing" — see [](/docs/agents_capture).
 
+JBrowse Desktop can also be driven the other way round, as an
+[MCP](https://modelcontextprotocol.io) server, so an agent changes the session
+that is already open instead of writing a new one from a file: see
+[](/docs/agents_mcp).
+
 Every tutorial on this site was written with an agent in the loop: fetching and
 subsetting the data, authoring the config, rendering the figure, then reading
 the figure back to check the claim in the prose. The pages under

@@ -38,7 +38,7 @@ product.** It is safe because of where it runs: a user-only local socket in a
 desktop app. The same surface behind anything reachable from a browser or a
 network is an RCE.
 
-## Claude Desktop setup## Claude Desktop setup
+## Claude Desktop setup
 
 Packaged app (macOS):
 
