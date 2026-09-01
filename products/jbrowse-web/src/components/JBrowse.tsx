@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { App, readQueryParams, setQueryParams } from '@jbrowse/app-core'
+import {
+  App,
+  createJbApi,
+  readQueryParams,
+  setQueryParams,
+} from '@jbrowse/app-core'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
@@ -45,7 +50,12 @@ const JBrowse = observer(function JBrowse({
     clearCrashedSession()
     window.JBrowseRootModel = rootModel
     window.JBrowseSession = session
-  }, [id, rootModel, session])
+    // The same helper library desktop serves to MCP. It reads the session
+    // through the plugin manager on every call rather than capturing the one
+    // above, so it survives a session swap; reassigning here rather than
+    // memoizing is what keeps it in step with the two globals beside it.
+    window.jb = createJbApi(pluginManager)
+  }, [id, pluginManager, rootModel, session])
 
   useEffect(() => {
     return adminKey

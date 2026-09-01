@@ -20,4 +20,7 @@ interface Window {
   JBrowseSession?: unknown
   getSnapshot?: unknown
   resolveIdentifier?: unknown
+  // window.jb is declared in jbApiGlobal.d.ts instead, because naming its type
+  // needs an import and an import would make this file a module — which turns
+  // the `declare module` lines above into augmentations of those modules
 }
