@@ -4,6 +4,8 @@ import { defineCollection } from 'astro:content'
 
 import { docId } from './lib/doc-slug.ts'
 
+import type { Loader } from 'astro/loaders'
+
 const blogBase = new URL('../blog', import.meta.url).pathname
 const docsBase = new URL('../docs', import.meta.url).pathname
 
@@ -36,26 +38,54 @@ const docsSchema = z.object({
 // introduction.md re-keys under its filename and the root keeps serving stale.
 // The id derivation itself lives in src/lib/doc-slug.ts, shared with the
 // sidebar builder and the docs validators that have to reproduce it.
-const docsLoader = glob({
-  base: docsBase,
-  pattern: ['**/*.md', '!**/CLAUDE.md*'],
-  generateId: ({ entry, data }) => docId(entry, data.slug),
-  // Nothing calls astro:content's render() — pages run entry.body through the
-  // richer pipeline in src/lib/markdown.ts — so Astro's own render pass is pure
-  // waste. Deferring it halves .astro/data-store.json (27MB -> 12MB) and takes
-  // cold `astro dev` startup from ~28s to ~5s.
-  deferRender: true,
-})
+// Nothing calls astro:content's render() — pages run entry.body through the
+// richer pipeline in src/lib/markdown.ts — so Astro's own render pass is pure
+// waste. `deferRender` moves it off the sync (which halved
+// .astro/data-store.json, 27MB -> 12MB, and took cold `astro dev` startup from
+// ~28s to ~5s), but it does not remove it: a deferred entry is flagged
+// `deferredRender`, and the store turns every flagged entry into a line of
+// .astro/content-modules.mjs, a Map of dynamic imports of the source .md.
+// That Map is reachable from the SSR entry, so `astro build` compiles all ~570
+// markdown files through Astro's own remark/rehype/shiki pipeline for a
+// render() nobody calls — most of the vite build (80s of a 140s build). Dropping
+// the flag on the way into the store empties the Map and leaves everything else
+// (ids, digests, dev watching, schema validation) to the glob loader. It goes on
+// the store rather than over the entries afterwards because the loader's dev
+// watcher writes entries without re-running load().
+function withoutDeferredRender(loader: Loader): Loader {
+  return {
+    ...loader,
+    load: context =>
+      loader.load({
+        ...context,
+        store: {
+          ...context.store,
+          set: entry => context.store.set({ ...entry, deferredRender: false }),
+        },
+      }),
+  }
+}
+
+const docsLoader = withoutDeferredRender(
+  glob({
+    base: docsBase,
+    pattern: ['**/*.md', '!**/CLAUDE.md*'],
+    generateId: ({ entry, data }) => docId(entry, data.slug),
+    deferRender: true,
+  }),
+)
 
 export const collections = {
   blog: defineCollection({
-    loader: glob({
-      base: blogBase,
-      pattern: '*.md',
-      generateId: ({ entry }) => entry.replace(/\.md$/, ''),
-      // see docsLoader above
-      deferRender: true,
-    }),
+    loader: withoutDeferredRender(
+      glob({
+        base: blogBase,
+        pattern: '*.md',
+        generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+        // see docsLoader above
+        deferRender: true,
+      }),
+    ),
     schema: z.object({
       title: z.string(),
       date: z.coerce.date(),
