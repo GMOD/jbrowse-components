@@ -770,8 +770,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The Filter by dialog (SAM flag bitmask editor), opened by driving the track
-  // menu. Illustrates the "Filtering reads" section.
+  // The Filter by dialog, opened by driving the track menu. Illustrates the
+  // "Filtering reads" section. Read name and tag filters are the face of it; the
+  // SAM flag bitmask sits behind its own accordion, so the frame is shorter than
+  // it was when the flag grid was always open.
   {
     mode: 'url',
     name: 'alignments/filter_dialog',
@@ -782,6 +784,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 4000,
+    // The SAM flag grid moved behind its own accordion, so the dialog is much
+    // shorter than the 800 default was framed for and the run reported 177 css
+    // px of page background under it. The remaining ~87 is the centred dialog's
+    // own: the frame splits every px past its height half above and half below,
+    // so driving that number to zero means a frame the size of the dialog, and
+    // the pileup it floats over — the reason the figure is a screenshot rather
+    // than a crop of a form — goes with it.
+    viewportHeight: 620,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
