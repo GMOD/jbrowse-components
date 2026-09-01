@@ -123,4 +123,8 @@ copy, which fixes the same bug class with no edit-site changes.
   larger, separate change, not pursued.
 - `CustomReferenceType` in the mobx-state-tree fork grows its own
   memoization/invalidation. Re-examine whether `getEditableTrackConfig`'s
-  session-owned cache should move into the fork's reference cache.
+  session-owned cache should move into the fork's reference cache. ADR-031's
+  "Revisit if" now carries the answer for the fork at 6.5.1: the only memo a
+  custom reference can grow generically is per-reference-site, and this cache
+  is per-track *and* stamped with the delta it mirrors — neither of which a
+  fork-level memo can express.

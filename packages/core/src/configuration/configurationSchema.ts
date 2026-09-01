@@ -472,8 +472,11 @@ function hydrateInto(
  * it as the plain object it is.
  *
  * Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating
- * the same entry twice returns the same node and a track that gets opened later
- * reuses it.
+ * the same entry twice returns the same node — and in admin/embedded sessions a
+ * track opened later resolves to that same node. A non-admin's open track does
+ * not: it resolves to the session's private working copy (ADR-032) and this is
+ * the pristine mirror beside it. The two agree in content, which is what the
+ * caller needs; `CopyConfigEntryPoints.test.ts` pins both halves.
  */
 export function hydrateTrackConfig(
   pluginManager: PluginManager,
@@ -504,7 +507,9 @@ export function hydrateTrackConfig(
 // config snapshot (held as a standalone schema instance). Both reference kinds
 // resolve to `schemaType` instances, so MST can't auto-dispatch on the instance
 // side — the explicit snapshot dispatcher (string → ref, object → schema)
-// disambiguates. Shared by TrackConfigurationReference/DisplayConfigurationReference.
+// disambiguates. Shared by TrackConfigurationReference/DisplayConfigurationReference,
+// and by neither accident nor oversight NOT by the plain branch — see the note
+// on it in `ConfigurationReference`.
 function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
   return types.union(
     {
@@ -584,13 +589,20 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
  * Step 2 is the safety net because `baseTrackConfig.preProcessSnapshot`
  * already injects a stub display for every registered displayType on the
  * track, so a same-type lookup always succeeds at runtime for properly
- * loaded tracks. An older third step auto-created a *detached* config when
+ * loaded tracks. It is what carries a **renamed display type** across: a
+ * DisplayType `aliases` entry rewrites the config's `type` and the display
+ * model's own `preProcessSnapshot` rewrites the state model's, but the saved
+ * `configuration` id still spells the old name, so only the type match
+ * reconnects them. An older third step auto-created a *detached* config when
  * neither matched — that produced an orphaned MST node whose edits silently
- * didn't persist. Removed in favor of a clear throw, since
- * preProcessSnapshot's injection makes the path effectively dead.
+ * didn't persist. Removed in favor of a clear throw.
  *
- * Union-with-schemaType branch is for the same reason as `TrackConfigurationReference`:
- * `CircularView.addTrackConf` passes inline display configs as MST instances.
+ * The union's schemaType branch is symmetry with `TrackConfigurationReference`
+ * rather than a path anything in tree takes: the two production writers,
+ * `showTrackGeneric` and `BaseTrackModel.replaceDisplay`, both write a
+ * displayId string, because a display config belongs in its track config's
+ * `displays` array. It stays because it costs nothing and because dropping it
+ * narrows `SnapshotIn` for every caller.
  */
 export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
@@ -718,9 +730,17 @@ export function ConfigurationReference<
       ? TrackConfigurationReference(schemaType)
       : id === 'displayId'
         ? DisplayConfigurationReference(schemaType)
-        : // Plain (non-track/display) ref. The union accepts either an id
-          // string (resolved via `types.reference`) or an inline schema
-          // snapshot (held as a standalone schema instance).
+        : // Plain (non-track/display) ref — internet accounts, connections —
+          // resolved by MST's own identifier lookup rather than through the
+          // session. **Deliberately not `idOrSnapshotUnion`**, even though it is
+          // the same two members: this branch is also handed a *live, in-tree*
+          // config node (`initializeInternetAccount` pushes
+          // `jbrowse.internetAccounts[i]` straight through), and an undispatched
+          // union sends that to the reference member because
+          // `BaseReferenceType.isAssignableFrom` defers to its target type. A
+          // `typeof snapshot === 'string'` dispatcher sends it to the schema
+          // member instead, and MST refuses to adopt a node that already has a
+          // parent. `InternetAccounts.test.ts` is the canary.
           types.union(types.reference(schemaType), schemaType)
   return ref
 }

@@ -75,3 +75,39 @@ test('a loose track added to the config or the session expands the same way', ()
     adapter: { type: 'Gff3TabixAdapter' },
   })
 })
+
+// The fourth entry point, and the one `pluggableConfigSchemaType('track')`'s
+// loose preprocessor does not cover: `showTrack`'s `inlineConf` writes the
+// config into the track itself (ADR-084), through the concrete track type's
+// `ConfigurationReference`, not through the union that carries the preprocessor.
+// `showTrackGeneric` expanded the loose form only to validate it and to pick
+// the display, then stored the caller's unexpanded object — so the whole
+// showTrack failed with `Unknown track type "undefined"` in a snackbar.
+test('a loose config passed to showTrack as an inline conf expands too', () => {
+  const { rootModel } = getPluginManager(config)
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    assembly: 'volvox',
+    loc: 'ctgA:1..1000',
+  }) as LinearGenomeViewModel
+  const track = view.showTrack(
+    'loose_inline',
+    {},
+    {},
+    {
+      trackId: 'loose_inline',
+      uri: 'volvox.filtered.vcf.gz',
+      assemblyNames: ['volvox'],
+    },
+  )
+
+  expect(session.snackbarMessages).toEqual([])
+  expect(track).toBeDefined()
+  expect(getSnapshot(track!.configuration)).toMatchObject({
+    type: 'VariantTrack',
+    trackId: 'loose_inline',
+    adapter: { type: 'VcfTabixAdapter' },
+  })
+  // and it is the track's own config, resolvable by nothing else (ADR-084)
+  expect(session.getTrackById('loose_inline')).toBeUndefined()
+})

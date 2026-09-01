@@ -998,7 +998,14 @@ export function showTrackGeneric(
     const track = trackType.stateModel.create({
       ...initialSnapshot,
       type: conf.type,
-      configuration: inlineConf ?? trackId,
+      // `rawConf`, not the caller's `inlineConf`: the loose `{ trackId, uri }`
+      // form has no `type` for the config schema to dispatch on, and the
+      // concrete schema this lands on carries no loose preprocessor — that one
+      // is on `pluggableConfigSchemaType('track')`, which a track model's
+      // `ConfigurationReference` is not. Not `conf` either: that has already
+      // run Core-preProcessTrackConfig, which the schema's own
+      // preProcessSnapshot runs again.
+      configuration: inlineConf ? rawConf : trackId,
       displays: [
         {
           ...displayConf,

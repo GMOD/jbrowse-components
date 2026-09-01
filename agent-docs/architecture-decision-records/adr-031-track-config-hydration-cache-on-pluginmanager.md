@@ -115,3 +115,16 @@ assumption.
   half of the justification, though the "single mutable node per track,
   shared across all readers" half would still need *some* keyed cache unless
   the fork's memoization is itself keyed by resolved identity.
+
+  **Checked against the fork at 6.5.1, and the natural version of it does not
+  help.** `IdentifierReferenceType` memoizes through `StoredReference`, whose
+  invalidation key is `identifierCache.getLastCacheModificationPerId(id)` — a
+  key that exists only because MST itself performed the resolution.
+  `CustomReferenceType.getValue` calls `options.get` and has no such key,
+  because it cannot know what a caller's `get` reads. The memo it *could* grow
+  is a per-`storedRefNode` MobX computed, and that is scoped to the
+  **reference site**, not to the resolved track: two views showing one track
+  are two reference nodes, so it would hand them two hydrated configs and break
+  the invariant `PromotedDefaultApply.test.ts` pins
+  (`first.configuration === second.configuration`). A cache keyed by the frozen
+  object is the shape the invariant actually asks for, and that is this one.

@@ -1231,6 +1231,45 @@ describe('ConfigurationReference', () => {
       expect(typeof getSnapshot(inst).config).toBe('object')
     })
 
+    // The plain branch is `types.union(ref, schema)` with no dispatcher, and
+    // that is load-bearing rather than an oversight the other two branches
+    // already corrected. `initializeInternetAccount` pushes
+    // `jbrowse.internetAccounts[i]` — a node that already has a parent —
+    // straight into `configuration`, and an undispatched union routes it to the
+    // reference member because `BaseReferenceType.isAssignableFrom` defers to
+    // its target type. Giving this branch `idOrSnapshotUnion`'s
+    // `typeof snapshot === 'string'` dispatcher routes it to the schema member
+    // instead, and MST refuses to adopt a parented node ("Cannot add an object
+    // to a state tree if it is already part of ... another state tree").
+    test('a plain ref takes a live in-tree config node as a reference', () => {
+      const AccountConfig = ConfigurationSchema(
+        'TestAccount',
+        { name: { type: 'string', defaultValue: '' } },
+        { explicitIdentifier: 'accountId' },
+      )
+      const Account = types.model('Account', {
+        configuration: ConfigurationReference(AccountConfig),
+      })
+      const Root = types
+        .model('AccountRoot', {
+          configs: types.array(AccountConfig),
+          accounts: types.array(Account),
+        })
+        .actions(self => ({
+          open(config: AnyConfigurationModel) {
+            self.accounts.push({ configuration: config })
+          },
+        }))
+      const root = Root.create(
+        { configs: [{ accountId: 'a1', name: 'first' }] },
+        { pluginManager },
+      )
+      root.open(root.configs[0]!)
+
+      expect(root.accounts[0]!.configuration).toBe(root.configs[0])
+      expect(getSnapshot(root.accounts[0]!)).toEqual({ configuration: 'a1' })
+    })
+
     test('track schemas snapshot the ref as the id string', () => {
       // Asserts the dispatch picks TrackConfigurationReference (the trackRef
       // branch serializes via its `set` callback as just the trackId).

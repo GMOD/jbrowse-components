@@ -323,22 +323,35 @@ config via `ConfigurationReference(schemaType)`, dispatched on the schema's
 | -------------------- | ------------------------------- |
 | `'trackId'`          | `TrackConfigurationReference`   |
 | `'displayId'`        | `DisplayConfigurationReference` |
-| anything else        | plain `types.union(ref, schema)`|
+| anything else        | plain MST-identifier reference  |
 
 Authoritative docs (with named canary tests) live alongside the code at
 `packages/core/src/configuration/CLAUDE.md`. Highlights:
 
-- **TrackConfigurationReference** resolves through `session.getTrackById(id)`
-  (a per-id computed — resolving one track's config subscribes only to that
-  id), falling back to MST `resolveIdentifier`, and the return is a
-  `types.union(ref, schema)`. Both the fallback and the union exist for
-  views that hold ephemeral track configs outside `session.tracks`
-  (LinearSyntenyView, CircularView/SvInspectorView). Canaries:
-  `ReadVsRef.test.tsx`, `SVInspector.test.tsx`.
+- All three branches are the same `types.union(ref, schema)`: an id string, or
+  a full inline config held as an owned instance.
+- **TrackConfigurationReference** resolves an id through
+  `session.getTrackById(id)` (a per-id computed — resolving one track's config
+  subscribes only to that id) and throws if it misses. The union's second
+  branch is what a view holding a track config nothing else can draw takes: the
+  config is written into the track rather than parked in a list beside it
+  ([ADR-084](../architecture-decision-records/adr-084-a-view-local-track-config-rides-on-its-track.md),
+  which deleted the tree-wide `resolveIdentifier` fallback along with
+  `viewTrackConfigs`). Canaries: `ReadVsRef.test.tsx`, `SVInspector.test.tsx`,
+  `viewTeardown.test.tsx`.
+- **What `getTrackById` hands back decides which of three nodes you get**: a
+  plain frozen object hydrates through the `PluginManager` cache (ADR-031), or,
+  for a non-admin, through the session's private working copy (ADR-032); an
+  entry that is *already* an MST node — an assembly's `sequence` track, a live
+  connection's track — is returned as-is and edited in place.
 - **DisplayConfigurationReference** resolves by displayId, then by
-  `parent.type`. The type-match path always succeeds at runtime because
-  `baseTrackConfig.preProcessSnapshot` injects a stub display entry for
-  every registered displayType on the track.
+  `parent.type`, inside the containing track config's `displays`. The
+  type-match path always succeeds at runtime because
+  `baseTrackConfig.preProcessSnapshot` injects a stub display entry for every
+  registered displayType on the track — and it is **reached**, by every session
+  saved before a `DisplayType` was renamed: the `aliases` entry rewrites both
+  `type`s, nothing rewrites the saved `configuration` id, and the injected stub
+  is named for the new type. `DisplaySnapshotShape.test.tsx` pins it.
 - `ConfigurationReference`'s return is left unannotated. Adding
   `as SCHEMATYPE` narrows `SnapshotIn` to just the object branch and breaks
   string-id callers; the inferred union `SnapshotIn` is
@@ -352,5 +365,6 @@ Authoritative docs (with named canary tests) live alongside the code at
   worked case, on `LinearMultiSampleVariantDisplay` against
   `SharedVariantConfigModel`.
 
-Simplifying either of the TrackConfigurationReference quirks requires first
-migrating view-local configs into the session.
+The inline-config branch is not a quirk to simplify away — ADR-084 chose it
+over the session list it replaced, and `assertTrackConfOutlivesItsAssemblies`
+enforces it.

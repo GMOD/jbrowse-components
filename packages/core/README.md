@@ -402,8 +402,11 @@ not be the thing that discovers this. Callers fall back to treating it as the
 plain object it is.
 
 Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating the
-same entry twice returns the same node and a track that gets opened later reuses
-it.
+same entry twice returns the same node — and in admin/embedded sessions a track
+opened later resolves to that same node. A non-admin's open track does not: it
+resolves to the session's private working copy (ADR-032) and this is the
+pristine mirror beside it. The two agree in content, which is what the caller
+needs; `CopyConfigEntryPoints.test.ts` pins both halves.
 
 ```js
 // type signature

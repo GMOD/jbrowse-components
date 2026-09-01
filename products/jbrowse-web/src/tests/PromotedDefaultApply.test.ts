@@ -10,9 +10,11 @@ import type { SnackAction } from '@jbrowse/core/util'
 // config into each display and have no `trackConfigDeltas` at all.
 //
 // The count is over TRACKS, and only a real session can tell whether it is:
-// `display.configuration` is a `TrackConfigurationReference`, so the same track
-// open in two views resolves to one config node through the hydration cache,
-// while the unit fakes cannot express the case at all. A breakpoint-split view
+// `display.configuration` resolves inside its containing track's config, and
+// that one is a `TrackConfigurationReference`, so the same track open in two
+// views resolves to one config node — and therefore one display config —
+// through the hydration cache, while the unit fakes cannot express the case at
+// all. A breakpoint-split view
 // is where a user meets it — it shows the same track in both halves, and is one
 // of the composite shapes `openPromotableDisplays` recurses into.
 const TRACK_ID = 'volvox_filtered_vcf'
