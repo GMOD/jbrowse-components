@@ -172,6 +172,26 @@ const HOOKS: Hook[] = [
       'the config sitting at `byteGateAdapterPath`, which a tier swap already moves — so this one is for a display whose adapter config is SYNTHESIZED rather than read off the track (GC content folds `windowSize` / `gcMode` in), where no path names what it fetches',
   },
   {
+    name: 'clearDisplaySpecificData',
+    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
+    ifNotOverridden:
+      'a no-op, so `clearAllRpcData` drops `loadedRegions` and nothing else — the payload store keeps its entries and the refetch overwrites them region by region, which is what a display that wants stale data drawn under the refetch (ADR-006) is choosing, and what a display holding a second store has silently not cleared',
+  },
+  {
+    name: 'hoveredFeature',
+    owner:
+      'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
+    ifNotOverridden:
+      '`undefined` forever, so the view container never feeds `session.hovered` from this display and nothing outside it — a linked view, the hover-synced sidebar — learns what is under the cursor',
+  },
+  {
+    name: 'clearHoveredFeature',
+    owner:
+      'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
+    ifNotOverridden:
+      'a no-op, right for a display that derives its hover from the live pointer; a display that STORES one and sits here keeps naming what used to be under the cursor after a zoom, a scroll or the too-large banner, since the viewport-change clear both foundations install calls this',
+  },
+  {
     name: 'scrollableHeight',
     owner: 'packages/display-kit/src/TrackHeightMixin.tsx',
     ifNotOverridden: '`Infinity` — the display does not scroll internally',

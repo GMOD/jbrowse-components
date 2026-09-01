@@ -41,7 +41,9 @@ const Arcs = observer(function Arcs({ model }: { model: ArcDisplayModel }) {
   const hitTest = useCallback(
     (state?: MouseState) => {
       const hit =
-        state && hitTestArcs(state.x, state.y, laidOutArcs, canvasWidth)
+        state && !model.isLoadingOrCanceled
+          ? hitTestArcs(state.x, state.y, laidOutArcs, canvasWidth)
+          : undefined
       model.setHoveredFeature(hit?.feature, hit?.key)
     },
     [model, laidOutArcs, canvasWidth],

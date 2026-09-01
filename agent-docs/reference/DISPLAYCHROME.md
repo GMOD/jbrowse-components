@@ -178,6 +178,15 @@ call `useMouseTracking`, one of which had already dropped `onMouseLeave`.
   nothing without one. `BaseTooltip` owns the gap to the cursor
   ([ADR-028](../architecture-decision-records/adr-028-tooltip-clientpoint-vs-pointer-tracking.md#amendment-2026-08-06-clientpoint-is-the-pointer-not-the-pointer-plus-a-gap));
   callers pass the true client point.
+- **The loading scrim is pointer-transparent, so hovering under it is the
+  display's call, and the two families answer it differently on purpose.** A
+  per-region display keeps hit-testing its loaded blocks through a fetch, since
+  the blocks under the cursor are not the ones being fetched. A global display
+  replaces its whole frame, so every one of them answers no hit while
+  `isLoadingOrCanceled` — a tooltip over cells the scrim says are being replaced,
+  or that a standing cancel says are not there, describes nothing on screen.
+  HiC and LD had the gate and arc and multi-way synteny did not, which is the
+  drift this line exists to stop; a fifth global display owes the same term.
 - **A terminal phase removes the container, and that is not a `mouseleave`.**
   The event cannot fire on an element unmounted under the cursor, so the chrome
   drops the measurement itself when `tooLarge`/`renderError` replace the subtree.

@@ -1103,7 +1103,11 @@ export function stateModelFactory(
        * #action
        */
       setPointer(state?: MouseState) {
-        self.setHoverTarget(state ? self.hitTest(state.x, state.y) : undefined)
+        self.setHoverTarget(
+          state && !self.isLoadingOrCanceled
+            ? self.hitTest(state.x, state.y)
+            : undefined,
+        )
       },
       /**
        * #action
