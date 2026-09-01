@@ -14,7 +14,31 @@ to genes, add tracks from local files or URLs, and screenshot the result.
   that socket. Two interchangeable entries: the packaged app with `--mcp`, or
   `node build/mcpServer.js` (built by `pnpm build:electron-main`).
 
-## Claude Desktop setup
+## Threat model
+
+`run_javascript` is arbitrary code execution in a renderer with Node access —
+deliberately. The guard is the transport, not the payload: the bridge socket
+lives in a directory the app refuses unless it is owned by the current user with
+mode 0700, so only processes already running as that user can connect — and any
+such process already holds the same privileges the socket grants. The endpoint
+adds convenience, not escalation (the same argument as Chrome's DevTools
+debugging port).
+
+What that argument does NOT cover: a prompt-injected agent is a confused deputy
+— a hostile dataset description or web page can ask the agent to run malicious
+code, and the server cannot tell good JavaScript from bad. The mitigations are
+the MCP client's per-call approval prompts and the user's judgment, the same
+contract as any code-executing agent tool. Deployments that want no such
+endpoint at all (shared workstations, kiosks) can set `JBROWSE_DISABLE_MCP=1`.
+On Windows the named pipe relies on the default pipe security descriptor;
+multi-user terminal-server setups should verify or disable.
+
+**This design must never be ported to jbrowse-web or any network-reachable
+product.** It is safe because of where it runs: a user-only local socket in a
+desktop app. The same surface behind anything reachable from a browser or a
+network is an RCE.
+
+## Claude Desktop setup## Claude Desktop setup
 
 Packaged app (macOS):
 

@@ -252,12 +252,27 @@ function stateModelFactory() {
        * landed. Each key runs through the display config schema's
        * `preProcessSnapshot` (shorthand expansions, legacy-key migrations —
        * the same lowering a session spec's inline track keys get in
-       * `showTrackGeneric`), then writes the matching config slot, else calls
-       * a conventionally named `set<Key>` action. Keys matching neither come
-       * back in `unapplied` rather than vanishing: the settings vocabulary's
-       * historical failure mode is the silently dropped key.
+       * `showTrackGeneric`), then writes the matching config slot. Keys that
+       * are not slots come back in `unapplied` rather than vanishing: the
+       * settings vocabulary's historical failure mode is the silently dropped
+       * key.
+       *
+       * `allowSetters` additionally routes a non-slot key to a conventionally
+       * named single-argument `set<Key>` action. Opt-in, never the default:
+       * the declarative surfaces (session specs, share links, embeds) feed
+       * this whole bags of untyped JSON, and a blanket fallback would let
+       * them reach internal setters (`setError`, `setScrollTop`, ...) and
+       * call multi-argument setters with one argument. A caller that wants a
+       * specific action can also simply call it.
+       *
+       * Per-key errors land in `unapplied` instead of aborting the rest of
+       * the bag — a caller mid-`showTrack` has already pushed the track, and
+       * one rejected value must not strand a half-configured track.
        */
-      applyDisplaySettings(settings: Record<string, unknown>) {
+      applyDisplaySettings(
+        settings: Record<string, unknown>,
+        options?: { allowSetters?: boolean },
+      ) {
         // configuration is the reference every concrete display adds at
         // instantiation (see DisplayModel below); the base model composes
         // before it exists, hence the cast rather than a prop
@@ -266,24 +281,36 @@ function stateModelFactory() {
         const unapplied: string[] = []
         const slots = preProcessSlotValues(configuration, settings)
         for (const [key, value] of Object.entries(slots)) {
-          if (key === 'type') {
-            unapplied.push('type (switch the display type instead)')
-          } else if (isConfigurationSlot(configuration, key)) {
-            // the key arrives from runtime JSON; setConf's slot name is a
-            // compile-time type
-            // eslint-disable-next-line no-restricted-syntax
-            configuration.setSlot(key, value)
-            applied.push(key)
-          } else {
+          if (!key || key === 'type') {
+            unapplied.push(
+              key ? 'type (switch the display type instead)' : '(empty key)',
+            )
+            continue
+          }
+          try {
+            if (isConfigurationSlot(configuration, key)) {
+              // the key arrives from runtime JSON; setConf's slot name is a
+              // compile-time type
+              // eslint-disable-next-line no-restricted-syntax
+              configuration.setSlot(key, value)
+              applied.push(key)
+              continue
+            }
             const setter = (self as unknown as Record<string, unknown>)[
               `set${key[0]!.toUpperCase()}${key.slice(1)}`
             ]
-            if (typeof setter === 'function') {
+            if (typeof setter !== 'function') {
+              unapplied.push(key)
+            } else if (options?.allowSetters) {
               ;(setter as (value: unknown) => void)(value)
               applied.push(`${key} (via setter)`)
             } else {
-              unapplied.push(key)
+              unapplied.push(
+                `${key} (not a config slot; a set${key[0]!.toUpperCase()}${key.slice(1)} action exists — call it, or pass { allowSetters: true })`,
+              )
             }
+          } catch (e) {
+            unapplied.push(`${key} (${e})`)
           }
         }
         return { applied, unapplied }

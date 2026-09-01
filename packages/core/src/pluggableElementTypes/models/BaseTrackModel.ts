@@ -309,23 +309,20 @@ export function createBaseTrackModel(
 
       /**
        * #action
-       * `applyDisplaySettings` on the display being drawn (`activeDisplay`) —
-       * the track-level entry for "restyle this track in place" (a session
-       * spec's inline keys, an agent's settings bag). Only that one display:
-       * settings vocabularies are per display type, so broadcasting one bag
-       * across a track's other displays would mis-route keys; address a
-       * non-active display directly if that is what you mean. See
-       * BaseDisplayModel for the routing.
+       * `applyDisplaySettings` on the display being drawn (`activeDisplay`,
+       * which a shown track always has — this is not meaningful on a bare
+       * config node) — the track-level entry for "restyle this track in
+       * place" (a session spec's inline keys, an agent's settings bag). Only
+       * that one display: settings vocabularies are per display type, so
+       * broadcasting one bag across a track's other displays would mis-route
+       * keys; address a non-active display directly if that is what you mean.
+       * See BaseDisplayModel for the routing and the `allowSetters` opt-in.
        */
-      applyDisplaySettings(settings: Record<string, unknown>) {
-        return (
-          self.activeDisplay as {
-            applyDisplaySettings: (settings: Record<string, unknown>) => {
-              applied: string[]
-              unapplied: string[]
-            }
-          }
-        ).applyDisplaySettings(settings)
+      applyDisplaySettings(
+        settings: Record<string, unknown>,
+        options?: { allowSetters?: boolean },
+      ) {
+        return self.activeDisplay.applyDisplaySettings(settings, options)
       },
 
       /**
