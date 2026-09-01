@@ -32,6 +32,11 @@ import type { BrowserWindow } from 'electron'
 
 const { autoUpdater } = pkg
 
+// A rejection nobody handled left no trace at all: the main process has no
+// terminal in a packaged app, so a menu item whose click handler rejected
+// simply did nothing. Logging it is what makes the next one findable.
+process.on('unhandledRejection', logError)
+
 registerContextMenu()
 debug({ showDevTools: false, isEnabled: true })
 
