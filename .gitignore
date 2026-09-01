@@ -172,3 +172,7 @@ test_data/1000g_cnv/samples.tsv
 *.bam.bai
 *.cram.crai
 products/jbrowse-web/browser-tests/tmp*
+
+# compiled on demand by scripts/agent-demos, never committed
+scripts/agent-demos/inputtool
+scripts/agent-demos/windowlist

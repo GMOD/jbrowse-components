@@ -58,13 +58,14 @@ Delete this when both rows land.
 
 ## Where the harness is
 
-`/private/tmp/claude-501/-Users-colin-src-jbrowse-components--claude-worktrees-mcp-demo/`,
-under the session scratchpads — **ephemeral**. `agentDemo.mjs` films JBrowse
-Desktop while a real `claude -p` session drives it over MCP and paints captions
-from the streamed messages; `panelDemo.mjs`, `inputtool.swift`,
-`windowlist.swift` and `encodeBrowser.mjs` are the browser side; `run5/` holds
-the encoded take, its poster and the full transcript.
+In the tree, at [`scripts/agent-demos/`](../../scripts/agent-demos/CLAUDE.md),
+which carries its own operating notes — it was rescued out of an ephemeral
+scratchpad rather than rewritten, so the takes it produced are reproducible.
 
-**Copy anything worth keeping before that directory is wiped.** If the harness
-is ever worth keeping in-tree, these findings belong in `reference/` rather than
-here, and this file goes away.
+The one desktop take that exists is at
+`website/static/media/mcp/agent_demo.mp4` (gitignored; bytes reach the store
+through `figures:push` once the clip is approved), and its transcript is beside
+the harness.
+
+When both TODO rows land, fold whatever is still true above into
+`reference/` beside the harness and delete this file.

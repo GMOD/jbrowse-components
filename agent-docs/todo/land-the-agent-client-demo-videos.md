@@ -26,6 +26,12 @@ control loci (gene deserts came out at exactly 0.00, which is what says the
 offset is locus-specific), and its closing audit caught a stale precomputed
 window it had introduced two turns earlier and rebuilt the track on camera.
 
+The clip is at `website/static/media/mcp/agent_demo.mp4` with its poster (that
+directory is gitignored; the bytes reach the store through `figures:push`), and
+what the agent actually did, turn by turn, is
+[`scripts/agent-demos/take5-transcript.txt`](../../scripts/agent-demos/take5-transcript.txt)
+— faster to judge than scrubbing 60 seconds.
+
 **Approve it in the Videos tab, then:** an `externalClips` entry in
 `website/scripts/video-specs.ts` — the generator cannot film this one, since
 there is no url to load, no steps to run and no live session to hand a reader —
