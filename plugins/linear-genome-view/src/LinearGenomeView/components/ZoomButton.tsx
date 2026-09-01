@@ -30,6 +30,11 @@ const ZoomButton = observer(function ZoomButton({
     <Tooltip title={out ? 'Zoom out 2x' : 'Zoom in 2x'}>
       <span>
         <IconButton
+          // on the button, not left to the Tooltip: its title lands on the
+          // <span> the disabled case needs, so the button itself reached the
+          // accessibility tree unnamed and nothing driving by name could aim at
+          // it
+          aria-label={out ? 'Zoom out' : 'Zoom in'}
           data-testid={out ? 'zoom_out' : 'zoom_in'}
           size={small ? 'small' : undefined}
           disabled={disabled}

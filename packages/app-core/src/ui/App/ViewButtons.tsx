@@ -30,6 +30,7 @@ const ViewButtons = observer(function ViewButtons({
   return (
     <>
       <IconButton
+        aria-label={view.minimized ? 'Restore view' : 'Minimize view'}
         data-testid="minimize_view"
         onClick={() => {
           view.setMinimized(!view.minimized)
@@ -42,6 +43,7 @@ const ViewButtons = observer(function ViewButtons({
         )}
       </IconButton>
       <IconButton
+        aria-label="Close view"
         data-testid="close_view"
         onClick={() => {
           session.removeView(view)
