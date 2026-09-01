@@ -23,9 +23,10 @@ track.
 Tests: `regionTooLargeUtils.test.ts` and `nextGateState.test.ts` for the pure
 parts, `gateTruthTable.test.ts` for every getter against boundary values
 (67,200 rows collapse to 7 banner-facing states, listed at the top of its golden
-file), a `derivedRegionTooLarge.test.ts` per gated display, and the fetch
-runners' own files for the commit and the refusal skip. History, and the bugs
-each rule closed: [HISTORICAL.md](HISTORICAL.md).
+file), a `derivedRegionTooLarge.test.ts` per gated display bar arc, whose
+equivalent is `fetchArcFeatures.test.ts`, and the fetch runners' own files for
+the commit and the refusal skip. History, and the bugs each rule closed:
+[HISTORICAL.md](HISTORICAL.md).
 
 ![What one gated fetch decides, and what the first refusal does to the batch](diagrams/region-too-large-gate.svg)
 
@@ -35,12 +36,13 @@ A display opts in with two lines: override `gateEnabled` to `true`, and pass
 `byteLimit: self.resolvedByteLimit()` in its fetch RPC's args. Everything else
 is the mixin's and the fetch runners'.
 
-1. **The RPC measures first.** `measureRegionBytes` is the first await of every
-   gated feature RPC (canvas's two, alignments, arc, both MAF tiers,
-   multi-sample variant, LD): one index read per region, no features. Over
-   budget, it answers a `RegionTooLargeResult` in place of the payload; under,
-   the payload carries `bytes` too. Canvas then samples density before the
-   download and refuses on that axis the same way.
+1. **The RPC measures first.** `measureRegionBytes` is the first await that
+   touches the data in every gated feature RPC (canvas's two, alignments, arc,
+   both MAF tiers, multi-sample variant, LD — MAF's two load their samples
+   adapter, a cached Newick read, ahead of it): one index read per region, no
+   features. Over budget, it answers a `RegionTooLargeResult` in place of the
+   payload; under, the payload carries `bytes` too. Canvas then samples density
+   before the download and refuses on that axis the same way.
 2. **The runner commits.** `fetchEachRegion`, `fetchAllRegions`,
    `fetchRegionsBatched` and the global family's shared `run` capture
    `gateFetchState()` before
@@ -72,7 +74,10 @@ region; lowering one re-banners from the stored measurement with no RPC.
 
 **A refusal refuses what the fetch is granular in.** Per-region runners store
 nothing for the refused region and keep what its neighbours already stored; a
-batched fetch (variants, MAF, LD, arc) refuses the whole payload. The banner
+batched fetch (variants, MAF, LD, arc) refuses the whole payload. MAF's batch is
+itself a per-region fan-out, so its first refusal stops a token scoped to that
+batch (`refusalScope` in `fetchMafData.ts`) and the siblings still downloading
+abort rather than land into a payload about to be discarded. The banner
 quotes the largest region's bytes labelled with the whole visible span — a
 label, never a denominator: dividing by span releases a region the worker still
 refuses.
@@ -104,10 +109,15 @@ rather than one per refusal, whatever a given display's cancel does.
 
 Two consequences worth knowing. The banner may quote the **first** refusing
 region's bytes rather than the largest, since the batch stops before the rest
-report; `zoomIneffective`'s consecutive-commit comparison inherits the same
-noise. And a sibling's real (non-abort) error is swallowed once the batch is
-cancelled, which is `handleFetchError`'s existing rule for a fetch that is no
-longer current, not a new one.
+report — which is why `gateBatch` commits that measurement as `partial` and
+`nextByteEstimate` carries `zoomIneffective` through unchanged rather than
+recomputing it: a batch that stopped early reports whichever regions won the
+race, so zooming from one refusing viewport to another could compare chr1's
+bytes against chr4's, clear the 90% bar on that alone, and drop the "zoom in"
+advice exactly where zooming in would have worked. And a sibling's real
+(non-abort) error is swallowed once the batch is cancelled, which is
+`handleFetchError`'s existing rule for a fetch that is no longer current, not a
+new one.
 
 ## Measurement follows the viewport
 
@@ -393,7 +403,16 @@ implement no `getRegionByteSize` and need no exemption. `LinearManhattanDisplay`
 never opts in, by decision: its case is a genome-wide summary-stats view.
 `LGVSyntenyDisplay` inherits alignments' opt-in but no comparative adapter
 implements the estimate, so its gate is inert
-([ideas/synteny-byte-gate.md](../ideas/synteny-byte-gate.md)). MAF's
-`mafFrames` overlay is bounded inside `LinearMafGetAnnotationData`, which
-measures before it reads and refuses with a `RegionTooLargeResult`; the display
-maps that to `framesGateBlocked` and never banners.
+([ideas/synteny-byte-gate.md](../ideas/synteny-byte-gate.md)). LD's
+pre-computed adapters (`PlinkLDAdapter`, `PlinkLDTabixAdapter`, `LdmatAdapter`)
+are skipped in `executeRenderLDData` before the measurement is taken, because
+they are not feature adapters and have no index estimate to read, so the byte
+axis is absent for them. `HtsgetBamAdapter` inherits `BamAdapter`'s
+`getRegionByteSize`, which answers `undefined` without a `bam.index`, and htsget
+has no index — so it is never byte-gated, and the budget table lists it only
+because that scan walks `extends` chains. MAF's `mafFrames` overlay is bounded
+inside `LinearMafGetAnnotationData`, which measures before it reads and refuses
+with a `RegionTooLargeResult` — against the display's `resolvedByteLimit()`,
+the alignment or summary tier's `fetchSizeLimit`, never a limit declared on the
+`annotationAdapter` sub-config; the display maps that to `framesGateBlocked` and
+never banners.
