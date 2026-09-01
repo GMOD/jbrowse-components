@@ -49,22 +49,22 @@ while it is closed return a message saying to launch it.
 
 ## Tools
 
-The primitives come first: `evaluate` runs Claude-authored async JS against the
-live session/MST model graph (with `jb` helpers: the mobx-state-tree API, config
-readers, direct adapter data access, refName renaming, the readiness wait), and
-`docs` serves the raw documentation (`live-model`, `session-spec`, `automating`)
-— bundled at build time, readable while the app is closed.
+Deliberately four. `run_javascript` is the interface: Claude-authored async JS
+against the live session/MST model graph, with `jb` as the standard library
+(orientation, track catalog, declarative view specs, in-place display settings
+with slot routing, main-thread feature access with refName renaming, the
+readiness wait, and the full mobx-state-tree/mobx APIs underneath). Every
+correctness rule lives in `jb`, not in tool plumbing.
 
-The rest are shortcuts over the same surface: `open` (config/session/link; bare
-lists recent sessions), `inspect_session` (no path: overview; path: live model
-walks, getters included), `list_tracks`, `load_session_spec`, `navigate`,
-`track` (show / in-place update with single/match/all selectors / hide),
-`add_track`, `get_features` (main-thread adapter read of the visible region,
-refNames renamed), `screenshot` — see `toolDefinitions.ts` for the contracts.
-`load_session_spec` takes the same spec JSON as JBrowse Web's `&session=spec-`
-URLs (website/docs/urlparams.md); `screenshot` waits on the capture readiness
-contract (`[data-app-phase="ready"]`) before capturing.
+The other three exist only because renderer JavaScript cannot express them:
+`screenshot` (pixels live in the main process; waits on the capture readiness
+contract and reports the session's error notifications), `open` (recovery path
+that works with no session or a broken renderer; waits for the new session
+identity before answering; bare form lists recent sessions), and `docs`
+(`live-model`, `session-spec`, `automating` — bundled at build time, readable
+while the app is closed).
 
 `pnpm test:mcp` (after `pnpm build && pnpm build:electron-main`) launches the
 built app and runs the conformance suite in `test/mcpConformance.ts` against
-volvox; agent-side working discipline lives in `.claude/skills/jbrowse-mcp/`.
+volvox; agent-side working discipline lives in `.claude/skills/jbrowse-mcp/`
+and, condensed, in the initialize response's `instructions`.

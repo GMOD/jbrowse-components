@@ -14,6 +14,12 @@ import type { BrowserWindow } from 'electron'
 
 const RENDERER_TIMEOUT_MS = 150_000
 const SCREENSHOT_WAIT_MS = 30_000
+const OPEN_WAIT_MS = 90_000
+
+const delay = (ms: number) =>
+  new Promise<void>(resolve => {
+    setTimeout(resolve, ms)
+  })
 
 interface BridgeDeps {
   paths: AppPaths
@@ -79,6 +85,43 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
     }
   }
 
+  async function currentSessionId() {
+    const response = await relayToRenderer('session_id', {})
+    return response.error
+      ? null
+      : ((response.result as { id?: string | null } | undefined)?.id ?? null)
+  }
+
+  // openTarget resolves when the launch is HANDED OVER (a push, or a page
+  // load), not when the new session is up — and a load that fails leaves the
+  // old session open by design. Answering then would let the very next call
+  // read the previous config's tracks as if they were the new one's, so this
+  // waits for the session identity to actually change.
+  async function openAndWait(
+    target: Parameters<BridgeDeps['openTarget']>[0],
+    opened: string,
+  ): Promise<BridgeToolResult> {
+    const before = await currentSessionId()
+    await openTarget(target)
+    const deadline = Date.now() + OPEN_WAIT_MS
+    while (Date.now() < deadline) {
+      const now = await currentSessionId()
+      if (now !== null && now !== before) {
+        const settled = await relayToRenderer('wait_ready', {
+          timeoutMs: 30_000,
+        })
+        return { result: { opened, ...(settled.result as object | undefined) } }
+      }
+      await delay(1000)
+    }
+    return {
+      result: {
+        opened,
+        note: 'the session had not finished loading (or the load failed and the previous session is still open) — check with inspect via run_javascript',
+      },
+    }
+  }
+
   async function openTool(
     args: Record<string, unknown>,
   ): Promise<BridgeToolResult> {
@@ -87,21 +130,23 @@ export function startMcpBridge({ paths, getWindow, openTarget }: BridgeDeps) {
       return listRecentSessions()
     }
     if (/^https?:\/\//.test(target)) {
-      await openTarget({ type: 'link', url: target })
-      return { result: { opened: target } }
+      return openAndWait({ type: 'link', url: target }, target)
     }
     if (!fs.existsSync(target)) {
       return { error: `No such file: ${target}` }
     }
-    await openTarget({ type: 'file', path: target })
-    return { result: { opened: target } }
+    return openAndWait({ type: 'file', path: target }, target)
   }
 
   async function screenshot(
     args: Record<string, unknown>,
   ): Promise<BridgeToolResult> {
-    const timeoutMs =
-      typeof args.timeoutMs === 'number' ? args.timeoutMs : SCREENSHOT_WAIT_MS
+    // clamped under the relay timeout, which would otherwise fire first and
+    // silently convert a long wait into a warning
+    const timeoutMs = Math.min(
+      typeof args.timeoutMs === 'number' ? args.timeoutMs : SCREENSHOT_WAIT_MS,
+      120_000,
+    )
     const settled = await relayToRenderer('wait_ready', { timeoutMs })
     const win = getWindow()
     if (!win) {

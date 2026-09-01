@@ -20,7 +20,6 @@ import {
   UNKNOWN,
   guessAdapter,
   guessTrackType,
-  normalizeTrackInit,
   stripFileExtension,
 } from '@jbrowse/core/util/tracks'
 import * as mst from '@jbrowse/mobx-state-tree'
@@ -30,7 +29,6 @@ import { autorun, observable, runInAction, when } from 'mobx'
 import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type {
   AbstractSessionModel,
   AbstractViewModel,
@@ -58,6 +56,7 @@ interface ViewSelf {
   assemblyNames?: string[]
   coarseVisibleLocStrings?: string
   tracks?: TrackSelf[]
+  views?: AbstractViewModel[]
   initialized?: boolean
   visibleRegions?: {
     refName: string
@@ -78,13 +77,23 @@ function viewSelf(view: AbstractViewModel) {
   return view as unknown as ViewSelf
 }
 
+// One level of composite-view flattening: a synteny or breakpoint-split view
+// keeps its navigable, track-bearing linear views in `views`, so a scan of
+// session.views alone cannot reach a session those views' own launcher built.
+function allViews(session: AbstractSessionModel): AbstractViewModel[] {
+  return session.views.flatMap(v => {
+    const sub = viewSelf(v).views
+    return [v, ...(Array.isArray(sub) ? sub : [])]
+  })
+}
+
 function sessionOf(pluginManager: PluginManager | undefined) {
   return (
     pluginManager?.rootModel as { session?: AbstractSessionModel } | undefined
   )?.session
 }
 
-function viewSummary(view: AbstractViewModel) {
+function viewSummary(view: AbstractViewModel): Record<string, unknown> {
   const v = viewSelf(view)
   return {
     id: v.id,
@@ -102,6 +111,9 @@ function viewSummary(view: AbstractViewModel) {
           })),
         }
       : {}),
+    ...(Array.isArray(v.views) && v.views.length
+      ? { views: v.views.map(sub => viewSummary(sub)) }
+      : {}),
   }
 }
 
@@ -118,7 +130,9 @@ function sessionSummary(session: AbstractSessionModel) {
 // cannot contain but a getter's return can.
 function safeJson(value: unknown) {
   const seen = new WeakSet<object>()
-  return JSON.stringify(
+  // typed by hand: JSON.stringify's declared return is string, but a bare
+  // Symbol/undefined at the top level really does yield undefined at runtime
+  const json = JSON.stringify(
     isStateTreeNode(value) ? getSnapshot(value) : value,
     (_key, v: unknown) => {
       if (typeof v === 'function') {
@@ -135,7 +149,8 @@ function safeJson(value: unknown) {
       }
       return v
     },
-  )
+  ) as string | undefined
+  return json === undefined ? '"[unserializable]"' : json
 }
 
 function describeBrief(value: unknown): string {
@@ -235,7 +250,7 @@ const delay = (ms: number) =>
 // products/jbrowse-capture/src/waits.ts.
 const READY_HOLD_MS = 1000
 
-async function waitReady(timeoutMs: number) {
+async function waitReady(timeoutMs: number, session?: AbstractSessionModel) {
   const deadline = Date.now() + timeoutMs
   let readySince: number | undefined
   let outcome
@@ -255,7 +270,19 @@ async function waitReady(timeoutMs: number) {
       await delay(200)
     }
   }
-  return outcome
+  // An errored track renders as a plausible frame, and a snackbar that fired
+  // before an evaluate ran is unreachable from it — so every settle result
+  // carries what the session is showing the human.
+  const messages =
+    session && 'snackbarMessages' in session
+      ? (session.snackbarMessages as { message: string }[])
+          .map(m => m.message)
+          .slice(-5)
+      : []
+  return {
+    ...outcome,
+    ...(messages.length ? { notifications: messages } : {}),
+  }
 }
 
 function trackEntry(conf: AnyConfigurationModel) {
@@ -310,14 +337,15 @@ function pickView(
   capability: 'navToLocString' | 'showTrack' | 'hideTrack',
 ) {
   const viewId = typeof args.viewId === 'string' ? args.viewId : ''
+  const candidates = allViews(session)
   const view = viewId
-    ? session.views.find(v => v.id === viewId)
-    : session.views.find(v => typeof viewSelf(v)[capability] === 'function')
+    ? candidates.find(v => v.id === viewId)
+    : candidates.find(v => typeof viewSelf(v)[capability] === 'function')
   if (!view) {
     throw new Error(
       viewId
-        ? `No view with id "${viewId}". Open views: ${session.views.map(v => `${v.id} (${v.type})`).join(', ')}`
-        : `No open view supports this. Open views: ${session.views.map(v => v.type).join(', ') || 'none'} — load_session_spec can open one.`,
+        ? `No view with id "${viewId}". Open views: ${candidates.map(v => `${v.id} (${v.type})`).join(', ')}`
+        : `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — load_session_spec can open one.`,
     )
   }
   if (typeof viewSelf(view)[capability] !== 'function') {
@@ -326,71 +354,6 @@ function pickView(
   return view
 }
 
-async function navigate(
-  session: AbstractSessionModel,
-  args: Record<string, unknown>,
-) {
-  const loc = typeof args.loc === 'string' ? args.loc : ''
-  if (!loc) {
-    throw new Error('navigate needs a loc')
-  }
-  const view = pickView(session, args, 'navToLocString')
-  const moved = await viewSelf(view).navToLocString!(loc)
-  const settle = await waitReady(30_000)
-  return {
-    navigated: moved !== false,
-    ...settle,
-    view: viewSummary(view),
-  }
-}
-
-function asTrackInit(value: unknown): TrackInit {
-  const valid =
-    typeof value === 'string' ||
-    (typeof value === 'object' &&
-      value !== null &&
-      typeof (value as { trackId?: unknown }).trackId === 'string')
-  if (!valid) {
-    throw new Error(
-      'track must be a trackId string or an object with a trackId',
-    )
-  }
-  return value as TrackInit
-}
-
-async function showTrack(
-  session: AbstractSessionModel,
-  args: Record<string, unknown>,
-) {
-  const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(
-    asTrackInit(args.track),
-  )
-  if (!session.getTrackById(trackId)) {
-    throw new Error(
-      `No track with trackId "${trackId}" — list_tracks shows what is available, add_track adds new data`,
-    )
-  }
-  const view = pickView(session, args, 'showTrack')
-  viewSelf(view).showTrack!(trackId, trackSnapshot, displaySnapshot)
-  const settle = await waitReady(30_000)
-  return { ...settle, view: viewSummary(view) }
-}
-
-function hideTrack(
-  session: AbstractSessionModel,
-  args: Record<string, unknown>,
-) {
-  const trackId = typeof args.track === 'string' ? args.track : ''
-  const view = pickView(session, args, 'hideTrack')
-  const hidden = viewSelf(view).hideTrack!(trackId)
-  return { hidden, view: view.id }
-}
-
-// The identical routing showTrackGeneric runs at open time (core/util/tracks.ts
-// #5591), applied to the live display: preProcessSlotValues so shorthand and
-// legacy-key migrations speak the same vocabulary here, slots written onto the
-// persistent display config, and anything else tried against the display
-// model's conventionally-named setter action.
 function applyDisplaySettings(
   track: TrackSelf,
   settings: Record<string, unknown>,
@@ -402,7 +365,7 @@ function applyDisplaySettings(
     for (const [key, value] of Object.entries(slots)) {
       if (key === 'type') {
         unapplied.add(
-          'type (changing the display type needs hide_track then show_track)',
+          'type (changing the display type needs track action "hide" then "show")',
         )
       } else if (isConfigurationSlot(display.configuration, key)) {
         // the key comes from runtime JSON; setConf's slot name is a
@@ -429,171 +392,131 @@ function applyDisplaySettings(
   }
 }
 
-async function updateTrack(
-  session: AbstractSessionModel,
-  args: Record<string, unknown>,
-) {
-  const settings =
-    typeof args.settings === 'object' && args.settings !== null
-      ? (args.settings as Record<string, unknown>)
-      : {}
-  if (!Object.keys(settings).length) {
-    throw new Error(
-      'update_track needs a settings object with at least one key',
-    )
-  }
-  const trackId = typeof args.track === 'string' ? args.track : ''
-  const match = typeof args.match === 'string' ? args.match.toLowerCase() : ''
-  const viewId = typeof args.viewId === 'string' ? args.viewId : ''
-  const updated: Record<string, unknown>[] = []
-  const shown: string[] = []
-  for (const view of session.views.filter(v => !viewId || v.id === viewId)) {
-    const v = viewSelf(view)
-    for (const track of v.tracks ?? []) {
-      const id = track.configuration.trackId
-      const name = readConfObject(track.configuration, 'name') as string
-      shown.push(id)
-      const matched = trackId
-        ? id === trackId
-        : !match ||
-          id.toLowerCase().includes(match) ||
-          name.toLowerCase().includes(match)
-      if (matched) {
-        try {
-          updated.push({
-            trackId: id,
-            view: v.id,
-            ...applyDisplaySettings(track, settings),
-          })
-        } catch (e) {
-          updated.push({ trackId: id, view: v.id, error: String(e) })
-        }
-      }
-    }
-  }
-  if (!updated.length) {
-    throw new Error(
-      shown.length
-        ? `No shown track matched. Shown tracks: ${shown.join(', ')}`
-        : 'No tracks are shown in any view — show_track or load_session_spec first',
-    )
-  }
-  const settle = await waitReady(30_000)
-  return { updated, ...settle }
-}
-
 function firstAssemblyName(conf: AnyConfigurationModel) {
   const names = readConfObject(conf, 'assemblyNames') as string[]
   return names[0]
 }
 
-async function getFeatures(
+interface McpRegion {
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+}
+
+function shownTrackModel(session: AbstractSessionModel, trackId: string) {
+  return allViews(session)
+    .flatMap(v => viewSelf(v).tracks ?? [])
+    .find(t => t.configuration.trackId === trackId)
+}
+
+async function locToRegion(
+  session: AbstractSessionModel,
+  conf: AnyConfigurationModel,
+  loc: string,
+  assemblyArg: string | undefined,
+): Promise<McpRegion> {
+  const assemblyName = assemblyArg ?? firstAssemblyName(conf)
+  if (assemblyName === undefined) {
+    throw new Error('The track names no assembly; pass assembly explicitly')
+  }
+  const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
+  if (!assembly) {
+    throw new Error(`Assembly "${assemblyName}" could not be loaded`)
+  }
+  const parsed = parseLocString(loc, refName =>
+    assembly.isValidRefName(refName),
+  )
+  const refName = assembly.getCanonicalRefName(parsed.refName) ?? parsed.refName
+  const bounds = assembly.regions?.find(r => r.refName === refName)
+  return {
+    assemblyName,
+    refName,
+    start: parsed.start ?? bounds?.start ?? 0,
+    end: parsed.end ?? bounds?.end ?? Number.MAX_SAFE_INTEGER,
+  }
+}
+
+async function visibleRegionsOf(
+  session: AbstractSessionModel,
+  viewId: string | undefined,
+  preferTrackId?: string,
+): Promise<McpRegion[]> {
+  // `in`, not evaluation: visibleRegions is a getter that THROWS ("width
+  // undefined") until the view's component mounts and sets a width — a
+  // freshly spec-loaded view stays in that state briefly even after the
+  // app-phase marker reads ready, since a view with no width has no display
+  // fetching anything.
+  const candidates = allViews(session)
+    .map(v => viewSelf(v))
+    .filter(v => (!viewId || v.id === viewId) && 'visibleRegions' in v)
+  // among region-bearing views, the one actually showing the track wins — two
+  // views on two assemblies would otherwise send the first view's namespace to
+  // the second view's file, which answers nothing, silently
+  const view =
+    candidates.find(v =>
+      v.tracks?.some(t => t.configuration.trackId === preferTrackId),
+    ) ?? candidates[0]
+  if (!view) {
+    throw new Error(
+      'No view that shows a region — pass loc, or open a linear view first',
+    )
+  }
+  const deadline = Date.now() + 10_000
+  let visible: NonNullable<ViewSelf['visibleRegions']> | undefined
+  while (visible === undefined) {
+    if (view.initialized !== false) {
+      try {
+        visible = view.visibleRegions
+      } catch {
+        // not mounted yet
+      }
+    }
+    if (visible?.length) {
+      break
+    }
+    visible = undefined
+    if (Date.now() >= deadline) {
+      throw new Error(
+        'The view has not finished initializing a visible region — pass loc, or navigate first',
+      )
+    }
+    await delay(250)
+  }
+  return visible.map(({ refName, start, end, assemblyName }) => ({
+    refName,
+    start,
+    end,
+    assemblyName,
+  }))
+}
+
+// Main-thread adapter, not the CoreGetFeatures RPC: the RPC serializes every
+// feature in the region across the worker boundary before any limit can
+// apply. Here the features stay objects. The shown track's own rpcSessionId,
+// so this shares the adapter instance — parsed indexes and chunk caches
+// included — that the display already warmed (rpcSessionId lives on track
+// models, so the walk cannot start at the session; session.id is the
+// cold-namespace fallback for un-shown tracks). Regions are renamed the same
+// way the RPC base class renames them: they arrive carrying the assembly's
+// canonical refNames, and a file spelling them differently would otherwise
+// answer nothing, silently.
+async function fetchFeatures(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
-  args: Record<string, unknown>,
+  trackId: string,
+  regions: McpRegion[],
 ) {
-  const trackId = typeof args.trackId === 'string' ? args.trackId : ''
   const conf = session.getTrackById(trackId)
   if (!conf) {
     throw new Error(
       `No track with trackId "${trackId}" — list_tracks shows what is available`,
     )
   }
-  const limit = Math.min(typeof args.limit === 'number' ? args.limit : 30, 500)
-  let regions: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-  }[]
-  if (typeof args.loc === 'string') {
-    const assemblyName =
-      typeof args.assembly === 'string'
-        ? args.assembly
-        : firstAssemblyName(conf)
-    if (assemblyName === undefined) {
-      throw new Error('The track names no assembly; pass assembly explicitly')
-    }
-    const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
-    if (!assembly) {
-      throw new Error(`Assembly "${assemblyName}" could not be loaded`)
-    }
-    const parsed = parseLocString(args.loc, refName =>
-      assembly.isValidRefName(refName),
-    )
-    const refName =
-      assembly.getCanonicalRefName(parsed.refName) ?? parsed.refName
-    const bounds = assembly.regions?.find(r => r.refName === refName)
-    regions = [
-      {
-        assemblyName,
-        refName,
-        start: parsed.start ?? bounds?.start ?? 0,
-        end: parsed.end ?? bounds?.end ?? Number.MAX_SAFE_INTEGER,
-      },
-    ]
-  } else {
-    // `in`, not evaluation: visibleRegions is a getter that THROWS ("width
-    // undefined") until the view's component mounts and sets a width — a
-    // freshly spec-loaded view stays in that state briefly even after the
-    // app-phase marker reads ready, since a view with no width has no display
-    // fetching anything.
-    const view = session.views
-      .map(v => viewSelf(v))
-      .find(
-        v => (!args.viewId || v.id === args.viewId) && 'visibleRegions' in v,
-      )
-    if (!view) {
-      throw new Error(
-        'No view that shows a region — pass loc, or open a linear view first',
-      )
-    }
-    const deadline = Date.now() + 10_000
-    let visible: NonNullable<ViewSelf['visibleRegions']> | undefined
-    while (visible === undefined) {
-      if (view.initialized !== false) {
-        try {
-          visible = view.visibleRegions
-        } catch {
-          // not mounted yet
-        }
-      }
-      if (visible?.length) {
-        break
-      }
-      visible = undefined
-      if (Date.now() >= deadline) {
-        throw new Error(
-          'The view has not finished initializing a visible region — pass loc, or navigate first',
-        )
-      }
-      await delay(250)
-    }
-    regions = visible.map(({ refName, start, end, assemblyName }) => ({
-      refName,
-      start,
-      end,
-      assemblyName,
-    }))
-  }
-  // Main-thread adapter, not the CoreGetFeatures RPC: the RPC serializes every
-  // feature in the region across the worker boundary before the limit can
-  // apply. Here the features stay objects and only the returned slice is ever
-  // turned into JSON.
-  // The shown track's own rpcSessionId, so this shares the adapter instance —
-  // parsed indexes and chunk caches included — that the display already
-  // warmed; session.id is the cold-namespace fallback for un-shown tracks
-  // (rpcSessionId lives on track models, so the walk cannot start at the
-  // session).
-  const trackModel = session.views
-    .flatMap(v => viewSelf(v).tracks ?? [])
-    .find(t => t.configuration.trackId === trackId)
+  const trackModel = shownTrackModel(session, trackId)
   const sessionId = trackModel
     ? getRpcSessionId(trackModel)
     : (session.id ?? 'mcp')
-  // The same translation the RPC base class runs: the regions above carry the
-  // assembly's canonical refNames, and the file may spell them differently — a
-  // query in the wrong namespace matches nothing and reads as "no data here".
   const renamed = await renameRegionsIfNeeded(session.assemblyManager, {
     regions,
     adapterConfig: readConfObject(conf, 'adapter') as Record<string, unknown>,
@@ -620,41 +543,7 @@ async function getFeatures(
   } finally {
     clearTimeout(stopTimer)
   }
-  const shown = features.slice(0, limit).map(f => truncateStrings(f.toJSON()))
-  return {
-    total: features.length,
-    ...(features.length > limit
-      ? {
-          note: `showing first ${limit} of ${features.length} — raise limit or narrow loc`,
-        }
-      : {}),
-    regions,
-    features: shown,
-  }
-}
-
-// A feature's JSON can carry whole read sequences and per-base arrays; the
-// inspection answer needs the shape, not the payload.
-function truncateStrings(value: unknown): unknown {
-  if (typeof value === 'string') {
-    return value.length > 300
-      ? `${value.slice(0, 300)}...(${value.length} chars)`
-      : value
-  }
-  if (Array.isArray(value)) {
-    return value.length > 100
-      ? [
-          ...value.slice(0, 100).map(v => truncateStrings(v)),
-          `...(${value.length} items)`,
-        ]
-      : value.map(v => truncateStrings(v))
-  }
-  if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, truncateStrings(v)]),
-    )
-  }
-  return value
+  return features
 }
 
 function fileLocation(spec: string): FileLocation {
@@ -712,7 +601,45 @@ async function evaluate(
     renameRegionsIfNeeded,
     createStopToken,
     stopStopToken,
-    waitReady,
+    waitReady: (timeoutMs: number) => waitReady(timeoutMs, session),
+    sessionSummary: () => sessionSummary(session),
+    inspect: (path?: string, maxInspectBytes?: number) =>
+      inspectSession(session, { path, maxBytes: maxInspectBytes }),
+    listTracks: (search?: string) => listTracks(session, { search }),
+    trackModel: (trackId: string) => shownTrackModel(session, trackId),
+    applyDisplaySettings,
+    loadSessionSpec: (spec: Record<string, unknown>) =>
+      loadSpec(pluginManager, { spec }),
+    addTrack: (opts: Record<string, unknown>) => addTrack(session, opts),
+    getFeatures: async (fetchArgs: {
+      trackId: string
+      loc?: string
+      assembly?: string
+      regions?: McpRegion[]
+      viewId?: string
+    }) => {
+      const conf = session.getTrackById(fetchArgs.trackId)
+      if (!conf) {
+        throw new Error(`No track with trackId "${fetchArgs.trackId}"`)
+      }
+      const regions =
+        fetchArgs.regions ??
+        (fetchArgs.loc !== undefined
+          ? [
+              await locToRegion(
+                session,
+                conf,
+                fetchArgs.loc,
+                fetchArgs.assembly,
+              ),
+            ]
+          : await visibleRegionsOf(
+              session,
+              fetchArgs.viewId,
+              fetchArgs.trackId,
+            ))
+      return fetchFeatures(pluginManager, session, fetchArgs.trackId, regions)
+    },
   }
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
   const fn = new Function(
@@ -786,7 +713,7 @@ async function addTrack(
   }
   const view = pickView(session, args, 'showTrack')
   viewSelf(view).showTrack!(trackId)
-  const settle = await waitReady(30_000)
+  const settle = await waitReady(30_000, session)
   return { ...summary, ...settle, shownInView: view.id }
 }
 
@@ -800,14 +727,15 @@ async function loadSpec(
     spec !== null &&
     Array.isArray((spec as { views?: unknown }).views)
   if (!valid) {
-    throw new Error('load_session_spec needs a spec object with a views array')
+    throw new Error('loadSessionSpec needs a spec object with a views array')
   }
   await loadSessionSpec(
     spec as Parameters<typeof loadSessionSpec>[0],
     pluginManager,
   )
-  const settle = await waitReady(60_000)
+  // the session was REPLACED by the spec load — settle against the new one
   const session = sessionOf(pluginManager)
+  const settle = await waitReady(60_000, session)
   return {
     ...settle,
     ...(session ? { session: sessionSummary(session) } : {}),
@@ -822,46 +750,22 @@ export async function handleMcpRequest(
   const session = sessionOf(pluginManager)
   if (tool === 'wait_ready') {
     return session
-      ? waitReady(typeof args.timeoutMs === 'number' ? args.timeoutMs : 30_000)
+      ? waitReady(
+          typeof args.timeoutMs === 'number' ? args.timeoutMs : 30_000,
+          session,
+        )
       : { settled: true, note: 'no session is open (start screen)' }
+  }
+  if (tool === 'session_id') {
+    return { id: session?.id ?? null }
   }
   if (!pluginManager || !session) {
     throw new Error(
       'No session is open. Use the open tool with a config/session file or URL, or bare to list recent sessions.',
     )
   }
-  switch (tool) {
-    case 'inspect_session':
-      return typeof args.path === 'string' && args.path
-        ? inspectSession(session, args)
-        : {
-            ...sessionSummary(session),
-            note: 'pass path to drill into the live model, e.g. "views.0" or "views.0.visibleLocStrings"',
-          }
-    case 'list_tracks':
-      return listTracks(session, args)
-    case 'load_session_spec':
-      return loadSpec(pluginManager, args)
-    case 'navigate':
-      return navigate(session, args)
-    case 'track':
-      switch (args.action) {
-        case 'show':
-          return showTrack(session, args)
-        case 'update':
-          return updateTrack(session, args)
-        case 'hide':
-          return hideTrack(session, args)
-        default:
-          throw new Error('track needs an action: "show", "update", or "hide"')
-      }
-    case 'add_track':
-      return addTrack(session, args)
-    case 'get_features':
-      return getFeatures(pluginManager, session, args)
-    case 'evaluate':
-      return evaluate(pluginManager, session, args)
-    default:
-      throw new Error(`Unknown tool: ${tool}`)
+  if (tool === 'run_javascript') {
+    return evaluate(pluginManager, session, args)
   }
+  throw new Error(`Unknown tool: ${tool} — use run_javascript`)
 }

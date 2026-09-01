@@ -18,5 +18,18 @@ export function defaultSocketPath() {
   }
   const dir = path.join(os.tmpdir(), `jbrowse-desktop-mcp-${label()}`)
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 })
+  // mkdir's mode applies only when it creates: on a shared /tmp, a
+  // pre-existing directory another account planted would let them own the
+  // rendezvous for an endpoint that runs arbitrary code
+  const stat = fs.lstatSync(dir)
+  if (
+    !stat.isDirectory() ||
+    stat.uid !== process.getuid?.() ||
+    (stat.mode & 0o077) !== 0
+  ) {
+    throw new Error(
+      `refusing unsafe MCP socket directory ${dir}: it must be a directory owned by you with mode 0700`,
+    )
+  }
   return path.join(dir, 'mcp.sock')
 }
