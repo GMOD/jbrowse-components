@@ -61,21 +61,54 @@ export interface SyntenyFollowHost extends IStateTreeNode, FollowHost {
 }
 
 // The root actions a person's own gesture on a row produces: a drag or a
-// wheel (`horizontalScroll`, `zoomTo`, `scrollTo`), a rubber band, a ruler
-// label or a feature's "navigate" (`moveTo`, `navTo`, `centerAt`), the row's
-// search box (`navToLocString`) and its own menu (`showAllRegions`). NOT
-// `showRegions` or `navToLocations`, which `navToLocString` reaches for after
-// an await, as fresh roots, on the follow's own behalf; and not
-// `horizontallyFlip`, since a hand flip of a followed row is meant to stand.
-const ROW_GESTURES = new Set([
+// wheel (`horizontalScroll`, `zoomTo`, `scrollTo`), the header's zoom and pan
+// buttons (`zoom`, `slide`), a rubber band, a ruler label, a feature's
+// "navigate" or a mark's flight (`moveTo`, `navTo`, `flyTo`, `flyToCenter`;
+// `centerAt` is a plain function over `scrollTo`), the row's search box
+// (`navToLocString`), its own menu
+// (`showAllRegions`, `showAllRegionsInAssembly`, `fitAllRegions`) and a
+// bookmark (`navigateNewestBookmark`).
+//
+// `gestureTakesAnchor.integration.test.ts` holds the two sets against the
+// view's actual action list: a navigation-shaped action in neither is a
+// gesture the follow would silently undo, or a tail it would silently take on.
+export const ROW_GESTURES = new Set([
   'horizontalScroll',
   'zoomTo',
+  'zoom',
   'scrollTo',
+  'slide',
   'moveTo',
   'navTo',
-  'centerAt',
+  'flyTo',
+  'flyToCenter',
   'navToLocString',
+  'navigateNewestBookmark',
   'showAllRegions',
+  'showAllRegionsInAssembly',
+  'fitAllRegions',
+])
+
+// The row's other navigations, which are NOT gestures: the tails a gesture
+// reaches for after an await, as fresh roots, on the follow's own behalf
+// (`navToLocString` → `navToLocations` → `showRegions`; `navTo` →
+// `navToMultiple`), the primitives the tails and the frame pass write through
+// (`setWindow`, `setWindowFrame`, `scrollToBp`, `setNewView`,
+// `setDisplayedRegions`), the stack's own zoom ceiling (`clampZoomToCeiling`),
+// and `horizontallyFlip`, since a hand flip of a followed row is meant to
+// stand. Read by the contract test alone.
+export const ROW_NAVIGATIONS_HELD = new Set([
+  'navToLocations',
+  'navToLocation',
+  'navToMultiple',
+  'showRegions',
+  'setWindow',
+  'setWindowFrame',
+  'scrollToBp',
+  'setNewView',
+  'setDisplayedRegions',
+  'clampZoomToCeiling',
+  'horizontallyFlip',
 ])
 
 // One level's placement, with the observables the async half needs already read

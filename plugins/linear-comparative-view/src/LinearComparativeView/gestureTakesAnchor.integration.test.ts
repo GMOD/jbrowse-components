@@ -1,5 +1,11 @@
+import { getMembers } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
+
+import {
+  ROW_GESTURES,
+  ROW_NAVIGATIONS_HELD,
+} from '../SyntenyFollow/installSyntenyFollow.ts'
 
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
@@ -68,6 +74,14 @@ test('a drag or a zoom on a followed row makes it the anchor', async () => {
   expect(view.followAnchorIndex).toBe(1)
 })
 
+test('the header zoom and pan buttons on a followed row take it too', async () => {
+  const view = await openStack()
+  view.views[1]!.zoom(view.views[1]!.bpPerPx * 2)
+  expect(view.followAnchorIndex).toBe(1)
+  view.views[2]!.slide(0.9)
+  expect(view.followAnchorIndex).toBe(2)
+})
+
 test('the search box on a followed row takes it before the navigation lands', async () => {
   const view = await openStack()
   const landing = view.views[2]!.navToLocString('ctgA:100-200')
@@ -98,6 +112,40 @@ test('a view-wide zoom is not one either', async () => {
   view.squareView()
   view.showAllRegionsAcrossRows(false)
   expect(view.followAnchorIndex).toBe(0)
+})
+
+// The gesture set is a list of names, and a navigation the view grows that is
+// in neither set is one of two silent defects: a gesture the follow undoes on
+// the next settle, or a tail it takes the anchor on. So every navigation-shaped
+// action the view actually has must be classified, one way or the other.
+test('every navigation-shaped action of a row is classified', async () => {
+  const view = await openStack()
+  // matches of the shape test that do not navigate: a preference, a
+  // decoration, a read, the rubber band's highlight, an animation's cancel
+  const notNavigation = new Set([
+    'setScrollZoom',
+    'setShowCenterLine',
+    'getSelectedRegions',
+    'setOffsets',
+    'cancelZoomAnimation',
+  ])
+  const shape =
+    /scroll|zoom|^nav|moveTo|center|^fly|slide|fit|regions|window|offsets|newView|flip/i
+  const actions = [...getMembers(view.views[0]!).actions]
+  expect(actions.length).toBeGreaterThan(50)
+  expect(
+    actions.filter(
+      name =>
+        shape.test(name) &&
+        !ROW_GESTURES.has(name) &&
+        !ROW_NAVIGATIONS_HELD.has(name) &&
+        !notNavigation.has(name),
+    ),
+  ).toEqual([])
+  expect([...ROW_GESTURES].filter(name => !actions.includes(name))).toEqual([])
+  expect(
+    [...ROW_NAVIGATIONS_HELD].filter(name => !actions.includes(name)),
+  ).toEqual([])
 })
 
 test('off, a gesture takes nothing', async () => {

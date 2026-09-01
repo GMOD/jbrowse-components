@@ -377,6 +377,13 @@ a hand flip of a followed row is meant to stand. The view-wide zooms
 (`squareView`, `showAllRegionsAcrossRows`) are the stack's own actions and nest
 the rows' zooms under them.
 
+**The set is a list of names, so a contract test holds it against the view.**
+Every navigation-shaped action the row actually has must be in `ROW_GESTURES` or
+`ROW_NAVIGATIONS_HELD`; one in neither is a gesture the follow would silently
+undo, or a tail it would silently take on. Writing that test found `zoom` and
+`slide` — the header's zoom and pan buttons — missing from the first draft of
+the set.
+
 **Nothing in the middleware may register as a dependency.** It also sees the
 follow's own root actions, some dispatched from inside its autoruns, so its
 reads are `untracked`. `gestureTakesAnchor.integration.test.ts` holds all of
