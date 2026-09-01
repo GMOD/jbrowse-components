@@ -23,6 +23,19 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 }
 ```
 
+`signal.bedGraph.gz` infers `BedGraphTabixAdapter` and `QuantitativeTrack` on
+its own, and `name` defaults to the file name. In a config declaring one
+assembly, `assemblyNames` comes from there too — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'my_track',
+  uri: 'https://example.com/signal.bedGraph.gz',
+  assemblyNames: ['hg38'],
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed bedGraph signal files
