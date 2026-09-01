@@ -29,7 +29,14 @@ const MultiWayBody = observer(function MultiWayBody({
     <>
       <canvas
         ref={canvasRef}
-        style={{ width, height, position: 'absolute', left: 0, top: 0 }}
+        style={{
+          width,
+          height,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          cursor: hoverTarget ? 'pointer' : undefined,
+        }}
       />
       <MultiWayOverlay model={model} />
       <LaneHeaders model={model} />
@@ -48,7 +55,7 @@ const MultiWaySyntenyReactComponent = observer(
   }: {
     model: MultiWaySyntenyDisplayModel
   }) {
-    const { canvasWidth: width, height, hoverTarget } = model
+    const { canvasWidth: width, height } = model
     // a pan ends with a click on whatever the drag stopped over; only a press
     // that stayed put opens what it pressed
     const pressX = useRef<number | undefined>(undefined)
@@ -57,12 +64,7 @@ const MultiWaySyntenyReactComponent = observer(
         model={model}
         factory={MultiWayRenderer}
         testid="multiway-synteny-display"
-        style={{
-          width,
-          height,
-          overflow: 'hidden',
-          cursor: hoverTarget ? 'pointer' : undefined,
-        }}
+        style={{ width, height, overflow: 'hidden' }}
         onPointerPosition={state => {
           model.setPointer(state)
         }}

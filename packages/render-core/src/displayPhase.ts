@@ -96,6 +96,15 @@ export interface DisplayLoadingInputs {
    */
   isLoadingOrCanceled: boolean
   /**
+   * A load this display depends on beyond its primary fetch has not landed for
+   * the first time, so the frame the primary fetch calls current is still
+   * missing something (multi-way synteny's lane genes and links). A loading
+   * term rather than a `dataSuperseded` fold: that flag holds the export
+   * through every later refetch too, and a scrim over lanes that are already
+   * drawn is the thing a display saying this wants to avoid.
+   */
+  awaitingDependentData: boolean
+  /**
    * Whether this display paints a canvas in its current configuration. Gates
    * the pre-first-paint term alone, because a display that is showing a
    * deliberate non-canvas placeholder (LD with the triangle off) never flips
@@ -160,6 +169,7 @@ export function computeLoadingTerm(
     fetchInert,
     viewportEmpty,
     isLoadingOrCanceled,
+    awaitingDependentData,
     rendersCanvas,
     canvasDrawn,
   }: DisplayLoadingInputs,
@@ -170,6 +180,7 @@ export function computeLoadingTerm(
     !fetchInert &&
     !viewportEmpty &&
     (isLoadingOrCanceled ||
+      awaitingDependentData ||
       (rendersCanvas && hostMounted() && !canvasDrawn) ||
       !viewportCurrent())
   )

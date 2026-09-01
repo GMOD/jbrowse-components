@@ -125,6 +125,12 @@ const HOOKS: Hook[] = [
       'every decline is judged on the spot by the dev-only retry check, which is right for a display whose fetch answers off its own state — a two-stage one (HiC waits on `CoreGetInfo`, variants on `sourcesBase`) is reported as a dead Retry it does not have, since the run that will fetch is the one after the prerequisite lands. Overriding it DEFERS that verdict, never waives it, so the override has to be strictly narrower than the gate it explains',
   },
   {
+    name: 'awaitingDependentData',
+    owner: 'packages/display-kit/src/FetchMixin.ts',
+    ifNotOverridden:
+      'the primary fetch is the whole loading answer, so a display whose frame also waits on a dependent load of its own (multi-way synteny’s lane genes and links) reads `ready` between the two, and an export or a capture samples the half-filled frame',
+  },
+  {
     name: 'rendersCanvas',
     owner: 'packages/render-core/src/RenderLifecycleMixin.ts',
     ifNotOverridden:

@@ -334,6 +334,28 @@ export default function FetchMixin() {
 
       /**
        * #getter
+       * Overridable hook (default false), read by `computeLoadingTerm`: a load
+       * this display depends on beyond its primary fetch has not landed for the
+       * first time, so the frame the primary fetch calls current is still
+       * missing something. Multi-way synteny says it until its lane genes and
+       * lane links first arrive, so an export or a capture never lands between
+       * the ortholog fetch and the gene models that fill the lanes.
+       *
+       * A hook rather than a `displayPhase` override, for the reason
+       * `fetchInert` is one: that display carried the override, restating the
+       * foundation's two arguments verbatim to append one term, which is the
+       * shape that silently misses the next term added.
+       *
+       * Not `dataSuperseded`, which holds the export through every later
+       * refetch too: a display saying this wants the scrim on the first landing
+       * only, since later lane fetches redraw over lanes already on screen.
+       */
+      get awaitingDependentData(): boolean {
+        return false
+      },
+
+      /**
+       * #getter
        * The RPC cache key both fetch foundations invalidate on: this display's
        * `rpcProps()` payload serialized to a string. `serializeRpcProps` owns
        * the why, including the silently-dead-axis corollary.

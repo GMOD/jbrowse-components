@@ -71,12 +71,19 @@ const DRAWN = {
   fetchInert: false,
   viewportEmpty: false,
   isLoadingOrCanceled: false,
+  awaitingDependentData: false,
   rendersCanvas: true,
   canvasDrawn: true,
 }
 const current = () => true
 
 describe('computeLoadingTerm', () => {
+  test('a dependent load that has not first landed is loading', () => {
+    expect(
+      computeLoadingTerm({ ...DRAWN, awaitingDependentData: true }, current),
+    ).toBe(true)
+  })
+
   test('not loading once drawn, idle and viewport-current', () => {
     expect(computeLoadingTerm(DRAWN, current)).toBe(false)
   })

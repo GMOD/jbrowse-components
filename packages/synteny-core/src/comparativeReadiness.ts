@@ -137,6 +137,7 @@ export function comparativeDisplayPhase(
           // that can empty out from under them
           viewportEmpty: false,
           isLoadingOrCanceled: display.loading || display.refetching,
+          awaitingDependentData: false,
           rendersCanvas: true,
           canvasDrawn: surface.painted,
         },

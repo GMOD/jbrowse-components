@@ -29,7 +29,10 @@ export interface DisplayStatusPhaseFoundation
     DisplayStatusPhaseInputs,
     Pick<
       DisplayLoadingInputs,
-      'fetchInert' | 'viewportEmpty' | 'isLoadingOrCanceled'
+      | 'fetchInert'
+      | 'viewportEmpty'
+      | 'isLoadingOrCanceled'
+      | 'awaitingDependentData'
     > {}
 
 /**
@@ -88,6 +91,7 @@ export function foundationDisplayStatusPhase(
         fetchInert: self.fetchInert,
         viewportEmpty: self.viewportEmpty,
         isLoadingOrCanceled: self.isLoadingOrCanceled,
+        awaitingDependentData: self.awaitingDependentData,
         rendersCanvas: false,
         canvasDrawn: false,
       },

@@ -15,11 +15,8 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
-import GlobalFetchMixin, {
-  blockKeySignature,
-} from '@jbrowse/display-kit/GlobalFetchMixin'
+import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { bandGroundColor } from '@jbrowse/synteny-core'
@@ -73,7 +70,6 @@ import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type React from 'react'
 
 /** what the pointer is over: a gene, a placement box or a ribbon */
@@ -322,10 +318,7 @@ export function stateModelFactory(
        * block boundary refetches, a scroll inside the loaded blocks does not
        */
       get viewSignature() {
-        const view = self.lgv
-        return view.initialized
-          ? blockKeySignature(view.staticBlocks.contentBlocks)
-          : undefined
+        return self.staticBlockSignature
       },
       /**
        * #getter
@@ -961,25 +954,20 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the dependent fetches are part of loading until they FIRST land, so an
-       * export or a capture never lands between the ortholog fetch and the
-       * gene models that fill the lanes. Not for later refetches: those run
-       * over lanes that are already drawn, and holding the phase at loading
-       * puts the striped scrim over them. A failed lane fetch commits an empty
-       * result rather than hanging this at loading (see afterAttach)
+       * `FetchMixin`'s hook: the dependent fetches are part of loading until
+       * they FIRST land, so an export or a capture never lands between the
+       * ortholog fetch and the gene models that fill the lanes. Not for later
+       * refetches: those run over lanes that are already drawn, and holding the
+       * phase at loading puts the striped scrim over them. A failed lane fetch
+       * commits an empty result rather than hanging this (see afterAttach)
        */
-      get displayPhase(): DisplayPhase {
-        const base = foundationDisplayPhase(
-          self,
-          () => true,
-          () => self.host.effectiveBodyMounted,
-        )
-        const firstFetchPending =
+      get awaitingDependentData(): boolean {
+        return (
           (self.laneGenes === undefined &&
             self.laneGenesFetchSpecs.specs.length > 0) ||
           (self.laneLinks === undefined &&
             self.laneLinksFetchSpecs.specs.length > 0)
-        return base === 'ready' && firstFetchPending ? 'loading' : base
+        )
       },
       /**
        * #getter

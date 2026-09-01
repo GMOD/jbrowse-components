@@ -70,9 +70,14 @@ Both foundations call it and supply exactly one argument, their staleness
 predicate: per-region its spatial one, global `() => true`. Arc goes
 through `foundationDisplayStatusPhase`, the same mapping returning the narrower
 phase and supplying the two canvas terms it has no canvas for. Customize it
-through `fetchInert` / `rendersCanvas`, **never by overriding
-`displayPhase`** — an override restates every term and then silently misses the
-next one added. Same rule the precedence has, one level down.
+through the hooks — `fetchInert`, `rendersCanvas`, `awaitingDependentData` (a
+load beyond the primary fetch has not first landed; multi-way synteny's lanes) —
+**never by overriding `displayPhase`**: an override restates every term and
+then silently misses the next one added. Same rule the precedence has, one
+level down. `displayPhaseNotOverridden.test.ts` fails a plugin getter that
+calls the LGV mapping and post-processes it, which is the shape multi-way
+synteny shipped in before the third hook existed; a display with a new term
+adds a hook beside those three.
 
 **The bottom-right corner has one owner, and it is the chrome.** The background
 `ProgressChip` and the display's own control row (`BottomRightIndicators`) both
@@ -537,9 +542,10 @@ today, since the only Retry lives on an error banner and an error needs a fetch
 that ran; a `prepare()` that says which of the two it meant is what would close
 it properly.
 
-A report is only useful if something can hear it. Nine `testEnv.ts` harnesses set
-`console.error = jest.fn()` as copied boilerplate, muting every contract check in
-exactly the suites that build real displays. Don't reinstate a blanket silencer;
+A report is only useful if something can hear it. Nine `testEnv.ts` harnesses
+used to set `console.error = jest.fn()` as copied boilerplate, muting every
+contract check in exactly the suites that build real displays; none does now.
+Don't reinstate a blanket silencer;
 capture and assert on the channel, the way `assertDisplayContract.test.ts` does.
 `createDisplayTestEnvironment` now silences `console.warn` and only
 `console.warn`, in one place, which is what stops the boilerplate from coming
