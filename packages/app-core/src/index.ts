@@ -55,3 +55,13 @@ export {
 } from './queryParams.ts'
 export { processMutableMenuActions, resolveMenus } from './menus.ts'
 export type { Menu, MenuAction, MenuDefinition } from './menus.ts'
+// The helper library an agent drives the app through: desktop serves it to
+// run_javascript over MCP, web hands it to the page as window.jb
+export {
+  createJbApi,
+  ensureReExports,
+  safeJson,
+  sessionOf,
+  waitReady,
+} from './JbApi/index.ts'
+export type { JbApi } from './JbApi/index.ts'
