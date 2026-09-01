@@ -1,0 +1,97 @@
+import rehypeRaw from 'rehype-raw'
+import rehypeSlug from 'rehype-slug'
+import rehypeStringify from 'rehype-stringify'
+import remarkGfm from 'remark-gfm'
+import remarkParse from 'remark-parse'
+import remarkRehype from 'remark-rehype'
+import { unified } from 'unified'
+
+import { ensureAutogenIndex } from './autogen-links.ts'
+import rehypeAdmonitions from './rehype-admonitions.ts'
+import rehypeBaseUrls from './rehype-base-urls.ts'
+import rehypeCollectToc, { type TocItem } from './rehype-collect-toc.ts'
+import rehypeHeadingLinks from './rehype-heading-links.ts'
+import rehypeLightbox from './rehype-lightbox.ts'
+import rehypeShiki from './rehype-shiki.ts'
+import rehypeTrailingSlash from './rehype-trailing-slash.ts'
+import remarkAutolinkTypes from './remark-autolink-types.ts'
+import remarkCodeBase from './remark-code-base.ts'
+import remarkConfigCliTabs from './remark-config-cli-tabs.ts'
+import remarkCustomHeadingId from './remark-custom-heading-id.ts'
+import remarkDocList from './remark-doc-list.ts'
+import remarkFigure from './remark-figure.ts'
+import remarkRelatedGuides from './remark-related-guides.ts'
+import remarkSpecExample from './remark-spec-example.ts'
+import remarkVideo, { type VideoRef } from './remark-video.ts'
+import remarkWikiTitle from './remark-wiki-title.ts'
+
+import type { AutogenDoc } from './autogen-links.ts'
+
+export interface RenderedMarkdown {
+  html: string
+  toc: TocItem[]
+  videos: VideoRef[]
+}
+
+// The whole pipeline as a function of its inputs — no astro:content and no
+// astro:config/client anywhere in the module graph below this file, which is
+// what lets markdown-worker.ts run it off the main thread. src/lib/markdown.ts
+// is the binding that supplies both from Astro.
+export function createRenderMarkdown({
+  baseUrl,
+  docs,
+}: {
+  baseUrl: string
+  docs: AutogenDoc[]
+}) {
+  ensureAutogenIndex(docs)
+  const processor = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkCustomHeadingId)
+    .use(remarkConfigCliTabs)
+    .use(remarkFigure, { base: baseUrl })
+    .use(remarkVideo, { base: baseUrl })
+    .use(remarkDocList)
+    .use(remarkSpecExample)
+    .use(remarkCodeBase)
+    .use(remarkAutolinkTypes)
+    .use(remarkWikiTitle)
+    .use(remarkRelatedGuides)
+    // Footnotes come from remarkGfm above; these name what they render as. The
+    // default label is an `sr-only` "Footnotes" heading, which is invisible here
+    // (that class is scoped to DocsSidebarNav) and would leave the notes as an
+    // unlabelled list under the page's last section.
+    .use(remarkRehype, {
+      allowDangerousHtml: true,
+      footnoteLabel: 'Notes',
+      footnoteLabelProperties: { className: ['footnotes-label'] },
+      footnoteBackLabel: 'Back to the text',
+    })
+    .use(rehypeRaw)
+    .use(rehypeShiki)
+    .use(rehypeLightbox)
+    .use(rehypeAdmonitions)
+    .use(rehypeTrailingSlash)
+    .use(rehypeBaseUrls, { base: baseUrl })
+    .use(rehypeSlug)
+    .use(rehypeCollectToc)
+    .use(rehypeHeadingLinks)
+    .use(rehypeStringify, { allowDangerousHtml: true })
+
+  // `feed` renders for the RSS feed, where page-only interactivity (the
+  // lightbox wrapper around images) is markup a feed reader can only strip or
+  // mangle.
+  return async function renderMarkdown(
+    body: string,
+    id = '',
+    { feed = false }: { feed?: boolean } = {},
+  ): Promise<RenderedMarkdown> {
+    const file = await processor.process({ value: body, data: { id, feed } })
+    return {
+      html: String(file),
+      toc: (file.data.toc as TocItem[] | undefined) ?? [],
+      videos: (file.data.videos as VideoRef[] | undefined) ?? [],
+    }
+  }
+}

@@ -1,77 +1,23 @@
-import rehypeRaw from 'rehype-raw'
-import rehypeSlug from 'rehype-slug'
-import rehypeStringify from 'rehype-stringify'
-import remarkGfm from 'remark-gfm'
-import remarkParse from 'remark-parse'
-import remarkRehype from 'remark-rehype'
-import { unified } from 'unified'
+import { getCollection } from 'astro:content'
 
-import { ensureAutogenIndex } from './autogen-links.ts'
 import { baseUrl } from './base-url.ts'
-import rehypeAdmonitions from './rehype-admonitions.ts'
-import rehypeBaseUrls from './rehype-base-urls.ts'
-import rehypeCollectToc, { type TocItem } from './rehype-collect-toc.ts'
-import rehypeHeadingLinks from './rehype-heading-links.ts'
-import rehypeLightbox from './rehype-lightbox.ts'
-import rehypeShiki from './rehype-shiki.ts'
-import rehypeTrailingSlash from './rehype-trailing-slash.ts'
-import remarkAutolinkTypes from './remark-autolink-types.ts'
-import remarkCodeBase from './remark-code-base.ts'
-import remarkConfigCliTabs from './remark-config-cli-tabs.ts'
-import remarkCustomHeadingId from './remark-custom-heading-id.ts'
-import remarkDocList from './remark-doc-list.ts'
-import remarkFigure from './remark-figure.ts'
-import remarkRelatedGuides from './remark-related-guides.ts'
-import remarkSpecExample from './remark-spec-example.ts'
-import remarkVideo, { type VideoRef } from './remark-video.ts'
-import remarkWikiTitle from './remark-wiki-title.ts'
+import { createRenderMarkdown } from './markdown-core.ts'
 
-const processor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkCustomHeadingId)
-  .use(remarkConfigCliTabs)
-  .use(remarkFigure, { base: baseUrl })
-  .use(remarkVideo, { base: baseUrl })
-  .use(remarkDocList)
-  .use(remarkSpecExample)
-  .use(remarkCodeBase)
-  .use(remarkAutolinkTypes)
-  .use(remarkWikiTitle)
-  .use(remarkRelatedGuides)
-  // Footnotes come from remarkGfm above; these name what they render as. The
-  // default label is an `sr-only` "Footnotes" heading, which is invisible here
-  // (that class is scoped to DocsSidebarNav) and would leave the notes as an
-  // unlabelled list under the page's last section.
-  .use(remarkRehype, {
-    allowDangerousHtml: true,
-    footnoteLabel: 'Notes',
-    footnoteLabelProperties: { className: ['footnotes-label'] },
-    footnoteBackLabel: 'Back to the text',
-  })
-  .use(rehypeRaw)
-  .use(rehypeShiki)
-  .use(rehypeLightbox)
-  .use(rehypeAdmonitions)
-  .use(rehypeTrailingSlash)
-  .use(rehypeBaseUrls, { base: baseUrl })
-  .use(rehypeSlug)
-  .use(rehypeCollectToc)
-  .use(rehypeHeadingLinks)
-  .use(rehypeStringify, { allowDangerousHtml: true })
+import type { RenderedMarkdown } from './markdown-core.ts'
 
-// `feed` renders for the RSS feed, where page-only interactivity (the lightbox
-// wrapper around images) is markup a feed reader can only strip or mangle.
-export async function renderMarkdown(
+// The Astro-side binding of the pipeline in markdown-core.ts: it supplies the
+// two values that file deliberately does not import, so that everything below
+// it can also run in a worker. Held as a promise rather than a value because
+// the corpus is fetched, and several pages render before any of them finish.
+let renderer: Promise<ReturnType<typeof createRenderMarkdown>> | undefined
+
+export function renderMarkdown(
   body: string,
   id = '',
   { feed = false }: { feed?: boolean } = {},
-): Promise<{ html: string; toc: TocItem[]; videos: VideoRef[] }> {
-  await ensureAutogenIndex()
-  const file = await processor.process({ value: body, data: { id, feed } })
-  return {
-    html: String(file),
-    toc: (file.data.toc as TocItem[] | undefined) ?? [],
-    videos: (file.data.videos as VideoRef[] | undefined) ?? [],
-  }
+): Promise<RenderedMarkdown> {
+  renderer ??= getCollection('docs').then(docs =>
+    createRenderMarkdown({ baseUrl, docs }),
+  )
+  return renderer.then(render => render(body, id, { feed }))
 }

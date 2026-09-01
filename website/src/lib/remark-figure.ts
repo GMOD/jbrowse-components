@@ -15,9 +15,6 @@ import type { Plugin } from 'unified'
 
 const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/
 
-// each figure's dialog needs an id unique to the page it renders on
-let dialogCount = 0
-
 // The generated refs carry each spec's url as it was written; CODE_BASE names
 // the hosted build a relative one opens against, and is a build-time env var, so
 // it is applied here rather than baked in (see src/lib/code-base.ts).
@@ -50,6 +47,10 @@ function slowNote(name: string | undefined) {
 const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''
   return (tree, file) => {
+    // ids only have to be unique within the page, and numbering them per page
+    // is what keeps a page's html independent of how many pages rendered before
+    // it — which a render pool makes visible (see markdown-pool.ts).
+    let dialogCount = 0
     visit(tree, 'paragraph', (node: Paragraph, index, parent) => {
       const firstChild = node.children[0]
       if (

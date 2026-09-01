@@ -1,5 +1,3 @@
-import { getCollection } from 'astro:content'
-
 import { docUrl, normalizeDocUrl } from './doc-slug.ts'
 import { guideRank } from './guide-categories.ts'
 import { collisionLabels } from './guide-title-collisions.ts'
@@ -13,6 +11,20 @@ import { collisionLabels } from './guide-title-collisions.ts'
 // Guide→guide links are deliberately NOT here: every guide carries a curated
 // "## See also", which reads better than anything derived from shared
 // citations (see remark-related-guides.ts).
+
+// The docs collection, reduced to what the index derives from. Named as its own
+// shape because it also has to cross a worker boundary: the render pool clones
+// the corpus into each worker, which cannot reach astro:content itself.
+export interface AutogenDoc {
+  id: string
+  data: {
+    title: string
+    description?: string
+    sidebar_label?: string
+    guide_category?: string
+  }
+  body?: string
+}
 
 const autogenDirs = new Set(['config', 'models', 'api'])
 
@@ -78,13 +90,15 @@ function referencedIds(body: string, known: Set<string>): Set<string> {
   return ids
 }
 
-let built: Promise<void> | undefined
+let built = false
 
-// Populate the indexes once from the docs collection. Cached so repeated
-// renderMarkdown calls share the work.
-export function ensureAutogenIndex(): Promise<void> {
-  built ??= (async () => {
-    const docs = await getCollection('docs')
+// Populate the indexes once from the docs collection. The corpus is passed in
+// rather than fetched so the pipeline holds no astro:content import: that is
+// what lets a worker thread run it (see markdown-pool.ts). Repeated calls after
+// the first are ignored, so every renderMarkdown in a process shares one index.
+export function ensureAutogenIndex(docs: AutogenDoc[]): void {
+  if (!built) {
+    built = true
     const knownIds = new Set(docs.map(d => d.id))
     const labels = collisionLabels(
       docs.map(d => ({ id: d.id, title: d.data.title })),
@@ -150,8 +164,7 @@ export function ensureAutogenIndex(): Promise<void> {
         }
       }
     }
-  })()
-  return built
+  }
 }
 
 // Pages directly under a top-level docs dir, sorted by title — the same order

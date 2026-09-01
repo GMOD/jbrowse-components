@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content'
 
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { entrySlug } from '../../lib/docs-sidebar.ts'
-import { renderMarkdown } from '../../lib/markdown.ts'
+import { renderDoc } from '../../lib/markdown-pool.ts'
 
 export async function getStaticPaths() {
   const docs = await getCollection('docs')
@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props
 const currentSlug = Astro.params.slug ?? ''
-const { html, toc, videos } = await renderMarkdown(entry.body ?? '', entry.id)
+const { html, toc, videos } = await renderDoc(entry.id, entry.body ?? '')
 ---
 
 <DocsLayout

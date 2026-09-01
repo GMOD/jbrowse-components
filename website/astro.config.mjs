@@ -35,6 +35,26 @@ function fixAbsoluteLinks() {
   }
 }
 
+// The docs render pool (src/lib/markdown-pool.ts) spawns workers off a real
+// source file, which the SSR bundle it runs from cannot point at. This config
+// can: it is the one module in the build whose import.meta.url is still in the
+// tree. On `astro:build:start` rather than `astro:config:setup`, because the
+// pool is for the build — `astro dev` renders one page at a time and would pay
+// the whole corpus to serve the first request.
+function markdownWorkerPath() {
+  return {
+    name: 'markdown-worker-path',
+    hooks: {
+      'astro:build:start': () => {
+        process.env.MARKDOWN_WORKER_PATH = new URL(
+          './src/lib/markdown-worker.ts',
+          import.meta.url,
+        ).pathname
+      },
+    },
+  }
+}
+
 // Emit raw `/docs/<slug>.md` files for LLM/agent consumption (see
 // src/lib/emit-raw-markdown.ts and the /llms.txt index).
 function emitRawMarkdownIntegration() {
@@ -77,7 +97,12 @@ export default defineConfig({
   // No React integration: every component here is .astro and there are no
   // client: directives, so adding it only emits an unreferenced ~190KB React
   // runtime chunk. Re-add it (and the react deps) if an island comes back.
-  integrations: [icon(), fixAbsoluteLinks(), emitRawMarkdownIntegration()],
+  integrations: [
+    icon(),
+    markdownWorkerPath(),
+    fixAbsoluteLinks(),
+    emitRawMarkdownIntegration(),
+  ],
   // Self-hosted Roboto, served from our own origin — no render-blocking request
   // to fonts.googleapis.com. Exposed as var(--font-roboto); emit the <Font> tags
   // with <Font cssVariable> in the head.
