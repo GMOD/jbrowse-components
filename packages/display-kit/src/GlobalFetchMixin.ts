@@ -100,6 +100,19 @@ export default function GlobalFetchMixin() {
        * fetches and never exports — hung is diagnosable, stale ships wrong
        * pixels.
        */
+      /**
+       * #getter
+       * The static-block set as a signature, or `undefined` before the view is
+       * measured — the building block every `viewSignature` in this family
+       * starts from. Arc and multi-way synteny are exactly this; HiC appends
+       * its resolution. Declared here so the initialized gate is spelled once.
+       */
+      get staticBlockSignature(): string | undefined {
+        const { host } = this
+        return host.initialized
+          ? blockKeySignature(host.staticBlocks.contentBlocks)
+          : undefined
+      },
       get viewSignature(): string | undefined {
         return undefined
       },

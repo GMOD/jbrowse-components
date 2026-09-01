@@ -1,7 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import GlobalFetchMixin, {
-  blockKeySignature,
-} from '@jbrowse/display-kit/GlobalFetchMixin'
+import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import { foundationDisplayStatusPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -166,10 +164,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          * does not.
          */
         get viewSignature() {
-          const view = self.host
-          return view.initialized
-            ? blockKeySignature(view.staticBlocks.contentBlocks)
-            : undefined
+          return self.staticBlockSignature
         },
         /**
          * #getter

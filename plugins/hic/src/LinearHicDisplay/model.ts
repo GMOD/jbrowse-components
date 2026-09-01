@@ -5,9 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getContainingView } from '@jbrowse/core/util'
-import GlobalFetchMixin, {
-  blockKeySignature,
-} from '@jbrowse/display-kit/GlobalFetchMixin'
+import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
   gradientSvgLegendWidth,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -385,10 +383,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * mismatch converges in one fetch.
        */
       get viewSignature(): string | undefined {
-        const { host } = self
+        const blocks = self.staticBlockSignature
         const resolution = self.effectiveResolution
-        return host.initialized && resolution !== undefined
-          ? `${blockKeySignature(host.staticBlocks.contentBlocks)}|res:${resolution}`
+        return blocks !== undefined && resolution !== undefined
+          ? `${blocks}|res:${resolution}`
           : undefined
       },
       /**
