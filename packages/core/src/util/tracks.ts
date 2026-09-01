@@ -1042,12 +1042,14 @@ export function showTrackGeneric(
     // too — a session spec, share link, or embed writes slots here rather
     // than creating a config from a snapshot, and those surfaces are meant to
     // speak the same vocabulary. Runs after the push so the display's config
-    // reference can resolve. Keys that are neither slots nor snapshot props
-    // but name a display setter apply through it, where they used to drop.
-    const display = track.displays[0] as {
-      applyDisplaySettings: (settings: Record<string, unknown>) => unknown
-    }
-    display.applyDisplaySettings(displayInitialSnapshot)
+    // reference can resolve. Slots only, deliberately: this is the
+    // declarative surface, and `allowSetters` stays off so a spec key cannot
+    // reach internal display actions.
+    ;(
+      track as {
+        applyDisplaySettings: (settings: Record<string, unknown>) => unknown
+      }
+    ).applyDisplaySettings(displayInitialSnapshot)
     // if this track came from a connection, persist its config so it survives
     // reload without re-establishing the connection (no-op otherwise)
     session.captureConnectionTrack?.(trackId)

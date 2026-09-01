@@ -12,7 +12,8 @@ app's renderer. What you `return` is serialized back to you. In scope:
   - `jb.inspect(path?, maxBytes?)` — walk the live model by dot-path
     (`'views.0.visibleLocStrings'`); an object result lists its getters, the
     high-value state a snapshot filters out
-  - `jb.listTracks(search?)` — the track catalog with trackIds
+  - `jb.listTracks(search?, limit?)` — the track catalog with trackIds
+    (connection/hub tracks included; default cap 100)
   - `jb.loadSessionSpec(spec)` — build views declaratively (docs topic
     "session-spec"); replaces the open views, settles, returns the summary
   - `track.applyDisplaySettings(settings)` — a model ACTION on every track:

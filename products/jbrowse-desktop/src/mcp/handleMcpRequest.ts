@@ -295,9 +295,13 @@ function trackEntry(conf: AnyConfigurationModel) {
   }
 }
 
-function listTracks(session: AbstractSessionModel, searchArg?: string) {
+function listTracks(
+  session: AbstractSessionModel,
+  searchArg?: string,
+  limitArg?: number,
+) {
   const search = searchArg?.toLowerCase() ?? ''
-  const limit = 100
+  const limit = limitArg ?? 100
   // allSessionTracks, not session.tracks: connection-supplied tracks (hubs,
   // registries) are absent from the session lists but fully showable — a
   // hand-rolled union here hid them from agents entirely
@@ -530,16 +534,11 @@ function describeSlots(conf: AnyConfigurationModel) {
 // already grants — expressed directly instead of through a curated verb.
 // The re-export registry is what pluginManager.jbrequire serves: the same
 // pinned ABI module names external plugins link against (ReExports/modules.ts,
-// abiBaseline.json). It stays empty until a runtime plugin loads, so the first
-// evaluate populates it — that, not growing jb, is how agent code reaches the
-// rest of core.
-let reExportsReady = false
+// abiBaseline.json). It stays empty until a runtime plugin loads, so each
+// evaluate (re)installs it — import() is memoized, so this is one lookup and
+// an idempotent assignment, with no module-level flag to hold.
 async function ensureReExports() {
-  if (!reExportsReady) {
-    const modules = await import('@jbrowse/core/ReExports/modules')
-    setReExportRegistry(modules.default)
-    reExportsReady = true
-  }
+  setReExportRegistry((await import('@jbrowse/core/ReExports/modules')).default)
 }
 
 async function evaluate(
@@ -570,7 +569,8 @@ async function evaluate(
     sessionSummary: () => sessionSummary(session),
     inspect: (path?: string, maxInspectBytes?: number) =>
       inspectSession(session, { path, maxBytes: maxInspectBytes }),
-    listTracks: (search?: string) => listTracks(session, search),
+    listTracks: (search?: string, limit?: number) =>
+      listTracks(session, search, limit),
     trackModel: (trackId: string) => shownTrackModel(session, trackId),
     loadSessionSpec: (spec: Record<string, unknown>) =>
       loadSpec(pluginManager, { spec }),

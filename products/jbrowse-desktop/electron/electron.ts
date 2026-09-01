@@ -289,12 +289,17 @@ function runApp() {
       registerPluginHandlers()
       registerDownloadHandler()
       setupAutoUpdater(autoUpdater)
-      const stopMcpBridge = startMcpBridge({
-        paths,
-        getWindow: () => wm.current,
-        openTarget: target => wm.ensureWindow(target),
-      })
-      app.on('will-quit', stopMcpBridge)
+      // JBROWSE_DISABLE_MCP for deployments that don't want a code-executing
+      // control socket at all (shared workstations, kiosk installs); see
+      // electron/mcp/README.md for the threat model the default accepts
+      if (!process.env.JBROWSE_DISABLE_MCP) {
+        const stopMcpBridge = startMcpBridge({
+          paths,
+          getWindow: () => wm.current,
+          openTarget: target => wm.ensureWindow(target),
+        })
+        app.on('will-quit', stopMcpBridge)
+      }
 
       // Register app-level event handlers before any await so a second-instance
       // launch or macOS open-file/open-url that fires during filesystem init is
