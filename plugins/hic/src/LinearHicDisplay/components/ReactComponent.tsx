@@ -137,9 +137,7 @@ const HicBody = observer(function HicBody({
   // `item` is absent over an empty bin, where the guide still draws (reading a
   // position off the axes is exactly what you want somewhere with no contact)
   // but there is nothing to put in a tooltip.
-  // isLoadingOrCanceled, not isLoading: a standing user cancel parks the
-  // "Loading canceled / Retry" overlay, and hit-testing under it would float a
-  // tooltip over cells the overlay says are not there
+  // the global family's rule — DISPLAYCHROME.md, the pointer section
   const item =
     mouseState && !model.isLoadingOrCanceled
       ? model.hitTest(mouseState.x, mouseState.y)

@@ -90,9 +90,7 @@ const LDCanvas = observer(function LDCanvas({
   // tooltip, the crosshairs and the view's vertical guides all describe the
   // same cell in the same frame.
   const mouseState = useMouseState(mouseTracker)
-  // isLoadingOrCanceled, not isLoading: a standing user cancel parks the
-  // "Loading canceled / Retry" overlay, and hit-testing under it would float a
-  // tooltip over cells the overlay says are not there
+  // the global family's rule — DISPLAYCHROME.md, the pointer section
   const hoveredItem =
     mouseState && !model.isLoadingOrCanceled
       ? model.hitTest(mouseState.x, mouseState.y)
