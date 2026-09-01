@@ -5,51 +5,41 @@ guide_category: Analysis
 ---
 
 **TL;DR:** Triage structural variant (SV) candidates in the
-[SV inspector](/docs/user_guides/sv_inspector_view) (a combined variant table
-and whole-genome circular overview), then drill into the alignments at each
-breakpoint for read-level evidence. SV calls load as
-[variant tracks](/docs/user_guides/variant_track) (VCF), reads as
-[alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). The
-[alignments track guide](/docs/user_guides/alignments_track) covers their
-general features.
+[SV inspector](/docs/user_guides/sv_inspector_view), a combined table and
+whole-genome circular overview over a
+[variant track](/docs/user_guides/variant_track)'s calls, then drill into the
+[alignments](/docs/user_guides/alignments_track) (BAM/CRAM) at each breakpoint
+for the read-level evidence. This page is about what those read patterns mean,
+and the [alignments track guide](/docs/user_guides/alignments_track) covers what
+each control does.
 
-For the read-level signals behind these displays (how split (supplementary)
-alignments, the `SA` tag, pair orientation, `TLEN`, and clipping encode SV
-evidence in the SAM format), see
+End-to-end walkthroughs: [](/docs/tutorials/sv_visualization_cgiab),
+[](/docs/tutorials/cancer_sv), [](/docs/tutorials/sv_multisamples). For how
+split (supplementary) alignments, the `SA` tag, pair orientation, `TLEN` and
+clipping encode SV evidence in the SAM format itself, see
 [Structural variants and the SAM format](https://cmdcolin.github.io/posts/2022-02-06-sv-sam/).
-
-For end-to-end walkthroughs, see
-[Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) (HG008
-tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
-[](/docs/tutorials/sv_multisamples) (a whole-gene deletion across the cohort,
-then a call its coverage is silent about).
 
 ## SV signals in the alignments track
 
-Four things a standard alignments track already shows carry most of the SV
-evidence. The [alignments track guide](/docs/user_guides/alignments_track)
-covers what each control does; here they matter for what their patterns mean.
-
-- [Soft clipping](/docs/user_guides/alignments_track#soft-clipping) - reads that
-  extend past a breakpoint have their overhanging bases soft-clipped, so a
-  cluster of them marks a breakpoint edge
-- [Insertion and clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators) -
-  purple, blue, and red triangles above the coverage row flag insertions and
-  clips without zooming into the pileup
-- Color by pair orientation - abnormally oriented pairs produce the
-  characteristic colors in the table below
-- Color by insert size - pairs with unexpectedly large or small inserts are
-  highlighted
+Most of the evidence is in a standard alignments track already.
+[Soft clipping](/docs/user_guides/alignments_track#soft-clipping) marks a
+breakpoint edge, where a cluster of reads terminates and their overhanging bases
+are clipped, and the
+[insertion and clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators)
+flag those clusters above the coverage row before you zoom into the pileup.
+Coloring by pair orientation or by insert size then lifts the abnormal pairs out
+of the concordant ones. What each SV type makes of those signals is
+[below](#sv-type-signatures).
 
 <Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored bases marks where many reads terminate at a common breakpoint." src="/img/alignments_soft_clipped.png" />
 
 ### Pair orientation color scheme
 
-JBrowse uses the same color scheme as IGV. See the
-[IGV paired-end alignments guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
-for background. Set the color scheme to Pair orientation from the track menu.
-Orientation coloring assumes standard `fr` (Illumina) read pairs; SOLiD-style
-pair orientations are not supported. The table below assumes `fr`:
+Set the color scheme to Pair orientation from the track menu. JBrowse uses the
+same colors as IGV (see the
+[IGV paired-end alignments guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)),
+and assumes standard `fr` (Illumina) read pairs. SOLiD-style orientations are
+not supported.
 
 <!-- COLOR_TABLE alignments-pair-orientation START -->
 
@@ -66,62 +56,49 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-An inversion turns a stretch of sequence around, and every read that was inside
-it turns around too. A pair with one end inside and one end outside therefore
-has one end reversed and one not, so both point the same way — forward-forward
-where the pair crosses the left junction, reverse-reverse where it crosses the
-right one.
-
-Each of those pairs also has one end carried to the far side of the segment, so
-the two span most of it and overlap each other. A green LL pair and a navy RR
-pair drawn across the same stretch is the pattern to look for.
+An inversion turns a stretch of sequence around, and every read inside it turns
+around too. A pair with one end inside and one end outside therefore has one end
+reversed and one not, so both point the same way: forward-forward across the
+left junction, reverse-reverse across the right one. Each of those pairs also
+has an end carried to the far side of the segment, so a green LL bundle and a
+navy RR bundle span the same stretch.
 
 <Figure caption="Only a pair straddling a junction has an end that moved without its mate; one wholly inside the inverted segment, or wholly outside it, is unremarkable. The bottom row flips the segment back, and the tie lines follow each read to where it lands: the two inside the segment trade places and turn around." src="/img/inversion_pair_orientation.png" />
 
-The two halves of an INVdup call read out of two different things. Green LL,
-navy RR and magenta split reads are the inversion — the third is one read split
-into alignments that point in opposite directions, which is the same event seen
-within a single molecule. They are a minority of an otherwise concordant grey
-pileup, so they cluster at the breakpoints. The duplication carries no
-orientation signature at all: where the second copy went is the segment the call
-names in `INFO.CPX_INTERVALS`, and no read in the pileup states it.
+In an inverted duplication call, green LL, navy RR and magenta split reads are
+all the inversion, the last being one read split into alignments that point in
+opposite directions. They are a minority of an otherwise concordant grey pileup,
+so they cluster at the breakpoints. The duplication carries no orientation
+signature at all: where the second copy went is what the call's
+`INFO.CPX_INTERVALS` names, and no read in the pileup states it.
 
 <Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
 
 ### Inversions in long reads
 
-Short paired-end reads _infer_ an inversion: neither mate spans the breakpoint,
-so the evidence is a cluster of same-orientation (LL/RR) or split pairs arcing
-across the two junctions in an otherwise concordant (grey) pileup. Long reads
-span the whole event, so a single read crosses both breakpoints and splits into
-forward and reverse-strand alignments. With View as pairs / link supplementary
-alignments on, those segments chain onto one row: the inverted middle paints the
-reverse-strand color between the forward-strand segments on either side, and the
-split alignments are joined by a magenta inversion arc.
+Short paired-end reads _infer_ an inversion, because neither mate spans a
+breakpoint. A long read spans the whole event and splits into forward and
+reverse-strand alignments. With View as pairs / link supplementary alignments
+on, those segments chain onto one row: the inverted middle paints the
+reverse-strand color between the forward-strand segments either side, and a
+magenta arc joins the two breakpoints.
 
-**Group by... → Split read (SA tag)** in the track menu puts the reads carrying
-a supplementary alignment in their own section. In that section each read breaks
-into three pieces: the middle one aligns in reverse (blue) and the two either
-side align forward (red), and the magenta arc joins the two breakpoints. The
-section below it spans the locus in one piece.
-
-The two sections together are the genotype. A read covers one haplotype, so a
-locus where some reads invert and the rest run through unbroken is one inverted
-copy and one uninverted — a heterozygous inversion read off the pileup rather
-than from the caller's `GT`.
+**Group by... → Split read (SA tag)** puts the reads carrying a supplementary
+alignment in their own section, where each breaks into three pieces with the
+middle one reversed. The section below spans the locus in one piece. The two
+sections together are the genotype: a locus where some reads invert and the rest
+run through unbroken is one inverted copy and one uninverted, read off the
+pileup rather than from the caller's `GT`.
 
 <Figure caption="Reads grouped by Group by... → Split read (SA tag) over HGSV_10047 in HG00151 nanopore reads, with the 1KGP ensemble VCF call above. The split reads in the upper section break into three pieces with the middle one reversed; the reads below cross the same span in one piece." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 
-In the pileup, set the color scheme to Insert size from the track menu. Reads
-are colored red (insert larger than expected), pink (smaller than expected), or
-light grey (normal). A separate Insert size (gradient) option shades reads
-continuously by the magnitude of the deviation. Reads with a mate on a different
-chromosome are handled separately (see the table below).
-
-With read arcs or the read cloud enabled (via Read connections in the track
-menu), the Insert size option uses threshold-based coloring:
+Set the color scheme to Insert size from the track menu. Reads are colored red
+(insert larger than expected), pink (smaller than expected), or light grey
+(normal), and a separate Insert size (gradient) option shades continuously by
+the magnitude of the deviation. With read arcs or the read cloud enabled, the
+Insert size option uses threshold-based coloring:
 
 <!-- COLOR_TABLE alignments-insert-size START -->
 
@@ -135,123 +112,65 @@ menu), the Insert size option uses threshold-based coloring:
 
 <!-- COLOR_TABLE alignments-insert-size END -->
 
-The "expected" range is a robust band around the typical insert size,
-`median ± 3·1.4826·MAD` rather than `mean ± 3σ`: the long right tail of large
-inserts (deletions, SVs) inflates the standard deviation, pushing a `mean − 3σ`
-lower bound below zero so short inserts are never flagged.
+The expected range is a robust band around the typical insert size.[^mad]
 
 Insert size and orientation combines both signals and is often the most
-informative setting for a general SV scan. The two signals are prioritized so
-that the strongest cue wins:
-
-- Short insert always paints pink, even if the pair orientation is abnormal: at
-  a short insert the signal is that an insertion is here.
-- Otherwise an abnormal pair orientation wins (teal RL → tandem duplication;
-  green LL / dark blue RR → inversion).
-- A large insert with normal orientation paints red, the classic deletion
-  signature.
+informative setting for a general SV scan. A short insert always paints pink,
+even where the orientation is abnormal, then an abnormal orientation wins (teal
+RL for a tandem duplication, green LL or dark blue RR for an inversion), and a
+large insert with normal orientation paints red for the classic deletion.
 
 ### SV channels
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
-the rows around it: a minority of abnormally oriented pairs among concordant
-grey, their arcs crossing everything else's. **Track menu → Read connections →
-SV channels (pairs by orientation)** takes the same reads apart. Each
-orientation class becomes its own band with its own coverage curve and its own
-arcs, the concordant pairs drop out of the arcs, and the pileup goes away.
-
-The bands are the rows of the orientation table above, and the
-[signatures below](#sv-type-signatures) are the key to reading them.
+the rows around it. **Track menu → Read connections → SV channels (pairs by
+orientation)** takes the same reads apart: each orientation class becomes its
+own band with its own coverage curve and its own arcs, the concordant pairs drop
+out of the arcs, and the pileup goes away. The bands are the rows of the
+orientation table above, and the [signatures below](#sv-type-signatures) are the
+key to reading them.
 
 <Figure caption="The same variant, in the same place, through each band. Which band fills is what names the rearrangement, and a band that stays empty under a call is a call with no read-pair evidence behind it." src="/img/sv_channels_bands.png" />
 
 <Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles standing on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty." src="/img/sv_channels.png" />
 
-Clicking the row again restores an ordinary pileup. The color scheme is
-untouched in both directions, so a track colored by modifications or insert size
-still is on the way back out.
+Clicking the row again restores an ordinary pileup, with the color scheme
+untouched in both directions. [](/docs/tutorials/sv_multisamples) reads a
+complex 1000 Genomes call band by band.
 
 ## SV-type signatures
 
-The patterns below describe what each SV type typically looks like in the
-alignments track. Combine several signals (clipping, orientation, coverage,
-arcs) before calling an SV. IGV's
-[paired-end alignment guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
-is a useful companion reference.
+Each SV type leaves a characteristic combination of the signals above. One row
+alone has artifacts that produce it, so combine several before calling an SV.
 
-### Deletion
+| SV type            | Read pairs                                 | Coverage                                                 | Clipping and arcs                                                                                               |
+| ------------------ | ------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Deletion           | red, insert larger than expected           | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs                                                                |
+| Insertion          | pink, insert smaller than expected         | unchanged                                                | clipped reads at one site, a purple insertion indicator, mates unmapped once the insertion outruns the fragment |
+| Inversion          | green LL and dark blue RR at the junctions | unchanged                                                | clipped reads at both breakpoints, magenta split-read arcs                                                      |
+| Tandem duplication | teal RL                                    | elevated over the duplicated segment                     | arcs pointing back upstream across the junction                                                                 |
+| Translocation      | rust, mate on another chromosome           | unchanged                                                | a cluster of rust reads at one end, arcs drawn as verticals at the view edge                                    |
 
-- Soft-clipped reads at two nearby positions mark the breakpoint edges
-- A coverage drop between those positions is a classic deletion signal;
-  heterozygous deletions typically show only a ~50% reduction rather than a
-  complete drop
-- Paired reads flanking the gap colored red (larger insert than expected)
-  suggest a deletion spanning the pair
-- With read arcs enabled, unusually long arcs point to a deletion
+Zoomed inside an inverted segment the interior reads look concordant, so the
+junctions are where to look. Turning on Show soft clipping makes an insertion's
+bases readable on each side of the site, and the clipped bases at an inversion
+breakpoint often carry the short homology the junction formed on. For a
+translocation, open the [breakpoint split view](#breakpoint-split-view) from the
+feature details to see both ends at once.
 
 <Figure caption="A 27 bp heterozygous deletion in HG002 ONT reads, with the SNP coverage panel above the pileup. The pileup is grouped by HP tag into stacked sections, and the reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
-
-### Insertion
-
-- Soft-clipped reads at a single site suggest an insertion; with Show soft
-  clipping enabled, the inserted bases become visible on each side
-- When the insertion is large enough that pairs flank it, those pairs colored
-  pink (smaller insert on reference) suggest an insertion between them
-- For insertions larger than the sequenced fragment size, mates may become
-  unmapped; long reads are needed to fully span the event
-- A purple insertion indicator triangle suggests an insertion when enough reads
-  carry one at that position (see
-  [insertion and clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators)
-  for the depth-dependent threshold and for the same event across nanopore,
-  PacBio, and Illumina reads)
-
-### Inversion
-
-- LL (green) and RR (dark blue) read pairs at a boundary suggest an inversion:
-  normally LR-oriented reads become same-direction across the junction
-- If you're zoomed into the inverted region itself, interior reads may look
-  concordant
-- Soft-clipped reads appear at both breakpoints, sometimes with short homology
-  sequences visible in the clipped bases
-
-The green LL / dark blue RR signature appears in the inverted-duplication figure
-in the [pair orientation section](#pair-orientation-color-scheme) above.
-
-### Tandem duplication
-
-- RL (teal) read pairs suggest a tandem duplication: reads appear to point away
-  from each other when the duplicated segment is joined back to its origin
-- Elevated coverage over the duplicated region is another supporting signal
-- With read arcs enabled, arcs pointing backward (upstream) across a junction
-  point to a tandem duplication
-
-The teal RL signature also appears in the inverted-duplication figure in the
-[pair orientation section](#pair-orientation-color-scheme) above.
-
-### Translocation / inter-chromosomal fusion
-
-- Under the pair orientation and insert size schemes, reads with mates on a
-  different chromosome take the rust inter-chromosomal color in the pileup and
-  on their arcs alike, rather than being classified by orientation
-- A cluster of such reads at a locus marks one end of a translocation; open the
-  [breakpoint split view](#breakpoint-split-view) from the feature details to
-  see both ends at once
 
 ## Read arcs
 
 [Read arcs](/docs/user_guides/alignments_track#read-arcs) draw bezier curves
-between the ends of paired or split reads. For SVs, unusually long arcs relative
-to their neighbors point to a deletion spanning the pair, and inter-chromosomal
-connections (drawn as vertical lines at the view edge) flag translocations. Set
-the color scheme to insert size, orientation, or combined coloring from the
-track menu.
+between the ends of paired or split reads. Unusually long arcs relative to their
+neighbors point to a deletion spanning the pair, and inter-chromosomal
+connections (drawn as vertical lines at the view edge) flag translocations. With
+View as pairs on, each mate pair collapses onto a single row joined by its own
+curve, so the abnormal same-orientation pairs of an inverted duplication read as
+a coherent bundle.
 
 <Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio, with the 1KGP ensemble SV call on top. The red arcs are pairs with a larger-than-expected insert size, lining up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
-
-With View as pairs on, each mate pair collapses onto a single row joined by its
-own bezier curve, colored here by pair orientation. The abnormal
-same-orientation pairs of an inverted duplication then read as a coherent bundle
-of curves.
 
 A read can look concordant (light-grey LR fill) yet still carry a colored
 connector: the read itself crosses the breakpoint, splitting into a primary and
@@ -259,16 +178,20 @@ a strand-flipped supplementary alignment, and the arc joining them takes the
 split-read inversion color rather than the RR-pair blue. That is evidence from
 one read rather than a pair. Hover any connector for its classification.
 
+Arcs also count. Near-identical curves stack into one line, so a curve per
+molecule cannot say how many molecules agree, while the arc band draws each
+junction once and thickens it by the reads behind it.
+[](/docs/tutorials/k562_fusions) counts a fusion's support that way.
+
 ## Read cloud
 
 [Read cloud](/docs/user_guides/alignments_track#read-cloud) stratifies reads by
-the log-scaled distance between mates, making it easy to count how many reads
-span a breakpoint and read their orientation at a glance. Chains with
-supplementary alignments are connected by an orange line.
+the log-scaled distance between mates, so how many reads span a breakpoint and
+which way they point are both countable at a glance. Chains with supplementary
+alignments are connected by an orange line, and Edit filters in the track menu
+shows or hides proper pairs and singletons.
 
-The Edit filters option in the track menu lets you show or hide proper pairs and
-singletons. The color scheme provides insert size, orientation, or combined
-coloring.
+<Figure caption="Read cloud on a synthetic SV dataset, colored by insert size. Reads are stratified by log distance between mates, lifting the insertion pairs (pink) clear of the background." src="/img/alignments/read_cloud.png" />
 
 ## Inspecting individual reads
 
@@ -278,136 +201,86 @@ long read spanning a breakpoint, where the order the read visits those loci in
 is the structure of the rearrangement. See
 [one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
+<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions, the ordinary pileup above and the read drawn against the reference below. Each gap in the diagonal is sequence the read carries and the reference does not." src="/img/read_vs_ref_insertion.png" />
+
 ## Reconstructing a derivative allele
 
 A split read is an ordered, oriented list of reference intervals, which is what
 a derivative allele is. The alignments track menu's **Launch → Reconstruct
 derivative allele...** groups the reads in the window by the route their split
 alignments describe and lists each route with the number of reads that
-independently take it. **Draw as** picks which view it opens in:
+independently take it. **Draw as** picks which view it opens in: a linear
+synteny view puts the allele along the bottom and the loci it visits along the
+top, a breakpoint split view stacks those loci in the order the reads cross
+them. Either goes into the launching view's place or into a new view below it.
 
-- **linear synteny view** puts the allele along the bottom and the loci it
-  visits along the top
-- **breakpoint split view** stacks those loci in the order the reads cross them
-
-Either goes into the launching view's place or into a new view below it.
-
-### What the reconstruction needs
-
-Reconstruction reads split alignments and counts them, so what it recovers
-follows from what the aligner wrote and how many molecules crossed the event.
-The figures below come from scoring it at every junction two published somatic
-callsets report — COLO829 on ONT and C-GIAB's HG008-T on PacBio HiFi, 215
-junctions between them, with the matched normals and random loci as controls.
-
-- **Long reads, from an aligner that emits SA tags** — minimap2 and ngmlr both
-  do. A 100 bp Illumina library over the same breakpoints ranks each junction on
-  its own and produces no multi-junction route, because no read reaches from one
-  junction to the next. The picker measures the reads on screen, so where a
-  short-read library returns nothing it prints the median aligned length it
-  found rather than sending you to a wider window.
-- **An event above about 10 kb, or interchromosomal.** Across those two
-  callsets, 129 of the 130 junctions above 10 kb or between chromosomes are
-  recovered; between 1 and 10 kb it is 60% and 65%; below 1 kb, 11% and 10%. The
-  cliff is a representation, not a limit on the event: 50 of the 58 misses are
-  events the aligner wrote as a deletion inside one read's CIGAR rather than as
-  a split alignment, which nothing reading SA tags can reach, and the pileup's
-  own deletion marks are where those show. Where the cliff falls is as much the
-  aligner's doing as the browser's, so another aligner puts it somewhere else.
-- **Two reads that agree.** A route reaches the list once at least two of them
-  cross the same junctions in the same order and orientation. Listing one-read
-  routes as well buys three points of recall and twelve times as many routes at
-  loci with no event, which is what the floor is there for — it is not a
-  judgement that a single split read is mismapped.
-- **The reads actually loaded.** A window over the track's byte budget renders
-  as `force load` with nothing behind it; the dialog says so rather than
-  reporting that no route is supported. Narrow the window.
-- **Every locus you want ranked on screen.** A read anchored in the window
-  brings its whole SA chain, so the far side of a junction needs no panel of its
-  own. Reads sitting only at that far locus contribute nothing until it is
-  shown: over one of the HG008-T demo slices the picker offers a single route,
-  and over both it offers seven.
-
-The same entry on a synteny track reads contigs rather than reads — a de novo
-assembly aligned to the reference is the same object at a larger scale — and
-there one contig is enough to list a route, while every locus has to be on
-screen, since an alignment block names nothing the view has not fetched.
-
-### Judging what it lists
-
-A read count ranks the routes; it does not vouch for them. Reads mismapped into
-a repeat produce a confident-looking route, so the output is a proposal to check
-against the reads rather than a call.
-
-- **The matched normal is the strongest check.** At the same windows, the normal
-  recovers none of the somatic junctions in either callset. It does propose
-  routes elsewhere — at 40% of COLO829's control windows and 4% of HG008-T's —
-  so a route on its own says a locus has split reads, not that it has an event.
-- **Look at the top two rows.** Where a published junction is recovered, it
-  ranks first in 48 of 51 (COLO829) and 96 of 106 (HG008-T), and first or second
-  in every single case. A route further down the list is unlikely to be the one
-  you came for.
-- **Read the segment sizes.** A route whose segments are each about one read
-  long is an aligner splitting a short read across the genome rather than an
-  allele; the segment strip drawn to scale beside each row, and the sizes under
-  it, are what separate the two.
-- **A row marked "part of a longer route in this list"** crosses a run of
-  another row's junctions and stops. It is consistent with the longer route
-  rather than a rival to it.
-- **Dozens of routes means a repetitive window**, not a complicated allele. The
-  picker says how many it left off the list for that reason.
+<Figure caption="Top: the reconstruction dialog over the COLO829 tumor pileup it was computed from, each route's segments drawn to scale under its read count. Bottom: the linear synteny view the top route opens, hg38 above and the reconstructed allele below, one ribbon per segment." src="/img/cancer_sv/derivative_autogenerated.png" />
 
 [](/docs/tutorials/cancer_sv) works through both shapes it produces, a
 two-segment fold-back and a four-segment allele across three chromosomes.
+[](/docs/tutorials/sv_visualization_cgiab) runs it over a tumor/normal HiFi pair
+and checks the route it ranks first against a published benchmark.
 
-### Where split-read reconstruction comes from
+### What the reconstruction needs
 
-Reading a split alignment as an ordered list of reference intervals is the
-signature long-read SV callers extract before they cluster anything
-([Sedlazeck et al. 2018](https://doi.org/10.1038/s41592-018-0001-7)), and
-ordering and orienting those intervals into a derivative chromosome is what
-long-read rearrangement pipelines do with them
-([Cretu Stancu et al. 2017](https://doi.org/10.1038/s41467-017-01343-4),
-[Mitsuhashi et al. 2020](https://doi.org/10.1186/s13073-020-00762-1)). Callers
-that work from junctions instead reach the same object by chaining breakends
-under copy-number constraints, which is LINX
-([Shale et al. 2022](https://doi.org/10.1016/j.xgen.2022.100112)).
+- **Long reads, from an aligner that emits SA tags** - minimap2 and ngmlr both
+  do. A short-read library ranks each junction on its own and produces no
+  multi-junction route, because no read reaches from one junction to the next.
+  The picker measures the reads on screen, so it prints the median aligned
+  length it found rather than sending you to a wider window.
+- **An event above about 10 kb, or interchromosomal.** Below that an aligner
+  usually writes the event inside one read's CIGAR rather than as a split
+  alignment, which nothing reading SA tags can reach, and the pileup's own
+  deletion marks are where those show. Where the cliff falls is as much the
+  aligner's doing as the browser's.
+- **Two reads that agree.** A route reaches the list once at least two of them
+  cross the same junctions in the same order and orientation. The floor is what
+  keeps a repetitive window from filling the list, not a judgement that a single
+  split read is mismapped.
+- **The reads actually loaded.** A window over the track's byte budget renders
+  as `force load` with nothing behind it, and the dialog says so rather than
+  reporting that no route is supported. Narrow the window.
+- **Every locus you want ranked on screen.** A read anchored in the window
+  brings its whole SA chain, so the far side of a junction needs no panel of its
+  own, but reads sitting only at that far locus contribute nothing until it is
+  shown.
 
-The browser does the visualization half of that lineage. Ribbon
-([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa1080)) draws
-one read's split alignment against every locus it touches; this groups those
-chains and counts them. It does not genotype, filter or emit a call, and where
-two routes disagree it lists both with their counts rather than choosing.
+The same entry on a synteny track reads contigs rather than reads, since a de
+novo assembly aligned to the reference is the same object at a larger scale.
+There one contig is enough to list a route, and every locus has to be on screen,
+because an alignment block names nothing the view has not fetched.
 
-### Validation datasets
+### Judging what it lists
 
-Each row below is a regression fixture holding every read in that window that
-takes part in a multi-segment chain, verbatim from the published file, so what
-the fixture asserts is what the picker shows.
+A read count ranks the routes, it does not vouch for them. Reads mismapped into
+a repeat produce a confident-looking route, so the output is a proposal to check
+against the reads rather than a call.
 
-| Records                       | Chemistry       | What the fixture pins                                                                                                   |
-| ----------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| COLO829 tumor, chr3           | ONT             | The der(3) allele as one four-segment route at 28 reads, and beside it at 2 reads the route that skips its chr12 insert |
-| COLO829BL normal, same window | ONT             | No route, which is what makes the tumor's somatic                                                                       |
-| COLO829 tumor, chr9           | ONT             | A fold-back, kept apart from a second allele whose junction sits 28 bp away                                             |
-| COLO829 tumor, hg19           | Illumina 100 bp | The three published junctions ranked top, and no path: no read reaches from one junction to the next                    |
-| HG008-T                       | PacBio HiFi     | A chromoplexy breakend as the top route at 65 reads, its two ends on the breakends the benchmark publishes              |
-| HG008-N, same window          | PacBio HiFi     | No split reads at all                                                                                                   |
-| 1000 Genomes HG02030          | Illumina 150 bp | Confidently ranked routes at a germline locus with no event, separable from a real allele by segment span               |
-| K562                          | PacBio Iso-Seq  | One row per splice acceptor from a single DNA breakpoint, which is why this is documented for genomic reads             |
-
-The COLO829 junctions are those of the multi-platform truth set
-([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)); the
-HG008-T ones are the C-GIAB draft benchmark's, whose T2T tumor assembly puts
-both loci on one contig with the orientation flip the reads describe
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
+- **The matched normal is the strongest check.** A route on its own says a locus
+  has split reads, not that it has an event, and normals do propose routes at
+  windows with nothing somatic in them.
+- **Look at the top two rows.** Where a published junction is recovered it is
+  the first or second row in both validation callsets. A route further down the
+  list is unlikely to be the one you came for.
+- **Read the segment sizes.** A route whose segments are each about one read
+  long is an aligner splitting a short read across the genome rather than an
+  allele, and the segment strip drawn to scale beside each row is what separates
+  the two.
+- **A row marked "part of a longer route in this list"** crosses a run of
+  another row's junctions and stops, so it is consistent with the longer route
+  rather than a rival to it.
+- **Dozens of routes means a repetitive window**, not a complicated allele. The
+  picker says how many it left off the list.
 
 ### Recall by event size
 
-Recall depends on event size, because the reconstruction reads split alignments
-and an aligner represents a short deletion inside one read's CIGAR instead of
-splitting it. Below, COLO829 against its ONT calls and HG008-T against the
-C-GIAB benchmark, run over every junction rather than at chosen loci:
+Recall follows event size, because the reconstruction reads split alignments and
+an aligner represents a short deletion inside one read's CIGAR instead. Below,
+COLO829 against its ONT calls
+([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)) and
+HG008-T against the C-GIAB draft benchmark
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)), scored at
+every junction rather than at chosen loci:
 
 | Event size       | COLO829, ONT | HG008-T, PacBio HiFi |
 | ---------------- | ------------ | -------------------- |
@@ -417,25 +290,36 @@ C-GIAB benchmark, run over every junction rather than at chosen loci:
 | > 100 kb         | 17 / 17      | 54 / 54              |
 | interchromosomal | 11 / 11      | 14 / 14              |
 
-Where the junction is recovered it is the first or second route listed in every
-case in both datasets, and its two ends land a median of 1 to 2 bp from the
-called breakend. No somatic junction is recovered at the same windows in each
-matched normal.
+Where a junction is recovered, its two ends land within a base or two of the
+called breakend, and neither matched normal recovers a somatic junction at the
+same windows.
 
-So the tool is for events large enough that the aligner splits the read across
-them, which is what the segment sizes beside each row let you check. Routes do
-appear at loci with no event.
+Reading a split alignment as an ordered list of reference intervals is what
+long-read SV callers extract before they cluster anything
+([Sedlazeck et al. 2018](https://doi.org/10.1038/s41592-018-0001-7)), and
+ordering those intervals into a derivative chromosome is what long-read
+rearrangement pipelines do with them
+([Cretu Stancu et al. 2017](https://doi.org/10.1038/s41467-017-01343-4),
+[Mitsuhashi et al. 2020](https://doi.org/10.1186/s13073-020-00762-1)). This is
+the visualization half of that lineage, in the manner of Ribbon
+([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa1080)): it
+groups those chains and counts them, and where two routes disagree it lists both
+with their counts rather than choosing.
 
 ## Breakpoint split view
 
-The breakpoint split view opens two synchronized panels side-by-side, each
-centered on one breakpoint locus. Splines connect supporting reads across both
-panels, and the variant call is drawn as a colored line with feet indicating
-directionality.
+The breakpoint split view opens synchronized panels side-by-side, each centered
+on one breakpoint locus. Splines connect supporting reads across the panels, and
+the variant call is drawn as a colored line with feet indicating directionality.
+The header bar accepts location searches in either panel.
 
 <Figure caption="Breakpoint split view for an interchromosomal translocation, each panel centered on one breakpoint locus. Black splines connect supporting reads that span the junction, and the green line with feet is the variant call drawn across both panels to show directionality." src="/img/breakpoint_split_view.png" />
 
-The header bar accepts location searches directly in either panel.
+Hovering a spline shades the reads it joins, so a junction names the alignments
+that carry it. The shading follows the whole chain, every segment of the read in
+every panel it visits, and every other spline of the same read thickens
+alongside it. Untick **Show... → Allow clicking alignment squiggles** to turn
+the overlay back into a static picture.
 
 ### Launching the breakpoint split view
 
@@ -446,96 +330,81 @@ The header bar accepts location searches directly in either panel.
   the feature details panel has a button to open the split view, automatically
   loading any open alignment tracks.
 - From alignment feature details - click any read with a supplementary
-  alignment; the feature details panel includes an option to open the split view
-  centered on that read and its supplementary partner.
+  alignment, for a split view centered on that read and its supplementary
+  partner.
 - From the circular genome view - click a chord's feature details and use the
   "Open breakpoints in split view" link in its Breakends section.
 
 <Figure caption="Feature details panel for a TRA variant. The Breakends section lists each endpoint with its own 'Open in linear view' link, and below them a single 'Open breakpoints in split view' link that opens both loci at once." src="/img/link_to_split_view.png" />
 
-The view also supports multi-hop events where a single read has multiple
-supplementary alignments, connecting more than two breakpoints simultaneously.
+### Multi-hop events
 
-Hovering a spline shades the reads it joins, so a junction names the alignments
-that carry it. The shading follows the whole chain — every segment of the read,
-in every panel it visits — and every other spline of the same read thickens
-alongside it. Untick **Show... → Allow clicking alignment squiggles** to turn
-the overlay back into a static picture.
+A read with several supplementary alignments visits more than two loci, and the
+view grows a panel per locus rather than stopping at a pair.
+[](/docs/tutorials/cancer_sv) follows one such chain across three chromosomes.
+
+<Figure caption="A COLO829 chain through chr3, chr10 and chr12 and back to chr3, one panel per locus with the tumor pileup in each. The splines carry the same molecules from panel to panel, in the order the reads cross the junctions." src="/img/cancer_sv/multihop_split_view.png" />
 
 ### Following a chain of breakends
 
-A BND record names one partner, so the record a launch starts from is two loci
-however many the rearrangement has. Launching from a variant track's own
-right-click menu offers **Follow further breakends at each end**, which reaches
-the rest from the callset: at each end of the chain it looks for another
-junction leaving from within a kilobase of the same place, and takes it when
-there is exactly one, adding a panel per hop up to four.
+A BND record names one partner, so a launch from one record is two loci however
+many the rearrangement has. **Follow further breakends at each end** reaches the
+rest from the callset: at each end of the chain it looks for another junction
+leaving from within a kilobase of the same place, and takes it when there is
+exactly one, adding a panel per hop up to four. It is offered by the two
+launches that can read the callset, a variant track's right-click menu and a
+click on a chord drawn from that same file, and only for the stacked shape.
 
-It reads two junctions that leave one locus as one molecule, which the caller
-does not assert, so it stops where that would be a guess: two open continuations
-at a locus stop the walk, since the records cannot say which molecule carries
-which, and so does a continuation leading back to a locus already on screen. To
-work from the reads themselves, use
-[Reconstruct derivative allele](/docs/tutorials/cancer_sv#reconstructing-the-derivative-allele-in-the-browser),
-which ranks whole routes by how many molecules independently take each.
+<Figure caption="Launching from a COLO829 breakend record: the variant's right-click menu, the dialog with Follow further breakends at each end ticked, and the three panels the walk produces because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
 
-The option appears only for a launch that can read the callset, and only for the
-stacked shape. Two launches can: a variant track's right-click menu, and a click
-on a chord in the SV inspector or a circular view, where the chord was drawn
-from that same file.
+It reads two junctions leaving one locus as one molecule, which the caller does
+not assert, so it stops where that would be a guess. Two open continuations at a
+locus stop the walk, since the records cannot say which molecule carries which,
+and so does a continuation leading back to a locus already on screen. To work
+from the reads themselves instead, use
+[Reconstruct derivative allele](#reconstructing-a-derivative-allele), which
+ranks whole routes by how many molecules independently take each.
 
 ## Phasing heterozygous SVs
 
-For heterozygous SVs, confirming that supporting reads come from a single
-haplotype is strong evidence for the call. If your BAM/CRAM has been haplotagged
-(e.g., with WhatsHap or HiPhase), reads carry an `HP` tag identifying the
-haplotype; the [phased trio tutorial](/docs/tutorials/analyze_trio) covers
-working with phased haplotypes end-to-end.
-
-Sort, color, or [group](/docs/user_guides/alignments_track#grouping-reads) by
-the `HP` tag from the track menu. Sorting and coloring cluster each haplotype's
-reads together; grouping goes further and gives each haplotype its own pileup
-section, which makes a one-sided SV unmistakable. Reads with no `HP` tag collect
-in their own section, so unphased support is visible.
+For a heterozygous SV, confirming that the supporting reads come from a single
+haplotype is strong evidence for the call. Where the BAM/CRAM has been
+haplotagged (WhatsHap, HiPhase), reads carry an `HP` tag, and sorting, coloring
+or [grouping](/docs/user_guides/alignments_track#grouping-reads) by it from the
+track menu clusters each haplotype. Grouping goes furthest, giving each
+haplotype its own pileup section, with untagged reads collected in their own so
+unphased support stays visible. The
+[phased trio tutorial](/docs/tutorials/analyze_trio) covers phased haplotypes
+end-to-end.
 
 ## Working with large SVs
 
-Loading a very large region can trigger an error when the window would require
-fetching more data than JBrowse allows in a single request. For large or
-inter-chromosomal SVs:
+A window large enough to need more data than a single request allows will fail
+to load reads. For large or inter-chromosomal SVs:
 
-- Use a BigWig coverage track (or a
+- Survey the region with a BigWig coverage track, or a
   [multi-quantitative track](/docs/user_guides/multiquantitative_track) for
-  tumor vs normal comparison) instead of a full alignments track when surveying
-  the region. It loads at any scale and makes copy-number changes immediately
-  visible
-- Load the SV call set as a variant track for a compact overview of all calls;
-  clicking a feature navigates directly to it
-- Open the breakpoint split view to inspect the breakpoint loci themselves. Each
-  panel shows only a local window around one end of the SV, so the
-  inter-breakpoint distance doesn't matter
-- Use the SV inspector for whole-genome triage before drilling into individual
-  calls
+  tumor vs normal. It loads at any scale and makes copy-number changes
+  immediately visible
+- Load the call set as a variant track for a compact overview, where clicking a
+  feature navigates to it
+- Open the breakpoint split view for the breakpoint loci themselves. Each panel
+  is a local window around one end, so the distance between them does not matter
+- Use the SV inspector for whole-genome triage before drilling in
 
 <Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale without loading any reads." src="/img/cnv.png" />
 
 ## Whole-genome assembly comparison
 
-When a de novo assembly of the sample is available (for example, a phased tumor
-assembly from PacBio HiFi or ONT data), aligning it back to the reference with a
-tool like [minimap2](https://github.com/lh3/minimap2) and loading the resulting
-PAF as a [synteny track](/docs/tutorials/synteny_visualization) gives a
-chromosome-scale view of rearrangements. Complex events like chromosomal fusions
-appear as off-diagonal blocks in the
-[dotplot view](/docs/user_guides/dotplot_view), and clicking and dragging over a
-region in the dotplot can launch a base-level
-[linear synteny view](/docs/user_guides/linear_synteny_view) with the same
-alignment.
-
-This is particularly effective on cancer samples, whose derived genome often
-differs structurally from the reference. The
-[C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab) walks through this
-workflow end-to-end with the HG008 phased tumor assembly.
+Where a de novo assembly of the sample is available, aligning it back to the
+reference with [minimap2](https://github.com/lh3/minimap2) and loading the PAF
+as a [synteny track](/docs/tutorials/synteny_visualization) gives a
+chromosome-scale view of the rearrangements. Complex events appear as
+off-diagonal blocks in the [dotplot view](/docs/user_guides/dotplot_view), and
+dragging over one launches a base-level
+[linear synteny view](/docs/user_guides/linear_synteny_view) on the same
+alignment. The [C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab) walks
+this through with the HG008 phased tumor assembly.
 
 ## Summary
 
@@ -555,17 +424,13 @@ workflow end-to-end with the HG008 phased tumor assembly.
 
 ## Limitations
 
-- Read-level displays require zooming in: the pileup, read arcs, and read cloud
-  modes only render when the view is zoomed in enough to load individual reads;
-  very large SVs can't be spanned in a single pileup view
-- Paired-end evidence is fragment-size limited: for insertions larger than the
-  sequenced fragment, paired-end evidence disappears; long reads are required to
-  fully resolve the inserted sequence
-- Repetitive regions: SVs in segmental duplications or repeats produce noisy,
-  ambiguous signals; soft-clipped reads and orientation anomalies are common
-  artifacts in these regions
-- Short-read orientation coloring assumes `fr` (Illumina) read pairs;
-  SOLiD-style orientations are not supported
+- Read-level displays need the reads: the pileup, read arcs and read cloud only
+  render once the view is zoomed in far enough to load them, and a very large SV
+  cannot be spanned in one pileup. Use the routes in
+  [working with large SVs](#working-with-large-svs)
+- Repetitive regions: in segmental duplications and repeats, soft clips and
+  orientation anomalies are common artifacts, so a signature there is weak
+  evidence on its own
 
 ## See also
 
@@ -582,15 +447,16 @@ workflow end-to-end with the HG008 phased tumor assembly.
   [Mapping and phasing of structural variation in patient genomes using nanopore sequencing](https://doi.org/10.1038/s41467-017-01343-4)
 - Mitsuhashi et al. (2020).
   [A pipeline for complete characterization of complex germline rearrangements from long DNA reads](https://doi.org/10.1186/s13073-020-00762-1)
-- Nattestad et al. (2018).
-  [Complex rearrangements and oncogene amplifications revealed by long-read DNA and RNA sequencing of a breast cancer cell line](https://doi.org/10.1101/gr.231100.117)
 - Nattestad et al. (2021).
   [Ribbon: intuitive visualization for complex genomic variation](https://doi.org/10.1093/bioinformatics/btaa1080)
 - Sedlazeck et al. (2018).
   [Accurate detection of complex structural variations using single-molecule sequencing](https://doi.org/10.1038/s41592-018-0001-7)
-- Shale et al. (2022).
-  [Unscrambling cancer genomes via integrated analysis of structural variation and copy number](https://doi.org/10.1016/j.xgen.2022.100112)
 - Valle-Inclán et al. (2022).
   [A multi-platform reference for somatic structural variation detection](https://doi.org/10.1016/j.xgen.2022.100139)
 - Wagner et al. (2026).
   [A complete human pancreatic cancer genome](https://doi.org/10.64898/2026.05.01.722316)
+
+[^mad]:
+    The band is `median ± 3·1.4826·MAD` rather than `mean ± 3σ`, because the
+    long right tail of large inserts inflates the standard deviation and pushes
+    a `mean − 3σ` lower bound below zero, where no short insert is ever flagged.
