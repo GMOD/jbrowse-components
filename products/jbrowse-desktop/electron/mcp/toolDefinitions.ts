@@ -4,7 +4,8 @@
 
 export interface McpToolDefinition {
   name: string
-  handledBy: 'main' | 'renderer'
+  // 'stdio' is answered inside the stdio server itself, without the app
+  handledBy: 'main' | 'renderer' | 'stdio'
   description: string
   inputSchema: Record<string, unknown>
 }
@@ -12,6 +13,39 @@ export interface McpToolDefinition {
 const TRACK_ENTRY_DOC = `A track entry is either a bare trackId string, or an object { "trackId": ... } whose other keys are display settings written inline — the same names the track menu writes, e.g. { "trackId": "hg002_ont", "type": "LinearAlignmentsDisplay", "height": 400, "colorBy": { "type": "tag", "tag": "HP" } }. Common inline keys: height, displayMode ("compact"/"collapse"), showLabels, featureHeight, minScore, maxScore, color, colorBy, defaultRendering, jexlFilters, autoscale, forceLoad.`
 
 export const MCP_TOOLS: McpToolDefinition[] = [
+  {
+    name: 'evaluate',
+    handledBy: 'renderer',
+    description: `The raw primitive: run an async JavaScript function body inside the app against the LIVE session — everything the other tools do is expressible here, and anything they don't cover is too. In scope: "session" (the mobx-state-tree session model), "rootModel", "pluginManager", and "jb" ({ mst: full mobx-state-tree API, mobx: { autorun, when, runInAction, observable }, readConfObject, getConf, parseLocString, getFeatureAdapterOrThrow, getRpcSessionId, createStopToken, stopStopToken, waitReady }), plus the DOM and Node via window.require. Whatever you "return" comes back serialized (size-capped). Invent your own utilities: state persists between calls on globalThis (but re-read "session" each call — it is replaced when a new config loads). MST rules: read via properties and getters (snapshots omit getters), mutate ONLY via actions, read config slots with jb.readConfObject. READ docs topic "live-model" FIRST — it is a short orientation with working examples (model layout, direct adapter data access, waiting on renders).`,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string',
+          description:
+            'Async function body. Use "return" for the value you want back; "await" is available.',
+        },
+        maxBytes: {
+          type: 'number',
+          description:
+            'Largest serialized result to return whole before truncating to a preview (default 50000)',
+        },
+      },
+      required: ['code'],
+    },
+  },
+  {
+    name: 'docs',
+    handledBy: 'stdio',
+    description:
+      'Read the raw JBrowse automation documentation. Topics: "live-model" (driving the live session from evaluate — read this before your first evaluate), "session-spec" (the full session spec / URL params reference, every view type and launch key), "automating" (overview). No topic lists them. Works even while the app is closed.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        topic: { type: 'string' },
+      },
+    },
+  },
   {
     name: 'open',
     handledBy: 'main',
@@ -42,6 +76,26 @@ export const MCP_TOOLS: McpToolDefinition[] = [
     description:
       'Describe the currently open session: its name, the assemblies available, and each open view (id, type, visible region, shown tracks). Call this first to see what is on screen and to get view ids for navigate/show_track.',
     inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'inspect_session',
+    handledBy: 'renderer',
+    description: `Inspect the LIVE session model by dot-path — both raw state and the computed getters that a session snapshot filters out. Examples: path "views.0" (one view: its state plus a "getters" list naming what else it can answer), "views.0.visibleLocStrings" or "views.0.coarseVisibleLocStrings" (what region is on screen), "views.0.tracks.0.displays.0" (a live display's state), "views.0.totalBp", "" (session root). Large values come back as a keys/summary listing to drill into; property reads only, nothing is mutated. Use get_session for a quick overview and this for depth.`,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description:
+            'Dot-path from the session root, numeric segments index arrays (e.g. "views.0.visibleLocStrings"). Omit for the root.',
+        },
+        maxBytes: {
+          type: 'number',
+          description:
+            'Largest value to return whole before summarizing (default 20000)',
+        },
+      },
+    },
   },
   {
     name: 'list_tracks',
@@ -118,7 +172,7 @@ ${TRACK_ENTRY_DOC}
   {
     name: 'show_track',
     handledBy: 'renderer',
-    description: `Show a track in an open view (the given viewId or the first view that can show tracks). ${TRACK_ENTRY_DOC}`,
+    description: `Show a track in an open view (the given viewId or the first view that can show tracks). On a track that is ALREADY shown this is a no-op — settings are not re-applied; use update_track for that. ${TRACK_ENTRY_DOC}`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -130,6 +184,30 @@ ${TRACK_ENTRY_DOC}
         viewId: { type: 'string' },
       },
       required: ['track'],
+    },
+  },
+  {
+    name: 'update_track',
+    handledBy: 'renderer',
+    description: `Change display settings of tracks that are already shown, in place — no session or track reload, the display re-renders reactively. Select ONE track with "track" (exact trackId), a GROUP with "match" (case-insensitive substring of trackId or name), or EVERY shown track by passing neither — e.g. settings {"displayMode": "compact"} with no selector makes all tracks compact. Optionally scope to one view with viewId.
+
+"settings" speaks the same vocabulary as show_track's inline keys and session-spec track entries: height, displayMode ("compact"/"collapse"), showLabels, featureHeight, minScore/maxScore/autoscale, color, colorBy (e.g. {"type": "tag", "tag": "HP"} on alignments), defaultRendering, jexlFilters, and any other config slot of the track's display. The response reports per track which keys were applied and which could not be (changing the display "type" itself needs hide_track then show_track).`,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        settings: {
+          type: 'object',
+          description: 'Display settings to apply (see tool description)',
+        },
+        track: { type: 'string', description: 'Exact trackId to update' },
+        match: {
+          type: 'string',
+          description:
+            'Update all shown tracks whose trackId or name contains this (case-insensitive)',
+        },
+        viewId: { type: 'string' },
+      },
+      required: ['settings'],
     },
   },
   {
@@ -176,6 +254,33 @@ ${TRACK_ENTRY_DOC}
         viewId: { type: 'string' },
       },
       required: ['location'],
+    },
+  },
+  {
+    name: 'get_features',
+    handledBy: 'renderer',
+    description:
+      'Fetch the actual feature data of a track — the same records the display draws — as JSON: genes with subfeatures, variants with genotype/INFO, alignments with flags and CIGAR, quantitative values, etc. Runs the track adapter on the main thread (no worker serialization). Defaults to the region currently visible on screen (so navigate first, then inspect what is shown); pass loc for an arbitrary region without moving the view. Long strings and arrays are truncated; raise limit for more features. For aggregation, filtering, or anything beyond a bounded peek, use evaluate with jb.getFeatureAdapterOrThrow instead and return only the reduced answer.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        trackId: { type: 'string' },
+        loc: {
+          type: 'string',
+          description:
+            'Optional locstring ("ctgA:1,000-2,000" or a whole refName); default is the visible region of the (first navigable or viewId) view',
+        },
+        assembly: {
+          type: 'string',
+          description: "With loc: assembly name; defaults to the track's first",
+        },
+        limit: {
+          type: 'number',
+          description: 'Max features to return (default 30, max 500)',
+        },
+        viewId: { type: 'string' },
+      },
+      required: ['trackId'],
     },
   },
   {

@@ -20,12 +20,13 @@ interface JsonRpcRequest {
   params?: Record<string, unknown>
 }
 
-// The tool result travelling back over the bridge. `image` is the one
-// non-JSON-text payload: the screenshot tool fills it and everything else is
-// serialized as text content.
+// The tool result travelling back over the bridge (or produced locally).
+// `result` is serialized as JSON text content; `text` is passed through
+// verbatim (documentation); `image` becomes MCP image content.
 export interface BridgeToolResult {
   result?: unknown
   error?: string
+  text?: string
   image?: { data: string; mimeType: string }
 }
 
@@ -123,6 +124,9 @@ function toolCallContent(outcome: BridgeToolResult) {
       ],
     }
   }
+  if (outcome.text !== undefined) {
+    return { content: [{ type: 'text', text: outcome.text }] }
+  }
   return {
     content: [{ type: 'text', text: JSON.stringify(outcome.result, null, 2) }],
   }
@@ -191,7 +195,13 @@ export function runMcpStdioServer({
           typeof params.arguments === 'object' && params.arguments !== null
             ? (params.arguments as Record<string, unknown>)
             : {}
-        if (MCP_TOOLS.some(t => t.name === name)) {
+        if (name === 'docs') {
+          // answered here rather than in the app, so documentation reads work
+          // while JBrowse Desktop is closed; lazy so jest never resolves the
+          // .md imports it bundles
+          const { docsToolResult } = await import('./docsContent.ts')
+          respond(id, { result: toolCallContent(docsToolResult(args)) })
+        } else if (MCP_TOOLS.some(t => t.name === name)) {
           const outcome = await callBridge(name, args).catch((e: unknown) => ({
             error: e instanceof Error ? e.message : String(e),
           }))
@@ -211,6 +221,7 @@ export function runMcpStdioServer({
     }
   }
 
+  const inFlight = new Set<Promise<void>>()
   rl.on('line', line => {
     if (line.trim()) {
       let msg: JsonRpcRequest
@@ -220,7 +231,7 @@ export function runMcpStdioServer({
         respond(null, { error: { code: -32700, message: 'Parse error' } })
         return
       }
-      handle(msg).catch((e: unknown) => {
+      const work = handle(msg).catch((e: unknown) => {
         if (msg.id !== undefined && msg.id !== null) {
           respond(msg.id, {
             error: {
@@ -230,9 +241,13 @@ export function runMcpStdioServer({
           })
         }
       })
+      inFlight.add(work)
+      void work.finally(() => inFlight.delete(work))
     }
   })
   rl.on('close', () => {
-    onExit()
+    // drain before exiting: a one-shot pipe closes stdin the moment it has
+    // written its requests, while their answers are still being fetched
+    void Promise.allSettled([...inFlight]).then(onExit)
   })
 }
