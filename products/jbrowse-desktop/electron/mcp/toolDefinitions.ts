@@ -39,7 +39,7 @@ In scope: "session" (the live mobx-state-tree session model), "rootModel", "plug
 - views: jb.loadSessionSpec(spec) builds views declaratively (docs topic "session-spec" is the full reference; e.g. { views: [{ type: "LinearGenomeView", assembly, loc, tracks: [...] }] }); view.navToLocString("BRCA1") navigates (gene names go through text search); view.showTrack(id) / view.hideTrack(id)
 - data: jb.getFeatures({ trackId, loc? }) returns the track's live Feature objects (visible region by default; refNames renamed, adapter cache shared with the display) — aggregate in code, return only the answer
 - waiting: await jb.waitReady(ms) after mutations, before reading render state (its result carries the session's own error notifications)
-- lower level: jb.mst (full mobx-state-tree API), jb.mobx ({ autorun, when, runInAction, observable }), jb.readConfObject/jb.getConf (config slots are NOT plain properties), jb.parseLocString, jb.getFeatureAdapterOrThrow, jb.renameRegionsIfNeeded, jb.getRpcSessionId, stop tokens — plus the DOM and Node via window.require.
+- lower level: jb.mst and jb.mobx (the full mobx-state-tree and mobx APIs), jb.readConfObject/jb.getConf (config slots are NOT plain properties), jb.parseLocString, jb.getFeatureAdapterOrThrow, jb.renameRegionsIfNeeded, jb.getRpcSessionId, stop tokens; anything else core serves comes from jb.require(name) with the same module names plugins use (e.g. jb.require('@jbrowse/core/util'), '@jbrowse/core/configuration', '@jbrowse/core/ui') — plus the DOM and Node via window.require.
 
 READ docs topic "live-model" FIRST: a short orientation with working examples. Mutate the model only through actions.`,
     inputSchema: {
@@ -63,7 +63,7 @@ READ docs topic "live-model" FIRST: a short orientation with working examples. M
     name: 'docs',
     handledBy: 'stdio',
     description:
-      'Read the raw JBrowse automation documentation. Topics: "live-model" (driving the live session from run_javascript — read this before your first call), "session-spec" (the full session spec / URL params reference, every view type and launch key), "automating" (overview). No topic lists them. Works even while the app is closed.',
+      'Read the raw JBrowse automation documentation. Topics: "live-model" (driving the live session from run_javascript — read this before your first call), "session-spec" (the full session spec / URL params reference, every view type and launch key), "automating" (overview). Call with no topic to list them. Works even while the app is closed.',
     inputSchema: {
       type: 'object',
       properties: {

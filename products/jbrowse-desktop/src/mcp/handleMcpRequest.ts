@@ -1,4 +1,5 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
+import { setReExportRegistry } from '@jbrowse/core/ReExports/registry'
 import {
   getConf,
   getConfigurationSchemaDefinition,
@@ -11,20 +12,20 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import {
   getRpcSessionId,
   isSessionWithAddSessionTrack,
-  isSessionWithSessionTracks,
   parseLocString,
   renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   UNKNOWN,
+  allSessionTracks,
   guessAdapter,
   guessTrackType,
   stripFileExtension,
 } from '@jbrowse/core/util/tracks'
 import * as mst from '@jbrowse/mobx-state-tree'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-import { autorun, observable, runInAction, when } from 'mobx'
+import * as mobx from 'mobx'
 
 import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -296,32 +297,20 @@ function trackEntry(conf: AnyConfigurationModel) {
   }
 }
 
-function listTracks(
-  session: AbstractSessionModel,
-  args: Record<string, unknown>,
-) {
-  const search =
-    typeof args.search === 'string' ? args.search.toLowerCase() : ''
-  const assembly = typeof args.assembly === 'string' ? args.assembly : ''
-  const limit = typeof args.limit === 'number' ? args.limit : 100
-  const confs = [
-    ...session.tracks,
-    ...(isSessionWithSessionTracks(session) ? session.sessionTracks : []),
-  ]
-  const seen = new Set<string>()
-  const matches = confs
+function listTracks(session: AbstractSessionModel, searchArg?: string) {
+  const search = searchArg?.toLowerCase() ?? ''
+  const limit = 100
+  // allSessionTracks, not session.tracks: connection-supplied tracks (hubs,
+  // registries) are absent from the session lists but fully showable — a
+  // hand-rolled union here hid them from agents entirely
+  const matches = allSessionTracks(session)
     .map(c => trackEntry(c))
-    .filter(t => {
-      const dup = seen.has(t.trackId)
-      seen.add(t.trackId)
-      return (
-        !dup &&
-        (!assembly || t.assemblyNames.includes(assembly)) &&
-        (!search ||
-          t.trackId.toLowerCase().includes(search) ||
-          t.name.toLowerCase().includes(search))
-      )
-    })
+    .filter(
+      t =>
+        !search ||
+        t.trackId.toLowerCase().includes(search) ||
+        t.name.toLowerCase().includes(search),
+    )
   return {
     total: matches.length,
     ...(matches.length > limit
@@ -345,7 +334,7 @@ function pickView(
     throw new Error(
       viewId
         ? `No view with id "${viewId}". Open views: ${candidates.map(v => `${v.id} (${v.type})`).join(', ')}`
-        : `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — load_session_spec can open one.`,
+        : `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — jb.loadSessionSpec can open one.`,
     )
   }
   if (typeof viewSelf(view)[capability] !== 'function') {
@@ -510,7 +499,7 @@ async function fetchFeatures(
   const conf = session.getTrackById(trackId)
   if (!conf) {
     throw new Error(
-      `No track with trackId "${trackId}" — list_tracks shows what is available`,
+      `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
     )
   }
   const trackModel = shownTrackModel(session, trackId)
@@ -579,19 +568,35 @@ function describeSlots(conf: AnyConfigurationModel) {
 // live model graph. The renderer already runs with nodeIntegration and the
 // bridge socket is user-only, so this grants what the surface as a whole
 // already grants — expressed directly instead of through a curated verb.
+// The re-export registry is what pluginManager.jbrequire serves: the same
+// pinned ABI module names external plugins link against (ReExports/modules.ts,
+// abiBaseline.json). It stays empty until a runtime plugin loads, so the first
+// evaluate populates it — that, not growing jb, is how agent code reaches the
+// rest of core.
+let reExportsReady = false
+async function ensureReExports() {
+  if (!reExportsReady) {
+    const modules = await import('@jbrowse/core/ReExports/modules')
+    setReExportRegistry(modules.default)
+    reExportsReady = true
+  }
+}
+
 async function evaluate(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
   args: Record<string, unknown>,
 ) {
+  await ensureReExports()
   const code = typeof args.code === 'string' ? args.code : ''
   if (!code) {
-    throw new Error('evaluate needs code (an async function body)')
+    throw new Error('run_javascript needs code (an async function body)')
   }
   const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 50_000
   const jb = {
+    require: pluginManager.jbrequire,
     mst,
-    mobx: { autorun, observable, runInAction, when },
+    mobx,
     readConfObject,
     getConf,
     describeSlots,
@@ -605,7 +610,7 @@ async function evaluate(
     sessionSummary: () => sessionSummary(session),
     inspect: (path?: string, maxInspectBytes?: number) =>
       inspectSession(session, { path, maxBytes: maxInspectBytes }),
-    listTracks: (search?: string) => listTracks(session, { search }),
+    listTracks: (search?: string) => listTracks(session, search),
     trackModel: (trackId: string) => shownTrackModel(session, trackId),
     applyDisplaySettings,
     loadSessionSpec: (spec: Record<string, unknown>) =>
@@ -677,7 +682,7 @@ async function addTrack(
   }
   const location = typeof args.location === 'string' ? args.location : ''
   if (!location) {
-    throw new Error('add_track needs a location (local path or URL)')
+    throw new Error('jb.addTrack needs a location (local path or URL)')
   }
   const file = fileLocation(location)
   const index =

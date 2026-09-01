@@ -26,9 +26,15 @@ app's renderer. What you `return` is serialized back to you. In scope:
     result carries the session's own error notifications
 
   Lower level:
+  - `jb.require(name)` — the same module registry external plugins link against,
+    by the same names: `jb.require('@jbrowse/core/util')`,
+    `'@jbrowse/core/configuration'`, `'@jbrowse/core/util/tracks'`,
+    `'@jbrowse/core/ui'`, `'react'`, ... Anything core serves that jb does not
+    name directly comes from here.
   - `jb.mst` — the whole mobx-state-tree API (`getSnapshot`, `onPatch`,
     `resolveIdentifier`, `getType`, `isAlive`, ...)
-  - `jb.mobx` — `autorun`, `when`, `runInAction`, `observable`
+  - `jb.mobx` — the whole mobx API (`autorun`, `when`, `runInAction`,
+    `observable`, ...)
   - `jb.readConfObject(conf, 'slotName')` / `jb.getConf(model, 'slotName')` —
     read config slots (plain property access on a config model does NOT work)
   - `jb.describeSlots(confNode)` — every config slot the node's schema defines,

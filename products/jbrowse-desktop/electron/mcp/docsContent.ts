@@ -11,7 +11,7 @@ import type { BridgeToolResult } from './stdioServer.ts'
 const TOPICS: Record<string, { summary: string; text: string }> = {
   'live-model': {
     summary:
-      'Driving the live session from evaluate: model orientation, MST rules, direct adapter data access, waiting on renders',
+      'Driving the live session from run_javascript: model orientation, MST rules, direct adapter data access, waiting on renders',
     text: liveModelGuide,
   },
   'session-spec': {
