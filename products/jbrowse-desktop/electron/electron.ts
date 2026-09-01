@@ -1,10 +1,10 @@
 import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
-import contextMenu from 'electron-context-menu'
 import debug from 'electron-debug'
 import pkg from 'electron-updater'
 
 import { setupAutoUpdater } from './autoUpdater.ts'
 import { createCloseGuard, subscribeQuitSignals } from './closeGuard.ts'
+import { registerContextMenu } from './contextMenu.ts'
 import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
@@ -32,7 +32,7 @@ import type { BrowserWindow } from 'electron'
 
 const { autoUpdater } = pkg
 
-contextMenu()
+registerContextMenu()
 debug({ showDevTools: false, isEnabled: true })
 
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL
