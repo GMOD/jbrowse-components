@@ -41,6 +41,9 @@ const mdHref = isRealDoc
   : undefined
 // every tutorial gets the same feedback line, so no page carries its own copy
 const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
+// a single video gets a named jump link; several look like a second table of
+// contents duplicating the sidebar, so those just get a plain count instead
+const soleVideo = videos.length === 1 ? videos[0] : undefined
 ---
 
 <SidebarLayout
@@ -58,20 +61,27 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
     <Breadcrumbs currentSlug={currentSlug} />
     <h1>{title}</h1>
     {
-      videos.length > 0 && (
-        <nav class="video-jump" aria-label="Videos on this page">
+      soleVideo ? (
+        <nav class="video-jump" aria-label="Video on this page">
           <span class="video-jump-lead">
             <span class="video-jump-play" aria-hidden="true">
               ▶
             </span>
             Video
           </span>
-          {videos.map(video => (
-            <a class="video-jump-link" href={`#${video.id}`}>
-              {video.section ? video.section : 'Walkthrough'}
-            </a>
-          ))}
+          <a class="video-jump-link" href={`#${soleVideo.id}`}>
+            {soleVideo.section ? soleVideo.section : 'Walkthrough'}
+          </a>
         </nav>
+      ) : (
+        videos.length > 1 && (
+          <p class="video-jump">
+            <span class="video-jump-play" aria-hidden="true">
+              ▶
+            </span>
+            {videos.length} videos in this tutorial
+          </p>
+        )
       )
     }
     <slot />
@@ -127,8 +137,10 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
   /* Under the h1, where a reader deciding whether to read the page at all can
      see there is a clip and get to it. A tutorial runs to hundreds of lines and
      a <video> is a black rectangle in the scrollbar, so the alternative is
-     scrolling for one. Links are labelled by the section each clip sits in
-     rather than by its caption, which is a sentence. */
+     scrolling for one. With one clip that's a single link labelled by the
+     section it sits in; with several, named links here would just duplicate
+     the sidebar TOC, so it's a plain count instead and the sidebar does the
+     navigating. */
   .video-jump {
     display: flex;
     flex-wrap: wrap;
