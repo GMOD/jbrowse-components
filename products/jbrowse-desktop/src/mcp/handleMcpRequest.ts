@@ -44,6 +44,7 @@ interface DisplaySelf {
   configuration: AnyConfigurationModel
   displayPhase?: string
   regionTooLargeReason?: string
+  height?: number
   error?: unknown
 }
 
@@ -121,6 +122,9 @@ function displayState(track: TrackSelf) {
     const phase = display.displayPhase
     return {
       display: display.type,
+      // "make it all fit in the window" is a normal thing to be asked, and
+      // without this the only way to answer it is measuring DOM rectangles
+      ...(typeof display.height === 'number' ? { height: display.height } : {}),
       ...(phase === undefined || phase === 'ready' ? {} : { phase }),
       ...(phase === 'tooLarge' && display.regionTooLargeReason
         ? { reason: display.regionTooLargeReason }
@@ -746,7 +750,19 @@ async function evaluate(
   if (value === undefined) {
     return { note: 'code returned undefined — use "return" for a value' }
   }
-  const json = safeJson(value)
+  // Past V8's maximum string, JSON.stringify throws RangeError("Invalid string
+  // length") rather than returning something long — so the truncation below
+  // never gets the chance to help with the case it exists for, and the caller
+  // is told about string lengths when what it did was return a live object.
+  let json
+  try {
+    json = safeJson(value)
+  } catch (e) {
+    throw new Error(
+      `the returned value could not be serialized (${e instanceof Error ? e.message : String(e)}). A live model node or a rendering backend serializes its whole object graph — return a summary you built from it instead of the object.`,
+      { cause: e },
+    )
+  }
   return json.length <= maxBytes
     ? { bytes: json.length, value: JSON.parse(json) as unknown }
     : {
