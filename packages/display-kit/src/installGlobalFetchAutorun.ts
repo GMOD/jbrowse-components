@@ -8,7 +8,7 @@ import { autorunOnReadyView } from './displayAutoruns.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
 
 import type { FetchContext, FetchLifecycleHost } from './FetchMixin.ts'
-import type { GateFetchState } from './regionTooLargeUtils.ts'
+import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { StopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
@@ -38,7 +38,8 @@ export interface GlobalFetchPhases<TArgs, TResult> extends Omit<
 // `STNValue<any, …>` to `any`, so extending it silently turns off checking for
 // every member below, and a host missing one of them would compile. See the note
 // on `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
-export interface GlobalFetchHost extends IStateTreeNode, FetchLifecycleHost {
+export interface GlobalFetchHost
+  extends IStateTreeNode, FetchLifecycleHost, GateCommitHost {
   // `FetchMixin`'s, beside the begin/end/error trio `FetchLifecycleHost` above
   // names: the rotation this family lends the fetch skeleton, so `cancelFetch`
   // and `cancelFetchByUser` reach the fetch it installs rather than a second
@@ -51,15 +52,6 @@ export interface GlobalFetchHost extends IStateTreeNode, FetchLifecycleHost {
   // export and must not refetch.
   fetchSignature: string | undefined
   commitFetchResult: (commit: () => void, signature: string) => void
-  // `RegionTooLargeMixin`'s byte-gate commit pair: the gate as it stood when
-  // this fetch was issued, and where the bytes its result reports go. A display
-  // that passes no `byteLimit` measures nothing and commits nothing, which is
-  // what lets the shared commit call them unconditionally.
-  gateFetchState: () => GateFetchState
-  commitFetchBytes: (
-    perRegionBytes: (number | undefined)[],
-    issued: GateFetchState,
-  ) => void
 }
 
 export interface GlobalFetchAutorunHost extends GlobalFetchHost {

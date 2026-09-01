@@ -61,6 +61,22 @@ export interface GateFetchState {
   tierKey: string | undefined
 }
 
+/**
+ * `RegionTooLargeMixin`'s byte-gate commit pair, as every fetch runner needs
+ * it: the gate as it stood when a fetch was issued, and where the bytes its
+ * result reports go. A display that passes no `byteLimit` measures nothing and
+ * commits nothing, which is what lets a runner call them unconditionally.
+ */
+export interface GateCommitHost {
+  gateFetchState: () => GateFetchState
+  commitFetchBytes: (
+    perRegionBytes: (number | undefined)[],
+    issued: GateFetchState,
+    /** the batch stopped early, so these are not the whole region set */
+    partial?: boolean,
+  ) => void
+}
+
 /** Everything a sequence of gate events moves. */
 export interface GateState {
   byteEstimate: ByteEstimate | undefined

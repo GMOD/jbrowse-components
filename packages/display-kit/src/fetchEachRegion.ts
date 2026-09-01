@@ -4,7 +4,7 @@ import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
-import type { GateFetchState } from './regionTooLargeUtils.ts'
+import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -12,23 +12,16 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 /**
  * What the three fan-out helpers below need a display to be. The two gate
  * members are `RegionTooLargeMixin`'s, which every display in this family
- * composes through `MultiRegionDisplayMixin` — they are here rather than in a
+ * composes through `MultiRegionDisplayMixin` — required here rather than in a
  * separate gated variant because the helpers commit the byte axis for every
  * display, and one that never passes a `byteLimit` measures nothing and commits
  * nothing.
  */
-export interface FetchEachRegionModel extends IStateTreeNode {
+export interface FetchEachRegionModel extends IStateTreeNode, GateCommitHost {
   fetchRegions: (
     needed: IndexedRegion[],
     work: (ctx: RegionFetchContext) => Promise<void>,
   ) => Promise<void>
-  gateFetchState: () => GateFetchState
-  commitFetchBytes: (
-    perRegionBytes: (number | undefined)[],
-    issued: GateFetchState,
-    /** the batch stopped early, so these are not the whole region set */
-    partial?: boolean,
-  ) => void
   /**
    * `FetchMixin`'s, which every display on these helpers composes.
    *
@@ -175,7 +168,7 @@ export async function fetchEachRegion<R>(
       ctx: FetchContext,
       displayedRegionIndex: number,
     ) => Promise<R | RegionTooLargeResult>
-    onResult: (displayedRegionIndex: number, result: R) => void
+    onResult: (displayedRegionIndex: number, result: R, region: Region) => void
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
@@ -201,7 +194,7 @@ export async function fetchEachRegion<R>(
           // against a payload nobody received. See RegionFetchContext.
           batch.refuse()
         } else {
-          opts.onResult(displayedRegionIndex, result)
+          opts.onResult(displayedRegionIndex, result, region)
           ctx.commitRegion(displayedRegionIndex)
         }
       }),

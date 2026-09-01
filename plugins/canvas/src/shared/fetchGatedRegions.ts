@@ -11,7 +11,6 @@ import type {
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 
 interface GatedFetchModel extends FetchEachRegionModel {
-  gateFetchState: () => GateFetchState
   commitGateMeasurements: (
     measurements: RegionGateMeasurement[],
     issued: GateFetchState,
@@ -53,10 +52,7 @@ export function fetchGatedRegions<
       results.set(displayedRegionIndex, result)
       return result
     },
-    onResult: (displayedRegionIndex, result: Payload) => {
-      const { region } = needed.find(
-        n => n.displayedRegionIndex === displayedRegionIndex,
-      )!
+    onResult: (displayedRegionIndex, result: Payload, region) => {
       opts.onResult(displayedRegionIndex, result, region)
     },
     onComplete: issued => {

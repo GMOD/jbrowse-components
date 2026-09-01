@@ -123,7 +123,10 @@ const PROBE_WINDOW_PX = DENSITY_SETTLE_FEATURES / DENSITY_SETTLE_MARGIN
 // The cap is the other half. A budget below 1/px asks for a proportionally wider
 // window — `maxFeatureScreenDensity: 0.01`, a plausible way to gate hard, asks
 // for 200 px, half a gigabase at whole-genome zoom. It costs nothing where it
-// binds, because a tighter budget makes `settled` easier to clear, not harder.
+// binds: at any budget at or under 1 feature/px the derived window and the cap
+// coincide, so of `settled`'s two terms only the admitted count binds —
+// `DENSITY_SETTLE_FEATURES` in `PROBE_WINDOW_PX` px is 4 features/px, over any
+// such budget by construction.
 export function densityProbeGate(bpPerPx: number, maxFeatureDensity: number) {
   const settlingPerBp = (DENSITY_SETTLE_MARGIN * maxFeatureDensity) / bpPerPx
   return settlingPerBp > 0 && Number.isFinite(settlingPerBp)

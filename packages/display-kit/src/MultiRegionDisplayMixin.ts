@@ -603,12 +603,13 @@ export default function MultiRegionDisplayMixin() {
                   }
                 },
               })
-              // `|| regionTooLarge` so a batch that `fetchEachRegion` cancelled
-              // on its own refusal still reaches the check: it is stale by then,
-              // and the streak this resets counts fetches that stored nothing
-              // with NOTHING gating them. Skipping it lets a streak survive a
-              // refusal batch and report on runs that were never consecutive.
-              // Widening only ever resets — a gated run cannot increment.
+              // `|| regionTooLarge` so a refusal batch still reaches the check
+              // — it is stale by then, and the streak this resets counts
+              // fetches that stored nothing with NOTHING gating them. Widening
+              // only ever resets: a gated run cannot increment. It gets there
+              // for a single-region display, or once every sibling landed;
+              // `cancelFetch` rejects `work(...)`, so an aborted sibling skips
+              // the check and only leaves its batch's reset undone.
               if (
                 needed.length > 0 &&
                 (!ctx.isStale() || self.regionTooLarge)

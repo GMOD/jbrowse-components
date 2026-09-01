@@ -15,7 +15,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 /** What this mixin reads off its host: the config and `RegionTooLargeMixin`'s gate terms. */
 export interface GateHost {
   configuration: BaseLinearDisplayConfigModel
-  gateActive: boolean
   densityGateActive: boolean
   byteGateAdapterKey: string
 }
