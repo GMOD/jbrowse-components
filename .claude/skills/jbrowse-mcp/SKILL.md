@@ -44,7 +44,9 @@ discipline for using it.
   key is **dropped silently** — that is this format's known failure mode.
 - What a live view can answer comes from `jb.inspect('views.0')` — the `getters`
   list names things (visibleLocStrings, totalBp, ...) that session snapshots
-  filter out.
+  filter out. How to call an action it lists:
+  `docs topic:"model:<its modelType>" section:"Actions"`. A config's slots by
+  type: `docs topic:"config:<Name>"`.
 
 ## The silent failure modes
 

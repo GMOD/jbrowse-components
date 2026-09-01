@@ -11,11 +11,15 @@ app's renderer. What you `return` is serialized back to you. In scope:
     orientation call
   - `jb.inspect(path?, maxBytes?)` — walk the live model by dot-path
     (`'views.0'`): the value, its getters (the high-value state a snapshot
-    filters out) and **the actions it takes**. Reach for it before deciding a
-    model cannot do something: MST attaches actions as NON-ENUMERABLE
-    properties, so `Object.keys(view)` lists none of them, and a view that has
-    `moveTrack`, `moveTrackUp` and `moveTrackToTop` looks like it has no way to
-    reorder a track
+    filters out), **the actions it takes** and its `modelType`. Reach for it
+    before deciding a model cannot do something: MST attaches actions as
+    NON-ENUMERABLE properties, so `Object.keys(view)` lists none of them, and a
+    view that has `moveTrack`, `moveTrackUp` and `moveTrackToTop` looks like it
+    has no way to reorder a track. The action's signature and what it does:
+    `docs topic:"model:<modelType>" section:"Actions"` (e.g.
+    `model:LinearAlignmentsDisplay` documents `setColorScheme(colorBy)`,
+    `setFilterBy`, `setSortedBy`, `setHeightMode`). Config slots by type:
+    `docs topic:"config:BamAdapter"`; every name: `docs topic:"types"`
   - `jb.listTracks(search?, limit?)` — the track catalog with trackIds
     (connection/hub tracks included; default cap 100)
   - `jb.loadSessionSpec(spec)` — build views declaratively (docs topic
@@ -23,13 +27,9 @@ app's renderer. What you `return` is serialized back to you. In scope:
     REPLACES the session, so the `session` argument you were given is a dead
     node afterwards — every `jb` helper re-reads the live one for you, and
     `jb.session` is it if you need to rebind: `session = jb.session`
-  - `track.applyDisplaySettings(settings)` — a model ACTION on every track:
-    in-place styling of the track's `activeDisplay` with the same slot routing
-    and legacy-key handling a session spec's inline keys get; returns { applied,
-    unapplied, failed }. `failed` is a key whose write threw — the one that
-    means you got it wrong; `unapplied` also collects keys that are simply not
-    config slots. (Each display also has it, for addressing a non-active display
-    — settings vocabularies are per display type.)
+  - `track.applyDisplaySettings(settings)` — in-place styling of the track's
+    `activeDisplay`; returns { applied, unapplied, failed } (`failed` means you
+    got a key wrong; `unapplied` also lists keys that are not config slots)
   - `jb.addTrack({ location, index?, assembly?, name?, show? })` — local path or
     URL, format inferred from the extension
   - `jb.getFeatures({ trackId, loc? })` — the track's data as live Feature
@@ -43,29 +43,19 @@ app's renderer. What you `return` is serialized back to you. In scope:
     either way
 
   Lower level:
-  - `jb.require(name)` — the same module registry external plugins link against,
-    by the same names: `jb.require('@jbrowse/core/util')`,
-    `'@jbrowse/core/configuration'`, `'@jbrowse/core/util/tracks'`,
-    `'@jbrowse/core/ui'`, `'react'`, ... Anything core serves that jb does not
-    name directly comes from here.
-  - `jb.mst` — the whole mobx-state-tree API (`getSnapshot`, `onPatch`,
-    `resolveIdentifier`, `getType`, `isAlive`, ...)
-  - `jb.mobx` — the whole mobx API (`autorun`, `when`, `runInAction`,
-    `observable`, ...)
-  - `jb.readConfObject(conf, 'slotName')` / `jb.getConf(model, 'slotName')` —
-    read config slots (plain property access on a config model does NOT work)
-  - `jb.describeSlots(confNode)` — every config slot the node's schema defines,
-    with type/description/default. Introspect instead of guessing: an unknown
-    settings key is dropped SILENTLY. Select the track you mean by id, e.g.
-    `jb.describeSlots(view.tracks.find(t => t.configuration.trackId === 'x').activeDisplay.configuration)`
-  - `jb.parseLocString(str, refName => true)` — locstring parsing
-  - `jb.getFeatureAdapterOrThrow({ pluginManager, sessionId, adapterConfig })` —
-    direct data access, see below
-  - `jb.renameRegionsIfNeeded(session.assemblyManager, { regions, adapterConfig, sessionId })`
-    — canonical refNames → the file's own, see below
+  - `jb.require(name)` — the module registry plugins link against, by the same
+    names (`'@jbrowse/core/util'`, `'@jbrowse/core/configuration'`, `'react'`)
+  - `jb.mst`, `jb.mobx` — the whole mobx-state-tree and mobx APIs
+  - `jb.readConfObject(conf, 'slot')` / `jb.getConf(model, 'slot')` — config
+    slots are not plain properties
+  - `jb.describeSlots(confNode)` — every slot the node's schema defines, with
+    type/description/default:
+    `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`. An
+    unknown settings key is dropped SILENTLY, so introspect before writing
   - `jb.trackModel(trackId)` — the shown track's live model (or undefined)
-  - `jb.getRpcSessionId(trackModel)`, `jb.createStopToken()`,
-    `jb.stopStopToken(t)`
+  - `jb.parseLocString`, `jb.getFeatureAdapterOrThrow` (async),
+    `jb.renameRegionsIfNeeded`, `jb.getRpcSessionId`, `jb.createStopToken`,
+    `jb.stopStopToken` — direct data access, see below
 
 - `window` — real DOM plus Node via `window.require` (fs, path, ...); this is an
   Electron renderer with nodeIntegration
@@ -118,26 +108,17 @@ view.showTrack('mytrack', {}, { height: 300, displayMode: 'compact' })
 view.hideTrack('mytrack')
 // a shown track's live display model (getters are rich) — find by trackId,
 // view.tracks is every shown track; activeDisplay is the one being drawn
-const display = view.tracks.find(
-  t => t.configuration.trackId === 'mytrack',
-)?.activeDisplay
-
-// track catalog (config models — use jb.readConfObject)
-session.tracks.map(t => ({
-  trackId: t.trackId,
-  name: jb.readConfObject(t, 'name'),
-  adapter: jb.readConfObject(t, 'adapter').type,
-}))
+const display = jb.trackModel('mytrack')?.activeDisplay
 ```
 
 MST rules: reads are plain property/getter access; **mutations only through
 actions** (`view.setWidth(800)` works, `view.width = 800` throws). Snapshots
 (`jb.mst.getSnapshot(node)`) omit computed getters — read getters off the live
-node. Write display settings with `track.applyDisplaySettings(settings)` — it
-targets the track's `activeDisplay`, routes each key through the same slot
-machinery a session spec's inline keys get (legacy keys included), and reports
-what applied — and `jb.describeSlots(display.configuration)` lists the slots
-that exist before you write one.
+node. Display settings go through `track.applyDisplaySettings(settings)`, which
+routes each key through the same slot machinery a session spec's inline keys get
+(legacy keys included); `jb.describeSlots(display.configuration)` lists the
+slots that exist before you write one, and `docs topic:"model:<modelType>"`
+documents the display's own actions for anything a slot does not cover.
 
 ```js
 // make every shown track compact

@@ -8,6 +8,14 @@ import {
   trackTypeForAdapter,
 } from '../../../packages/add-track-core/src/index.ts'
 import {
+  agentPage,
+  exampleBlock,
+  firstParagraph,
+  flatCode,
+  memberLine,
+  pluginOf,
+} from './agentText.ts'
+import {
   enumConstantValues,
   numericConstantValue,
   scalarConstantValue,
@@ -1854,6 +1862,96 @@ function writePromotableAdopterDocs(
   )
 }
 
+// Where the slots of this config are written, as one plain sentence — the
+// website's slotNesting with its links and its base-schema redirect removed.
+const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
+  Adapter: name =>
+    `Slots go inside a track's adapter: "adapter": { "type": "${name}", ... }.`,
+  Display: name =>
+    `Slots go on a display entry: "displays": [{ "type": "${name}", ... }], or in the track's displayDefaults.`,
+  Track: () =>
+    'Slots are top-level fields of the track config, beside trackId and name.',
+  Connection: () =>
+    "Slots are top-level fields of the connection's entry in connections.",
+  'Internet Account': () =>
+    "Slots are top-level fields of the account's entry in internetAccounts.",
+}
+
+function agentSlotLine(item: Item) {
+  const { meta } = slotMetaFor(item)
+  const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
+  const type = meta.type
+    ? `${meta.type}${enums}`
+    : flatCode(
+        meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
+      )
+  const dflt = isPromotableSlot(meta)
+    ? `${flatCode(meta.promotedBase)} (promotable)`
+    : flatCode(
+        meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
+      )
+  const notes = [
+    meta.contextVariable?.length &&
+      `callback args: ${meta.contextVariable.join(', ')}`,
+    meta.advanced && 'advanced',
+  ].filter(Boolean)
+  const docs = [firstParagraph(item.docs || meta.description), ...notes]
+    .filter(Boolean)
+    .join(' — ')
+  return memberLine(
+    item.name,
+    `${type ? `: ${type}` : ''}${dflt ? ` = ${dflt}` : ''}`,
+    docs,
+  )
+}
+
+export function renderAgentConfig(
+  cfg: ConfigWithHeader,
+  bases: ConfigWithHeader[],
+  links: DisplayLinkContext,
+) {
+  const { header, slots, filename } = cfg
+  const category = configCategory(header.name, header.category)
+  const isBase = isBaseSchema(header, links)
+  const seen = new Set<string>()
+  const all = [
+    ...filterUnseenByName(seen, slots),
+    ...bases.flatMap(b => filterUnseenByName(seen, b.slots)),
+  ]
+  const visible = all.filter(s => !isContainerSlot(s, slotMetaFor(s).meta, all))
+  const trackType = relatedTrackType(header.name, links)
+  const adapters = trackType ? (links.adaptersByTrack.get(trackType) ?? []) : []
+  const displays = links.displayTypesByTrack.get(header.name) ?? []
+  const shorthand =
+    category === 'Adapter' && !isBase
+      ? (shorthandKeysByAdapter()[header.name]?.shorthandKeys ?? [])
+      : []
+  return {
+    category,
+    text: agentPage(
+      `${header.name} (${category} config, ${pluginOf(filename)})`,
+      [
+        firstParagraph(header.docs, 600),
+        isBase
+          ? `A shared base schema, not a type you write: use one of ${(links.extendedBy.get(header.name) ?? []).join(', ')}.`
+          : AGENT_SLOT_NESTING[category]?.(header.name),
+        shorthand.length > 0 &&
+          `Shorthand: ${shorthand.join(', ')} may replace the location slot.`,
+        trackType && trackType !== header.name && `Track type: ${trackType}.`,
+        adapters.length > 0 &&
+          category !== 'Adapter' &&
+          `Adapters: ${adapters.join(', ')}.`,
+        displays.length > 0 && `Displays: ${displays.join(', ')}.`,
+        links.modelNames.has(header.name) &&
+          `Runtime API: docs topic "model:${header.name}".`,
+        ...header.gotchas.map(g => `Note: ${firstParagraph(g, 600)}`),
+        exampleBlock(header.examples[0]?.content),
+      ],
+      [{ heading: 'Slots', lines: visible.map(s => agentSlotLine(s)) }],
+    ),
+  }
+}
+
 export function writeConfigDocs(
   byFile: Record<string, Config>,
   displayTypesByTrack: Map<string, string[]>,
@@ -1891,11 +1989,11 @@ export function writeConfigDocs(
     modelNames,
     extendedBy,
   }
+  const agentPages: Record<string, { category: string; text: string }> = {}
   for (const cfg of withHeader) {
-    writePage(
-      `${dir}/${cfg.header.name}.md`,
-      renderConfig(cfg, collectBaseConfigs(cfg, index), links),
-    )
+    const bases = collectBaseConfigs(cfg, index)
+    writePage(`${dir}/${cfg.header.name}.md`, renderConfig(cfg, bases, links))
+    agentPages[cfg.header.name] = renderAgentConfig(cfg, bases, links)
   }
   // A base/shared schema is exempt from the #example gap: it is never named in
   // a config, so an example on it would teach a type nobody can write. Listing
@@ -1908,6 +2006,7 @@ export function writeConfigDocs(
   // is a real gap, and exempting it would hide the one thing this list exists to
   // surface.
   return {
+    agentPages,
     ...headerGaps({
       items: withHeader,
       getName: c => c.header.name,

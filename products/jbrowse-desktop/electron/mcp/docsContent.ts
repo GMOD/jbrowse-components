@@ -6,6 +6,8 @@ import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
 import { readDocSection } from './docSections.ts'
 import liveModelGuide from './docs/live-model-guide.md'
+import typePages from './docs/typeDocs.generated.json'
+import { lookupTypeDoc, typeIndex } from './typeDocs.ts'
 
 import type { BridgeToolResult } from './stdioServer.ts'
 
@@ -36,9 +38,17 @@ export function docsToolResult(
   if (entry) {
     return readDocSection(entry.text, section)
   }
-  const listing = Object.entries(TOPICS)
-    .map(([name, t]) => `- ${name}: ${t.summary}`)
-    .join('\n')
+  if (topic === 'types') {
+    return { text: typeIndex(typePages) }
+  }
+  const typed = lookupTypeDoc(typePages, topic)
+  if (typed) {
+    return 'text' in typed ? readDocSection(typed.text, section) : typed
+  }
+  const listing = [
+    ...Object.entries(TOPICS).map(([name, t]) => `- ${name}: ${t.summary}`),
+    '- model:<Name> / config:<Name>: one type\'s runtime API (actions, getters, properties) or config slots, generated from the running version; "types" lists every name',
+  ].join('\n')
   return topic
     ? { error: `No topic "${topic}". Available:\n${listing}` }
     : { text: `Pass topic to read one of:\n${listing}` }

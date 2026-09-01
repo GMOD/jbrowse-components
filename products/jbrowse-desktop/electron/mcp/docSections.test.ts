@@ -36,9 +36,9 @@ describe('readDocSection', () => {
   it('returns a long document as its table of contents', () => {
     const long = `${doc}${'x'.repeat(30_000)}\n`
     const { text } = readDocSection(long, '')
-    expect(text).toContain('- Title')
-    expect(text).toContain('  - Alpha')
-    expect(text).toContain('    - Alpha child')
+    expect(text).toMatch(/- Title \(\d+ chars\)/)
+    expect(text).toMatch(/\n  - Alpha \(\d+ chars\)/)
+    expect(text).toMatch(/\n    - Alpha child \(\d+ chars\)/)
     expect(text).not.toContain('Alpha body.')
   })
 
@@ -47,7 +47,7 @@ describe('readDocSection', () => {
     const { text } = readDocSection(fm, '')
     expect(text!.startsWith('Intro.')).toBe(true)
     expect(text).not.toContain('title: T')
-    expect(text).toContain('\n- Only\n  - Child')
+    expect(text).toMatch(/\n- Only \(\d+ chars\)\n  - Child \(\d+ chars\)/)
   })
 
   it('returns a section with its subsections, matched case-insensitively', () => {

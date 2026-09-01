@@ -9,6 +9,7 @@ import {
   writeUnformatted,
   writtenDocs,
 } from './format.ts'
+import { writeAgentTypeDocs } from './generateAgentTypeDocs.ts'
 import {
   accumulateApi,
   writeApiDocs,
@@ -164,6 +165,10 @@ async function main() {
   )
   writePromotableSlotDocs(configs, displayToTrackType)
   const modelGaps = writeModelDocs(models, configNames)
+  writeAgentTypeDocs({
+    models: modelGaps.agentPages,
+    configs: configGaps.agentPages,
+  })
   // Not in MARKER_GENERATORS: this one needs `models` off the program, since
   // half of what a spec can set on a view is the model's composed-in
   // properties. After writeModelDocs, so the pages its rows link into exist by

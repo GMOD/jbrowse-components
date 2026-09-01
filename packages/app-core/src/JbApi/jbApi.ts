@@ -26,7 +26,7 @@ import {
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
 import * as mst from '@jbrowse/mobx-state-tree'
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, getType, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import * as mobx from 'mobx'
 
 // relative, not '@jbrowse/app-core': a package self-import would make this
@@ -304,6 +304,8 @@ function inspectSession(
   const json = safeJson(node)
   const base = {
     path: path || '(session root)',
+    // the name the docs tool files a type under: docs topic "model:<modelType>"
+    ...(isStateTreeNode(node) ? { modelType: getType(node).name } : {}),
     bytes: json.length,
     ...(members.getters.length ? { getters: members.getters } : {}),
     ...(members.methods.length ? { actions: members.methods } : {}),
@@ -903,7 +905,9 @@ async function addTrack(
     pluginManager,
   })
   viewSelf(view).showTrack!(conf.trackId)
-  const settle = await waitReady(30_000, session)
+  // a spec load on a busy machine passed 30s and answered settled:false over
+  // views that were fine; the wait exits the moment they are ready
+  const settle = await waitReady(60_000, session)
   return { ...summary, ...settle, shownInView: view.id }
 }
 

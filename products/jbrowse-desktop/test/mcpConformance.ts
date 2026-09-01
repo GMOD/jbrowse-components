@@ -258,6 +258,32 @@ try {
         },
       ],
     })`)
+  const actions = await client.call('docs', {
+    topic: 'model:LinearGenomeView',
+    section: 'Actions',
+  })
+  check(
+    "docs serves a model type's actions with signatures",
+    typeof actions?.text === 'string' &&
+      actions.text.includes('navToLocString(') &&
+      !actions.text.includes('## Getters'),
+    actions?.text?.slice(0, 300),
+  )
+  const slots = await client.call('docs', { topic: 'BamAdapter' })
+  check(
+    "docs serves a config type's slots by bare name",
+    typeof slots?.text === 'string' && slots.text.includes('bamLocation'),
+    slots?.text?.slice(0, 300),
+  )
+  const types = await client.call('docs', { topic: 'types' })
+  check(
+    'docs lists every type by category',
+    typeof types?.text === 'string' &&
+      types.text.includes('View models:') &&
+      types.text.includes('Adapter configs:'),
+    types?.text?.slice(0, 300),
+  )
+
   check('spec load settles', loaded.value?.settled === true, loaded)
   check(
     'spec load shows both tracks',

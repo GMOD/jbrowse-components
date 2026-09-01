@@ -44,11 +44,18 @@ function sectionWithChildren(sections: DocSection[], index: number) {
     .join('')
 }
 
+// each entry carries the size of the section with its children, so an agent
+// can weigh a 40 KB getter list against a 13 KB action list before asking
 function tableOfContents(sections: DocSection[]) {
-  const headed = sections.filter(s => s.level > 0)
+  const headed = sections
+    .map((s, index) => ({ ...s, index }))
+    .filter(s => s.level > 0)
   const top = Math.min(...headed.map(s => s.level))
   return headed
-    .map(s => `${'  '.repeat(s.level - top)}- ${s.heading}`)
+    .map(
+      s =>
+        `${'  '.repeat(s.level - top)}- ${s.heading} (${sectionWithChildren(sections, s.index).length} chars)`,
+    )
     .join('\n')
 }
 

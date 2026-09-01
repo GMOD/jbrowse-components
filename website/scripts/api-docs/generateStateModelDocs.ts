@@ -2,6 +2,14 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
+import {
+  agentPage,
+  exampleBlock,
+  firstParagraph,
+  flatCode,
+  memberLine,
+  pluginOf,
+} from './agentText.ts'
 import { writePage } from './format.ts'
 import {
   assertSingleHeader,
@@ -417,6 +425,65 @@ function renderModel(
   })
 }
 
+// Agents read a member as a name, a signature and a sentence, never a table, and
+// they read the inherited members in the same list — composition is how the
+// model is built, not something to follow to another page. Actions first: they
+// are what an agent came to find out how to call.
+const AGENT_KIND_ORDER: MemberKey[] = [
+  'actions',
+  'getters',
+  'properties',
+  'methods',
+  'volatiles',
+]
+
+export function renderAgentModel(
+  model: ModelWithHeader,
+  ancestors: ModelWithHeader[],
+  configNames: Set<string>,
+) {
+  const { header, filename } = model
+  const inherited = collectInheritedMembers(model.members, ancestors)
+  const category = stateModelCategory(header.name, header.category)
+  const membersOf = (key: MemberKey) => [
+    ...model.members[key],
+    ...inherited.flatMap(g => g.members[key]),
+  ]
+  const sections = AGENT_KIND_ORDER.map(key => {
+    const kind = MEMBER_KINDS.find(k => k.key === key)!
+    return {
+      heading: kind.label,
+      lines: membersOf(key).map(m =>
+        memberLine(
+          m.name,
+          key === 'properties' || key === 'volatiles'
+            ? ` = ${flatCode(kind.memberCode(m)).replace(new RegExp(`^${m.name}\\s*:\\s*`), '')}`
+            : key === 'getters'
+              ? `: ${flatCode(kind.memberCode(m))}`
+              : flatCode(kind.memberCode(m)),
+          m.docs,
+        ),
+      ),
+    }
+  })
+  const composed = ancestors.map(a => a.header.name)
+  return {
+    category,
+    text: agentPage(
+      `${header.name} (${category} model, ${pluginOf(filename)})`,
+      [
+        firstParagraph(header.docs, 600),
+        configNames.has(header.name) &&
+          `Config slots: docs topic "config:${header.name}" (or jb.describeSlots(node.configuration) live).`,
+        composed.length > 0 &&
+          `Composes ${composed.join(', ')} — their members are listed below, nothing to follow.`,
+        exampleBlock(header.examples[0]?.content),
+      ],
+      sections,
+    ),
+  }
+}
+
 /**
  * Every `#property` a model ends up with — its own, plus the ones it inherits
  * through `types.compose`, deduped at the most specific declaration and tagged
@@ -478,14 +545,21 @@ export function writeModelDocs(
     byDeclId: mapByKey(withHeader, m => m.header.selfDeclId),
     bySlug: mapByKey(withHeader, m => m.header.id),
   }
+  const agentPages: Record<string, { category: string; text: string }> = {}
   for (const model of withHeader) {
     const ancestors = collectAncestors(model, index)
     writePage(
       `${dir}/${model.header.name}.md`,
       renderModel(model, ancestors, configNames),
     )
+    agentPages[model.header.name] = renderAgentModel(
+      model,
+      ancestors,
+      configNames,
+    )
   }
   return {
+    agentPages,
     ...headerGaps({
       items: withHeader,
       getName: m => m.header.name,
