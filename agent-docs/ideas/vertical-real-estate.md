@@ -50,7 +50,7 @@ scroll) is the higher lever.
 ### Lever A: view-level height allocator (fit the whole stack, not each track)
 
 Today heights are **bottom-up**: `LinearGenomeView.height` = `Σ trackHeight(t) +
-chrome`, and `trackHeight(t)` (model.ts:742) reads `display.height` (config slot,
+chrome`, and `trackHeight(t)` (model.ts:1044) reads `display.height` (config slot,
 or content-height in fit mode). Nothing constrains the sum to a viewport. Current
 fit-to-height fits each track to *its own* content; ten content-fit tracks can
 still overflow. The higher-lever version inverts to **top-down**: a budget `B` is
@@ -88,7 +88,7 @@ screen. Sweet spot is the common mixed session (genes + coverage + one pileup):
 one-panel-scroll -> zero. Degrades gracefully to "fair small shares" when every
 track is dense; when all are sparse, today's fit-to-height already handles it.
 
-**Where it slots in:** `trackHeight(track)` at model.ts:742 is already the single
+**Where it slots in:** `trackHeight(track)` at model.ts:1044 is already the single
 chokepoint deciding a track's vertical box (it centralizes minimized-collapse).
 It becomes:
 

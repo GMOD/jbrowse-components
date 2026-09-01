@@ -1,15 +1,16 @@
 ---
 name: barrels-block-extraction
-description: A 169-line module with one runtime import pulls a 17,104-line closure because it imports through a barrel, and `render-core` sits in the same repo with 32 subpath exports and no `.` proving the alternative. The measurement, the two files that hold every leaf hostage, and why this is an extraction blocker rather than a bundle-size claim.
+description: A 169-line module with one runtime import pulls a 17,104-line closure because it imports through a barrel, and `render-core` sits in the same repo with 44 subpath exports and no `.` proving the alternative. The measurement, the two files that hold every leaf hostage, and why this is an extraction blocker rather than a bundle-size claim.
 ---
 
 # Barrels are what block extraction
 
 `@jbrowse/render-core` left `@jbrowse/core` successfully and is a real leaf —
 `mobx` plus `@jbrowse/mobx-state-tree`, React as a peer. The per-region fetch
-harness did not leave, and reads as hopelessly coupled to the application. The
-difference is not architecture. It is that render-core publishes 32 subpath
-exports and **no `.` entry**, and `@jbrowse/core/util` is one barrel.
+harness read as hopelessly coupled to the application until it left too, as
+`@jbrowse/display-kit` (2026-08-23), with an `exports` map and no barrel of its
+own. The difference was never architecture. It is that render-core publishes 44
+subpath exports and **no `.` entry**, and `@jbrowse/core/util` is one barrel.
 
 That makes this a rare thing to write up: a controlled comparison between the
 two shapes inside a single codebase, with the same authors and the same period.
@@ -158,8 +159,10 @@ outright. Redeclaring would have to reproduce
 `UriLocation.internetAccountPreAuthorization.authInfo`, which is
 `types.frozen()`, i.e. `any`, and is indexed into by three callers.
 
-Still unproven, and unchanged by any of this: **nobody has tried to build the
-harness as a separate package.** The graph is small enough now to try.
+The harness has since been built as a separate package (`packages/display-kit`,
+whose `publicApi.test.ts` pins the subpath map), which is the experiment this
+paragraph used to call unproven. What the measurement above still says is why the
+barrel importers below cannot follow it without the same treatment.
 
 ## What this is not
 
@@ -170,7 +173,7 @@ easy to quote for each other. The cost here is that a module importing through a
 barrel cannot be moved into a package without dragging the barrel's whole graph
 with it, which is true regardless of what any bundler does afterwards.
 
-**Unverified:** nothing in `packages/core` or `packages/render-core` imports
-back from `BaseLinearDisplay`, so the direction is clean — but nobody has tried
-to build the harness as a separate package, and no cycle is necessary rather
-than sufficient.
+**Direction:** nothing in `packages/core` or `packages/render-core` imports
+back from `BaseLinearDisplay`, so the direction is clean, and display-kit's
+extraction confirmed that no cycle was the necessary half; the barrel closure
+was the sufficient one.
