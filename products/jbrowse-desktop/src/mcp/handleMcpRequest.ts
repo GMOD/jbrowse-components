@@ -1,9 +1,19 @@
 import { loadSessionSpec } from '@jbrowse/app-core'
-import { readConfObject } from '@jbrowse/core/configuration'
 import {
+  getConf,
+  isConfigurationSlot,
+  preProcessSlotValues,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import {
+  getRpcSessionId,
   isSessionWithAddSessionTrack,
   isSessionWithSessionTracks,
+  parseLocString,
+  renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   UNKNOWN,
   guessAdapter,
@@ -11,6 +21,9 @@ import {
   normalizeTrackInit,
   stripFileExtension,
 } from '@jbrowse/core/util/tracks'
+import * as mst from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { autorun, observable, runInAction, when } from 'mobx'
 
 import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -21,18 +34,35 @@ import type {
   AbstractViewModel,
   FileLocation,
 } from '@jbrowse/core/util/types'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // What the handlers ask of a view, duck-typed the way loadSessionSpec
 // duck-types the session: the concrete view models live in plugins this module
 // must not import, so members are optional and presence is the capability
 // check.
+interface TrackSelf extends IStateTreeNode {
+  type: string
+  configuration: AnyConfigurationModel & { trackId: string }
+  displays?: (Record<string, unknown> & {
+    type: string
+    configuration: AnyConfigurationModel
+  })[]
+}
+
 interface ViewSelf {
   id: string
   type: string
   displayName?: string
   assemblyNames?: string[]
   coarseVisibleLocStrings?: string
-  tracks?: { type: string; configuration: { trackId: string } }[]
+  tracks?: TrackSelf[]
+  initialized?: boolean
+  visibleRegions?: {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+  }[]
   navToLocString?: (input: string) => Promise<unknown>
   showTrack?: (
     trackId: string,
@@ -79,6 +109,116 @@ function sessionSummary(session: AbstractSessionModel) {
     assemblyNames: session.assemblyNames,
     views: session.views.map(v => viewSummary(v)),
   }
+}
+
+// MST nodes serialize as their snapshot (toJSON), so the live-model walk below
+// can stringify whatever it lands on; the replacer guards what a snapshot
+// cannot contain but a getter's return can.
+function safeJson(value: unknown) {
+  const seen = new WeakSet<object>()
+  return JSON.stringify(
+    isStateTreeNode(value) ? getSnapshot(value) : value,
+    (_key, v: unknown) => {
+      if (typeof v === 'function') {
+        return '[function]'
+      }
+      if (typeof v === 'bigint') {
+        return `${v}`
+      }
+      if (v !== null && typeof v === 'object' && !isStateTreeNode(v)) {
+        if (seen.has(v)) {
+          return '[circular]'
+        }
+        seen.add(v)
+      }
+      return v
+    },
+  )
+}
+
+function describeBrief(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `array(${value.length})`
+  }
+  if (value !== null && typeof value === 'object') {
+    const json = safeJson(value)
+    return json.length > 120 ? `object(~${json.length} bytes)` : json
+  }
+  const json = safeJson(value)
+  return json.length > 120 ? `${json.slice(0, 117)}...` : json
+}
+
+// The names a live node answers beyond its snapshot: MST defines views as own
+// getter properties on the instance, which is exactly the high-value surface
+// (visibleLocStrings, assemblyNames, totalBp, ...) a snapshot filters out.
+function memberNames(node: object) {
+  const getters: string[] = []
+  const methods: string[] = []
+  for (const [key, desc] of Object.entries(
+    Object.getOwnPropertyDescriptors(node),
+  )) {
+    if (!key.startsWith('$') && key !== 'toJSON') {
+      if (desc.get) {
+        getters.push(key)
+      } else if (typeof desc.value === 'function') {
+        methods.push(key)
+      }
+    }
+  }
+  return { getters: getters.sort(), methods: methods.sort() }
+}
+
+function inspectSession(
+  session: AbstractSessionModel,
+  args: Record<string, unknown>,
+) {
+  const path = typeof args.path === 'string' ? args.path : ''
+  const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 20_000
+  let node: unknown = session
+  const walked: string[] = []
+  for (const segment of path.split('.').filter(Boolean)) {
+    node =
+      node !== null && typeof node === 'object'
+        ? (node as Record<string, unknown>)[segment]
+        : undefined
+    if (node === undefined) {
+      throw new Error(
+        `Nothing at "${path}" (undefined after "${walked.join('.') || '(root)'}"). Inspect the parent path to see its keys and getters.`,
+      )
+    }
+    walked.push(segment)
+  }
+  const members =
+    node !== null && typeof node === 'object' && !Array.isArray(node)
+      ? memberNames(node)
+      : { getters: [], methods: [] }
+  const json = safeJson(node)
+  const base = {
+    path: path || '(session root)',
+    bytes: json.length,
+    ...(members.getters.length ? { getters: members.getters } : {}),
+    ...(members.methods.length ? { actions: members.methods } : {}),
+  }
+  if (json.length <= maxBytes) {
+    return { ...base, value: JSON.parse(json) as unknown }
+  }
+  const plain = JSON.parse(json) as unknown
+  return Array.isArray(plain)
+    ? {
+        ...base,
+        note: `too large to return whole — ${plain.length} items; index in with .N or raise maxBytes`,
+        items: plain.slice(0, 20).map(item => describeBrief(item)),
+      }
+    : {
+        ...base,
+        note: 'too large to return whole — drill down by path or raise maxBytes',
+        keys: Object.fromEntries(
+          Object.entries(plain as Record<string, unknown>).map(([k, v]) => [
+            k,
+            describeBrief(v),
+          ]),
+        ),
+      }
 }
 
 const delay = (ms: number) =>
@@ -244,10 +384,335 @@ function hideTrack(
   return { hidden, view: view.id }
 }
 
+// The identical routing showTrackGeneric runs at open time (core/util/tracks.ts
+// #5591), applied to the live display: preProcessSlotValues so shorthand and
+// legacy-key migrations speak the same vocabulary here, slots written onto the
+// persistent display config, and anything else tried against the display
+// model's conventionally-named setter action.
+function applyDisplaySettings(
+  track: TrackSelf,
+  settings: Record<string, unknown>,
+) {
+  const applied = new Set<string>()
+  const unapplied = new Set<string>()
+  for (const display of track.displays ?? []) {
+    const slots = preProcessSlotValues(display.configuration, settings)
+    for (const [key, value] of Object.entries(slots)) {
+      if (key === 'type') {
+        unapplied.add(
+          'type (changing the display type needs hide_track then show_track)',
+        )
+      } else if (isConfigurationSlot(display.configuration, key)) {
+        // the key comes from runtime JSON; setConf's slot name is a
+        // compile-time type
+        // eslint-disable-next-line no-restricted-syntax
+        display.configuration.setSlot(key, value)
+        applied.add(key)
+      } else {
+        const setter = display[`set${key[0]!.toUpperCase()}${key.slice(1)}`]
+        if (typeof setter === 'function') {
+          ;(setter as (value: unknown) => void)(value)
+          applied.add(`${key} (via setter)`)
+        } else {
+          unapplied.add(
+            `${key} (not a config slot or settable prop on ${display.type})`,
+          )
+        }
+      }
+    }
+  }
+  return {
+    applied: [...applied],
+    ...(unapplied.size ? { unapplied: [...unapplied] } : {}),
+  }
+}
+
+async function updateTrack(
+  session: AbstractSessionModel,
+  args: Record<string, unknown>,
+) {
+  const settings =
+    typeof args.settings === 'object' && args.settings !== null
+      ? (args.settings as Record<string, unknown>)
+      : {}
+  if (!Object.keys(settings).length) {
+    throw new Error(
+      'update_track needs a settings object with at least one key',
+    )
+  }
+  const trackId = typeof args.track === 'string' ? args.track : ''
+  const match = typeof args.match === 'string' ? args.match.toLowerCase() : ''
+  const viewId = typeof args.viewId === 'string' ? args.viewId : ''
+  const updated: Record<string, unknown>[] = []
+  const shown: string[] = []
+  for (const view of session.views.filter(v => !viewId || v.id === viewId)) {
+    const v = viewSelf(view)
+    for (const track of v.tracks ?? []) {
+      const id = track.configuration.trackId
+      const name = readConfObject(track.configuration, 'name') as string
+      shown.push(id)
+      const matched = trackId
+        ? id === trackId
+        : !match ||
+          id.toLowerCase().includes(match) ||
+          name.toLowerCase().includes(match)
+      if (matched) {
+        try {
+          updated.push({
+            trackId: id,
+            view: v.id,
+            ...applyDisplaySettings(track, settings),
+          })
+        } catch (e) {
+          updated.push({ trackId: id, view: v.id, error: String(e) })
+        }
+      }
+    }
+  }
+  if (!updated.length) {
+    throw new Error(
+      shown.length
+        ? `No shown track matched. Shown tracks: ${shown.join(', ')}`
+        : 'No tracks are shown in any view — show_track or load_session_spec first',
+    )
+  }
+  const settle = await waitReady(30_000)
+  return { updated, ...settle }
+}
+
+function firstAssemblyName(conf: AnyConfigurationModel) {
+  const names = readConfObject(conf, 'assemblyNames') as string[]
+  return names[0]
+}
+
+async function getFeatures(
+  pluginManager: PluginManager,
+  session: AbstractSessionModel,
+  args: Record<string, unknown>,
+) {
+  const trackId = typeof args.trackId === 'string' ? args.trackId : ''
+  const conf = session.getTrackById(trackId)
+  if (!conf) {
+    throw new Error(
+      `No track with trackId "${trackId}" — list_tracks shows what is available`,
+    )
+  }
+  const limit = Math.min(typeof args.limit === 'number' ? args.limit : 30, 500)
+  let regions: {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+  }[]
+  if (typeof args.loc === 'string') {
+    const assemblyName =
+      typeof args.assembly === 'string'
+        ? args.assembly
+        : firstAssemblyName(conf)
+    if (assemblyName === undefined) {
+      throw new Error('The track names no assembly; pass assembly explicitly')
+    }
+    const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
+    if (!assembly) {
+      throw new Error(`Assembly "${assemblyName}" could not be loaded`)
+    }
+    const parsed = parseLocString(args.loc, refName =>
+      assembly.isValidRefName(refName),
+    )
+    const refName =
+      assembly.getCanonicalRefName(parsed.refName) ?? parsed.refName
+    const bounds = assembly.regions?.find(r => r.refName === refName)
+    regions = [
+      {
+        assemblyName,
+        refName,
+        start: parsed.start ?? bounds?.start ?? 0,
+        end: parsed.end ?? bounds?.end ?? Number.MAX_SAFE_INTEGER,
+      },
+    ]
+  } else {
+    // `in`, not evaluation: visibleRegions is a getter that THROWS ("width
+    // undefined") until the view's component mounts and sets a width — a
+    // freshly spec-loaded view stays in that state briefly even after the
+    // app-phase marker reads ready, since a view with no width has no display
+    // fetching anything.
+    const view = session.views
+      .map(v => viewSelf(v))
+      .find(
+        v => (!args.viewId || v.id === args.viewId) && 'visibleRegions' in v,
+      )
+    if (!view) {
+      throw new Error(
+        'No view that shows a region — pass loc, or open a linear view first',
+      )
+    }
+    const deadline = Date.now() + 10_000
+    let visible: NonNullable<ViewSelf['visibleRegions']> | undefined
+    while (visible === undefined) {
+      if (view.initialized !== false) {
+        try {
+          visible = view.visibleRegions
+        } catch {
+          // not mounted yet
+        }
+      }
+      if (visible?.length) {
+        break
+      }
+      visible = undefined
+      if (Date.now() >= deadline) {
+        throw new Error(
+          'The view has not finished initializing a visible region — pass loc, or navigate first',
+        )
+      }
+      await delay(250)
+    }
+    regions = visible.map(({ refName, start, end, assemblyName }) => ({
+      refName,
+      start,
+      end,
+      assemblyName,
+    }))
+  }
+  // Main-thread adapter, not the CoreGetFeatures RPC: the RPC serializes every
+  // feature in the region across the worker boundary before the limit can
+  // apply. Here the features stay objects and only the returned slice is ever
+  // turned into JSON.
+  // The shown track's own rpcSessionId, so this shares the adapter instance —
+  // parsed indexes and chunk caches included — that the display already
+  // warmed; session.id is the cold-namespace fallback for un-shown tracks
+  // (rpcSessionId lives on track models, so the walk cannot start at the
+  // session).
+  const trackModel = session.views
+    .flatMap(v => viewSelf(v).tracks ?? [])
+    .find(t => t.configuration.trackId === trackId)
+  const sessionId = trackModel
+    ? getRpcSessionId(trackModel)
+    : (session.id ?? 'mcp')
+  // The same translation the RPC base class runs: the regions above carry the
+  // assembly's canonical refNames, and the file may spell them differently — a
+  // query in the wrong namespace matches nothing and reads as "no data here".
+  const renamed = await renameRegionsIfNeeded(session.assemblyManager, {
+    regions,
+    adapterConfig: readConfObject(conf, 'adapter') as Record<string, unknown>,
+    sessionId,
+  })
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig: renamed.adapterConfig,
+    sequenceAdapter: renamed.sequenceAdapter,
+  })
+  const stopToken = createStopToken()
+  // the MCP relay gives up at 150s, so the read must not outlive it
+  const stopTimer = setTimeout(() => {
+    stopStopToken(stopToken)
+  }, 120_000)
+  const features = []
+  try {
+    for (const region of renamed.regions) {
+      features.push(
+        ...(await dataAdapter.getFeaturesArray(region, { stopToken })),
+      )
+    }
+  } finally {
+    clearTimeout(stopTimer)
+  }
+  const shown = features.slice(0, limit).map(f => truncateStrings(f.toJSON()))
+  return {
+    total: features.length,
+    ...(features.length > limit
+      ? {
+          note: `showing first ${limit} of ${features.length} — raise limit or narrow loc`,
+        }
+      : {}),
+    regions,
+    features: shown,
+  }
+}
+
+// A feature's JSON can carry whole read sequences and per-base arrays; the
+// inspection answer needs the shape, not the payload.
+function truncateStrings(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return value.length > 300
+      ? `${value.slice(0, 300)}...(${value.length} chars)`
+      : value
+  }
+  if (Array.isArray(value)) {
+    return value.length > 100
+      ? [
+          ...value.slice(0, 100).map(v => truncateStrings(v)),
+          `...(${value.length} items)`,
+        ]
+      : value.map(v => truncateStrings(v))
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, truncateStrings(v)]),
+    )
+  }
+  return value
+}
+
 function fileLocation(spec: string): FileLocation {
   return /^https?:\/\//.test(spec)
     ? { uri: spec, locationType: 'UriLocation' }
     : { localPath: spec, locationType: 'LocalPathLocation' }
+}
+
+// The raw primitive under all of the above: Claude-authored code against the
+// live model graph. The renderer already runs with nodeIntegration and the
+// bridge socket is user-only, so this grants what the surface as a whole
+// already grants — expressed directly instead of through a curated verb.
+async function evaluate(
+  pluginManager: PluginManager,
+  session: AbstractSessionModel,
+  args: Record<string, unknown>,
+) {
+  const code = typeof args.code === 'string' ? args.code : ''
+  if (!code) {
+    throw new Error('evaluate needs code (an async function body)')
+  }
+  const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 50_000
+  const jb = {
+    mst,
+    mobx: { autorun, observable, runInAction, when },
+    readConfObject,
+    getConf,
+    parseLocString,
+    getFeatureAdapterOrThrow,
+    getRpcSessionId,
+    renameRegionsIfNeeded,
+    createStopToken,
+    stopStopToken,
+    waitReady,
+  }
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval
+  const fn = new Function(
+    'session',
+    'rootModel',
+    'pluginManager',
+    'jb',
+    `return (async () => {\n${code}\n})()`,
+  ) as (
+    session: AbstractSessionModel,
+    rootModel: unknown,
+    pluginManager: PluginManager,
+    jbHelpers: typeof jb,
+  ) => Promise<unknown>
+  const value = await fn(session, pluginManager.rootModel, pluginManager, jb)
+  if (value === undefined) {
+    return { note: 'code returned undefined — use "return" for a value' }
+  }
+  const json = safeJson(value)
+  return json.length <= maxBytes
+    ? { bytes: json.length, value: JSON.parse(json) as unknown }
+    : {
+        bytes: json.length,
+        note: `result larger than maxBytes=${maxBytes} — truncated preview follows; aggregate in code or raise maxBytes`,
+        preview: json.slice(0, maxBytes),
+      }
 }
 
 async function addTrack(
@@ -342,6 +807,8 @@ export async function handleMcpRequest(
   switch (tool) {
     case 'get_session':
       return sessionSummary(session)
+    case 'inspect_session':
+      return inspectSession(session, args)
     case 'list_tracks':
       return listTracks(session, args)
     case 'load_session_spec':
@@ -350,10 +817,16 @@ export async function handleMcpRequest(
       return navigate(session, args)
     case 'show_track':
       return showTrack(session, args)
+    case 'update_track':
+      return updateTrack(session, args)
     case 'hide_track':
       return hideTrack(session, args)
     case 'add_track':
       return addTrack(session, args)
+    case 'get_features':
+      return getFeatures(pluginManager, session, args)
+    case 'evaluate':
+      return evaluate(pluginManager, session, args)
     default:
       throw new Error(`Unknown tool: ${tool}`)
   }

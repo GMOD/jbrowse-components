@@ -49,8 +49,17 @@ while it is closed return a message saying to launch it.
 
 ## Tools
 
-`open`, `list_recent_sessions`, `get_session`, `list_tracks`,
-`load_session_spec`, `navigate`, `show_track`, `hide_track`, `add_track`,
+The primitives come first: `evaluate` runs Claude-authored async JS against the
+live session/MST model graph (with `jb` helpers: the mobx-state-tree API, config
+readers, direct adapter data access, refName renaming, the readiness wait), and
+`docs` serves the raw documentation (`live-model`, `session-spec`, `automating`)
+— bundled at build time, readable while the app is closed.
+
+The rest are shortcuts over the same surface: `open`, `list_recent_sessions`,
+`get_session`, `inspect_session` (live-model path walks, getters included),
+`list_tracks`, `load_session_spec`, `navigate`, `show_track`, `update_track`
+(in-place display settings, single/match/all selectors), `hide_track`,
+`add_track`, `get_features` (main-thread adapter read of the visible region),
 `screenshot` — see `toolDefinitions.ts` for the contracts. `load_session_spec`
 takes the same spec JSON as JBrowse Web's `&session=spec-` URLs
 (website/docs/urlparams.md); `screenshot` waits on the capture readiness

@@ -20,6 +20,7 @@ await esbuild.build({
   format: 'esm',
   outfile: path.join(rootDir, 'build/electron.js'),
   external: ['electron'],
+  loader: { '.md': 'text' },
   // Inject createRequire so bundled CommonJS code can use require() for Node built-ins
   banner: {
     js: `import { createRequire } from 'module'; const require = createRequire(import.meta.url);`,
@@ -58,6 +59,7 @@ await esbuild.build({
   target: 'node20',
   format: 'esm',
   outfile: path.join(rootDir, 'build/mcpServer.js'),
+  loader: { '.md': 'text' },
   sourcemap: false,
   minify: process.env.NODE_ENV === 'production',
 })
