@@ -30,8 +30,8 @@ assembly and its own maternal-to-paternal chain
 ([Hansen _et al._ 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
 Liftoff v0.6 gene models built on v1.1.
 
-- the diploid assembly, `chr1_MATERNAL` and `chr1_PATERNAL` and the rest of both
-  haplotypes in one FASTA:
+- the diploid assembly, both haplotypes in one FASTA (e.g. `chr1_MATERNAL`,
+  `chr1_PATERNAL`):
   https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz
 - the Q100 project's maternal-to-paternal chain:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz
