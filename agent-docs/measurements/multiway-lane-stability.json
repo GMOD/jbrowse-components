@@ -107,7 +107,7 @@
         "empty": 33,
         "rungChanges": 7,
         "rungOsc": 0,
-        "slipSteps": 29,
+        "slipSteps": 30,
         "medianSlipPx": 261,
         "maxSlipPx": 4705
       }
@@ -116,36 +116,36 @@
       "values": {
         "lane": "citrus",
         "contigs": 3,
-        "contigChanges": 7,
+        "contigChanges": 8,
         "contigOsc": 0,
         "drawnFlipChanges": 4,
         "drawnFlipOsc": 0,
-        "fallbackFlipChanges": 11,
-        "fallbackFlipOsc": 1,
+        "fallbackFlipChanges": 13,
+        "fallbackFlipOsc": 3,
         "empty": 33,
-        "rungChanges": 3,
+        "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 26,
-        "medianSlipPx": 351,
-        "maxSlipPx": 901
+        "slipSteps": 25,
+        "medianSlipPx": 364,
+        "maxSlipPx": 1194
       }
     },
     {
       "values": {
         "lane": "cacao",
-        "contigs": 1,
-        "contigChanges": 2,
+        "contigs": 2,
+        "contigChanges": 4,
         "contigOsc": 0,
         "drawnFlipChanges": 5,
         "drawnFlipOsc": 0,
         "fallbackFlipChanges": 17,
         "fallbackFlipOsc": 2,
         "empty": 33,
-        "rungChanges": 11,
+        "rungChanges": 13,
         "rungOsc": 0,
-        "slipSteps": 95,
-        "medianSlipPx": 85,
-        "maxSlipPx": 24382
+        "slipSteps": 91,
+        "medianSlipPx": 79,
+        "maxSlipPx": 24234
       }
     },
     {
@@ -156,12 +156,12 @@
         "contigOsc": 0,
         "drawnFlipChanges": 7,
         "drawnFlipOsc": 0,
-        "fallbackFlipChanges": 16,
-        "fallbackFlipOsc": 4,
+        "fallbackFlipChanges": 14,
+        "fallbackFlipOsc": 3,
         "empty": 33,
         "rungChanges": 4,
         "rungOsc": 0,
-        "slipSteps": 54,
+        "slipSteps": 59,
         "medianSlipPx": 128,
         "maxSlipPx": 3596
       }
@@ -174,13 +174,13 @@
         "contigOsc": 0,
         "drawnFlipChanges": 8,
         "drawnFlipOsc": 0,
-        "fallbackFlipChanges": 18,
-        "fallbackFlipOsc": 7,
+        "fallbackFlipChanges": 12,
+        "fallbackFlipOsc": 3,
         "empty": 33,
         "rungChanges": 7,
         "rungOsc": 0,
-        "slipSteps": 56,
-        "medianSlipPx": 71,
+        "slipSteps": 74,
+        "medianSlipPx": 66,
         "maxSlipPx": 4280
       }
     },
@@ -190,16 +190,16 @@
         "contigs": 4,
         "contigChanges": 8,
         "contigOsc": 0,
-        "drawnFlipChanges": 6,
+        "drawnFlipChanges": 2,
         "drawnFlipOsc": 0,
         "fallbackFlipChanges": 15,
         "fallbackFlipOsc": 5,
         "empty": 34,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 60,
-        "medianSlipPx": 72,
-        "maxSlipPx": 710
+        "slipSteps": 53,
+        "medianSlipPx": 130,
+        "maxSlipPx": 13215
       }
     }
   ]

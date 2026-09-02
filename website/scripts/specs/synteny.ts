@@ -1620,6 +1620,142 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 660,
   },
 
+  // Eight primates on a gene-symbol join, no aligner: the TP53 neighbourhood
+  // over seven lanes, each drawing its own RefSeq gene models. Strand color so
+  // the one lane reading the block reversed (siamang) is the crossed ribbons
+  // and the rest are straight — the figure's negative is that one lane.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/primate_tp53_lanes',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/primate_orthologs/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'human',
+            loc: 'chr17:7,400,000-7,700,000',
+            tracks: [
+              {
+                trackId: 'primate_orthologs',
+                type: 'MultiWaySyntenyDisplay',
+                ribbonColorBy: 'strand',
+                height: 620,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 180000,
+    settleMs: 15000,
+    viewportHeight: 820,
+  },
+
+  // The same track ten megabases wide, where per-gene ribbons bundle into a
+  // synteny painting: straight bundles are shared gene order, crossed ones are
+  // a block inverted in one lane relative to the one above it.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/primate_chr17_inversions',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/primate_orthologs/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'human',
+            loc: 'chr17:40,000,000-50,000,000',
+            tracks: [
+              {
+                trackId: 'primate_orthologs',
+                type: 'MultiWaySyntenyDisplay',
+                ribbonColorBy: 'strand',
+                height: 620,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 180000,
+    settleMs: 15000,
+    viewportHeight: 820,
+  },
+
+  // A window across the human chr2 fusion point. Every non-human lane has
+  // orthologs on two of its chromosomes here, follows the one holding more
+  // of them, names the other in its header where it keeps a fifth of the
+  // window, and draws the genes past the fusion with models but no ribbon.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/primate_chr2_fusion',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/primate_orthologs/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'human',
+            loc: 'chr2:112,500,000-115,500,000',
+            tracks: [
+              {
+                trackId: 'primate_orthologs',
+                type: 'MultiWaySyntenyDisplay',
+                height: 620,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 180000,
+    settleMs: 15000,
+    viewportHeight: 820,
+  },
+
+  // The join's limit: the amylase cluster, lettered symbols in human and LOC
+  // placeholders elsewhere, so the copies draw in every lane and chain to
+  // nothing while the flanking genes chain down the stack.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/primate_amy_cluster',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/primate_orthologs/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'human',
+            loc: 'chr1:103,500,000-103,800,000',
+            tracks: [
+              {
+                trackId: 'primate_orthologs',
+                type: 'MultiWaySyntenyDisplay',
+                height: 620,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 180000,
+    settleMs: 15000,
+    viewportHeight: 820,
+  },
+
   // The grasses radiation as lanes: the rice window the
   // orthofinder_synteny/grasses_maize_wgd stacked figure reads, over the same
   // five-genome orthogroups track, with a lane per grass carrying its own gene

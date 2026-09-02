@@ -174,6 +174,15 @@ export function stateModelFactory(
       laneGenesKey: undefined as string | undefined,
       /**
        * #volatile
+       * whether a lane-gene commit has yet covered a MATE lane. The anchor's
+       * spec exists as soon as the view does, so the first commit can be the
+       * anchor alone, before the ortholog fetch has given any mate a frame;
+       * the lanes' first real filling is the commit after that, and it is the
+       * one a capture has to wait for
+       */
+      laneGenesCoverMates: false,
+      /**
+       * #volatile
        * alignments between ADJACENT mate lanes, fetched per pair from the same
        * track when the source is an all-vs-all alignment file — the direct
        * records the file holds for that pair, at the lanes' own coordinates
@@ -235,6 +244,7 @@ export function stateModelFactory(
       setLaneGenes(genes: Map<string, LaneGene[]>, key: string) {
         self.laneGenes = genes
         self.laneGenesKey = key
+        self.laneGenesCoverMates ||= key.split(';').length > 1
       },
       /**
        * #action
@@ -990,12 +1000,20 @@ export function stateModelFactory(
        * ortholog fetch and the gene models that fill the lanes. Not for later
        * refetches: those run over lanes that are already drawn, and holding the
        * phase at loading puts the striped scrim over them. A failed lane fetch
-       * commits an empty result rather than hanging this (see afterAttach)
+       * commits an empty result rather than hanging this (see afterAttach).
+       *
+       * The first landing is the first one that names a mate lane, not the
+       * anchor-only commit that can precede it: the anchor's spec exists
+       * before the ortholog fetch has framed any mate, so a phase that read
+       * `ready` off that commit let a capture shoot placement boxes while
+       * seven lanes were still downloading their indexes (the primate
+       * amylase figure, 2026-09-02)
        */
       get awaitingDependentData(): boolean {
+        const genes = self.laneGenesFetchSpecs
         return (
-          (self.laneGenes === undefined &&
-            self.laneGenesFetchSpecs.specs.length > 0) ||
+          (self.laneGenes === undefined && genes.specs.length > 0) ||
+          (!self.laneGenesCoverMates && genes.specs.length > 1) ||
           (self.laneLinks === undefined &&
             self.laneLinksFetchSpecs.specs.length > 0)
         )

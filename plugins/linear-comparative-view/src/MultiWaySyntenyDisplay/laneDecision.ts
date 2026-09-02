@@ -58,8 +58,10 @@ const MIN_SHARED_TO_SWITCH = 5
 // named beside the lane rather than dropped: a genome holding two homoeologous
 // copies of the anchor window shows one, and the other is the reader's to ask
 // for. Well under the switch margin, so a copy the lane will never choose on
-// its own is still named.
-const ALSO_ON_SHARE = 0.5
+// its own is still named, and low enough that the far side of a fusion
+// breakpoint is named for most of a window's walk across it while a lone
+// paralog among a dozen genes is not.
+const ALSO_ON_SHARE = 0.2
 // a lane keeps its placement while its frame still shows this much of the
 // placed weight: content that came in with the anchor is drawn where it
 // arrived, and the lane re-aligns only once what it should show has left it
@@ -85,9 +87,8 @@ function pickContig(
   pinned: string | undefined,
 ) {
   const byRef = new Map<string, MultiWayPlacement[]>()
-  const anchorBp = new Map<string, number>()
+  const evidence = new Map<string, number>()
   for (const group of groups) {
-    const weight = Math.max(group.anchor.end - group.anchor.start, 1)
     for (const p of group.mates.get(assemblyName) ?? []) {
       let bucket = byRef.get(p.refName)
       if (!bucket) {
@@ -95,30 +96,30 @@ function pickContig(
         byRef.set(p.refName, bucket)
       }
       bucket.push(p)
-      anchorBp.set(p.refName, (anchorBp.get(p.refName) ?? 0) + weight)
+      evidence.set(p.refName, (evidence.get(p.refName) ?? 0) + group.weight)
     }
   }
   let best: { refName: string; overlap: number } | undefined
-  for (const [refName, overlap] of anchorBp) {
+  for (const [refName, overlap] of evidence) {
     if (!best || overlap > best.overlap) {
       best = { refName, overlap }
     }
   }
   const held =
-    incumbent !== undefined && anchorBp.has(incumbent)
-      ? { refName: incumbent, overlap: anchorBp.get(incumbent)! }
+    incumbent !== undefined && evidence.has(incumbent)
+      ? { refName: incumbent, overlap: evidence.get(incumbent)! }
       : undefined
   // a pin is the reader's choice and outranks the vote, for as long as the
   // window still places anything on it
   const chosen =
-    pinned !== undefined && anchorBp.has(pinned)
-      ? { refName: pinned, overlap: anchorBp.get(pinned)! }
+    pinned !== undefined && evidence.has(pinned)
+      ? { refName: pinned, overlap: evidence.get(pinned)! }
       : preferIncumbent(best, held)
   return (
     chosen && {
       refName: chosen.refName,
       placements: byRef.get(chosen.refName)!,
-      alsoOn: [...anchorBp]
+      alsoOn: [...evidence]
         .filter(
           ([refName, overlap]) =>
             refName !== chosen.refName &&

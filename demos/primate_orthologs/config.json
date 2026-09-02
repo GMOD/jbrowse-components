@@ -1,0 +1,454 @@
+{
+  "assemblies": [
+    {
+      "name": "human",
+      "displayName": "Human (GRCh38.p14)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "human-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "human.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "human.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "chimp",
+      "displayName": "Chimpanzee (NHGRI_mPanTro3-v2.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "chimp-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "chimp.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "chimp.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "bonobo",
+      "displayName": "Bonobo (NHGRI_mPanPan1-v2.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "bonobo-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "bonobo.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "bonobo.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "gorilla",
+      "displayName": "Gorilla (NHGRI_mGorGor1-v2.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "gorilla-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "gorilla.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "gorilla.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "sumatran",
+      "displayName": "Sumatran orangutan (NHGRI_mPonAbe1-v2.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "sumatran-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "sumatran.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "sumatran.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "bornean",
+      "displayName": "Bornean orangutan (NHGRI_mPonPyg2-v2.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "bornean-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "bornean.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "bornean.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "siamang",
+      "displayName": "Siamang (NHGRI_mSymSyn1-v2.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "siamang-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "siamang.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "siamang.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "macaque",
+      "displayName": "Rhesus macaque (T2T-MMU8v2.0)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "macaque-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "macaque.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "macaque.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "human_genes",
+      "name": "Human (GRCh38.p14) genes (RefSeq)",
+      "assemblyNames": ["human"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "human.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "human.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chimp_genes",
+      "name": "Chimpanzee (NHGRI_mPanTro3-v2.1) genes (RefSeq)",
+      "assemblyNames": ["chimp"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "chimp.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "chimp.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bonobo_genes",
+      "name": "Bonobo (NHGRI_mPanPan1-v2.1) genes (RefSeq)",
+      "assemblyNames": ["bonobo"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "bonobo.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "bonobo.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gorilla_genes",
+      "name": "Gorilla (NHGRI_mGorGor1-v2.1) genes (RefSeq)",
+      "assemblyNames": ["gorilla"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "gorilla.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "gorilla.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "sumatran_genes",
+      "name": "Sumatran orangutan (NHGRI_mPonAbe1-v2.1) genes (RefSeq)",
+      "assemblyNames": ["sumatran"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "sumatran.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "sumatran.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bornean_genes",
+      "name": "Bornean orangutan (NHGRI_mPonPyg2-v2.1) genes (RefSeq)",
+      "assemblyNames": ["bornean"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "bornean.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "bornean.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "siamang_genes",
+      "name": "Siamang (NHGRI_mSymSyn1-v2.1) genes (RefSeq)",
+      "assemblyNames": ["siamang"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "siamang.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "siamang.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "macaque_genes",
+      "name": "Rhesus macaque (T2T-MMU8v2.0) genes (RefSeq)",
+      "assemblyNames": ["macaque"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "macaque.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "macaque.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "primate_orthologs",
+      "name": "Primate orthologs by gene symbol (8 genomes, RefSeq)",
+      "assemblyNames": [
+        "human",
+        "chimp",
+        "bonobo",
+        "gorilla",
+        "sumatran",
+        "bornean",
+        "siamang",
+        "macaque"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "mcscanBlocksLocation": {
+          "uri": "primates.blocks",
+          "locationType": "UriLocation"
+        },
+        "blockAssemblies": [
+          "human",
+          "chimp",
+          "bonobo",
+          "gorilla",
+          "sumatran",
+          "bornean",
+          "siamang",
+          "macaque"
+        ],
+        "bedLocations": [
+          {
+            "uri": "human.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "chimp.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "bonobo.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "gorilla.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "sumatran.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "bornean.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "siamang.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "macaque.bed",
+            "locationType": "UriLocation"
+          }
+        ],
+        "assemblyNames": [
+          "human",
+          "chimp",
+          "bonobo",
+          "gorilla",
+          "sumatran",
+          "bornean",
+          "siamang",
+          "macaque"
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "primate_orthologs-MultiWaySyntenyDisplay",
+          "color": "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'"
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "Primate orthologs",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "human",
+        "loc": "chr17:7,400,000-7,700,000",
+        "tracks": ["primate_orthologs"]
+      }
+    ]
+  }
+}

@@ -29,7 +29,8 @@ function pairFeature({
   mate,
 }: {
   uniqueId: string
-  name: string
+  // absent for an alignment record, which names nothing and is weighed by bp
+  name?: string
   start: number
   end: number
   strand?: number
@@ -38,7 +39,7 @@ function pairFeature({
     refName: string
     start: number
     end: number
-    name: string
+    name?: string
   }
 }) {
   // No `strand` inside `mate`: the PAF adapters never write one, and the
@@ -1081,16 +1082,16 @@ test('a span outside the frame has no px pair to draw from', () => {
 
 // A lane's own contig is whichever explains the most of the ANCHOR window, the
 // vote `resolvePanel` runs on the same axis for the panel this lane launches.
-// Counting placements instead let a cluster of short repeat hits outvote the
-// syntenic blocks that are the lane, and put the launch and the lane it
-// launched from on different contigs.
+// Counting an alignment's records instead let a cluster of short repeat hits
+// outvote the syntenic blocks that are the lane, and put the launch and the
+// lane it launched from on different contigs. Nameless, because a named
+// source is a gene table and a gene is one vote whatever its length.
 test('a lane sits on the contig explaining the most anchor bp, not the most hits', () => {
   const groups = groupFeatures([
     // three short repeat hits...
     ...['a', 'b', 'c'].map((suffix, i) =>
       pairFeature({
         uniqueId: `repeat${suffix}`,
-        name: `r${suffix}`,
         start: 100 * (i + 1),
         end: 100 * (i + 1) + 20,
         mate: {
@@ -1098,7 +1099,6 @@ test('a lane sits on the contig explaining the most anchor bp, not the most hits
           refName: 'Pp_repeats',
           start: 1000 * (i + 1),
           end: 1000 * (i + 1) + 20,
-          name: `r${suffix}`,
         },
       }),
     ),
@@ -1106,7 +1106,6 @@ test('a lane sits on the contig explaining the most anchor bp, not the most hits
     ...['d', 'e'].map((suffix, i) =>
       pairFeature({
         uniqueId: `block${suffix}`,
-        name: `b${suffix}`,
         start: 1000 * (i + 1),
         end: 1000 * (i + 1) + 400,
         mate: {
@@ -1114,7 +1113,6 @@ test('a lane sits on the contig explaining the most anchor bp, not the most hits
           refName: 'Pp1',
           start: 5000 * (i + 1),
           end: 5000 * (i + 1) + 400,
-          name: `b${suffix}`,
         },
       }),
     ),

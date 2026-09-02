@@ -27,6 +27,14 @@ export interface MultiWayGroup {
   anchor: MultiWayPlacement
   mates: Map<string, MatePlacement[]>
   feature: Feature
+  /**
+   * What the group counts for in a contig vote: the anchor bp of an
+   * alignment record, where a 2 Mb block has to outweigh twenty repeat hits,
+   * and one per gene for a named source, where a 1.4 Mb gene is one gene.
+   * DPP10 alone otherwise carried the chimp lane onto chr2B against fifteen
+   * genes on chr2A at the human chr2 fusion.
+   */
+  weight: number
 }
 
 export interface RowFrame {
@@ -75,15 +83,15 @@ export function groupFeatures(features: Feature[]) {
     const key = groupKeyOf(feature)
     let group = byKey.get(key)
     if (!group) {
+      const start = feature.get('start')
+      const end = feature.get('end')
       group = {
         key,
-        anchor: {
-          refName: feature.get('refName'),
-          start: feature.get('start'),
-          end: feature.get('end'),
-        },
+        anchor: { refName: feature.get('refName'), start, end },
         mates: new Map(),
         feature,
+        weight:
+          feature.get('name') === undefined ? Math.max(end - start, 1) : 1,
       }
       byKey.set(key, group)
     }

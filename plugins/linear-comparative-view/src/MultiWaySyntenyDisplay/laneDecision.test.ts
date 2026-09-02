@@ -160,6 +160,7 @@ describe('the ladder rung', () => {
 })
 
 describe('the contig', () => {
+  // an alignment source: nameless records, whose evidence is their anchor bp
   const twoContigs = (pp1Bp: number, pp2Bp: number) =>
     groupFeatures([
       new SimpleFeature({
@@ -168,7 +169,7 @@ describe('the contig', () => {
         start: 100,
         end: 100 + pp1Bp,
         strand: 1,
-        name: 'a',
+        syntenyId: 1,
         mate: { assemblyName: 'peach', refName: 'Pp1', start: 1000, end: 1500 },
       }),
       new SimpleFeature({
@@ -177,13 +178,59 @@ describe('the contig', () => {
         start: 400,
         end: 400 + pp2Bp,
         strand: 1,
-        name: 'b',
+        syntenyId: 2,
         mate: { assemblyName: 'peach', refName: 'Pp2', start: 1000, end: 1500 },
       }),
     ])
 
-  test('is the one explaining the most anchor bp', () => {
+  // a gene table: named rows, one vote each whatever the gene's length
+  const genesOn = (pp1: number, pp2: number, pp2GeneBp = 60) =>
+    groupFeatures([
+      ...Array.from({ length: pp1 }, (_, i) =>
+        pair(`a${i}`, `a${i}`, 100 + 80 * i, { start: 1000 + 80 * i }),
+      ),
+      ...Array.from({ length: pp2 }, (_, i) =>
+        pair(`b${i}`, `b${i}`, 100 + 80 * (pp1 + i), {
+          refName: 'Pp2',
+          start: 1000 + 80 * i,
+          end: 1000 + 80 * i + pp2GeneBp,
+        }),
+      ),
+    ])
+
+  test('is the one explaining the most anchor bp of an alignment', () => {
     expect(settle(twoContigs(100, 130)).refName).toBe('Pp2')
+  })
+
+  test('is the one holding the most genes of a gene table', () => {
+    expect(settle(genesOn(3, 2)).refName).toBe('Pp1')
+    expect(settle(genesOn(2, 3)).refName).toBe('Pp2')
+  })
+
+  // DPP10 spans 1.4 Mb; the fifteen genes on the other side of the human chr2
+  // fusion span 0.4 Mb between them, and they are fifteen orthologs
+  test('one long gene does not outvote many short ones', () => {
+    const groups = groupFeatures([
+      ...Array.from({ length: 6 }, (_, i) =>
+        pair(`a${i}`, `a${i}`, 100 + 80 * i, { start: 1000 + 80 * i }),
+      ),
+      new SimpleFeature({
+        uniqueId: 'giant',
+        refName: 'chr1',
+        start: 600,
+        end: 600 + 50_000,
+        strand: 1,
+        name: 'giant',
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp2',
+          start: 1000,
+          end: 51_000,
+        },
+      }),
+    ])
+    expect(settle(groups).refName).toBe('Pp1')
+    expect(settle(groups).alsoOn).toEqual([])
   })
 
   test('holds against a challenger inside the switch margin', () => {
@@ -197,15 +244,19 @@ describe('the contig', () => {
   })
 
   // a second homoeologous copy is a contig the lane will never choose on its
-  // own once the first clearly wins, and the reader has to be told it exists
+  // own once the first clearly wins, and the reader has to be told it exists;
+  // so is the far side of a fusion breakpoint, which holds a quarter of the
+  // window's genes for most of a walk across it
   test('names a contig explaining a comparable share, and not a repeat hit', () => {
     expect(settle(twoContigs(200, 130)).alsoOn).toEqual(['Pp2'])
-    expect(settle(twoContigs(200, 60)).alsoOn).toEqual([])
+    expect(settle(twoContigs(200, 30)).alsoOn).toEqual([])
+    expect(settle(genesOn(8, 2)).alsoOn).toEqual(['Pp2'])
+    expect(settle(genesOn(12, 1)).alsoOn).toEqual([])
   })
 
   test('a pin outranks the vote while the window still places on it', () => {
     const pinned = new Map([['peach', 'Pp2']])
-    const groups = twoContigs(200, 60)
+    const groups = twoContigs(200, 30)
     const decision = decideLaneFrames({
       groups,
       assemblyNames: ['peach'],

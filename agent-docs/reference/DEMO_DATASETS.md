@@ -275,6 +275,17 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   `95616b5201`).
 - **Multiway synteny** uses `colorBy: reference`, the meaningful multi-way mode;
   `drawCurves` defaults false and the figures show straight ribbons.
+- **`demos/primate_orthologs` is a gene-symbol join, no aligner**
+  (`build_primate_orthologs.sh`, `symbols_to_blocks.py`): GRCh38.p14, the six
+  NHGRI T2T apes and T2T macaque, RefSeq GFF3 only, ~290 MB downloaded, and
+  every lane 93-97% full because one annotation pipeline named the orthologs.
+  The same join over PR #5627's 100 E. coli accessions filled a quarter of the
+  lanes under 30% (older PGAP annotations carry locus tags, not symbols) and 18
+  of the accessions no longer download, so check symbol presence before
+  pinning a list. Loci: `chr17:7,400,000-7,700,000` (TP53, every lane at the
+  anchor's scale, siamang reversed), `chr2:112,500,000-115,500,000` (the 2q13
+  fusion, every ape lane on one of its two chromosomes), the AMY1 cluster at
+  `chr1:103,500,000-103,800,000` as the join's negative (LOC ids in the apes).
 
 ## Other demos
 
@@ -361,6 +372,8 @@ both files, and the same CLI emits the `seq-report` an INSDC-accession assembly
 needs for its aliases (see Format gotchas below). An FTP route composes a path
 out of species name, release number and assembly-version string instead, so a
 set is pinned by three moving parts rather than one.
+`build_primate_orthologs.sh` is the cheapest form of it: `gff3,seq-report`
+only, no FASTA, and the ortholog table is a symbol join over the annotations.
 
 **Either way it is a build-time host, which bounds what an upstream change can
 break.** `website/scripts/third-party-hosts.txt` — the gated list of what a

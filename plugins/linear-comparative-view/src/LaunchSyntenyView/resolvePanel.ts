@@ -161,12 +161,17 @@ export function resolvePanel(
       ? [{ feature, mate, spans: resolveSpans({ feature, mate, region }) }]
       : []
   })
-  const bpByRefName = new Map<string, number>()
-  for (const { mate, spans } of resolved) {
-    const bp = spans.featEnd - spans.featStart
-    bpByRefName.set(mate.refName, (bpByRefName.get(mate.refName) ?? 0) + bp)
+  // the same evidence the multi-way lane votes with (`MultiWayGroup.weight`):
+  // an alignment record's anchor bp, and one per gene for a named source, so
+  // a panel launched off a lane opens on the lane's contig
+  const evidenceOf = ({ feature, spans }: (typeof resolved)[number]) =>
+    feature.get('name') === undefined ? spans.featEnd - spans.featStart : 1
+  const byRefName = new Map<string, number>()
+  for (const entry of resolved) {
+    const { refName } = entry.mate
+    byRefName.set(refName, (byRefName.get(refName) ?? 0) + evidenceOf(entry))
   }
-  const refName = [...bpByRefName].sort((a, b) => b[1] - a[1])[0]?.[0]
+  const refName = [...byRefName].sort((a, b) => b[1] - a[1])[0]?.[0]
   // a reverse-strand walk counts down, so one block's two ends arrive swapped
   const mateSpan = ({ spans }: (typeof resolved)[number]) => ({
     start: Math.min(spans.mateStart, spans.mateEnd),
@@ -190,8 +195,8 @@ export function resolvePanel(
   let anchorHi = Number.NEGATIVE_INFINITY
   let mateLo = Number.POSITIVE_INFINITY
   let mateHi = Number.NEGATIVE_INFINITY
-  let minusBp = 0
-  let totalBp = 0
+  let minus = 0
+  let total = 0
   for (const entry of kept) {
     const { feature, mate, spans } = entry
     const { featStart, featEnd } = spans
@@ -201,10 +206,10 @@ export function resolvePanel(
     anchorHi = Math.max(anchorHi, featEnd)
     mateLo = Math.min(mateLo, start)
     mateHi = Math.max(mateHi, end)
-    const bp = featEnd - featStart
-    totalBp += bp
+    const evidence = evidenceOf(entry)
+    total += evidence
     if (feature.get('strand') === -1) {
-      minusBp += bp
+      minus += evidence
     }
   }
   // Whole bases, rounded OUTWARD, and here rather than at either of the two
@@ -223,7 +228,7 @@ export function resolvePanel(
         mateEnd: Math.ceil(mateHi),
         // ties (a single zero-length block, an even split) read as forward,
         // which is what an unflipped panel already was
-        reversed: minusBp * 2 > totalBp,
+        reversed: minus * 2 > total,
       }
 }
 

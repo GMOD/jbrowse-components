@@ -35,6 +35,24 @@ test('the lane fetch is part of loading only until it first lands', () => {
   expect(display.displayPhase).toBe('ready')
 })
 
+// The anchor's gene spec exists before the ortholog fetch has framed a single
+// mate, so the first commit can be the anchor alone; a phase reading `ready`
+// off that one shot the primate amylase figure as placement boxes with every
+// mate lane still downloading. The commit that counts is the first naming a
+// mate, which the key says by joining more than one spec.
+test('the first landing that counts is the one covering a mate lane', () => {
+  const display = createDisplay()
+  display.setLaneGenes(new Map(), 'volvox:ctgA:0-1000')
+  expect(display.laneGenesCoverMates).toBe(false)
+  display.setLaneGenes(
+    new Map(),
+    'volvox:ctgA:0-1000;volvox_random:ctgB:0-2048',
+  )
+  expect(display.laneGenesCoverMates).toBe(true)
+  display.setLaneGenes(new Map(), 'volvox:ctgA:500-1500')
+  expect(display.laneGenesCoverMates).toBe(true)
+})
+
 // This display's `trackMenuItems` REPLACED the inherited list rather than
 // appending to it. Nothing is lost by that today — `BaseDisplay` returns `[]`
 // and neither mixin in the chain contributes a row — so this pins the item
