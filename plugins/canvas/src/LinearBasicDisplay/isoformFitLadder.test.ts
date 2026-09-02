@@ -1,11 +1,13 @@
 import { packStackedGenes } from '../RenderFeatureDataRPC/testUtils.ts'
 import { solveIsoformCount, solveLabelRoomFactor } from './fitLadder.ts'
+import { maxIsoformCount } from './isoformTrim.ts'
 import {
   computeLaidOutData,
   createContentHeightProbe,
   createIsoformCountProbe,
   maxBottom,
 } from './layout.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type { LayoutInputs, LayoutRegionData } from './layout.ts'
 
@@ -160,5 +162,49 @@ describe('the isoform rung, on the shape that needed it', () => {
     expect(
       expanded.floatingLabelsData.get('LDB3')!.moreIsoformsLabel,
     ).toMatchObject({ text: 'show fewer', expanded: true })
+  })
+})
+
+// An opened gene is the user's own request for the full stack, so no count takes
+// anything off it. With every stacked gene open the solve has no bracket:
+// height@10 is height@1, both overflow, and counting the open genes' isoforms
+// anyway made the fit-mode floor answer 1 over a stack drawing every transcript
+// — a chip saying "One isoform" on a gene showing all ten.
+describe('the isoform rung with every stacked gene expanded', () => {
+  const expandedGeneIds = new Set(['OPN4', 'LDB3'])
+  const probe = createIsoformCountProbe(REGIONS, { ...INPUTS, expandedGeneIds })
+
+  it('measures the same overflowing height at every count', () => {
+    expect(probe(1)).toBe(probe(10))
+    expect(probe(1)).toBeGreaterThan(TRACK_HEIGHT)
+  })
+
+  it('leaves no gene to count, so there is nothing to solve', () => {
+    const top = maxIsoformCount(REGIONS.values(), undefined, expandedGeneIds)
+    expect(top).toBe(0)
+    expect(solveIsoformCount(probe, TRACK_HEIGHT, top, 1)).toBeUndefined()
+  })
+
+  it('reports no trim on the display', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setGeneGlyphMode('auto')
+    display.setRpcData(
+      0,
+      packStackedGenes([
+        { featureId: 'gene1', startBp: 0, endBp: 5000, isoforms: 10 },
+        { featureId: 'gene2', startBp: 4000, endBp: 9000, isoforms: 4 },
+      ]),
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 },
+    )
+    display.setHeightMode('fit')
+    display.setHeight(30)
+    expect(display.fitStage.maxIsoforms).toBe(1)
+    expect(display.geneGlyphCollapsed).toBe(true)
+    display.toggleExpandedGene('gene1')
+    display.toggleExpandedGene('gene2')
+    expect(display.fitStage.maxIsoforms).toBeUndefined()
+    expect(display.geneGlyphIsoformCap).toBeUndefined()
+    expect(display.geneGlyphCollapsed).toBe(false)
   })
 })

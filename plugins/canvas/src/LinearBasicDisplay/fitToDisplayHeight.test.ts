@@ -18,10 +18,10 @@ import type {
 import type { TestDisplay } from './testEnv.ts'
 
 // Overlapping features so the packer stacks them into rows taller than the
-// track height, giving the fit something to shrink. Each spans 800bp (64px at the
-// test view's 12.5 bp/px) — wider than its 46px label, so `fitWidth` decimation
-// keeps every name here (decimated ≡ labels); a dedicated mixed-width test
-// exercises the case where narrow features shed their names.
+// track height, giving the fit something to shrink. Every feature shares one
+// start, so no name has whitespace of its own and `fitWidth` decimation sheds
+// them all at any factor above zero (decimated packs to the bodies height); a
+// dedicated mixed-width test exercises names shedding one at a time.
 function stackedRegionData(rows: number, heightPx: number) {
   const features = Array.from({ length: rows }, (_, i) => ({
     featureId: `f${i}`,
@@ -84,8 +84,8 @@ function labeledStackedRegionData(rows: number, heightPx: number) {
 // where its box + neighbor gap >= labelWidth·factor (see keepFeatureLabel), so
 // distinct rooms make decimation gradual — the crowded (small-room) names shed
 // first, the roomier ones last — and the solve can fill the height a name at a
-// time. The uniform-wide `labeledStackedRegionData` can't show this: every name
-// there has infinite room, so decimated always equals labels.
+// time. The same-start `labeledStackedRegionData` can't show this: every name
+// there has zero room, so they all shed at once.
 function mixedWidthRegionData(count: number) {
   const features: {
     featureId: string
@@ -254,7 +254,7 @@ const ctgA = {
 // autorun reads it — so a field added to the signature is added in one place
 // and every test below sees it.
 function displaySignature(display: TestDisplay) {
-  const { level } = display.fitStage
+  const { level, maxIsoforms } = display.fitStage
   return rowGeometrySignature({
     displayMode: display.displayMode,
     renderedShowLabels: display.renderedShowLabels,
@@ -263,6 +263,7 @@ function displaySignature(display: TestDisplay) {
     fitLevel: level,
     labelRoomFactor:
       level === 'decimated' ? display.fitDecimatedFactor : undefined,
+    maxIsoforms,
   })
 }
 
@@ -785,14 +786,14 @@ describe('canvas display fit escalation ladder', () => {
     const maxScale = display.fitMaxScale
 
     // Least-reduced rung whose unscaled stack fits h; bodies is the fallback.
-    // This data is uniform-wide (all names have infinite overhang room), so the
-    // height-solved `decimated` rung always keeps every name and equals `labels`
-    // — it is never selected distinctly here (the mixed-width test covers that);
-    // when labels overflows so does decimated, dropping straight to bodies.
+    // This data shares one start (no name has overhang room), so the
+    // height-solved `decimated` rung sheds every name and packs to the bodies
+    // height — it is selected wherever bodies fits and labels does not (the
+    // mixed-width test covers a solve that keeps some names).
     const rungs = [
       ['full', fullH],
       ['labels', labelsH],
-      ['bodies', bodiesH],
+      ['decimated', bodiesH],
     ] as const
     const expectedLevel = (h: number) =>
       rungs.find(([, ch]) => ch <= h)?.[0] ?? 'bodies'
@@ -1133,10 +1134,10 @@ describe('canvas display fit escalation ladder', () => {
     expect(inLabels.level).toBe('labels')
     expect(inLabels.sig).not.toBe(inFull.sig)
 
-    // ...and the labels/bodies boundary, where the names go.
-    const inBodies = at(Math.round(labelsH) - 10)
-    expect(inBodies.level).toBe('bodies')
-    expect(inBodies.sig).not.toBe(inLabels.sig)
+    // ...and the labels/decimated boundary, where the names go.
+    const inDecimated = at(Math.round(labelsH) - 10)
+    expect(inDecimated.level).toBe('decimated')
+    expect(inDecimated.sig).not.toBe(inLabels.sig)
 
     // Within a rung, with the scale pinned at 1 (normal display mode never grows),
     // the signature holds — so a zoom re-pack at this height eases rather than
@@ -1214,8 +1215,8 @@ describe('canvas display fit escalation ladder', () => {
 
   // Descriptions off (or density-hidden) collapses the full and labels stages
   // onto one name-only reservation, so the ladder has no distinct descriptions
-  // step and drops straight from names to bodies. Exercises the labels-only
-  // shortcut that reuses the base layout.
+  // step and drops straight from names to the decimated rung. Exercises the
+  // labels-only shortcut that reuses the base layout.
   it('with descriptions off, the full and labels stages coincide', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -1233,9 +1234,9 @@ describe('canvas display fit escalation ladder', () => {
 
     display.setHeightMode('fit')
     display.setHeight(Math.round((bodiesH + labelsH) / 2))
-    expect(display.fitStage.level).toBe('bodies')
+    expect(display.fitStage.level).toBe('decimated')
     expect(display.renderedShowDescriptions).toBe(false)
-    expect(display.renderedShowLabels).toBe(false)
+    expect(display.renderedShowLabels).toBe(true)
   })
 
   // Labels and descriptions both off: nothing is reserved anywhere, so all three

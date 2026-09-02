@@ -9,6 +9,7 @@ import {
   easeInOutCubic,
   interpolateYData,
   morphOffset,
+  rowGeometrySignature,
 } from './yMorph.ts'
 
 // One rect per feature, sitting at the feature's top.
@@ -180,4 +181,23 @@ test('a feature overflowing off-screen in the target does not animate', () => {
   const target = new Map([[0, region([{ featureId: 'a', top: -1e6 }])]])
   expect(canMorph(fromTops, target)).toBe(false)
   expect(interpolateYData(fromTops, target, 0).get(0)!.rectYs[0]).toBe(-1e6)
+})
+
+// A drag-resize at fixed height re-solves the isoform count every frame, and a
+// trimmed gene's row is as tall as the transcripts it keeps — so two counts are
+// two row geometries, and the morph must snap between them rather than ease.
+test('rowGeometrySignature separates two isoform counts', () => {
+  const at = (maxIsoforms: number | undefined) =>
+    rowGeometrySignature({
+      displayMode: 'normal',
+      renderedShowLabels: true,
+      renderedShowDescriptions: false,
+      fitScale: 1,
+      fitLevel: 'isoforms',
+      labelRoomFactor: undefined,
+      maxIsoforms,
+    })
+  expect(at(5)).not.toBe(at(4))
+  expect(at(5)).toBe(at(5))
+  expect(at(undefined)).not.toBe(at(1))
 })

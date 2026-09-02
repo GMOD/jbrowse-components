@@ -688,7 +688,7 @@ function packedRowsHeight(
     if (measureIds && !measureIds.has(id)) {
       continue
     }
-    const bottom = top + (layoutHeights.get(id) ?? 0)
+    const bottom = top + layoutHeights.get(id)!
     if (isPlacedRow(top) && bottom > max) {
       max = bottom
     }
@@ -826,6 +826,7 @@ interface GroupCache {
   expandedGeneIds: ReadonlySet<string> | undefined
   collapseDepth: number | undefined
   flattenRows: boolean | undefined
+  dropBelowLabelRows: boolean | undefined
   displayMode: DisplayMode
   // The MobX-computed pinned set; a stable reference until pins change, so a
   // reference compare in groupUnchanged detects a pin toggle.
@@ -859,6 +860,7 @@ function groupUnchanged(
     expandedGeneIds,
     collapseDepth,
     flattenRows,
+    dropBelowLabelRows,
   } = inputs
   const paramsSame =
     prev.bpPerPx === bpPerPx &&
@@ -870,6 +872,7 @@ function groupUnchanged(
     prev.expandedGeneIds === expandedGeneIds &&
     prev.collapseDepth === collapseDepth &&
     prev.flattenRows === flattenRows &&
+    prev.dropBelowLabelRows === dropBelowLabelRows &&
     prev.displayMode === displayMode &&
     prev.pinnedFeatureIds === pinnedFeatureIds &&
     prev.members.size === members.size
@@ -995,6 +998,7 @@ export function createIncrementalLayout({
           expandedGeneIds: inputs.expandedGeneIds,
           collapseDepth: inputs.collapseDepth,
           flattenRows: inputs.flattenRows,
+          dropBelowLabelRows: inputs.dropBelowLabelRows,
           displayMode: inputs.displayMode,
           pinnedFeatureIds: inputs.pinnedFeatureIds,
           members: new Map(members),
@@ -1151,25 +1155,8 @@ function intersectsMerged(
   return idx >= 0 && merged[idx]![1] > queryStart
 }
 
-// Smallest value strictly greater than `x` in ascending `sorted`, or undefined
-// when none exists (x is at/after the last element).
-function firstGreater(sorted: number[], x: number) {
-  let lo = 0
-  let hi = sorted.length
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1
-    if (sorted[mid]! > x) {
-      hi = mid
-    } else {
-      lo = mid + 1
-    }
-  }
-  return sorted[lo]
-}
-
-// Largest value strictly less than `x` in ascending `sorted`, or undefined when
-// none exists (x is at/before the first element).
-function lastLess(sorted: number[], x: number) {
+// Index of the first element >= `x` in ascending `sorted`.
+function lowerBound(sorted: number[], x: number) {
   let lo = 0
   let hi = sorted.length
   while (lo < hi) {
@@ -1180,7 +1167,35 @@ function lastLess(sorted: number[], x: number) {
       hi = mid
     }
   }
-  return lo > 0 ? sorted[lo - 1] : undefined
+  return lo
+}
+
+// Index of the first element > `x` in ascending `sorted`.
+function upperBound(sorted: number[], x: number) {
+  let lo = 0
+  let hi = sorted.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (sorted[mid]! > x) {
+      hi = mid
+    } else {
+      lo = mid + 1
+    }
+  }
+  return lo
+}
+
+// The value following one occurrence of `x` in ascending `sorted` (x itself when
+// another element shares it), or undefined at the top end.
+function valueAfter(sorted: number[], x: number) {
+  return sorted[lowerBound(sorted, x) + 1]
+}
+
+// The value preceding one occurrence of `x` in ascending `sorted` (x itself when
+// another element shares it), or undefined at the bottom end.
+function valueBefore(sorted: number[], x: number) {
+  const idx = upperBound(sorted, x) - 2
+  return idx >= 0 ? sorted[idx] : undefined
 }
 
 // Per-feature horizontal whitespace (px) a label may overhang into, on each
@@ -1188,8 +1203,11 @@ function lastLess(sorted: number[], x: number) {
 // feature's left edge (its box plus the gap after it, matching the rightward
 // overhang the packer reserves via layoutEndBp); leftward room mirrors it from
 // the right edge for reversed regions. A feature with no neighbor on a side has
-// open space there (Infinity). Only computed for the `fitWidth` decimation rung;
-// the default `all` policy keeps every name and never asks.
+// open space there (Infinity); one sharing its edge with another feature has
+// none (a pile on one bp thins under decimation rather than every member
+// reading the gap to the far neighbor as its own). Only computed for the
+// `fitWidth` decimation rung; the default `all` policy keeps every name and
+// never asks.
 function labelOverhangRoomPx(
   features: Map<string, { startBp: number; endBp: number }>,
   bpPerPx: number,
@@ -1201,8 +1219,8 @@ function labelOverhangRoomPx(
   const rightRoom = new Map<string, number>()
   const leftRoom = new Map<string, number>()
   for (const [id, f] of features) {
-    const nextStart = firstGreater(starts, f.startBp)
-    const prevEnd = lastLess(ends, f.endBp)
+    const nextStart = valueAfter(starts, f.startBp)
+    const prevEnd = valueBefore(ends, f.endBp)
     rightRoom.set(
       id,
       nextStart === undefined ? Infinity : (nextStart - f.startBp) / bpPerPx,
@@ -1923,7 +1941,7 @@ function applyLayoutToRegion(
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
   for (let i = 0; i < data.flatbushItems.length; i++) {
-    featureOffsets[i] = layoutMap.get(data.flatbushItems[i]!.featureId) ?? 0
+    featureOffsets[i] = layoutMap.get(data.flatbushItems[i]!.featureId)!
   }
 
   for (let i = 0; i < data.rectDensityFade.length; i++) {
@@ -1947,7 +1965,7 @@ function applyLayoutToRegion(
   for (let i = 0; i < data.flatbushItems.length; i++) {
     const item = data.flatbushItems[i]!
     const offset = featureOffsets[i]!
-    const height = layoutHeights.get(item.featureId) ?? item.featureHeightPx
+    const height = layoutHeights.get(item.featureId)!
     item.topPx = offset
     item.bottomPx = offset + height
   }

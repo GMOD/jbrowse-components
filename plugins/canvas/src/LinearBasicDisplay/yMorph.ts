@@ -75,7 +75,10 @@ export function morphOffset(
 // produced the identical key while the `decimated` rung strips a name row off
 // roughly half the features. `labelRoomFactor` is the same hazard one level in:
 // two `decimated` stacks at different factors keep different names, so the rung
-// alone is not enough (a fit drag-resize re-solves it every frame).
+// alone is not enough (a fit drag-resize re-solves it every frame). `maxIsoforms`
+// is the same hazard on the `isoforms` rung and the two below it: a trimmed gene's
+// row is as tall as the transcripts it keeps, so two stacks solved to 5 and 4
+// rescale every trimmed row while every other field here stays put.
 export function rowGeometrySignature(g: {
   displayMode: string
   renderedShowLabels: boolean
@@ -83,6 +86,7 @@ export function rowGeometrySignature(g: {
   fitScale: number
   fitLevel: string
   labelRoomFactor: number | undefined
+  maxIsoforms: number | undefined
 }) {
   return [
     g.displayMode,
@@ -91,6 +95,7 @@ export function rowGeometrySignature(g: {
     g.fitScale,
     g.fitLevel,
     g.labelRoomFactor,
+    g.maxIsoforms,
   ].join('|')
 }
 

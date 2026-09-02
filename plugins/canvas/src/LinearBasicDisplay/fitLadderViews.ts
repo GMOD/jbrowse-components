@@ -255,13 +255,16 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The most isoforms any gene ON SCREEN has — the top of the solve's
-     * bracket, and the count above which a trim can take nothing away.
+     * The most isoforms any trimmable gene ON SCREEN has — the top of the
+     * solve's bracket, and the count above which a trim can take nothing away.
+     * Genes the user opened are left out: no count trims them, so with every
+     * stacked gene open this is 0 and the solve has nothing to do.
      */
     get maxIsoformsOnScreen() {
       return maxIsoformCount(
         self.rpcDataMap.values(),
         self.fitMeasureFeatureIds,
+        self.layoutInputs.expandedGeneIds,
       )
     },
     /**

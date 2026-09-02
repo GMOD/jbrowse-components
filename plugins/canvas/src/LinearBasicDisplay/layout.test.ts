@@ -7,6 +7,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
   computeLaidOutData,
+  createContentHeightProbe,
   packedContentHeight,
   createIncrementalLayout,
   featureIdsTouchingBlocks,
@@ -339,6 +340,75 @@ describe('fitWidth label decimation', () => {
     ).get(0)!.floatingLabelsData
     expect(keptName(out, 'edge')).toBe(false) // crowded 5px on its left
     expect(keptName(out, 'blockerL')).toBe(true) // leftmost end, open to the left
+  })
+
+  // Features stacked on one bp share their start, so none has whitespace of its
+  // own to the right: the next left edge is its own. Measured to the next
+  // DISTINCT start instead, every member of the pile read the whole gap to the
+  // far neighbor as room, kept its name at any factor, and the solve found no
+  // factor that fits.
+  it('a pile sharing one start sheds its names under decimation, a lone feature keeps its own', () => {
+    const pile = Array.from({ length: 20 }, (_, i) => ({
+      featureId: `pile${i}`,
+      startBp: 1000,
+      endBp: 1001,
+      height: 20,
+    }))
+    const data = new Map([
+      [
+        0,
+        labeledFeatureData([
+          ...pile,
+          { featureId: 'lone', startBp: 5000, endBp: 5001, height: 20 },
+        ]),
+      ],
+    ])
+    const inputs = {
+      bpPerPx: 1,
+      showLabels: true,
+      showDescriptions: false,
+      reversedRegions: new Set<number>(),
+      displayMode: 'normal' as const,
+      pinnedFeatureIds: new Set<string>(),
+      labelDecimation: 'fitWidth' as const,
+    }
+    const heightAt = createContentHeightProbe(data, inputs)
+    expect(heightAt(8)).toBeLessThan(heightAt(0))
+
+    const labels = computeLaidOutData(data, {
+      ...inputs,
+      labelRoomFactor: 8,
+    }).get(0)!.floatingLabelsData
+    expect(keptName(labels, 'pile0')).toBe(false)
+    expect(keptName(labels, 'pile19')).toBe(false)
+    expect(keptName(labels, 'lone')).toBe(true)
+  })
+
+  it('a pile sharing one end sheds its names in a reversed region', () => {
+    const labels = computeLaidOutData(
+      new Map([
+        [
+          0,
+          labeledFeatureData([
+            { featureId: 'a', startBp: 900, endBp: 1000, height: 20 },
+            { featureId: 'b', startBp: 950, endBp: 1000, height: 20 },
+            { featureId: 'lone', startBp: 100, endBp: 110, height: 20 },
+          ]),
+        ],
+      ]),
+      {
+        bpPerPx: 1,
+        showLabels: true,
+        showDescriptions: false,
+        reversedRegions: new Set([0]),
+        displayMode: 'normal',
+        pinnedFeatureIds: new Set<string>(),
+        labelDecimation: 'fitWidth',
+      },
+    ).get(0)!.floatingLabelsData
+    expect(keptName(labels, 'a')).toBe(false)
+    expect(keptName(labels, 'b')).toBe(false)
+    expect(keptName(labels, 'lone')).toBe(true)
   })
 })
 
@@ -1112,6 +1182,19 @@ test('incremental memo: flipping a region reversed recomputes its group', () => 
   })
   const first = memo(new Map([[0, a]]), incInputs(1, new Set()))
   const second = memo(new Map([[0, a]]), incInputs(1, new Set([0])))
+  expect(second.get(0)).not.toBe(first.get(0))
+})
+
+test('incremental memo: toggling dropBelowLabelRows recomputes its group', () => {
+  const memo = createIncrementalLayout()
+  const a = makeFeatureData({
+    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
+  })
+  const first = memo(new Map([[0, a]]), incInputs())
+  const second = memo(new Map([[0, a]]), {
+    ...incInputs(),
+    dropBelowLabelRows: true,
+  })
   expect(second.get(0)).not.toBe(first.get(0))
 })
 

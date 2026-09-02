@@ -213,7 +213,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       // level change, or a fit squeeze) and must snap. See
       // rowGeometrySignature for why it reads the rendered, not raw,
       // label/description flags.
-      const { level } = self.fitStage
+      const { level, maxIsoforms } = self.fitStage
       const geometry = rowGeometrySignature({
         displayMode: self.displayMode,
         renderedShowLabels: self.renderedShowLabels,
@@ -225,6 +225,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
         // discriminate stacks it had no hand in.
         labelRoomFactor:
           level === 'decimated' ? self.fitDecimatedFactor : undefined,
+        maxIsoforms,
       })
       const scaleUnchanged = geometry === prevGeometry
       const from = prevLayout

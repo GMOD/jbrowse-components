@@ -1,5 +1,8 @@
-import { packStackedGenes } from '../RenderFeatureDataRPC/testUtils.ts'
-import { trimIsoformStack } from './isoformTrim.ts'
+import {
+  makeFlatbushItem,
+  packStackedGenes,
+} from '../RenderFeatureDataRPC/testUtils.ts'
+import { maxIsoformCount, trimIsoformStack } from './isoformTrim.ts'
 import { computeLaidOutData } from './layout.ts'
 
 import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -76,6 +79,35 @@ describe('trimIsoformStack', () => {
         1,
       ).hidden,
     ).toBe(2)
+  })
+})
+
+describe('maxIsoformCount', () => {
+  const regions = [
+    {
+      flatbushItems: [
+        makeFlatbushItem({
+          featureId: 'wide',
+          isoformStack: { ...STACK, isoformCount: 9 },
+        }),
+        makeFlatbushItem({ featureId: 'narrow', isoformStack: STACK }),
+        makeFlatbushItem({ featureId: 'plain' }),
+      ],
+    },
+  ]
+
+  it('is the largest count on screen', () => {
+    expect(maxIsoformCount(regions, undefined, undefined)).toBe(9)
+    expect(maxIsoformCount(regions, new Set(['narrow']), undefined)).toBe(3)
+  })
+
+  // No count trims a gene the user opened, so its isoforms are not a bracket
+  // the solve can bisect over.
+  it('leaves an expanded gene out', () => {
+    expect(maxIsoformCount(regions, undefined, new Set(['wide']))).toBe(3)
+    expect(
+      maxIsoformCount(regions, undefined, new Set(['wide', 'narrow'])),
+    ).toBe(0)
   })
 })
 

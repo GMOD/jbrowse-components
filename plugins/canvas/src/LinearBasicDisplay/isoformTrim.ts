@@ -124,16 +124,6 @@ export const NO_ISOFORM_TRIM: IsoformTrimPlan = {
  */
 export const MIN_ISOFORM_BADGE_GENE_PX = 100
 
-function stackExtentBp(stack: IsoformStack) {
-  let startBp = Number.POSITIVE_INFINITY
-  let endBp = Number.NEGATIVE_INFINITY
-  for (const child of stack.children) {
-    startBp = Math.min(startBp, child.startBp)
-    endBp = Math.max(endBp, child.endBp)
-  }
-  return endBp > startBp ? endBp - startBp : 0
-}
-
 export function planIsoformTrims(
   stacks: Iterable<readonly [string, IsoformStack]>,
   maxIsoforms: number | undefined,
@@ -159,7 +149,10 @@ export function planIsoformTrims(
     if (!expanded && trim.keptOrdinals.size !== stack.children.length) {
       trims.set(featureId, trim)
     }
-    const extentBp = expanded ? stackExtentBp(stack) : trim.endBp - trim.startBp
+    const drawn = expanded
+      ? trimIsoformStack(stack, Number.POSITIVE_INFINITY)
+      : trim
+    const extentBp = drawn.endBp - drawn.startBp
     if (trim.hidden > 0 && extentBp / bpPerPx >= MIN_ISOFORM_BADGE_GENE_PX) {
       badges.set(featureId, { hidden: trim.hidden, expanded })
     }
@@ -167,17 +160,24 @@ export function planIsoformTrims(
   return { trims, badges }
 }
 
-// The most isoforms any gene on screen has — the top of the fit ladder's
-// bisection, and the count above which trimming can take nothing away.
+// The most isoforms any gene on screen has that a count can still take from —
+// the top of the fit ladder's bisection. An expanded gene is skipped because
+// `planIsoformTrims` never trims it: counted, it puts a bracket over a stack no
+// count changes, and the solve floors to 1 over a gene drawing everything.
 export function maxIsoformCount(
   regions: Iterable<Pick<FeatureDataResult, 'flatbushItems'>>,
-  measureIds?: ReadonlySet<string>,
+  measureIds: ReadonlySet<string> | undefined,
+  expandedGeneIds: ReadonlySet<string> | undefined,
 ) {
   let max = 0
   for (const data of regions) {
     for (const item of data.flatbushItems) {
       const count = item.isoformStack?.isoformCount ?? 0
-      if (count > max && (!measureIds || measureIds.has(item.featureId))) {
+      if (
+        count > max &&
+        (!measureIds || measureIds.has(item.featureId)) &&
+        !expandedGeneIds?.has(item.featureId)
+      ) {
         max = count
       }
     }
@@ -371,7 +371,6 @@ export function applyIsoformTrim(
       const trim = trims.get(item.featureId)
       if (trim) {
         item.featureHeightPx = trim.heightPx
-        item.bottomPx = trim.heightPx
         item.labelRows = trim.labelRows
         item.startBp = trim.startBp
         item.endBp = trim.endBp
