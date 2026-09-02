@@ -60,7 +60,7 @@ between variants (`shared/components/TreeSidebar.tsx` 298, `SvgTree.tsx` 48,
 `shared/treeDrawingAutorun.ts` 169, `shared/makeSidebarSvg.tsx` 45) and wiggle
 (`MultiLinearWiggleDisplay/components/TreeSidebar.tsx` 299, `SvgTree.tsx` 48,
 `treeDrawingAutorun.ts` 167, `makeSidebarSvg.tsx` 49, `treeTypes.ts` 44), with a
-vendored `plugins/variants/src/d3-hierarchy2` (34 files) and
+vendored `d3-hierarchy2` under `plugins/variants/src` (34 files) and
 `VariantRPC/executeClusterGenotypeMatrix.ts` (56). All of that LEFT. What
 ARRIVED is the package: 94 files / 11,193 lines at HEAD (59 source, 35 test),
 consumed by canvas, maf, variants and wiggle; 86 files / 10,093 lines at the
