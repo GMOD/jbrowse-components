@@ -147,9 +147,9 @@ function trackMenuLabels(display: { trackMenuItems: () => MenuItem[] }) {
 
 test('the track menu offers the tier only where there is a source', () => {
   expect(trackMenuLabels(refusedDisplay().display)).not.toContain(
-    'Density tier',
+    'Density band',
   )
   expect(trackMenuLabels(refusedDisplay(DENSITY_ADAPTER).display)).toContain(
-    'Density tier',
+    'Density band',
   )
 })

@@ -25,10 +25,9 @@ class is already in the file, and the display discovers the lanes from it.
 - htslib (`bgzip`, `tabix`, `htsfile`), for the check at the end
 - `samtools`, for
   [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
-  only
-- `node`, for
-  [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
-  only
+  and [Reproduce it end to end](#reproduce-it-end-to-end), which runs the same
+  conversion
+- `node`, for the [JBrowse CLI](/docs/cli), which both of those need too
 
 ## Where the data comes from
 

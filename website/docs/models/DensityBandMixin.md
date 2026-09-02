@@ -19,10 +19,6 @@ what `LinearAlignmentsDisplay` does.
 Composed after the fetch foundation, whose `displayPhase` / `svgReady` it
 post-processes — `types.compose` resolves a collision to the later argument.
 
-The two displays drawing a band compose it: `LinearBasicDisplay`'s base model
-and `LinearMultiRowFeatureDisplay`, which had the block written out line for
-line.
-
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Volatiles
@@ -42,7 +38,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="getter-densitybandactive">**densityBandActive**</span><br><code>boolean</code> | Whether the band stands in for the features here — the tier's own decision, plus the view geometry the draw is mapped through. | DensityBandMixin |
 | <span id="getter-densitybandlayer">**densityBandLayer**</span><br><code>DensityBandLayer</code> |  | DensityBandMixin |
-| <span id="getter-densityreadout">**densityReadout**</span><br><code>string</code> | The band's line of text: its peak, and the source's value under the cursor while there is one. | DensityBandMixin |
+| <span id="getter-densityreadout">**densityReadout**</span><br><code>string</code> | The band's line of text: its peak, and the source's value under the cursor while there is one. Blank until the first read lands, so the scrim is not captioned "no density data" for a read still in flight. | DensityBandMixin |
 | <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayPhase</code> | The foundation's phase with the too-large banner swapped for the band — see `densityBandDisplayPhase`. | DensityBandMixin |
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | The export gate with the same swap — see `densityBandSvgReady`. | DensityBandMixin |
 | <span id="getter-drawswhentoolarge">**drawsWhenTooLarge**</span><br><code>boolean</code> | `renderDisplaySvg`'s hook: the export paints the band in place of the too-large note, the same swap the chrome makes on screen. | DensityBandMixin |
@@ -59,7 +55,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-setdensityhoverpx">**setDensityHoverPx**</span><br><code>(px?: number &#124; undefined) =&gt; void</code> | The cursor's view px over the band, or nothing when it leaves. | DensityBandMixin |
+| <span id="action-setdensityhoverpx">**setDensityHoverPx**</span><br><code>(px?: number &#124; undefined) =&gt; void</code> | The cursor's view px, or nothing when it leaves. Kept only while the band is up, so a pointer over features writes nothing here. | DensityBandMixin |
 | <span id="action-setdensitybins">**setDensityBins**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(entries: { displayedRegionIndex: number; bins: FeatureDensity;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(entries: { displayedRegionIndex: number; bins: FeatureDensity; }[], read: DensityRead) =&gt; void</code></pre></dialog></span> |  | [DensityTierMixin](../densitytiermixin#action-setdensitybins) |
 | <span id="action-cleardensitybins">**clearDensityBins**</span><br><code>() =&gt; void</code> |  | [DensityTierMixin](../densitytiermixin#action-cleardensitybins) |
 | <span id="action-setdensityloading">**setDensityLoading**</span><br><code>(loading: boolean) =&gt; void</code> |  | [DensityTierMixin](../densitytiermixin#action-setdensityloading) |

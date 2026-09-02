@@ -22,13 +22,13 @@ drops the moment they fit.
 - a JBrowse to open the figures' sessions in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop)); every file here is a URL, so nothing
   needs hosting to read along
+- [Node.js](https://nodejs.org/), which the JBrowse CLI runs on
 - the [JBrowse CLI](/docs/cli), for `jbrowse make-density` and the track it
   attaches to
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
 - htslib (`bgzip`, `tabix`), for the counts at the end
-- `node`, for [Reproduce it end to end](#reproduce-it-end-to-end) only
 
 ## Where the data comes from
 
@@ -139,9 +139,10 @@ thousands of records for this window, so they keep their bands.
 
 The swap is on what a fetch would cost, not on how wide the view is: the gene
 track and the Alu track are the same width here and only one of them is over
-budget. A track with a sidecar also carries a **Density tier** entry in its
+budget. A track with a sidecar also carries a **Density band** entry in its
 track menu, with **Automatic**, **Features only** and **Density only**, so the
-band can be held or dropped by hand.
+band can be held or dropped by hand, and **Load features anyway** to force the
+fetch the band replaced.
 
 ## Checking the band against the file
 

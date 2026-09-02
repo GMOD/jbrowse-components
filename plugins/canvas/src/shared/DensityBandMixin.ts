@@ -1,11 +1,14 @@
 import { getContainingView } from '@jbrowse/core/util'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
+import {
+  densityBandDisplayPhase,
+  densityBandPending,
+  densityBandSvgReady,
+} from '@jbrowse/display-kit/densityBandPhase'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
-  densityBandDisplayPhase,
   densityBandReadout,
-  densityBandSvgReady,
   densityHoverAt,
   displayDensityBandLayer,
 } from './densityBandViews.ts'
@@ -48,10 +51,6 @@ function bandHost(self: object) {
  * Composed after the fetch foundation, whose `displayPhase` / `svgReady` it
  * post-processes — `types.compose` resolves a collision to the later argument.
  *
- * The two displays drawing a band compose it: `LinearBasicDisplay`'s base model
- * and `LinearMultiRowFeatureDisplay`, which had the block written out line for
- * line.
- *
  * #stateModel DensityBandMixin
  * #category display
  */
@@ -67,15 +66,6 @@ export default function DensityBandMixin() {
          * Where the cursor is over the density band, for its readout.
          */
         densityHover: undefined as DensityHover | undefined,
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         * The cursor's view px over the band, or nothing when it leaves.
-         */
-        setDensityHoverPx(px?: number) {
-          self.densityHover = densityHoverAt(bandView(self), px)
-        },
       }))
       .views(self => ({
         /**
@@ -95,18 +85,33 @@ export default function DensityBandMixin() {
           return displayDensityBandLayer(bandHost(self))
         },
       }))
+      .actions(self => ({
+        /**
+         * #action
+         * The cursor's view px, or nothing when it leaves. Kept only while the
+         * band is up, so a pointer over features writes nothing here.
+         */
+        setDensityHoverPx(px?: number) {
+          self.densityHover = self.densityBandActive
+            ? densityHoverAt(bandView(self), px)
+            : undefined
+        },
+      }))
       .views(self => ({
         /**
          * #getter
          * The band's line of text: its peak, and the source's value under the
-         * cursor while there is one.
+         * cursor while there is one. Blank until the first read lands, so the
+         * scrim is not captioned "no density data" for a read still in flight.
          */
         get densityReadout() {
-          return densityBandReadout(
-            self.densityBandLayer,
-            bandHost(self).densityBins,
-            self.densityHover,
-          )
+          return densityBandPending(bandHost(self))
+            ? ''
+            : densityBandReadout(
+                self.densityBandLayer,
+                bandHost(self).densityBins,
+                self.densityHover,
+              )
         },
         /**
          * #getter

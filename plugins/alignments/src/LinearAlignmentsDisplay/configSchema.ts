@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -102,6 +103,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         growMaxHeight:
           'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight)',
       }),
+      // the density tier's two slots, which `DensityTierMixin` reads
+      ...densityTierConfigSchemaFields,
       /**
        * #slot
        */

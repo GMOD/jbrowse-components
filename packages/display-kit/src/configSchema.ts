@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { densityTierConfigSchemaFields } from './densityTierConfigSchemaFields.ts'
 import { regionTooLargeConfigSchemaFields } from './regionTooLargeConfigSchemaFields.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -38,7 +37,6 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     // written out, so the five displays composing the mixin against a schema
     // that does NOT extend this one declare the same pair from the same place.
     ...regionTooLargeConfigSchemaFields,
-    ...densityTierConfigSchemaFields,
     /**
      * #slot
      */

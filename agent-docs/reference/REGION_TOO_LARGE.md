@@ -340,7 +340,8 @@ the parts:
 | `BaseFeatureDataAdapter.getFeatureDensity` — reads the sidecar at the view's bp/px      | `packages/core/src/data_adapters/BaseAdapter/BaseFeatureDataAdapter.ts` |
 | `CoreGetFeatureDensity` — the RPC, one answer per region                                | `packages/core/src/rpc/methods/CoreGetFeatureDensity.ts`          |
 | `DensityTierMixin` — the swap decision, the bins, the read on its own rotation          | `packages/display-kit/src/DensityTierMixin.ts`                    |
-| `densityToUniformBins` — the resampler onto screen-pixel bins                           | `packages/display-kit/src/densityBins.ts`                         |
+| `densityBandDisplayPhase` / `densityBandSvgReady` — the phase and export gate with the band standing in, one copy for canvas and alignments | `packages/display-kit/src/densityBandPhase.ts`                    |
+| `densityToUniformBins` / `packDensityRegion` — the resampler onto screen-pixel bins, packed for the coverage band's painters | `packages/alignments-core/src/densityBins.ts`                     |
 | the canvas band, one painter for both feature displays and their SVG export             | `plugins/canvas/src/shared/densityBand.ts`                        |
 | the alignments band, the coverage band's own depth-bar pass over the bins               | `plugins/alignments/src/features/coverage/densityBand.ts`         |
 | `jbrowse make-density`, `add-track --density`                                           | `products/jbrowse-cli/src/commands/make-density/`                 |
@@ -372,6 +373,13 @@ the parts:
   With the band up the phase is the band's own read (`loading` until it lands,
   `ready` after) and so is the export gate; the two failure terminals pass
   through.
+- **The two slots sit on the schemas that compose the tier**, not on
+  `baseLinearDisplayConfigSchema` beside `regionTooLargeConfigSchemaFields`.
+  Every gated display uses the gate's pair, which is why that one belongs at
+  the base; the tier reaches five displays, through
+  `LinearBasicDisplay`'s base schema (which variants and LGV synteny extend),
+  `LinearMultiRowFeatureDisplay` and `LinearAlignmentsDisplay`. Spread lower it
+  listed `densityTier` in the config docs of ten displays that ignore it.
 - **The bins never touch the fetch tiers.** They live in their own
   `regionDataMap`, cleared on chromosome navigation, and the mode is a config
   slot (`densityTier`) that never enters `rpcProps()`, so the swap drops no
@@ -389,6 +397,9 @@ One volatile boolean for the whole track, `forceLoadTrack`, ORed with the
 through `gateActive`. The banner quotes the size before the click, and the
 user is never asked again for that track. Volatile so a shared session cannot
 carry a disabled gate; the slot is the durable form (`jbrowse-img --force`).
+Where the density band has replaced the banner the button lived on, the band's
+own submenu carries it (`densityTierMenuItems`), so `auto` under a refusal is
+never a one-way door.
 [ADR-074](../architecture-decision-records/adr-074-force-load-is-one-boolean-per-track.md)
 is why a boolean rather than a raised ceiling.
 

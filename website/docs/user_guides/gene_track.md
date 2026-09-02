@@ -180,9 +180,11 @@ jbrowse make-density genes.gff3.gz --chrom-sizes hg38.chrom.sizes
 jbrowse add-track genes.gff3.gz --load copy
 ```
 
-The track menu's **Density tier** submenu: **Automatic** swaps where the fetch
+The track menu's **Density band** submenu: **Automatic** swaps where the fetch
 would be too large, **Features only** keeps the message, **Density only** always
-draws the band. See the [gene density tutorial](/docs/tutorials/gene_density).
+draws the band. While the band is standing in for a fetch that was too large,
+the same submenu carries **Load features anyway**, the banner's force-load. See
+the [gene density tutorial](/docs/tutorials/gene_density).
 
 ## See also
 

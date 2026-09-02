@@ -2823,14 +2823,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -2848,6 +2840,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityTier",
+          "type": "(JexlString | Density tier)"
+        },
+        {
+          "name": "densityTierBpPerPx",
           "type": "(JexlString | number)"
         },
         {
@@ -3001,14 +3001,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -3051,6 +3043,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showRowSeparators",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "densityTier",
+          "type": "(JexlString | Density tier)"
+        },
+        {
+          "name": "densityTierBpPerPx",
+          "type": "(JexlString | number)"
         },
         {
           "name": "colorRowLabels",
@@ -3119,14 +3119,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -3148,6 +3140,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityTier",
+          "type": "(JexlString | Density tier)"
+        },
+        {
+          "name": "densityTierBpPerPx",
           "type": "(JexlString | number)"
         },
         {
@@ -3441,14 +3441,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -3470,6 +3462,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityTier",
+          "type": "(JexlString | Density tier)"
+        },
+        {
+          "name": "densityTierBpPerPx",
           "type": "(JexlString | number)"
         },
         {
@@ -3683,14 +3683,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -3803,14 +3795,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -3828,6 +3812,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "densityTier",
+          "type": "(JexlString | Density tier)"
+        },
+        {
+          "name": "densityTierBpPerPx",
           "type": "(JexlString | number)"
         },
         {
@@ -3970,14 +3962,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -4111,14 +4095,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -4236,14 +4212,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -4348,14 +4316,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "forceLoad",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
         },
         {
           "name": "height",
@@ -4960,14 +4920,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | (number | undefined))"
         },
@@ -5101,14 +5053,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -5180,14 +5124,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "forceLoad",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
         },
         {
           "name": "height",
@@ -5262,14 +5198,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "height",
           "type": "(JexlString | number)"
         },
@@ -5321,14 +5249,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "forceLoad",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "densityTier",
-          "type": "(JexlString | Density tier)"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
         },
         {
           "name": "height",

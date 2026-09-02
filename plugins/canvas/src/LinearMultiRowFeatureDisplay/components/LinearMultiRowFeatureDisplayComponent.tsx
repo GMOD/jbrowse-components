@@ -169,9 +169,7 @@ const LinearMultiRowFeatureDisplayComponent = observer(
           model.setHoveredFeature(
             state ? model.featureAt(state.x, state.y) : undefined,
           )
-          model.setDensityHoverPx(
-            state && model.densityBandActive ? state.x : undefined,
-          )
+          model.setDensityHoverPx(state ? state.x : undefined)
         }}
         onClick={e => {
           onClick(e)

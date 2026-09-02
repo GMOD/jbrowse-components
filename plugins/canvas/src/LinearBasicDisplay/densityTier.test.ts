@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { stageByteEstimate } from '@jbrowse/display-test-utils'
 
 import {
@@ -213,9 +214,43 @@ function trackMenuLabels(display: { trackMenuItems: () => MenuItem[] }) {
 
 test('the track menu offers the tier only where there is a source', () => {
   expect(trackMenuLabels(refusableDisplay().display)).not.toContain(
-    'Density tier',
+    'Density band',
   )
   expect(trackMenuLabels(refusableDisplay(DENSITY_ADAPTER).display)).toContain(
-    'Density tier',
+    'Density band',
   )
+})
+
+function densityBandItems(display: { trackMenuItems: () => MenuItem[] }) {
+  const band = display
+    .trackMenuItems()
+    .find(m => 'label' in m && m.label === 'Density band')
+  return band && 'subMenu' in band ? resolveSubMenu(band) : []
+}
+
+// The band replaced the banner the Force-load button lived on, so the way to
+// the features is offered where the band is, and only where the band stands
+// in for a refusal: a forced density has nothing to release, and a fetch the
+// gate allows needs no forcing.
+test("the band carries the banner's force-load while it stands in for a refusal", () => {
+  const { display } = refusableDisplay(DENSITY_ADAPTER)
+  const labels = () =>
+    densityBandItems(display).map(m => ('label' in m ? m.label : undefined))
+  expect(labels()).not.toContain('Load features anyway (may be slow)')
+
+  refuseOnBytes(display)
+  expect(labels()).toContain('Load features anyway (may be slow)')
+
+  setConf(display, 'densityTier', 'density')
+  expect(labels()).not.toContain('Load features anyway (may be slow)')
+
+  setConf(display, 'densityTier', 'auto')
+  const load = densityBandItems(display).find(
+    m => 'label' in m && m.label === 'Load features anyway (may be slow)',
+  )!
+  if ('onClick' in load) {
+    load.onClick({})
+  }
+  expect(display.regionTooLarge).toBe(false)
+  expect(display.densityTierActive).toBe(false)
 })

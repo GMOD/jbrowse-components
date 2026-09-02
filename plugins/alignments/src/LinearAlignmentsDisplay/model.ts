@@ -4,6 +4,7 @@ import {
   computeCoverageTicks,
   coverageDepthDomain,
   computeVisibleCoverageStats,
+  densityBinSize,
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
@@ -38,13 +39,15 @@ import HeightModeMixin, {
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { densityBinSize } from '@jbrowse/display-kit/densityBins'
+import {
+  densityBandDisplayPhase,
+  densityBandPending,
+  densityBandSvgReady,
+} from '@jbrowse/display-kit/densityBandPhase'
 import { resolveFetchSuspended } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
-import { foundationDisplayPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
-import { foundationSvgReady } from '@jbrowse/display-kit/foundationSvgReady'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
@@ -4230,21 +4233,8 @@ export default function stateModelFactory(
             regionTooLarge: self.regionTooLarge,
           })
         },
-
-        /**
-         * #getter
-         * The band is standing in and holds nothing yet — where the banner's
-         * "nothing is coming" is the wrong answer. A failed read lands on the
-         * display's own `error`, which outranks this, so neither the scrim nor
-         * the export gate can latch on a source that will not answer.
-         */
-        get densityBandPending() {
-          return (
-            this.densityBandActive &&
-            (self.densityLoading || self.densityCoverageRegions.size === 0)
-          )
-        },
-
+      }))
+      .views(self => ({
         /**
          * #getter
          * `FetchMixin`'s hook: the band the display is drawing instead of the
@@ -4254,53 +4244,24 @@ export default function stateModelFactory(
          * ranking below never sees that case.
          */
         get awaitingDependentData(): boolean {
-          return this.densityBandPending
+          return self.densityBandActive && densityBandPending(self)
         },
 
         /**
          * #getter
-         * The phase, post-processed for the density tier: with the band
-         * standing in for the reads the display is drawing the band and
-         * nothing else, so neither the banner (whose verdict is untouched
-         * underneath) nor the read fetch (which `fetchSuspended` stops where
-         * the gate was not already stopping it) is its loading question. The
-         * band's own read is.
-         *
-         * The two failure terminals pass through, the render error and the
-         * fetch error, and so does a standing cancel: its Retry chrome is the
-         * way back, and the export gate fails on it after the wait.
+         * The phase with the band standing in for the reads — see
+         * `densityBandDisplayPhase`.
          */
         get displayPhase(): DisplayPhase {
-          // The base is recomputed rather than captured — a view has no super —
-          // so the staleness argument is `MultiRegionDisplayMixin`'s, spelled
-          // the way that mixin spells it.
-          const base = foundationDisplayPhase(
-            self,
-            () => self.viewportWithinLoadedData && !self.dataSuperseded,
-            () => self.host.effectiveBodyMounted,
-          )
-          return this.densityBandActive &&
-            !self.fetchCanceled &&
-            base !== 'error' &&
-            base !== 'renderError'
-            ? this.densityBandPending
-              ? 'loading'
-              : 'ready'
-            : base
+          return densityBandDisplayPhase(self)
         },
 
         /**
          * #getter
-         * The export gate under the same swap: `regionTooLarge` is a terminal
-         * in `computeSvgReady` because nothing is coming, and `dataCurrent`
-         * waits on a read fetch that is not running, so with the band up the
-         * bins are what the export waits for — sampled before they land, it
-         * writes the band empty.
+         * The export gate under the same swap — see `densityBandSvgReady`.
          */
         get svgReady(): boolean {
-          return this.densityBandActive
-            ? !!self.error || self.fetchCanceled || !this.densityBandPending
-            : foundationSvgReady(self)
+          return densityBandSvgReady(self)
         },
       }))
       .views(self => ({
@@ -4350,7 +4311,11 @@ export default function stateModelFactory(
               disabledHelpText: 'Turn on "Show pileup" to change read height',
             }),
             getCoverageMenuItem(self),
-            ...densityTierMenuItems(self),
+            ...densityTierMenuItems(self, {
+              disabled: !self.showCoverage,
+              disabledHelpText:
+                'The density band draws in the coverage band — turn on "Show coverage" first',
+            }),
             getReadConnectionsMenuItem(self),
             getSashimiMenuItem(self),
           ] satisfies MenuItem[]

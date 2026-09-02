@@ -1,6 +1,5 @@
 import {
   densityBandLayer,
-  densityBandRegion,
   drawDensityBand,
   formatDensity,
 } from './densityBand.ts'
@@ -19,52 +18,6 @@ function density(
     scores: new Float32Array(intervals.map(i => i.score)),
   }
 }
-
-// The packed layout `drawCoverageBins` reads, un-packed: absolute bp and the
-// fraction of the region peak. Two u32-sized fields per record.
-function unpack(buffer: ArrayBuffer) {
-  const u32 = new Uint32Array(buffer)
-  const f32 = new Float32Array(buffer)
-  return Array.from({ length: u32.length / 2 }, (_, i) => ({
-    position: u32[i * 2]!,
-    relDepth: f32[i * 2 + 1]!,
-  }))
-}
-
-describe('densityBandRegion', () => {
-  it('bins the source intervals over their own extent, one bin per screen pixel', () => {
-    const region = densityBandRegion(
-      density([
-        { start: 100, end: 110, score: 5 },
-        { start: 110, end: 120, score: 15 },
-      ]),
-      10,
-    )!
-    expect(region.binSize).toBe(10)
-    expect(region.maxDepth).toBe(15)
-    const bins = unpack(region.buffer)
-    expect(bins.map(b => b.position)).toEqual([100, 110])
-    expect(bins[0]!.relDepth).toBeCloseTo(5 / 15)
-    expect(bins[1]!.relDepth).toBe(1)
-  })
-
-  // The whole reason the extent comes off the source rather than off the
-  // visible region: at wide zoom the bins are pixels, so the record count
-  // tracks the screen and not the span.
-  it('follows bp/px rather than the span', () => {
-    const source = density([{ start: 0, end: 4000, score: 40 }])
-    expect(densityBandRegion(source, 1000)!.binSize).toBe(1000)
-    expect(unpack(densityBandRegion(source, 1000)!.buffer)).toHaveLength(4)
-    expect(unpack(densityBandRegion(source, 4000)!.buffer)).toHaveLength(1)
-  })
-
-  it('has nothing to draw for an empty or all-zero source', () => {
-    expect(densityBandRegion(density([]), 10)).toBeUndefined()
-    expect(
-      densityBandRegion(density([{ start: 0, end: 100, score: 0 }]), 10),
-    ).toBeUndefined()
-  })
-})
 
 describe('densityBandLayer', () => {
   // Per-region normalization would draw the quiet contig at the same full-band
@@ -104,18 +57,28 @@ function recordingCtx() {
     h: number
     fillStyle: string
   }[] = []
+  const texts: string[] = []
   const ctx = {
     fillStyle: '',
+    strokeStyle: '',
+    font: '',
+    textBaseline: '',
+    lineWidth: 0,
+    lineJoin: '',
     save() {},
     restore() {},
     beginPath() {},
     rect() {},
     clip() {},
+    strokeText() {},
+    fillText(text: string) {
+      texts.push(text)
+    },
     fillRect(x: number, y: number, w: number, h: number) {
       fills.push({ x, y, w, h, fillStyle: this.fillStyle })
     },
   }
-  return { fills, ctx: ctx as unknown as Ctx2D }
+  return { fills, texts, ctx: ctx as unknown as Ctx2D }
 }
 
 const BLOCK: RenderBlock = {
@@ -156,8 +119,10 @@ describe('drawDensityBand', () => {
     expect(fills[0]!.h / fills[1]!.h).toBeCloseTo(0.5, 1)
   })
 
-  it('draws nothing when no region holds a depth', () => {
-    const { ctx, fills } = recordingCtx()
+  // Without the readout an empty band is an empty rectangle, which reads as
+  // "no features here" rather than "the sidecar answered with nothing"
+  it('draws no bars but still its readout when no region holds a depth', () => {
+    const { ctx, fills, texts } = recordingCtx()
     drawDensityBand(
       ctx,
       [BLOCK],
@@ -166,9 +131,11 @@ describe('drawDensityBand', () => {
         canvasWidth: 100,
         bandHeight: 100,
         color: 'grey',
+        readout: 'no density data in view',
       },
     )
     expect(fills).toEqual([])
+    expect(texts).toEqual(['no density data in view'])
   })
 })
 
@@ -198,10 +165,19 @@ describe('the readout', () => {
 
   test('names the peak, and the value while there is a cursor', () => {
     const layer = densityBandLayer(bins, 10)
-    expect(densityBandReadout(layer, bins, undefined)).toBe('peak 120')
+    expect(densityBandReadout(layer, bins, undefined)).toBe('density peak 120')
     expect(
       densityBandReadout(layer, bins, { displayedRegionIndex: 0, bp: 10 }),
-    ).toBe('3.0 at cursor, peak 120')
+    ).toBe('3.0 at cursor, density peak 120')
+  })
+
+  // The band otherwise draws nothing at all, and an empty track cannot be told
+  // from a sidecar over the wrong assembly
+  test('says so when the layer holds no depth', () => {
+    const layer = densityBandLayer(new Map(), 10)
+    expect(densityBandReadout(layer, new Map(), undefined)).toBe(
+      'no density data in view',
+    )
   })
 
   test('formats a mean to what a band can show', () => {

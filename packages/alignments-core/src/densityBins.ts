@@ -1,3 +1,5 @@
+import { packCoverageBinsForGpu } from './coverageGpuPacking.ts'
+
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /** Uniform bins over a region, the shape a coverage-style band draws. */
@@ -56,4 +58,54 @@ export function densityToUniformBins(
 /** One bin per screen pixel, never finer than a base. */
 export function densityBinSize(bpPerPx: number) {
   return Math.max(1, Math.round(bpPerPx))
+}
+
+/**
+ * One region's density in the packed layout the coverage band draws from
+ * (`packCoverageBinsForGpu`): absolute position plus depth/maxDepth per bin.
+ */
+export interface PackedDensityRegion {
+  buffer: ArrayBuffer
+  maxDepth: number
+  binSize: number
+}
+
+/**
+ * The bp the source's intervals actually cover. Binned over this rather than
+ * over the visible region so the pack depends only on the density read and the
+ * settled bp/px — `visibleRegions` rebuilds on every frame of every gesture.
+ */
+function densitySpan({ starts, ends }: FeatureDensity) {
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  for (let i = 0; i < starts.length; i++) {
+    start = Math.min(start, starts[i]!)
+    end = Math.max(end, ends[i]!)
+  }
+  return start < end ? { start, end } : undefined
+}
+
+/**
+ * Resample one region's density read onto `binSize` bp bins and pack it for the
+ * coverage band's painters, or nothing where the read holds no depth at all.
+ */
+export function packDensityRegion(
+  density: FeatureDensity,
+  binSize: number,
+): PackedDensityRegion | undefined {
+  const span = densitySpan(density)
+  const bins = span ? densityToUniformBins(density, span, binSize) : undefined
+  return bins && bins.maxDepth > 0
+    ? {
+        buffer: packCoverageBinsForGpu(
+          bins.depths,
+          bins.maxDepth,
+          bins.startOffset,
+          bins.binCount,
+          binSize,
+        ),
+        maxDepth: bins.maxDepth,
+        binSize,
+      }
+    : undefined
 }

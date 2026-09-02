@@ -81,6 +81,12 @@ export {
   packModCovSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export {
+  densityBinSize,
+  densityToUniformBins,
+  packDensityRegion,
+} from './densityBins.ts'
+export type { PackedDensityRegion, UniformDensityBins } from './densityBins.ts'
+export {
   computeInterbaseCoverage,
   emptyInterbaseCoverage,
 } from './interbaseCoverage.ts'

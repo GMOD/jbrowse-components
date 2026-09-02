@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import {
   rowHeightConfigSchemaFields,
   rowSeparatorsConfigSchemaFields,
@@ -200,6 +201,8 @@ export default function configSchemaF() {
         advanced: true,
       },
       ...rowSeparatorsConfigSchemaFields(),
+      // the density tier's two slots, which `DensityBandMixin` reads
+      ...densityTierConfigSchemaFields,
       /**
        * #slot
        * Tint each sidebar label box with the color that row's blocks are painted

@@ -148,12 +148,27 @@ test('the track menu offers the tri-state only where there is a source', () => {
     withSource
       .trackMenuItems()
       .map(item => ('label' in item ? item.label : '')),
-  ).toContain('Density tier')
+  ).toContain('Density band')
 
   const without = refusedDisplay({ withSource: false }).display
   expect(
     without.trackMenuItems().map(item => ('label' in item ? item.label : '')),
-  ).not.toContain('Density tier')
+  ).not.toContain('Density band')
+})
+
+// With the coverage band hidden there is nowhere to draw, so the tri-state
+// would change nothing visible
+test('the tri-state is disabled while the coverage band is hidden', () => {
+  const { display } = refusedDisplay({ withSource: true })
+  const bandDisabled = () => {
+    const band = display
+      .trackMenuItems()
+      .find(item => 'label' in item && item.label === 'Density band')!
+    return 'disabled' in band ? band.disabled : undefined
+  }
+  expect(bandDisabled()).toBeFalsy()
+  display.setShowCoverage(false)
+  expect(bandDisabled()).toBe(true)
 })
 
 // `auto` reaches the tier through the gate's verdict, but the `density` mode is
