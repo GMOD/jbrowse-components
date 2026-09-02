@@ -21,7 +21,7 @@ import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
-import type { MultiRowClusterModel } from './runMultiRowClustering.ts'
+import type { MultiRowClusterDialogModel } from './runMultiRowClustering.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -55,7 +55,7 @@ interface MultiRowMenuSelf
     TreeLayoutModel<MultiRowSource>,
     // what the cluster dialog reads and writes, so the menu's `self` satisfies
     // the dialog's `model` where it hands it over
-    MultiRowClusterModel {
+    MultiRowClusterDialogModel {
   showTree: boolean
   showLegend: boolean
   showLegendDisplayTypeDefault: Pin

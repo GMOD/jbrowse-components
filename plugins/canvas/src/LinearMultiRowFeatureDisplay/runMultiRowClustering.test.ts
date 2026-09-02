@@ -1,6 +1,9 @@
 import { createStopToken } from '@jbrowse/core/util/stopToken'
 
-import { runMultiRowClustering } from './runMultiRowClustering.ts'
+import {
+  featureMatrixKey,
+  runMultiRowClustering,
+} from './runMultiRowClustering.ts'
 
 import type { MultiRowClusterModel } from './runMultiRowClustering.ts'
 
@@ -66,4 +69,45 @@ test('skips the RPC when fewer than two rows', async () => {
 
   expect(call).not.toHaveBeenCalled()
   expect(setLayoutAndClusterTree).not.toHaveBeenCalled()
+})
+
+// The key `useFetch` serializes on every render of the open dialog. It used to
+// be the MST display node, which stringifies to the whole display snapshot —
+// `layout` included, so a cohort's worth of rows went through JSON per render
+// and any unrelated slot write re-keyed the fetch and re-ran the worker.
+describe('featureMatrixKey', () => {
+  const model = {
+    sourcesWithoutLayout: [{ name: 'LINE' }, { name: 'SINE' }],
+    layout: [],
+    adapterConfig: { type: 'BedTabixAdapter' },
+    effectivePartitionField: 'repClass',
+    colorConfig: undefined,
+    setLayoutAndClusterTree: () => {},
+  } satisfies MultiRowClusterModel
+
+  it('carries the arguments that decide what comes back', () => {
+    expect(featureMatrixKey(model)).toEqual([
+      'featureMatrix',
+      'LINE\tSINE',
+      'repClass',
+      undefined,
+    ])
+  })
+
+  it('moves when a run argument moves, and not otherwise', () => {
+    const base = featureMatrixKey(model)
+
+    expect(featureMatrixKey({ ...model, colorConfig: 'jexl:x' })).not.toEqual(
+      base,
+    )
+    // the layout is not a run argument: the matrix is keyed by row NAME and
+    // reordering the rows does not change what the worker returns
+    expect(featureMatrixKey({ ...model, layout: [{ name: 'SINE' }] })).toEqual(
+      base,
+    )
+  })
+
+  it('is null before any row has been discovered', () => {
+    expect(featureMatrixKey({ ...model, sourcesWithoutLayout: [] })).toBeNull()
+  })
 })

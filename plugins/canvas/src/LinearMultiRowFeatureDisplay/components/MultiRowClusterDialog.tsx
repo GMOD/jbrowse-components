@@ -5,11 +5,12 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import { runMultiRowClustering } from '../runMultiRowClustering.ts'
+import {
+  featureMatrixKey,
+  runMultiRowClustering,
+} from '../runMultiRowClustering.ts'
 
-import type { MultiRowClusterModel } from '../runMultiRowClustering.ts'
-import type { MultiRowSource } from '../sourcesLogic.ts'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { MultiRowClusterDialogModel } from '../runMultiRowClustering.ts'
 
 // What "cluster rows by similarity" means for the multi-row painting: each row's
 // painted colors, binned over the visible region. The dialog itself is shared
@@ -21,8 +22,7 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
   model,
   handleClose,
 }: {
-  model: IStateTreeNode &
-    MultiRowClusterModel & { setLayout: (layout: MultiRowSource[]) => void }
+  model: MultiRowClusterDialogModel
   handleClose: () => void
 }) {
   const { sourcesWithoutLayout } = model
@@ -35,7 +35,7 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
       matrixLabel="feature matrix"
       tsvFilename="features.tsv"
       canRun={sourcesWithoutLayout.length > 1}
-      matrixKey={sourcesWithoutLayout.length ? ['featureMatrix', model] : null}
+      matrixKey={featureMatrixKey(model)}
       run={args => runMultiRowClustering({ model, ...args })}
       fetchMatrix={({ rpcManager, sessionId, ...args }) =>
         rpcManager.call(sessionId, 'MultiRowGetFeatureMatrix', {

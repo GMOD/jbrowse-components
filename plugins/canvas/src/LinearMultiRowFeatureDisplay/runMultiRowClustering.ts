@@ -6,7 +6,12 @@ import {
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { ClusterProvenance, RpcMethodCaller } from '@jbrowse/tree-sidebar'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  ClusterProvenance,
+  RpcMethodCaller,
+  TreeLayoutModel,
+} from '@jbrowse/tree-sidebar'
 
 type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 
@@ -25,6 +30,47 @@ export interface MultiRowClusterModel {
     tree?: string,
     provenance?: ClusterProvenance,
   ) => void
+}
+
+/**
+ * What the cluster dialog is handed: the run's own contract plus the write that
+ * commits a pasted order, and the node the dialog resolves its view and RPC
+ * manager off.
+ *
+ * `setLayout` is `Pick`ed off `TreeLayoutModel` rather than restated, so the
+ * one declaration of it in this chain is the one the arrangement dialog and the
+ * track menu's `self` already satisfy — the dialog's props used to spell out an
+ * intersection of its own, free to drift from the type actually checking the
+ * call site.
+ */
+export interface MultiRowClusterDialogModel
+  extends
+    IStateTreeNode,
+    MultiRowClusterModel,
+    Pick<TreeLayoutModel<MultiRowSource>, 'setLayout'> {}
+
+/**
+ * The cluster dialog's fetch key for the exported feature matrix: the run
+ * arguments that decide what comes back, and nothing else.
+ *
+ * `useFetch` serializes its key on every render, and the key used to be the MST
+ * display node — which stringifies to the whole display snapshot, `layout`
+ * included, so a cohort's worth of rows was serialized per render and any
+ * unrelated slot write re-keyed the fetch and re-ran the worker. The dialog
+ * adds the region and the zoom itself.
+ *
+ * `null` when no row has been discovered: there is nothing to export yet.
+ */
+export function featureMatrixKey(model: MultiRowClusterModel) {
+  const { sourcesWithoutLayout } = model
+  return sourcesWithoutLayout.length
+    ? ([
+        'featureMatrix',
+        sourcesWithoutLayout.map(s => s.name).join('\t'),
+        model.effectivePartitionField,
+        model.colorConfig,
+      ] as const)
+    : null
 }
 
 export async function runMultiRowClustering({
