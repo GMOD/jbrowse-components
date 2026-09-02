@@ -50,9 +50,9 @@ Three _H. pylori_ RefSeq assemblies, each fetched by accession with the
 
 ## Three strains, stacked
 
-This tutorial follows three _Helicobacter pylori_ strains (26695, CHC155, and
-J99) from raw assemblies to a stacked three-genome synteny view. The steps work
-the same on any pair of assemblies you have.
+Three _Helicobacter pylori_ strains (26695, CHC155, and J99) go from raw
+assemblies to a stacked three-genome synteny view. The steps work the same on
+any pair of assemblies.
 
 ## Aligning the assemblies
 
@@ -62,18 +62,13 @@ the same on any pair of assemblies you have.
 minimap2 -c -x asm20 --eqx hpylori_j99.fa hpylori_26695.fa > 26695_vs_j99.paf
 ```
 
-The flags each do one thing:
-
-- `-x asm20` is the whole-genome assembly preset, sized to how divergent the two
-  genomes are. `asm5` covers up to about 5% divergence; these _H. pylori_
-  strains are the same species but diverge well past that, so they need `asm20`.
+- `-x asm20` is the assembly preset for the divergence between the genomes.
+  `asm5` covers up to about 5%; these strains diverge well past that.
 - `-c` emits the base-level CIGAR the linear synteny view draws from.
-- `--eqx` splits CIGAR matches (`=`) from mismatches (`X`). The ribbon band
-  treats both as matches, and the same track opened in a plain linear genome
-  view draws the `X` operations as per-base mismatches, the way a read pileup
-  does.
+- `--eqx` splits CIGAR matches (`=`) from mismatches (`X`), so the same track
+  opened in a plain linear genome view draws per-base mismatches.
   [Color by → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
-  reads the PAF's own divergence tag, or its match counts.
+  reads the PAF's divergence tag or match counts.
 
 JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 `.chain` files directly, and
@@ -82,7 +77,7 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 
 ## Loading the assemblies and the alignment
 
-Both genomes have to be assemblies before the alignment can reference them:
+Both genomes are added as assemblies before the alignment that references them:
 
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
@@ -92,16 +87,14 @@ jbrowse add-assembly hpylori_j99.fa --load copy
 jbrowse add-track 26695_vs_j99.paf -a hpylori_26695,hpylori_j99 --load copy
 ```
 
-The `-a` order is `query,target`, which is the reverse of the minimap2 argument
-order: `minimap2 target.fa query.fa` becomes `add-track -a query,target`. Here
-26695 was the query and J99 the target, so 26695 comes first.
+The `-a` order is `query,target`, the reverse of the minimap2 argument order:
+`minimap2 target.fa query.fa` becomes `add-track -a query,target`.
 
 ## Reading the whole genome in a dotplot
 
-**Add → Dotplot view** opens the import form. The track just added is in the
-config, so the form opens in **Quick start**: pick it and click **Launch**.
-**Swap** transposes the axes, since a synteny track is queryable in either
-direction. **Manual** is where you pick each axis, and a synteny file, by hand.
+**Add → Dotplot view** opens the import form in **Quick start**: pick the track
+just added and click **Launch**. **Swap** transposes the axes. **Manual** picks
+each axis and a synteny file by hand.
 
 <Figure caption="The dotplot import form in Manual mode, where you pick the X-axis and Y-axis assembly by hand, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
@@ -130,31 +123,24 @@ Add the third assembly and both alignments the same way as above, then:
    track: 26695 against CHC155, then CHC155 against J99.
 4. Click **Launch**, and all three strains stack in one view.
 
-Open each strain's gene track from its own track selector; conserved genes then
-line up down the stack ribbon by ribbon.
+Open each strain's gene track from its own track selector.
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, and each strain's gene track from that row's own track selector." />
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as fliR, cbf2, efp, and lysS line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
-Each panel is a full linear genome view, so search boxes, zooming, and the track
-selector work per genome. See [](/docs/user_guides/linear_synteny_view) for
-ribbon coloring, curved ribbons, and the rest of the view's options, and
+Each panel is a full linear genome view with its own search box, zoom and track
+selector. See [](/docs/user_guides/linear_synteny_view) for ribbon options and
 [URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view) for
-building one from a session-spec URL.
+building one from a URL.
 
 ## Coloring genes by ortholog
 
-The ribbons connect aligned sequence, and the gene tracks color independently.
 In bacteria the gene symbol is effectively the ortholog id, since NCBI reuses
-standardized symbols across strains. On each gene track, open the track menu and
-pick **Color by... → Attribute...**, then enter `gene`. The dialog prints the
-expression it is about to write, and every distinct value of that attribute gets
+standardized symbols across strains. On each gene track, pick **Color by... →
+Attribute...** from the track menu and enter `gene`. Every distinct value gets
 its own deterministic color, so an ortholog carries one color down all three
-panels.
-
-Features with no value for that attribute are painted a neutral grey; most of
-the genes in this window carry only a locus tag.
+panels. Features with no value are grey; most genes here carry only a locus tag.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
@@ -190,18 +176,15 @@ jbrowse add-track alignment.pif.gz -a query,target --load copy
 
 ## Troubleshooting
 
-`assemblyNames` in the wrong order is the common one, and JBrowse checks for it
-once at view load: it asks the adapter which chromosomes belong to the top row
-and compares them against that assembly's own. When they belong to the other row
-instead, a warning appears in the view header, and the dialog behind it names
-the remedy.
+`assemblyNames` in the wrong order is the common one. JBrowse checks at view
+load whether the top row's chromosome names belong to that assembly, and a
+warning in the view header names the remedy when they belong to the other row.
 
 <Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the header warning reports the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
-A view that draws but scatters its blocks randomly comes from the alignment: a
-preset too tight for the divergence leaves only short spurious anchors. Raise
-it, `asm5` up to about 5% and `asm10`/`asm20` past that, and check `-c --eqx`
-were passed.
+A view that scatters its blocks randomly comes from a preset too tight for the
+divergence, which leaves only short spurious anchors. Raise it, and check
+`-c --eqx` were passed.
 
 ## Reproduce it end to end
 
@@ -214,11 +197,10 @@ bash build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
 npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 ```
 
-It downloads the three RefSeq assemblies, aligns all three strain pairs with
-minimap2, downloads JBrowse, and writes a `config.json` with the three
-assemblies, a gene track per strain, the three pairwise synteny tracks, and a
-default session that stacks all three in one linear synteny view. It needs the
-same tools listed under [Prerequisites](#prerequisites).
+It downloads the three assemblies, aligns the strain pairs, and writes a
+`config.json` with a gene track per strain, the pairwise synteny tracks, and a
+default session stacking all three. It needs the tools under
+[Prerequisites](#prerequisites).
 
 ## See also
 
