@@ -37,7 +37,10 @@ const useStyles = makeStyles()({
  *
  * The approximate case yields to it, since a row that is holding was never
  * placed at all, and beats "click to stop", since nothing else in the view
- * distinguishes a proportional placement from a walked one.
+ * distinguishes a proportional placement from a walked one. It names both of
+ * its causes rather than the tier alone: a window wider than one alignment is
+ * the common one, and a coarse tier now walks its fold, so only a pinned coarse
+ * tier zoomed under its threshold is approximate on the tier's account.
  *
  * `anchorLabel` is the row's label rather than its bare assembly name: a stack
  * can hold one assembly twice, and "Following hg38" says nothing there.
@@ -78,7 +81,7 @@ export function followToggleTitle({
     return `Following ${anchor} on ${partial.following} — ${partial.elsewhere.join(', ')} aligns too far away to show at once, so scroll onto it to follow that instead`
   }
   if (approximate) {
-    return `Following ${anchor} — no per-base alignment at this zoom, so positions are approximate`
+    return `Following ${anchor} — positions are approximate here, since the window spans more than one alignment or only a coarse alignment is loaded at this zoom`
   }
   return `Following ${anchor} — click to stop`
 }

@@ -79,6 +79,27 @@ existing value.
   eventual fix and the same problem whether or not SNPs are drawn.
   `ideas/synteny-comparative.md` §"No intra-record slicing" already holds it.
 
+## Verified on hs1 vs mm39 (2026-09-02)
+
+The hosted PIF was inverted to PAF and rebuilt with the current writer;
+`measurements/pif-coarse-fold-bytes.json` holds the disk cost (one row per
+alignment, 9.79 vs 7.24 MB per perspective, every fold closing, 6.7% of rows
+tagged, two thirds of the fold's bytes the 5-10 kb indels the half-gap rule
+keeps). A browser pass against the dev server then confirmed, with pixel
+diffs: whole genome auto vs pinned fine differ by 19 of 794,000 band pixels;
+a 240 kb insertion in the chr1 block draws as the same 22 px wedge under auto,
+pinned fine and pinned coarse at 10 kb/px, and is a white seam on the old
+hosted file; at 1 kb/px under pinned coarse the wedge and the ribbon edges
+match the fine tier to the pixel and only sub-5 kb stripes are absent; the
+move-panel items appear on the coarse tier and land within the fold bound of
+the fine walk; no console errors. The captures were scratch files and are not
+kept; the drivers were throwaway puppeteer scripts of the kind
+`scripts/verify-hs1-mm39-dotplot.mjs` shows. Two observations: `auto` resolves
+off the min of both rows, so a follow that zooms one row past the threshold
+flips the tier (documented); and the follow tooltip's "approximate" wording
+read as a tier statement when its usual cause is a window wider than one
+alignment, so it now names both causes.
+
 ## Decisions taken, not to reopen
 
 - `N` keeps the row's own axis on the Q row in both `cg` and `cr`, matching
