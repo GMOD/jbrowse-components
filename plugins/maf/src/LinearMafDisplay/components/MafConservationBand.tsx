@@ -1,4 +1,3 @@
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import MafBand from './MafBand.tsx'
@@ -9,6 +8,7 @@ import {
 } from './drawConservation.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { Theme } from '@mui/material'
 
 /**
  * Percent-identity conservation band, stacked directly below the coverage band.
@@ -27,6 +27,25 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  * same class of reason one level up: identity is computed from the alignment,
  * which the summary path clears.
  */
+// Module level, and reading the band's geometry off the model rather than off
+// the render — see `BandDraw`.
+function drawBand(
+  ctx: CanvasRenderingContext2D,
+  model: LinearMafDisplayModel,
+  theme: Theme,
+) {
+  const state = {
+    conservationHeight: model.conservationHeight,
+    canvasWidth: model.canvasWidthPx,
+    theme,
+  }
+  if (model.codonConservationActive) {
+    drawCodonConservation(ctx, model.visibleCodonConservation, state)
+  } else {
+    drawConservation(ctx, model.renderBlocks, model.rpcDataMap, state)
+  }
+}
+
 const MafConservationBand = observer(function MafConservationBand({
   model,
   onResizeActiveChange,
@@ -34,13 +53,7 @@ const MafConservationBand = observer(function MafConservationBand({
   model: LinearMafDisplayModel
   onResizeActiveChange: (active: boolean) => void
 }) {
-  const theme = useTheme()
-  const {
-    conservationBandActive,
-    codonConservationActive,
-    conservationHeight,
-    topBands,
-  } = model
+  const { conservationBandActive, conservationHeight, topBands } = model
   return (
     <MafBand
       model={model}
@@ -52,18 +65,7 @@ const MafConservationBand = observer(function MafConservationBand({
         model.resizeConservationHeight(n)
       }}
       onResizeActiveChange={onResizeActiveChange}
-      draw={ctx => {
-        const state = {
-          conservationHeight,
-          canvasWidth: model.canvasWidthPx,
-          theme,
-        }
-        if (codonConservationActive) {
-          drawCodonConservation(ctx, model.visibleCodonConservation, state)
-        } else {
-          drawConservation(ctx, model.renderBlocks, model.rpcDataMap, state)
-        }
-      }}
+      draw={drawBand}
     />
   )
 })

@@ -5,6 +5,7 @@ import MafYScaleGutter from './MafYScaleGutter.tsx'
 import TrackBandCanvas from './TrackBandCanvas.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { BandDraw } from './TrackBandCanvas.tsx'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 /**
@@ -37,7 +38,7 @@ const MafBand = observer(function MafBand({
   top: number
   height: number
   ticks: YScaleTicks | undefined
-  draw: (ctx: CanvasRenderingContext2D) => void
+  draw: BandDraw
   resize: (distance: number) => void
   onResizeActiveChange: (active: boolean) => void
 }) {

@@ -17,6 +17,11 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  * itself is `drawMafRowsCanvas2d`, shared with the SVG export for the same
  * reason.
  */
+// Module level, so the autorun in TrackBandCanvas is built once — see BandDraw.
+function drawRows(ctx: CanvasRenderingContext2D, model: LinearMafDisplayModel) {
+  drawMafRowsCanvas2d(ctx, model, model.renderBlocks, model.canvasWidthPx)
+}
+
 const MafRowsCanvas = observer(function MafRowsCanvas({
   model,
 }: {
@@ -29,9 +34,7 @@ const MafRowsCanvas = observer(function MafRowsCanvas({
       top={0}
       height={rowsHeight}
       show={rowsCanvas2dMode !== undefined && sources.length > 0}
-      draw={ctx => {
-        drawMafRowsCanvas2d(ctx, model, model.renderBlocks, model.canvasWidthPx)
-      }}
+      draw={drawRows}
     />
   )
 })
