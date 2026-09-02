@@ -185,8 +185,8 @@ track.replaceDisplay(
 A feature's label is whatever `name` it carries, else its `id`, and a file
 decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and
 carries no `Name`, so `f.get('name')` is `null` there and `f.get('id')` is the
-symbol. `Object.keys(f.toJSON())` says what one feature has before you filter
-on a field.
+symbol. `Object.keys(f.toJSON())` says what one feature has before you filter on
+a field.
 
 - Reads are plain property or getter access; **mutations only through actions**
   (`view.setWidth(800)` works, `view.width = 800` throws).
@@ -336,8 +336,8 @@ await session.views[0].launchTrack('nutlin-log2')
   against the view before capturing anything.
 - A whole-window screenshot spends most of its pixels on chrome, and a session
   taller than the window is cut off at the bottom — the settle result says so
-  under `offscreen`. `screenshot` takes `fullPage: true` for the whole
-  laid-out document, `selector` to crop to one element —
+  under `offscreen`. `screenshot` takes `fullPage: true` for the whole laid-out
+  document, `selector` to crop to one element —
   `[data-testid="view-container-<view.id>"]` for a view, id from
   `jb.sessionSummary()` — or `rect` with a box you measured.
 

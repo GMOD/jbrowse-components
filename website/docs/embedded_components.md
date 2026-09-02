@@ -94,7 +94,8 @@ const state = createViewState({
   view, with the two items an embed can honour (open track, open connection);
   **`disableAddTracks`** empties that menu and removes the track selector's
   add-track affordances. Both are off by default. `height` sets the view's
-  height.
+  height; it supersedes the older `drawerViewHeight`, which only applied while a
+  drawer was open.
 - **The imperative controllers take callbacks** in place of props:
   `onLocationChange` fires with the visible region as the user pans or zooms,
   `onFeatureSelect` with the clicked feature, `onSessionChange` with the view's

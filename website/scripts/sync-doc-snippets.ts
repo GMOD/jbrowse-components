@@ -144,7 +144,11 @@ const stale: string[] = []
 // 41 -> 40 on 2026-09-02: `automating.md` absorbed `config_and_session_json.md`
 // and dropped its hand-rolled puppeteer script; `agents_capture.md` and the
 // generated `@jbrowse/capture` reference carry the waits.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '40')
+//
+// 40 -> 35 on 2026-09-02: the quickstarts and config_guides passes cut every
+// guide to what the generated config/model pages and the cookbook don't
+// already carry, dropping fences those pages restated.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '35')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {
