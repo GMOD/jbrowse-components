@@ -1190,9 +1190,10 @@ export default function MultiSampleVariantBaseModelF(
          * named booleans rather than one expression at the autorun, so each can
          * be read — and tested — on its own.
          *
-         * The dialog gates on `clusteringReady` alone and needs no second half:
-         * the menu row that opens it carries `hasClusterableRows`, so it cannot
-         * be opened on a cohort too small to cluster in the first place.
+         * The dialog gates on the same pair, spelled at its own call site: the
+         * menu row that opens it carries `hasClusterableRows` too, but a
+         * subtree filter applied while the dialog is open can take the rows
+         * away underneath it.
          */
         get autoClusterReady() {
           return this.clusteringReady && this.hasClusterableRows
