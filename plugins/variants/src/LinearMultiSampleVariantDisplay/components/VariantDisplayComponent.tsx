@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
+import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
 import VariantLaneOverlay, {
@@ -25,6 +26,12 @@ const VariantDisplayComponent = observer(
     const { model } = props
     const { rowsTopOffset } = model
     const canvasId = useId()
+    // The rows panel, not the canvas: a canvas holds no DOM children, so the
+    // dendrogram and the row labels beside it are siblings, and a wheel over
+    // them never reached a canvas-bound listener — it fell through and panned
+    // the view instead of scrolling the rows it was over. Same shape MAF uses.
+    const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
+    useVariantVirtualScroll(rowsEl, model)
     return (
       <DisplayChrome
         model={model}
@@ -62,7 +69,7 @@ const VariantDisplayComponent = observer(
           }
         }}
       >
-        {({ canvasRef, canvas, mouseTracker }) => (
+        {({ canvasRef, mouseTracker }) => (
           <>
             <VariantLaneOverlay model={model} />
             {/* The rows and everything positioned against them sit below the
@@ -70,25 +77,37 @@ const VariantDisplayComponent = observer(
                 display takes for its connector zone, and the same one
                 `SvgVariantOverlay` translates the export by — `TreeSidebar`
                 takes it off the model as `rowsTopOffset`. */}
-            <div style={{ position: 'absolute', top: rowsTopOffset, left: 0 }}>
+            <div
+              ref={setRowsEl}
+              data-testid="variant-rows-panel"
+              style={{
+                position: 'absolute',
+                top: rowsTopOffset,
+                left: 0,
+                width: model.canvasWidthPx,
+                height: model.availableHeight,
+              }}
+            >
               <VariantBody
                 model={model}
                 canvasRef={canvasRef}
-                canvas={canvas}
                 canvasId={canvasId}
               />
+              {/* Inside the panel so a wheel over the dendrogram scrolls the
+                  rows it labels, which means the offset is on the container and
+                  the portaled half takes it explicitly (`top`). */}
+              <TreeSidebar model={model} top={rowsTopOffset} />
             </div>
-            {/* Outside that container, and it has to be: everything in there is
-                absolutely positioned, so the container shrink-to-fits to 0x0 —
-                fine for a child placed by `left`/`top`, fatal for one placed by
-                `right`. The scrollbar's `right: 0` resolved against a zero-width
-                box put the thumb 12px LEFT of the display (clipped away by
-                `contain: strict`), and the edge fade's `left: 0; right: 0` made
-                it zero-wide. Out here the box is the display's own, and
-                `rowsTopOffset` is applied once rather than twice. */}
+            {/* Outside that container, and it has to be: the panel is sized to
+                the rows, so a child placed by `right` would anchor to the
+                canvas width rather than to the display. It used to shrink to
+                0x0, where the scrollbar's `right: 0` put the thumb 12px LEFT of
+                the display (clipped away by `contain: strict`) and the edge
+                fade's `left: 0; right: 0` made it zero-wide. Out here the box
+                is the display's own, and `rowsTopOffset` is applied once rather
+                than twice. */}
             <VariantScrollbar model={model} controlsId={canvasId} />
             <VariantOverlay model={model} top={rowsTopOffset} />
-            <TreeSidebar model={model} />
             {/* The crosshairs are gated to the rows: drawn over the variant
                 lane they would name a genotype row the pointer is not on. The
                 tooltip is not — the lane's marks are hoverable too, and what

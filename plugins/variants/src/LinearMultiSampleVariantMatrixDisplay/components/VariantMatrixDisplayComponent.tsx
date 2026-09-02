@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
+import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody, {
@@ -62,6 +63,12 @@ const VariantMatrixDisplayComponent = observer(
     const { model } = props
     const { rowsTopOffset, height } = model
     const canvasId = useId()
+    // The rows panel, not the canvas: a canvas holds no DOM children, so the
+    // dendrogram beside the matrix is a sibling, and a wheel over it never
+    // reached a canvas-bound listener — it fell through and panned the view
+    // instead of scrolling the rows it was over. Same shape MAF uses.
+    const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
+    useVariantVirtualScroll(rowsEl, model)
     return (
       <DisplayChrome
         model={model}
@@ -90,7 +97,7 @@ const VariantMatrixDisplayComponent = observer(
           }
         }}
       >
-        {({ canvasRef, canvas, mouseTracker }) => (
+        {({ canvasRef, mouseTracker }) => (
           <>
             {/* Both pointer-driven pieces share one definition of "the cursor
                 is in the matrix rather than in the bands above it".
@@ -110,14 +117,34 @@ const VariantMatrixDisplayComponent = observer(
                 />
               )}
             </PointerLayer>
-            <MatrixBodyOffset model={model} top={rowsTopOffset}>
-              <VariantMatrixBody
-                model={model}
-                canvasRef={canvasRef}
-                canvas={canvas}
-                canvasId={canvasId}
-              />
-            </MatrixBodyOffset>
+            {/* The rows panel the wheel is bound to. It carries the band
+                offset so `applyRowResizeWheel` measures against the rows' own
+                top, which leaves `MatrixBodyOffset` with the horizontal column
+                origin alone — the number that moves every frame of a pan, and
+                the reason it is read in a child observer. */}
+            <div
+              ref={setRowsEl}
+              data-testid="variant-matrix-rows-panel"
+              style={{
+                position: 'absolute',
+                top: rowsTopOffset,
+                left: 0,
+                width: model.canvasWidth,
+                height: model.availableHeight,
+              }}
+            >
+              <MatrixBodyOffset model={model} top={0}>
+                <VariantMatrixBody
+                  model={model}
+                  canvasRef={canvasRef}
+                  canvasId={canvasId}
+                />
+              </MatrixBodyOffset>
+              {/* Inside the panel so a wheel over the dendrogram scrolls the
+                  rows it labels; the portaled half takes the offset the
+                  container already carries. */}
+              <TreeSidebar model={model} top={rowsTopOffset} />
+            </div>
             {/* Outside `MatrixBodyOffset`, and it has to be: every child in
                 there is absolutely positioned, so the box shrink-to-fits to 0x0
                 — fine for a child placed by `left`/`top`, fatal for one placed
@@ -129,7 +156,6 @@ const VariantMatrixDisplayComponent = observer(
                 display's own, and `rowsTopOffset` is applied once. */}
             <VariantScrollbar model={model} controlsId={canvasId} />
             <VariantOverlay model={model} top={rowsTopOffset} />
-            <TreeSidebar model={model} />
             <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}

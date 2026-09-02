@@ -4,7 +4,6 @@ import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import { cellCarriesAlt } from '../../shared/variantCellStyles.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import { matrixCellAt } from './matrixHitTest.ts'
@@ -122,12 +121,10 @@ export function variantMatrixSurface(
 const VariantMatrixBody = observer(function VariantMatrixBody({
   model,
   canvasRef,
-  canvas,
   canvasId,
 }: {
   model: LinearMultiSampleVariantMatrixDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  canvas: HTMLCanvasElement | null
   canvasId: string
 }) {
   // `model.canvasWidth`, the getter `renderState` and `columnGeometry` are both
@@ -138,8 +135,6 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   // a width that never moved.
   const width = model.canvasWidth
   const height = model.availableHeight
-
-  useVariantVirtualScroll(canvas, model)
 
   return (
     <canvas

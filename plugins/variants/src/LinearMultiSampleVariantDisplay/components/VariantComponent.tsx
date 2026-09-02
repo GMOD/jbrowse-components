@@ -10,7 +10,6 @@ import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import VariantInsertionGlyphOverlay from './VariantInsertionGlyphOverlay.tsx'
 import { pickVariantCell } from './pickVariantCell.ts'
@@ -245,12 +244,10 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
 const VariantBody = observer(function VariantBody({
   model,
   canvasRef,
-  canvas,
   canvasId,
 }: {
   model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  canvas: HTMLCanvasElement | null
   canvasId: string
 }) {
   // `canvasWidthPx`, not a second `view.trackWidthPx` read: it is the width
@@ -259,8 +256,6 @@ const VariantBody = observer(function VariantBody({
   // exists to be the one answer — reading the view directly is how MAF drifted
   // onto `view.width` (see MultiRegionDisplayMixin.canvasWidthPx).
   const width = model.canvasWidthPx
-
-  useVariantVirtualScroll(canvas, model)
 
   return (
     <>
