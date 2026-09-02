@@ -46,13 +46,13 @@ rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
 
 **COLO829** is a melanoma cell line with a matched normal, COLO829BL, and a
 community reference for somatic structural-variant calling. The
-[multi-hop tutorial](/docs/tutorials/cancer_sv) follows **one** event in this
-callset all the way down; this one renders every junction at a glance.
+[multi-hop tutorial](/docs/tutorials/cancer_sv) follows one event in this
+callset all the way down; this page renders every junction at a glance.
 
 ## The contact sheet
 
-A junction joins two loci, and those two loci are exactly the two panels of a
-breakpoint split view. So a callset renders straight into a review queue:
+A junction joins two loci, which are the two panels of a breakpoint split view,
+so a callset renders straight into a review queue:
 
 ```bash
 curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
@@ -68,15 +68,12 @@ Warning: skipped 35 record(s), e.g. line 271: names no second locus (INS)
 wrote 100/100 images to tumor
 ```
 
-**100 junctions.** Insertions name one locus, so there is no second panel to
-stack and the run counts them out in its warning; what remains collapses because
-a caller writes each breakend pair twice. That is the same 100 that
-`sv_multihop.py chains` reports on this file in the
-[multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), junction for
-junction and in the same order.
-
-They agree because neither parses the ALT bracket by hand, which goes wrong four
-ways, all of them silent:
+Insertions name one locus, so there is no second panel and the warning counts
+them out. Each breakend pair is written twice and collapses to one. The result
+is the same 100 junctions, in the same order, that `sv_multihop.py chains`
+reports in the
+[multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), because
+neither parses the ALT bracket by hand, which goes wrong four ways, all silent:
 
 - the replacement string may carry inserted sequence either side of the bracket
   (`GTGATGGATTCA[CHR12:72273112[`)
@@ -84,57 +81,44 @@ ways, all of them silent:
 - `END=` matches inside `CIEND=`, and the first hit wins
 - the two records of one breakend pair name the same translocation twice
 
-One image per row, written as `1_chr1_33053494-chr6_2919922_gridss12o.png`:
-index first so the directory sorts in callset order, coordinates next so you can
-find the one you are looking at, and the caller's own ID last so you can go back
-to the VCF row it came from. A file with no ID column falls back to
-`junction_<n>`.
+One image per row, named `1_chr1_33053494-chr6_2919922_gridss12o.png`: index
+first so the directory sorts in callset order, coordinates next, the caller's ID
+last. A file with no ID column falls back to `junction_<n>`.
 
-`--flank` is the setting that decides the picture: a caller's breakend is one
-base, so the flank is what frames the panel. `--dryRun` prints the file and loci
-of every row and renders nothing, and `--limit 20` renders the first few, so you
-can check the framing before committing to the whole callset.
+`--flank` frames the panel, since a breakend is one base. `--dryRun` prints the
+file and loci of every row and renders nothing, and `--limit 20` renders the
+first few, to check the framing before the whole callset.
 
-Two flags for a long run:
+For a long run:
 
-- `--resume` skips a row whose image is already in `--outDir`, so an interrupted
-  callset continues from where it stopped.
+- `--resume` skips a row whose image is already in `--outDir`
 - `--manifest` writes `manifest.tsv` beside the images: one row per junction
-  with its file, both loci, its name, and whether it rendered. The status column
-  is where the failed rows stay readable after the run's output has scrolled
-  past.
+  with its file, both loci, its name, and whether it rendered
+- `--passOnly` drops records the caller filtered out. `--limit` takes the first
+  N in file order, so on an unfiltered callset the two go together
 
-`--passOnly` drops the records the caller has already filtered out. `--limit`
-takes the first N in _file_ order, so on an unfiltered callset the two go
-together.
+The reads stream from the hosted CRAM, the module graph loads once for the whole
+callset, and a `--config` URL or `--hub` is fetched once. A row that cannot be
+rendered is reported and the run continues.
 
-The reads stream from the hosted CRAM and each image is rendered server-side.
-The run is a single process, so the module graph loads once for the whole
-callset, and a `--config` URL or a `--hub` is fetched once.
-
-A row that cannot be rendered is reported and the run continues, so a
-translocation into a contig the assembly does not have costs you that row alone.
-
-A junction is two loci, so that is what `batch` draws. A connector drawn dashed
-means the read carrying it has a segment at a locus the frame does not show, and
-these reads also visit chr10, so this junction wants a third panel. The control
-belongs beside it: one render per sample, the same `--loc` list and the same
-`--width`.
+A connector drawn dashed means the read has a segment at a locus the frame does
+not show. These reads also visit chr10, so this junction wants a third panel,
+and the control belongs beside it: one render per sample, the same `--loc` list
+and `--width`.
 
 <Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
-Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
-on one screen.
+`featureHeight:super-compact` draws reads at 1 px apiece, which keeps six
+pileups on one screen.
 
-A curve says two loci are joined in this sample; a contig says in what order and
-in which orientation, which takes a reconstruction step. The
-[multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from these
-same reads, and rendering it is another `jb2export` run with a different
-`--assembly`, since a derivative allele is an assembly like any other.
+A curve says two loci are joined; a contig says in what order and orientation.
+The [multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from
+these reads, and rendering it is another `jb2export` run with a different
+`--assembly`.
 
 ## The same export over the normal
 
-The whole callset gets the same treatment, one directory per track:
+One directory per track:
 
 ```bash
 jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
@@ -143,8 +127,8 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --outDir normal --flank 600 --width 1100
 ```
 
-Put the two directories side by side and the somatic calls are the ones with
-curves in `tumor/` and none in `normal/`, rendered at the same flank and width.
+Side by side, the somatic calls are the ones with curves in `tumor/` and none in
+`normal/`.
 
 ## Reading the sheet
 
@@ -163,37 +147,34 @@ What each picture says:
 
 Take the coordinates from an image's filename, open the
 [SV inspector](/docs/user_guides/sv_inspector_view) on the same VCF, and click
-through to the breakpoint split view for the interactive version of the picture
-you just looked at, with the gene track and the read details attached.
+through to the breakpoint split view, with the gene track and read details
+attached.
 
-For a junction that turns out to be one hop of something larger, the alignments
-track menu's **Reconstruct derivative allele...** groups the reads in view by
-the route their split alignments describe. COLO829's der(3), the junction in the
-figures above, is three junctions across three chromosomes, and the
-[multi-hop tutorial](/docs/tutorials/cancer_sv) follows it the rest of the way.
+For a junction that is one hop of something larger, the alignments track menu's
+**Reconstruct derivative allele...** groups the reads in view by the route their
+split alignments describe. COLO829's der(3) is three junctions across three
+chromosomes, and the [multi-hop tutorial](/docs/tutorials/cancer_sv) follows it
+the rest of the way.
 
 <Video src="/media/sv/derivative_allele_route.mp4" caption="The junction the figures above are of, taken the rest of the way in the browser: the tumor track menu, the routes the reads describe with the count behind each one, and Breakpoint split view replacing the window with one panel per segment of the route." />
 
 ## Other callers
 
-The recipe follows the format. Anything that writes breakends or symbolic SVs to
-a VCF goes through the same two commands:
+Anything that writes breakends or symbolic SVs to a VCF goes through the same
+two commands:
 
 - **cuteSV, Sniffles, pbsv, Delly, Manta, GRIDSS** all write a VCF that
   `sv_multihop.py bedpe` reads directly
-- **LINX** publishes its clusters and chained links as TSVs rather than VCF.
-  Convert the junction columns to the six BEDPE columns with `awk` and the rest
-  of this page is unchanged; the cluster and chain ids make good `--outDir`
-  names, so one directory per cluster gives you a chromothripsis event as a
-  contact sheet
+- **LINX** publishes clusters and chained links as TSVs. Convert the junction
+  columns to the six BEDPE columns with `awk`; one `--outDir` per cluster gives
+  a chromothripsis event as a contact sheet
 - **PURPLE** copy-number segments are not junctions. Convert the segment TSV to
   a bedGraph, `bedGraphToBigWig` it, and add it as a `--bigwig` so every image
   carries the copy number under the reads
 
 Ordering breakends into a derivative chromosome needs allele-specific copy
 number and a centromere constraint, which is what
-[LINX does with PURPLE's purity and ploidy](https://doi.org/10.1016/j.xgen.2022.100112);
-run it, and load its output here.
+[LINX does with PURPLE's purity and ploidy](https://doi.org/10.1016/j.xgen.2022.100112).
 
 ## Reproduce it end to end
 
