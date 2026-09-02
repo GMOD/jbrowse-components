@@ -10,6 +10,12 @@ export const SHARE_MODE_LOCALSTORAGE_KEY = 'jbrowse-shareMode'
 // server — see buildShareUrl and refererFor
 const ADMIN_PARAMS = ['adminKey', 'adminServer']
 
+// Params that describe this browser's state rather than the session, and so
+// stop at the address bar. `safeMode` sticks across reloads on purpose (it is
+// how a user gets back to a menu a crashing permanent plugin hid), which is
+// exactly what would make it silently switch off the recipient's plugins.
+const LOCAL_PARAMS = ['safeMode']
+
 export interface ShareUrlResult {
   url: string
   // human-readable session text shown in the dialog alongside the URL (only
@@ -63,7 +69,7 @@ export async function buildShareUrl(
   // share dialog reads it — and adminKey is the credential the admin server
   // accepts for overwriting config.json. Sharing a link must never hand that to
   // the recipient.
-  for (const key of ADMIN_PARAMS) {
+  for (const key of [...ADMIN_PARAMS, ...LOCAL_PARAMS]) {
     params.delete(key)
   }
   params.set('session', sessionParam)

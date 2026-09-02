@@ -92,6 +92,18 @@ describe('buildShareUrl', () => {
     },
   )
 
+  // safeMode is this browser's escape hatch from a crashing permanent plugin,
+  // and it sticks across reloads on purpose — carried into a link it would
+  // silently switch off the recipient's own plugins
+  it('does not carry safeMode into the link', async () => {
+    setUrl('/app/?config=conf.json&safeMode=1')
+    mockEncode.mockResolvedValue({ sessionParam: 'share-abc', password: 'pw' })
+
+    const { url } = await buildShareUrl('short', {}, 'https://share/')
+    expect(url).toContain('config=conf.json')
+    expect(url).not.toContain('safeMode')
+  })
+
   // The referer is POSTed to the share server and stored beside the session, so
   // it has to drop everything the shared link itself drops.
   const referer = () => mockEncode.mock.calls.at(-1)![2].referer as string
