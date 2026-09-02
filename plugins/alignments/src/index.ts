@@ -144,6 +144,9 @@ export type {
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
 export type { CigarHitResult, ResolvedBlock } from './shared/hitTestTypes.ts'
+export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
+export type { LayoutOrder } from './LinearAlignmentsDisplay/menus/sortGroup.ts'
+export type { CoverageRegionFields } from './features/coverage/types.ts'
 export type {
   ArcColorByType,
   CategoryFilter,

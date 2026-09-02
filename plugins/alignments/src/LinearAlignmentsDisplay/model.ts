@@ -240,7 +240,7 @@ export type { AlignmentLane }
 
 // Screen-px geometry of one section's coverage band, named by the hover
 // volatile and by the action that writes it.
-interface HoverCoverageBand {
+export interface HoverCoverageBand {
   topOffset: number
   coverageHeight: number
 }

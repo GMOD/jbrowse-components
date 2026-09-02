@@ -573,6 +573,11 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // retired streaming renderer path contrasted with the current collect-then-
   // return shape. Gone with the whole renderer registry.
   'FeatureRendererType',
+  // plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md §"A gesture on
+  // a followed row takes the anchor": the drag-vs-navigation heuristic tried
+  // before root-action gating, named to say it had an untestable false
+  // positive and was replaced. Gone with the snap-back snackbar it explained.
+  'handNudged',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on

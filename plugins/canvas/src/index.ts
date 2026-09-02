@@ -243,3 +243,5 @@ export type {
   HitFeatureResult,
   VisibleRegion,
 } from './LinearBasicDisplay/components/hitTesting.ts'
+export type { DensityBandLayer } from './shared/densityBand.ts'
+export type { DensityHover } from './shared/densityBandViews.ts'

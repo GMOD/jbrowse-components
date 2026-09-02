@@ -62,9 +62,10 @@ samples: [
   `srcSize` can't disagree between the tooltip and a navigation target. A row
   that changes chromosome mid-range clips to the first one, so the result is
   always one navigable locus.
-- `stateModel.ts::rowNavigationTarget` — that span for a display row, plus the
-  sample's `assemblyName`/label; undefined when the row has no aligned base
-  there or the sample has no assembly.
+- `stateModel.ts::rowNavigationTargets` — that span for a `[startRow, endRow)`
+  range of display rows in one walk, plus each sample's `assemblyName`/label;
+  a row is absent from the result when it has no aligned base there or the
+  sample has no assembly.
 - `components/sampleNavigationItems.ts` — menu entries for the rows a drag
   selection covers, appended to the existing `SubsequenceContextMenu`. Six or
   fewer go inline, more collapse into a submenu.
@@ -126,7 +127,7 @@ reaches none. A different case turned up on the pangenome tutorials
 (2026-08-25): the pggb and Minigraph-Cactus MAFs name their samples by PanSN
 strain (`Sakai`, `CFT073`) and the same config loads those strains as
 assemblies under exactly those names, with no `samples[].assemblyName` written
-anywhere. `rowNavigationTarget` therefore falls back to the sample id when
+anywhere. `rowNavigationTargets` therefore falls back to the sample id when
 `assemblyManager.has(id)` — an assembly present under the exact id is the
 config author's own statement of which genome it is, and nothing is looked up.
 The config mapping still wins where it exists.
