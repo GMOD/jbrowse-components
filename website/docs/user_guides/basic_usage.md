@@ -82,7 +82,7 @@ appears only when the hits point at different places.
 
 Menu bar: `File` → `Open track...`. For a whole track hub (UCSC track hub or
 JBrowse 1 data directory), `File` → `Open connection...`; see
-[Connections](/docs/user_guides/connections).
+[](/docs/user_guides/connections).
 
 <Figure caption="The 'Open track...' item in the File menu opens the 'Add a track' form as a drawer widget." src="/img/add_track_form.png" />
 
