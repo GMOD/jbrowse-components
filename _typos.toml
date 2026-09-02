@@ -37,6 +37,10 @@ Bre = "Bre"           # Bre1, the Drosophila ubiquitin ligase on 3L
 # `{assembly: 'hg38', asembly: 'hg19'}` with both spellings on one line. A word
 # rather than six file excludes, so those files stay spell-checked otherwise
 asembly = "asembly"
+# products/jbrowse-desktop/electron/contextMenu.test.ts: the misspelling IS the
+# fixture, asserting the "Add to dictionary" item names the word electron's
+# spellchecker flagged.
+chromsome = "chromsome"
 # pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"
@@ -102,6 +106,8 @@ extend-exclude = [
   # generated: `pnpm gendocs` writes these from source
   "website/docs/models/",
   "website/docs/config/",
+  # generated: mid-word truncated JSDoc excerpts, not prose
+  "products/jbrowse-desktop/electron/mcp/docs/typeDocs.generated.json",
   # fixture and reference data
   "test_data/",
   "plugins/legacy-jbrowse/test_data/",
@@ -119,6 +125,10 @@ extend-exclude = [
   "website/diagrams/rpc_lifecycle.dot",
   # recorded human review comments, kept verbatim
   "website/scripts/screenshot-review.json",
+  # recorded agent-demo transcripts, mid-word truncated by their own capture
+  # format, kept verbatim
+  "scripts/agent-demos/take5-transcript.txt",
+  "scripts/agent-demos/takes/",
   # vendored
   "packages/core/src/ui/react-colorful.ts",
   # the typos are the fixtures: this file tests that `--cigarMode ful` is reported
