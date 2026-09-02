@@ -19,6 +19,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { breakendSplitViewMenuItem } from './breakendSplitViewMenuItem.ts'
 import { capitalizeFirst } from './constants.ts'
@@ -36,6 +37,34 @@ import { SV_TYPE_COLOR } from './variantSvType.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+// The sample-metadata radio group both "Color by..." and "Group by..." offer:
+// the same candidate attributes (`colorByAttributes` — every samplesTsv column
+// the sources carry), each with a None to turn the setting off.
+function sampleAttributeItems(
+  attributes: string[],
+  current: string,
+  onSelect: (attribute: string) => void,
+): MenuItem[] {
+  return [
+    {
+      label: 'None',
+      type: 'radio',
+      checked: !current,
+      onClick: () => {
+        onSelect('')
+      },
+    },
+    ...attributes.map(attr => ({
+      label: capitalizeFirst(attr),
+      type: 'radio' as const,
+      checked: current === attr,
+      onClick: () => {
+        onSelect(attr)
+      },
+    })),
+  ]
+}
 
 // Items for the "Show..." submenu — the toggles both displays share. Extended
 // by subclasses via super-capture (the regular display adds "Show reference
@@ -221,26 +250,35 @@ export function variantTrackMenuItems(
                 label: 'Samples',
                 type: 'subHeader' as const,
               },
-              {
-                label: 'None',
-                type: 'radio' as const,
-                checked: !self.colorBy,
-                onClick: () => {
-                  self.setColorBy('')
+              ...sampleAttributeItems(
+                self.colorByAttributes,
+                self.colorBy,
+                arg => {
+                  self.setColorBy(arg)
                 },
-              },
-              ...self.colorByAttributes.map(attr => ({
-                label: capitalizeFirst(attr),
-                type: 'radio' as const,
-                checked: self.colorBy === attr,
-                onClick: () => {
-                  self.setColorBy(attr)
-                },
-              })),
+              ),
             ]
           : []),
       ],
     },
+    // The ordering half of the same metadata, beside the coloring half: both
+    // are config slots a session can set, and only the coloring one had a way
+    // in from the menu.
+    ...(self.colorByAttributes.length
+      ? [
+          {
+            label: 'Group by...',
+            icon: WorkspacesIcon,
+            subMenu: sampleAttributeItems(
+              self.colorByAttributes,
+              self.groupBy,
+              arg => {
+                self.setGroupBy(arg)
+              },
+            ),
+          },
+        ]
+      : []),
     ...filterMenuItems({
       // Declared once (see `Reversible`), so the count in the label and what
       // "Clear all filters" clears come from the same list — they were two,
