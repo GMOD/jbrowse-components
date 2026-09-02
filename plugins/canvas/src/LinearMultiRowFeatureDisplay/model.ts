@@ -11,10 +11,8 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
-import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin, {
@@ -43,11 +41,9 @@ import {
   sortRowsHereMenuItem,
   treeDescribesRows,
   treeSidebarOffset,
-  treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
-import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import DensityBandMixin from '../shared/DensityBandMixin.ts'
 import { copyItem } from '../shared/copyMenuItem.ts'
 import {
@@ -56,18 +52,24 @@ import {
 } from '../shared/fetchCanvasFeatureDetails.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
-import { blockScreenRect } from './rendering/blockScreenRect.ts'
+import {
+  contextTargetAtPixel,
+  createDrawnFeaturesByRowIndex,
+  featureAtPixel,
+  hitBlockRect,
+  hitRow,
+} from './hitTesting.ts'
+import {
+  answeredPartitionField,
+  partitionCandidates,
+  pinnedPartitionField,
+  regionHasPinnedData,
+} from './partitionFields.ts'
 import {
   buildColorLegend,
   resolveConfiguredLegend,
 } from './rendering/colorLegend.ts'
-import {
-  drawnFeatureContext,
-  drawnFeaturesByRow,
-  findTopDrawnFeatureInRow,
-} from './rendering/featurePainting.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
-import { paintedSpanContainsBp, rowBand } from './rendering/rowBand.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
@@ -80,6 +82,7 @@ import type {
   LinearMultiRowFeatureDisplayConfig,
   LinearMultiRowFeatureDisplayConfigModel,
 } from './configSchema.ts'
+import type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
 import type { DrawnFeaturesByRow } from './rendering/featurePainting.ts'
 import type {
   MultiRowFeaturePaintInputs,
@@ -88,7 +91,7 @@ import type {
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource, RowGroup } from './sourcesLogic.ts'
-import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -97,35 +100,10 @@ import type React from 'react'
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
 
-export interface MultiRowHit {
-  // adapter feature id + the region it was found in, so a click can re-fetch
-  // the full feature for the details widget
-  id: string
-  regionIndex: number
-  // the partition value naming the row the feature paints on — its IDENTITY,
-  // not its position. A hit outlives a reorder, a subtree filter or a clustering
-  // run, and a snapshotted index then names whoever moved into it. Consumers
-  // resolve the row through `rowIndexByValue`.
-  rowName: string
-  name: string
-  refName: string
-  start: number
-  end: number
-  // Signed bp length change vs the reference, from the `lengthField` slot, and
-  // absent whenever the slot is unset — the block's width is reference span and
-  // says nothing about it, which is what the indel glyphs are for and what the
-  // tooltip reads out.
-  delta?: number
-}
-
-// What a right-click resolves to: the genomic column the menu's
-// position-scoped rows act on, and the feature there when the click landed on
-// one.
-export interface MultiRowContextMenuInfo extends ContextMenuAnchor {
-  refName: string
-  pos: number
-  hit?: MultiRowHit
-}
+// The hit and the right-click target the interaction surface resolves to, and
+// the functions that resolve them, live beside the painting they read
+// (`hitTesting.ts`). Re-exported because they are this display's vocabulary.
+export type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
 
 /**
  * #stateModel LinearMultiRowFeatureDisplay
@@ -375,36 +353,13 @@ export default function stateModelFactory(
         /**
          * #getter
          * The attribute a loaded region actually resolved its rows on, or
-         * undefined while none has — the one answer `effectivePartitionField` and
-         * `pinnedPartitionField` are two readings of.
-         *
-         * Off the first loaded region that PUT SOMETHING IN A ROW, rather than
-         * the first loaded region: a region that came back empty resolved
-         * nothing. `resolvePartitionField` collects its candidates off the
-         * features, so an empty one falls through to the degenerate `name` — and
-         * pinned for the display that is every later region partitioned by
-         * feature name, which on the RepeatMasker files auto exists for is tens
-         * of thousands of one-feature hairline rows, a "Partition by" radio
-         * checking a field nobody picked, and clustering keyed on the same wrong
-         * attribute.
-         *
-         * Not a vote across the regions either: one file's columns are one file's
-         * columns, and a region that disagreed is a different partition rather
-         * than a tiebreak — which is why a disagreeing region is refetched (see
-         * `regionHasData`) instead of being averaged in here.
-         *
-         * Off `rpcDataMap`, not `drawnRegionData`, and so is `regionHasData`,
-         * which compares against it. What the density band swaps out is what
-         * the display DRAWS; this is a fact about the payloads it holds. Read
-         * through the swap the pin fell back to auto while every held region
-         * still named its own field, so the reconciliation below read all of
-         * them as holding nothing and the fetch plan re-issued the lot, on a
-         * track whose whole point is that it is fetching nothing.
+         * undefined while none has — the one answer `effectivePartitionField`
+         * and `pinnedPartitionField` are two readings of. Which region answers,
+         * and why the question is asked of the held payloads rather than the
+         * drawn ones, are `partitionFields.ts`.
          */
         get answeredPartitionField(): string | undefined {
-          return [...self.rpcDataMap.values()].find(
-            data => data.partitionValues.length > 0,
-          )?.resolvedPartitionField
+          return answeredPartitionField(self)
         },
         /**
          * #getter
@@ -427,47 +382,22 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * What a fetch issued NOW should partition on under auto: the attribute an
-         * already-loaded region resolved, or auto again when none has. Unlike
-         * `effectivePartitionField` there is no display default to fall back to —
-         * this is an instruction to the worker, where "no instruction" is a real
-         * answer.
-         *
-         * The worker resolves auto off a SAMPLE of the region it packs, so a
-         * region panned into later can land on a different attribute, and the
-         * regions of one batch fan out in parallel with nothing to pin yet — so
-         * this is also what a landed region is CHECKED against (`regionHasData`),
-         * not only what a later fetch is told. Not an `rpcProps()` key: keying on
-         * the resolved field would refetch every region the moment the first one
-         * answered.
+         * What a fetch issued NOW should partition on under auto, and what a
+         * landed region is CHECKED against (`regionHasData`). Not an
+         * `rpcProps()` key: keying on the resolved field would refetch every
+         * region the moment the first one answered.
          */
         get pinnedPartitionField(): string {
-          return this.answeredPartitionField ?? AUTO_PARTITION_FIELD
+          return pinnedPartitionField(self)
         },
         /**
          * #getter
          * The attribute names the loaded features carry, which is what the
-         * "Partition by..." menu offers. Unioned across regions and re-sorted,
-         * since two regions can be served by adapters that saw different optional
-         * columns.
-         *
-         * Empty until something is loaded, which is the menu's own disabled
-         * condition — the names are discovered from the data rather than declared,
-         * the same way the rows themselves are.
-         *
-         * Off the held payloads for the same reason as the pin above: the menu
-         * offers a repartition, which is a fetch input, and the band standing
-         * in over the rows says nothing about which columns the file has. Read
-         * through the swap the whole submenu vanished while it was up.
+         * "Partition by..." menu offers. Empty until something is loaded, which
+         * is the menu's own disabled condition.
          */
         get partitionCandidates(): string[] {
-          const names = new Set<string>()
-          for (const data of self.rpcDataMap.values()) {
-            for (const name of data.partitionCandidates) {
-              names.add(name)
-            }
-          }
-          return [...names].sort()
+          return partitionCandidates(self)
         },
       }
     })
@@ -911,20 +841,7 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      // Held per region, because `rpcDataMap` invalidates the computed whole:
-      // the Nth region to land rebuilt the N-1 indexes that already held, two
-      // passes over every feature each. Kept on exactly the compares
-      // `installUpload` keeps its encodings on, and exact for the same reason —
-      // a region payload is replaced whole and never mutated
-      // (`regionDataMap`), and `featurePaintInputs` is the memoized triple the
-      // painters key on.
-      const held = new Map<
-        number,
-        { data: MultiRowRegionData; byRow: DrawnFeaturesByRow }
-      >()
-      // the row count is `state.rowIndexByValue.size`, so it cannot move
-      // without the state identity moving with it
-      let heldFor: MultiRowFeaturePaintInputs | undefined
+      const index = createDrawnFeaturesByRowIndex()
       return {
         /**
          * #getter
@@ -937,7 +854,8 @@ export default function stateModelFactory(
          * runs on every rAF-coalesced mouse move, and building it inline meant
          * resolving the region's whole partition list (a couple of thousand rows
          * on a cohort painting) sixty times a second for a value that changes
-         * only when the rows, the colors or the data do.
+         * only when the rows, the colors or the data do. What is held between
+         * calls, and on which compares, is `createDrawnFeaturesByRowIndex`.
          *
          * Bucketing rather than a bare context, because the memo only removed the
          * *setup* from the pointer frame and left the scan: the row is known
@@ -953,170 +871,34 @@ export default function stateModelFactory(
          * does not cache a computed nobody is watching.
          */
         get drawnFeaturesByRow(): Map<number, DrawnFeaturesByRow> {
-          const state = self.featurePaintInputs
-          const rowCount = self.sources.length
-          if (state !== heldFor) {
-            heldFor = state
-            held.clear()
-          }
-          const byRegion = new Map<number, DrawnFeaturesByRow>()
-          for (const [index, data] of self.drawnRegionData.entries()) {
-            const prev = held.get(index)
-            const entry =
-              prev?.data === data
-                ? prev
-                : {
-                    data,
-                    byRow: drawnFeaturesByRow(
-                      data,
-                      drawnFeatureContext(data, state),
-                      rowCount,
-                    ),
-                  }
-            held.set(index, entry)
-            byRegion.set(index, entry.byRow)
-          }
-          for (const index of held.keys()) {
-            if (!byRegion.has(index)) {
-              held.delete(index)
-            }
-          }
-          return byRegion
+          return index(
+            self.drawnRegionData,
+            self.featurePaintInputs,
+            self.sources.length,
+          )
         },
       }
     })
     .views(self => ({
       /**
        * #method
-       * Hit-test the feature under a display-relative pixel: the rows whose
-       * painted band covers it, genomic bp from the view, then the first
-       * feature on one of those rows whose PAINTED block covers the bp. Returns
-       * undefined over the sidebar, off-row, out-of-bounds, or over a gap.
-       *
-       * The row comes from `rowsUnderPointer`, the shared rule maf, variants
-       * and wiggle read their stacks with, rather than `mouseY / rowHeight`.
-       * Two things follow. The question is asked at the pixel's CENTRE, which
-       * is the scanline that decided the colour the reader is pointing at — at
-       * the 0.32 px rows a cohort painting fits into, the top edge names a row
-       * one and a half off. And a sub-pixel row is painted at
-       * MIN_DRAWN_ROW_PX, so several rows share one drawn pixel: the walk from
-       * `nearest` down to `lowest` finds whichever of them actually put a block
-       * there, which is the block the reader can see.
-       *
-       * Painted rather than genomic, because the painters widen a sub-pixel
-       * block to `MULTI_ROW_MIN_CELL_PX` and a bare `[start,end)` then answers
-       * for none of it — a repeat element at chromosome zoom was drawn, and had
-       * no tooltip, no details and no menu. `paintedSpanContainsBp` is that
-       * rule, and `blockScreenRect` draws the marker on the same one.
-       *
-       * The sidebar bound is `treeSidebarRightEdge`, not `sidebarOffset`: the
-       * latter is where labels are *drawn* from, while the resize handle sitting
-       * in the 4px past it is the sidebar's interactive edge, and a hit under the
-       * handle would fight the drag. Same bound the wiggle family hit-tests
-       * against, and the same one the crosshair's guide stops at.
+       * The feature under a display-relative pixel — `featureAtPixel`, which
+       * owns the row rule, the painted-span rule and the sidebar bound.
        */
       featureAt(mouseX: number, mouseY: number): MultiRowHit | undefined {
-        if (mouseX < treeSidebarRightEdge(self)) {
-          return undefined
-        }
-        const view = self.view
-        const p = view.pxToBp(mouseX)
-        if (p.oob) {
-          return undefined
-        }
-        const region = self.drawnRegionData.get(p.index)
-        if (!region) {
-          return undefined
-        }
-        const byRow = self.drawnFeaturesByRow.get(p.index)
-        if (!byRow) {
-          return undefined
-        }
-        // the base drawn under the cursor, which the containment test compares
-        // against; coord0 names the one to its right when reversed
-        const bp = basePaintedAt(p, p.offset)
-        const {
-          featureStarts,
-          featureEnds,
-          featureNames,
-          featureIds,
-          featureDeltas,
-        } = region
-        const rowHeight = self.effectiveRowHeight
-        const { nearest, lowest } = rowsUnderPointer(
-          mouseY,
-          { rowHeight },
-          rowBand(rowHeight, self.rowProportion).height,
-        )
-        for (let targetRow = nearest; targetRow >= lowest; targetRow--) {
-          const row = self.sources[targetRow]
-          if (row) {
-            // `findTopDrawnFeatureInRow` owns both halves of "which feature is
-            // under this pixel" that the painters also own: which features are
-            // drawn at all, and which of two overlapping ones is on top. All
-            // this adds is the span, and `paintedSpanContainsBp` owns both the
-            // zero-length case and the sub-pixel widening within that.
-            const i = findTopDrawnFeatureInRow(byRow, targetRow, i =>
-              paintedSpanContainsBp(
-                featureStarts[i]!,
-                featureEnds[i]!,
-                bp,
-                view.bpPerPx,
-              ),
-            )
-            if (i !== -1) {
-              return {
-                id: featureIds[i]!,
-                regionIndex: p.index,
-                rowName: row.name,
-                name: featureNames[i]!,
-                refName: p.refName,
-                start: featureStarts[i]!,
-                end: featureEnds[i]!,
-                // the length agreement `regionWithDeltas` makes, for the same
-                // reason: `featureDeltas` is EMPTY rather than zero-filled when
-                // the `lengthField` slot is unset
-                delta:
-                  featureDeltas.length === featureStarts.length
-                    ? featureDeltas[i]!
-                    : undefined,
-              }
-            }
-          }
-        }
-        return undefined
+        return featureAtPixel(self, mouseX, mouseY)
       },
     }))
     .views(self => ({
       /**
        * #method
-       * What a right-click at this display-relative pixel resolves to: the
-       * genomic position the menu's position-scoped rows act on ("Sort rows by
-       * color here"), and the feature there when the click landed on one.
-       *
-       * Undefined wherever no menu should open, which is what the component
-       * needs in order to decide whether to `preventDefault` — over the tree
-       * sidebar, which overlays this display and owns its own menu, and in the
-       * inter-region gutter, where there is no base to name. Model-side and
-       * beside `featureAt` because it is the same question about the same pixel;
-       * spelled out in the component it re-derived `pxToBp`, the sidebar bound
-       * and the painted base that `featureAt` was about to derive again.
+       * What a right-click at this display-relative pixel resolves to. Model-
+       * side because it is the same question about the same pixel `featureAt`
+       * asks; spelled out in the component it re-derived `pxToBp`, the sidebar
+       * bound and the painted base.
        */
       contextTargetAt(mouseX: number, mouseY: number) {
-        if (mouseX < treeSidebarRightEdge(self)) {
-          return undefined
-        }
-        const p = self.view.pxToBp(mouseX)
-        if (p.oob) {
-          return undefined
-        }
-        return {
-          refName: p.refName,
-          // anchors "sort rows by color here" on the clicked column, so it must
-          // be the base drawn there (coord0 is off by one when reversed)
-          pos: basePaintedAt(p, p.offset),
-          hit: self.featureAt(mouseX, mouseY),
-        }
+        return contextTargetAtPixel(self, mouseX, mouseY)
       },
 
       /**
@@ -1127,19 +909,10 @@ export default function stateModelFactory(
        * menu is acting on is exactly the one that should stay marked.
        */
       get highlightedBlockRect() {
-        const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
-        // resolved off the live order rather than trusted from the hit (see
-        // `rowName`); a row since filtered away draws no box
-        const rowIndex = hit && self.rowIndexByValue.get(hit.rowName)
-        return hit && rowIndex !== undefined
-          ? blockScreenRect({
-              hit,
-              rowIndex,
-              blocks: self.renderBlocks,
-              rowHeight: self.effectiveRowHeight,
-              rowProportion: self.rowProportion,
-            })
-          : undefined
+        return hitBlockRect(
+          self,
+          self.hoveredFeature ?? self.contextMenuInfo?.hit,
+        )
       },
 
       /**
@@ -1148,9 +921,7 @@ export default function stateModelFactory(
        * label, resolved the way `highlightedBlockRect` resolves its row.
        */
       get hoveredRow(): MultiRowSource | undefined {
-        const hit = self.hoveredFeature
-        const rowIndex = hit && self.rowIndexByValue.get(hit.rowName)
-        return rowIndex === undefined ? undefined : self.sources[rowIndex]
+        return hitRow(self, self.hoveredFeature)
       },
     }))
     .actions(self => {
@@ -1391,31 +1162,13 @@ export default function stateModelFactory(
        *
        * **And the reconciliation for auto partitioning**, which is the second
        * thing this hook is for (MAF's "which of several held payloads answers"
-       * is the first). Auto is resolved in the worker off a sample of the
-       * region it packs, and a batch fans out in parallel with nothing pinned
-       * yet — so two regions of one display can come back partitioned on
-       * different attributes, after which one row name means two things and
-       * `sourcesWithoutLayout` unions both sets. A region that answered
-       * something other than the pin has not stored data this display can draw,
-       * so it is refetched, and this time it is TOLD the field. It terminates
-       * because the worker echoes an explicit field back verbatim, and because
-       * the pin is itself some loaded region's answer, so at least one region
-       * always agrees.
-       *
-       * A region holding no row is exempt: it has nothing to land in the wrong
-       * one, and refetching it would re-download every empty contig of a
-       * whole-genome load to be told the same nothing.
+       * is the first) — `regionHasPinnedData` is that half.
        *
        * A view, not an action: as an action MobX untracks the `rpcDataMap` read
        * and `FetchVisibleRegions` keeps a stale answer.
        */
       regionHasData(displayedRegionIndex: number) {
-        const data = self.rpcDataMap.get(displayedRegionIndex)
-        return (
-          data !== undefined &&
-          (data.partitionValues.length === 0 ||
-            data.resolvedPartitionField === self.pinnedPartitionField)
-        )
+        return regionHasPinnedData(self, displayedRegionIndex)
       },
     }))
     .actions(self => ({
