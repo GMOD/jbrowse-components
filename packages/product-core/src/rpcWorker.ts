@@ -49,16 +49,16 @@ async function getPluginManager(
   // tooltip against the full feature here rather than shipping it back — so it
   // needs the main thread's display preference before any RPC method runs
   setNumberGrouping(config.numberGrouping)
-  const pluginLoader = new PluginLoader(
-    config.plugins,
-    opts,
-  ).installGlobalReExports(self)
   // Keep each runtime plugin's `definition` on its load record (mirroring the
   // main thread's createPluginManager) so PluginManager populates
   // runtimePluginDefinitions. A plugin that resolves a sibling asset from its
   // own bundle url in the worker — e.g. GraphGenomeView's Bandage layout
   // engine — needs its definition here, not just its instance.
-  const runtimePlugins = await pluginLoader.load(config.windowHref)
+  const runtimePlugins = config.plugins.length
+    ? await new PluginLoader(config.plugins, opts)
+        .installGlobalReExports(self)
+        .load(config.windowHref)
+    : []
   return new PluginManager([
     ...corePlugins.map(P => ({ plugin: new P() })),
     ...runtimePlugins.map(({ plugin: P, definition }) => ({

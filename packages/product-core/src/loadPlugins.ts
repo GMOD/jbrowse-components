@@ -55,14 +55,14 @@ export async function loadRuntimePlugins(
   if (failures[0]) {
     throw failures[0].error
   }
-  const pluginLoader = new PluginLoader(
-    dropVendored ? dropVendoredPlugins(definitions) : definitions,
-    args,
-  )
-  pluginLoader.installGlobalReExports(window)
+  const toLoad = dropVendored ? dropVendoredPlugins(definitions) : definitions
   // the default matters: `new URL('umd_plugin.js', undefined)` throws, so a
   // relative plugin url used to fail outright instead of resolving against the
   // page the way every other relative url does
   const base = args.baseUri ?? args.baseUrl
-  return pluginLoader.load(base ?? window.location.href)
+  return toLoad.length
+    ? new PluginLoader(toLoad, args)
+        .installGlobalReExports(window)
+        .load(base ?? window.location.href)
+    : []
 }

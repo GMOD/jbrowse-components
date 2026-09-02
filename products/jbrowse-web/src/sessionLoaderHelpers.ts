@@ -37,11 +37,16 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
     defs,
     packageJSON.version,
   )
-  const loader = new PluginLoader(dropVendoredPlugins(definitions), {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
-  })
-  loader.installGlobalReExports(window)
-  const { records, failures } = await loader.loadSettled(window.location.href)
+  const toLoad = dropVendoredPlugins(definitions)
+  // No definitions, no loader — see `initializeWorker` for what a loader costs
+  const loaded = toLoad.length
+    ? await new PluginLoader(toLoad, {
+        fetchESM: url => import(/* webpackIgnore:true */ url),
+      })
+        .installGlobalReExports(window)
+        .loadSettled(window.location.href)
+    : { records: [], failures: [] }
+  const { records, failures } = loaded
   // A ref with no build for this JBrowse and a bundle that 404s are the same
   // thing to the person looking at the session — a feature that is not there —
   // so they are reported through one path.

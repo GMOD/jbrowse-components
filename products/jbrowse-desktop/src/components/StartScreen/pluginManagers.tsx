@@ -59,14 +59,16 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 // warns about. Anyone retrying this should confirm that first; the win on offer
 // is deferring the graph from start-screen-mount to session-open, not bytes.
 
+// undefined where there is nothing to load — see `initializeWorker` for what a
+// loader costs
 function makePluginLoader(definitions: PluginDefinition[]) {
-  return new PluginLoader(
-    dropVendoredPlugins(definitions, desktopVendoredPluginNames),
-    {
-      fetchESM: url => import(/* webpackIgnore:true */ url),
-      fetchCJS,
-    },
-  ).installGlobalReExports(window)
+  const toLoad = dropVendoredPlugins(definitions, desktopVendoredPluginNames)
+  return toLoad.length
+    ? new PluginLoader(toLoad, {
+        fetchESM: url => import(/* webpackIgnore:true */ url),
+        fetchCJS,
+      }).installGlobalReExports(window)
+    : undefined
 }
 
 function pluginRecords(
@@ -121,9 +123,10 @@ async function buildPluginManager(
   // config that names none is unaffected.
   const { definitions: resolved, failures: unresolved } =
     await resolveStorePluginRefs(definitions, packageJSON.version)
-  const { records, failures } = await makePluginLoader(resolved).loadSettled(
-    window.location.href,
-  )
+  const loader = makePluginLoader(resolved)
+  const { records, failures } = loader
+    ? await loader.loadSettled(window.location.href)
+    : { records: [], failures: [] }
   const pluginManager = new PluginManager(pluginRecords(records, isGlobal))
   pluginManager.createPluggableElements()
   return { pluginManager, failures: [...unresolved, ...failures] }

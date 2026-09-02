@@ -318,7 +318,10 @@ export default class PluginLoader {
 
   private async publishReExports() {
     const target = this.reExportTarget
-    if (!target) {
+    // only a runtime plugin can call jbrequire, and the registry names React,
+    // react-dom/client and Material UI: a realm with no definitions must not
+    // fetch that stack to serve nobody
+    if (!target || this.definitions.length === 0) {
       return
     }
     const { default: ReExports } = await import('./ReExports/index.ts')

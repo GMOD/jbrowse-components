@@ -17,6 +17,11 @@
  *                      median of five loads, over an emulated 4 Mbps / 40 ms
  *                      link — the bytes only matter through this number
  *   --build <dir>      measure another build directory (a second checkout)
+ *   --worker           split the fetched chunks by realm. A dedicated worker's
+ *                      requests reach the page's own network events, so
+ *                      `page.on('response')` cannot tell them apart; the server
+ *                      can, from `Sec-Fetch-Dest: worker` and from a Referer
+ *                      that is a chunk rather than the page
  */
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
@@ -35,6 +40,10 @@ const buildDir =
 const port = 8137
 const filesPrefix = argAfter('--files')
 const timing = process.argv.includes('--time')
+const byRealm = process.argv.includes('--worker')
+// which realm asked for a path, filled by the server below
+let workerFetched = new Set<string>()
+let pageFetched = new Set<string>()
 
 const scenarios = {
   emptyLGV: { url: '/?config=test_data/volvox/config.json', drawn: 0 },
@@ -110,6 +119,13 @@ const mimeTypes: Record<string, string> = {
 // charged a TCP handshake per chunk the way python's http.server would
 const server = createServer((req, res) => {
   const url = new URL(req.url ?? '/', 'http://localhost')
+  const referer = new URL(String(req.headers.referer ?? ''), 'http://localhost')
+  const fromWorker =
+    req.headers['sec-fetch-dest'] === 'worker' ||
+    /\/static\/js\/.*\.js$/.test(referer.pathname)
+  ;(fromWorker ? workerFetched : pageFetched).add(
+    url.pathname.replace(/^\//, ''),
+  )
   const file = path.join(
     buildDir,
     url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname),
@@ -186,6 +202,8 @@ try {
         `\n## ${name} over 4 Mbps / 40 ms, median of 5: app ready ${median(runs.map(r => r.ready)).toFixed(0)} ms${sc.drawn ? `, ${sc.drawn} displays drawn ${median(runs.map(r => r.drawn)).toFixed(0)} ms` : ''}`,
       )
     } else {
+      workerFetched = new Set()
+      pageFetched = new Set()
       const { fetched, errors } = await load(sc, false)
       const chunks = [...fetched]
         .map(k => ({ k, ...gz(k) }))
@@ -206,6 +224,24 @@ try {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 25)) {
         console.log(`  ${kb(b).padStart(8)}  ${pkg}`)
+      }
+      if (byRealm) {
+        const worker = chunks.filter(c => workerFetched.has(c.k))
+        const only = worker.filter(c => !pageFetched.has(c.k))
+        console.log(
+          `  the RPC worker realm fetched ${worker.length} of them (${kb(worker.reduce((a, c) => a + c.gzip, 0))}), ${only.length} of those the page never asks for (${kb(only.reduce((a, c) => a + c.gzip, 0))}):`,
+        )
+        for (const c of only.slice(0, 12)) {
+          console.log(
+            `  ${kb(c.gzip).padStart(8)}  ${c.k.replace('static/js/', '')}`,
+          )
+        }
+        const { byPkg: workerPkg } = attribute(worker)
+        for (const [pkg, b] of [...workerPkg]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 8)) {
+          console.log(`  ${kb(b).padStart(8)}  ${pkg}`)
+        }
       }
       if (filesPrefix) {
         console.log(`  files under ${filesPrefix}:`)

@@ -48,9 +48,11 @@ test('a product that does not bundle them still fetches one', async () => {
   expect(calls[0]!.names).toEqual(['MafViewer', 'UCSC'])
 })
 
+// each of these passes a definition, because a definition is what makes a
+// loader exist at all now — see 'a config that names nothing loads nothing'
 test('baseUri resolves relative plugin urls', async () => {
   const calls = captureLoad()
-  await loadRuntimePlugins([], {
+  await loadRuntimePlugins(defs, {
     dropVendored: true,
     jbrowseVersion,
     baseUri: 'https://example.com/config.json',
@@ -60,7 +62,7 @@ test('baseUri resolves relative plugin urls', async () => {
 
 test('baseUrl is still accepted as the pre-4.4 spelling', async () => {
   const calls = captureLoad()
-  await loadRuntimePlugins([], {
+  await loadRuntimePlugins(defs, {
     dropVendored: true,
     jbrowseVersion,
     baseUrl: 'https://example.com/config.json',
@@ -70,8 +72,18 @@ test('baseUrl is still accepted as the pre-4.4 spelling', async () => {
 
 test('with neither, urls resolve against the page rather than throwing', async () => {
   const calls = captureLoad()
-  await loadRuntimePlugins([], { dropVendored: true, jbrowseVersion })
+  await loadRuntimePlugins(defs, { dropVendored: true, jbrowseVersion })
   expect(calls[0]!.baseUri).toBe(window.location.href)
+})
+
+// `loadSettled` publishes the runtime re-export ABI on the way past, and that
+// registry names React, react-dom/client and Material UI. Nothing can call
+// `jbrequire` without a runtime plugin, so a host whose config names none must
+// not reach the loader at all.
+test('a config that names nothing loads nothing', async () => {
+  const calls = captureLoad()
+  await loadRuntimePlugins([], { dropVendored: true, jbrowseVersion })
+  expect(calls).toEqual([])
 })
 
 // The order at this seam is load-bearing: dropVendoredPlugins matches on the UMD
@@ -109,7 +121,8 @@ describe('store refs', () => {
       dropVendored: true,
       jbrowseVersion,
     })
-    expect(calls[0]!.names).toEqual([])
+    // dropped down to nothing, so there is nothing to load
+    expect(calls).toEqual([])
   })
 
   it('fetches nothing when no definition is a ref', async () => {
