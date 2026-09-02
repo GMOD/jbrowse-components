@@ -1,6 +1,6 @@
 ---
 name: single-tier-pif-refetches-at-the-threshold
-description: A `.pif.gz` built without a coarse tier still flips tiers at 10,000 bp/px, because the flip is resolved from a config slot both indexed adapters declare while whether the file HAS the tier is an async adapter-side fact. Identical bytes refetched once per crossing; the fix is a capability the main thread can read, and the design question is where it lives in the cache key.
+description: A `.pif.gz` built without a coarse tier still flips tiers at 10,000 bp/px, because the flip is resolved from a config slot both indexed adapters declare while whether the file HAS the tier is an async adapter-side fact. Identical bytes refetched once per crossing; the fix is a capability the main thread can read, and the design question is where it lives in the cache key. The `#pif` header now carries the bound as a value, and the same one-shot `meta` RPC closes the unenforced threshold slot and the approximate-walk claim with it.
 ---
 
 # A single-tier PIF refetches itself crossing the LOD threshold
@@ -47,3 +47,22 @@ increasing cost:
 The menu already says the fallback out loud (`lodMenuItems`' `helpText` for
 "Alignment blocks only"), so the user-facing half is not silent. Only the
 network is.
+
+## The `#pif` header makes the first option cheap, and it answers two more
+
+Filed 2026-09-02 when `handoffs/pif-coarse-tier-rollout.md` closed. The writer
+now emits a `#pif` header and `PifFile.meta` carries `coarse:i:`, the accuracy
+bound the file was built with, so the capability the main thread cannot see is
+already sitting on the adapter side as a value rather than a flag to invent.
+One shape delivers it: a one-shot RPC in `afterAttach` that returns `meta`, the
+way `LinearHicDisplay` learns its binsize, stored on the display and read by
+`resolveLodTier`.
+
+Two further defects close with it, which is what changes the price:
+
+- `coarseBpPerPxThreshold` is a config slot that must be `>= --coarse` for the
+  served tier to be as accurate as the display claims, and nothing enforces it.
+  With `meta` on the display it is checkable.
+- `LinearSyntenyDisplay.coarseWalkIsApproximate` reads the tier that was
+  REQUESTED, not the one served, so a `--no-coarse` file reports an approximate
+  walk over fine-tier geometry.
