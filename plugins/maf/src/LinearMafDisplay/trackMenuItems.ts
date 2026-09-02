@@ -43,7 +43,16 @@ const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 // summary tier does not read — so past the floor they collapse and the tick
 // keeps reporting what the user chose. Said out loud, because otherwise the
 // only feedback for ticking either one there is nothing happening.
-const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier'
+export const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier'
+
+/**
+ * The same override applied to a row whose ACTION the summary tier has taken
+ * away rather than its setting: the row keeps its place and says why it cannot
+ * act, instead of being enabled and silently doing nothing.
+ */
+export function zoomGatedItem(item: MenuItem, hint: string | undefined) {
+  return hint ? { ...item, disabled: true, disabledHelpText: hint } : item
+}
 
 // Row-height presets for the shared "Row height" menu. Each pairs a height with
 // the glyph proportion that reads best at it — maf is the one display that has

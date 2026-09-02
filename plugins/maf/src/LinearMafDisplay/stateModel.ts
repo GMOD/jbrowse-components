@@ -9,6 +9,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
   getContainingView,
   getPaletteHost,
@@ -90,7 +91,11 @@ import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { isRowIdentityMode } from './rowIdentityModes.ts'
-import { buildMafTrackMenuItems } from './trackMenuItems.ts'
+import {
+  ZOOM_IN_FOR_BAND,
+  buildMafTrackMenuItems,
+  zoomGatedItem,
+} from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 
 import type {
@@ -1286,15 +1291,22 @@ export default function stateModelFactory(
          */
         contextMenuItems(): MenuItem[] {
           const info = self.contextMenuInfo
+          // The sort reads `rpcDataMap`, which the summary fetch clears on
+          // purpose, so on that tier the row was enabled and did nothing. Same
+          // wording the two band toggles use for the same override.
+          const zoomHint = self.showSummary ? ZOOM_IN_FOR_BAND : undefined
           return info
             ? [
-                sortRowsHereMenuItem({
-                  label: 'Sort rows by base here',
-                  rowCount: self.editableSources.length,
-                  onClick: () => {
-                    self.sortRowsByBaseAt(info.refName, info.pos)
-                  },
-                }),
+                zoomGatedItem(
+                  sortRowsHereMenuItem({
+                    label: withHint('Sort rows by base here', zoomHint),
+                    rowCount: self.editableSources.length,
+                    onClick: () => {
+                      self.sortRowsByBaseAt(info.refName, info.pos)
+                    },
+                  }),
+                  zoomHint,
+                ),
                 ...resetRowOrderMenuItems(self),
               ]
             : []

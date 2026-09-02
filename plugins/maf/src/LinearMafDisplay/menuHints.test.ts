@@ -39,6 +39,22 @@ function hintOn(items: MenuItem[], label: string) {
   return findRow(items, label)?.split(SEP)[1]
 }
 
+// The tooltip a disabled row shows in place of its help text, which is where
+// the reason has to live once the row cannot be clicked at all.
+function disabledHintOn(items: MenuItem[], label: string) {
+  for (const item of items) {
+    if (
+      'label' in item &&
+      typeof item.label === 'string' &&
+      item.label.split(SEP)[0] === label &&
+      'disabledHelpText' in item
+    ) {
+      return item.disabledHelpText
+    }
+  }
+  return undefined
+}
+
 const BAND_ROWS = ['Show coverage', 'Show conservation (% identity)']
 const HINT = 'zoom in past the summary tier'
 
@@ -78,6 +94,44 @@ describe('the band toggles say when the summary tier has overridden them', () =>
     for (const label of BAND_ROWS) {
       expect(hintOn(items, label)).toBeUndefined()
     }
+  })
+})
+
+// The right-click sort is the third row the summary tier overrides. It reads
+// `rpcDataMap`, which the summary fetch clears on purpose, so past the floor it
+// was enabled and silently did nothing.
+describe('the right-click sort says when the summary tier has its data', () => {
+  const SORT = 'Sort rows by base here'
+
+  function contextItems(bpPerPx: number) {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    view.zoomTo(bpPerPx)
+    display.openContextMenu({
+      clientX: 0,
+      clientY: 0,
+      refName: 'ctgA',
+      pos: 100,
+    })
+    return {
+      items: display.contextMenuItems(),
+      showSummary: display.showSummary,
+    }
+  }
+
+  it('hints and disables past the floor', () => {
+    const { items, showSummary } = contextItems(100)
+    expect(showSummary).toBe(true)
+    expect(hintOn(items, SORT)).toBe(HINT)
+    expect(disabledHintOn(items, SORT)).toBe(HINT)
+  })
+
+  it('leaves the row alone below it, where the sort has blocks to read', () => {
+    const { items, showSummary } = contextItems(1)
+    expect(showSummary).toBe(false)
+    expect(hintOn(items, SORT)).toBeUndefined()
+    expect(disabledHintOn(items, SORT)).toBe('Needs at least two rows to sort')
   })
 })
 
