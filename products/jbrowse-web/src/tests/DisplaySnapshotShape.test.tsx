@@ -1,5 +1,7 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import corePlugins from '../corePlugins.ts'
 import { getTestSession } from './util.tsx'
 
 // Documents the serialized shape of display configs that the BaseTrackModel
@@ -72,4 +74,33 @@ test('a pre-rename session resolves its display config by type', async () => {
   // the invariant showTrackGeneric's pickDisplayForView exists to keep, arrived
   // at here through the fallback rather than through the id
   expect(display.configuration.type).toBe(display.type)
+})
+
+// A display type nothing registers — a removed one (`LDDisplay`, which a config
+// written before d725f75263 still names on its VariantTrack), a plugin's that
+// did not load, a typo — is dropped from the config rather than failing the
+// whole track. Dropped, but not silently: the track goes on to render its
+// default display, which is not the picture the config asked for, and the only
+// thing standing between that and "the browser lost my track setting" is this
+// line in the console.
+test('a display of a type no plugin registers is dropped with a warning', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
+  pluginManager.configure()
+  const conf = pluginManager.pluggableConfigSchemaType('track').create({
+    type: 'VariantTrack',
+    trackId: 'stale',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'VcfTabixAdapter', uri: 'x.vcf.gz' },
+    displays: [{ type: 'LDDisplay', displayId: 'stale-LDDisplay' }],
+  })
+  const snap: TrackSnap = getSnapshot(conf)
+
+  expect(snap.displays?.map(d => d.type)).not.toContain('LDDisplay')
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('unknown type "LDDisplay" from track "stale"'),
+  )
+  warn.mockRestore()
 })

@@ -88,7 +88,15 @@ export function preprocessTrackConfigSnapshot(
         const canonical = displayAliasMap.get(d.type)
         return canonical ? { ...d, type: canonical } : d
       })
-      .filter(d => knownDisplayTypes.has(d.type))
+      .filter(d => {
+        const known = knownDisplayTypes.has(d.type)
+        if (!known) {
+          console.warn(
+            `Dropping display of unknown type "${d.type}" from track "${snap.trackId}": no registered display type has that name`,
+          )
+        }
+        return known
+      })
       .filter(d => {
         const dup = seenTypes.has(d.type)
         seenTypes.add(d.type)
