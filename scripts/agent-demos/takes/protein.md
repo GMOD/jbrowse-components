@@ -232,6 +232,60 @@ take rather than coaching around:
 - **The connected genome view is not a layout index**, so the agent's first
   correct-looking spec left an empty panel; see the layout note above.
 
+### State on 2026-09-02
+
+Worked on branch `worktree-agent-aa92132f6b50ecd65`, two commits; the second is
+unfinished and says so. Per gap:
+
+- **`ProteinView` not in the bundled docs — NOT DONE, mechanism chosen and
+  half-wired.** Why it was missing:
+  `website/scripts/api-docs/util.ts getAllFiles` is `git ls-files`, so the doc
+  program only ever saw this repo's source; the plugin is published from its own
+  repository. And its model tag is `#stateModel Protein3dViewPlugin`
+  (`src/ProteinView/model.ts`), not `ProteinView`, so even once included
+  `docs topic:"model:ProteinView"` will miss until the plugin renames the tag or
+  `lookupTypeDoc` learns the MST name (`types.compose('ProteinView', ...)`).
+  What is in the tree now: `jbrowse-plugin-protein3d@0.9.0` is a root
+  devDependency whose runtime dependencies are dropped with `-` overrides in
+  `pnpm-workspace.yaml` (20 MB, no molstar — verified),
+  `EXTERNAL_PLUGIN_PACKAGES` in `util.ts` feeds its `src/` into the program,
+  `pluginOf` in `agentText.ts` labels it, and two of the generator's in-tree
+  hygiene assertions are exempted for `isExternalSource` files. `pnpm gendocs`
+  still fails on the third (`generateConfigDocs.ts:1446`, blank Description
+  cells for the three adapters' `location` slot); more may follow (coverage-gaps
+  lists, the `#example` gaps, `writeSpecKeyDocs`). Next command: `pnpm gendocs`,
+  exempt each external-source assertion the same way, then look at
+  `website/docs/models/Protein3dViewPlugin.md` and
+  `products/jbrowse-desktop/electron/mcp/docs/typeDocs.generated.json`. The
+  session-spec page's explicit form is not started: the plugin's launcher types
+  its args inline on the `addToExtensionPoint` callback with no `declare module`
+  augmentation and no `#launchKeys` tag, so `scanSpecKeys` in
+  `generateSpecKeyDocs.ts` cannot see it.
+- **`applyLayoutSpec` shape — DONE (one-shape fix).** `LayoutSpecNode` in
+  `packages/app-core/src/WorkspaceLayout/spec.ts` is now the spec's own shape: a
+  leaf is `views: (number | string)[]`, indexes counting into `session.views`
+  for the live action (the spec's own `views` for a link) or view ids; `viewIds`
+  is gone. `resolveLayoutSpec` throws naming what it received for a leaf spelled
+  otherwise (`received keys "viewIds"`), an index past the end, an unknown id or
+  a non-array, and the tree is untouched. `moveViewToSplitRight(viewId)` /
+  `moveViewToNewTab(viewId)` default `allViewIds` to the session's list. Tests:
+  `WorkspaceLayout/model.test.ts` (bottom), `spec.test.ts`,
+  `SessionSpec/loadSessionSpec.test.ts`,
+  `products/jbrowse-web/src/sessionModel/specLayoutOrder.test.ts`; all green.
+  Docs updated: `website/docs/agents_live_model.md`, `website/docs/urlparams.md`
+  ("Tiled views"). Not yet run: `pnpm typecheck web`, `pnpm lint --fix --cache`,
+  `pnpm test-related --with-web`, `pnpm autogen` (the model pages under
+  `website/docs/models/*` carry the old `LayoutSpecNode` signature text).
+- **Connected genome view not a layout index — DONE.** `loadSessionSpec.ts`
+  records every view a spec entry created (`createdViewIds: string[][]`), so a
+  layout index names the pair (genome view over structure) and nothing is left
+  unhomed; a string entry names a view id the spec pinned with `id`, reported
+  and dropped like a bad index when nothing has it. `displayName` now goes to
+  the created view of the entry's own `type`, so the ProteinView is no longer
+  "Untitled view". Placing the genome view and the structure in different cells
+  from one entry needs the plugin to honour `id` (it does not forward it today);
+  that is the one thing left here.
+
 ## Open
 
 - The turn-four phrasing. "Which residues moved" invites the agent to
