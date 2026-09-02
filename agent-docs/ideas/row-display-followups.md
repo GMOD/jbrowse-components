@@ -85,10 +85,3 @@ published-config change, not a fix. A jexl "Filter by..." on the multi-row
 painting (LinearBasicDisplay has it on the same data) and a per-feature "Color
 by..." menu are new UI. Wiggle's `useMouseState` in the body rather than
 `PointerLayer` is the same shape as MAF's pointer layer above and as low.
-
-**One idea, two names for "is there a legend key to show".** MAF's
-`hasLegendKey` and `LinearMultiRowFeatureDisplay`'s `hasLegendToShow` are the
-same getter — a fact about the active rendering, gating the menu row so a
-configured legend with nothing painted yet does not drop the toggle and its
-pin. The second display to need it wrote the second name; the 2026-09-01 review
-asked for one spelling and the fix landed before that reached it.
