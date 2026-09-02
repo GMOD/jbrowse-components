@@ -1,6 +1,7 @@
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
 import { describeMafStatus } from '../../util/mafStatus.ts'
+import { insertionForwardStart } from './findRowHover.ts'
 import { useTooltipStyles } from './tooltipStyles.ts'
 
 import type { MafStatus } from '../../types.ts'
@@ -114,7 +115,16 @@ function HoverContents({
   }
 
   if (hover.kind === 'insertion') {
-    const loc = locationStr(hover.chr, hover.pos, hover.strand)
+    // The lowest forward coordinate of the run, which is what the widget the
+    // click opens spans from — `hover.pos` is the first base in alignment
+    // order, and on a '-' row that is the run's far end.
+    const loc = locationStr(
+      hover.chr,
+      hover.pos === undefined
+        ? undefined
+        : insertionForwardStart(hover.pos, hover.length, hover.strand),
+      hover.strand,
+    )
     const seq = hover.sequence
     const label =
       seq && seq.length <= 20

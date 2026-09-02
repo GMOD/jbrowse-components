@@ -29,10 +29,18 @@ export interface InsertionHit {
   kind: 'insertion'
   /** number of inserted bases in this sample relative to the reference */
   length: number
-  /** the inserted bases (sample sequence within the ref-gap run) */
+  /**
+   * the inserted bases in alignment order, which is the reference's left-to-
+   * right direction — on a '-' row that is the reverse complement of the
+   * sample's own forward strand
+   */
   sequence: string
   chr?: string
-  /** 0-based forward-strand genomic coord of the first inserted base */
+  /**
+   * 0-based forward-strand genomic coord of the first inserted base in
+   * alignment order; on a '-' row that is the run's highest coordinate — see
+   * `insertionForwardStart`
+   */
   pos?: number
   strand?: number
 }
@@ -90,6 +98,18 @@ export function forwardPos(row: MafAlignedRow, baseOffset: number) {
       ? undefined
       : row.srcSize - 1 - row.start - baseOffset
     : row.start + baseOffset
+}
+
+// Lowest forward coordinate of an insertion's bases. `InsertionHit.pos` is the
+// first inserted base in ALIGNMENT order, and `forwardPos` mirrors a '-' row
+// through srcSize, so there that base is the span's highest coordinate and the
+// run extends leftward.
+export function insertionForwardStart(
+  pos: number,
+  length: number,
+  strand: number | undefined,
+) {
+  return strand === -1 ? pos - length + 1 : pos
 }
 
 /**

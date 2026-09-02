@@ -1,5 +1,6 @@
 import { openFeatureWidget } from '@jbrowse/core/util'
 
+import { insertionForwardStart } from './components/findRowHover.ts'
 import { resolveMafRowHover } from './components/mafHitTest.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
@@ -23,7 +24,8 @@ export function openInsertionWidgetOnClick(
     const hover = resolveMafRowHover(model, mouseX, mouseY)
     if (hover?.kind === 'insertion') {
       const { length, sequence, chr, pos, strand, sampleLabel } = hover
-      const start = pos ?? 0
+      const start =
+        pos === undefined ? 0 : insertionForwardStart(pos, length, strand)
       openFeatureWidget(model, {
         uniqueId: `maf-insertion-${chr}-${start}-${sampleLabel}`,
         type: 'insertion',
@@ -33,6 +35,14 @@ export function openInsertionWidgetOnClick(
         end: start + length,
         length,
         sequence,
+        // The MAF column order is the reference's, so a '-' row's bases read
+        // against its own forward strand backwards. Said out loud rather than
+        // silently reverse-complementing them: what the file holds is what the
+        // display drew.
+        sequenceOrientation:
+          strand === -1
+            ? 'alignment order (reverse complement of the sample forward strand)'
+            : 'sample forward strand',
         sample: sampleLabel,
         strand,
       })

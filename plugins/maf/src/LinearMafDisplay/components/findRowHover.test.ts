@@ -1,5 +1,5 @@
 import { emptyMafCoverage } from './coverageTestFixture.ts'
-import { findRowHoverAtBp } from './findRowHover.ts'
+import { findRowHoverAtBp, insertionForwardStart } from './findRowHover.ts'
 
 import type {
   MafBlock,
@@ -79,6 +79,41 @@ test('resolves an insertion (reference-gap columns) over the abutting base', () 
   expect(findRowHoverAtBp(r, at(101.9), 0, false, 0.1)).toMatchObject({
     kind: 'cell',
   })
+})
+
+test('a minus-row insertion runs leftward from the reported position', () => {
+  // Same 2bp insertion as above on a '-' row: the columns are still the
+  // reference's left-to-right, so the first inserted base has the HIGHEST
+  // forward coordinate and the run covers [897, 899).
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 102,
+      refSeqBytes: enc.encode('A--A'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('accA'),
+          chr: 'chrY',
+          start: 100,
+          strand: -1,
+          srcSize: 1000,
+        },
+      ],
+      empties: [],
+    },
+  ])
+  const hit = findRowHoverAtBp(r, at(101), 0, false, 0.1)
+  expect(hit).toMatchObject({
+    kind: 'insertion',
+    length: 2,
+    sequence: 'cc',
+    // srcSize - 1 - start - baseOffset = 1000 - 1 - 100 - 1
+    pos: 898,
+    strand: -1,
+  })
+  expect(insertionForwardStart(898, 2, -1)).toBe(897)
+  expect(insertionForwardStart(898, 2, 1)).toBe(898)
 })
 
 test('mirrors position through srcSize for reverse-strand rows', () => {
