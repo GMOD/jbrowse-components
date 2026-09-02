@@ -165,6 +165,25 @@ Both arms read every row of their own tier out of the same file. The `bytes/row`
 column is the one to read: the coarse copy returns alignments that are far
 smaller, and what separates them is the CIGAR.
 
+The coarse copy did not always carry a CIGAR at all: earlier it split an
+alignment into pieces wherever an indel was large enough to matter, and read
+whichever piece bounded the query region. Replacing that with one row per
+alignment plus a folded CIGAR (`cr:Z:`) added bytes back, on the same hosted
+human/mouse file:
+
+<!-- BEGIN GENERATED MEASUREMENT pif-coarse-fold-bytes -->
+
+| coarse tier of hs1 vs mm39, one perspective |   rows | uncompressed |        gzip | rows with cr | fold share of bytes |
+| ------------------------------------------- | -----: | -----------: | ----------: | -----------: | ------------------: |
+| split pieces, no CIGAR (before 2026-09-02)  | 75,738 |      7.24 MB |     2.01 MB |            0 |                  0% |
+| coarse CIGAR (cr:Z:)                        | 75,076 |      9.79 MB | **3.41 MB** |        5,047 |                 26% |
+
+<!-- END GENERATED MEASUREMENT pif-coarse-fold-bytes -->
+
+Under 7% of rows carry a fold at all, and most of a fold's bytes are indels
+between 5 and 10 kb — too small to change a whole-genome view, kept anyway
+because the format bounds every run to within `--coarse` of the true path.
+
 Back in the file-size table, the last column is what carrying both copies costs
 the file, and the `coarse/fine bytes` column beside it is what reading the
 coarse copy saves. With 1.5 kb alignment blocks it gives up indel detail for
