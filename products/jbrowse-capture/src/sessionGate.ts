@@ -98,7 +98,7 @@ export function readSessionSummary(
 // puppeteer serializes, rather than a copy of it that can drift.
 export function readSessionSummaryInPage(): SessionSummary | undefined {
   // census first: one element, no walk (see APP_CENSUS)
-  const marker = document.querySelector('[data-app-tracks]')
+  const marker = document.querySelector<HTMLElement>('[data-app-tracks]')
   if (marker) {
     try {
       return {
@@ -169,7 +169,7 @@ export async function waitForSession(
       (wantAssembly: string | null, wantTracks: string[]) => {
         // The census the app publishes on its ready marker (see APP_CENSUS):
         // on a build that has it, the whole gate is a read of one element.
-        const marker = document.querySelector('[data-app-tracks]')
+        const marker = document.querySelector<HTMLElement>('[data-app-tracks]')
         if (marker) {
           try {
             const openViews = Number(marker.dataset.appViews)

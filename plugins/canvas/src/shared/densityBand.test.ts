@@ -206,7 +206,7 @@ describe('the readout', () => {
 
   test('formats a mean to what a band can show', () => {
     expect(formatDensity(0.0341)).toBe('0.034')
-    expect(formatDensity(3.14)).toBe('3.1')
+    expect(formatDensity(Math.PI)).toBe('3.1')
     expect(formatDensity(119.6)).toBe('120')
   })
 })

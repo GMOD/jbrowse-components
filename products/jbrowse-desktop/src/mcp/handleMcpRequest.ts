@@ -60,6 +60,7 @@ export function captureConsole(logs: string[]) {
   const forward =
     (level: ConsoleLevel) =>
     (...args: unknown[]) => {
+      // eslint-disable-next-line no-console -- level is dynamic, not statically 'log'/'info'/'debug'
       console[level](...args)
       record(level, args)
     }
