@@ -24,8 +24,8 @@ gate, the freshness gate with its reload epoch, and both contract checks.
 `installGlobalFetchAutorun` is a declaration over that skeleton (its gates, its
 signature as the freshness key, `FetchMixin`'s rotation lent through the
 `rotation` option so `cancelFetch` reaches the fetch it installs), the same way
-the comparative installer is. There is no on-demand entry beside it: the one
-there was (`runGlobalFetchOnce`, for tests wanting one round trip) carried a
+the comparative installer is. There is no on-demand entry beside it: the
+single-shot one there used to be, for tests wanting one round trip, carried a
 copy of the family's gates that drifted from the installed ones on three of four
 terms, and a test that wants a fetch drives the installed autorun through the
 view and waits for its RPC (`plugins/variants/src/LDDisplay/testEnv.ts`'s

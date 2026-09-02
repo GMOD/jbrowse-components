@@ -131,6 +131,12 @@ def related_tests(targets):
         if base not in ('index', 'types'):
             names.add(base)
         names |= {n for n in EXPORTED.findall(open(path).read()) if len(n) > 3}
+    # An index/types target whose exports are all short names leaves nothing to
+    # grep for, and `\b()\b` matches every line of every file -- the whole
+    # repo's tests, which is the opposite of the narrowing above. No name is no
+    # relation.
+    if not names:
+        return []
     pattern = r'\b(' + '|'.join(sorted(names)) + r')\b'
     out = subprocess.run(
         ['grep', '-rlE', pattern, '--include=*.test.ts', '--include=*.test.tsx',

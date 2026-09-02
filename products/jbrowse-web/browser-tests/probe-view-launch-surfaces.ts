@@ -229,9 +229,9 @@ interface Census {
 async function census(page: Page): Promise<Census> {
   const dom = await page.evaluate(
     (chords, rows, pending) => ({
-      viewPhases: [...document.querySelectorAll('[data-view-phase]')].map(
-        e => e.dataset.viewPhase ?? '',
-      ),
+      viewPhases: [
+        ...document.querySelectorAll<HTMLElement>('[data-view-phase]'),
+      ].map(e => e.dataset.viewPhase ?? ''),
       chords: document.querySelectorAll(chords).length,
       rows: document.querySelectorAll(rows).length,
       pending: document.querySelectorAll(pending).length,
@@ -324,11 +324,11 @@ async function pageState(page: Page) {
     ).JBrowseSession
     return {
       appPhase:
-        document.querySelector('[data-app-phase]')?.dataset.appPhase ??
-        'absent',
-      viewPhases: [...document.querySelectorAll('[data-view-phase]')].map(
-        e => e.dataset.viewPhase ?? '',
-      ),
+        document.querySelector<HTMLElement>('[data-app-phase]')?.dataset
+          .appPhase ?? 'absent',
+      viewPhases: [
+        ...document.querySelectorAll<HTMLElement>('[data-view-phase]'),
+      ].map(e => e.dataset.viewPhase ?? ''),
       pending: [...document.querySelectorAll(pending)].map(e =>
         [...e.attributes]
           .filter(a => a.name.startsWith('data-'))
