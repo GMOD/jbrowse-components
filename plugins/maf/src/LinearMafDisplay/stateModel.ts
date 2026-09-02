@@ -83,7 +83,7 @@ import {
   sourceChromLegendItems,
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
-import { findRowSpan } from './components/findRowSpan.ts'
+import { findRowSpans } from './components/findRowSpan.ts'
 import { coverageInsertionAt, coverageSnpSnap } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
@@ -116,6 +116,7 @@ import type {
 } from './components/computeVisibleCodons.ts'
 import type { StrandConsensus } from './components/computeVisibleInversions.ts'
 import type { HoverBp } from './components/findRowHover.ts'
+import type { RowSpan } from './components/findRowSpan.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type {
   LinearMafDisplayConfig,
@@ -1565,49 +1566,81 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * Where `rowIndex` sits in its own genome across the reference bp range
-         * `[startBp, endBp)` — the locus a "open this species here" navigation
-         * targets. Undefined when the row has no aligned base in the range, when
-         * no fetched block covers it, or when the row's genome isn't loaded as
-         * an assembly (`Sample.assemblyName` unset), since there is then nowhere
-         * to navigate to.
+         * Where the rows `[startRow, endRow)` sit in their own genomes across
+         * the reference bp range `[startBp, endBp)` — the loci an "open this
+         * species here" navigation targets. A row contributes nothing when it
+         * has no aligned base in the range, when no fetched block covers it, or
+         * when its genome isn't loaded as an assembly (`Sample.assemblyName`
+         * unset), since there is then nowhere to navigate to.
+         *
+         * The whole row range at once, because that is what the callers ask
+         * for: the track menu builds an entry per row on every open, and a
+         * per-row answer re-walked the buffered region — thousands of blocks,
+         * each scanned with `rows.find` — once per species.
          */
-        rowNavigationTarget(
+        rowNavigationTargets(
           displayedRegionIndex: number,
           startBp: number,
           endBp: number,
-          rowIndex: number,
+          startRow: number,
+          endRow: number,
         ) {
           const { sources } = self
-          const source =
-            rowIndex >= 0 && rowIndex < sources.length
-              ? sources[rowIndex]!
-              : undefined
-          // The config's mapping first. Failing one, a sample whose id IS an
-          // assembly the session already holds — the pangenome MAFs are built
-          // from PanSN-named strains loaded under those same names. This is not
-          // the name resolution MAF_CROSS_VIEW_NAVIGATION.md rules out: nothing
-          // is looked up against a portal, and an assembly present under the
-          // exact id is the config author's own statement of which genome it is.
-          const assemblyName =
-            source?.assemblyName ??
-            (source && getSession(self).assemblyManager.has(source.name)
-              ? source.name
-              : undefined)
-          const region = assemblyName
+          const { assemblyManager } = getSession(self)
+          const assemblyNames = new Map<number, string>()
+          for (
+            let row = Math.max(0, startRow);
+            row < Math.min(endRow, sources.length);
+            row++
+          ) {
+            const source = sources[row]!
+            // The config's mapping first. Failing one, a sample whose id IS an
+            // assembly the session already holds — the pangenome MAFs are built
+            // from PanSN-named strains loaded under those same names. This is
+            // not the name resolution MAF_CROSS_VIEW_NAVIGATION.md rules out:
+            // nothing is looked up against a portal, and an assembly present
+            // under the exact id is the config author's own statement of which
+            // genome it is.
+            const assemblyName =
+              source.assemblyName ??
+              (assemblyManager.has(source.name) ? source.name : undefined)
+            if (assemblyName !== undefined) {
+              assemblyNames.set(row, assemblyName)
+            }
+          }
+          // A track whose samples name no genome — every multiz — never reaches
+          // the blocks at all.
+          const region = assemblyNames.size
             ? self.rpcDataMap.get(displayedRegionIndex)
             : undefined
-          const span = region
-            ? findRowSpan(region, startBp, endBp, rowIndex)
+          const spans = region
+            ? findRowSpans(
+                region,
+                startBp,
+                endBp,
+                new Set(assemblyNames.keys()),
+              )
             : undefined
-          return span && source && assemblyName
-            ? {
+          const targets: (RowSpan & {
+            assemblyName: string
+            assemblyConfigLocation?: UriLocation
+            sampleLabel: string
+            rowIndex: number
+          })[] = []
+          for (const [rowIndex, assemblyName] of assemblyNames) {
+            const span = spans?.get(rowIndex)
+            const source = sources[rowIndex]!
+            if (span) {
+              targets.push({
                 ...span,
                 assemblyName,
                 assemblyConfigLocation: source.assemblyConfigLocation,
                 sampleLabel: source.label ?? source.name,
-              }
-            : undefined
+                rowIndex,
+              })
+            }
+          }
+          return targets
         },
         /**
          * #method

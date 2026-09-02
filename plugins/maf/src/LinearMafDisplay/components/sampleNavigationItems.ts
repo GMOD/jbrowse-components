@@ -28,12 +28,13 @@ import type {
  */
 export type SampleNavigationModel = MafHitTestModel & {
   id: string
-  rowNavigationTarget: (
+  rowNavigationTargets: (
     displayedRegionIndex: number,
     startBp: number,
     endBp: number,
-    rowIndex: number,
-  ) => SampleNavigationTarget | undefined
+    startRow: number,
+    endRow: number,
+  ) => (SampleNavigationTarget & { rowIndex: number })[]
   view: { assemblyNames: string[] }
 }
 
@@ -118,21 +119,12 @@ function rowTargetsBetween(
     start: startBp,
     end: endBp,
   } = selectionRegion(left.pos, right.pos)
-  const targets: (SampleNavigationTarget & { rowIndex: number })[] = []
-  for (let row = startRow; row < endRow; row++) {
-    const target = model.rowNavigationTarget(
-      left.pos.index,
-      startBp,
-      endBp,
-      row,
-    )
-    // The reference's own row leads nowhere this view is not already: a
-    // pangenome MAF carries the reference as a sample, and with its assembly
-    // loaded under that name the row resolves like any other.
-    if (target && !model.view.assemblyNames.includes(target.assemblyName)) {
-      targets.push({ ...target, rowIndex: row })
-    }
-  }
+  // The reference's own row leads nowhere this view is not already: a pangenome
+  // MAF carries the reference as a sample, and with its assembly loaded under
+  // that name the row resolves like any other.
+  const targets = model
+    .rowNavigationTargets(left.pos.index, startBp, endBp, startRow, endRow)
+    .filter(t => !model.view.assemblyNames.includes(t.assemblyName))
   return {
     regionIndex: left.pos.index,
     refName,

@@ -11,11 +11,10 @@ import type { SampleNavigationModel } from './sampleNavigationItems.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // 1px = 1bp starting at bp 100, single region, 10px rows with no scroll.
+type Target = ReturnType<SampleNavigationModel['rowNavigationTargets']>[number]
+
 function model(
-  targets: Record<
-    number,
-    ReturnType<SampleNavigationModel['rowNavigationTarget']>
-  >,
+  targets: Record<number, Omit<Target, 'rowIndex'>>,
 ): SampleNavigationModel {
   return {
     id: 'display1',
@@ -41,8 +40,10 @@ function model(
     effectiveRowHeight: 10,
     rowProportion: 1,
     rowHoverInfo: () => undefined,
-    rowNavigationTarget: (_regionIndex, _startBp, _endBp, rowIndex) =>
-      targets[rowIndex],
+    rowNavigationTargets: (_regionIndex, _startBp, _endBp, startRow, endRow) =>
+      Object.entries(targets)
+        .map(([row, t]) => ({ ...t, rowIndex: Number(row) }))
+        .filter(t => t.rowIndex >= startRow && t.rowIndex < endRow),
   }
 }
 

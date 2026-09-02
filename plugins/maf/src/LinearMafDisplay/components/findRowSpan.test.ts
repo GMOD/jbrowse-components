@@ -1,5 +1,5 @@
 import { emptyMafCoverage } from './coverageTestFixture.ts'
-import { findRowSpan } from './findRowSpan.ts'
+import { findRowSpans } from './findRowSpan.ts'
 
 import type {
   MafBlock,
@@ -10,6 +10,16 @@ const enc = new TextEncoder()
 
 function region(blocks: MafBlock[]): MafRegionData {
   return { blocks, coverage: emptyMafCoverage() }
+}
+
+// One row's span out of the batch every caller asks for.
+function findRowSpan(
+  r: MafRegionData,
+  startBp: number,
+  endBp: number,
+  rowIndex: number,
+) {
+  return findRowSpans(r, startBp, endBp, new Set([rowIndex])).get(rowIndex)
 }
 
 const plusStrand = region([

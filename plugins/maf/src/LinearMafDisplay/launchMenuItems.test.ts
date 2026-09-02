@@ -30,7 +30,7 @@ function target(sampleLabel: string) {
   }
 }
 
-function model(asked: [number, number, number][] = []) {
+function model(asked: [number, number, number, number][] = []) {
   return {
     id: 'display1',
     samples: [{ id: 's0' }, { id: 's1' }, { id: 's2' }],
@@ -62,14 +62,17 @@ function model(asked: [number, number, number][] = []) {
         refIndex: 0,
       }),
     },
-    rowNavigationTarget: (
+    rowNavigationTargets: (
       regionIndex: number,
       startBp: number,
       endBp: number,
-      rowIndex: number,
+      startRow: number,
+      endRow: number,
     ) => {
-      asked.push([startBp, endBp, rowIndex])
-      return rowIndex === 0 ? undefined : target(`s${rowIndex}`)
+      asked.push([startBp, endBp, startRow, endRow])
+      return [1, 2]
+        .filter(rowIndex => rowIndex >= startRow && rowIndex < endRow)
+        .map(rowIndex => ({ ...target(`s${rowIndex}`), rowIndex }))
     },
   } as unknown as MafLaunchModel
 }
@@ -98,13 +101,11 @@ test('the drag menu’s three offers reach the track menu', () => {
 })
 
 test('it asks about the whole window and every row, not a selection', () => {
-  const asked: [number, number, number][] = []
+  const asked: [number, number, number, number][] = []
   launchSubMenu(model(asked))
-  expect(asked).toEqual([
-    [100, 180, 0],
-    [100, 180, 1],
-    [100, 180, 2],
-  ])
+  // One question for the whole row range, not one per row: the answer costs a
+  // walk over the buffered region and there is no reason to take it three times
+  expect(asked).toEqual([[100, 180, 0, 3]])
 })
 
 test('the subsequence entry opens the widget over that same window', () => {
