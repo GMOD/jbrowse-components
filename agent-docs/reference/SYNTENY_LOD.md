@@ -19,11 +19,20 @@ a one-letter prefix on the seqid (tabix column 1):
   colored `KIND_CIGAR_D`/`_I` wedge, which is the whole reason it exists. To
   split the alignments themselves, `rb break-paf` upstream of `make-pif` — that
   splits both tiers, keeping them 1:1.
-- **coarse** — `T<target>` / `Q<query>` (uppercase). No CIGAR/`cs`, every other
-  tag passed through. Each row is split wherever a CIGAR indel is `>= --coarse`
-  (default 10 kb) so each coarse piece's bounding box stays tight and its
-  straight ribbon is accurate. Emitted by default; suppress with `--no-coarse`
-  (which is now an error alongside an explicit `--coarse`).
+- **coarse** — `T<target>` / `Q<query>` (uppercase). One row per PAF row, the
+  columns and every non-alignment tag verbatim. The CIGAR is replaced by its
+  fold, a `cr:Z:` **coarse CIGAR** (`packages/cigar-utils/src/coarseCigar.ts`,
+  ADR-104): indels `>= --coarse` (default 10 kb) kept as `I`/`D`/`N`, everything
+  between them one run, written `<own>:<mate>M` when the two sides differ. A run
+  also closes before its folded skew passes `--coarse / 2`, so a straight line
+  across a run is within `--coarse` of the true path. A row with no kept indel
+  carries no tag. The renderer walks `cr` where it would walk `cg` — `CIGAR_RUN`,
+  a two-word packed op that `visitCigarRenderedSegments` and `clipSyntenyFeature`
+  understand — so a kept gap draws as the same colored wedge in both tiers and
+  nothing visible changes at the switch. Emitted by default; suppress with
+  `--no-coarse` (an error alongside an explicit `--coarse`). **Files built before
+  2026-09-02 have no `cr`**: their coarse rows were split into pieces at large
+  indels instead, and they still load and draw as plain ribbons.
 
 ## One alignment string per row
 
@@ -103,12 +112,10 @@ Never recompute divergence from the CIGAR: a `cg` (M-style) CIGAR folds
 mismatches into `M`, so a recompute reports ~0 divergence for a divergent
 alignment.
 
-Split pieces get the row's `num_matches`/`block_len` **apportioned by aligned
-length**, so each piece implies exactly the row's identity (agreeing with the
-`de:f:` beside it) and the pieces sum back to the row. `splitCigarOnLargeGaps`
-therefore does not count residue matches at all — counting `M` as a match was
-inflating them. A row that doesn't split keeps its PAF coordinate/count columns
-verbatim rather than the walk's reconstruction of them.
+A coarse row keeps the row's `num_matches`/`block_len` and coordinate columns
+verbatim — it is the same row — so nothing is apportioned or reconstructed. The
+old split tier had to apportion the counts across its pieces, and the detail
+panel showed those invented numbers on a coarse click.
 
 ## What the coarse tier does and does NOT solve
 
@@ -117,10 +124,10 @@ indel instances, tight bboxes). It is the right tool for the "few huge
 alignments with megabase CIGARs" regime (liftOver chains, distant-species
 synteny).
 
-It does **not** reduce alignment **count** — splitting on gaps only adds rows
-(coarse rows `>= 2` per PAF row, vs fine's `2`). So for the "many short
-alignments" regime (dense all-vs-all pangenomes, human-vs-mouse whole genome) it
-is only marginal. The bottleneck there is N.
+It does **not** reduce alignment **count** — the coarse tier has exactly the
+fine tier's rows. So for the "many short alignments" regime (dense all-vs-all
+pangenomes, human-vs-mouse whole genome) it is only marginal. The bottleneck
+there is N.
 
 ## Measured cost model (do not guess — this was profiled)
 
@@ -299,7 +306,7 @@ Two levers, neither built:
   (one-shot RPC in `afterAttach` → model state → render decisions).
 
 To reproduce: emit N PAF rows of a fixed block length with a CIGAR of
-proportional op count, run `createPIF` with `coarseSplitGap: 10000`, and sum
+proportional op count, run `createPIF` with a 10000 bp coarse gap, and sum
 line lengths partitioned on `T`/`Q` vs `t`/`q` in the first column.
 
 Related: `agent-docs/reference/REGION_TOO_LARGE.md`, `agent-docs/ARCHITECTURE.md`

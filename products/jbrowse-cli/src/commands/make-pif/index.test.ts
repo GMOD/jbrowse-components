@@ -33,7 +33,7 @@ test('make-pif', async () => {
   })
 })
 
-test('make-pif with --coarse emits T/Q coarse tier with CIGAR stripped', async () => {
+test('make-pif with --coarse emits one T/Q coarse row per alignment, CIGAR stripped', async () => {
   await runInTmpDir(async () => {
     const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
     await runCommand(['make-pif', simplePaf, '--out', fn, '--coarse', '50000'])
@@ -44,13 +44,12 @@ test('make-pif with --coarse emits T/Q coarse tier with CIGAR stripped', async (
     const coarseT = lines.filter(l => l.startsWith('T'))
     const coarseQ = lines.filter(l => l.startsWith('Q'))
     expect(coarseT.length).toBeGreaterThan(0)
-    expect(coarseQ.length).toBeGreaterThan(0)
-    // strip-only mode (no row had a >=50kb indel): coarse row count matches
-    // fine. Any split would only inflate coarse counts.
-    expect(coarseT.length).toBeGreaterThanOrEqual(fineT.length)
-    expect(coarseQ.length).toBeGreaterThanOrEqual(fineQ.length)
+    expect(coarseT.length).toBe(fineT.length)
+    expect(coarseQ.length).toBe(fineQ.length)
     for (const l of coarseT) {
       expect(l).not.toMatch(/cg:Z:/)
+      // no row has a 50kb indel, so there is no coarse CIGAR to write either
+      expect(l).not.toMatch(/cr:Z:/)
       expect(l).toMatch(/de:f:/)
     }
   })
@@ -327,6 +326,8 @@ test('coarse rows carry the non-alignment tags through', async () => {
       // the alignment strings are the whole point of the tier being coarse
       expect(l).not.toContain('cg:Z:')
       expect(l).not.toContain('cs:Z:')
+      // and a 100M row has no gap for a coarse CIGAR to keep
+      expect(l).not.toContain('cr:Z:')
       // the aligner's own de string, not a toFixed restatement of it
       expect(tagValue(l, 'de:f:')).toBe('0.0908')
       expect(l.split('\t').filter(f => f.startsWith('de:f:'))).toHaveLength(1)
@@ -334,34 +335,82 @@ test('coarse rows carry the non-alignment tags through', async () => {
   })
 })
 
-test('coarse pieces report the row identity, not an M-inflated one', async () => {
+test('a coarse row keeps its columns and carries the CIGAR fold as cr:Z:', async () => {
   await runInTmpDir(async () => {
-    // 40M + a 1kb deletion + 40M, no de:f: tag. Both pieces must imply the row's
-    // 50% identity; counting M as a match would claim 40/40 = 100% on each.
+    // 40M + a 1kb deletion + 40M. The row stays one row with the PAF columns
+    // verbatim; the deletion, at or above --coarse, survives into the coarse
+    // CIGAR, which the Q row carries from the query's side (D<->I on +).
     const lines = await pifLines(
       pafRow(['cg:Z:40M1000D40M'], { 3: '80', 8: '1080', 9: '40', 10: '80' }),
       ['--coarse', '500'],
     )
     const coarseT = lines.filter(l => l.startsWith('T'))
-    expect(coarseT).toHaveLength(2)
-    for (const l of coarseT) {
-      const [, , , , , , , , , numMatches, blockLen] = l.split('\t')
-      expect(+numMatches! / +blockLen!).toBeCloseTo(0.5, 6)
-      expect(+tagValue(l, 'de:f:')!).toBeCloseTo(0.5, 6)
-    }
-    // and the pieces sum back to the row's num_matches
-    expect(coarseT.reduce((a, l) => a + +l.split('\t')[9]!, 0)).toBe(40)
+    const coarseQ = lines.filter(l => l.startsWith('Q'))
+    expect(coarseT).toHaveLength(1)
+    expect(coarseQ).toHaveLength(1)
+    const [, , tstart, tend, , , , qstart, qend, numMatches, blockLen] =
+      coarseT[0]!.split('\t')
+    expect([tstart, tend, qstart, qend]).toEqual(['0', '1080', '0', '80'])
+    expect([numMatches, blockLen]).toEqual(['40', '80'])
+    expect(tagValue(coarseT[0]!, 'cr:Z:')).toBe('40M1000D40M')
+    expect(tagValue(coarseQ[0]!, 'cr:Z:')).toBe('40M1000I40M')
   })
 })
 
-test('an unsplit coarse row keeps the PAF coordinate columns verbatim', async () => {
+test('a minus-strand coarse row flips the fold for the Q row', async () => {
+  await runInTmpDir(async () => {
+    // small indels fold into an unequal run; on '-' the Q row reverses the op
+    // order as well as trading axes, the way flipCigar does for the fine tier
+    const lines = await pifLines(
+      pafRow(['cg:Z:40M5I35M1000D40M'], {
+        3: '120',
+        4: '-',
+        8: '1115',
+        9: '40',
+        10: '80',
+      }),
+      ['--coarse', '500'],
+    )
+    expect(
+      tagValue(
+        lines.find(l => l.startsWith('T'))!,
+        'cr:Z:',
+      ),
+    ).toBe('75:80M1000D40M')
+    expect(
+      tagValue(
+        lines.find(l => l.startsWith('Q'))!,
+        'cr:Z:',
+      ),
+    ).toBe('40M1000I80:75M')
+  })
+})
+
+test('a coarse row keeps the PAF coordinate columns verbatim and no fold when the CIGAR does not close on them', async () => {
   await runInTmpDir(async () => {
     // a CIGAR whose spans disagree with the coordinate columns: the fine tier
-    // draws the columns, so the coarse row must not drift onto the walk's answer
-    const lines = await pifLines(pafRow(['cg:Z:50M']))
+    // draws the columns, so the coarse row must not say anything the walk
+    // reconstructed from a CIGAR that never reached them
+    const lines = await pifLines(pafRow(['cg:Z:50M1000D40M']), [
+      '--coarse',
+      '500',
+    ])
     const coarseT = lines.find(l => l.startsWith('T'))!
     const [, , start, end] = coarseT.split('\t')
     expect([start, end]).toEqual(['0', '100'])
+    expect(coarseT).not.toContain('cr:Z:')
+  })
+})
+
+test('--coarse 0 writes coarse rows with no alignment string', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(pafRow(['cg:Z:40M1000D40M'], { 8: '1080' }), [
+      '--coarse',
+      '0',
+    ])
+    const coarseT = lines.find(l => l.startsWith('T'))!
+    expect(coarseT).not.toContain('cr:Z:')
+    expect(coarseT).not.toContain('cg:Z:')
   })
 })
 

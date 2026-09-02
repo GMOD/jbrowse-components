@@ -14,3 +14,9 @@ export const CIGAR_X = 8
 export const CIGAR_M_EQ_MASK = 0b10000001 // (1<<0)|(1<<7) = 129
 // Indel ops (I=1, D=2, N=3) — each consumes only one axis (a gap on the other)
 export const CIGAR_INDEL_MASK = 0b00001110 // (1<<1)|(1<<2)|(1<<3) = 14
+
+// Not a BAM op: a match run whose two axes advance by different lengths, the
+// coarse tier's fold of the small indels between two kept gaps. Packed as two
+// consecutive words, `(ownLen << 4) | CIGAR_RUN` then `(mateLen << 4) |
+// CIGAR_RUN`. Only parseCoarseCigar writes it.
+export const CIGAR_RUN = 9

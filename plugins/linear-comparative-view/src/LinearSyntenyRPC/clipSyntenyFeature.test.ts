@@ -3,6 +3,7 @@ import {
   CIGAR_H,
   CIGAR_I,
   CIGAR_M,
+  CIGAR_RUN,
   CIGAR_S,
   visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
@@ -507,5 +508,48 @@ describe('the window must be integer bp', () => {
     // the 0.6bp remnant of the D op packs as a zero-length op
     expect([...r.cigar].map(p => p >>> 4)).toContain(0)
     expect(r.end - r.start).toBeGreaterThan(walkedQuerySpan(r.cigar))
+  })
+})
+
+// A coarse-tier run (CIGAR_RUN pair) maps its mate in proportion: own 100 over
+// mate 50, so the window's 20bp slice of it keeps 10bp of mate, entered at
+// 80 * 0.5 = 40. The kept D and the trailing match trim as before.
+test('a CIGAR_RUN pair is trimmed with its mate length in proportion', () => {
+  const c = clipSyntenyFeature(
+    cig([100, CIGAR_RUN], [50, CIGAR_RUN], [50, CIGAR_D], [150, CIGAR_M]),
+    0,
+    0,
+    70,
+    1,
+    80,
+    170,
+  )
+  expect(c).toEqual({
+    start: 80,
+    end: 170,
+    mateStart: 40,
+    mateEnd: 70,
+    cigar: cig([20, CIGAR_RUN], [10, CIGAR_RUN], [50, CIGAR_D], [20, CIGAR_M]),
+  })
+})
+
+// The same run on the minus strand: the mate counts down from mateEnd, so the
+// slice enters the mate at 50 - 40 = 10 and leaves it at 0.
+test('a CIGAR_RUN pair on the minus strand walks the mate down', () => {
+  const c = clipSyntenyFeature(
+    cig([100, CIGAR_RUN], [50, CIGAR_RUN]),
+    0,
+    0,
+    50,
+    -1,
+    80,
+    100,
+  )
+  expect(c).toEqual({
+    start: 80,
+    end: 100,
+    mateStart: 0,
+    mateEnd: 10,
+    cigar: cig([20, CIGAR_RUN], [10, CIGAR_RUN]),
   })
 })

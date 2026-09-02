@@ -3,6 +3,7 @@ import {
   CIGAR_I,
   CIGAR_M,
   CIGAR_N,
+  CIGAR_RUN,
   CIGAR_X,
 } from './cigarConstants.ts'
 import { visitCigarRenderedSegments } from './cigarRenderedSegments.ts'
@@ -130,5 +131,46 @@ describe('visitCigarRenderedSegments', () => {
       expect(segs[i]!.bp1Start).toBeCloseTo(segs[i - 1]!.bp1End)
     }
     expect(segs.at(-1)!.bp1End).toBeCloseTo(300 + 2000 + 400 + 600 + 3)
+  })
+})
+
+describe('CIGAR_RUN word pairs', () => {
+  test('a run advances each axis by its own length and reports as M', () => {
+    const [seg, ...rest] = collect(
+      [pack(100, CIGAR_RUN), pack(50, CIGAR_RUN)],
+      1,
+      1,
+    )
+    expect(rest).toHaveLength(0)
+    expect(seg!.op).toBe(CIGAR_M)
+    expect(seg!.bp1End).toBe(100)
+    expect(seg!.bp2End).toBe(50)
+  })
+
+  test('a kept gap between two runs is still emitted as its own op', () => {
+    const segs = collect(
+      [
+        pack(100, CIGAR_RUN),
+        pack(50, CIGAR_RUN),
+        pack(30, CIGAR_D),
+        pack(100, CIGAR_RUN),
+        pack(50, CIGAR_RUN),
+      ],
+      1,
+      1,
+    )
+    expect(segs.map(s => s.op)).toEqual([CIGAR_M, CIGAR_D, CIGAR_M])
+    expect(segs[1]).toEqual({
+      op: CIGAR_D,
+      bp1Start: 100,
+      bp1End: 130,
+      bp2End: 50,
+    })
+    expect(segs[2]).toEqual({
+      op: CIGAR_M,
+      bp1Start: 130,
+      bp1End: 230,
+      bp2End: 100,
+    })
   })
 })

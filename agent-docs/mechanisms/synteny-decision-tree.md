@@ -45,8 +45,9 @@ adapter.
 - The **zoom** enters the key as `floor(log2(bpPerPx))`: enough for the worker's
   px-sized culls, and it fires once per doubling instead of once per wheel
   notch.
-- The **tier** is fine (per-row CIGAR, every tag) or coarse (no CIGAR, rows split
-  at large indels so each bounding box stays tight). `auto` resolves to one of
+- The **tier** is fine (per-row CIGAR, every tag) or coarse (the CIGAR folded to
+  a `cr:Z:` coarse CIGAR of runs and the indels `>= --coarse`; SYNTENY_LOD.md).
+  `auto` resolves to one of
   them **on the main thread, in a getter that feeds the key** — `auto` is a
   preference, and the two are separate types so the resolution cannot drift back
   into the adapter.

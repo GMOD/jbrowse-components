@@ -127,38 +127,60 @@ the `PairwiseIndexedPAFAdapter`.
 
 ### Level-of-detail coarse tier
 
-By default `make-pif` also writes a no-CIGAR "coarse" tier of the same
-alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view
-serves this tier automatically, drawing clean ribbons without parsing
-megabyte-scale CIGAR strings; zooming in switches back to the fine `t`/`q` tier.
-The "Level of detail" control defaults to `auto`, and `fine`/`coarse` pin a
-tier. It is a submenu of the settings menu on both comparative views, and of the
-track menu on the LGV synteny track.
+By default `make-pif` also writes a "coarse" tier of the same alignments (rows
+prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view serves this tier
+automatically, drawing the same ribbons without parsing megabyte-scale CIGAR
+strings; zooming in switches back to the fine `t`/`q` tier. The "Level of
+detail" control defaults to `auto`, and `fine`/`coarse` pin a tier. It is a
+submenu of the settings menu on both comparative views, and of the track menu on
+the LGV synteny track.
 
-A coarse row has no CIGAR, so it is drawn as a straight ribbon between its
-endpoints. To keep that honest, a row is split wherever its CIGAR contains an
-indel of at least `--coarse` bp, so no coarse ribbon spans a large gap. A gap at
-either END of the row is trimmed the same way, which leaves one coarse row
-tighter than the input's own coordinate columns.
+A coarse row is the same alignment as its fine row: one row, with the PAF
+columns and every non-alignment tag verbatim. What changes is the alignment
+string. The CIGAR is replaced by a **coarse CIGAR** in a `cr:Z:` tag, the CIGAR
+folded at the `--coarse` length:
 
-Each piece reports the row's identity — `num_matches` is apportioned by aligned
-length, so every piece implies the same identity as the row and as the `de:f:`
-written beside it. The pieces' `num_matches` do not quite sum back to the row's
-when its `block_len` counts the split gaps, which PAF's does.
+- every insertion or deletion at least `--coarse` bp long is kept as its own
+  `I`/`D`/`N` op, exactly as in the CIGAR
+- everything between two kept indels collapses to one match run. A run whose two
+  sides consumed different lengths, because it absorbed small indels, is written
+  `<own>:<mate>M` with the row's own side first; a square run stays `<n>M`
+- a run is also closed before the small indels it absorbs would skew it by more
+  than half of `--coarse`, so the straight line between a run's two corners is
+  never more than `--coarse` bp off the alignment's real path
 
-The split is used only when the CIGAR walk lands exactly on the row's own far
-corner. A CIGAR that disagrees with its coordinate columns — clipping ops, a
-hand-written `cg`, a `cs` whose spans don't add up — leaves the coarse row on
-the columns verbatim, since the columns are what the fine tier draws.
+```
+cg:Z:31198M4800I18803M   fine row
+cr:Z:31198M4800I18803M   coarse T row built with --coarse 1000: the insertion is kept
+cr:Z:31198M4800D18803M   the same alignment's coarse Q row (I<->D from the query's side)
+```
+
+Built with the default `--coarse 10000` the insertion folds into the run, and
+since the row then has no kept indel the tag is omitted altogether: the
+coordinate columns already say everything a single run would. The Q row's coarse
+CIGAR is re-oriented the way the fine tier's `cg` is, `I`/`D` swapped and the
+run lengths traded, and reversed on the minus strand.
+
+The renderer walks a coarse CIGAR exactly as it walks a CIGAR at that zoom: each
+run is one ribbon segment between its corners and each kept gap is a colored
+indel wedge. An insertion or deletion large enough to see at whole-genome zoom
+therefore looks the same in both tiers, and the tier switch changes nothing on
+screen. The row's coordinates, `num_matches` and `block_len` are the fine row's,
+so the feature detail panel shows the same alignment either way.
+
+The tag is also omitted when the row has no CIGAR, and when the CIGAR does not
+close on the row's own coordinate columns (clipping ops, a hand-written `cg`, a
+`cs` whose spans don't add up): the columns are what the fine tier draws, so the
+coarse row must not say anything the walk reconstructed.
 
 ```bash
-# coarse tier is on by default, split at indels >= 10kb
+# coarse tier is on by default, keeping indels >= 10kb
 jbrowse make-pif input.paf
 
-# tune the gap (bp) at which a coarse row is split to keep its bbox tight
-jbrowse make-pif input.paf --coarse 50000
+# keep smaller indels in the coarse tier
+jbrowse make-pif input.paf --coarse 1000
 
-# one coarse row per alignment, never split
+# coarse rows with no alignment string at all
 jbrowse make-pif input.paf --coarse 0
 
 # disable the coarse tier (fine t/q tier only)
@@ -168,7 +190,11 @@ jbrowse make-pif input.paf --no-coarse
 Keep
 [`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
 at or above the `--coarse` gap you built with. Below it, the coarse tier is
-served at zooms where the indels it was allowed to span are wide enough to see.
+served at zooms where the indels it folded away are wide enough to see.
+
+PIF files built before the coarse CIGAR existed still load. Their coarse rows
+were instead split into pieces at large indels and carry no alignment string, so
+they draw as plain ribbons; rebuild with `make-pif` to get the wedges.
 
 ### Optional preprocessing with rustybam
 
@@ -191,11 +217,10 @@ sufficient. The [SafFire](https://github.com/mrvollger/SafFire) viewer documents
 the rationale for each rustybam step.
 
 `rb break-paf --max-size N` splits the input alignments themselves at large
-indels, so **both** tiers inherit the same pieces. `--coarse` splits only the
-coarse tier: the fine tier keeps whole alignments and draws each large indel as
-a colored wedge. Break the PAF upstream to see those indels as genuine breaks
-between separate alignments, with feature identity staying the same across a
-tier switch.
+indels, so **both** tiers inherit the same pieces. `--coarse` keeps a large
+indel inside one row in both tiers, as a CIGAR op in the fine tier and a coarse
+CIGAR op in the coarse tier, drawn as a colored wedge either way. Break the PAF
+upstream to see those indels as genuine breaks between separate alignments.
 
 ## JBrowse configuration
 

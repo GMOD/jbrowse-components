@@ -4,6 +4,7 @@ import {
   CIGAR_I,
   CIGAR_M,
   CIGAR_N,
+  CIGAR_RUN,
   CIGAR_X,
 } from './cigarConstants.ts'
 
@@ -21,7 +22,9 @@ const MIN_INDEL_PX = 1
  * Walks pre-parsed (packed int) CIGAR ops in bp-space and fires a callback
  * for each rendered segment. Small indels (width < MIN_INDEL_PX) are merged
  * into surrounding context; tiny M segments (both accumulators advance <
- * bpPerPx) are accumulated before emitting.
+ * bpPerPx) are accumulated before emitting. A `CIGAR_RUN` word pair (the
+ * coarse tier's fold of a run with its small indels) advances each axis by its
+ * own length and is reported as CIGAR_M.
  *
  * Used by synteny and dotplot GPU renderers so both stay in sync.
  * Re-exported via @jbrowse/synteny-core for consistent import paths.
@@ -61,7 +64,10 @@ export function visitCigarRenderedSegments(
       segBp2Start = bp2
     }
 
-    if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+    if (op === CIGAR_RUN) {
+      bp1 += len * rev1
+      bp2 += (cigar[++j]! >>> 4) * rev2
+    } else if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
       bp1 += len * rev1
       bp2 += len * rev2
     } else if (op === CIGAR_D || op === CIGAR_N) {
@@ -88,7 +94,12 @@ export function visitCigarRenderedSegments(
     } else {
       const span1 = Math.abs(bp1 - segBp1Start)
       const span2 = Math.abs(bp2 - segBp2Start)
-      const resolvedOp = span1 > bpPerPx0 || span2 > bpPerPx1 ? op : CIGAR_M
+      const resolvedOp =
+        span1 > bpPerPx0 || span2 > bpPerPx1
+          ? op === CIGAR_RUN
+            ? CIGAR_M
+            : op
+          : CIGAR_M
       continuingFlag = false
       callback(resolvedOp, segBp1Start, bp1, segBp2Start, bp2)
     }

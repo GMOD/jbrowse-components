@@ -8,7 +8,7 @@ import {
 } from '../shared/validators.ts'
 import {
   DEFAULT_BGZIP_THREADS,
-  DEFAULT_COARSE_SPLIT_GAP,
+  DEFAULT_COARSE_GAP,
   createPIF,
   getOutputFilename,
   missingPairs,
@@ -33,12 +33,12 @@ export async function run(args?: string[]) {
     coarse: {
       type: 'string',
       description:
-        'Minimum insertion/deletion length (bp) at which a coarse-tier row is split into multiple pieces so each row stays tight — 0 emits an unsplit coarse tier. Defaults to 10000. The no-CIGAR coarse tier (prefix T/Q) is emitted alongside the per-row CIGAR fine tier by default so whole-genome synteny views can auto-switch to it; pass --no-coarse to omit it.',
+        'Minimum insertion/deletion length (bp) the coarse tier keeps. A coarse row replaces its CIGAR with a coarse CIGAR (cr:Z:) of the indels at least this long and the runs between them; 0 writes coarse rows with no alignment string. Defaults to 10000. The coarse tier (prefix T/Q) is emitted alongside the per-row CIGAR fine tier by default so whole-genome synteny views can auto-switch to it; pass --no-coarse to omit it.',
     },
     'no-coarse': {
       type: 'boolean',
       description:
-        'Do not emit the coarse no-CIGAR tier; write only the per-row CIGAR fine tier.',
+        'Do not emit the coarse tier; write only the per-row CIGAR fine tier.',
     },
     threads: {
       type: 'string',
@@ -64,7 +64,10 @@ export async function run(args?: string[]) {
     '# use a CSI index for assemblies with chromosomes longer than ~512 Mb',
     '$ jbrowse make-pif input.paf --csi',
     '',
-    '# emit an unsplit coarse tier (alongside the fine tier)',
+    '# keep only indels of 50kb or more in the coarse tier',
+    '$ jbrowse make-pif input.paf --coarse 50000',
+    '',
+    '# emit a coarse tier with no alignment strings at all',
     '$ jbrowse make-pif input.paf --coarse 0',
     '',
     '# emit only the per-row CIGAR fine tier, skipping the coarse tier',
@@ -108,14 +111,14 @@ export async function run(args?: string[]) {
   if (noCoarse && coarse !== undefined) {
     throw new Error('--coarse and --no-coarse are mutually exclusive')
   }
-  const coarseSplitGap = noCoarse
+  const coarseGap = noCoarse
     ? undefined
     : coarse === undefined
-      ? DEFAULT_COARSE_SPLIT_GAP
+      ? DEFAULT_COARSE_GAP
       : +coarse
   if (
-    coarseSplitGap !== undefined &&
-    (!Number.isFinite(coarseSplitGap) || coarseSplitGap < 0)
+    coarseGap !== undefined &&
+    (!Number.isFinite(coarseGap) || coarseGap < 0)
   ) {
     throw new Error(`Invalid --coarse value: ${coarse}`)
   }
@@ -129,7 +132,7 @@ export async function run(args?: string[]) {
   const stdin = child.stdin
   // end stdin even if createPIF throws, otherwise the spawned sort/index child
   // is left running with an open stdin
-  const stats = await createPIF(file, stdin, coarseSplitGap).finally(() => {
+  const stats = await createPIF(file, stdin, coarseGap).finally(() => {
     stdin.end()
   })
   const { samples, rows, skipped } = stats

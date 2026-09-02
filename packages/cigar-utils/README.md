@@ -32,6 +32,28 @@ a caller may not have the assembly in hand; pass it when you do.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/buildReadVsRefFeatures.ts)
 
+### coarsenCigar
+
+Fold a CIGAR into a coarse CIGAR. Every indel shorter than `minGap` is absorbed
+into the match run around it, and a run whose two axes advanced by different
+amounts is written `<own>:<mate>M`; a square run stays `<n>M`. D/N/I at least
+`minGap` long keep their letter and length. `=`/`X` count as M.
+`ownLen`/`mateLen` are the totals each axis consumed, for the caller to check
+against the row's coordinate columns.
+
+A run is also closed before a folded indel would push its running skew (own
+minus mate) past `minGap / 2`, so the straight line between a run's corners is
+never more than `minGap` off the alignment's own path inside it. That is what
+lets a reader interpolate within a run, and it costs a new run only where the
+two genomes' small indels are lopsided.
+
+```js
+// type signature
+(cigar: string, minGap: number) => CoarsenedCigar
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
+
 ### featurizeSAEntries
 
 featurizeSA over pre-split entries (see splitSA). Lets a caller filter the
@@ -44,6 +66,18 @@ segments — without paying to split and rejoin the tag around the filter.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
+
+### flipCoarseCigar
+
+The coarse CIGAR seen from the other axis on the minus strand: swapped as
+`swapCoarseCigar` does, and in reverse op order. The twin of `flipCigar`.
+
+```js
+// type signature
+(s: string) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
 
 ### getLength
 
@@ -152,6 +186,19 @@ single typed-array code path.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
 
+### parseCoarseCigar
+
+Parse a coarse CIGAR into the packed `(len << 4) | op` form
+`visitCigarRenderedSegments` walks. A square run packs as one `CIGAR_M` word; an
+unequal run as a `CIGAR_RUN` word pair, own axis first.
+
+```js
+// type signature
+(s: string) => Uint32Array<ArrayBuffer>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
+
 ### splitSA
 
 The `;`-separated alignment records of an SA tag, empties dropped — the input
@@ -163,5 +210,18 @@ The `;`-separated alignment records of an SA tag, empties dropped — the input
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
+
+### swapCoarseCigar
+
+The coarse CIGAR seen from the other axis on the plus strand: the two lengths of
+every run trade places and D<->I swap, op order untouched. The twin of
+`swapIndelCigar`.
+
+```js
+// type signature
+(s: string) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
 
 <!-- API_DOCS_END -->

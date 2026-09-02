@@ -114,3 +114,25 @@ test('a forward-strand cg is unchanged: it starts at the (p11, p21) corner', () 
   expect(span(...gap.x)).toEqual(GAP_T)
   expect(gap.y).toEqual([100, 100])
 })
+
+// The coarse tier's fold of the same alignment: `100:100M5000D900M` packs its
+// leading run as a CIGAR_RUN pair (own length, then mate length) and the gap
+// must land where the fine CIGAR put it.
+test('a coarse-tier run pair places the kept gap where the CIGAR did', () => {
+  const RUN = (len: number) => (len << 4) | 9
+  const segs = segments(
+    fakeDotplotRpcData({
+      p11: new Float64Array([6000]),
+      p12: new Float64Array([0]),
+      p21: new Float64Array([0]),
+      p22: new Float64Array([1000]),
+      strands: new Int8Array([-1]),
+      alignmentLengths: new Uint32Array([6000]),
+      cigarData: new Uint32Array([RUN(100), RUN(100), D(5000), M(900)]),
+      cigarOffsets: new Uint32Array([0, 4]),
+    }),
+  )
+  const gap = segs.find(s => s.op === 2)!
+  expect(span(...gap.x)).toEqual(GAP_T)
+  expect(gap.y).toEqual([GAP_Q, GAP_Q])
+})

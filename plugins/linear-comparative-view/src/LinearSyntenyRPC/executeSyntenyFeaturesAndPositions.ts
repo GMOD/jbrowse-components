@@ -1,4 +1,4 @@
-import { parseCigar2Typed } from '@jbrowse/cigar-utils'
+import { parseCigar2Typed, parseCoarseCigar } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   createProgressReporter,
@@ -421,6 +421,18 @@ export async function executeSyntenyFeaturesAndPositions({
     if (cigarStr) {
       hasCigar = true
     }
+    // The coarse tier's fold of the CIGAR, walked in the CIGAR's place: runs
+    // that each advance the two axes by their own lengths, and the gaps
+    // make-pif kept. Not a CIGAR for `hasCigar`, which gates the walks that
+    // need per-base ops.
+    const coarseTag = cigarStr ? undefined : f.get('coarseCigar')
+    const coarseStr = typeof coarseTag === 'string' ? coarseTag : undefined
+    const parsedAlignment = () =>
+      cigarStr
+        ? parseCigar2Typed(cigarStr)
+        : coarseStr
+          ? parseCoarseCigar(coarseStr)
+          : undefined
 
     // A single alignment block can be a whole liftOver chain (tens of Mb). Its
     // base ribbon is one linear trapezoid across that span, which cannot follow
@@ -510,8 +522,7 @@ export async function executeSyntenyFeaturesAndPositions({
       // keeps no op, or when snapping leaves no whole bp) the proportional
       // endpoints stand and the block draws as base ribbon only, which is what
       // an untrimmed no-CIGAR block does too.
-      const cig =
-        clippedCigar ?? (cigarStr ? parseCigar2Typed(cigarStr) : undefined)
+      const cig = clippedCigar ?? parsedAlignment()
       const re =
         cig && qHi > qLo
           ? clipSyntenyFeature(cig, fStart, mStart, mEnd, strand, qLo, qHi)
@@ -643,12 +654,13 @@ export async function executeSyntenyFeaturesAndPositions({
     const widthPx0 = topMaxX - topMinX
     const widthPx1 = botMaxX - botMinX
     const willNeedCigar =
-      !!cigarStr &&
+      (!!cigarStr || !!coarseStr) &&
       drawCIGAR &&
       Math.max(widthPx0, widthPx1) >= MIN_CIGAR_PX_WIDTH
     parsedCigars.push(
       clippedCigar ??
-        (willNeedCigar ? parseCigar2Typed(cigarStr) : EMPTY_CIGAR),
+        (willNeedCigar ? parsedAlignment() : undefined) ??
+        EMPTY_CIGAR,
     )
 
     validCount++

@@ -29,11 +29,11 @@ export interface ResolvedSpan {
  * that is padded by a window size it is fine), but a caller that is going to
  * NAVIGATE a panel to the result and show it flush against its neighbour would
  * be presenting a straight-line guess as a correspondence. A PIF's coarse tier
- * is CIGAR-less by construction (`jbrowse make-pif` drops it, splitting rows
- * only at indels >= 10kb), and the skew inside one coarse row is NOT bounded by
- * that threshold — many smaller indels accumulate without ever triggering a
- * split. So there is no error bound to fall back on, and the honest answer is
- * no answer.
+ * is CIGAR-less by construction: `jbrowse make-pif` folds the CIGAR to a
+ * `cr:Z:` coarse CIGAR, whose runs DO bound the skew inside them (to the
+ * `--coarse` gap), but nothing here walks that yet, and a straight line across
+ * the whole row has no bound at all. So there is no error bound to fall back
+ * on, and the honest answer is no answer.
  *
  * `toMate` picks the direction: true maps a window on the feature (target) axis
  * onto the mate (query) axis, false maps the mate axis onto the feature axis.

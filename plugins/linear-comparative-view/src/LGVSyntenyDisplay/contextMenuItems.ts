@@ -241,9 +241,9 @@ function openMateItem(
  * navigates a neighbouring panel and parks it flush against this one, which
  * presents a straight-line guess as a correspondence with nothing on screen to
  * say so. A minimap2 PAF without `-c`, MashMap, MCScan and a PIF's coarse tier
- * all carry no CIGAR, and on the coarse tier the skew is not even bounded by its
- * 10 kb split threshold — smaller indels accumulate without triggering a split.
- * The band's own right-click menu gates on the same thing via
+ * all carry no CIGAR. The coarse tier's `cr:Z:` fold does bound the skew inside
+ * each of its runs, but nothing walks it for this yet, so the tier stays gated
+ * with the rest. The band's own right-click menu gates on the same thing via
  * `featureData.hasCigar`.
  */
 function movePanelItem(

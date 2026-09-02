@@ -216,11 +216,11 @@ limits worth recording:
   fine-tier row; zooming into a 10 kb window *inside* it still fetches+parses the
   entire CIGAR because the row's `[start,end]` overlaps. The RPC clips oversized
   blocks (`executeSyntenyFeaturesAndPositions.ts`) but only *after* fetch+parse.
-  `make-pif` already splits the **coarse** tier at large gaps
-  (`splitCigarOnLargeGaps`, `pif-generator.ts`) yet leaves **fine** rows whole.
-  Fix (mostly a `make-pif` + adapter change, no new format): extend gap-splitting
-  to the fine tier, or store CIGAR in an offset-addressed sidecar so a windowed
-  query fetches only the needed slice. This is exactly what IMPG's CIGAR-delta +
+  `make-pif` already folds the **coarse** tier's CIGAR to a few ops
+  (`coarsenCigar`, the `cr:Z:` tag) yet leaves **fine** rows whole. Fix (mostly a
+  `make-pif` + adapter change, no new format): split fine rows at large gaps, or
+  store CIGAR in an offset-addressed sidecar so a windowed query fetches only the
+  needed slice. This is exactly what IMPG's CIGAR-delta +
   range projection avoids.
 - **Transitive closure is round-trip-bound.** A live JS `query_transitive_dfs`
   (see the PanSN+IMPG note below) over PIF is N *sequential, dependent* tabix
@@ -378,10 +378,10 @@ does not. Read "Implemented so far" before extending.
 
 - **Coarse LOD tier in `make-pif`** (`products/jbrowse-cli/src/commands/make-pif/`).
   `make-pif` emits the uppercase `T`/`Q` coarse tier **by default** (`--no-coarse`
-  to opt out, `--coarse <bp>` to tune the split gap). A coarse row strips the
-  CIGAR and, wherever a single fine row has an insertion/deletion `>=` the split
-  gap (`DEFAULT_COARSE_SPLIT_GAP = 10kb`), splits that row into pieces so each
-  coarse bbox stays tight (`splitCigarOnLargeGaps` in `cigar-utils.ts`).
+  to opt out, `--coarse <bp>` to set the gap). A coarse row replaces the CIGAR
+  with its fold, a `cr:Z:` coarse CIGAR keeping only the indels `>=` the gap
+  (`DEFAULT_COARSE_GAP = 10kb`) and one run between each pair of them
+  (`coarsenCigar` in `@jbrowse/cigar-utils`; ADR-104).
 - **`lodMode` (`auto | fine | coarse`)** plumbed model → RFC → RPC → adapter
   (`BaseOptions.lodMode`; `LinearSyntenyView`/`DotplotView` models; consumed in
   `PairwiseIndexedPAFAdapter.pickPifPrefix`). `auto` switches to coarse at

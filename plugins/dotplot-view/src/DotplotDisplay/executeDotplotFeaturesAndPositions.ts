@@ -1,4 +1,4 @@
-import { parseCigar2Typed } from '@jbrowse/cigar-utils'
+import { parseCigar2Typed, parseCoarseCigar } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -299,16 +299,23 @@ export async function executeDotplotFeaturesAndPositions({
     const cigarStr = trim.trimmed
       ? undefined
       : (f.get('CIGAR') as string | undefined)
+    // the coarse tier's fold of the CIGAR walks in its place: runs that advance
+    // the two axes by their own lengths, and the gaps make-pif kept
+    const coarseTag =
+      trim.trimmed || cigarStr ? undefined : f.get('coarseCigar')
+    const coarseStr = typeof coarseTag === 'string' ? coarseTag : undefined
+    const worthParsing = cigarWorthParsing(
+      c12 - c11,
+      c22 - c21,
+      hViewSnap.bpPerPx,
+      vViewSnap.bpPerPx,
+    )
     const cigar =
-      cigarStr &&
-      cigarWorthParsing(
-        c12 - c11,
-        c22 - c21,
-        hViewSnap.bpPerPx,
-        vViewSnap.bpPerPx,
-      )
+      cigarStr && worthParsing
         ? parseCigar2Typed(cigarStr)
-        : EMPTY_CIGAR
+        : coarseStr && worthParsing
+          ? parseCoarseCigar(coarseStr)
+          : EMPTY_CIGAR
     cigarChunks.push(cigar)
     cigarTotal += cigar.length
     n++

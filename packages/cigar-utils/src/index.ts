@@ -8,9 +8,17 @@ export {
   CIGAR_M_EQ_MASK,
   CIGAR_N,
   CIGAR_P,
+  CIGAR_RUN,
   CIGAR_S,
   CIGAR_X,
 } from './cigarConstants.ts'
+export {
+  coarsenCigar,
+  flipCoarseCigar,
+  parseCoarseCigar,
+  swapCoarseCigar,
+} from './coarseCigar.ts'
+export type { CoarsenedCigar } from './coarseCigar.ts'
 export {
   CHAR_FROM_CODE,
   SEQRET,

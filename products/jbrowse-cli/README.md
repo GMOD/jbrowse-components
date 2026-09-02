@@ -646,16 +646,18 @@ Options:
 
       --csi                  Create a CSI index for the PIF file instead of TBI
 
-      --coarse               Minimum insertion/deletion length (bp) at which a
-                             coarse-tier row is split into multiple pieces so
-                             each row stays tight — 0 emits an unsplit coarse
-                             tier. Defaults to 10000. The no-CIGAR coarse tier
-                             (prefix T/Q) is emitted alongside the per-row CIGAR
-                             fine tier by default so whole-genome synteny views
-                             can auto-switch to it; pass --no-coarse to omit it.
+      --coarse               Minimum insertion/deletion length (bp) the coarse
+                             tier keeps. A coarse row replaces its CIGAR with a
+                             coarse CIGAR (cr:Z:) of the indels at least this
+                             long and the runs between them; 0 writes coarse
+                             rows with no alignment string. Defaults to 10000.
+                             The coarse tier (prefix T/Q) is emitted alongside
+                             the per-row CIGAR fine tier by default so
+                             whole-genome synteny views can auto-switch to it;
+                             pass --no-coarse to omit it.
 
-      --no-coarse            Do not emit the coarse no-CIGAR tier; write only
-                             the per-row CIGAR fine tier.
+      --no-coarse            Do not emit the coarse tier; write only the per-row
+                             CIGAR fine tier.
 
       --threads              Compression threads for bgzip. Defaults to 4. Raise
                              it on a machine with cores to spare, or set 1 to
@@ -679,7 +681,10 @@ $ jbrowse make-pif input.paf --out output.pif.gz
 # use a CSI index for assemblies with chromosomes longer than ~512 Mb
 $ jbrowse make-pif input.paf --csi
 
-# emit an unsplit coarse tier (alongside the fine tier)
+# keep only indels of 50kb or more in the coarse tier
+$ jbrowse make-pif input.paf --coarse 50000
+
+# emit a coarse tier with no alignment strings at all
 $ jbrowse make-pif input.paf --coarse 0
 
 # emit only the per-row CIGAR fine tier, skipping the coarse tier

@@ -1001,8 +1001,8 @@ export function resolveCoarseTier({
  * of the tab-offset parse (`benches/pafLineParse.bench.ts`), which makes it the
  * larger of the two — bigger than the parse it follows.
  *
- * `cg`/`cs` are excluded because the caller has already turned them into
- * `CIGAR`/`cs`, and `id` (odgi untangle's identity tag) because `pafIdentity`
+ * `cg`/`cs`/`cr` are excluded because the caller has already turned them into
+ * `CIGAR`/`cs`/`coarseCigar`, and `id` (odgi untangle's identity tag) because `pafIdentity`
  * reads it and as feature data it would become the feature's `id`, which the
  * synteny tooltip falls back to for a name — a row tagged `id:f:0.98` labelled
  * itself "0.98".
@@ -1018,6 +1018,7 @@ export function copyPafTags(
     if (
       key !== 'cg' &&
       key !== 'cs' &&
+      key !== 'cr' &&
       key !== 'id' &&
       !Object.hasOwn(data, key)
     ) {
@@ -1045,9 +1046,9 @@ export function makeIndexedSyntenyFeature({
   mate: { start: number; end: number; refName: string; assemblyName: string }
 }) {
   const { extra, strand, indexedStart, indexedEnd } = line
-  const { numMatches = 0, blockLen = 1, cg, cs } = extra
-  // a PIF row's tags are untyped strings/numbers, so both tags are narrowed
-  // rather than assumed to be strings
+  const { numMatches = 0, blockLen = 1, cg, cs, cr } = extra
+  // a PIF row's tags are untyped strings/numbers, so the alignment tags are
+  // narrowed rather than assumed to be strings
   const CIGAR =
     typeof cg === 'string'
       ? cg
@@ -1064,6 +1065,8 @@ export function makeIndexedSyntenyFeature({
     strand,
     CIGAR,
     cs: typeof cs === 'string' ? cs : undefined,
+    // the coarse tier's fold of the CIGAR: runs and the gaps make-pif kept
+    coarseCigar: typeof cr === 'string' ? cr : undefined,
     syntenyId: fileOffset,
     identity: pafIdentity(extra),
     numMatches,

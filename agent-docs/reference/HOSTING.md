@@ -120,7 +120,7 @@ no download. Audited 2026-08-02:
 | `demos/hpylori/26695_vs_chc155.pif.gz` | no |
 
 - **Every file above predates the coarse CIGAR.** Since 2026-09-02 `make-pif`
-  writes a `cr:Z:` tag on a coarse row (ADR-103) so the indels it keeps draw as
+  writes a `cr:Z:` tag on a coarse row (ADR-104) so the indels it keeps draw as
   wedges; these files' coarse rows are the older split pieces with no alignment
   string and draw as plain ribbons. A rebuild is what adds it.
 - **The coarse tier can never engage for a bacterial genome.** It serves only

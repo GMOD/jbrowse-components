@@ -38,9 +38,10 @@ const pifInsPath =
   require.resolve('../../../../test_data/volvox/volvox_ins.pif.gz')
 const pifDelPath =
   require.resolve('../../../../test_data/volvox/volvox_del.pif.gz')
-// volvox_ins_coarse.pif.gz is `jbrowse make-pif` on volvox_ins.paf with the
-// default coarse tier, so it carries the uppercase T/Q no-CIGAR rows alongside
-// the fine tier.
+// volvox_ins_coarse.pif.gz is `jbrowse make-pif --coarse 1000` on
+// volvox_ins.paf, so it carries the uppercase T/Q coarse rows alongside the fine
+// tier, and its one alignment's 4.8kb insertion survives into their coarse
+// CIGAR (the default 10kb gap would have folded it).
 const pifInsCoarsePath =
   require.resolve('../../../../test_data/volvox/volvox_ins_coarse.pif.gz')
 describe('PairwiseIndexedPAFAdapter', () => {
@@ -301,10 +302,31 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(features.length).toBe(1)
       const feature = features[0]!
       // The coarse T-row carries the same target-perspective coords as the fine
-      // row but no CIGAR — it is the whole-genome LOD summary.
+      // row but no CIGAR — it is the whole-genome LOD summary. What it has
+      // instead is the CIGAR's fold, which keeps the insertion.
       expect(feature.get('CIGAR')).toBeUndefined()
+      expect(feature.get('coarseCigar')).toBe('31198M4800I18803M')
       expect(feature.get('start')).toBe(0)
       expect(feature.get('end')).toBe(50001)
+    })
+
+    it('the coarse Q-row carries the fold from the query side', async () => {
+      const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures(
+            {
+              refName: 'ctgA',
+              start: 0,
+              end: 60000,
+              assemblyName: 'volvox_ins',
+            },
+            { lodMode: 'coarse' },
+          )
+          .pipe(toArray()),
+      )
+      expect(features.length).toBe(1)
+      expect(features[0]!.get('coarseCigar')).toBe('31198M4800D18803M')
     })
   })
 

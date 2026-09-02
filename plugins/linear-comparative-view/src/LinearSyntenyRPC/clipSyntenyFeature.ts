@@ -4,6 +4,7 @@ import {
   CIGAR_I,
   CIGAR_M,
   CIGAR_N,
+  CIGAR_RUN,
   CIGAR_X,
   parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
@@ -129,35 +130,53 @@ export function clipSyntenyFeature(
     const packed = cigar[k]!
     const len = packed >>> 4
     const op = packed & 0xf
-    const qAdv = consumesQuery(op) ? len : 0
-    const tAdv = consumesTarget(op) ? len : 0
+    // a CIGAR_RUN pair advances the query by its first word and the target by
+    // its second, mapping the two in proportion along the run
+    const isRun = op === CIGAR_RUN
+    const qAdv = isRun || consumesQuery(op) ? len : 0
+    const tAdv = isRun ? cigar[++k]! >>> 4 : consumesTarget(op) ? len : 0
     const bp1Next = bp1 + qAdv
     const bp2Next = bp2 + tAdv * revTarget
     const opQLo = bp1
     const opQHi = bp1Next
     if (opQHi >= winStart && opQLo <= winEnd) {
       if (qAdv > 0) {
-        // Query-consuming op (match or D/N): trim to the window in query space.
+        // Query-consuming op (match, run or D/N): trim to the window in query
+        // space.
         const cLo = Math.max(opQLo, winStart)
         const cHi = Math.min(opQHi, winEnd)
         if (cHi > cLo) {
-          out.push(((cHi - cLo) << 4) | op)
           qLo = Math.min(qLo, cLo)
           qHi = Math.max(qHi, cHi)
-          if (isMatchOp(op)) {
-            // matches map target 1:1: target(q) = bp2 + (q - bp1) * revTarget
-            extendTarget(
-              bp2 + (cLo - bp1) * revTarget,
-              bp2 + (cHi - bp1) * revTarget,
-            )
+          if (isRun) {
+            const ratio = tAdv / len
+            const keptOwn = cHi - cLo
+            const keptMate = Math.round(keptOwn * ratio)
+            const tEntry = Math.round(bp2 + (cLo - bp1) * ratio * revTarget)
+            out.push((keptOwn << 4) | CIGAR_RUN, (keptMate << 4) | CIGAR_RUN)
+            extendTarget(tEntry, tEntry + keptMate * revTarget)
           } else {
-            // D/N consume no target, so it stays a point at bp2
-            extendTarget(bp2, bp2)
+            out.push(((cHi - cLo) << 4) | op)
+            if (isMatchOp(op)) {
+              // matches map target 1:1: target(q) = bp2 + (q - bp1) * revTarget
+              extendTarget(
+                bp2 + (cLo - bp1) * revTarget,
+                bp2 + (cHi - bp1) * revTarget,
+              )
+            } else {
+              // D/N consume no target, so it stays a point at bp2
+              extendTarget(bp2, bp2)
+            }
           }
         }
       } else if (tAdv > 0 && bp1 >= winStart && bp1 <= winEnd) {
-        // I: target-consuming gap at a single query position; keep it whole
-        out.push(packed)
+        // I (or a run with no query span): target-consuming gap at a single
+        // query position; keep it whole
+        if (isRun) {
+          out.push(packed, cigar[k]!)
+        } else {
+          out.push(packed)
+        }
         qLo = Math.min(qLo, bp1)
         qHi = Math.max(qHi, bp1)
         extendTarget(bp2, bp2Next)
