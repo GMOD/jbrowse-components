@@ -20,6 +20,9 @@ extend-ignore-re = [
   # UCSC assembly ids: turTru2 (dolphin), oryAfe1 (aardvark), haeCon2. The
   # capitalized middle is a genus/species abbreviation, never a word
   "\\b[a-z]{3}[A-Z][a-z]{2}\\d+\\b",
+  # Irish surnames in the reference lists: O'Leary reads as "Leery". The
+  # apostrophe-capital prefix is a name, never a word
+  "\\bO'[A-Z][a-z]+\\b",
 ]
 
 [default.extend-words]
@@ -37,6 +40,9 @@ Bre = "Bre"           # Bre1, the Drosophila ubiquitin ligase on 3L
 # `{assembly: 'hg38', asembly: 'hg19'}` with both spellings on one line. A word
 # rather than six file excludes, so those files stay spell-checked otherwise
 asembly = "asembly"
+# same fixture, for the views key: probe-view-launch-surfaces.ts carries the
+# misspelling as its `typoKey`, and VIEW_INIT.md names both spellings together
+veiws = "veiws"
 # products/jbrowse-desktop/electron/contextMenu.test.ts: the misspelling IS the
 # fixture, asserting the "Add to dictionary" item names the word electron's
 # spellchecker flagged.
