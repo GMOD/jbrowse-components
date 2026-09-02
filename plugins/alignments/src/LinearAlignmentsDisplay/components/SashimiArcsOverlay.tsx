@@ -1,10 +1,10 @@
 import { Fragment, useState } from 'react'
 
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import SashimiArcLabels from './SashimiArcLabels.tsx'
+import SashimiSelectionOutline from './SashimiSelectionOutline.tsx'
 import { openSashimiWidget } from './detailWidgets.ts'
 import {
   SASHIMI_SIDES,
@@ -18,7 +18,6 @@ import { formatSashimiTooltip } from './tooltipUtils.ts'
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One side's worth of arcs as an absolutely-positioned SVG at the (scrolled)
 // sub-band top. Native per-path hover/click means each band resolves its own
@@ -29,9 +28,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // a tall arc can rise into it) and a 'down' band is the reserved strip below it,
 // clipped to its own height so it can't paint over the pileup.
 //
-// Hover just widens the stroke: it's plain React state, not an imperative
-// setAttribute. Arc geometry is memoized on the model (`sashimiArcSections`), so
-// hovering repaints only this band's (low count) paths without recomputing it.
+// Hover just widens the stroke, and stays plain React state: it is a
+// per-mousemove thing with nothing to export. Selection is the model's
+// (`selectedSashimiKey`), so the export can draw the same outline. Arc geometry
+// is memoized on the model (`sashimiArcSections`), so hovering repaints only
+// this band's (low count) paths without recomputing it.
 const SashimiSubBand = observer(function SashimiSubBand({
   model,
   arcs,
@@ -41,8 +42,6 @@ const SashimiSubBand = observer(function SashimiSubBand({
   clipped,
   width,
   palette,
-  selectedArcKey,
-  onSelect,
 }: {
   model: LinearAlignmentsDisplayModel
   arcs: SashimiArc[]
@@ -52,8 +51,6 @@ const SashimiSubBand = observer(function SashimiSubBand({
   clipped: boolean
   width: number
   palette: JBrowsePalette
-  selectedArcKey: string | null
-  onSelect: (key: string) => void
 }) {
   const [hoveredArcKey, setHoveredArcKey] = useState<string | null>(null)
   return (
@@ -71,23 +68,10 @@ const SashimiSubBand = observer(function SashimiSubBand({
       {arcs.map(arc => {
         const arcKey = sashimiArcKey(arc)
         const selKey = sashimiSelectionKey(groupKey, arc)
-        const isSelected = selKey === selectedArcKey
         return (
           <Fragment key={arcKey}>
-            {/* Selection outline, painted UNDER the arc so the junction keeps
-                its strand tint while you inspect it — recoloring the stroke
-                itself threw away the one thing the color encodes, at exactly
-                the moment the detail widget is asking about that junction. The
-                palette color inverts with the theme; the old hardcoded '#333'
-                vanished against the dark-mode track background. */}
-            {isSelected ? (
-              <path
-                d={arc.d}
-                stroke={palette.text.primary}
-                strokeWidth={arc.strokeWidth + 4}
-                fill="none"
-                style={{ pointerEvents: 'none' }}
-              />
+            {selKey === model.selectedSashimiKey ? (
+              <SashimiSelectionOutline arc={arc} palette={palette} />
             ) : null}
             <path
               d={arc.d}
@@ -119,7 +103,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
               // idempotent rather than deselecting it while reopening the
               // widget that says it's selected.
               onClick={() => {
-                onSelect(selKey)
+                model.setSelectedSashimiKey(selKey)
                 openSashimiWidget(model, arc)
               }}
             />
@@ -144,7 +128,6 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const [selectedArcKey, setSelectedArcKey] = useState<string | null>(null)
   const palette = usePalette()
   // Ungrouped coverage is sticky (only the pileup scrolls), so its bands keep
   // their content-space tops; grouped sections scroll as a unit.
@@ -157,7 +140,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   // the gate is what makes this read safe, rather than it being safe by
   // accident of nothing mounting the overlay early (the trap
   // `PileupBezierOverlay` documents at length).
-  const { width } = getContainingView(model) as LinearGenomeViewModel
+  const { width } = model.view
   return sections.flatMap(section =>
     SASHIMI_SIDES.map(side => {
       const arcs = section[side]
@@ -180,10 +163,6 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
           clipped={band.clipped}
           width={width}
           palette={palette}
-          selectedArcKey={selectedArcKey}
-          onSelect={key => {
-            setSelectedArcKey(key)
-          }}
         />
       )
     }),

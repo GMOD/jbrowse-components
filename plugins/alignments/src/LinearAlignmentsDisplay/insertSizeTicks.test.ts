@@ -59,6 +59,27 @@ describe('computeInsertSizeTicks', () => {
     expect(up.yTop).toBe(45 - upAvailH)
   })
 
+  it('carries the domain reversed in down mode', () => {
+    const arcsYDomainBp = 1000
+    const availH = 40 - ARC_HEIGHT_MARGIN
+    const down = computeInsertSizeTicks({
+      arcsYDomainBp,
+      band: { top: 45, height: 40, down: true },
+    })!
+    expect(down.items[0]!.value).toBe(1)
+    expect(down.items[0]!.y).toBe(down.yTop)
+    expect(down.items.at(-1)!.value).toBe(arcsYDomainBp)
+    expect(down.items.at(-1)!.y).toBeCloseTo(down.yBottom)
+    expect(down.yBottom - down.yTop).toBeCloseTo(availH)
+
+    const up = computeInsertSizeTicks({
+      arcsYDomainBp,
+      band: { top: 45, height: 40, down: false },
+    })!
+    expect(up.items[0]!.y).toBe(up.yBottom)
+    expect(up.items.at(-1)!.y).toBeCloseTo(up.yTop)
+  })
+
   // Ticks are base-2 log-positioned, not linear: at domain 1000 the value-100
   // tick sits at log2(100)/log2(1000) ≈ 0.666 of the band, far from the linear
   // 0.1 it would occupy. (Tall band so the 100 decade survives tick-thinning.)

@@ -1,4 +1,3 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { arcColorLegendCategory } from '../../features/arcs/arcColors.ts'
@@ -11,7 +10,6 @@ import { formatArcTooltip } from './tooltipUtils.ts'
 
 import type { CrossRegionArcShape } from '../../features/arcs/crossRegionOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One section's cross-region arcs as an absolutely-positioned SVG at the
 // (scrolled) arc-band top.
@@ -127,6 +125,8 @@ const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
                   // read as this arc lighting up, and the target is deliberately
                   // wider than the ink.
                   lineWidth: arc.strokeWidth,
+                  // The mark's own dash: a split connector is dashed.
+                  dash: arc.dash,
                 },
                 highlightedChainReadIds: [],
               })
@@ -155,7 +155,7 @@ const CrossRegionArcsOverlay = observer(function CrossRegionArcsOverlay({
   }
   // Read AFTER that gate: `view.width` throws by design before the view is
   // measured, and `crossRegionArcSections` is empty until `view.initialized`.
-  const { width } = getContainingView(model) as LinearGenomeViewModel
+  const { width } = model.view
   return sections.map(section => {
     const screenTop = bandScreenTop(section.bandTop, scroll)
     // A grouped display re-renders on every scroll frame, so an off-screen

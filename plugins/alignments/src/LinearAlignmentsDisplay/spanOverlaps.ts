@@ -17,29 +17,54 @@ export interface Span {
 // appears in exactly `d - 1` emitted intervals. (Span `i` emits `p` iff span `i`
 // covers `p` and some earlier span does too — and "earlier" is by start, so any
 // span reaching past `p` with a smaller start covers it.) Callers wanting a flat
-// "reads overlap here" mark run `mergeSpans` over the result; callers wanting
+// "reads overlap here" mark run `mergeSortedSpans` over the result; callers wanting
 // depth feed it straight to the alpha-blended tint layer, where `d - 1` stacked
 // tints darken monotonically with depth.
 export function overlapIntervals(spans: Span[]): Span[] {
-  const sorted = [...spans].sort((a, b) => a.start - b.start)
-  const out: Span[] = []
-  let runningMaxEnd = sorted[0]?.end ?? 0
-  for (let i = 1; i < sorted.length; i++) {
-    const { start, end } = sorted[i]!
+  const positions = new Uint32Array(spans.length * 2)
+  for (const [i, { start, end }] of spans.entries()) {
+    positions[i * 2] = start
+    positions[i * 2 + 1] = end
+  }
+  const packed = packedOverlapIntervals(positions, spans.length)
+  return Array.from({ length: packed.length / 2 }, (_, i) => ({
+    start: packed[i * 2]!,
+    end: packed[i * 2 + 1]!,
+  }))
+}
+
+// The same sweep on the packed `[start, end]` pairs `segmentPositions` already
+// ships, so a collapsed relayout allocates no `Span` per segment. Sorting an
+// index array leaves the caller's own array untouched, and the index tiebreak
+// keeps ties on `start` in input order. Output is packed the same way, in start
+// order and NOT deduplicated.
+export function packedOverlapIntervals(
+  positions: Uint32Array,
+  numSpans: number,
+) {
+  const order = Uint32Array.from({ length: numSpans }, (_, i) => i)
+  order.sort((a, b) => positions[a * 2]! - positions[b * 2]! || a - b)
+  const out = new Uint32Array(Math.max(0, numSpans - 1) * 2)
+  let count = 0
+  let runningMaxEnd = numSpans > 0 ? positions[order[0]! * 2 + 1]! : 0
+  for (let i = 1; i < numSpans; i++) {
+    const at = order[i]! * 2
+    const start = positions[at]!
+    const end = positions[at + 1]!
     const overlapEnd = Math.min(end, runningMaxEnd)
     if (start < overlapEnd) {
-      out.push({ start, end: overlapEnd })
+      out[count * 2] = start
+      out[count * 2 + 1] = overlapEnd
+      count++
     }
     runningMaxEnd = Math.max(runningMaxEnd, end)
   }
-  return out
+  return count * 2 === out.length ? out : out.slice(0, count * 2)
 }
 
-// Collapse a set of spans into their disjoint union, merging any that overlap or
-// touch. Undoes the depth-stacking above for callers that want one uniform tint
-// over "reads overlap here" rather than a darkness proportional to how many.
-export function mergeSpans(spans: Span[]): Span[] {
-  const sorted = [...spans].sort((a, b) => a.start - b.start)
+// Collapse spans already in start order (as `overlapIntervals` emits them) into
+// their disjoint union, merging any that overlap or touch.
+export function mergeSortedSpans(sorted: Span[]): Span[] {
   const out: Span[] = []
   for (const span of sorted) {
     const last = out[out.length - 1]

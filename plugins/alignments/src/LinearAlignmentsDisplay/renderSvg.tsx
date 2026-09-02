@@ -31,11 +31,16 @@ import {
   rightAxisLabelX,
   rightAxisSpineX,
 } from './coverageAxisStyle.ts'
-import { groupSectionLabel } from './groupLabelStyle.ts'
+import {
+  GROUP_LABEL_INSET_X,
+  groupChipTop,
+  groupSectionLabel,
+} from './groupLabelStyle.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { buildSectionRenders } from './sectionLayout.ts'
 import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
 
+import type { ScrollModel } from './components/sectionScreen.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -170,6 +175,7 @@ function AlignmentsSvgBody({
           down={model.readConnectionsDown}
           yShift={bandScreenTop(0, scroll)}
           x={insertSizeAxisBoxLeft(canvasWidth, model.readConnectionsDown)}
+          palette={palette}
         />
       ) : null}
       {model.showsGroupLabels ? (
@@ -178,6 +184,7 @@ function AlignmentsSvgBody({
           left={contentLeft}
           width={canvasWidth}
           theme={theme}
+          scroll={scroll}
         />
       ) : null}
       {model.showLegend ? (
@@ -292,34 +299,45 @@ function GroupLabelBoxes({
   left,
   width,
   theme,
+  scroll,
 }: {
   sections: RenderSection[]
   left: number
   width: number
   theme: Theme
+  scroll: ScrollModel
 }) {
   return (
     <>
-      {sections.map((section, i) => (
-        <Fragment key={sectionKey(section.groupKey)}>
-          {i > 0 ? (
-            <line
-              x1={0}
-              x2={width}
-              y1={section.coverageTop}
-              y2={section.coverageTop}
-              stroke={theme.palette.divider}
-              strokeWidth={1}
-            />
-          ) : null}
-          <GroupLabelBox
-            x={left + 4}
-            y={section.coverageTop + 1}
-            text={groupSectionLabel(section.label)}
-            theme={theme}
-          />
-        </Fragment>
-      ))}
+      {sections.map((section, i) => {
+        const chipTop = groupChipTop(
+          section.coverageTop,
+          section.height,
+          scroll,
+        )
+        return (
+          <Fragment key={sectionKey(section.groupKey)}>
+            {i > 0 ? (
+              <line
+                x1={0}
+                x2={width}
+                y1={section.coverageTop}
+                y2={section.coverageTop}
+                stroke={theme.palette.divider}
+                strokeWidth={1}
+              />
+            ) : null}
+            {chipTop === undefined ? null : (
+              <GroupLabelBox
+                x={left + GROUP_LABEL_INSET_X}
+                y={chipTop + 1}
+                text={groupSectionLabel(section.label)}
+                theme={theme}
+              />
+            )}
+          </Fragment>
+        )
+      })}
     </>
   )
 }

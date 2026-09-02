@@ -5,6 +5,7 @@ import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
 import {
   countOfTotal,
+  coverageRows,
   formatLenRange,
   getCoverageBin,
   getInterbaseBin,
@@ -14,6 +15,7 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
+import type { CoverageBin, CoverageRow } from './tooltipUtils.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -58,6 +60,30 @@ export function openIndicatorWidget(
   openFeatureWidget(model, featureData)
 }
 
+// The same breakdown the hover table renders, as widget fields. The Total row
+// is dropped because the widget states the depth as its own field.
+export function coverageWidgetFields(bin: CoverageBin) {
+  return Object.fromEntries(
+    coverageRows(bin)
+      .filter(row => row.key !== 'total')
+      .map(row => [coverageFieldName(row), coverageFieldValue(row)]),
+  )
+}
+
+function coverageFieldName(row: CoverageRow) {
+  return row.base !== undefined
+    ? `SNP ${row.label}`
+    : row.color !== undefined
+      ? `modification ${row.label}`
+      : row.label
+}
+
+function coverageFieldValue({ reads, avgProb, strands }: CoverageRow) {
+  const prob = avgProb === undefined ? '' : ` avg prob ${avgProb}`
+  const counts = strands === undefined ? '' : ` (${strands})`
+  return `${reads}${prob}${counts}`
+}
+
 export function openCoverageWidget(
   model: IAnyStateTreeNode,
   position: number,
@@ -79,18 +105,7 @@ export function openCoverageWidget(
     start: position,
     end: position + 1,
     depth: bin.depth,
-  }
-
-  for (const [base, snpEntry] of Object.entries(bin.snps)) {
-    featureData[`SNP ${base.toUpperCase()}`] =
-      `${countOfTotal(snpEntry.count, bin.depth)} (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
-  }
-  if (bin.modifications) {
-    for (const entry of bin.modifications) {
-      const avgProb = entry.count > 0 ? entry.probabilityTotal / entry.count : 0
-      featureData[`modification ${entry.name}`] =
-        `${countOfTotal(entry.count, bin.depth)} avg prob ${(avgProb * 100).toFixed(1)}% (${entry.fwd}(+) ${entry.rev}(-))`
-    }
+    ...coverageWidgetFields(bin),
   }
 
   openFeatureWidget(model, featureData)

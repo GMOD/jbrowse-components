@@ -7,6 +7,9 @@ import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 // coverage band produced an unreadable figure with no on-screen warning.
 export const COMPACT_AXIS_HEIGHT = 30
 
+// Type size of that single label, on both paths.
+export const COMPACT_AXIS_FONT_SIZE = 9
+
 // The compact label's text, from the SAME ticks the full axis would have drawn.
 // Same wording on screen and in export.
 //

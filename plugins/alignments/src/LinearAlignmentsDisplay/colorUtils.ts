@@ -42,7 +42,6 @@ import { ColorScheme } from './constants.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 
-// Re-exports from core — kept for backwards-compat with call sites.
 export const rgb255 = normalizedRgbToCss
 
 interface ReadColorData {
@@ -62,8 +61,7 @@ interface ReadColorData {
 // swatch (CATEGORY_LEGEND in legendUtils). Because the renderer and the legend
 // both flow through this, the legend can never list a color the renderer didn't
 // paint (or omit one it did): they are correct by construction, not by a
-// mirrored test. Members that are dynamic ramps/palettes rather than a fixed
-// swatch ('mapq', 'tag', 'modFwd'/'modRev', 'plain') get no legend entry.
+// mirrored test.
 export type ReadColorCategory =
   | 'supplementary'
   | 'splitInversion'
@@ -137,7 +135,7 @@ function insertSizeCategory(
 // render + legend hot loop) does not reallocate this each call. The registry is
 // now the only source — read.slang used to mirror this membership as a bitmask
 // for its own classification, and no longer classifies at all.
-export const orientationSchemes = new Set(
+const orientationSchemes = new Set(
   Object.values(COLOR_SCHEMES)
     .filter(s => s.mateAware)
     .map(s => ColorScheme[s.shaderScheme]),
@@ -166,9 +164,7 @@ const dataFillSchemes = new Set([
 // which is the gate on running `consensusChainStrandFrames` at all — that pass
 // rewrites the very marker the framing reads, so under a scheme or a tickbox
 // that discards the framing it would be work whose result nothing looks at.
-// Every condition here is one of the branch's own, spelled once so the two
-// cannot drift; the default for `flipStrandLongReadChains` mirrors the
-// destructuring default in `readColorCategory`.
+// The `flipStrandLongReadChains` default here mirrors its config slot's (true).
 export function framesUnpairedChainStrand(
   colorScheme: number,
   {
@@ -248,30 +244,52 @@ export interface ReadColorOpts {
   colorSupplementaryChains?: boolean
 }
 
-// Classify read `i` under the active color scheme. Precedence:
-// opt-in paired-supplementary override → long-read-chain-supplementary strand
-// framing → unmapped mate → inter-chromosomal → per-scheme bucket.
+// Classify read `i` under the active color scheme: the cross-cutting override
+// ladder first, then the scheme's own bucket.
 //
 // This is the ONLY implementation of that precedence. read.slang consumes the
 // baked category (see buildReadColorCategories) and paints it; it no longer
 // re-derives these rules, so there is nothing left to keep in sync.
-// Defaults are declared once, here in the signature, rather than at each read:
-// `flipStrandLongReadChains` mirrors its config-slot default (true), and the
-// other two are off. Destructured rather than kept as an `opts?` object because
-// the chain branches below read the fields unguarded — that only type-checked
-// via TypeScript narrowing `opts` non-null through the aliased `isChain`
-// condition, so moving or rewording that one `const` would silently have made
-// them unsafe dereferences.
 export function readColorCategory(
   i: number,
   data: ReadColorData,
   colorScheme: number,
-  {
-    chainMode: isChain = false,
-    flipStrandLongReadChains = true,
-    colorSupplementaryChains = false,
-  }: ReadColorOpts = {},
+  opts: ReadColorOpts = {},
 ): ReadColorCategory {
+  return (
+    overrideCategory(i, data, colorScheme, opts) ??
+    schemeCategory(i, data, colorScheme)
+  )
+}
+
+// The chain / unmapped-mate / inter-chromosomal ladder, which outranks whatever
+// the active scheme would say; `undefined` hands the read on to
+// `schemeCategory`.
+//
+// Three of these repaint a chain that carries a supplementary segment, and they
+// are one ladder rather than three independent rules:
+//
+//   1. orange (opt-in) — "don't classify the split, just mark the chain". The
+//      user asked for it explicitly, so it outranks both classifiers and every
+//      scheme.
+//   2. the unpaired classifier — the red/blue strand framing below.
+//   3. the paired classifier — the magenta/yellow split markers further down.
+//
+// 2 and 3 are scoped to opposite data because a pair HAS a richer answer: a
+// supplementary framed against its own mate's primary is an inversion or a
+// deletion junction, which `buildChainMetadata` already resolved into
+// CHAIN_SPLIT_*. An unpaired read has no mate to frame against, so the
+// strand flip is the whole story. 1 is scoped to neither, and used to be
+// paired-only purely because it was added to restore what a paired-only change
+// removed (5b8aa129d9) — on long reads the tickbox then did nothing at all,
+// which is the one kind of setting this menu must not have.
+function overrideCategory(
+  i: number,
+  data: ReadColorData,
+  colorScheme: number,
+  opts: ReadColorOpts,
+): ReadColorCategory | undefined {
+  const { chainMode: isChain = false, colorSupplementaryChains = false } = opts
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
 
@@ -287,23 +305,6 @@ export function readColorCategory(
     (colorScheme === ColorScheme.pairOrientation ||
       colorScheme === ColorScheme.insertSizeAndOrientation)
 
-  // Three overrides can repaint a chain that carries a supplementary segment,
-  // and they are one ladder rather than three independent rules:
-  //
-  //   1. orange (opt-in) — "don't classify the split, just mark the chain". The
-  //      user asked for it explicitly, so it outranks both classifiers and every
-  //      scheme.
-  //   2. the unpaired classifier — the red/blue strand framing below.
-  //   3. the paired classifier — the magenta/yellow split markers further down.
-  //
-  // 2 and 3 are scoped to opposite data because a pair HAS a richer answer: a
-  // supplementary framed against its own mate's primary is an inversion or a
-  // deletion junction, which `buildChainMetadata` already resolved into
-  // CHAIN_SPLIT_*. An unpaired read has no mate to frame against, so the
-  // strand flip is the whole story. 1 is scoped to neither, and used to be
-  // paired-only purely because it was added to restore what a paired-only change
-  // removed (5b8aa129d9) — on long reads the tickbox then did nothing at all,
-  // which is the one kind of setting this menu must not have.
   if (isChain && hasSupp && colorSupplementaryChains) {
     return 'supplementary'
   }
@@ -320,21 +321,10 @@ export function readColorCategory(
   // across chains by `consensusChainStrandFrames`, which rewrites this same
   // marker before the bake. Read the marker; don't re-derive a frame here.
   //
-  // Held off the data-carrying schemes (`dataFillSchemes`) so it refines the
-  // fill rather than replacing it, and off entirely when the user unticks
-  // `flipStrandLongReadChains` — its checkbox says "color supplementary
-  // alignments by consensus strand", and unticking it used to keep colouring
-  // them by strand, just unframed, which under `strand` (the one scheme it was
-  // ever tested against) is indistinguishable from having no effect at all.
-  // `framesUnpairedChainStrand` restates these four conditions for the consensus
-  // pass, which must not run where they don't hold.
-  if (
-    isChain &&
-    hasSupp &&
-    !isPaired &&
-    flipStrandLongReadChains &&
-    !dataFillSchemes.has(colorScheme)
-  ) {
+  // `framesUnpairedChainStrand` is the whole of the scheme/tickbox gate, and the
+  // consensus pass reads that same predicate, so it cannot run where the framing
+  // is discarded.
+  if (framesUnpairedChainStrand(colorScheme, opts) && hasSupp && !isPaired) {
     // One bit, read as the sign it is. This was a comparison against a code,
     // and correct only while the split bits could not coexist with the frame —
     // which rested on `summarizeChain`'s `paired` (ANY read of the chain is
@@ -378,9 +368,19 @@ export function readColorCategory(
 
   // Mate on another chromosome: orientation/insert size are meaningless, so one
   // distinct bucket instead of an LR/RL/etc hue.
-  if (data.readInterchrom[i] === 1 && isOrientationScheme) {
-    return 'interchrom'
-  }
+  return data.readInterchrom[i] === 1 && isOrientationScheme
+    ? 'interchrom'
+    : undefined
+}
+
+// The scheme's own bucket, for a read no override claimed.
+function schemeCategory(
+  i: number,
+  data: ReadColorData,
+  colorScheme: number,
+): ReadColorCategory {
+  const flags = data.readFlags[i]!
+  const strand = data.readStrands[i]!
 
   switch (colorScheme) {
     case ColorScheme.normal:
@@ -446,11 +446,6 @@ export function readColorCategory(
         ? 'noTagValue'
         : 'tag'
 
-    // Unreachable: `colorScheme` is always `ColorScheme[shaderScheme]`, which
-    // COLOR_SCHEMES makes total over the ten ShaderScheme names, and every one
-    // of them has a case above. Kept because the parameter is a bare `number`
-    // and TypeScript can't be told otherwise — not because any scheme falls
-    // through to it.
     default:
       return 'plain'
   }
@@ -483,10 +478,6 @@ function categoryColor(
     case 'mapq':
       // hue = mapq degrees (0–255), browser native hsl() is fastest
       return `hsl(${data.readMapqs[i]},50%,50%)`
-    case 'modFwd':
-      return rgb255(palette.colorModificationFwd)
-    case 'modRev':
-      return rgb255(palette.colorModificationRev)
     case 'tag': {
       const packed = data.readTagColors[i]
       return packed ? abgrToCssRgba(packed) : rgb255(palette.colorPairLR)
@@ -536,12 +527,14 @@ export function getReadColor(
 
 // Palette key backing each fixed-swatch category, so the legend swatch is the
 // exact color the renderer paints. The keys form `SwatchCategory` — the subset
-// of categories that render as a single flat color; dynamic categories
-// (mapq/tag/mod/plain) have no single swatch and are absent here.
+// of categories that render as a single flat color; `plain`, `mapq` and `tag`
+// are absent here.
 export const swatchPaletteKeys = {
   fwdStrand: 'colorFwdStrand',
   revStrand: 'colorRevStrand',
   noStrand: 'colorNeutralRead',
+  modFwd: 'colorModificationFwd',
+  modRev: 'colorModificationRev',
   // non-split read under the pair-orientation scheme: reuses the neutral grey,
   // but a distinct category so the legend can label it "Non-split read"
   nonSplit: 'colorNeutralRead',
@@ -577,15 +570,13 @@ export type SwatchCategory = keyof typeof swatchPaletteKeys
 // category is painted and the color its swatch shows come from one table rather
 // than from a shader chain checked against this one by a test.
 //
-// The four dynamic categories resolve per read (an hsl() of the mapq, a packed
-// tag color) and never reach the uploaded table; they take the neutral fill so
-// the slot holds a sane color rather than whatever the last block render left,
-// which is also what the shader's own tagColor==0 path paints.
+// `mapq` and `tag` resolve per read (an hsl() of the mapq, a packed tag color)
+// and never reach the uploaded table; they take the neutral fill so the slot
+// holds a sane color rather than whatever the last block render left, which is
+// also what the shader's own tagColor==0 path paints.
 export const readCategoryPaletteKeys = {
   ...swatchPaletteKeys,
   plain: 'colorPairLR',
-  modFwd: 'colorModificationFwd',
-  modRev: 'colorModificationRev',
   mapq: 'colorPairLR',
   tag: 'colorPairLR',
 } satisfies Record<ReadColorCategory, keyof ColorPalette>

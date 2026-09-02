@@ -4,6 +4,7 @@ import {
   GROUP_LABEL_BG_OPACITY,
   GROUP_LABEL_FONT_SIZE,
   GROUP_LABEL_HEIGHT,
+  GROUP_LABEL_ICON_SIZE,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
 } from '../groupLabelStyle.ts'
@@ -28,7 +29,10 @@ export default function GroupLabelBox({
   const fontSize = GROUP_LABEL_FONT_SIZE
   const paddingX = GROUP_LABEL_PADDING_X
   const height = GROUP_LABEL_HEIGHT
-  const width = measureText(text, fontSize) + paddingX * 2
+  // The chevron's slot, empty here: the on-screen chip draws one before its text.
+  const textX = x + paddingX + GROUP_LABEL_ICON_SIZE
+  const width =
+    measureText(text, fontSize) + paddingX * 2 + GROUP_LABEL_ICON_SIZE
   return (
     <g>
       <rect
@@ -41,7 +45,7 @@ export default function GroupLabelBox({
         fillOpacity={GROUP_LABEL_BG_OPACITY}
       />
       <text
-        x={x + paddingX}
+        x={textX}
         y={y + height - 4}
         fontSize={fontSize}
         fill={theme.palette.text.secondary}

@@ -1,5 +1,9 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 
+import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
+import SashimiArcsSvg from './SashimiArcsSvg.tsx'
 import {
   sashimiArcKey,
   sashimiSelectionKey,
@@ -7,7 +11,15 @@ import {
 } from './sashimiArcs.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { SashimiArcSection } from './sashimiArcs.ts'
+
+// The widget open is a session write with a whole config layer behind it.
+jest.mock('./detailWidgets.ts', () => ({
+  openSashimiWidget: jest.fn(),
+}))
+
+afterEach(cleanup)
 
 function makeArc(arc: Partial<SashimiArc>): SashimiArc {
   return {
@@ -103,5 +115,81 @@ describe('sashimiSelectionKey', () => {
   it('matches for the same junction within one group (ungrouped key is empty)', () => {
     const arc = makeArc({})
     expect(sashimiSelectionKey('', arc)).toBe(sashimiSelectionKey('', arc))
+  })
+})
+
+describe('sashimi selection', () => {
+  const ARC = makeArc({ d: 'M 0 0 L 10 10', strokeWidth: 2 })
+  const SELECTED = sashimiSelectionKey('sampleA', ARC)
+
+  function stubModel(selectedSashimiKey: string | undefined) {
+    return {
+      id: 'sashimi-selection',
+      view: { width: 800 },
+      scrollModel: { isGrouped: false, scrollTop: 0, canvasHeight: 500 },
+      sashimiArcSections: [
+        {
+          groupKey: 'sampleA',
+          up: [ARC],
+          down: [],
+          coverageOverlayTop: 0,
+          sashimiBandTop: 100,
+        },
+      ],
+      showSashimiLabels: false,
+      coverageHeight: 100,
+      sashimiArcsHeight: 40,
+      selectedSashimiKey,
+      setSelectedSashimiKey: jest.fn(),
+      setHoverState: jest.fn(),
+      clearMouseoverState: jest.fn(),
+    } as unknown as LinearAlignmentsDisplayModel
+  }
+
+  // The outline is painted UNDER the arc, so it is the first path and the wider.
+  function strokeWidths(container: Element) {
+    return [...container.querySelectorAll('path')].map(p =>
+      p.getAttribute('stroke-width'),
+    )
+  }
+
+  it('draws no outline in the export with nothing selected', () => {
+    const { container } = render(
+      <svg>
+        <SashimiArcsSvg
+          model={stubModel(undefined)}
+          width={800}
+          palette={resolvePalette()}
+        />
+      </svg>,
+    )
+    expect(strokeWidths(container)).toEqual(['2'])
+  })
+
+  it('draws the selected junction outline in the export', () => {
+    const { container } = render(
+      <svg>
+        <SashimiArcsSvg
+          model={stubModel(SELECTED)}
+          width={800}
+          palette={resolvePalette()}
+        />
+      </svg>,
+    )
+    expect(strokeWidths(container)).toEqual(['6', '2'])
+  })
+
+  it('records the clicked junction on the model, not in the component', () => {
+    const model = stubModel(undefined)
+    const { container } = render(<SashimiArcsOverlay model={model} />)
+    fireEvent.click(container.querySelectorAll('path')[0]!)
+    expect(model.setSelectedSashimiKey).toHaveBeenCalledWith(SELECTED)
+  })
+
+  it('outlines the model-selected junction on screen too', () => {
+    const { container } = render(
+      <SashimiArcsOverlay model={stubModel(SELECTED)} />,
+    )
+    expect(strokeWidths(container)).toEqual(['6', '2'])
   })
 })

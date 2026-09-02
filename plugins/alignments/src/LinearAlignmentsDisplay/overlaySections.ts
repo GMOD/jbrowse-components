@@ -193,6 +193,7 @@ export function computeCrossRegionArcSections(
         groupKey: sec.groupKey,
         bandTop: sec.arcBandTop,
         bandHeight: sec.arcBandHeight,
+        arcDown: sec.arcDown,
         arcs: computeCrossRegionArcs({
           arcs,
           bpToScreenX,

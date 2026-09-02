@@ -23,7 +23,7 @@ export default function PileupBezierArcsSvg({
   model: LinearAlignmentsDisplayModel
   view: LinearGenomeViewModel
 }) {
-  const arcs = computePileupBezierArcsFromModel(model, view, model.scrollTop)
+  const arcs = computePileupBezierArcsFromModel(model, view)
   return arcs.length ? (
     <g style={{ pointerEvents: 'none' }}>
       {arcs.map(arc => (

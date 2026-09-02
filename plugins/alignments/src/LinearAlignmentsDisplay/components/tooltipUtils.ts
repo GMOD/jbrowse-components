@@ -607,6 +607,106 @@ export function getCoverageBin(
   }
 }
 
+// "18(+) 22(-)", or nothing when the sweep collected no per-strand tally — a
+// row reporting "0(+) 0(-)" for want of the data says something false.
+function strandCounts(fwd: number, rev: number) {
+  return fwd > 0 || rev > 0 ? `${fwd}(+) ${rev}(-)` : undefined
+}
+
+// One line of the coverage breakdown at a position. `color` is a
+// modification's own; `base` names an allele, whose colour is looked up in the
+// 256-entry CSS map only the tooltip holds.
+export interface CoverageRow {
+  key: string
+  label: string
+  color?: string
+  base?: string
+  reads: string
+  avgProb?: string
+  strands?: string
+}
+
+// The coverage breakdown at one position, in display order, for both the hover
+// table and the click's detail widget.
+export function coverageRows(bin: CoverageBin) {
+  const { depth, fwdDepth, revDepth, snps, deletions, modifications } = bin
+  // Descending by count, tie-broken by base: `Object.entries` is insertion
+  // order, so the same locus listed its alleles differently after a pan.
+  const snpEntries = Object.entries(snps).sort(
+    ([aBase, a], [bBase, b]) => b.count - a.count || aBase.localeCompare(bBase),
+  )
+  const modEntries = modifications
+    ? [...modifications].sort((a, b) => a.name.localeCompare(b.name))
+    : []
+  const totalStrands =
+    fwdDepth !== undefined && revDepth !== undefined
+      ? { fwd: fwdDepth, rev: revDepth }
+      : undefined
+  const rows: CoverageRow[] = [
+    {
+      key: 'total',
+      label: 'Total',
+      reads: `${depth}`,
+      strands: totalStrands
+        ? strandCounts(totalStrands.fwd, totalStrands.rev)
+        : undefined,
+    },
+  ]
+  // Modification rows sit alongside the allele rows rather than instead of
+  // them: at a CpG the A/C/G/T breakdown and the methylation calls are exactly
+  // the pair worth disambiguating.
+  for (const mod of modEntries) {
+    rows.push({
+      key: `${mod.name}-${mod.color}`,
+      label: mod.name,
+      color: mod.color,
+      reads: countOfTotal(mod.count, depth),
+      avgProb: `${((mod.count > 0 ? mod.probabilityTotal / mod.count : 0) * 100).toFixed(1)}%`,
+      strands: strandCounts(mod.fwd, mod.rev),
+    })
+  }
+  // Reads carrying the reference allele: `depth` counts every read over the
+  // position and `snps` holds mismatches only, so the difference is the count a
+  // reader at a het site is after. No BASE — `regionSequence` never ships to
+  // the main thread — and no row at all without an alt to weigh it against or a
+  // depth to weigh it in.
+  if (snpEntries.length > 0 && depth > 0) {
+    const altReads = snpEntries.reduce((sum, [, d]) => sum + d.count, 0)
+    const altFwd = snpEntries.reduce((sum, [, d]) => sum + d.fwd, 0)
+    const altRev = snpEntries.reduce((sum, [, d]) => sum + d.rev, 0)
+    rows.push({
+      key: 'ref',
+      label: 'Ref',
+      reads: countOfTotal(Math.max(0, depth - altReads), depth),
+      strands: totalStrands
+        ? strandCounts(
+            Math.max(0, totalStrands.fwd - altFwd),
+            Math.max(0, totalStrands.rev - altRev),
+          )
+        : undefined,
+    })
+  }
+  for (const [base, data] of snpEntries) {
+    rows.push({
+      key: base,
+      label: base.toUpperCase(),
+      base,
+      reads: countOfTotal(data.count, depth),
+      strands: strandCounts(data.fwd, data.rev),
+    })
+  }
+  if (deletions) {
+    rows.push({
+      key: 'deletion',
+      // A deleted base is absent from the read and so out of `depth`, which
+      // makes the share one of depth + deletions.
+      label: `Deletion (${formatLenRange(deletions.minLen, deletions.maxLen)})`,
+      reads: countOfTotal(deletions.count, depth + deletions.count),
+    })
+  }
+  return rows
+}
+
 export function formatIndicatorTooltip(
   position: number,
   blockRpcData: PileupDataResult | undefined,

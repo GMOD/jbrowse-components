@@ -5,6 +5,7 @@ import {
   ScrollEdgeShadow,
   VerticalScrollbar,
 } from '@jbrowse/core/ui'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
@@ -587,6 +588,7 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
+  const palette = usePalette()
   const {
     insertSizeTickSections,
     readConnectionsDown,
@@ -627,6 +629,7 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         // same projection, rather than a second inline
         // `isGrouped ? -scrollTop : 0`.
         yShift={bandScreenTop(0, model.scrollModel)}
+        palette={palette}
       />
     </svg>
   )

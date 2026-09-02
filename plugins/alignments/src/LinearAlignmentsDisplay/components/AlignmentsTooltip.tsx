@@ -9,7 +9,12 @@ import { buildBaseCssMap } from '../../features/mismatch/baseColors.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
-import { countOfTotal, formatLenRange, supportLabel } from './tooltipUtils.ts'
+import {
+  countOfTotal,
+  coverageRows,
+  formatLenRange,
+  supportLabel,
+} from './tooltipUtils.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type {
@@ -84,18 +89,8 @@ function SimpleTooltipContents({ message }: { message: string }) {
   return message ? <SanitizedHTML html={message} /> : null
 }
 
-// "18(+) 22(-)"
-function strandCounts(fwd: number, rev: number) {
-  return `${fwd}(+) ${rev}(-)`
-}
-
 function ColorSwatch({ color }: { color: string }) {
   return <div style={{ width: 10, height: 10, background: color }} />
-}
-
-// Mean per-read call probability for one modification tally.
-function avgProbability(mod: { probabilityTotal: number; count: number }) {
-  return mod.count > 0 ? mod.probabilityTotal / mod.count : 0
 }
 
 function InterbaseTooltip({
@@ -146,20 +141,16 @@ function InterbaseTooltip({
   )
 }
 
-// Which optional columns the coverage table is showing. Swatches whenever some
-// row describes a coloured mark — an allele or a modification; Avg Prob only
-// with modification data; Strands only when some row reports it. Both the header
-// and every body row derive their cells from this one value, so a row can't fall
-// out of column alignment by forgetting a filler <td>.
+// Which optional columns the coverage table is showing, derived from the rows
+// themselves so a row can't fall out of column alignment by forgetting a filler
+// <td>.
 interface CoverageColumns {
   swatches: boolean
   avgProb: boolean
   strands: boolean
 }
 
-// One body row of the coverage table. Cells are named rather than positional,
-// and the optional ones render as empty when this row has nothing for them.
-function CoverageRow({
+function CoverageTableRow({
   columns,
   swatch,
   label,
@@ -203,64 +194,16 @@ export function CoverageTooltipContents({
   // raw base byte, which is what carries the non-ACGTN fallback.
   baseColors: string[]
 }) {
-  const {
-    position,
-    depth,
-    fwdDepth,
-    revDepth,
-    snps,
-    deletions,
-    modifications,
-  } = bin
-  const location = formatLocation(refName, position)
-
-  // Descending by count, tie-broken by base. `Object.entries` is insertion
-  // order and `countSnpsAtPosition` inserts in mismatch-array order, so the same
-  // locus listed its alleles differently after a pan. Descending alone still
-  // flips two alleles at equal depth, which is the pair a reader at a het site
-  // is most likely to be staring at.
-  const snpEntries = Object.entries(snps).sort(
-    ([aBase, a], [bBase, b]) => b.count - a.count || aBase.localeCompare(bBase),
-  )
-  // Sort modifications by name for consistent display order
-  const modEntries = modifications
-    ? [...modifications].sort((a, b) => a.name.localeCompare(b.name))
-    : []
-  const hasTotalStrands = fwdDepth !== undefined && revDepth !== undefined
+  const rows = coverageRows(bin)
   const columns: CoverageColumns = {
-    swatches: modEntries.length > 0 || snpEntries.length > 0,
-    avgProb: modEntries.length > 0,
-    strands:
-      modEntries.length > 0 ||
-      hasTotalStrands ||
-      snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0),
-  }
-
-  // Reads carrying the reference allele. `depth` counts every read over the
-  // position and `snps` holds mismatches only — a deleted base is in neither, an
-  // insertion is interbase — so the difference is the count a reader at a het
-  // site is after, and the table used to leave them to subtract it. Floored
-  // because the two tallies come from different arrays.
-  //
-  // The BASE is deliberately absent: `regionSequence` is fetched only for
-  // bisulfite colouring and never ships to the main thread, so this row is `Ref`
-  // rather than `Ref (G)`. Only drawn where there is an alt to weigh it against.
-  const altReads = snpEntries.reduce((sum, [, d]) => sum + d.count, 0)
-  const refRow = snpEntries.length > 0 && {
-    reads: Math.max(0, depth - altReads),
-    fwd: Math.max(
-      0,
-      (fwdDepth ?? 0) - snpEntries.reduce((s, [, d]) => s + d.fwd, 0),
-    ),
-    rev: Math.max(
-      0,
-      (revDepth ?? 0) - snpEntries.reduce((s, [, d]) => s + d.rev, 0),
-    ),
+    swatches: rows.some(r => r.color !== undefined || r.base !== undefined),
+    avgProb: rows.some(r => r.avgProb !== undefined),
+    strands: rows.some(r => r.strands !== undefined),
   }
 
   return (
     <table>
-      <caption>Coverage - {location}</caption>
+      <caption>Coverage - {formatLocation(refName, bin.position)}</caption>
       <thead>
         <tr>
           {columns.swatches ? <th /> : null}
@@ -271,58 +214,21 @@ export function CoverageTooltipContents({
         </tr>
       </thead>
       <tbody>
-        <CoverageRow
-          columns={columns}
-          label="Total"
-          reads={depth}
-          strands={
-            hasTotalStrands ? strandCounts(fwdDepth, revDepth) : undefined
-          }
-        />
-        {modEntries.map(data => (
-          <CoverageRow
-            key={`${data.name}-${data.color}`}
+        {rows.map(row => (
+          <CoverageTableRow
+            key={row.key}
             columns={columns}
-            swatch={data.color}
-            label={data.name}
-            reads={countOfTotal(data.count, depth)}
-            avgProb={`${(avgProbability(data) * 100).toFixed(1)}%`}
-            strands={strandCounts(data.fwd, data.rev)}
-          />
-        ))}
-        {/* SNP rows sit alongside the modification rows rather than instead of
-            them: at a CpG the A/C/G/T breakdown and the methylation calls are
-            exactly the pair worth disambiguating, which is why the per-read
-            modification tooltip carries its snpBase too. */}
-        {refRow ? (
-          <CoverageRow
-            columns={columns}
-            label="Ref"
-            reads={countOfTotal(refRow.reads, depth)}
-            strands={
-              hasTotalStrands ? strandCounts(refRow.fwd, refRow.rev) : undefined
+            swatch={
+              row.base === undefined
+                ? row.color
+                : baseColors[row.base.toUpperCase().charCodeAt(0)]
             }
-          />
-        ) : null}
-        {snpEntries.map(([base, data]) => (
-          <CoverageRow
-            key={base}
-            columns={columns}
-            swatch={baseColors[base.toUpperCase().charCodeAt(0)]}
-            label={base.toUpperCase()}
-            reads={countOfTotal(data.count, depth)}
-            strands={strandCounts(data.fwd, data.rev)}
+            label={row.label}
+            reads={row.reads}
+            avgProb={row.avgProb}
+            strands={row.strands}
           />
         ))}
-        {deletions ? (
-          // Deletions aren't in `depth` (a deleted base is absent from the
-          // read), so their share is out of depth + deletions, not depth.
-          <CoverageRow
-            columns={columns}
-            label={`Deletion (${formatLenRange(deletions.minLen, deletions.maxLen)})`}
-            reads={countOfTotal(deletions.count, depth + deletions.count)}
-          />
-        ) : null}
       </tbody>
     </table>
   )
@@ -561,6 +467,10 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
           </div>
         </BaseTooltip>
       )
+    }
+    default: {
+      const unhandled: never = tooltipData
+      return unhandled
     }
   }
 })

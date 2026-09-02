@@ -28,6 +28,7 @@ function isFramedUnpairedSplit(fill: number, flags: number) {
 }
 
 interface Seg {
+  name: string
   chain: number
   bucket: number
   start: number
@@ -105,15 +106,18 @@ function buildVotes(segs: Seg[], numChains: number, numBuckets: number) {
   const votes = keys.map(key => {
     const f = fwd.get(key) ?? 0
     const r = rev.get(key) ?? 0
+    const t = f + r
     return {
       chain: Math.floor(key / numBuckets),
       bucket: key % numBuckets,
-      v: (f - r) / (f + r),
+      // A zero-length bucket abstains: as `0 / 0` its NaN would make every
+      // comparison against the bucket total false, freezing the whole bucket.
+      v: t > 0 ? (f - r) / t : 0,
     }
   })
   const byChain: number[][] = Array.from({ length: numChains }, () => [])
-  votes.forEach((_, i) => {
-    byChain[votes[i]!.chain]!.push(i)
+  votes.forEach((vote, i) => {
+    byChain[vote.chain]!.push(i)
   })
   return { votes, byChain }
 }
@@ -225,14 +229,15 @@ export function consensusChainStrandFrames<T extends WorkerPileupData>(
   map: Map<number, T>,
   locusOf: (key: number) => number = key => key,
 ): Map<number, T> {
-  const chainIds = new Map<string, number>()
+  // `reconcileChainSuppAcrossRegions` has already made the frame one answer per
+  // chain, so the first segment met states it for the whole chain.
+  const seedByName = new Map<string, number>()
   const byLocus = new Map<number, Seg[]>()
-  let numSegs = 0
   for (const [key, data] of map) {
-    const segs = getOrCreate(byLocus, locusOf(key), () => [])
     if (!isChainData(data)) {
       continue
     }
+    const segs = getOrCreate(byLocus, locusOf(key), () => [])
     const {
       readChainIndices,
       chainNames,
@@ -242,53 +247,45 @@ export function consensusChainStrandFrames<T extends WorkerPileupData>(
       readChainHasSupp,
     } = data
     for (let i = 0; i < readChainIndices.length; i++) {
-      if (!isFramedUnpairedSplit(readChainHasSupp[i]!, readFlags[i]!)) {
+      const fill = readChainHasSupp[i]!
+      if (!isFramedUnpairedSplit(fill, readFlags[i]!)) {
         continue
       }
       const name = chainNames[readChainIndices[i]!]!
-      let id = chainIds.get(name)
-      if (id === undefined) {
-        id = chainIds.size
-        chainIds.set(name, id)
+      if (!seedByName.has(name)) {
+        seedByName.set(name, chainFrame(fill))
       }
       segs.push({
-        chain: id,
+        name,
+        chain: 0,
         bucket: 0,
         start: readPositions[i * 2]!,
         end: readPositions[i * 2 + 1]!,
         strand: readStrands[i]!,
       })
-      numSegs++
     }
   }
-  // One chain has nobody to agree with, and one segment per chain carries no
-  // relative orientation at all.
-  if (chainIds.size < 2 || numSegs < 2) {
+  // One chain has nobody to agree with.
+  if (seedByName.size < 2) {
     return map
   }
+
+  // Id order is the order `solveFrames` sweeps in, and of two conflicting chains
+  // the one met first is the one that flips, so it must not depend on which
+  // region's fetch landed first.
+  const names = [...seedByName.keys()].sort()
+  const chainIds = new Map(names.map((name, id) => [name, id]))
+  const frames = Int8Array.from(names, name => seedByName.get(name)!)
 
   const loci = [...byLocus.values()]
   const numBuckets = assignBuckets(loci)
   const all = loci.flat()
-  const frames = new Int8Array(chainIds.size).fill(1)
-  for (const data of map.values()) {
-    if (!isChainData(data)) {
-      continue
-    }
-    for (let i = 0; i < data.readChainIndices.length; i++) {
-      const fill = data.readChainHasSupp[i]!
-      if (!isFramedUnpairedSplit(fill, data.readFlags[i]!)) {
-        continue
-      }
-      const id = chainIds.get(data.chainNames[data.readChainIndices[i]!]!)
-      if (id !== undefined) {
-        frames[id] = chainFrame(fill)
-      }
-    }
+  for (const seg of all) {
+    seg.chain = chainIds.get(seg.name)!
   }
   const seeded = Int8Array.from(frames)
 
-  const { votes, byChain } = buildVotes(all, chainIds.size, numBuckets)
+  const { votes, byChain } = buildVotes(all, names.length, numBuckets)
   solveFrames(frames, votes, byChain, numBuckets)
 
   // Anchor the global sign, which the objective leaves free: keep whichever
@@ -316,8 +313,9 @@ export function consensusChainStrandFrames<T extends WorkerPileupData>(
       continue
     }
     const { readChainIndices, chainNames, readFlags, readChainHasSupp } = data
-    const merged = new Uint8Array(readChainHasSupp)
-    let dirty = false
+    // Reference identity matters downstream (the renderer's upload memo reads
+    // it), so a region the consensus agreed with keeps its own array.
+    let merged: Uint8Array | undefined
     for (let i = 0; i < readChainIndices.length; i++) {
       const fill = readChainHasSupp[i]!
       if (!isFramedUnpairedSplit(fill, readFlags[i]!)) {
@@ -328,12 +326,12 @@ export function consensusChainStrandFrames<T extends WorkerPileupData>(
         continue
       }
       const next = withChainFrame(fill, frames[id]!)
-      merged[i] = next
-      dirty = dirty || next !== fill
+      if (next !== fill) {
+        merged ??= new Uint8Array(readChainHasSupp)
+        merged[i] = next
+      }
     }
-    // Reference identity matters downstream (the renderer's upload memo reads
-    // it), so a region the consensus agreed with keeps its own array.
-    out.set(idx, dirty ? { ...data, readChainHasSupp: merged } : data)
+    out.set(idx, merged ? { ...data, readChainHasSupp: merged } : data)
   }
   return out
 }

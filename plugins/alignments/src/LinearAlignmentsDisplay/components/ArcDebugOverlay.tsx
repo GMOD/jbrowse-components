@@ -1,4 +1,4 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { measureText } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -7,7 +7,9 @@ import { bandScreenTop } from './sectionScreen.ts'
 
 import type { ArcMark } from '../../features/arcs/mark.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const LABEL_FONT_SIZE = 10
+const LABEL_PAD_X = 4
 
 const useStyles = makeStyles()(() => ({
   svg: {
@@ -43,7 +45,7 @@ const useStyles = makeStyles()(() => ({
   },
   label: {
     fill: '#000',
-    fontSize: 10,
+    fontSize: LABEL_FONT_SIZE,
     fontFamily: 'monospace',
   },
   labelBg: {
@@ -51,6 +53,12 @@ const useStyles = makeStyles()(() => ({
     opacity: 0.75,
   },
 }))
+
+// The label's own box, so a longer line is not clipped by a constant and a
+// shorter one does not white out the arcs beside it.
+function labelBoxWidth(text: string) {
+  return measureText(text, LABEL_FONT_SIZE, 'monospace') + LABEL_PAD_X * 2
+}
 
 // How wide the mark actually draws, which is what the label list ranks on. A
 // dome's is its `rx`; a bar's is the half-length it was widened to, and reading
@@ -98,9 +106,6 @@ const CrossRegionArcDebugBand = observer(function CrossRegionArcDebugBand({
 }) {
   const { classes } = useStyles()
   const top = bandScreenTop(section.bandTop, model.scrollModel)
-  const down =
-    model.renderSections.find(s => s.groupKey === section.groupKey)?.arcDown ??
-    false
   const labelled = [...section.arcs]
     .sort((a, b) => drawnHalfWidth(b.mark) - drawnHalfWidth(a.mark))
     .slice(0, 6)
@@ -117,28 +122,29 @@ const CrossRegionArcDebugBand = observer(function CrossRegionArcDebugBand({
         className={classes.ceiling}
         x1={0}
         x2={width}
-        y1={top + arcApexCeilingY(0, section.bandHeight, down)}
-        y2={top + arcApexCeilingY(0, section.bandHeight, down)}
+        y1={top + arcApexCeilingY(0, section.bandHeight, section.arcDown)}
+        y2={top + arcApexCeilingY(0, section.bandHeight, section.arcDown)}
       />
-      {labelled.map((arc, i) => (
-        <g key={arc.key} transform={`translate(6 ${top + 12 + i * 12})`}>
-          <rect
-            className={classes.labelBg}
-            x={-4}
-            y={-9}
-            width={330}
-            height={12}
-          />
-          {/* No `yBp`: a cross-region arc's drawn Y does not cross into
-              `CrossRegionArcShape`, and adding a field to a published type for a
-              debug label is a worse trade than one missing number. `span` is the
-              bp between its two feet and reads the same as the per-region row. */}
-          <text className={classes.label}>
-            {`x-region ${describeMark(arc.mark)} ` +
-              `span=${Math.abs(arc.end - arc.start)}bp n=${arc.support}`}
-          </text>
-        </g>
-      ))}
+      {labelled.map((arc, i) => {
+        // No `yBp`: a cross-region arc's drawn Y does not cross into
+        // `CrossRegionArcShape`, and adding a field to a published type for a
+        // debug label is a worse trade than one missing number.
+        const text =
+          `x-region ${describeMark(arc.mark)} ` +
+          `span=${Math.abs(arc.end - arc.start)}bp n=${arc.support}`
+        return (
+          <g key={arc.key} transform={`translate(6 ${top + 12 + i * 12})`}>
+            <rect
+              className={classes.labelBg}
+              x={-LABEL_PAD_X}
+              y={-9}
+              width={labelBoxWidth(text)}
+              height={12}
+            />
+            <text className={classes.label}>{text}</text>
+          </g>
+        )
+      })}
     </g>
   )
 })
@@ -161,7 +167,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
   model: LinearAlignmentsDisplayModel
 }) {
   const { classes } = useStyles()
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const { view } = model
   if (!model.debugArcGeometry || model.readConnections === 'off') {
     return null
   }
@@ -240,25 +246,27 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
                 <path key={i} className={classes.shape} d={s.d} />
               ))}
             </g>
-            {labelled.map((s, i) => (
-              <g
-                // eslint-disable-next-line @eslint-react/no-array-index-key -- the index IS the identity here: it is the label's row in the stack, as the transform below reads
-                key={`l${i}`}
-                transform={`translate(${band.clip.x + 6} ${band.clip.y + 12 + i * 12})`}
-              >
-                <rect
-                  className={classes.labelBg}
-                  x={-4}
-                  y={-9}
-                  width={330}
-                  height={12}
-                />
-                <text className={classes.label}>
-                  {`${describeMark(s.mark)} ` +
-                    `yBp=${s.yBp} span=${Math.abs(s.x2 - s.x1)}bp n=${s.support}`}
-                </text>
-              </g>
-            ))}
+            {labelled.map((s, i) => {
+              const text =
+                `${describeMark(s.mark)} ` +
+                `yBp=${s.yBp} span=${Math.abs(s.x2 - s.x1)}bp n=${s.support}`
+              return (
+                <g
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- the index IS the identity here: it is the label's row in the stack, as the transform below reads
+                  key={`l${i}`}
+                  transform={`translate(${band.clip.x + 6} ${band.clip.y + 12 + i * 12})`}
+                >
+                  <rect
+                    className={classes.labelBg}
+                    x={-LABEL_PAD_X}
+                    y={-9}
+                    width={labelBoxWidth(text)}
+                    height={12}
+                  />
+                  <text className={classes.label}>{text}</text>
+                </g>
+              )
+            })}
           </g>
         )
       })}

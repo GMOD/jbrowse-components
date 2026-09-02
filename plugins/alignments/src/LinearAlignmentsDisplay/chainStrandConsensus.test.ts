@@ -207,7 +207,8 @@ it('does not let one pileup frame a chain that is only at another', () => {
 })
 
 // The pass is fed by a fetch, so its answer must not depend on which region's
-// worker call landed first.
+// worker call landed first. The two regions must list the chains in opposite
+// order for this to bite.
 it('gives the same answer whichever order the regions arrive in', () => {
   const anchor = region([
     { chain: 'a', start: 1000, end: 1800, strand: 1 },
@@ -216,8 +217,8 @@ it('gives the same answer whichever order the regions arrive in', () => {
     { chain: 'b', start: 1200, end: 1500, strand: 1 },
   ])
   const insert = region([
-    { chain: 'a', start: 9000, end: 9200, strand: 1 },
     { chain: 'b', start: 9000, end: 9200, strand: -1 },
+    { chain: 'a', start: 9000, end: 9200, strand: 1 },
   ])
   const forwards = consensusChainStrandFrames(
     new Map([
@@ -232,6 +233,28 @@ it('gives the same answer whichever order the regions arrive in', () => {
     ]),
   )
   expect(fills(forwards, 1)).toEqual(fills(backwards, 1))
+  expect(fills(forwards, 1)).toEqual([FWD, REV])
+})
+
+it('is not silenced by a chain whose segment has zero length', () => {
+  const anchor = region([
+    { chain: 'a', start: 1000, end: 1800, strand: 1 },
+    { chain: 'a', start: 1200, end: 1500, strand: -1 },
+    { chain: 'b', start: 1000, end: 1800, strand: -1 },
+    { chain: 'b', start: 1200, end: 1500, strand: 1 },
+    { chain: 'c', start: 1400, end: 1400, strand: 1 },
+  ])
+  const insert = region([
+    { chain: 'a', start: 9000, end: 9200, strand: 1 },
+    { chain: 'b', start: 9000, end: 9200, strand: -1 },
+  ])
+  const out = consensusChainStrandFrames(
+    new Map([
+      [0, anchor],
+      [1, insert],
+    ]),
+  )
+  expect(fills(out, 1)).toEqual([REV, FWD])
 })
 
 // The frame is derived from what is on screen, so PANNING is the one input that

@@ -1,8 +1,16 @@
+import { Fragment } from 'react'
+
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 
 import SashimiArcLabels from './SashimiArcLabels.tsx'
-import { SASHIMI_SIDES, sashimiArcKey, sashimiSideBand } from './sashimiArcs.ts'
+import SashimiSelectionOutline from './SashimiSelectionOutline.tsx'
+import {
+  SASHIMI_SIDES,
+  sashimiArcKey,
+  sashimiSelectionKey,
+  sashimiSideBand,
+} from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
@@ -22,6 +30,7 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 // overrun it produced a figure the screen never showed.
 function SashimiSide({
   arcs,
+  groupKey,
   top,
   height,
   clipped,
@@ -29,8 +38,10 @@ function SashimiSide({
   width,
   showLabels,
   palette,
+  selectedKey,
 }: {
   arcs: SashimiArc[]
+  groupKey: string
   top: number
   height: number
   clipped: boolean
@@ -38,6 +49,7 @@ function SashimiSide({
   width: number
   showLabels: boolean
   palette: JBrowsePalette
+  selectedKey: string | undefined
 }) {
   if (arcs.length === 0) {
     return null
@@ -45,13 +57,17 @@ function SashimiSide({
   const body = (
     <>
       {arcs.map(arc => (
-        <path
-          key={sashimiArcKey(arc)}
-          d={arc.d}
-          stroke={arc.stroke}
-          strokeWidth={arc.strokeWidth}
-          fill="none"
-        />
+        <Fragment key={sashimiArcKey(arc)}>
+          {sashimiSelectionKey(groupKey, arc) === selectedKey ? (
+            <SashimiSelectionOutline arc={arc} palette={palette} />
+          ) : null}
+          <path
+            d={arc.d}
+            stroke={arc.stroke}
+            strokeWidth={arc.strokeWidth}
+            fill="none"
+          />
+        </Fragment>
       ))}
       <SashimiArcLabels arcs={arcs} show={showLabels} palette={palette} />
     </>
@@ -104,6 +120,7 @@ export default function SashimiArcsSvg({
         <SashimiSide
           key={`${section.groupKey}-${side}`}
           arcs={section[side]}
+          groupKey={section.groupKey}
           top={bandScreenTop(band.top, scroll)}
           height={band.height}
           clipped={band.clipped}
@@ -111,6 +128,7 @@ export default function SashimiArcsSvg({
           width={width}
           showLabels={model.showSashimiLabels}
           palette={palette}
+          selectedKey={model.selectedSashimiKey}
         />
       )
     }),

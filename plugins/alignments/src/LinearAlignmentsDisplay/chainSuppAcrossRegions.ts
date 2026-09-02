@@ -85,10 +85,10 @@ export function reconcileChainSuppAcrossRegions<T extends WorkerPileupData>(
       continue
     }
     const { readChainIndices, chainNames, readChainHasSupp } = data
-    const n = readChainIndices.length
-    const merged = new Uint8Array(n)
-    let changed = false
-    for (let i = 0; i < n; i++) {
+    // Reference identity matters downstream (the renderer's upload memo reads
+    // it), so a region the union agreed with keeps its own array.
+    let merged: Uint8Array | undefined
+    for (let i = 0; i < readChainIndices.length; i++) {
       const own = readChainHasSupp[i]!
       const entry = byChain.get(chainNames[readChainIndices[i]!]!)!
       // Re-answer the has-supp and frame bits from the union; carry this read's
@@ -98,12 +98,12 @@ export function reconcileChainSuppAcrossRegions<T extends WorkerPileupData>(
       const fill =
         chainSuppFill(entry.hasSupp, entry.primaryStrand) |
         (own & CHAIN_SPLIT_MASK)
-      merged[i] = fill
-      changed = changed || fill !== own
+      if (fill !== own) {
+        merged ??= new Uint8Array(readChainHasSupp)
+        merged[i] = fill
+      }
     }
-    // Reference identity matters downstream (the renderer's upload memo reads
-    // it), so a region the union agreed with keeps its own array.
-    out.set(idx, changed ? { ...data, readChainHasSupp: merged } : data)
+    out.set(idx, merged ? { ...data, readChainHasSupp: merged } : data)
   }
   return out
 }

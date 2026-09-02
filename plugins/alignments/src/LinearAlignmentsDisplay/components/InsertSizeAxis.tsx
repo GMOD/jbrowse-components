@@ -1,15 +1,21 @@
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
-import { leftAxisSpineX } from '../coverageAxisStyle.ts'
+import { AXIS_SVG_WIDTH, leftAxisSpineX } from '../coverageAxisStyle.ts'
 import TlenAxisLabel from './TlenAxisLabel.tsx'
 import { sectionKey } from './sectionScreen.ts'
 
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
-// x the "TLEN" caption sits at in down mode: left of the tick labels, which grow
-// leftward from the spine. Up mode's caption takes TlenAxisLabel's own default,
-// which is right of them for the same reason.
-const DOWN_MODE_CAPTION_X = 11
+// Half the rotated caption's own 10px height plus a px of margin, which is how
+// far in from the box edge it can sit with its glyphs still inside the box.
+const CAPTION_INSET_PX = 8
+
+// The caption goes on the far side of the AXIS_SVG_WIDTH box from the spine, so
+// it clears the tick labels, which grow out of the spine in either orientation.
+function captionX(down: boolean) {
+  return down ? CAPTION_INSET_PX : AXIS_SVG_WIDTH - CAPTION_INSET_PX
+}
 
 /**
  * The read-cloud insert-size (TLEN) axis, laid out inside a box
@@ -27,15 +33,18 @@ const DOWN_MODE_CAPTION_X = 11
 export default function InsertSizeAxis({
   ticks,
   down,
+  palette,
 }: {
   ticks: YScaleTicks
   down: boolean
+  palette: JBrowsePalette
 }) {
   const caption = (
     <TlenAxisLabel
       yTop={ticks.yTop}
       yBottom={ticks.yBottom}
-      x={down ? DOWN_MODE_CAPTION_X : undefined}
+      x={captionX(down)}
+      palette={palette}
     />
   )
   return down ? (
@@ -71,17 +80,24 @@ export function InsertSizeAxisStack({
   sections,
   down,
   yShift,
+  palette,
   x = 0,
 }: {
   sections: { groupKey: string; ticks: YScaleTicks }[]
   down: boolean
   yShift: number
+  palette: JBrowsePalette
   x?: number
 }) {
   return (
     <g transform={`translate(${x}, ${yShift})`}>
       {sections.map(({ groupKey, ticks }) => (
-        <InsertSizeAxis key={sectionKey(groupKey)} ticks={ticks} down={down} />
+        <InsertSizeAxis
+          key={sectionKey(groupKey)}
+          ticks={ticks}
+          down={down}
+          palette={palette}
+        />
       ))}
     </g>
   )

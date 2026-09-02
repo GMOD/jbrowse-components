@@ -10,6 +10,10 @@ import { hitTestArcBand } from '../../features/arcs/hitTest.ts'
 import { arcMark } from '../../features/arcs/mark.ts'
 import { hasArcBandInk } from '../../features/arcs/types.ts'
 import { ARC_APEX_FRACTION } from '../../shaders/slang/arc.consts.generated.ts'
+import {
+  ARC_LINE_DASH_PX,
+  ARC_LINE_GAP_PX,
+} from '../../shaders/slang/arcLine.consts.generated.ts'
 import { bandScreenTop, makeBpToPx } from './sectionScreen.ts'
 
 import type {
@@ -129,6 +133,8 @@ export interface ArcHighlight {
   d: string
   clip: ArcBandClip
   lineWidth: number
+  // `stroke-dasharray`, matching the mark's own. Only a tick is dashed.
+  dash?: string
 }
 
 // The block's own clamped screen span, carried alongside the hit-test frame
@@ -337,6 +343,12 @@ export function resolveArcBandHover(
       // one. One `arcLineWidth` call for both families, since ticks take their
       // width from support on the same curve the arcs do.
       lineWidth: arcLineWidth(hit.support, scale.lineWidth),
+      // The same pattern `arcLine.slang` and `drawArcs`'s `setLineDash` use
+      // (adr-051). Arcs are solid, so only a tick carries it.
+      dash:
+        hit.kind === 'tick'
+          ? `${ARC_LINE_DASH_PX} ${ARC_LINE_GAP_PX}`
+          : undefined,
     },
   }
 }

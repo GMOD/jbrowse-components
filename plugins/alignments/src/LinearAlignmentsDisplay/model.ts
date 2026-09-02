@@ -498,6 +498,12 @@ export default function stateModelFactory(
            * next move. `undefined` when not on an arc.
            */
           hoveredArcHighlight: undefined as ArcHighlight | undefined,
+          /**
+           * #volatile
+           * `sashimiSelectionKey` of the junction the sashimi detail widget is
+           * showing, or undefined.
+           */
+          selectedSashimiKey: undefined as string | undefined,
         }
       })
       // Named getters for frequently-tested conditions so the inline boolean
@@ -3315,6 +3321,14 @@ export default function stateModelFactory(
             if (self.selectedChainReadIds.length > 0) {
               self.selectedChainReadIds = []
             }
+            self.selectedSashimiKey = undefined
+          },
+
+          /**
+           * #action
+           */
+          setSelectedSashimiKey(key: string | undefined) {
+            self.selectedSashimiKey = key
           },
 
           /**

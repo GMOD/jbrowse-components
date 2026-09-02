@@ -3,7 +3,6 @@ import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
   buildChainConnectingData,
-  computeChainLayout,
   computeMultiRegionChainLayout,
   readYsFromRowMap,
 } from './computeChainLayout.ts'
@@ -148,20 +147,20 @@ function makeChainData(opts: {
   }
 }
 
-describe('computeChainLayout', () => {
+describe('single-region chain layout', () => {
   test('single chain with one read is placed at row 0', () => {
     const data = makeChainData({
       regionStart: 1000,
       chains: [{ name: 'readA', minStart: 1000, maxEnd: 1100, distance: 100 }],
     })
-    const { readYs, maxY } = computeChainLayout(data)
-    expect(readYs[0]).toBe(0)
+    const { rowMap, maxY } = computeMultiRegionChainLayout([[0, data]])
+    expect(readYsFromRowMap(data, rowMap)[0]).toBe(0)
     expect(maxY).toBe(1)
   })
 
   test('empty data returns maxY 0', () => {
     const data = makeChainData({ regionStart: 1000, chains: [] })
-    const { maxY } = computeChainLayout(data)
+    const { maxY } = computeMultiRegionChainLayout([[0, data]])
     expect(maxY).toBe(0)
   })
 
@@ -173,7 +172,8 @@ describe('computeChainLayout', () => {
         { name: 'readB', minStart: 1200, maxEnd: 1300, distance: 100 },
       ],
     })
-    const { readYs, maxY } = computeChainLayout(data)
+    const { rowMap, maxY } = computeMultiRegionChainLayout([[0, data]])
+    const readYs = readYsFromRowMap(data, rowMap)
     expect(readYs[0]).toBe(readYs[1])
     expect(maxY).toBe(1)
   })
@@ -186,7 +186,8 @@ describe('computeChainLayout', () => {
         { name: 'readB', minStart: 1100, maxEnd: 1300, distance: 200 },
       ],
     })
-    const { readYs, maxY } = computeChainLayout(data)
+    const { rowMap, maxY } = computeMultiRegionChainLayout([[0, data]])
+    const readYs = readYsFromRowMap(data, rowMap)
     expect(readYs[0]).not.toBe(readYs[1])
     expect(maxY).toBe(2)
   })
@@ -204,7 +205,8 @@ describe('computeChainLayout', () => {
         { name: 'readB', minStart: 100, maxEnd: 200, distance: 300 },
       ],
     })
-    const { readYs, maxY } = computeChainLayout(data)
+    const { rowMap, maxY } = computeMultiRegionChainLayout([[0, data]])
+    const readYs = readYsFromRowMap(data, rowMap)
     expect(readYs[0]).toBe(readYs[1]) // both in row 0 — no overlap
     expect(maxY).toBe(1)
   })
@@ -222,7 +224,8 @@ describe('computeChainLayout', () => {
         },
       ],
     })
-    const { readYs } = computeChainLayout(data)
+    const { rowMap } = computeMultiRegionChainLayout([[0, data]])
+    const readYs = readYsFromRowMap(data, rowMap)
     expect(readYs[0]).toBe(readYs[1])
   })
 

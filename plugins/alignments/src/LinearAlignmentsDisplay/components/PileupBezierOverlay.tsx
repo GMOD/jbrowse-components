@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import {
@@ -16,7 +15,6 @@ import { formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Takes the whole arc rather than positional (label, id1, id2) so the two ids
 // can't be transposed at the call site.
@@ -48,8 +46,8 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
 }) {
   const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
   const [hoveredArcId, setHoveredArcId] = useState<string | null>(null)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { bezierArcScope, scrollTop, height } = model
+  const { view } = model
+  const { bezierArcScope, height } = model
 
   // `view.width` is read AFTER this gate, never destructured alongside
   // `initialized` above it: destructuring evaluates the getter, and `width`
@@ -67,7 +65,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   }
   const { width } = view
 
-  const arcs = computePileupBezierArcsFromModel(model, view, scrollTop)
+  const arcs = computePileupBezierArcsFromModel(model, view)
 
   if (!arcs.length) {
     return null

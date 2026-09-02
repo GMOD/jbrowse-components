@@ -6,6 +6,7 @@ import {
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
 
+import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
@@ -19,6 +20,7 @@ function legendFor(
     presentTagValues?: ReadonlySet<string>
     presentModifications?: ReadonlySet<string>
     chainFramed?: boolean
+    refNamePosition?: RefNamePosition
   },
 ) {
   return getReadDisplayLegendItems({
@@ -169,10 +171,12 @@ describe('getReadDisplayLegendItems', () => {
       'Split segment (same strand)',
       'Normal',
     ])
-    expect(labels('mappingQuality', ['fwdStrand'])).toEqual([
-      'MAPQ 0',
-      'MAPQ 30',
-      'MAPQ 60',
+    expect(labels('perBaseQuality', ['fwdStrand'])).toEqual([
+      'BQ 0',
+      'BQ 10',
+      'BQ 20',
+      'BQ 30',
+      'BQ 40',
       'Split segment (same strand)',
     ])
   })
@@ -223,13 +227,32 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('modifications view surfaces chain-mode split reads after the mod-type key', () => {
+  // The read body, under the marks painted on top of it. fwd/revStrand is what
+  // this used to assert, and no read reaches those under this scheme: the
+  // chain-strand framing is held off the data-fill schemes (`dataFillSchemes`),
+  // so `schemeCategory` decides every read here and it answers modFwd/modRev.
+  test('modifications view names the read body after the mod-type key', () => {
     const mods = new Map([['m', 'red']])
-    expect(labels('modifications', ['fwdStrand', 'revStrand'], mods)).toEqual([
+    expect(labels('modifications', ['modFwd', 'modRev'], mods)).toEqual([
       '5mC',
-      'Split segment (same strand)',
-      'Split segment (inverted)',
+      'Read, forward strand',
+      'Read, reverse strand',
     ])
+    expect(labels('modifications', ['modFwd', 'modRev'], mods)).not.toContain(
+      'Split segment (same strand)',
+    )
+  })
+
+  // Picking "Tag" leaves the scheme set with no tag until the dialog resolves
+  // one, and a saved session can carry that shape. Every read paints the flat
+  // fallback then, so the box names it rather than rendering empty.
+  test('a tag scheme with no tag chosen keys the flat read fill', () => {
+    expect(legendFor({ type: 'tag' }, ['tag']).map(i => i.label)).toEqual([
+      'Reads',
+    ])
+    expect(legendFor({ type: 'tag' }, ['tag'])[0]!.color).toBe(
+      legendFor({ type: 'normal' }, ['plain'])[0]!.color,
+    )
   })
 
   test('value tag scheme lists the values on screen, sorted', () => {
@@ -237,6 +260,14 @@ describe('getReadDisplayLegendItems', () => {
       '1',
       '2',
     ])
+    // a numeric tag counts, rather than reading '10' as a word starting in '1'
+    expect(
+      tagLabels({ type: 'tag', tag: 'HP' }, new Set(['10', '2', '1'])),
+    ).toEqual(['1', '2', '10'])
+    // one non-integer and the whole vocabulary is text again, in one order
+    expect(
+      tagLabels({ type: 'tag', tag: 'RG' }, new Set(['10', '2', 'sampleA'])),
+    ).toEqual(['10', '2', 'sampleA'])
     // empty until reads carrying the tag are laid out
     expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set())).toEqual([])
     expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
@@ -262,6 +293,38 @@ describe('getReadDisplayLegendItems', () => {
     expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set(['1', '']))).toEqual([
       '1',
     ])
+  })
+
+  // The reads take their colour from the same position (`refNameColor`), so the
+  // swatch column reads down the karyotype instead of putting chr10 above chr2.
+  test('chromosome painting lists mate refNames in assembly order', () => {
+    const order = new Map([
+      ['chr1', 0],
+      ['chr2', 1],
+      ['chr10', 9],
+    ])
+    expect(
+      legendFor({ type: 'mateRefName' }, ['tag'], {
+        presentTagValues: new Set(['chr10', 'chr1', 'chr2']),
+        refNamePosition: name => order.get(name),
+      }).map(i => i.label),
+    ).toEqual(['chr1', 'chr2', 'chr10'])
+  })
+
+  test('…and puts the names it cannot place after the ones it can', () => {
+    const order = new Map([['chr2', 1]])
+    expect(
+      legendFor({ type: 'mateRefName' }, ['tag'], {
+        presentTagValues: new Set(['chrUn', 'chrM', 'chr2']),
+        refNamePosition: name => order.get(name),
+      }).map(i => i.label),
+    ).toEqual(['chr2', 'chrM', 'chrUn'])
+    // no assembly to ask (still loading) is the same fallback for every name
+    expect(
+      legendFor({ type: 'mateRefName' }, ['tag'], {
+        presentTagValues: new Set(['chr10', 'chr2']),
+      }).map(i => i.label),
+    ).toEqual(['chr10', 'chr2'])
   })
 
   test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {
@@ -887,6 +950,7 @@ describe('the overlap row', () => {
       palette: makeTestPalette({
         colorPairLR: [1, 1, 1],
         colorOverlap: [0.2, 0.2, 0.2],
+        colorOverlapTint: [0, 0, 1],
       }),
       overlaps,
     })
@@ -906,13 +970,14 @@ describe('the overlap row', () => {
   test('collapsed rows name a modifier, in two swatches', () => {
     const row = items('collapsed').at(-1)!
     expect(row.color).toBeUndefined()
-    // the read colour, then that colour composited under the 0.4 black tint —
-    // opaque, since a legend swatch is one `fill` for the SVG export too
+    // the read colour, then that colour 0.4 of the way to `colorOverlapTint` —
+    // the pass's own tint, not black, and opaque because a legend swatch is one
+    // `fill` for the SVG export too
     expect(row.swatches).toEqual([
       { color: 'rgb(255,255,255)' },
-      { color: 'rgb(153,153,153)' },
+      { color: 'rgb(153,153,255)' },
     ])
-    expect(row.label).toBe('Overlapping reads (darker = more)')
+    expect(row.label).toBe('Overlapping reads (tint = depth)')
   })
 
   test('sits last, after the colours it modifies', () => {

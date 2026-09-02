@@ -1,14 +1,88 @@
 ---
 name: alignments-display-review
-description: Review of plugins/alignments LinearAlignmentsDisplay — findings, what is being implemented in the alignments-display-review worktree, and what is still open
+description: Review of plugins/alignments LinearAlignmentsDisplay — every verified finding, what landed on the alignments-display-review worktree branch, and what is still open
 ---
 
 # LinearAlignmentsDisplay review handoff
 
-Worktree: `.claude/worktrees/alignments-display-review`, reset to local `main`
-at `ac47137850`. Nothing committed yet except this file. Three opus
-implementers and two opus reviewers may still be running in it when you read
-this — check `git status` there before editing, and do not `git stash`.
+Worktree: `.claude/worktrees/alignments-display-review`, branched from local
+`main` at `ac47137850`. Two implementation commits are on the worktree branch:
+batch one (`9f598924f7`) landed every first-pass finding, and batch two landed
+all three second-pass reviewer lists except the items under "Still open". The
+branch has not been rebased or merged to `main` yet.
+
+## Landed (both batches; verified by lint, typecheck, `test-related --with-web`)
+
+First pass: density-coverage doc block; sashimi and bezier hover through
+`setHoverState` (`setMouseoverExtraInformation` removed); bezier click selects
+the chain; one read tooltip in both modes with strand and MAPQ; line-width
+slider in the arc band options and the debug geometry toggle gated to dev;
+`setLayoutOrder`; scroll survives a refetch; GPU arc-only upload path
+(`renderers/arcOnlyUpload.test.ts`, bench in `benches/arcUploadPath.bench.ts`);
+feature-height dialog noun; SNP-floor radio snapping; typed `model.view`
+replaces the casts; strand/flags/mapq read without fallbacks.
+
+Second pass, colour modules: overlap legend swatch composites the real
+`colorOverlapTint` (label now "Overlapping reads (tint = depth)");
+`modFwd`/`modRev` are swatch categories so a modifications legend names the
+read body; an untagged `{type:'tag'}` keys the "Reads" row; categorical tag
+values hash into three relit laps of the palette (`colorTagUtils.ts`); baked
+legend values sort numerically or by assembly position; `readColorCategory` is
+an override ladder plus a scheme switch; dead exports and drifted comments gone;
+the unreachable legend tests retargeted.
+
+Second pass, chain and layout: chain ids assigned in sorted-name order so the
+consensus frame no longer depends on region arrival order (test strengthened);
+zero-length buckets abstain instead of voting NaN; single-region
+`computeChainLayout` deleted; typed-array `packedOverlapIntervals` for the
+collapsed relayout and `mergeSortedSpans` for the chain path (the unsorted
+`mergeSpans` had no caller and is gone; the canvas plugin's tuple-based copy
+stays separate on purpose, see below); group chip opacity applied to the
+background colour on both paths; chip inset, icon size and compact-axis font in
+`groupLabelStyle.ts`/`coverageAxisStyle.ts`; `YScaleTicks` down-mode reversal
+documented; replacement arrays allocated lazily.
+
+Second pass, tooltip and arc components: TLEN caption takes the palette; export
+chips cull and pin through the shared `groupChipTop`; arc hover highlight
+carries the mark's dash; sections emit `arcDown`; `coverageRows` in
+`tooltipUtils.ts` feeds both the hover table and the click widget (Ref and
+Deletion rows now in both, no "Ref 0" at zero depth); sashimi selection lives
+on the model (`selectedSashimiKey`) so the SVG export draws the outline; the
+remaining `getContainingView` casts use `model.view`; `resolveArcHover` reads
+the lane's own `arcsRpcDataMap`; tooltip payload switch is exhaustive; debug
+overlay label boxes measure their text.
+
+## Still open
+
+- `packages/core/src/ui/palette.ts:698-700` modification fills have no dark
+  variant, and the tag palette likewise. Decide separately; bigger job.
+- `plugins/alignments/src/shared/legendWidth.test.ts` sweeps `SCHEMES`/`ALL`
+  and neither lists `modifications` or the new `modFwd`/`modRev` rows, so
+  those labels are unmeasured against `LEGEND_MAX_WIDTH` (they fit today,
+  ~103px of 173px).
+- `perBaseQuality`/`perBaseLetter` paint marks over a `plain` body no legend
+  row names, the same gap closed for modifications. `plain` is not a
+  `SwatchCategory`, so it needs an explicit row in those `schemeLegend`
+  branches.
+- `spanOverlaps.ts` and `plugins/canvas/src/shared/mergeSpans.ts` stay separate:
+  canvas merges `[start, end]` tuples on a hot path, alignments merges
+  `{start, end}` objects, and core's `mergeIntervals` always sorts a copy so it
+  cannot back the sorted-input entry point.
+- `pnpm autogen` refuses on main and here alike: hand-written TS fences in the
+  docs exceed `DOC_FENCE_BASELINE` (49 vs 24). Not from this branch; the other
+  generated-doc drift in the main checkout is also not from this branch.
+
+## Parked / rejected
+
+- GroupByDialog firing two actions: the fetch autorun coalesces within a
+  microtask, so no double fetch. Dropped.
+- Layout, hit-test and both renderers' math checked against their parity tests;
+  no wrong-answer bug found there.
+
+## Original finding lists
+
+Kept for the line references; every item is either under "Landed" or "Still
+open" above.
 
 ## Confirmed findings (first pass, all verified by reading the code path)
 
@@ -53,32 +127,7 @@ UX
   `featureNoun`.
 - `menus/coverage.ts:151` SNP-floor radio ticks nothing for an off-list value.
 
-## Being implemented right now (three concurrent agents, file-partitioned)
-
-- Agent A owns `model.ts`, `PileupBezierOverlay.tsx`, `SashimiArcsOverlay.tsx`,
-  `CrossRegionArcsOverlay.tsx`, `menus/sortGroup.ts`, `menus/readConnections.ts`:
-  docs block move + `pnpm autogen`; hover via `setHoverState` and delete
-  `setMouseoverExtraInformation`; bezier chain select + test; `self.view`;
-  `stickyBandHeight` getter; one hover-band interface; `setLayoutOrder` action;
-  scroll-reset scoping (only if scrollTop is clamped on content shrink); line
-  width `makeSizeMenu` row + gate the debug toggle to dev; wrap callbacks.
-- Agent B owns `renderers/GpuAlignmentsRenderer.ts` + renderer tests: arc-only
-  upload path (re-upload `ARC_PASSES` only when layout/colours unchanged), test
-  with fake HAL, measurement if a bench fits.
-- Agent C owns `useAlignmentsBase.ts`, `tooltipUtils.ts`, `PileupComponent.tsx`,
-  `AlignmentsDisplayComponent.tsx`, `readLookup.ts`, `SetFeatureHeightDialog.tsx`,
-  `menus/featureSize.ts`, `menus/coverage.ts`, `menus/reads.ts`: one read
-  tooltip formatter (+MAPQ, keep strand), noun threading, SNP radio snapping,
-  callback wrapping, casts, strand fallback.
-
-Agents were told not to commit. When they report: run
-`pnpm lint --cache --fix`, typecheck, `pnpm test-related --with-web` (menu
-labels changed), then commit with an explicit pathspec.
-
-## Second-pass findings not yet assigned (colour modules reviewer, verified)
-
-Implement after A/B/C finish (touches `shared/legendUtils.ts`, `colorUtils.ts`,
-`colorTagUtils.ts`, `readTagColors.ts`, core `palette.ts`):
+## Second-pass findings: colour modules reviewer
 
 - bug `shared/legendUtils.ts:627-635` collapsed-overlap legend swatch composites
   black; pass paints `colorOverlapTint` = `palette.text.primary` (light in
@@ -108,18 +157,8 @@ Implement after A/B/C finish (touches `shared/legendUtils.ts`, `colorUtils.ts`,
 - refactor `colorUtils.ts:265-457` `readColorCategory` → override ladder +
   scheme switch.
 
-Two more reviewers (tooltip/arc components; chain/layout helpers) were still
-running — read their reports from the session if available, else re-run the
-same read-only review on those file sets.
 
-## Parked / rejected
-
-- GroupByDialog firing two actions: the fetch autorun coalesces within a
-  microtask, so no double fetch. Dropped.
-- Layout, hit-test and both renderers' math checked against their parity tests;
-  no wrong-answer bug found there.
-
-## Second-pass findings: chain and layout helpers reviewer (verified, unassigned)
+## Second-pass findings: chain and layout helpers reviewer
 
 - bug `chainStrandConsensus.ts:246-252,160,306` — consensus frame depends on
   chain ENCOUNTER order: ids assigned in walk order, sweep is id-ordered, and
@@ -154,11 +193,8 @@ same read-only review on those file sets.
   the `isChainData` guard; `insertSizeTicks.ts:16` dead `v === 0` branch;
   `spanOverlaps.ts:41` duplicates `plugins/canvas/src/shared/mergeSpans.ts`.
 
-Third reviewer (tooltip/arc components: AlignmentsTooltip, arcHitTest,
-chainOverlayUtils, sashimiArcs, pileupBezierArcs, ArcDebugOverlay,
-drawAlignmentLabels, *Svg export twins, GroupLabelBox) was still running.
 
-## Second-pass findings: tooltip and arc components reviewer (verified, unassigned)
+## Second-pass findings: tooltip and arc components reviewer
 
 - bug (dark mode) `components/TlenAxisLabel.tsx:17-25` caption has no `fill`;
   renders black on dark track and in dark export. Pass `palette.text.primary`
@@ -202,5 +238,3 @@ drawAlignmentLabels, *Svg export twins, GroupLabelBox) was still running.
   width omits the 14px chevron the screen chip draws, so export chips are
   ~14px narrower.
 
-All three second-pass reviewers have reported; their lists above are the
-remaining implementation queue.

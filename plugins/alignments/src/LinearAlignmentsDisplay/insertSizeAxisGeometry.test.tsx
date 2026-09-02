@@ -1,3 +1,4 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { ThemeProvider } from '@mui/material/styles'
 import { render } from '@testing-library/react'
@@ -42,7 +43,11 @@ function draw(down: boolean, boxLeft: number) {
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
         <g transform={`translate(${boxLeft}, 0)`}>
-          <InsertSizeAxis ticks={ticks} down={down} />
+          <InsertSizeAxis
+            ticks={ticks}
+            down={down}
+            palette={resolvePalette()}
+          />
         </g>
       </svg>
     </ThemeProvider>,

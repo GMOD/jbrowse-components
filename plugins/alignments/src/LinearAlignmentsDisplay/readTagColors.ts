@@ -117,7 +117,7 @@ function applyResolver(
   const n = tagValues.length
   const out = new Uint32Array(n)
   for (let i = 0; i < n; i++) {
-    out[i] = resolve(tagValues[i] ?? '', strands[i] ?? 0)
+    out[i] = resolve(tagValues[i]!, strands[i]!)
   }
   return out
 }

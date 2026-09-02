@@ -15,9 +15,8 @@ export const BEZIER_ARC_STROKE_OPACITY = 0.8
 
 // Single source of truth mapping model + view state to bezier-arc geometry, so
 // the on-screen overlay (PileupBezierOverlay) and the SVG export (renderSvg)
-// cannot drift in which fields feed the curves. Only `scrollTop` legitimately
-// differs — on-screen scrolls, export shows the full height — so it stays a
-// parameter. Returns [] unless the bezier connection overlay is enabled.
+// cannot drift in which fields feed the curves. Returns [] unless the bezier
+// connection overlay is enabled.
 //
 // Loops `model.renderSections` so every group's pairs get arcs, not just the
 // first; each section supplies its own `topOffset` (pileup band top) and
@@ -26,17 +25,12 @@ export const BEZIER_ARC_STROKE_OPACITY = 0.8
 export function computePileupBezierArcsFromModel(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,
-  scrollTop: number,
 ): PileupArc[] {
   // `bezierPairSections` is [] when the overlay is off and memoizes the
   // scroll-invariant pair enumeration, so a scroll frame only re-runs the
   // screen projection below.
   const bpToScreenX = makeBpToScreenX(view)
-  const scroll = {
-    isGrouped: model.isGrouped,
-    scrollTop,
-    canvasHeight: model.height,
-  }
+  const scroll = model.scrollModel
   const result: PileupArc[] = []
   for (const sec of model.bezierPairSections) {
     const bottom = sectionBandBottom(sec.topOffset, sec.pileupHeight, scroll)
@@ -49,7 +43,7 @@ export function computePileupBezierArcsFromModel(
         featureHeight: model.featureHeight,
         featureSpacing: model.featureSpacing,
         pileupTopOffset: sec.topOffset,
-        scrollTop,
+        scrollTop: scroll.scrollTop,
         viewportBottom: bottom,
       }),
     )

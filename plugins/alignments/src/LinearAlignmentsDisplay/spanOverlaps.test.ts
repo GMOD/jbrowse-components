@@ -1,4 +1,8 @@
-import { mergeSpans, overlapIntervals } from './spanOverlaps.ts'
+import {
+  mergeSortedSpans,
+  overlapIntervals,
+  packedOverlapIntervals,
+} from './spanOverlaps.ts'
 
 describe('overlapIntervals', () => {
   test('disjoint spans produce no overlaps', () => {
@@ -67,10 +71,10 @@ describe('overlapIntervals', () => {
   })
 })
 
-describe('mergeSpans', () => {
+describe('mergeSortedSpans', () => {
   test('overlapping spans collapse into their union', () => {
     expect(
-      mergeSpans([
+      mergeSortedSpans([
         { start: 100, end: 200 },
         { start: 150, end: 300 },
       ]),
@@ -79,18 +83,18 @@ describe('mergeSpans', () => {
 
   test('touching spans merge', () => {
     expect(
-      mergeSpans([
+      mergeSortedSpans([
         { start: 0, end: 100 },
         { start: 100, end: 200 },
       ]),
     ).toEqual([{ start: 0, end: 200 }])
   })
 
-  test('disjoint spans are kept separate and sorted', () => {
+  test('disjoint spans are kept separate', () => {
     expect(
-      mergeSpans([
-        { start: 300, end: 400 },
+      mergeSortedSpans([
         { start: 0, end: 100 },
+        { start: 300, end: 400 },
       ]),
     ).toEqual([
       { start: 0, end: 100 },
@@ -104,11 +108,36 @@ describe('mergeSpans', () => {
       { start: 100, end: 300 },
       { start: 150, end: 400 },
     ]
-    expect(mergeSpans(overlapIntervals(spans))).toEqual([
+    expect(mergeSortedSpans(overlapIntervals(spans))).toEqual([
       { start: 100, end: 300 },
     ])
   })
 })
+
+// Span sets with every overlap shape the tint has to survive.
+const cases = [
+  [
+    { start: 0, end: 100 },
+    { start: 0, end: 100 },
+    { start: 0, end: 100 },
+  ],
+  [
+    { start: 0, end: 100 },
+    { start: 10, end: 90 },
+    { start: 20, end: 30 },
+  ],
+  [
+    { start: 0, end: 10 },
+    { start: 20, end: 100 },
+    { start: 0, end: 100 },
+  ],
+  [
+    { start: 0, end: 100 },
+    { start: 10, end: 20 },
+    { start: 30, end: 40 },
+    { start: 35, end: 60 },
+  ],
+]
 
 // The property the collapsed-group tint depends on: alpha-blending the raw
 // (unmerged) output darkens each position exactly in proportion to how many
@@ -122,30 +151,6 @@ describe('overlapIntervals depth property', () => {
     return spans.filter(s => pos >= s.start && pos < s.end).length
   }
 
-  const cases = [
-    [
-      { start: 0, end: 100 },
-      { start: 0, end: 100 },
-      { start: 0, end: 100 },
-    ],
-    [
-      { start: 0, end: 100 },
-      { start: 10, end: 90 },
-      { start: 20, end: 30 },
-    ],
-    [
-      { start: 0, end: 10 },
-      { start: 20, end: 100 },
-      { start: 0, end: 100 },
-    ],
-    [
-      { start: 0, end: 100 },
-      { start: 10, end: 20 },
-      { start: 30, end: 40 },
-      { start: 35, end: 60 },
-    ],
-  ]
-
   test.each(cases.map((spans, i) => [i, spans] as const))(
     'case %i tints every position depth-1 times',
     (_i, spans) => {
@@ -156,4 +161,62 @@ describe('overlapIntervals depth property', () => {
       }
     },
   )
+})
+
+// The collapsed relayout takes the packed entry point and chain mode the object
+// one, so the two have to be the same sweep rather than a similar one.
+describe('packedOverlapIntervals', () => {
+  function packed(spans: { start: number; end: number }[]) {
+    const positions = Uint32Array.from(spans.flatMap(s => [s.start, s.end]))
+    return [...packedOverlapIntervals(positions, spans.length)]
+  }
+  function flattened(spans: { start: number; end: number }[]) {
+    return overlapIntervals(spans).flatMap(s => [s.start, s.end])
+  }
+
+  const fixtures = [
+    [],
+    [{ start: 0, end: 100 }],
+    [
+      { start: 0, end: 100 },
+      { start: 100, end: 200 },
+    ],
+    [
+      { start: 100, end: 250 },
+      { start: 0, end: 150 },
+    ],
+    [
+      { start: 0, end: 200 },
+      { start: 100, end: 300 },
+      { start: 150, end: 400 },
+    ],
+    [
+      { start: 0, end: 50 },
+      { start: 100, end: 500 },
+      { start: 200, end: 300 },
+    ],
+    // ties on start, where the object path relied on its sort being stable
+    [
+      { start: 0, end: 30 },
+      { start: 0, end: 10 },
+      { start: 0, end: 20 },
+    ],
+    ...cases,
+  ]
+
+  test.each(fixtures.map((spans, i) => [i, spans] as const))(
+    'fixture %i matches the object path exactly',
+    (_i, spans) => {
+      expect(packed(spans)).toEqual(flattened(spans))
+    },
+  )
+
+  test('the returned array is exactly the intervals found', () => {
+    expect(
+      packedOverlapIntervals(Uint32Array.from([0, 200, 100, 300]), 2).length,
+    ).toBe(2)
+    expect(
+      packedOverlapIntervals(Uint32Array.from([0, 100, 100, 200]), 2).length,
+    ).toBe(0)
+  })
 })

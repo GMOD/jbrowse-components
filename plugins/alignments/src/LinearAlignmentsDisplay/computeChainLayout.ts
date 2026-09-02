@@ -11,7 +11,7 @@ import { UNCAPPED, isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { getOrCreate } from '../shared/util.ts'
-import { mergeSpans, overlapIntervals } from './spanOverlaps.ts'
+import { mergeSortedSpans, overlapIntervals } from './spanOverlaps.ts'
 
 import type {
   RefNameSpans,
@@ -24,6 +24,7 @@ import type {
   RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
+import type { OverlapsUploadData } from '../features/overlap/types.ts'
 import type { Span } from './spanOverlaps.ts'
 
 // Total order over chains: packing distance first, then span, then chain name.
@@ -239,21 +240,6 @@ export function readYsFromRowMap(
 }
 
 /**
- * Compute chain row layout for a single region. Mirrors computeLayout() from
- * sortLayout.ts but groups reads into chains by name before layout so mates
- * always share a row. Sorted by chain distance so shorter insert-size pairs
- * pack first.
- */
-export function computeChainLayout(
-  data: WorkerPileupData,
-  maxRows = Number.POSITIVE_INFINITY,
-) {
-  const chains = mergeChains([[0, data]], undefined)
-  const { rowMap, maxY, truncated } = buildChainRowMap(chains, maxRows)
-  return { readYs: readYsFromRowMap(data, rowMap), maxY, truncated }
-}
-
-/**
  * Compute chain layout across multiple regions, deduplicating chains that
  * span region boundaries by read name. Returns a rowMap keyed by chain name
  * for distributing rows back to each region. Mirrors computeMultiRegionLayout()
@@ -348,7 +334,8 @@ function buildChainOverlaps(
   }
   for (const [chainIdx, spans] of spansByChain) {
     const y = readYs[multiReadChains.get(chainIdx)![0]!]!
-    for (const { start, end } of mergeSpans(overlapIntervals(spans))) {
+    // `overlapIntervals` emits in start order, so the sorted merge applies.
+    for (const { start, end } of mergeSortedSpans(overlapIntervals(spans))) {
       positions.push(start, end)
       ys.push(y)
     }
@@ -357,6 +344,21 @@ function buildChainOverlaps(
   return {
     overlapPositions: Uint32Array.from(positions),
     overlapYs: Uint16Array.from(ys),
+  }
+}
+
+interface ChainConnectingData extends OverlapsUploadData {
+  connectingLinePositions: Uint32Array
+  connectingLineYs: Uint16Array
+  chainFlatbush: Flatbush | undefined
+}
+
+function emptyChainConnectingData(): ChainConnectingData {
+  return {
+    connectingLinePositions: new Uint32Array(0),
+    connectingLineYs: new Uint16Array(0),
+    ...emptyOverlapsUploadData(),
+    chainFlatbush: undefined,
   }
 }
 
@@ -378,12 +380,7 @@ export function buildChainConnectingData(
   readYs: Uint16Array,
 ) {
   if (!isChainData(data)) {
-    return {
-      connectingLinePositions: new Uint32Array(0),
-      connectingLineYs: new Uint16Array(0),
-      ...emptyOverlapsUploadData(),
-      chainFlatbush: undefined as Flatbush | undefined,
-    }
+    return emptyChainConnectingData()
   }
 
   const {

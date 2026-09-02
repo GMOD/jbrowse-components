@@ -1,5 +1,6 @@
 import { hashString, refNameColor } from '@jbrowse/core/ui/colors'
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
+import { relight } from '@jbrowse/core/util/color'
 
 import type { ColorBy } from '../shared/types.ts'
 
@@ -12,7 +13,27 @@ import type { ColorBy } from '../shared/types.ts'
  */
 export type RefNamePosition = (refName: string) => number | undefined
 
-export const TAG_COLOR_PALETTE = tagColorPalette
+// Each lap around the palette re-lights the same ten hues, giving a hashed value
+// 30 positions to land in. Laps only darken: tol_light has no room to go lighter
+// against the track background.
+const TAG_PALETTE_LAP_TONES = [
+  undefined,
+  { lightnessShift: -0.18, chromaScale: 1.35 },
+  { lightnessShift: -0.36, chromaScale: 1.7 },
+]
+
+const TAG_PALETTE_POSITIONS =
+  tagColorPalette.length * TAG_PALETTE_LAP_TONES.length
+
+function tagPaletteColorAt(position: number) {
+  const hex = tagColorPalette[position % tagColorPalette.length]!
+  const lap =
+    TAG_PALETTE_LAP_TONES[
+      Math.floor(position / tagColorPalette.length) %
+        TAG_PALETTE_LAP_TONES.length
+    ]
+  return lap ? relight(hex, lap.lightnessShift, lap.chromaScale) : hex
+}
 
 // Palette slot for a tag value, derived from the VALUE rather than from the
 // order it was discovered in. Values stream in as regions load, so
@@ -27,15 +48,15 @@ export const TAG_COLOR_PALETTE = tagColorPalette
 // green. HP:0 means unphased where it appears at all, and lands at the far end of
 // the palette rather than sharing the leading color with a real haplotype.
 // Adjacent haplotypes stay adjacent and distinct, and discovering a new value
-// never shifts an existing one. Anything else hashes — stable for the same
-// reason, at the cost of occasional collisions between two values; discovery
-// order had those too, since it wrapped at the palette length.
+// never shifts an existing one. The integer branch stays on the ten base slots,
+// where adjacency is the point; anything else hashes into the lap-extended
+// positions, stable for the same reason at the cost of occasional collisions.
 function tagValueColor(value: string) {
-  const n = TAG_COLOR_PALETTE.length
+  const n = tagColorPalette.length
   const num = Number(value)
-  const idx =
-    Number.isInteger(num) && num >= 0 ? num + n - 1 : hashString(value)
-  return TAG_COLOR_PALETTE[idx % n]!
+  return Number.isInteger(num) && num >= 0
+    ? tagColorPalette[(num + n - 1) % n]!
+    : tagPaletteColorAt(hashString(value) % TAG_PALETTE_POSITIONS)
 }
 
 /**

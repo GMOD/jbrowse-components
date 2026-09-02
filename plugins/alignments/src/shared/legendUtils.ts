@@ -256,8 +256,8 @@ function hslRamp(
 // is the order, the same way `GROUP_BY_DIMENSIONS`' is its menu order. The
 // swatch color is resolved from the live palette (categorySwatchColor), so
 // wording is the only thing the legend hard-codes. Categories absent from
-// `SwatchCategory` ('plain', 'mapq', 'tag', 'modFwd'/'modRev') are dynamic
-// ramps/palettes with no single swatch and are keyed by `schemeLegend` instead.
+// `SwatchCategory` ('plain', 'mapq', 'tag') are keyed by `schemeLegend`
+// instead.
 //
 // A `Record<SwatchCategory, …>` and not an array. `colorUtils` calls this pair
 // correct BY CONSTRUCTION — "the legend can never list a color the renderer
@@ -275,6 +275,9 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   fwdStrand: 'Forward strand',
   revStrand: 'Reverse strand',
   noStrand: 'Unstranded',
+  // the modification scheme's read body, under the marks it paints on top
+  modFwd: 'Read, forward strand',
+  modRev: 'Read, reverse strand',
   nonSplit: 'Unsplit read',
   // From the shared table, because the group-by section chips name the same four
   // buckets (`pairOrientationKey`) and a swatch row and the section it labels
@@ -338,6 +341,11 @@ export const LEGEND_MAX_WIDTH = 230
 // separately incomplete.
 const CATEGORY_ORDER = Object.keys(CATEGORY_LEGEND) as SwatchCategory[]
 
+// The same table, widened so a consumer holding a bare `ReadColorCategory` reads
+// the `string | undefined` the type states rather than one a cast hides.
+const CATEGORY_LABELS: Partial<Record<ReadColorCategory, string>> =
+  CATEGORY_LEGEND
+
 // The wording for one category, for consumers outside the legend box that still
 // have to name a color bucket — the arc hover tooltip is the first, so the
 // tooltip and the swatch beside it cannot say different things about the same
@@ -354,10 +362,9 @@ const CATEGORY_ORDER = Object.keys(CATEGORY_LEGEND) as SwatchCategory[]
 // nothing.
 export function readColorCategoryLabel(
   category: ReadColorCategory,
-  overrides: Partial<Record<SwatchCategory, string>> = {},
-): string | undefined {
-  const key = category as SwatchCategory
-  return overrides[key] ?? CATEGORY_LEGEND[key]
+  overrides: Partial<Record<ReadColorCategory, string>> = {},
+) {
+  return overrides[category] ?? CATEGORY_LABELS[category]
 }
 
 // Under any scheme that colors ordinary reads by something OTHER than their own
@@ -599,20 +606,21 @@ function bucketItems(
  * once: it named a color the pass didn't paint, and under any scheme but pair
  * orientation it named a pair of colors nothing on screen carried.
  *
- * **Collapsed group rows: two swatches, "this but darker".** There the mark IS
+ * **Collapsed group rows: two swatches, "this but tinted".** There the mark IS
  * a modifier — unrelated reads deliberately share a row, spans are not merged
  * (`collapsedLayout`, and the `mergeSpans` note in the display's CLAUDE.md), so
- * the tint stacks and the darkness is the depth. There is no single swatch to
+ * the tint stacks and the strength is the depth. There is no single swatch to
  * list, because the tint lands on whatever the reads underneath already carry:
- * under an insert-size scheme it darkens five different colors. The neutral
+ * under an insert-size scheme it tints five different colors. The neutral
  * read color and that same color tinted is the only honest form, and
  * `LegendItem.swatches` exists for exactly this — one meaning drawn twice.
  *
- * **Composited to an opaque color, not shipped as `rgba(0,0,0,0.4)`.**
+ * **Composited to an opaque color, not shipped as an alpha fill.**
  * `LegendSwatchGlyph` emits one `fill` for both the on-screen box and the SVG
  * export, and an alpha fill is not honored by every consumer an exported figure
- * reaches. `OVERLAP_ALPHA` is the shader's own constant (adr-051), so the
- * composite cannot drift from the ink it describes.
+ * reaches. Both halves of the composite are the pass's own — `OVERLAP_ALPHA`
+ * the shader constant (adr-051), `colorOverlapTint` the palette entry
+ * `overlap.slang` reads — so it cannot drift from the ink it describes.
  */
 function getOverlapLegendItem(
   palette: ColorPalette,
@@ -625,13 +633,19 @@ function getOverlapLegendItem(
     }
   }
   const [r, g, b] = palette.colorPairLR
-  const k = 1 - OVERLAP_ALPHA
+  const [tintR, tintG, tintB] = palette.colorOverlapTint
   return {
     swatches: [
       { color: rgb255(palette.colorPairLR) },
-      { color: rgb255([r * k, g * k, b * k]) },
+      {
+        color: rgb255([
+          r + (tintR - r) * OVERLAP_ALPHA,
+          g + (tintG - g) * OVERLAP_ALPHA,
+          b + (tintB - b) * OVERLAP_ALPHA,
+        ]),
+      },
     ],
-    label: 'Overlapping reads (darker = more)',
+    label: 'Overlapping reads (tint = depth)',
   }
 }
 
@@ -818,13 +832,49 @@ function bakedValueLegend(
   present: ReadonlySet<string> | undefined,
   refNamePosition: RefNamePosition | undefined,
 ): LegendItem[] {
-  return [...(present ?? [])]
-    .filter(value => value !== '')
-    .sort((a, b) => a.localeCompare(b))
-    .map(value => ({
-      color: bakedValueColor(colorBy, value, refNamePosition),
-      label: value,
-    }))
+  const values = [...(present ?? [])].filter(value => value !== '')
+  return sortedBakedValues(values, colorBy, refNamePosition).map(value => ({
+    color: bakedValueColor(colorBy, value, refNamePosition),
+    label: value,
+  }))
+}
+
+const INTEGER_VALUE = /^-?\d+$/
+
+// "1, 2, 10" and not "1, 10, 2": HP, NM and cluster ids are numbers written as
+// text. Only when every value is an integer, so a mixed vocabulary keeps one
+// order rather than two.
+function valueCompare(values: string[]) {
+  return values.every(value => INTEGER_VALUE.test(value))
+    ? (a: string, b: string) => Number(a) - Number(b)
+    : (a: string, b: string) => a.localeCompare(b)
+}
+
+// Chromosome painting lists in the assembly's own chromosome order — the order
+// the reads are coloured in (`refNameColor` hands the palette out by position),
+// so the swatch column reads down the karyotype. A name the assembly cannot
+// place, and every name while it is still loading, falls back to the rule above
+// and sorts after the placed ones.
+function sortedBakedValues(
+  values: string[],
+  colorBy: ColorBy,
+  refNamePosition: RefNamePosition | undefined,
+) {
+  const compare = valueCompare(values)
+  const position = colorBy.type === 'mateRefName' ? refNamePosition : undefined
+  return position === undefined
+    ? [...values].sort(compare)
+    : [...values].sort((a, b) => {
+        const posA = position(a)
+        const posB = position(b)
+        return posA === undefined
+          ? posB === undefined
+            ? compare(a, b)
+            : 1
+          : posB === undefined
+            ? -1
+            : posA - posB
+      })
 }
 
 // XS/TS/ts encode strand rather than a categorical value, so they are keyed by
@@ -879,7 +929,15 @@ function schemeLegend({
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing.
-  if (colorBy === undefined || colorBy.type === 'normal') {
+  //
+  // A `tag` scheme with no tag chosen yet paints that same flat colour
+  // (`categoryColor`'s tag branch, with nothing baked to look up), so it keys
+  // the same row rather than an empty box.
+  if (
+    colorBy === undefined ||
+    colorBy.type === 'normal' ||
+    (colorBy.type === 'tag' && colorBy.tag === undefined)
+  ) {
     return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }]
   }
   const colorType = colorBy.type

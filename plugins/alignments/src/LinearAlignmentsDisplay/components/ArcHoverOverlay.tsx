@@ -44,7 +44,7 @@ const ArcHoverOverlay = observer(function ArcHoverOverlay({
   if (!highlight) {
     return null
   }
-  const { d, clip, lineWidth } = highlight
+  const { d, clip, lineWidth, dash } = highlight
   const clipId = `arc-hover-clip-${model.id}`
   return (
     <svg className={classes.svg} height={model.height}>
@@ -61,6 +61,7 @@ const ArcHoverOverlay = observer(function ArcHoverOverlay({
         className={classes.path}
         d={d}
         strokeWidth={lineWidth + 3}
+        strokeDasharray={dash}
         clipPath={`url(#${clipId})`}
       />
     </svg>

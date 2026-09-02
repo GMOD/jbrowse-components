@@ -13,9 +13,6 @@ import type { YScaleTicks } from '@jbrowse/wiggle-core'
 // kb/Mb values round to a whole number (e.g. 33950 → "34kb", not "34.0kb") since
 // a fractional unit on a coarse insert-size tick reads as noise (reviewer).
 function formatBp(v: number) {
-  if (v === 0) {
-    return '0'
-  }
   if (v >= 1_000_000) {
     const mb = v / 1_000_000
     return `${mb >= 10 ? Math.round(mb) : mb % 1 === 0 ? mb : mb.toFixed(1)}Mb`
@@ -112,6 +109,8 @@ export function computeInsertSizeTicks({
     })
   }
 
+  // Down mode anchors insert size 0 at the band TOP, so the pair comes back
+  // reversed: `yTop` carries the domain min there and `yBottom` the max.
   const yTop = band.down ? anchor : anchor - availH
   const yBottom = band.down ? anchor + availH : anchor
   return { items, yTop, yBottom }

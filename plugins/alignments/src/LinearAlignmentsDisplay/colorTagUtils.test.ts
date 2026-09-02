@@ -1,6 +1,11 @@
-import { getQueryColor, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
+import {
+  getQueryColor,
+  hashString,
+  refNamePaletteColorAt,
+} from '@jbrowse/core/ui/colors'
+import { tagColorPalette } from '@jbrowse/core/ui/palette'
 
-import { TAG_COLOR_PALETTE, bakedValueColor } from './colorTagUtils.ts'
+import { bakedValueColor } from './colorTagUtils.ts'
 
 import type { ColorBy } from '../shared/types.ts'
 
@@ -16,10 +21,10 @@ const tagColor = (value: string) => bakedValueColor(TAG, value)
 // Haplotypes are numbered from 1, so HP:1 takes the leading color and HP:0
 // (unphased) the last one rather than sharing a color with a real haplotype.
 test('numeric tag values index the palette anchored at 1', () => {
-  const n = TAG_COLOR_PALETTE.length
-  expect(tagColor('1')).toBe(TAG_COLOR_PALETTE[0])
-  expect(tagColor('2')).toBe(TAG_COLOR_PALETTE[1])
-  expect(tagColor('0')).toBe(TAG_COLOR_PALETTE[n - 1])
+  const n = tagColorPalette.length
+  expect(tagColor('1')).toBe(tagColorPalette[0])
+  expect(tagColor('2')).toBe(tagColorPalette[1])
+  expect(tagColor('0')).toBe(tagColorPalette[n - 1])
 })
 
 // The property is now structural — there is no state for an order to be
@@ -32,8 +37,17 @@ test('a value resolves the same color whatever else is on screen', () => {
 })
 
 test('numeric values past the palette length wrap', () => {
-  const n = TAG_COLOR_PALETTE.length
-  expect(tagColor(`${n + 1}`)).toBe(TAG_COLOR_PALETTE[0])
+  const n = tagColorPalette.length
+  expect(tagColor(`${n + 1}`)).toBe(tagColorPalette[0])
+})
+
+test('a dozen categorical values do not collapse onto ten colors', () => {
+  const values = 'ABCDEFGHIJKL'.split('').map(letter => `sample${letter}`)
+  expect(new Set(values.map(tagColor)).size).toBe(values.length)
+  const tenSlots = values.map(
+    v => tagColorPalette[hashString(v) % tagColorPalette.length],
+  )
+  expect(new Set(tenSlots).size).toBeLessThan(values.length)
 })
 
 // These used to be a live hazard: the map was probed with `map[value]`, so a
@@ -43,7 +57,10 @@ test('numeric values past the palette length wrap', () => {
 // real ones a tag can carry.
 test('values naming prototype members take real colors', () => {
   for (const value of ['toString', 'constructor', 'hasOwnProperty']) {
-    expect(TAG_COLOR_PALETTE).toContain(tagColor(value))
+    expect(
+      tagColorPalette.includes(tagColor(value)) ||
+        /^#[0-9a-f]{6}$/.test(tagColor(value)),
+    ).toBe(true)
   }
 })
 

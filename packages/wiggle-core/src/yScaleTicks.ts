@@ -13,7 +13,8 @@ import { YSCALEBAR_LABEL_OFFSET } from './constants.ts'
 // `computeCoverageTicks` and `computeInsertSizeTicks` — against three different
 // renderers, so the agreement is per producer and each one owns it. `computeInsertSizeTicks` states the
 // same rule in its own words, and derives its geometry from the very functions
-// the arcs are drawn with.
+// the arcs are drawn with. Its down-anchored mode returns the pair reversed,
+// `yTop` at domain-min, so a consumer wanting a span must take min and max.
 //
 // The half-pixel a 1px stroke needs to land crisply is the *drawing's*
 // business, not this type's. Folding it into the values skews every tick to buy

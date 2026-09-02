@@ -5,18 +5,22 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
+import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
   GROUP_LABEL_BG_OPACITY,
   GROUP_LABEL_FONT_SIZE,
   GROUP_LABEL_HEIGHT,
+  GROUP_LABEL_ICON_SIZE,
+  GROUP_LABEL_INSET_X,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
+  groupChipTop,
   groupSectionLabel,
 } from '../groupLabelStyle.ts'
 import { laneExpandable } from '../model.ts'
-import { bandOnScreen, bandScreenTop, sectionKey } from './sectionScreen.ts'
+import { bandScreenTop, sectionKey } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
@@ -30,8 +34,7 @@ const useStyles = makeStyles()(theme => {
     // chip can never outgrow the space left for it.
     height: GROUP_LABEL_HEIGHT,
     color: theme.palette.text.secondary,
-    background: theme.palette.background.paper,
-    opacity: GROUP_LABEL_BG_OPACITY,
+    background: alpha(theme.palette.background.paper, GROUP_LABEL_BG_OPACITY),
     borderRadius: GROUP_LABEL_RADIUS,
     whiteSpace: 'nowrap' as const,
     userSelect: 'none' as const,
@@ -48,7 +51,7 @@ const useStyles = makeStyles()(theme => {
     },
     controls: {
       position: 'absolute' as const,
-      left: 4,
+      left: GROUP_LABEL_INSET_X,
       display: 'flex',
       alignItems: 'center',
       gap: 2,
@@ -65,14 +68,14 @@ const useStyles = makeStyles()(theme => {
       border: 'none',
       pointerEvents: 'auto' as const,
       '&:hover': {
-        opacity: 1,
+        background: theme.palette.background.paper,
       },
     },
     // Non-interactive header when the pileup is hidden — collapse/expand are
     // no-ops on a coverage-only stack, so the group name is just a label.
     label: chip,
     icon: {
-      fontSize: 14,
+      fontSize: GROUP_LABEL_ICON_SIZE,
     },
   }
 })
@@ -141,14 +144,9 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     <>
       {renderSections.map((section, i) => {
         const top = bandScreenTop(section.coverageTop, scroll)
-        // A section owns the strip from its own coverage top down to the next
-        // one's (`Section.height`), which is what the chip is a header for.
-        // Culling — and the sticky pin below — on the coverage band alone
-        // dropped the label of a group still filling the viewport, and with
-        // coverage hidden that band is 0px, so the label went the moment the
-        // section's top edge crossed the top of the canvas.
-        const { height } = section
-        if (!bandOnScreen(top, height, scroll)) {
+        // Cull and sticky-pin per `groupChipTop`, which the export shares.
+        const chipTop = groupChipTop(top, section.height, scroll)
+        if (chipTop === undefined) {
           return null
         }
         const label = groupSectionLabel(section.label)
@@ -156,15 +154,6 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         // entry IS its lane, chip state included.
         const { collapsed } = section
         const hasOverride = section.heightOverridePx !== undefined
-        // Sticky: hold the chip at the top of the canvas while its section
-        // scrolls past, then let it go with the section's own bottom edge, so a
-        // group on its way off the top doesn't park its name over the next
-        // group's. Pin first, release second — the other order floors the
-        // release at 0 and the chip never yields.
-        const chipTop = Math.min(
-          Math.max(0, top),
-          top + height - GROUP_LABEL_HEIGHT,
-        )
         const heightButton =
           canSizeGroupHeights &&
           !collapsed &&

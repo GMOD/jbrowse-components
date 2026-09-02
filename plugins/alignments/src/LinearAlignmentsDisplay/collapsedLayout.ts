@@ -2,13 +2,12 @@ import {
   cloneWithLayout,
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
-import { overlapIntervals } from './spanOverlaps.ts'
+import { packedOverlapIntervals } from './spanOverlaps.ts'
 
 import type {
   LaidOutPileupData,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { Span } from './spanOverlaps.ts'
 
 // Lay a group out as a single row: every feature sits on row 0 and paints over
 // the ones it overlaps, with the overlap tint layer carrying the depth. One lane
@@ -39,33 +38,25 @@ export function collapsedLayoutMaxY(
   return 0
 }
 
+// The tint instances for one region: one per (depth - 1) at each position, all
+// on row 0. Packed straight into the `overlap*` arrays the existing chain-mode
+// tint pass already renders on both backends.
+//
 // Exon spans, not read extents. `readPositions` is the read's full aligned
 // extent, intron included, so a spliced read tinted its own introns as covered
 // — a solid depth bar with the 1px junction line sitting on it, disagreeing
 // with the coverage histogram directly above, which subtracts skips. Segments
 // are the spans `drawReads` paints, and two segments of one read cannot overlap
 // each other, so the depth stays right.
-function readSpans({
+function collapsedOverlaps({
   segmentPositions,
   numSegments,
-}: WorkerPileupData): Span[] {
-  return Array.from({ length: numSegments }, (_, i) => ({
-    start: segmentPositions[i * 2]!,
-    end: segmentPositions[i * 2 + 1]!,
-  }))
-}
-
-// The tint instances for one region: one per (depth - 1) at each position, all
-// on row 0. Packed straight into the `overlap*` arrays the existing chain-mode
-// tint pass already renders on both backends.
-function collapsedOverlaps(data: WorkerPileupData) {
-  const overlaps = overlapIntervals(readSpans(data))
-  const overlapPositions = new Uint32Array(overlaps.length * 2)
-  for (const [i, { start, end }] of overlaps.entries()) {
-    overlapPositions[i * 2] = start
-    overlapPositions[i * 2 + 1] = end
+}: WorkerPileupData) {
+  const overlapPositions = packedOverlapIntervals(segmentPositions, numSegments)
+  return {
+    overlapPositions,
+    overlapYs: new Uint16Array(overlapPositions.length / 2),
   }
-  return { overlapPositions, overlapYs: new Uint16Array(overlaps.length) }
 }
 
 export function buildCollapsedPileupMap(

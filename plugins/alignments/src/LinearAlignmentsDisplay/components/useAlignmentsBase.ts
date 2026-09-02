@@ -26,6 +26,7 @@ import {
   formatReadTooltip,
 } from './tooltipUtils.ts'
 
+import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
@@ -162,16 +163,16 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // every gesture switches over.
   //
   // Kept OUT of `performHitTest`: that pipeline is the pileup's, and takes a
-  // resolved block of laid-out reads. Arcs are a different feed (per group, per
-  // region, straight off `arcsByGroup`), drawn into a band of their own, and a
-  // lane can have arcs with no drawn pileup at all — read-cloud mode is exactly
-  // that. Threading them through the block pipeline would have made the block
-  // the gate on a hover that does not depend on one.
+  // resolved block of laid-out reads. Arcs are a different feed (per lane, per
+  // region), drawn into a band of their own, and a lane can have arcs with no
+  // drawn pileup at all — read-cloud mode is exactly that. Threading them
+  // through the block pipeline would have made the block the gate on a hover
+  // that does not depend on one.
   function resolveArcHover(
     canvasX: number,
     canvasY: number,
     section: {
-      groupKey: string
+      arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
       arcBandTop: number
       arcBandHeight: number
       arcDown: boolean
@@ -186,9 +187,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (!region) {
       return undefined
     }
-    const arcs = model.arcsByGroup
-      .get(section.groupKey)
-      ?.get(region.displayedRegionIndex)
+    const arcs = section.arcsRpcDataMap.get(region.displayedRegionIndex)
     const hover = resolveArcBandHover(canvasX, canvasY, arcs, {
       region,
       band: section,
