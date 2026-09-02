@@ -9,6 +9,10 @@
 //   pnpm autogen gallery                  only generators whose name contains 'gallery'
 //   pnpm autogen --skip-figure-dependent  drop the generators that read the
 //                                         figure corpus or figures.lock
+//   pnpm autogen --skip-whole-repo-program drop the generators that build a
+//                                         TypeScript program over the whole
+//                                         tree (the pre-push hook; CI runs
+//                                         them)
 
 import { spawn } from 'node:child_process'
 import { availableParallelism } from 'node:os'
@@ -18,7 +22,12 @@ import { fileURLToPath } from 'node:url'
 import { figureRootPulled } from '../website/scripts/figure-paths.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const FLAGS = ['--check', '--fix-stale', '--skip-figure-dependent']
+const FLAGS = [
+  '--check',
+  '--fix-stale',
+  '--skip-figure-dependent',
+  '--skip-whole-repo-program',
+]
 const args = process.argv.slice(2)
 const unknownFlags = args.filter(a => a.startsWith('--') && !FLAGS.includes(a))
 if (unknownFlags.length > 0) {
@@ -29,6 +38,7 @@ if (unknownFlags.length > 0) {
 }
 const fixStale = args.includes('--fix-stale')
 const skipFigureDependent = args.includes('--skip-figure-dependent')
+const skipWholeRepoProgram = args.includes('--skip-whole-repo-program')
 // `--fix-stale` starts as a check and flips once it knows what to rewrite.
 let checking = args.includes('--check') || fixStale
 const filters = args.filter(a => !a.startsWith('--'))
@@ -39,6 +49,10 @@ interface Generator {
   // Reads the figure corpus or figures.lock, so its answer is only CI's answer
   // when the two agree. `--skip-figure-dependent` drops these.
   figureDependent?: boolean
+  // Builds a TypeScript program over every source in the tree, which costs
+  // whole seconds however little has changed and cannot be narrowed to a push.
+  // `--skip-whole-repo-program` drops these; see the flag's own note.
+  wholeRepoProgram?: boolean
   // Rewrites a package.json, which every node process resolves modules
   // through, so a rewrite runs it with nothing else in flight.
   exclusive?: boolean
@@ -216,6 +230,7 @@ const GENERATORS: Generator[] = [
     name: 'config/model/api docs',
     argv: api('generate.ts'),
     needs: ['config schema manifest'],
+    wholeRepoProgram: true,
   },
 ]
 
@@ -285,7 +300,20 @@ if (figureSkipped.length > 0) {
   )
   skipped.push(...figureSkipped.map(g => g.name))
 }
-const selected = matched.filter(g => !figureSkipped.includes(g))
+const programSkipped = skipWholeRepoProgram
+  ? matched.filter(g => g.wholeRepoProgram)
+  : []
+if (programSkipped.length > 0) {
+  console.log(
+    `Skipping the whole-repo-program generators: ${programSkipped
+      .map(g => g.name)
+      .join(', ')}`,
+  )
+  skipped.push(...programSkipped.map(g => g.name))
+}
+const selected = matched.filter(
+  g => !figureSkipped.includes(g) && !programSkipped.includes(g),
+)
 
 // A rewrite drops the generators another one in the same run redoes; a check
 // keeps them, since that one names the stale table where the other can only

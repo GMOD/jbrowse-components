@@ -48,21 +48,23 @@
 # WHAT IT COSTS. Measured warm on 2026-09-01, on a machine at load 6-12 with
 # other agents running:
 #   pnpm figures:check       1.5s
-#   pnpm autogen --check    22.5s  of which ONE generator is 21s: `config/model/
-#                                  api docs` builds a whole-repo TypeScript
-#                                  program, and all 29 others hide behind it in
-#                                  the pool. It is the long pole of this hook.
-#   pnpm check-docs          9.2s  31s of validators, pooled four at a time,
-#                                  and free: it finishes inside the fixers
+#   pnpm autogen --check     5.4s  with `--skip-whole-repo-program`; 22.5s
+#                                  without it, because `config/model/api docs`
+#                                  alone is 21s and the other 29 generators
+#                                  hide behind it in the pool
+#   pnpm check-docs          9.2s  31s of validators, pooled four at a time.
+#                                  Now the longest single gate here
 #   pnpm lint               10.1s  type-aware oxlint; `lint:fast` is 4s of it
 #   pnpm lint:eslint         5.6s  (127s without --cache)
 #   pnpm format              9.4s  whole tree, 6908 files
 #   pnpm build:esm           1.7s  incremental
-# 60-68s end to end with nothing stale, over three interleaved A/B pairs
-# against the version before this pass, which took 81-106s on the same tree
-# minutes apart. Every gate here is CPU-bound and this machine runs several
-# agents, so a wall number swings by a factor of two with what else is running
-# — which is why the numbers above are only worth reading in pairs.
+# Every gate here is CPU-bound and this machine runs several agents, so a wall
+# number swings by a factor of two with what else is running. That is why the
+# end-to-end figures are quoted as interleaved A/B pairs and not as single runs:
+# 33-47s here, against 77-96s for the version that ran the whole-repo program,
+# alternating on the same tree minutes apart while the load average went from 4
+# to 22. The version before that one, which also paid for pnpm seven times over
+# and rewrote every generator to heal one, was 81-106s.
 #
 # THE FIXERS RUN IN SEQUENCE, unlike the old all-parallel version, because they
 # write to the same files: autogen emits sources the linters then lint, and both
@@ -76,8 +78,9 @@
 # one, came out at 83s and 84s against the sequential version's 79s and 85s in
 # an interleaved A/B. The lanes want ~22 cores between them on a 16-core machine
 # that already has 6-12 in use, so the overlap buys nothing and the wall number
-# is set by what else is running. The wait here is not something scheduling can
-# fix; it is the 21s program above, paid once.
+# is set by what else is running. What was actually costing the time was the
+# 21s program, and the fix for that was not to schedule it differently but to
+# stop running it here at all.
 #
 # A COLD `build:esm` is worse and happens once per checkout — tsc has no
 # .tsbuildinfo to reuse and takes a minute or more. Every run after that is the
@@ -189,7 +192,7 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~60s, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~40s, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -211,8 +214,8 @@ git status --porcelain -uall 2>/dev/null | sed 's/^...//; s/.* -> //' \
   >"$tmp/dirty-before" || : >"$tmp/dirty-before"
 
 # The two files a REVIEW APP writes, which no fixer here writes. The comparison
-# above is a before/after over a minute-plus window, so anything that changes
-# during the run is attributed to the fixers — including someone filing verdicts
+# above is a before/after over a ~40s window, so anything that changes during
+# the run is attributed to the fixers — including someone filing verdicts
 # in `pnpm review-screenshots-web` or `pnpm review-snapshots-web` in another
 # window, which is a normal thing to be doing while a push runs. Blocking on
 # those told someone their own half-finished review was a fixer's output and
@@ -283,12 +286,34 @@ fi
 # the ones that failed plus anything downstream reading their output. On the
 # push where nothing is stale, which is most of them, the check is the whole of
 # the autogen cost; on the push where something is, the rewrite is the three
-# tables that drifted rather than all thirty generators. That distinction is
-# most of the wait: `config/model/api docs` builds a whole-repo TypeScript
-# program and costs the same 21s in both passes, so the old "check everything,
-# then rewrite everything" paid for it twice whatever had actually gone stale.
+# tables that drifted rather than all thirty generators.
+#
+# `--skip-whole-repo-program` DROPS THE ONE GENERATOR THIS HOOK CANNOT AFFORD.
+# `config/model/api docs` builds a TypeScript program over every source in the
+# tree to read the tags off it, which is 21s whatever the push contains and
+# cannot be narrowed to the changed files — it was 22.5s of the 24s autogen
+# spent here, and the other 29 generators simply hid behind it in the pool.
+# Without it the check is 5.4s.
+#
+# IT IS NOT UNWATCHED AFTERWARDS, which is what makes the drop cheap rather
+# than a hole. Two things still ask:
+#
+#   - post-merge runs the whole `pnpm autogen --check`, the program included,
+#     in the BACKGROUND after every land, and leaves `autogen-stale` for
+#     pre-commit to print. So a stale config or model page still reaches
+#     whoever is about to edit the same tree, at no interactive cost — it just
+#     arrives after the land instead of blocking the push before it.
+#   - push.yml's `generated` job runs a bare `pnpm autogen --check` and, on
+#     failure, runs the rewrite and uploads it as `autogen.patch`, so the fix
+#     is `git apply` rather than reproducing the generation locally.
+#
+# What the drop actually costs, then, is that a stale config, model or API page
+# can land on main and be named minutes later rather than seconds earlier. The
+# marker-block tables are not part of that bet at all: `marker tables` covers
+# those, needs no program, and still runs on every push at 4s.
 astatus=0
-eval "$cmd_autogen --fix-stale $autogen_flags" >"$tmp/autogen.log" 2>&1 || astatus=$?
+eval "$cmd_autogen --fix-stale --skip-whole-repo-program $autogen_flags" \
+  >"$tmp/autogen.log" 2>&1 || astatus=$?
 if [ "$astatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm autogen failed" >&2
