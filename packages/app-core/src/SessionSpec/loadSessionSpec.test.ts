@@ -1,9 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { observable, runInAction } from 'mobx'
 
-import { viewIdsInSpec } from '../WorkspaceLayout/spec.ts'
+import { resolveLayoutSpec, viewIdsInSpec } from '../WorkspaceLayout/spec.ts'
 import { loadSessionSpec } from './loadSessionSpec.ts'
 
+import type { LayoutSpecNode } from '../WorkspaceLayout/spec.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'
 
 // A fake session/pluginManager: the real ones need a full plugin runtime, but
@@ -105,18 +106,31 @@ function setup(
     connections?: ReturnType<typeof connectionStub>
   } = {},
 ) {
+  const views: StubView[] = []
   const session = {
-    views: [] as StubView[],
+    views,
     notifyError: jest.fn(),
     notify: jest.fn(),
     ...(workspaces
       ? {
           setUseWorkspaces: jest.fn(),
-          // returns what the real action returns — the view ids the spec names,
+          // Returns what the real action returns — the view ids the spec names,
           // in the order it states — because that return value is the whole
           // input to `orderViews`, and a stub returning `[]` cannot tell a
-          // wired-up ordering from a dropped one
-          applyLayoutSpec: jest.fn(viewIdsInSpec),
+          // wired-up ordering from a dropped one.
+          //
+          // It also RESOLVES first, as the real action does. A stub that only
+          // read ids off the converted spec could not see it produce a spec the
+          // real resolver refuses, which is how a duplicate seat and an empty
+          // node both got past this suite.
+          applyLayoutSpec: jest.fn((spec: LayoutSpecNode) =>
+            viewIdsInSpec(
+              resolveLayoutSpec(
+                spec,
+                views.map(v => v.id),
+              ),
+            ),
+          ),
           orderViews: jest.fn(),
         }
       : undefined),
@@ -423,6 +437,106 @@ test('a layout index past the end of the spec views is reported', async () => {
     size: undefined,
   })
 })
+
+// The ProteinView case the index expansion exists for, spelled the way anyone
+// would write it: one entry opens a genome view beside its own structure, and
+// the other cell names the structure by id. Expanding the index blind seats the
+// structure in BOTH cells — two React trees and two GPU contexts for one model
+// — which the resolver now refuses outright, so the layout would have been lost
+// entirely. An id stated by hand is the more specific statement and wins.
+test('an id named by hand wins its view from an index that also created it', async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-Protein': async s => {
+      s.views.push(stubView('genome'))
+      s.views.push(stubView('structure', 'ProteinView'))
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [{ type: 'Protein', assembly: 'volvox', id: 'structure' }],
+      layout: {
+        direction: 'horizontal',
+        children: [{ views: [0] }, { views: ['structure'] }],
+      },
+    },
+    pluginManager,
+  )
+
+  expect(session.notifyError).not.toHaveBeenCalled()
+  expect(session.applyLayoutSpec).toHaveBeenCalledWith({
+    direction: 'horizontal',
+    children: [
+      { views: ['genome'], size: undefined },
+      { views: ['structure'], size: undefined },
+    ],
+    size: undefined,
+  })
+})
+
+test('a node stating nothing costs its own cell, not the layout', async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-A': async s => {
+      s.views.push(stubView('a'))
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [{ type: 'A', assembly: 'volvox' }],
+      layout: {
+        direction: 'horizontal',
+        children: [{ views: [0] }, { size: 30 }],
+      },
+    },
+    pluginManager,
+  )
+
+  expect(session.notifyError).not.toHaveBeenCalled()
+  expect(session.orderViews).toHaveBeenCalledWith(['a'])
+})
+
+// The layout is the LAST thing the spec does, so a layout the resolver will not
+// arrange used to reach the whole load's catch — after `setUseWorkspaces(true)`
+// had run, with the views left unordered and the spec's error reported as the
+// session's.
+test.each([
+  [
+    'seats one view twice',
+    { children: [{ views: ['a'] }, { views: ['a'] }] },
+    'more than one cell',
+  ],
+  ['spells views as a bare id', { views: 'a' }, '"views" is an array'],
+])(
+  'a layout that %s costs the spec its layout alone',
+  async (_, layout, message) => {
+    const { session, pluginManager } = setup({
+      'LaunchView-A': async s => {
+        s.views.push(stubView('a'))
+      },
+    })
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    try {
+      await loadSessionSpec(
+        {
+          views: [{ type: 'A', assembly: 'volvox' }],
+          layout: layout as LayoutSpecNode,
+        },
+        pluginManager,
+      )
+    } finally {
+      error.mockRestore()
+    }
+
+    // the view the spec asked for is still there, and the report names the layout
+    expect(session.views.map(v => v.id)).toEqual(['a'])
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining(message),
+      expect.anything(),
+    )
+  },
+)
 
 test('a session without workspaces support says so instead of throwing', async () => {
   const { session, pluginManager } = setup(

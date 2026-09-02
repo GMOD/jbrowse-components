@@ -145,6 +145,7 @@ function convertLayoutNode(
   node: LayoutNode,
   createdViewIds: string[][],
   knownIds: Set<string>,
+  pinnedIds: Set<string>,
 ): LayoutSpecNode {
   const { views, children, ...rest } = node
   return {
@@ -152,22 +153,47 @@ function convertLayoutNode(
     ...(views === undefined
       ? {}
       : {
-          views: views.flatMap(ref =>
-            typeof ref === 'number'
-              ? (createdViewIds[ref] ?? [])
-              : knownIds.has(ref)
-                ? [ref]
-                : [],
-          ),
+          views: Array.isArray(views)
+            ? views.flatMap(ref =>
+                typeof ref === 'number'
+                  ? (createdViewIds[ref] ?? []).filter(id => !pinnedIds.has(id))
+                  : knownIds.has(ref)
+                    ? [ref]
+                    : [],
+              )
+            : views,
         }),
     ...(children === undefined
       ? {}
       : {
-          children: children.map(child =>
-            convertLayoutNode(child, createdViewIds, knownIds),
-          ),
+          children: Array.isArray(children)
+            ? children.map(child =>
+                convertLayoutNode(child, createdViewIds, knownIds, pinnedIds),
+              )
+            : children,
         }),
   }
+}
+
+// An index names every view its entry created, so the entry that opens a genome
+// view beside its own puts BOTH in the cell naming it — which is the point, and
+// is wrong the moment another cell names one of them by id. `{views:[0]}` next
+// to `{views:['structure']}` is the obvious spelling of "genome left, structure
+// right", and expanding the index blind seats the structure in both cells: two
+// React trees and two GPU contexts for one model, which `resolveLayoutSpec` now
+// refuses outright. An id stated by hand is the more specific statement, so it
+// wins its view and the index gives it up.
+function pinnedLayoutIds(node: LayoutNode, knownIds: Set<string>): string[] {
+  return [
+    ...(Array.isArray(node.views)
+      ? node.views.filter(
+          (ref): ref is string => typeof ref === 'string' && knownIds.has(ref),
+        )
+      : []),
+    ...(Array.isArray(node.children)
+      ? node.children.flatMap(child => pinnedLayoutIds(child, knownIds))
+      : []),
+  ]
 }
 
 // A layout index is a position in the spec's `views` array, so one past the end
@@ -180,15 +206,23 @@ function unresolvedLayoutRefs(
   viewCount: number,
   knownIds: Set<string>,
 ): (number | string)[] {
+  // Array-guarded rather than `?.`: a hand-written `views: 0` is non-nullish,
+  // so `?.` does not short-circuit and `(0).filter` threw a raw TypeError out
+  // of this validator — past `resolveLayoutSpec`, which has a real message for
+  // that exact slip and never got to say it.
   return [
-    ...(node.views?.filter(ref =>
-      typeof ref === 'number'
-        ? ref < 0 || ref >= viewCount
-        : !knownIds.has(ref),
-    ) ?? []),
-    ...(node.children?.flatMap(child =>
-      unresolvedLayoutRefs(child, viewCount, knownIds),
-    ) ?? []),
+    ...(Array.isArray(node.views)
+      ? node.views.filter(ref =>
+          typeof ref === 'number'
+            ? ref < 0 || ref >= viewCount
+            : !knownIds.has(ref),
+        )
+      : []),
+    ...(Array.isArray(node.children)
+      ? node.children.flatMap(child =>
+          unresolvedLayoutRefs(child, viewCount, knownIds),
+        )
+      : []),
   ]
 }
 
@@ -205,12 +239,10 @@ function unresolvedLayoutRefs(
 // nested or partial sizes had been ignored while the layout honoured them —
 // which is also what website/docs/urlparams.md promises.
 function unsizeableLayoutNodes(layout: LayoutNode): boolean {
+  const children = Array.isArray(layout.children) ? layout.children : []
   const sizedTabsChild =
-    layout.direction === 'tabs' &&
-    (layout.children?.some(c => c.size !== undefined) ?? false)
-  return (
-    sizedTabsChild || (layout.children?.some(unsizeableLayoutNodes) ?? false)
-  )
+    layout.direction === 'tabs' && children.some(c => c.size !== undefined)
+  return sizedTabsChild || children.some(unsizeableLayoutNodes)
 }
 
 // The other statement a `tabs` node cannot take literally, and the one that
@@ -221,12 +253,10 @@ function unsizeableLayoutNodes(layout: LayoutNode): boolean {
 // to be dropped from the layout, after which homing swept them into whichever
 // tab happened to be showing, so the arrangement was wrong with nothing said.
 function flattenedTabsContainers(layout: LayoutNode): boolean {
+  const children = Array.isArray(layout.children) ? layout.children : []
   const nestedTabsChild =
-    layout.direction === 'tabs' &&
-    (layout.children?.some(c => c.children !== undefined) ?? false)
-  return (
-    nestedTabsChild || (layout.children?.some(flattenedTabsContainers) ?? false)
-  )
+    layout.direction === 'tabs' && children.some(c => c.children !== undefined)
+  return nestedTabsChild || children.some(flattenedTabsContainers)
 }
 
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
@@ -487,11 +517,28 @@ export async function loadSessionSpec(
         // what `applyLayoutSpec`'s return value is for. Drop this call and the
         // stated order is silently ignored: the tree holds it, nothing reads
         // it, and the views come back in launch order with no diagnostic.
-        session.orderViews(
-          session.applyLayoutSpec(
-            convertLayoutNode(layout, createdViewIds, knownIds),
-          ),
-        )
+        // Its own try/catch, the same reasoning as the per-view one above: the
+        // resolver throws for a layout it will not arrange, and this is the
+        // LAST thing the spec does — so an unarrangeable layout used to take
+        // the whole load's catch, after `setUseWorkspaces(true)` had already
+        // run, and report itself as the session's error with the views left
+        // unordered. The layout is one statement in the spec; losing it should
+        // cost the spec its layout and nothing else.
+        try {
+          session.orderViews(
+            session.applyLayoutSpec(
+              convertLayoutNode(
+                layout,
+                createdViewIds,
+                knownIds,
+                new Set(pinnedLayoutIds(layout, knownIds)),
+              ),
+            ),
+          )
+        } catch (e) {
+          console.error(e)
+          session.notifyError(`Session spec layout: ${e}`, e)
+        }
       } else {
         session.notifyError(
           'Session spec has a "layout", but this application does not support workspace layouts',

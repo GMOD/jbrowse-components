@@ -527,7 +527,12 @@ test.each([
   [
     'a leaf spelled viewIds',
     { viewIds: ['v1'] },
-    /needs "views".*received keys "viewIds"/,
+    /unrecognized key\(s\) "viewIds"/,
+  ],
+  [
+    'one view seated in two cells',
+    { direction: 'horizontal', children: [{ views: ['v1'] }, { views: [0] }] },
+    /seats view "v1" in more than one cell/,
   ],
   [
     'an index past the end',
@@ -552,6 +557,73 @@ test.each([
     expect(getSnapshot(session.layout)).toEqual(before)
   },
 )
+
+// The empty panel `treeFromSpec` has always built for a node stating nothing
+// (`{ direction: 'horizontal', children: [] }` is the same shape, and
+// spec.test.ts calls it usable) — and the one the session-spec path kept
+// building while this action refused it outright, so the two surfaces
+// disagreed about the one shape they share. An unrecognized KEY is the slip
+// worth refusing, and it is named above.
+test('a node stating neither views nor children is the empty panel', () => {
+  const session = createViewsSession()
+
+  expect(() => session.applyLayoutSpec({})).not.toThrow()
+  expect(session.panels).toHaveLength(1)
+  expect(session.tabs).toEqual([])
+})
+
+// A cell with nothing in it is a cell nothing can be dragged out of, so the
+// builder drops it rather than leaving a dead zone; the point here is that the
+// rest of the layout survives it.
+test('an empty leaf beside a populated one costs only its own cell', () => {
+  const session = createViewsSession()
+
+  session.applyLayoutSpec({
+    direction: 'horizontal',
+    children: [{ views: [0, 1, 2] }, { size: 30 }],
+  })
+
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v2', 'v3']])
+})
+
+// `applyLayoutSpec` refuses an id no view has, and these two sugars route a
+// CALLER's id list through it — a plugin's snapshot of the session, which can
+// name a view it is about to add or one already closed. Throwing out of them
+// breaks a launch no plugin wraps, which is the failure `setPendingMove`'s
+// optional second argument exists because of.
+describe('a stale id in a caller-supplied list', () => {
+  test('costs setPendingMove that name and nothing else', () => {
+    const session = createViewsSession()
+
+    expect(() => {
+      session.setPendingMove({ type: 'splitRight', viewId: 'v3' }, [
+        'v1',
+        'gone',
+        'v3',
+      ])
+    }).not.toThrow()
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1'], ['v3']])
+  })
+
+  test('leaves setPendingMove nothing to move when it is the moved view', () => {
+    const session = createViewsSession()
+    const before = getSnapshot(session.layout)
+
+    expect(() => {
+      session.setPendingMove({ type: 'newTab', viewId: 'gone' })
+    }).not.toThrow()
+    expect(getSnapshot(session.layout)).toEqual(before)
+  })
+
+  test('costs tileViews that cell and nothing else', () => {
+    const session = createViewsSession()
+
+    expect(() => {
+      session.tileViews('vertical', ['v1', 'gone', 'v2', 'v1'])
+    }).not.toThrow()
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1'], ['v2']])
+  })
+})
 
 test('an index means nothing on a host with no view list, and says so', () => {
   const session = createSession()

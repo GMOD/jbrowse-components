@@ -32,6 +32,10 @@ export interface LayoutSpecNode<View = LayoutViewRef> {
 
 export type ResolvedLayoutSpecNode = LayoutSpecNode<string>
 
+// `views`/`children` are pulled off by name; the rest pass through to the tree,
+// so an unrecognized one is a key the writer expected to mean something
+const layoutNodeKeys = new Set(['views', 'direction', 'children', 'size'])
+
 /**
  * Resolve every view a spec names to an id against `allViewIds`, the list its
  * indexes count into. Anything that resolves to nothing throws, naming what was
@@ -39,6 +43,12 @@ export type ResolvedLayoutSpecNode = LayoutSpecNode<string>
  * `viewIds` where `views` goes, or an index past the end, used to be accepted
  * as an empty leaf and collapse the workspace into one blank tab with nothing
  * said.
+ *
+ * A node stating no `views` and no `children` is NOT that slip — it is the
+ * empty panel `treeFromSpec` has always built, and refusing it here made the
+ * two surfaces disagree about the one shape they share. The slip is an
+ * unrecognized KEY, which is what `viewIds` actually is, and naming it beats
+ * the old message that could only say the node needed something else.
  *
  * `allViewIds` is undefined only on a model that composes no view list, where
  * an id cannot be checked and an index cannot mean anything.
@@ -78,11 +88,10 @@ export function resolveLayoutSpec(
   }
   const resolveNode = (node: LayoutSpecNode): ResolvedLayoutSpecNode => {
     const { views, children, ...rest } = node
-    if (views === undefined && children === undefined) {
+    const unknown = Object.keys(rest).filter(key => !layoutNodeKeys.has(key))
+    if (unknown.length > 0) {
       throw new Error(
-        `Layout node needs "views" (view indexes or ids) or "children"; received keys ${
-          Object.keys(node).map(describe).join(', ') || 'none'
-        }`,
+        `Layout node has unrecognized key(s) ${unknown.map(describe).join(', ')}; a leaf names its views with "views" (view indexes or ids) and a container nests "children"`,
       )
     }
     if (views !== undefined && !Array.isArray(views)) {
@@ -103,7 +112,21 @@ export function resolveLayoutSpec(
         : { children: children.map(resolveNode) }),
     }
   }
-  return resolveNode(spec)
+  const resolved = resolveNode(spec)
+  const seen = new Set<string>()
+  const repeated = new Set(
+    viewIdsInSpec(resolved).filter(id => {
+      const already = seen.has(id)
+      seen.add(id)
+      return already
+    }),
+  )
+  if (repeated.size > 0) {
+    throw new Error(
+      `Layout seats view ${[...repeated].map(describe).join(', ')} in more than one cell; a view lives in exactly one tab, so name it once`,
+    )
+  }
+  return resolved
 }
 
 /** A request to move one view relative to the others. Public plugin API. */

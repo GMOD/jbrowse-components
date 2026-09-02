@@ -59,6 +59,24 @@ function sessionViewIds(self: LayoutHostSelf) {
 }
 
 /**
+ * A caller-supplied view list narrowed to the views the session actually has.
+ *
+ * The list is the caller's snapshot, and `applyLayoutSpec` refuses an id no
+ * view has — so a view added after the list was built, or removed between
+ * building it and the call, would throw out of a sugar action no plugin wraps.
+ * The arrangement a stale name asks for is still the one it means for every
+ * view that IS there, so the name is dropped rather than the action. A repeat
+ * is dropped for the same reason: it would seat one view in two cells, which
+ * the resolver also refuses.
+ */
+function liveViewIds(self: LayoutHostSelf, allViewIds: string[]) {
+  const live = sessionViewIds(self)
+  return [
+    ...new Set(live ? allViewIds.filter(id => live.includes(id)) : allViewIds),
+  ]
+}
+
+/**
  * #stateModel WorkspaceLayoutMixin
  *
  * The whole workspace, in one MST tree. There is no second owner, so there is
@@ -617,7 +635,13 @@ export function WorkspaceLayoutMixin() {
           if (!move || !ids) {
             return
           }
-          self.applyLayoutSpec(specForPendingMove(move, ids))
+          const known = liveViewIds(self, ids)
+          // Nothing to move: the view named is not in the session, so there is
+          // no arrangement to state about it.
+          if (sessionViewIds(self) && !known.includes(move.viewId)) {
+            return
+          }
+          self.applyLayoutSpec(specForPendingMove(move, known))
           // Show where the view went. A spec states an arrangement and not a
           // selection, so `treeFromSpec` shows each cell's FIRST tab — and
           // `newTab` puts the moved view in a tab beside the others, which makes
@@ -641,7 +665,9 @@ export function WorkspaceLayoutMixin() {
          * session spec's layout there is nothing for `orderViews` to apply.
          */
         tileViews(mode: TileMode, allViewIds: string[]) {
-          self.applyLayoutSpec(tileLayoutSpec(allViewIds, mode))
+          self.applyLayoutSpec(
+            tileLayoutSpec(liveViewIds(self, allViewIds), mode),
+          )
         },
       }))
   )
