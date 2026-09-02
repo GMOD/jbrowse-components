@@ -6,72 +6,58 @@ description:
   spec that launches any view type
 ---
 
-JBrowse Web supports URL parameters for initializing a session.
-
-For embedded components like @jbrowse/react-linear-genome-view2, the consuming
-application implements URL parameter handling itself.
+JBrowse Web reads its launch state from the URL. Embedded components such as
+`@jbrowse/react-linear-genome-view2` leave URL handling to the host app.
 
 ## Query string or hash fragment
 
-Every parameter on this page works in either place: `?config=…&loc=…` or
-`#config=…&loc=…`. A fragment is never sent to the server, so a long value — an
-`encoded-`/`json-` session, a whole [session spec](#session-spec), a big
-`&sessionTracks=` — cannot trip the request-line limit that answers a long query
-string with HTTP 414. That is why the Share button writes its two inline formats
-as hash URLs.
-
-If the fragment contains an `=`, JBrowse reads its parameters only from there
-and ignores the query string, so moving one long parameter into the fragment
-means moving them all: `?config=my.json#session=spec-{…}` loads the default
-`config.json`, not `my.json`.
+- Every parameter works in either place: `?config=…&loc=…` or `#config=…&loc=…`.
+- A fragment is never sent to the server, so a long value (an `encoded-` or
+  `json-` session, a whole [session spec](#session-spec), a big
+  `&sessionTracks=`) cannot trip the request-line limit that answers a long
+  query string with HTTP 414. The Share button writes its inline formats as hash
+  URLs for that reason.
+- If the fragment contains an `=`, JBrowse reads its parameters only from there
+  and ignores the query string. Moving one long parameter into the fragment
+  means moving them all: `?config=my.json#session=spec-{…}` loads the default
+  `config.json`, not `my.json`.
 
 ## Linear genome view (simple)
 
-A simplified URL format for launching a single linear genome view:
+One linear genome view, from a handful of parameters:
 
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
-`&assembly=`, `&loc=`, `&regions=`, `&nav=`, `&tracks=`, `&tracklist=`,
-`&highlight=`, `&sessionTracks=` and `&extendSession=` apply only to this single
-linear genome view launch — every other launch type carries the same settings
-inside the session it loads. `?config=`, `&sessionName=`, `&hubURL=`,
-`&renderer=` and `&session=` work for any launch type.
-
-Two more are documented with the feature they belong to: `&password=` with
-[`&session=share-`](#sessionshare-), and `&adminKey=` in
-[](/docs/quickstart_adminserver).
+- `&assembly=`, `&loc=`, `&regions=`, `&nav=`, `&tracks=`, `&tracklist=`,
+  `&highlight=`, `&sessionTracks=` and `&extendSession=` apply only to this
+  launch. Every other launch type carries the same settings inside the session
+  it loads.
+- `?config=`, `&sessionName=`, `&hubURL=`, `&renderer=` and `&session=` work for
+  any launch type.
+- `&password=` belongs to [`&session=share-`](#sessionshare-), and `&adminKey=`
+  to [](/docs/quickstart_adminserver).
 
 ### ?config=
 
 `?config=test_data/volvox/config.json`
 
-A path to a JBrowse 2 config file, relative to the current folder on disk,
-fetched by the client. If `?config=` is omitted, JBrowse looks for `config.json`
-in the current folder (e.g. `http://host/jbrowse2/config.json`), which is what
-the `@jbrowse/cli` tool sets up by default.
-
-The special value `?config=none` skips loading a config file entirely. This is
-useful with `&hubURL=` (below), which supplies its own assemblies and tracks.
-
-To change the default without putting `?config=` in every link, set
-`window.__jbrowseConfigPath` in the `<head>` of JBrowse's index.html — see
-[](/docs/config_guides/avoiding_stale_config), which uses the same mechanism. An
-explicit `?config=` still wins over it.
+- A path to a config file, relative to the current folder, fetched by the
+  client. Omitted, JBrowse loads `config.json` from the current folder, which is
+  what `@jbrowse/cli` sets up.
+- `?config=none` skips the config entirely, for a `&hubURL=` that supplies its
+  own assemblies and tracks.
+- To change the default without putting `?config=` in every link, set
+  `window.__jbrowseConfigPath` in the `<head>` of `index.html`
+  ([](/docs/config_guides/avoiding_stale_config)). An explicit `?config=` still
+  wins.
 
 ### &assembly=
 
-`&assembly=hg19`
-
-`&assembly=` refers to the `name` field of an entry in the `assemblies` array of
-config.json.
+`&assembly=hg19`, the `name` of an entry in the config's `assemblies` array.
 
 ### &loc=
 
-`&loc=chr1:6000-7000`
-
-Navigates to this region on load. Accepts the formats shown below.
-
-Example strings
+`&loc=chr1:6000-7000`, navigated to on load. Accepted forms:
 
 ```
 &loc=chr1:6000-7000 // using - notation for range
@@ -83,139 +69,73 @@ Example strings
 &loc=GENEID // if you have used `jbrowse text-index`
 ```
 
-A coordinate may be written with a `k`, `M` or `G` suffix, optionally followed
-by `b` or `bp`, so `chr1:34M-35M`, `chr1:1.5Mb-2Mb` and `chr1:500kb-600kb` are
-all accepted. These are expanded to whole base pairs on load, and the location
-box then reads back the full number.
-
-Navigating via `&loc=GENEID` requires a text index built with
-`jbrowse text-index`.
-
-Several whitespace-separated locstrings open a discontinuous view showing each
-region in turn — a gene and the partner it is fused to, an allele beside the
-sequences it derives from. The space is URL-encoded as `%20`:
-
-`&loc=chr3:25,325,000-25,361,000%20chr10:58,716,500-58,718,500`
-
-This is the same form the location box displays once a view holds more than one
-region, so what you copy out of it pastes back into a URL. To open a
-whole-genome view restricted to particular chromosomes instead, use
-[`&regions=`](#regions).
-
-By default `&loc=` (and `&assembly=`) start a fresh session, ignoring the
-config's `defaultSession`;
-[`&extendSession=true`](#navigating-within-the-default-session) navigates that
-session instead of replacing it.
+- A coordinate takes a `k`, `M` or `G` suffix, optionally followed by `b` or
+  `bp`, and is expanded to whole base pairs on load.
+- A gene name needs a text index built with `jbrowse text-index`.
+- Several whitespace-separated locstrings (`%20` in a URL) open a discontinuous
+  view showing each region in turn: a gene and its fusion partner, an allele
+  beside the sequences it derives from. The location box displays the same form
+  once a view holds more than one region, so what you copy out of it pastes back
+  into a URL.
+- `&loc=` and `&assembly=` start a fresh session, ignoring the config's
+  `defaultSession`;
+  [`&extendSession=true`](#navigating-within-the-default-session) navigates that
+  session instead.
 
 ### &regions=
 
 `&assembly=hg38&regions=chr1,chr2,chr3`
 
-Restricts the whole-genome overview to this comma-separated subset of the
-assembly's chromosomes, in the order given, handy for dropping unplaced/alt
-contigs or reordering. Names resolve through the assembly's aliases. It is
-ignored when `&loc=` is set, and it requires `&assembly=`. This is the
-simple-URL form of the session-spec
-[`displayedRegionNames`](#fields-every-view-takes) field, and takes the same
-[globs](#glob-region-names).
+Restricts the whole-genome overview to this subset of the assembly's
+chromosomes, in this order, for dropping unplaced contigs or reordering. Names
+resolve through the assembly's aliases and take [globs](#glob-region-names). It
+requires `&assembly=`, is ignored when `&loc=` is set, and is the simple-URL
+form of the spec's [`displayedRegionNames`](#fields-every-view-takes).
 
 ### &highlight=
 
-`&highlight=chr1:6000-7000`
-
-Creates a highlight over the specified region when combined with
+`&highlight=chr1:6000-7000`, a band over the region on every track, with
 [&assembly=](#assembly) and [&loc=](#loc).
 
-Multiple highlight locations can be specified by delimiting locations with a
-space (URL-encoded as `%20`):
-
-`&highlight=chr1:6000-7000%20chr1:7100-7200`
-
-Always pass `&assembly=` alongside `&highlight=`. Highlights are stored by
-assembly name so downstream features (e.g. bookmarking from the chip menu) can
-resolve them. Without one, a highlight still renders when its refName matches a
-displayed region, but it is not portable across assemblies and may break actions
-that need a fully-qualified region. The same applies to `view.highlight` in a
-session JSON: include `assemblyName` on each entry.
-
-`view.highlight` entries also accept optional `color` and `label` fields, both
-when authoring a session JSON directly and via the URL by passing a JSON object
-(URL-encoded) instead of a loc string:
-
-```json
-{
-  "refName": "11",
-  "start": 32200274,
-  "end": 32203877,
-  "assemblyName": "mm39",
-  "color": "rgba(240, 128, 128, 0.3)",
-  "label": "R2_intron"
-}
-```
-
-- **`color`** overrides the theme highlight color, used as-is, so explicit alpha
-  is preserved
-- **`label`** is shown inline next to the chip icon and in the chip tooltip
-
-URL form (URL-encode the JSON):
-
-```
-&highlight={"refName":"11","start":32200274,"end":32203877,"color":"rgba(240,128,128,0.3)","label":"R2_intron"}
-```
-
-JSON highlights use the same `%20` space delimiter, and loc strings and JSON
-objects can be mixed in one `&highlight=` value.
-
-This highlights a _region_, over every track at once, and needs coordinates. To
-box a single _feature_ by name, and sort it to the top of its track's layout,
-see
-[`featureHighlights`](#live-example-highlight-a-feature-and-sort-it-to-the-top).
+- Several regions are space-separated (`%20`).
+- Always pass `&assembly=`. Highlights are stored by assembly name so the chip
+  menu's actions can resolve them; the same applies to `view.highlight` in a
+  session JSON, where each entry takes `assemblyName`.
+- A URL-encoded JSON object in place of a locstring adds `color` (used as-is,
+  alpha included) and `label` (shown beside the chip icon):
+  `&highlight={"refName":"11","start":32200274,"end":32203877,"color":"rgba(240,128,128,0.3)","label":"R2_intron"}`.
+  Locstrings and JSON objects can be mixed in one value.
+- To box one feature by name and sort it to the top of its track, see
+  [`featureHighlights`](#live-example-highlight-a-feature-and-sort-it-to-the-top).
 
 ### &tracklist=
 
-`&tracklist=true`
-
-Opens the track selector on load. Default: false.
+`&tracklist=true` opens the track selector on load. Default false.
 
 ### &nav=
 
-`&nav=false`
-
-Turns off the navigation bar of the linear genome view. Default true.
+`&nav=false` hides the linear genome view's navigation bar. Default true.
 
 ### &tracks=
 
-`&tracks=gene_track,vcf_track`
-
-A comma-separated list of trackIds, which the config.json defines. A trackId
-added by `&sessionTracks=` can be named here too.
+`&tracks=gene_track,vcf_track`, a comma-separated list of trackIds from the
+config. A trackId added by `&sessionTracks=` can be named here too.
 
 ### &sessionTracks=
 
-`&sessionTracks=` dynamically adds a track to the session. It can also add a
-`FromConfigAdapter` track, specifying features inline as JSON — BLAST hits from
-the URL bar, say.
-
-A track over a data file needs no `type` or `adapter` — the extension gives
-both:
+Adds track configs to the session from the URL. A track over a data file needs
+no `type` or `adapter`, since the extension gives both, but nothing implies its
+assembly, so name it
+([the shortest track](/docs/config_guides/tracks#the-shortest-track)):
 
 ```
 &sessionTracks=[{"trackId":"reads","uri":"https://example.com/sample.bam","assemblyNames":["hg38"]}]
 ```
 
-Nothing implies the assembly for a session track, so name it — see
-[the shortest track](/docs/config_guides/tracks#the-shortest-track). The full
-form below is what a track with no data file needs.
-
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}])
-
-This creates a track with a single feature at `ctgA:100-200`.
-
-The value is an array of track configs. Pretty-printed, the one above is:
+A track with no data file, such as BLAST hits carried inline as a
+`FromConfigAdapter`, takes the full form.
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]),
+whose value pretty-printed is:
 
 ```json
 [
@@ -242,142 +162,84 @@ The value is an array of track configs. Pretty-printed, the one above is:
 
 ### &sessionName=
 
-`&sessionName=My%20Custom%20Session`
-
-Sets the session name displayed in the header bar. It works with all session
-types:
-
-- Default sessions (loaded from config)
-- Session specs (`&session=spec-...`)
-- Hub sessions (`&hubURL=...`)
-
-Use it to give URL-launched sessions a meaningful name; without it the name is
-auto-generated with a timestamp. URL-encode the value if it contains spaces or
-special characters.
+`&sessionName=My%20Custom%20Session` names the session in the header bar, for
+any launch type. Without it the name is generated with a timestamp.
 
 ### &hubURL=
 
 `&hubURL=https://example.com/hub.txt&config=none`
 
-Loads one or more UCSC track hubs as a session (multiple hubs as a
-comma-separated list), typically combined with `?config=none` since the hub
-supplies its own assemblies and tracks.
-
-Add `&loc=` and `&assembly=` to open the hub at a particular place. `&assembly=`
-is required for this: it names the hub genome that `&loc=` resolves against.
-
-```
-?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
-```
-
-`&sessionTracks=` works alongside a hub, registering its track configs into the
-hub session, so `&tracks=` can name one of them beside the hub's own tracks.
-
-`&hubURL=` opens each hub with a single linear genome view. For anything beyond
-that — several views over a hub, a workspace layout, or a dotplot — put the hub
-in a session spec's [`sessionConnections`](#session-spec) instead.
-
-See [](/docs/user_guides/hub_url) for the full workflow, including combining a
-hub with a config and loading several at once.
+- Loads one or more UCSC track hubs (comma-separated) as a session, usually with
+  `?config=none` since the hub supplies its own assemblies and tracks.
+- `&assembly=` and `&loc=` open the hub at a place; `&assembly=` is required,
+  since it names the hub genome `&loc=` resolves against:
+  `?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000`.
+- `&sessionTracks=` registers into the hub session, so `&tracks=` can name one
+  of them beside the hub's own.
+- Each hub opens with a single linear genome view. For several views, a
+  workspace layout or a dotplot, put the hub in a session spec's
+  [`sessionConnections`](#session-spec).
+- [](/docs/user_guides/hub_url) is the full workflow.
 
 ### &renderer=
 
-`&renderer=webgl`
-
-Pins the backend tracks are drawn with, overriding automatic detection. Each
-value pins one backend:
-
-- **`webgpu`** requires WebGPU
-- **`webgl`** skips WebGPU and uses WebGL2
-- **`canvas2d`** skips both and draws in software. `canvas` is accepted as an
-  alias for it
-
-A pin never falls through to the next backend: if the one you named cannot
-start, tracks show an error saying so. Any other value is ignored, with a
-console warning naming the ones that work.
-
-It is a debugging aid: trying each in turn says whether a blank or wrong-looking
-track comes from the GPU path, see
-[my tracks are blank or render incorrectly](/docs/troubleshooting#my-tracks-are-blank-or-render-incorrectly).
-JBrowse Desktop takes the same choice as a `--renderer` command-line flag, see
-[](/docs/quickstart_desktop#launching-from-the-command-line).
+`&renderer=webgl` pins the drawing backend, overriding detection: `webgpu`,
+`webgl`, or `canvas2d` (alias `canvas`). A pin never falls through, so a backend
+that cannot start shows an error on every track. It is a debugging aid
+([my tracks are blank](/docs/troubleshooting#my-tracks-are-blank-or-render-incorrectly)),
+and JBrowse Desktop takes the same choice as
+[`--renderer`](/docs/quickstart_desktop#launching-from-the-command-line).
 
 ### &safeMode
 
-`&safeMode`
-
-Loads without the plugins this browser keeps for this configuration, see
-[keeping a plugin for every visit](/docs/user_guides/plugin_store#keeping-a-plugin-for-every-visit).
-The list is left alone — the plugins are skipped for this load only, and the
-next one without the parameter runs them again.
-
-Its own use is a plugin that crashes the app before any menu is on screen. The
-fatal error dialog offers the same thing as a button, and JBrowse turns them off
-by itself after a load that never finished; the parameter is for the case where
-neither has happened and you want to rule them out.
-
-Bare, with no value, is how it is normally written. `&safeMode=1` works too:
-what counts is that the parameter is present.
+`&safeMode`, bare, loads without the plugins this browser
+[keeps for this configuration](/docs/user_guides/plugin_store#keeping-a-plugin-for-every-visit),
+for one load only. Its use is a plugin that crashes the app before any menu is
+on screen; the fatal error dialog offers the same thing as a button.
 
 ### Navigating within the default session
 
-`&extendSession=true` alongside `&loc=` navigates a curated `defaultSession`
-while keeping its tracks and settings, rather than replacing it:
+`&extendSession=true` beside `&loc=` navigates a curated `defaultSession`
+instead of replacing it:
 
 ```
 ?loc=chr1:100000-200000&extendSession=true
 ```
 
-`&loc=`, `&tracks=`, `&highlight=`, `&nav=` and `&tracklist=` are then applied
-to the **first linear genome view** of that `defaultSession`. The assembly comes
-from that view, so `&assembly=` isn't needed. `&sessionTracks=` is not layered
-on; a full [session spec](#session-spec) is the way to add a track config to a
-curated session.
+`&loc=`, `&tracks=`, `&highlight=`, `&nav=` and `&tracklist=` then apply to the
+first linear genome view of that session, whose assembly is used, so
+`&assembly=` is not needed. `&sessionTracks=` is not layered on; a
+[session spec](#session-spec) is the way to add a track config to a curated
+session.
 
 ## Which parameter decides the launch
 
-A link can carry several of these at once, and they don't combine — one of them
-decides what opens and the rest are either layered onto it or dropped. The
-ranking, highest first:
+A link can carry several of these at once, and they do not combine: one decides
+what opens and the rest are layered onto it or dropped. Highest first:
 
-- **`&session=`**, in any of its forms (`spec-`, `share-`, `encoded-`, `json-`,
-  `local-`). An explicit session always beats a stray `&loc=`. A value matching
-  none of those prefixes is an error.
-- **`&extendSession=true`** alongside `&loc=`/`&assembly=`, which navigates the
-  config's `defaultSession` — see
-  [below](#navigating-within-the-default-session). It outranks a hub, which
-  would otherwise replace that session outright.
-- **`&hubURL=`**. A hub brings its own assemblies and tracks, so a link carrying
-  both a hub and `&loc=` navigates _inside_ the hub: the shorthand rides along
-  on top of the hub session.
-- **`&loc=`/`&assembly=`** on their own, which build a fresh single linear
-  genome view.
-- **Nothing of the above**, which opens the config's `defaultSession`.
+- **`&session=`**, in any form (`spec-`, `share-`, `encoded-`, `json-`,
+  `local-`). A value matching none of those prefixes is an error.
+- **`&extendSession=true`** beside `&loc=`/`&assembly=`, which navigates the
+  config's `defaultSession`. It outranks a hub, which would otherwise replace
+  that session.
+- **`&hubURL=`**. A link carrying both a hub and `&loc=` navigates inside the
+  hub.
+- **`&loc=`/`&assembly=`** on their own, a fresh single linear genome view.
+- **Nothing of the above** opens the config's `defaultSession`.
 
 `?config=`, `&sessionName=` and `&renderer=` sit outside the ranking and apply
 to whichever launch wins. `&sessionTracks=` applies to the hub launch and to the
-shorthand on its own. It is not layered onto a default session or onto a
-`&session=` of any kind, both of which have their own way to carry a track (a
-spec's [`sessionTracks`](#session-spec), the snapshot's own).
+shorthand on its own, and is not layered onto a default session or any
+`&session=`, which carry tracks their own way.
 
 ## Session spec
 
-A "session spec" encodes a session as JSON in the URL, as the value of
-`&session=`, prefixed `spec-`:
+A session spec is the session as JSON in the URL, the value of `&session=`
+prefixed `spec-`:
 
 ```
 &session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5100"}]}
 ```
-
-Each view object lists the keys that view launches with, written directly on the
-view as below. A `defaultSession` in a config carries the same object (see
-[Where the view object goes](/docs/automating#where-the-view-object-goes)), so a
-view moves between a spec, a config and an `addView` call unchanged.
-
-Under the hood, each view's `type` dispatches to a `LaunchView-<type>`
-[extension point](/docs/developer_guides/extension_points) that builds the view
-from the remaining fields. This is also how plugins add launchable view types
-(see [Plugin-provided view types](#plugin-provided-view-types)).
 
 ```json live config=test_data/volvox/config.json
 {
@@ -397,46 +259,35 @@ from the remaining fields. This is also how plugins add launchable view types
 }
 ```
 
-The `views` array accepts multiple views opened simultaneously. Each can specify
-`loc`, `tracks`, `assembly`, and view type. `loc` is optional, omitting it shows
-the whole genome. Different view types accept different params: dotplot, for
-example, takes two assemblies.
+- Each view object lists the keys it launches with, written directly on the
+  view. A `defaultSession` in a config carries the same object
+  ([](/docs/automating#where-the-view-object-goes)), so a view moves between a
+  spec, a config and an `addView` call unchanged.
+- `views` takes several views, opened together. `loc` is optional; omitting it
+  shows the whole genome. Other view types take other keys: a dotplot takes two
+  assemblies.
+- Each view's `type` dispatches to a `LaunchView-<type>`
+  [extension point](/docs/developer_guides/extension_points), which is how
+  [plugins](#plugin-provided-view-types) add launchable view types.
 
 ### Session-wide fields
 
-Alongside `views`, four top-level arrays furnish the session the views open
-into. They are applied in this order — assemblies, then connections, then
-tracks, then the views — so each can name what the ones before it registered.
+Four top-level arrays furnish the session the views open into, applied in this
+order so each can name what the ones before it registered:
 
-A `sessionTracks` array registers track configs into the session before the
-views open, equivalent to combining `&sessionTracks=` with a simple URL:
+- `sessionAssemblies` registers assemblies. With `?config=none` a spec is then
+  fully self-contained: a novel assembly, its tracks, and the views over them.
+- `sessionConnections` attaches connections, UCSC track hubs or JBrowse hubs,
+  and waits for each to finish fetching before launching the views, so a view
+  can name an assembly or trackId the connection supplies. A spec with no
+  `views` leaves the connection to open its own view where it starts, which is
+  what [`&hubURL=`](#huburl) does.
+- `sessionTracks` registers track configs, the spec form of `&sessionTracks=`.
+- `views`, then a `layout` that tiles them into a
+  [workspace](#tiled-views--workspaces).
 
-```json
-{
-  "sessionTracks": [
-    {
-      "type": "FeatureTrack",
-      "trackId": "my_track",
-      "name": "My track",
-      "assemblyNames": ["hg38"],
-      "adapter": { "type": "FromConfigAdapter", "features": [] }
-    }
-  ],
-  "views": [
-    {
-      "type": "LinearGenomeView",
-      "assembly": "hg38",
-      "tracks": ["my_track"]
-    }
-  ]
-}
-```
-
-A `sessionAssemblies` array registers assemblies, the counterpart to
-`sessionTracks`. Because assemblies are added first, `sessionTracks` and each
-view's `assembly` can reference them by name. This makes a spec fully
-self-contained: a novel assembly, its tracks, and the views over them (pair it
-with `?config=none`):
+Everything a session carries this way stays with the session: opening the link
+never writes into the `config.json` the instance serves.
 
 ```json
 {
@@ -465,12 +316,6 @@ with `?config=none`):
 }
 ```
 
-A `sessionConnections` array attaches connections — UCSC track hubs, JBrowse
-hubs. Each entry is a connection config, and it stays with the session: opening
-the link never writes the connection into the config.json the instance serves.
-The spec waits for each connection to finish fetching before launching its
-views, so a view can name an assembly or a trackId the connection supplies:
-
 ```json
 {
   "sessionConnections": [
@@ -491,39 +336,21 @@ views, so a view can name an assembly or a trackId the connection supplies:
 }
 ```
 
-This is what [`&hubURL=`](#huburl) does in its simple form, written out. Use the
-spec form when the hub needs more than one view, a
-[layout](#tiled-views--workspaces), or a view type other than the linear genome
-view.
-
-A spec that lists no `views` leaves the connection to open its own view wherever
-it starts (a single-file hub's `defaultPos`), which is what `&hubURL=` on its
-own does. As soon as the spec has views of its own, those are the launch
-instruction and the connection opens no view of its own.
-
-A `layout` object tiles the views into a workspace rather than stacking them —
-see [tiled views](#tiled-views--workspaces).
-
-[`&sessionName=`](#sessionname) sets a spec's session name, the same as for any
-other launch type:
-
-```
-&session=spec-{...}&sessionName=My%20Analysis
-```
+[`&sessionName=`](#sessionname) names a spec's session the same as any other
+launch.
 
 ### Fields every view takes
 
-`id` pins the created view's id so another view in the same spec can point at it
-(e.g. an MsaView's `connectedViewId`). It is the one key the launcher reserves —
-the rest of what every view takes comes from `BaseViewModel` and appears in each
-view's table below, `displayName` among them.
-
-`displayedRegionNames` is the spec form of [`&regions=`](#regions), with the
-same meaning: when `loc` is omitted it restricts the whole-genome overview to
-these chromosomes, in this order. Names may be [globs](#glob-region-names). It
-works on the linear genome view, the [circular view](#circular-view), and each
-axis of a [dotplot](#dotplot-view) — volvox showing only its two contigs, order
-reversed:
+- `id` pins the created view's id so another view in the same spec can point at
+  it (an MsaView's `connectedViewId`). It is the one key the launcher reserves;
+  the rest of what every view takes comes from `BaseViewModel` and appears in
+  each view's table below, `displayName` among them.
+- `displayedRegionNames` is the spec form of [`&regions=`](#regions): with no
+  `loc`, it restricts the whole-genome overview to these chromosomes, in this
+  order. It works on the linear genome view, the
+  [circular view](#circular-view), each axis of a [dotplot](#dotplot-view) and
+  each row of a [synteny view](#linear-synteny-view). Volvox showing its two
+  contigs, order reversed:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -540,46 +367,28 @@ reversed:
 
 #### Glob region names
 
-An entry in `displayedRegionNames` containing `*` is a glob matched against the
-refName, which makes a fragmented assembly tractable: `["*_hap1"]` covers
-sixteen scaffolds in one entry and survives the assembly being rebuilt. `*` is
-the only metacharacter, so a refName with regex punctuation in it (`chr1.1`,
-`scaffold[2]`) still matches literally.
+An entry containing `*` is a glob matched against the refName, so `["*_hap1"]`
+covers sixteen scaffolds in one entry and survives the assembly being rebuilt.
 
-A glob contributes its matches in the **assembly's** order, since that is the
-only order it can mean; exact names contribute in the order you wrote them, so
-an explicit list still controls layout. Entries already taken are skipped, which
-makes `["chr1_hap1", "*_hap1"]` read as "chr1 first, then the rest of hap1". A
-name matching nothing is dropped, and a list that matches nothing at all is
-reported.
-
-Globs match the assembly's **aliases** as well as its own names, and match
-**case-insensitively**, both the same as an exact entry does — so `["chr*"]`
-works on an assembly whose FASTA calls its chromosomes `1`, `2`, `3`, and
-`["CHR*"]` works wherever `["chr*"]` does. A region is taken once however many
-of its names match.
-
-A glob does not separate the main chromosomes from the rest of a UCSC-style
-assembly: that naming makes the unplaced and alt contigs extensions of the names
-you want, so on hg38 `chr*` also takes `chrUn_GL000195v1` and
-`chr1_KI270706v1_random`, and even `chr1*` takes `chr10` through `chr19`. There
-is no negation. Globs are for name families an assembly separates — `*_hap1`,
-`*_MATERNAL`, `*_alt` — and a main-chromosome subset is best written as a list.
-
-The same field, and the same matching, is available on [`&regions=`](#regions),
-on the [circular view](#circular-view), on each axis of a
-[dotplot](#dotplot-view), and on each row of a
-[linear synteny view](#linear-synteny-view).
-
-The dotplot and linear synteny [import forms](#dotplot-view) put this syntax in
-a text box — one beside each assembly, holding the comma-separated list this
-field takes — so a haplotype-per-axis plot can be reached by clicking. Empty
-means the whole assembly.
+- `*` is the only metacharacter; regex punctuation in a refName (`chr1.1`,
+  `scaffold[2]`) matches literally.
+- A glob contributes its matches in the assembly's order; exact names contribute
+  in the order written, and entries already taken are skipped, so
+  `["chr1_hap1", "*_hap1"]` reads as "chr1 first, then the rest of hap1".
+- Globs match aliases and match case-insensitively, the same as an exact entry.
+  A name matching nothing is dropped, and a list matching nothing at all is
+  reported.
+- There is no negation, and on a UCSC-style assembly `chr*` also takes
+  `chrUn_GL000195v1` and `chr1_KI270706v1_random`, while `chr1*` takes `chr10`
+  through `chr19`. Globs suit name families an assembly separates (`*_hap1`,
+  `*_MATERNAL`, `*_alt`); a main-chromosome subset is best written as a list.
+- The dotplot and synteny import forms put the same syntax in a text box beside
+  each assembly.
 
 #### Advanced track configuration
 
-The `tracks` array can contain either simple trackId strings or objects with
-additional configuration options:
+A `tracks` entry is a trackId string, or an object carrying initial display
+state:
 
 ```json
 {
@@ -607,37 +416,22 @@ additional configuration options:
 }
 ```
 
-Each track object supports the following properties:
-
-- `trackId` (required): The track identifier from config.json
-- `displaySnapshot` (optional): Initial display state. Can include:
-  - `type`: Override the display type (e.g., `LinearBasicDisplay`,
-    `LinearArcDisplay`, `LinearAlignmentsDisplay`)
-  - `height`: Display height in pixels
-  - `color`: Feature color for feature/wiggle tracks (a CSS color, or a `jexl:`
-    expression for per-feature coloring)
-  - `minScore`, `maxScore`: Score range for quantitative tracks
-  - `forceLoad`: render even when the region trips the "too much data" gate, the
-    declarative equivalent of the "Force load" button (see
-    [](/docs/config/baselineardisplay/#slot-forceload))
-  - Other display-specific settings
-- `trackSnapshot` (optional): Initial track state such as `pinned: true`
-
-The `displaySnapshot` fields can also be written directly on the track object as
-a shorthand:
-`{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`
-is equivalent to the `displaySnapshot` form above. Any key other than `trackId`
-and `trackSnapshot` is treated as a display setting. Use the explicit
-`displaySnapshot` form when you also pass `trackSnapshot`, so the two stay
-visually separated.
+- `displaySnapshot` takes anything the display's own menu offers: `type` to pick
+  a display, `height`, `color` (a CSS color or a `jexl:` expression), `minScore`
+  and `maxScore` on a quantitative track, `forceLoad` to render past the "too
+  much data" gate ([](/docs/config/baselineardisplay/#slot-forceload)).
+- `trackSnapshot` sets track state such as `pinned: true`.
+- Any other key on the object is a display setting, so
+  `{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`
+  is the shorthand for the nested form. Use the explicit form when you also pass
+  `trackSnapshot`.
 
 ### Linear genome view
 
-A `LinearGenomeView` object takes two kinds of key, and the launcher sorts them
-that way: the launch keys are the [simple params](#linear-genome-view-simple)
-plus `grow`, which expands `loc` by that fraction on each side for context (so
-`0.2` pads 20%, and it is ignored without a `loc`); everything else is a
-property the state model declares.
+A `LinearGenomeView` object takes the
+[simple params](#linear-genome-view-simple) plus `grow`, which pads `loc` by
+that fraction on each side (`0.2` pads 20%), and beyond those any property the
+state model declares.
 
 #### Linear genome view properties
 
@@ -678,25 +472,22 @@ restores natively:
 
 <!-- SPEC_KEYS LinearGenomeView END -->
 
-Three of those warrant more than their one-line description:
-
-- `bpPerPx` and `offsetPx` are the zoom and the horizontal scroll. `loc` reads,
-  and it survives an assembly whose regions were rebuilt; reach for these two
-  only to reproduce a viewport to the pixel.
+- `bpPerPx` and `offsetPx` are the zoom and the horizontal scroll. `loc` reads
+  better and survives an assembly whose regions were rebuilt; reach for these
+  two only to reproduce a viewport to the pixel.
 - `displayedRegions` gives the regions the view lays out as full
-  `{refName, start, end, assemblyName}` objects. `displayedRegionNames` names
-  the same thing by refName and is the shorter form; this is the form for
-  showing part of a chromosome, which a name cannot express.
+  `{refName, start, end, assemblyName}` objects, which is the form for showing
+  part of a chromosome; `displayedRegionNames` names whole ones.
 - `showCytobands` and `showTrackOutlines` default to the visitor's own stored
-  preference — both are menu settings persisted in `localStorage`, so a spec
-  that omits them opens however that visitor last left them. Set them explicitly
-  in a link that has to look the same for everyone.
+  preference, so set them explicitly in a link that has to look the same for
+  everyone.
 
 #### Live example: alignments display settings
 
-`displaySnapshot` can set any of the display's own settings — anything the
-display's own menu offers. An alignments track colored by pair orientation, with
-soft-clipped bases shown and an enlarged height:
+An alignments track colored by pair orientation, with soft-clipped bases shown
+and an enlarged height. Swapping `showSoftClipping` for `showBezierConnections`
+draws a curved connector between the mates of each aberrant pair and across
+split-read junctions:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -720,38 +511,10 @@ soft-clipped bases shown and an enlarged height:
 }
 ```
 
-Swapping `showSoftClipping` for `showBezierConnections` draws a curved connector
-between the mates of each aberrant pair and across split-read junctions, so
-structural-variant signal stands out over the pileup. Each curve is the same
-horizontal-tangent shape a breakpoint split view draws:
-
-```json live config=test_data/volvox/config.json
-{
-  "views": [
-    {
-      "assembly": "volvox",
-      "loc": "ctgA:1-10000",
-      "type": "LinearGenomeView",
-      "tracks": [
-        {
-          "trackId": "volvox_sv_cram",
-          "displaySnapshot": {
-            "height": 300,
-            "showBezierConnections": true,
-            "colorBy": { "type": "pairOrientation" }
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
 #### Live example: feature track color
 
-For a feature track (genes, BED, GFF), `color` in the `displaySnapshot` takes a
-plain CSS color, or a `jexl:` expression to color per-feature. The genes track
-in green:
+`color` on a feature track's display takes a CSS color, or a `jexl:` expression
+such as `"jexl:get(feature,'type')=='gene'?'blue':'gray'"` to color per feature:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -773,19 +536,14 @@ in green:
 }
 ```
 
-To color by a feature attribute, use a jexl expression, e.g.
-`"color": "jexl:get(feature,'type')=='gene'?'blue':'gray'"`.
-
 #### Live example: highlight a feature, and sort it to the top
 
-[`&highlight=`](#highlight) paints a band over a _region_, drawn by the view
-across every track at once. To box one _feature_ — a gene, transcript or
-variant, at whatever row and height its own track laid it out — set
-`featureHighlights` on the display. It is the same state the right-click
-"Highlight feature" item and a feature search write, and every canvas display
-carries it
+[`&highlight=`](#highlight) paints a band over a region across every track. To
+box one feature at whatever row its own track laid it out, set
+`featureHighlights` on the display, the same state the right-click "Highlight
+feature" item and a feature search write
 ([`LinearBasicDisplay`](/docs/models/linearbasicdisplay#property-featurehighlights),
-`LinearVariantDisplay`, and the rest):
+`LinearVariantDisplay`, and every other canvas display):
 
 ```json live config=test_data/volvox/config.json
 {
@@ -808,39 +566,26 @@ carries it
 }
 ```
 
-A highlight also **sorts its feature to a top row** of that track, ahead of the
-row packer's usual order, and holds it there across pan and zoom. On a dense
-annotation track the named gene is then boxed _and_ first in the lane. Only a
-declarative highlight sorts: the right-click one marks a feature the user just
-clicked and leaves it where the packer put it.
-
-Each entry names one feature, either way:
-
-- **By name** — `{"refName": "ctgA", "name": "EDEN"}`. The feature's label,
-  matched exactly and case-insensitively within that refName. Prefer this.
-- **By span** — `{"refName": "ctgA", "start": 1049, "end": 9000}`, in interbase
-  (0-based half-open) coordinates, matched within ±1bp of the track's own
-  record.
-
-A location box reads `ctgA:1,050-9,000` for that same feature — 1-based and
-inclusive — so coordinates copied off the screen are a base short at the start
-and match nothing. An entry may carry both forms, in which case `name` is the
-fallback used when the span misses. A name that is genuinely ambiguous (a gene
-and its same-named transcript) boxes both.
-
-A span that resolves to nothing logs a console warning naming the coordinates,
-once data covering it has loaded. A name that resolves to nothing stays silent —
-it is indistinguishable from a feature elsewhere on the contig that has not been
-fetched yet. To clear, use the clear-highlights button that appears in the view
-header while anything is highlighted, or the track menu's "Clear N highlights".
+- A declarative highlight also sorts its feature to a top row of the track,
+  ahead of the row packer's order, and holds it there across pan and zoom.
+- **By name**, `{"refName": "ctgA", "name": "EDEN"}`, matched exactly and
+  case-insensitively within that refName. Prefer this. A name that is ambiguous
+  (a gene and its same-named transcript) boxes both.
+- **By span**, `{"refName": "ctgA", "start": 1049, "end": 9000}`, in interbase
+  coordinates, matched within one base of the track's record. A location box
+  reads the same feature as `ctgA:1,050-9,000`, so coordinates copied off the
+  screen are a base short at the start. An entry carrying both forms falls back
+  to `name` when the span misses.
+- A span that resolves to nothing logs a console warning once data covering it
+  has loaded; a name that resolves to nothing stays silent. The clear-highlights
+  button in the view header removes them.
 
 ### Circular view
 
 The circular view shows the whole genome, so there is no `loc`. It takes
 `assembly`, `tracks`, `displayedRegionNames` (which chromosomes get an arc, in
-that order — [globs](#glob-region-names) allowed, so a circle can drop the
-unplaced contigs that would each claim a wedge), and `height`. The circle
-auto-fits its container, so `height` is what sizes the drawing.
+that order, [globs](#glob-region-names) allowed) and `height`, which sizes the
+drawing since the circle auto-fits its container.
 
 ```json live config=test_data/volvox/config.json
 {
@@ -855,9 +600,6 @@ auto-fits its container, so `height` is what sizes the drawing.
 ```
 
 #### Circular view properties
-
-As with the linear genome view, the spec also takes the view's own declared
-properties:
 
 <!-- SPEC_KEYS CircularView START -->
 
@@ -893,13 +635,10 @@ restores natively:
 
 <!-- SPEC_KEYS CircularView END -->
 
-`bpPerPx` and `offsetRadians` are the circle's zoom and rotation, the
-equivalents of the linear view's `bpPerPx`/`offsetPx`; pairing them with
-`autoFit: false` is what stops the first resize refitting over them.
+`bpPerPx` and `offsetRadians` are the circle's zoom and rotation; pairing them
+with `autoFit: false` stops the first resize refitting over them.
 
 ### Dotplot view
-
-Example (self-vs-self alignment):
 
 ```json live config=test_data/volvox/config_main_thread.json
 {
@@ -920,34 +659,14 @@ Example (self-vs-self alignment):
 }
 ```
 
-Each entry in the `views` array also accepts an optional `loc` to navigate that
-axis to a specific region (`views[0]` is the horizontal axis, `views[1]` the
-vertical); omit `loc` for a whole-genome overview. An entry can also carry
-`displayedRegionNames`, which is a different thing: `loc` navigates _within_
-what an axis displays, `displayedRegionNames` changes what it displays at all.
-That is what a haplotype-resolved assembly needs: an axis showing the whole
-assembly interleaves both haplotypes, and `["*_hap1"]` on one axis plots one
-haplotype against the reference ([globs](#glob-region-names) allowed). It is
-applied before `autoDiagonalize`, so the reorder runs over the restricted set.
-
-```json
-{
-  "views": [
-    {
-      "type": "DotplotView",
-      "views": [
-        { "assembly": "volvox", "loc": "ctgA:1-50000" },
-        { "assembly": "volvox", "loc": "ctgA:1-50000" }
-      ],
-      "tracks": ["volvox_fake_synteny"]
-    }
-  ]
-}
-```
+- `views[0]` is the horizontal axis and `views[1]` the vertical. Each takes an
+  optional `loc` to navigate that axis; omit it for a whole-genome overview.
+- Each also takes `displayedRegionNames`, which changes what the axis displays
+  at all where `loc` navigates within it. A haplotype-resolved assembly shown
+  whole interleaves both haplotypes, and `["*_hap1"]` on one axis plots one
+  haplotype against the reference. It is applied before `autoDiagonalize`.
 
 #### Dotplot view properties
-
-The dotplot spec accepts extra top-level fields applied on load:
 
 <!-- SPEC_KEYS DotplotView START -->
 
@@ -989,28 +708,12 @@ restores natively:
 
 <!-- SPEC_KEYS DotplotView END -->
 
-```json
-{
-  "views": [
-    {
-      "type": "DotplotView",
-      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }],
-      "tracks": ["volvox_fake_synteny"],
-      "colorBy": "strand",
-      "autoDiagonalize": true
-    }
-  ]
-}
-```
-
 #### Dotplot highlights
 
-The dotplot view accepts a `highlight` array in the same way the linear genome
-view does (see [&highlight=](#highlight)). Each entry is a loc string (or a
-URL-encoded `HighlightType` JSON object with optional `color`/`label`). A region
-is drawn as a translucent **vertical** band when its assembly matches the
-horizontal axis and as a **horizontal** band when it matches the vertical axis,
-so on a self-vs-self plot it appears on both axes:
+`highlight` works as it does on the linear genome view. A region draws as a
+vertical band when its assembly matches the horizontal axis and a horizontal
+band when it matches the vertical one, so on a self-vs-self plot it appears on
+both. Include `assemblyName` to tie a band to one axis of a non-self plot.
 
 ```json live config=test_data/volvox/config_main_thread.json
 {
@@ -1028,13 +731,7 @@ so on a self-vs-self plot it appears on both axes:
 }
 ```
 
-As with the linear genome view, include `assemblyName` when the band must be
-tied to a specific axis assembly (e.g. a non-self plot); a bare loc string
-resolves by refName against whichever axis contains it.
-
 ### Linear synteny view
-
-A self-self alignment is allowed:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1057,19 +754,20 @@ A self-self alignment is allowed:
 }
 ```
 
-Each entry in `views` is one genome row, and takes the same keys an
-[LGV](#linear-genome-view) does. `displayedRegionNames` restricts that row to a
-subset of its assembly, with [globs](#glob-region-names) allowed — so a
-whole-genome synteny view can put one haplotype on each row (`["*_MATERNAL"]`
-above `["*_PATERNAL"]`), where a row showing the whole assembly interleaves
-both. Use it in place of `loc`: `loc` navigates within what a row displays, and
-takes precedence.
+- Each entry in `views` is one genome row, a linear genome view, so it takes the
+  [LGV's](#linear-genome-view) keys and launch props (`trackLabels`,
+  `colorByCDS`, `showAminoAcids`), and its `tracks` entries take
+  [inline display options](#advanced-track-configuration).
+- `displayedRegionNames` restricts a row to a subset of its assembly, with
+  [globs](#glob-region-names), so a whole-genome view can put one haplotype on
+  each row (`["*_MATERNAL"]` above `["*_PATERNAL"]`). `loc` navigates within
+  what a row displays and takes precedence.
+- A self-self alignment is allowed.
 
 #### Linear synteny view properties
 
-The synteny view spec accepts extra top-level fields that set the view's initial
-display state on load. This opens the same view colored by strand, with curved
-ribbons and stronger opacity:
+Top-level fields set the view's initial display state. The same view colored by
+strand, with curved ribbons and stronger opacity:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1088,8 +786,6 @@ ribbons and stronger opacity:
   ]
 }
 ```
-
-Supported fields:
 
 <!-- SPEC_KEYS LinearSyntenyView START -->
 
@@ -1136,21 +832,13 @@ restores natively:
 
 <!-- SPEC_KEYS LinearSyntenyView END -->
 
-`levels` is accepted because the view declares it: filling it is what `tracks`
-does — one entry per level — and sizing them is `levelHeights`, so reach for
-`levels` only to author a band's full state.
-
-Each entry in `views` is a linear genome view, so besides `loc`, `assembly` and
-`tracks` it takes that view's own launch props (`trackLabels`, `colorByCDS`,
-`showAminoAcids`, `showCenterLine`, `showHighlightChips`), and its `tracks`
-entries take inline display options the same way the
-[LGV's do](#advanced-track-configuration) — a shorter `LGVSyntenyDisplay`
-height, say.
+`levels` is accepted because the view declares it; `tracks` fills it, one entry
+per level, and `levelHeights` sizes them, so reach for `levels` only to author a
+band's full state.
 
 #### Linear synteny view (multi-way)
 
-The `tracks` field is a multidimensional array. Each sub-array corresponds to
-the synteny tracks at one level of the multi-way view:
+`tracks` is then an array of arrays, one per level between adjacent rows:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1192,12 +880,9 @@ the synteny tracks at one level of the multi-way view:
 }
 ```
 
-The `views` array specifies the two (or more) linear genome views that make up
-the breakpoint split view. Each view can have its own location, assembly, and
-tracks, and each `tracks` entry takes inline display options the same way the
-[LGV's do](#advanced-track-configuration).
-
-Alongside `views`, the spec accepts every setting the view's menu offers:
+`views` lists the two or more linear genome views that make up the split view,
+each with its own location, assembly and tracks. Beside `views`, the spec
+accepts every setting the view's menu offers:
 
 <!-- SPEC_KEYS BreakpointSplitView START -->
 
@@ -1255,8 +940,8 @@ restores natively:
 
 <!-- SPEC_KEYS SpreadsheetView END -->
 
-`fileType` is one of `VCF`, `BED`, `BEDPE` or `STAR-Fusion` — a URL with no
-extension needs it, and so does `STAR-Fusion` output, which has none of its own.
+`fileType` is one of `VCF`, `BED`, `BEDPE` or `STAR-Fusion`, for a URL with no
+extension or a STAR-Fusion file, which has none of its own.
 
 ### SV inspector
 
@@ -1305,47 +990,42 @@ restores natively:
 
 ### Plugin-provided view types
 
-A plugin makes its view launchable from a spec by registering a
-`LaunchView-<type>` [extension point](/docs/developer_guides/extension_points).
-Once the plugin is loaded (via the config's `plugins`, a hosted config, or a
-session's own [`sessionPlugins`](#loading-a-plugin-from-a-url) — a spec has no
-field of its own for it), a session spec can launch its view by `type`. Their
-spec fields are documented by each plugin:
+A plugin makes its view launchable by registering a `LaunchView-<type>`
+[extension point](/docs/developer_guides/extension_points). Once the plugin is
+loaded, through the config's `plugins`, a hosted config, or a session's own
+[`sessionPlugins`](#loading-a-plugin-from-a-url), a spec launches its view by
+`type`. Each plugin documents its own fields:
 
-- `ProteinView` (3D structures) from `jbrowse-plugin-protein3d`. Fields such as
-  `uniprotId`, `transcriptId`, `url`, and `connectedView` are documented in the
-  plugin's
-  [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md).
-  See also the [proteins tutorial](/docs/tutorials/genomes_proteins).
-- `MsaView` (multiple sequence alignments) from `jbrowse-plugin-msaview`. Fields
-  such as `msaFileLocation`, `treeFileLocation`, and `connectedViewId` are
-  documented in the plugin's
-  [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md).
+- `ProteinView` from
+  [`jbrowse-plugin-protein3d`](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md)
+  (`uniprotId`, `transcriptId`, `url`, `connectedView`). See also the
+  [proteins tutorial](/docs/tutorials/genomes_proteins).
+- `MsaView` from
+  [`jbrowse-plugin-msaview`](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md)
+  (`msaFileLocation`, `treeFileLocation`, `connectedViewId`).
 
 ### Tiled views / Workspaces
 
 A spec's `layout` arranges its views into a tiled workspace, and turns
-workspaces mode on by doing so. It is a tree whose every node is one of two
-things:
+workspaces mode on by doing so. It is a tree of two kinds of node:
 
 - a **panel**, carrying a `views` array of indices into the spec's own `views`,
-  displayed stacked vertically. An index names every view that entry created: a
+  stacked vertically. An index names every view that entry created: a
   [`ProteinView`](#plugin-provided-view-types) with a `connectedView` opens its
   genome view and then the structure, and its index is the pair, stacked. An
   entry may also be a view id the spec pinned with
   [`id`](#fields-every-view-takes), to place one of those views on its own
-- a **container**, carrying a `children` array, whose `direction` arranges them
-  `"horizontal"` (left-right), `"vertical"` (top-bottom) or `"tabs"` (one tab
-  group, one child visible at a time)
+- a **container**, carrying `children` and a `direction`: `"horizontal"`,
+  `"vertical"` or `"tabs"` (one tab group, one child visible at a time)
 
 Containers nest arbitrarily deep. An index past the end, or an id no view in the
-spec has, is reported and left out of the layout.
-
-The live session takes the same shape: `session.applyLayoutSpec(layout)` (see
+spec has, is reported and left out of the layout. The live session takes the
+same shape: `session.applyLayoutSpec(layout)` (see
 [the live model guide](/docs/agents_live_model)) counts a panel's indices into
 `session.views` instead, and refuses a panel spelled any other way.
 
-#### Horizontal split example
+Views 0 and 1 stacked in a left panel taking 70% of the width, view 2 alone on
+the right:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1371,102 +1051,25 @@ The live session takes the same shape: `session.applyLayoutSpec(layout)` (see
   ],
   "layout": {
     "direction": "horizontal",
-    "children": [{ "views": [0, 1] }, { "views": [2] }]
-  }
-}
-```
-
-Views 0 and 1 stack in the left panel, view 2 sits alone on the right.
-
-#### Custom panel sizes
-
-A panel's `size` gives its proportion of the split:
-
-```json live config=test_data/volvox/config.json
-{
-  "views": [
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgA:1-5000",
-      "tracks": ["gff3tabix_genes"]
-    },
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgB:1-5000",
-      "tracks": ["gff3tabix_genes"]
-    }
-  ],
-  "layout": {
-    "direction": "horizontal",
     "children": [
-      {
-        "views": [0],
-        "size": 70
-      },
-      {
-        "views": [1],
-        "size": 30
-      }
+      { "views": [0, 1], "size": 70 },
+      { "views": [2], "size": 30 }
     ]
   }
 }
 ```
 
-A 70/30 split, the left panel taking 70% of the width.
+- `size` is a panel's proportion of the split, at any depth: a nested container
+  sizes its own children as well as taking a share of its parent.
+- Size every sibling and the numbers are proportions, so `7` and `3` lay out the
+  same as `70` and `30`. Leave one bare and they are read as percentages, the
+  bare panel taking what the sized ones leave: `70` beside a bare panel is
+  70/30, and `7` beside a bare panel is 7/93.
+- Dragging the divider adjusts from there, and the position is saved with the
+  session.
 
-`size` works at **any depth**, so a nested container sizes its own children as
-well as taking a share of its parent — see the nested example below.
-
-Size every sibling and the numbers are proportions rather than strict
-percentages: `7` and `3` lay out the same as `70` and `30`. Leave one bare and
-they are read as percentages, because the bare panel takes an equal share of
-what the sized ones leave over — `70` beside a bare panel is a 70/30 split, and
-`7` beside a bare panel is a 7/93 one.
-
-Drag the divider to adjust from there; the position is saved with the session.
-
-#### Tabbed panels
-
-`"direction": "tabs"` puts its children in one tab group rather than dividing
-the space, so only one panel is visible at a time and the rest are a click away.
-Useful when the views are alternatives to each other:
-
-```json live config=test_data/volvox/config.json
-{
-  "views": [
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgA:1-5000",
-      "tracks": ["gff3tabix_genes"]
-    },
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgA:1-5000",
-      "tracks": ["volvox_sv_test"]
-    }
-  ],
-  "layout": {
-    "direction": "tabs",
-    "children": [{ "views": [0] }, { "views": [1] }]
-  }
-}
-```
-
-Both panels land in the same tab group; the first is the one shown. Tabs can be
-renamed by double-clicking them, and dragged out into a split at any time.
-
-A `tabs` node is the one container whose `size` does not divide space, so a
-`size` on its children describes nothing, and a container nested inside it has
-its views gathered into a single tab. A spec that does either says so in a
-notification when it loads. Everywhere else, `size` and nesting mean what they
-say.
-
-Mixing the two is where it gets useful — a fixed reference panel on the left,
-and a set of tabs to page through on the right:
+A fixed reference panel on the left, and a set of tabs to page through on the
+right:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1503,193 +1106,97 @@ and a set of tabs to page through on the right:
 }
 ```
 
-#### Complex nested layout example
-
-Containers nested inside containers:
-
-```json live config=test_data/volvox/config.json
-{
-  "views": [
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgA:1-5000",
-      "tracks": ["gff3tabix_genes"]
-    },
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgA:5000-10000",
-      "tracks": ["gff3tabix_genes"]
-    },
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgB:1-5000",
-      "tracks": ["gff3tabix_genes"]
-    },
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "loc": "ctgB:5000-10000",
-      "tracks": ["gff3tabix_genes"]
-    }
-  ],
-  "layout": {
-    "direction": "horizontal",
-    "children": [
-      {
-        "views": [0, 1],
-        "size": 60
-      },
-      {
-        "direction": "vertical",
-        "size": 40,
-        "children": [
-          {
-            "views": [2],
-            "size": 75
-          },
-          {
-            "views": [3],
-            "size": 25
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Views 0 and 1 stack in the left panel, which takes 60% of the width; the right
-40% splits vertically, view 2 taking three quarters of that column and view 3
-the rest. The `75`/`25` is the nested sizing — it divides the right-hand
-container's own height, not the window's.
+- The first child of a `tabs` node is the tab shown. Tabs can be renamed by
+  double-clicking and dragged out into a split.
+- A `tabs` node is the one container whose `size` does not divide space, so a
+  `size` on its children describes nothing, and a container nested inside it has
+  its views gathered into a single tab. A spec that does either says so in a
+  notification when it loads.
 
 ## Other session formats
 
-Besides `spec-`, `&session=` takes four formats that each carry a session
-snapshot rather than instructions for building one.
+Besides `spec-`, `&session=` takes four formats that carry a session snapshot
+rather than instructions for building one.
 
 ### &session=json-
 
-`&session=json-` takes a plain JSON snapshot of a session, the same shape
-produced by "Export session...".
-
-The Share button's gear icon offers this as "Plaintext JSON": the longest of the
-three formats, and the one to pick when you want to read what the session
-contains.
+A plain JSON snapshot, the shape "Export session..." produces, and the Share
+button's "Plaintext JSON" option: the longest format, and the one to read.
 
 ```
 &session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"name":"MsaView","url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
 ```
 
-The `sessionPlugins` array in there loads an extra plugin with the session — see
-[below](#loading-a-plugin-from-a-url).
-
 ### &session=encoded-
 
-Similar to JSON sessions but uses a URL encoding (base64+gzip), so the URLs look
-like:
+The same snapshot as base64 plus gzip, the Share button's "Long URL" option. It
+works without the session-sharing server, and because it is long the Share
+button puts it [in the fragment](#query-string-or-hash-fragment).
 
 ```
 https://jbrowse.org/code/jb2/latest/#session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6Ndfj...
 ```
 
-The "Share" button's gear icon has a "Long URL" option that produces these.
-Because the entire session is encoded in the URL, they work without the central
-session-sharing system in place — and because that makes the URL long, the Share
-button puts it [in the fragment](#query-string-or-hash-fragment) rather than the
-query string. `?session=encoded-` is read the same way.
-
 ### &session=local-
 
-The local sessions look like this
-
-https://host/jbrowse2/?session=local-Fjphq8kjY
-
-By default, after a session is loaded, it is stored into sessionStorage and
-IndexedDB, and then the URL bar uses the ?session=local- format to reflect the
-session ID. Pasting the URL in the same browser tab restores from
-sessionStorage. Pasting it into a new tab on the same machine restores from
+`https://host/jbrowse2/?session=local-Fjphq8kjY`. A loaded session is stored in
+sessionStorage and IndexedDB and the URL bar switches to this form. The same tab
+restores from sessionStorage; a new tab on the same machine restores from
 IndexedDB.
 
 ### &session=share-
 
-If you click the "Share" button in the header bar, it will generate a "shareable
-link" that you can give to other users
+`https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU`, from the Share
+button.
 
-https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
-
-The Share button generates a random encryption key on the client, encrypts the
-session, and uploads the encrypted blob — without the key — to an AWS DynamoDB
-database. The `password` is never transmitted to the server: the recipient
-downloads the DynamoDB entry and decodes it with the key embedded in the URL, so
-the DynamoDB contents cannot be decrypted even by JBrowse administrators.
-
-Behind a firewall that cannot reach the shortener, the gear icon in the Share
-dialog switches to "Long URL" mode, which needs no central server. To run your
-own shortener instead, set `shareURL` in config.json.
+- The client mints a random key, encrypts the session and uploads the blob
+  without the key to a DynamoDB store. The recipient decrypts with the key in
+  the URL, so the store's contents cannot be read even by JBrowse
+  administrators.
+- Behind a firewall that cannot reach the shortener, the Share dialog's gear
+  icon switches to "Long URL". `shareURL` in the config points at a shortener of
+  your own.
 
 #### Are share links reproducible
 
-It depends which of the gear icon's three formats you pick.
-
-The short link (`&session=share-<ID>&password=<KEY>`) is _not_. Each click of
-Share mints a new random key and uploads a new encrypted blob, so the same view
-gives a new `<ID>`/`<KEY>` pair every time. The link is by design just a key
-into our hosted store.
-
-**Long URL** and **Plaintext JSON** _are_. Both carry the whole session in the
-link itself - compressed for the first, readable JSON for the second - with no
-server round-trip and no minted password, so the same view and config produce
-the same link, and it survives rebuilding or moving your instance. Being long,
-both go [into the URL fragment](#query-string-or-hash-fragment) rather than the
-query string.
-
-Your **config** can still break reproducibility. A restored session references
-tracks by `trackId`, so a redeploy that regenerates `config.json` with different
-`trackId`s leaves the link unable to find those tracks. See
-[keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links).
+- The short link is not: each click mints a new key and uploads a new blob, so
+  the same view gives a new id and password every time.
+- "Long URL" and "Plaintext JSON" are: both carry the whole session in the link,
+  so the same view and config produce the same link, and it survives moving the
+  instance.
+- The config can still break either. A restored session names tracks by
+  `trackId`, so a redeploy that regenerates `config.json` with different ids
+  leaves the link unable to find them
+  ([keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)).
 
 ### Loading a plugin from a URL
 
 A snapshot's `sessionPlugins` array is the only way to name a plugin in the URL
-itself; anything else comes from the config JBrowse loads. It takes the same
-definitions a config's `plugins` array takes, and works in all four formats
-above — `json-`, `encoded-`, `share-` and `local-`. A plugin loaded this way
-belongs to that session rather than being installed for the user, and travels
-with it through the Share button.
+itself. It takes the same definitions a config's `plugins` array takes, works in
+all four snapshot formats, and the plugin belongs to that session rather than
+being installed for the user.
 
-Four things govern one written by hand:
-
-- **`name` is required for a UMD bundle** — the `.umd.production.min.js` builds
+- **`name` is required for a UMD bundle**, the `.umd.production.min.js` builds
   the plugin store publishes. The loader resolves the bundle as the global
   `JBrowsePlugin<Name>`, so a definition carrying only a `url` loads the script
   and then finds nothing in it.
 - **An unrecognized plugin prompts the visitor.** Anything not served from
-  `https://jbrowse.org/plugins/` and not listed in the
-  [plugin store](https://jbrowse.org/jb2/plugin_store/) opens a "this session
-  has the following unknown plugins" dialog, naming each one, before the session
-  loads — a plugin is arbitrary javascript running with the page's privileges,
-  and a session URL arrives from whoever sent it. Accepting can remember that
-  url for this origin. A config's `plugins` are gated the same way, but only
-  when the config is cross-origin, which is why a config served beside JBrowse
-  never prompts.
+  `https://jbrowse.org/plugins/` and not in the
+  [plugin store](https://jbrowse.org/jb2/plugin_store/) opens an "unknown
+  plugins" dialog before the session loads, since a plugin is arbitrary
+  JavaScript running with the page's privileges. A config's `plugins` are gated
+  the same way, but only when the config is cross-origin.
 - **A JSON session is state.** A plugin's view type opened this way is
   instantiated straight from the snapshot, so anything its
   [launcher](#plugin-provided-view-types) would have resolved has to be written
-  out. Build the session in the app and copy it out of Share → gear → "Plaintext
+  out. Build the session in the app and copy it out of Share, gear, "Plaintext
   JSON".
 - **These URLs get long.** Put the session
-  [in the fragment](#query-string-or-hash-fragment) to stay under the
-  request-line limit that answers a long query string with HTTP 414 — and note
-  that a fragment containing `=` makes JBrowse ignore the query string
-  altogether, so `?config=…#session=json-…` loads the default `config.json`, not
-  the named one. Move `config=` into the fragment as well.
+  [in the fragment](#query-string-or-hash-fragment), and `config=` with it,
+  since a fragment containing `=` makes JBrowse ignore the query string.
 
 For everyone opening a config to have the plugin, put it in that config's own
-`plugins` array. `sessionPlugins` is for one session, or one link.
+`plugins` array.
 
 ## See also
 
