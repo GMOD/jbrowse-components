@@ -11,6 +11,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
+  assembleLocString,
   getContainingView,
   getPaletteHost,
   getSession,
@@ -21,6 +22,7 @@ import {
   clampBandHeight,
 } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -46,6 +48,8 @@ import {
   sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import {
   getMafCoverageColors,
@@ -88,6 +92,7 @@ import { coverageInsertionAt, coverageSnpSnap } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
+import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { isRowIdentityMode } from './rowIdentityModes.ts'
@@ -128,6 +133,7 @@ import type {
   RowIdentityModeWithOff,
 } from './rowIdentityModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
+import type { MafHover } from './util.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
@@ -159,10 +165,13 @@ export interface MafSource extends RowSource {
 }
 
 // What a right-click on the rows resolves to: the reference column the menu's
-// sort acts on.
+// sort and copy act on, plus whatever the click landed on — the same hit the
+// tooltip shows, resolved once here so an item acting on it does not have to
+// re-run the hit test against an anchor the menu has since closed.
 export interface MafContextMenuInfo extends ContextMenuAnchor {
   refName: string
   pos: number
+  hover?: MafHover
 }
 
 /**
@@ -1296,8 +1305,39 @@ export default function stateModelFactory(
           // purpose, so on that tier the row was enabled and did nothing. Same
           // wording the two band toggles use for the same override.
           const zoomHint = self.showSummary ? ZOOM_IN_FOR_BAND : undefined
+          const insertion =
+            info?.hover?.kind === 'insertion' ? info.hover : undefined
           return info
             ? [
+                {
+                  label: 'Copy location',
+                  icon: ContentCopyIcon,
+                  onClick: () => {
+                    void copyText(
+                      self,
+                      assembleLocString({
+                        refName: info.refName,
+                        start: info.pos,
+                        end: info.pos + 1,
+                      }),
+                      'location',
+                    )
+                  },
+                },
+                // Reachable by left click too, and only there until now — a
+                // long insertion's sequence is dropped from the tooltip, so
+                // the widget is the only way to read it.
+                ...(insertion
+                  ? [
+                      {
+                        label: 'Open insertion details',
+                        icon: MenuOpenIcon,
+                        onClick: () => {
+                          openInsertionWidget(self, insertion)
+                        },
+                      },
+                    ]
+                  : []),
                 zoomGatedItem(
                   sortRowsHereMenuItem({
                     label: withHint('Sort rows by base here', zoomHint),

@@ -37,7 +37,7 @@ import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { mafPointerAt, resolveMafPointerHit } from './mafHitTest.ts'
+import { resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
 import { useMafVirtualScroll } from './useMafVirtualScroll.ts'
 
@@ -63,7 +63,15 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
   // gutter resolve to nothing, so the browser's menu falls through there
   function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
     const { x, y } = eventPoint(e)
-    const { pos, baseBp, inBands } = mafPointerAt(model, x, y)
+    // The hit is resolved here rather than inside an item's onClick, because
+    // `closeContextMenu` runs first when an item is clicked — the same reason
+    // the column is captured here.
+    const { pos, baseBp, inBands, hover } = resolveMafPointerHit({
+      model,
+      mouseX: x,
+      mouseY: y,
+      resolveRowHover: x >= treeSidebarRightEdge(model),
+    })
     openContextMenuFromEvent(
       model,
       e,
@@ -73,6 +81,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
             clientY: e.clientY,
             refName: pos.refName,
             pos: baseBp,
+            hover,
           }
         : undefined,
     )
