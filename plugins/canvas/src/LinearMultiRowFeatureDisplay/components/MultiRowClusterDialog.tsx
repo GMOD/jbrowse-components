@@ -1,8 +1,7 @@
 import {
   ClusterDialog,
   MIN_CLUSTER_ROWS,
-  buildClusteredLayout,
-  validateClusterOrder,
+  clusteredCladeLayout,
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -26,7 +25,7 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
   model: MultiRowClusterDialogModel
   handleClose: () => void
 }) {
-  const { sourcesWithoutLayout } = model
+  const { clusterableSources } = model
   return (
     <ClusterDialog
       model={model}
@@ -35,12 +34,12 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
       description="This procedure will cluster the rows by the colors each one is painted in across the window in view, using hierarchical clustering"
       matrixLabel="feature matrix"
       tsvFilename="features.tsv"
-      canRun={sourcesWithoutLayout.length >= MIN_CLUSTER_ROWS}
+      canRun={clusterableSources.length >= MIN_CLUSTER_ROWS}
       matrixKey={featureMatrixKey(model)}
       run={args => runMultiRowClustering({ model, ...args })}
       fetchMatrix={({ rpcManager, sessionId, ...args }) =>
         rpcManager.call(sessionId, 'MultiRowGetFeatureMatrix', {
-          sources: sourcesWithoutLayout.map(s => s.name),
+          sources: clusterableSources.map(s => s.name),
           adapterConfig: model.adapterConfig,
           partitionField: model.effectivePartitionField,
           colorConfig: model.colorConfig,
@@ -48,12 +47,17 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
         })
       }
       applyOrder={(order, matrixRowNames) => {
-        // the same rows `fetchMatrix` keyed the matrix by, so a partition value
-        // discovered while the user was in R is caught rather than shifting
-        // every rank below it onto the wrong row
-        validateClusterOrder(order, sourcesWithoutLayout, matrixRowNames)
+        // `matrixRowNames` is the rows `fetchMatrix` keyed the matrix by, so a
+        // partition value discovered while the user was in R is caught rather
+        // than shifting every rank below it onto the wrong row
         model.setLayout(
-          buildClusteredLayout(sourcesWithoutLayout, model.layout, order),
+          clusteredCladeLayout({
+            rows: clusterableSources,
+            editableSources: model.editableSources,
+            layout: model.layout,
+            order,
+            matrixRowNames,
+          }),
         )
       }}
     />

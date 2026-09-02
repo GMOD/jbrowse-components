@@ -1,7 +1,6 @@
 import {
-  buildClusteredLayout,
+  clusteredCladeLayout,
   clusterProvenanceFromRegions,
-  validateClusterOrder,
 } from '@jbrowse/tree-sidebar'
 
 import type { MafSource } from './stateModel.ts'
@@ -30,50 +29,6 @@ export interface MafClusterSelf extends IStateTreeNode {
     tree?: string,
     provenance?: ClusterProvenance,
   ) => void
-}
-
-/**
- * Turn a cluster order into the display's next `layout`. One home, because the
- * auto ("Run clustering") and manual (R script paste) paths both take it and
- * would otherwise drift.
- *
- * `sources` is the row set the display is DRAWING, and it is what the order
- * indexes -- the same array is sent to the worker and applied here. Under an
- * active subtree filter that means a run resolves the structure WITHIN the
- * clade rather than handing back the whole-cohort tree, which is both the more
- * useful answer and the only one `computeClusterHierarchy` will draw: it refuses
- * a tree whose leaves are not exactly the drawn rows in order.
- *
- * The rows a subtree filter is hiding are re-appended rather than dropped.
- * `layout` is the persisted record of every row's position and colour, so
- * losing them here would erase them for good the moment the filter is cleared.
- *
- * `matrixRowNames` comes from the R-script path and names the rows the exported
- * matrix held, so a paste applied after the drawn rows moved (a subtree filter
- * cleared, a guide tree arriving) is rejected rather than landing each rank on
- * its neighbour. The RPC path has none: its order came from the very array
- * passed here.
- */
-export function clusteredMafLayout({
-  sources,
-  editableSources,
-  layout,
-  order,
-  matrixRowNames,
-}: {
-  sources: MafSource[]
-  editableSources: MafSource[]
-  layout: readonly MafSource[]
-  order: number[]
-  matrixRowNames?: string[]
-}): MafSource[] {
-  validateClusterOrder(order, sources, matrixRowNames)
-  const clustered = buildClusteredLayout(sources, [...layout], order)
-  const clusteredNames = new Set(clustered.map(s => s.name))
-  return [
-    ...clustered,
-    ...editableSources.filter(s => !clusteredNames.has(s.name)),
-  ]
 }
 
 /**
@@ -110,8 +65,8 @@ export async function runMafClustering({
     },
   )
   model.setLayoutAndClusterTree(
-    clusteredMafLayout({
-      sources,
+    clusteredCladeLayout({
+      rows: sources,
       editableSources: model.editableSources,
       layout: model.layout,
       order: ret.order,

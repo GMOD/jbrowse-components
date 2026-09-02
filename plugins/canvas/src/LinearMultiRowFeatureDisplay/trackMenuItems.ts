@@ -270,7 +270,7 @@ export function buildMultiRowTrackMenuItems(
           ])
         },
       },
-      self.sourcesWithoutLayout.length,
+      self.clusterableSources.length,
     ),
   ]
 }

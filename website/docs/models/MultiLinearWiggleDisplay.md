@@ -108,6 +108,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-isoverlay">**isOverlay**</span><br><code>boolean</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-sourceswithoutlayout">**sourcesWithoutLayout**</span><br><code>SourceInfo[]</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-editablesources">**editableSources**</span><br><code>SourceInfo[]</code> |  | MultiLinearWiggleDisplay |
+| <span id="getter-clusterablesources">**clusterableSources**</span><br><code>SourceInfo[]</code> | The rows a clustering run acts on: `editableSources` narrowed to the focused clade, and deliberately NOT the decorated `sources` below — `clusteredCladeLayout` writes what it is handed into `layout`, where a synthesized palette color has no business. Under no subtree filter this is `editableSources` itself. | MultiLinearWiggleDisplay |
 | <span id="getter-sources">**sources**</span><br><code>SourceInfo[]</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-numsources">**numSources**</span><br><code>number</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt;</code> |  | MultiLinearWiggleDisplay |

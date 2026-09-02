@@ -414,6 +414,20 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The rows a clustering run acts on: `editableSources` narrowed to the
+       * focused clade, and deliberately NOT the decorated `sources` below —
+       * `clusteredCladeLayout` writes what it is handed into `layout`, where a
+       * `rowGroups` swatch color has no business, and `applyRowGroups` may
+       * reorder into blocks besides. Under no subtree filter this is
+       * `editableSources` itself.
+       */
+      get clusterableSources(): MultiRowSource[] {
+        return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The display rows: `editableSources` narrowed by the active subtree
        * filter. Render order, label order, and `rowIndexByValue` all key off
        * this, so reordering/filtering flows through to the painting.
@@ -1229,7 +1243,7 @@ export default function stateModelFactory(
             // `clusterRegion` locus if the session named one, the visible
             // blocks if not
             clustering: {
-              ready: () => self.sourcesWithoutLayout.length > 1,
+              ready: () => self.clusterableSources.length > 1,
               run: async args => {
                 const { runMultiRowClustering } =
                   await import('./runMultiRowClustering.ts')

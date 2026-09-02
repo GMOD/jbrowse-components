@@ -1,6 +1,7 @@
 import { createStopToken } from '@jbrowse/core/util/stopToken'
+import { clusteredCladeLayout } from '@jbrowse/tree-sidebar'
 
-import { clusteredMafLayout, runMafClustering } from './runMafClustering.ts'
+import { runMafClustering } from './runMafClustering.ts'
 
 import type {
   ClusterIdentityMatrixCaller,
@@ -111,15 +112,12 @@ describe('runMafClustering', () => {
     })
   })
 
-  // The `ready` gate upstream is `sources.length > 1`, but nothing stops a
-  // caller reaching this with an empty set, and an RPC over no rows is a
-  // pointless round trip whose result cannot be applied.
   // A hand-pasted order from the dialog's R tab is the one that can be short or
   // duplicated. Rejected rather than silently dropping or doubling rows.
   it('rejects an order that does not cover the drawn rows', () => {
     expect(() =>
-      clusteredMafLayout({
-        sources: [src('a'), src('b'), src('c')],
+      clusteredCladeLayout({
+        rows: [src('a'), src('b'), src('c')],
         editableSources: [],
         layout: [],
         order: [0, 1],

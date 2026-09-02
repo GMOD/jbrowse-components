@@ -24,6 +24,7 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
+  filterRowsBySubtree,
   focusRowGroup,
   reconcileLayout,
   resetRowOrderMenuItems,
@@ -182,6 +183,17 @@ export default function stateModelFactory(
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       * The rows a clustering run acts on: `editableSources` narrowed to the
+       * focused clade, and deliberately NOT the decorated `sources` below —
+       * `clusteredCladeLayout` writes what it is handed into `layout`, where a
+       * synthesized palette color has no business. Under no subtree filter this
+       * is `editableSources` itself.
+       */
+      get clusterableSources(): Source[] {
+        return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+      },
       get sources(): Source[] {
         return buildSources(
           self.editableSources,
@@ -518,7 +530,7 @@ export default function stateModelFactory(
           // `clusterRegion` locus if the session named one and the visible
           // blocks if not. Refuses a single row, matching the track menu's gate
           clustering: {
-            ready: () => self.sourcesWithoutLayout.length > 1,
+            ready: () => self.clusterableSources.length > 1,
             run: async args => {
               const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
                 await Promise.all([
@@ -590,7 +602,7 @@ export default function stateModelFactory(
                 ])
               },
             },
-            self.sourcesWithoutLayout.length,
+            self.clusterableSources.length,
           ),
           // top-level rather than inside the Clustering submenu, where it used
           // to sit as "Clear clustering" — see resetRowOrderMenuItems

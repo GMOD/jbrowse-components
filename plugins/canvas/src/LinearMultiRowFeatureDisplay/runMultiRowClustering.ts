@@ -1,5 +1,5 @@
 import {
-  buildClusteredLayout,
+  clusteredCladeLayout,
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
@@ -18,7 +18,10 @@ type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 // The subset of the display model this run reads/writes. Kept structural so the
 // menu trigger and the declarative autorun call one shared implementation.
 export interface MultiRowClusterModel {
-  sourcesWithoutLayout: MultiRowSource[]
+  // The rows a run clusters — the focused clade, undecorated. See the model's
+  // `clusterableSources`, and `clusteredCladeLayout` for why not `sources`.
+  clusterableSources: MultiRowSource[]
+  editableSources: MultiRowSource[]
   layout: readonly MultiRowSource[]
   adapterConfig: Record<string, unknown>
   // the resolved one, never the raw slot — the matrix has to bucket each
@@ -62,11 +65,11 @@ export interface MultiRowClusterDialogModel
  * `null` when no row has been discovered: there is nothing to export yet.
  */
 export function featureMatrixKey(model: MultiRowClusterModel) {
-  const { sourcesWithoutLayout } = model
-  return sourcesWithoutLayout.length
+  const { clusterableSources } = model
+  return clusterableSources.length
     ? ([
         'featureMatrix',
-        sourcesWithoutLayout.map(s => s.name).join('\t'),
+        clusterableSources.map(s => s.name).join('\t'),
         model.effectivePartitionField,
         model.colorConfig,
       ] as const)
@@ -91,10 +94,10 @@ export async function runMultiRowClustering({
   stopToken: StopToken
   statusCallback: (status: RpcStatus) => void
 }) {
-  const { sourcesWithoutLayout } = model
+  const { clusterableSources } = model
   const ret = await rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
     regions,
-    sources: sourcesWithoutLayout.map(s => s.name),
+    sources: clusterableSources.map(s => s.name),
     adapterConfig: model.adapterConfig,
     partitionField: model.effectivePartitionField,
     colorConfig: model.colorConfig,
@@ -102,7 +105,12 @@ export async function runMultiRowClustering({
     statusCallback,
   })
   model.setLayoutAndClusterTree(
-    buildClusteredLayout(sourcesWithoutLayout, model.layout, ret.order),
+    clusteredCladeLayout({
+      rows: clusterableSources,
+      editableSources: model.editableSources,
+      layout: model.layout,
+      order: ret.order,
+    }),
     ret.tree,
     // This display clusters on the *rendered color* of each bin, so the color
     // scheme is not a display preference here — it is the matrix. Change "Color

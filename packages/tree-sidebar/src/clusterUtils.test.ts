@@ -2,6 +2,7 @@ import {
   applyLayoutOverrides,
   applySubtreeFilter,
   buildClusteredLayout,
+  clusteredCladeLayout,
   computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
@@ -173,6 +174,39 @@ test('buildClusteredLayout reorders base sources and merges existing fields', ()
   expect(result.map(r => r.name)).toEqual(['C', 'A', 'B'])
   expect(result[2]).toMatchObject({ name: 'B', color: 'yellow', extra: 1 })
   expect(result[0]).toEqual({ name: 'C', color: 'blue' })
+})
+
+// The four displays' one commit path. A run under a subtree filter clusters the
+// clade, so the order covers only those rows -- the rest of `layout` is the
+// user's record of where they sit and what they were named, and dropping it
+// would erase that the moment the filter cleared.
+test('clusteredCladeLayout re-appends the rows the filter is hiding', () => {
+  const editableSources = [
+    { name: 'A' },
+    { name: 'B', color: 'yellow' },
+    { name: 'C' },
+    { name: 'D' },
+  ]
+  const result = clusteredCladeLayout({
+    rows: [{ name: 'A' }, { name: 'C' }],
+    editableSources,
+    layout: [{ name: 'B', color: 'yellow' }],
+    order: [1, 0],
+  })
+
+  expect(result.map(r => r.name)).toEqual(['C', 'A', 'B', 'D'])
+  expect(result[2]).toEqual({ name: 'B', color: 'yellow' })
+})
+
+test('clusteredCladeLayout rejects an order that misses a clustered row', () => {
+  expect(() =>
+    clusteredCladeLayout({
+      rows: abc,
+      editableSources: abc,
+      layout: [],
+      order: [0, 1],
+    }),
+  ).toThrow(/expected 3 entries/)
 })
 
 test('buildClusteredLayout throws on out-of-bounds index', () => {

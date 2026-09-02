@@ -420,6 +420,59 @@ export function applyLayoutOverrides<S extends { name: string }>(
   })
 }
 
+/**
+ * A clustering run's `order` turned into the display's next `layout` — the one
+ * write behind both the "Run clustering" RPC and a hand-pasted R order, on
+ * every display that clusters its rows.
+ *
+ * `rows` is the row set the run CLUSTERED, and it is what the order indexes:
+ * the same array whose names went to the worker. Under an active subtree filter
+ * that is the focused clade, so a run resolves the structure WITHIN it rather
+ * than handing back the whole-cohort tree — both the more useful answer and the
+ * only one `computeClusterHierarchy` will draw, since it refuses a tree whose
+ * leaves are not exactly the drawn rows in order.
+ *
+ * **Undecorated rows, not the drawn `sources`.** Every display decorates on the
+ * way to the painting — multi-wiggle synthesizes a palette, the multi-row
+ * feature display tags `rowGroups` colors and may reorder into blocks — and
+ * `applyLayoutOverrides` spreads whatever it is handed into the persisted
+ * layout. Passing the decorated list writes synthesized colors into `layout`,
+ * which is meant to hold only what the user chose. `editableSources` narrowed
+ * by the filter is the list.
+ *
+ * The rows the filter is hiding are re-appended rather than dropped: `layout`
+ * is the persisted record of every row's position and overrides, so losing them
+ * here would erase them for good the moment the filter is cleared. They land
+ * after the clustered block, which is a no-op with no filter active.
+ *
+ * `matrixRowNames` comes from the R-script path and names the rows the exported
+ * matrix held, so a paste applied after the clustered rows moved (a filter
+ * cleared, a guide tree arriving) is rejected rather than landing each rank on
+ * its neighbour. The RPC path has none: its order came from the very array
+ * passed here.
+ */
+export function clusteredCladeLayout<S extends { name: string }>({
+  rows,
+  editableSources,
+  layout,
+  order,
+  matrixRowNames,
+}: {
+  rows: S[]
+  editableSources: S[]
+  layout: readonly S[]
+  order: number[]
+  matrixRowNames?: string[]
+}): S[] {
+  validateClusterOrder(order, rows, matrixRowNames)
+  const clustered = buildClusteredLayout(rows, [...layout], order)
+  const clusteredNames = new Set(clustered.map(s => s.name))
+  return [
+    ...clustered,
+    ...editableSources.filter(s => !clusteredNames.has(s.name)),
+  ]
+}
+
 export function buildClusteredLayout<S extends { name: string }>(
   baseSources: S[],
   existingLayout: readonly S[],

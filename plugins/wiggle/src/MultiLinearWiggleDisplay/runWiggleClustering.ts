@@ -1,5 +1,5 @@
 import {
-  buildClusteredLayout,
+  clusteredCladeLayout,
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
@@ -36,7 +36,6 @@ export async function runWiggleClustering({
   stopToken: StopToken
   statusCallback: (status: RpcStatus) => void
 }) {
-  const { sourcesWithoutLayout } = model
   const args = clusterScoreMatrixArgs(model, samplesPerPixel, regions)
   const ret = await rpcManager.call(
     sessionId,
@@ -48,7 +47,12 @@ export async function runWiggleClustering({
     },
   )
   model.setLayoutAndClusterTree(
-    buildClusteredLayout(sourcesWithoutLayout, model.layout, ret.order),
+    clusteredCladeLayout({
+      rows: model.clusterableSources,
+      editableSources: model.editableSources,
+      layout: model.layout,
+      order: ret.order,
+    }),
     ret.tree,
     // Sampling density belongs in the caption because it changes the matrix:
     // the columns are pixel bins, so the same locus at a different density is

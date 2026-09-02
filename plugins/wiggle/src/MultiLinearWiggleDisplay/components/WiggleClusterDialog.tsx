@@ -1,8 +1,7 @@
 import {
   ClusterDialog,
   MIN_CLUSTER_ROWS,
-  buildClusteredLayout,
-  validateClusterOrder,
+  clusteredCladeLayout,
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -33,7 +32,7 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
   // the key, so passing the node stringified the whole display snapshot on
   // every render and re-fetched the matrix for a row relabel that cannot move a
   // score.
-  const sourceNames = model.sourcesWithoutLayout.map(s => s.name).join('\t')
+  const sourceNames = model.clusterableSources.map(s => s.name).join('\t')
   return (
     <ClusterDialog
       model={model}
@@ -42,9 +41,9 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
       maxWidth="xl"
       matrixLabel="score matrix"
       tsvFilename="scores.tsv"
-      canRun={model.sourcesWithoutLayout.length >= MIN_CLUSTER_ROWS}
+      canRun={model.clusterableSources.length >= MIN_CLUSTER_ROWS}
       matrixKey={
-        model.sourcesWithoutLayout.length
+        model.clusterableSources.length
           ? ['scoreMatrix', sourceNames, samplesPerPixel]
           : null
       }
@@ -56,9 +55,14 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
         })
       }
       applyOrder={(order, matrixRowNames) => {
-        validateClusterOrder(order, model.sourcesWithoutLayout, matrixRowNames)
         model.setLayout(
-          buildClusteredLayout(model.sourcesWithoutLayout, model.layout, order),
+          clusteredCladeLayout({
+            rows: model.clusterableSources,
+            editableSources: model.editableSources,
+            layout: model.layout,
+            order,
+            matrixRowNames,
+          }),
         )
       }}
       advancedOptions={

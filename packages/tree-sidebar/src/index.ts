@@ -57,6 +57,7 @@ export {
   applySubtreeFilter,
   buildClusteredLayout,
   buildTree,
+  clusteredCladeLayout,
   computeClusterHierarchy,
   filterRowsBySubtree,
   parseClusterOrder,

@@ -44,7 +44,7 @@ function makeSelf(
     layout: [],
     rowOrderIsCustom: false,
     editableSources: rows,
-    sourcesWithoutLayout: rows,
+    clusterableSources: rows,
     adapterConfig: {},
     colorConfig: undefined,
     setLayoutAndClusterTree: () => {},
@@ -275,7 +275,7 @@ describe('multi-row track menu', () => {
   it('disables clustering until there are two rows to cluster', () => {
     const oneRow = subMenuOf(
       buildMultiRowTrackMenuItems(
-        makeSelf({ sourcesWithoutLayout: [{ name: 'a' }] }),
+        makeSelf({ clusterableSources: [{ name: 'a' }] }),
       ),
       'Clustering',
     )[0]!
