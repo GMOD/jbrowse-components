@@ -59,6 +59,31 @@ function styleForAllele(
 }
 
 /**
+ * Whether the cell at one row carries an alt allele — the question the painter
+ * answers per cell as `isAlt` / `altDosage`, asked again where only a genotype
+ * string and a row are in hand.
+ *
+ * `HP` is the haplotype row's index, or undefined in allele-count mode where a
+ * row is a whole sample. That split is the whole point: in phased mode `1|0`
+ * carries the alt on HP0 and not on HP1, so a per-sample test reports a
+ * record's inserted bases on a reference haplotype row (the matrix tooltip's
+ * bug). An unphased or no-call genotype paints the same non-alt cell on every
+ * haplotype row, which is `buildPhasedStyles`' `uncalledStyle`.
+ */
+export function cellCarriesAlt(genotype: string, HP: number | undefined) {
+  let carries: boolean
+  if (HP === undefined) {
+    carries = altDosageByte(genotype) > 0
+  } else {
+    const allele = isPhasedOrHaploid(genotype)
+      ? splitPhasedAlleles(genotype)[HP]
+      : undefined
+    carries = allele !== undefined && allele !== '0' && allele !== '.'
+  }
+  return carries
+}
+
+/**
  * One genotype's style at one site, in allele-count (dosage) mode.
  *
  * Resolved per *distinct genotype string* rather than per cell. A site with

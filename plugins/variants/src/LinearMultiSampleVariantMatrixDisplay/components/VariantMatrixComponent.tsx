@@ -5,6 +5,7 @@ import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { cellCarriesAlt } from '../../shared/variantCellStyles.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import { matrixCellAt } from './matrixHitTest.ts'
 
@@ -74,10 +75,15 @@ function getHoveredMatrixCell(
           sampleName,
           name: source.name,
           featureId: feature.featureId,
-          // the matrix has no per-cell alt flag on hand, so derive it from the
-          // decoded genotype: only a sample carrying the alt reports the
-          // record's inserted bp, matching pickVariantCell's cellAltDosage gate
-          insertedBp: /[1-9]/.test(genotype) ? feature.insertedBp : 0,
+          // The matrix has no per-cell alt flag on hand, so it asks the same
+          // question of the decoded genotype AND the row: in phased mode a
+          // haplotype row either carries the allele or does not, so `1|0`
+          // reports the insertion on HP0 and nothing on HP1. Matches
+          // pickVariantCell's `cellAltDosage` gate, which the regular display
+          // gets from the painter per cell.
+          insertedBp: cellCarriesAlt(genotype, source.HP)
+            ? feature.insertedBp
+            : 0,
         }),
         featureData: feature,
       }
