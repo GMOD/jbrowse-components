@@ -146,10 +146,9 @@ export function extractFeatureArrays<T extends FeatureData>(
       ? ''
       : ((feature.get('CIGAR') as string | undefined) ?? '')
     // clipAtStart: an alignment feature reads the start clip straight off its
-    // packed CIGAR (`clipLengthAtStartOfRead`, required by MismatchFeature),
-    // avoiding a full per-read CIGAR string build — and, for CRAM, its retention
-    // in the feature LRU. Synteny features carry only a CIGAR string, so parse
-    // that instead.
+    // record (`clipLengthAtStartOfRead`, required by MismatchFeature), avoiding
+    // a full per-read CIGAR string build. Synteny features carry only a CIGAR
+    // string, so parse that instead.
     clipAtStart.push(
       isMismatch
         ? feature.clipLengthAtStartOfRead

@@ -177,8 +177,9 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   // every element of this array is manufactured, and for a 49kb ONT read that is
   // ~7,000 operations built and retained on demand.
   //
-  // Still memoized, because a consumer that asks once usually asks again, and
-  // the adapter's ultra-long feature LRU keeps it across a pan.
+  // Still memoized, because a consumer that asks once usually asks again
+  // (the modification path, several walks per read). Wrappers are per query,
+  // so the memo lives exactly as long as the query that built it.
   //
   // `fields`, `CIGAR` and `tags` were measured and are deliberately *not*
   // memoized: `fields` and `CIGAR` are read 0 times per read on the render path
@@ -198,8 +199,7 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   // operations for a long ONT read — to look at one of them, and then retaining
   // it. @gmod/cram answers both ends in O(1) off the features at that end, so
   // nothing is built or walked, and the memo below is a number rather than an
-  // array — the LRU still pays off across a pan, at 8 bytes instead of ~2 MB per
-  // ONT slice.
+  // array.
   //
   // Semantics match clipLengthAtStartOfReadNumeric, including that it inspects
   // only that one operation: a read whose CIGAR is `5H4S…` clips 5, not 9.

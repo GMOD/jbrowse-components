@@ -1,7 +1,6 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, sum, withProgress } from '@jbrowse/core/util'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { decodedRecordsBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -121,10 +120,6 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
   // CraiIndex to pre-download the .crai with progress in setup()
   private configureResult?: { cram: IndexedCramFile; index: CraiIndex }
 
-  private ultraLongFeatureCache = new QuickLRU<number, CramSlightlyLazyFeature>(
-    { maxSize: 500 },
-  )
-
   private seqIdToOriginalRefName: string[] = []
 
   private getSeqAdapterRefNames = cachedSetup({
@@ -215,27 +210,6 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     return this.seqIdToOriginalRefName[refId]
   }
 
-  // Long reads get their wrapper reused across fetches so what is memoized on it
-  // survives a pan instead of being rebuilt per read. Measured worth ~13% of the
-  // extract pass on long-read CRAM back when the wrapper retained a rebuilt
-  // NUMERIC_CIGAR — ~2 MB across a 37-read ONT slice.
-  //
-  // It retains far less now: the render path reads `clipLengthAtStartOfRead`,
-  // which is memoized as a *number*, and NUMERIC_CIGAR is built only if a
-  // consumer asks for the packed form. So this is worth re-measuring — it may
-  // now be carrying its own bookkeeping for a memo of 8 bytes per read, in which
-  // case deleting it is simpler and frees the LRU's retention of the records
-  // themselves. Left in place because that has not been measured, not because it
-  // is known to still pay.
-  private getOrCacheFeature(record: CramRecord) {
-    let feat = this.ultraLongFeatureCache.get(record.uniqueId)
-    if (!feat) {
-      feat = new CramSlightlyLazyFeature(record, this)
-      this.ultraLongFeatureCache.set(record.uniqueId, feat)
-    }
-    return feat
-  }
-
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
@@ -290,11 +264,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
             if (shouldFilterRecord(record, filterBy, samHeader)) {
               continue
             }
-            const feat =
-              record.readLength > 5_000
-                ? this.getOrCacheFeature(record)
-                : new CramSlightlyLazyFeature(record, this)
-            observer.next(feat)
+            observer.next(new CramSlightlyLazyFeature(record, this))
           }
           observer.complete()
         },

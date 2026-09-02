@@ -42,9 +42,10 @@ export interface MismatchFeature extends Feature {
   forEachMismatch: (callback: MismatchCallback, opts?: MismatchWindow) => void
 
   // REQUIRED. The render path reads the start clip from here instead of
-  // building a CIGAR string per read — expensive for CRAM, which would also
-  // retain the string in its feature LRU. Read straight off the packed CIGAR by
-  // every implementer (`clipLengthAtStartOfReadNumeric`).
+  // building a CIGAR string per read — expensive for CRAM, which stores no
+  // CIGAR. BAM and SAM read it off the packed CIGAR
+  // (`clipLengthAtStartOfReadNumeric`); CRAM answers in O(1) off the read
+  // features at that end.
   readonly clipLengthAtStartOfRead: number
 
   // OPTIONAL — a performance hint, never a requirement. The packed
