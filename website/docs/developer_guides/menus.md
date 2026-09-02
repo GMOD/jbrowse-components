@@ -227,15 +227,23 @@ short.
 
 Called from `configure()`, guarded by `isAbstractMenuManager`. A contribution is
 recorded and merged in each time the menu opens, so none of these return
-anything and one that throws costs your item rather than the app. A negative
-`position` counts from the end.
+anything and one that names a path that is not a sub-menu costs your item rather
+than the app. A contributed `subMenu` may be a function, and stays one: it is
+called when its panel opens, with any contributions into it merged onto the
+result.
+
+A `position` is an index into the menu's rows as they are at the moment it
+opens, which for a menu built from session state is not knowable in advance. A
+negative one counts from the end. To place an item relative to its neighbours
+give it a `priority` instead; the renderer sorts rows by it, higher first, and
+it holds however the rest of the menu changes. `insertMenu` is the exception: a
+top-level menu has no priority, so its position is the only ordering there is.
 
 <!-- MENU_ACTIONS START -->
 
 <!-- prettier-ignore -->
 | Action | Description |
 | --- | --- |
-| [`setMenus(newMenus)`](/docs/models/rootappmenumixin#action-setmenus) | Replace the menu bar wholesale. Item contributions recorded before this one are dropped along with the menus they targeted, so a plugin adding to the existing bar wants `appendToMenu` instead. |
 | [`appendMenu(menuName)`](/docs/models/rootappmenumixin#action-appendmenu) | Add a top-level menu, if the app bar does not already have one with this name. |
 | [`insertMenu(menuName, position)`](/docs/models/rootappmenumixin#action-insertmenu) | Insert a top-level menu, if the app bar does not already have one with this name. |
 | [`appendToMenu(menuName, menuItem)`](/docs/models/rootappmenumixin#action-appendtomenu) | Add a menu item to a top-level menu, creating the menu if it does not exist. |

@@ -1,10 +1,16 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { processMutableMenuActions, resolveMenus } from './menus.ts'
 
-import type { Menu, MenuAction, MenuDefinition } from './menus.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { Menu, MenuAction } from './menus.ts'
+import type { MenuItem, SubMenuItem } from '@jbrowse/core/ui/menuItems'
 
 function item(label: string) {
   return { label } as unknown as MenuItem
+}
+
+function subMenu(label: string, items: MenuItem[] | (() => MenuItem[])) {
+  return { label, subMenu: items } as SubMenuItem
 }
 
 // open a resolved menu the way the app bar does
@@ -12,7 +18,15 @@ function labelsOf(menu: Menu) {
   return menu.menuItems().map(i => ('label' in i ? i.label : ''))
 }
 
-function run(base: MenuDefinition[], actions: MenuAction[]) {
+function findSubMenu(items: MenuItem[], label: string) {
+  const found = items.find(i => 'subMenu' in i && i.label === label)
+  if (!found || !('subMenu' in found)) {
+    throw new Error(`no sub-menu ${label}`)
+  }
+  return found
+}
+
+function run(base: Menu[], actions: MenuAction[]) {
   return processMutableMenuActions(base, actions)
 }
 
@@ -26,8 +40,8 @@ describe('menu structure', () => {
   it('inserts a top-level menu at a position', () => {
     const menus = run(
       [
-        { label: 'File', menuItems: [] },
-        { label: 'Help', menuItems: [] },
+        { label: 'File', menuItems: () => [] },
+        { label: 'Help', menuItems: () => [] },
       ],
       [{ type: 'addMenu', menuName: 'Edit', position: 1 }],
     )
@@ -37,8 +51,8 @@ describe('menu structure', () => {
   it('inserts a top-level menu at a negative position', () => {
     const menus = run(
       [
-        { label: 'File', menuItems: [] },
-        { label: 'Help', menuItems: [] },
+        { label: 'File', menuItems: () => [] },
+        { label: 'Help', menuItems: () => [] },
       ],
       [{ type: 'addMenu', menuName: 'Edit', position: -1 }],
     )
@@ -60,7 +74,7 @@ describe('menu structure', () => {
   // two menus with one label is never what a caller wanted
   it('does not duplicate a menu that already exists', () => {
     const menus = run(
-      [{ label: 'File', menuItems: [item('Open')] }],
+      [{ label: 'File', menuItems: () => [item('Open')] }],
       [
         { type: 'addMenu', menuName: 'File' },
         { type: 'addMenu', menuName: 'Help', position: 0 },
@@ -71,37 +85,11 @@ describe('menu structure', () => {
     expect(menus.map(m => m.label)).toEqual(['Help', 'File'])
     expect(labelsOf(menus[1]!)).toEqual(['Open', 'added'])
   })
-
-  it('setMenus replaces the bar wholesale', () => {
-    const menus = run(
-      [{ label: 'File', menuItems: [] }],
-      [
-        { type: 'addMenu', menuName: 'Tools' },
-        { type: 'setMenus', newMenus: [{ label: 'Help', menuItems: [] }] },
-        { type: 'addMenu', menuName: 'Edit' },
-      ],
-    )
-    expect(menus.map(m => m.label)).toEqual(['Help', 'Edit'])
-  })
-
-  // an item contribution is scoped to the menu bar it targeted; a later
-  // setMenus discards that bar and the contributions aimed at it
-  it('setMenus discards item contributions made before it', () => {
-    const menus = run(
-      [{ label: 'File', menuItems: [] }],
-      [
-        { type: 'addItem', menuPath: ['File'], menuItem: item('early') },
-        { type: 'setMenus', newMenus: [{ label: 'File', menuItems: [] }] },
-        { type: 'addItem', menuPath: ['File'], menuItem: item('late') },
-      ],
-    )
-    expect(labelsOf(menus[0]!)).toEqual(['late'])
-  })
 })
 
 describe('item contributions', () => {
-  const base: MenuDefinition[] = [
-    { label: 'File', menuItems: [item('Open'), item('Close')] },
+  const base: Menu[] = [
+    { label: 'File', menuItems: () => [item('Open'), item('Close')] },
   ]
 
   it('appends in order', () => {
@@ -155,10 +143,7 @@ describe('item contributions', () => {
         position: 1,
       },
     ])
-    const importEntry = menus[0]!
-      .menuItems()
-      .find(i => 'label' in i && i.label === 'Import')
-    expect(importEntry).toMatchObject({
+    expect(findSubMenu(menus[0]!.menuItems(), 'Import')).toMatchObject({
       subMenu: [
         { label: 'From File' },
         { label: 'From URL' },
@@ -181,6 +166,20 @@ describe('item contributions', () => {
     })
   })
 
+  // a created sub-menu lands where the contribution that first named it would
+  // have, so a later append still goes after it
+  it('creates a sub-menu at the point of its first contribution', () => {
+    const menus = run(base, [
+      {
+        type: 'addItem',
+        menuPath: ['File', 'Import'],
+        menuItem: item('From URL'),
+      },
+      { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
+    ])
+    expect(labelsOf(menus[0]!)).toEqual(['Open', 'Close', 'Import', 'added'])
+  })
+
   // a single-segment path names the top-level menu itself, which is what
   // appendToMenu records
   it('treats a one-segment path as the top-level menu', () => {
@@ -192,7 +191,7 @@ describe('item contributions', () => {
 
   // a plugin naming a path that isn't a sub-menu is a plugin bug, and it must
   // cost that plugin its menu item rather than cost the user their session
-  it('drops only the contribution that throws', () => {
+  it('drops only the contributions under a path that is not a sub-menu', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const menus = run(base, [
       { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
@@ -213,25 +212,28 @@ describe('item contributions', () => {
     ])
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.stringMatching(/is not a subMenu/),
+        message: '"Open" in path "File > Open" is not a subMenu',
       }),
     )
     spy.mockRestore()
   })
 
-  // the menu re-resolves on every open and, while open, on every observer
-  // re-render, so a broken contribution must not spam the console
+  // the menu re-resolves on every open, on every observer re-render while open,
+  // and from scratch on every menus() evaluation; a broken contribution must
+  // not spam the console from any of them
   it('reports a broken contribution once', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    const menus = run(base, [
+    const actions: MenuAction[] = [
       {
         type: 'addItem',
         menuPath: ['File', 'Close', 'Nested'],
         menuItem: item('x'),
       },
-    ])
+    ]
+    const menus = run(base, actions)
     menus[0]!.menuItems()
     menus[0]!.menuItems()
+    run(base, actions)[0]!.menuItems()
     expect(spy).toHaveBeenCalledTimes(1)
     spy.mockRestore()
   })
@@ -239,9 +241,12 @@ describe('item contributions', () => {
   // the definition is reused across every menus() evaluation and every open, so
   // resolution must never write back into it
   it('does not mutate the definitions it resolves', () => {
-    const definitions: MenuDefinition[] = [
-      { label: 'File', menuItems: [item('Open')] },
-      { label: 'Add', menuItems: [{ label: 'Views', subMenu: [item('LGV')] }] },
+    const fileItems = [item('Open')]
+    const viewsItems = [item('LGV')]
+    const addItems = [subMenu('Views', viewsItems)]
+    const definitions: Menu[] = [
+      { label: 'File', menuItems: () => fileItems },
+      { label: 'Add', menuItems: () => addItems },
     ]
     const menus = run(definitions, [
       { type: 'addItem', menuPath: ['File'], menuItem: item('added') },
@@ -251,47 +256,36 @@ describe('item contributions', () => {
         menuItem: item('Dotplot'),
       },
     ])
-    // Called for the side effect of realizing each lazy menu; the mapped
-    // array was never read.
-    for (const m of menus) {
-      m.menuItems()
-    }
-    expect(definitions[0]!.menuItems).toEqual([{ label: 'Open' }])
-    expect(definitions[1]!.menuItems).toEqual([
-      { label: 'Views', subMenu: [{ label: 'LGV' }] },
-    ])
+    expect(labelsOf(menus[0]!)).toEqual(['Open', 'added'])
+    expect(findSubMenu(menus[1]!.menuItems(), 'Views')).toMatchObject({
+      subMenu: [{ label: 'LGV' }, { label: 'Dotplot' }],
+    })
+    expect(fileItems).toEqual([{ label: 'Open' }])
+    expect(viewsItems).toEqual([{ label: 'LGV' }])
+    expect(addItems).toEqual([{ label: 'Views', subMenu: [{ label: 'LGV' }] }])
   })
 
   // a caller that edits what it got back must not be editing the root model's
   // own array, whether or not the menu had contributions
   it('hands out a fresh array even with no contributions', () => {
-    const definitions: MenuDefinition[] = [
-      { label: 'File', menuItems: [item('Open')] },
-    ]
-    const menus = run(definitions, [])
-    expect(menus[0]!.menuItems()).not.toBe(definitions[0]!.menuItems)
+    const fileItems = [item('Open')]
+    const menus = run([{ label: 'File', menuItems: () => fileItems }], [])
+    expect(menus[0]!.menuItems()).not.toBe(fileItems)
   })
 
-  // a contributed sub-menu is a path later contributions resolve into, so the
-  // array they land in has to be a copy: writing into the action's own payload
-  // survives the resolution, and the item then reappears once per open
+  // a contributed sub-menu is a path later contributions resolve into; the
+  // action's own payload must come through every open unchanged
   it('does not accumulate in a sub-menu another contribution supplied', () => {
+    const payload = subMenu('My plugin', [item('Its own view')])
     const actions: MenuAction[] = [
-      {
-        type: 'addItem',
-        menuPath: ['Add'],
-        menuItem: {
-          label: 'My plugin',
-          subMenu: [item('Its own view')],
-        } as unknown as MenuItem,
-      },
+      { type: 'addItem', menuPath: ['Add'], menuItem: payload },
       {
         type: 'addItem',
         menuPath: ['Add', 'My plugin'],
         menuItem: item('A second view'),
       },
     ]
-    const menus = run([{ label: 'Add', menuItems: [] }], actions)
+    const menus = run([{ label: 'Add', menuItems: () => [] }], actions)
     const opened = () => menus[0]!.menuItems()
     const expected = [
       {
@@ -301,11 +295,13 @@ describe('item contributions', () => {
     ]
     expect(opened()).toEqual(expected)
     expect(opened()).toEqual(expected)
-    // and the replay the next menus() evaluation does starts from the same
-    // actions, so the payload must not have been written to either
     expect(
-      run([{ label: 'Add', menuItems: [] }], actions)[0]!.menuItems(),
+      run([{ label: 'Add', menuItems: () => [] }], actions)[0]!.menuItems(),
     ).toEqual(expected)
+    expect(payload).toEqual({
+      label: 'My plugin',
+      subMenu: [{ label: 'Its own view' }],
+    })
   })
 
   // menus() replays the whole action log on every re-render, and a menu can be
@@ -331,12 +327,11 @@ describe('item contributions', () => {
   })
 })
 
-// jbrowse-web's File menu is a thunk so the app bar doesn't track the session
-// metadata its recent-sessions list reads. Plugins still append to it by name —
-// jbrowse-plugin-hubs does exactly this — which used to throw and take the app
-// down with it.
-describe('thunk-form definitions', () => {
-  it('merges contributions into a thunk menu', () => {
+// jbrowse-web's File menu reads the session metadata its recent-sessions list
+// needs, and the app bar must not track those reads. Plugins still append to
+// it by name — jbrowse-plugin-hubs does exactly this
+describe('lazy menus', () => {
+  it('merges contributions into the menu', () => {
     const menus = run(
       [{ label: 'File', menuItems: () => [item('New session')] }],
       [
@@ -395,21 +390,66 @@ describe('thunk-form definitions', () => {
     expect(called).toBe(0)
   })
 
-  it('fills a sub-menu of a thunk menu', () => {
+  // a sub-menu whose rows are a thunk is resolved when its panel opens, not
+  // when its parent does; a contribution into it must keep that
+  it('keeps a thunk sub-menu lazy and merges into it when it opens', () => {
+    let called = 0
     const menus = run(
-      [{ label: 'File', menuItems: () => [item('New session')] }],
+      [
+        {
+          label: 'Add',
+          menuItems: () => [
+            subMenu('Views', () => {
+              called += 1
+              return [item('LGV')]
+            }),
+          ],
+        },
+      ],
+      [{ type: 'addItem', menuPath: ['Add', 'Views'], menuItem: item('Dot') }],
+    )
+    const views = findSubMenu(menus[0]!.menuItems(), 'Views')
+    expect(called).toBe(0)
+    expect(typeof views.subMenu).toBe('function')
+    expect(resolveSubMenu(views)).toMatchObject([
+      { label: 'LGV' },
+      { label: 'Dot' },
+    ])
+    expect(called).toBe(1)
+    expect(resolveSubMenu(views)).toMatchObject([
+      { label: 'LGV' },
+      { label: 'Dot' },
+    ])
+    expect(called).toBe(2)
+  })
+
+  it('keeps a contributed thunk sub-menu lazy too', () => {
+    let called = 0
+    const menus = run(
+      [{ label: 'Add', menuItems: () => [] }],
       [
         {
           type: 'addItem',
-          menuPath: ['File', 'Import'],
-          menuItem: item('From URL'),
+          menuPath: ['Add'],
+          menuItem: subMenu('My plugin', () => {
+            called += 1
+            return [item('Its own view')]
+          }),
+        },
+        {
+          type: 'addItem',
+          menuPath: ['Add', 'My plugin'],
+          menuItem: item('A second view'),
         },
       ],
     )
-    expect(menus[0]!.menuItems()).toContainEqual({
-      label: 'Import',
-      subMenu: [{ label: 'From URL' }],
-    })
+    const mine = findSubMenu(menus[0]!.menuItems(), 'My plugin')
+    expect(called).toBe(0)
+    expect(resolveSubMenu(mine)).toMatchObject([
+      { label: 'Its own view' },
+      { label: 'A second view' },
+    ])
+    expect(called).toBe(1)
   })
 })
 
@@ -418,7 +458,7 @@ describe('resolveMenus', () => {
     const menus = run(
       [
         { label: 'File', menuItems: () => [item('New session')] },
-        { label: 'Add', menuItems: [] },
+        { label: 'Add', menuItems: () => [] },
       ],
       [
         {

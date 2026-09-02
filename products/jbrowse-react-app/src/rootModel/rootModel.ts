@@ -183,7 +183,7 @@ export default function RootModel({
           [
             {
               label: 'File',
-              menuItems: [
+              menuItems: () => [
                 newSessionMenuItem(self),
                 importSessionMenuItem(),
                 exportSessionMenuItem(),
@@ -194,11 +194,11 @@ export default function RootModel({
             },
             {
               label: 'Add',
-              menuItems: [],
+              menuItems: () => [],
             },
             {
               label: 'Tools',
-              menuItems: [
+              menuItems: () => [
                 preferencesMenuItem(pluginManager, PreferencesDialog),
                 workspacesMenuItem(self.session),
               ],

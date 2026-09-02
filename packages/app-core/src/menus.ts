@@ -1,6 +1,4 @@
-import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-
-import type { MenuItem, MenuItemsGetter, SubMenuItem } from '@jbrowse/core/ui'
+import type { MenuItem, SubMenuItem } from '@jbrowse/core/ui/menuItems'
 
 /**
  * Ensure a top-level menu exists. `position` appends when omitted and counts
@@ -27,82 +25,71 @@ interface AddItemAction {
   position?: number
 }
 
-interface SetMenusAction {
-  type: 'setMenus'
-  newMenus: MenuDefinition[]
-}
-
 /**
- * `addMenu`/`setMenus` change which menus exist, so they resolve eagerly — the
- * app bar renders one button per menu before anything is opened. `addItem` only
- * changes a menu's contents, so it resolves when that menu opens, against
- * whatever its items are at that moment.
+ * `addMenu` changes which menus exist, so it resolves eagerly — the app bar
+ * renders one button per menu before anything is opened. `addItem` only changes
+ * a menu's contents, so it resolves when that menu opens, against whatever its
+ * items are at that moment.
  */
-export type MenuAction = AddMenuAction | AddItemAction | SetMenusAction
+export type MenuAction = AddMenuAction | AddItemAction
 
 /**
- * A menu as a root model authors it. Items may be a plain array, or a thunk for
- * a menu whose contents depend on state that would otherwise be read — and so
- * tracked — every time the app bar renders.
- */
-export interface MenuDefinition {
-  label: string
-  menuItems: MenuItemsGetter
-}
-
-/**
- * A menu as the app bar consumes it. Always a thunk returning a fresh array: a
- * menu's items are produced when it opens and never before, so no consumer has
- * to care which form the root model authored, and a plugin's contributions are
- * merged in at that point rather than spliced into the definition.
+ * A top-level menu. `menuItems` is a thunk the app bar calls when the menu
+ * opens and never before, so a root model's reads stay out of the bar's
+ * tracking scope and a plugin's contributions are merged onto each fresh
+ * result rather than spliced into a definition.
  */
 export interface Menu {
   label: string
   menuItems: () => MenuItem[]
 }
 
-// a menu whose contributions have been collected but not yet applied
-interface PendingMenu {
-  label: string
-  base: MenuItemsGetter
-  itemActions: AddItemAction[]
+/**
+ * The contributions to one level of one menu, in log order. A sub-menu is
+ * entered the first time a contribution names it, so one that has to be created
+ * lands where that contribution would have.
+ */
+interface ContributionNode {
+  entries: (AddItemAction | SubMenuEntry)[]
 }
 
-// a contribution that threw is reported once rather than on every open — the
-// menu re-resolves on each open and, while open, on each observer re-render
+interface SubMenuEntry {
+  type: 'subMenu'
+  label: string
+  path: string[]
+  node: ContributionNode
+  first: AddItemAction
+}
+
+// a conflict is reported once rather than on every open — the menu re-resolves
+// on each open and, while open, on each observer re-render — and the action is
+// what outlives the nodes, which are rebuilt on every menus() evaluation
 const reported = new WeakSet<AddItemAction>()
 
-/**
- * The action log is permanent; the menu it builds is thrown away when the menu
- * closes. Everything a resolution walks therefore has to belong to the
- * throwaway, because resolving a path is a **write**:
- * `appendToSubMenu(['Add', 'My plugin'], two)` means "find the array labelled
- * My plugin and push into it".
- *
- * So when an earlier action is what supplied that array —
- * `appendToMenu('Add', { label: 'My plugin', subMenu: [one] })` — and it goes
- * into the menu by reference, the push lands in the stored action instead. The
- * next open replays a log that now reads `subMenu: [one, two]` and pushes
- * again, so the sub-menu gains an item on every open, and on every observer
- * re-render while open.
- *
- * Cloning is what keeps the two apart: the copy is what the path resolves to
- * and what gets written, and it dies with the open. Leaf items are shared by
- * reference — nothing writes into them — so this costs an allocation only for
- * the rows that nest.
- */
-function cloneMenuItem(item: MenuItem): MenuItem {
-  return 'subMenu' in item
-    ? { ...item, subMenu: cloneMenuItems(resolveSubMenu(item)) }
-    : item
-}
-
-function cloneMenuItems(items: MenuItem[]): MenuItem[] {
-  return items.map(item => cloneMenuItem(item))
-}
-
-function materialize(menuItems: MenuItemsGetter) {
-  return typeof menuItems === 'function' ? menuItems() : menuItems
+function register(
+  node: ContributionNode,
+  action: AddItemAction,
+  depth: number,
+) {
+  const label = action.menuPath[depth]
+  if (label === undefined) {
+    node.entries.push(action)
+  } else {
+    let entry = node.entries.find(
+      (e): e is SubMenuEntry => e.type === 'subMenu' && e.label === label,
+    )
+    if (!entry) {
+      entry = {
+        type: 'subMenu',
+        label,
+        path: action.menuPath.slice(0, depth + 1),
+        node: { entries: [] },
+        first: action,
+      }
+      node.entries.push(entry)
+    }
+    register(entry.node, action, depth + 1)
+  }
 }
 
 // splice is already the "counts from the end when negative" rule, and clamps
@@ -111,49 +98,60 @@ function insertAt<T>(items: T[], item: T, position = items.length) {
   items.splice(position, 0, item)
 }
 
-/**
- * Walk `menuPath` past its first segment (the top-level menu, already
- * resolved), creating empty sub-menus as needed, and return the deepest
- * sub-menu's item array. Throws if a path segment names an item that is not a
- * sub-menu.
- */
-function resolveMenuPath(items: MenuItem[], menuPath: string[]) {
-  let level = items
-  for (const [idx, menuName] of menuPath.slice(1).entries()) {
-    let sub = level.find(
-      (mi): mi is SubMenuItem => 'subMenu' in mi && mi.label === menuName,
-    )
-    if (!sub) {
-      if (level.some(mi => 'label' in mi && mi.label === menuName)) {
-        const pathSoFar = menuPath.slice(0, idx + 2).join(' > ')
-        throw new Error(`"${menuName}" in path "${pathSoFar}" is not a subMenu`)
-      }
-      sub = { label: menuName, subMenu: [] }
-      level.push(sub)
-    }
-    level = resolveSubMenu(sub)
+// the author's form is kept: an array sub-menu resolves now, a thunk sub-menu
+// resolves when its panel opens, with the contributions merged in either way
+function withContributions(item: SubMenuItem, node: ContributionNode) {
+  const { subMenu } = item
+  return {
+    ...item,
+    subMenu:
+      typeof subMenu === 'function'
+        ? () => apply(subMenu(), node)
+        : apply(subMenu, node),
   }
-  return level
 }
 
-// each contribution is applied independently: a plugin that names a bad path
-// loses its own item rather than every other plugin's, and never the session —
-// this runs from the app bar's click handler, where a throw goes straight
-// through React
-function applyItemActions(items: MenuItem[], actions: AddItemAction[]) {
-  for (const action of actions) {
-    try {
-      const target = resolveMenuPath(items, action.menuPath)
-      // cloned rather than inserted by reference — see cloneMenuItem
-      insertAt(target, cloneMenuItem(action.menuItem), action.position)
-    } catch (error) {
-      if (!reported.has(action)) {
-        reported.add(action)
-        console.error(error)
+/**
+ * Return a copy of `items` with a node's contributions merged in. Nothing is
+ * written into `items`, into any sub-menu it holds, or into a contribution's
+ * own payload: a sub-menu that gains contributions is replaced by a copy whose
+ * `subMenu` resolves them, so the arrays behind a definition or an action are
+ * the same on every open.
+ *
+ * A path segment naming a row that is not a sub-menu is a plugin bug. It
+ * costs that subtree of contributions, reported once, and nothing else — this
+ * runs from the app bar's click handler, where a throw goes straight through
+ * React.
+ */
+function apply(items: MenuItem[], node: ContributionNode) {
+  const result = [...items]
+  for (const entry of node.entries) {
+    if (entry.type === 'addItem') {
+      insertAt(result, entry.menuItem, entry.position)
+    } else {
+      const idx = result.findIndex(
+        mi => 'label' in mi && mi.label === entry.label,
+      )
+      const found = result[idx]
+      if (found === undefined) {
+        result.push({ label: entry.label, subMenu: apply([], entry.node) })
+      } else if ('subMenu' in found) {
+        result[idx] = withContributions(found, entry.node)
+      } else if (!reported.has(entry.first)) {
+        reported.add(entry.first)
+        console.error(
+          new Error(
+            `"${entry.label}" in path "${entry.path.join(' > ')}" is not a subMenu`,
+          ),
+        )
       }
     }
   }
-  return items
+  return result
+}
+
+interface PendingMenu extends Menu {
+  node: ContributionNode
 }
 
 // first menu with this label, or a new empty one — an item action naming a menu
@@ -168,53 +166,37 @@ function findOrCreateMenu(
   if (found) {
     return found
   }
-  const menu: PendingMenu = { label, base: [], itemActions: [] }
+  const menu: PendingMenu = {
+    label,
+    menuItems: () => [],
+    node: { entries: [] },
+  }
   insertAt(pending, menu, position)
   return menu
 }
 
-function toMenu({ label, base, itemActions }: PendingMenu): Menu {
-  return {
-    label,
-    menuItems: () =>
-      applyItemActions(cloneMenuItems(materialize(base)), itemActions),
-  }
-}
-
 /**
- * Resolve a root model's menu definitions against the contributions plugins
- * have pushed (via `RootAppMenuMixin`). Structural contributions apply now;
- * item contributions are recorded against their target menu and applied when
- * that menu opens, so a menu that computes its items lazily stays lazy and
- * nothing is ever spliced into a definition.
+ * Resolve a root model's menus against the contributions plugins have pushed
+ * (via `RootAppMenuMixin`). Structural contributions apply now; item
+ * contributions are grouped by path and merged when the menu they target
+ * opens.
  *
  * Runs on every `menus()` evaluation, so it must not mutate `base` or anything
  * an action carries.
  */
 export function processMutableMenuActions(
-  base: MenuDefinition[],
+  base: Menu[],
   actions: MenuAction[],
 ): Menu[] {
-  const toPending = (m: MenuDefinition): PendingMenu => ({
-    label: m.label,
-    base: m.menuItems,
-    itemActions: [],
-  })
-  let pending = base.map(toPending)
+  const pending = base.map(m => ({ ...m, node: { entries: [] } }))
   for (const action of actions) {
     switch (action.type) {
-      case 'setMenus': {
-        // replaces the menu bar wholesale, so item contributions made before it
-        // are dropped along with the menus they targeted
-        pending = action.newMenus.map(toPending)
-        break
-      }
       case 'addMenu': {
         findOrCreateMenu(pending, action.menuName, action.position)
         break
       }
       case 'addItem': {
-        findOrCreateMenu(pending, action.menuPath[0]!).itemActions.push(action)
+        register(findOrCreateMenu(pending, action.menuPath[0]!).node, action, 1)
         break
       }
       default: {
@@ -222,7 +204,10 @@ export function processMutableMenuActions(
       }
     }
   }
-  return pending.map(m => toMenu(m))
+  return pending.map(({ label, menuItems, node }) => ({
+    label,
+    menuItems: () => apply(menuItems(), node),
+  }))
 }
 
 /**

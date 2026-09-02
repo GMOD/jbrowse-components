@@ -46,7 +46,7 @@ import { savedSessionMenuItems } from './sessionMenus.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type { Session, SessionMetadata } from '../types.ts'
-import type { MenuDefinition, SessionModelFactory } from '@jbrowse/app-core'
+import type { Menu, SessionModelFactory } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -464,7 +464,7 @@ export default function RootModel({
           | { name: string; [key: string]: unknown }[]
           | undefined = readConfObject(self.jbrowse, 'preConfiguredSessions')
 
-        const ret: MenuDefinition[] = [
+        const ret: Menu[] = [
           {
             label: 'File',
             menuItems: () => [
@@ -504,7 +504,7 @@ export default function RootModel({
             ? [
                 {
                   label: 'Admin',
-                  menuItems: [
+                  menuItems: () => [
                     {
                       label: 'Set default session',
                       onClick: () => {
@@ -523,11 +523,11 @@ export default function RootModel({
             : []),
           {
             label: 'Add',
-            menuItems: [],
+            menuItems: () => [],
           },
           {
             label: 'Tools',
-            menuItems: [
+            menuItems: () => [
               undoMenuItem(self.history),
               redoMenuItem(self.history),
               { type: 'divider' },

@@ -341,7 +341,7 @@ export default function rootModelFactory({
             [
               {
                 label: 'File',
-                menuItems: [
+                menuItems: () => [
                   {
                     label: 'Open genome...',
                     icon: DNA,
@@ -488,11 +488,11 @@ export default function rootModelFactory({
               },
               {
                 label: 'Add',
-                menuItems: [],
+                menuItems: () => [],
               },
               {
                 label: 'Tools',
-                menuItems: [
+                menuItems: () => [
                   undoMenuItem(self.history),
                   redoMenuItem(self.history),
                   { type: 'divider' },

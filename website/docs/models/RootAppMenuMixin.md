@@ -18,7 +18,6 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setmenus">**setMenus**</span><br><code>(newMenus: MenuDefinition[]) =&gt; void</code> | Replace the menu bar wholesale. Item contributions recorded before this one are dropped along with the menus they targeted, so a plugin adding to the existing bar wants `appendToMenu` instead. |
 | <span id="action-appendmenu">**appendMenu**</span><br><code>(menuName: string) =&gt; void</code> | Add a top-level menu, if the app bar does not already have one with this name. |
 | <span id="action-insertmenu">**insertMenu**</span><br><code>(menuName: string, position: number) =&gt; void</code> | Insert a top-level menu, if the app bar does not already have one with this name. |
 | <span id="action-appendtomenu">**appendToMenu**</span><br><code>(menuName: string, menuItem: MenuItem) =&gt; void</code> | Add a menu item to a top-level menu, creating the menu if it does not exist. |

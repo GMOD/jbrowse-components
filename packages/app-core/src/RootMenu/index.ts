@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { MenuAction, MenuDefinition } from '../menus.ts'
-import type { MenuItem } from '@jbrowse/core/ui/Menu'
+import type { MenuAction } from '../menus.ts'
+import type { MenuItem } from '@jbrowse/core/ui/menuItems'
 
 /**
  * #stateModel RootAppMenuMixin
@@ -18,17 +18,6 @@ export function RootAppMenuMixin() {
         self.mutableMenuActions = [...self.mutableMenuActions, action]
       }
       return {
-        /**
-         * #action
-         * Replace the menu bar wholesale. Item contributions recorded before
-         * this one are dropped along with the menus they targeted, so a plugin
-         * adding to the existing bar wants `appendToMenu` instead.
-         *
-         * @param newMenus - The complete new set of top-level menus.
-         */
-        setMenus(newMenus: MenuDefinition[]) {
-          pushAction({ type: 'setMenus', newMenus })
-        },
         /**
          * #action
          * Add a top-level menu, if the app bar does not already have one with
