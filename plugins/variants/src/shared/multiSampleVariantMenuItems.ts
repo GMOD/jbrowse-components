@@ -12,13 +12,13 @@ import {
   rowHeightMenuItem,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
+  sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
-import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { breakendSplitViewMenuItem } from './breakendSplitViewMenuItem.ts'
@@ -449,14 +449,20 @@ export function variantContextMenuItems(
         // it is about the record, as the two rows above it are, where the sort
         // is about the rows.
         ...breakendSplitViewMenuItem(self, feat),
+        // The shared row: one label shape and one `< 2 rows` gate across the
+        // four displays that sort rows at a column. The help text is this
+        // display's own — what a genotype sort does to the rows around the
+        // anchor is not what a score or a base sort does.
         {
-          label: 'Sort by genotype',
-          icon: SwapVertIcon,
+          ...sortRowsHereMenuItem({
+            label: 'Sort rows by genotype here',
+            rowCount: self.editableSources.length,
+            onClick: () => {
+              self.sortByGenotype(feat.id())
+            },
+          }),
           helpText:
             'Sort rows by their genotype at this variant, then by how far each row matches its neighbours to either side. The shared haplotype block around this variant reads as a solid rectangle and frays outward where recombination ends it',
-          onClick: () => {
-            self.sortByGenotype(feat.id())
-          },
         },
         // the undo for the item above, in the menu it was invoked from — the
         // same item the track menu spreads, so it must not read as two actions
