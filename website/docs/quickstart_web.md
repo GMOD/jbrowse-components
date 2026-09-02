@@ -5,9 +5,8 @@ description:
 data: download
 ---
 
-This guide sets up a self-hosted JBrowse web instance: you'll use the
-`@jbrowse/cli` command-line tool to download JBrowse, add an assembly and
-tracks, and serve the result as a folder of files on a web server.
+Install the `@jbrowse/cli`, download JBrowse web, add an assembly and tracks,
+and serve the result as a folder of static files.
 
 Other ways to run JBrowse:
 
@@ -15,19 +14,13 @@ Other ways to run JBrowse:
   server
 - [](/docs/embedded_components) - embed a view in your own web app
 
-The `config.json` directory you build in this guide opens directly in JBrowse
-Desktop as well. See [](/docs/tutorials/cli_desktop).
+The folder this guide builds also opens directly in JBrowse Desktop. See
+[](/docs/tutorials/cli_desktop).
 
 ## TLDR
 
-Adding an assembly or a track writes an entry to `config.json` and copies the
-data file next to it, so the folder JBrowse creates ends up as a self-contained
-static site: no database, no server-side code, just files a web server hands
-out. The commands below install the CLI, download that folder, add a FASTA
-assembly, a BAM alignments track, and a VCF variant track, then build a search
-index and serve the folder locally. They need Node.js 18+, samtools, and tabix
-installed first, and use placeholder filenames (`genome.fa`, `file.bam`,
-`file.vcf`) that you swap for your own.
+Needs Node.js 18+, samtools and tabix. Swap `genome.fa`, `file.bam` and
+`file.vcf` for your own files.
 
 ```bash
 npm install -g @jbrowse/cli
@@ -47,12 +40,14 @@ jbrowse text-index
 npx serve -S .
 ```
 
+Each `add-*` command writes an entry to `config.json` and copies the data file
+next to it. The result is a static site: no database, no server-side code.
+
 ## Reproduce it end to end
 
-The TLDR above uses placeholder filenames (`genome.fa`, `file.bam`, `file.vcf`)
-that you supply.
 [`build_quickstart_web.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_quickstart_web.sh)
-runs the same flow against the volvox sample data JBrowse ships:
+runs the same flow against the volvox sample data JBrowse ships, with every
+input pinned:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_quickstart_web.sh
@@ -60,13 +55,9 @@ bash build_quickstart_web.sh               # builds ./quickstart_web_build/jbrow
 npx serve -S quickstart_web_build/jbrowse2 # then open the printed URL
 ```
 
-It downloads a FASTA, a BAM, a BigWig, a VCF, and a GFF3, runs the same
-`samtools faidx` / `samtools index` / `bgzip` + `tabix` indexing and
-`add-assembly` / `add-track` / `text-index` commands, and writes a `config.json`
-with an alignments track, a coverage track, a variant track, and a searchable
-gene track. Every input is pinned, so re-running reproduces the same config. It
-needs `samtools`, htslib's `bgzip` and `tabix`, `curl`, and node (for the
-JBrowse CLI).
+It needs `samtools`, `bgzip`, `tabix`, `curl` and node, and produces a config
+with an alignments track, a coverage track, a variant track and a searchable
+gene track.
 
 ## Prerequisites
 
@@ -94,31 +85,25 @@ command below.
 
 ```bash
 jbrowse create jbrowse2
+cd jbrowse2
 ```
 
-This downloads and unzips jbrowse-web into a folder named `jbrowse2`. Run
-`cd jbrowse2` before any further commands. Alternatively, download the zip
-manually from https://github.com/GMOD/jbrowse-components/releases.
+This downloads and unzips jbrowse-web into `jbrowse2/`. The rest of this guide
+runs from inside that folder. The zip is also available from
+https://github.com/GMOD/jbrowse-components/releases.
 
 ## Running JBrowse 2
 
-JBrowse 2 requires a web server. Opening `index.html` directly in your browser
-won't work.
-
-To verify locally:
+JBrowse 2 needs a web server; opening `index.html` directly does not work.
 
 ```bash
-cd jbrowse2/
 npx serve -S .
 ```
 
-The `-S` flag tells `serve` to resolve symlinks, relevant if you later add
-tracks with `--load symlink`.
+`-S` resolves symlinks, which matters once you add tracks with `--load symlink`.
+Open `http://localhost:3000` and click a sample config to confirm the install.
 
-Navigate to `http://localhost:3000`. Click the sample config to confirm the
-install works.
-
-For production, place the folder in your web server's static directory (e.g.
+For production, copy the folder into your web server's static directory (e.g.
 `/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
 
 <Figure caption="The JBrowse 2 fresh-install screen, shown when no config.json is present yet. An 'It worked!' banner plus a list of sample configs and demo sessions to try." src="/img/config_not_found.png"/>
@@ -127,22 +112,28 @@ For production, place the folder in your web server's static directory (e.g.
 
 ## Adding tracks
 
-The examples below run from inside `jbrowse2/`, so they omit `--out` (which
-defaults to the current directory). To write elsewhere, add
-`--out /var/www/html/jbrowse2`, either a directory containing `config.json` or a
-path to a specific config file. Run `jbrowse add-track --help` for all options.
+Every command below:
 
-For the full list of supported formats and the adapter each maps to, see
-[](/docs/config_guides/file_types).
+- runs from inside `jbrowse2/`, so `--out` is omitted. Pass
+  `--out /var/www/html/jbrowse2` (a directory holding `config.json`, or a config
+  file path) to write elsewhere
+- uses `--load copy`, which puts the data file next to `config.json`. Use
+  `--load symlink` to symlink instead
 
-Every example below uses `--load copy`, which puts the data file next to
-`config.json` so one server serves both. For data your lab already hosts
-somewhere else, pass the URL in place of a path and the track records that URL;
-see the [hosting section](#hosting-your-own-data) below.
+For data already hosted elsewhere, pass the URL instead of a path and the track
+records that URL:
 
 ```bash
 jbrowse add-track https://data.myuniversity.edu/rnaseq/sample1.bam
 ```
+
+Most formats need an index file (`.fai`, `.bai`, `.tbi`) beside the data file.
+JBrowse never downloads a whole BAM or VCF; the index tells it which byte range
+holds the region on screen. `add-track` finds the index by its conventional name
+and records both.
+
+`jbrowse add-track --help` lists all options. Supported formats and the adapter
+each maps to: [](/docs/config_guides/file_types).
 
 ### Genome assembly (FASTA)
 
@@ -151,14 +142,8 @@ samtools faidx genome.fa
 jbrowse add-assembly genome.fa --load copy
 ```
 
-This writes an assembly entry to `config.json` and copies `genome.fa` and
-`genome.fa.fai` into the output directory. Use `--load symlink` to symlink
-instead of copying.
-
-Use `--name` (shorthand `-n`) to set a human-readable assembly name (defaults to
-the filename).
-
-JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
+`--name` (`-n`) sets the assembly name, which defaults to the filename.
+Bgzip-compressed indexed FASTA and 2bit also work.
 
 <Figure caption="JBrowse 2 linear genome view setup with volvox in assembly dropdown" src="/img/lgv_assembly.png"/>
 
@@ -175,7 +160,9 @@ See the [alignments track guide](/docs/user_guides/alignments_track).
 
 ### VCF
 
-VCFs must be bgzip-compressed and tabix-indexed:
+VCFs must be bgzip-compressed and tabix-indexed. `bgzip` is gzip written in
+blocks, so tabix can jump to a region without decompressing the whole file; a
+plain `gzip` file cannot be indexed:
 
 ```bash
 bgzip file.vcf
@@ -183,15 +170,13 @@ tabix file.vcf.gz
 jbrowse add-track file.vcf.gz --load copy
 ```
 
-If tabix reports the VCF is unsorted, sort it first:
+If tabix reports the VCF is unsorted:
 
 ```bash
 bcftools sort file.vcf > file.sorted.vcf
 bgzip file.sorted.vcf
 tabix file.sorted.vcf.gz
 ```
-
-See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`.
 
 <Figure caption="JBrowse 2 linear genome view with variant track" src="/img/volvox_variants.png"/>
 
@@ -210,6 +195,9 @@ See the [quantitative track guide](/docs/user_guides/quantitative_track).
 
 ### GFF3
 
+GFF3 is often unsorted, and tabix needs features ordered by reference name and
+start, so sort before compressing:
+
 ```bash
 jbrowse sort-gff yourfile.gff | bgzip > yourfile.sorted.gff.gz
 tabix yourfile.sorted.gff.gz
@@ -220,7 +208,7 @@ See the [gene track guide](/docs/user_guides/gene_track).
 
 ### GTF
 
-GTF shares GFF3's refname and start columns, so `sort-gff` sorts it too:
+`sort-gff` sorts GTF too:
 
 ```bash
 jbrowse sort-gff yourfile.gtf | bgzip > yourfile.sorted.gtf.gz
@@ -228,22 +216,20 @@ tabix yourfile.sorted.gtf.gz
 jbrowse add-track yourfile.sorted.gtf.gz --load copy
 ```
 
-A plain `.gtf` loads without any of this, but the whole file is read at once, so
-sort and index anything genome-scale.
+A plain `.gtf` loads without indexing, but is read whole, so sort and index
+anything genome-scale.
 
-GTF has no `Name` or `ID` attribute, so transcripts are grouped into a gene by
-`gene_id`, and
-[`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield) names the
-attribute that labels the gene. `jbrowse text-index` matches the GTF spellings —
-`gene_name`, `transcript_name`, `gene_id`, `transcript_id` — alongside its GFF3
-defaults, so searching by gene name works on a GTF track without passing
+GTF has no `Name` or `ID` attribute. Transcripts group into a gene by `gene_id`,
+and [`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield) names
+the attribute that labels the gene. `jbrowse text-index` matches the GTF
+spellings (`gene_name`, `transcript_name`, `gene_id`, `transcript_id`) without
 `--attributes`.
 
 See the [gene track guide](/docs/user_guides/gene_track).
 
 ### Synteny (PAF)
 
-Use [minimap2](https://github.com/lh3/minimap2) to align two assemblies and load
+Align two assemblies with [minimap2](https://github.com/lh3/minimap2) and load
 the result as a synteny track:
 
 ```bash
@@ -251,39 +237,29 @@ minimap2 -cx asm20 grape.fa peach.fa > peach_vs_grape.paf
 
 jbrowse add-assembly grape.fa --load copy -n grape
 jbrowse add-assembly peach.fa --load copy -n peach
-```
-
-Note: `--assemblyNames` takes `query,target`, the **reverse** of minimap2's
-`target query` order. Above, `minimap2 grape.fa peach.fa` makes peach the query,
-so load with `--assemblyNames peach,grape`:
-
-```bash
 jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy
 ```
 
-Setting the named `queryAssembly` and `targetAssembly` fields on the adapter in
-`config.json` avoids the ordering question (see the
+`--assemblyNames` takes `query,target`, the **reverse** of minimap2's
+`target query` argument order. Setting `queryAssembly` and `targetAssembly` on
+the adapter in `config.json` avoids the question (see the
 [synteny track config guide](/docs/config_guides/synteny_track)).
 
-Pick the `-cx` preset by how far apart the two assemblies are:
+Pick the `-cx` preset by divergence:
 
-- `asm5` - closely related assemblies, up to ~5% divergence
-- `asm10` - moderately diverged assemblies
-- `asm20` - divergent / cross-species comparisons, up to ~20% divergence, used
-  above
+- `asm5` - closely related, up to ~5% divergence
+- `asm10` - moderately diverged
+- `asm20` - cross-species, up to ~20% divergence
 
-See the [minimap2 docs](https://github.com/lh3/minimap2) for details.
-
-Other supported synteny formats:
+Other synteny formats load the same way
+(`jbrowse add-track alignment.delta --assemblyNames query,target ...`):
 
 - `.delta` (MUMmer/NUCmer)
 - `.chain` (UCSC)
 - `.anchors` and `.anchors.simple` (MCScan)
 - `.out` (MashMap)
 
-Add them the same way:
-`jbrowse add-track alignment.delta --assemblyNames query,target ...`. For large
-alignments, convert to indexed PIF first with `jbrowse make-pif`.
+For large alignments, convert to indexed PIF first with `jbrowse make-pif`.
 
 See also the [linear synteny view](/docs/user_guides/linear_synteny_view),
 [dotplot view](/docs/user_guides/dotplot_view),
@@ -293,51 +269,38 @@ See also the [linear synteny view](/docs/user_guides/linear_synteny_view),
 
 ## Hosting your own data
 
-The folder you just built is a **static site**: plain files that a web server
-hands out unchanged, with no server-side program or database. All the work
-happens in the visitor's browser, which fetches the pieces of your data files it
-needs.
-
-Any web server, S3 or GCS bucket, or institutional file host can serve it. See
-[](/docs/config_guides/deploying) for the full picture, including generating
+The folder you built is a **static site**. Any web server, S3 or GCS bucket, or
+institutional file host can serve it; the browser fetches the slices of each
+data file it needs. See [](/docs/config_guides/deploying), including generating
 `config.json` from a samplesheet.
 
-Two properties decide whether a host works, and both fail quietly:
+Two host properties decide whether tracks load, and both fail quietly:
 
-- **Byte-range requests.** JBrowse reads slices of a BAM, CRAM, BigWig, or tabix
-  file rather than downloading it, so the host has to answer a `Range` header
-  with `206 Partial Content`. A host that returns the whole file with `200`
-  instead is the usual reason a track that works locally shows nothing in
-  production. See
+- **Byte-range requests.** The host must answer a `Range` header with
+  `206 Partial Content`. A host that returns the whole file with `200` is the
+  usual reason a track that works locally shows nothing in production. See
   [](/docs/config_guides/serving_data#indexed-binary-files-do-not-work-on-my-server).
-- **No re-compression of compressed files.** Serving a `.bam` or `.bgz` through
-  gzip corrupts the byte offsets the index depends on. See
+- **No re-compression.** Serving a `.bam` or `.bgz` through gzip corrupts the
+  byte offsets the index depends on. See
   [](/docs/config_guides/serving_data#configure-gzip-for-text-never-for-bgzf).
 
-Object storage satisfies both out of the box, which is why S3 and GCS are common
-homes for the data even when the app itself is served elsewhere. Data on a
-different domain than the app needs a
-[CORS policy](/docs/config_guides/serving_data#cors-errors-on-remote-files) as
-well.
-
-For data that cannot be public, JBrowse authenticates per file host. See
-[](/docs/config_guides/authentication).
+Object storage satisfies both by default. Data on a different domain than the
+app also needs a
+[CORS policy](/docs/config_guides/serving_data#cors-errors-on-remote-files). For
+data that cannot be public, see [](/docs/config_guides/authentication).
 
 ## Indexing feature names for searching
-
-Optionally, build a text index so users can search by gene name or feature ID:
 
 ```bash
 jbrowse text-index
 ```
 
-This indexes the GFF3, GTF and VCF tracks in your config, tabix-indexed or
-plain. Every other track is skipped, and a bare `text-index` run skips silently
-— name a track with `--tracks` and it says why that one was left out. Once
-complete, names can be typed directly into the location search box. See
-[](/docs/config_guides/text_searching) for which attributes are indexed and how
-to narrow the set, the [text-index docs](/docs/cli#jbrowse-text-index) for the
-flags, and
+This builds a name index, separate from the tabix index, over the feature names
+and IDs in GFF3, GTF and VCF tracks. Once built, a gene name typed into the
+location search box jumps to that feature. Other track types are skipped
+silently; name one with `--tracks` and it says why. See
+[](/docs/config_guides/text_searching) for which attributes are indexed, the
+[text-index docs](/docs/cli#jbrowse-text-index) for flags, and
 [the trix index format](/docs/config_guides/text_searching#the-trix-index-format)
 for how the index files work.
 
