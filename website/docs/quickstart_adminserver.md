@@ -7,51 +7,35 @@ description:
 
 :::caution
 
-We recommend the [CLI quickstart](/docs/quickstart_web/) for most config setup.
-The admin-server is a niche tool for occasional GUI editing.
+The [CLI quickstart](/docs/quickstart_web/) is the recommended way to build a
+config. The admin-server is for occasional GUI editing.
 
 :::
 
-This guide covers configuring JBrowse 2 (adding assemblies and tracks) through
-the graphical admin interface.
+The JBrowse CLI's `admin-server` serves JBrowse 2 locally in "admin mode", where
+the Assembly manager, the Add track form and the connection form write their
+changes back to `config.json`. The writes only happen while the server runs.
+
+:::warning
+
+The `admin-server` is for temporary configuration, **not for production.**
+
+:::
 
 ## Prerequisites
 
-This tutorial requires the following software:
-
 - [JBrowse CLI](/docs/quickstart_web/#installing-the-jbrowse-cli)
-
 - [JBrowse 2 web application](/docs/quickstart_web/#download-jbrowse-2)
 
 ## Starting JBrowse 2 admin server
 
-The JBrowse CLI includes an `admin-server` tool that serves JBrowse 2 locally
-and writes any configuration changes back to a config file.
-
-:::warning
-
-The `admin-server` is meant to be used temporarily for configuration, **not in
-production.**
-
-:::
-
-The `admin-server` launches an instance of JBrowse 2 in "admin mode", which then
-lets you:
-
-- Add and edit assemblies with the "Assembly manager"
-- Add tracks and edit tracks
-- Add and edit connections
-
-All changes are written to the JBrowse config file (usually `config.json`). This
-only works while the `admin-server` is running.
-
-To start the `admin-server`, navigate into your JBrowse 2 directory and run:
+From inside your JBrowse 2 directory:
 
 ```bash
 jbrowse admin-server
 ```
 
-This prints a link you can visit in your web browser:
+Open the printed link in your browser:
 
 ```
 Admin server started on port 9090
@@ -67,16 +51,13 @@ To stop the server, press Ctrl+C
 
 ## Adding a genome assembly
 
-Open the Assembly manager from the menu bar to add an assembly.
-
-This opens a table to create, edit, and delete assemblies in your application:
+Open the Assembly manager from the menu bar. It lists, creates, edits and
+deletes assemblies:
 
 <Figure caption="Screenshot showing the assembly manager, with no assemblies loaded yet." src="/img/assembly_manager.png"/>
 
-As an example, add the hg38 human reference genome.
-
-Press **Add new assembly**, then **Open from a URL**, and paste the FASTA and
-its two indexes into the box, one per line:
+To add hg38, press **Add new assembly**, then **Open from a URL**, and paste the
+FASTA and its two indexes, one per line:
 
 ```
 https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
@@ -84,9 +65,8 @@ https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai
 https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi
 ```
 
-The form recognizes the three files, pairs the indexes with the FASTA, and fills
-in a genome name from the filename. That name is editable, and the rest of this
-page calls the assembly `hg38`, so set it to that.
+The form pairs the indexes with the FASTA and fills in a name from the filename.
+Set the name to `hg38`, which is what the rest of this page calls it.
 
 <Figure caption="Assembly manager page for adding a new assembly." src="/img/hg38_assembly_table.png"/>
 
@@ -98,41 +78,38 @@ page calls the assembly `hg38`, so set it to that.
 
 ### Editing a genome assembly
 
-The pencil icon button in the Assembly manager edits an assembly, and the same
-table deletes assemblies.
+The pencil icon in the Assembly manager edits an assembly, and the same table
+deletes them.
 
 ## Adding a track
 
-Open the Add track form from the menu bar to add a track or connection:
+Open the Add track form from the menu bar:
 
 <Figure caption="JBrowse 2 file menu with the 'Add track' form" src="/img/add_track_form.png"/>
 
-The action button (circular "+") inside the track selector opens the same form:
+The circular "+" button in the track selector opens the same form:
 
 <Figure caption="The 'Add track' form can be launched from the circular '+' button in the bottom righthand corner" src="/img/add_track_tracklist.png"/>
 
-In the "Add track" form, provide a URL or select a local file to load. For the
-formats JBrowse supports and their accepted index types, see
-[](/docs/config_guides/file_types). Plugins add support for further data
-formats; see the [plugin store](/docs/user_guides/plugin_store).
+Provide a URL or select a local file. Supported formats and index types:
+[](/docs/config_guides/file_types). Plugins add further formats; see the
+[plugin store](/docs/user_guides/plugin_store).
 
 ### Editing a track
 
-Open a Linear Genome View and click the "Select tracks" button. Each track's
-three-dot (...) menu has a "Settings" button, which opens the configuration
-editor. The editor live-edits any configurable value for that track, and changes
-are persisted to the config file when editing through the admin-server.
+In a Linear Genome View, click "Select tracks". Each track's three-dot (...)
+menu has a "Settings" button that opens the configuration editor. Edits apply
+live and, through the admin-server, persist to the config file.
 
 ## Setting a default session
 
-The graphical admin server also sets the default session, the session that
-appears when JBrowse 2 is first visited. Open the Set default session form
-(Admin menu):
+The default session is what a visitor sees first. Open the Set default session
+form from the Admin menu:
 
 <Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>
 
-The form clears the default session, or sets it to the currently open session or
-any previously saved one.
+The form clears the default session, or sets it to the current session or any
+previously saved one.
 
 ## See also
 

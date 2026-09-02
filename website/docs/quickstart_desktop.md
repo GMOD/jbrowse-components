@@ -4,242 +4,196 @@ description: Install JBrowse Desktop, open a genome, and add your first tracks
 data: download
 ---
 
-In this guide, we'll install JBrowse desktop, open a genome, add a track, and
-save a session, all from the GUI, with no command line or web server required.
-Desktop opens files straight off your local filesystem. For a hosted browser,
-see the [web quick start](/docs/quickstart_web); to embed a genome view in your
-own web app, see [embedded components](/docs/embedded_components).
+Install JBrowse desktop, open a genome, add a track, and save a session, all
+from the GUI. Desktop reads files straight off your local filesystem, so there
+is no command line or web server.
+
+Other ways to run JBrowse:
+
+- [JBrowse web](/docs/quickstart_web) - a hosted browser served as static files
+- [](/docs/embedded_components) - embed a view in your own web app
 
 ## Installing JBrowse desktop
 
-Go to the [download page](/download/) and download the installer for your
-platform, or grab the latest release directly from
+Download the installer for your platform from the [download page](/download/) or
 [GitHub releases](https://github.com/GMOD/jbrowse-components/releases/latest).
 
 ### Installing on Windows
 
-Download the latest Windows installer executable (`.exe`) and double-click it to
-install and open JBrowse.
+Double-click the `.exe` installer.
 
 ### Installing on macOS
 
-Download the latest macOS release artifact (`.dmg`), open it, then drag JBrowse
-to Applications.
+Open the `.dmg` and drag JBrowse to Applications.
 
 ### Installing on Linux
 
-Download the latest Linux AppImage release (`.AppImage`) and start it in one of
-two ways.
-
-In the terminal, make the file executable, then run it:
+Make the `.AppImage` executable, then run it:
 
 ```sh
-# Make the AppImage file executable, only need to do this once
 chmod a+x jbrowse-desktop-*-linux.AppImage
-# Run!
 ./jbrowse-desktop-*-linux.AppImage
 ```
 
-Or in your file explorer (steps may vary by distribution):
-
-- right-click the AppImage and open "Properties"
-- go to the "Permissions" tab
-- check "Allow executing file as program"
-- double-click the AppImage to launch JBrowse
+Or from a file explorer: right-click the AppImage, open "Properties", check
+"Allow executing file as program" under "Permissions", and double-click it.
 
 ## The start screen
 
-After starting JBrowse Desktop, you'll see a start screen with two panels:
-
 <Figure src="/img/desktop-landing.png" caption="The JBrowse desktop start screen. The left panel launches new sessions; the right panel lists recently opened ones."/>
 
-The left panel, "Launch new session", starts a new session from your own genome
-or a pre-loaded one:
+The left panel, "Launch new session", starts a session on a genome:
 
-- **Open new genome** loads a custom genome from local files or URLs (see
-  [Opening a genome](#opening-a-genome)).
-- **Show all available genomes** browses and launches from a searchable table of
-  publicly available reference genomes.
+- **Open new genome** loads a genome from local files or URLs (see
+  [Opening a genome](#opening-a-genome))
+- **Show all available genomes** launches from a searchable table of public
+  reference genomes
 - **Favorite genomes** and **Quickstart list** are one-click launchers for
-  genomes you've starred or saved.
+  genomes you've starred or saved
 
-The right panel, "Recently opened sessions", holds sessions you've saved, plus
-autosaves. Click a session name to reopen it (see
+The right panel, "Recently opened sessions", lists saved sessions and autosaves.
+Click one to reopen it (see
 [Saving and reopening sessions](#saving-and-reopening-sessions)).
 
 ## Opening a genome
 
-**Open new genome** brings up the "Open genome(s)" dialog, and what you give it
-there becomes a new session on that assembly.
+**Open new genome** brings up the "Open genome(s)" dialog. What you give it
+becomes a new session on that assembly.
 
 <Figure src="/img/desktop-open-genome-steps.png" caption="Opening a genome from your own files. Open new genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
 
-The dialog is drop-first. Drop your sequence file (a FASTA, bgzip-compressed
-FASTA, or 2bit, along with any `.fai`/`.gzi` index files) onto the drop area, or
-click it to browse. A `.chrom.sizes` goes there too, for an assembly of
-reference names and lengths with no sequence behind it — see the format list
-below for what that costs. To load from the web, click **Open from a URL** and
-paste your file URLs, one per line. JBrowse classifies each file, and once it
-recognizes a sequence it shows a confirmation card with a **Genome name** field
-(e.g. `hg38`). The drop area and the URL box stay where they are, so a `.fai`
-you forgot can go in after the sequence is already recognized. JBrowse names any
-file it can't place or can't use with the format it detected.
+Drop your sequence file onto the drop area, or click it to browse. For files on
+the web, click **Open from a URL** and paste the URLs, one per line. JBrowse
+classifies each file, and once it recognizes a sequence it shows a confirmation
+card with a **Genome name** field (e.g. `hg38`). A forgotten `.fai` can be
+dropped in after the sequence is already recognized.
 
-If a filename doesn't match the conventions JBrowse detects, it offers **Enter
-details manually**, opening a form with a **Format** dropdown:
+Accepted sequence formats:
 
 - `FASTA with index (.fa + .fai)`
 - `Compressed FASTA (.fa.gz + .fai + .gzi)` (bgzip-compressed)
-- `FASTA (automatically indexed)` - a plain FASTA with no index. JBrowse builds
-  one on open, reading the whole file (and downloading all of it first if it's a
-  URL), so this can take a while on a large genome. **Cancel** stops it — supply
-  a `.fai` and choose "FASTA with index" to skip the step entirely
+- `FASTA (automatically indexed)` - a plain FASTA. JBrowse builds the index on
+  open, reading the whole file, which can take a while on a large genome. Supply
+  a `.fai` to skip it
 - `2bit file (.2bit)`
-- `Chromosome sizes, no sequence (.chrom.sizes)` - a UCSC-style
-  `name<TAB>length` table. The assembly gets its reference names and lengths and
-  no bases at all, which is what whole-genome and synteny views need and a
-  fraction of the size (the six wheat genomes behind
-  [Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny)
-  are tens of gigabytes as sequence and a few kilobytes as chrom.sizes). The
-  dialog warns when you pick it, because the sequence track and GC content then
-  draw nothing, CRAM cannot decode without the reference, and a feature has no
-  DNA or protein sequence to show. Dropping a `.chrom.sizes` on the drop area
-  selects this format on its own
+- `Chromosome sizes, no sequence (.chrom.sizes)` - reference names and lengths
+  with no bases behind them. Enough for whole-genome and synteny views at a
+  fraction of the size, and the dialog warns what it costs[^chromsizes]
+
+If a filename doesn't match what JBrowse detects, **Enter details manually**
+opens a form with a **Format** dropdown listing the same choices.
 
 Three buttons finish the dialog:
 
-- **More options** sets an assembly display name, refName aliases (e.g. to treat
-  `chr1` and `1` as the same contig), or cytoband data
+- **More options** sets a display name, refName aliases (e.g. to treat `chr1`
+  and `1` as the same contig), or cytoband data
 - **Add another genome** stages the current genome and starts on the next, for
-  loading several at once for comparative views
-- **Open** (shown as **Open N genomes** once you've staged more than one) opens
-  a linear genome view on the new assembly, ready for tracks
+  comparative views
+- **Open** (**Open N genomes** once several are staged) opens a linear genome
+  view on the new assembly
 
 ### Using a pre-loaded genome
 
 For a common reference genome, use **Show all available genomes**, which needs
 no files. The table is searchable by name, scientific name, or accession, and
 grouped by source (UCSC main genomes, GenArk, and so on). Star a genome to add
-it to the **Favorite genomes** quick-launch list on the start screen.
+it to **Favorite genomes** on the start screen.
 
 <Figure src="/img/desktop-available-genomes-steps.png" caption="Launching a public assembly. Show all available genomes (1) opens the table, and launch (2) opens a session on that genome, here T2T CHM13v2.0/hs1 with the assembly's hub tracks listed in the track selector."/>
 
-The **Quickstart list** works the same way for genomes you've saved yourself
-(see
+The **Quickstart list** works the same way for genomes you've saved (see
 [Saving a genome to the quickstart list](#saving-a-genome-to-the-quickstart-list)).
-Check multiple entries and click **Go** to open them together in one combined
-session, handy for comparative genomics.
+Check several entries and click **Go** to open them in one combined session.
 
 ## Adding tracks
 
-Once a genome is open, add data tracks from local files or URLs.
-
-Open the **File** menu and choose **Open track...**, or open the track selector
-and use its **Add track** button. Either opens the "Add a track" form.
+Open the **File** menu and choose **Open track...**, or click **Add track** in
+the track selector. Either opens the "Add a track" form.
 
 <Figure src="/img/desktop-add-track-steps.png" caption="Adding a track. File then Open track... (1) opens the form, which takes a main file as a local path or a URL (2) and infers the index from it (3). Confirming the guessed track type adds the track to the open view, the third frame."/>
 
-- Choose **Add a track from file or URL**.
-- Set the **Main file** (the data file) and optionally an **Index file**. For
-  formats that need one (BAM/CRAM/tabix), the index URL is inferred from the
-  main file if you leave it blank. You can pick local files or paste URLs.
-- Click **Next**. JBrowse guesses the **Track type** and **Adapter type** from
-  the file; confirm or adjust them, set a **Track name**, and pick the assembly
-  to add the track to.
-- Click **Add**.
+- Choose **Add a track from file or URL**
+- Set the **Main file**, as a local file or a URL. For BAM/CRAM/tabix formats
+  the **Index file** is inferred from the main file if left blank
+- Click **Next**. JBrowse guesses the **Track type** and **Adapter type**;
+  confirm or adjust them, set a **Track name**, and pick the assembly
+- Click **Add**
 
-JBrowse desktop supports the same file formats as JBrowse web. See
-[](/docs/config_guides/file_types). For the indexing and preparation commands
-behind these formats, see the [web quick start](/docs/quickstart_web).
-
-To load many tracks at once, choose **Add multiple tracks at once** in the "Add
-a track" form.
+Desktop supports the same formats as JBrowse web; see
+[](/docs/config_guides/file_types). The indexing commands behind them are in the
+[web quick start](/docs/quickstart_web). To load many tracks at once, choose
+**Add multiple tracks at once** in the form.
 
 ### Gene annotations (GFF3 and GTF)
 
-Both load through the same form, and a plain `.gff3` or `.gtf` needs no index —
-pick the file and desktop reads it. That is the fast path for one chromosome's
-worth of annotation.
+A plain `.gff3` or `.gtf` needs no index; pick the file and desktop reads it.
+That is fine for one chromosome's worth of annotation.
 
-Sort, bgzip and tabix anything genome-scale before loading it. An unindexed file
-is parsed once and held whole in memory, so a full annotation costs that much
-resident before the first feature draws. The commands are in the
-[web quick start](/docs/quickstart_web) under GFF3 and GTF; `jbrowse sort-gff`
-handles both formats. Give the form the `.gff.gz` or `.gtf.gz` as the main file
-and it infers the `.tbi` beside it.
+Anything genome-scale should be sorted, bgzipped and tabix-indexed first,
+because an unindexed file is parsed once and held whole in memory. The commands
+are in the [web quick start](/docs/quickstart_web) under GFF3 and GTF. Give the
+form the `.gff.gz` or `.gtf.gz` and it infers the `.tbi` beside it.
 
 ### Connecting to a track hub
 
-To pull in a whole set of tracks at once, use **File → Open connection...** and
-point it at a UCSC track hub or a JBrowse hub. The connection's tracks then
-appear in the track selector alongside any you added by hand.
+**File → Open connection...** takes a UCSC track hub or a JBrowse hub and lists
+its tracks in the track selector alongside your own.
 
 ### Making tracks searchable by name
 
-To search a track by gene name or feature ID from the location box, index its
-feature names: open the track's menu (the **⋮** button on the track, or its
-entry in the track selector) and choose **Index track**. Indexing runs as a
-background job; when it finishes, names from that track can be typed straight
-into the search box. This is the in-app equivalent of the CLI
-`jbrowse text-index` command.
+Open the track's menu (the **⋮** button on the track, or its entry in the track
+selector) and choose **Index track**. Indexing runs as a background job; once
+done, names from that track can be typed into the location search box. This is
+the in-app equivalent of `jbrowse text-index`.
 
-**Index track** only appears on a track it can index — GFF3, GTF and VCF, plain
-or tabix-indexed.
+**Index track** only appears on GFF3, GTF and VCF tracks, plain or
+tabix-indexed.
 
 ## Saving and reopening sessions
 
-JBrowse desktop autosaves your work continuously, and autosaves show up in
-"Recently opened sessions" on the start screen.
+Desktop autosaves continuously, and autosaves appear in "Recently opened
+sessions" on the start screen. The **File → Session** menu handles named
+sessions:
 
-The **File → Session** menu handles named sessions:
-
-- **Save session as...** writes a `.jbrowse` file you can reopen later (or
-  share)
+- **Save session as...** writes a `.jbrowse` file you can reopen or share
 - **Open config.json or .jbrowse file...** reopens one, as does the start
   screen's **Open file or link** menu
-- **Export session to web...** produces a shareable URL, to hand a session off
-  to someone running JBrowse web
+- **Export session to web...** produces a URL for someone running JBrowse web
 
 ### Opening a JBrowse web link
 
-The reverse direction works too, in JBrowse Desktop 5.0 and newer: **Open file
-or link → Open JBrowse Web link...** on the start screen, or **File → Session →
-Open JBrowse Web link...** once a session is open. Either takes a JBrowse web
-URL and rebuilds it here as a new session. Two link forms work:
+The reverse direction works in JBrowse Desktop 5.0 and newer: **Open file or
+link → Open JBrowse Web link...** on the start screen, or **File → Session →
+Open JBrowse Web link...** in a session. Either rebuilds a JBrowse web URL as a
+new session. Link forms that work:
 
-- one containing a [session spec](/docs/urlparams/#session-spec)
-  (`&session=spec-...`) — for example the "Open this view in JBrowse" link under
-  any figure in these docs
-- one using the [URL parameter](/docs/urlparams/) shorthand, i.e. `&assembly=`
-  with an optional `&loc=`, `&tracks=`, `&highlight=` and so on
-- one naming a track hub with `&hubURL=`, which is attached as a connection; add
-  `&assembly=` naming one of the hub's genomes to open at a particular place in
-  it, or leave it off to land at the hub's own default position
+- a [session spec](/docs/urlparams/#session-spec) (`&session=spec-...`), such as
+  the "Open this view in JBrowse" link under any figure in these docs
+- the [URL parameter](/docs/urlparams/) shorthand, i.e. `&assembly=` with an
+  optional `&loc=`, `&tracks=`, `&highlight=` and so on
+- a track hub with `&hubURL=`, attached as a connection; add `&assembly=` naming
+  one of the hub's genomes to open at a particular place in it
 
-The config the link names is downloaded and saved alongside the session, so it
+The config the link names is downloaded and saved with the session, so it
 reopens later like any other. Share links (`&session=share-...`) can't be opened
-this way: only the JBrowse web instance that created one can resolve it.
+this way; only the JBrowse web instance that created one can resolve it.
 
 Figures in these docs also offer an "Open this view in JBrowse Desktop" button,
-which hands the view straight to Desktop through a `jbrowse://` link that the
-macOS and Windows installers register for you. **The Linux AppImage doesn't
-register anything by itself**, so that button generally won't work there unless
-you've integrated the AppImage with your desktop (e.g. with
-[AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)): paste the
-link instead, or pass it on the command line (below).
+a `jbrowse://` link that the macOS and Windows installers register. **The Linux
+AppImage doesn't register anything by itself**, so on Linux paste the link
+instead, pass it on the command line (below), or integrate the AppImage with
+[AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher).
 
 ### Saving a genome to the quickstart list
 
-To turn a session into a reusable quickstart entry, select it in "Recently
-opened sessions" and choose **Add to quickstart list** (the playlist-add icon in
-list view, or the entry's action menu). It then appears in the **Quickstart
-list** on the left panel for one-click launching.
+Select a session in "Recently opened sessions" and choose **Add to quickstart
+list** (the playlist-add icon in list view, or the entry's action menu). It then
+appears in the **Quickstart list** for one-click launching.
 
 ## Launching from the command line
 
-If you start JBrowse Desktop from a terminal, you can pass a session
-(`.jbrowse`) or a configuration (`config.json`) file to open it straight away,
-skipping the start screen:
+Pass a session (`.jbrowse`) or a configuration (`config.json`) file to skip the
+start screen:
 
 ```sh
 # Linux AppImage
@@ -252,13 +206,12 @@ jbrowse-desktop mysession.jbrowse
 open -a "JBrowse 2" myproject/config.json
 ```
 
-Relative paths inside a `config.json` are resolved against that file's own
-folder, so a config the [CLI builds](/docs/tutorials/cli_desktop) opens with no
-extra setup.
+Relative paths inside a `config.json` resolve against that file's own folder, so
+a config the [CLI builds](/docs/tutorials/cli_desktop) opens with no extra
+setup.
 
-A `jbrowse://` link works as an argument too, which is how to open one on Linux,
-where the AppImage does not register the URL scheme itself (quote it, so the
-shell leaves the `&` alone):
+A `jbrowse://` link works as an argument too, quoted so the shell leaves the `&`
+alone:
 
 ```sh
 ./jbrowse-desktop-*-linux.AppImage 'jbrowse://open?url=https%3A%2F%2Fjbrowse.org%2F...'
@@ -273,9 +226,9 @@ jbrowse-desktop --version          # print the version and exit
 jbrowse-desktop --help             # print usage and exit
 ```
 
-`--renderer` is useful when WebGPU is unavailable or misbehaving, for example
-running over X11 forwarding or a remote desktop. Use `webgl` first, and `canvas`
-only if WebGL is also unavailable.
+`--renderer` helps when WebGPU is unavailable or misbehaving, for example over
+X11 forwarding or a remote desktop. Try `webgl` first, and `canvas` only if
+WebGL is also unavailable.
 
 ## See also
 
@@ -283,3 +236,12 @@ only if WebGL is also unavailable.
 - [](/docs/config_guide)
 - [Web quick start](/docs/quickstart_web)
 - [](/docs/faq)
+
+[^chromsizes]:
+    A `.chrom.sizes` is a UCSC-style `name<TAB>length` table. The six wheat
+    genomes behind
+    [Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny)
+    are tens of gigabytes as sequence and a few kilobytes as chrom.sizes. With
+    no bases, the sequence track and GC content draw nothing, CRAM cannot decode
+    without the reference, and a feature has no DNA or protein sequence to show.
+    Dropping a `.chrom.sizes` on the drop area selects this format on its own.
