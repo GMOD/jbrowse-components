@@ -6,7 +6,6 @@ import {
   addOrReplaceView,
   getContainingView,
   getSession,
-  renderToStaticMarkup,
   saveAs,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
@@ -32,7 +31,6 @@ import { when } from 'mobx'
 import { observer } from 'mobx-react'
 
 import DerivativePathStrip from './DerivativePathStrip.tsx'
-import SegmentMapFigure, { segmentMapCaption } from './SegmentMapFigure.tsx'
 import {
   buildDerivativeVsRefSpec,
   derivativeName,
@@ -45,6 +43,7 @@ import {
   buildSplitViewFromPath,
 } from './buildSplitViewFromPath.ts'
 import { segmentSizeSummary } from './pathStripBlocks.ts'
+import { segmentMapCaption, segmentMapSvg } from './segmentMapSvg.ts'
 
 import type { DerivativePathHost } from './index.ts'
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
@@ -488,12 +487,10 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // The segment map as a file: the figure SV papers draw by hand, for the route
   // the reader has picked. SVG rather than PNG so the letters stay text.
   function saveSegmentMap(candidate: DerivativeCandidate) {
-    const svg = renderToStaticMarkup(
-      <SegmentMapFigure
-        candidate={candidate}
-        lettering={letterSegments(candidate.observedSegments)}
-        noun={noun}
-      />,
+    const svg = segmentMapSvg(
+      candidate,
+      letterSegments(candidate.observedSegments),
+      noun,
     )
     saveAs(
       new Blob([svg], { type: 'image/svg+xml' }),

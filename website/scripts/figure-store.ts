@@ -122,6 +122,8 @@ const derivedFigureDirs = [
   'gallery-thumbs/',
   'tutorial-thumbs/',
   'home-gallery/',
+  // drawn from committed reads by gen-segment-maps.ts, no capture involved
+  'segment-maps/',
 ]
 const derivedFigureFiles = new Set([
   'screenshot.webp',

@@ -7,6 +7,9 @@ import {
 import { letterSegments } from '@jbrowse/plugin-alignments'
 
 import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
+import { derivativeName } from './derivativeName.ts'
+
+export { derivativeName }
 
 import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
@@ -80,13 +83,6 @@ export interface BuildDerivativeVsRefArgs {
   // Injected for testability. Production passes Date.now and Math.random.
   now: () => number
   rand: () => number
-}
-
-// chr3 → chr10 → chr12 → chr3 reads as one name; a path that revisits a
-// chromosome should say so once rather than twice, so the label is built from
-// the candidate's deduplicated refNames.
-export function derivativeName(candidate: DerivativeCandidate) {
-  return `der_${candidate.refNames.join('_')}`
 }
 
 // One line naming the path, for the picker. Orientation is spelled out rather

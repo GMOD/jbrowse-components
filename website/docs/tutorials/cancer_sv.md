@@ -256,9 +256,9 @@ bp of chr12 inverted, then 8.43 kb of chr3 inverted. The second is that route
 with the chr12 piece missing, and two reads take it; both cross the same first
 junction, so the disagreement is about what follows it.
 
-Lettered, the first row reads `A B C D E′ B′`: B is carried twice, forward in
-the arm and inverted at the end, an inverted duplication with the chr10 and
-chr12 pieces templated in at the fold.
+**Save segment map (SVG)** on the first row writes this figure.
+
+<Figure caption="The der(3) route as a segment map: chr3 cut into A B C by the returning arm's edges, the copies the derivative carries of each stepped above, and the derivative below with B carried twice, forward in the arm and inverted at the end." src="/img/segment-maps/cancer_sv_der3.svg" />
 
 The reconstruction is anchored on the window the pileup was showing, so the
 reference row is tens of kilobases of chr3 with the two insert loci a few pixels

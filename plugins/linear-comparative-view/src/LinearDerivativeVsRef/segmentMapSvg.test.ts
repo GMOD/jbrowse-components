@@ -1,10 +1,10 @@
-import { renderToStaticMarkup } from '@jbrowse/core/util'
 import { letterSegments } from '@jbrowse/plugin-alignments'
 
-import SegmentMapFigure, {
+import {
   segmentMapCaption,
   segmentMapHeight,
-} from './SegmentMapFigure.tsx'
+  segmentMapSvg,
+} from './segmentMapSvg.ts'
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
@@ -30,13 +30,7 @@ const der3 = candidate([
 ])
 
 function figure(c: DerivativeCandidate) {
-  return renderToStaticMarkup(
-    <SegmentMapFigure
-      candidate={c}
-      lettering={letterSegments(c.observedSegments)}
-      noun="reads"
-    />,
-  )
+  return segmentMapSvg(c, letterSegments(c.observedSegments), 'reads')
 }
 
 test('the caption is the string plus a legend', () => {
@@ -50,6 +44,7 @@ test('the caption is the string plus a legend', () => {
 test('the figure stands alone and carries the string, the copies and the legend', () => {
   const svg = figure(der3)
   expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true)
+  expect(svg.endsWith('</svg>')).toBe(true)
   expect(svg).toContain('A B C D E′ B′')
   // B is carried twice, and the step over the reference says so
   expect(svg).toContain('×2')
@@ -57,6 +52,9 @@ test('the figure stands alone and carries the string, the copies and the legend'
   expect(svg).toContain('J3')
   expect(svg).not.toContain('J4')
   expect(svg).toContain('chr10:58,717,464..58,717,662 (199bp)')
+  // the narrow inserts still carry their letters in the derivative row
+  expect(svg).toContain('>D</text>')
+  expect(svg).toContain('>E′</text>')
 })
 
 test('a skipped piece is drawn hollow and named as missing', () => {
@@ -73,6 +71,17 @@ test('a skipped piece is drawn hollow and named as missing', () => {
     ...svg.matchAll(/<rect x="[\d.]+" y="\d+" width="([\d.]+)"/g),
   ].map(m => Number(m[1]))
   expect(Math.max(...widths)).toBeLessThan(400)
+})
+
+test('a refName with markup in it is escaped', () => {
+  const svg = figure(
+    candidate([
+      { refName: 'HLA-A*01:01<x>', start: 0, end: 1000, strand: 1 },
+      { refName: 'chr1', start: 0, end: 1000, strand: 1 },
+    ]),
+  )
+  expect(svg).not.toContain('<x>')
+  expect(svg).toContain('&lt;x&gt;')
 })
 
 test('the height follows the legend', () => {
