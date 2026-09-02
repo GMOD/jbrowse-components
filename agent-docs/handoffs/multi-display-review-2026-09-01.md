@@ -1,6 +1,6 @@
 ---
 name: multi-display-review-2026-09-01
-description: The 2026-09-01 review of the four multi/row displays (multi-wiggle, the two multi-sample variant displays, the multi-row feature painting, MAF) and the shared tree-sidebar machinery — every verified finding, which ones landed in wave one, which are still in flight in four per-plugin agents, and the wave-two cross-cutting list that has to touch every plugin's model at once. Pick up here rather than re-reviewing.
+description: The 2026-09-01 review of the four multi/row displays (multi-wiggle, the two multi-sample variant displays, the multi-row feature painting, MAF) and the shared tree-sidebar machinery — every verified finding, what landed in wave one, what the wave-two cross-cutting pass did to every plugin's model at once (including the clustering-under-a-filter decision and the one item argued down), and what is still owed. Pick up here rather than re-reviewing.
 ---
 
 # Multi display review, 2026-09-01
@@ -17,8 +17,9 @@ disjoint directory, committing with explicit pathspecs. Ownership was:
 `plugins/wiggle` + `packages/wiggle-core/src/autoscale.ts`,
 `plugins/variants`, `plugins/canvas`, `plugins/maf`,
 `packages/tree-sidebar` + `packages/core/src/util/{rowStackGeometry,useRowVirtualScroll,usePanelVirtualScroll}.ts`.
-Wave two (not started) is the cross-cutting work that must touch every
-plugin's model, so it could not run concurrently.
+Wave two is the cross-cutting work that must touch every plugin's model, so
+it could not run concurrently; it ran on 2026-09-02 in its own worktree and
+is written up below.
 
 Commits from this session carry
 `Claude-Session: https://claude.ai/code/session_014psJ3MEcdh1mzRbfJb7z5j`.
@@ -93,12 +94,10 @@ hit-test cluster and partition views moved out of `model.ts`;
 `MultiRowClusterDialog` type + stable `matrixKey`.
 
 **maf** — COMPLETE except three items, 95 suites green. Not done:
-(a) `LegendMixin` for MAF: fully built and reverted because it fails
-`products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts` (needs a
-`LinearMafDisplay` fixture there) and the `ConfigSlotDefaults` snapshot;
-the working patch is at the session scratchpad
-`item9-legend-mixin.patch` and may be gone, so rebuild from the wiggle
-model's `showLegend` shape and land it with those two web-side edits.
+(a) `LegendMixin` for MAF: built and reverted because it failed
+`products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts` and the
+`ConfigSlotDefaults` snapshot. **Landed 2026-09-02** with both web-side
+edits — see "Landed since" below.
 (b) Lazy Launch submenu: `SubMenuItem.subMenu` has no function form
 (`packages/core`); the `rows.find` per block was replaced by one pass
 (`findRowSpans`), measured 2.0x on the 464-row shape. (c) Pan-stable
@@ -118,43 +117,107 @@ context menu "Copy location" + open insertion widget; `LegendMixin` with
 `SvgTreeSidebar` in export; `TrackBandCanvas` draw dep churn;
 `legendItems` pan-stable; argument-taking views out of `stateModel.ts`.
 
-## Wave two (cross-cutting, one agent after wave one is committed)
+## Wave two (cross-cutting) — done 2026-09-02
 
-- Add `setScrollTop` to `multiWiggleDisplayTypes.ts`, then make
-  `TreeSidebarModel.setScrollTop` required (`types.ts`) and drop the `?.()`
-  in `focusRows.ts`.
-- Pass `rowCount` to `clusteringMenuItem` at
-  `wiggle/model.ts` (~576, keep `isOverlay` in disabled),
-  `canvas/trackMenuItems.ts` (~262), `maf/trackMenuItems.ts` (~304); leave
-  variants (its help text distinguishes loading from one sample). Delete
-  the per-display `< 2` spellings that the shared refusal now covers; the
-  two admitting one row are `runMafClustering.ts` (`!sources.length`) and
-  `runGenotypeClustering.ts` (`if (sourcesBase)`).
-- Forward the sort boolean: `setupMultiSampleVariantAutoruns.ts` ~23,
-  `wiggle/model.ts` ~516, `canvas/model.ts` ~1502, `maf/stateModel.ts`
-  ~2529; variants' `sortRowsByGenotypeAt` returns `false` on both declines
-  (unless the variants agent already sorted to the nearest record).
-- `showRowSeparators` slot + getter + setter is copied in wiggle, canvas and
-  variants with drifted descriptions; move into
-  `treeSidebarConfigSchemaFields` + `TreeSidebarMixin`. MAF has none
-  (deliberate, see row-display-followups).
-- Clustering under a subtree filter has two semantics: wiggle/canvas cluster
-  all rows and prune the tree, variants/maf cluster the clade (and a chip
-  click then hides the tree behind the stale hint). Decide one; the
-  wiggle/canvas commit code is identical modulo the list
-  (`runWiggleClustering.ts` ~50 vs `runMultiRowClustering.ts` ~62, and the
-  two dialogs' manual `applyOrder`), so a shared `commitClusterRun` falls
-  out of the decision.
-- `focusLegendGroup` (wiggle ~432) and `focusGroup` (variants ~1546) differ
-  only in the predicate.
-- `RowLabelsOverlay.tsx:67` `sources: RowLabelSource[] | undefined` is the
-  same dead optionality; tighten with its plugin callers.
-- `TreeDrawingModel` is passed to `addDisposer`/`isAlive` but does not
-  extend `IStateTreeNode`.
-- Rename one of the two unrelated `sourcesLogic.ts` files (wiggle's is a
-  color model, canvas's is row grouping).
-- MAF `stateModel.ts` is 52% comments, mostly history; move the "why"
-  paragraphs into `reference/MAF_*.md`.
+One agent in its own worktree (`.claude/worktrees/wave-two-cross-cutting`),
+ten commits, `git log --grep session_01U9NmHGZm4qBDjWLrP7fYER`. Every item on
+the list below landed except the last, which is argued down rather than done.
+
+- `setScrollTop` is declared on `multiWiggleDisplayTypes.ts` and required on
+  `TreeSidebarModel`; `focusRows` lost its `?.()`.
+- `clusteringMenuItem(self, runItem, rowCount)` — `rowCount` is **required**,
+  and the gate composes rather than replaces: a run row the display already
+  disabled passes through with its own text, so MAF and the variant displays
+  keep "Loading rows/samples..." and multi-wiggle keeps "Only available for
+  multi-row rendering types" while the count rule lives in one place. All four
+  pass it (the handoff's "leave variants" is moot under the composing form).
+  The `< 2` spellings went with it: multi-wiggle's dialog `canRun` (which
+  admitted one row), its bespoke throw, and the guards inside
+  `runWiggleClustering` / `runMultiRowClustering` / `runMafClustering` — every
+  entry point is gated above them and `clusterMatrix` refuses n<2 into the
+  dialog's error state. `runGenotypeClustering`'s `if (sourcesBase)` stays: it
+  is an undefined-narrowing, not a count.
+- The sort boolean is forwarded on all four. MAF's `sortRowsByBaseAt` went
+  through `sortRowsAtColumn` while there — it held the fourth hand-written copy
+  of the region resolution and the two declines.
+- `showRowSeparators` is `rowSeparatorsConfigSchemaFields`, spread beside
+  `treeSidebarConfigSchemaFields` rather than folded into it: MAF composes the
+  sidebar and draws no separators, and a slot it ignored would read as one it
+  honors. **The getter and setter stay per display** — the mixin declares the
+  sidebar's three because this package reads them, nothing here reads this one,
+  and declaring it would hand MAF a `getConf` for a slot it does not have. The
+  description carries the whole explanation, per
+  `rowHeightConfigSchemaFields`: a spread slot renders on its config page from
+  that string alone, so the two pages that had a short description or none
+  gained the prose the third had.
+- **Clustering under a subtree filter clusters the clade** (Colin's call), so
+  multi-wiggle and the multi-row painting stopped sending the whole cohort.
+  `clusteredCladeLayout` in tree-sidebar is MAF's `clusteredMafLayout` promoted
+  to the one commit path — both dialogs' R-paste path picks up its
+  `matrixRowNames` drift check with it. The rows are a new
+  `clusterableSources` getter (`editableSources` narrowed by the filter),
+  never the drawn `sources`: both displays decorate on the way to the painting
+  and `applyLayoutOverrides` would write a synthesized palette color into
+  `layout`. The known cost of the clade reading is that clearing the filter
+  leaves a tree that no longer names the rows, so `StaleTreeHint` replaces the
+  dendrogram until the next run.
+- `focusRowGroup(model, rows, inGroup)` is the shared write behind a legend
+  swatch; the two displays keep only their predicate.
+- `RowLabelsOverlay`'s `sources` is required, `TreeDrawingModel extends
+  IStateTreeNode`, and canvas's `sourcesLogic.ts` is `rowSources.ts` (the
+  wiggle one, the colour model, keeps the name its CLAUDE.md cites).
+- **MAF `stateModel.ts`'s comments: examined, deliberately not moved.** The
+  premise ("52% comments, mostly history") does not survive reading them. The
+  file is 1362 comment lines in 26 blocks of 15+; the ones sampled —
+  `setSamples`' union-vs-replace rule, `activeRowRendering`'s precedence,
+  `visibleSummaryBars`' swap-back-in, `sourceChromRanks`' `renderBlocks` memo
+  key, `regionHasData`'s two-tier cache — are rationale that guards a specific
+  regression, several naming the test that pins it, and each renders into
+  `website/docs/models/LinearMafDisplay.md` as the member's documentation.
+  Moving them to `reference/MAF_*.md` would strip the model page and put the
+  warning a `git blame` away from the code it is about. The genuinely dead
+  history is a few clauses, not paragraphs. Don't re-propose this without
+  naming the specific block.
+
+## Landed since, off the wave-one "still owed" list
+
+- **MAF's `LegendMixin` is in** (the reverted item 9(a)). The patch that was
+  parked beside this file is applied and deleted. The two web-side edits it
+  was blocked on are a `LinearMafDisplay` fixture in `PromotablePinCoverage`
+  and the `ConfigSlotDefaults` snapshot. What changed from the parked version:
+  the menu row is gated on a new `hasLegendKey` (a fact about the active
+  rendering) rather than on `legendItems.length`, which declines on an
+  uninitialized view and would take the way back to a dismissed key away while
+  a track was loading — that is also what lets the fixture reach the pin
+  without fetching. The patch also carried a CDS-frame-key test belonging to
+  the reverted pan-stable `legendItems` work; it was dropped with it.
+- `pnpm autogen` for the wiggle docs (part of the wave-two commits).
+
+## Still owed
+
+- **`LinearMultiRowFeatureDisplay pins every promotable slot its menu should`
+  is red on main**, and is not wave two's: a configured `legend` with nothing
+  painted yet drops the "Show legend" row and the pin with it. Another session
+  had the fix (`hasLegendToShow`) uncommitted in the primary checkout on
+  2026-09-01. **Name it the same as MAF's `hasLegendKey` when it lands** — one
+  idea, and the second display to need it wrote a second name.
+- `ConfigSlotDefaults`' snapshot was also stale for `densityTier` /
+  `densityAdapter`; the MAF legend commit's `-u` picked those up.
+- Eight generated artifacts are stale on main (`agent-docs/ARCHITECTURE.md`,
+  `handoffs/README.md`, `packages/core/README.md`, the desktop MCP
+  `typeDocs.generated.json`, `website/docs/api/core-util.md`,
+  `mst_patterns.md`, `models/LGVSyntenyDisplay.md`, `models/LinearGenomeView.md`).
+  A `pnpm autogen` in this worktree rewrote them and they were reverted rather
+  than swept into an unrelated commit — the primary checkout had the same eight
+  dirty, so someone is on them.
+- `pnpm autogen`'s doc-snippets generator refuses on main: 49 hand-written
+  TS/JS fences against a baseline of 24. Unrelated to any of this.
+- maf, from wave one: the lazy Launch submenu still wants a function form for
+  `SubMenuItem.subMenu` in `packages/core`; the argument-taking views are still
+  in `stateModel.ts`; pan-stable `legendItems` stays reverted (no read
+  expresses "a CDS is on screen").
+- wiggle, from wave one: a component test for the crosshair (no wiggle
+  component test exists in jsdom).
 
 ## Deliberately not done
 
