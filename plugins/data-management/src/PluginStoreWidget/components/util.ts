@@ -1,4 +1,8 @@
-import { isPluginUrl } from '@jbrowse/core/pluginDefinitions'
+import {
+  isPluginUrl,
+  maybePluginUrl,
+  storePluginName,
+} from '@jbrowse/core/pluginDefinitions'
 import {
   getEnv,
   isSessionWithPermanentPlugins,
@@ -28,12 +32,32 @@ function configPlugins(session: AbstractSessionModel) {
 }
 
 /**
- * The url a loaded plugin was installed from, which is what every "is this
+ * The definition a loaded plugin was actually loaded from — the resolved,
+ * version-pinned one PluginManager recorded — which is what every "is this
  * plugin in that list" question below compares against.
  */
-function installedUrl(plugin: BasePlugin, session: AbstractSessionModel) {
+function loadedDefinition(plugin: BasePlugin, session: AbstractSessionModel) {
   const { pluginManager } = getEnv(session)
-  return pluginManager.pluginMetadata[plugin.name]?.url
+  const url = pluginManager.pluginMetadata[plugin.name]?.url
+  return pluginManager.runtimePluginDefinitions.find(d => isPluginUrl(d, url))
+}
+
+/**
+ * Whether a list entry is the one the loaded copy came from. The url, or the
+ * store ref: an entry the permanent list keeps as a ref resolves to whatever
+ * build the store publishes for this JBrowse, so its pinned url and the loaded
+ * one drift apart on the first upgrade while the ref stays the same string.
+ *
+ * Not `samePlugin`, whose name clause would also match a session entry that
+ * names the same plugin at another url — the copy dedupe *dropped*, which is
+ * not the list the loaded one lives in.
+ */
+function holdsLoaded(entry: PluginDefinition, loaded: PluginDefinition) {
+  const ref = storePluginName(entry)
+  return (
+    isPluginUrl(entry, maybePluginUrl(loaded)) ||
+    (ref !== undefined && ref === storePluginName(loaded))
+  )
 }
 
 /**
@@ -64,19 +88,24 @@ export function pluginHome(
   plugin: BasePlugin,
   session: AbstractSessionModel,
 ): PluginHome | undefined {
-  const url = installedUrl(plugin, session)
+  const loaded = loadedDefinition(plugin, session)
+  if (loaded === undefined) {
+    return session.adminMode ? 'config' : undefined
+  }
   if (
     isSessionWithSessionPlugins(session) &&
-    session.sessionPlugins.some(p => isPluginUrl(p, url))
+    session.sessionPlugins.some(p => holdsLoaded(p, loaded))
   ) {
     return 'session'
   }
-  if ((configPlugins(session).plugins ?? []).some(p => isPluginUrl(p, url))) {
+  if (
+    (configPlugins(session).plugins ?? []).some(p => holdsLoaded(p, loaded))
+  ) {
     return session.adminMode ? 'config' : undefined
   }
   if (
     isSessionWithPermanentPlugins(session) &&
-    session.permanentPlugins.some(p => isPluginUrl(p, url))
+    session.permanentPlugins.some(p => holdsLoaded(p, loaded))
   ) {
     return 'permanent'
   }

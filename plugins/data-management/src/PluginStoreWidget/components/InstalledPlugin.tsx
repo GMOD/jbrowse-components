@@ -182,6 +182,7 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
           addPluginTo(session, home, {
             ...update.definition,
             name: update.name,
+            ...(home === 'permanent' ? { storePlugin: update.name } : {}),
           })
           setQueued(true)
         }}
@@ -235,13 +236,20 @@ const InstalledPlugin = observer(function InstalledPlugin({
   // only the two lists a keep toggle can move a plugin between, and only where
   // the product has a permanent list at all — a config-installed plugin is the
   // admin's to move, and a definition with no name cannot go back into the
-  // session list, which keys on it
+  // session list, which keys on it.
+  //
+  // A store plugin is kept as a store ref beside its pinned url. The permanent
+  // list outlives the JBrowse it was written against, and the ref is what lets
+  // the entry resolve against the store for whatever version is running next
+  // time, rather than keep loading a build pinned to this one.
   const keepable =
     definition &&
     hasPluginName(definition) &&
     canInstallPermanently(session) &&
     (home === 'session' || home === 'permanent')
-      ? definition
+      ? storeEntry
+        ? { ...definition, storePlugin: storeEntry.name }
+        : definition
       : undefined
 
   return (

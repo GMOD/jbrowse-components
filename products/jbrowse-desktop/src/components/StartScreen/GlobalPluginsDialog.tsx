@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
-import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
+import {
+  desktopVendoredPluginNames,
+  pluginLabel,
+  pluginName,
+  vendoredPluginNames,
+} from '@jbrowse/core/pluginDefinitions'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import AddCustomPluginDialog from '@jbrowse/core/ui/AddCustomPluginDialog'
 import PluginStoreCard from '@jbrowse/core/ui/PluginStoreCard'
@@ -67,6 +72,9 @@ function InstalledGlobalPlugins({
       index,
       label: pluginLabel(plugin),
       disabled: Boolean(plugin.disabled),
+      // installed by an older build that still offered it, and dropped by the
+      // loader ever since: it reads as installed here and runs nowhere
+      bundled: isBundled(plugin),
     }))
     .filter(({ label }) => label.toLowerCase().includes(filter.toLowerCase()))
 
@@ -78,7 +86,7 @@ function InstalledGlobalPlugins({
         <Typography>No installed plugins match the filter</Typography>
       ) : (
         <List dense>
-          {matching.map(({ index, label, disabled }) => (
+          {matching.map(({ index, label, disabled, bundled }) => (
             // keyed by position, which is also what the callbacks address: the
             // stored list is not deduped, so two entries can share a label
             <ListItem key={index}>
@@ -111,12 +119,23 @@ function InstalledGlobalPlugins({
               <Typography color={disabled ? 'textDisabled' : undefined}>
                 {label}
                 {disabled ? ' — disabled' : ''}
+                {bundled
+                  ? ' — built into JBrowse Desktop, this entry is not loaded'
+                  : ''}
               </Typography>
             </ListItem>
           ))}
         </List>
       )}
     </div>
+  )
+}
+
+function isBundled(plugin: PluginDefinition) {
+  const name = pluginName(plugin)
+  return (
+    name !== undefined &&
+    (vendoredPluginNames.has(name) || desktopVendoredPluginNames.includes(name))
   )
 }
 
@@ -163,7 +182,16 @@ function AvailablePlugins({
               // ESM/CJS one carries none — and a nameless entry in the global
               // list is one samePlugin() can only match by url, so the same
               // plugin pinned to a different version in a config loads twice.
-              onInstall({ ...definition, name: plugin.name })
+              //
+              // The store ref beside the pinned url is what lets this entry
+              // outlive the Desktop it was installed on: it resolves against
+              // the store for whatever version is running at the next launch,
+              // and falls back to the url when the store cannot be reached.
+              onInstall({
+                ...definition,
+                name: plugin.name,
+                storePlugin: plugin.name,
+              })
             }}
           />
         )
