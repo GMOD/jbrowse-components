@@ -2,6 +2,7 @@ import { createElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import {
+  resolveLayoutSpec,
   specForPendingMove,
   tileLayoutSpec,
   treeFromSpec,
@@ -38,7 +39,24 @@ import type {
   TabHome,
   TabNode,
 } from './tree.ts'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IStateTreeNode,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
+
+/**
+ * The session's whole view list, read off the host this mixin is composed
+ * into. Duck-typed because `views` is MultipleViewsSessionMixin's and
+ * composition is the only thing that puts the two together; undefined on a
+ * host that has no view list, which only a test composes.
+ */
+interface LayoutHostSelf extends IStateTreeNode {
+  views?: { id: string }[]
+}
+function sessionViewIds(self: LayoutHostSelf) {
+  return self.views?.map(v => v.id)
+}
 
 /**
  * #stateModel WorkspaceLayoutMixin
@@ -274,6 +292,16 @@ export function WorkspaceLayoutMixin() {
          * Returns where the view came from, or `undefined` if it is not in the
          * session, in which case nothing is applied.
          */
+        function everyViewId(action: string, allViewIds: string[] | undefined) {
+          const ids = allViewIds ?? sessionViewIds(self)
+          if (!ids) {
+            throw new Error(
+              `${action}(viewId, allViewIds): allViewIds is every view id in the session, and this session has no view list to default it from`,
+            )
+          }
+          return ids
+        }
+
         function rehomeView(
           viewId: string,
           allViewIds: string[],
@@ -485,6 +513,14 @@ export function WorkspaceLayoutMixin() {
           /**
            * Arrange the workspace as a spec states.
            *
+           * The spec is the same shape a session spec's `layout` takes: a leaf's
+           * `views` names views by index into `session.views` or by id, so
+           * `{ direction: 'horizontal', children: [{ views: [0] }, { views: [1] }] }`
+           * means here what it means in a link. A leaf spelled any other way, an
+           * index past the end or an id no view has throws rather than arranging
+           * nothing — an untyped caller used to collapse the workspace into one
+           * blank tab that way.
+           *
            * There is no `init` property and no standing request: the spec is
            * converted and *becomes* the layout, here and now. `init` existed only
            * because dockview had to be told, could not be told before it mounted,
@@ -492,21 +528,24 @@ export function WorkspaceLayoutMixin() {
            * from the layout living somewhere this action could not reach.
            */
           applyLayoutSpec(spec: LayoutSpecNode) {
-            apply(treeFromSpec(spec, nextId))
+            const resolved = resolveLayoutSpec(spec, sessionViewIds(self))
+            apply(treeFromSpec(resolved, nextId))
             self.activePanelId = panels(self.tree)[0]?.id
-            return viewIdsInSpec(spec)
+            return viewIdsInSpec(resolved)
           },
           /**
            * ViewMenu's "move to new tab": the view leaves its tab for a new one.
            *
-           * `allViewIds` is EVERY view in the session, and is required for that
-           * reason — homing drops any view the list does not name, so the
+           * `allViewIds` is EVERY view in the session, defaulting to the host's
+           * own list — homing drops any view the list does not name, so the
            * `[viewId]` default this used to carry unhomed all the others.
            */
-          moveViewToNewTab(viewId: string, allViewIds: string[]) {
+          moveViewToNewTab(viewId: string, allViewIds?: string[]) {
             const tab: TabNode = { id: nextId('tab'), viewIds: [viewId] }
-            const from = rehomeView(viewId, allViewIds, (tree, at) =>
-              addTab(tree, at.panel.id, tab),
+            const from = rehomeView(
+              viewId,
+              everyViewId('moveViewToNewTab', allViewIds),
+              (tree, at) => addTab(tree, at.panel.id, tab),
             )
             if (!from) {
               return undefined
@@ -518,7 +557,7 @@ export function WorkspaceLayoutMixin() {
            * ViewMenu's "move to split view": the view leaves for a new cell.
            * `allViewIds` is every view in the session — see `moveViewToNewTab`.
            */
-          moveViewToSplitRight(viewId: string, allViewIds: string[]) {
+          moveViewToSplitRight(viewId: string, allViewIds?: string[]) {
             const tabId = nextId('tab')
             const panel: PanelNode = {
               id: nextId('panel'),
@@ -526,8 +565,10 @@ export function WorkspaceLayoutMixin() {
               tabs: [{ id: tabId, viewIds: [viewId] }],
               activeTabId: tabId,
             }
-            const from = rehomeView(viewId, allViewIds, (tree, at) =>
-              splitPanel(tree, at.panel.id, 'row', panel),
+            const from = rehomeView(
+              viewId,
+              everyViewId('moveViewToSplitRight', allViewIds),
+              (tree, at) => splitPanel(tree, at.panel.id, 'row', panel),
             )
             if (!from) {
               return undefined
@@ -569,17 +610,10 @@ export function WorkspaceLayoutMixin() {
          * is spelled.
          */
         setPendingMove(move: PendingMove | undefined, allViewIds?: string[]) {
-          // The session's whole set of views, for the one entry point that cannot
-          // be handed it. Every other one takes it as an argument on purpose —
-          // this mixin owns the tree and knows nothing else — and this would too,
-          // if its caller were ours. Duck-typed because `views` is
-          // MultipleViewsSessionMixin's and composition is the only thing that
-          // puts the two together.
-          const { views } = self as unknown as { views?: { id: string }[] }
           // Not `?? []`: homing drops every view the list does not name, so an
           // empty one would answer "put this view beside nothing" and unhome the
           // rest. Nothing to say is nothing to do.
-          const ids = allViewIds ?? views?.map(v => v.id)
+          const ids = allViewIds ?? sessionViewIds(self)
           if (!move || !ids) {
             return
           }

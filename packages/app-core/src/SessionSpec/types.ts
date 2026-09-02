@@ -1,3 +1,4 @@
+import type { LayoutSpecNode } from '../WorkspaceLayout/spec.ts'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 export interface ViewSpec {
@@ -23,13 +24,10 @@ export interface ViewSpec {
 }
 
 /**
- * Nested layout structure for workspaces.
+ * A spec's `layout`: the one layout shape, with a leaf's `views` counting into
+ * the spec's own `views` array (an index names every view that entry created)
+ * or naming a view id the spec pinned with `id`.
  *
- * A LayoutNode is either:
- * - A panel (has `views` array) - displays views stacked vertically
- * - A container (has `children` array) - arranges children horizontally or vertically
- *
- * Example - horizontal split with custom sizes:
  * ```json
  * {
  *   "direction": "horizontal",
@@ -40,13 +38,4 @@ export interface ViewSpec {
  * }
  * ```
  */
-export interface LayoutNode {
-  // Panel node - contains views stacked vertically
-  views?: number[]
-  // Container node - arranges children in a direction. 'tabs' stacks them into
-  // one tab group rather than splitting the space between them.
-  direction?: 'horizontal' | 'vertical' | 'tabs'
-  children?: LayoutNode[]
-  // Size as percentage (0-100) of the parent container; ignored under 'tabs'
-  size?: number
-}
+export type LayoutNode = LayoutSpecNode

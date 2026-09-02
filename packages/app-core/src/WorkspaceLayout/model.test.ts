@@ -3,6 +3,7 @@ import { autorun } from 'mobx'
 
 import { WorkspaceLayoutMixin } from './model.ts'
 
+import type { LayoutSpecNode } from './spec.ts'
 import type { PanelNode } from './tree.ts'
 
 const TestSession = types.compose(
@@ -484,4 +485,99 @@ describe('maximize', () => {
     applySnapshot(session, before)
     expect(session.maximizedPanelId).toBeUndefined()
   })
+})
+
+// `applyLayoutSpec` takes the shape a session spec's `layout` takes, with a
+// leaf's `views` counting into `session.views` — the list this mixin reads
+// off its host — or naming ids. One shape, so what an agent wrote into a link
+// is what it can call live, and a leaf spelled any other way is refused rather
+// than arranging nothing: an untyped caller that wrote `viewIds` used to get
+// an empty leaf and a workspace collapsed into one blank tab.
+const ViewsSession = types.compose(
+  'ViewsSession',
+  types.model({
+    views: types.array(types.model({ id: types.identifier })),
+  }),
+  WorkspaceLayoutMixin(),
+)
+
+function createViewsSession() {
+  const session = ViewsSession.create({
+    views: [{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }],
+  })
+  session.homeUnassignedViews(['v1', 'v2', 'v3'])
+  return session
+}
+
+test('applyLayoutSpec counts a leaf index into session.views, beside ids', () => {
+  const session = createViewsSession()
+
+  const stated = session.applyLayoutSpec({
+    direction: 'horizontal',
+    children: [{ views: [2, 'v1'] }, { views: [1] }],
+  })
+
+  expect(stated).toEqual(['v3', 'v1', 'v2'])
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v3', 'v1'], ['v2']])
+})
+
+// The wrong shapes an untyped caller (the MCP run_javascript tool) can hand
+// the action, hence the cast: the point is what the runtime says to them.
+test.each([
+  [
+    'a leaf spelled viewIds',
+    { viewIds: ['v1'] },
+    /needs "views".*received keys "viewIds"/,
+  ],
+  [
+    'an index past the end',
+    { views: [3] },
+    /view index 3, but the session has 3 view\(s\) \(indexes 0-2\)/,
+  ],
+  [
+    'an id no view has',
+    { views: ['nope'] },
+    /view id "nope".*ids: "v1", "v2", "v3"/,
+  ],
+  ['a non-array views', { views: 'v1' }, /"views" is an array.*received "v1"/],
+])(
+  'applyLayoutSpec refuses %s, naming what it received, and leaves the tree alone',
+  (_, spec, message) => {
+    const session = createViewsSession()
+    const before = getSnapshot(session.layout)
+
+    expect(() =>
+      session.applyLayoutSpec(spec as unknown as LayoutSpecNode),
+    ).toThrow(message)
+    expect(getSnapshot(session.layout)).toEqual(before)
+  },
+)
+
+test('an index means nothing on a host with no view list, and says so', () => {
+  const session = createSession()
+
+  expect(() => session.applyLayoutSpec({ views: [0] })).toThrow(
+    /no view list for an index to count into/,
+  )
+  expect(session.applyLayoutSpec({ views: ['view-1'] })).toEqual(['view-1'])
+})
+
+// The View menu passes every view id; a caller that has only the session (the
+// one-argument call an agent tries first) gets the same list read off it.
+test('moveViewToSplitRight with one argument homes the whole session', () => {
+  const session = createViewsSession()
+
+  session.moveViewToSplitRight('v2')
+
+  expect(session.panels).toHaveLength(2)
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3'], ['v2']])
+})
+
+test('moveViewToNewTab with one argument keeps the other views homed', () => {
+  const session = createViewsSession()
+
+  session.moveViewToNewTab('v2')
+
+  expect(session.panels).toHaveLength(1)
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3'], ['v2']])
 })

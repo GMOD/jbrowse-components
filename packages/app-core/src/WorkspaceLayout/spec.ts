@@ -3,19 +3,107 @@ import { normalize } from './tree.ts'
 import type { LayoutTree, NodeKind, PanelNode, TabNode } from './tree.ts'
 
 /**
- * The `layout` a session spec / URL param states, in the vocabulary users
- * write it in. **This shape is public** — it is documented as a URL parameter —
- * so it keeps `horizontal`/`vertical`/`tabs` and percentage `size` rather than
- * being renamed to match the internal tree.
+ * A view named by a layout leaf: an index into the view list the layout is
+ * applied against (a session spec's own `views`, or `session.views` for the
+ * live `applyLayoutSpec`), or a view id.
  */
-export interface LayoutSpecNode {
+export type LayoutViewRef = number | string
+
+/**
+ * The `layout` a session spec / URL param states, in the vocabulary users
+ * write it in, and the same shape the live `applyLayoutSpec` action takes — one
+ * shape, so an agent that has written one has written the other. **This shape
+ * is public** — it is documented as a URL parameter — so it keeps
+ * `horizontal`/`vertical`/`tabs` and percentage `size` rather than being
+ * renamed to match the internal tree.
+ *
+ * `resolveLayoutSpec` turns the indexes into ids; the tree builder below takes
+ * the resolved form only.
+ */
+export interface LayoutSpecNode<View = LayoutViewRef> {
   /** a leaf: the views to stack vertically in one tab */
-  viewIds?: string[]
+  views?: View[]
   /** how children divide the space; `tabs` puts them in one cell as tabs */
   direction?: 'horizontal' | 'vertical' | 'tabs'
-  children?: LayoutSpecNode[]
+  children?: LayoutSpecNode<View>[]
   /** share of the parent, as a percentage */
   size?: number
+}
+
+export type ResolvedLayoutSpecNode = LayoutSpecNode<string>
+
+/**
+ * Resolve every view a spec names to an id against `allViewIds`, the list its
+ * indexes count into. Anything that resolves to nothing throws, naming what was
+ * received: an untyped caller (the MCP `run_javascript` tool) that writes
+ * `viewIds` where `views` goes, or an index past the end, used to be accepted
+ * as an empty leaf and collapse the workspace into one blank tab with nothing
+ * said.
+ *
+ * `allViewIds` is undefined only on a model that composes no view list, where
+ * an id cannot be checked and an index cannot mean anything.
+ */
+export function resolveLayoutSpec(
+  spec: LayoutSpecNode,
+  allViewIds: string[] | undefined,
+): ResolvedLayoutSpecNode {
+  const describe = (value: unknown) =>
+    typeof value === 'string' ? `"${value}"` : String(value)
+  const resolveRef = (ref: unknown) => {
+    if (typeof ref === 'number') {
+      if (!allViewIds) {
+        throw new Error(
+          `Layout names view index ${ref}, but this session has no view list for an index to count into; name the view by id`,
+        )
+      }
+      const id = allViewIds[ref]
+      if (id === undefined) {
+        throw new Error(
+          `Layout names view index ${ref}, but the session has ${allViewIds.length} view(s)${allViewIds.length ? ` (indexes 0-${allViewIds.length - 1})` : ''}`,
+        )
+      }
+      return id
+    }
+    if (typeof ref !== 'string') {
+      throw new Error(
+        `Layout "views" entries are view indexes or view ids; received ${describe(ref)}`,
+      )
+    }
+    if (allViewIds && !allViewIds.includes(ref)) {
+      throw new Error(
+        `Layout names view id ${describe(ref)}, which is not a view in this session (ids: ${allViewIds.map(describe).join(', ') || 'none'})`,
+      )
+    }
+    return ref
+  }
+  const resolveNode = (node: LayoutSpecNode): ResolvedLayoutSpecNode => {
+    const { views, children, ...rest } = node
+    if (views === undefined && children === undefined) {
+      throw new Error(
+        `Layout node needs "views" (view indexes or ids) or "children"; received keys ${
+          Object.keys(node).map(describe).join(', ') || 'none'
+        }`,
+      )
+    }
+    if (views !== undefined && !Array.isArray(views)) {
+      throw new Error(
+        `Layout "views" is an array of view indexes or ids; received ${describe(views)}`,
+      )
+    }
+    if (children !== undefined && !Array.isArray(children)) {
+      throw new Error(
+        `Layout "children" is an array of layout nodes; received ${describe(children)}`,
+      )
+    }
+    return {
+      ...rest,
+      ...(views === undefined ? {} : { views: views.map(resolveRef) }),
+      ...(children === undefined
+        ? {}
+        : { children: children.map(resolveNode) }),
+    }
+  }
+  return resolveNode(spec)
 }
 
 /** A request to move one view relative to the others. Public plugin API. */
@@ -70,15 +158,18 @@ function resolveSizes(children: LayoutSpecNode[]): number[] {
  * nothing pass.
  */
 export function treeFromSpec(
-  spec: LayoutSpecNode,
+  spec: ResolvedLayoutSpecNode,
   nextId: (kind: NodeKind) => string,
 ): LayoutTree {
-  function build(node: LayoutSpecNode, size: number): LayoutTree | undefined {
-    if (node.viewIds) {
+  function build(
+    node: ResolvedLayoutSpecNode,
+    size: number,
+  ): LayoutTree | undefined {
+    if (node.views) {
       return {
         id: nextId('panel'),
         size,
-        tabs: [{ id: nextId('tab'), viewIds: [...node.viewIds] }],
+        tabs: [{ id: nextId('tab'), viewIds: [...node.views] }],
         activeTabId: undefined,
       } satisfies PanelNode
     }
@@ -97,7 +188,7 @@ export function treeFromSpec(
     if (node.direction === 'tabs') {
       const tabs: TabNode[] = children.flatMap(child => {
         const viewIds = viewIdsInSpec(child)
-        return child.viewIds === undefined && viewIds.length === 0
+        return child.views === undefined && viewIds.length === 0
           ? []
           : [{ id: nextId('tab'), viewIds }]
       })
@@ -128,9 +219,9 @@ export function treeFromSpec(
 }
 
 /** Every viewId a spec names, depth-first — the order it states. */
-export function viewIdsInSpec(spec: LayoutSpecNode): string[] {
+export function viewIdsInSpec(spec: ResolvedLayoutSpecNode): string[] {
   return [
-    ...(spec.viewIds ?? []),
+    ...(spec.views ?? []),
     ...(spec.children ?? []).flatMap(viewIdsInSpec),
   ]
 }
@@ -156,18 +247,18 @@ export type TileMode = 'tabs' | 'horizontal' | 'vertical' | 'grid'
 export function tileLayoutSpec(
   viewIds: string[],
   mode: TileMode,
-): LayoutSpecNode {
+): ResolvedLayoutSpecNode {
   // Nothing to arrange: one view is the whole workspace whatever the mode, and
   // no views leaves the empty panel the tree already guarantees.
   if (viewIds.length <= 1) {
-    return { viewIds: [...viewIds] }
+    return { views: [...viewIds] }
   }
-  const cell = (id: string): LayoutSpecNode => ({ viewIds: [id] })
+  const cell = (id: string): ResolvedLayoutSpecNode => ({ views: [id] })
   if (mode !== 'grid') {
     return { direction: mode, children: viewIds.map(cell) }
   }
   const cols = Math.ceil(Math.sqrt(viewIds.length))
-  const rows: LayoutSpecNode[] = []
+  const rows: ResolvedLayoutSpecNode[] = []
   for (let i = 0; i < viewIds.length; i += cols) {
     rows.push({
       direction: 'horizontal',
@@ -185,12 +276,12 @@ export function tileLayoutSpec(
 export function specForPendingMove(
   move: PendingMove,
   allViewIds: string[],
-): LayoutSpecNode {
+): ResolvedLayoutSpecNode {
   const others = allViewIds.filter(id => id !== move.viewId)
   return others.length > 0
     ? {
         direction: move.type === 'splitRight' ? 'horizontal' : 'tabs',
-        children: [{ viewIds: others }, { viewIds: [move.viewId] }],
+        children: [{ views: others }, { views: [move.viewId] }],
       }
-    : { viewIds: [move.viewId] }
+    : { views: [move.viewId] }
 }

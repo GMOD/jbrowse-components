@@ -133,45 +133,61 @@ async function whenConnectionsSettle(
   return !gone()
 }
 
-// Convert LayoutNode (view indices into the spec's `views` array) to
-// LayoutSpecNode (view IDs). `viewIds` is indexed the same as that spec
-// array — element i is the id of the view the i-th spec entry created, or
-// undefined if it created none — so a layout index maps to the right view
-// regardless of what order the views ended up in on the session.
+// Resolve a spec layout's view indexes to ids before `applyLayoutSpec` counts
+// them into `session.views`, which is a different list: a spec index names a
+// spec entry, and `createdViewIds[i]` is EVERY view the i-th entry created, in
+// creation order. A connected ProteinView creates its genome view and then
+// itself, and the index names both — stacked in one cell — where recording one
+// id per entry left the structure unaddressable, in no cell, and the panel
+// naming it empty. A string is a view id and passes through; a reference that
+// resolves to nothing is dropped here after `unresolvedLayoutRefs` reported it.
 function convertLayoutNode(
   node: LayoutNode,
-  viewIds: (string | undefined)[],
+  createdViewIds: string[][],
+  knownIds: Set<string>,
 ): LayoutSpecNode {
-  if (node.views !== undefined) {
-    // Panel node - convert view indices to view IDs
-    const ids = node.views
-      .map(idx => viewIds[idx])
-      .filter((id): id is string => id !== undefined)
-    return { viewIds: ids, size: node.size }
+  const { views, children, ...rest } = node
+  return {
+    ...rest,
+    ...(views === undefined
+      ? {}
+      : {
+          views: views.flatMap(ref =>
+            typeof ref === 'number'
+              ? (createdViewIds[ref] ?? [])
+              : knownIds.has(ref)
+                ? [ref]
+                : [],
+          ),
+        }),
+    ...(children === undefined
+      ? {}
+      : {
+          children: children.map(child =>
+            convertLayoutNode(child, createdViewIds, knownIds),
+          ),
+        }),
   }
-  if (node.children) {
-    // Container node - recursively convert children
-    return {
-      direction: node.direction,
-      children: node.children.map(child => convertLayoutNode(child, viewIds)),
-      size: node.size,
-    }
-  }
-  return {}
 }
 
 // A layout index is a position in the spec's `views` array, so one past the end
 // (or negative) is an authoring slip that would otherwise silently drop that
-// view from the layout, or, if every index in a panel is bad, leave an empty
-// panel with no clue why.
-function outOfRangeLayoutIndices(
+// view from the layout, or, if every reference in a panel is bad, leave an
+// empty panel with no clue why. An id names a view pinned with the spec's `id`
+// key, so one nothing created is the same slip.
+function unresolvedLayoutRefs(
   node: LayoutNode,
   viewCount: number,
-): number[] {
+  knownIds: Set<string>,
+): (number | string)[] {
   return [
-    ...(node.views?.filter(idx => idx < 0 || idx >= viewCount) ?? []),
+    ...(node.views?.filter(ref =>
+      typeof ref === 'number'
+        ? ref < 0 || ref >= viewCount
+        : !knownIds.has(ref),
+    ) ?? []),
     ...(node.children?.flatMap(child =>
-      outOfRangeLayoutIndices(child, viewCount),
+      unresolvedLayoutRefs(child, viewCount, knownIds),
     ) ?? []),
   ]
 }
@@ -401,7 +417,7 @@ export async function loadSessionSpec(
       return
     }
 
-    const createdViewIds: (string | undefined)[] = []
+    const createdViewIds: string[][] = []
     for (const { type, displayName, ...view } of specViews) {
       const before = new Set(session?.views.map(v => v.id))
       // Strict so a launch handler that throws (missing/invalid assembly,
@@ -421,18 +437,30 @@ export async function loadSessionSpec(
         console.error(e)
         session?.notifyError(`Failed to launch ${type} view: ${e}`, e)
       }
-      const created = session?.views.find(v => !before.has(v.id))
-      if (created && displayName) {
-        created.setDisplayName(displayName)
+      const created = session?.views.filter(v => !before.has(v.id)) ?? []
+      // The entry's own view, when its launcher created others beside it: a
+      // connected ProteinView's name went to the genome view it opened first,
+      // and the structure came up "Untitled view".
+      const named = created.find(v => v.type === type) ?? created[0]
+      if (named && displayName) {
+        named.setDisplayName(displayName)
       }
-      createdViewIds.push(created?.id)
+      createdViewIds.push(created.map(v => v.id))
     }
 
     if (layout && session) {
-      const badIndices = outOfRangeLayoutIndices(layout, views.length)
+      const knownIds = new Set(createdViewIds.flat())
+      const bad = unresolvedLayoutRefs(layout, views.length, knownIds)
+      const badIndices = bad.filter(ref => typeof ref === 'number')
+      const badIds = bad.filter(ref => typeof ref === 'string')
       if (badIndices.length) {
         session.notifyError(
           `Session spec layout references view index ${badIndices.join(', ')}, but the spec has ${views.length} view(s).`,
+        )
+      }
+      if (badIds.length) {
+        session.notifyError(
+          `Session spec layout references view id ${badIds.map(id => `"${id}"`).join(', ')}, but no view in the spec has that id (a view's "id" key pins it).`,
         )
       }
       if (unsizeableLayoutNodes(layout)) {
@@ -460,7 +488,9 @@ export async function loadSessionSpec(
         // stated order is silently ignored: the tree holds it, nothing reads
         // it, and the views come back in launch order with no diagnostic.
         session.orderViews(
-          session.applyLayoutSpec(convertLayoutNode(layout, createdViewIds)),
+          session.applyLayoutSpec(
+            convertLayoutNode(layout, createdViewIds, knownIds),
+          ),
         )
       } else {
         session.notifyError(

@@ -1327,12 +1327,21 @@ workspaces mode on by doing so. It is a tree whose every node is one of two
 things:
 
 - a **panel**, carrying a `views` array of indices into the spec's own `views`,
-  displayed stacked vertically
+  displayed stacked vertically. An index names every view that entry created: a
+  [`ProteinView`](#plugin-provided-view-types) with a `connectedView` opens its
+  genome view and then the structure, and its index is the pair, stacked. An
+  entry may also be a view id the spec pinned with
+  [`id`](#fields-every-view-takes), to place one of those views on its own
 - a **container**, carrying a `children` array, whose `direction` arranges them
   `"horizontal"` (left-right), `"vertical"` (top-bottom) or `"tabs"` (one tab
   group, one child visible at a time)
 
-Containers nest arbitrarily deep.
+Containers nest arbitrarily deep. An index past the end, or an id no view in the
+spec has, is reported and left out of the layout.
+
+The live session takes the same shape: `session.applyLayoutSpec(layout)` (see
+[the live model guide](/docs/agents_live_model)) counts a panel's indices into
+`session.views` instead, and refuses a panel spelled any other way.
 
 #### Horizontal split example
 

@@ -11,15 +11,17 @@ import type { AbstractRootModel } from '@jbrowse/core/util'
 // stub the launch handlers to push view ids and record the layout spec applied.
 interface StubView {
   id: string
+  type: string
   displayName?: string
-  setDisplayName: (arg: string) => void
+  setDisplayName: jest.Mock<void, [string]>
 }
-function stubView(id: string): StubView {
+function stubView(id: string, type = 'StubView'): StubView {
   const view: StubView = {
     id,
-    setDisplayName: (arg: string) => {
+    type,
+    setDisplayName: jest.fn((arg: string) => {
       view.displayName = arg
-    },
+    }),
   }
   return view
 }
@@ -143,10 +145,12 @@ function setup(
   return { session, pluginManager }
 }
 
-test('layout indices map to the view each spec entry created, not session position', async () => {
-  // The first spec view's handler adds a primary view AND an auxiliary one, so
-  // session.views is [a-main, a-aux, b] — reading it positionally would map
-  // layout index 1 to a-aux; the per-launch capture maps it to b.
+test('a layout index names every view its spec entry created, not a session position', async () => {
+  // The first spec view's handler adds a primary view AND an auxiliary one (a
+  // connected ProteinView opens its genome view first, then itself), so
+  // session.views is [a-main, a-aux, b]. Read positionally, layout index 1
+  // would be a-aux; per-launch capture maps it to b, and index 0 to both of
+  // A's views — recording one id per entry left a-aux in no cell at all.
   const { session, pluginManager } = setup({
     'LaunchView-A': async s => {
       s.views.push(stubView('a-main'), stubView('a-aux'))
@@ -173,12 +177,91 @@ test('layout indices map to the view each spec entry created, not session positi
   expect(session.setUseWorkspaces).toHaveBeenCalledWith(true)
   expect(session.applyLayoutSpec).toHaveBeenCalledWith({
     direction: 'horizontal',
-    children: [
-      { viewIds: ['a-main'], size: undefined },
-      { viewIds: ['b'], size: undefined },
-    ],
-    size: undefined,
+    children: [{ views: ['a-main', 'a-aux'] }, { views: ['b'] }],
   })
+})
+
+test('a layout names a view by the id the spec pinned, beside the indexes', async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-A': async (s, args) => {
+      s.views.push(stubView('genome'), stubView(String(args.id)))
+    },
+    'LaunchView-B': async s => {
+      s.views.push(stubView('b'))
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [
+        { type: 'A', id: 'structure', assembly: 'volvox' },
+        { type: 'B', assembly: 'volvox' },
+      ],
+      layout: {
+        direction: 'horizontal',
+        children: [{ views: ['genome', 1] }, { views: ['structure'] }],
+      },
+    },
+    pluginManager,
+  )
+
+  expect(session.applyLayoutSpec).toHaveBeenCalledWith({
+    direction: 'horizontal',
+    children: [{ views: ['genome', 'b'] }, { views: ['structure'] }],
+  })
+  expect(session.notifyError).not.toHaveBeenCalled()
+})
+
+test('a layout id no view in the spec has is reported and dropped, like a bad index', async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-A': async s => {
+      s.views.push(stubView('a'))
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [{ type: 'A', assembly: 'volvox' }],
+      layout: {
+        direction: 'horizontal',
+        children: [{ views: [0] }, { views: ['nope', 3] }],
+      },
+    },
+    pluginManager,
+  )
+
+  expect(session.notifyError).toHaveBeenCalledWith(
+    expect.stringContaining('view index 3'),
+  )
+  expect(session.notifyError).toHaveBeenCalledWith(
+    expect.stringContaining('view id "nope"'),
+  )
+  expect(session.applyLayoutSpec).toHaveBeenCalledWith({
+    direction: 'horizontal',
+    children: [{ views: ['a'] }, { views: [] }],
+  })
+})
+
+test("a spec entry's displayName goes to the view of its own type, not the first one its launcher made", async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-ProteinView': async s => {
+      s.views.push(
+        stubView('genome', 'LinearGenomeView'),
+        stubView('structure', 'ProteinView'),
+      )
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [{ type: 'ProteinView', displayName: 'HBB, folded' }],
+    },
+    pluginManager,
+  )
+
+  const [genome, structure] = session.views
+  expect(structure!.setDisplayName).toHaveBeenCalledWith('HBB, folded')
+  expect(genome!.setDisplayName).not.toHaveBeenCalled()
 })
 
 test('launches sequentially so a later view can reference an earlier one', async () => {
@@ -231,7 +314,7 @@ test('a spec view that creates no view leaves an undefined slot the layout skips
 
   // index 0 created nothing, so only index 1's real view lands in the panel
   expect(session.applyLayoutSpec).toHaveBeenCalledWith({
-    viewIds: ['real'],
+    views: ['real'],
     size: undefined,
   })
 })
@@ -336,7 +419,7 @@ test('a layout index past the end of the spec views is reported', async () => {
   )
   // the valid index still lands in the panel
   expect(session.applyLayoutSpec).toHaveBeenCalledWith({
-    viewIds: ['a'],
+    views: ['a'],
     size: undefined,
   })
 })

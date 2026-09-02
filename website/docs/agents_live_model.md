@@ -36,11 +36,17 @@ the last expression (see [](/docs/agents_web)). In scope either way:
     REPLACES the session, so the `session` argument you were given is a dead
     node afterwards — every `jb` helper re-reads the live one for you, and
     `jb.session` is it if you need to rebind: `session = jb.session`. A spec
-    `layout` indexes the spec's own `views` array; a view a plugin launcher
-    creates alongside its own (the genome view a connected `ProteinView` opens)
-    is not an index. The live action `session.applyLayoutSpec` takes the same
-    tree with `viewIds` (view id strings) in place of `views`, and accepts the
-    wrong key silently, collapsing the workspace into one tab
+    `layout` leaf's `views` are indexes into the spec's own `views` array — an
+    index names EVERY view that entry created, so a connected `ProteinView`'s
+    index is its genome view and the structure, stacked — or view ids
+  - `session.applyLayoutSpec(layout)` — the same `layout` shape, live: a leaf's
+    `views` are indexes into `session.views` (the order `jb.sessionSummary()`
+    lists them) or view ids, e.g.
+    `{ direction: 'horizontal', children: [{ views: [0] }, { views: [1] }] }`. A
+    leaf spelled any other way, an index past the end or an unknown id throws
+    and changes nothing. `session.moveViewToSplitRight(viewId)` and
+    `moveViewToNewTab(viewId)` are the two one-view moves; both read the
+    session's own view list when not handed one
   - `track.applyDisplaySettings(settings)` — in-place styling of the track's
     `activeDisplay`; returns { applied, unapplied, failed } (`failed` means you
     got a key wrong; `unapplied` also lists keys that are not config slots)

@@ -15,7 +15,7 @@ test('a stated within-tab order is what the tab renders', () => {
   session.setUseWorkspaces(true)
 
   // the spec stacks b above a, the reverse of the order they were added in
-  session.orderViews(session.applyLayoutSpec({ viewIds: [b, a] }))
+  session.orderViews(session.applyLayoutSpec({ views: [b, a] }))
 
   const tabId = session.tabs[0]!.id
   // `viewIds` is membership, so it held this order all along — the assertion
@@ -41,7 +41,7 @@ test('an order for one panel leaves the views of another where they sit', () => 
   session.orderViews(
     session.applyLayoutSpec({
       direction: 'horizontal',
-      children: [{ viewIds: [a] }, { viewIds: [c, b] }],
+      children: [{ views: [a] }, { views: [c, b] }],
     }),
   )
 

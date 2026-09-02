@@ -38,8 +38,8 @@ test('a flat split keeps the stated proportions', () => {
     {
       direction: 'horizontal',
       children: [
-        { viewIds: ['a'], size: 70 },
-        { viewIds: ['b'], size: 30 },
+        { views: ['a'], size: 70 },
+        { views: ['b'], size: 30 },
       ],
     },
     nextId,
@@ -56,8 +56,8 @@ test('sizes are proportions, not required to total 100', () => {
     {
       direction: 'horizontal',
       children: [
-        { viewIds: ['a'], size: 7 },
-        { viewIds: ['b'], size: 3 },
+        { views: ['a'], size: 7 },
+        { views: ['b'], size: 3 },
       ],
     },
     nextId,
@@ -75,13 +75,13 @@ test('a nested split is sized at its own depth', () => {
     {
       direction: 'horizontal',
       children: [
-        { viewIds: ['a'], size: 70 },
+        { views: ['a'], size: 70 },
         {
           direction: 'vertical',
           size: 30,
           children: [
-            { viewIds: ['b'], size: 80 },
-            { viewIds: ['c'], size: 20 },
+            { views: ['b'], size: 80 },
+            { views: ['c'], size: 20 },
           ],
         },
       ],
@@ -104,7 +104,7 @@ test('an unsized sibling takes what the sized ones left over', () => {
   const tree = treeFromSpec(
     {
       direction: 'horizontal',
-      children: [{ viewIds: ['a'], size: 70 }, { viewIds: ['b'] }],
+      children: [{ views: ['a'], size: 70 }, { views: ['b'] }],
     },
     nextId,
   )
@@ -121,7 +121,7 @@ test('beside a bare sibling, a small size is a percentage and not a weight', () 
   const tree = treeFromSpec(
     {
       direction: 'horizontal',
-      children: [{ viewIds: ['a'], size: 7 }, { viewIds: ['b'] }],
+      children: [{ views: ['a'], size: 7 }, { views: ['b'] }],
     },
     nextId,
   )
@@ -134,9 +134,9 @@ test('several unsized siblings divide the remainder between them', () => {
     {
       direction: 'horizontal',
       children: [
-        { viewIds: ['a'], size: 60 },
-        { viewIds: ['b'] },
-        { viewIds: ['c'] },
+        { views: ['a'], size: 60 },
+        { views: ['b'] },
+        { views: ['c'] },
       ],
     },
     nextId,
@@ -153,9 +153,9 @@ test('an over-subscribed branch still gives a bare sibling a real share', () => 
     {
       direction: 'horizontal',
       children: [
-        { viewIds: ['a'], size: 60 },
-        { viewIds: ['b'], size: 40 },
-        { viewIds: ['c'] },
+        { views: ['a'], size: 60 },
+        { views: ['b'], size: 40 },
+        { views: ['c'] },
       ],
     },
     nextId,
@@ -173,7 +173,7 @@ test('no sizes at all divides the space evenly', () => {
   const tree = treeFromSpec(
     {
       direction: 'horizontal',
-      children: [{ viewIds: ['a'] }, { viewIds: ['b'] }, { viewIds: ['c'] }],
+      children: [{ views: ['a'] }, { views: ['b'] }, { views: ['c'] }],
     },
     nextId,
   )
@@ -188,7 +188,7 @@ test('direction tabs puts every child in one cell', () => {
   const tree = treeFromSpec(
     {
       direction: 'tabs',
-      children: [{ viewIds: ['a'] }, { viewIds: ['b', 'c'] }],
+      children: [{ views: ['a'] }, { views: ['b', 'c'] }],
     },
     nextId,
   )
@@ -209,10 +209,10 @@ test('a container inside a tabs node becomes one tab, keeping its views', () => 
     {
       direction: 'tabs',
       children: [
-        { viewIds: ['a'] },
+        { views: ['a'] },
         {
           direction: 'horizontal',
-          children: [{ viewIds: ['b'] }, { viewIds: ['c'] }],
+          children: [{ views: ['b'] }, { views: ['c'] }],
         },
       ],
     },
@@ -232,7 +232,7 @@ test('a tabs node skips a child with no views anywhere under it', () => {
   const tree = treeFromSpec(
     {
       direction: 'tabs',
-      children: [{ viewIds: ['a'] }, { direction: 'horizontal', children: [] }],
+      children: [{ views: ['a'] }, { direction: 'horizontal', children: [] }],
     },
     nextId,
   )
@@ -251,7 +251,7 @@ test('a spec with no children at all still yields a usable empty panel', () => {
 // branch's size — so a one-panel "split" is just the panel, filling the space.
 test('a split with one child collapses to the child', () => {
   const tree = treeFromSpec(
-    { direction: 'horizontal', children: [{ viewIds: ['a'], size: 40 }] },
+    { direction: 'horizontal', children: [{ views: ['a'], size: 40 }] },
     nextId,
   )
 
@@ -265,8 +265,8 @@ test('viewIdsInSpec reports every view depth-first, in the order stated', () => 
     viewIdsInSpec({
       direction: 'horizontal',
       children: [
-        { viewIds: ['a', 'b'] },
-        { direction: 'vertical', children: [{ viewIds: ['c'] }] },
+        { views: ['a', 'b'] },
+        { direction: 'vertical', children: [{ views: ['c'] }] },
       ],
     }),
   ).toEqual(['a', 'b', 'c'])
@@ -277,7 +277,7 @@ test.each(['tabs', 'horizontal', 'vertical'] as const)(
   mode => {
     expect(tileLayoutSpec(['a', 'b', 'c'], mode)).toEqual({
       direction: mode,
-      children: [{ viewIds: ['a'] }, { viewIds: ['b'] }, { viewIds: ['c'] }],
+      children: [{ views: ['a'] }, { views: ['b'] }, { views: ['c'] }],
     })
   },
 )
@@ -291,11 +291,11 @@ test('a grid is rows of ceil(sqrt(n)) columns, filled row-major', () => {
     children: [
       {
         direction: 'horizontal',
-        children: [{ viewIds: ['a'] }, { viewIds: ['b'] }, { viewIds: ['c'] }],
+        children: [{ views: ['a'] }, { views: ['b'] }, { views: ['c'] }],
       },
       {
         direction: 'horizontal',
-        children: [{ viewIds: ['d'] }, { viewIds: ['e'] }],
+        children: [{ views: ['d'] }, { views: ['e'] }],
       },
     ],
   })
@@ -307,8 +307,8 @@ test.each(['tabs', 'horizontal', 'vertical', 'grid'] as const)(
     // `normalize` would collapse a single-child branch anyway; stating the leaf
     // means the tree never has to, and an empty session states an empty leaf
     // rather than a branch with no children.
-    expect(tileLayoutSpec(['only'], mode)).toEqual({ viewIds: ['only'] })
-    expect(tileLayoutSpec([], mode)).toEqual({ viewIds: [] })
+    expect(tileLayoutSpec(['only'], mode)).toEqual({ views: ['only'] })
+    expect(tileLayoutSpec([], mode)).toEqual({ views: [] })
   },
 )
 
@@ -320,14 +320,11 @@ test('a pending splitRight puts the named view opposite everything else', () => 
   ])
 
   expect(spec.direction).toBe('horizontal')
-  expect(spec.children).toEqual([
-    { viewIds: ['v1', 'v3'] },
-    { viewIds: ['v2'] },
-  ])
+  expect(spec.children).toEqual([{ views: ['v1', 'v3'] }, { views: ['v2'] }])
 })
 
 test('a pending move with nothing to split from just takes the space', () => {
   expect(
     specForPendingMove({ type: 'splitRight', viewId: 'v1' }, ['v1']),
-  ).toEqual({ viewIds: ['v1'] })
+  ).toEqual({ views: ['v1'] })
 })
