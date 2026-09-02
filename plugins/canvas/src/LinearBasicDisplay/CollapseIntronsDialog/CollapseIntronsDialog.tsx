@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Dialog, LabeledCheckbox, NumberTextField } from '@jbrowse/core/ui'
 import { getSession, pluralize, sum, toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isSessionWithMultipleViews } from '@jbrowse/core/util/types'
 import {
   Button,
   DialogActions,
@@ -13,7 +14,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { isObservableArray } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
@@ -112,12 +112,9 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
-  // Gates "Open in new view". Deliberately NOT isViewContainer/`'addView' in
-  // session`: the embedded react-LGV session has addView too, but it
-  // destructively REPLACES its single view, and its `views` getter returns a
-  // fresh plain array. An observable `views` array is what actually
-  // distinguishes a real multi-view container that can hold an added view.
-  const canLaunchView = isObservableArray(getSession(view).views)
+  // Gates "Open in new view": the embedded react-LGV session has addView too,
+  // but it replaces its single view — see the guard for what tells them apart.
+  const canLaunchView = isSessionWithMultipleViews(getSession(view))
   // Always the originally-clicked feature id, even for a specific transcript
   // row: solo is an exact uniqueId match (featureAdmission), and a gene-shaped
   // feature draws from its top-level id, so isolating to a transcript's id

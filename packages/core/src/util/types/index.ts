@@ -282,6 +282,26 @@ export function isSessionModelWithConfigEditing(
 }
 
 /**
+ * abstract interface for a session that keeps a list of views, so that `addView`
+ * appends and the view a launch came out of survives it.
+ *
+ * `AbstractViewContainer` alone does not say this. The single-view embedded
+ * products satisfy it with a `views` getter that wraps their one `view` in a
+ * fresh plain array and an `addView` that overwrites that view, so "Open in new
+ * view" there would destroy the view it was offered from. A view list that is
+ * itself part of the state tree is what tells the two apart: only a session
+ * that stores its views can hold one more.
+ */
+export interface SessionWithMultipleViews extends AbstractSessionModel {
+  views: AbstractViewModel[] & IStateTreeNode
+}
+export function isSessionWithMultipleViews(
+  t: unknown,
+): t is SessionWithMultipleViews {
+  return isSessionModel(t) && isStateTreeNode(t.views)
+}
+
+/**
  * abstract interface for a session that can swap one of its views for a new one
  * of another type, in the slot the old view occupied.
  *

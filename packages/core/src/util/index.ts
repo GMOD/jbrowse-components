@@ -116,6 +116,7 @@ export {
   isSessionWithAddTracks,
   isSessionWithPublishTrackConf,
   isSessionWithDeleteTrackConf,
+  isSessionWithMultipleViews,
   isSessionWithPermanentPlugins,
   isSessionWithSessionPlugins,
   isSessionWithSessionTracks,
