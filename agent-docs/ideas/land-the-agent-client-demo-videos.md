@@ -1,16 +1,17 @@
 ---
 name: land-the-agent-client-demo-videos
-description: three shell takes of Claude Code driving Desktop are published and embedded on the agents overview awaiting a verdict; the side-panel take is blocked on knowing when a turn ended
-metadata:
-  area: agents, website, videos
-  category: visual-call
-  order: 1
-  first_move: "watch the three clips on /docs/agents and say yes, reshoot, or cut; each take doc ends with what to change before a reshoot"
+description: three Claude Code shell takes are published and embedded on /docs/agents, so v5.0.0 ships with MCP shown running; what is parked is the visual verdict on those clips, the Chrome side-panel reshoot with its 90s turn threshold, and the Claude Desktop take that was never started — the harness lives only in an ephemeral scratchpad, so read the handoff before filming
 ---
 
 # Land the agent client demo videos
 
-MCP ships in v5.0.0 with nothing showing it running. Three clients were wanted:
+Moved out of [TODO.md](../TODO.md) on 2026-09-02. The clips are live on the
+agents overview, which is the part the release turned on; the verdict on them,
+the side-panel reshoot and the Desktop take are polish the release does not
+wait for. The three app-side gaps the protein take exposed are being fixed
+separately and are tracked in `scripts/agent-demos/takes/protein.md`.
+
+MCP ships in v5.0.0 and three clients were wanted showing it running:
 Claude Code, Claude Desktop, the Chrome extension.
 
 ## Claude Code over desktop MCP — three takes published, awaiting a verdict

@@ -1,12 +1,12 @@
 ---
 name: agent-clients-and-demos
-description: What was established about driving JBrowse from a real Claude client — the Chrome extension's actual powers, the macOS automation that films it, and where the demo harness lives. The work items are rows in TODO.md; this is the knowledge behind them, which lives nowhere else.
+description: What was established about driving JBrowse from a real Claude client — the Chrome extension's actual powers, the macOS automation that films it, and where the demo harness lives. The work item is parked in ideas/; this is the knowledge behind it, which lives nowhere else.
 ---
 
 # Driving JBrowse from a real Claude client
 
 The work these findings belong to is filed:
-[land-the-agent-client-demo-videos](../todo/land-the-agent-client-demo-videos.md).
+[land-the-agent-client-demo-videos](../ideas/land-the-agent-client-demo-videos.md).
 The other row, proving `window.jb` against a real browser agent, landed on
 2026-09-01: `scripts/agent-demos/webDemo.mjs` drove a local jbrowse-web build
 through the extension for the four desktop demo turns with no improvisation

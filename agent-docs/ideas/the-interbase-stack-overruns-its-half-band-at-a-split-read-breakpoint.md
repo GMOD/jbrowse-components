@@ -1,14 +1,16 @@
 ---
 name: the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint
-description: a visual call; the overflow is measured, no fix is chosen
-metadata:
-  area: alignments
-  category: visual-call
-  order: 2
-  first_move: "a visual call; the overflow is measured, no fix is chosen — and it eats 50% of the coverage bars at exactly the locus someone navigates to"
+description: at a clean breakend the interbase stack is scaled by the region's peak read depth while the events at one boundary can sum to twice it, so the bar runs into the coverage bars at exactly the locus someone navigates to — measured at 2.0x, both backends identical so the gate is blind to it, and three fixes each lose something the current form chose; a visual call, not a release blocker
 ---
 
 # The interbase stack overruns its half-band at a split-read breakpoint
+
+Moved out of [TODO.md](../TODO.md) on 2026-09-02. It is a measured picture
+defect, not a regression and not something v5.0.0 turns on: the overflow needs
+a breakend at the region's depth peak with no spanning reads, the clamp was
+objected to on the record, and the other two fixes each give up a property the
+current scaling chose. It waits on a visual call, which is the same reason the
+release list cannot hold it.
 
 `computeInterbaseCoverage` bakes each stacked segment as `count /
 interbaseMaxCount`, where the denominator is the region's PEAK READ DEPTH. At a
