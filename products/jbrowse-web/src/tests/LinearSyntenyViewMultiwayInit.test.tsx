@@ -159,3 +159,55 @@ test('the track selector targets the level it was opened for', async () => {
   expect(addTrack.trackContainer).toBe(view.levels[1])
   expect(addTrack.assembly).toBe('volvox')
 }, 40000)
+
+// The MAF row launch writes its band as a whole config on the launch: the
+// track lives on the level's track node and no session track is left behind.
+test('an inline band config opens on its level without adding a session track', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const sessionTracksBefore = session.tracks.length
+
+  const view = session.addView('LinearSyntenyView', {
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+    tracks: [
+      [
+        {
+          type: 'SyntenyTrack',
+          trackId: 'inline-band',
+          name: 'inline band',
+          assemblyNames: ['volvox', 'volvox_del'],
+          adapter: {
+            type: 'FromConfigAdapter',
+            features: [
+              {
+                uniqueId: 'b1',
+                refName: 'ctgA',
+                start: 100,
+                end: 200,
+                strand: 1,
+                mate: {
+                  refName: 'ctgA',
+                  start: 100,
+                  end: 200,
+                  assemblyName: 'volvox_del',
+                },
+              },
+            ],
+          },
+        },
+      ],
+    ],
+  })
+  view.setWidth(800)
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+  expect(view.levels[0]?.tracks[0]?.configuration.trackId).toBe('inline-band')
+  expect(session.tracks.length).toBe(sessionTracksBefore)
+  expect(session.getTrackById('inline-band')).toBeUndefined()
+}, 40000)

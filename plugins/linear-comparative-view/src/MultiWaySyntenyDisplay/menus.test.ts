@@ -281,7 +281,7 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
     'Move down',
     'Hide lane',
     '—',
-    'Open peach in a new view',
+    'Open peach at the matching region',
     'Re-anchor on peach',
   ])
   click(items[4])

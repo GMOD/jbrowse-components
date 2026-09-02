@@ -509,7 +509,7 @@ group down every lane; clicking a glyph opens the detail panel.
 
 Two routes reach the stacked view from the lanes:
 
-- **From the lane track**, **Launch stacked synteny view (visible region)** in
+- **From the lane track**, **Launch → Linear synteny view (visible region)** in
   its track menu offers a row to every genome aligning in the window
 - **From the scale bar**, drag-select a locus and pick **Launch → Linear synteny
   view**. The dialog opens a row per genome with arrows to order them; moving

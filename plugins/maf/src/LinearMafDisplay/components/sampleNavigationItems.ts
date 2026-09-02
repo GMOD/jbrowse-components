@@ -1,3 +1,5 @@
+import { openMateLabel } from '@jbrowse/core/util/tracks'
+
 import { launchMafRowSynteny } from '../launchMafRowSynteny.ts'
 import {
   navigationLocString,
@@ -18,6 +20,7 @@ import type {
   AbstractViewContainer,
   AssemblyHost,
   NotificationSink,
+  TrackCatalog,
 } from '@jbrowse/core/util'
 
 /**
@@ -142,7 +145,10 @@ function rowTargetsBetween(
  * rows for every sample.
  */
 export function sampleNavigationItems(
-  session: AbstractViewContainer & AssemblyHost & NotificationSink,
+  session: AbstractViewContainer &
+    AssemblyHost &
+    TrackCatalog &
+    NotificationSink,
   model: Pick<SampleNavigationModel, 'id'>,
   { targets }: RowTargets,
 ): MenuItem[] {
@@ -160,15 +166,10 @@ export function sampleNavigationItems(
   return targets.length === 0
     ? []
     : targets.length <= MAX_INLINE_ITEMS
-      ? targets.map(t =>
-          menuItem(
-            t,
-            `Open ${t.sampleLabel} ${navigationLocString(t)} in new view`,
-          ),
-        )
+      ? targets.map(t => menuItem(t, openMateLabel(t.sampleLabel)))
       : [
           {
-            label: 'Open aligned genome in new view',
+            label: 'Open aligned genome at the matching region',
             subMenu: targets.map(t =>
               menuItem(t, `${t.sampleLabel} ${navigationLocString(t)}`),
             ),
@@ -192,7 +193,7 @@ export function mafSyntenyLaunchItems(
     ? []
     : [
         {
-          label: `Launch synteny view, ${refAssembly} vs...`,
+          label: `Linear synteny view, ${refAssembly} vs...`,
           subMenu: targets.map(target => ({
             label: `${target.sampleLabel} ${navigationLocString(target)}`,
             onClick: () => {

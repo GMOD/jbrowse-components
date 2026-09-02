@@ -16,11 +16,11 @@ export function visibleSpanOnFeature(
     assemblyName === undefined
       ? undefined
       : host.assemblyManager.get(assemblyName)
-  const refName = feature.get('refName')
-  return visibleSpanOnRefName(
-    view,
-    assembly?.getCanonicalRefName2(refName) ?? refName,
-  )
+  const featureRefName = feature.get('refName')
+  const refName =
+    assembly?.getCanonicalRefName2(featureRefName) ?? featureRefName
+  const span = visibleSpanOnRefName(view, refName)
+  return span ? { refName, ...span } : undefined
 }
 
 /**

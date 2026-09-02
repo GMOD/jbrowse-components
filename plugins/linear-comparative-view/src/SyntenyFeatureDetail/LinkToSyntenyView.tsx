@@ -2,14 +2,14 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ActionLink } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import {
-  openMateInLinearView,
-  openMateLabel,
-} from '../LaunchSyntenyView/openMateInLinearView.ts'
+import { allAssembliesLaunchItems } from '../LaunchSyntenyView/allAssembliesLaunch.ts'
+import { openMateInLinearView } from '../LaunchSyntenyView/openMateInLinearView.ts'
 import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
+import { visibleSpanOnFeature } from '../LaunchSyntenyView/visibleSpanOnRefName.ts'
 import { syntenyCenterTargets } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
@@ -79,12 +79,21 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
           sourceView: view,
         })
       : undefined
+  const allAssemblies =
+    row && track
+      ? allAssembliesLaunchItems({
+          session,
+          view: row,
+          track,
+          region: visibleSpanOnFeature(session, row, feature),
+        })
+      : []
   const canCenter = 'views' in view
   // No card at all rather than an empty one titled "Link to view". A synteny
   // track opened inside a plain LGV has no rows to center, and a mate whose
   // assembly the track does not declare cannot launch a view either — which
   // left the panel showing a heading over an empty list.
-  if (!canCenter && !launch && !mate) {
+  if (!canCenter && !launch && !mate && allAssemblies.length === 0) {
     return null
   }
   return (
@@ -129,6 +138,19 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
             </ActionLink>
           </li>
         ) : null}
+        {allAssemblies.map(item =>
+          'onClick' in item ? (
+            <li key={`${item.label}`}>
+              <ActionLink
+                onClick={() => {
+                  item.onClick()
+                }}
+              >
+                {item.label}
+              </ActionLink>
+            </li>
+          ) : null,
+        )}
         {mate ? (
           <li>
             <ActionLink

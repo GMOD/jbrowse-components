@@ -128,7 +128,7 @@ walk offsets are exactly what the 19x-smaller reference-keyed index dropped
 
 **The interaction surface.** What shipped since: hovering a ribbon highlights
 its whole ortholog group across every lane (`hoveredGroupKey`, main-thread
-recolor), and the track menu carries **Launch stacked synteny view (visible
+recolor), and the track menu carries **Launch → Linear synteny view (visible
 region)** — the `syntenyRegionMenuItems` dialog seeded from this track alone,
 which is the "lane you want to drive independently" handoff. Lane order is
 densest-first by default (`rowAssembliesOf` counts placements over the fetched
@@ -149,8 +149,10 @@ lanes are `hiddenLanes`, a declared property beside `rowOrder`, and
 `rowAssemblies` filters them out so every layer and fetch forgets the lane at
 once. The label also carries a menu (right-click, or the ⋮ at its end;
 `laneHeaderMenuItems` in `menus.ts`): the track menu's own Move up/Move
-down/Hide lane row, **Open ⟨assembly⟩ in a new view** — `LaunchView-LinearGenomeView`
-on the lane's frame with this track along — and **Re-anchor on ⟨assembly⟩**,
+down/Hide lane row, **Open ⟨assembly⟩ at the matching region** —
+`openAssemblyInLinearView` on the lane's frame with this track and the genome's
+annotation along, keyed so a second click re-navigates — and **Re-anchor on
+⟨assembly⟩**,
 which is `navToLocString` on the HOSTING view with the lane's assembly, since
 the anchor lane reads off `lgv.assemblyNames[0]` and the old anchor drops into
 a mate lane on its own. Both hops are dead while the lane places nothing or the

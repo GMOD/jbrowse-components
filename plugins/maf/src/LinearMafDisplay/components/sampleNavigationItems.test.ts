@@ -50,6 +50,7 @@ function model(
 const views: { id: string; init?: unknown }[] = []
 const session = {
   views,
+  tracks: [],
   addView: (_type: string, snap: { id: string }) => {
     views.push(snap)
   },
@@ -88,8 +89,8 @@ test('one entry per navigable row in the selection', () => {
     model({ 0: target('SPRET_EiJ', 1000), 1: target('PWK_PhJ', 2000) }),
   )
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
-    'Open SPRET_EiJ chr2:1001-1020 in new view',
-    'Open PWK_PhJ chr2:2001-2020 in new view',
+    'Open SPRET_EiJ at the matching region',
+    'Open PWK_PhJ at the matching region',
   ])
 })
 
@@ -170,6 +171,7 @@ test('launching opens a view keyed on display + assembly', async () => {
       id: 'display1_mm10',
       assembly: 'mm10',
       loc: 'chr2:1001-1020',
+      tracks: [],
     },
   ])
 })
@@ -183,6 +185,7 @@ test('the have-we-got-it probe does not go through get()', async () => {
   const calls: string[] = []
   const loadedSession = {
     views,
+    tracks: [],
     addView: (_type: string, snap: { id: string }) => {
       views.push(snap)
     },

@@ -74,7 +74,7 @@ test('a launchable mate appends the synteny item when the feature lands', () => 
   expect(labels(display)).toEqual([
     'Open feature details',
     'Copy info to clipboard',
-    'Launch synteny view for this position',
+    'Linear synteny view with volvox_random',
     'Open volvox_random at the matching region',
   ])
 })
@@ -114,7 +114,7 @@ test('a right-click on no feature offers no feature items', () => {
 })
 
 const MOVE = 'Move other panel to the matching region'
-const LAUNCH = 'Launch synteny view for this position'
+const LAUNCH = 'Linear synteny view with volvox_random'
 
 test('a panel whose neighbour is on the mate assembly can move it', () => {
   const display = createDisplay({ neighbourAssembly: 'volvox_random' })
@@ -193,7 +193,7 @@ test('the launch items sit under one heading, the move outside it', () => {
   ).toBe(false)
 })
 
-const LAUNCH_ALL = 'Launch synteny view for all assemblies here'
+const LAUNCH_ALL = 'Linear synteny view, all assemblies here'
 
 // A block on a track declaring three or more assemblies can reach more than
 // the one mate under the cursor, so the multi-panel launch is offered beside

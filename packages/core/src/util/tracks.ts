@@ -41,6 +41,7 @@ import type {
   FileLocation,
   PreFileLocation,
 } from './types/data.ts'
+import type { AbstractViewContainer } from './types/index.ts'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -1169,4 +1170,72 @@ export function allSessionTracks(session: {
   return connectionTracks.length
     ? [...session.tracks, ...connectionTracks]
     : session.tracks
+}
+
+/**
+ * The session's annotation for `assemblyName`, as trackIds: what a view opened
+ * on another genome starts with. Only FeatureTracks, not everything configured
+ * for the assembly — an alignments track turned on behind the user's back
+ * fetches data nobody asked for, and a FeatureTrack over a few kb is one tabix
+ * range query.
+ */
+export function annotationTrackIds(
+  session: {
+    tracks: AnyConfigurationModel[]
+    connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+    assemblyManager: AssemblyNameResolver
+  },
+  assemblyName: string,
+) {
+  return allSessionTracks(session).flatMap(track =>
+    readConfObject(track, 'type') === 'FeatureTrack' &&
+    (readConfObject(track, 'assemblyNames') as string[]).some(name =>
+      isSameAssemblyName(name, assemblyName, session.assemblyManager),
+    )
+      ? [readConfObject(track, 'trackId') as string]
+      : [],
+  )
+}
+
+interface NavigableView {
+  navToLocString: (loc: string, assemblyName?: string) => Promise<unknown>
+}
+
+function isNavigableView(view: object): view is NavigableView {
+  return 'navToLocString' in view
+}
+
+/**
+ * One assembly on its own in a linear genome view, at `loc`. Keyed on `id`:
+ * following several alignments to one genome re-navigates the view rather than
+ * stacking a new one each time.
+ */
+export async function openAssemblyInLinearView({
+  session,
+  id,
+  assemblyName,
+  loc,
+  tracks,
+}: {
+  session: AbstractViewContainer
+  id: string
+  assemblyName: string
+  loc: string
+  tracks: TrackInit[]
+}) {
+  const view = session.views.find(v => v.id === id)
+  if (view && isNavigableView(view)) {
+    await view.navToLocString(loc, assemblyName)
+  } else {
+    session.addView('LinearGenomeView', {
+      id,
+      assembly: assemblyName,
+      loc,
+      tracks,
+    })
+  }
+}
+
+export function openMateLabel(assemblyName: string) {
+  return `Open ${assemblyName} at the matching region`
 }

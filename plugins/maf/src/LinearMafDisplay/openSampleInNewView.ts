@@ -1,13 +1,17 @@
 import { isSessionWithAddAssembly } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { openLocation, resolveUriLocation } from '@jbrowse/core/util/io'
+import {
+  annotationTrackIds,
+  openAssemblyInLinearView,
+} from '@jbrowse/core/util/tracks'
 
 import type {
   AbstractViewContainer,
   AssemblyHost,
+  TrackCatalog,
   UriLocation,
 } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface SampleNavigationTarget {
   assemblyName: string
@@ -86,32 +90,24 @@ export async function ensureAssembly(
 }
 
 /**
- * Open the aligned sample's own genome at the locus its MAF row covers.
- *
- * The view id is keyed on the display and the sample, so repeatedly following
- * the same species' rows re-navigates one view instead of stacking new ones.
- * A brand-new view launches declaratively via `init` (spinner while the
- * assembly loads, then self-navigation) rather than being navigated
- * imperatively — same reasoning as the spreadsheet view's location links.
+ * Open the aligned sample's own genome at the locus its MAF row covers, with
+ * the session's annotation for it — the same view the synteny track's "Open
+ * ... at the matching region" gives a mate. The view id is keyed on the
+ * display and the sample, so repeatedly following the same species' rows
+ * re-navigates one view instead of stacking new ones.
  */
 export async function openSampleInNewView(
-  session: AbstractViewContainer & AssemblyHost,
+  session: AbstractViewContainer & AssemblyHost & TrackCatalog,
   displayId: string,
   target: SampleNavigationTarget,
 ) {
   await ensureAssembly(session, target)
-  const viewId = `${displayId}_${target.assemblyName}`
-  const locString = navigationLocString(target)
-  const view = session.views.find(v => v.id === viewId) as
-    | LinearGenomeViewModel
-    | undefined
-  if (view) {
-    await view.navToLocString(locString, target.assemblyName)
-  } else {
-    session.addView('LinearGenomeView', {
-      id: viewId,
-      assembly: target.assemblyName,
-      loc: locString,
-    })
-  }
+  const { assemblyName } = target
+  await openAssemblyInLinearView({
+    session,
+    id: `${displayId}_${assemblyName}`,
+    assemblyName,
+    loc: navigationLocString(target),
+    tracks: annotationTrackIds(session, assemblyName),
+  })
 }

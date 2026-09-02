@@ -5,23 +5,28 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import {
   doesIntersect2,
   getContainingView,
-  getEnv,
   getPaletteHost,
   getSession,
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
-import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
+import {
+  annotationTrackIds,
+  isSameAssemblyName,
+  openAssemblyInLinearView,
+} from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { bandGroundColor } from '@jbrowse/synteny-core'
 
+import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import {
   syntenyRegionMenuItems,
@@ -444,11 +449,7 @@ export function stateModelFactory(
        * table does not
        */
       holdsAssembly(assemblyName: string) {
-        const { assemblyManager } = getSession(self)
-        return assemblyManager.has(
-          assemblyManager.getCanonicalAssemblyName(assemblyName) ??
-            assemblyName,
-        )
+        return getSession(self).assemblyManager.has(assemblyName)
       },
       /**
        * #method
@@ -1057,16 +1058,19 @@ export function stateModelFactory(
          */
         trackMenuItems(): MenuItem[] {
           const view = self.lgv
+          const items = [...superMenuItems()]
+          for (const item of syntenyRegionMenuItems({
+            label: 'Linear synteny view (visible region)',
+            region: widestRegion(view.dynamicBlocks.contentBlocks),
+            session: getSession(self),
+            openTracks: [self.parentTrack.configuration],
+            anchorTracks: anchorPanelTracks(view.tracks),
+            sourceView: containingPanelStack(view) ?? view,
+          })) {
+            pushLaunchViewMenuItem(items, item)
+          }
           return [
-            ...superMenuItems(),
-            ...syntenyRegionMenuItems({
-              label: 'Launch stacked synteny view (visible region)',
-              region: widestRegion(view.dynamicBlocks.contentBlocks),
-              session: getSession(self),
-              openTracks: [self.parentTrack.configuration],
-              anchorTracks: anchorPanelTracks(view.tracks),
-              sourceView: view,
-            }),
+            ...items,
             { type: 'divider' },
             ...laneSettingsMenuItems(self),
             ...laneOrderMenuItem(self),
@@ -1084,23 +1088,24 @@ export function stateModelFactory(
       /**
        * #action
        * a lane's assembly in a linear genome view of its own, at `loc`, with
-       * this track along so the new view is the same stack anchored there
+       * this track along so the new view is the same stack anchored there,
+       * and the session's annotation for the genome. Keyed on the display and
+       * the lane, so following one lane twice re-navigates the view
        */
       openInNewView(assemblyName: string, loc: string) {
         const session = getSession(self)
-        getEnv(self)
-          .pluginManager.evaluateAsyncExtensionPointStrict(
-            'LaunchView-LinearGenomeView',
-            {
-              session,
-              assembly: assemblyName,
-              loc,
-              tracks: [self.parentTrack.configuration.trackId as string],
-            },
-          )
-          .catch((e: unknown) => {
-            session.notifyError(`${e}`, e)
-          })
+        openAssemblyInLinearView({
+          session,
+          id: `${self.id}-mate-${assemblyName}`,
+          assemblyName,
+          loc,
+          tracks: [
+            self.parentTrack.configuration.trackId as string,
+            ...annotationTrackIds(session, assemblyName),
+          ],
+        }).catch((e: unknown) => {
+          session.notifyError(`${e}`, e)
+        })
       },
       /**
        * #action

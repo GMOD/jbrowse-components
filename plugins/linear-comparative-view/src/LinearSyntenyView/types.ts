@@ -12,6 +12,15 @@ import type React from 'react'
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 export type { CigarMode } from './cigarModes.ts'
 
+// A band track: a session trackId, or the whole config of a track no session
+// list holds ({ trackId, type, assemblyNames, adapter, … }). The config lives
+// on the track node, so a launcher that builds its band from data it has in
+// hand (the MAF row launch) leaves nothing in the track selector behind the
+// view.
+export type SyntenyTrackInit =
+  | string
+  | ({ trackId: string } & Record<string, unknown>)
+
 // Sub-pixel width fade: 'auto' turns on once the view is dense enough to tangle.
 export type FadeThinMode = 'auto' | 'on' | 'off'
 
@@ -59,9 +68,10 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
     // span on two rows is how a synteny figure says "this object, seen twice".
     highlight?: (string | HighlightType)[]
   } & LinearGenomeViewLaunchProps)[]
-  // synteny track ids per level: tracks[i] is shown between views[i] and
-  // views[i+1]. string[] shorthand is treated as a single level-0 entry
-  tracks?: string[] | string[][]
+  // synteny tracks per level: tracks[i] is shown between views[i] and
+  // views[i+1]. A flat list is treated as a single level-0 entry. An entry is a
+  // trackId, or an inline track config for a band no session list holds
+  tracks?: SyntenyTrackInit[] | SyntenyTrackInit[][]
   // Pixel height of each synteny strip, one entry per level. Useful for
   // whole-genome views where the default ~100px is too cramped for the
   // ribbon detail to be readable.

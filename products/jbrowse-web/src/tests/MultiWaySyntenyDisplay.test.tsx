@@ -88,11 +88,16 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
     [170, 200],
   ])
 
+  const launch = display
+    .trackMenuItems()
+    .find(item => 'label' in item && item.label === 'Launch')
+  const subMenu =
+    launch && 'subMenu' in launch && typeof launch.subMenu !== 'function'
+      ? launch.subMenu
+      : []
   expect(
-    display
-      .trackMenuItems()
-      .flatMap(item => ('label' in item ? [item.label] : [])),
-  ).toContain('Launch stacked synteny view (visible region)')
+    subMenu.flatMap(item => ('label' in item ? [item.label] : [])),
+  ).toContain('Linear synteny view (visible region)')
 }, 40000)
 
 // `coarseDynamicBlocks` is empty for the 500ms between a view initializing and
@@ -423,7 +428,7 @@ test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
     'Move up',
     'Move down',
     'Hide lane',
-    'Open peach in a new view',
+    'Open peach at the matching region',
     'Re-anchor on peach',
   ]) {
     expect(await findByText(label)).toBeTruthy()
@@ -510,7 +515,7 @@ test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track alon
   )
   const { findByTestId, findByText } = render(<LaneHeaders model={display} />)
   fireEvent.contextMenu(await findByTestId('multiway-lane-label-peach'))
-  fireEvent.click(await findByText('Open peach in a new view'))
+  fireEvent.click(await findByText('Open peach at the matching region'))
 
   const opened = await waitFor(
     () => {
@@ -529,7 +534,7 @@ test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track alon
           (t: { configuration: { trackId: string } }) =>
             t.configuration.trackId,
         ),
-      ).toEqual(['multiway_blocks'])
+      ).toContain('multiway_blocks')
     },
     { timeout: 30000 },
   )

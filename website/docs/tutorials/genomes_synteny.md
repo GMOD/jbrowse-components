@@ -52,12 +52,13 @@ block, laid out in rows.
 
 ## Launching a synteny view
 
-Right-click any chain block and choose **Launch synteny view for this
-position**. The dialog frames the second panel. **Use CIGAR to map the current
-visible region to the target** walks the alignment to find the interval matching
-what is in view; the chain through _TNNT3_ spans the chromosome, so unticked it
-frames both panels on all of chromosome 11. A reverse-strand block adds
-**Horizontally flip inverted targets**, ticked by default.
+Right-click any chain block and choose **Linear synteny view with ...**, which
+names the other assembly. The dialog frames the second panel. **Use CIGAR to map
+the current visible region to the target** walks the alignment to find the
+interval matching what is in view; the chain through _TNNT3_ spans the
+chromosome, so unticked it frames both panels on all of chromosome 11. A
+reverse-strand block adds **Horizontally flip inverted targets**, ticked by
+default.
 
 **Open in new view** appends the result below the linear view; **Replace current
 view** puts it in that view's place.

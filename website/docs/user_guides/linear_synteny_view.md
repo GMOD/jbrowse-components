@@ -71,23 +71,24 @@ configured but closed is what the import form above is for.
   [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus reaches
   several assemblies at once.
 - **Right-click a single alignment** in a synteny track drawn in a linear genome
-  view and pick **Launch synteny view for this position**, which opens the one
-  pair that alignment describes. Its **Use CIGAR to map the current visible
-  region to the target** option walks the alignment to find the interval that
-  matches what you are looking at; without it the panels frame on the whole
-  block's endpoints, and the dialog prints where each panel will open either
-  way. An alignment carrying no CIGAR — a PAF written without minimap2's `-c`,
-  MashMap, MCScan, the coarse tier of a PIF — offers the same option as **Clip
-  the panels to the current visible region**, estimating the target interval by
-  interpolating across the block, which is the straight line its ribbon is
-  already drawn as. Worked through in [](/docs/tutorials/genomes_synteny). On a
-  track declaring three or more assemblies the same menu also offers **Launch
-  synteny view for all assemblies here**, the multi-panel dialog above cut from
-  this track at the block you clicked in. **Open \<assembly\> at the matching
-  region** is the jump rather than the comparison: it opens the mate assembly on
-  its own, with the session's gene track for it, at the stretch the alignment
-  maps your window to, for any mate the session has loaded. The same three are
-  links in the feature's details panel, clipped to the panel's visible window.
+  view and pick **Linear synteny view with ...** (naming the mate assembly),
+  which opens the one pair that alignment describes. Its **Use CIGAR to map the
+  current visible region to the target** option walks the alignment to find the
+  interval that matches what you are looking at; without it the panels frame on
+  the whole block's endpoints, and the dialog prints where each panel will open
+  either way. An alignment carrying no CIGAR — a PAF written without minimap2's
+  `-c`, MashMap, MCScan, the coarse tier of a PIF — offers the same option as
+  **Clip the panels to the current visible region**, estimating the target
+  interval by interpolating across the block, which is the straight line its
+  ribbon is already drawn as. Worked through in
+  [](/docs/tutorials/genomes_synteny). On a track declaring three or more
+  assemblies the same menu also offers **Launch synteny view for all assemblies
+  here**, the multi-panel dialog above cut from this track at the block you
+  clicked in. **Open \<assembly\> at the matching region** is the jump rather
+  than the comparison: it opens the mate assembly on its own, with the session's
+  gene track for it, at the stretch the alignment maps your window to, for any
+  mate the session has loaded. The same three are links in the feature's details
+  panel, clipped to the panel's visible window.
 - The same **Linear synteny view (visible region)** entry sits in the view's
   hamburger menu under **Launch**, for when the region you want is the whole
   view and there is nothing to select.

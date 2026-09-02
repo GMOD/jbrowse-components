@@ -214,9 +214,13 @@ function applyInitSyntenyTracks(
   init: SyntenyLaunch,
 ) {
   if (init.tracks) {
-    for (const [i, ids] of normalizeTrackLevels(init.tracks).entries()) {
-      for (const trackId of ids) {
-        self.showTrack(trackId, i)
+    for (const [i, entries] of normalizeTrackLevels(init.tracks).entries()) {
+      for (const entry of entries) {
+        if (typeof entry === 'string') {
+          self.showTrack(entry, i)
+        } else {
+          self.showTrack(entry.trackId, i, {}, {}, entry)
+        }
       }
     }
   }

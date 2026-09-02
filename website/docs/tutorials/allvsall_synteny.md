@@ -380,11 +380,11 @@ to that region and opens a row for each. The dialog lists them top to bottom and
 lets you reorder them; ribbons are drawn between neighbouring rows only, which
 is why IAI39 sits directly below K-12 in the figure above.
 
-Right-clicking a single alignment offers three routes. **Launch synteny view for
-this position** opens the one pair that alignment describes. **Launch synteny
-view for all assemblies here** is the same multi-strain dialog. **Open Sakai at
-the matching region** (or whichever strain the alignment names) opens that
-strain on its own coordinates at the matching stretch, which is also what a
+Right-clicking a single alignment offers three routes. **Linear synteny view
+with Sakai** (or whichever strain the alignment names) opens the one pair that
+alignment describes. **Linear synteny view, all assemblies here** is the same
+multi-strain dialog. **Open Sakai at the matching region** opens that strain on
+its own coordinates at the matching stretch, which is also what a
 [graph node](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
 offers.
 

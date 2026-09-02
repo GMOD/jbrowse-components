@@ -1,5 +1,6 @@
 import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
+import { openMateLabel } from '@jbrowse/core/util/tracks'
 
 import type { Lane } from './laneStack.ts'
 import type { MultiWayRibbonColorBy } from './multiwayGeometry.ts'
@@ -125,8 +126,9 @@ export function laneLocString(lane: HeaderLane) {
 
 /**
  * The menu a lane's header raises. A mate lane gets the track menu's own row
- * plus the two hops off it: its assembly in a new view at the frame the lane
- * is drawing, and the whole track re-anchored on it, which the hosting view
+ * plus the two hops off it: its assembly in a view of its own at the frame the
+ * lane is drawing (the same jump a synteny track and a MAF row offer a mate),
+ * and the whole track re-anchored on it, which the hosting view
  * does by navigating there — the anchor lane reads off the view's first
  * assembly, so the old anchor drops into a mate lane on its own. Either hop is
  * dead while the lane places nothing, and re-anchoring also while the session
@@ -159,7 +161,7 @@ export function laneHeaderMenuItems(
     ...laneRowMenuItems(model, name),
     { type: 'divider' },
     {
-      label: `Open ${name} in a new view`,
+      label: openMateLabel(name),
       disabled: loc === undefined || !held,
       onClick: () => {
         model.openInNewView(name, loc!)

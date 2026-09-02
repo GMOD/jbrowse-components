@@ -85,3 +85,7 @@ export function pairwiseSyntenyLaunch({
     ])
   }
 }
+
+export function pairwiseLaunchLabel(mateAssemblyName: string) {
+  return `Linear synteny view with ${mateAssemblyName}`
+}

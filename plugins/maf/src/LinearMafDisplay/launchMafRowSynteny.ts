@@ -1,9 +1,5 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  assembleLocString,
-  isSessionWithAddSessionTrack,
-} from '@jbrowse/core/util'
-import { allSessionTracks, isSameAssemblyName } from '@jbrowse/core/util/tracks'
+import { assembleLocString } from '@jbrowse/core/util'
+import { annotationTrackIds } from '@jbrowse/core/util/tracks'
 
 import { buildMafRowSynteny } from './mafRowSynteny.ts'
 import { ensureAssembly } from './openSampleInNewView.ts'
@@ -32,36 +28,21 @@ export interface MafSyntenyLaunchModel {
   }
 }
 
-// The launched view's rows open with: the reference row carries what the
-// launching view has open (the MAF included, since it is the alignment the
-// ribbons were cut from), and the sample row the session's annotation for that
-// genome — the same choice the graph's launch out of a node and the synteny
-// track's "Open <assembly>" make.
-function annotationTracks(host: MafSyntenyHost, assemblyName: string) {
-  return allSessionTracks(host).flatMap(track =>
-    readConfObject(track, 'type') === 'FeatureTrack' &&
-    (readConfObject(track, 'assemblyNames') as string[]).some(name =>
-      isSameAssemblyName(name, assemblyName, host.assemblyManager),
-    )
-      ? [readConfObject(track, 'trackId') as string]
-      : [],
-  )
-}
-
 /**
  * Open a two-row synteny view of the reference against one aligned sample
  * over the selection, the ribbons cut from the MAF columns themselves.
  *
  * No adapter and no preprocessing: `buildMafRowSynteny` turns the fetched
- * blocks into synteny features with a CIGAR, and those go into a session
- * `SyntenyTrack` over a `FromConfigAdapter` — the shape "linear read vs ref"
- * launches a read with. A session track rather than a catalog entry
- * (`addSessionTrackConf`): it is a view the user stood up, not data the site
- * offers. Only the reference-anchored side is stored; the band's fetch queries
- * the top row's axis, and the reference is what opens on top.
+ * blocks into synteny features with a CIGAR, and those go into a `SyntenyTrack`
+ * over a `FromConfigAdapter` written inline on the launch, so the band lives on
+ * the view's own track node and closes with it. Only the reference-anchored
+ * side is stored; the band's fetch queries the top row's axis, and the
+ * reference is what opens on top. The reference row carries what the launching
+ * view has open (the MAF included), the sample row the session's annotation for
+ * that genome.
  *
  * The sample's assembly is loaded first where the sample names a config to
- * load it from, the same way its "Open ... in new view" item does.
+ * load it from, the same way its "Open ... at the matching region" item does.
  */
 export async function launchMafRowSynteny({
   host,
@@ -85,9 +66,6 @@ export async function launchMafRowSynteny({
   if (refAssembly === undefined || !region) {
     throw new Error('No alignment loaded under the selection')
   }
-  if (!isSessionWithAddSessionTrack(host)) {
-    throw new Error('This session cannot add a track for the synteny view')
-  }
   const { assemblyName, sampleLabel } = target
   const synteny = buildMafRowSynteny({
     region,
@@ -103,14 +81,6 @@ export async function launchMafRowSynteny({
   }
   await ensureAssembly(host, target)
   const refLoc = assembleLocString({ refName, start: startBp, end: endBp })
-  const trackId = `${model.id}-${assemblyName}-maf-synteny-${Date.now()}`
-  host.addSessionTrackConf({
-    type: 'SyntenyTrack',
-    trackId,
-    name: `${refAssembly} vs ${sampleLabel} (MAF, ${refLoc})`,
-    assemblyNames: [refAssembly, assemblyName],
-    adapter: { type: 'FromConfigAdapter', features: synteny.features },
-  })
   const refTracks: TrackInit[] = model.view.tracks.map(track => {
     const type = track.displays[0]?.type
     return type
@@ -128,9 +98,19 @@ export async function launchMafRowSynteny({
           end: synteny.end,
           reversed: synteny.reversed,
         }),
-        tracks: annotationTracks(host, assemblyName),
+        tracks: annotationTrackIds(host, assemblyName),
       },
     ],
-    tracks: [[trackId]],
+    tracks: [
+      [
+        {
+          type: 'SyntenyTrack',
+          trackId: `${model.id}-${assemblyName}-maf-synteny`,
+          name: `${refAssembly} vs ${sampleLabel} (MAF, ${refLoc})`,
+          assemblyNames: [refAssembly, assemblyName],
+          adapter: { type: 'FromConfigAdapter', features: synteny.features },
+        },
+      ],
+    ],
   })
 }

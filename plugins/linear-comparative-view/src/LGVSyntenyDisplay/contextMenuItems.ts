@@ -1,10 +1,10 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getNotificationSink,
   getSession,
 } from '@jbrowse/core/util'
+import { openMateLabel } from '@jbrowse/core/util/tracks'
 import {
   copyFeatureInfo,
   withContextMenuFeature,
@@ -15,13 +15,12 @@ import LineStyleIcon from '@mui/icons-material/LineStyle'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 
-import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
+import { allAssembliesLaunchItems } from '../LaunchSyntenyView/allAssembliesLaunch.ts'
+import { openMateInLinearView } from '../LaunchSyntenyView/openMateInLinearView.ts'
 import {
-  openMateInLinearView,
-  openMateLabel,
-} from '../LaunchSyntenyView/openMateInLinearView.ts'
-import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
-import { syntenyRegionMenuItems } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
+  pairwiseLaunchLabel,
+  pairwiseSyntenyLaunch,
+} from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { getMate, hasAlignmentString } from '../syntenyMate.ts'
 import {
   containingPanelStack,
@@ -118,22 +117,25 @@ function launchSyntenyItem(
   feature: Feature,
   block: ClickedBlock | undefined,
 ): MenuItem[] {
+  const view = self.view
   const launch = pairwiseSyntenyLaunch({
     host: getSession(self),
     feature,
-    anchorView: self.view,
+    anchorView: view,
     track: getContainingTrack(self).configuration,
     region: block
       ? { start: block.bpRange[0], end: block.bpRange[1] }
       : undefined,
     // ...so the launched view can take this one's place rather than stacking
-    // below it, showing the same locus twice
-    sourceView: self.view,
+    // below it, showing the same locus twice. A row of a stack offers the
+    // stack: the row holds no session slot of its own
+    sourceView: containingPanelStack(view) ?? view,
   })
-  return launch
+  const mate = getMate(feature)
+  return launch && mate
     ? [
         {
-          label: 'Launch synteny view for this position',
+          label: pairwiseLaunchLabel(mate.assemblyName),
           icon: CompareArrowsIcon,
           onClick: launch,
         },
@@ -141,47 +143,21 @@ function launchSyntenyItem(
     : []
 }
 
-/**
- * The multi-panel launch, from the same right-click: a row for every assembly
- * the clicked block's window aligns to in this dataset, not just the mate of
- * the alignment under the cursor.
- *
- * Only on a track declaring three or more assemblies. On a pairwise track the
- * region launch discovers the one mate the item above already offers, so the
- * second entry would be the first with a fetch in front of it. A one-vs-all
- * track whose extra mates are undeclared PanSN samples is the same case: those
- * cannot open a panel whichever route is taken.
- *
- * The lane track is the only dataset offered — the region launch from the view
- * menu lists every open synteny track, but a click on this track's block means
- * this track. The pairwise item above and the panel-move below need the feature;
- * this needs only the block, and the assemblies gate reads config, so it could
- * be offered before the fetch lands — it is not, so the three launch-shaped
- * items arrive together rather than the menu reordering under the cursor.
- */
 function launchAllAssembliesItem(
   self: SyntenyContextMenuModel,
   block: ClickedBlock | undefined,
 ): MenuItem[] {
-  const view = self.view
-  const assemblyName = view.assemblyNames[0]
-  const track = getContainingTrack(self)
-  const declared = new Set(getConf(track, 'assemblyNames') as string[])
-  if (!block || assemblyName === undefined || declared.size < 3) {
-    return []
-  }
-  return syntenyRegionMenuItems({
-    label: 'Launch synteny view for all assemblies here',
-    region: {
-      assemblyName,
-      refName: block.refName,
-      start: block.bpRange[0],
-      end: block.bpRange[1],
-    },
+  return allAssembliesLaunchItems({
     session: getSession(self),
-    openTracks: [track.configuration],
-    anchorTracks: anchorPanelTracks(view.tracks),
-    sourceView: view,
+    view: self.view,
+    track: getContainingTrack(self).configuration,
+    region: block
+      ? {
+          refName: block.refName,
+          start: block.bpRange[0],
+          end: block.bpRange[1],
+        }
+      : undefined,
   })
 }
 

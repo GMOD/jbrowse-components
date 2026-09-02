@@ -506,8 +506,9 @@ per-row identity, and codon view.
 Drag across the rows and the menu that opens on release lists each strain the
 selection covers:
 
-- **Open Sakai ... in new view**: that strain, aligned <!-- menu-path-ok -->
-- **Launch synteny view, K12 vs...** opens the two as a
+- **Open Sakai at the matching region**: that strain, aligned
+  <!-- menu-path-ok -->
+- **Linear synteny view, K12 vs...** opens the two as a
   [linear synteny view](/docs/user_guides/linear_synteny_view)
 
 This works because the config loads the strains as assemblies under the names
