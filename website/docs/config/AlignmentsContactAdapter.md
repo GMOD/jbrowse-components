@@ -4,9 +4,7 @@ title: AlignmentsContactAdapter
 sidebar_label: Adapter -> AlignmentsContactAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/AlignmentsContactAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/AlignmentsContactAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -29,10 +27,10 @@ Auto-generated config schema for the current JBrowse release — see the
 
 _See the **Config slots** section below for all available configuration fields._
 
-builds a contact matrix live from a BAM/CRAM instead of a `.hic` file, so an SV
-signature (Cue's contact map) can be looked at without running juicer. Contacts
-are computed from the reads in the current view, like the pileup, so this is a
-zoomed-in track rather than a whole-genome one
+builds a contact matrix live from a BAM/CRAM instead of a `.hic` file, so an
+SV signature (Cue's contact map) can be looked at without running juicer.
+Contacts are computed from the reads in the current view, like the pileup,
+so this is a zoomed-in track rather than a whole-genome one
 
 ## Related links
 
@@ -41,13 +39,7 @@ zoomed-in track rather than a whole-genome one
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "AlignmentsContactAdapter", ... }`. This adapter has no
-`uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it
-the location slots below. Slot types (`fileLocation`, `frozen`, ...) are
-explained in the [config slot types reference](/docs/config_guides/slot_types).
-Slots a base configuration contributes are listed here too, so this table is the
-whole surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "AlignmentsContactAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
