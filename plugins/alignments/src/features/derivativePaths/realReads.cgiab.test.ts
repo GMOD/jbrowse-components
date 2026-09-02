@@ -1,8 +1,8 @@
-import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 import { computeReadChains } from '../arcs/arcChains.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
-import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 
 // HG008-T, the Cancer Genome in a Bottle tumour, as PacBio HiFi rather than
 // ONT. A second real dataset for the reconstruction, and a second cancer: the

@@ -1,13 +1,11 @@
 import { getClip, getLengthOnRef } from '@jbrowse/cigar-utils'
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { computeReadChains } from '../features/arcs/arcChains.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
-
-// On its own rather than in testUtils.ts, whose other helpers pull in the plugin
-// manager, MST and the LGV plugin: this pair is what a plain node script needs
-// to run the reconstruction over committed SAM records, and nothing more.
+import type { RegionInfo } from '../features/arcs/arcTypes.ts'
 
 /**
  * One alignment record as `samtools view` prints it, reduced to the columns the
@@ -66,4 +64,15 @@ export function pileupDataFromSamRecords(
     ...namesToBlock(records.map(rec => rec.name)),
     readSuppAlignments: records.map(rec => rec.SA),
   }
+}
+
+/** The split-read chains those records form when fetched for one region. */
+export function chainsFromSamRecords(
+  records: SamRecordFixture[],
+  region: RegionInfo,
+) {
+  return computeReadChains(
+    [new Map([[0, pileupDataFromSamRecords(records)]])],
+    [region],
+  )
 }

@@ -25,11 +25,6 @@ import type {
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { RenderState } from './renderers/rendererTypes.ts'
-
-export {
-  pileupDataFromSamRecords,
-  type SamRecordFixture,
-} from './samRecordFixture.ts'
 import type { MenuDivider, MenuItem, MenuSubHeader } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'

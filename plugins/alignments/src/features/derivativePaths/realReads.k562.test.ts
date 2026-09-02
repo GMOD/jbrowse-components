@@ -1,8 +1,7 @@
-import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { computeReadChains } from '../arcs/arcChains.ts'
+import { chainsFromSamRecords } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
-import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 
 // K562's BCR--ABL1, as PacBio Iso-Seq rather than genomic long reads. A second
 // dataset because the COLO829 fixture next door is one allele of four segments
@@ -574,12 +573,7 @@ const READS: SamRecordFixture[] = [
 ]
 
 function candidates() {
-  return computeDerivativePaths({
-    chains: computeReadChains(
-      [new Map([[0, pileupDataFromSamRecords(READS)]])],
-      [REGION],
-    ),
-  })
+  return computeDerivativePaths({ chains: chainsFromSamRecords(READS, REGION) })
 }
 
 describe('K562 BCR--ABL1 from Iso-Seq reads', () => {

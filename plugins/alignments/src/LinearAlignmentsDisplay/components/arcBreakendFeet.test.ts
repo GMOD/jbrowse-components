@@ -1,10 +1,10 @@
+import { pileupDataFromSamRecords } from '../samRecordFixture.ts'
 import {
   applyView,
   createTestAlignmentsDisplay,
   makeEmptyPileupData as emptyPileupData,
   oneReadWithInterchromMate,
   oneReadWithMate,
-  pileupDataFromSamRecords,
 } from '../testUtils.ts'
 
 // The breakend feet an interchromosomal arc draws: a short horizontal tick at

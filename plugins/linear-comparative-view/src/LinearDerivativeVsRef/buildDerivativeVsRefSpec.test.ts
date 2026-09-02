@@ -1,9 +1,9 @@
 import {
   buildDerivativeVsRefSpec,
-  derivativeName,
   derivativePathTestIds,
   selectedCandidateIndex,
 } from './buildDerivativeVsRefSpec.ts'
+import { derivativeName } from './derivativeName.ts'
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 

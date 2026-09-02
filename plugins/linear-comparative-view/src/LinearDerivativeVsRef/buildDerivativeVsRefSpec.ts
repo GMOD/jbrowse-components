@@ -9,8 +9,6 @@ import { letterSegments } from '@jbrowse/plugin-alignments'
 import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
 import { derivativeName } from './derivativeName.ts'
 
-export { derivativeName }
-
 import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 

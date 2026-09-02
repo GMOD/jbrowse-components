@@ -34,11 +34,10 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { pileupDataFromSamRecords } from '../plugins/alignments/src/LinearAlignmentsDisplay/testUtils.ts'
-import { computeReadChains } from '../plugins/alignments/src/features/arcs/arcChains.ts'
+import { chainsFromSamRecords } from '../plugins/alignments/src/LinearAlignmentsDisplay/samRecordFixture.ts'
 import { computeDerivativePaths } from '../plugins/alignments/src/features/derivativePaths/computePaths.ts'
 
-import type { SamRecordFixture } from '../plugins/alignments/src/LinearAlignmentsDisplay/testUtils.ts'
+import type { SamRecordFixture } from '../plugins/alignments/src/LinearAlignmentsDisplay/samRecordFixture.ts'
 import type { DerivativeCandidate } from '../plugins/alignments/src/features/derivativePaths/computePaths.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -546,11 +545,12 @@ function scoreLocus(
   const inWindow = records.filter(
     r => r.pos - 1 < end && r.pos - 1 + refSpan(r.CIGAR) > start,
   )
-  const data = pileupDataFromSamRecords(inWindow)
-  const chains = computeReadChains(
-    [new Map([[0, data]])],
-    [{ refName: locus.refName, start, end, displayedRegionIndex: 0 }],
-  )
+  const chains = chainsFromSamRecords(inWindow, {
+    refName: locus.refName,
+    start,
+    end,
+    displayedRegionIndex: 0,
+  })
   const candidates = computeDerivativePaths({ chains, ...opts })
   let rank = 0
   let distance = Infinity

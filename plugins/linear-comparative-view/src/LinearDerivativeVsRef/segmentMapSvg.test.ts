@@ -1,10 +1,6 @@
 import { letterSegments } from '@jbrowse/plugin-alignments'
 
-import {
-  segmentMapCaption,
-  segmentMapHeight,
-  segmentMapSvg,
-} from './segmentMapSvg.ts'
+import { segmentMapCaption, segmentMapSvg } from './segmentMapSvg.ts'
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
@@ -84,17 +80,34 @@ test('a refName with markup in it is escaped', () => {
   expect(svg).toContain('&lt;x&gt;')
 })
 
+const many = candidate(
+  Array.from({ length: 60 }, (_, i) => ({
+    refName: `chr${i}`,
+    start: 0,
+    end: 1000,
+    strand: 1,
+  })),
+)
+
+function svgHeight(svg: string) {
+  return Number(/<svg [^>]*height="(\d+)"/.exec(svg)![1])
+}
+
 test('the height follows the legend', () => {
-  const short = segmentMapHeight(letterSegments(der3.observedSegments))
-  const many = candidate(
-    Array.from({ length: 60 }, (_, i) => ({
-      refName: `chr${i}`,
-      start: 0,
-      end: 1000,
-      strand: 1,
-    })),
-  )
-  const long = segmentMapHeight(letterSegments(many.observedSegments))
-  expect(long).toBeGreaterThan(short)
-  expect(figure(many)).toContain('20 more pieces')
+  const long = figure(many)
+  expect(svgHeight(long)).toBeGreaterThan(svgHeight(figure(der3)))
+  expect(long).toContain('20 more pieces')
+})
+
+test('a route through sixty chromosomes still draws inside the frame', () => {
+  // the chromosome gaps alone were wider than the row, and every block came
+  // out with a negative width
+  const rects = [
+    ...figure(many).matchAll(/<rect x="([\d.]+)" y="\d+" width="([\d.]+)"/g),
+  ].map(m => [Number(m[1]), Number(m[2])] as const)
+  expect(rects).toHaveLength(120)
+  for (const [x, width] of rects) {
+    expect(width).toBeGreaterThan(0)
+    expect(x + width).toBeLessThanOrEqual(720)
+  }
 })

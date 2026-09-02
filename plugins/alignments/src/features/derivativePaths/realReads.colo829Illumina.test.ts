@@ -1,8 +1,8 @@
-import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 import { computeReadChains } from '../arcs/arcChains.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
-import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 
 // COLO829's der(3) again, but sequenced short. The long-read fixture next door
 // is the same three junctions in the same cell line, so the pair isolates read

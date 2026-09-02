@@ -1,5 +1,4 @@
-import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { computeReadChains } from '../arcs/arcChains.ts'
+import { chainsFromSamRecords } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 import { letterSegments } from './letterSegments.ts'
 import {
@@ -7,7 +6,7 @@ import {
   COLO829_TUMOUR as TUMOUR,
 } from './realReads.colo829.fixture.ts'
 
-import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 
 // COLO829 at the chr3 breakpoints of its der(3), tumour and matched normal, so
 // the headline number this feature reports — "N reads describe this allele" — is
@@ -19,11 +18,8 @@ import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.t
 //
 // Both fixtures are every record overlapping the window that takes part in a
 // multi-segment chain, verbatim, one selection rule for both so the tumour and
-// its control are comparable:
-//
-//   samtools view --input-fmt-option required_fields=0x87F -F 1540 \
-//     https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram \
-//     chr3:25357600-25361000
+// its control are comparable. The tumour's command is with its records in
+// realReads.colo829.fixture.ts; the normal's is
 //
 //   samtools view -F 1540 \
 //     https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam \
@@ -44,10 +40,7 @@ const NORMAL: SamRecordFixture[] = [
 ]
 
 function candidatesFor(records: SamRecordFixture[]) {
-  const chains = computeReadChains(
-    [new Map([[0, pileupDataFromSamRecords(records)]])],
-    [REGION],
-  )
+  const chains = chainsFromSamRecords(records, REGION)
   return { chains, candidates: computeDerivativePaths({ chains }) }
 }
 
@@ -154,10 +147,11 @@ describe('COLO829 der(3), tumour', () => {
           : record.SA,
       }))
     for (let by = 0; by < 20; by++) {
-      const chains = computeReadChains(
-        [new Map([[0, pileupDataFromSamRecords(shift(TUMOUR, by))]])],
-        [{ ...REGION, start: REGION.start + by, end: REGION.end + by }],
-      )
+      const chains = chainsFromSamRecords(shift(TUMOUR, by), {
+        ...REGION,
+        start: REGION.start + by,
+        end: REGION.end + by,
+      })
       const candidates = computeDerivativePaths({ chains })
       expect(candidates).toHaveLength(2)
       expect(candidates[0]!.readCount).toBe(28)
@@ -181,10 +175,7 @@ describe('COLO829BL matched normal, same window', () => {
     // Lowering minReads surfaces the mismapping as a one-read path rather than
     // conjuring the tumour's allele, i.e. the normal genuinely carries no
     // evidence for it and is not merely being filtered.
-    const chains = computeReadChains(
-      [new Map([[0, pileupDataFromSamRecords(NORMAL)]])],
-      [REGION],
-    )
+    const chains = chainsFromSamRecords(NORMAL, REGION)
     const loose = computeDerivativePaths({ chains, minReads: 1 })
     expect(loose).toHaveLength(1)
     expect(loose[0]!.refNames).not.toContain('chr10')

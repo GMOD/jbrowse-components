@@ -1,9 +1,11 @@
-import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import {
+  chainsFromSamRecords,
+  pileupDataFromSamRecords,
+} from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 import { medianReadSpan } from '../../shared/readSpans.ts'
-import { computeReadChains } from '../arcs/arcChains.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
-import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 
 // Paired-end Illumina, which is the input class this feature is NOT for, pinned
 // here because nothing else says so. The premise is that a split read is an
@@ -2065,10 +2067,7 @@ const READS: SamRecordFixture[] = [
 ]
 
 function run() {
-  const chains = computeReadChains(
-    [new Map([[0, pileupDataFromSamRecords(READS)]])],
-    [REGION],
-  )
+  const chains = chainsFromSamRecords(READS, REGION)
   return { chains, candidates: computeDerivativePaths({ chains }) }
 }
 

@@ -14,11 +14,8 @@ import type {
 // The segment map SV papers draw by hand: the reference cut into lettered pieces
 // with the copies the derivative carries of each stepped above it, and the
 // derivative below as the same letters in the order the reads cross them, a
-// prime on an inverted piece and a junction mark between segments.
-//
-// A string rather than a React tree, because it has two consumers with no
-// browser between them and the file: the picker's save button, and the website
-// generator that draws the tutorial's map from the committed COLO829 reads.
+// prime on an inverted piece and a junction mark between segments. Built as a
+// string so the picker's save button and the website generator share it.
 
 const WIDTH = 720
 const MARGIN = 16
@@ -125,57 +122,57 @@ interface Placed<T> {
   width: number
 }
 
-// Pieces laid out in reference order, a wider gap where the chromosome changes.
-// A piece the derivative skips is drawn no wider than the longest piece it
-// carries: a deletion of 2 Mb between two 5 kb arms is real, but drawn to scale
-// it is the whole figure and the arms are two slivers.
-function layoutPieces(pieces: ReferencePiece[]): Placed<ReferencePiece>[] {
-  const chromosomes = new Set(pieces.map(p => p.refName)).size
-  const available =
-    WIDTH -
-    2 * MARGIN -
-    CHROM_GAP * (chromosomes - 1) -
-    BLOCK_GAP * (pieces.length - chromosomes)
-  const carriedMax = Math.max(
-    1,
-    ...pieces.filter(p => p.copies > 0).map(p => p.end - p.start),
-  )
+// Blocks in a row, proportional to `lengths` with no block under the floor.
+// Gaps yield to blocks when there are too many of them for the row: a route
+// through sixty chromosomes still draws inside the frame.
+function place<T>(items: T[], lengths: number[], gaps: number[]): Placed<T>[] {
+  const row = WIDTH - 2 * MARGIN
+  const gapTotal = gaps.reduce((a, b) => a + b, 0)
+  const gapScale = Math.min(1, row / 2 / Math.max(1, gapTotal))
   const widths = allocateWidths(
-    pieces.map(p =>
-      Math.max(
-        1,
-        p.copies === 0
-          ? Math.min(p.end - p.start, carriedMax)
-          : p.end - p.start,
-      ),
-    ),
-    available,
+    lengths.map(len => Math.max(1, len)),
+    row - gapTotal * gapScale,
     MIN_BLOCK_WIDTH,
   )
   let x = MARGIN
-  return pieces.map((piece, i) => {
+  return items.map((item, i) => {
     if (i > 0) {
-      x += pieces[i - 1]!.refName === piece.refName ? BLOCK_GAP : CHROM_GAP
+      x += gaps[i - 1]! * gapScale
     }
-    const placed = { item: piece, x, width: widths[i]! }
+    const placed = { item, x, width: widths[i]! }
     x += placed.width
     return placed
   })
 }
 
-function layoutSegments(segments: DerivativeSegment[]) {
-  const available = WIDTH - 2 * MARGIN - BLOCK_GAP * (segments.length - 1)
-  const widths = allocateWidths(
-    segments.map(seg => Math.max(1, seg.end - seg.start)),
-    available,
-    MIN_BLOCK_WIDTH,
+// Pieces in reference order, a wider gap where the chromosome changes. A piece
+// the derivative skips is drawn no wider than the longest piece it carries: a
+// deletion of 2 Mb between two 5 kb arms is real, but drawn to scale it is the
+// whole figure and the arms are two slivers.
+function layoutPieces(pieces: ReferencePiece[]) {
+  const carriedMax = Math.max(
+    1,
+    ...pieces.filter(p => p.copies > 0).map(p => p.end - p.start),
   )
-  let x = MARGIN
-  return segments.map((seg, i) => {
-    const placed = { item: seg, x, width: widths[i]! }
-    x += placed.width + BLOCK_GAP
-    return placed
-  })
+  return place(
+    pieces,
+    pieces.map(p =>
+      p.copies === 0 ? Math.min(p.end - p.start, carriedMax) : p.end - p.start,
+    ),
+    pieces
+      .slice(1)
+      .map((p, i) =>
+        pieces[i]!.refName === p.refName ? BLOCK_GAP : CHROM_GAP,
+      ),
+  )
+}
+
+function layoutSegments(segments: DerivativeSegment[]) {
+  return place(
+    segments,
+    segments.map(seg => seg.end - seg.start),
+    segments.slice(1).map(() => BLOCK_GAP),
+  )
 }
 
 function chevron(x: number, y: number, strand: number) {
@@ -202,7 +199,7 @@ function stepY(copies: number) {
   return Y_COPIES_BASE - COPY_UNIT * Math.min(copies, MAX_STEPPED_COPIES)
 }
 
-export function segmentMapHeight(lettering: SegmentLettering) {
+function segmentMapHeight(lettering: SegmentLettering) {
   const lines = Math.min(lettering.pieces.length, MAX_LEGEND_LINES + 1)
   return Y_LEGEND + LEGEND_LINE * lines + MARGIN
 }
@@ -242,9 +239,7 @@ export function segmentMapSvg(
   )
   const height = segmentMapHeight(lettering)
   const legend = pieces.slice(0, MAX_LEGEND_LINES)
-  const out: string[] = []
-
-  out.push(
+  const out = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="${INK}">`,
     `<rect width="${WIDTH}" height="${height}" fill="white"/>`,
     text(
@@ -259,7 +254,7 @@ export function segmentMapSvg(
       'font-size': 9,
       fill: MUTED,
     }),
-  )
+  ]
 
   placedPieces.forEach(({ item: piece, x, width }, i) => {
     const y = stepY(piece.copies)

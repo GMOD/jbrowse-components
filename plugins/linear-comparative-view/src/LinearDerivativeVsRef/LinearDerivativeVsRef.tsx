@@ -33,7 +33,6 @@ import { observer } from 'mobx-react'
 import DerivativePathStrip from './DerivativePathStrip.tsx'
 import {
   buildDerivativeVsRefSpec,
-  derivativeName,
   derivativePathLabel,
   derivativePathTestIds,
   selectedCandidateIndex,
@@ -42,6 +41,7 @@ import {
   MAX_SPLIT_PANELS,
   buildSplitViewFromPath,
 } from './buildSplitViewFromPath.ts'
+import { derivativeName } from './derivativeName.ts'
 import { segmentSizeSummary } from './pathStripBlocks.ts'
 import { segmentMapCaption, segmentMapSvg } from './segmentMapSvg.ts'
 

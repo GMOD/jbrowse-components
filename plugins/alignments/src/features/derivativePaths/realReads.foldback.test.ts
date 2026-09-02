@@ -1,8 +1,7 @@
-import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { computeReadChains } from '../arcs/arcChains.ts'
+import { chainsFromSamRecords } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
-import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
 
 // A fold-back, which is the case the der(3) fixture cannot exercise: an allele
 // that visits ONE chromosome twice, in opposite orientations. COLO829's chr9
@@ -360,10 +359,7 @@ const READS: SamRecordFixture[] = [
 ]
 
 function run() {
-  const chains = computeReadChains(
-    [new Map([[0, pileupDataFromSamRecords(READS)]])],
-    [REGION],
-  )
+  const chains = chainsFromSamRecords(READS, REGION)
   return { chains, candidates: computeDerivativePaths({ chains }) }
 }
 
