@@ -48,22 +48,18 @@ release 116.
 
 ## What dN/dS says
 
-Every coding substitution between two orthologs is either synonymous, changing
-the codon but not the amino acid, or non-synonymous. Synonymous changes are
-close to invisible to selection, so their rate dS is roughly the rate at which
-mutations arrive and fix. Non-synonymous changes are seen, so their rate dN
-carries whatever selection did.
-
-The ratio is therefore read against 1. Below it, amino acid changes were removed
-faster than silent ones, which is purifying selection and is where most genes
-sit most of the time. Above it, amino acid changes fixed faster than silent
-ones, which takes positive selection to explain.
+A coding substitution is synonymous (the codon changes, the amino acid does not)
+or non-synonymous. Synonymous changes are nearly invisible to selection, so
+their rate dS approximates the mutation rate; non-synonymous changes are seen,
+so their rate dN carries what selection did. The ratio is read against 1: below
+it is purifying selection, where most genes sit, and above it takes positive
+selection to explain.
 
 ## Producing the data
 
-dS has to be large enough to estimate and small enough not to saturate, and
-rhesus macaque sits in that window against human. Chimpanzee leaves a
-denominator near zero on most genes.
+dS has to be large enough to estimate and small enough not to saturate. Rhesus
+macaque sits in that window against human; chimpanzee leaves a denominator near
+zero on most genes.
 
 ### Orthologs
 
@@ -81,17 +77,14 @@ python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
   --align_soft diamond_blastp --no_dotplot human rhesus
 ```
 
-Two traps, both silent.
+Two silent traps:
 
-The alignment file has to be **query = the first species, subject = the
-second**, which is the order jcvi would have used had it run the aligner itself.
-Reversed, every id is looked up in the wrong BED and the run ends with
-`A total of 0 anchor was found`.
-
-Ensembl **versions transcript ids in its FASTA and not in its GFF3**, so the
-proteome ends up naming `ENST00000641515.7` where the BED names
-`ENST00000641515`. Nothing matches and nothing says so. The script strips the
-version; `kaks_from_pairs.py` takes `--strip-version` for the same reason.
+- the alignment file has to be **query = the first species, subject = the
+  second**. Reversed, every id is looked up in the wrong BED and the run ends
+  with `A total of 0 anchor was found`
+- Ensembl **versions transcript ids in its FASTA and not in its GFF3**
+  (`ENST00000641515.7` against `ENST00000641515`), so nothing matches. The
+  script strips the version, and `kaks_from_pairs.py` takes `--strip-version`
 
 ### dN and dS
 
@@ -108,23 +101,18 @@ frame, and runs Nei-Gojobori.
 
 ### Filtering paralogs and low-count pairs
 
-Two species diverged once, so their true orthologs share a divergence time and
-their dS values cluster. A pair whose dS comes out an order of magnitude above
-that cluster is a paralog the aligner preferred, and the script's `--max-ds`
-removes it.
+True orthologs share one divergence time, so their dS values cluster. A pair an
+order of magnitude above the cluster is a paralog the aligner preferred, and
+`--max-ds` removes it.
 
-Sorting the table by dN/dS and reading off the top returns the pairs with almost
-nothing to divide by: _HBA1_, about as strongly conserved as a gene gets, comes
-out over 2 off a single synonymous difference, and so do the others near the
-top. `--min-syn-subs` is a floor on that count. dS is per site, so the same rate
-is much weaker evidence in a short gene than a long one.
+The top of a table sorted by dN/dS is the pairs with almost nothing to divide
+by: _HBA1_ comes out over 2 off a single synonymous difference. `--min-syn-subs`
+is a floor on that count.
 
-Every row also carries that count and a two-sided Fisher exact p, which is the
-test
+Every row also carries that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
-prescribes when the numbers of substitutions are small, where the large-sample
-Z-test over-rejects. They are `attributeColumns` like the rates, so clicking a
-link shows how much evidence is under its colour.
+prescribes for small substitution counts. Both are `attributeColumns`, so
+clicking a link shows the evidence under its colour.
 
 ## Loading the blocks table in JBrowse
 
@@ -149,61 +137,44 @@ is the `.blocks` shape
 }
 ```
 
-`attributeColumns` names the columns after the two gene columns, so each becomes
-a feature attribute visible in the detail panel, and `dn` with `ds` together
-drive **Color by... → dN/dS**. `syn_subs` and `fisher_p` are what a reader
-checks a colour against.
+`attributeColumns` names the columns after the two gene columns, and each
+becomes a feature attribute in the detail panel. `dn` and `ds` drive **Color
+by... → dN/dS**, whose ramp has 1 at its middle and 2 at its top.
 
-That ramp is fixed, with 1 at its middle and 2 at its top, so a pair's colour
-says which side of 1 it falls on.
-
-Two settings matter for a view this sparse, and both are properties of the
-`LinearSyntenyView` rather than of the track. `alpha` defaults to 0.2, tuned for
-whole-genome views where thousands of ribbons overlap; at 0.95 the colour is the
-colour. `drawCurves` renders the links as beziers, which separates stacked
-neighbours.
+Two `LinearSyntenyView` properties matter for a view this sparse: `alpha`
+defaults to 0.2 for whole-genome views where ribbons overlap, and 0.95 shows the
+colour as it is; `drawCurves` separates stacked neighbours.
 
 ## Reading the plot
 
 <Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
 
-The neighbourhood is collinear, so the ribbons run parallel and colour is the
-only thing that varies across them. Lysozyme is a good gene to find there:
-adaptive evolution of primate lysozyme is one of the older results in molecular
+The neighbourhood is collinear, so colour is the only thing that varies.
+Adaptive evolution of primate lysozyme is one of the older results in molecular
 evolution, the enzyme having been recruited as a digestive protein in foregut
 fermenters.
 
-Click the orange link and the detail panel gives the count and the p behind it:
-a handful of synonymous differences, and a Fisher p nowhere near significant.
-One pairwise comparison carries very little power, and the published result
-rests on codon models across many primate lineages.
-
-The blue is the colour that tests strongly here: a conserved gene accumulates
-enough synonymous change to measure while holding non-synonymous change near
-zero. Across the whole table the great majority of pairs sit significantly
-_below_ 1 and almost none significantly above.
+Clicking the orange link shows a handful of synonymous differences and a Fisher
+p nowhere near significant. One pairwise comparison has little power; the
+published result rests on codon models across many primate lineages. Blue is the
+colour that tests strongly: a conserved gene accumulates measurable synonymous
+change while holding non-synonymous change near zero.
 
 ## Checking the rates against the raw data
 
-The figure carries its own control. _YEATS4_ begins just past where _LYZ_ ends,
-so the two share a locus, a divergence time and a neighbourhood, and they land
-at opposite ends of the ramp. _YEATS4_ is also the pair the substitution-count
-floor keeps: it is conserved and compact, so its dS is low while its synonymous
-count is adequate.
+_YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
+divergence time and land at opposite ends of the ramp. It is conserved and
+compact, so its dS is low while its synonymous count clears the floor.
 
-The [script](#reproduce-it-end-to-end) prints the neighbourhood beside the
-genome-wide distribution as two counts: how many pairs exceed 1, and how many of
-those survive the Fisher test. Few do the first, and those that survive the
-second are about what chance alone would give at that many tests.
+The [script](#reproduce-it-end-to-end) prints two genome-wide counts: pairs
+exceeding 1, and those surviving the Fisher test. The second is about what
+chance gives at that many tests.
 
 ## Reproduce it end to end
 
 [`build_primate_selection.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_primate_selection.sh)
-runs everything above: it downloads both annotations from Ensembl, builds the
-BEDs, proteomes and gene tracks, runs DIAMOND and jcvi, measures dN and dS on
-every ortholog pair, prints the tables in the section above, downloads JBrowse,
-and writes a `config.json` with both assemblies, both gene tracks, the ortholog
-track and a session opening the locus.
+runs everything above and writes a `config.json` with both assemblies, both gene
+tracks, the ortholog track and a session opening the locus.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_selection.sh
