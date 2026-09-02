@@ -117,9 +117,10 @@ const configSchema = ConfigurationSchema(
     /**
      * #slot
      * Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`,
-     * `multirowline`, `multirowscatter`) draw one stacked plot per subtrack;
-     * overlapping modes (`multixyplot`, `multiline`, `multiscatter`) draw all
-     * subtracks together in one shared plot.
+     * `multirowline`, `multirowlinecenter`, `multirowscatter`) draw one stacked
+     * plot per subtrack; overlapping modes (`multixyplot`, `multiline`,
+     * `multilinecenter`, `multiscatter`) draw all subtracks together in one
+     * shared plot.
      * #example
      * ```json
      * {
