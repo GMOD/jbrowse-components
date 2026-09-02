@@ -63,15 +63,17 @@ export function readInfo(hit: ReadHit, region: Region, featureId: string) {
     name: readNameAt(rpcData, idx),
     start,
     end,
-    flags: rpcData.readFlags[idx],
-    mapq: rpcData.readMapqs[idx],
+    // `findRead` has already resolved `idx` against `readPositions`, so these
+    // three per-read arrays have an entry at it.
+    flags: rpcData.readFlags[idx]!,
+    mapq: rpcData.readMapqs[idx]!,
     // The worker's own normalized strand, not a re-derivation from
     // SAM_FLAG_REVERSE. Identical for BAM/CRAM (whose `strand` IS that flag),
     // but a PAF/synteny block carries a real strand and no flags at all — so the
     // flag read reported every reverse-strand block as `(+)` in the hover
     // tooltip and in `hoveredFeature`. Same reasoning as `strandKey` in
     // shared/groupFeatures.ts.
-    strand: rpcData.readStrands[idx] ?? 1,
+    strand: rpcData.readStrands[idx]!,
     refName: region.refName,
     assemblyName: region.assemblyName,
   }

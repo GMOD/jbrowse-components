@@ -26,6 +26,7 @@ import {
   ARC_MARKER_PASS,
   ARC_PASS,
 } from '../../features/arcs/packGpu.ts'
+import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { CLIP_PASS } from '../../features/clip/packGpu.ts'
 import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
 import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
@@ -629,12 +630,17 @@ export const GPU_COVERAGE_PASS: Record<CoverageLayerId, PileupPass> = {
 // A separate list from the two above because the band packs from a separate RPC
 // result plus the configured line width (`ArcsPackData`), not from the pileup
 // payload — and it has no per-pass gate: the band as a whole is drawn or not.
-const ARC_PASSES: InstancePass<ArcsPackData>[] = [
+export const ARC_PASSES: InstancePass<ArcsPackData>[] = [
   ARC_LINE_PASS,
   ARC_PASS,
   ARC_FLAT_PASS,
   ARC_MARKER_PASS,
 ]
+
+// The feed an arc pass packs zero instances from, which is how the band's
+// buffers are released without a whole-region wipe (see `syncRegion`). Shared
+// rather than rebuilt per call: the packers only read it.
+const EMPTY_ARCS = emptyArcsUploadData()
 
 // Everything the HAL compiles, derived from the three registries above plus the
 // packer-less overlay pass, so that registering a pass is not a fourth wiring
@@ -833,17 +839,25 @@ export class GpuAlignmentsRenderer
    * they were preparing for.
    *
    * The gate is whole-region on purpose, and so is the wipe that opens the
-   * rebuild branch: any change to any part of a region deletes and rebuilds
-   * all of it, which is what preserves "a pass whose data went empty leaves no
-   * stale buffer" — a half that vanished (pileup gone, or arcs toggled off)
-   * uploads nothing, so only the wipe releases its buffers.
+   * rebuild branch: a new layout run deletes and rebuilds all of it, which is
+   * what preserves "a pass whose data went empty leaves no stale buffer" — a
+   * pileup that vanished uploads nothing, so only the wipe releases its
+   * buffers.
    *
-   * The recolor path is the one exception, and it is safe for a narrower reason:
-   * an unchanged `readYs` means the payload is the *same layout run* with only
-   * the two per-read color arrays rebaked (the color tier spreads over it —
-   * `overlayReadTagColors` / `overlayReadColorCategories`), so no other pass's
-   * data can have gone empty and only the read pass needs rewriting. Same shape
-   * as `GpuSyntenyRenderer.getInterleaved`'s geometry/color split.
+   * An unchanged `readYs` is what lets the two narrow paths skip that wipe: it
+   * means the payload is the *same layout run*, so every array feeding every
+   * pileup and coverage pass is the object the GPU already holds, and only what
+   * spreads over it can differ. Two things do, and each rewrites its own passes:
+   *
+   * - the two per-read color arrays the color tier rebakes
+   *   (`overlayReadTagColors` / `overlayReadColorCategories`) → the read pass.
+   *   Same shape as `GpuSyntenyRenderer.getInterleaved`'s geometry/color split.
+   * - the arc feed and its stroke width → `ARC_PASSES`. `arcsByGroup` allocates
+   *   fresh maps for every arc-tier setting (`minInterchromSupport` is a live
+   *   slider), so without this each tick repacked all eighteen pileup and
+   *   coverage passes for a change confined to the band.
+   *
+   * They can land together, and then both narrow uploads run.
    */
   private syncRegion(
     idx: number,
@@ -862,13 +876,12 @@ export class GpuAlignmentsRenderer
       arcLineWidth,
     })
 
-    if (
-      prev &&
+    const sameLayoutRun =
+      prev !== undefined &&
       prev.density === undefined &&
-      prev.layout === data?.readYs &&
-      prev.arcs === arcs &&
-      prev.arcLineWidth === arcLineWidth
-    ) {
+      prev.layout === data?.readYs
+
+    if (sameLayoutRun) {
       if (
         data &&
         (prev.tagColors !== data.readTagColors ||
@@ -876,28 +889,43 @@ export class GpuAlignmentsRenderer
       ) {
         uploadPass(this.hal, idx, GPU_PILEUP_PASS.read, data)
       }
-      return
+      if (prev.arcs !== arcs || prev.arcLineWidth !== arcLineWidth) {
+        // A band switched off uploads the empty feed rather than skipping the
+        // pass: `uploadBuffer` releases the prior buffer before it looks at the
+        // count, so a zero-instance upload IS the per-pass delete this path
+        // needs in place of the whole-region wipe.
+        this.uploadArcPasses(idx, arcs ?? EMPTY_ARCS, arcLineWidth)
+      }
+    } else {
+      this.hal.deleteRegion(idx)
+      if (data) {
+        // Every pileup layer and every coverage-band pass, by construction — the
+        // registries are exhaustive over their key sets and the pass carries its
+        // own packer. Uploads are unconditional: a layer's `enabled` gate belongs
+        // to the DRAW (see COVERAGE_LAYERS).
+        for (const pass of Object.values(GPU_PILEUP_PASS)) {
+          uploadPass(this.hal, idx, pass, data)
+        }
+        for (const pass of Object.values(GPU_COVERAGE_PASS)) {
+          uploadPass(this.hal, idx, pass, data)
+        }
+      }
+      // The arc band packs from its own input — a separate RPC result, absent
+      // whenever the band is off, plus the configured line width. The wipe above
+      // already released its buffers, so nothing is uploaded when it is absent.
+      if (arcs) {
+        this.uploadArcPasses(idx, arcs, arcLineWidth)
+      }
     }
+  }
 
-    this.hal.deleteRegion(idx)
-    if (data) {
-      // Every pileup layer and every coverage-band pass, by construction — the
-      // registries are exhaustive over their key sets and the pass carries its
-      // own packer. Uploads are unconditional: a layer's `enabled` gate belongs
-      // to the DRAW (see COVERAGE_LAYERS).
-      for (const pass of Object.values(GPU_PILEUP_PASS)) {
-        uploadPass(this.hal, idx, pass, data)
-      }
-      for (const pass of Object.values(GPU_COVERAGE_PASS)) {
-        uploadPass(this.hal, idx, pass, data)
-      }
-    }
-    // The arc band packs from its own input — a separate RPC result, absent
-    // whenever the band is off, plus the configured line width.
-    if (arcs) {
-      for (const pass of ARC_PASSES) {
-        uploadPass(this.hal, idx, pass, { arcs, baseWidth: arcLineWidth })
-      }
+  private uploadArcPasses(
+    idx: number,
+    arcs: ArcsUploadData,
+    arcLineWidth: number,
+  ) {
+    for (const pass of ARC_PASSES) {
+      uploadPass(this.hal, idx, pass, { arcs, baseWidth: arcLineWidth })
     }
   }
 

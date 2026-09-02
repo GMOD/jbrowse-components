@@ -5,7 +5,7 @@ import {
 import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
-import { formatChainTooltip, formatFeatureLabel } from './tooltipUtils.ts'
+import { formatReadTooltip, formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -20,6 +20,8 @@ function makeRpcData(
     ...namesToBlock(['readA']),
     readPositions: new Uint32Array([1000, 1100]),
     readFlags: new Uint16Array([1]), // paired
+    readMapqs: new Uint8Array([60]),
+    readStrands: Int8Array.from([1]),
     readInsertSizes: new Float32Array([500]),
     readPairOrientations: new Uint8Array([1]), // LR
     ...nextRefsToTable(['chr1']),
@@ -34,9 +36,9 @@ function makeRpcData(
   } as PileupDataResult
 }
 
-describe('formatChainTooltip pair anomalies', () => {
+describe('formatReadTooltip pair anomalies', () => {
   it('reports BOTH orientation and insert size when both are abnormal', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({
         readPairOrientations: new Uint8Array([2]), // RL
         readInsertSizes: new Float32Array([5000]), // > upper
@@ -49,7 +51,7 @@ describe('formatChainTooltip pair anomalies', () => {
   })
 
   it('reports both for an abnormal-orientation short-insert pair', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({
         readPairOrientations: new Uint8Array([3]), // RR
         readInsertSizes: new Float32Array([50]), // < lower
@@ -62,7 +64,7 @@ describe('formatChainTooltip pair anomalies', () => {
   })
 
   it('normal LR pair with a long insert shows only the insert row', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({ readInsertSizes: new Float32Array([5000]) }),
       0,
       'chr1',
@@ -73,7 +75,7 @@ describe('formatChainTooltip pair anomalies', () => {
   })
 
   it('unmapped mate pre-empts insert/orientation anomalies', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({
         readFlags: new Uint16Array([1 | 8]), // paired + mate unmapped
         readPairOrientations: new Uint8Array([2]),
@@ -88,7 +90,7 @@ describe('formatChainTooltip pair anomalies', () => {
   })
 
   it('inter-chromosomal mate pre-empts insert/orientation anomalies', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({
         ...nextRefsToTable(['chr2']),
         readInterchrom: new Uint8Array([1]),
@@ -111,7 +113,7 @@ describe('formatChainTooltip pair anomalies', () => {
   // with both names in file space, and what the read fill already uses — is the
   // only thing that decides this.
   it('does not call an aliased same-chromosome mate inter-chromosomal', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({
         ...nextRefsToTable(['chr1']), // file naming
         readInterchrom: new Uint8Array([0]), // worker: same chromosome
@@ -132,7 +134,7 @@ describe('read tooltip location', () => {
   // agree with the context menu's "Copy location", the feature detail widget,
   // and the SNP tooltip on the same read.
   it('renders the read start 1-based', () => {
-    expect(formatChainTooltip(makeRpcData(), 0, 'chr1')).toContain(
+    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain(
       'chr1:1,001-1,100',
     )
   })
@@ -142,7 +144,7 @@ describe('read tooltip location', () => {
   // The connecting line between mates is a deliberate hover target — more so
   // now that chain mode draws one across displayed regions.
   it('spans the whole chain, not the read the hit test happened to name', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({
         readChainIndices: new Uint32Array([0]),
         chainAbsMinStarts: new Uint32Array([1000]),
@@ -157,9 +159,51 @@ describe('read tooltip location', () => {
   // A hover on an ordinary read carries no chain arrays; the read's own span is
   // the right answer there and must still be what it reports.
   it('falls back to the read span with no chain metadata', () => {
-    expect(formatChainTooltip(makeRpcData(), 0, 'chr1')).toContain(
+    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain(
       'chr1:1,001-1,100',
     )
+  })
+
+  // The strand used to be the plain-pileup hover's alone, from a separate
+  // formatter reading `getFeatureInfoById`. It is the same normalized
+  // `readStrands` either way — a PAF/synteny block has one and no flags — and
+  // chain mode dropped it entirely.
+  it('prints the strand on the location line', () => {
+    expect(
+      formatReadTooltip(
+        makeRpcData({ readStrands: Int8Array.from([-1]) }),
+        0,
+        'chr1',
+      ),
+    ).toContain('chr1:1,001-1,100 (-)')
+    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain(
+      'chr1:1,001-1,100 (+)',
+    )
+  })
+
+  // 0 is a real, and the most interesting, mapping quality — a multi-mapping
+  // read — so the row is written from the value and not from its truthiness.
+  it('reports the mapping quality', () => {
+    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain('MAPQ: 60')
+    expect(
+      formatReadTooltip(
+        makeRpcData({ readMapqs: new Uint8Array([0]) }),
+        0,
+        'chr1',
+      ),
+    ).toContain('MAPQ: 0')
+  })
+
+  // 255 is the spec's "not available" sentinel, named the same way the legend
+  // and the MAPQ group-by name it.
+  it('names an unavailable mapping quality rather than reporting 255', () => {
+    const tip = formatReadTooltip(
+      makeRpcData({ readMapqs: new Uint8Array([255]) }),
+      0,
+      'chr1',
+    )
+    expect(tip).toContain('MAPQ unavailable')
+    expect(tip).not.toContain('255')
   })
 
   it('formats a feature label 1-based, with the strand only when asked', () => {
@@ -195,14 +239,14 @@ describe('read tooltip location', () => {
 // own record — `consensusChainStrandFrames` settles it from the other chains on
 // screen — so this row is what connects the color to the legend entry that
 // explains it.
-describe('formatChainTooltip names the color bucket', () => {
+describe('formatReadTooltip names the color bucket', () => {
   const framed = makeRpcData({
     readStrands: Int8Array.from([-1]),
     readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.fwdStrand]),
   })
 
   it('reports the wording the legend uses, not the raw table', () => {
-    const tip = formatChainTooltip(framed, 0, 'chr1', c =>
+    const tip = formatReadTooltip(framed, 0, 'chr1', c =>
       readColorCategoryLabel(c, readCategoryLabelOverrides(undefined, true)),
     )
     // the confusing pair, and the reason the row exists: a reverse-MAPPED
@@ -214,14 +258,14 @@ describe('formatChainTooltip names the color bucket', () => {
   })
 
   it('says nothing when no label resolver is supplied', () => {
-    expect(formatChainTooltip(framed, 0, 'chr1')).not.toContain('Color:')
+    expect(formatReadTooltip(framed, 0, 'chr1')).not.toContain('Color:')
   })
 
   // `readColorCategories` ships EMPTY from the worker and is baked on the main
   // thread, so a hover can beat the bake. Every other row of this tooltip is
   // readable then, and this one has to be absent rather than "Color: undefined".
   it('says nothing before the categories are baked', () => {
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({ readColorCategories: new Uint8Array(0) }),
       0,
       'chr1',
@@ -234,7 +278,7 @@ describe('formatChainTooltip names the color bucket', () => {
   it('omits the row for a bucket with no single name', () => {
     // the mapq/tag/modification ramps have no one swatch, so `undefined` must
     // append nothing rather than an empty row
-    const tip = formatChainTooltip(
+    const tip = formatReadTooltip(
       makeRpcData({
         readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.mapq]),
       }),

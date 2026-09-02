@@ -6,7 +6,6 @@ import {
   VerticalScrollbar,
 } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
-import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
@@ -87,8 +86,7 @@ const PileupBody = observer(function PileupBody({
     handleClick,
   } = useAlignmentsBase(model)
 
-  const view = getContainingView(model) as { scrollZoom?: boolean }
-  const { scrollZoom } = view
+  const { scrollZoom } = model.view
   const canvasId = useId()
   const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
@@ -100,7 +98,7 @@ const PileupBody = observer(function PileupBody({
   // reaches a listener on the canvas. See `useVirtualScrollWheel`.
   usePanelVirtualScroll(panel, model, {
     viewportHeight: model.pileupViewportHeight,
-    scrollZoom: !!scrollZoom,
+    scrollZoom,
   })
 
   if (!width) {

@@ -76,15 +76,21 @@ export function getReadsMenuItems(model: ReadsModel) {
       },
       { pin: model.showLegendDisplayTypeDefault },
     ),
-    toggleItem('Show coverage', model.showCoverage, model.setShowCoverage),
-    toggleItem('Show pileup', model.showPileup, model.setShowPileup),
+    toggleItem('Show coverage', model.showCoverage, show => {
+      model.setShowCoverage(show)
+    }),
+    toggleItem('Show pileup', model.showPileup, show => {
+      model.setShowPileup(show)
+    }),
     // Only while grouping is in effect, so it sits next to the pileup toggle
     // it modifies rather than in the Group-by dimension list.
     ...collapseGroupRowsItems(model),
     toggleItem(
       'Show mismatches',
       model.showMismatches,
-      model.setShowMismatches,
+      show => {
+        model.setShowMismatches(show)
+      },
       {
         helpText:
           'Uncheck to hide how each read differs from the reference — ' +
@@ -130,7 +136,9 @@ export function getReadsMenuItems(model: ReadsModel) {
     toggleItem(
       'Show interbase indicators',
       model.showInterbaseIndicators,
-      model.setShowInterbaseIndicators,
+      show => {
+        model.setShowInterbaseIndicators(show)
+      },
       {
         disabled: !model.showCoverage,
         disabledHelpText:

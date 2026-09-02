@@ -21,6 +21,20 @@ const SNP_FREQUENCY_OPTIONS = [
   { value: '0.2', label: 'Above 20%' },
 ]
 
+// Which row reads as selected for a fraction that is none of the five. The slot
+// is a plain number a config can declare, so 0.15 used to tick nothing and the
+// group reported "no floor set" over a floor that was in effect. Nearest wins,
+// ties to the lower since the list is ascending; the click still writes the
+// row's own exact value, so opening the menu never silently rounds the setting.
+function nearestSnpFrequencyOption(fraction: number) {
+  return SNP_FREQUENCY_OPTIONS.reduce((best, option) =>
+    Math.abs(Number(option.value) - fraction) <
+    Math.abs(Number(best.value) - fraction)
+      ? option
+      : best,
+  ).value
+}
+
 // Single "Coverage" submenu: scale type, autoscale, min/max range dialog, and
 // the band's allele-fraction floor. The coverage band exposes the canonical
 // ScoreScaleModel shape, so this is the shared wiggle-core Score submenu
@@ -56,7 +70,7 @@ export function getCoverageMenuItem(model: CoverageModel) {
         label: 'Color SNPs above...',
         subMenu: radioItems(
           SNP_FREQUENCY_OPTIONS,
-          String(model.coverageSnpMinFrequency),
+          nearestSnpFrequencyOption(model.coverageSnpMinFrequency),
           v => {
             model.setCoverageSnpMinFrequency(Number(v))
           },

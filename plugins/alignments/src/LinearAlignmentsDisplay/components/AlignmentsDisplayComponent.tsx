@@ -2,7 +2,6 @@ import { Suspense } from 'react'
 
 import { useMouseState } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
-import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
@@ -16,7 +15,6 @@ import PileupBody from './PileupComponent.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The tooltip, in its own component so that following the pointer re-renders
 // the tooltip and nothing else.
@@ -76,13 +74,12 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
 }) {
   // The guard travels with the read it was written for. Hiding a track detaches
   // the display, firing MobX reactions synchronously inside the click handler —
-  // and this observer reads `getContainingView`, which throws outright on a
-  // detached node. Relying on the parent re-rendering first would be relying on
-  // reaction order.
+  // and this observer reads `model.view`, which throws outright on a detached
+  // node. Relying on the parent re-rendering first would be relying on reaction
+  // order.
   if (!isAlive(model)) {
     return null
   }
-  const view = getContainingView(model) as LinearGenomeViewModel
   const hasOverflow = model.scrollableHeight > 0
   return (
     // The pileup's own scrollbar sits on the same edge, so the row has to clear
@@ -95,7 +92,7 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
       <TrackHeightIndicator
         heightMode={model.heightMode}
         hasOverflow={hasOverflow}
-        scrollZoom={view.scrollZoom}
+        scrollZoom={model.view.scrollZoom}
         noun={model.featureNoun}
         onSetHeightMode={mode => {
           model.setHeightMode(mode)

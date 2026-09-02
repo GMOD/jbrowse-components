@@ -104,3 +104,24 @@ test('a sort with no center line warns and leaves the ordering alone', () => {
     'warning',
   )
 })
+
+// One radio group, one write. The three non-slot orderings are mutually
+// exclusive, so each is stated as the whole answer rather than leaving a caller
+// to spell two flags plus a clear and get one of them wrong.
+test.each([
+  ['position', false, false],
+  ['length', true, false],
+  ['spliced', false, true],
+] as const)(
+  'setLayoutOrder(%s) writes both flags and drops the sort',
+  (order, large, spliced) => {
+    const { display } = createDisplay({ start: 0, end: 50_000 })
+    display.setSortedBy('basePair')
+
+    display.setLayoutOrder(order)
+
+    expect(display.largeFeaturesFirst).toBe(large)
+    expect(display.splicedReadsFirst).toBe(spliced)
+    expect(display.sortedBy).toBeUndefined()
+  },
+)

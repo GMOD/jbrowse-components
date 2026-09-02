@@ -1,4 +1,5 @@
 import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
@@ -64,6 +65,10 @@ function makeModel() {
     minInterchromSupport: DEFAULT_MIN_INTERCHROM_SUPPORT,
     setMinInterchromSupport(v: number) {
       this.minInterchromSupport = v
+    },
+    readConnectionsLineWidth: 1,
+    setReadConnectionsLineWidth(v: number) {
+      this.readConnectionsLineWidth = v
     },
     // The SV-channel row is served from this menu, so its two settings from
     // outside it are on the mock as well.
@@ -248,4 +253,65 @@ test('every toggle keeps the menu open', () => {
   const toggles = rows.filter(i => 'checked' in i)
   expect(toggles.length).toBeGreaterThan(0)
   expect(toggles.every(i => staysOpenOnClick(i))).toBe(true)
+})
+
+// The `readConnectionsLineWidth` slot had a setter and no way to reach it: every
+// renderer and the SVG export read the width, and nothing in the UI wrote one.
+describe('arc line width row', () => {
+  function lineWidthRow(model: ReturnType<typeof makeModel>) {
+    const row = bandOptionsSubMenu(model).subMenu.find(
+      i => 'label' in i && i.label === 'Line width',
+    )
+    if (row?.type !== 'custom') {
+      throw new Error('no line width slider row')
+    }
+    return row
+  }
+
+  // `findBy*`, not `getBy*`: makeSizeMenu draws the row through `lazy()`, so the
+  // first paint is its Suspense fallback.
+  test('the slider writes the width the renderers read', async () => {
+    const model = makeModel()
+    model.readConnections = 'arc'
+    render(<>{lineWidthRow(model).render(() => {})}</>)
+
+    const input = (
+      await screen.findByTestId('arc-line-width-slider')
+    ).querySelector('input')!
+    fireEvent.change(input, { target: { value: 3 } })
+
+    expect(model.readConnectionsLineWidth).toBe(3)
+  })
+
+  test('the row lives with the other band options, so it is gated with them', () => {
+    const model = makeModel()
+    expect(bandOptionsSubMenu(model).disabled).toBe(true)
+    expect(lineWidthRow(model)).toBeDefined()
+  })
+})
+
+// A diagnostic overlay, so the row is not offered in a shipped build. The
+// setting survives — a snapshot carrying it still draws in a dev build — only
+// the way to reach it from the track menu goes.
+describe('the debug arc-geometry row is development-only', () => {
+  const { NODE_ENV } = process.env
+
+  afterEach(() => {
+    process.env.NODE_ENV = NODE_ENV
+  })
+
+  function hasDebugRow(model: ReturnType<typeof makeModel>) {
+    return bandOptionsSubMenu(model).subMenu.some(
+      i => 'label' in i && i.label === 'Debug: show arc geometry',
+    )
+  }
+
+  test('present outside production', () => {
+    expect(hasDebugRow(makeModel())).toBe(true)
+  })
+
+  test('absent in a production build', () => {
+    process.env.NODE_ENV = 'production'
+    expect(hasDebugRow(makeModel())).toBe(false)
+  })
 })

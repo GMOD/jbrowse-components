@@ -16,9 +16,7 @@ function makeModel(init?: {
     largeFeaturesFirst: init?.largeFeaturesFirst ?? false,
     splicedReadsFirst: init?.splicedReadsFirst ?? false,
     setSortedBy: jest.fn(),
-    clearSortedBy: jest.fn(),
-    setLargeFeaturesFirst: jest.fn(),
-    setSplicedReadsFirst: jest.fn(),
+    setLayoutOrder: jest.fn(),
   }
 }
 
@@ -159,29 +157,15 @@ describe('curated modes', () => {
 })
 
 describe('sort menu keeps the two ordering slots mutually exclusive', () => {
-  test('Start location clears every slot (it is the reset)', () => {
+  test.each([
+    ['Start location', 'position'],
+    ['Longest reads first', 'length'],
+    ['Spliced reads first', 'spliced'],
+  ])('%s is one setLayoutOrder(%s) write', (label, order) => {
     const model = makeModel({ largeFeaturesFirst: true })
-    radio(model, 'Start location').onClick()
-    expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(false)
-    expect(model.setSplicedReadsFirst).toHaveBeenCalledWith(false)
-    expect(model.clearSortedBy).toHaveBeenCalled()
+    radio(model, label).onClick()
+    expect(model.setLayoutOrder).toHaveBeenCalledWith(order)
     expect(model.setSortedBy).not.toHaveBeenCalled()
-  })
-
-  test('Longest reads first clears the sort and the other flag before enabling itself', () => {
-    const model = makeModel({ sortedBy: sorted('basePair') })
-    radio(model, 'Longest reads first').onClick()
-    expect(model.clearSortedBy).toHaveBeenCalled()
-    expect(model.setSplicedReadsFirst).toHaveBeenCalledWith(false)
-    expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(true)
-  })
-
-  test('Spliced reads first clears the sort and the other flag before enabling itself', () => {
-    const model = makeModel({ largeFeaturesFirst: true })
-    radio(model, 'Spliced reads first').onClick()
-    expect(model.clearSortedBy).toHaveBeenCalled()
-    expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(false)
-    expect(model.setSplicedReadsFirst).toHaveBeenCalledWith(true)
   })
 
   // The sort radios delegate the mutual exclusion to setSortSlot, which drops
@@ -197,7 +181,7 @@ describe('sort menu keeps the two ordering slots mutually exclusive', () => {
       const model = makeModel({ largeFeaturesFirst: true })
       radio(model, label).onClick()
       expect(model.setSortedBy).toHaveBeenCalledWith(type)
-      expect(model.setLargeFeaturesFirst).not.toHaveBeenCalled()
+      expect(model.setLayoutOrder).not.toHaveBeenCalled()
     },
   )
 })

@@ -31,9 +31,22 @@ interface ReadConnectionsModel {
   setMinInterchromSupport: (support: number) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
+  readConnectionsLineWidth: number
+  setReadConnectionsLineWidth: (width: number) => void
   debugArcGeometry: boolean
   setDebugArcGeometry: (on: boolean) => void
 }
+
+// The `readConnectionsLineWidth` slot's default, spelled again here for the
+// reset item and the is-default marker — the same duplication
+// `DEFAULT_MIN_INTERCHROM_SUPPORT` carries, and for the same reason: the config
+// docgen renders a slot default off its AST source text, so the slot cannot name
+// a constant.
+const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
+
+// No @types/node here, and bundlers string-replace the expression, so this is
+// the minimal type displayAutoruns.ts gives it.
+declare const process: { env: { NODE_ENV?: string } }
 
 // Everything about pairing/connecting reads lives here (arcs, read cloud, linked
 // reads, bezier). Proper-pair / singleton visibility is a per-read-category
@@ -93,7 +106,9 @@ export function getReadConnectionsMenuItem(
     toggleItem(
       'Use curved connectors',
       model.showBezierConnections,
-      model.setShowBezierConnections,
+      flag => {
+        model.setShowBezierConnections(flag)
+      },
       {
         helpText:
           'draw a curve between a read and its mate or split-read segment; curve color marks the connection type (e.g. inversion, deletion, pair orientation — see the legend). Hover a curve to identify it. A connection between two different displayed regions is drawn this way whatever this is set to, since the per-region pass cannot reach across one.',
@@ -115,7 +130,9 @@ export function getReadConnectionsMenuItem(
         toggleItem(
           'Show concordant-pair arcs',
           model.drawProperPairArcs,
-          model.setDrawProperPairArcs,
+          draw => {
+            model.setDrawProperPairArcs(draw)
+          },
           {
             helpText:
               'Uncheck to draw only the arcs that carry a category — abnormal insert size or orientation, and split junctions — leaving out the ordinary pairs. "Concordant" means exactly what it means for the Proper pairs filter under Filter by...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That setting hides the reads; this one hides their arcs, so you can keep the pileup whole and still read the band. On deep coverage it is the difference between a readable band and a solid mass — at 300x roughly 99 arcs in 100 are the ordinary case.',
@@ -124,7 +141,9 @@ export function getReadConnectionsMenuItem(
         toggleItem(
           'Show off-screen mate connections',
           model.drawLongRange,
-          model.setDrawLongRange,
+          draw => {
+            model.setDrawLongRange(draw)
+          },
           {
             helpText:
               'draw an arc to a read whose mate is elsewhere on this chromosome and not loaded in the current view; the arc renders as vertical lines at this zoom. Inter-chromosomal partners have their own setting below and do not need this one.',
@@ -133,7 +152,9 @@ export function getReadConnectionsMenuItem(
         toggleItem(
           'Show inter-chromosomal pairs',
           model.drawInter,
-          model.setDrawInter,
+          draw => {
+            model.setDrawInter(draw)
+          },
           {
             helpText:
               'reads whose mate — or split-read segment — maps to a different chromosome. Drawn as an arc when both chromosomes are displayed and as a connector tick at each breakpoint otherwise. Independent of the setting above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
@@ -168,15 +189,49 @@ export function getReadConnectionsMenuItem(
             model.setMinInterchromSupport(DEFAULT_MIN_INTERCHROM_SUPPORT)
           },
         }),
-        toggleItem(
-          'Debug: show arc geometry',
-          model.debugArcGeometry,
-          model.setDebugArcGeometry,
-          {
-            helpText:
-              'diagnostic overlay: outlines the band, the pre-unclamp apex ceiling, and every arc traced from the same radii the renderer uses, with rx/ry/aspect printed for the widest few. An outline that does not sit on its painted arc is a real disagreement between the model and the paint.',
+        makeSizeMenu({
+          label: 'Line width',
+          title: 'Arc line width',
+          // Tier 4 (repaint only), so a live onChange is fine. Small-topped
+          // because the strokes of a deep band merge into each other well before
+          // 5px, and half-px steps because 1.5 is a real width on a retina
+          // display rather than a rounding of 2.
+          scale: 'linear',
+          min: 1,
+          max: 5,
+          step: 0.5,
+          unit: 'px',
+          getValue: () => model.readConnectionsLineWidth,
+          isDefault:
+            model.readConnectionsLineWidth ===
+            DEFAULT_READ_CONNECTIONS_LINE_WIDTH,
+          onChange: width => {
+            model.setReadConnectionsLineWidth(width)
           },
-        ),
+          onReset: () => {
+            model.setReadConnectionsLineWidth(
+              DEFAULT_READ_CONNECTIONS_LINE_WIDTH,
+            )
+          },
+        }),
+        // A diagnostic, so it is not in a shipped build's track menu. The
+        // setting itself stays — a session snapshot carrying it still draws the
+        // overlay in a dev build — it is only the row that goes.
+        ...(process.env.NODE_ENV === 'production'
+          ? []
+          : [
+              toggleItem(
+                'Debug: show arc geometry',
+                model.debugArcGeometry,
+                on => {
+                  model.setDebugArcGeometry(on)
+                },
+                {
+                  helpText:
+                    'diagnostic overlay: outlines the band, the pre-unclamp apex ceiling, and every arc traced from the same radii the renderer uses, with rx/ry/aspect printed for the widest few. An outline that does not sit on its painted arc is a real disagreement between the model and the paint.',
+                },
+              ),
+            ]),
       ],
     },
   ]

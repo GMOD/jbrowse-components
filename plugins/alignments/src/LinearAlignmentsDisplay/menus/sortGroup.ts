@@ -20,11 +20,9 @@ const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
 interface SortByModel {
   sortedBy?: SortedBy
   setSortedBy: (type: string, tag?: string) => void
-  clearSortedBy: () => void
   largeFeaturesFirst: boolean
-  setLargeFeaturesFirst: (flag: boolean) => void
   splicedReadsFirst: boolean
-  setSplicedReadsFirst: (flag: boolean) => void
+  setLayoutOrder: (order: LayoutOrder) => void
 }
 
 // One ordering at a time, so a single radio group. Most modes write a `sortedBy`
@@ -33,10 +31,10 @@ interface SortByModel {
 // radios because they compete for the same ordering. "Start location" is the
 // unsorted default, so it doubles as the reset — no separate "Clear".
 //
-// Only the two flag radios clear the other slots here. `setSortSlot` drops
-// both flags as it writes `sortedBy`, so a sort that never lands (no valid
-// center line, a cancelled tag dialog) leaves the ordering alone instead of
-// unchecking every radio.
+// The three non-slot orderings go through `setLayoutOrder`, one write for the
+// whole radio group. `setSortSlot` drops both flags as it writes `sortedBy`, so
+// a sort that never lands (no valid center line, a cancelled tag dialog) leaves
+// the ordering alone instead of unchecking every radio.
 //
 // Strand / base pair / tag anchor on the center-line column, which `setSortedBy`
 // reveals when applied. Interbase types from the context menu's "sort at
@@ -49,13 +47,11 @@ interface SortByModel {
 // ("Longest reads first"); rows that lead with it capitalize through
 // `capitalizeFirst`.
 
-export type SortMode =
-  | 'position'
-  | 'strand'
-  | 'basePair'
-  | 'tag'
-  | 'length'
-  | 'spliced'
+// The orderings held as layout flags rather than a `sortedBy` slot, and so the
+// argument `setLayoutOrder` takes.
+export type LayoutOrder = 'position' | 'length' | 'spliced'
+
+export type SortMode = LayoutOrder | 'strand' | 'basePair' | 'tag'
 
 const ALL_SORT_MODES: SortMode[] = [
   'position',
@@ -125,19 +121,13 @@ export function getSortByMenuItem(
   })
   const items: Record<SortMode, RadioMenuItem> = {
     position: radio('position', 'Start location', () => {
-      model.setLargeFeaturesFirst(false)
-      model.setSplicedReadsFirst(false)
-      model.clearSortedBy()
+      model.setLayoutOrder('position')
     }),
     length: radio('length', `Longest ${noun}s first`, () => {
-      model.clearSortedBy()
-      model.setSplicedReadsFirst(false)
-      model.setLargeFeaturesFirst(true)
+      model.setLayoutOrder('length')
     }),
     spliced: radio('spliced', `Spliced ${noun}s first`, () => {
-      model.clearSortedBy()
-      model.setLargeFeaturesFirst(false)
-      model.setSplicedReadsFirst(true)
+      model.setLayoutOrder('spliced')
     }),
     strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
       model.setSortedBy('strand')

@@ -36,9 +36,10 @@ types").
 
 - **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
   `colorTagMap` is the canonical trap.
-- **A color input in `groupLayoutContext` costs a full relayout** and loses the
-  recolor fast path, since layout allocates a fresh `readYs` the upload memo
-  keys on. A value the layout only _sometimes_ spends goes in as a thunk.
+- **A color input in `groupLayoutContext` costs a full relayout** and loses both
+  narrow upload paths (recolor, and arc-only), since layout allocates a fresh
+  `readYs` the upload memo keys on. A value the layout only _sometimes_ spends
+  goes in as a thunk.
 - **Tier 4 repaints the whole canvas**, so per-mousemove state must not be
   there. Hover is a React overlay; selection stays in `renderState`.
 

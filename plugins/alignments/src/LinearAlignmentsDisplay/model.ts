@@ -38,6 +38,7 @@ import HeightModeMixin, {
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin, {
   fetchEachRegion,
+  onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { densityBinSize } from '@jbrowse/display-kit/densityBins'
@@ -207,6 +208,7 @@ import type {
   SashimiArcsMode,
 } from './constants.ts'
 import type { AlignmentLane } from './lanes.ts'
+import type { LayoutOrder } from './menus/sortGroup.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type {
@@ -235,6 +237,13 @@ export { ColorScheme } from './constants.ts'
 // group-label overlay, and the plugin's public surface.
 export { laneExpandable }
 export type { AlignmentLane }
+
+// Screen-px geometry of one section's coverage band, named by the hover
+// volatile and by the action that writes it.
+interface HoverCoverageBand {
+  topOffset: number
+  coverageHeight: number
+}
 
 // colorBy.type → shader colorScheme index, resolved through the shared
 // COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
@@ -479,9 +488,7 @@ export default function stateModelFactory(
            * it lands on the hovered group's coverage band, not always the top
            * one. `undefined` when not hovering coverage.
            */
-          hoverCoverageBand: undefined as
-            | { topOffset: number; coverageHeight: number }
-            | undefined,
+          hoverCoverageBand: undefined as HoverCoverageBand | undefined,
           /**
            * #volatile
            * The read-connection arc under the cursor, as the ink to draw over
@@ -1047,18 +1054,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The density tier's bins as the coverage band's own per-region payload
-         * — one entry per region holding bins, empty while the tier is off.
-         * Both backends and the SVG export read this one map, so the band that
-         * draws read depth draws features per bin with no second renderer.
-         *
-         * Its dependencies are `densityBins` and the DEBOUNCED zoom, and both
-         * halves are deliberate: the bins are cached by zoom bucket, and the
-         * repack is a per-region allocation, so it must not land on anything
-         * that moves per frame of a pan.
-         */
-        /**
-         * #getter
          * Whether the band stands in for the reads: the tier's verdict AND
          * somewhere to draw it. "Show coverage" off collapses the band to
          * nothing, so with it off the reads are fetched and drawn as they
@@ -1069,6 +1064,18 @@ export default function stateModelFactory(
           return self.densityTierActive && self.showCoverage
         },
 
+        /**
+         * #getter
+         * The density tier's bins as the coverage band's own per-region payload
+         * — one entry per region holding bins, empty while the tier is off.
+         * Both backends and the SVG export read this one map, so the band that
+         * draws read depth draws features per bin with no second renderer.
+         *
+         * Its dependencies are `densityBins` and the DEBOUNCED zoom, and both
+         * halves are deliberate: the bins are cached by zoom bucket, and the
+         * repack is a per-region allocation, so it must not land on anything
+         * that moves per frame of a pan.
+         */
         get densityCoverageRegions(): ReadonlyMap<
           number,
           CoverageRegionFields
@@ -2483,13 +2490,22 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The coverage band held out of the scroll: ungrouped keeps it sticky
+         * above the pileup, grouped scrolls the whole stack so nothing is held
+         * back. Subtracted from both the viewport and the content, which is what
+         * keeps the two ends of the scroll extent measuring the same band.
+         */
+        get stickyBandHeight() {
+          return this.isGrouped ? 0 : self.coverageDisplayHeight
+        },
+
+        /**
+         * #getter
          * Height of the scrollable viewport. Ungrouped excludes the sticky
          * coverage band; grouped scrolls the entire display.
          */
         get pileupViewportHeight() {
-          return this.isGrouped
-            ? self.height
-            : Math.max(0, self.height - self.coverageDisplayHeight)
+          return Math.max(0, self.height - this.stickyBandHeight)
         },
 
         /**
@@ -2503,12 +2519,10 @@ export default function stateModelFactory(
          * region opens up below the coverage band.
          */
         get pileupContentHeight() {
-          return this.isGrouped
-            ? this.sections.contentHeight
-            : Math.max(
-                0,
-                this.sections.contentHeight - self.coverageDisplayHeight,
-              )
+          return Math.max(
+            0,
+            this.sections.contentHeight - this.stickyBandHeight,
+          )
         },
 
         /**
@@ -2529,9 +2543,7 @@ export default function stateModelFactory(
          * #getter
          */
         get scalebarOverlapLeft() {
-          const view = getContainingView(self) as {
-            effectiveTrackLabels?: string
-          }
+          const { view } = self
           // when grouping (prefersOffset) the label is drawn above the plot, so
           // the coverage axis needn't dodge right of it (matches TrackContainer)
           if (
@@ -3148,7 +3160,7 @@ export default function stateModelFactory(
           }
           return new SimpleFeature({
             uniqueId: info.id,
-            name: info.name || info.id,
+            name: info.name === '' ? info.id : info.name,
             start: info.start,
             end: info.end,
             refName: info.refName,
@@ -3290,7 +3302,6 @@ export default function stateModelFactory(
            */
           clearDisplaySpecificData() {
             self.rpcDataMap.clear()
-            self.scrollTop = 0
           },
 
           /**
@@ -3443,6 +3454,19 @@ export default function stateModelFactory(
            */
           setSplicedReadsFirst(flag: boolean) {
             setConf(self, 'splicedReadsFirst', flag)
+          },
+
+          /**
+           * #action
+           * The three orderings that are not a `sortedBy` slot, written
+           * together: they are one radio group, and a caller spelling the two
+           * flags plus the clear itself can leave the pileup holding two
+           * orderings at once.
+           */
+          setLayoutOrder(order: LayoutOrder) {
+            setConf(self, 'largeFeaturesFirst', order === 'length')
+            setConf(self, 'splicedReadsFirst', order === 'spliced')
+            setConf(self, 'sortedBy', null)
           },
 
           /**
@@ -3800,6 +3824,9 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Chain mode restacks the whole pileup — rows become chains — so the
+           * scroll offset names nothing after the flip, and the `scrollableHeight`
+           * clamp only catches the half of that where the new stack is shorter.
            */
           setLinkedReads(mode: LinkedReadsMode) {
             const prev = self.linkedReads
@@ -3812,6 +3839,7 @@ export default function stateModelFactory(
             if (prev === mode) {
               return
             }
+            self.scrollTop = 0
             // Forget chain hover (clearMouseoverState) and selection. A product
             // choice — selection doesn't survive a mode change — not a
             // render-safety mechanism: `renderState` already gates chain
@@ -3855,13 +3883,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           */
-          setMouseoverExtraInformation(extra?: TooltipPayload) {
-            self.mouseoverExtraInformation = extra
-          },
-
-          /**
-           * #action
            * The whole hover state in one action, so no branch of the pileup's
            * mousemove handler can leave a field stale. Refused while the
            * right-click menu is open: `openContextMenu` pins the hover to the
@@ -3873,7 +3894,7 @@ export default function stateModelFactory(
             overCigarItem: boolean
             featureIdUnderMouse: string | undefined
             mouseoverExtraInformation: TooltipPayload | undefined
-            hoverCoverageBand?: { topOffset: number; coverageHeight: number }
+            hoverCoverageBand?: HoverCoverageBand
             // Optional and ALWAYS assigned, like `hoverCoverageBand`: a branch
             // with no arc to name clears the highlight by not mentioning one,
             // which is the property this single action exists to give.
@@ -4349,6 +4370,20 @@ export default function stateModelFactory(
               },
               { name: 'AlignmentsGroupKeySpaceReset' },
             ),
+          )
+
+          // Scroll back to the top on a real region-list change (chromosome
+          // navigation), not on the same-region refetch a zoom or a settings
+          // write issues — `clearDisplaySpecificData` used to zero the scroll
+          // for both, so changing a filter or a tag color yanked the reader off
+          // the row they were reading. The canvas displays split it the same way
+          // and for the same reason.
+          onDisplayedRegionsChange(
+            self,
+            () => {
+              self.setScrollTop(0)
+            },
+            'AlignmentsResetScrollOnDisplayedRegions',
           )
         },
       }))

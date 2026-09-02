@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
-import { getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
@@ -20,19 +19,17 @@ import { contextMenuTargetForHit, performHitTest } from './hitTestPipeline.ts'
 import {
   formatArcLineTooltip,
   formatArcTooltip,
-  formatChainTooltip,
   formatCigarTooltip,
   formatCoverageTooltip,
-  formatFeatureTooltip,
   formatIndicatorTooltip,
   formatModificationTooltip,
+  formatReadTooltip,
 } from './tooltipUtils.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
 import type { MarkHitResult } from './hitTestPipeline.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 export type { LinearAlignmentsDisplayModel }
@@ -52,7 +49,7 @@ const PAN_MOVED = '[data-pan-moved]'
 // straight off the native event (`offsetX`/`offsetY`, canvas-relative since the
 // canvas is a borderless leaf element), so no canvas ref or rect math is needed.
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const { view } = model
   // `canvasWidthPx`, matching renderState.canvasWidth — the CSS width of the
   // canvas element and the width its backing store is sized to must agree, or
   // the whole pileup draws at the wrong horizontal scale. Off the model, never a
@@ -402,16 +399,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         return {
           overCigarItem: false,
           featureIdUnderMouse: hit.id,
-          // A chain reports the whole template (both mates, insert size, pair
-          // anomalies); a plain read reports just its own name and span.
-          mouseoverExtraInformation: model.isChainMode
-            ? formatChainTooltip(
-                resolved.rpcData,
-                hit.index,
-                resolved.refName,
-                model.readCategoryLabel,
-              )
-            : formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
+          mouseoverExtraInformation: formatReadTooltip(
+            resolved.rpcData,
+            hit.index,
+            resolved.refName,
+            model.readCategoryLabel,
+          ),
           highlightedChainReadIds: hoveredChainReadIds(hit, resolved),
         }
       }

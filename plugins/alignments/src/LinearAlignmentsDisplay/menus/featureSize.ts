@@ -146,6 +146,7 @@ export function getFeatureHeightMenuItem(
               SetFeatureHeightDialog,
               {
                 model,
+                noun,
                 handleClose,
               },
             ])

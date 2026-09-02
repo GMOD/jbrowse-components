@@ -144,9 +144,10 @@ const suite: TestSuite = {
           const hit = await page.evaluate((y: number) => {
             const tip = document.querySelector('[data-testid="pileup-tooltip"]')
             const text = (tip?.textContent ?? '').trim()
-            // Only the per-read hover ends in a strand marker; the coverage
-            // band's tooltip is a table and matches nothing here.
-            const marker = /\(([+-])\)$/.exec(text)?.[1]
+            // Only the per-read hover carries a strand marker on its
+            // location line; the coverage band's tooltip is a table and
+            // matches nothing here.
+            const marker = /:[\d,]+-[\d,]+ \(([+-])\)/.exec(text)?.[1]
             if (marker === undefined) {
               return undefined
             }

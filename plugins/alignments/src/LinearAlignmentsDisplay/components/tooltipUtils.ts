@@ -25,7 +25,7 @@ import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getCigarTypeLabel, interbaseTypeName } from '../../shared/types.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
-import { getOrCreate } from '../../shared/util.ts'
+import { MAPQ_UNAVAILABLE, getOrCreate } from '../../shared/util.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from '../colorUtils.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
@@ -164,9 +164,9 @@ export function supportLabel(support: number) {
     : `Supported by ${toLocale(support)} reads`
 }
 
-// HTML/plain strings come from formatChainTooltip / formatCigarTooltip /
-// formatFeatureTooltip / arcTooltip; structured payloads come from the other
-// formatters. The consumer dispatches on typeof + .type.
+// HTML/plain strings come from formatReadTooltip / formatCigarTooltip;
+// structured payloads come from the other formatters. The consumer dispatches on
+// typeof + .type.
 export type TooltipPayload =
   | string
   | IndicatorTooltipPayload
@@ -284,7 +284,11 @@ function chainSpan(rpcData: PileupDataResult, idx: number) {
 }
 
 /**
- * The chain-mode hover, and the one place that names a read's COLOR.
+ * The pileup hover, in every mode, and the one place that names a read's COLOR.
+ *
+ * One formatter for both modes: `chainSpan` is the chain's extent where there is
+ * a chain and the read's own where there isn't, every other row reads a field
+ * the worker fills either way, and a row with nothing to say appends nothing.
  *
  * Chain mode is the only mode where the fill cannot be derived from the read's
  * own record: `consensusChainStrandFrames` settles which way "same strand"
@@ -299,7 +303,7 @@ function chainSpan(rpcData: PileupDataResult, idx: number) {
  * for the buckets with no single name — the mapq/tag/modification ramps, and an
  * ordinary unbucketed read — which append nothing rather than a blank row.
  */
-export function formatChainTooltip(
+export function formatReadTooltip(
   rpcData: PileupDataResult,
   idx: number,
   refName: string,
@@ -310,8 +314,19 @@ export function formatChainTooltip(
   const flags = rpcData.readFlags[idx] ?? 0
   const insertSize = rpcData.readInsertSizes[idx] ?? 0
   const pairOrientation = rpcData.readPairOrientations[idx] ?? 0
+  const mapq = rpcData.readMapqs[idx]
 
-  const lines = [`<b>${name}</b>`, formatLocationRange(refName, start, end)]
+  const lines = [
+    `<b>${name}</b>`,
+    `${formatLocationRange(refName, start, end)} (${rpcData.readStrands[idx] === -1 ? '-' : '+'})`,
+  ]
+
+  if (mapq !== undefined) {
+    // 255 is the SAM spec's "not available", which the color scheme, the legend
+    // and the group-by dimension all name rather than plot — so the row says it
+    // too instead of reporting the sentinel as a very good alignment.
+    lines.push(mapq === MAPQ_UNAVAILABLE ? 'MAPQ unavailable' : `MAPQ: ${mapq}`)
+  }
 
   // readInsertSizes is |TLEN| already (buildBaseFeatureData abs's it).
   if (insertSize !== 0) {
@@ -749,22 +764,13 @@ export interface TooltipFeatureInfo {
   refName: string
 }
 
-// "name chr1:1,001-1,100" for one read, shared by the plain pileup hover and the
-// bezier overlay's two-endpoint tooltip so neither re-spells the location. The
-// pileup hover appends the strand; the bezier tooltip omits it (the curve's own
-// color already encodes orientation, and two strands in one line reads as noise).
+// "name chr1:1,001-1,100" for one read, for the bezier overlay's two-endpoint
+// tooltip. The strand is opt-in and that overlay omits it: the curve's own color
+// already encodes orientation, and two strands in one line reads as noise.
 export function formatFeatureLabel(
   info: TooltipFeatureInfo,
   { showStrand = false } = {},
 ) {
   const label = `${info.name || info.id} ${formatLocationRange(info.refName, info.start, info.end)}`
   return showStrand ? `${label} (${info.strand === -1 ? '-' : '+'})` : label
-}
-
-export function formatFeatureTooltip(
-  featureId: string,
-  getFeatureInfoById: (id: string) => TooltipFeatureInfo | undefined,
-) {
-  const info = getFeatureInfoById(featureId)
-  return info ? formatFeatureLabel(info, { showStrand: true }) : undefined
 }

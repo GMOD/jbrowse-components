@@ -132,10 +132,16 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
               style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
               onMouseEnter={() => {
                 setHoveredArcId(arcId)
-                const tooltip = arcTooltip(model, arc)
-                if (tooltip) {
-                  model.setMouseoverExtraInformation(tooltip)
-                }
+                // Through `setHoverState`, as `CrossRegionArcsOverlay` is: it is
+                // the one write the right-click menu's hover pin can refuse, so
+                // a curve crossed while the menu is open cannot overwrite the
+                // read the menu is acting on.
+                model.setHoverState({
+                  overCigarItem: false,
+                  featureIdUnderMouse: undefined,
+                  mouseoverExtraInformation: arcTooltip(model, arc),
+                  highlightedChainReadIds: [],
+                })
               }}
               onMouseLeave={() => {
                 setHoveredArcId(prev => (prev === arcId ? null : prev))
@@ -144,6 +150,18 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
               onClick={() => {
                 setSelectedArcId(isSelected ? null : arcId)
                 void model.selectFeatureById(arc.id1)
+                // The chain the curve belongs to, exactly as a canvas click on
+                // one of its reads resolves it (`useAlignmentsBase`'s
+                // handleClick) — otherwise clicking the connector selected one
+                // end and left the rest of the chain unmarked.
+                const hit = model.isChainMode
+                  ? model.findFeatureInRpcData(arc.id1)
+                  : undefined
+                if (hit) {
+                  model.setSelectedChainReadIds(
+                    model.readIdsSharingChain(hit.rpcData, hit.idx),
+                  )
+                }
               }}
             />
           </g>

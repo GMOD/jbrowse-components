@@ -99,7 +99,16 @@ const SashimiSubBand = observer(function SashimiSubBand({
               style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
               onMouseEnter={() => {
                 setHoveredArcKey(arcKey)
-                model.setMouseoverExtraInformation(formatSashimiTooltip(arc))
+                // Through `setHoverState` for the reason the two arc overlays
+                // are: it is the write the open context menu's hover pin
+                // refuses, so an arc crossed while the menu is up can't
+                // overwrite the read the menu acts on.
+                model.setHoverState({
+                  overCigarItem: false,
+                  featureIdUnderMouse: undefined,
+                  mouseoverExtraInformation: formatSashimiTooltip(arc),
+                  highlightedChainReadIds: [],
+                })
               }}
               onMouseLeave={() => {
                 setHoveredArcKey(null)
