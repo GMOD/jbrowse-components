@@ -12,14 +12,15 @@
  * cannot see — a wide record that has an `ID` nothing references, which hosted
  * hg19 RefSeq's chromosome-long `region` is.
  *
- * A scan of the attribute column rather than a parse, because it runs on every
- * line of every query ahead of the flanks. It anchors on the `;` separator so an
- * attribute merely ending in `ID` (`geneID=`) is not one, and tolerates space
- * after the separator, which the spec forbids and real files contain — the two
- * errors are not symmetric. A false positive only widens the bound to what it is
- * today; a false negative drops a flank a feature's children are in, which is
- * the truncated-gene rendering this whole mechanism exists to prevent.
+ * What counts as an `ID` here has to be what counts as one to gff-nostream's
+ * linker, or the bound and the tree disagree: a line this admits but the linker
+ * ignores only widens the bound, but a line the linker registers and this
+ * rejects drops a flank a feature's children are in, which is the truncated
+ * gene this mechanism exists to prevent. The linker lowercases tags (`id=` is
+ * an ID) and, from 5.4.0, trims the space real files put after a `;`, so this
+ * scan does both. gff-nostream 5.4.0 exports `hasIdAttribute` from that same
+ * scan; this regex stands in until the dependency moves.
  */
 export function hasIdAttribute(line: string) {
-  return /(^|;)\s*ID=/.test(line.slice(line.lastIndexOf('\t') + 1))
+  return /(^|;)\s*ID\s*=[^;]/i.test(line.slice(line.lastIndexOf('\t') + 1))
 }

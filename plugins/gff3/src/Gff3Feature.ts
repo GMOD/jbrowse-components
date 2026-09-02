@@ -6,9 +6,6 @@ import type {
 } from '@jbrowse/core/util/simpleFeature'
 import type { LazyGffFeature } from 'gff-nostream'
 
-/** A parsed GFF3 feature carrying the id the adapter minted for it. */
-export type IdentifiedGffFeature = LazyGffFeature & { uniqueId: string }
-
 /**
  * A {@link Feature} over a GFF3 feature whose attributes are still raw column-9
  * text, resolving each one only when something asks for it.
@@ -30,7 +27,7 @@ export class Gff3Feature implements Feature {
   private inflated?: Feature[]
 
   public constructor(
-    private data: IdentifiedGffFeature | LazyGffFeature,
+    private data: LazyGffFeature,
     private uniqueId: string,
     private parentFeature?: Feature,
   ) {}

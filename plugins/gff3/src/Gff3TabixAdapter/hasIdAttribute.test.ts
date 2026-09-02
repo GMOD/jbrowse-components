@@ -20,6 +20,16 @@ test('a record with no ID cannot be one', () => {
   ).toBe(false)
   expect(hasIdAttribute(line('Parent=gene-A'))).toBe(false)
   expect(hasIdAttribute(line('.'))).toBe(false)
+  // an empty value registers nothing with the linker either
+  expect(hasIdAttribute(line('ID=;Name=A'))).toBe(false)
+})
+
+// the linker lowercases tags and trims the space after a `;`, so a record it
+// registers under either spelling is one this must admit, else its flank drops
+test('spells ID the way the linker does', () => {
+  expect(hasIdAttribute(line('id=gene-A'))).toBe(true)
+  expect(hasIdAttribute(line('Name=A; ID=gene-A'))).toBe(true)
+  expect(hasIdAttribute(line('ID =gene-A'))).toBe(true)
 })
 
 // The two errors are not symmetric, so the anchoring is deliberate both ways: a
@@ -30,7 +40,4 @@ test('anchors on the separator rather than matching anywhere', () => {
   expect(hasIdAttribute(line('geneID=7157;Name=TP53'))).toBe(false)
   // nor is an ID= sitting inside another attribute's value
   expect(hasIdAttribute(line('Note=see ID=other'))).toBe(false)
-  // but space after the separator is real-world GFF3 and must still match,
-  // since missing one is the error that costs a rendering
-  expect(hasIdAttribute(line('Name=A; ID=gene-A'))).toBe(true)
 })

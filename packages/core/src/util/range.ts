@@ -86,8 +86,14 @@ export function calculateRedispatchRange<
 ): { start: number; end: number } | undefined {
   let minStart = queryStart
   let maxEnd = queryEnd
+  // bounds first: only a line reaching past the current bound can widen it, so
+  // the predicate, which may scan the line's text, runs on those few lines and
+  // not on every line in the window
   for (const feature of features) {
-    if (expands(feature)) {
+    if (
+      (feature.start < minStart || feature.end > maxEnd) &&
+      expands(feature)
+    ) {
       if (feature.start < minStart) {
         minStart = feature.start
       }

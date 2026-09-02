@@ -13,7 +13,6 @@ import { parseLinesLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
 
-import type { IdentifiedGffFeature } from '../Gff3Feature.ts'
 import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -34,7 +33,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
         opts.statusCallback,
       )
 
-      const intervalTreeMap = makeFeatureIntervalTreeMap<IdentifiedGffFeature>(
+      const intervalTreeMap = makeFeatureIntervalTreeMap(
         linesByRef,
         // lines are already split and comment/FASTA-filtered by
         // groupLinesByRef, so feed them straight to parseLinesLazy rather than
@@ -45,17 +44,17 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
         // that resident set small (8.5x on GENCODE-shaped input), and the
         // render path reads only a handful of attributes anyway — see
         // Gff3Feature.
-        (lines, refName) => {
-          const features = parseLinesLazy(lines) as IdentifiedGffFeature[]
-          // stamped in place rather than through `{...feature, uniqueId}`:
-          // these are freshly parsed objects nobody else holds, and the spread
-          // copied every attribute of every top-level feature in the file to
-          // add one key
-          for (let i = 0; i < features.length; i++) {
-            features[i]!.uniqueId = `${this.id}-${refName}-${i}`
-          }
-          return features
-        },
+        //
+        // The id the tree entry carries is minted here, beside the feature
+        // rather than stamped onto it, so the parsed feature is the library's
+        // shape and Gff3Feature serializes it identically for both adapters.
+        (lines, refName) =>
+          parseLinesLazy(lines).map((feature, i) => ({
+            start: feature.start,
+            end: feature.end,
+            feature,
+            uniqueId: `${this.id}-${refName}-${i}`,
+          })),
         'Parsing GFF data',
       )
 
@@ -81,8 +80,11 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
       const { intervalTreeMap } = await this.loadData(opts)
       const tree = intervalTreeMap[refName]
       if (tree) {
-        for (const f of tree(opts.statusCallback).search([start, end])) {
-          observer.next(new Gff3Feature(f, f.uniqueId))
+        for (const { feature, uniqueId } of tree(opts.statusCallback).search([
+          start,
+          end,
+        ])) {
+          observer.next(new Gff3Feature(feature, uniqueId))
         }
       }
       observer.complete()
