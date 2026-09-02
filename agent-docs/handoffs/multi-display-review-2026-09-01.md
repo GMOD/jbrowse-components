@@ -49,7 +49,11 @@ use `pnpm exec oxfmt <files>`.
 Each agent was told to commit per item. Verify with
 `git log --oneline -- <dir>` and `npx jest <dir> --reporters=default`.
 
-**wiggle** (`plugins/wiggle/src/MultiLinearWiggleDisplay`): sort-by-score
+**wiggle** — COMPLETE, all ten items committed (`ca8e03ee98` … `949485fd2d`),
+75 suites green. Still owed: `pnpm autogen` for
+`website/docs/config/MultiLinearWiggleDisplay.md`, and a component test for
+the crosshair (no wiggle component test exists in jsdom).
+Items (`plugins/wiggle/src/MultiLinearWiggleDisplay`): sort-by-score
 reads `getEffectiveScores(mode)` not the average; cluster caption records
 the parsed `samplesPerPixel`; NaN skipped in `autoscale.ts` stats so the
 domain does not collapse to the `[0,1]` stub; crosshair no longer gated on
