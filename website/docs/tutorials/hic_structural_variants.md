@@ -51,17 +51,10 @@ loop and compartment calls over the same two matrices.
 
 ## What Hi-C measures, and what it looks like
 
-Hi-C counts how often two stretches of the genome are found touching each other
-in the nucleus. JBrowse draws the result as a triangle: the diagonal runs along
-the top edge, and depth below it is genomic separation, so a bin near the top is
-a pair of loci close together and a bin near the bottom is a pair far apart.
-
-A linear browser puts the matrix in the same coordinate system as genes,
-annotations and read-level tracks, which is what the rest of this page reads the
-contacts against.
-
-Two features of that picture have names, and ENCODE publishes both as separate
-annotation files derived from the same matrix:
+Hi-C counts how often two stretches of the genome touch in the nucleus. JBrowse
+draws the result as a triangle: the diagonal runs along the top edge, and depth
+below it is genomic separation. Two features of that picture have names, and
+ENCODE publishes both as annotation files derived from the matrix:
 
 - **Contact domains** (also TADs) are the square blocks sitting on the diagonal.
   Inside one, everything contacts everything; across a boundary, contact drops
@@ -75,55 +68,42 @@ annotation files derived from the same matrix:
 
 <Figure src="/img/hic/loops_and_domains.png" caption="Bands on the two corners of one MYC contact domain, with its Arrowhead arc, its bounding HiCCUPS loop and the denser triangle in the matrix all ending on them, under twelve single-cell ATAC pseudobulks." links="Open this view=hic/loops_and_domains" />
 
-A contact domain and the loop at its corner are the same object seen two ways:
-the loop is what holds the domain together, so the block in the matrix, the
+The loop is what holds the domain together, so the block in the matrix, the
 Arrowhead arc and the HiCCUPS arc all end on the domain's two corners. _MYC_ is
-at the left one.
+at the left one. The ATAC lane comes from outside the contact map: GM12878 is a
+B-lymphoblastoid line, and all twelve lineages are more accessible inside the
+domain than outside it.
 
-All three lanes come out of one experiment. ENCODE's Arrowhead and HiCCUPS call
-sets for GM12878 are derived from the in situ matrix drawn underneath them, and
-that matrix is deep enough for a 600 kb block to have visible edges.
-
-The ATAC lane comes from outside the contact map. GM12878 is a B-lymphoblastoid
-line, so B-cell accessibility is the nearest public annotation of which sequence
-here is regulatory. All twelve lineages are drawn, and each is more accessible
-inside the domain than outside it.
-
-The window is a domain-and-loop pair: taking every Arrowhead domain whose two
-corners carry a HiCCUPS loop and ranking by that loop's contact count puts this
-one near the top, with _MYC_ at its left anchor. The
+The window was chosen by taking every Arrowhead domain whose two corners carry a
+HiCCUPS loop and ranking by that loop's contact count; the
 [scoring script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hic_pick_loop.py)
-prints that ranking and what a candidate window contains.
+prints that ranking.
 
-Which bins the matrix is drawn in decides whether any of it is visible. JBrowse
-picks the largest binsize no coarser than twice the current bp-per-pixel, which
-at this width is fine enough that the triangle renders as red speckle. The
-figure above sets
+JBrowse picks the largest binsize no coarser than twice the current
+bp-per-pixel, which at this width renders the triangle as red speckle. The
+figure sets
 [`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) to `2`,
-stepping two levels coarser. If a Hi-C track looks like noise, this is the first
-thing to change; see
+stepping two levels coarser. If a Hi-C track looks like noise, change this
+first; see
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
 
 ## Two chromosomes in one view
 
-The matrix is fetched for every pair of displayed regions. With one region on
-screen that is the region against itself; open a second and JBrowse also fetches
-the contacts _between_ the two and draws them in the wedge between their
-triangles. Type both locations into the location box, separated by a space.
+The matrix is fetched for every pair of displayed regions. Open a second region
+and JBrowse also fetches the contacts _between_ the two, drawn in the wedge
+between their triangles. Type both locations into the location box, separated by
+a space.
 
 <Video src="/media/hic/two_regions.mp4" caption="A chr22 window typed into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles arrives with the second region." />
 
-That makes a genome browser a translocation detector. Contact frequency decays
-with distance along whatever molecule two loci actually sit on, so two regions
-on separate chromosomes only touch at the nucleus' low background rate. If they
-are fused, they are neighbours, and they contact each other constantly.
+Contact frequency decays with distance along whatever molecule two loci sit on,
+so two regions on separate chromosomes only touch at background rate. If they
+are fused, they contact each other constantly.
 
-K562 is derived from a chronic myeloid leukaemia patient and carries the
-Philadelphia chromosome, t(9;22)(q34;q11)
-([Rowley 1973](https://doi.org/10.1038/243290a0)), which joins _BCR_ on chr22 to
-_ABL1_ on chr9, the fusion imatinib targets. GM12878 is a lymphoblastoid line
-with a normal karyotype. Both have deep in situ Hi-C from the same lab and
-pipeline in ENCODE, so the two maps are directly comparable.
+K562 carries the Philadelphia chromosome, t(9;22)(q34;q11)
+([Rowley 1973](https://doi.org/10.1038/243290a0)), joining _BCR_ on chr22 to
+_ABL1_ on chr9. GM12878 has a normal karyotype. Both have deep in situ Hi-C from
+the same ENCODE lab and pipeline.
 
 <Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between each panel's own triangles is chr9 against chr22: empty in GM12878, a dense arrowed block in K562." links="Open this view=hic/bcr_abl1_translocation" />
 
@@ -132,32 +112,26 @@ normally in K562.
 
 ## Depth and normalization
 
-Two things decide what the empty wedge in the top panel means: how deeply that
-file was sequenced, and how its matrix was normalized.
+**Depth.** ENCODE's GM12878 "supernatant" fraction (`ENCSR730CER`, which the
+script carries commented out) is much shallower over this chromosome pair than
+the in situ file the figure uses, `ENCSR410MDC`, and a wedge empty for want of
+reads looks the same as one empty for want of a translocation. As shipped, the
+scan finds GM12878 carrying more contact than K562 across the whole chr9-chr22
+block, with the order inverting at the junction bin.
 
-**Depth.** ENCODE's GM12878 "supernatant" fraction (`ENCSR730CER`, the
-alternative the script carries commented out) is much shallower over this
-chromosome pair than the deep in situ file the figure uses, `ENCSR410MDC`, and a
-wedge empty for want of sequencing reads the same as one empty for want of a
-translocation. Run the scan as it ships and GM12878 carries more contact than
-K562 across the whole chr9-chr22 block; the order inverts at the junction bin.
-
-**Normalization.** Matrix balancing exists to divide out per-bin coverage
-differences, and an amplified fusion _is_ a coverage difference. Re-run the scan
-below with `NORM=INTER_SCALE` and *ABL1*×*BCR* drops off the top of the table.
-Both Hi-C tracks in this demo therefore set
+**Normalization.** Matrix balancing divides out per-bin coverage differences,
+and an amplified fusion is one. Re-run the scan with `NORM=INTER_SCALE` and
+*ABL1*×*BCR* drops off the top of the table. Both Hi-C tracks here set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
-to `NONE`. Balanced matrices are what to read domains and loops with;
-rearrangements want the raw counts.
+to `NONE`: balanced matrices for domains and loops, raw counts for
+rearrangements.
 
-The control gets its own ranked list, which the scan prints below the case's.
-The bin at its head is hot in GM12878, present in K562, and not a rearrangement.
+The scan prints the control's own ranked list below the case's. The bin at its
+head is hot in GM12878, present in K562, and not a rearrangement.
 
 ## Run the scan
 
-The figure shows the translocation; finding it is a dump and a sort. The dump is
-one command per file, and it is where the normalization decision above becomes a
-command-line argument:
+Finding the translocation is a dump and a sort, one dump per file:
 
 <!-- from: scripts/scan_hic_translocation.sh -->
 
@@ -174,8 +148,8 @@ java -Xmx4g -jar juicer_tools.jar dump observed NONE \
   sample.hic chr9 chr22 BP 250000 sample.chr9_chr22.txt
 ```
 
-Three columns come back: bin1 start, bin2 start, contact count. Run it over the
-control too, then rank the sample's bins and read the control's value for each.
+Three columns come back: bin1 start, bin2 start, contact count. Rank the
+sample's bins and read the control's value for each.
 [`scan_hic_translocation.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/scan_hic_translocation.sh)
 does exactly that:
 
@@ -202,14 +176,11 @@ sort -k3,3 -rn case.txt | awk 'NR <= 10'
 
 `CASE`, `CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` are all overridable, so the
 same scan applies to any two `.hic` files that hold inter-chromosomal blocks.
-The top row it prints pairs _ABL1_ intron 1 with the 5' end of _BCR_, the pair
-of bins the canonical CML fusion joins. Drop `RES` to `10000` and the top row
-lands on the junction itself, _ABL1_ intron 1 against the _BCR_ major breakpoint
-cluster region.
-
-Further down its list the scan reports a second partner for chr9 elsewhere on
-chr22, well clear of the control: K562's karyotype is complex, and the ranking
-is a list of candidates to open.
+The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_. Drop `RES` to
+`10000` and it lands on the junction itself, _ABL1_ intron 1 against the _BCR_
+major breakpoint cluster region. Further down, a second chr9 partner elsewhere
+on chr22 sits well clear of the control; the ranking is a list of candidates to
+open.
 
 Purpose-built callers do this genome-wide with a trained model:
 [EagleC](https://github.com/XiaoTaoWang/EagleC),
@@ -221,31 +192,24 @@ next to the matrix it was called from.
 
 ## A and B compartments
 
-Above the domains and loops of the first figure, the matrix separates into two
-interleaved sets of regions that preferentially contact their own kind: the
-gene-rich, active A compartment and the inactive B compartment. ENCODE publishes
-that call for every Hi-C experiment as a
-[compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
-both derived from the matrix already loaded.
+Above domains and loops, the matrix separates into two interleaved sets of
+regions that contact their own kind: the gene-rich, active A compartment and the
+inactive B compartment. ENCODE publishes that call for every experiment as a
+[compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
 
 The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
-K562, and the sequence either side of it, from the same two files and the same
-pipeline, agrees.
+K562, and the sequence either side of it agrees. Two settings in the figure:
 
-Two settings in the figure:
-
-- The eigenvector tracks are pinned to one shared scale, so the two lanes are
-  read against the same axis.
-- An eigenvector names the A compartment only up to a sign, so which sign means
-  active is a property of the file. It is read off the gene track, since A is
-  the gene-rich compartment by definition.
+- The eigenvector tracks are pinned to one shared scale
+- An eigenvector names the A compartment only up to a sign, so which sign is
+  active is read off the gene track, A being the gene-rich compartment
 
 The
 [user guide section](/docs/user_guides/hic_track#compartments-and-subcompartments)
-covers both, along with why the subcompartment class numbers cannot be compared
-between files on their own.
+covers both, and why subcompartment class numbers cannot be compared between
+files.
 
 ## Configuring the Hi-C tracks
 
@@ -287,25 +251,21 @@ The loop and domain BEDPEs each need one extra slot:
 }
 ```
 
-A contact domain is a `FeatureTrack`. Arrowhead writes each domain with both
-BEDPE mates set to the same interval, so read as plain features the file gives
-one box per domain, with nested domains stacking into rows. Loops, whose two
-mates are different places, are the paired-arc case. See the
+Arrowhead writes each domain with both BEDPE mates set to the same interval, so
+as a `FeatureTrack` the file gives one box per domain, nested domains stacking
+into rows. Loops, whose mates differ, are the paired-arc case. See the
 [Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs).
 
 To color or filter either track by a column, set
-[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. The
-adapter otherwise reads names off the file's own header, and juicer writes its
-version banner _after_ the defline, so every column past the tenth reads back as
-`undefined` and a jexl expression on one silently evaluates against nothing.
-HiCCUPS writes 24 columns and Arrowhead 16; only the first ten of either are
-positional.
+[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. Juicer
+writes its version banner after the defline, so names read off the header make
+every column past the tenth `undefined`, and a jexl expression on one silently
+evaluates against nothing. HiCCUPS writes 24 columns and Arrowhead 16.
 
-Both callers also leave the standard BEDPE `name` and `score` columns at `.` and
-put what they rank by further along: HiCCUPS' is `observed`, and Arrowhead's is
-a _second_ column called `score`. Values past the tenth column arrive as
-strings, so compare them with `>` and `<`, which coerce, rather than with a jexl
-`==`.
+Both callers leave `name` and `score` at `.` and put what they rank by further
+along: HiCCUPS' is `observed`, Arrowhead's a second column called `score`.
+Values past the tenth column arrive as strings, so compare with `>` and `<`,
+which coerce, rather than `==`.
 
 ## See also
 
