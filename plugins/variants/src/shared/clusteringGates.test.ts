@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -84,7 +86,7 @@ function clusterRow(sources?: { name: string }[]) {
     .trackMenuItems()
     .find(item => 'label' in item && item.label === 'Clustering')
   const subMenu: MenuItem[] =
-    clustering && 'subMenu' in clustering ? clustering.subMenu : []
+    clustering && 'subMenu' in clustering ? resolveSubMenu(clustering) : []
   const row = subMenu.find(
     item => 'label' in item && item.label === 'Cluster rows by genotype...',
   )

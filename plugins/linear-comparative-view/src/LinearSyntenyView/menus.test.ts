@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import {
   displayCanShowCigar,
   navigationMenuItems,
@@ -46,7 +48,7 @@ describe('navigationMenuItems', () => {
 
   function subMenuOf(items: MenuItem[], label: string) {
     const item = items.find(i => 'label' in i && i.label === label)
-    return item && 'subMenu' in item ? item.subMenu : []
+    return item && 'subMenu' in item ? resolveSubMenu(item) : []
   }
 
   function labelled(items: MenuItem[], label: string) {
@@ -241,7 +243,7 @@ describe('rowMenuItems', () => {
 
   function subMenu(items: MenuItem[], idx: number) {
     const item = items[idx]!
-    return 'subMenu' in item ? item.subMenu : []
+    return 'subMenu' in item ? resolveSubMenu(item) : []
   }
 
   test('off, each row is its own menu and nothing more', () => {

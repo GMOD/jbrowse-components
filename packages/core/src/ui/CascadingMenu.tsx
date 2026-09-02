@@ -15,7 +15,7 @@ import { makeStyles } from '../util/tss-react/index.ts'
 import { useEventCallback } from '../util/useEventCallback.ts'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
-import { staysOpenOnClick } from './MenuTypes.ts'
+import { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 import { hasMenuItemAdornment } from './menuItemAdornment.tsx'
 import { isAimedAtPanel } from './submenuAim.ts'
 
@@ -483,8 +483,8 @@ function CascadingSubmenu({
           hover.setSubmenu(undefined)
         }}
       >
-        <CascadingMenuList
-          menuItems={item.subMenu}
+        <SubMenuList
+          item={item}
           onNavigateBack={() => {
             hover.setSubmenu(undefined)
             anchorEl?.focus()
@@ -494,6 +494,25 @@ function CascadingSubmenu({
     </>
   )
 }
+
+// Resolves the rows inside the panel, which MUI mounts only while it is open:
+// a function-form `subMenu` is not called by listing the parent menu. An
+// observer so the observables that builder reads re-render the open panel, the
+// way an array built in the root observer's render already did.
+const SubMenuList = observer(function SubMenuList({
+  item,
+  onNavigateBack,
+}: {
+  item: SubMenuItem
+  onNavigateBack: () => void
+}) {
+  return (
+    <CascadingMenuList
+      menuItems={resolveSubMenu(item)}
+      onNavigateBack={onNavigateBack}
+    />
+  )
+})
 
 // One clickable menu row: label (with optional leading icon) plus its trailing
 // value/help/adornment decorations. The menu-wide `columns` flags let every row

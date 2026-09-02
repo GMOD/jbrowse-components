@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
@@ -19,7 +19,7 @@ function showSubmenu(items: MenuItem[]) {
   if (!show || !('subMenu' in show)) {
     throw new Error('no "Show..." submenu in the track menu')
   }
-  return show.subMenu
+  return resolveSubMenu(show)
 }
 
 function tooltipItem(items: MenuItem[]) {

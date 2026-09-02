@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 
 import type { MafLaunchModel } from './launchMenuItems.ts'
@@ -77,14 +79,19 @@ function model(asked: [number, number, number, number][] = []) {
   } as unknown as MafLaunchModel
 }
 
-function launchSubMenu(m: MafLaunchModel) {
+function launchEntry(m: MafLaunchModel) {
   const [entry] = mafLaunchMenuItems({
     session: session as never,
     model: m,
     view: m.view as unknown as LinearGenomeViewModel,
   })
   expect(entry && 'label' in entry ? entry.label : undefined).toBe('Launch')
-  return entry && 'subMenu' in entry ? entry.subMenu : []
+  return entry
+}
+
+function launchSubMenu(m: MafLaunchModel) {
+  const entry = launchEntry(m)
+  return entry && 'subMenu' in entry ? resolveSubMenu(entry) : []
 }
 
 function labels(items: MenuItem[]) {
@@ -105,6 +112,17 @@ test('it asks about the whole window and every row, not a selection', () => {
   launchSubMenu(model(asked))
   // One question for the whole row range, not one per row: the answer costs a
   // walk over the buffered region and there is no reason to take it three times
+  expect(asked).toEqual([[100, 180, 0, 3]])
+})
+
+test('listing the track menu does not walk the region; opening the submenu does', () => {
+  const asked: [number, number, number, number][] = []
+  const entry = launchEntry(model(asked))
+  expect(asked).toEqual([])
+  if (!entry || !('subMenu' in entry)) {
+    throw new Error('no Launch submenu')
+  }
+  resolveSubMenu(entry)
   expect(asked).toEqual([[100, 180, 0, 3]])
 })
 

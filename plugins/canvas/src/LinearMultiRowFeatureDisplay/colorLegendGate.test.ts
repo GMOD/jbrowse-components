@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -13,7 +14,7 @@ function menuLabels(display: { trackMenuItems: () => MenuItem[] }): string[] {
   return display.trackMenuItems().flatMap(function labels(m): string[] {
     return [
       ...('label' in m && typeof m.label === 'string' ? [m.label] : []),
-      ...('subMenu' in m ? m.subMenu.flatMap(labels) : []),
+      ...('subMenu' in m ? resolveSubMenu(m).flatMap(labels) : []),
     ]
   })
 }

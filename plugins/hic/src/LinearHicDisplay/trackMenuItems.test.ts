@@ -1,4 +1,4 @@
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { DEFAULT_HIC_COLOR_SCHEME } from './components/colorRamp.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
@@ -54,7 +54,7 @@ function labelOf(item: MenuItem) {
 function subMenuOf(items: MenuItem[], label: string) {
   const item = items.find(i => labelOf(i) === label)
   if (item && 'subMenu' in item) {
-    return item.subMenu
+    return resolveSubMenu(item)
   } else {
     throw new Error(
       `"${label}" has no submenu in [${items.map(labelOf).join(', ')}]`,

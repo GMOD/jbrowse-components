@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
 import type { LDMethod } from '../VariantRPC/getLDMatrix.ts'
@@ -60,7 +62,7 @@ function labels(items: MenuItem[]) {
 
 function subMenuOf(items: MenuItem[], label: string) {
   const item = items.find(i => labelOf(i) === label)
-  return item && 'subMenu' in item ? item.subMenu : undefined
+  return item && 'subMenu' in item ? resolveSubMenu(item) : undefined
 }
 
 test('the default menu is metric + show + filters', () => {

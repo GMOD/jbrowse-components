@@ -202,10 +202,11 @@ function collect(corpus: SourceCorpus) {
     }
   }
   const tagged = new Set(builders.map(b => b.name))
-  // `staysOpenOnClick` is a predicate over a built row, not a builder, so it is
-  // named in the guide's prose rather than in this table
+  // `staysOpenOnClick` and `resolveSubMenu` read a built row rather than build
+  // one, so they are named in the guide's prose rather than in this table
+  const readers = new Set(['staysOpenOnClick', 'resolveSubMenu'])
   const untagged = reExportedBuilders().filter(
-    name => !tagged.has(name) && name !== 'staysOpenOnClick',
+    name => !tagged.has(name) && !readers.has(name),
   )
   if (untagged.length > 0) {
     throw new Error(

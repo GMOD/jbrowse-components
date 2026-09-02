@@ -1,4 +1,8 @@
-import { CascadingMenu, createJBrowseTheme } from '@jbrowse/core/ui'
+import {
+  CascadingMenu,
+  createJBrowseTheme,
+  resolveSubMenu,
+} from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
@@ -55,7 +59,7 @@ function subMenuOf(model: ReturnType<typeof makeModel>) {
   if (!showItem || !('subMenu' in showItem)) {
     throw new Error('expected a "Show..." submenu')
   }
-  return showItem.subMenu
+  return resolveSubMenu(showItem)
 }
 
 function renderRows(items: MenuItem[]) {

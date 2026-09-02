@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { clusterProvenanceFromRegions } from './clusterProvenance.ts'
 import {
   clusterProvenanceMenuItems,
@@ -82,7 +84,7 @@ describe('clusteringMenuItem', () => {
   const runItem = { label: 'Cluster rows by score...', onClick: () => {} }
   const model = { setSubtreeFilter: () => {} }
   const subMenuOf = (item: ReturnType<typeof clusteringMenuItem>) =>
-    'subMenu' in item ? item.subMenu : []
+    'subMenu' in item ? resolveSubMenu(item) : []
 
   it('leaves a run row the display already disabled with its own reason', () => {
     const loading = {

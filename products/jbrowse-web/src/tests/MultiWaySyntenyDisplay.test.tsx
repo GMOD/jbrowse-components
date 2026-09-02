@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
@@ -256,7 +257,7 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
     return hit
   }
   const subMenuOf = (item: MenuItem) =>
-    'subMenu' in item ? item.subMenu : ([] as MenuItem[])
+    'subMenu' in item ? resolveSubMenu(item) : ([] as MenuItem[])
   const laneOrder = () => subMenuOf(rowNamed(display.trackMenuItems(), 'Lanes'))
   const click = (item: MenuItem) => {
     ;(item as { onClick: () => void }).onClick()

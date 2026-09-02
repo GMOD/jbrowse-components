@@ -1,4 +1,4 @@
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
@@ -81,7 +81,7 @@ function labels(items: MenuItem[]) {
 function subMenuOf(items: MenuItem[], label: string) {
   const item = items.find(i => 'label' in i && i.label === label)
   if (item && 'subMenu' in item) {
-    return item.subMenu
+    return resolveSubMenu(item)
   } else {
     throw new Error(`submenu "${label}" not found`)
   }
@@ -91,7 +91,7 @@ function subMenuOf(items: MenuItem[], label: string) {
 function allLabels(items: MenuItem[]): string[] {
   return items.flatMap(i =>
     'subMenu' in i
-      ? allLabels(i.subMenu)
+      ? allLabels(resolveSubMenu(i))
       : 'label' in i
         ? [String(i.label)]
         : [],

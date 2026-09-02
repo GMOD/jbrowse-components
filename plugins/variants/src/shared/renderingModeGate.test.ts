@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -46,7 +48,8 @@ function phasedRow(flags?: {
   const mode = display
     .trackMenuItems()
     .find(item => 'label' in item && item.label === 'Rendering mode')
-  const subMenu: MenuItem[] = mode && 'subMenu' in mode ? mode.subMenu : []
+  const subMenu: MenuItem[] =
+    mode && 'subMenu' in mode ? resolveSubMenu(mode) : []
   const row = subMenu.find(
     item =>
       'label' in item &&

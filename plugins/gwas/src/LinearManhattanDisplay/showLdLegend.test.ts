@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -16,7 +17,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 function ldLegendRow(items: MenuItem[]) {
   const walk = (list: MenuItem[]): MenuItem[] =>
-    list.flatMap(i => ('subMenu' in i ? walk(i.subMenu) : [i]))
+    list.flatMap(i => ('subMenu' in i ? walk(resolveSubMenu(i)) : [i]))
   return walk(items).find(i => 'label' in i && i.label === 'Show legend')
 }
 

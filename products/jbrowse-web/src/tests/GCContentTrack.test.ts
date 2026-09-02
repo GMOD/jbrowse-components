@@ -1,9 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { waitFor } from '@testing-library/react'
 
 import { createTestSession } from '../rootModel/test_util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -146,7 +148,9 @@ test('in-view track menu offers "Add GC content track" on refseq', () => {
     item => 'label' in item && item.label === 'Track actions',
   )
   const subMenu =
-    trackActions && 'subMenu' in trackActions ? trackActions.subMenu : []
+    trackActions && 'subMenu' in trackActions
+      ? resolveSubMenu(trackActions)
+      : []
   expect(
     subMenu.some(
       item => 'label' in item && item.label === 'Add GC content track',
@@ -259,14 +263,13 @@ test('the refseq label menu offers "Add GC content track" exactly once', () => {
   const track = view.tracks[0]
 
   // the two sources TrackLabelMenu concatenates
-  const flatten = (items: unknown[]): string[] =>
-    items.flatMap(item => {
-      const i = item as { label?: unknown; subMenu?: unknown[] }
-      return [
-        ...(typeof i.label === 'string' ? [i.label] : []),
-        ...(i.subMenu ? flatten(i.subMenu) : []),
-      ]
-    })
+  const flatten = (items: MenuItem[]): string[] =>
+    items.flatMap(item => [
+      ...('label' in item && typeof item.label === 'string'
+        ? [item.label]
+        : []),
+      ...('subMenu' in item ? flatten(resolveSubMenu(item)) : []),
+    ])
   const labels = [
     ...flatten(
       session.getTrackActionMenuItems({ config: track.configuration, view }),

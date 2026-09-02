@@ -1,4 +1,5 @@
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
@@ -85,7 +86,7 @@ export type TestDisplay = ReturnType<
 // out of a submenu stay one test.
 function flattenMenuItems(items: MenuItem[]): MenuItem[] {
   return items.flatMap(m =>
-    'subMenu' in m ? flattenMenuItems(m.subMenu) : [m],
+    'subMenu' in m ? flattenMenuItems(resolveSubMenu(m)) : [m],
   )
 }
 

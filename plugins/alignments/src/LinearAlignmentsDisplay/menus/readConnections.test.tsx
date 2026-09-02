@@ -1,4 +1,4 @@
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
@@ -84,18 +84,17 @@ function makeModel() {
 }
 
 function findByLabel(model: ReturnType<typeof makeModel>, label: string) {
-  const items = getReadConnectionsMenuItem(model).subMenu
+  const items = resolveSubMenu(getReadConnectionsMenuItem(model))
   return (
     items.find(i => 'label' in i && i.label === label) ??
     items
-      .filter((i): i is typeof i & { subMenu: typeof items } => 'subMenu' in i)
-      .flatMap(i => i.subMenu)
+      .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : []))
       .find(i => 'label' in i && i.label === label)
   )
 }
 
 function bandOptionsSubMenu(model: ReturnType<typeof makeModel>) {
-  const item = getReadConnectionsMenuItem(model).subMenu.find(
+  const item = resolveSubMenu(getReadConnectionsMenuItem(model)).find(
     i => 'label' in i && i.label === 'Arc / read cloud band options',
   )
   if (!item || !('subMenu' in item)) {
@@ -186,7 +185,7 @@ describe('read connections menu', () => {
   // never the nesting.
   test('the SV-channel row is a direct child of this submenu', () => {
     const model = makeModel()
-    const labels = getReadConnectionsMenuItem(model).subMenu.map(i =>
+    const labels = resolveSubMenu(getReadConnectionsMenuItem(model)).map(i =>
       'label' in i ? i.label : undefined,
     )
     expect(labels).toContain('SV channels (pairs by orientation)')
@@ -247,8 +246,8 @@ describe('promote-as-default (default for all) pin', () => {
 // no row here may dismiss the menu.
 test('every toggle keeps the menu open', () => {
   const model = makeModel()
-  const rows = getReadConnectionsMenuItem(model).subMenu.flatMap(i =>
-    'subMenu' in i ? i.subMenu : [i],
+  const rows = resolveSubMenu(getReadConnectionsMenuItem(model)).flatMap(i =>
+    'subMenu' in i ? resolveSubMenu(i) : [i],
   )
   const toggles = rows.filter(i => 'checked' in i)
   expect(toggles.length).toBeGreaterThan(0)
@@ -259,7 +258,7 @@ test('every toggle keeps the menu open', () => {
 // renderer and the SVG export read the width, and nothing in the UI wrote one.
 describe('arc line width row', () => {
   function lineWidthRow(model: ReturnType<typeof makeModel>) {
-    const row = bandOptionsSubMenu(model).subMenu.find(
+    const row = resolveSubMenu(bandOptionsSubMenu(model)).find(
       i => 'label' in i && i.label === 'Line width',
     )
     if (row?.type !== 'custom') {
@@ -301,7 +300,7 @@ describe('the debug arc-geometry row is development-only', () => {
   })
 
   function hasDebugRow(model: ReturnType<typeof makeModel>) {
-    return bandOptionsSubMenu(model).subMenu.some(
+    return resolveSubMenu(bandOptionsSubMenu(model)).some(
       i => 'label' in i && i.label === 'Debug: show arc geometry',
     )
   }

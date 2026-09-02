@@ -1,4 +1,4 @@
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 import { createTestEnvironment as createMatrixTestEnvironment } from '../LinearMultiSampleVariantMatrixDisplay/testEnv.ts'
@@ -12,7 +12,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // could inherit a mode it had no way to change back.
 function referenceItem(items: MenuItem[]) {
   const show = items.find(i => 'label' in i && i.label === 'Show...')
-  const subMenu = show && 'subMenu' in show ? show.subMenu : []
+  const subMenu = show && 'subMenu' in show ? resolveSubMenu(show) : []
   const item = subMenu.find(
     i => 'label' in i && i.label === 'Show reference alleles',
   )

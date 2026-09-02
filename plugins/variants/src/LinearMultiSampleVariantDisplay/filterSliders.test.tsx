@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -20,7 +21,7 @@ describe('multi-sample variant filter sliders', () => {
   }
 
   function subMenuOf(item: MenuItem | undefined) {
-    return item && 'subMenu' in item ? item.subMenu : []
+    return item && 'subMenu' in item ? resolveSubMenu(item) : []
   }
 
   // The custom row for one slider inside "Filter by...", by its `label`.

@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { fireEvent, waitFor } from '@testing-library/react'
 
 import {
@@ -82,7 +83,7 @@ test('copy and delete reference sequence track disabled', () => {
     )
     const trackActions =
       trackActionsSubMenu && 'subMenu' in trackActionsSubMenu
-        ? trackActionsSubMenu.subMenu
+        ? resolveSubMenu(trackActionsSubMenu)
         : []
 
     // copy ref seq track disabled

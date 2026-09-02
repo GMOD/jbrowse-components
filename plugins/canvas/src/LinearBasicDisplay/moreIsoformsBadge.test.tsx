@@ -1,4 +1,4 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme, resolveSubMenu } from '@jbrowse/core/ui'
 import { measureText } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import { ThemeProvider } from '@mui/material'
@@ -646,7 +646,8 @@ test('the track menu offers the way back from a run of expansions', () => {
   const collapseRow = () => {
     const items: MenuItem[] = display.trackMenuItems()
     const geneGlyph = items.find(i => 'label' in i && i.label === 'Gene glyph')
-    const subMenu = geneGlyph && 'subMenu' in geneGlyph ? geneGlyph.subMenu : []
+    const subMenu =
+      geneGlyph && 'subMenu' in geneGlyph ? resolveSubMenu(geneGlyph) : []
     const row = subMenu.find(
       i => 'label' in i && String(i.label).startsWith('Collapse'),
     )

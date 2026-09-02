@@ -1,6 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
+import { resolveSubMenu } from '../ui/MenuTypes.ts'
 import { LAUNCH_LABEL } from '../ui/launchViewMenu.ts'
 import ViewType from './ViewType.ts'
 import { addViewMenuItems } from './addMenuItems.ts'
@@ -145,7 +146,10 @@ test('group collects both plugins items under one submenu', () => {
   }
   const items = makeView(pm).menuItems()
   expect(labels(items)).toEqual(['base', LAUNCH_LABEL])
-  expect(labels((items[1] as SubMenuItem).subMenu)).toEqual(['first', 'second'])
+  expect(labels(resolveSubMenu(items[1] as SubMenuItem))).toEqual([
+    'first',
+    'second',
+  ])
 })
 
 // A second call has to see a clean array: `group` reaches inside an item to
@@ -161,7 +165,7 @@ test('reopening the menu does not accumulate', () => {
   const view = makeView(pm)
   view.menuItems()
   const items = view.menuItems()
-  expect(labels((items[1] as SubMenuItem).subMenu)).toEqual(['mine'])
+  expect(labels(resolveSubMenu(items[1] as SubMenuItem))).toEqual(['mine'])
 })
 
 test('the menu methods own arguments reach the contributor', () => {

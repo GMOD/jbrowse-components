@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 
 import type { Source } from './types.ts'
@@ -19,7 +21,7 @@ function groupBySubMenu(d: ReturnType<typeof display>): MenuItem[] {
   const item = d
     .trackMenuItems()
     .find(i => 'label' in i && i.label === 'Group by...')
-  return item && 'subMenu' in item ? item.subMenu : []
+  return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 
 const SOURCES = [

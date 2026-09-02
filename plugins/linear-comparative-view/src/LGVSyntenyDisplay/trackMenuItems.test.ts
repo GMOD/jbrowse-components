@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 
 import { createDisplay, createSyntenyEnv } from './testEnv.ts'
@@ -18,7 +19,7 @@ function subMenu(items: MenuItem[], label: string): MenuItem[] {
   if (!found || !('subMenu' in found)) {
     throw new Error(`no "${label}" submenu`)
   }
-  return found.subMenu
+  return resolveSubMenu(found)
 }
 
 function colorRows(display: ReturnType<typeof createDisplay>) {

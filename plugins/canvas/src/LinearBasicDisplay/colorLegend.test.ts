@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -35,7 +36,7 @@ describe('declared color legend', () => {
       const show = display
         .trackMenuItems()
         .find((i: MenuItem) => 'label' in i && i.label === 'Show...')
-      return show && 'subMenu' in show ? show.subMenu : []
+      return show && 'subMenu' in show ? resolveSubMenu(show) : []
     }
     const legendItem = () =>
       showItems().find(

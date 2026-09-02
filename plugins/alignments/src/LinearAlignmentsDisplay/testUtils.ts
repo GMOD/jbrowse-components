@@ -8,6 +8,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
@@ -522,7 +523,7 @@ export function findMenuItem(
       return item
     }
     const found =
-      'subMenu' in item ? findMenuItem(item.subMenu, label) : undefined
+      'subMenu' in item ? findMenuItem(resolveSubMenu(item), label) : undefined
     if (found) {
       return found
     }
@@ -537,7 +538,7 @@ export function hasMenuItem(items: MenuItem[], label: string) {
 /** The rows nested under `label`, or [] where it isn't a submenu. */
 export function menuSubItems(items: MenuItem[], label: string): MenuItem[] {
   const found = findMenuItem(items, label)
-  return found && 'subMenu' in found ? found.subMenu : []
+  return found && 'subMenu' in found ? resolveSubMenu(found) : []
 }
 
 /**

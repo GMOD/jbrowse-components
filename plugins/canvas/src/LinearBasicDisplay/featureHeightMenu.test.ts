@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -15,7 +17,7 @@ function hasLabel(item: MenuItem, label: string) {
 function subMenuOf(items: MenuItem[], label: string) {
   const item = items.find(i => hasLabel(i, label))
   if (item && 'subMenu' in item) {
-    return item.subMenu
+    return resolveSubMenu(item)
   } else {
     throw new Error(`submenu "${label}" not found`)
   }

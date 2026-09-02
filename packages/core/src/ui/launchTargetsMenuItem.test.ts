@@ -1,5 +1,6 @@
 import PlaceholderIcon from '@mui/icons-material/CompareArrows'
 
+import { resolveSubMenu } from './MenuTypes.ts'
 import { launchTargetsMenuItem } from './launchTargetsMenuItem.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
@@ -24,7 +25,7 @@ function labelOf(item: MenuItem | undefined) {
 }
 
 function subMenu(item: MenuItem | undefined) {
-  return item && 'subMenu' in item ? item.subMenu : undefined
+  return item && 'subMenu' in item ? resolveSubMenu(item) : undefined
 }
 
 function click(item: MenuItem | undefined) {

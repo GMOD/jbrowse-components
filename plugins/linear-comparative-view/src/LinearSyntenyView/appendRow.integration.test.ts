@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -200,7 +201,7 @@ test('a track added in the same tick shows on the level it was added for', async
 const menuLabels = (view: LinearSyntenyViewModel) =>
   view
     .headerMenuItems()
-    .flatMap(item => ('subMenu' in item ? item.subMenu : [item]))
+    .flatMap(item => ('subMenu' in item ? resolveSubMenu(item) : [item]))
     .map(item => ('label' in item ? item.label : ''))
 
 // A row is appended to the stack the user is looking at, and the import form is

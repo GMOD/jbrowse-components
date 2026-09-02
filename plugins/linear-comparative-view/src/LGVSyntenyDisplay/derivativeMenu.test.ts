@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import LinearDerivativeVsRefMenuItemF from '../LinearDerivativeVsRef/index.ts'
 import { createDisplay } from './testEnv.ts'
 
@@ -6,7 +8,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function labels(items: MenuItem[]): unknown[] {
   return items.flatMap(i => [
     ...('label' in i ? [i.label] : []),
-    ...('subMenu' in i ? labels(i.subMenu) : []),
+    ...('subMenu' in i ? labels(resolveSubMenu(i)) : []),
   ])
 }
 

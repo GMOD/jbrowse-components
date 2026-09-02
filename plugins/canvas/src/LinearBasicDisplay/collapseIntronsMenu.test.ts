@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { isFeature } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 
@@ -125,7 +126,7 @@ function collapseItem(display: Display) {
 }
 
 function subMenu(item: MenuItem): MenuItem[] | undefined {
-  return 'subMenu' in item ? item.subMenu : undefined
+  return 'subMenu' in item ? resolveSubMenu(item) : undefined
 }
 
 function subMenuLabels(item: MenuItem) {

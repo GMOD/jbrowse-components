@@ -39,6 +39,10 @@ export type MafLaunchModel = SampleNavigationModel &
  * were found by people who already knew they were there. A reader who has
  * navigated to a locus has named one just as well as a rubberband does, and the
  * window is the span the drag would have covered.
+ *
+ * The submenu is the function form: naming the per-species entries walks the
+ * buffered region (`rowNavigationTargets`), and the track menu is opened far
+ * more often than this row is.
  */
 export function mafLaunchMenuItems({
   session,
@@ -49,28 +53,31 @@ export function mafLaunchMenuItems({
   model: MafLaunchModel
   view: LinearGenomeViewModel
 }): MenuItem[] {
-  const targets = visibleRowTargets(model)
-  const subMenu: MenuItem[] = [
-    {
-      label: 'View subsequences (visible region)',
-      icon: NotesIcon,
-      disabled: model.samples.length === 0,
-      onClick: () => {
-        // `width - 1`, the last pixel the window paints, not `width`: the
-        // entries below take the window from the same two pixels, and a right
-        // edge one past it puts one extra base in the widget and not in them.
-        openSubsequenceWidget(
-          session,
-          model,
-          view,
-          0,
-          view.width - 1,
-          model.samples,
-        )
+  const subMenu = (): MenuItem[] => {
+    const targets = visibleRowTargets(model)
+    return [
+      {
+        label: 'View subsequences (visible region)',
+        icon: NotesIcon,
+        disabled: model.samples.length === 0,
+        onClick: () => {
+          // `width - 1`, the last pixel the window paints, not `width`: the
+          // entries below take the window from the same two pixels, and a
+          // right edge one past it puts one extra base in the widget and not
+          // in them.
+          openSubsequenceWidget(
+            session,
+            model,
+            view,
+            0,
+            view.width - 1,
+            model.samples,
+          )
+        },
       },
-    },
-    ...sampleNavigationItems(session, model, targets),
-    ...mafSyntenyLaunchItems(session, model, targets),
-  ]
+      ...sampleNavigationItems(session, model, targets),
+      ...mafSyntenyLaunchItems(session, model, targets),
+    ]
+  }
   return [{ label: LAUNCH_LABEL, type: 'subMenu', subMenu }]
 }

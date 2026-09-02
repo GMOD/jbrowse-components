@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { createTestSession } from '../rootModel/test_util.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -80,7 +82,7 @@ function colorByLabels(display: ReturnType<typeof syntenyDisplay>) {
   if (!colorBy || !('subMenu' in colorBy)) {
     throw new Error('no Color by... menu')
   }
-  return colorBy.subMenu.map(i => ('label' in i ? i.label : ''))
+  return resolveSubMenu(colorBy).map(i => ('label' in i ? i.label : ''))
 }
 
 test('offers only the schemes a PAF block can answer', () => {

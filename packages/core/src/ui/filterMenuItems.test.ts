@@ -1,3 +1,4 @@
+import { resolveSubMenu } from './MenuTypes.ts'
 import { filterMenuItems } from './filterMenuItems.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
@@ -11,7 +12,7 @@ function subMenu(items: MenuItem[]) {
   if (!item || !('subMenu' in item)) {
     throw new Error('expected a submenu')
   }
-  return item.subMenu
+  return resolveSubMenu(item)
 }
 
 test('a lone dialog opener stays a top-level row', () => {

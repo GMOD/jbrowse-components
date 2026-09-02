@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { fireEvent, render } from '@testing-library/react'
 
 import { makeResolutionSubMenu } from './wiggleMenuItems.tsx'
@@ -22,7 +23,7 @@ function makeSelf(resolution: number) {
 function renderStepper(resolution: number) {
   const self = makeSelf(resolution)
   const item = makeResolutionSubMenu(self)[0]!
-  const custom = 'subMenu' in item ? item.subMenu[0]! : undefined
+  const custom = 'subMenu' in item ? resolveSubMenu(item)[0]! : undefined
   const node = custom && 'render' in custom ? custom.render(() => {}) : null
   const utils = render(<div>{node}</div>)
   const [coarser, finer, reset] = utils.getAllByRole('button')

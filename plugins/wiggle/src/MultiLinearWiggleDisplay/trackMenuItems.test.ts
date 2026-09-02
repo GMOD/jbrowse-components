@@ -1,4 +1,4 @@
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
@@ -47,7 +47,7 @@ function labels(items: MenuItem[]) {
 function subMenuOf(items: MenuItem[], label: string) {
   const item = items.find(i => 'label' in i && i.label === label)
   if (item && 'subMenu' in item) {
-    return item.subMenu
+    return resolveSubMenu(item)
   } else {
     throw new Error(`submenu "${label}" not found`)
   }

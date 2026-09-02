@@ -19,7 +19,12 @@ export function pushIntoSubMenu(
     (i): i is SubMenuItem => i.type === 'subMenu' && i.label === label,
   )
   if (existing) {
-    existing.subMenu.push(item)
+    const { subMenu } = existing
+    if (typeof subMenu === 'function') {
+      existing.subMenu = () => [...subMenu(), item]
+    } else {
+      subMenu.push(item)
+    }
   } else {
     items.push({ label, type: 'subMenu', subMenu: [item] })
   }

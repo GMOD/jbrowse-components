@@ -1,5 +1,8 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
+import type { CheckboxMenuItem, RadioMenuItem } from '@jbrowse/core/ui'
 import type { GroupByType } from '@jbrowse/plugin-alignments'
 
 function makeModel(
@@ -17,9 +20,12 @@ function makeModel(
 }
 
 // The menu mixes radios, a divider and a checkbox; every assertion below is
-// about the labelled entries, so narrow to those once here.
+// about the settings rows and several read `checked`, so narrow to those once
+// here.
 function items(model: ReturnType<typeof makeModel>) {
-  return getSyntenyGroupByMenuItem(model).subMenu.filter(i => 'label' in i)
+  return resolveSubMenu(getSyntenyGroupByMenuItem(model)).filter(
+    (i): i is CheckboxMenuItem | RadioMenuItem => 'checked' in i,
+  )
 }
 
 // No "One row per group" here: that toggle is the group's drawn height, not a
@@ -139,7 +145,7 @@ function makeShowModel(showCoverage: boolean) {
 
 function showLabels(showCoverage: boolean) {
   return getSyntenyShowMenuItems(makeShowModel(showCoverage))
-    .flatMap(i => ('subMenu' in i ? i.subMenu : [i]))
+    .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i]))
     .filter(i => 'label' in i)
     .map(i => i.label)
 }

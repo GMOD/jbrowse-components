@@ -1,4 +1,8 @@
-import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
+import {
+  resolveSubMenu,
+  showLegendCheckboxItem,
+  toggleItem,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   collapseGroupRowsItems,
@@ -57,7 +61,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   return {
     ...item,
     subMenu: [
-      ...item.subMenu,
+      ...resolveSubMenu(item),
       ...(model.groupBy?.type === 'mateAssembly'
         ? [
             { type: 'divider' as const },

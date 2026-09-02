@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import type { MenuItem, MenuItemsGetter, SubMenuItem } from '@jbrowse/core/ui'
 
 /**
@@ -91,7 +93,7 @@ const reported = new WeakSet<AddItemAction>()
  */
 function cloneMenuItem(item: MenuItem): MenuItem {
   return 'subMenu' in item
-    ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
+    ? { ...item, subMenu: cloneMenuItems(resolveSubMenu(item)) }
     : item
 }
 
@@ -115,7 +117,7 @@ function insertAt<T>(items: T[], item: T, position = items.length) {
  * sub-menu's item array. Throws if a path segment names an item that is not a
  * sub-menu.
  */
-function resolveSubMenu(items: MenuItem[], menuPath: string[]) {
+function resolveMenuPath(items: MenuItem[], menuPath: string[]) {
   let level = items
   for (const [idx, menuName] of menuPath.slice(1).entries()) {
     let sub = level.find(
@@ -129,7 +131,7 @@ function resolveSubMenu(items: MenuItem[], menuPath: string[]) {
       sub = { label: menuName, subMenu: [] }
       level.push(sub)
     }
-    level = sub.subMenu
+    level = resolveSubMenu(sub)
   }
   return level
 }
@@ -141,7 +143,7 @@ function resolveSubMenu(items: MenuItem[], menuPath: string[]) {
 function applyItemActions(items: MenuItem[], actions: AddItemAction[]) {
   for (const action of actions) {
     try {
-      const target = resolveSubMenu(items, action.menuPath)
+      const target = resolveMenuPath(items, action.menuPath)
       // cloned rather than inserted by reference — see cloneMenuItem
       insertAt(target, cloneMenuItem(action.menuItem), action.position)
     } catch (error) {

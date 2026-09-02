@@ -1,3 +1,4 @@
+import { resolveSubMenu } from './MenuTypes.ts'
 import { makeRadioSubMenu } from './radioSubMenu.ts'
 
 import type { RadioMenuItem } from './MenuTypes.ts'
@@ -8,7 +9,7 @@ const OPTIONS = [
 ] as const
 
 function radios(item: ReturnType<typeof makeRadioSubMenu>) {
-  return ('subMenu' in item ? item.subMenu : []) as RadioMenuItem[]
+  return ('subMenu' in item ? resolveSubMenu(item) : []) as RadioMenuItem[]
 }
 
 describe('makeRadioSubMenu', () => {
@@ -63,7 +64,7 @@ describe('makeRadioSubMenu', () => {
       options: OPTIONS,
       extraItems: [{ label: 'Something else', onClick: () => {} }],
     })
-    const last = ('subMenu' in item ? item.subMenu : []).at(-1)
+    const last = ('subMenu' in item ? resolveSubMenu(item) : []).at(-1)
     expect(last && 'label' in last ? last.label : undefined).toBe(
       'Something else',
     )

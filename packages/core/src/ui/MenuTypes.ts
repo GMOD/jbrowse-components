@@ -141,10 +141,22 @@ export interface RadioMenuItem extends BaseMenuItem {
   onClick: MenuItemClickHandler
 }
 
-/** #menuItem subMenu | nests another `MenuItem[]`, to any depth */
+/**
+ * #menuItem subMenu | nests another `MenuItem[]`, or a function building one, to any depth
+ *
+ * The function form is called when the submenu opens (or a walker asks for its
+ * rows), not when the parent menu is built — for a submenu whose rows cost a
+ * scan of the display's data to name. Read the field through `resolveSubMenu`
+ * rather than by hand, so the two forms stay one thing to the renderer, the
+ * pin-coverage walk and every test helper that flattens a menu.
+ */
 export interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
-  subMenu: MenuItem[]
+  subMenu: MenuItem[] | (() => MenuItem[])
+}
+
+export function resolveSubMenu(item: SubMenuItem) {
+  return typeof item.subMenu === 'function' ? item.subMenu() : item.subMenu
 }
 
 /**

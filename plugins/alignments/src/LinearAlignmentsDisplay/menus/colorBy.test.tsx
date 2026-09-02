@@ -1,6 +1,6 @@
 import { isValidElement } from 'react'
 
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
@@ -50,7 +50,7 @@ function fakePinFactory(model: Model) {
 }
 
 function subMenuOf(item: MenuItem | undefined) {
-  return item && 'subMenu' in item ? item.subMenu : []
+  return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 
 // Flatten the Color by... menu one level so both top-level scheme radios and the
@@ -68,7 +68,7 @@ function allItems(
       ...opts,
     }),
   )
-  return top.flatMap(i => ('subMenu' in i ? [i, ...i.subMenu] : [i]))
+  return top.flatMap(i => ('subMenu' in i ? [i, ...resolveSubMenu(i)] : [i]))
 }
 
 function byLabel(

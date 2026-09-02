@@ -1,4 +1,4 @@
-import { staysOpenOnClick } from '@jbrowse/core/ui'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -28,7 +28,7 @@ function find(items: MenuItem[], label: string) {
 function subMenuOf(items: MenuItem[], label: string) {
   const item = find(items, label)
   if ('subMenu' in item) {
-    return item.subMenu
+    return resolveSubMenu(item)
   } else {
     throw new Error(`"${label}" has no submenu`)
   }

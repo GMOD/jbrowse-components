@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 import { getSashimiMenuItem } from './sashimi.ts'
 
@@ -55,7 +57,7 @@ function pinOf(item: MenuItem | undefined) {
 }
 
 function labels(model: ReturnType<typeof makeModel>) {
-  return getSashimiMenuItem(model).subMenu.flatMap(i =>
+  return resolveSubMenu(getSashimiMenuItem(model)).flatMap(i =>
     'label' in i ? [i.label] : [],
   )
 }
@@ -85,7 +87,7 @@ describe('sashimi menu', () => {
   test('every checkbox precedes every submenu', () => {
     const model = makeModel()
     model.showSashimiArcs = true
-    const shapes = getSashimiMenuItem(model).subMenu.map(i =>
+    const shapes = resolveSubMenu(getSashimiMenuItem(model)).map(i =>
       'subMenu' in i ? 'submenu' : 'checkbox',
     )
     expect(shapes.lastIndexOf('checkbox')).toBeLessThan(
@@ -100,7 +102,7 @@ describe('sashimi menu', () => {
   test('no row carries a "?"', () => {
     const model = makeModel()
     model.showSashimiArcs = true
-    const withHelp = getSashimiMenuItem(model).subMenu.filter(
+    const withHelp = resolveSubMenu(getSashimiMenuItem(model)).filter(
       i => 'helpText' in i && i.helpText,
     )
     expect(withHelp).toEqual([])
@@ -109,7 +111,7 @@ describe('sashimi menu', () => {
   test('the read-support floor is a submenu holding its slider', () => {
     const model = makeModel()
     model.showSashimiArcs = true
-    const floor = getSashimiMenuItem(model).subMenu.find(
+    const floor = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Min read support',
     )
     if (!floor || !('subMenu' in floor)) {
@@ -117,13 +119,15 @@ describe('sashimi menu', () => {
     }
     // the size row itself, which draws its own slider rather than reaching the
     // menu's shared trailing column (ui/makeSizeMenu.tsx)
-    expect(floor.subMenu.map(i => 'type' in i && i.type)).toEqual(['custom'])
+    expect(resolveSubMenu(floor).map(i => 'type' in i && i.type)).toEqual([
+      'custom',
+    ])
   })
 
   test('"Hide non-canonical junctions" toggles and carries a pin', () => {
     const model = makeModel()
     model.showSashimiArcs = true
-    const row = getSashimiMenuItem(model).subMenu.find(
+    const row = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Hide non-canonical junctions',
     )
     if (!row || !('onClick' in row)) {
@@ -137,13 +141,13 @@ describe('sashimi menu', () => {
   test('placement submenu checks the active mode and switches on click', () => {
     const model = makeModel()
     model.showSashimiArcs = true
-    const placement = getSashimiMenuItem(model).subMenu.find(
+    const placement = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Arc placement',
     )
     if (!placement || !('subMenu' in placement)) {
       throw new Error('no placement submenu')
     }
-    const below = placement.subMenu.find(
+    const below = resolveSubMenu(placement).find(
       i => 'label' in i && i.label === 'Below coverage',
     )
     if (!below || !('onClick' in below)) {
@@ -156,14 +160,14 @@ describe('sashimi menu', () => {
   test('every arc-placement option carries a default-for-all pin', () => {
     const model = makeModel()
     model.showSashimiArcs = true
-    const placement = getSashimiMenuItem(model).subMenu.find(
+    const placement = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Arc placement',
     )
     if (!placement || !('subMenu' in placement)) {
       throw new Error('no placement submenu')
     }
     const byLabel = (label: string) =>
-      placement.subMenu.find(i => 'label' in i && i.label === label)
+      resolveSubMenu(placement).find(i => 'label' in i && i.label === label)
     expect(pinOf(byLabel('Below coverage'))).toBeDefined()
     expect(pinOf(byLabel('Auto (minimize overlap)'))).toBeDefined()
     expect(pinOf(byLabel('Above coverage'))).toBeDefined()
@@ -172,7 +176,7 @@ describe('sashimi menu', () => {
   test('"Show labels" carries a default-for-all pin', () => {
     const model = makeModel()
     model.showSashimiArcs = true
-    const showLabels = getSashimiMenuItem(model).subMenu.find(
+    const showLabels = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Show labels',
     )
     expect(pinOf(showLabels)).toBeDefined()
@@ -183,7 +187,7 @@ describe('sashimi menu', () => {
     // with no pin, so "show sashimi arcs by default for every track" was the
     // single thing this menu couldn't express.
     const model = makeModel()
-    const toggle = getSashimiMenuItem(model).subMenu.find(
+    const toggle = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Show sashimi arcs',
     )
     expect(pinOf(toggle)).toBeDefined()

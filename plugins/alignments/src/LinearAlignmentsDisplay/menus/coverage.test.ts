@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { getCoverageMenuItem } from './coverage.ts'
 
 // Every setting in this submenu scales the coverage band's draw and its hit
@@ -41,7 +43,7 @@ test('the coverage submenu is live with the band shown', () => {
 // than after a user finds its pin dead.
 test('no row inside carries a pin', () => {
   const item = menu(true)
-  const rows = 'subMenu' in item ? item.subMenu : []
+  const rows = 'subMenu' in item ? resolveSubMenu(item) : []
   for (const row of rows) {
     expect(row).not.toHaveProperty('pin')
   }
@@ -53,11 +55,11 @@ test('no row inside carries a pin', () => {
 // effect. Ties go to the lower row.
 function tickedSnpFrequencyLabels(coverageSnpMinFrequency: number) {
   const item = menu(true, coverageSnpMinFrequency)
-  const rows = 'subMenu' in item ? item.subMenu : []
+  const rows = 'subMenu' in item ? resolveSubMenu(item) : []
   const group = rows.find(
     row => 'label' in row && row.label === 'Color SNPs above...',
   )
-  const options = group && 'subMenu' in group ? group.subMenu : []
+  const options = group && 'subMenu' in group ? resolveSubMenu(group) : []
   return options.flatMap(row =>
     'checked' in row && row.checked && 'label' in row ? [row.label] : [],
   )

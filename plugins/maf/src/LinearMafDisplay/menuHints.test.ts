@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -25,7 +27,7 @@ function findRow(items: MenuItem[], label: string): string | undefined {
       return item.label
     }
     if ('subMenu' in item) {
-      const hit = findRow(item.subMenu, label)
+      const hit = findRow(resolveSubMenu(item), label)
       if (hit) {
         return hit
       }

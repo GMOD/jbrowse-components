@@ -159,7 +159,7 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
 | `normal` | `onClick` | an action row; the default when `type` is omitted |
 | `radio` | `checked`, `onClick` | a setting row with a radio button; leaves the menu open |
 | `subHeader` | `priority`, `label` | a text label for a section of a menu; not clickable |
-| `subMenu` | `subMenu` | nests another `MenuItem[]`, to any depth |
+| `subMenu` | `subMenu` | nests another `MenuItem[]`, or a function building one, to any depth |
 
 <!-- MENU_ITEM_TYPES END -->
 
@@ -187,6 +187,12 @@ Every variant except `divider` and `subHeader` also takes these:
 Clicking a row dismisses the menu unless it is a `checkbox` or `radio`, which
 are settings and stay open. `staysOpenOnClick` is that rule, exported so a test
 can assert the behavior.
+
+A `subMenu` row's `subMenu` may be a function instead of an array. It is called
+when the submenu opens, not when the parent menu is built, which is the form for
+a submenu whose rows cost a scan of the display's data to name (the MAF track
+menu's per-species "Launch" entries). Read the field through `resolveSubMenu`,
+which accepts both forms, rather than indexing `item.subMenu` directly.
 
 ## Builders
 

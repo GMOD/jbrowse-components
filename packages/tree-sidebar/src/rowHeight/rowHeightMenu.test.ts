@@ -1,4 +1,4 @@
-import { staysOpenOnClick } from '@jbrowse/core/ui/menuItems'
+import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui/menuItems'
 
 import { rowHeightMenuItem } from './rowHeightMenu.ts'
 
@@ -27,7 +27,7 @@ function subMenu(model: RowHeightModel, presets = PRESETS) {
   if (!('subMenu' in item)) {
     throw new Error('expected a submenu')
   }
-  return item.subMenu
+  return resolveSubMenu(item)
 }
 
 function labels(items: MenuItem[]) {

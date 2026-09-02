@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import {
   laneHeaderMenuItems,
   laneLocString,
@@ -14,7 +16,7 @@ function labelsOf(items: MenuItem[]) {
 }
 
 function subMenuOf(item: MenuItem | undefined) {
-  return item && 'subMenu' in item ? item.subMenu : []
+  return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 
 // A move writes back `rowAssemblies`, which holds neither a hidden lane nor

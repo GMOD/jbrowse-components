@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { colorByMenuItems } from './colorByMenuItems.tsx'
 
 import type {
@@ -42,7 +44,7 @@ function findSubMenu(
   label: string,
 ) {
   const found = items.find(i => 'label' in i && i.label === label)
-  return found && 'subMenu' in found ? found.subMenu : undefined
+  return found && 'subMenu' in found ? resolveSubMenu(found) : undefined
 }
 
 // The view-wide radios come first and are the primary control; per-track is a
@@ -133,9 +135,10 @@ describe('per-track "Use view setting"', () => {
     const perTrack = items.find(
       i => 'label' in i && i.label === 'Customize per track',
     )
-    const list = perTrack && 'subMenu' in perTrack ? perTrack.subMenu : []
+    const list =
+      perTrack && 'subMenu' in perTrack ? resolveSubMenu(perTrack) : []
     const row = list.find(i => 'label' in i && i.label === name)
-    return row && 'subMenu' in row ? row.subMenu : []
+    return row && 'subMenu' in row ? resolveSubMenu(row) : []
   }
   const checkedOf = (items: MenuItem[], label: string) => {
     const row = items.find(i => 'label' in i && i.label === label)

@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getEnv } from '@jbrowse/core/util'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 
@@ -278,7 +279,7 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     if (!launch || !('subMenu' in launch)) {
       throw new Error('expected a Launch submenu')
     }
-    const item = launch.subMenu.find(
+    const item = resolveSubMenu(launch).find(
       f => 'label' in f && f.label === 'Linear synteny view',
     )
     if (!item || !('onClick' in item)) {

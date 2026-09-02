@@ -339,6 +339,20 @@ describe('CascadingMenu submenus', () => {
     ).toBe('false')
   })
 
+  it('calls a function-form subMenu when the row opens, not when the menu lists', () => {
+    const build = jest.fn(() => [{ label: 'Inner', onClick: () => {} }])
+    const { getByText } = renderMenu([
+      { label: 'Lazy', subMenu: build },
+      { label: 'Other', onClick: () => {} },
+    ])
+    expect(getByText('Other')).toBeTruthy()
+    expect(build).not.toHaveBeenCalled()
+
+    fireEvent.mouseOver(getByText('Lazy'))
+    expect(getByText('Inner')).toBeTruthy()
+    expect(build).toHaveBeenCalled()
+  })
+
   it('keeps the same submenu open when a row appears above it', () => {
     const showExtra = observable.box(false)
     const { getByText, getByTestId } = render(

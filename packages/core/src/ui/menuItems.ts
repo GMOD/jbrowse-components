@@ -34,7 +34,7 @@ export {
   promotableToggleItem,
 } from './promotableMenuItems.ts'
 export type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
-export { staysOpenOnClick } from './MenuTypes.ts'
+export { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 export type {
   BaseMenuItem,
   CheckboxMenuItem,

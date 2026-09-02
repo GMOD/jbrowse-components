@@ -131,7 +131,7 @@ export type {
   RadioMenuItem,
   SubMenuItem,
 } from './MenuTypes.ts'
-export { staysOpenOnClick } from './MenuTypes.ts'
+export { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 export {
   LAUNCH_LABEL,
   pushIntoSubMenu,

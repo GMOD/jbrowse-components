@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom'
 
 import { readConfObject } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getContainingView } from '@jbrowse/core/util'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -44,7 +45,7 @@ suppressTeardownNoise()
 function flatten(items: MenuItem[]): { label?: string; disabled?: boolean }[] {
   return items.flatMap(i => [
     i as { label?: string; disabled?: boolean },
-    ...('subMenu' in i ? flatten(i.subMenu) : []),
+    ...('subMenu' in i ? flatten(resolveSubMenu(i)) : []),
   ])
 }
 

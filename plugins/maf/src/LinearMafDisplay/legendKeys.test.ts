@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import {
@@ -98,7 +99,7 @@ describe('the color key is dismissible, like every other row display', () => {
   function rows(items: MenuItem[]): string[] {
     return items.flatMap(i => [
       ...('label' in i && typeof i.label === 'string' ? [i.label] : []),
-      ...('subMenu' in i ? rows(i.subMenu) : []),
+      ...('subMenu' in i ? rows(resolveSubMenu(i)) : []),
     ])
   }
 

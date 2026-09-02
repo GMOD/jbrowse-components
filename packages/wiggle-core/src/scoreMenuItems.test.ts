@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { makeScoreSubMenu } from './scoreMenuItems.ts'
 
 import type { ScoreScaleModel } from './scoreMenuItems.ts'
@@ -22,7 +24,7 @@ function makeSelf(over: Partial<ScoreScaleModel> = {}) {
 }
 
 function labels(item: MenuItem) {
-  const sub = 'subMenu' in item ? item.subMenu : []
+  const sub = 'subMenu' in item ? resolveSubMenu(item) : []
   return sub.map(i => ('label' in i ? i.label : ''))
 }
 

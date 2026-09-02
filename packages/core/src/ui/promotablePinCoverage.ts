@@ -23,6 +23,7 @@
  * result against a baseline.
  */
 import { promotableSlotNames } from '../configuration/promotableSlots.ts'
+import { resolveSubMenu } from './MenuTypes.ts'
 
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
@@ -69,7 +70,7 @@ export function pinnedSlots(items: MenuItem[]): Set<string> {
         found.add(item.pin.control.slot)
       }
       if ('subMenu' in item) {
-        walk(item.subMenu)
+        walk(resolveSubMenu(item))
       }
     }
   }
