@@ -75,7 +75,7 @@ test('it says when the row was placed proportionally rather than walked', () => 
       anchorLabel: 'hg002mat',
     }),
   ).toBe(
-    'Following hg002mat — no per-base alignment at this zoom, so positions are approximate',
+    'Following hg002mat — positions are approximate here, since the window spans more than one alignment or only a coarse alignment is loaded at this zoom',
   )
 })
 
