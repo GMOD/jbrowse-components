@@ -1,3 +1,4 @@
+import { CramRecord } from '@gmod/cram'
 import { numericCigarToString } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
@@ -7,7 +8,6 @@ import { packCigar } from './packCigar.ts'
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
 import type CramAdapter from './CramAdapter.ts'
-import type { CramRecord } from '@gmod/cram'
 import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -36,72 +36,65 @@ export function cramReadGroup(
   return samHeader?.readGroups[record.readGroupId] ?? record.getTag('RG')
 }
 
-export default class CramSlightlyLazyFeature implements MismatchFeature {
-  // parameter properties auto-create the record/adapter fields
-  // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
-  constructor(
-    private record: CramRecord,
-    private adapter: CramAdapter,
-  ) {}
+/**
+ * EXTENDS CramRecord because CramAdapter passes this class to `@gmod/cram` as
+ * `recordClass`, so every record a query hands out is already the feature and
+ * a read is one object rather than a record plus a wrapper. The same shape as
+ * BamSlightlyLazyFeature, with the same hazard: an additive @gmod/cram release
+ * can shadow one of these members without semver saying so, which
+ * cramRecordOverrides.test.ts guards.
+ *
+ * A record is a view onto its slice's columns, handed out fresh per query, so
+ * what is memoized here lives exactly as long as the query that built it.
+ */
+export default class CramSlightlyLazyFeature
+  extends CramRecord
+  implements MismatchFeature
+{
+  public adapter!: CramAdapter
 
   private numericCigar?: ArrayLike<number>
 
   private clipStart?: number
 
   get name() {
-    return this.record.readName
-  }
-
-  get start() {
-    return this.record.start
-  }
-
-  // floored at 1 like parseSam: a zero-width span (fully soft-clipped record)
-  // is unfindable by interval search
-  get end() {
-    return this.start + Math.max(this.record.lengthOnRef ?? 0, 1)
+    return this.readName
   }
 
   get score() {
-    return this.record.mappingQuality
-  }
-
-  get flags() {
-    return this.record.flags
+    return this.mappingQuality
   }
 
   get strand() {
-    return this.record.isReverseComplemented() ? -1 : 1
+    return this.isReverseComplemented() ? -1 : 1
   }
 
   get qual() {
-    return this.record.qualityScores?.join(' ')
+    return this.qualityScores?.join(' ')
   }
 
   get qualRaw() {
-    return this.record.qualityScores
+    return this.qualityScores
   }
 
   get refName() {
-    return this.adapter.refIdToName(this.record.sequenceId)!
+    return this.adapter.refIdToName(this.sequenceId)!
   }
 
   get pair_orientation() {
-    return this.record.getPairOrientation()
+    return this.getPairOrientation()
   }
 
   get template_length() {
-    return this.record.templateLength ?? this.record.templateSize
+    return this.templateLength ?? this.templateSize
   }
 
-  // `mate` was an object per paired record through @gmod/cram 11; from 12 the
-  // position is two numbers on the record, under SAM's names for those fields.
   // hasNextPosition() is the test, not truthiness: nextSequenceId is -2 when
   // the file gave no position, which is deliberately distinct from -1, a next
   // segment that has a position but is unplaced.
   get next_ref() {
-    return this.record.hasNextPosition()
-      ? this.adapter.refIdToName(this.record.nextSequenceId)
+    return this.hasNextPosition()
+      ? this.adapter.refIdToName(this.nextSequenceId)
       : undefined
   }
 
@@ -117,28 +110,30 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
    * "no mate reference to show" — but only one of them is a missing mate.
    */
   get nextRefId() {
-    return this.record.hasNextPosition() ? this.record.nextSequenceId : -1
+    return this.hasNextPosition() ? this.nextSequenceId : -1
   }
 
   get next_segment_position() {
-    return this.record.hasNextPosition()
-      ? `${this.adapter.refIdToName(this.record.nextSequenceId)}:${
-          this.record.nextStart + 1
-        }`
+    return this.hasNextPosition()
+      ? `${this.adapter.refIdToName(this.nextSequenceId)}:${this.nextStart + 1}`
       : undefined
   }
 
   get next_pos() {
-    return this.record.hasNextPosition() ? this.record.nextStart : undefined
+    return this.hasNextPosition() ? this.nextStart : undefined
   }
 
   // Read group lives outside the CRAM tag block, so it is spliced in to match
   // what BAM exposes. Read ~3x per read on the render path and still not
   // memoized: an in-process A/B on volvox-rg.cram (400 reads) put re-spreading
   // at 1.06ms against 1.09ms for a cached copy.
-  get tags() {
-    const RG = this.adapter.samHeader?.readGroups[this.record.readGroupId]
-    return RG === undefined ? this.record.tags : { ...this.record.tags, RG }
+  //
+  // OVERRIDES CramRecord.tags, which is a getter/setter pair; leaving the
+  // setter off makes assignment throw in strict mode, which is what this side
+  // wants.
+  override get tags() {
+    const RG = this.adapter.samHeader?.readGroups[this.readGroupId]
+    return RG === undefined ? super.tags : { ...super.tags, RG }
   }
 
   /**
@@ -154,16 +149,14 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
    * spells with its spread: the header's read group wins over any `RG` the tag
    * block carries.
    */
-  getTag(tagName: string) {
+  override getTag(tagName: string) {
     return tagName === 'RG'
-      ? cramReadGroup(this.adapter.samHeader, this.record)
-      : this.record.getTag(tagName)
+      ? cramReadGroup(this.adapter.samHeader, this)
+      : super.getTag(tagName)
   }
 
   get seq() {
-    // CRAM stores sequences as strings, not packed like BAM
-    // So we return the string directly without encoding/decoding
-    return this.record.getReadBases()
+    return this.getReadBases()
   }
 
   // packed CIGAR array, each entry (length << 4) | opIndex — see packCigar.ts
@@ -178,15 +171,14 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   // ~7,000 operations built and retained on demand.
   //
   // Still memoized, because a consumer that asks once usually asks again
-  // (the modification path, several walks per read). Wrappers are per query,
-  // so the memo lives exactly as long as the query that built it.
+  // (the modification path, several walks per read).
   //
   // `fields`, `CIGAR` and `tags` were measured and are deliberately *not*
   // memoized: `fields` and `CIGAR` are read 0 times per read on the render path
   // (only toJSON/details touch them, once), and re-spreading `tags` on each of
   // its ~3 reads per read beats installing a per-instance copy.
   get NUMERIC_CIGAR() {
-    this.numericCigar ??= packCigar(this.record)
+    this.numericCigar ??= packCigar(this)
     return this.numericCigar
   }
 
@@ -208,8 +200,8 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     // start of the read as sequenced is the one at the end of its alignment
     this.clipStart ??=
       this.strand === -1
-        ? this.record.getTrailingClipLength()
-        : this.record.getLeadingClipLength()
+        ? this.getTrailingClipLength()
+        : this.getLeadingClipLength()
     return this.clipStart
   }
 
@@ -218,7 +210,7 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   }
 
   id() {
-    return `${this.adapter.id}-${this.record.uniqueId}`
+    return `${this.adapter.id}-${this.uniqueId}`
   }
 
   /**
@@ -227,7 +219,7 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
    * reasoning; both exist for `dedupeById` in the alignments render RPC.
    */
   get recordId() {
-    return this.record.uniqueId
+    return this.uniqueId
   }
 
   get(name: 'refName'): string
@@ -269,7 +261,7 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
       case 'NUMERIC_CIGAR':
         return this.NUMERIC_CIGAR
       case 'seq_length':
-        return this.record.readLength
+        return this.readLength
       case 'pair_orientation':
         return this.pair_orientation
       case 'next_ref':
@@ -316,10 +308,10 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   //   628 ONT reads      0.999x, 1.013x, 1.021x   — parity
   //   80,177 short reads 1.088x, 1.111x, 1.132x   — ~10%
   //
-  // The cost is per *call*, not per emission: one extra hop, since
-  // `record.forEachMismatch` then calls the walk. A long read amortizes it over
-  // ~5,000 emissions and a short read has ~7, which is the whole difference
-  // between those two rows.
+  // The cost is per *call*, not per emission: one extra hop, since the base
+  // method then calls the walk. A long read amortizes it over ~5,000 emissions
+  // and a short read has ~7, which is the whole difference between those two
+  // rows.
   //
   // Measured unbundled it looks worse (a further ~6%), but that part is an
   // artefact of module boundaries under node's loader — the identical walk,
@@ -331,11 +323,14 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   // nothing but a hand-diff against cram-js's copy would have caught. Revisit
   // if an end-to-end render measurement, not this micro-benchmark, shows the
   // short-read row mattering.
-  forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {
+  //
+  // OVERRIDES CramRecord.forEachMismatch, so the signature has to stay
+  // compatible with its `(callback, opts?: MismatchOptions)`.
+  override forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {
     MISMATCH_OPTS.start = opts?.start
     MISMATCH_OPTS.end = opts?.end
     MISMATCH_OPTS.origin = this.start
-    this.record.forEachMismatch(callback, MISMATCH_OPTS)
+    super.forEachMismatch(callback, MISMATCH_OPTS)
   }
 
   get fields(): SimpleFeatureSerialized {
@@ -358,7 +353,9 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     }
   }
 
-  toJSON(): SimpleFeatureSerialized {
+  // OVERRIDES CramRecord.toJSON, which emits the library's own field names
+  // rather than a SimpleFeatureSerialized.
+  override toJSON(): SimpleFeatureSerialized {
     return {
       ...this.fields,
       CIGAR: this.CIGAR,

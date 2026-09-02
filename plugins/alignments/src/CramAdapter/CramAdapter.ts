@@ -118,7 +118,10 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
   // the CraiIndex is kept alongside `cram` because IndexedCramFile.index is
   // typed as the minimal CramIndexLike (no getIndex); we need the concrete
   // CraiIndex to pre-download the .crai with progress in setup()
-  private configureResult?: { cram: IndexedCramFile; index: CraiIndex }
+  private configureResult?: {
+    cram: IndexedCramFile<CramSlightlyLazyFeature>
+    index: CraiIndex
+  }
 
   private seqIdToOriginalRefName: string[] = []
 
@@ -179,7 +182,8 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
         fetchReferenceSequence: (seqId: number, start: number, end: number) =>
           this.seqFetch(seqId, start, end),
         checkSequenceMD5: false,
-        // cacheSize is per file, and one IndexedCramFile is held per open
+        recordClass: CramSlightlyLazyFeature,
+        // maxCacheBytes is per file, and one IndexedCramFile is held per open
         // track. Its own budget, not the bytes one: this cache weighs decoded
         // records, and a budget summing records with bytes bounds neither
         cacheBudget: decodedRecordsBudget,
@@ -264,7 +268,8 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
             if (shouldFilterRecord(record, filterBy, samHeader)) {
               continue
             }
-            observer.next(new CramSlightlyLazyFeature(record, this))
+            record.adapter = this
+            observer.next(record)
           }
           observer.complete()
         },
