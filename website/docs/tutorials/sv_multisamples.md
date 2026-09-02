@@ -42,25 +42,21 @@ cohort.
 
 ## The 1000 Genomes SV callset
 
-The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced
-genomes from 2,504 individuals across 26 populations. The 2022 high-coverage
-re-analysis produced a comprehensive SV callset
-([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004)) that
-includes deletions, insertions, inversions, and translocations with per-sample
+The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced 2,504
+individuals across 26 populations. The 2022 high-coverage re-analysis
+([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004))
+called deletions, insertions, inversions and translocations with per-sample
 genotypes across all 3,202 individuals.
 
-`HGSV_1821` is a deletion on chr1 whose span contains the whole of _RHD_, so the
-samples called homozygous here carry no copy of that gene. Deleting _RHD_ is the
-most common cause of the RhD-negative blood type; inactivating variants and
-RHD-CE hybrid genes produce it too.
+`HGSV_1821` is a deletion on chr1 spanning the whole of _RHD_, so samples called
+homozygous carry no copy of that gene. Deleting _RHD_ is the most common cause
+of the RhD-negative blood type. The call is `PASS` and common enough to fill all
+three genotype classes, and read depth settles whether a gene is present twice,
+once, or not at all.
 
-The call is `PASS` and common enough in the cohort to fill all three genotype
-classes, and read depth settles whether a gene is present twice, once, or not at
-all.
-
-The tracks are added with the usual `jbrowse add-track` workflow. The callset is
-bgzip-compressed and tabix-indexed, and the alignment tracks stream the
-published high-coverage CRAMs directly from the urls above.
+The tracks are added with `jbrowse add-track`. The callset is bgzip-compressed
+and tabix-indexed, and the alignment tracks stream the CRAMs from the urls
+above.
 
 In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset under
 **1000 Genomes → SV callsets**, <!-- menu-path-ok --> listed by its file name
@@ -73,26 +69,23 @@ which opens your own VCF and BAM files from disk.
 ## Genotypes across the cohort
 
 Switch the track to the **Multi-sample variant display (regular)** from the
-track menu. Each sample becomes a row, drawn at the variant's real genomic span,
-so the deletion is a wide block rather than a tick. Clicking it opens the
-feature details panel, whose **SAMPLES** section lists every sample with its
-genotype, read depth, and other per-sample fields.
+track menu. Each sample becomes a row drawn at the variant's genomic span, so
+the deletion is a wide block. Clicking it opens the feature details panel, whose
+**SAMPLES** section lists every sample's genotype, read depth and other
+per-sample fields.
 
-Rows arrive in the callset's own order. Right-click the deletion and pick **Sort
-by genotype**: rows order by their genotype at that call first, then by how far
-each row keeps matching the rows to either side of it. The three classes
-separate into three contiguous bands. The track menu's **Clustering → Cluster
-rows by genotype...** keys every row on the whole window and draws the
-dendrogram it built.
+Rows arrive in the callset's order. Right-click the deletion and pick **Sort by
+genotype** to order rows by genotype at that call, then by how far each keeps
+matching its neighbours. **Clustering → Cluster rows by genotype...** in the
+track menu keys every row on the whole window and draws the dendrogram.
 
-Dark blue is a sample with no copy of _RHD_, light blue one copy, grey two, and
-the olive stripe running through the block is a separate nested call.
+Dark blue is no copy of _RHD_, light blue one, grey two, and the olive stripe is
+a separate nested call.
 
-A matrix cell says a sample carries something at that column, not which call it
-carries, and a good many records overlap in this window. Loading the same VCF a
-second time in the ordinary variant display puts each of them on its own row
-with its id, class and size, so a band in the matrix reads off a named record.
-Cell coloring by **SV type** is the other way to ask that question, shown in the
+A matrix cell says a sample carries something at that column, not which call.
+Loading the same VCF again in the ordinary variant display puts each record on
+its own row with its id, class and size. Cell coloring by **SV type** is the
+other way to ask, shown in the
 [multi-variant track guide](/docs/user_guides/multivariant_track).
 
 Three lanes read below, over NCBI RefSeq genes:
@@ -111,82 +104,61 @@ The olive no-call column is a copy-number gain in the lane beneath it.
 
 <Video src="/media/sv/multisample_sort.mp4" caption="Both arrangements the section names, on the callset the figure above is of: a right-click on the deletion sorts the cohort by its genotype there and the callset order resolves into three bands, then the track menu's clustering re-keys the same rows on the whole window and draws the tree it built." />
 
-The olive stripe is `HGSV_1823`, a small copy-number record sitting inside the
-deletion, and most of the cohort is uncalled for it. The display gives a no-call
-its own color, since a no-call is the caller declining to answer. In the record
-lane the same column is a copy-number call.
-
-A genotype is a caller's discrete verdict per record, so a record the caller
-declined leaves a hole; copy number is one continuous quantity per bin per
-individual, taken from the reads, so the column that is olive above is red
-below. The [copy-number tutorial](/docs/tutorials/population_cnv) is where that
-lane comes from, and it is the same store.
+The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion,
+uncalled in most of the cohort. A no-call gets its own color. Copy number is a
+continuous quantity per bin taken from the reads, so the column that is olive
+above is red below. The [copy-number tutorial](/docs/tutorials/population_cnv)
+reads the same store.
 
 ## Reading the genotypes off the reads
 
-The genotypes are the caller's answer, and the reads it read are in the demo
-too, so every row of the block above can be checked against them.
-
 Open three samples' alignments from **1000 Genomes → Alignments**, one per
-genotype: HG00113 called homozygous alt, HG00096 heterozygous, HG00097
-homozygous reference. Two settings make them comparable:
+genotype: HG00113 homozygous alt, HG00096 heterozygous, HG00097 homozygous
+reference. Two settings make them comparable:
 
 - Turn the pileup off from the track menu's **Show...** submenu, since at this
-  width the individual reads are a solid mass and it is the coverage curve that
-  carries the comparison.
-- Pin each lane's axis from the track menu's **Score → Set min/max score...**,
-  so the three coverage lanes share one scale.
+  width the coverage curve carries the comparison
+- Pin each lane's axis from **Score → Set min/max score...**, so the three lanes
+  share one scale
 
 <Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
 ## A closer look at the empty span
 
-Look again at the top row and the deleted span is not quite at zero: reads are
-there, in a sample that carries no _RHD_ at all.
+The top row's deleted span is not quite at zero. _RHCE_ sits just to the right
+of _RHD_ and is nearly identical, so with no _RHD_ to come from, some _RHCE_
+reads land in the empty footprint, and the aligner records its uncertainty in
+their mapping quality.
 
-They belong to the gene next door. _RHCE_ sits just to the right of _RHD_ and is
-nearly identical to it, so when a sample has no _RHD_ for its reads to come
-from, some _RHCE_ reads land in the empty footprint instead. An aligner with
-nowhere better to put a read puts it somewhere, and records how sure it was in
-the read's mapping quality.
-
-A display setting separates that residue from real coverage. Open HG00113's
-pileup inside the deleted span and set **Color by... → Mapping quality**: the
-ramp runs red at MAPQ 0 through orange to yellow at MAPQ 60, so reads the
-aligner could not confidently place come out red.
-
-Residual coverage inside a called deletion turns up wherever the deleted
-sequence has a close paralog. Raising the track's mapping quality filter empties
-the span the same way.
+Open HG00113's pileup inside the deleted span and set **Color by... → Mapping
+quality**: the ramp runs red at MAPQ 0 through orange to yellow at MAPQ 60, so
+reads the aligner could not place come out red. Raising the track's mapping
+quality filter empties the span the same way. Residual coverage inside a called
+deletion turns up wherever the deleted sequence has a close paralog.
 
 ## An SV the coverage cannot see
 
-A deletion moves the coverage, which is why every step so far could be read off
-the curve. Most structural variants leave it alone. The same demo carries a
-complex call on chromosome 1 in HG02768, and the profile under it looks like
-anywhere else on the arm.
+Most structural variants leave the coverage alone. The demo carries a complex
+call on chromosome 1 in HG02768 whose profile looks like anywhere else on the
+arm.
 
 Put `1:39,658,200-39,661,800` in the location box and open HG02768's alignments
-from **1000 Genomes → Alignments**. The ensemble callset draws the call above
-the reads, and nothing in the coverage marks where it starts or stops.
-
-Which way the pairs point does. Turn on **Track menu → Read connections → SV
+from **1000 Genomes → Alignments**. Turn on **Track menu → Read connections → SV
 channels (pairs by orientation)**: the reads split into one band per orientation
-class, each with its own coverage curve and its own arcs.
+class, each with its own coverage curve and arcs.
 
-- The normal band holds the flat profile, the same reading the homozygous
-  reference sample gave at _RHD_.
-- The two same-strand bands each carry a bundle of arcs standing on one pair of
-  breakpoints. Pairs that point the same way are the inversion signature.
-- The outward-pointing band stays near empty, which is where a tandem
-  duplication would have gone.
+- The normal band holds the flat profile
+- The two same-strand bands each carry a bundle of arcs on one pair of
+  breakpoints, the inversion signature
+- The outward-pointing band, where a tandem duplication would go, stays near
+  empty
 
 <Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles standing on one pair of breakpoints, the normal band's coverage runs on unremarked, and the outward-pointing band is near empty." src="/img/sv_channels.png" />
 
-The call names a duplicated copy in its `INFO.CPX_INTERVALS` too, and no band
-shows it. A copy that lands beside where it came from leaves pair orientation
-alone, so this half of the call is back to reading the coverage, at a size where
-the profile's own noise is the same shape.
+The call also names a duplicated copy in its `INFO.CPX_INTERVALS`, and no band
+shows it. A copy landing beside its origin leaves pair orientation alone, so
+that half of the call is back to reading the coverage, at a size where the
+profile's own noise is the same shape.
 
 ## See also
 
