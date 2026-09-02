@@ -1,46 +1,22 @@
 // eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 
-import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
 import SvgIcon, { createSvgIcon } from '@mui/material/SvgIcon'
 import * as MUIUtils from '@mui/material/utils'
-import * as mobx from 'mobx'
 import * as mxreact from 'mobx-react'
 import * as ReactDom from 'react-dom'
 import * as ReactDomClient from 'react-dom/client'
-import * as ReactJSXRuntime from 'react/jsx-runtime'
 
-import Plugin from '../Plugin.ts'
-import * as Configuration from '../configuration/index.ts'
-import * as BaseAdapterExports from '../data_adapters/BaseAdapter/index.ts'
-import * as dataAdapterCache from '../data_adapters/dataAdapterCache.ts'
-import AdapterType from '../pluggableElementTypes/AdapterType.ts'
-import DisplayType from '../pluggableElementTypes/DisplayType.ts'
-import TrackType from '../pluggableElementTypes/TrackType.ts'
-import ViewType from '../pluggableElementTypes/ViewType.ts'
-import WidgetType from '../pluggableElementTypes/WidgetType.ts'
-import * as pluggableElementTypes from '../pluggableElementTypes/index.ts'
-import * as pluggableElementTypeModels from '../pluggableElementTypes/models/index.ts'
 import * as coreUi from '../ui/index.ts'
-import * as corePalette from '../ui/palette.ts'
-import * as coreTheme from '../ui/theme.ts'
-import Base1DView from '../util/Base1DViewModel.ts'
-import * as coreColor from '../util/color/index.ts'
-import * as coreIo from '../util/io/index.ts'
-import * as coreLayouts from '../util/layouts/index.ts'
-import * as coreMstReflection from '../util/mst-reflection.ts'
-import * as rxjs from '../util/rxjs.ts'
-import * as trackUtils from '../util/tracks.ts'
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
-import * as mstTypes from '../util/types/mst.ts'
 import { BaseFeatureDetail } from './BaseFeatureDetails.tsx'
 import { DataGridEntries } from './MuiDataGridReExports.ts'
 import { Entries } from './MuiReExports.ts'
 import { MUIStyles } from './MuiStylesReExports.ts'
 import { lazyMap } from './lazify.tsx'
 import reExportsList from './list.ts'
-import * as coreUtil from './publicUtil.ts'
+import { sharedModules } from './sharedModules.ts'
 
 function makeLegacyMakeStyles() {
   return (args: Parameters<ReturnType<typeof makeStyles>>[0]) => {
@@ -53,14 +29,10 @@ const tssReact = { cx, keyframes, makeStyles }
 const legacyMakeStyles = makeLegacyMakeStyles()
 
 const libs = {
-  mobx,
-  '@jbrowse/mobx-state-tree': mst,
-  'mobx-state-tree': mst,
-  react: React,
-  'react/jsx-runtime': ReactJSXRuntime,
+  ...sharedModules,
+  'mobx-react': mxreact,
   'react-dom': ReactDom,
   'react-dom/client': ReactDomClient,
-  'mobx-react': mxreact,
   // Only lazy component entries are re-exported. The grid *hooks*
   // (useGridApiContext/useGridApiRef/useGridRootProps) are intentionally left
   // out: statically importing them here pulled the entire ~1.2 MB
@@ -126,12 +98,7 @@ const libs = {
     ToggleButtonGroup: Entries.ToggleButtonGroup,
   },
 
-  '@jbrowse/core/Plugin': Plugin,
-  '@jbrowse/core/configuration': Configuration,
-  '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,
-  '@jbrowse/core/ui/theme': coreTheme,
-  '@jbrowse/core/ui/palette': corePalette,
   // BaseTooltip is deliberately absent from the '@jbrowse/core/ui' barrel: the
   // re-export alone held @floating-ui (~266KB) on the startup path, since eager
   // plugin entries import that barrel. Serving it as its own module behind
@@ -143,24 +110,8 @@ const libs = {
     { BaseTooltip: React.lazy(() => import('../ui/BaseTooltip.tsx')) },
     '@jbrowse/core/ui/',
   ),
-  '@jbrowse/core/util': coreUtil,
-  '@jbrowse/core/util/color': coreColor,
-  '@jbrowse/core/util/layouts': coreLayouts,
-  '@jbrowse/core/util/tracks': trackUtils,
-  '@jbrowse/core/util/Base1DViewModel': Base1DView,
-  '@jbrowse/core/util/io': coreIo,
-  '@jbrowse/core/util/mst-reflection': coreMstReflection,
-  '@jbrowse/core/util/rxjs': rxjs,
-  '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
-  '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
-  '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
-  '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,
-  '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
-  '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
-  '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
-  '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 
   // `adapterCache` is module-level state, so a plugin that bundles its own copy
   // of this file gets a second cache in the RPC worker — and `freeAdapterResources`,
@@ -169,7 +120,6 @@ const libs = {
   // reference to an adapter (see the comment on that function), so those
   // adapters and everything they hold live as long as the worker. Serving the
   // module is what makes an external RPC method share the host's cache.
-  '@jbrowse/core/data_adapters/dataAdapterCache': dataAdapterCache,
 }
 
 const libsList = Object.keys(libs)

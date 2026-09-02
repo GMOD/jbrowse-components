@@ -3,7 +3,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { setNumberGrouping, throttleStatusEmits } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
-import { enableStaticRendering } from 'mobx-react'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
@@ -138,7 +137,6 @@ export async function initializeWorker(
   // copies meant a fifth product would silently ship without it — the plugins
   // that could trip it are not loaded until getPluginManager below, so this is
   // still ahead of anything that observes.
-  enableStaticRendering(true)
 
   // Add global error handler to catch uncaught errors in the worker
   self.addEventListener('error', event => {

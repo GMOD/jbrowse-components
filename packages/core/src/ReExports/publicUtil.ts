@@ -241,7 +241,6 @@ export {
   registerStopTokenBroadcaster,
   renameRegionIfNeeded,
   renameRegionsIfNeeded,
-  renderToStaticMarkup,
   reorder,
   reorderWithin,
   resolvePlugin,

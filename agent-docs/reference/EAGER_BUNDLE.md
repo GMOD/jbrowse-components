@@ -792,11 +792,30 @@ Two things that looked like the fix and measured worse, both reverted:
   are downloaded by the page anyway, so the worker's marginal cost was never the
   UI in them.
 
-What remains when a config does name a UMD plugin: the worker still fetches the
-full ABI, react-dom/client included, about 127 KB it cannot use. The lever is a
-worker-appropriate re-export set in `PluginLoader.publishReExports`, and the
-hazard is that a plugin bundle evaluated in the worker may read a UI entry at
-module scope, so a missing key is a load-time throw rather than a saving.
+When a config does name a UMD plugin, the worker publishes
+`ReExports/workerModules.ts` instead of the full map: the same keys, with the
+non-UI entries (`sharedModules.ts`, which `modules.ts` also builds on) real and
+every UI entry — react-dom, mobx-react, Material UI, the core `ui` namespace —
+set to `uiStub`, a callable proxy whose every read and call is itself. A plugin
+bundle is one file for both realms and reads UI at module scope
+(`styled(Box)(...)`, destructured components, `observer(C)`), so the keys must
+all exist and every read and call must succeed; nothing in a worker renders, so
+no code path reaches a difference. `workerModules.test.ts` pins key parity
+between the realms.
+
+Two more edges held react-dom in the worker and were cut with it: the worker
+entry's `enableStaticRendering` import from mobx-react (which imports react-dom
+for update batching; a worker has no observers to batch), and
+`util/renderToStaticMarkup.ts`, a `document`-only helper the `util` barrel and
+the `@jbrowse/core/util` ABI entry re-exported. It is now only importable from
+`@jbrowse/core/util/renderToStaticMarkup`; the published-plugin scan
+(`publishedPluginBreaks.json`) names no plugin importing it, and the ABI
+baseline records the removal. Measured on the committed volvox config, which
+names one UMD plugin: four tracks 1103 → 1013 KB, worker-only bytes 272 → 182
+KB, and the react-dom chunk is no longer fetched by the worker. What is left
+worker-only is data code (bbi, bgzf, the alignments and wiggle renderers) plus
+the ~36 KB of Material UI's style engine that rides with `ui/theme.ts`, which
+renderers read.
 
 `scripts/eager-import-closure.ts` overstates a worker or app closure several
 times over: it walks a barrel whole, so one eager import of a constant from

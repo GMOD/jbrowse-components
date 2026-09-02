@@ -380,7 +380,6 @@ export {
   useLocalStorage,
   useWidthSetter,
 } from './hooks.ts'
-export { renderToStaticMarkup } from './renderToStaticMarkup.ts'
 export {
   codonTable,
   defaultCodonTable,

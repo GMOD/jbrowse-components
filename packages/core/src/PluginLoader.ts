@@ -321,7 +321,11 @@ export default class PluginLoader {
     if (!target) {
       return
     }
-    const { default: ReExports } = await import('./ReExports/index.ts')
+    // a worker never renders: the same keys, with the UI ones stubbed, so a
+    // plugin bundle evaluates there without fetching react-dom and Material UI
+    const { default: ReExports } = isWebWorker()
+      ? await import('./ReExports/workerModules.ts')
+      : await import('./ReExports/index.ts')
     ;(target as unknown as Record<string, unknown>).JBrowseExports = {
       ...ReExports,
     }
