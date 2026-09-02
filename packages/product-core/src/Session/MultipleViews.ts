@@ -89,6 +89,17 @@ function dropRefsInto(holder: IAnyStateTreeNode, view: IBaseViewModel) {
   return found
 }
 
+// A session snapshot's `views`, or undefined for anything that is not one
+function viewsOfSessionSnapshot(
+  snapshot: unknown,
+): { id?: string; type?: string }[] | undefined {
+  const views =
+    typeof snapshot === 'object' && snapshot !== null && 'views' in snapshot
+      ? snapshot.views
+      : undefined
+  return Array.isArray(views) ? views : undefined
+}
+
 /**
  * #stateModel MultipleViewsSessionMixin
  */
@@ -377,12 +388,15 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * lands, which is why ADR-069's rule stops there.
          */
         takeOutViewsMissingFrom(snapshot: unknown) {
-          const incoming =
-            (
-              snapshot as
-                | { views?: { id?: string; type?: string }[] }
-                | undefined
-            )?.views ?? []
+          const incoming = viewsOfSessionSnapshot(snapshot)
+          // an argument that is not a session snapshot used to read as "keep
+          // none" and close every view: an agent introspecting the actions
+          // called this with a tab id and a keep-list and lost its session
+          if (!incoming) {
+            throw new Error(
+              'takeOutViewsMissingFrom takes a session snapshot (it is what undo and redo call to close the views a snapshot no longer has); to close one view, session.removeView(view)',
+            )
+          }
           const kept = new Map(incoming.map(v => [v.id, v.type] as const))
           // a copy, because `takeOut` splices the array it is iterating
           for (const view of [...self.views]) {

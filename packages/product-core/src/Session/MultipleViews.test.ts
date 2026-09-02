@@ -538,3 +538,22 @@ test('takeOutViewsMissingFrom counts a changed type as a different view', () => 
 
   expect(session.views).toHaveLength(0)
 })
+
+// Undo's door, reached by an agent introspecting the session's actions: a tab
+// id and a keep-list used to read as "keep none" and close every view.
+test('takeOutViewsMissingFrom refuses anything but a session snapshot', () => {
+  const session = sessionWithThreeViews()
+  expect(() => {
+    session.takeOutViewsMissingFrom(['some-view-id'])
+  }).toThrow(/session snapshot/)
+  expect(() => {
+    session.takeOutViewsMissingFrom('tab-1')
+  }).toThrow(/session snapshot/)
+  expect(session.views).toHaveLength(3)
+
+  const [first] = session.views
+  session.takeOutViewsMissingFrom({
+    views: [{ id: first!.id, type: first!.type }],
+  })
+  expect(session.views.map(v => v.displayName)).toEqual(['first'])
+})
