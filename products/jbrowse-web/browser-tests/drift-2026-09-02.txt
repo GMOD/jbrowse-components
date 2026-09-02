@@ -1,0 +1,19 @@
+Starting test server...
+Discovering test suites...
+Found 47 test suites
+
+Launching browser (headed: false)...
+(backend: canvas2d, concurrency: 1)
+    ⏳ [1/69] Additional Track Types > BED genes track renders...    ✓ [1/69] Additional Track Types > BED genes track renders (4711ms)
+    ⏳ [2/69] Additional Track Types > BigBed genes track renders...    ✓ [2/69] Additional Track Types > BigBed genes track renders (3513ms)
+    ⏳ [3/69] Additional Track Types > density wiggle track renders...    ✓ [3/69] Additional Track Types > density wiggle track renders (3838ms)
+    ⏳ [4/69] Additional Track Types > line wiggle track renders...    ✓ [4/69] Additional Track Types > line wiggle track renders (3906ms)
+    ⏳ [5/69] Additional Track Types > colored wiggle track renders...    ✓ [5/69] Additional Track Types > colored wiggle track renders (3567ms)
+    ⏳ [6/69] Additional Track Types > multi-sample VCF variant track renders...    ✓ [6/69] Additional Track Types > multi-sample VCF variant track renders (3699ms)
+    ⏳ [7/69] Additional Track Types > structural variant VCF track renders...    ✓ [7/69] Additional Track Types > structural variant VCF track renders (3577ms)
+    ⏳ [8/69] Additional Track Types > fractional positive/negative wiggle track renders...    ✓ [8/69] Additional Track Types > fractional positive/negative wiggle track renders (3574ms)
+    ⏳ [9/69] Additional Track Types > variant effect annotation track renders...    ✓ [9/69] Additional Track Types > variant effect annotation track renders (3833ms)
+    ⏳ [10/69] Alignments Track > loads BAM track...    ✓ [10/69] Alignments Track > loads BAM track (3390ms)
+    ⏳ [11/69] Alignments Track > loads CRAM track...    ✓ [11/69] Alignments Track > loads CRAM track (3492ms)
+    ⏳ [12/69] Alignments Track > BAM track screenshot...    ✓ [12/69] Alignments Track > BAM track screenshot (3971ms)
+    ⏳ [13/69] Alignments Track > volvox_sv track screenshot...

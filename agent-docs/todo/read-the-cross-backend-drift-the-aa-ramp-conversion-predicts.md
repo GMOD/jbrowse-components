@@ -5,7 +5,7 @@ metadata:
   area: shaders, GPU
   category: ready
   order: 2
-  first_move: "the capsule extraction (`8a9c288605`, 2026-08-29) moved two of the watched sites after the conversions, one of them the control — decide what the baseline is before running anything"
+  first_move: "baseline decided and the build is done — resume the gate run in a quiet worktree with the command in the 2026-09-02 section, then read only `Synteny Views`, `Multi-Way Synteny Views` (minus its dotplot pair) and `GWAS Tracks`"
 ---
 
 # Read the cross-backend drift the AA ramp conversion predicts
@@ -106,3 +106,57 @@ say the dotplot is out of frame, or re-baseline the distribution at
 `8a9c288605` first and give up the before/after on the dotplot entirely. What
 does not work is quoting one run against the 66-pair table as though it
 answered the question.
+
+## State on 2026-09-02
+
+**Baseline decision, taken:** read the prediction on the three suites the
+capsule extraction did not touch — `Synteny Views`, `Multi-Way Synteny Views`
+and `GWAS Tracks` — against the recorded distribution (66 pairs, max 0.62%,
+median 0.00%; synteny pairs at 0.00–0.02%, GWAS and Multi-Way under 0.5% and
+outside the top four, which are all wiggle line plots). `Dotplot View` is out
+of frame because it moved twice (`856cdbcd86` then `8a9c288605`), and
+`multiway-dotplot-grape-peach-zoomed` inside the Multi-Way suite is a
+`DotplotView` and goes with it. The wiggle line is no longer a control
+(`wiggleLine.slang` was rewritten in `8a9c288605`). No second run at an older
+commit. The three open-coded cubic ramps above stay unmeasured by this run.
+
+**Measured at** `d477a80121` (main, 2026-09-02), which includes the MSAA
+sample-count commit `bea2ae1546` — so any number it produces is post-both,
+and the doc section that records it must say so.
+
+**How far it got:** `pnpm --filter @jbrowse/web build` completed. The gate run
+(`ps` confirmed no other `runner.ts` in this worktree first; concurrency 1)
+reached `[13/69] Alignments Track > volvox_sv track screenshot` on the
+canvas2d pass and wrote nothing further for 23 minutes — the same wedge shape
+as the two earlier attempts, this time with no second runner present. It was
+killed and port 3333 freed. The partial output is
+`products/jbrowse-web/browser-tests/drift-2026-09-02.txt`; it holds no drift
+line. So there is still no number, and the prediction is neither confirmed nor
+falsified.
+
+**To resume** (the build in `products/jbrowse-web/build` is current for
+`d477a80121`; rebuild if HEAD moved):
+
+```sh
+ps -Ao command | grep runner.ts | grep -v grep   # must be empty for this worktree
+cd products/jbrowse-web && node browser-tests/runner.ts \
+  --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate --drift-report
+```
+
+Note the runner's command line is a relative path, so a `ps` filter on the
+worktree path misses it; `lsof -nP -iTCP:3333 -sTCP:LISTEN` is the other tell.
+If it wedges on the same test again, that is a finding about the alignments
+capture rather than about this entry — take the run with
+`--filter=synteny,gwas` (three suites, `--ci-gate` still scopes and forces
+remote off) and note in the doc that the summary line is then over the three
+suites rather than the 66-pair scope, which is fine because the reading is
+per pair.
+
+Then: write the result as a dated section in
+[reference/CROSS_BACKEND_GATE.md](../reference/CROSS_BACKEND_GATE.md) (commit,
+per-suite before/after, verdict, dotplot and wiggle explicitly out of frame),
+land an `agent-docs/measurements/` record in the shape of
+`wiggle-bar-top-backend-drift.json` with a `text` column for the recorded
+bound where the doc has no per-pair figure, update the "NOT yet measured"
+paragraph in `reference/GPU_RENDERING.md`, delete this entry, `pnpm autogen`.
+If falsified, keep the entry and say what the number was.
