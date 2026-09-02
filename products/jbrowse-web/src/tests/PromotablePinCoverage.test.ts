@@ -94,6 +94,22 @@ interface Fixture {
   menuItems?: (display: any) => MenuItem[]
 }
 
+// One drawn feature, which is all `hasDrawnFeatures` asks for.
+const PAINTED_REGION = {
+  featureStarts: new Uint32Array([100]),
+  featureEnds: new Uint32Array([200]),
+  featureColors: new Uint32Array([0xff0000ff]),
+  featureDeltas: new Int32Array(0),
+  partitionValues: ['row'],
+  featurePartitionIndex: new Uint32Array([0]),
+  featureNames: ['a'],
+  featureIds: ['f0'],
+  usedItemRgb: true,
+  partitionCandidates: [],
+  legendCandidates: [],
+  resolvedPartitionField: 'name',
+}
+
 const FIXTURES: Fixture[] = [
   { displayType: 'LinearAlignmentsDisplay', trackId: 'volvox_cram_alignments' },
   {
@@ -138,15 +154,19 @@ const FIXTURES: Fixture[] = [
     states: wiggleRenderingStates(),
   },
   {
-    // The legend row is gated on the display having a key to show, and a
-    // configured `legend` is one of the two things that gives it one —
-    // `colorLegend` reads the slot before it derives anything from data. That
-    // is the honest way in here, the way `overlayWithSources` is for
-    // multi-wiggle: the pin is reachable in any session with a legend, and
-    // would otherwise read as missing because this test never fetches.
+    // The legend row is gated on the display having a key to show, and both
+    // halves of `colorLegend` wait for a painting: a configured `legend`
+    // resolves only once `hasDrawnFeatures` is true, since a declared key is a
+    // claim about colors on the screen. This test never fetches, so the slot
+    // supplies the key and the staged region supplies the painting.
     displayType: 'LinearMultiRowFeatureDisplay',
     trackId: 'gff3tabix_genes',
     displaySnapshot: { legend: [{ label: 'a', color: 'red' }] },
+    states: [
+      d => {
+        d.setRpcData(0, PAINTED_REGION)
+      },
+    ],
   },
   {
     displayType: 'LinearMultiSampleVariantDisplay',

@@ -11,7 +11,8 @@
     "**/*.zarr/**",
     "website/docs/config/**",
     "website/docs/models/**",
-    "website/docs/api/**"
+    "website/docs/api/**",
+    "products/jbrowse-desktop/electron/mcp/docs/**"
   ],
   "sortImports": {
     "customGroups": [

@@ -20,13 +20,15 @@ test('a bgzipped fasta names the two index files the form asks for', () => {
       }),
     ),
   ).toMatchInlineSnapshot(`
-"In JBrowse Desktop, Open new genome on the start screen (or File → Open genome... in a session), then Open from a URL and paste, one per line:
-https://example.com/hg38.fa.gz
-https://example.com/hg38.fa.gz.fai
-https://example.com/hg38.fa.gz.gzi
-JBrowse reads the format off the file name. Then fill in:
-Genome name: hg38Assembly display name (under More options): Human (hg38)"
-`)
+    "<div class="desktop-steps">
+    In JBrowse Desktop, Open new genome on the start screen (or File → Open genome... in a session), then Open from a URL and paste, one per line:
+    https://example.com/hg38.fa.gz
+    https://example.com/hg38.fa.gz.fai
+    https://example.com/hg38.fa.gz.gzi
+    JBrowse reads the format off the file name. Then fill in:
+    Genome name: hg38Assembly display name (under More options): Human (hg38)
+    </div>"
+  `)
 })
 
 test('a 2bit carries its own names, so the paste is one line', () => {
