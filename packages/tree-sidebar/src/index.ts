@@ -23,7 +23,7 @@ export {
 } from './RowSeparatorLines.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
-export { focusRows } from './focusRows.ts'
+export { focusRowGroup, focusRows } from './focusRows.ts'
 export { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 export {
   CLUSTER_PROVENANCE_MIN_OVERLAP,

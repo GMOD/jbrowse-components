@@ -24,7 +24,7 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
-  focusRows,
+  focusRowGroup,
   reconcileLayout,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
@@ -435,13 +435,10 @@ export default function stateModelFactory(
        * matches the same way.
        */
       focusLegendGroup(label: string) {
-        // `editableSources`, the unfiltered list: a second click on another
-        // group has to reach the rows the first click hid
-        focusRows(
+        focusRowGroup(
           self,
-          self.editableSources
-            .filter(s => (s.group ?? s.label ?? s.name) === label)
-            .map(s => s.name),
+          self.editableSources,
+          s => (s.group ?? s.label ?? s.name) === label,
         )
       },
 

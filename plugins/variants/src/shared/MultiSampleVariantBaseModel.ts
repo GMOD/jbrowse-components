@@ -34,7 +34,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
-  focusRows,
+  focusRowGroup,
   loadedRegionIndexAt,
   paletteColorsByRow,
 } from '@jbrowse/tree-sidebar'
@@ -1562,22 +1562,15 @@ export default function MultiSampleVariantBaseModelF(
          */
         focusGroup(label: string) {
           const value = label === UNLABELED_GROUP ? '' : label
-          // Names off `sourcesBeforeSubtreeFilter`, the granularity
-          // `filterRowsBySubtree` matches against: in phased mode
-          // `editableSources` is haplotype-expanded ("S0 HP0") while the rows
-          // the filter runs over are still sample-level unless a phased
-          // clustering run put haplotypes in `layout`, so the expanded names
-          // matched nothing and the click drew zero rows. Unfiltered, so this
-          // reaches rows an earlier focus hid — the group section itself is
-          // gone from the legend by then (one group distinguishes nothing), so
-          // the way back is the sidebar chip or "Clear subtree filter".
+          // `sourcesBeforeSubtreeFilter` for both of `focusRowGroup`'s reasons,
+          // and it is the one list here that can be absent: the samples arrive
+          // on their own RPC, and before it lands there is no group to focus.
           const rows = self.sourcesBeforeSubtreeFilter
           if (rows) {
-            focusRows(
+            focusRowGroup(
               self,
-              rows
-                .filter(s => String(s[self.colorBy] ?? '') === value)
-                .map(s => s.name),
+              rows,
+              s => String(s[self.colorBy] ?? '') === value,
             )
           }
         },
