@@ -9,7 +9,6 @@ import {
   getConnectedAssemblies,
   getSyntenyTracks,
   planSyntenyChain,
-  remapImportFormSelections,
 } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
@@ -21,6 +20,7 @@ import {
   FormControlLabel,
   IconButton,
   Tooltip,
+  Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -30,15 +30,11 @@ import {
 } from '../../util/importFormRows.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type {
-  ChromosomeFilters,
-  ImportFormSyntenyChoices,
-  PairStatus,
-} from '@jbrowse/synteny-core'
+import type { ImportFormRows, PairStatus } from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()(theme => ({
-  mb: {
-    marginBottom: 10,
+  header: {
+    marginBottom: theme.spacing(1),
   },
   buttons: {
     display: 'flex',
@@ -81,24 +77,23 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const AssemblyRows = observer(function AssemblyRows({
-  selectedRow,
-  selectedAssemblyNames,
-  chromosomes,
+  form,
   statusByPair,
-  applyRows,
-  setSelectedRow,
   model,
 }: {
-  selectedRow: number
-  selectedAssemblyNames: string[]
-  chromosomes: ChromosomeFilters
+  form: ImportFormRows
   statusByPair: PairStatus[]
-  applyRows: (rows: string[], nextSelectedPair: number) => void
-  setSelectedRow: (idx: number) => void
   model: LinearSyntenyViewModel
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
+  const {
+    rows: selectedAssemblyNames,
+    selectedPair: selectedRow,
+    chromosomes,
+    applyRows,
+    setSelectedPair: setSelectedRow,
+  } = form
   function removeRow(idx: number) {
     applyRows(
       selectedAssemblyNames.filter((_, i) => i !== idx),
@@ -218,46 +213,27 @@ const AssemblyRows = observer(function AssemblyRows({
 const LeftPanel = observer(function LeftPanel({
   model,
   statusByPair,
-  selectedAssemblyNames,
-  setSelectedAssemblyNames,
-  chromosomes,
-  choices,
-  selectedRow,
-  setSelectedRow,
+  form,
 }: {
   model: LinearSyntenyViewModel
   // computed by the form, which also gates Launch on it, so the row icons and
   // the button can't disagree about what launching would do
   statusByPair: PairStatus[]
-  selectedAssemblyNames: string[]
-  setSelectedAssemblyNames: (names: string[]) => void
-  chromosomes: ChromosomeFilters
-  // moved by applyRows, so a pair's radio ends up where its selection did
-  choices: ImportFormSyntenyChoices
-  selectedRow: number
-  setSelectedRow: (row: number) => void
+  form: ImportFormRows
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
+  const {
+    rows: selectedAssemblyNames,
+    selectedPair: selectedRow,
+    chromosomes,
+    applyRows,
+  } = form
   // a reorder can only help a pair that has no dataset at all, not one the user
   // set to None on purpose
   const canReorder =
     selectedAssemblyNames.length > 2 &&
     statusByPair.includes('noTrackAvailable')
-
-  // The one way the assembly rows change — add, remove, reorder, or retype one
-  // in a Select. Selections are indexed by row-pair position but are *about* a
-  // pair of assemblies, so every edit has to re-match the two; doing it here
-  // means no caller can forget. See remapSelectionsToPairs for what that
-  // silently cost when only the reordering paths did it.
-  function applyRows(rows: string[], nextSelectedPair: number) {
-    choices.remap(remapImportFormSelections(model, selectedAssemblyNames, rows))
-    // positional, unlike the selections: rows arrive here as a bare name list
-    // with no permutation to follow a glob along. See useChromosomeFilters.
-    chromosomes.remap(selectedAssemblyNames, rows)
-    setSelectedAssemblyNames(rows)
-    setSelectedRow(nextSelectedPair)
-  }
 
   // Default the new row to an assembly connected to the current bottom row, so
   // the added pair draws ribbons rather than stacking blank — but one the stack
@@ -310,9 +286,9 @@ const LeftPanel = observer(function LeftPanel({
 
   return (
     <>
-      <div className={classes.mb}>
+      <Typography className={classes.header}>
         Select assemblies for linear synteny view
-      </div>
+      </Typography>
       {/* off unless asked for — see useChromosomeFilters. One box per row makes
           this the form the disclosure matters most on: a five-row stack put five
           empty fields between the reader and Launch. */}
@@ -328,15 +304,7 @@ const LeftPanel = observer(function LeftPanel({
         label="Show only certain chromosomes"
       />
       <div data-testid="synteny-assembly-rows">
-        <AssemblyRows
-          model={model}
-          selectedAssemblyNames={selectedAssemblyNames}
-          statusByPair={statusByPair}
-          applyRows={applyRows}
-          chromosomes={chromosomes}
-          selectedRow={selectedRow}
-          setSelectedRow={setSelectedRow}
-        />
+        <AssemblyRows model={model} statusByPair={statusByPair} form={form} />
       </div>
 
       <div className={classes.buttons}>

@@ -219,6 +219,11 @@ export {
 } from './syntenyTrackRows.ts'
 export { default as ChromosomeFilter } from './ChromosomeFilter.tsx'
 export { useChromosomeFilters } from './useChromosomeFilters.ts'
+export {
+  defaultImportFormRows,
+  useImportFormRows,
+} from './useImportFormRows.ts'
+export type { ImportFormRows } from './useImportFormRows.ts'
 export type { ChromosomeFilters } from './useChromosomeFilters.ts'
 export { default as ImportFormModeToggle } from './ImportFormModeToggle.tsx'
 export type { ImportFormMode } from './ImportFormModeToggle.tsx'

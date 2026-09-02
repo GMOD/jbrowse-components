@@ -374,3 +374,66 @@ test('None leaves the launch without a track', () => {
   expect(model.assemblyNames).toEqual(['mm39', 'hg38'])
   expect(model.tracks).toHaveLength(0)
 })
+
+test('a session with no assemblies cannot launch, and says why', () => {
+  // launching blank axes left the view on a spinner that never ended
+  setup({ assemblyNames: [] })
+  expect(launchButton()).toBeDisabled()
+  expect(
+    screen.getByText('This session has no configured assemblies to plot.'),
+  ).toBeInTheDocument()
+})
+
+test('an assembly added after mount seeds the axes', () => {
+  const { session } = setup({ assemblyNames: [] })
+  act(() => {
+    session.addAssembly({
+      name: 'late',
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'late_refseq',
+        adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+      },
+    })
+  })
+  expect(axisSelect('X')).toHaveTextContent('late')
+  expect(axisSelect('Y')).toHaveTextContent('late')
+  expect(launchButton()).toBeEnabled()
+})
+
+test('Swap axes transposes the pair and keeps its track selection', () => {
+  const { model } = setup({
+    tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('radio', { name: 'None' }))
+  fireEvent.click(screen.getByRole('button', { name: /Swap the axes/ }))
+  expect(axisSelect('X')).toHaveTextContent('hg38')
+  expect(axisSelect('Y')).toHaveTextContent('mm39')
+  // the same pair of assemblies, so the None the user chose is still theirs
+  expect(screen.getByRole('radio', { name: 'None' })).toBeChecked()
+  fireEvent.click(launchButton())
+  expect(model.assemblyNames).toEqual(['hg38', 'mm39'])
+  expect(model.tracks).toHaveLength(0)
+})
+
+test('picking another Quick start track starts from its own axis order', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+      syntenyTrack('hg38_rn7', ['hg38', 'rn7']),
+    ],
+  })
+  fireEvent.click(
+    screen.getByRole('button', { name: /Put each assembly on the other axis/ }),
+  )
+  expect(screen.getByTestId('quick-start-axes')).toHaveTextContent(
+    'X-axis: hg38',
+  )
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Synteny track' }))
+  fireEvent.click(screen.getByRole('option', { name: 'hg38_rn7' }))
+  const axes = screen.getByTestId('quick-start-axes')
+  expect(axes).toHaveTextContent('X-axis: rn7')
+  expect(axes).toHaveTextContent('Y-axis: hg38')
+})

@@ -176,10 +176,32 @@ test('a self-alignment pair only matches a track naming the assembly twice', () 
   expect(calls.shown).toEqual([['hg38_self', 0]])
 })
 
-test('a session that cannot add tracks still builds the rows', () => {
+test('a session that cannot add tracks still shows a pre-configured track', () => {
   const { calls, model, session } = setup({
     selections: [],
     tracks: [track('hg38_mm39', ['hg38', 'mm39'])],
+    canAddTracks: false,
+  })
+  doSubmit({ selectedAssemblyNames: ['hg38', 'mm39'], model, session })
+  expect(calls.views).toHaveLength(2)
+  expect(calls.shown).toEqual([['hg38_mm39', 0]])
+  expect(calls.notified).toEqual([])
+})
+
+test('a session that cannot add tracks says so about an upload, and still builds the rows', () => {
+  const { calls, model, session } = setup({
+    selections: [
+      {
+        type: 'userOpened',
+        value: {
+          trackId: 'opened',
+          name: 'opened',
+          assemblyNames: ['hg38', 'mm39'],
+          type: 'SyntenyTrack',
+          adapter: { type: 'PAFAdapter' },
+        },
+      },
+    ],
     canAddTracks: false,
   })
   doSubmit({ selectedAssemblyNames: ['hg38', 'mm39'], model, session })

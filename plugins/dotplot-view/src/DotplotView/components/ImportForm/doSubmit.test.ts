@@ -124,26 +124,50 @@ describe('doSubmit', () => {
     expect(calls.assemblyNames).toEqual(['hg38', 'mm10'])
   })
 
-  test('session that cannot add tracks says so, and still sets assemblies', () => {
+  function sessionNoAdd(tracks: unknown[], notified: string[]) {
+    return {
+      rpcManager: {},
+      configuration: {},
+      tracks,
+      assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
+      notify: (message: string) => notified.push(message),
+    } as unknown as AbstractSessionModel
+  }
+
+  test('a session that cannot add tracks still shows a pre-configured pick', () => {
     const { calls, model } = setup({ type: 'preConfigured', value: 'picked' }, [
       track('picked'),
     ])
     const notified: string[] = []
-    const sessionNoAdd = {
-      rpcManager: {},
-      configuration: {},
-      tracks: [track('picked')],
-      assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
-      notify: (message: string) => notified.push(message),
-    } as unknown as AbstractSessionModel
     doSubmit({
       model,
-      session: sessionNoAdd,
+      session: sessionNoAdd([track('picked')], notified),
+      assemblyX: 'hg38',
+      assemblyY: 'mm10',
+    })
+    // showing needs nothing added, so there is nothing to refuse
+    expect(calls.shown).toEqual(['picked'])
+    expect(notified).toEqual([])
+    expect(calls.assemblyNames).toEqual(['hg38', 'mm10'])
+  })
+
+  test('a session that cannot add tracks says so about an upload, and still sets assemblies', () => {
+    const conf = {
+      trackId: 'opened',
+      name: 'x',
+      assemblyNames: ['hg38', 'mm10'],
+      type: 'x',
+    }
+    const { calls, model } = setup({ type: 'userOpened', value: conf })
+    const notified: string[] = []
+    doSubmit({
+      model,
+      session: sessionNoAdd([], notified),
       assemblyX: 'hg38',
       assemblyY: 'mm10',
     })
     expect(calls.shown).toEqual([])
-    // opening the plot without the track the user picked, and saying nothing,
+    // opening the plot without the track the user built, and saying nothing,
     // is what the synteny form already refused to do
     expect(notified).toEqual(["Can't add tracks"])
     expect(calls.assemblyNames).toEqual(['hg38', 'mm10'])

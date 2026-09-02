@@ -37,23 +37,26 @@ export function applySyntenyTrackSelections({
   /** `level` is the pair index: the band between rows `level` and `level + 1` */
   showTrack: (trackId: string, level: number) => void
 }) {
-  if (!isSessionWithAddSessionTrack(session)) {
-    // the pre-configured case would work, but an upload cannot be added, and
-    // silently opening the view without the track the user chose is worse than
-    // saying so
-    session.notify("Can't add tracks", 'warning')
-    return
-  }
   const actions = resolveSyntenyTrackActions({
     tracks: allSessionTracks(session),
     selections,
     assemblyNames,
     assemblyManager: session.assemblyManager,
   })
+  if (
+    !isSessionWithAddSessionTrack(session) &&
+    actions.some(action => action?.kind === 'open')
+  ) {
+    // only an upload needs adding, and silently opening the view without the
+    // track the user built is worse than saying so
+    session.notify("Can't add tracks", 'warning')
+  }
   for (const [level, action] of actions.entries()) {
     if (action?.kind === 'open') {
-      session.addSessionTrackConf(toJS(action.conf))
-      showTrack(action.conf.trackId, level)
+      if (isSessionWithAddSessionTrack(session)) {
+        session.addSessionTrackConf(toJS(action.conf))
+        showTrack(action.conf.trackId, level)
+      }
     } else if (action?.kind === 'show') {
       showTrack(action.trackId, level)
     }

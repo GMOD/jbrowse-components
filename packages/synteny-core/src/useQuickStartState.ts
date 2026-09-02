@@ -63,7 +63,7 @@ export function useQuickStartState(
   )
   const [chosenMode, setMode] = useState<ImportFormMode>()
   const mode = chosenMode ?? (quickTracks.length ? 'quick' : 'manual')
-  const [preferredTrackId, setTrackId] = useState('')
+  const [preferredTrackId, setPreferredTrackId] = useState('')
   const [swapped, setSwapped] = useState(false)
 
   const trackId = pickSyntenyTrackId(preferredTrackId, quickTracks) ?? ''
@@ -77,7 +77,12 @@ export function useQuickStartState(
     mode,
     setMode,
     trackId,
-    setTrackId,
+    // a new track's own order is the starting point again: Swap was an answer
+    // about the previous track's pair, not a standing preference
+    setTrackId: (next: string) => {
+      setPreferredTrackId(next)
+      setSwapped(false)
+    },
     track,
     /** the track's own assembly order, before Swap */
     trackRows,

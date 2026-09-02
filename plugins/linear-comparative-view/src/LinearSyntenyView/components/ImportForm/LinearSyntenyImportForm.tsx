@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -9,8 +9,7 @@ import {
   applyQuickStartSelections,
   blockedByUnfinishedUpload,
   syntenyPairStatuses,
-  useChromosomeFilters,
-  useImportFormSyntenyChoices,
+  useImportFormRows,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
 import { Button, Container, Typography } from '@mui/material'
@@ -68,25 +67,14 @@ const LinearSyntenyViewImportForm = observer(
   }) {
     const { classes } = useStyles()
     const session = getSession(model)
-    const { assemblyNames } = session
     const quick = useQuickStartState(session)
-    const [selectedRow, setSelectedRow] = useState(0)
+    // held here rather than in the selector area, which the key below remounts
+    const form = useImportFormRows(model, session.assemblyNames)
+    const { rows, selectedPair, chromosomes, missingAssemblyRows } = form
     // names the per-pair heading so it is also the track radio group's label:
     // one piece of text, rather than a heading and a duplicate screen-reader
     // label that can disagree
     const pairHeadingId = useId()
-    // Two different assemblies, so Manual doesn't open on a same-assembly pair
-    // (which needs a self-alignment track and so is flagged). There is no point
-    // consulting connectivity here: any synteny track opens the form in Quick
-    // start instead, and reaching Manual from there hands over that track's rows.
-    const [selectedAssemblyNames, setSelectedAssemblyNames] = useState(() => {
-      const first = assemblyNames[0] ?? ''
-      return [first, assemblyNames[1] ?? first]
-    })
-    // parallel to the rows, and kept in step by applyRows
-    const chromosomes = useChromosomeFilters()
-    // held here rather than in the selector area, which the key below remounts
-    const choices = useImportFormSyntenyChoices(model)
 
     // computed once for the whole form: the row icons, the Auto-arrange offer
     // and the Launch button are three views of the same answer, and each entry
@@ -94,11 +82,22 @@ const LinearSyntenyViewImportForm = observer(
     const statusByPair = syntenyPairStatuses({
       tracks: allSessionTracks(session),
       selections: model.importFormSyntenyTrackSelections,
-      assemblyNames: selectedAssemblyNames,
+      assemblyNames: rows,
       assemblyManager: session.assemblyManager,
     })
-    const blockedPair = statusByPair.indexOf('unfinishedUpload')
-    const canLaunch = !blockedByUnfinishedUpload(statusByPair)
+    const blockedPairs = statusByPair.flatMap((status, idx) =>
+      status === 'unfinishedUpload' ? [`rows ${idx + 1} and ${idx + 2}`] : [],
+    )
+    // why Launch is off, in text next to it. The row's warning icon says which
+    // pair, but it is at the far edge of the other column and only speaks on
+    // hover.
+    const launchBlocker = missingAssemblyRows.length
+      ? session.assemblyNames.length
+        ? `Row ${missingAssemblyRows[0]! + 1} names an assembly this session does not have.`
+        : 'This session has no configured assemblies to open.'
+      : blockedByUnfinishedUpload(statusByPair)
+        ? `Finish the new synteny track between ${blockedPairs.join(', and between ')}, or set that pair to None.`
+        : undefined
 
     // one band between each pair of adjacent rows
     function applyQuickSelections() {
@@ -109,10 +108,10 @@ const LinearSyntenyViewImportForm = observer(
     // init supersedes the old banner without a second copy of the state here. A
     // failed `init` also lands the view on this form rather than a spinner (see
     // showImportForm), and the banner is what explains why.
-    const launch = (rows: string[], regions = chromosomes.values) => {
+    const launch = (launchRows: string[], regions = chromosomes.values) => {
       try {
         doSubmit({
-          selectedAssemblyNames: rows,
+          selectedAssemblyNames: launchRows,
           regionNames: regions,
           model,
           session,
@@ -134,11 +133,7 @@ const LinearSyntenyViewImportForm = observer(
           quick={quick}
           onHandoverToManual={() => {
             // the rows open on the chosen track instead of resetting
-            setSelectedAssemblyNames(quick.rows)
-            // the handover brings a different set of rows, so nothing typed
-            // against the old ones still applies
-            chromosomes.reset()
-            setSelectedRow(0)
+            form.reset(quick.rows)
             applyQuickSelections()
           }}
           onQuickLaunch={() => {
@@ -173,12 +168,7 @@ const LinearSyntenyViewImportForm = observer(
               <LeftPanel
                 model={model}
                 statusByPair={statusByPair}
-                selectedAssemblyNames={selectedAssemblyNames}
-                setSelectedAssemblyNames={setSelectedAssemblyNames}
-                chromosomes={chromosomes}
-                choices={choices}
-                selectedRow={selectedRow}
-                setSelectedRow={setSelectedRow}
+                form={form}
               />
             </div>
             <div className={classes.rightPanel}>
@@ -192,9 +182,9 @@ const LinearSyntenyViewImportForm = observer(
                 role="status"
                 aria-live="polite"
               >
-                Synteny dataset between {selectedAssemblyNames[selectedRow]} and{' '}
-                {selectedAssemblyNames[selectedRow + 1]} (rows {selectedRow + 1}{' '}
-                and {selectedRow + 2})
+                Synteny dataset between {rows[selectedPair]} and{' '}
+                {rows[selectedPair + 1]} (rows {selectedPair + 1} and{' '}
+                {selectedPair + 2})
               </Typography>
               {/* the uploader and any plugin body below hold local state that
                 belongs to one pair, so the area remounts whenever the pair being
@@ -202,36 +192,32 @@ const LinearSyntenyViewImportForm = observer(
                 and the radio choice is deliberately NOT among them, which is why
                 `choices` lives in this form. */}
               <ImportSyntenyTrackSelectorArea
-                key={`${selectedRow}-${selectedAssemblyNames[selectedRow]}-${selectedAssemblyNames[selectedRow + 1]}`}
+                key={`${selectedPair}-${rows[selectedPair]}-${rows[selectedPair + 1]}`}
                 model={model}
-                selectedRow={selectedRow}
+                selectedRow={selectedPair}
                 labelledBy={pairHeadingId}
-                choices={choices}
-                assembly1={selectedAssemblyNames[selectedRow]!}
-                assembly2={selectedAssemblyNames[selectedRow + 1]!}
+                choices={form.choices}
+                assembly1={rows[selectedPair]!}
+                assembly2={rows[selectedPair + 1]!}
               />
             </div>
           </div>
           <div className={classes.footer}>
             <Button
-              disabled={!canLaunch}
+              disabled={launchBlocker !== undefined}
               onClick={() => {
-                launch(selectedAssemblyNames)
+                launch(rows)
               }}
               variant="contained"
               color="primary"
             >
               Launch
             </Button>
-            {/* why the button is off, in text next to it. The row's warning
-                icon says which pair, but it is at the far edge of the other
-                column and only speaks on hover. */}
-            {canLaunch ? null : (
+            {launchBlocker ? (
               <Typography variant="body2" color="warning.main">
-                Rows {blockedPair + 1} and {blockedPair + 2} have an unfinished
-                new synteny track. Finish the upload, or set that pair to None.
+                {launchBlocker}
               </Typography>
-            )}
+            ) : null}
           </div>
         </ImportFormModes>
       </Container>

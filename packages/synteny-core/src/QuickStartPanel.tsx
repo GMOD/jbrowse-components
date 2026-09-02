@@ -18,22 +18,25 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   summary: {
     display: 'flex',
     alignItems: 'center',
-    gap: 20,
+    gap: theme.spacing(2.5),
   },
   // the form is a short one, so let the Select stop at a readable width instead
   // of stretching across a wide window away from everything it controls
   track: {
-    marginBottom: 10,
+    marginBottom: theme.spacing(1),
     maxWidth: 500,
   },
   emptyText: {
-    marginBottom: 10,
+    marginBottom: theme.spacing(1),
   },
-})
+  launch: {
+    marginTop: theme.spacing(1),
+  },
+}))
 
 /**
  * Quick start: launch straight from a pre-configured synteny track, which names
@@ -109,7 +112,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
         </Tooltip>
       </div>
       <Button
-        style={{ marginTop: 10 }}
+        className={classes.launch}
         onClick={() => {
           onLaunch()
         }}

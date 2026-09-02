@@ -800,3 +800,42 @@ test('a pair the option was never chosen for keeps the built-in default', () => 
   expect(serverRadio()).not.toBeChecked()
   expect(screen.getByRole('radio', { name: 'Existing track' })).toBeChecked()
 })
+
+test('a session with no assemblies cannot launch, and says why', () => {
+  // launching blank rows errored the view with "init needs an assembly"
+  setup({ assemblyNames: [] })
+  expect(launchButton()).toBeDisabled()
+  expect(
+    screen.getByText('This session has no configured assemblies to open.'),
+  ).toBeInTheDocument()
+})
+
+test('an assembly added after mount seeds the rows', () => {
+  const { session } = setup({ assemblyNames: [] })
+  act(() => {
+    session.addAssembly({
+      name: 'late',
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'late_refseq',
+        adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+      },
+    })
+  })
+  expect(rowSelects().map(s => s.textContent)).toEqual(['late', 'late'])
+  expect(launchButton()).toBeEnabled()
+})
+
+test('every pair with an unfinished upload is named next to Launch', () => {
+  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
+  fireEvent.click(screen.getAllByTestId('synbutton')[0]!)
+  fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
+  expect(launchButton()).toBeDisabled()
+  expect(
+    screen.getByText(
+      'Finish the new synteny track between rows 1 and 2, and between rows 2 and 3, or set that pair to None.',
+    ),
+  ).toBeInTheDocument()
+})

@@ -12,15 +12,18 @@ import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
+  panel: {
+    padding: theme.spacing(1.5),
+  },
   // same reasoning as QuickStartPanel's Select: one short control, so it stops
   // at a readable width instead of stretching the width of the window away from
   // the assembly selectors it belongs with
   track: {
-    marginBottom: 10,
+    marginBottom: theme.spacing(1),
     maxWidth: 500,
   },
-})
+}))
 
 /**
  * Pre-configured track picker shared by the synteny and dotplot import forms: a
@@ -53,7 +56,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
     const picked = selection?.type === 'preConfigured' ? selection.value : ''
     const value = pickSyntenyTrackId(picked, tracks) ?? ''
     return (
-      <Paper style={{ padding: 12 }}>
+      <Paper className={classes.panel}>
         {tracks.length ? (
           <>
             <FormControl fullWidth className={classes.track}>
