@@ -120,12 +120,22 @@ matters.
   multi-region case that does enumerate is ~63–80ms, against the 587–1317ms
   `buildLaidOutChainMap` relayout beside it. The single-region grouping the
   lift would newly pay is measured now (`benches/bezierEnumerate.probe.ts`,
-  synthetic reads, min of 15 rounds): **~375ms at 200k short reads, 10%
-  paired**, ~285ms at 50% paired, and ~10ms at 20k reads. That is the deep
-  short-read view paying a third of a second for a mark only a split read can
-  carry, so the lift has to be gated on something cheaper than `map.size` —
-  `readSuppAlignments` being present is the obvious one, since the worker
-  ships it only when some read in the group has an SA tag.
+  synthetic reads, min of 25 rounds on a quiet box): **~85ms at 200k short
+  reads, 10% paired**, ~108ms at 50% paired, ~5ms at 20k reads. Same order as
+  the multi-region case, so by the standard that accepted `crossRegion` it is
+  affordable — but a first run under a concurrent typecheck reported 375ms,
+  which is BENCHMARKING.md's drift warning in practice: quote the min of a
+  quiet run, and gate the lift on `readSuppAlignments` being present anyway,
+  since the worker ships it only when some read carries an SA tag and the
+  deep short-read view then pays nothing.
+- **The lift does not fix chain mode on its own.** `buildChainConnectingData`
+  draws ONE solid span per chain per region, min start to max end, with no
+  notion of junctions. A same-strand hidden hop dashed by the overlay would
+  be painted exactly on top of that span and vanish; only a curve (an
+  inverted or cross-ref hop) rises clear of it. So in chain mode the span has
+  to become per-junction segments before a dash can mean anything there —
+  `a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md`
+  carries both halves.
 - **Gate on the settings that exist**: `drawLongRange` ("Draw long-range
   read-connection arcs") and `drawInter` ("Draw inter-chromosomal
   read-connection arcs"), combined by `emitsOffScreenPartner` — which exists
@@ -140,6 +150,31 @@ matters.
   `{refName, bp, strand}` for the segment that is not there. A discriminated pair
   type keeps `isBezierArcPair` / `isCrossRegionPair` honest, since neither
   predicate has an answer for a one-ended connection.
+
+---
+
+## A dashed arc names loci nobody can act on
+
+The hover prints `hiddenSegmentsBetween`, and that is the only place those loci
+appear. Making them walkable is smaller than it looks and blocked on a UI call,
+not plumbing:
+
+- **The loci are already structured before they are strings.** `hiddenSegments`
+  in `shared/readGroupConnections.ts` gets `refName`/`start`/`end` back from
+  `featurizeSAEntries` and keeps only `formatLocationRange` of them. Carrying
+  `{refName, start, end}` beside `loc` through `ReadConnection` → `LinkedPair`
+  → `PileupArc` is a field on each.
+- **Adding them is one existing helper away**, `showRegionsWithUndo` from the
+  LGV plugin, which `viewSplitAlignmentRegionsInCurrentView` already wraps —
+  but that helper REPLACES the view's regions with one window per segment. A
+  dashed arc wants the hidden windows INSERTED between the two it joins, in
+  read order, so it is the same undo-able call with a different region list.
+- **The gesture is the open half.** `PileupBezierOverlay` has no context menu,
+  and a plain click already selects the nearer endpoint. Either a right-click
+  item on the arc target (the display's `openContextMenu` builds its items from
+  a read feature, so an arc needs its own item source) or a modified click.
+  Decide that before the plumbing, since it fixes where the region list is
+  built.
 
 ---
 
