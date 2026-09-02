@@ -11,9 +11,20 @@ const useStyles = makeStyles()({
   flexContainer: {
     display: 'flex',
     alignItems: 'center',
+    width: '100%',
+    minWidth: 0,
+  },
+  // text-overflow has no effect on a flex container, only on the flex item
+  // holding the text
+  name: {
+    minWidth: 0,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  icons: {
+    display: 'flex',
+    flexShrink: 0,
   },
 })
 
@@ -41,36 +52,40 @@ function SessionNameCell({
   return (
     <div className={classes.flexContainer}>
       <ActionLink
+        className={classes.name}
+        title={value}
         onClick={async () => {
           await launch(row.path)
         }}
       >
         {value}
       </ActionLink>
-      <StarIcon
-        isFavorite={isFavorite}
-        onClick={() => {
-          toggleFavorite(row.path)
-        }}
-      />
-      <CascadingMenuButton
-        menuItems={sessionMenuItems({
-          session: row,
-          isFavorite,
-          launch,
-          onRename: setSessionToRename,
-          onDelete: session => {
-            setSessionsToDelete([session])
-          },
-          onToggleFavorite: () => {
+      <div className={classes.icons}>
+        <StarIcon
+          isFavorite={isFavorite}
+          onClick={() => {
             toggleFavorite(row.path)
-          },
-          onAddToQuickstartList: addToQuickstartList,
-          includeLaunch: true,
-        })}
-      >
-        <MoreHoriz />
-      </CascadingMenuButton>
+          }}
+        />
+        <CascadingMenuButton
+          menuItems={sessionMenuItems({
+            session: row,
+            isFavorite,
+            launch,
+            onRename: setSessionToRename,
+            onDelete: session => {
+              setSessionsToDelete([session])
+            },
+            onToggleFavorite: () => {
+              toggleFavorite(row.path)
+            },
+            onAddToQuickstartList: addToQuickstartList,
+            includeLaunch: true,
+          })}
+        >
+          <MoreHoriz />
+        </CascadingMenuButton>
+      </div>
     </div>
   )
 }

@@ -40,6 +40,10 @@ const useStyles = makeStyles()({
     marginTop: 50,
     display: 'flex',
     gap: 10,
+    // a window too narrow for both used to hold the launch panel at its minimum
+    // and crush the recent-sessions panel, which has the wider content of the
+    // two; stack them instead
+    flexWrap: 'wrap',
   },
 
   panel: {
@@ -52,6 +56,7 @@ const useStyles = makeStyles()({
   recentPanel: {
     flex: 2,
     padding: 16,
+    minWidth: 450,
     overflow: 'auto',
   },
 

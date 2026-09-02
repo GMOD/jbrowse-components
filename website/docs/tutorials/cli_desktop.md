@@ -134,10 +134,10 @@ jbrowse set-default-session --session session.json --out myproject
 ## Open the folder in JBrowse Desktop
 
 In JBrowse Desktop, choose **File → Session → Open config.json or .jbrowse
-file...** (or the **Open .jbrowse or config.json or link** button on the start
-screen) and pick `myproject/config.json`. Desktop resolves each relative path
-against the config's own folder, loading the copied files straight from local
-disk with no web server.
+file...** (or the **Open file or link** button on the start screen) and pick
+`myproject/config.json`. Desktop resolves each relative path against the
+config's own folder, loading the copied files straight from local disk with no
+web server.
 
 You can also hand the config straight to Desktop:
 

@@ -15,6 +15,10 @@ import type {
   GridRowSelectionModel,
 } from '@mui/x-data-grid'
 
+// SessionNameCell puts a small star IconButton (30px) and a MoreHoriz
+// IconButton (40px) after the name, none of which measureGridWidth sees
+const nameCellIconsWidth = 70
+
 const useStyles = makeStyles()({
   cell: {
     whiteSpace: 'nowrap',
@@ -49,11 +53,10 @@ function RecentSessionsDataGrid({
     return { ...session, lastModified: label, lastModifiedTooltip: tooltip }
   })
 
-  const nameWidth =
-    measureGridWidth(
-      rows.map(r => r.name),
-      { stripHTML: true },
-    ) + 40
+  const nameWidth = measureGridWidth(
+    rows.map(r => r.name),
+    { stripHTML: true, padding: 30 + nameCellIconsWidth },
+  )
   const lastModifiedWidth =
     measureGridWidth(
       rows.map(r => r.lastModified),

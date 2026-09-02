@@ -56,6 +56,9 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     flexShrink: 0,
   },
+  label: {
+    whiteSpace: 'nowrap',
+  },
 })
 
 type RecentSessions = RecentSessionData[]
@@ -272,48 +275,6 @@ export default function RecentSessionPanel({
             </IconButtonWithTooltip>
           </div>
         ) : null}
-        <LabeledCheckbox
-          label="Show autosaves"
-          checked={showAutosaves}
-          onChange={val => {
-            setShowAutosaves(val)
-          }}
-        />
-        <LabeledCheckbox
-          label="Show favorites only"
-          checked={showFavoritesOnly}
-          onChange={val => {
-            setShowFavoritesOnly(val)
-          }}
-        />
-
-        <CascadingMenuButton
-          ButtonComponent={Button}
-          className={classes.openButton}
-          variant="contained"
-          endIcon={<ArrowDropDownIcon />}
-          menuItems={[
-            {
-              label: 'Open .jbrowse or config.json file...',
-              icon: OpenIcon,
-              onClick: () => {
-                promptOpenFile().catch((e: unknown) => {
-                  console.error(e)
-                  notifyError(e)
-                })
-              },
-            },
-            {
-              label: 'Open JBrowse Web link...',
-              icon: LinkIcon,
-              onClick: () => {
-                setLinkDialogOpen(true)
-              },
-            },
-          ]}
-        >
-          Open .jbrowse or config.json or link
-        </CascadingMenuButton>
         <Tooltip title="More actions">
           <IconButton
             onClick={event => {
@@ -342,6 +303,51 @@ export default function RecentSessionPanel({
               : 'No autosaves older than 30 days'}
           </MenuItem>
         </Menu>
+        <LabeledCheckbox
+          className={classes.label}
+          label="Show autosaves"
+          checked={showAutosaves}
+          onChange={val => {
+            setShowAutosaves(val)
+          }}
+        />
+        <LabeledCheckbox
+          className={classes.label}
+          label="Show favorites only"
+          checked={showFavoritesOnly}
+          onChange={val => {
+            setShowFavoritesOnly(val)
+          }}
+        />
+
+        <CascadingMenuButton
+          ButtonComponent={Button}
+          className={classes.openButton}
+          variant="contained"
+          endIcon={<ArrowDropDownIcon />}
+          tooltip="Open a .jbrowse or config.json file, or a JBrowse Web link"
+          menuItems={[
+            {
+              label: 'Open .jbrowse or config.json file...',
+              icon: OpenIcon,
+              onClick: () => {
+                promptOpenFile().catch((e: unknown) => {
+                  console.error(e)
+                  notifyError(e)
+                })
+              },
+            },
+            {
+              label: 'Open JBrowse Web link...',
+              icon: LinkIcon,
+              onClick: () => {
+                setLinkDialogOpen(true)
+              },
+            },
+          ]}
+        >
+          Open file or link
+        </CascadingMenuButton>
       </div>
 
       {!filteredSessions.length ? (
