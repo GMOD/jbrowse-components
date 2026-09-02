@@ -26,7 +26,6 @@ import {
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HeightModeMixin, {
   installGrowExitBake,
 } from '@jbrowse/display-kit/HeightModeMixin'
@@ -57,13 +56,7 @@ import {
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
-import {
-  densityBandDisplayPhase,
-  densityBandReadout,
-  densityBandSvgReady,
-  densityHoverAt,
-  displayDensityBandLayer,
-} from '../shared/densityBandViews.ts'
+import DensityBandMixin from '../shared/DensityBandMixin.ts'
 import {
   featureSpanRegion,
   fetchCanvasFeatureDetails,
@@ -118,7 +111,6 @@ import type {
   FeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { DensityHover } from '../shared/densityBandViews.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -141,7 +133,6 @@ import type {
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 type LGV = LinearGenomeViewModel
 
@@ -229,10 +220,11 @@ export default function baseStateModelFactory(
         // axis and its `resolvedByteLimit()` budget are RegionTooLargeMixin's,
         // reached through MultiRegionDisplayMixin above.
         CanvasFeatureGateMixin(),
-        // The density tier: where the verdict above refuses the features, a
-        // track with a density sidecar draws features per bin in the banner's
-        // place. After both gate mixins, since it keys off their verdict.
-        DensityTierMixin(),
+        // The density tier and the band it draws: where the verdict above
+        // refuses the features, a track with a density sidecar draws features
+        // per bin in the banner's place. After both gate mixins, since it keys
+        // off their verdict.
+        DensityBandMixin(),
         ContextMenuMixin<FeatureContextMenuInfo>(),
         types.model({
           /**
@@ -353,75 +345,6 @@ export default function baseStateModelFactory(
       }))
       .volatile(fitLadderVolatiles)
       .volatile(yMorphVolatiles)
-      .volatile(() => ({
-        /**
-         * #volatile
-         * Where the cursor is over the density band, for its readout.
-         */
-        densityHover: undefined as DensityHover | undefined,
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         * The cursor's view px over the band, or nothing when it leaves.
-         */
-        setDensityHoverPx(px?: number) {
-          self.densityHover = densityHoverAt(getContainingView(self) as LGV, px)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Whether the band stands in for the features here — the tier's own
-         * decision, plus the view geometry the draw is mapped through.
-         */
-        get densityBandActive() {
-          return self.densityTierActive && self.host.initialized
-        },
-        /**
-         * #getter
-         */
-        get densityBandLayer() {
-          return displayDensityBandLayer(self)
-        },
-        /**
-         * #getter
-         * The band's line of text: its peak, and the source's value under the
-         * cursor while there is one.
-         */
-        get densityReadout() {
-          return densityBandReadout(
-            this.densityBandLayer,
-            self.densityBins,
-            self.densityHover,
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The foundation's phase with the too-large banner swapped for the
-         * band — see `densityBandDisplayPhase`.
-         */
-        get displayPhase(): DisplayPhase {
-          return densityBandDisplayPhase(self)
-        },
-        /**
-         * #getter
-         * The export gate with the same swap — see `densityBandSvgReady`.
-         */
-        get svgReady(): boolean {
-          return densityBandSvgReady(self)
-        },
-        /**
-         * #getter
-         * `renderDisplaySvg`'s hook: the export paints the band in place of the
-         * too-large note, the same swap the chrome makes on screen.
-         */
-        get drawsWhenTooLarge() {
-          return self.densityBandActive
-        },
-      }))
       .views(self => ({
         /**
          * #getter

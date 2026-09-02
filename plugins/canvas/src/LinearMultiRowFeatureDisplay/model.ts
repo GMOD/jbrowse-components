@@ -16,7 +16,6 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin, {
   autorunOnReadyView,
@@ -49,14 +48,8 @@ import {
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { AUTO_PARTITION_FIELD } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import DensityBandMixin from '../shared/DensityBandMixin.ts'
 import { copyItem } from '../shared/copyMenuItem.ts'
-import {
-  densityBandDisplayPhase,
-  densityBandReadout,
-  densityBandSvgReady,
-  densityHoverAt,
-  displayDensityBandLayer,
-} from '../shared/densityBandViews.ts'
 import {
   featureSpanRegion,
   fetchCanvasFeatureDetails,
@@ -83,7 +76,6 @@ import {
 } from './sourcesLogic.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
-import type { DensityHover } from '../shared/densityBandViews.ts'
 import type {
   LinearMultiRowFeatureDisplayConfig,
   LinearMultiRowFeatureDisplayConfigModel,
@@ -101,7 +93,6 @@ import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type React from 'react'
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
@@ -158,7 +149,7 @@ export default function stateModelFactory(
       // After the foundation, whose region-too-large verdict it keys off: where
       // the gate refuses the features, a track with a density sidecar draws
       // features per bin in the banner's place.
-      DensityTierMixin(),
+      DensityBandMixin(),
       LegendMixin(),
       RowHeightMixin(),
       TreeSidebarMixin<MultiRowSource>(),
@@ -202,53 +193,6 @@ export default function stateModelFactory(
       hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
       // #endregion
     }))
-    .volatile(() => ({
-      /**
-       * #volatile
-       * Where the cursor is over the density band, for its readout.
-       */
-      densityHover: undefined as DensityHover | undefined,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * The cursor's view px over the band, or nothing when it leaves.
-       */
-      setDensityHoverPx(px?: number) {
-        self.densityHover = densityHoverAt(
-          getContainingView(self) as LinearGenomeViewModel,
-          px,
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Whether the band stands in for the features here — the tier's own
-       * decision, plus the view geometry the draw is mapped through.
-       */
-      get densityBandActive() {
-        return self.densityTierActive && self.host.initialized
-      },
-      /**
-       * #getter
-       */
-      get densityBandLayer() {
-        return displayDensityBandLayer(self)
-      },
-      /**
-       * #getter
-       * The band's line of text: its peak, and the source's value under the
-       * cursor while there is one.
-       */
-      get densityReadout() {
-        return densityBandReadout(
-          this.densityBandLayer,
-          self.densityBins,
-          self.densityHover,
-        )
-      },
-    }))
     .views(self => ({
       /**
        * #getter
@@ -259,29 +203,6 @@ export default function stateModelFactory(
        */
       get drawnRegionData(): ReadonlyMap<number, MultiRowRegionData> {
         return self.densityBandActive ? EMPTY_REGION_DATA : self.rpcDataMap
-      },
-      /**
-       * #getter
-       * The foundation's phase with the too-large banner swapped for the band —
-       * see `densityBandDisplayPhase`.
-       */
-      get displayPhase(): DisplayPhase {
-        return densityBandDisplayPhase(self)
-      },
-      /**
-       * #getter
-       * The export gate with the same swap — see `densityBandSvgReady`.
-       */
-      get svgReady(): boolean {
-        return densityBandSvgReady(self)
-      },
-      /**
-       * #getter
-       * `renderDisplaySvg`'s hook: the export paints the band in place of the
-       * too-large note, the same swap the chrome makes on screen.
-       */
-      get drawsWhenTooLarge() {
-        return self.densityBandActive
       },
     }))
     .views(self => ({
