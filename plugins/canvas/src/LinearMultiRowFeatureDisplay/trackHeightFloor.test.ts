@@ -70,3 +70,40 @@ describe('the track cannot be dragged below a usable height', () => {
     expect(display.effectiveRowHeight).toBeGreaterThan(0)
   })
 })
+
+// The same floor from the other direction: not a drag, but a row count. The
+// derived `height` is what the canvas, the too-large banner and the density
+// band are all sized to, and a pinned row height over no rows sized every one
+// of them to a sliver.
+describe('the derived height carries the floor the drag does', () => {
+  it('floors a pinned row height over no rows at all', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRowHeight(14)
+
+    expect(display.sources).toHaveLength(0)
+    expect(display.height).toBe(MIN_DISPLAY_HEIGHT)
+  })
+
+  it('floors a pinned row height when a subtree filter names no row', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, rowsOnly(3))
+    display.setRowHeight(14)
+    expect(display.height).toBeCloseTo(42)
+
+    display.setSubtreeFilter(['nobody'])
+
+    expect(display.sources).toHaveLength(0)
+    expect(display.height).toBe(MIN_DISPLAY_HEIGHT)
+  })
+
+  it('leaves a taller stack alone', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, rowsOnly(10))
+    display.setRowHeight(14)
+
+    expect(display.height).toBeCloseTo(140)
+  })
+})

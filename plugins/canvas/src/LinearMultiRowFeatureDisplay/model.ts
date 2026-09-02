@@ -829,9 +829,19 @@ export default function stateModelFactory(
        * Bounded by `maxCanvasHeight` through `effectiveRowHeight`, so growing
        * to the content stops at the canvas limit rather than at nothing. A drag
        * past it therefore returns 0 from `resizeHeight` and simply stalls.
+       *
+       * Floored at MIN_DISPLAY_HEIGHT for the same reason `setHeight` floors
+       * what it writes, and here because the row count is the other way to
+       * reach a sliver: a pinned 14px row height over no rows at all is a 14px
+       * track, which is what an empty contig, a `subtreeFilter` naming nothing,
+       * a saved session before its first fetch lands, and — with a whole chrome
+       * of its own to draw — the too-large banner and the density band all get.
+       * The floor is on the TRACK, never on the row: `effectiveRowHeight` and
+       * the fit-mode arithmetic over `fitTargetHeight` are untouched, so a
+       * sub-pixel row stays legitimate (see `autoRowHeight`).
        */
       get height(): number {
-        return self.nrow * self.effectiveRowHeight
+        return Math.max(MIN_DISPLAY_HEIGHT, self.nrow * self.effectiveRowHeight)
       },
     }))
     .views(self => ({
