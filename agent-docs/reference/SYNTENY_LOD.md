@@ -22,11 +22,10 @@ a one-letter prefix on the seqid (tabix column 1):
 - **coarse** — `T<target>` / `Q<query>` (uppercase). One row per PAF row, the
   columns and every non-alignment tag verbatim. The CIGAR is replaced by its
   fold, a `cr:Z:` **coarse CIGAR** (`packages/cigar-utils/src/coarseCigar.ts`,
-  ADR-104): indels `>= --coarse` (default 10 kb) kept as `I`/`D`/`N`, everything
-  between them one run, written `<own>:<mate>M` when the two sides differ. A run
-  also closes before its folded skew passes `--coarse / 2`, so a straight line
-  across a run is within `--coarse` of the true path. A row with no kept indel
-  carries no tag. The renderer walks `cr` where it would walk `cg` — `CIGAR_RUN`,
+  ADR-104): indels longer than half of `--coarse` (default 10 kb) kept as
+  `I`/`D`/`N`, everything between them one run, written `<own>:<mate>M` when the two sides differ. A run also closes before its folded skew passes `--coarse / 2`, so a straight
+  line across a run is within `--coarse` of the true path. A fold that is a
+  single run carries no tag. The renderer walks `cr` where it would walk `cg` — `CIGAR_RUN`,
   a two-word packed op that `visitCigarRenderedSegments` and `clipSyntenyFeature`
   understand — so a kept gap draws as the same colored wedge in both tiers and
   nothing visible changes at the switch. The walks follow it too

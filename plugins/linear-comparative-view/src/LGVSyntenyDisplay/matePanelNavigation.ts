@@ -9,7 +9,7 @@ import {
   noFollowAnchor,
   takeFollowAnchor,
 } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
-import { getCigar } from '../syntenyMate.ts'
+import { hasAlignmentString } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
@@ -177,7 +177,9 @@ export function matePanelSpan(
   feature: Feature,
   region: RegionOfInterest,
 ): ResolvedSpan | undefined {
-  const span = getCigar(feature) ? resolvedMateSpan(feature, region) : undefined
+  const span = hasAlignmentString(feature)
+    ? resolvedMateSpan(feature, region)
+    : undefined
   return span
     ? { refName: span.refName, start: span.start, end: span.end }
     : undefined

@@ -140,14 +140,15 @@ columns and every non-alignment tag verbatim. What changes is the alignment
 string. The CIGAR is replaced by a **coarse CIGAR** in a `cr:Z:` tag, the CIGAR
 folded at the `--coarse` length:
 
-- every insertion or deletion at least `--coarse` bp long is kept as its own
+- every insertion or deletion longer than half of `--coarse` is kept as its own
   `I`/`D`/`N` op, exactly as in the CIGAR
 - everything between two kept indels collapses to one match run. A run whose two
   sides consumed different lengths, because it absorbed small indels, is written
   `<own>:<mate>M` with the row's own side first; a square run stays `<n>M`
 - a run is also closed before the small indels it absorbs would skew it by more
   than half of `--coarse`, so the straight line between a run's two corners is
-  never more than `--coarse` bp off the alignment's real path
+  never more than `--coarse` bp off the alignment's real path. That bound is
+  what `--coarse` means
 
 ```
 cg:Z:31198M4800I18803M   fine row
@@ -155,11 +156,11 @@ cr:Z:31198M4800I18803M   coarse T row built with --coarse 1000: the insertion is
 cr:Z:31198M4800D18803M   the same alignment's coarse Q row (I<->D from the query's side)
 ```
 
-Built with the default `--coarse 10000` the insertion folds into the run, and
-since the row then has no kept indel the tag is omitted altogether: the
-coordinate columns already say everything a single run would. The Q row's coarse
-CIGAR is re-oriented the way the fine tier's `cg` is, `I`/`D` swapped and the
-run lengths traded, and reversed on the minus strand.
+Built with the default `--coarse 10000` the 4.8 kb insertion is under half the
+gap and folds into the run, and since the fold is then a single run the tag is
+omitted altogether: the coordinate columns already say everything it would. The
+Q row's coarse CIGAR is re-oriented the way the fine tier's `cg` is, `I`/`D`
+swapped and the run lengths traded, and reversed on the minus strand.
 
 The renderer walks a coarse CIGAR exactly as it walks a CIGAR at that zoom: each
 run is one ribbon segment between its corners and each kept gap is a colored
@@ -178,10 +179,10 @@ close on the row's own coordinate columns (clipping ops, a hand-written `cg`, a
 coarse row must not say anything the walk reconstructed.
 
 ```bash
-# coarse tier is on by default, keeping indels >= 10kb
+# coarse tier is on by default: runs within 10kb of the alignment, indels over 5kb kept
 jbrowse make-pif input.paf
 
-# keep smaller indels in the coarse tier
+# a tighter coarse tier: runs within 1kb, indels over 500bp kept
 jbrowse make-pif input.paf --coarse 1000
 
 # coarse rows with no alignment string at all

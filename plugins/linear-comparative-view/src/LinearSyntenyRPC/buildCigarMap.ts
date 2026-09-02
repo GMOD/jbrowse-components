@@ -125,11 +125,18 @@ export function buildCigarMap(
       emit()
     }
     if (op === CIGAR_RUN) {
-      // the fold's run: linear inside, so a point at its far end is exact and
-      // is worth putting down whenever it moved the skew
+      // the fold's run: linear inside, so both its ends are exact points, and
+      // a run that leans by more than the tolerance is a bend at both — the
+      // same two-sided rule as a large indel, since a line drawn from before
+      // the run to its far end would be off by the whole lean
+      const mateLen = cigar[++i]! >>> 4
+      const leans = Math.abs(len - mateLen) > toleranceBp
+      if (leans) {
+        emit()
+      }
       featX += len
-      mateX += cigar[++i]! >>> 4
-      if (Math.abs(featX - mateX - lastSkew) > toleranceBp) {
+      mateX += mateLen
+      if (leans || Math.abs(featX - mateX - lastSkew) > toleranceBp) {
         emit()
       }
     } else if (op === CIGAR_I) {

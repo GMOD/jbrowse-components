@@ -7,6 +7,7 @@ import {
   CIGAR_RUN,
   CIGAR_X,
   parseCigar2Typed,
+  parseCoarseCigar,
 } from '@jbrowse/cigar-utils'
 
 import type { BpRegionIndex } from '@jbrowse/synteny-core'
@@ -215,8 +216,9 @@ export function clipSyntenyFeature(
 
 // Worker glue over clipSyntenyFeature: gate on size + resolve the v1 region the
 // visible window is over, convert the window to that region's local bp, parse
-// the CIGAR and clip. Returns undefined (leave the block untouched) unless it is
-// a CIGAR block more than `spanRatio`x the window on a clippable region. The clip
+// the CIGAR (or the coarse tier's fold of it) and clip. Returns undefined
+// (leave the block untouched) unless it is a block with an alignment string
+// more than `spanRatio`x the window on a clippable region. The clip
 // itself is region-orientation-agnostic (it walks genomic query bp forward), and
 // buildSyntenyGeometry re-derives its rev1 from the cumBp order of the clipped
 // endpoints — so a reversed v1 region only changes the cumBp->local-bp window
@@ -230,6 +232,7 @@ export function clipLargeBlockToWindow({
   mateEnd,
   strand,
   cigar,
+  coarseCigar,
   winCumLo,
   winCumHi,
   windowSpan,
@@ -243,12 +246,13 @@ export function clipLargeBlockToWindow({
   mateEnd: number
   strand: number
   cigar: string | undefined
+  coarseCigar?: string
   winCumLo: number
   winCumHi: number
   windowSpan: number
   spanRatio: number
 }): ClippedSyntenyFeature | undefined {
-  if (!cigar || end - start <= spanRatio * windowSpan) {
+  if ((!cigar && !coarseCigar) || end - start <= spanRatio * windowSpan) {
     return undefined
   }
   // Re-anchor to the region this refName's visible window falls in. A refName
@@ -323,13 +327,20 @@ export function clipLargeBlockToWindow({
   if (end < winStart || start > winEnd) {
     return undefined
   }
-  return clipSyntenyFeature(
-    parseCigar2Typed(cigar),
-    start,
-    mateStart,
-    mateEnd,
-    strand,
-    winStart,
-    winEnd,
-  )
+  const ops = cigar
+    ? parseCigar2Typed(cigar)
+    : coarseCigar
+      ? parseCoarseCigar(coarseCigar)
+      : undefined
+  return ops
+    ? clipSyntenyFeature(
+        ops,
+        start,
+        mateStart,
+        mateEnd,
+        strand,
+        winStart,
+        winEnd,
+      )
+    : undefined
 }

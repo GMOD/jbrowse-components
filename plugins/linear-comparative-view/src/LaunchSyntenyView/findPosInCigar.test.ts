@@ -116,7 +116,7 @@ describe('findPosInCigarByMate', () => {
 
 // The coarse tier's fold: a `<own>:<mate>M` run packs as a CIGAR_RUN word pair
 // and maps the two axes in proportion, which is within the fold's gap of the
-// alignment's real path (ADR-103).
+// alignment's real path (ADR-104).
 describe('coarse CIGAR runs', () => {
   it('a run advances the mate axis in proportion to the feature axis', () => {
     expect(findPosInCigar(parseCoarseCigar('100:50M'), 50)).toEqual([50, 25])

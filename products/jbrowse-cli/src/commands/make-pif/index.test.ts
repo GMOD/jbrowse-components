@@ -48,7 +48,8 @@ test('make-pif with --coarse emits one T/Q coarse row per alignment, CIGAR strip
     expect(coarseQ.length).toBe(fineQ.length)
     for (const l of coarseT) {
       expect(l).not.toMatch(/cg:Z:/)
-      // no row has a 50kb indel, so there is no coarse CIGAR to write either
+      // no row has an indel over 25kb or leans by that much, so every fold is
+      // one run and there is no coarse CIGAR to write
       expect(l).not.toMatch(/cr:Z:/)
       expect(l).toMatch(/de:f:/)
     }
@@ -399,6 +400,27 @@ test('a coarse row keeps the PAF coordinate columns verbatim and no fold when th
     const [, , start, end] = coarseT.split('\t')
     expect([start, end]).toEqual(['0', '100'])
     expect(coarseT).not.toContain('cr:Z:')
+  })
+})
+
+test('a lopsided cluster of small indels is written as several runs', async () => {
+  await runInTmpDir(async () => {
+    // three 300bp deletions under --coarse 1000: none is kept on its own, but
+    // together they bend the path by 900bp, and a straight ribbon across the
+    // row would be off by that much. The fold's runs each lean at most 500.
+    const lines = await pifLines(
+      pafRow(['cg:Z:1000M300D1000M300D1000M300D1000M'], {
+        3: '4000',
+        8: '4900',
+      }),
+      ['--coarse', '1000'],
+    )
+    expect(
+      tagValue(
+        lines.find(l => l.startsWith('T'))!,
+        'cr:Z:',
+      ),
+    ).toBe('2300:2000M1300:1000M1300:1000M')
   })
 })
 

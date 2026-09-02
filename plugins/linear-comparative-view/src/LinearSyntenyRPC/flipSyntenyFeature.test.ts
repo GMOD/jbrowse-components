@@ -79,3 +79,19 @@ test('a feature with no mate is not an alignment to flip', () => {
     ),
   ).toBeUndefined()
 })
+
+// The coarse tier's fold carries the same trap as the CIGAR: a run's own and
+// mate lengths and its indel sense belong to the perspective the row was
+// fetched under, and the spread would carry them across unchanged.
+test('a coarse fold is turned round with the row', () => {
+  const plus = flipSyntenyFeature(
+    alignment({ coarseCigar: '100:80M5000I100M' }),
+  )!
+  expect(plus.get('coarseCigar')).toBe('80:100M5000D100M')
+  expect(plus.get('CIGAR')).toBeUndefined()
+
+  const minus = flipSyntenyFeature(
+    alignment({ strand: -1, coarseCigar: '100:80M5000I100M' }),
+  )!
+  expect(minus.get('coarseCigar')).toBe('100M5000D80:100M')
+})

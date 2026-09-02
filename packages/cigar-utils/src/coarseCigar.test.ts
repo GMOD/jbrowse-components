@@ -6,6 +6,7 @@ import {
   CIGAR_RUN,
 } from './cigarConstants.ts'
 import {
+  coarseCigarOwnAxis,
   coarsenCigar,
   flipCoarseCigar,
   parseCoarseCigar,
@@ -22,6 +23,7 @@ describe('coarsenCigar', () => {
       ownLen: 205,
       mateLen: 200,
       gapCount: 0,
+      opCount: 1,
     })
   })
 
@@ -31,6 +33,7 @@ describe('coarsenCigar', () => {
       ownLen: 5200,
       mateLen: 200,
       gapCount: 1,
+      opCount: 3,
     })
     expect(coarsenCigar('100M1000D100M', 1000).ops).toBe('100M1000D100M')
   })
@@ -41,6 +44,7 @@ describe('coarsenCigar', () => {
       ownLen: 32,
       mateLen: 20035,
       gapCount: 1,
+      opCount: 3,
     })
   })
 
@@ -61,9 +65,28 @@ describe('coarsenCigar', () => {
       ownLen: 310,
       mateLen: 300,
       gapCount: 0,
+      opCount: 2,
     })
     // balanced indels never lean far, so they fold into one run
     expect(coarsenCigar('100M5D100M5I100M5D100M5I100M', 10).ops).toBe('510M')
+  })
+
+  test('an indel longer than half the gap is kept, so no run leans past half', () => {
+    // 6 > 5 keeps its letter; folding it would open a run already leaning 6
+    expect(coarsenCigar('100M6D100M', 10).ops).toBe('100M6D100M')
+    // the lopsided probe: 9999 is kept, the 5000 (not > 5000) folds, and the
+    // last run's line is within the gap of the path
+    expect(coarsenCigar('9999D100M9999I100M5000I', 10000).ops).toBe(
+      '9999D100M9999I100:5100M',
+    )
+  })
+})
+
+describe('coarseCigarOwnAxis', () => {
+  test('keeps own lengths and kept indels, and names a one-sided run', () => {
+    expect(coarseCigarOwnAxis('100:90M5000D100M0:30M40:0M7N')).toBe(
+      '100M5000D100M30I40D7N',
+    )
   })
 })
 

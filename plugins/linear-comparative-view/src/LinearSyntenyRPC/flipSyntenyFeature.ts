@@ -1,7 +1,11 @@
-import { orientAlignment } from '@jbrowse/cigar-utils'
+import {
+  flipCoarseCigar,
+  orientAlignment,
+  swapCoarseCigar,
+} from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { getCigar, getMate } from '../syntenyMate.ts'
+import { getCigar, getCoarseCigar, getMate } from '../syntenyMate.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -42,16 +46,27 @@ export function flipSyntenyFeature(f: Feature): Feature | undefined {
     flip: true,
     strand,
   })
+  // the coarse tier's fold turns round the same way its CIGAR would: the two
+  // lengths of every run trade places with the indel sense, and the minus
+  // strand reverses the op order
+  const coarse = getCoarseCigar(f)
+  const coarseCigar =
+    coarse === undefined
+      ? undefined
+      : strand === -1
+        ? flipCoarseCigar(coarse)
+        : swapCoarseCigar(coarse)
   return new SimpleFeature({
     ...f.toJSON(),
     refName: mate.refName,
     start: mate.start,
     end: mate.end,
     assemblyName: mate.assemblyName,
-    // written even when undefined, so a row that had a CIGAR before the flip
-    // cannot keep the un-flipped one through the spread above
+    // written even when undefined, so a row that had an alignment string
+    // before the flip cannot keep the un-flipped one through the spread above
     CIGAR,
     cs,
+    coarseCigar,
     // the four fields a mate is: `name`/`id` are optional and no adapter sets
     // them (see SyntenyFeatureData), so there is nothing to carry across
     mate: {

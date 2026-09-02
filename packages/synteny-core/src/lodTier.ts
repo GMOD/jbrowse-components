@@ -6,7 +6,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 /**
  * The user-facing level-of-detail setting on a synteny view or dotplot: 'auto'
  * follows the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier,
- * 'coarse' the no-CIGAR tier.
+ * 'coarse' the tier whose CIGAR is folded to its large indels.
  */
 export type LodMode = 'auto' | 'fine' | 'coarse'
 
@@ -135,7 +135,8 @@ const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
     // behaviour (the alternative is no data) and the wrong thing to say nothing
     // about.
     helpText:
-      'Skip base-level detail for speed — no indel or mismatch coloring. A ' +
+      'Skip base-level detail for speed — only large indels are colored, no ' +
+      'mismatches. A ' +
       'file built without the coarse tier (make-pif --no-coarse) has nothing ' +
       'to switch to and keeps serving full detail.',
   },

@@ -17,10 +17,11 @@ import {
 
 import type { Writable } from 'node:stream'
 
-// Default minimum indel length (bp) the coarse tier keeps in its coarse CIGAR;
-// shorter ones fold into the runs between. 10kb matches the adapter's default
-// coarseBpPerPxThreshold, so at the zoom where the tier is served a kept gap is
-// at least ~1px wide and a folded one would have been sub-pixel anyway.
+// Default gap (bp) of the coarse tier's coarse CIGAR: how far a straight line
+// across one of its runs may be from the alignment's real path. Indels longer
+// than half of it keep their letter; shorter ones fold into the runs. 10kb
+// matches the adapter's default coarseBpPerPxThreshold, so at the zoom where the
+// tier is served the bound is ~1px and a folded indel was sub-pixel anyway.
 export const DEFAULT_COARSE_GAP = 10_000
 
 // What one pass over the PAF observed, for the caller's summary and warnings.
@@ -82,10 +83,13 @@ export function missingPairs({ samples, pairs }: PifStats) {
 }
 
 // The coarse row's `cr:Z:` value, or nothing. Nothing when the row has no
-// CIGAR, when no indel reaches the gap (the coordinate columns already say it
+// CIGAR, when the fold is a single run (the coordinate columns already say it
 // all), and when the walk does not close on the row's own far corner — clipping
 // ops, a hand-made cg, a cs whose spans don't add up — since the columns are what
-// the fine tier draws and the coarse row must not disagree with them.
+// the fine tier draws and the coarse row must not disagree with them. A fold of
+// several runs with no kept indel is still written: the runs are where a
+// lopsided cluster of small indels bends the path, which a straight ribbon
+// across the row would miss by up to the whole cluster.
 function coarseCigarTag({
   cigar,
   coarseGap,
@@ -102,7 +106,7 @@ function coarseCigarTag({
       ? undefined
       : coarsenCigar(cigar, coarseGap)
   return coarse !== undefined &&
-    coarse.gapCount > 0 &&
+    (coarse.gapCount > 0 || coarse.opCount > 1) &&
     coarse.ownLen === ownLen &&
     coarse.mateLen === mateLen
     ? coarse.ops
@@ -219,8 +223,8 @@ function processLine(
   // Every optional tag except the alignment string itself rides along, so a
   // click on a coarse ribbon shows the same attributes as the same alignment
   // does zoomed in (rustybam's tags, minimap2's tp/cm/s1, odgi's id). The CIGAR
-  // is replaced by its fold (`cr:Z:`, the runs and the indels at least
-  // `coarseGap` long), and de:f: is rewritten below. No `cs:Z:` can reach here:
+  // is replaced by its fold (`cr:Z:`, the runs and the indels longer than half
+  // of `coarseGap`), and de:f: is rewritten below. No `cs:Z:` can reach here:
   // it was folded into the cg above, since a PIF row carries one alignment
   // string.
   const passthrough = tags

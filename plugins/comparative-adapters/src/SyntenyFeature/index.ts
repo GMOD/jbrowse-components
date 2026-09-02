@@ -3,6 +3,7 @@ import {
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SKIP_TYPE,
+  coarseCigarOwnAxis,
   forEachCsMismatch,
   getMismatches,
 } from '@jbrowse/cigar-utils'
@@ -27,7 +28,7 @@ export default class SyntenyFeature extends SimpleFeature {
   get(name: string): unknown
   get(name: string): unknown {
     if (name === 'mismatches') {
-      return getMismatches(this.get('CIGAR') as string | undefined)
+      return getMismatches(this.walkableCigar)
     } else if (name === 'clipLengthAtStartOfRead') {
       return this.clipLengthAtStartOfRead
     } else if (name === 'name') {
@@ -39,6 +40,19 @@ export default class SyntenyFeature extends SimpleFeature {
 
   private get mate() {
     return super.get('mate') as { refName?: string; start?: number } | undefined
+  }
+
+  // The CIGAR, or on the coarse tier its fold read along this row's own axis,
+  // so a kept indel places itself where the fine tier's would; the runs' mate
+  // lengths mean nothing to a reference-anchored mismatch walk.
+  private get walkableCigar() {
+    const cigar = super.get('CIGAR')
+    const coarse = super.get('coarseCigar')
+    return typeof cigar === 'string'
+      ? cigar
+      : typeof coarse === 'string'
+        ? coarseCigarOwnAxis(coarse)
+        : undefined
   }
 
   // The block's offset along the other sequence, i.e. what a soft clip is to a
@@ -59,7 +73,7 @@ export default class SyntenyFeature extends SimpleFeature {
     } else {
       const lo = ws ?? Number.NEGATIVE_INFINITY
       const hi = we ?? Number.POSITIVE_INFINITY
-      for (const m of getMismatches(this.get('CIGAR') as string | undefined)) {
+      for (const m of getMismatches(this.walkableCigar)) {
         // Deletions and skips are spans, so one that starts left of the window
         // but reaches into it still draws — the overlap test the cs path and
         // BAM's forEachMismatchNumeric both apply. Clipping them on start

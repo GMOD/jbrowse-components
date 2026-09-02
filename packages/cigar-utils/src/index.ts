@@ -13,6 +13,7 @@ export {
   CIGAR_X,
 } from './cigarConstants.ts'
 export {
+  coarseCigarOwnAxis,
   coarsenCigar,
   flipCoarseCigar,
   parseCoarseCigar,

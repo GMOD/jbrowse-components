@@ -37,7 +37,7 @@ export interface BandMoveTarget {
  * navigates a panel to a straight-line guess and shows it flush against its
  * neighbour is presenting a guess as a correspondence. The coarse tier's
  * `cr:Z:` fold counts: its runs keep a walk within the fold's `--coarse` gap,
- * sub-pixel at the zoom the tier is served (ADR-103). What stays absent is a
+ * sub-pixel at the zoom the tier is served (ADR-104). What stays absent is a
  * CIGAR-less PAF, and a coarse tier built before the fold existed.
  *
  * AND ONLY WHERE THE STAYING PANEL IS ACTUALLY SHOWING THIS ALIGNMENT'S CONTIG.

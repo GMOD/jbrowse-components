@@ -449,6 +449,7 @@ export async function executeSyntenyFeaturesAndPositions({
       mateEnd: mate.end,
       strand,
       cigar: cigarStr,
+      coarseCigar: coarseStr,
       winCumLo,
       winCumHi,
       windowSpan,

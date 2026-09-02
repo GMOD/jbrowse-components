@@ -50,3 +50,23 @@ describe('forEachMismatch window clipping', () => {
     ])
   })
 })
+
+// The LGV synteny track draws indels through the mismatch walk, which reads the
+// CIGAR; on the coarse tier the fold stands in, read along this row's own axis,
+// so a kept deletion lands where the fine tier's would.
+test('mismatches come from the coarse fold when there is no CIGAR', () => {
+  const f = new SyntenyFeature({
+    uniqueId: 'c',
+    refName: 'chr1',
+    start: 0,
+    end: 5300,
+    strand: 1,
+    coarseCigar: '100:90M5000D100M0:30M',
+    mate: { refName: 'q', start: 0, end: 220, assemblyName: 'b' },
+  })
+  const mismatches = f.get('mismatches')
+  expect(mismatches).toEqual([
+    expect.objectContaining({ type: 'deletion', start: 100, length: 5000 }),
+    expect.objectContaining({ type: 'insertion', start: 5200 }),
+  ])
+})

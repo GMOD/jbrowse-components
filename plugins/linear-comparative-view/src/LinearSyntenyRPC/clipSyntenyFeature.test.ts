@@ -553,3 +553,36 @@ test('a CIGAR_RUN pair on the minus strand walks the mate down', () => {
     cigar: cig([20, CIGAR_RUN], [10, CIGAR_RUN]),
   })
 })
+
+// A coarse-tier row is clipped like a CIGAR one: its base trapezoid is drawn
+// corner to corner, so a chain-scale block left unclipped would put that base
+// hundreds of px off the wedges walked along its fold.
+test('clipLargeBlockToWindow clips a coarse fold through its run', () => {
+  const c = clipLargeBlockToWindow({
+    v1Index: buildBpRegionIndex({
+      bpPerPx: 1,
+      displayedRegions: [
+        { assemblyName: 'a', refName: 'chr1', start: 0, end: 300000 },
+      ],
+    }),
+    refName: 'chr1',
+    start: 0,
+    end: 300000,
+    mateStart: 0,
+    mateEnd: 150000,
+    strand: 1,
+    cigar: undefined,
+    coarseCigar: '300000:150000M',
+    winCumLo: 1000,
+    winCumHi: 1100,
+    windowSpan: 100,
+    spanRatio: 4,
+  })
+  expect(c).toEqual({
+    start: 1000,
+    end: 1100,
+    mateStart: 500,
+    mateEnd: 550,
+    cigar: cig([100, CIGAR_RUN], [50, CIGAR_RUN]),
+  })
+})

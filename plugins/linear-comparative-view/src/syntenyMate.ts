@@ -47,7 +47,7 @@ export function getCigar(feature: Feature) {
   return typeof cigar === 'string' ? cigar : undefined
 }
 
-// The coarse tier's fold of the CIGAR (`cr:Z:`, see ADR-103): the indels
+// The coarse tier's fold of the CIGAR (`cr:Z:`, see ADR-104): the indels
 // make-pif kept and one run between each pair, a run being a match that
 // advances the two axes by its own lengths. `undefined` on the fine tier and on
 // coarse rows with nothing to keep.

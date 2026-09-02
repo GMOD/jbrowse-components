@@ -20,7 +20,7 @@ export interface ResolvedSpan {
 /**
  * The slice of the OTHER axis that `alignment` puts opposite `window`, walked
  * through the CIGAR — or through the coarse tier's fold of it, whose runs keep
- * the answer within the fold's `--coarse` gap (ADR-103).
+ * the answer within the fold's `--coarse` gap (ADR-104).
  *
  * `undefined` when the block carries neither, and that is the point of this
  * function rather than a shortcoming of it. Interpolating across the block is

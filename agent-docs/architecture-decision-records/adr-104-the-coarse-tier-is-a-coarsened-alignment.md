@@ -46,20 +46,25 @@ only had to store that.
 - **One coarse row per PAF row**, the coordinate and count columns and every
   non-alignment tag verbatim. No splitting, no apportioning.
 - **The CIGAR is replaced by a `cr:Z:` coarse CIGAR** (`coarsenCigar` in
-  `@jbrowse/cigar-utils`): a CIGAR whose grammar has one extra form. Indels at
-  least `--coarse` long keep their letter and length (`I`/`D`/`N`). Everything
+  `@jbrowse/cigar-utils`): a CIGAR whose grammar has one extra form. Indels longer than half of `--coarse` keep their letter and length
+  (`I`/`D`/`N`). Everything
   between two kept indels is one run, written `<own>:<mate>M` when the two sides
   consumed different lengths and `<n>M` when square. The row's own axis is
   first; the Q row is re-oriented the way the fine `cg` is (`swapCoarseCigar` /
   `flipCoarseCigar`, the twins of `swapIndelCigar` / `flipCigar`).
-- **A run also closes before its folded skew passes `--coarse / 2`**, so the
-  straight line between a run's corners is within `--coarse` of the true path
-  everywhere inside it. Balanced small indels never trigger this; only a
+- **A run also closes before its folded skew passes `--coarse / 2`**, and no
+  folded indel is longer than that, so the straight line between a run's
+  corners is within `--coarse` of the true path everywhere inside it. (The
+  first cut kept only indels `>= --coarse` and folded the rest, which let one
+  indel in the upper half open a run already leaning by it — a 1.5x bound; the
+  review caught it.) Balanced small indels never trigger this; only a
   lopsided stretch costs a run. It is what makes interpolating inside a run a
   bounded operation rather than a guess.
-- **The tag is omitted** when the row has no CIGAR, when no indel reaches the
-  gap (the columns already describe a single run), and when the CIGAR does not
-  close on the columns — the columns are what the fine tier draws.
+- **The tag is omitted** when the row has no CIGAR, when the fold is a single
+  run (the columns already describe it), and when the CIGAR does not close on
+  the columns — the columns are what the fine tier draws. A fold of several
+  runs with no kept indel IS written: a lopsided cluster of sub-gap indels
+  bends the path by their sum, which a straight ribbon would miss.
 - **In the packed CIGAR a run is `CIGAR_RUN`**, a two-word op (own length, then
   mate length) that `visitCigarRenderedSegments` walks and reports as `CIGAR_M`,
   and that `clipSyntenyFeature` trims with the mate in proportion. Both workers
@@ -110,8 +115,14 @@ read directly, its pairs translate to `cr` runs one for one.
 - Feature ids still differ across tiers (both are file offsets), so a selection
   does not survive the switch. A per-alignment id stamped on every row of one
   PAF row is the follow-up for that.
-- `--coarse` means "minimum indel kept", not "split gap"; `coarseBpPerPxThreshold`
-  must still be at least `--coarse`, for the same reason as before.
+- `--coarse` is the tier's accuracy bound, not a "split gap": indels over half
+  of it are kept and a run's line is within it. `coarseBpPerPxThreshold` must
+  still be at least `--coarse`, for the same reason as before.
+- A flipped row re-orients its fold (`flipSyntenyFeature`), the viewport clip
+  (`clipLargeBlockToWindow`) takes the fold, `buildCigarMap` puts a point at
+  both ends of a leaning run, and the LGV synteny track derives its indel
+  mismatches from the fold along the row's own axis (`coarseCigarOwnAxis`) —
+  four gaps a Fable review found in the first cut.
 - The synthetic measurement in `measurements/pif-coarse-tier-bytes.json` was
   taken on the split format; a coarse row now costs the tag on rows with a kept
   gap and nothing on the rest.

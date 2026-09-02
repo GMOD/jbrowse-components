@@ -10,38 +10,51 @@ export interface CoarsenedCigar {
   ops: string
   ownLen: number
   mateLen: number
+  // indel ops kept, and ops written in all: one run and nothing else is what
+  // the row's coordinate columns already say
   gapCount: number
+  opCount: number
 }
 
 /**
  * #api
- * Fold a CIGAR into a coarse CIGAR. Every indel shorter than `minGap` is
- * absorbed into the match run around it, and a run whose two axes advanced by
- * different amounts is written `<own>:<mate>M`; a square run stays `<n>M`.
- * D/N/I at least `minGap` long keep their letter and length. `=`/`X` count as
- * M. `ownLen`/`mateLen` are the totals each axis consumed, for the caller to
- * check against the row's coordinate columns.
+ * Fold a CIGAR into a coarse CIGAR whose straight lines stay within `gap` of
+ * the alignment's own path. An indel longer than half the gap keeps its letter
+ * and length (D/N/I); a shorter one is absorbed into the match run around it,
+ * and a run whose two axes advanced by different amounts is written
+ * `<own>:<mate>M`, a square run `<n>M`. `=`/`X` count as M. `ownLen`/`mateLen`
+ * are the totals each axis consumed, for the caller to check against the row's
+ * coordinate columns.
  *
- * A run is also closed before a folded indel would push its running skew
- * (own minus mate) past `minGap / 2`, so the straight line between a run's
- * corners is never more than `minGap` off the alignment's own path inside it.
- * That is what lets a reader interpolate within a run, and it costs a new run
- * only where the two genomes' small indels are lopsided.
+ * The bound: a run is closed before a folded indel would push its running
+ * skew (own minus mate) past half the gap, and no folded indel is longer than
+ * that, so inside a run the skew never exceeds half the gap and the line
+ * between the run's corners is never more than the gap off the path. That is
+ * what lets a reader interpolate within a run, and it costs a new run only
+ * where the two genomes' small indels are lopsided.
  */
-export function coarsenCigar(cigar: string, minGap: number): CoarsenedCigar {
-  const skewBound = minGap / 2
+export function coarsenCigar(cigar: string, gap: number): CoarsenedCigar {
+  const skewBound = gap / 2
   let ops = ''
   let ownLen = 0
   let mateLen = 0
   let gapCount = 0
+  let opCount = 0
   let runOwn = 0
   let runMate = 0
   const flushRun = () => {
     if (runOwn > 0 || runMate > 0) {
       ops += runOwn === runMate ? `${runOwn}M` : `${runOwn}:${runMate}M`
+      opCount++
       runOwn = 0
       runMate = 0
     }
+  }
+  const keep = (len: number, op: string) => {
+    flushRun()
+    ops += `${len}${op}`
+    gapCount++
+    opCount++
   }
   const fold = (own: number, mate: number) => {
     if (Math.abs(runOwn + own - runMate - mate) > skewBound) {
@@ -64,19 +77,15 @@ export function coarsenCigar(cigar: string, minGap: number): CoarsenedCigar {
         mateLen += len
       } else if (op === 'D' || op === 'N') {
         ownLen += len
-        if (len >= minGap) {
-          flushRun()
-          ops += `${len}${op}`
-          gapCount++
+        if (len > skewBound) {
+          keep(len, op)
         } else {
           fold(len, 0)
         }
       } else if (op === 'I') {
         mateLen += len
-        if (len >= minGap) {
-          flushRun()
-          ops += `${len}I`
-          gapCount++
+        if (len > skewBound) {
+          keep(len, op)
         } else {
           fold(0, len)
         }
@@ -85,7 +94,7 @@ export function coarsenCigar(cigar: string, minGap: number): CoarsenedCigar {
     }
   }
   flushRun()
-  return { ops, ownLen, mateLen, gapCount }
+  return { ops, ownLen, mateLen, gapCount, opCount }
 }
 
 interface CoarseOp {
@@ -167,6 +176,29 @@ export function swapCoarseCigar(s: string) {
  */
 export function flipCoarseCigar(s: string) {
   return serializeCoarseOps(parseCoarseOps(s).map(swapAxes).reverse())
+}
+
+/**
+ * #api
+ * The coarse CIGAR as a plain CIGAR over the row's own axis, for a walk that
+ * places mismatches by reference position: a run keeps only its own length, a
+ * run with no own length is the insertion it amounts to, and one with no mate
+ * length the deletion. Kept indels are exact, so they land where the fine
+ * tier's would.
+ */
+export function coarseCigarOwnAxis(s: string) {
+  let out = ''
+  for (const { own, mate, op } of parseCoarseOps(s)) {
+    out +=
+      op === 'M'
+        ? own === 0
+          ? `${mate}I`
+          : mate === 0
+            ? `${own}D`
+            : `${own}M`
+        : `${op === 'I' ? mate : own}${op}`
+  }
+  return out
 }
 
 // The packed form keeps 28 bits of length, so a longer op is written as several

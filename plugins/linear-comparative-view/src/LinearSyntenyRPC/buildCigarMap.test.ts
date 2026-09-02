@@ -133,3 +133,14 @@ test('a coarse CIGAR run puts one point at its end and interpolates inside', () 
   expect(interpolate(m, 500)).toBeCloseTo(450)
   expect(interpolate(m, 1250)).toBe(900)
 })
+
+// A lopsided run after a long square one: without a point at the run's near
+// end, the line from the block's start to the run's far end would be off by
+// the whole lean over the square stretch, which is exactly where the fine
+// CIGAR's map is exact.
+test('a leaning run gets a point at its near end too', () => {
+  const m = buildCigarMap(parseCoarseCigar('1000000M14000:8000M'))
+  expect([...m.featOffsets]).toEqual([0, 1000000, 1014000])
+  expect([...m.mateOffsets]).toEqual([0, 1000000, 1008000])
+  expect(interpolate(m, 1000000)).toBe(1000000)
+})
