@@ -1,6 +1,11 @@
 import { lazy } from 'react'
 
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
 import { compareStructural, reaction } from 'mobx'
 
@@ -343,6 +348,14 @@ export function createBaseTrackModel(
         }
         const displays = self.configuration.displays as DisplayConf[]
         const displayConf = getDisplayConf(displays, newDisplayId)
+        // same interception showTrackGeneric makes: a registered-but-unloaded
+        // display would otherwise fail as an opaque union mismatch below
+        const displayRecord = pm.resolveDisplayTypeRecord(displayConf.type)
+        if (displayRecord && !displayRecord.isStateModelLoaded) {
+          throw new Error(
+            `state model for display type ${displayConf.type} is not loaded yet — await getDisplayType('${displayConf.type}').loadStateModel() first`,
+          )
+        }
         self.displays[idx] = {
           ...initialSnapshot,
           type: displayConf.type,
@@ -538,15 +551,29 @@ export function createBaseTrackModel(
                       // being replaced, so leaving the menu up would keep a
                       // list of items built against a destroyed MST node
                       keepMenuOpen: false,
+                      // the chosen display's state model may still be a dynamic
+                      // import away, so load it before swapping — replaceDisplay
+                      // itself stays a plain sync action
                       onClick: () => {
                         if (d.displayId !== shownId) {
-                          self.replaceDisplay(
-                            shownId,
-                            d.displayId,
-                            self.activeDisplay.getPortableSettings?.(
-                              d.displayId,
-                            ) ?? {},
-                          )
+                          void (async () => {
+                            try {
+                              await pm
+                                .resolveDisplayTypeRecord(d.type)
+                                ?.loadStateModel()
+                              if (isAlive(self)) {
+                                self.replaceDisplay(
+                                  shownId,
+                                  d.displayId,
+                                  self.activeDisplay.getPortableSettings?.(
+                                    d.displayId,
+                                  ) ?? {},
+                                )
+                              }
+                            } catch (e) {
+                              getSession(self).notifyError(`${e}`, e)
+                            }
+                          })()
                         }
                       },
                     }

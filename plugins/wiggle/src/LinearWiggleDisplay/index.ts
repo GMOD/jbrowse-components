@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
 import configSchema from './configSchema.ts'
-import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -30,7 +29,15 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
         name: 'LinearWiggleDisplay',
         displayName: 'Wiggle display',
         configSchema,
-        stateModel: stateModelFactory(pluginManager, configSchema),
+        // lazily loaded, for the same reason the component below is: the model
+        // reaches the wiggle mixins and the score-scale machinery, and is
+        // needed only once a quantitative track is shown. gccontent composes
+        // this factory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/
+        // stateModel' — the subpath, so the barrel keeps no value edge to it.
+        stateModel: () =>
+          import('./model.ts').then(f =>
+            f.default(pluginManager, configSchema),
+          ),
         trackType: 'QuantitativeTrack',
         viewType: 'LinearGenomeView',
         ReactComponent,
@@ -38,5 +45,4 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
   )
 }
 
-export { default as modelFactory } from './model.ts'
 export { default as configSchema } from './configSchema.ts'

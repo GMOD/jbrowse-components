@@ -28,6 +28,7 @@
     "check-deferred-slot-reads": "node --experimental-strip-types scripts/audit-deferred-slot-reads.ts",
     "validate-built-config": "node --experimental-strip-types scripts/validate-built-config.ts",
     "measure-chrome-bundle": "node --experimental-strip-types scripts/measureChromeBundle.ts",
+    "measure-web-bundle": "node --experimental-strip-types scripts/measureWebBundle.ts",
     "changelog": "scripts/generate-changelog.sh",
     "lint": "oxlint --type-aware --deny-warnings",
     "lint:fast": "oxlint --deny-warnings",

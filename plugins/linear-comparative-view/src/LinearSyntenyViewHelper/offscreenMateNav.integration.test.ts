@@ -46,12 +46,12 @@ async function setup() {
   // either edge of the band point at
   session.addAssemblyConf(assembly('volvox', ['ctgA', 'ctgB']))
   session.addAssemblyConf(assembly('volvox2', ['ctgA', 'ctgB']))
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [
       { assembly: 'volvox', loc: 'ctgA' },
       { assembly: 'volvox2', loc: 'ctgA' },
     ],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.pendingLaunch === undefined)
   return { session, view, level: view.levels[0]! }

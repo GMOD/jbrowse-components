@@ -1,4 +1,4 @@
-import { createTestSession } from '../rootModel/test_util.ts'
+import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -9,8 +9,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // `rpcProps` as a bare function, so a base that read a sibling view off `this`
 // threw on every fetch; and it read the threshold from a source that silently
 // omits defaults, so the tier was never sent for a default-configured track.
-function syntenyDisplay(adapter: Record<string, unknown>) {
-  const session = createTestSession({
+async function syntenyDisplay(adapter: Record<string, unknown>) {
+  const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
         {
@@ -94,8 +94,8 @@ function tiered(coarseBpPerPxThreshold?: number) {
 
 const UNTIERED = { type: 'FromConfigAdapter', features: [] }
 
-test('the override still carries the inherited alignments fields', () => {
-  const { display } = syntenyDisplay(tiered())
+test('the override still carries the inherited alignments fields', async () => {
+  const { display } = await syntenyDisplay(tiered())
   // sortTag is the one the base reads off a sibling view, so it is the field
   // that regressed; the rest pin that nothing else was dropped by the override.
   // Keys, not values: sortTag and colorBy are legitimately undefined here (the
@@ -125,14 +125,14 @@ test('the override still carries the inherited alignments fields', () => {
 // the regression that made the whole feature a no-op: the threshold slot carries
 // a schema default (10000), and reading it from a source that omits defaults
 // left it undefined, which resolves to no lodMode at all
-test('a threshold left at its schema default still yields a tier', () => {
-  const { view, display } = syntenyDisplay(tiered())
+test('a threshold left at its schema default still yields a tier', async () => {
+  const { view, display } = await syntenyDisplay(tiered())
   expect(view.bpPerPx).toBe(1)
   expect(display.rpcProps().lodMode).toBe('fine')
 })
 
-test('a threshold below the current bpPerPx asks for the coarse tier', () => {
-  const { view, display } = syntenyDisplay(tiered(0.5))
+test('a threshold below the current bpPerPx asks for the coarse tier', async () => {
+  const { view, display } = await syntenyDisplay(tiered(0.5))
   expect(view.bpPerPx).toBe(1)
   expect(display.rpcProps().lodMode).toBe('coarse')
 })
@@ -140,14 +140,14 @@ test('a threshold below the current bpPerPx asks for the coarse tier', () => {
 // An untiered adapter has only the fine tier to serve, so that is the honest
 // answer at any zoom — and, having no threshold slot, it is also the reason the
 // "Level of detail" menu stays hidden for it
-test('an adapter with no coarse tier asks for the fine tier and offers no menu', () => {
-  const { display } = syntenyDisplay(UNTIERED)
+test('an adapter with no coarse tier asks for the fine tier and offers no menu', async () => {
+  const { display } = await syntenyDisplay(UNTIERED)
   expect(display.rpcProps().lodMode).toBe('fine')
   expect(display.hasLodCapableAdapter).toBe(false)
 })
 
-test('a tiered adapter offers the level-of-detail menu', () => {
-  const { display } = syntenyDisplay(tiered())
+test('a tiered adapter offers the level-of-detail menu', async () => {
+  const { display } = await syntenyDisplay(tiered())
   expect(display.hasLodCapableAdapter).toBe(true)
   expect(display.trackMenuItems().map(i => i.label)).toContain(
     'Level of detail',
@@ -156,8 +156,8 @@ test('a tiered adapter offers the level-of-detail menu', () => {
 
 // The bug this whole resolution point exists for: pinning a tier must move the
 // value that goes into rpcProps, which is the refetch cache key
-test('pinning a tier overrides the zoom-based answer', () => {
-  const { display } = syntenyDisplay(tiered(0.5))
+test('pinning a tier overrides the zoom-based answer', async () => {
+  const { display } = await syntenyDisplay(tiered(0.5))
   expect(display.rpcProps().lodMode).toBe('coarse')
   display.setLodMode('fine')
   expect(display.rpcProps().lodMode).toBe('fine')

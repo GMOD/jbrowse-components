@@ -43,10 +43,10 @@ const views = [{ assembly: 'small' }, { assembly: 'large' }]
 
 async function launch(spec: Record<string, unknown>) {
   const session = setup()
-  const view = session.addView(
+  const view = (await session.launchView(
     'LinearSyntenyView',
     spec,
-  ) as LinearSyntenyViewModel
+  )) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.pendingLaunch === undefined)
   return view
@@ -193,7 +193,7 @@ test('both spellings re-fit, and the nested one says it is deprecated', async ()
 // the shared scale would throw that away on every reload.
 test('a restored session with the mode on is not re-zoomed', async () => {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     sameScale: true,
     views: [
       {
@@ -211,7 +211,7 @@ test('a restored session with the mode on is not re-zoomed', async () => {
         ],
       },
     ],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
 
   view.setWidth(800)
   await when(() => view.views.every(v => v.initialized))
@@ -234,7 +234,7 @@ test('a restored session with the mode on attaches before any width', async () =
     .mockImplementation((...args: unknown[]) => {
       errors.push(args[0])
     })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     sameScale: true,
     views: [
       {
@@ -250,7 +250,7 @@ test('a restored session with the mode on attaches before any width', async () =
         ],
       },
     ],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   spy.mockRestore()
 
   expect(errors).toEqual([])
@@ -278,7 +278,7 @@ test('a restored session with the mode on attaches before any width', async () =
 // re-clamp widens ctgA from 499.01 to 527.5 in the exported figure.
 test('a restored row zoomed out past its own fit is left where it was saved', async () => {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [
       {
         type: 'LinearGenomeView',
@@ -295,7 +295,7 @@ test('a restored row zoomed out past its own fit is left where it was saved', as
         ],
       },
     ],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
 
   view.setWidth(800)
   await when(() => view.views.every(v => v.initialized))
@@ -320,7 +320,7 @@ test('a restored session with the mode OFF attaches before any width', async () 
     .mockImplementation((...args: unknown[]) => {
       errors.push(args[0])
     })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [
       {
         type: 'LinearGenomeView',
@@ -335,7 +335,7 @@ test('a restored session with the mode OFF attaches before any width', async () 
         ],
       },
     ],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
 
   expect(errors).toEqual([])
   expect(view.sameScale).toBe(false)
@@ -451,7 +451,7 @@ test('appending a row that cannot answer yet leaves the stack alone', async () =
   const shared = small!.bpPerPx
   expect(shared).toBeCloseTo(large!.bpPerPx)
 
-  view.appendRow({ assembly: 'not-loaded-yet' })
+  await view.appendRow({ assembly: 'not-loaded-yet' })
 
   expect(view.sharedFit).toEqual({ answered: false })
   expect(small!.bpPerPx).toBeCloseTo(shared)

@@ -96,6 +96,17 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       removeView() {},
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * same as addView — the single view type here is always eagerly
+       * registered, so there is nothing to load; async to satisfy the
+       * AbstractViewContainer contract
+       */
+      async launchView(typeName: string, initialState = {}) {
+        return self.addView(typeName, initialState)
+      },
+    }))
 }
 
 type SessionStateModel = ReturnType<typeof sessionModelFactory>

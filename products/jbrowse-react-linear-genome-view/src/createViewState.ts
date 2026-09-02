@@ -142,26 +142,48 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
 }
 
 export default function createViewState(opts: ViewStateOptions): ViewModel {
+  const { plugins = [], makeWorkerInstance } = opts
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  return finishCreateViewState(opts, model, pluginManager)
+}
+
+/**
+ * `createViewState` for a session naming lazily registered display types:
+ * preloads their state models. The synchronous `createViewState` throws on
+ * one — a session restored from a URL is the usual case.
+ */
+export async function createViewStateAsync(opts: ViewStateOptions) {
+  const { plugins = [], makeWorkerInstance } = opts
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  // both: the tree is created from `defaultSession` and a restored `session`
+  // is applied afterwards
+  await pluginManager.preloadSessionTypes(opts.defaultSession)
+  await pluginManager.preloadSessionTypes(opts.session)
+  return finishCreateViewState(opts, model, pluginManager)
+}
+
+function finishCreateViewState(
+  opts: ViewStateOptions,
+  model: ReturnType<typeof createModel>['model'],
+  pluginManager: ReturnType<typeof createModel>['pluginManager'],
+): ViewModel {
   const {
     assembly,
     tracks,
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins = [],
     init,
     location,
     highlight,
     disableAddTracks = false,
     menuBar = false,
-    makeWorkerInstance,
     defaultSession,
     session,
     localFiles,
     height,
     drawerViewHeight = '100vh',
   } = opts
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   // registered once, here, rather than per track: each registration pushes a
   // File into core's process-global blobMap. Adapters are expanded out of their
   // `{ type, uri }` shorthand first, because that is the form the substitution

@@ -55,9 +55,9 @@ function setup() {
   return { session, view, widget }
 }
 
-test('adds a single pasted config and shows it on the view', () => {
+test('adds a single pasted config and shows it on the view', async () => {
   const { session, view, widget } = setup()
-  doPasteConfigSubmit({
+  await doPasteConfigSubmit({
     model: widget,
     jsonText: JSON.stringify(trackConf('pasted1')),
   })
@@ -65,9 +65,9 @@ test('adds a single pasted config and shows it on the view', () => {
   expect(openTrackIds(view)).toEqual(['pasted1'])
 })
 
-test('adds every config in a pasted array', () => {
+test('adds every config in a pasted array', async () => {
   const { session, view, widget } = setup()
-  doPasteConfigSubmit({
+  await doPasteConfigSubmit({
     model: widget,
     jsonText: JSON.stringify([trackConf('pasted1'), trackConf('pasted2')]),
   })
@@ -78,43 +78,46 @@ test('adds every config in a pasted array', () => {
 
 // addTrackConf silently returns the existing track on a trackId collision, so
 // pasting a config that reuses an id would otherwise be a confusing no-op
-test('rejects a config reusing an existing trackId, adding nothing', () => {
+test('rejects a config reusing an existing trackId, adding nothing', async () => {
   const { session, widget } = setup()
   session.addSessionTrackConf(trackConf('taken'))
-  expect(() => {
+  await expect(
     doPasteConfigSubmit({
       model: widget,
       jsonText: JSON.stringify([trackConf('taken'), trackConf('fresh')]),
-    })
-  }).toThrow(/already exists/)
+    }),
+  ).rejects.toThrow(/already exists/)
   // the whole paste is refused up front, so the valid sibling is not added
   expect(session.getTrackById('fresh')).toBeUndefined()
 })
 
-test('reports unparseable JSON', () => {
+test('reports unparseable JSON', async () => {
   const { widget } = setup()
-  expect(() => {
-    doPasteConfigSubmit({ model: widget, jsonText: '{not json' })
-  }).toThrow(/Could not parse JSON/)
+  await expect(
+    doPasteConfigSubmit({ model: widget, jsonText: '{not json' }),
+  ).rejects.toThrow(/Could not parse JSON/)
 })
 
-test('reports a config missing trackId or type', () => {
+test('reports a config missing trackId or type', async () => {
   const { widget } = setup()
-  expect(() => {
-    doPasteConfigSubmit({ model: widget, jsonText: '{"type":"FeatureTrack"}' })
-  }).toThrow(/missing a "trackId" string/)
-  expect(() => {
-    doPasteConfigSubmit({ model: widget, jsonText: '{"trackId":"x"}' })
-  }).toThrow(/missing a "type" string/)
+  await expect(
+    doPasteConfigSubmit({
+      model: widget,
+      jsonText: '{"type":"FeatureTrack"}',
+    }),
+  ).rejects.toThrow(/missing a "trackId" string/)
+  await expect(
+    doPasteConfigSubmit({ model: widget, jsonText: '{"trackId":"x"}' }),
+  ).rejects.toThrow(/missing a "type" string/)
 })
 
 // a track for an assembly the view isn't on is still added to the session; it
 // just can't be opened here, and saying nothing looks like the paste failed
-test('adds but does not show a track for an assembly the view is not on', () => {
+test('adds but does not show a track for an assembly the view is not on', async () => {
   const { session, view, widget } = setup()
   const notify = jest.fn()
   session.notify = notify
-  doPasteConfigSubmit({
+  await doPasteConfigSubmit({
     model: widget,
     jsonText: JSON.stringify(trackConf('otherAsm', 'someOtherAssembly')),
   })
@@ -123,9 +126,9 @@ test('adds but does not show a track for an assembly the view is not on', () => 
   expect(notify.mock.calls[0]?.[0]).toMatch(/not displayed/)
 })
 
-test('closes the widget after a successful paste', () => {
+test('closes the widget after a successful paste', async () => {
   const { session, widget } = setup()
-  doPasteConfigSubmit({
+  await doPasteConfigSubmit({
     model: widget,
     jsonText: JSON.stringify(trackConf('pasted1')),
   })
@@ -145,10 +148,10 @@ function unbuildableTrackConf(trackId: string) {
 // config was rejected buries the error snackbars behind an empty form with
 // nothing to retry from — the pasted JSON lives in component state and dies
 // with the unmount
-test('keeps the widget open when every pasted config was rejected', () => {
+test('keeps the widget open when every pasted config was rejected', async () => {
   const { session, widget } = setup()
   widget.setTrackName('a name being typed')
-  doPasteConfigSubmit({
+  await doPasteConfigSubmit({
     model: widget,
     jsonText: JSON.stringify([
       unbuildableTrackConf('bad1'),
@@ -161,10 +164,10 @@ test('keeps the widget open when every pasted config was rejected', () => {
   expect(widget.altTrackName).toBe('a name being typed')
 })
 
-test('closes the widget when a paste lands at least one of its configs', () => {
+test('closes the widget when a paste lands at least one of its configs', async () => {
   const { session, view, widget } = setup()
   widget.setTrackName('a name being typed')
-  doPasteConfigSubmit({
+  await doPasteConfigSubmit({
     model: widget,
     jsonText: JSON.stringify([
       unbuildableTrackConf('bad1'),

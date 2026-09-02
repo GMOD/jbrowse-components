@@ -10,14 +10,21 @@ import rootModelFactory from './rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-function getRootModel() {
+function getRootModelWithPlugins() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  return rootModelFactory({
+  return {
     pluginManager,
-    sessionModelFactory,
-  })
+    model: rootModelFactory({
+      pluginManager,
+      sessionModelFactory,
+    }),
+  }
+}
+
+function getRootModel() {
+  return getRootModelWithPlugins().model
 }
 afterEach(() => {
   localStorage.clear()
@@ -484,9 +491,10 @@ test('keeps a session whose drawer holds a widget this build has no plugin for',
 // nothing to do, the union short-circuited on the registered VIEW name, and the
 // unbuildable track went straight into `cast`. The whole session was lost on one
 // of the two routes this module exists to keep open.
-test('keeps a synteny session whose level holds a track this build cannot make', () => {
-  const root = getRootModel().create(mainThreadConfig)
-  root.setSession({
+test('keeps a synteny session whose level holds a track this build cannot make', async () => {
+  const { pluginManager, model } = getRootModelWithPlugins()
+  const root = model.create(mainThreadConfig)
+  const snapshot = {
     name: 'from a colleague',
     views: [
       {
@@ -505,7 +513,9 @@ test('keeps a synteny session whose level holds a track this build cannot make',
         ],
       },
     ],
-  })
+  }
+  await pluginManager.preloadSessionTypes(snapshot)
+  root.setSession(snapshot)
   const session = root.session!
   expect(session.views.map((v: { id: string }) => v.id)).toEqual(['syn'])
   expect(session.views[0].levels[0].tracks.length).toBe(0)

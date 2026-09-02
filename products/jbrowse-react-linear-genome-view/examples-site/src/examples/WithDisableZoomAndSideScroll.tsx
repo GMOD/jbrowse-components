@@ -62,5 +62,5 @@ export default function WithDisableZoomAndSideScroll() {
     // start somewhere specific wants its bpPerPx/offsetPx on the view above
     location: 'ctgA:1105..1221',
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

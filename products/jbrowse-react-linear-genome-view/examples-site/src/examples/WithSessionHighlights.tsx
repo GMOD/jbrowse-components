@@ -61,5 +61,5 @@ export default function WithSessionHighlights() {
       },
     },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

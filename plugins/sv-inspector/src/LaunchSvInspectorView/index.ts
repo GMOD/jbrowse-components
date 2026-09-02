@@ -40,13 +40,16 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SvInspectorView | async | Programmatically launch the SV inspector view */
-  pluginManager.addToExtensionPoint('LaunchView-SvInspectorView', args => {
-    // Nothing is sorted here — the view's own preProcessSnapshot partitions the
-    // launch keys from the properties. With a uri the view imports the file;
-    // with only an assembly it lands on the import form with that assembly
-    // selected rather than the first one.
-    const { session, ...spec } = args
-    session.addView('SvInspectorView', spec)
-    return args
-  })
+  pluginManager.addToExtensionPoint(
+    'LaunchView-SvInspectorView',
+    async args => {
+      // Nothing is sorted here — the view's own preProcessSnapshot partitions
+      // the launch keys from the properties. With a uri the view imports the
+      // file; with only an assembly it lands on the import form with that
+      // assembly selected rather than the first one.
+      const { session, ...spec } = args
+      await session.launchView('SvInspectorView', spec)
+      return args
+    },
+  )
 }

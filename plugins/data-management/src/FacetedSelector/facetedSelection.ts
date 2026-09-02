@@ -19,15 +19,26 @@ export function setTracksSelected(
     } else {
       model.removeFromSelection(ids)
     }
+  } else if (selected) {
+    // A display's state model may still be a dynamic import away, so the shows
+    // cannot sit inside a transaction — they are awaited one at a time, which
+    // also keeps the tracks in the order the caller listed them. Only the
+    // bookkeeping is still batched.
+    const { trackContainer } = model
+    void (async () => {
+      for (const id of ids) {
+        await trackContainer?.launchTrack(id)
+      }
+      transaction(() => {
+        for (const id of ids) {
+          model.addToRecentlyUsed(id)
+        }
+      })
+    })()
   } else {
     transaction(() => {
       for (const id of ids) {
-        if (selected) {
-          model.trackContainer?.showTrack(id)
-          model.addToRecentlyUsed(id)
-        } else {
-          model.trackContainer?.hideTrack(id)
-        }
+        model.trackContainer?.hideTrack(id)
       }
     })
   }

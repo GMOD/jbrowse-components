@@ -39,7 +39,7 @@ function PathogenView({
   // page builds and discards engines rather than keeping one for the lifetime
   // of the page. Nothing to do about it here: useCreateViewState destroys the
   // engine on unmount, so the RPC worker threads and the autoruns go with it.
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }
 
 export default function NextstrainPathogens() {

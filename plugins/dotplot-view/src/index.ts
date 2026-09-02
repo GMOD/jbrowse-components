@@ -46,7 +46,7 @@ export default class DotplotPlugin extends Plugin {
         label: 'Dotplot view',
         icon: TimelineIcon,
         onClick: (session: AbstractViewContainer) => {
-          session.addView('DotplotView', {})
+          void session.launchView('DotplotView', {})
         },
       })
     }

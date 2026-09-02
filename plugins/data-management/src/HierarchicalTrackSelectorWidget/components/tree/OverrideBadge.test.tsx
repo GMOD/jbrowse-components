@@ -22,7 +22,7 @@ function theme(node: React.ReactNode) {
 // A session with one open FeatureTrack (GPU LinearBasicDisplay, which
 // implements displayTypeDefaultChanges) plus its track selector, so the badge runs
 // against real display models.
-function openTrackSelector() {
+async function openTrackSelector() {
   const session = createTestSession()
   session.addAssemblyConf({
     name: 'volMyt1',
@@ -49,14 +49,14 @@ function openTrackSelector() {
       { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
     ],
   })
-  view.showTrack('genes')
+  await view.launchTrack('genes')
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
   return { session, view, model }
 }
 
 describe('OverrideBadge session-default awareness', () => {
   it('shows no badge when no session default affects the track', async () => {
-    const { model } = openTrackSelector()
+    const { model } = await openTrackSelector()
     const { findAllByTestId, queryByTestId } = render(
       theme(<HierarchicalTrackSelector model={model} toolbarHeight={20} />),
     )
@@ -66,7 +66,7 @@ describe('OverrideBadge session-default awareness', () => {
   })
 
   it('badges an open track affected by a session-wide default and queues the dialog', async () => {
-    const { session, model } = openTrackSelector()
+    const { session, model } = await openTrackSelector()
     session.setDisplayTypeDefault(
       'LinearBasicDisplay',
       'subfeatureLabels',
@@ -85,7 +85,7 @@ describe('OverrideBadge session-default awareness', () => {
   })
 
   it('clears only the session defaults the dialog listed', async () => {
-    const { session, model } = openTrackSelector()
+    const { session, model } = await openTrackSelector()
     session.setDisplayTypeDefault(
       'LinearBasicDisplay',
       'subfeatureLabels',

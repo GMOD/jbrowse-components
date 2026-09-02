@@ -27,7 +27,7 @@ export interface UcscHost
   extends AbstractViewContainer, AssemblyHost, NotificationSink, DialogHost {}
 
 interface NavigableView extends AbstractViewModel {
-  showTrack: (trackId: string) => void
+  launchTrack: (trackId: string) => Promise<unknown>
   navToLocString: (
     locString: string,
     assemblyName?: string,
@@ -37,8 +37,8 @@ interface NavigableView extends AbstractViewModel {
 
 function isNavigableView(view: AbstractViewModel): view is NavigableView {
   return (
-    'showTrack' in view &&
-    typeof view.showTrack === 'function' &&
+    'launchTrack' in view &&
+    typeof view.launchTrack === 'function' &&
     'navToLocString' in view &&
     typeof view.navToLocString === 'function'
   )
@@ -169,7 +169,7 @@ export async function addResultTrack({
   })
   const view = findNavigableView(session, assembly)
   if (view) {
-    view.showTrack(trackId)
+    await view.launchTrack(trackId)
   } else {
     session.notify(
       `Added track "${trackId}" but no open view displays ${assembly}`,

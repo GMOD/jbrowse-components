@@ -273,12 +273,15 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     // one entry, under the rubberband menu's "Launch" group: a view can have
     // several synteny datasets open and the choice between them is a field in
     // the dialog, not a submenu here
-    const launch = view
-      .rubberBandMenuItems()
-      .find(f => 'label' in f && f.label === 'Launch')
-    if (!launch || !('subMenu' in launch)) {
-      throw new Error('expected a Launch submenu')
-    }
+    const launch = await waitFor(() => {
+      const found = view
+        .rubberBandMenuItems()
+        .find(f => 'label' in f && f.label === 'Launch')
+      if (!found || !('subMenu' in found)) {
+        throw new Error('expected a Launch submenu')
+      }
+      return found
+    }, delay)
     const item = resolveSubMenu(launch).find(
       f => 'label' in f && f.label === 'Linear synteny view',
     )

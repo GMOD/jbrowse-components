@@ -45,10 +45,10 @@ const stalled = [{ assembly: 'volvox' }, { assembly: 'never-configured' }]
 
 test('an init superseded before its reorder hands the gate to its replacement', async () => {
   const session = setup()
-  const view = session.addView('DotplotView', {
+  const view = (await session.launchView('DotplotView', {
     views: stalled,
     autoDiagonalize: true,
-  }) as DotplotViewModel
+  })) as DotplotViewModel
   view.setWidth(800)
 
   // the gate goes up as the first step of the apply, before the reorder
@@ -66,9 +66,9 @@ test('an init superseded before its reorder hands the gate to its replacement', 
 // inheriting it.
 test('an init pass declares the gate rather than only raising it', async () => {
   const session = setup()
-  const view = session.addView('DotplotView', {
+  const view = (await session.launchView('DotplotView', {
     views,
-  }) as DotplotViewModel
+  })) as DotplotViewModel
   // what a superseded reorder request leaves behind
   view.beginAutoDiagonalize(true)
   view.setWidth(800)

@@ -54,10 +54,10 @@ export default function ObserveSelection() {
       },
     },
   })
-  return (
+  return state ? (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
       <SelectedFeature viewState={state} />
     </div>
-  )
+  ) : null
 }

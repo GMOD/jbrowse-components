@@ -48,7 +48,7 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchCircularViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-CircularView | async | Programmatically launch a circular view */
-  pluginManager.addToExtensionPoint('LaunchView-CircularView', args => {
+  pluginManager.addToExtensionPoint('LaunchView-CircularView', async args => {
     const { session, ...spec } = args
     if (!spec.assembly) {
       throw new Error(
@@ -59,7 +59,7 @@ export default function LaunchCircularViewF(pluginManager: PluginManager) {
     // the snapshot, which is what makes a spec, a `defaultSession` view and an
     // `addView` literal one shape. `id` rides along the same way, which is what
     // makes MST's optional identifier honor it rather than generating one.
-    session.addView('CircularView', spec)
+    await session.launchView('CircularView', spec)
     return args
   })
 }

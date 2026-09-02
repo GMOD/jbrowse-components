@@ -23,11 +23,12 @@ export default function AddTracksProgrammatically() {
   const ref = useRef<ViewModel>(null)
   const [added, setAdded] = useState(false)
 
-  function addTrack() {
+  async function addTrack() {
     const state = ref.current
     if (state) {
       state.jbrowse.addTrackConf(genesTrackConf)
-      state.session.views[0]?.showTrack('volvox_genes')
+      // async because the display's code may still need loading
+      await state.session.views[0]?.launchTrack('volvox_genes')
       setAdded(true)
     }
   }
@@ -37,7 +38,7 @@ export default function AddTracksProgrammatically() {
       <button
         disabled={added}
         onClick={() => {
-          addTrack()
+          void addTrack()
         }}
       >
         {added ? 'Genes track added' : 'Add genes track'}

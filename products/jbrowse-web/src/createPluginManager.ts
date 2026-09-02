@@ -62,7 +62,7 @@ function formatSessionError(e: unknown) {
   return r.startsWith('Error:') ? r : `Error: ${r}`
 }
 
-export function createPluginManager(
+export async function createPluginManager(
   model: PluginManagerSource,
   reloadPluginManagerCallback: (
     configSnapshot: Record<string, unknown>,
@@ -93,6 +93,12 @@ export function createPluginManager(
   // session state
   pluginManager.setRootModel(rootModel).configure()
   doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
+  // both: the config's default session is initSession's fallback on any
+  // failure
+  if (model.sessionSource?.type === 'snapshot') {
+    await pluginManager.preloadSessionTypes(model.sessionSource.snapshot)
+  }
+  await pluginManager.preloadSessionTypes(model.configSnapshot?.defaultSession)
   initSession(rootModel, pluginManager, model)
   notifyPluginLoadFailures(rootModel, model)
   notifyPermanentPluginSafeMode(rootModel)

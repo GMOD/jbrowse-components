@@ -62,10 +62,13 @@ function writeSessionParam(value: string) {
 // there is never a moment where it is missing. `<JBrowseApp>` is what the
 // props component renders internally, so nothing is given up by dropping to it.
 function App({ session, note }: { session?: SessionSnapshot; note: string }) {
+  // undefined for the frame in which the engine is still being built: a
+  // restored session names the view and display types that were open when it
+  // was saved, and those state models load before the tree can be built
   const viewState = useCreateViewState({ config, session })
   const [status, setStatus] = useState(note)
 
-  return (
+  return viewState ? (
     <div>
       <div style={{ padding: 8, fontSize: 13, background: '#8881' }}>
         {status || 'navigate or open a track, then save from the app toolbar'}
@@ -98,7 +101,7 @@ function App({ session, note }: { session?: SessionSnapshot; note: string }) {
         }
       />
     </div>
-  )
+  ) : null
 }
 
 export default function SessionInUrl() {

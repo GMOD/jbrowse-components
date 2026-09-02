@@ -114,7 +114,7 @@ const AddRowDialog = observer(function AddRowDialog({
         try {
           setError(undefined)
           if (mode === 'existing' && selected) {
-            model.appendRow({
+            void model.appendRow({
               assembly: selected.newAssembly,
               syntenyTrackId: selected.trackId,
             })
@@ -122,7 +122,7 @@ const AddRowDialog = observer(function AddRowDialog({
           } else if (mode === 'custom' && customTrack && newAssembly) {
             if (isSessionWithAddSessionTrack(session)) {
               session.addSessionTrackConf(toJS(customTrack))
-              model.appendRow({
+              void model.appendRow({
                 assembly: newAssembly,
                 syntenyTrackId: customTrack.trackId,
               })

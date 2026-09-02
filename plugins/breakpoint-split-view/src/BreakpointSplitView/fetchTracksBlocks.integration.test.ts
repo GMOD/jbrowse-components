@@ -75,16 +75,16 @@ async function setup() {
     return call(sessionId, method as never, args as never)
   }) as typeof rpc.call
 
-  const view = session.addView('BreakpointSplitView', {
+  const view = (await session.launchView('BreakpointSplitView', {
     views: [
       { assembly: 'volvox', loc: 'ctgA:1-10000' },
       { assembly: 'volvox', loc: 'ctgA:1-10000' },
     ],
-  }) as BreakpointViewModel
+  })) as BreakpointViewModel
   view.setWidth(800)
   await when(() => view.initialized, { timeout: 20000 })
   for (const v of view.views) {
-    v.showTrack('tk1')
+    await v.launchTrack('tk1')
   }
   // Both rows blocked out AND fetched at those blocks, which is the state both
   // tests start from. Waiting on `fetched.length > 0` instead catches the first

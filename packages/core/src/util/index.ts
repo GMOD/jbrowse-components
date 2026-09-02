@@ -317,6 +317,7 @@ export {
   getContainingView,
   getEnv,
   getRenderingServices,
+  launchOrReplaceView,
   getSession,
   hashCode,
   objectHash,

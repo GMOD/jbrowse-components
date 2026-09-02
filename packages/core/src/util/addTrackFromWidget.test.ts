@@ -56,6 +56,7 @@ test('addTrackFromWidget shows a track whose assembly the container names by an 
       trackContainer: {
         assemblyNames: ['volvox'],
         showTrack: (trackId: string) => shown.push(trackId),
+        launchTrack: async (trackId: string) => shown.push(trackId),
       },
       clearData: () => {},
     } as never,

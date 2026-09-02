@@ -54,7 +54,7 @@ const ViewLauncher = observer(function ViewLauncher({
       <FormControl className={classes.m2}>
         <Button
           onClick={() => {
-            session.addView(value, {})
+            void session.launchView(value, {})
           }}
           variant="contained"
           color="primary"

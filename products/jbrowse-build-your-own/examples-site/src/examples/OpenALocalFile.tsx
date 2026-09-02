@@ -260,7 +260,7 @@ function openLocalFile({
     assemblyNames: [hg38.name],
     adapter,
   })
-  view.showTrack(trackId)
+  void view.launchTrack(trackId)
 }
 
 /**

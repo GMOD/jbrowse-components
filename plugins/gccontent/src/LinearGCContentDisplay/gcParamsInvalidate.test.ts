@@ -20,7 +20,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // other writer of the slots (the config editor, a session patch) left the
 // previous GC curve on screen with no error. Pinning the cache key rather than
 // the setters is what keeps that from coming back.
-function createDisplay() {
+async function createDisplay() {
   const pluginManager = new PluginManager([
     new LinearGenomeViewPlugin(),
     new WigglePlugin(),
@@ -28,6 +28,12 @@ function createDisplay() {
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
+  // the display's state model is registered as a loader, so the display union
+  // the view below builds its track from cannot match the snapshot until it has
+  // resolved
+  await pluginManager
+    .getDisplayType('LinearGCContentTrackDisplay')
+    .loadStateModel()
 
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
   const trackConfig = pluginManager.pluggableConfigSchemaType('track').create(
@@ -91,8 +97,8 @@ function createDisplay() {
   return { view, display: view.tracks[0]!.displays[0]! }
 }
 
-test('each GC parameter is a cache key, so changing it invalidates the fetch', () => {
-  const { display } = createDisplay()
+test('each GC parameter is a cache key, so changing it invalidates the fetch', async () => {
+  const { display } = await createDisplay()
   const initial = display.rpcPropsCacheKey
 
   display.setGCMode('skew')
@@ -109,16 +115,16 @@ test('each GC parameter is a cache key, so changing it invalidates the fetch', (
 
 // The step menu caps itself at the current windowSize, but that cap can't see a
 // later shrink of windowSize itself — which the menu offers right above it.
-test('windowDelta never outlives a windowSize shrunk below it', () => {
-  const { display } = createDisplay()
+test('windowDelta never outlives a windowSize shrunk below it', async () => {
+  const { display } = await createDisplay()
   display.setGCContentParams({ windowSize: 1000, windowDelta: 1000 })
   display.setGCContentParams({ windowSize: 20 })
   expect(display.windowSize).toBe(20)
   expect(display.windowDelta).toBe(20)
 })
 
-test('setting one GC parameter leaves the other alone', () => {
-  const { display } = createDisplay()
+test('setting one GC parameter leaves the other alone', async () => {
+  const { display } = await createDisplay()
   display.setGCContentParams({ windowSize: 500, windowDelta: 25 })
   display.setGCContentParams({ windowSize: 400 })
   expect(display.windowDelta).toBe(25)
@@ -127,8 +133,8 @@ test('setting one GC parameter leaves the other alone', () => {
 // GC content is a fraction, so its axis is the quantity's own range rather than
 // whatever happens to be on screen; skew stays autoscaled because its real
 // values occupy a small part of [-1,1].
-test('content mode pins the score domain to [0,1], skew autoscales', () => {
-  const { display } = createDisplay()
+test('content mode pins the score domain to [0,1], skew autoscales', async () => {
+  const { display } = await createDisplay()
   expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
 
   display.setGCMode('skew')
@@ -138,16 +144,16 @@ test('content mode pins the score domain to [0,1], skew autoscales', () => {
   ])
 })
 
-test('an explicit score bound still beats the pinned default', () => {
-  const { display } = createDisplay()
+test('an explicit score bound still beats the pinned default', async () => {
+  const { display } = await createDisplay()
   display.setMaxScore(0.75)
   expect(display.maxScoreBound).toBe(0.75)
   // the end left unset still falls back to the pinned domain
   expect(display.minScoreBound).toBe(0)
 })
 
-test('the GC parameters also reach the adapter config the worker resolves', () => {
-  const { display } = createDisplay()
+test('the GC parameters also reach the adapter config the worker resolves', async () => {
+  const { display } = await createDisplay()
   display.setGCMode('skew')
   display.setGCContentParams({ windowSize: 50, windowDelta: 10 })
 
@@ -162,8 +168,8 @@ test('the GC parameters also reach the adapter config the worker resolves', () =
 // The adapter computes GC from its three parameters alone and the wiggle RPC
 // bins nothing for it, so the strict-bpPerPx key the wiggle base fetches under
 // would only make every zoom inside a loaded region re-download the sequence.
-test('a zoom inside a loaded region keeps the cache valid', () => {
-  const { view, display } = createDisplay()
+test('a zoom inside a loaded region keeps the cache valid', async () => {
+  const { view, display } = await createDisplay()
   const region = {
     refName: 'ctgA',
     start: 0,

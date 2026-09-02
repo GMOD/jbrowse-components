@@ -28,12 +28,12 @@ const hit = { trackId: 'someTrack', id: 'feat1-feat2' }
 async function setup() {
   const session = createTestSession()
   session.addAssemblyConf(assembly)
-  const view = session.addView('BreakpointSplitView', {
+  const view = (await session.launchView('BreakpointSplitView', {
     views: [
       { assembly: 'volvox', loc: 'ctgA:1-10000' },
       { assembly: 'volvox', loc: 'ctgB:1-10000' },
     ],
-  }) as unknown as BreakpointViewModel
+  })) as unknown as BreakpointViewModel
   view.setWidth(800)
   await when(() => view.initialized)
   return view

@@ -103,7 +103,7 @@ export function buildSyntenyViewSpec({
   }
 }
 
-export function launchSyntenyViewForPanels({
+export async function launchSyntenyViewForPanels({
   session,
   replacing,
   ...rest
@@ -112,7 +112,7 @@ export function launchSyntenyViewForPanels({
   // the launching view, when the dialog's "Replace current view" was used
   replacing?: AbstractViewModel
 }) {
-  launchSyntenyView({
+  await launchSyntenyView({
     session,
     viewType: 'LinearSyntenyView',
     replacing,
@@ -126,7 +126,7 @@ export function launchSyntenyViewForPanels({
  * block and no discovery RPC behind them. The anchor contig is the alignments'
  * own, which they all share by construction.
  */
-export function launchSyntenyViewForFeatures({
+export async function launchSyntenyViewForFeatures({
   features,
   region,
   ...rest
@@ -141,7 +141,7 @@ export function launchSyntenyViewForFeatures({
   if (!anchor) {
     throw new Error('No alignments to launch a synteny view on')
   }
-  launchSyntenyViewForPanels({
+  await launchSyntenyViewForPanels({
     ...rest,
     anchorRefName: anchor.get('refName'),
     panels: resolveFeaturePanels(features, region),

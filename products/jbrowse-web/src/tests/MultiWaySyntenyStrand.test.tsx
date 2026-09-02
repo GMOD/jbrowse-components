@@ -87,7 +87,7 @@ function ribbons(display: MultiWaySyntenyDisplayModel) {
 }
 
 test('a reverse-strand link between two mate lanes draws a crossed ribbon', async () => {
-  const { rootModel } = getPluginManager(reversePafConfig())
+  const { rootModel } = await getPluginManager(reversePafConfig())
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
     assembly: 'grape',
@@ -165,7 +165,7 @@ function farPafConfig() {
 }
 
 test('a link record outside a lane frame draws no ribbon off the canvas', async () => {
-  const { rootModel } = getPluginManager(farPafConfig())
+  const { rootModel } = await getPluginManager(farPafConfig())
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
     assembly: 'grape',
@@ -225,7 +225,7 @@ test('a link record outside a lane frame draws no ribbon off the canvas', async 
 // follow — paired every ortholog crosswise. A flip is a mirror: it may move
 // where a ribbon is drawn, never whether it twists.
 test('flipping the view horizontally does not twist the ribbons', async () => {
-  const { rootModel } = getPluginManager(structuredClone(baseConfig))
+  const { rootModel } = await getPluginManager(structuredClone(baseConfig))
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
     assembly: 'grape',

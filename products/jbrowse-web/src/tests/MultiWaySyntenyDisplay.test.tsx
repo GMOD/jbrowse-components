@@ -33,7 +33,7 @@ function multiwayGetFile(url: string): GenericFilehandle {
 utilizeFetchMockForTest(multiwayGetFile)
 
 test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a plain LGV', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -107,7 +107,7 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
 // and the stack rendered zero lanes while `view.initialized` was already true.
 // a3345aa45b built `settledDynamicBlocks` for exactly this class of consumer.
 test('MultiWaySyntenyDisplay shows its lanes before the coarse blocks settle', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -155,7 +155,7 @@ test('MultiWaySyntenyDisplay shows its lanes before the coarse blocks settle', a
 // A `RowFrame` is affine and `bpToPx` is piecewise, so the fix is not a better
 // frame — it is seeding from `bpToPx` itself. This pins the two together.
 test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -233,7 +233,7 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
 // what the row writes back — the whole order, not the lane that moved — is the
 // half that would go unnoticed.
 test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -290,7 +290,7 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
 // `g2` is placed on grape and peach and not on cacao, so hovering it lit one
 // ribbon and moved nothing the reader was looking at. `g1` is on all three.
 test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places it', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -352,7 +352,7 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
 // on it. jsdom's rects are all zero, so the y the drag reads is clientY
 // itself, which the lanes' band extents are stated in
 test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -400,7 +400,7 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
 // The label's left-click is the drag, so the menu hangs off a right-click and
 // off the glyph at the label's end; both raise the same items
 test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -449,7 +449,7 @@ test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
 // off the view's first assembly, so the stack follows on its own and the old
 // anchor drops into a mate lane
 test('MultiWaySyntenyDisplay re-anchors on a mate lane from its label menu', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -493,7 +493,7 @@ test('MultiWaySyntenyDisplay re-anchors on a mate lane from its label menu', asy
 }, 40000)
 
 test('MultiWaySyntenyDisplay opens a mate lane in a new view with the track along', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {

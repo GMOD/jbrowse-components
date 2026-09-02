@@ -16,17 +16,17 @@ afterEach(() => {
 
 const warnings = () => warn.mock.calls.map(c => `${c[0]}`)
 
-function open(snap: Record<string, unknown>) {
-  return createTestSession().addView(
+async function open(snap: Record<string, unknown>) {
+  return (await createTestSession().launchView(
     'SvInspectorView',
     snap,
-  ) as SvInspectorViewModel
+  )) as SvInspectorViewModel
 }
 
 // No uri, so the forward seeds the sheet's wizard and stops there: what is
 // asserted is the partition and the hand-off, not the load.
-test('a launch key written on the view object reaches the child sheet', () => {
-  const view = open({ assembly: 'volvox', fileType: 'BEDPE' })
+test('a launch key written on the view object reaches the child sheet', async () => {
+  const view = await open({ assembly: 'volvox', fileType: 'BEDPE' })
   const { importWizard } = view.spreadsheetView
   expect(importWizard.selectedAssemblyName).toBe('volvox')
   expect(importWizard.fileType).toBe('BEDPE')
@@ -37,8 +37,8 @@ test('a launch key written on the view object reaches the child sheet', () => {
 // Nothing in this view's launch path mentions either name: v4's `init` was
 // forwarded whole to the sheet, so a declared property written beside it
 // reached nothing.
-test('a declared property lands natively, named nowhere in the launch path', () => {
-  const view = open({
+test('a declared property lands natively, named nowhere in the launch path', async () => {
+  const view = await open({
     assembly: 'volvox',
     height: 900,
     spreadsheetWidthFraction: 0.4,
@@ -51,8 +51,8 @@ test('a declared property lands natively, named nowhere in the launch path', () 
 
 // The two halves are declared properties, so a saved session's persisted pan
 // and zoom stays state rather than sorting as a launch key or a typo.
-test('a persisted child view stays on its property', () => {
-  const view = open({
+test('a persisted child view stays on its property', async () => {
+  const view = await open({
     circularView: { type: 'CircularView', bpPerPx: 42, autoFit: false },
   })
   expect(view.circularView.bpPerPx).toBe(42)
@@ -64,38 +64,38 @@ describe('the v4 nested form', () => {
   const DEPRECATED =
     'SvInspectorView nests its settings under "init", which is deprecated: write every setting directly on the view object.'
 
-  test('a nested spec launches, and says the spelling is deprecated', () => {
-    const view = open({ init: { assembly: 'volvox', fileType: 'BEDPE' } })
+  test('a nested spec launches, and says the spelling is deprecated', async () => {
+    const view = await open({ init: { assembly: 'volvox', fileType: 'BEDPE' } })
     expect(view.spreadsheetView.importWizard.selectedAssemblyName).toBe(
       'volvox',
     )
     expect(warnings()).toContain(DEPRECATED)
   })
 
-  test('a declared property nested inside it lands', () => {
-    const view = open({ init: { assembly: 'volvox', height: 900 } })
+  test('a declared property nested inside it lands', async () => {
+    const view = await open({ init: { assembly: 'volvox', height: 900 } })
     expect(view.height).toBe(900)
     expect(warnings()).toEqual([DEPRECATED])
   })
 })
 
-test('a key naming neither a launch key nor a property is named on attach', () => {
-  open({ assembly: 'volvox', fileTypes: 'BEDPE' })
+test('a key naming neither a launch key nor a property is named on attach', async () => {
+  await open({ assembly: 'volvox', fileTypes: 'BEDPE' })
   expect(warnings()).toContain(
     'SvInspectorView ignored unknown key(s): fileTypes',
   )
 })
 
-test('an unknown key is reported once', () => {
-  open({ fileTypes: 'BEDPE' })
+test('an unknown key is reported once', async () => {
+  await open({ fileTypes: 'BEDPE' })
   expect(warnings()).toHaveLength(1)
 })
 
 // Read as work to do, the whole blob is forwarded to the sheet, which then
 // seeds its wizard with an assembly nobody named and skips its cached-file
 // reload.
-test('a typo alone leaves nothing pending', () => {
-  const view = open({ fileTypes: 'BEDPE' })
+test('a typo alone leaves nothing pending', async () => {
+  const view = await open({ fileTypes: 'BEDPE' })
   expect(view.launch).toEqual({ unknown: { fileTypes: 'BEDPE' } })
   expect(view.pendingLaunch).toBeUndefined()
   expect(view.spreadsheetView.importWizard.selectedAssemblyName).toBeUndefined()
@@ -103,8 +103,8 @@ test('a typo alone leaves nothing pending', () => {
 
 // Forwarded synchronously, and the sheet caches the file location just as
 // synchronously, so this node's copy has nothing left to reconstruct.
-test('the launch state is never persisted', () => {
-  const snap = getSnapshot(open({ assembly: 'volvox' })) as {
+test('the launch state is never persisted', async () => {
+  const snap = getSnapshot(await open({ assembly: 'volvox' })) as {
     launch?: unknown
   }
   expect(snap.launch).toBeUndefined()

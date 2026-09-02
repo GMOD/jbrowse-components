@@ -319,6 +319,7 @@ async function buildSession(
   const defaultSession = rootModel.jbrowse.defaultSession as {
     name?: string
   } & Record<string, unknown>
+  await pluginManager.preloadSessionTypes(defaultSession)
   rootModel.setSession({
     ...defaultSession,
     name: resolveSessionName(defaultSession),

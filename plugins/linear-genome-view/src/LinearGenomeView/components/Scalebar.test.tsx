@@ -1,4 +1,7 @@
-import { createTestSession } from '@jbrowse/web/testUtils'
+import {
+  createTestSession,
+  createTestSessionAsync,
+} from '@jbrowse/web/testUtils'
 import { render, waitFor } from '@testing-library/react'
 
 import Scalebar from './Scalebar.tsx'
@@ -9,8 +12,8 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // into the assembly-name scalebar prefix via showAssemblyNameInSubviewScalebar.
 // bpPerPx 0.25 draws each 100bp region 400px wide, wide enough that the folded
 // "volvox:ctgA" label fits inside the region it names
-function syntenySubView(offsetPx: number, bpPerPx = 0.25) {
-  const session = createTestSession({
+async function syntenySubView(offsetPx: number, bpPerPx = 0.25) {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [
         {
@@ -32,7 +35,7 @@ function syntenySubView(offsetPx: number, bpPerPx = 0.25) {
         },
       ],
     },
-  }) as any
+  })) as any
   const model = session.views[0].views[0]
   model.setWidth(800)
   return model
@@ -139,7 +142,7 @@ describe('Scalebar genome view component', () => {
   })
 
   it('displays assembly name prefix only on the leftmost label when no pinned block', async () => {
-    const model = syntenySubView(0)
+    const model = await syntenySubView(0)
 
     const { getByTestId, queryByTestId, container } = render(
       <Scalebar model={model} />,
@@ -160,7 +163,7 @@ describe('Scalebar genome view component', () => {
 
   it('displays assembly name prefix only on pinned label when scrolled', async () => {
     // scrolled so ctgA's left end is off-screen (its label pins to the viewport)
-    const model = syntenySubView(50)
+    const model = await syntenySubView(50)
 
     const { queryByTestId, container } = render(<Scalebar model={model} />)
     await waitFor(() => {
@@ -181,7 +184,7 @@ describe('Scalebar genome view component', () => {
   it('pins the bare assembly name when the view is scrolled left of its regions', async () => {
     // negative offsetPx: the row's data starts mid-viewport, as it does for
     // every genome but the longest one in a stack of whole-genome synteny rows
-    const model = syntenySubView(-300)
+    const model = await syntenySubView(-300)
 
     const { getByTestId, container } = render(<Scalebar model={model} />)
     await waitFor(() => {
@@ -198,7 +201,7 @@ describe('Scalebar genome view component', () => {
     // ctgA drawn 100px wide, of which 50 are left after the scroll: no room for
     // "volvox:ctgA" without running over ctgB, and a name clipped mid-glyph
     // names a chromosome that does not exist
-    const model = syntenySubView(50, 1)
+    const model = await syntenySubView(50, 1)
 
     const { getByTestId, queryByTestId } = render(<Scalebar model={model} />)
     await waitFor(() => {

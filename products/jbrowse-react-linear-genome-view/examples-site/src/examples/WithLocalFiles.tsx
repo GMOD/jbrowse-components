@@ -38,7 +38,7 @@ function LocalFileView({ localFiles }: { localFiles: LocalFileInput }) {
     localFiles,
     init: { loc: 'ctgA:1..20000', tracks: ['local_bam'] },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }
 
 export default function WithLocalFiles() {

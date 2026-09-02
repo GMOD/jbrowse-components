@@ -91,6 +91,9 @@ test('click and drag to reorder tracks', async () => {
   const { view, findByTestId } = await createView()
   fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(2)
+  })
 
   const trackId1 = view.tracks[1].id
   const dragHandle0 = await findByTestId(
@@ -162,7 +165,10 @@ test('opens track selector', async () => {
   await findByTestId(hts('bigbed_genes'), ...opts)
   expect(view.tracks.length).toBe(0)
   fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
-  expect(view.tracks.length).toBe(1)
+  // the show goes through the async launchTrack path now
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(1)
+  })
 }, 30000)
 
 test('opens reference sequence track and expects zoom in message', async () => {

@@ -133,7 +133,7 @@ function GenomeView({
       },
     },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }
 
 export default function PanUKBGWAS() {

@@ -637,6 +637,25 @@ function stateModelFactory(pluginManager: PluginManager) {
           inlineConf,
         )
       },
+      /**
+       * #action
+       * showTrack for a track whose display state model may be lazily
+       * loaded: loads it, then shows
+       */
+      async launchTrack(
+        trackId: string,
+        level = 0,
+        initialSnapshot: object = {},
+        displayInitialSnapshot: DisplayInitialSnapshot = {},
+        inlineConf?: Record<string, unknown>,
+      ) {
+        return self.levels[level]?.launchTrack(
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+          inlineConf,
+        )
+      },
 
       /**
        * #action
@@ -789,6 +808,10 @@ function stateModelFactory(pluginManager: PluginManager) {
        * afterAttach autorun loads the assembly regions and navigates (whole
        * genome, or `loc` when given), so we don't reimplement that imperatively
        * here.
+       *
+       * Returns `launchTrack`'s promise rather than awaiting it, so this
+       * action stays synchronous and keeps action context while a caller
+       * still has something to await.
        */
       appendRow({
         assembly,
@@ -806,9 +829,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           assembly,
           loc,
         })
-        if (syntenyTrackId) {
-          self.showTrack(syntenyTrackId, level)
-        }
+        return syntenyTrackId
+          ? self.launchTrack(syntenyTrackId, level)
+          : undefined
       },
     }))
     .views(() => ({

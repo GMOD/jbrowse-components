@@ -31,5 +31,5 @@ export default function WithPerTrackTextSearching() {
     ],
     location: 'ctgA:1..800',
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

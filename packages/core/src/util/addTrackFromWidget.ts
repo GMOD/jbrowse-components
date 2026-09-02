@@ -129,7 +129,7 @@ export function addTrackFromWidget({
       )
       return undefined
     }
-    trackContainer.showTrack(conf.trackId, {}, {}, conf)
+    void trackContainer.launchTrack(conf.trackId, {}, {}, conf)
     finishAddTrack(model, session)
     return conf
   }
@@ -144,7 +144,7 @@ export function addTrackFromWidget({
       session.assemblyManager,
     )
   ) {
-    trackContainer?.showTrack(conf.trackId)
+    void trackContainer?.launchTrack(conf.trackId)
   } else {
     const assemblies = conf.assemblyNames?.filter(a => !!a) ?? []
     session.notify(

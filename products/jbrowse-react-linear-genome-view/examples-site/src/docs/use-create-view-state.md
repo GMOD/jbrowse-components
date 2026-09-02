@@ -6,10 +6,12 @@ away the view's scroll position, open tracks and in-flight data.
 
 It takes the same options the managed
 [`<LinearGenomeView>`](../setting-up-the-view/#with-init) takes, `init`
-included, so choosing it costs no extra setup — and it hands you the engine on
-the first render, where a `ref` on that component arrives one render later. Two
-things need it: reading the view _while_ rendering (a button of yours that
-depends on view state), and
+included, so choosing it costs no extra setup. It resolves the lazily loaded
+view and display types the options name first, so it returns `undefined` for the
+first frame and the component renders nothing until then; after that the engine
+is a plain value in render, where a `ref` on that component is a `RefObject` to
+read through. Two things need it: reading the view _while_ rendering (a button
+of yours that depends on view state), and
 [destroying the engine](../plugins/#with-external-plugin) when you discard it.
 
 `location` is a shorthand for `init.loc` that also accepts a

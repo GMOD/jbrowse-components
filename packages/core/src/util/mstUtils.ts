@@ -1,7 +1,8 @@
-import { getEnv as getEnvMST } from '@jbrowse/mobx-state-tree'
+import { getEnv as getEnvMST, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { cachedParent, findParentThatIs } from './parentWalk.ts'
 import {
+  addOrReplaceView,
   isDisplayModel,
   isSessionModel,
   isTrackModel,
@@ -12,6 +13,7 @@ import type PluginManager from '../PluginManager.ts'
 import type {
   AbstractDisplayModel,
   AbstractSessionModel,
+  AbstractViewContainer,
   AbstractTrackModel,
   AbstractViewModel,
 } from './types/index.ts'
@@ -172,6 +174,32 @@ export function canonicalizeViewRefName(
  */
 export function getEnv(obj: IAnyStateTreeNode) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
+}
+
+/**
+ * #api core/util
+ * `addOrReplaceView` for view types whose state model may be lazily loaded;
+ * the synchronous `addOrReplaceView` requires it loaded already.
+ */
+export async function launchOrReplaceView(args: {
+  session: AbstractViewContainer
+  typeName: string
+  initialState?: Record<string, unknown>
+  replacing?: AbstractViewModel
+}) {
+  // a test's fake session is not an MST node; addView's own guard is the
+  // error path there
+  if (isStateTreeNode(args.session)) {
+    const { pluginManager } = getEnvMST<{ pluginManager?: PluginManager }>(
+      args.session,
+    )
+    await pluginManager?.getViewType(args.typeName).loadStateModel()
+    // the displays of the tracks a launch opens with are dynamic imports too
+    await pluginManager?.preloadSessionTypes({
+      views: [{ type: args.typeName, ...args.initialState }],
+    })
+  }
+  return addOrReplaceView(args)
 }
 
 export function hashCode(str: string) {

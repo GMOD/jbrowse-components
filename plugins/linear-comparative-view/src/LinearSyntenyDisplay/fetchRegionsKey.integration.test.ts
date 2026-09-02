@@ -48,10 +48,10 @@ async function openSynteny() {
       targetAssembly: 'volvox2',
     },
   })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
     tracks: ['vol_synteny'],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),

@@ -12,7 +12,7 @@ import {
   fetchResults,
   renderToSvg as renderLinearToSvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import { createViewState } from '@jbrowse/react-app2'
+import { createViewStateAsync } from '@jbrowse/react-app2'
 import { createCanvas } from 'canvas'
 import { autorun, when } from 'mobx'
 
@@ -54,8 +54,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // react-app2 hosts every view type and accepts multiple assemblies, where the
 // LGV-only react2 host could not. RPC runs on the main thread (the rpc
 // defaultDriver default), so no worker is needed for headless export.
-function createModel(data: Config) {
-  const model = createViewState({
+async function createModel(data: Config) {
+  const model = await createViewStateAsync({
     config: {
       assemblies: data.assemblies,
       tracks: data.tracks,
@@ -95,7 +95,7 @@ function createModel(data: Config) {
   return model
 }
 
-type Model = ReturnType<typeof createModel>
+type Model = Awaited<ReturnType<typeof createModel>>
 
 // Navigate the view to --loc. A locstring (chr1:1-100) or bare refname navigates
 // directly. When the config carries a text-search index (e.g. from --hub), a
@@ -353,8 +353,8 @@ async function addLaunchView<T extends InitView, N extends string>(
     suppliedType === viewType
       ? session.views[0]
       : ctx.spec
-        ? session.addView<string>(viewType, settingsFromSpec(ctx.spec))
-        : session.addView(viewType, makeSettings())
+        ? await session.launchView<string>(viewType, settingsFromSpec(ctx.spec))
+        : await session.launchView(viewType, makeSettings())
   return readyView(view as T, ctx)
 }
 
@@ -428,7 +428,7 @@ const renderLinear: ModeRenderer = async ctx => {
   if (refseq) {
     const seqTrackId = data.assembly.sequence.trackId
     if (typeof seqTrackId === 'string') {
-      view.showTrack(seqTrackId)
+      await view.launchTrack(seqTrackId)
     }
   }
 
@@ -444,7 +444,7 @@ const renderLinear: ModeRenderer = async ctx => {
     ...(data.openTracks ?? []),
   ]
   for (const { trackId, opts } of toOpen) {
-    applyDisplayOpts(
+    await applyDisplayOpts(
       view,
       trackId,
       configTrackCategory(data.tracks, trackId),
@@ -639,7 +639,7 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
  */
 export async function renderRegion(opts: Opts, configObject?: Config) {
   const data = readData(opts, configObject ?? (await resolveConfigObject(opts)))
-  const model = createModel(data)
+  const model = await createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
   // (e.g. gene-description blue) are baked at feature-fetch time from
   // session.themeOptions, which happens before renderToSvg applies themeName at

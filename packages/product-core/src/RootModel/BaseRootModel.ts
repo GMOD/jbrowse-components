@@ -134,6 +134,7 @@ export function BaseRootModelFactory({
         const unbuildable: UnbuildableNode[] = []
         let migrated = sessionSnapshot
         if (sessionSnapshot && typeof sessionSnapshot === 'object') {
+          pluginManager.assertSessionTypesLoaded(sessionSnapshot)
           // before the cast, because a type this build has no plugin for is a
           // union failure the try below never gets to see
           const pruned = pruneUnbuildableNodes(

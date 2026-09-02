@@ -26,5 +26,5 @@ export default function WithWebWorker() {
     // needed)
     makeWorkerInstance: () => new RpcWorker(),
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

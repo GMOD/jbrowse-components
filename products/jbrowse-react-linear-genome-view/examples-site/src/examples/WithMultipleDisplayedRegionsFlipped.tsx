@@ -38,7 +38,7 @@ export default function WithMultipleDisplayedRegionsFlipped() {
       },
     },
   })
-  return (
+  return state ? (
     <div>
       {/* horizontallyFlip() reverses the *arrangement*: the regions swap
           places and each one's own `reversed` flips with them. So there is no
@@ -54,5 +54,5 @@ export default function WithMultipleDisplayedRegionsFlipped() {
       </button>
       <JBrowseLinearGenomeView viewState={state} />
     </div>
-  )
+  ) : null
 }

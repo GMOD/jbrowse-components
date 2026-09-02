@@ -102,14 +102,14 @@ test('opens a track with minimal adapter config via "Open from track"', () => {
     expect(panelCount(session)).toBe(3)
 
     const breakpointView = session.views[2] as unknown as {
-      views: { showTrack: (t: string) => void }[]
+      views: { launchTrack: (t: string) => Promise<unknown> }[]
     }
     // Every panel, not the first two: the overlay renders only for tracks in
     // `matchedTracks`, which is the INTERSECTION across panels, so a track missing
     // from one panel draws no connections at all — including between the panels
     // that do have it. This record's breakends chain across three panels.
     for (const panel of breakpointView.views) {
-      panel.showTrack('volvox_sv_test_renamed')
+      await panel.launchTrack('volvox_sv_test_renamed')
     }
 
     const container = await findByTestId(

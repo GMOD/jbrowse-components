@@ -103,8 +103,11 @@ export function createEmbeddedRootModel<
       .actions(self => ({
         /**
          * #action
+         * Synchronous: an async caller must
+         * `await pluginManager.preloadSessionTypes(snapshot)` first.
          */
         setSession(sessionSnapshot: SnapshotIn<SESSION>) {
+          pluginManager.assertSessionTypesLoaded(sessionSnapshot)
           self.session = cast(sessionSnapshot)
         },
         /**
@@ -121,6 +124,7 @@ export function createEmbeddedRootModel<
          * actually matters for a value this app did not author.
          */
         restoreSession(sessionSnapshot: SessionSnapshot) {
+          pluginManager.assertSessionTypesLoaded(sessionSnapshot)
           self.session = cast(sessionSnapshot as SnapshotIn<SESSION>)
         },
         /**

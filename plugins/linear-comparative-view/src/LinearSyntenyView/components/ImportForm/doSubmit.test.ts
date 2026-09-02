@@ -64,7 +64,7 @@ function setup({
     setViews: (views: { assembly: string }[]) => {
       calls.views = views
     },
-    showTrack: (trackId: string, level: number) =>
+    launchTrack: async (trackId: string, level: number) =>
       calls.shown.push([trackId, level]),
     toggleTrack: (trackId: string, level: number) =>
       calls.toggled.push([trackId, level]),

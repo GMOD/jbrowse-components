@@ -301,7 +301,7 @@ session.addSessionTrackConf({
     })),
   },
 })
-session.views[0].showTrack(trackId)
+await session.views[0].launchTrack(trackId)
 return {
   trackId,
   bins: counts.length,
@@ -382,7 +382,7 @@ A display that refuses to draw replaces its own subtree and raises no toast, so
 a screenshot of it looks fine. The settle report is where it shows:
 
 ```js
-session.views[0].showTrack('volvox_bigwig_nonexist')
+await session.views[0].launchTrack('volvox_bigwig_nonexist')
 return jb.waitReady(20000)
 ```
 
@@ -486,7 +486,7 @@ const second = session.addView('LinearGenomeView', {
   displayName: 'second locus',
 })
 await second.navToLocString('ctgA:40,000-50,000', 'volvox')
-second.showTrack('gff3tabix_genes')
+await second.launchTrack('gff3tabix_genes')
 return {
   views: session.views.map(v => `${v.id}: ${v.displayName ?? v.type}`),
   ...(await jb.waitReady(30000)),

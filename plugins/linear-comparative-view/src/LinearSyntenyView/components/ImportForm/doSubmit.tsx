@@ -48,7 +48,7 @@ export function doSubmit({
       selections: model.importFormSyntenyTrackSelections,
       assemblyNames: selectedAssemblyNames,
       showTrack: (trackId, level) => {
-        model.showTrack(trackId, level)
+        void model.launchTrack(trackId, level)
       },
     })
     // no-op for few levels (per-level height is capped at the 100px default),

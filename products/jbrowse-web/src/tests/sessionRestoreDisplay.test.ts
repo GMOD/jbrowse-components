@@ -1,4 +1,4 @@
-import { createTestSession } from '../rootModel/test_util.ts'
+import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -8,8 +8,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // display instantiation, and made the session loader drop the display as
 // "unhydratable", leaving a track with empty displays that later crashed
 // trackHeights on displays[0].height.
-test('canvas display survives session restore before view width is measured', () => {
-  const session = createTestSession({
+test('canvas display survives session restore before view width is measured', async () => {
+  const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
         {

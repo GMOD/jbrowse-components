@@ -7,9 +7,9 @@ import { getTestSession } from './util.tsx'
 // baseTrackConfig.preProcessSnapshot with a unique displayId (a
 // types.identifier), so they never serialize to `{}` and always retain type +
 // displayId — even when every other slot is default.
-function getTrack(trackId: string) {
-  const { view } = getTestSession()
-  view.showTrack(trackId)
+async function getTrack(trackId: string) {
+  const { view } = await getTestSession()
+  await view.launchTrack(trackId)
   return view.tracks.find(t => t.trackId === trackId)!
 }
 
@@ -18,8 +18,8 @@ interface TrackSnap {
   displays?: { type?: string; displayId?: string }[]
 }
 
-test('getSnapshot(trackConfig).displays keeps type + displayId (not stripped to {})', () => {
-  const track = getTrack('volvox_filtered_vcf')
+test('getSnapshot(trackConfig).displays keeps type + displayId (not stripped to {})', async () => {
+  const track = await getTrack('volvox_filtered_vcf')
   const snap: TrackSnap = getSnapshot(track.configuration)
   expect(snap.displays?.length).toBeGreaterThan(0)
   for (const d of snap.displays!) {
@@ -29,8 +29,8 @@ test('getSnapshot(trackConfig).displays keeps type + displayId (not stripped to 
   }
 })
 
-test('getSnapshot(displayConfig) retains displayId (not stripped as an identifier)', () => {
-  const track = getTrack('volvox_filtered_vcf')
+test('getSnapshot(displayConfig) retains displayId (not stripped as an identifier)', async () => {
+  const track = await getTrack('volvox_filtered_vcf')
   const displayConf = track.displays[0]!.configuration
   const snap: { type?: string; displayId?: string } = getSnapshot(displayConf)
   expect(snap.type).toBeTruthy()
@@ -45,9 +45,9 @@ test('getSnapshot(displayConfig) retains displayId (not stripped as an identifie
 // but nothing rewrites the `configuration` id a pre-rename session saved — and
 // the stub the track config injects is named for the new type. So the id misses
 // and only the type match reconnects the two.
-test('a pre-rename session resolves its display config by type', () => {
-  const { session } = getTestSession()
-  const view = session.addView('LinearGenomeView', {
+test('a pre-rename session resolves its display config by type', async () => {
+  const { session } = await getTestSession()
+  const view = (await session.launchView('LinearGenomeView', {
     displayedRegions: [
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
     ],
@@ -63,7 +63,7 @@ test('a pre-rename session resolves its display config by type', () => {
         ],
       },
     ],
-  }) as unknown as {
+  })) as unknown as {
     tracks: { displays: { type: string; configuration: { type: string } }[] }[]
   }
 

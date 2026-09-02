@@ -34,10 +34,10 @@ function setup() {
   return session
 }
 
-function launch(session: ReturnType<typeof setup>, views: unknown[]) {
-  const view = session.addView<string>('DotplotView', {
+async function launch(session: ReturnType<typeof setup>, views: unknown[]) {
+  const view = (await session.launchView<string>('DotplotView', {
     views,
-  }) as DotplotViewModel
+  })) as DotplotViewModel
   view.setWidth(800)
   return view
 }
@@ -51,7 +51,7 @@ test.each([
 ])('%s opens the import form, with no error', async (_name, views) => {
   const session = setup()
   const notify = jest.spyOn(session, 'notifyError')
-  const view = launch(session, views)
+  const view = await launch(session, views)
 
   // consumed, not kept: a retry could not launch it either
   await when(() => view.pendingLaunch === undefined)
@@ -68,7 +68,7 @@ test.each([
 ])('%s is reported as malformed', async (_name, views) => {
   const session = setup()
   const notify = jest.spyOn(session, 'notifyError')
-  const view = launch(session, views)
+  const view = await launch(session, views)
 
   await when(() => view.pendingLaunch === undefined)
   expect(notify).toHaveBeenCalledWith(
@@ -80,7 +80,10 @@ test.each([
 test('both axes named launches the plot', async () => {
   const session = setup()
   const notify = jest.spyOn(session, 'notifyError')
-  const view = launch(session, [{ assembly: 'volvox' }, { assembly: 'volvox' }])
+  const view = await launch(session, [
+    { assembly: 'volvox' },
+    { assembly: 'volvox' },
+  ])
 
   await when(() => view.assemblyNames.length > 0)
   expect([...view.assemblyNames]).toEqual(['volvox', 'volvox'])

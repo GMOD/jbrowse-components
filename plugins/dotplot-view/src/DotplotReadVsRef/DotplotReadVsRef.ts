@@ -1,12 +1,12 @@
 import { getConf } from '@jbrowse/core/configuration'
 import {
-  addOrReplaceView,
   getContainingView,
   getSession,
+  launchOrReplaceView,
 } from '@jbrowse/core/util'
 
 import { MIN_BORDER } from '../DotplotView/components/util.ts'
-import { defaultHeight } from '../DotplotView/model.ts'
+import { defaultHeight } from '../DotplotView/consts.ts'
 import { buildDotplotReadVsRefSpec } from './buildDotplotReadVsRefSpec.ts'
 
 import type { ReadVsRefLaunchArgs } from '@jbrowse/plugin-alignments'
@@ -47,7 +47,7 @@ export async function launchDotplotReadVsRef({
   })
 
   session.addTemporaryAssembly?.(temporaryAssembly)
-  addOrReplaceView({
+  await launchOrReplaceView({
     session,
     typeName: 'DotplotView',
     initialState: viewSpec,

@@ -15,6 +15,8 @@ import {
 import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
 import {
   hideTrackGeneric,
+  launchToggleTrackGeneric,
+  launchTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
@@ -202,17 +204,20 @@ function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
   }
 }
 
-// stripDefault baselines: a snapshot omits these unless the user changed them
-// (exported so a launcher building a DotplotView snapshot can size its initial
-// bpPerPx against the height the view will actually come up at)
-export const defaultHeight = 600
-// Exported because the settings menu's slider rows carry a reset-to-default
-// button, and a default spelled twice is a reset that silently stops agreeing
-// with the property it resets.
-export const DEFAULT_LINE_WIDTH = 2.5
-export const DEFAULT_ALPHA = 1
-export const DEFAULT_MIN_ALIGNMENT_LENGTH = 0
-export const DEFAULT_MIN_IDENTITY = 0
+export {
+  DEFAULT_ALPHA,
+  DEFAULT_LINE_WIDTH,
+  DEFAULT_MIN_ALIGNMENT_LENGTH,
+  DEFAULT_MIN_IDENTITY,
+  defaultHeight,
+} from './consts.ts'
+import {
+  DEFAULT_ALPHA,
+  DEFAULT_LINE_WIDTH,
+  DEFAULT_MIN_ALIGNMENT_LENGTH,
+  DEFAULT_MIN_IDENTITY,
+  defaultHeight,
+} from './consts.ts'
 
 // Floor for the resize handle. Below this the axis borders (which floor at
 // MIN_BORDER=50 each) would eat the whole box and viewWidth/viewHeight would go
@@ -1587,8 +1592,36 @@ export default function stateModelFactory(pm: PluginManager) {
               levels: [{ level: 0, tracks }],
             }
 
-            session.addView('LinearSyntenyView', viewSnapshot)
+            void session.launchView('LinearSyntenyView', viewSnapshot)
           }
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * showTrack for a track whose display state model may be lazily
+         * loaded: loads it, then shows
+         */
+        async launchTrack(
+          trackId: string,
+          initialSnapshot: object = {},
+          displayInitialSnapshot: DisplayInitialSnapshot = {},
+          inlineConf?: Record<string, unknown>,
+        ) {
+          return launchTrackGeneric(
+            self,
+            trackId,
+            initialSnapshot,
+            displayInitialSnapshot,
+            inlineConf,
+          )
+        },
+        /**
+         * #action
+         * toggleTrack with launchTrack's loading behavior
+         */
+        async launchToggleTrack(trackId: string) {
+          return launchToggleTrackGeneric(self, trackId)
         },
       }))
       .actions(self => ({

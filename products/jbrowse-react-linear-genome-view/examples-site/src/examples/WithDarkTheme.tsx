@@ -31,5 +31,5 @@ export default function WithDarkTheme() {
       },
     },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

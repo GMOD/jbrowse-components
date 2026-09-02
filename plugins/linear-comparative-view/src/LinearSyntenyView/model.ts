@@ -33,7 +33,6 @@ import {
   rowViewMenuItems,
 } from './menus.ts'
 
-import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
 import type { OffscreenMateMode } from './offscreenMateModes.ts'
 import type {
   CigarMode,
@@ -54,12 +53,17 @@ import type {
   LodMode,
 } from '@jbrowse/synteny-core'
 
-// Exported because the settings menu's slider rows carry a reset-to-default
-// button, and a default spelled twice is a reset that silently stops agreeing
-// with the property it resets.
-export const DEFAULT_OVERDRAW_PX = 1000
-export const DEFAULT_ALPHA = 0.2
-export const DEFAULT_MIN_ALIGNMENT_LENGTH = 0
+export {
+  DEFAULT_ALPHA,
+  DEFAULT_MIN_ALIGNMENT_LENGTH,
+  DEFAULT_OVERDRAW_PX,
+} from './consts.ts'
+export { asSyntenyModel } from './asSyntenyModel.ts'
+import {
+  DEFAULT_ALPHA,
+  DEFAULT_MIN_ALIGNMENT_LENGTH,
+  DEFAULT_OVERDRAW_PX,
+} from './consts.ts'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -898,17 +902,3 @@ declare module '@jbrowse/core/PluginManager' {
   }
 }
 export type LinearSyntenyViewModel = Instance<LinearSyntenyViewStateModel>
-
-/**
- * The synteny-specific header controls (colorBy, alpha, etc.) read state that
- * only exists on a LinearSyntenyView. Gate on the MST type discriminator so a
- * plain LinearComparativeView never renders those controls against a model that
- * lacks the matching state/actions. Narrowing along the compose chain and not
- * from an arbitrary object, so the only thing unchecked is the discriminator
- * itself, which every subclass sets to its own literal.
- */
-export function asSyntenyModel(model: LinearComparativeViewModel) {
-  return model.type === 'LinearSyntenyView'
-    ? (model as LinearSyntenyViewModel)
-    : undefined
-}

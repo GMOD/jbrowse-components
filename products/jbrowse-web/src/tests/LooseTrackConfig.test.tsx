@@ -18,7 +18,7 @@ const config = {
 }
 
 test('a config track written as { trackId, uri } opens as an alignments track on the one assembly', async () => {
-  const { rootModel } = getPluginManager(config)
+  const { rootModel } = await getPluginManager(config)
   const session = rootModel.session!
   expect(session.getTrackById('loose_bam')).toMatchObject({
     type: 'AlignmentsTrack',
@@ -51,8 +51,8 @@ test('a config track written as { trackId, uri } opens as an alignments track on
   )
 }, 40000)
 
-test('a loose track added to the config or the session expands the same way', () => {
-  const { rootModel } = getPluginManager(config, false)
+test('a loose track added to the config or the session expands the same way', async () => {
+  const { rootModel } = await getPluginManager(config, false)
   const session = rootModel.session!
   const sessionTrack = session.addTrackConf({
     trackId: 'loose_vcf',
@@ -83,14 +83,14 @@ test('a loose track added to the config or the session expands the same way', ()
 // `showTrackGeneric` expanded the loose form only to validate it and to pick
 // the display, then stored the caller's unexpanded object — so the whole
 // showTrack failed with `Unknown track type "undefined"` in a snackbar.
-test('a loose config passed to showTrack as an inline conf expands too', () => {
-  const { rootModel } = getPluginManager(config)
+test('a loose config passed to showTrack as an inline conf expands too', async () => {
+  const { rootModel } = await getPluginManager(config)
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
     assembly: 'volvox',
     loc: 'ctgA:1..1000',
   }) as LinearGenomeViewModel
-  const track = view.showTrack(
+  const track = await view.launchTrack(
     'loose_inline',
     {},
     {},
@@ -118,8 +118,8 @@ test('a loose config passed to showTrack as an inline conf expands too', () => {
 // (`showTrackGeneric`'s own dedupe, `hideTrackGeneric`) goes through
 // `configuration.trackId`: the track opened, then could not be closed and
 // stacked a fresh copy on every re-show.
-test('a loose inline conf with no trackId takes the one showTrack was given', () => {
-  const { rootModel } = getPluginManager(config)
+test('a loose inline conf with no trackId takes the one showTrack was given', async () => {
+  const { rootModel } = await getPluginManager(config)
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
     assembly: 'volvox',
@@ -127,14 +127,14 @@ test('a loose inline conf with no trackId takes the one showTrack was given', ()
   }) as LinearGenomeViewModel
   const inline = { uri: 'volvox.filtered.vcf.gz', assemblyNames: ['volvox'] }
 
-  const track = view.showTrack('no_id_inline', {}, {}, inline)
+  const track = await view.launchTrack('no_id_inline', {}, {}, inline)
   expect(session.snackbarMessages).toEqual([])
   expect(getSnapshot(track!.configuration)).toMatchObject({
     type: 'VariantTrack',
     trackId: 'no_id_inline',
   })
 
-  expect(view.showTrack('no_id_inline', {}, {}, inline)).toBe(track)
+  expect(await view.launchTrack('no_id_inline', {}, {}, inline)).toBe(track)
   expect(view.tracks).toHaveLength(1)
   expect(view.hideTrack('no_id_inline')).toBe(true)
   expect(view.tracks).toHaveLength(0)
@@ -142,14 +142,14 @@ test('a loose inline conf with no trackId takes the one showTrack was given', ()
 
 // but a trackId written beside `uri` still wins, the same way every other
 // inferred default gives way to a key the loose form names
-test('an explicit trackId in the loose conf wins over the argument', () => {
-  const { rootModel } = getPluginManager(config)
+test('an explicit trackId in the loose conf wins over the argument', async () => {
+  const { rootModel } = await getPluginManager(config)
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
     assembly: 'volvox',
     loc: 'ctgA:1..1000',
   }) as LinearGenomeViewModel
-  const track = view.showTrack(
+  const track = await view.launchTrack(
     'ignored',
     {},
     {},

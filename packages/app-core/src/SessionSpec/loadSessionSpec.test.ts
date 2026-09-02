@@ -147,7 +147,10 @@ function setup(
           : registeredViewTypes
         ).includes(type),
     }),
-    getViewType: (type: string) => ({ acceptedKeys: acceptedKeys[type] }),
+    getViewType: (type: string) => ({
+      acceptedKeys: acceptedKeys[type],
+      loadStateModel: async () => undefined,
+    }),
     // mirrors the real PluginManager: an extension point with no registered
     // callback resolves to the extendee unchanged rather than throwing
     evaluateAsyncExtensionPointStrict: (

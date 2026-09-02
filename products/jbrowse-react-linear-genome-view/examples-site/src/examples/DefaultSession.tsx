@@ -41,5 +41,5 @@ export default function DefaultSession() {
       },
     },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

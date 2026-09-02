@@ -214,7 +214,7 @@ export function createCircularGenomeView(
         ? resolved.assembly.name
         : undefined
     const hasSession = opts.session !== undefined
-    const viewState = createViewState({
+    const viewState = await createViewState({
       assembly: resolved.assembly,
       // forwarded so the *assembly* gets the same substitution — its sequence
       // adapter is a location like any other, and only createViewState has the
@@ -255,7 +255,7 @@ export function createCircularGenomeView(
     // a restored session owns the initial track layout; without one, open the
     // wanted tracks so they actually display
     if (!hasSession) {
-      reconcileTracks(
+      await reconcileTracks(
         viewState.session,
         resolveTracks(tracks, viewState, assemblyName, localFiles),
       )
@@ -274,12 +274,12 @@ export function createCircularGenomeView(
   // Reconcile the live view to the wanted state, touching only the fields the
   // caller just stated: rebuilding the ring on a tracks-only update would redo
   // the region resolution for nothing.
-  function apply(state: CircularGenomeViewState) {
+  async function apply(state: CircularGenomeViewState) {
     if (!current) {
       return
     }
     if (state.tracks) {
-      reconcileTracks(
+      await reconcileTracks(
         current.session,
         resolveTracks(tracks, current, assemblyName, localFiles),
       )
@@ -317,7 +317,7 @@ export function createCircularGenomeView(
         displayedRegionNames = state.displayedRegionNames
       }
       await ready
-      apply(state)
+      await apply(state)
     },
     destroy() {
       // set first: a build still in flight reads it and destroys the engine it

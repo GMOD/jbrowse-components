@@ -30,16 +30,16 @@ utilizeFetchMockForTest(grapePeachGetFile)
 // walk reads `trackContainers`, and the plugin proves a level is one — neither
 // notices if the display never grew a phase.
 test('the app marker counts a synteny level a walk of view.tracks cannot reach', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [
       { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
       { loc: 'chr1:316,306..316,364', assembly: 'grape' },
     ],
     tracks: [['subset']],
-  }) as {
+  })) as {
     setWidth: (n: number) => void
     levels: {
       markCanvasDrawn: () => void
@@ -108,16 +108,16 @@ test('the app marker counts a synteny level a walk of view.tracks cannot reach',
 // The test above fakes the paint with `markCanvasDrawn`; this one asserts the
 // case where no paint is ever coming.
 test('the app marker does not wait on a view whose body was never mounted', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [
       { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
       { loc: 'chr1:316,306..316,364', assembly: 'grape' },
     ],
     tracks: [['subset']],
-  }) as {
+  })) as {
     setWidth: (n: number) => void
     setBodyMounted: (flag: boolean) => void
     levels: { linearSyntenyDisplays: { displayPhase: string }[] }[]
@@ -162,13 +162,13 @@ test('the app marker does not wait on a view whose body was never mounted', asyn
 // them — what it found there was a display with no `displayPhase`, which reads
 // as finished. Same conjunction, reached by the ordinary arm.
 test('the app marker counts a dotplot display', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('DotplotView', {
+  const view = (await session.launchView('DotplotView', {
     views: [{ assembly: 'peach' }, { assembly: 'grape' }],
     tracks: ['subset'],
-  }) as {
+  })) as {
     setWidth: (n: number) => void
     markCanvasDrawn: () => void
     dotplotDisplays: { displayPhase: string }[]
@@ -222,17 +222,17 @@ test('the app marker counts a dotplot display', async () => {
 // false` term it has always had for a view with no assembly. That is a separate
 // question from this change and is left alone.
 test('a comparative import form contributes no loading display', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const dotplot = session.addView('DotplotView', {}) as {
+  const dotplot = (await session.launchView('DotplotView', {})) as {
     setWidth: (n: number) => void
     showImportForm: boolean
     settled: boolean
     displayPhase: string
     dotplotDisplays: unknown[]
   }
-  const synteny = session.addView('LinearSyntenyView', {}) as {
+  const synteny = (await session.launchView('LinearSyntenyView', {})) as {
     setWidth: (n: number) => void
     showImportForm: boolean
     trackContainers: { tracks: unknown[] }[]

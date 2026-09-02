@@ -33,24 +33,27 @@ export default function LaunchBreakpointSplitViewF(
   pluginManager: PluginManager,
 ) {
   /** #extensionPoint LaunchView-BreakpointSplitView | async | Programmatically launch a breakpoint split view */
-  pluginManager.addToExtensionPoint('LaunchView-BreakpointSplitView', args => {
-    const { session, ...spec } = args
-    const { views } = spec
-    if (!Array.isArray(views)) {
-      throw new Error(
-        `BreakpointSplitView launch needs a "views" array of panels, but got ${JSON.stringify(views)}`,
-      )
-    }
-    if (views.length < 2) {
-      throw new Error(
-        'BreakpointSplitView requires at least 2 views to be specified',
-      )
-    }
-    // Nothing is sorted here — the view's own preProcessSnapshot tells the
-    // declarative panels from the built rows a saved session carries, which is
-    // what makes a spec, a `defaultSession` view and an `addView` literal one
-    // shape.
-    session.addView('BreakpointSplitView', spec)
-    return args
-  })
+  pluginManager.addToExtensionPoint(
+    'LaunchView-BreakpointSplitView',
+    async args => {
+      const { session, ...spec } = args
+      const { views } = spec
+      if (!Array.isArray(views)) {
+        throw new Error(
+          `BreakpointSplitView launch needs a "views" array of panels, but got ${JSON.stringify(views)}`,
+        )
+      }
+      if (views.length < 2) {
+        throw new Error(
+          'BreakpointSplitView requires at least 2 views to be specified',
+        )
+      }
+      // Nothing is sorted here — the view's own preProcessSnapshot tells the
+      // declarative panels from the built rows a saved session carries, which
+      // is what makes a spec, a `defaultSession` view and an `addView` literal
+      // one shape.
+      await session.launchView('BreakpointSplitView', spec)
+      return args
+    },
+  )
 }

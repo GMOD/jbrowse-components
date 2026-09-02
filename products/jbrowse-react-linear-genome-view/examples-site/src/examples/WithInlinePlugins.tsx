@@ -60,5 +60,5 @@ export default function WithInlinePlugins() {
     ],
     location: 'ctgA:1105..1221',
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

@@ -36,5 +36,5 @@ export default function WithInternetAccounts() {
       },
     ],
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

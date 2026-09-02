@@ -20,11 +20,11 @@ async function createSpreadsheetViewWithInit(spec: {
   uri: string
   fileType?: string
 }) {
-  const { pluginManager, rootModel } = getPluginManager()
+  const { pluginManager, rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SpreadsheetView', spec)
+  const view = await session.launchView('SpreadsheetView', spec)
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
@@ -82,12 +82,12 @@ test('SpreadsheetView initializes with explicit fileType', async () => {
   expect(view.pendingLaunch).toBeUndefined()
 }, 40000)
 
-test('SpreadsheetView with no launch keys shows import form', () => {
-  const { rootModel } = getPluginManager()
+test('SpreadsheetView with no launch keys shows import form', async () => {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SpreadsheetView', {})
+  const view = await session.launchView('SpreadsheetView', {})
 
   expect(view.spreadsheet).toBeUndefined()
   expect(view.pendingLaunch).toBeUndefined()
@@ -98,11 +98,11 @@ test('SpreadsheetView with no launch keys shows import form', () => {
 // (not just the volatile fileSource) so a snapshot taken before the async load
 // finishes can still reload the file instead of stranding on the import form.
 test('snapshot persists cached file location synchronously', async () => {
-  const { rootModel } = getPluginManager()
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SpreadsheetView', {
+  const view = await session.launchView('SpreadsheetView', {
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.filtered.vcf.gz',
   })

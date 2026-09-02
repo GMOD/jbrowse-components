@@ -37,11 +37,11 @@ const INVERTED = { start: 18600, end: 18950 }
 const FORWARD = { start: 20000, end: 25000 }
 
 async function openView() {
-  const { session } = getTestSession()
-  const view = session.addView('LinearSyntenyView', {
+  const { session } = await getTestSession()
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [{ assembly: ASM }, { assembly: MATE }],
     tracks: ['volvox_inv_indels'],
-  }) as unknown as SyntenyView
+  })) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
     expect(view.initialized).toBe(true)

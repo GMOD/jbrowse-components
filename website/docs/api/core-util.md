@@ -256,6 +256,18 @@ calling module actually uses.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
 
+## launchOrReplaceView
+
+`addOrReplaceView` for view types whose state model may be lazily loaded;
+the synchronous `addOrReplaceView` requires it loaded already.
+
+```js
+// type signature
+(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<...>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
 ## openPromotableDisplays
 
 Every display on an open track, across all open views — the reach of anything

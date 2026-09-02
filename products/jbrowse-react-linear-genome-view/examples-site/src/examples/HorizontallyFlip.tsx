@@ -27,10 +27,10 @@ const tracks = [
 ]
 
 // imperative toggle via the view's horizontallyFlip() action. The engine is
-// built by the hook and passed down as a plain value, so this takes a
-// ViewModel rather than a ref to one: `<LinearGenomeView ref>` would hand it
-// over a render later, which is a RefObject to thread through and a `?.` at
-// every use for a value that is never actually absent here.
+// built by the hook and passed down as a plain value once it exists, so this
+// takes a ViewModel rather than a ref to one: `<LinearGenomeView ref>` would
+// hand over a RefObject to thread through and a `?.` at every use for a value
+// that is never actually absent here.
 function FlipButton({ viewState }: { viewState: ViewModel }) {
   const [error, setError] = useState<unknown>()
   return (
@@ -67,10 +67,14 @@ export default function HorizontallyFlip() {
   return (
     <div>
       <h3>Flip imperatively from a button</h3>
-      <FlipButton viewState={state} />
-      <JBrowseLinearGenomeView viewState={state} />
+      {state ? (
+        <>
+          <FlipButton viewState={state} />
+          <JBrowseLinearGenomeView viewState={state} />
+        </>
+      ) : null}
       <h3>Open already flipped via a [rev] locstring</h3>
-      <JBrowseLinearGenomeView viewState={flipped} />
+      {flipped ? <JBrowseLinearGenomeView viewState={flipped} /> : null}
     </div>
   )
 }

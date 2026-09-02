@@ -33,7 +33,9 @@ export function doSubmit({
       selections: model.importFormSyntenyTrackSelections,
       assemblyNames: [assemblyX, assemblyY],
       showTrack: trackId => {
-        model.showTrack(trackId)
+        // voided, not awaited: this sits inside a mobx transaction, and the
+        // display's state model may still be a dynamic import away
+        void model.launchTrack(trackId)
       },
     })
     model.setAssemblyNames(assemblyX, assemblyY)

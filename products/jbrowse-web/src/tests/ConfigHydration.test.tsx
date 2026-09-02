@@ -13,7 +13,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 utilizeFetchMockForTest(volvoxGetFile)
 
 async function setupView(trackIds: string[]) {
-  const { rootModel } = getPluginManager()
+  const { rootModel } = await getPluginManager()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
     assembly: 'volvox',
@@ -35,8 +35,8 @@ async function setupView(trackIds: string[]) {
 // NOT create MST models for all frozen tracks. If hydrateTrack-style eager
 // initialization were re-introduced in the trackId index, this test would fail
 // because the entry would be an MST node instead of a plain frozen object.
-test('session.getTrackById does not eagerly hydrate frozen tracks', () => {
-  const { rootModel } = getPluginManager()
+test('session.getTrackById does not eagerly hydrate frozen tracks', async () => {
+  const { rootModel } = await getPluginManager()
   const session = rootModel.session!
   const conf = session.getTrackById('volvox_gc')
   expect(isStateTreeNode(conf)).toBe(false)

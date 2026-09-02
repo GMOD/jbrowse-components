@@ -64,7 +64,7 @@ const assembly = (name: string) => ({
 // Two rows with no displayed regions: the cascade is a config read, so nothing
 // here needs an initialized viewport, and a level with no regions starts no
 // fetch to leave in flight at teardown.
-function openPair() {
+async function openPair() {
   const session = createTestSession()
   session.addAssemblyConf(assembly('volvox'))
   session.addAssemblyConf(assembly('volvox2'))
@@ -80,10 +80,10 @@ function openPair() {
       targetAssembly: 'volvox2',
     },
   })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [{ type: 'LinearGenomeView' }, { type: 'LinearGenomeView' }],
-  }) as LinearSyntenyViewModel
-  view.showTrack('pair')
+  })) as LinearSyntenyViewModel
+  await view.launchTrack('pair')
   return {
     session,
     view,
@@ -91,8 +91,8 @@ function openPair() {
   }
 }
 
-test('unset at every tier resolves to the slot promotedBase', () => {
-  const { view, display } = openPair()
+test('unset at every tier resolves to the slot promotedBase', async () => {
+  const { view, display } = await openPair()
   expect(display.effectiveDrawCurves).toBe(false)
   expect(display.effectiveDrawLocationMarkers).toBe(false)
   expect(view.effectiveDrawCurves).toBe(false)
@@ -102,8 +102,8 @@ test('unset at every tier resolves to the slot promotedBase', () => {
 // What the pin writes. The view's getters read the cascade off the first synteny
 // display, so a promoted default has to move both or the checkbox and the
 // ribbons disagree.
-test('the session-wide default reaches the display and the view', () => {
-  const { session, view, display } = openPair()
+test('the session-wide default reaches the display and the view', async () => {
+  const { session, view, display } = await openPair()
   session.setDisplayTypeDefault('LinearSyntenyDisplay', 'drawCurves', true)
   session.setDisplayTypeDefault(
     'LinearSyntenyDisplay',
@@ -122,8 +122,8 @@ test('the session-wide default reaches the display and the view', () => {
 // inherit signal. Both directions, because only the second one separates "the
 // track wins" from "the cascade is gone": `promotedBase` is `false`, so a
 // dropped cascade agrees with the first.
-test("a track's own configured value beats the session-wide default", () => {
-  const { session, view, display } = openPair()
+test("a track's own configured value beats the session-wide default", async () => {
+  const { session, view, display } = await openPair()
   session.setDisplayTypeDefault('LinearSyntenyDisplay', 'drawCurves', true)
   setConf(display, 'drawCurves', false)
   expect(display.effectiveDrawCurves).toBe(false)
@@ -139,7 +139,7 @@ test("a track's own configured value beats the session-wide default", () => {
 // and `setDrawCurves` has to write the slot on BOTH — a fan-out that stopped
 // at `allSyntenyDisplays[0]`, or wrote some view-local state instead of the
 // slot, leaves the second band drawing the old shape.
-function openTriple() {
+async function openTriple() {
   const session = createTestSession()
   for (const name of ['volvox', 'volvox2', 'volvox3']) {
     session.addAssemblyConf(assembly(name))
@@ -161,15 +161,15 @@ function openTriple() {
       },
     })
   }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [
       { type: 'LinearGenomeView' },
       { type: 'LinearGenomeView' },
       { type: 'LinearGenomeView' },
     ],
-  }) as LinearSyntenyViewModel
-  view.showTrack('pairA', 0)
-  view.showTrack('pairB', 1)
+  })) as LinearSyntenyViewModel
+  await view.launchTrack('pairA', 0)
+  await view.launchTrack('pairB', 1)
   return {
     session,
     view,
@@ -177,8 +177,8 @@ function openTriple() {
   }
 }
 
-test('the settings checkbox writes the slot on every level', () => {
-  const { view, displays } = openTriple()
+test('the settings checkbox writes the slot on every level', async () => {
+  const { view, displays } = await openTriple()
   expect(displays).toHaveLength(2)
   view.setDrawCurves(true)
   view.setDrawLocationMarkers(true)
@@ -205,8 +205,8 @@ test('the settings checkbox writes the slot on every level', () => {
 // badge's reset, the config editor's reset-to-default) rejoins the cascade.
 // The removed view-level property had neither half: its first write detached
 // the view from the cascade for good.
-test('unticking under a promoted default straightens, and unsetting rejoins', () => {
-  const { session, view, display } = openPair()
+test('unticking under a promoted default straightens, and unsetting rejoins', async () => {
+  const { session, view, display } = await openPair()
   session.setDisplayTypeDefault('LinearSyntenyDisplay', 'drawCurves', true)
   view.setDrawCurves(false)
   expect(getConf(display, 'drawCurves')).toBe(false)
@@ -222,8 +222,8 @@ test('unticking under a promoted default straightens, and unsetting rejoins', ()
 // `setDrawLocationMarkers` that wrote nothing — or an
 // `effectiveDrawLocationMarkers` hard-wired to its base — stayed green
 // everywhere else, since `promotedBase` is `false` too.
-test('setDrawLocationMarkers customizes the shown tracks', () => {
-  const { view, display } = openPair()
+test('setDrawLocationMarkers customizes the shown tracks', async () => {
+  const { view, display } = await openPair()
   view.setDrawLocationMarkers(true)
   expect(getConf(display, 'drawLocationMarkers')).toBe(true)
   expect(display.effectiveDrawLocationMarkers).toBe(true)
@@ -260,8 +260,8 @@ function markerAlpha(display: LinearSyntenyDisplayModel) {
   return abgrAlpha(display.computedColors![1]!)
 }
 
-test('the location-marker default reaches the color lane', () => {
-  const { session, display } = openPair()
+test('the location-marker default reaches the color lane', async () => {
+  const { session, display } = await openPair()
   expect(markerAlpha(display)).toBe(0)
   session.setDisplayTypeDefault(
     'LinearSyntenyDisplay',
@@ -292,11 +292,11 @@ async function openInitializedPair(initExtras: Record<string, unknown> = {}) {
       targetAssembly: 'volvox2',
     },
   })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
     tracks: ['pair'],
     ...initExtras,
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.pendingLaunch === undefined)
   const level = view.levels[0]!

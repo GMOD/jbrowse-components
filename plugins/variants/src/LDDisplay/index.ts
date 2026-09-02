@@ -5,7 +5,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import ldTrackDisplayConfigSchema from './configSchemaLDTrack.ts'
 import ldDisplayConfigSchema from './configSchemaVariant.ts'
-import sharedModelFactory from './shared.ts'
 
 import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -30,9 +29,15 @@ function makeLDStateModel(
 ) {
   return {
     configSchema,
-    stateModel: sharedModelFactory(configSchema)
-      .named(typeName)
-      .props({ type: types.literal(typeName) }),
+    // lazily loaded: the LD model carries the pairwise-R² machinery, and is
+    // fetched when a track picks one of these displays or a session names one
+    stateModel: () =>
+      import('./shared.ts').then(f =>
+        f
+          .default(configSchema)
+          .named(typeName)
+          .props({ type: types.literal(typeName) }),
+      ),
   }
 }
 

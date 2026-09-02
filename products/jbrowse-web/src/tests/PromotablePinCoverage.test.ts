@@ -85,7 +85,7 @@ interface Fixture {
   displaySnapshot?: Record<string, unknown>
   // How to open, where `showTrack` on the session's default LGV cannot — a
   // synteny display needs a LinearSyntenyView with two rows under it.
-  open?: () => OpenedDisplay
+  open?: () => Promise<OpenedDisplay>
   // Where the pins are, when they are not on the display's own track menu. A
   // display that curates no track menu still has to pin its promotable slots
   // *somewhere*, and that surface is what the check has to walk; defaulting to
@@ -250,9 +250,9 @@ function identityRendering(d: any) {
 // first and carry a row for each side of the comparison. The regions are what
 // give the level two initialized rows; nothing here fetches, and the settings
 // menu does not gate any pin on data.
-function openSyntenyDisplay() {
-  const { rootModel } = getPluginManager()
-  const view = rootModel.session!.addView('LinearSyntenyView', {
+async function openSyntenyDisplay() {
+  const { rootModel } = await getPluginManager()
+  const view = await rootModel.session!.launchView('LinearSyntenyView', {
     views: [
       {
         type: 'LinearGenomeView',
@@ -268,7 +268,7 @@ function openSyntenyDisplay() {
       },
     ],
   })
-  view.showTrack('volvox_inv_indels')
+  await view.launchTrack('volvox_inv_indels')
   const display = view.allSyntenyDisplays[0]
   if (!display) {
     throw new Error(
@@ -302,11 +302,11 @@ function colorByConsequenceImpact(d: any) {
 type OpenedDisplay = ResolvableDisplay & { trackMenuItems: () => MenuItem[] }
 
 interface TestView {
-  showTrack: (
+  launchTrack: (
     trackId: string,
     initialSnapshot?: Record<string, unknown>,
     displayInitialSnapshot?: Record<string, unknown>,
-  ) => unknown
+  ) => Promise<unknown>
   tracks: { displays: OpenedDisplay[] }[]
 }
 
@@ -320,14 +320,16 @@ beforeEach(() => {
 // Open `trackId` showing `displayType`, and return the display. Passing the
 // display type is what reaches a track's non-default displays — the SV arcs on a
 // VariantTrack, GC content on a ReferenceSequenceTrack.
-function openDisplay(fixture: Fixture) {
+async function openDisplay(fixture: Fixture) {
   if (fixture.open) {
     return fixture.open()
   }
   const { displayType, trackId, displaySnapshot } = fixture
-  const { rootModel } = getPluginManager()
+  const { rootModel } = await getPluginManager()
   const view = rootModel.session!.views[0] as unknown as TestView
-  view.showTrack(trackId, {}, { type: displayType, ...displaySnapshot })
+  // launchTrack, not showTrack: some of these display types (the alignments
+  // ones) load their state model lazily, and the sync path throws for those
+  await view.launchTrack(trackId, {}, { type: displayType, ...displaySnapshot })
   const display = view.tracks
     .flatMap(t => t.displays)
     .find(d => d.type === displayType)
@@ -342,8 +344,8 @@ function openDisplay(fixture: Fixture) {
 // Every menu row the display can offer, across the states that reveal them.
 // Concatenated rather than merged: `pinnedSlots` walks a flat list of rows and
 // their submenus, so the union of two builds is just both lists.
-function allMenuItems(fixture: Fixture) {
-  const display = openDisplay(fixture)
+async function allMenuItems(fixture: Fixture) {
+  const display = await openDisplay(fixture)
   const states = fixture.states ?? [() => {}]
   return {
     display,
@@ -356,8 +358,8 @@ function allMenuItems(fixture: Fixture) {
 
 test.each(FIXTURES.map(f => [f.displayType, f] as const))(
   '%s pins every promotable slot its menu should',
-  (displayType, fixture) => {
-    const { display, menuItems } = allMenuItems(fixture)
+  async (displayType, fixture) => {
+    const { display, menuItems } = await allMenuItems(fixture)
     expect(promotableSlotsWithoutPin(display, menuItems)).toEqual(
       KNOWN_UNPINNED[displayType] ?? [],
     )
@@ -381,8 +383,8 @@ test('every baseline entry names a display type this test opens', () => {
 // `promotedBase` travels down `baseConfiguration`, so this grows on its own:
 // giving a shared base schema a promotable slot enrols every display composing
 // it, including ones whose author never read this file.
-test('every display type declaring a promotable slot is opened or exempt', () => {
-  const { pluginManager } = getPluginManager()
+test('every display type declaring a promotable slot is opened or exempt', async () => {
+  const { pluginManager } = await getPluginManager()
   const covered = new Set([...FIXTURES.map(f => f.displayType), ...NO_FIXTURE])
   const declaring = displayTypesWithPromotableSlots(
     pluginManager.getDisplayElements(),
@@ -393,8 +395,8 @@ test('every display type declaring a promotable slot is opened or exempt', () =>
 // A stale exemption is the other direction, and the one the prose table got
 // wrong: an entry left behind after the display type gained a fixture, was
 // renamed, or stopped declaring a promotable slot.
-test('every exemption still names a display type that needs one', () => {
-  const { pluginManager } = getPluginManager()
+test('every exemption still names a display type that needs one', async () => {
+  const { pluginManager } = await getPluginManager()
   const declaring = new Set(
     displayTypesWithPromotableSlots(pluginManager.getDisplayElements()),
   )

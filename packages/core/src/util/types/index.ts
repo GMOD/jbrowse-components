@@ -88,6 +88,10 @@ export interface AbstractViewContainer extends IStateTreeNode {
     typeName: N,
     initialState?: NoInfer<ViewSnapshotInput<N>>,
   ): AbstractViewModel
+  launchView(
+    typeName: string,
+    initialState?: Record<string, unknown>,
+  ): Promise<AbstractViewModel>
 }
 export function isViewContainer(
   thing: unknown,
@@ -107,6 +111,7 @@ export function isViewContainer(
  */
 export interface TrackActionView {
   showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   getActiveDisplayId?: (trackId: string) => string | undefined
 }
 
@@ -652,6 +657,18 @@ export interface TrackContainer {
     displayInitialSnapshot?: Record<string, unknown>,
     inlineConf?: Record<string, unknown>,
   ) => unknown
+  /**
+   * The sync pair still works on an unloaded display — it loads and shows a
+   * tick later, returning undefined — so these are for a caller that needs
+   * the track back.
+   */
+  launchTrack: (
+    trackId: string,
+    initialSnapshot?: object,
+    displayInitialSnapshot?: Record<string, unknown>,
+    inlineConf?: Record<string, unknown>,
+  ) => Promise<unknown>
+  launchToggleTrack: (trackId: string) => Promise<unknown>
   hideTrack: (trackId: string) => unknown
   toggleTrack: (trackId: string) => unknown
 }

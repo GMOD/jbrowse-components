@@ -1,4 +1,4 @@
-import { fireEvent, within } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 
 import {
   createView,
@@ -32,7 +32,9 @@ test('open tracklist file', async () => {
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Dotplot view'))
-  expect(session.views.length).toBe(2)
+  await waitFor(() => {
+    expect(session.views.length).toBe(2)
+  })
   fireEvent.click(await findByText('Manual'))
   fireEvent.mouseDown(
     await findByRole('combobox', { name: 'Y-axis assembly', hidden: true }),
@@ -52,7 +54,9 @@ test('open local paf', async () => {
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Dotplot view'))
-  expect(session.views.length).toBe(2)
+  await waitFor(() => {
+    expect(session.views.length).toBe(2)
+  })
   fireEvent.click(await findByText('Manual'))
 
   fireEvent.mouseDown(
@@ -80,7 +84,9 @@ test('open local pif', async () => {
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Dotplot view'))
-  expect(session.views.length).toBe(2)
+  await waitFor(() => {
+    expect(session.views.length).toBe(2)
+  })
   fireEvent.click(await findByText('Manual'))
 
   fireEvent.mouseDown(

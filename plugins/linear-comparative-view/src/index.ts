@@ -80,7 +80,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
         label: 'Linear synteny view',
         icon: CalendarIcon,
         onClick: (session: AbstractViewContainer) => {
-          session.addView('LinearSyntenyView', {})
+          void session.launchView('LinearSyntenyView', {})
         },
       })
     }

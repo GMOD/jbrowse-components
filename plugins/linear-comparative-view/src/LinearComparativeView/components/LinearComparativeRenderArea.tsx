@@ -9,7 +9,7 @@ import { Chip, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
-import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
+import { asSyntenyModel } from '../../LinearSyntenyView/asSyntenyModel.ts'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'

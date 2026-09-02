@@ -23,11 +23,11 @@ async function createDotplotViewWithInit(spec: {
   views: { assembly: string }[]
   tracks?: string[]
 }) {
-  const { pluginManager, rootModel } = getPluginManager(configSnapshot)
+  const { pluginManager, rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('DotplotView', spec)
+  const view = await session.launchView('DotplotView', spec)
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
@@ -86,12 +86,12 @@ test('DotplotView showImportForm is false when a launch is pending', async () =>
   )
 }, 40000)
 
-test('DotplotView showImportForm is true with nothing to launch', () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+test('DotplotView showImportForm is true with nothing to launch', async () => {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('DotplotView', {})
+  const view = await session.launchView('DotplotView', {})
 
   expect(view.hasSomethingToShow).toBe(false)
 }, 40000)
@@ -132,10 +132,10 @@ test('DotplotView can re-initialize with different assemblies', async () => {
 // launch state, so a reload/restore rebuilds instead of stranding on the import
 // form. Once assemblyNames are set it is redundant and stripped.
 test('snapshot keeps the launch state until assemblyNames set, strips it after', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('DotplotView', {
+  const view = await session.launchView('DotplotView', {
     views: [{ assembly: 'peach' }, { assembly: 'grape' }],
   })
 

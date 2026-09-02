@@ -876,21 +876,43 @@ export default class PluginManager {
     return this.getElementTypesInGroup('adapter') as AdapterType[]
   }
 
-  /** get a MST type for the union of all specified pluggable MST types */
+  /**
+   * get a MST type for the union of all specified pluggable MST types.
+   * Membership is late-bound, so a lazily registered state model joins when
+   * its loader resolves; a snapshot naming one cannot be cast until then.
+   */
   pluggableMstType(
     groupName: PluggableElementTypeGroup,
     fieldName: string,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes = this.getElementTypeRecord(groupName)
-      .all()
-      .map(t => (t as unknown as Record<string, unknown>)[fieldName])
-      .filter(t => isType(t) && isModelType(t)) as IAnyType[]
-
-    if (pluggableTypes.length === 0) {
+    const record = this.getElementTypeRecord(groupName)
+    const anyMember = record.all().some(t => {
+      const element = t as unknown as Record<string, unknown>
+      const field = element[fieldName]
+      return (
+        (isType(field) && isModelType(field)) ||
+        typeof element[`${fieldName}Loader`] === 'function'
+      )
+    })
+    if (!anyMember) {
       return fallback
     }
-    return types.union(...pluggableTypes)
+    const modelsOf = () =>
+      record
+        .all()
+        .map(t => (t as unknown as Record<string, unknown>)[fieldName])
+        .filter(t => isType(t) && isModelType(t)) as IAnyType[]
+    let members = modelsOf()
+    return types.union({
+      name: `pluggable(${groupName} ${fieldName})`,
+      members: () => {
+        if (members.length !== modelsOf().length) {
+          members = modelsOf()
+        }
+        return members
+      },
+    })
   }
 
   /** get a MST type for the union of all specified pluggable config schemas */
@@ -1010,6 +1032,129 @@ export default class PluginManager {
   getViewType(typeName: string): ViewType
   getViewType(typeName: string) {
     return this.viewTypes.get(typeName)
+  }
+
+  private sessionTypeNames(sessionSnapshot: unknown) {
+    const viewNames = new Set<string>()
+    const displayNames = new Set<string>()
+    const collectTracks = (tracks: unknown) => {
+      if (Array.isArray(tracks)) {
+        for (const track of tracks) {
+          const { displays } =
+            track && typeof track === 'object'
+              ? (track as { displays?: unknown })
+              : {}
+          if (Array.isArray(displays)) {
+            for (const display of displays) {
+              const type =
+                display && typeof display === 'object'
+                  ? (display as { type?: unknown }).type
+                  : undefined
+              if (typeof type === 'string') {
+                displayNames.add(type)
+              }
+            }
+          }
+        }
+      }
+    }
+    const collectViews = (views: unknown) => {
+      if (Array.isArray(views)) {
+        for (const view of views) {
+          if (view && typeof view === 'object') {
+            const {
+              type,
+              views: children,
+              tracks,
+              levels,
+            } = view as {
+              type?: unknown
+              views?: unknown
+              tracks?: unknown
+              levels?: unknown
+            }
+            if (typeof type === 'string') {
+              viewNames.add(type)
+            }
+            collectViews(children)
+            collectTracks(tracks)
+            if (Array.isArray(levels)) {
+              for (const level of levels) {
+                collectTracks(
+                  level && typeof level === 'object'
+                    ? (level as { tracks?: unknown }).tracks
+                    : undefined,
+                )
+              }
+            }
+          }
+        }
+      }
+    }
+    if (sessionSnapshot && typeof sessionSnapshot === 'object') {
+      const { view, views } = sessionSnapshot as {
+        view?: unknown
+        views?: unknown
+      }
+      collectViews(views)
+      collectViews(view ? [view] : undefined)
+    }
+    return { viewNames, displayNames }
+  }
+
+  /**
+   * Every async code path that hands a snapshot to a synchronous session
+   * instantiation (`setSession`, `cast`) must await this first.
+   */
+  async preloadSessionTypes(sessionSnapshot: unknown) {
+    const { viewNames, displayNames } = this.sessionTypeNames(sessionSnapshot)
+    await Promise.all([
+      ...[...viewNames]
+        .filter(name => this.viewTypes.has(name))
+        .map(name => this.getViewType(name).loadStateModel()),
+      ...[...displayNames]
+        .map(name => this.resolveDisplayTypeRecord(name))
+        .flatMap(display => (display ? [display.loadStateModel()] : [])),
+    ])
+  }
+
+  unloadedSessionTypes(sessionSnapshot: unknown) {
+    const { viewNames, displayNames } = this.sessionTypeNames(sessionSnapshot)
+    return [
+      ...[...viewNames].filter(
+        name =>
+          this.viewTypes.has(name) &&
+          !this.getViewType(name).isStateModelLoaded,
+      ),
+      ...[...displayNames].filter(name => {
+        const display = this.resolveDisplayTypeRecord(name)
+        return display !== undefined && !display.isStateModelLoaded
+      }),
+    ]
+  }
+
+  /**
+   * Without this, a snapshot naming an unloaded lazy type fails inside MST as
+   * a union mismatch that reads like a corrupt snapshot.
+   */
+  assertSessionTypesLoaded(sessionSnapshot: unknown) {
+    const unloaded = this.unloadedSessionTypes(sessionSnapshot)
+    if (unloaded.length > 0) {
+      throw new Error(
+        `session names lazily loaded types that are not loaded yet: ${unloaded.join(', ')}. Await pluginManager.preloadSessionTypes(snapshot) before setting the session`,
+      )
+    }
+  }
+
+  /**
+   * Aliases resolve here because a legacy session names the alias, and the
+   * model that remaps it cannot be consulted before it is loaded.
+   */
+  resolveDisplayTypeRecord(name: string) {
+    if (this.displayTypes.has(name)) {
+      return this.getDisplayType(name)
+    }
+    return this.getDisplayElements().find(d => d.aliases?.includes(name))
   }
 
   getAddTrackWorkflow(typeName: string) {

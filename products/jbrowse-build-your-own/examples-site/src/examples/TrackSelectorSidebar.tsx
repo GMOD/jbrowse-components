@@ -400,7 +400,7 @@ const TrackSelector = observer(function TrackSelector({
                   if (onScreen.has(trackId)) {
                     view.hideTrack(trackId)
                   } else {
-                    view.showTrack(trackId)
+                    void view.launchTrack(trackId)
                   }
                 }}
               />

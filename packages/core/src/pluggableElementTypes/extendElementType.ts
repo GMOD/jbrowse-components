@@ -62,8 +62,16 @@ export function extendViewType<N extends ViewTypeName>(
         // point of the signature; widening it once here costs nothing, since
         // the only operation is handing the model to `extend` and storing what
         // comes back.
-        const view = element as { stateModel: IAnyModelType }
-        view.stateModel = widen(extend)(view.stateModel)
+        //
+        // Routed through extendStateModel rather than assigning `.stateModel`
+        // directly so a view registered with a lazy loader queues the
+        // extension and composes it when the loader resolves.
+        const view = element as {
+          extendStateModel: (
+            extend: (stateModel: IAnyModelType) => IAnyModelType,
+          ) => void
+        }
+        view.extendStateModel(widen(extend))
       }
       return element
     },
@@ -84,9 +92,14 @@ export function extendDisplayType<N extends DisplayTypeName>(
     'Core-extendPluggableElement',
     (element, props) => {
       if (props.group === 'display' && names.has(element.name)) {
-        // widened for the reason in extendViewType
-        const display = element as { stateModel: IAnyModelType }
-        display.stateModel = widen(extend)(display.stateModel)
+        // widened for the reason in extendViewType; routed through
+        // extendStateModel so a lazy registration queues the extension
+        const display = element as {
+          extendStateModel: (
+            extend: (stateModel: IAnyModelType) => IAnyModelType,
+          ) => void
+        }
+        display.extendStateModel(widen(extend))
       }
       return element
     },

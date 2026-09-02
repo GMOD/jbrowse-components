@@ -60,7 +60,7 @@ export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
  *
  * **The `--track` MODIFIERS apply here too**, which they did not until this
  * function stopped returning bare trackIds. Every other mode routes them
- * through `applyDisplayOpts`, which calls `view.showTrack` with the built
+ * through `applyDisplayOpts`, which calls `view.launchTrack` with the built
  * snapshot; a breakpoint panel opens its tracks from its own recipe instead, so
  * that call site does not exist and `height:240 force:true` was parsed,
  * validated, warned about if misspelled — and then dropped. Silently, and in

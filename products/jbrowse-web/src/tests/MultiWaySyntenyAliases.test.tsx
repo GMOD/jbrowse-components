@@ -49,7 +49,7 @@ async function openDisplay(
   config: ReturnType<typeof clone>,
   trackId: string,
 ): Promise<MultiWaySyntenyDisplayModel> {
-  const { rootModel } = getPluginManager(config)
+  const { rootModel } = await getPluginManager(config)
   rootModel.setDefaultSession()
   const view = rootModel.session!.addView('LinearGenomeView', {
     assembly: 'grape',

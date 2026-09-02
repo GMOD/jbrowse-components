@@ -27,7 +27,13 @@ packed tarball), and programmatic consumers all use — which also closes the
 hook instead of its own copy. Don't bundle `@jbrowse/img` for this — it freezes the
 semver flow-through for one narrow consumer path.
 
-### Lazy display behavior via `extendInstance` (proposal, not implemented)
+### Lazy display behavior via `extendInstance` (superseded 2026-09-02)
+
+Superseded: every view and display state model is now registered as a lazy
+loader (`agent-docs/reference/EAGER_BUNDLE.md`), which takes the whole model
+subgraph out of the eager bundle rather than only its interaction slice. The
+late-bound `types.union({ members })` in the MST fork is what removed the
+"the union must contain every type" objection below.
 
 Defer the dependency-heavy, interaction-only slice of display models out of the
 eager bundle. Today each plugin statically imports its model factory, and

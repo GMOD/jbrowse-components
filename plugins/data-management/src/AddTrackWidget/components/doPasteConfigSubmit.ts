@@ -10,7 +10,7 @@ import { parseTrackConfigs } from './parseTrackConfigs.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
-export function doPasteConfigSubmit({
+export async function doPasteConfigSubmit({
   model,
   jsonText,
 }: {
@@ -35,6 +35,10 @@ export function doPasteConfigSubmit({
     const { trackContainer } = model
     const notShown: string[] = []
     let added = 0
+    // The configs are pasted, so nothing can resolve their display types until
+    // they are in the session — the publishes stay in one transaction and the
+    // shows follow it, each awaiting its display's state model.
+    const toShow: string[] = []
     transaction(() => {
       for (const conf of confs) {
         // publishTrackConf returns undefined for an invalid config, which it
@@ -49,7 +53,7 @@ export function doPasteConfigSubmit({
               session.assemblyManager,
             )
           ) {
-            trackContainer?.showTrack(conf.trackId)
+            toShow.push(conf.trackId)
           } else {
             notShown.push(conf.name ?? conf.trackId)
           }
@@ -64,6 +68,9 @@ export function doPasteConfigSubmit({
         finishAddTrack(model, session)
       }
     })
+    for (const trackId of toShow) {
+      await trackContainer?.launchTrack(trackId)
+    }
     if (notShown.length) {
       // These tracks were added to the session but can't be shown here because
       // their assembly isn't open in this view; surface that rather than

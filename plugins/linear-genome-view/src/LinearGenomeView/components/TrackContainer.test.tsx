@@ -78,7 +78,7 @@ async function setup({
   await waitFor(() => {
     expect(model.initialized).toBe(true)
   })
-  model.showTrack('genes')
+  await model.launchTrack('genes')
   return model
 }
 

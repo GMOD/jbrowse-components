@@ -21,7 +21,25 @@ interface ViewMetadata {
 export default class ViewType extends PluggableElementBase {
   ReactComponent: ViewComponentType
 
-  stateModel: IAnyModelType
+  private loadedStateModel?: IAnyModelType
+
+  // Non-optional because nearly every reader holds a view instance, which
+  // implies the model is loaded; code that can run before any instance exists
+  // (session preloading, pruning, union membership) must check
+  // isStateModelLoaded first.
+  get stateModel(): IAnyModelType {
+    return this.loadedStateModel!
+  }
+
+  // named `stateModel` + `Loader` because pluggableMstType and
+  // pruneUnbuildableNodes probe `${fieldName}Loader` generically
+  stateModelLoader?: () => Promise<IAnyModelType>
+
+  private stateModelPromise?: Promise<IAnyModelType>
+
+  private pendingStateModelExtensions: ((
+    stateModel: IAnyModelType,
+  ) => IAnyModelType)[] = []
 
   // What `withLaunchInput` partitioned out of this view's snapshots, published
   // beside the model so an out-of-tree plugin, the doc generator and the
@@ -44,7 +62,7 @@ export default class ViewType extends PluggableElementBase {
   constructor(stuff: {
     name: string
     displayName?: string
-    stateModel: IAnyModelType
+    stateModel: IAnyModelType | (() => Promise<IAnyModelType>)
     launchKeys?: LaunchKeyRegistration<unknown, string>
     extendedName?: string
     viewMetadata?: ViewMetadata
@@ -54,7 +72,11 @@ export default class ViewType extends PluggableElementBase {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
     this.viewMetadata = stuff.viewMetadata ?? {}
-    this.stateModel = stuff.stateModel
+    if (typeof stuff.stateModel === 'function') {
+      this.stateModelLoader = stuff.stateModel
+    } else {
+      this.loadedStateModel = stuff.stateModel
+    }
     this.launchKeys = stuff.launchKeys
     this.extendedName = stuff.extendedName
   }
@@ -64,13 +86,15 @@ export default class ViewType extends PluggableElementBase {
    * properties plus the launch keys above. `undefined` for a view that
    * registers none: nothing there says which of its launcher's arguments are
    * settings, so a caller must classify nothing rather than call them all typos.
+   * Also `undefined` while a lazily registered state model is not loaded yet,
+   * for the same reason: nothing is known, so nothing is a typo.
    *
    * This is the set `withLaunchInput`'s partition reads off the same two
    * declarations, published for the surfaces that never build a view snapshot —
    * a session spec launches straight through `LaunchView-<type>`.
    */
   get acceptedKeys() {
-    const properties = this.stateModel.properties as
+    const properties = this.loadedStateModel?.properties as
       | Record<string, unknown>
       | undefined
     return this.launchKeys && properties
@@ -80,6 +104,39 @@ export default class ViewType extends PluggableElementBase {
           ...this.launchKeys.passThrough,
         ]
       : undefined
+  }
+
+  get isStateModelLoaded() {
+    return this.loadedStateModel !== undefined
+  }
+
+  loadStateModel() {
+    if (this.loadedStateModel !== undefined) {
+      return Promise.resolve(this.loadedStateModel)
+    }
+    if (!this.stateModelLoader) {
+      throw new Error(
+        `view type ${this.name} has neither a state model nor a loader`,
+      )
+    }
+    this.stateModelPromise ??= this.stateModelLoader().then(loaded => {
+      let stateModel = loaded
+      for (const extend of this.pendingStateModelExtensions) {
+        stateModel = extend(stateModel)
+      }
+      this.pendingStateModelExtensions = []
+      this.loadedStateModel = stateModel
+      return stateModel
+    })
+    return this.stateModelPromise
+  }
+
+  extendStateModel(extend: (stateModel: IAnyModelType) => IAnyModelType) {
+    if (this.loadedStateModel !== undefined) {
+      this.loadedStateModel = extend(this.loadedStateModel)
+    } else {
+      this.pendingStateModelExtensions.push(extend)
+    }
   }
 
   addDisplayType(display: DisplayType) {

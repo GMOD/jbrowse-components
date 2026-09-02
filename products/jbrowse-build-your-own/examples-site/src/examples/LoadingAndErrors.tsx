@@ -457,10 +457,10 @@ const Browser = observer(function Browser({ engine }: { engine: Engine }) {
             type="button"
             style={{ font: 'inherit', marginBottom: 8 }}
             onClick={() => {
-              // returns `undefined` and reports the reason through the session.
-              // Nothing throws, so a host that draws no notifications sees a
-              // checkbox tick and a track that never appears.
-              view.showTrack('a_track_that_is_not_in_the_config')
+              // resolves to `undefined` and reports the reason through the
+              // session. Nothing throws, so a host that draws no notifications
+              // sees a checkbox tick and a track that never appears.
+              void view.launchTrack('a_track_that_is_not_in_the_config')
             }}
           >
             Show a track that isn't in the config

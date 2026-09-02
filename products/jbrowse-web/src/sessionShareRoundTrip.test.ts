@@ -16,7 +16,9 @@ import type { SessionShareMode } from '@jbrowse/core/util'
 // one participant that isn't ours.
 
 jest.mock('./createPluginManager', () => ({
-  createPluginManager: jest.fn(),
+  // async in production (it preloads lazy view state models); a bare jest.fn()
+  // returns undefined and buildPluginManager's .then would throw on it
+  createPluginManager: jest.fn().mockResolvedValue({}),
 }))
 
 jest.mock('idb', () => ({

@@ -28,7 +28,7 @@ async function createLinearGenomeViewWithInit(spec: {
   nav?: boolean
   highlight?: string[]
 }) {
-  const { pluginManager, rootModel } = getPluginManager()
+  const { pluginManager, rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -174,8 +174,8 @@ test('LinearGenomeView showImportForm is false when a launch is pending', async 
   )
 }, 40000)
 
-test('LinearGenomeView with nothing to launch shows import form', () => {
-  const { rootModel } = getPluginManager()
+test('LinearGenomeView with nothing to launch shows import form', async () => {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -221,7 +221,7 @@ test('LinearGenomeView launch with 404 TwoBitAdapter shows error', async () => {
     return handleRequest(() => volvoxGetFile(`${url}`), args)
   })
 
-  const { rootModel } = getPluginManager(config404)
+  const { rootModel } = await getPluginManager(config404)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -246,7 +246,7 @@ test('LinearGenomeView launch with 404 TwoBitAdapter shows error', async () => {
 // reload/restore rebuilds instead of stranding on the import form. Once
 // displayedRegions exist, init is redundant and stripped.
 test('snapshot keeps the launch state while not materialized, strips it once regions load', async () => {
-  const { rootModel } = getPluginManager()
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {

@@ -87,7 +87,7 @@ export async function launchMafRowSynteny({
       ? { trackId: track.configuration.trackId, type }
       : { trackId: track.configuration.trackId }
   })
-  host.addView('LinearSyntenyView', {
+  await host.launchView('LinearSyntenyView', {
     views: [
       { assembly: refAssembly, loc: refLoc, tracks: refTracks },
       {

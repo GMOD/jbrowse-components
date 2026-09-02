@@ -25,7 +25,7 @@ export default function WithOutsideStyling() {
   })
   return (
     <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
-      <JBrowseLinearGenomeView viewState={state} />
+      {state ? <JBrowseLinearGenomeView viewState={state} /> : null}
     </div>
   )
 }

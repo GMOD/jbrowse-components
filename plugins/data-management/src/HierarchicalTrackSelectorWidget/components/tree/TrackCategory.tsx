@@ -163,9 +163,13 @@ function categoryTrackMenuItems(
     {
       label: 'Show all',
       onClick: () => {
-        for (const node of trackNodes) {
-          model.trackContainer?.showTrack(node.trackId)
-        }
+        // sequential, so the tracks land in the order the category lists them
+        // rather than the order their display chunks happen to resolve in
+        void (async () => {
+          for (const node of trackNodes) {
+            await model.trackContainer?.launchTrack(node.trackId)
+          }
+        })()
       },
     },
     {

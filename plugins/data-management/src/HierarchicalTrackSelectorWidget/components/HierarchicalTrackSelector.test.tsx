@@ -3,7 +3,7 @@ import { getSession } from '@jbrowse/core/util'
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
 import { getRowStr } from '../../FacetedSelector/components/util.ts'
@@ -81,8 +81,8 @@ test('sm categorized tracks', async () => {
       },
     ],
   })
-  firstView.showTrack(session.sessionTracks[0].trackId)
-  firstView.showTrack(session.sessionTracks[1].trackId)
+  await firstView.launchTrack(session.sessionTracks[0].trackId)
+  await firstView.launchTrack(session.sessionTracks[1].trackId)
   firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
   firstView.tracks[1].configuration.setSlot('category', [
     'Foo Category',
@@ -116,8 +116,8 @@ test('localstorage preference - collapse categorized tracks', async () => {
       },
     ],
   })
-  firstView.showTrack('fooC')
-  firstView.showTrack('barC')
+  await firstView.launchTrack('fooC')
+  await firstView.launchTrack('barC')
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId: f } = render(
@@ -155,8 +155,8 @@ test('configuration preference - collapse categorized tracks', async () => {
       },
     ],
   })
-  firstView.showTrack('fooC')
-  firstView.showTrack('barC')
+  await firstView.launchTrack('fooC')
+  await firstView.launchTrack('barC')
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId: f } = render(
@@ -550,13 +550,18 @@ test('checkbox click toggles track visibility', async () => {
   expect(checkbox.checked).toBe(false)
   expect(firstView.tracks.length).toBe(0)
 
-  // click checkbox to show track
+  // click checkbox to show track — the show goes through the async
+  // launchTrack path now
   fireEvent.click(checkbox)
-  expect(firstView.tracks.length).toBe(1)
+  await waitFor(() => {
+    expect(firstView.tracks.length).toBe(1)
+  })
 
   // click checkbox again to hide track
   fireEvent.click(checkbox)
-  expect(firstView.tracks.length).toBe(0)
+  await waitFor(() => {
+    expect(firstView.tracks.length).toBe(0)
+  })
 })
 
 test('filter text filters tracks', async () => {
@@ -1038,7 +1043,7 @@ test('faceted model destroy is safe', () => {
   expect(model.allTrackConfigurations.length).toBeGreaterThan(0)
 })
 
-test('setTracksSelected toggles tracks on the view', () => {
+test('setTracksSelected toggles tracks on the view', async () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1049,10 +1054,14 @@ test('setTracksSelected toggles tracks on the view', () => {
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   setTracksSelected(model, ['fooC', 'barC'], true, false)
-  expect([...model.shownTrackIds].toSorted()).toEqual(['barC', 'fooC'])
+  await waitFor(() => {
+    expect([...model.shownTrackIds].toSorted()).toEqual(['barC', 'fooC'])
+  })
 
   setTracksSelected(model, ['fooC'], false, false)
-  expect([...model.shownTrackIds]).toEqual(['barC'])
+  await waitFor(() => {
+    expect([...model.shownTrackIds]).toEqual(['barC'])
+  })
 })
 
 test('setTracksSelected updates the selection in shopping-cart mode', () => {

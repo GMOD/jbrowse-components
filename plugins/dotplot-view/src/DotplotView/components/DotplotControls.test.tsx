@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/testUtils'
+import { createTestSessionAsync } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
@@ -12,8 +12,8 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // Nothing rendered this header before, so the palette button moving into
 // synteny-core — and picking up the tooltip only its synteny twin used to have —
 // was covered by the typechecker alone.
-function setup() {
-  const session = createTestSession({
+async function setup() {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [
         {
@@ -37,7 +37,7 @@ function setup() {
         },
       ],
     },
-  }) as any
+  })) as any
   const model = session.views[0]
   const utils = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -47,8 +47,8 @@ function setup() {
   return { model, ...utils }
 }
 
-test('the palette button says which mode the plot is in', () => {
-  const { model } = setup()
+test('the palette button says which mode the plot is in', async () => {
+  const { model } = await setup()
   // the aria-label, not the tooltip's own node, which only mounts on hover
   expect(screen.getByTestId('color_by_menu')).toHaveAttribute(
     'aria-label',
@@ -66,8 +66,8 @@ test('the palette button says which mode the plot is in', () => {
 // the settings menu is all about drawn points, so it stays out of the header
 // until there is a track to draw. Found by title, the only handle its trigger
 // has.
-test('the settings menu appears only once a track is loaded', () => {
-  setup()
+test('the settings menu appears only once a track is loaded', async () => {
+  await setup()
   expect(
     screen.queryByLabelText('Dotplot display settings'),
   ).not.toBeInTheDocument()
@@ -81,8 +81,8 @@ function openViewMenu() {
 // Both rows draw the plot, so they are settings now. What is left of the
 // submenu that held them is one row about framing, promoted rather than kept
 // behind a hop of its own.
-test('the ⋮ menu keeps what the view is, not what it looks like', () => {
-  setup()
+test('the ⋮ menu keeps what the view is, not what it looks like', async () => {
+  await setup()
   openViewMenu()
   expect(screen.getByText('Lock aspect ratio (same bp/px)')).toBeInTheDocument()
   expect(screen.queryByText('Show...')).not.toBeInTheDocument()
@@ -92,8 +92,8 @@ test('the ⋮ menu keeps what the view is, not what it looks like', () => {
   expect(screen.queryByText(/^Gridlines/)).not.toBeInTheDocument()
 })
 
-test('the aspect lock row reports the model and writes it back', () => {
-  const { model } = setup()
+test('the aspect lock row reports the model and writes it back', async () => {
+  const { model } = await setup()
   openViewMenu()
   const name = 'Lock aspect ratio (same bp/px)'
   const row = () => screen.getByRole('menuitemcheckbox', { name })

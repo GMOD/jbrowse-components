@@ -46,9 +46,9 @@ async function setup() {
   const session = createTestSession() as any
   session.addAssemblyConf(assembly('volvox'))
   session.addAssemblyConf(assembly('volvox2'))
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.pendingLaunch === undefined)
 
@@ -64,7 +64,7 @@ async function setup() {
     },
   })
   const level = view.levels[0]!
-  level.showTrack('pafTrack')
+  await level.launchTrack('pafTrack')
   await when(() => level.linearSyntenyDisplays.length > 0)
   const display = level.linearSyntenyDisplays[0]!
   return { view, level, display }

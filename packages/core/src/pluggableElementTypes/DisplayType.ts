@@ -5,7 +5,20 @@ import type { AnyReactComponentType } from '../util/index.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 export default class DisplayType extends PluggableElementBase {
-  stateModel: IAnyModelType
+  private loadedStateModel?: IAnyModelType
+
+  // same contract as ViewType.stateModel
+  get stateModel(): IAnyModelType {
+    return this.loadedStateModel!
+  }
+
+  stateModelLoader?: () => Promise<IAnyModelType>
+
+  private stateModelPromise?: Promise<IAnyModelType>
+
+  private pendingStateModelExtensions: ((
+    stateModel: IAnyModelType,
+  ) => IAnyModelType)[] = []
 
   configSchema: AnyConfigurationSchemaType
 
@@ -28,7 +41,7 @@ export default class DisplayType extends PluggableElementBase {
 
   constructor(stuff: {
     name: string
-    stateModel: IAnyModelType
+    stateModel: IAnyModelType | (() => Promise<IAnyModelType>)
     trackType: string
     viewType: string
     displayName?: string
@@ -38,11 +51,48 @@ export default class DisplayType extends PluggableElementBase {
     aliases?: string[]
   }) {
     super(stuff)
-    this.stateModel = stuff.stateModel
+    if (typeof stuff.stateModel === 'function') {
+      this.stateModelLoader = stuff.stateModel
+    } else {
+      this.loadedStateModel = stuff.stateModel
+    }
     this.configSchema = stuff.configSchema
     this.ReactComponent = stuff.ReactComponent
     this.trackType = stuff.trackType
     this.viewType = stuff.viewType
     this.helpText = stuff.helpText
+  }
+
+  get isStateModelLoaded() {
+    return this.loadedStateModel !== undefined
+  }
+
+  loadStateModel() {
+    if (this.loadedStateModel !== undefined) {
+      return Promise.resolve(this.loadedStateModel)
+    }
+    if (!this.stateModelLoader) {
+      throw new Error(
+        `display type ${this.name} has neither a state model nor a loader`,
+      )
+    }
+    this.stateModelPromise ??= this.stateModelLoader().then(loaded => {
+      let stateModel = loaded
+      for (const extend of this.pendingStateModelExtensions) {
+        stateModel = extend(stateModel)
+      }
+      this.pendingStateModelExtensions = []
+      this.loadedStateModel = stateModel
+      return stateModel
+    })
+    return this.stateModelPromise
+  }
+
+  extendStateModel(extend: (stateModel: IAnyModelType) => IAnyModelType) {
+    if (this.loadedStateModel !== undefined) {
+      this.loadedStateModel = extend(this.loadedStateModel)
+    } else {
+      this.pendingStateModelExtensions.push(extend)
+    }
   }
 }

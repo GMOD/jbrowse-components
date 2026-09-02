@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { ErrorMessage, SubmitDialog, replaceViewAction } from '@jbrowse/core/ui'
 import {
-  addOrReplaceView,
+  launchOrReplaceView,
   getContainingView,
   getSession,
   saveAs,
@@ -145,12 +145,12 @@ const MAX_SHOWN = 10
 
 interface SyntenyPanel {
   initialized?: boolean
-  showTrack?: (
+  launchTrack?: (
     trackId: string,
     initialSnapshot?: Record<string, unknown>,
     displayInitialSnapshot?: Record<string, unknown>,
     inlineConf?: Record<string, unknown>,
-  ) => void
+  ) => Promise<unknown>
 }
 
 // Run `show` once the panel has a width. A view created by an action is not
@@ -395,12 +395,12 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     // so leaving that view standing above it is a second copy of the same
     // locus with the same tracks, one scroll apart. (Reviewer, on the figure
     // of exactly that: "too chaotic ... should also use 'replace view'".)
-    const created = addOrReplaceView({
+    const created = (await launchOrReplaceView({
       session,
       typeName: 'BreakpointSplitView',
       initialState: viewSnapshot,
       replacing: replace ? (view as AbstractViewModel) : undefined,
-    }) as unknown as {
+    })) as unknown as {
       views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
     }
     // Before the navigation, not after it, and this is the ordering the bug
@@ -449,20 +449,22 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         rand: () => Math.random(),
       })
     session.addTemporaryAssembly?.(temporaryAssembly)
-    const created = addOrReplaceView({
+    const created = (await launchOrReplaceView({
       session,
       typeName: 'LinearSyntenyView',
       initialState: viewSpec,
       replacing: replace ? (view as AbstractViewModel) : undefined,
-    }) as { views?: SyntenyPanel[] }
+    })) as { views?: SyntenyPanel[] }
     const [refPanel, derivativePanel] = created.views ?? []
     // the launching view's own tracks go onto the reference panel only: the
     // derivative panel is a synthetic assembly no configured track names
     if (refPanel && carried.length > 0) {
       showWhenMeasured(refPanel, () => {
-        for (const trackId of carried) {
-          refPanel.showTrack?.(trackId)
-        }
+        void (async () => {
+          for (const trackId of carried) {
+            await refPanel.launchTrack?.(trackId)
+          }
+        })()
       })
     }
     // The config travels on the track rather than into any session list. It is
@@ -473,7 +475,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     // above, whose config the view spec carries the same way.
     if (derivativePanel) {
       showWhenMeasured(derivativePanel, () => {
-        derivativePanel.showTrack?.(
+        void derivativePanel.launchTrack?.(
           segmentsTrack.trackId,
           {},
           segmentsDisplay,

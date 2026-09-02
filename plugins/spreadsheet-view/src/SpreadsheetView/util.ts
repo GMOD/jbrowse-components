@@ -24,12 +24,12 @@ export async function locationLinkClick({
     | LinearGenomeViewModel
     | undefined
   if (view) {
-    // reuse an already-open view by navigating it directly. showTrack is
+    // reuse an already-open view by navigating it directly. launchTrack is
     // idempotent, so a second row does not stack a second copy — but it does
     // put the track back if the reader closed it, and that is the wrong way
     // round, so only ask when the view has no tracks at all
     if (trackId && !view.tracks.length) {
-      view.showTrack(trackId)
+      await view.launchTrack(trackId)
     }
     await view.navToLocString(locString, assemblyName)
   } else {

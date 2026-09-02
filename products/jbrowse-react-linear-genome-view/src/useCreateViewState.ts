@@ -1,6 +1,6 @@
-import { useCreateOnce, useDestroyOnUnmount } from '@jbrowse/product-core'
+import { useAsyncEngineLifecycle } from '@jbrowse/product-core'
 
-import createViewState from './createViewState.ts'
+import { createViewStateAsync } from './createViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
@@ -25,9 +25,13 @@ import type { ViewStateOptions } from './createViewState.ts'
  * Do NOT reach for `useState(() => createViewState(opts))` plus a
  * `destroyViewState` cleanup by hand: both halves are StrictMode traps, and
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
+ *
+ * The lazily loaded view and display types the session names are resolved
+ * first, so this returns undefined for the first frame, and the component
+ * renders nothing until then.
  */
-export function useCreateViewState(opts: ViewStateOptions): ViewModel {
-  const state = useCreateOnce(() => createViewState(opts))
-  useDestroyOnUnmount(state)
-  return state
+export function useCreateViewState(
+  opts: ViewStateOptions,
+): ViewModel | undefined {
+  return useAsyncEngineLifecycle(() => createViewStateAsync(opts))
 }

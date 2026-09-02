@@ -104,6 +104,17 @@ function viewsOfSessionSnapshot(
  * #stateModel MultipleViewsSessionMixin
  */
 export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
+  // an unknown type name passes through to fail at the union as it always has
+  function assertViewStateModelLoaded(typeName: string) {
+    if (
+      pluginManager.getElementTypeRecord('view').has(typeName) &&
+      !pluginManager.getViewType(typeName).isStateModelLoaded
+    ) {
+      throw new Error(
+        `state model for view type ${typeName} is not loaded yet — use launchView(), or await getViewType('${typeName}').loadStateModel() first`,
+      )
+    }
+  }
   return types
     .compose(
       BaseSessionModel(pluginManager),
@@ -280,11 +291,14 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
+         * Requires the view type's state model to be loaded; for a lazily
+         * registered type use `launchView`.
          */
         addView<N extends string>(
           typeName: N,
           initialState?: NoInfer<ViewSnapshotInput<N>>,
         ) {
+          assertViewStateModelLoaded(typeName)
           const length = self.views.push({
             ...initialState,
             type: typeName,
@@ -326,6 +340,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
           typeName: N,
           initialState?: NoInfer<ViewSnapshotInput<N>>,
         ) {
+          assertViewStateModelLoaded(typeName)
           // read before the removal, which is what makes both stale
           const idx = self.views.indexOf(view)
           // `idx` first, so a view already gone from the session short-circuits
@@ -464,6 +479,26 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         },
       }
     })
+    .actions(self => ({
+      /**
+       * #action
+       * `addView` for view types whose state model may be lazily loaded. The
+       * view is not in `session.views` until the promise resolves.
+       * `getViewType` first so an unknown type name fails by that name; the
+       * snapshot walk skips unregistered names and covers the displays of the
+       * tracks a launch opens with.
+       */
+      async launchView<N extends string>(
+        typeName: N,
+        initialState?: NoInfer<ViewSnapshotInput<N>>,
+      ) {
+        await pluginManager.getViewType(typeName).loadStateModel()
+        await pluginManager.preloadSessionTypes({
+          views: [{ type: typeName, ...initialState }],
+        })
+        return self.addView(typeName, initialState)
+      },
+    }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

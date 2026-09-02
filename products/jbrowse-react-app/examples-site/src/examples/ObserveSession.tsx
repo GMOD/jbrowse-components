@@ -34,7 +34,7 @@ const config = {
 const SessionSummary = observer(function SessionSummary({
   viewState,
 }: {
-  viewState: ReturnType<typeof useCreateViewState>
+  viewState: NonNullable<ReturnType<typeof useCreateViewState>>
 }) {
   const { views } = viewState.session
   return (
@@ -55,12 +55,14 @@ export default function ObserveSession() {
   // `useCreateViewState`, not `useState(() => createViewState(…))`: React
   // double-invokes a state initializer under StrictMode and throws the second
   // result away, which for an engine is a whole orphaned worker pool per mount.
+  // undefined for the frame in which the engine is still being built — the
+  // view and display types the config's session names load first
   const viewState = useCreateViewState({ config })
 
-  return (
+  return viewState ? (
     <div>
       <SessionSummary viewState={viewState} />
       <JBrowseApp viewState={viewState} />
     </div>
-  )
+  ) : null
 }

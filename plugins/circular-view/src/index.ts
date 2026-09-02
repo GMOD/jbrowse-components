@@ -24,7 +24,7 @@ export default class CircularViewPlugin extends Plugin {
         label: 'Circular view',
         icon: DataUsageIcon,
         onClick: (session: AbstractViewContainer) => {
-          session.addView('CircularView', {})
+          void session.launchView('CircularView', {})
         },
       })
     }

@@ -292,9 +292,9 @@ function ResultList({
                 onChosen()
                 view
                   .navToLocString(location, hg38.name, 0.2)
-                  .then(() => {
+                  .then(async () => {
                     if (trackId) {
-                      view.showTrack(trackId)
+                      await view.launchTrack(trackId)
                     }
                   })
                   .catch((e: unknown) => {

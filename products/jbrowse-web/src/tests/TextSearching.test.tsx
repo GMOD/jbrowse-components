@@ -115,7 +115,7 @@ test('enter finds what the dropdown listed, searching: apple', async () => {
 // it, all at ctgA:1049..9000. Four rows whose only varying column is Track is
 // not a question worth asking, and asking it was issue #4302.
 test('hits agreeing on a destination navigate rather than ask', async () => {
-  const { session, view } = getTestSession(jb1_config)
+  const { session, view } = await getTestSession(jb1_config)
   view.setWidth(800)
 
   await view.navToLocString('eden.1', 'volvox')
@@ -129,7 +129,7 @@ test('hits agreeing on a destination navigate rather than ask', async () => {
 // of them leads the list. Travelling through it would navigate and then drop a
 // "could not resolve identifier" snackbar over the result.
 test('an agreeing group skips a track no config claims', async () => {
-  const { view } = getTestSession(jb1_config)
+  const { view } = await getTestSession(jb1_config)
   view.setWidth(800)
 
   await view.navToLocString('eden.1', 'volvox')
@@ -142,9 +142,9 @@ test('an agreeing group skips a track no config claims', async () => {
 // ...and a track already on screen outranks that, so the search does not stack
 // a second gene track under the one being read.
 test('an agreeing group navigates through a track already open', async () => {
-  const { view } = getTestSession(jb1_config)
+  const { view } = await getTestSession(jb1_config)
   view.setWidth(800)
-  view.showTrack('bedtabix_genes')
+  await view.launchTrack('bedtabix_genes')
 
   await view.navToLocString('eden.1', 'volvox')
 
@@ -156,7 +156,7 @@ test('an agreeing group navigates through a track already open', async () => {
 // the other half of the same branch: hits that name one feature in genuinely
 // different places are a real question, and still get the picker
 test('hits in different places still raise the picker', async () => {
-  const { session, view } = getTestSession()
+  const { session, view } = await getTestSession()
   view.setWidth(800)
 
   await view.navToLocString('seg02', 'volvox')
@@ -247,12 +247,12 @@ test('failed search resets input to visible location', async () => {
 // or sv-core's navToLoc, was honoured or overwritten depending on whether the
 // input happened to parse as a locstring rather than resolve to a feature.
 test('an explicit grow reaches a feature hit, not only a locstring', async () => {
-  const { view } = getTestSession()
+  const { view } = await getTestSession()
   view.setWidth(800)
   await view.navToLocString('eden.1', 'volvox', 0)
   const exact = view.visibleLocStrings
 
-  const { view: padded } = getTestSession()
+  const { view: padded } = await getTestSession()
   padded.setWidth(800)
   await padded.navToLocString('eden.1', 'volvox')
 
@@ -267,7 +267,7 @@ test('an explicit grow reaches a feature hit, not only a locstring', async () =>
 // adapters answer 'exact' by filtering exactly the broad list, so the flag now
 // rides on the hits and one read answers both.
 test('enter reads the index once, exact miss or not', async () => {
-  const { session, view } = getTestSession()
+  const { session, view } = await getTestSession()
   view.setWidth(800)
   const search = jest.spyOn(session.textSearchManager, 'search')
 

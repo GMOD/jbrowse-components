@@ -49,7 +49,7 @@ interface DensityIssue {
 }
 
 /** What one read was issued over, and so what the held bins answer for. */
-interface DensityRead {
+export interface DensityRead {
   regions: BufferedVisibleRegion[]
   bucket: number
   adapterKey: string

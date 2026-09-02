@@ -1,6 +1,6 @@
 import { useImperativeHandle } from 'react'
 
-import { useCreateOnce } from '@jbrowse/product-core'
+import { useCreateOnceAsync } from '@jbrowse/product-core'
 import { observer } from 'mobx-react'
 
 import JBrowseCircularGenomeView from '../JBrowseCircularGenomeView/index.ts'
@@ -16,7 +16,7 @@ export interface CircularGenomeViewProps extends CreateViewStateBaseOptions {
   // *read* the engine while rendering — to disable its own button until the
   // view is up, to show what is on the ring — gets it a render too late, and
   // should build the engine with useCreateViewState
-  ref?: Ref<ViewModel>
+  ref?: Ref<ViewModel | undefined>
 }
 
 /**
@@ -53,11 +53,11 @@ const CircularGenomeView = observer(function CircularGenomeView({
   // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state
   // initializer and discards the second result, which for an engine is a whole
   // orphaned worker pool per mount, and this component never destroys anything.
-  const state = useCreateOnce(() => createViewState(rest))
+  const state = useCreateOnceAsync(() => createViewState(rest))
 
   useImperativeHandle(ref, () => state, [state])
 
-  return <JBrowseCircularGenomeView viewState={state} />
+  return state ? <JBrowseCircularGenomeView viewState={state} /> : null
 })
 
 export default CircularGenomeView

@@ -34,11 +34,15 @@ export default class CanvasPlugin extends Plugin {
   }
 }
 
+// The two state model factories are deliberately NOT re-exported here: a value
+// edge from this barrel would keep the display model subgraph eager, which is
+// the point of the lazy registration. They are reachable at
+// '@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel' and
+// '.../baseStateModel' — the latter is what a display outside this plugin
+// composes (LinearVariantDisplay does).
 export {
   linearBasicDisplayConfigSchemaFactory,
-  linearBasicDisplayStateModelFactory,
   linearCanvasBaseDisplayConfigSchemaFactory,
-  linearCanvasBaseDisplayStateModelFactory,
 } from './LinearBasicDisplay/index.ts'
 // The exact string `colorByMode` recognizes as "color by strand". Exported so a
 // third party writing the `color` slot can produce the value the display reads

@@ -14,6 +14,11 @@ export type SyncableViewAction =
   | 'zoomTo'
   | 'showTrack'
   | 'toggleTrack'
+  // the loading twins of the two above: every runtime path a user can drive
+  // now calls these, so a list that named only the sync pair silently stopped
+  // syncing track toggles across linked views
+  | 'launchTrack'
+  | 'launchToggleTrack'
   | 'hideTrack'
   | 'setTrackLabels'
   | 'setShowCenterLine'
@@ -35,6 +40,12 @@ function applyViewAction(
       break
     case 'toggleTrack':
       view.toggleTrack(args[0])
+      break
+    case 'launchTrack':
+      void view.launchTrack(args[0])
+      break
+    case 'launchToggleTrack':
+      void view.launchToggleTrack(args[0])
       break
     case 'hideTrack':
       view.hideTrack(args[0])

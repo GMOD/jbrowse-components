@@ -44,7 +44,7 @@ test('banner shows when file handles cannot be silently restored', async () => {
     { handleId: 'h2', success: false },
   ])
 
-  const { pluginManager } = getPluginManager()
+  const { pluginManager } = await getPluginManager()
   const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
 
   await findByText(/2 local files need permission/, {}, delay)
@@ -55,7 +55,7 @@ test('no banner when file handles restore successfully', async () => {
     { handleId: 'h1', success: true },
   ])
 
-  const { pluginManager } = getPluginManager()
+  const { pluginManager } = await getPluginManager()
   const { findByText, queryByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
@@ -72,7 +72,7 @@ test('restore access reloads page when all handles succeed', async () => {
     { handleId: 'h1', success: true },
   ])
 
-  const { pluginManager } = getPluginManager()
+  const { pluginManager } = await getPluginManager()
   const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
 
   await findByText(/1 local file needs permission/, {}, delay)
@@ -93,7 +93,7 @@ test('restore access reloads page on partial success', async () => {
     { handleId: 'h2', success: false },
   ])
 
-  const { pluginManager } = getPluginManager()
+  const { pluginManager } = await getPluginManager()
   const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
 
   await findByText(/2 local files need permission/, {}, delay)
@@ -112,7 +112,7 @@ test('no reload when restore fails completely', async () => {
     { handleId: 'h1', success: false },
   ])
 
-  const { pluginManager } = getPluginManager()
+  const { pluginManager } = await getPluginManager()
   const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
 
   await findByText(/1 local file needs permission/, {}, delay)

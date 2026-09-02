@@ -2,7 +2,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, within } from '@testing-library/react'
+import { fireEvent, render, waitFor, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import { facetedStateTreeF } from '../facetedModel.ts'
@@ -96,7 +96,7 @@ test('renders a row per track', () => {
   expect(getByText('barC')).toBeTruthy()
 })
 
-test('clicking a row checkbox shows then hides the track on the view', () => {
+test('clicking a row checkbox shows then hides the track on the view', async () => {
   const { view, model, faceted } = setup()
   const { getByText } = renderGrid(model, faceted)
 
@@ -105,18 +105,25 @@ test('clicking a row checkbox shows then hides the track on the view', () => {
 
   expect(view.tracks.length).toBe(0)
   fireEvent.click(checkbox)
-  expect([...model.shownTrackIds]).toEqual(['fooC'])
+  // the show goes through the async launchTrack path now
+  await waitFor(() => {
+    expect([...model.shownTrackIds]).toEqual(['fooC'])
+  })
   fireEvent.click(checkbox)
-  expect(view.tracks.length).toBe(0)
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(0)
+  })
 })
 
-test('select-all checkbox shows every filtered track', () => {
+test('select-all checkbox shows every filtered track', async () => {
   const { view, model, faceted } = setup()
   const { getAllByRole } = renderGrid(model, faceted)
 
   // the first checkbox is the header select-all
   fireEvent.click(getAllByRole('checkbox')[0]!)
-  expect(view.tracks.length).toBe(faceted.filteredRows.length)
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(faceted.filteredRows.length)
+  })
 })
 
 test('shows an empty message when nothing matches the filter', () => {

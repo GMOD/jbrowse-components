@@ -21,11 +21,11 @@ const ToggleTrack = observer(function ToggleTrack({
   return (
     <button
       onClick={() => {
-        // showTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack
+        // launchTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-launchtrack
         if (open) {
           view.hideTrack(TRACK_ID)
         } else {
-          view.showTrack(TRACK_ID)
+          void view.launchTrack(TRACK_ID)
         }
       }}
     >
@@ -52,10 +52,10 @@ export default function WithShowTrack() {
     // its id in `init.tracks` instead of calling showTrack at construction
     init: { loc: 'ctgA:1105..1221' },
   })
-  return (
+  return state ? (
     <div>
       <ToggleTrack viewState={state} />
       <JBrowseLinearGenomeView viewState={state} />
     </div>
-  )
+  ) : null
 }

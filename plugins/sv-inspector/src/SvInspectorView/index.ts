@@ -10,7 +10,6 @@ import {
 } from '@jbrowse/sv-core'
 
 import { svInspectorLaunchKeys } from './launchKeys.ts'
-import stateModelFactory from './model.ts'
 import { svChordColor } from './svChordColor.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -94,8 +93,17 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('svChordColor', svChordColor)
 
   pluginManager.addViewType(() => {
-    const stateModel: ViewTypeRegistry['SvInspectorView'] =
-      stateModelFactory(pluginManager)
+    // the factory embeds the SpreadsheetView and CircularView state models as
+    // sub-model props, so their loaders resolve first
+    const stateModel = async (): Promise<
+      ViewTypeRegistry['SvInspectorView']
+    > => {
+      await Promise.all([
+        pluginManager.getViewType('SpreadsheetView').loadStateModel(),
+        pluginManager.getViewType('CircularView').loadStateModel(),
+      ])
+      return import('./model.ts').then(f => f.default(pluginManager))
+    }
     return new ViewType({
       name: 'SvInspectorView',
       displayName: 'SV inspector',

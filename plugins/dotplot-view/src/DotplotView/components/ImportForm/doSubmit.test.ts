@@ -29,7 +29,7 @@ function setup(
   const model = {
     importFormSyntenyTrackSelections: [selection],
     setError() {},
-    showTrack: (trackId: string) => calls.shown.push(trackId),
+    launchTrack: async (trackId: string) => calls.shown.push(trackId),
     toggleTrack: (trackId: string) => calls.toggled.push(trackId),
     setAssemblyNames: (x: string, y: string) => {
       calls.assemblyNames = [x, y]

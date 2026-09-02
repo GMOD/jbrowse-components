@@ -44,13 +44,15 @@ const PasteConfigAddTrackWorkflow = observer(
           variant="contained"
           className={classes.submit}
           onClick={() => {
-            try {
-              setError(undefined)
-              doPasteConfigSubmit({ model, jsonText: val })
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            }
+            void (async () => {
+              try {
+                setError(undefined)
+                await doPasteConfigSubmit({ model, jsonText: val })
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
+            })()
           }}
         >
           Submit

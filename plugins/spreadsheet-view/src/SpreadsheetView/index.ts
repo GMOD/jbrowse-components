@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
-import stateModelFactory from './SpreadsheetViewModel.ts'
 import { spreadsheetLaunchKeys } from './launchKeys.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -13,7 +12,8 @@ export default function SpreadsheetViewF(pluginManager: PluginManager) {
     // annotated against the registry rather than inferred, which is what
     // makes a hand-written augmentation earn what `getViewType` promises
     // its callers — see `ViewTypeRegistry`
-    const stateModel: ViewTypeRegistry['SpreadsheetView'] = stateModelFactory()
+    const stateModel = (): Promise<ViewTypeRegistry['SpreadsheetView']> =>
+      import('./SpreadsheetViewModel.ts').then(f => f.default())
     return new ViewType({
       name: 'SpreadsheetView',
       displayName: 'Spreadsheet view',

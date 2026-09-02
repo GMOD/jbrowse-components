@@ -1,9 +1,9 @@
 import { useImperativeHandle } from 'react'
 
-import { useCreateOnce } from '@jbrowse/product-core'
+import { useCreateOnceAsync } from '@jbrowse/product-core'
 
 import JBrowseApp from '../JBrowseApp/index.ts'
-import { createViewStateFromProps } from '../createViewStateFromProps.ts'
+import { createViewStateFromPropsAsync } from '../createViewStateFromProps.ts'
 
 import type { ViewModel } from '../createModel.ts'
 import type { CreateViewStateOptions } from '../createViewState.ts'
@@ -68,8 +68,10 @@ export interface JBrowseProps {
   // button has to be yours; see encodeSession and the session-in-url example
   headerButtons?: React.ReactElement
   // ref to the live engine, for imperative control after launch
-  // (session.addView, navToLocString, ...)
-  ref?: Ref<ViewModel>
+  // (session.addView, navToLocString, ...). Undefined until the engine is
+  // built, which is a wait: the view and display types a session names are
+  // loaded first.
+  ref?: Ref<ViewModel | undefined>
 }
 
 /**
@@ -90,14 +92,18 @@ export interface JBrowseProps {
  * owns the whole lifecycle.
  */
 function JBrowse({ ref, headerButtons, ...opts }: JBrowseProps) {
-  // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state
-  // initializer and discards the second result, which for an engine is a whole
-  // orphaned worker pool per mount, and this component never destroys anything.
-  const state = useCreateOnce(() => createViewStateFromProps(opts))
+  // `useCreateOnceAsync`, not `useState(() => …)`: StrictMode double-invokes a
+  // state initializer and discards the second result, which for an engine is a
+  // whole orphaned worker pool per mount, and this component never destroys
+  // anything. Async because `views`/`session` name view and display types whose
+  // state models are loaded on demand — nothing renders for that frame.
+  const state = useCreateOnceAsync(() => createViewStateFromPropsAsync(opts))
 
   useImperativeHandle(ref, () => state, [state])
 
-  return <JBrowseApp viewState={state} headerButtons={headerButtons} />
+  return state ? (
+    <JBrowseApp viewState={state} headerButtons={headerButtons} />
+  ) : null
 }
 
 export default JBrowse

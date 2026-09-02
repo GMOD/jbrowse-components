@@ -13,6 +13,8 @@ import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
   hideTrackGeneric,
   normalizeTrackInit,
+  launchToggleTrackGeneric,
+  launchTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
@@ -93,20 +95,22 @@ export interface ExportSvgOptions {
 // own Instance so the helper can live above the factory that defines it
 interface CircularViewInitSelf extends IStateTreeNode {
   setDisplayedRegions: (regions: Region[]) => void
-  showTrack: (
+  launchTrack: (
     trackId: string,
     trackSnapshot?: Record<string, unknown>,
     displaySnapshot?: Record<string, unknown>,
-  ) => unknown
+  ) => Promise<unknown>
 }
 
 /**
  * Apply one launch blob: the regions the circle is drawn from, then the chord
- * tracks. Nothing here awaits, so `installInitAutorun`'s supersede ceiling never
- * comes up — it is still the owner of the re-entry guard, the `isAlive` checks,
- * the identity-checked clear of `init`, and the failure policy.
+ * tracks. The only await is `launchTrack`'s dynamic import of a lazily
+ * registered display model, which cannot park indefinitely, so
+ * `installInitAutorun`'s supersede ceiling never comes up. It is still the
+ * owner of the re-entry guard, the `isAlive` checks, the identity-checked
+ * clear of `init`, and the failure policy.
  */
-function applyInit(
+async function applyInit(
   self: CircularViewInitSelf,
   init: LaunchInput<CircularViewCommands>,
 ) {
@@ -143,7 +147,7 @@ function applyInit(
   }
   for (const t of init.tracks ?? []) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
-    self.showTrack(trackId, trackSnapshot, displaySnapshot)
+    await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
 }
 
@@ -949,15 +953,18 @@ function stateModelFactory(pluginManager: PluginManager) {
         trackId: string,
         initialSnapshot = {},
         displayInitialSnapshot = {},
+        // the loading path re-enters through this action, so a parameter it
+        // drops is one `launchTrackConf` loses
+        inlineConf?: Record<string, unknown>,
       ) {
         return showTrackGeneric(
           self,
           trackId,
           initialSnapshot,
           displayInitialSnapshot,
+          inlineConf,
         )
       },
-
       /**
        * #action
        */
@@ -1010,6 +1017,52 @@ function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * showTrack for a track whose display state model may be lazily
+       * loaded: loads it, then shows
+       */
+      async launchTrack(
+        trackId: string,
+        initialSnapshot = {},
+        displayInitialSnapshot = {},
+      ) {
+        return launchTrackGeneric(
+          self,
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+        )
+      },
+      /**
+       * #action
+       * toggleTrack with launchTrack's loading behavior
+       */
+      async launchToggleTrack(trackId: string) {
+        return launchToggleTrackGeneric(self, trackId)
+      },
+      /**
+       * #action
+       * `addTrackConf` with `launchTrack`'s loading behavior, for a track
+       * handed over inline rather than from a session list
+       */
+      async launchTrackConf(
+        configuration: Record<string, unknown>,
+        initialSnapshot = {},
+      ) {
+        const { trackId } = configuration
+        return typeof trackId === 'string'
+          ? launchTrackGeneric(
+              self,
+              trackId,
+              initialSnapshot,
+              {},
+              configuration,
+            )
+          : undefined
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
@@ -1037,9 +1090,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           // step's problem and must not take the figure down with it —
           // showImportForm keys off `error` alone
           materialized: () => self.displayedRegions.length > 0,
-          apply: async init => {
-            applyInit(self, init)
-          },
+          apply: init => applyInit(self, init),
         })
       },
     }))

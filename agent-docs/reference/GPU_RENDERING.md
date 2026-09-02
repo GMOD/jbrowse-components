@@ -675,7 +675,12 @@ methods:
 - `linearWiggleDisplayConfigSchema` / `linearWiggleDisplayModelFactory` — the full
   LinearWiggleDisplay config + model. Composed **wholesale** by GC-content's
   `LinearGCContentDisplay`. The config schema is reused more widely (Manhattan
-  extends it); the model factory is not.
+  extends it); the model factory is not. The config schema comes off the plugin
+  barrel; the model factory does **not** and cannot — it is
+  `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel`, because the display
+  registers a state model loader and a value edge from the eager barrel would
+  undo that. A display composing it is itself lazily registered, so it reaches
+  the subpath from inside its own loader.
 - `WiggleScoreConfigMixin()` / `WiggleCommonMixin()` — score/color config pieces
   composed à la carte by displays that build their own model. The score *axis*
   alone (`scaleType` / `autoscale` / min-max + setters, i.e. the `ScoreScaleModel`
@@ -1749,8 +1754,9 @@ does the Canvas2D-only version); keep them in step with any change here.
   )
   ```
 - **Wiggle-style displays** — to reuse the whole LinearWiggleDisplay model, compose
-  `linearWiggleDisplayModelFactory` from `@jbrowse/plugin-wiggle` (see
-  `plugins/gccontent`). To borrow only the score machinery, compose
+  `linearWiggleDisplayModelFactory` from
+  `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` — the subpath, not the
+  barrel (see `plugins/gccontent`, and the export note above). To borrow only the score machinery, compose
   `WiggleScoreConfigMixin` + `makeScoreSubMenu` (see `plugins/gwas` Manhattan).
   Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
   zoom-independent display needs no cache override: the strict-`bpPerPx`

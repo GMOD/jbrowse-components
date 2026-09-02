@@ -108,7 +108,8 @@ function GenomeBrowser() {
 
 Props are read once on mount. To reach the view engine imperatively (navigate,
 show a track), take a `ref` or use `useCreateViewState`, which builds the same
-view state as a hook:
+view state as a hook. It is `undefined` for the first frame, while the view and
+display types the options name load, so render nothing until then:
 
 ```js
 import {
@@ -118,7 +119,7 @@ import {
 
 function GenomeBrowser() {
   const state = useCreateViewState({ assembly, tracks, location: '...' })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }
 ```
 

@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { createTestSession } from '../rootModel/test_util.ts'
+import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -10,8 +10,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // every read-oriented color scheme unless its menu curates them away. These
 // specs drive the real model (not a menu stub) so the curation is checked
 // against what the display actually offers.
-function syntenyDisplay() {
-  const session = createTestSession({
+async function syntenyDisplay() {
+  const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
         {
@@ -75,7 +75,7 @@ function syntenyDisplay() {
   return display
 }
 
-function colorByLabels(display: ReturnType<typeof syntenyDisplay>) {
+function colorByLabels(display: Awaited<ReturnType<typeof syntenyDisplay>>) {
   const colorBy = display
     .trackMenuItems()
     .find(i => 'label' in i && i.label === 'Color by...')
@@ -85,8 +85,8 @@ function colorByLabels(display: ReturnType<typeof syntenyDisplay>) {
   return resolveSubMenu(colorBy).map(i => ('label' in i ? i.label : ''))
 }
 
-test('offers only the schemes a PAF block can answer', () => {
-  expect(colorByLabels(syntenyDisplay())).toEqual([
+test('offers only the schemes a PAF block can answer', async () => {
+  expect(colorByLabels(await syntenyDisplay())).toEqual([
     'Normal',
     'Strand',
     'Mapping quality',
@@ -94,15 +94,15 @@ test('offers only the schemes a PAF block can answer', () => {
   ])
 })
 
-test('drops the read-oriented schemes it inherits from the alignments model', () => {
-  const labels = colorByLabels(syntenyDisplay())
+test('drops the read-oriented schemes it inherits from the alignments model', async () => {
+  const labels = colorByLabels(await syntenyDisplay())
   expect(labels).not.toContain('Paired end')
   expect(labels).not.toContain('Bisulfite / EM-seq')
   expect(labels).not.toContain('Modifications')
 })
 
-test('picking Query name stores the scheme through the config slot', () => {
-  const display = syntenyDisplay()
+test('picking Query name stores the scheme through the config slot', async () => {
+  const display = await syntenyDisplay()
   display.setColorScheme({ type: 'mateRefName' })
   expect(display.colorBy).toEqual({ type: 'mateRefName' })
 })

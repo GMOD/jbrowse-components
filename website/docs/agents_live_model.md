@@ -130,7 +130,7 @@ const view = session.views[0]
 view.visibleLocStrings // getter: what region is on screen
 view.assemblyNames
 view.navToLocString('BRCA1') // async; gene names go through text search
-view.showTrack('mytrack', {}, { height: 300, displayMode: 'compact' })
+await view.launchTrack('mytrack', {}, { height: 300, displayMode: 'compact' })
 view.hideTrack('mytrack')
 // a shown track's live display model (getters are rich) — find by trackId,
 // view.tracks is every shown track; activeDisplay is the one being drawn
@@ -243,7 +243,7 @@ session.addSessionTrackConf({
     })),
   },
 })
-session.views[0].showTrack('nutlin-log2')
+await session.views[0].launchTrack('nutlin-log2')
 return jb.waitReady(60000)
 ```
 
@@ -265,7 +265,7 @@ session.addSessionTrackConf({
   ...conf,
   adapter: { ...conf.adapter, adapterId: `nutlin-log2-${Date.now()}` },
 })
-session.views[0].showTrack('nutlin-log2')
+await session.views[0].launchTrack('nutlin-log2')
 ```
 
 **Plan for a few thousand features, not more.** The array lives in the track

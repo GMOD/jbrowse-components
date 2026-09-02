@@ -157,12 +157,13 @@ async function navigateInit(
   }
 }
 
-// showTrack funnels through showTrackGeneric, which surfaces any failure
-// (unresolved id, bad config, etc) as its own snackbar
-function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
+// launchTrack funnels through showTrackGeneric, which surfaces any failure
+// (unresolved id, bad config, etc) as its own snackbar, and loads the picked
+// display's state model first when it is registered lazily
+async function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
   for (const t of asArray(init.tracks)) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
-    self.showTrack(trackId, trackSnapshot, displaySnapshot)
+    await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
 }
 
@@ -244,7 +245,10 @@ async function applyInit(
   if (superseded()) {
     return
   }
-  showInitTracks(self, init)
+  await showInitTracks(self, init)
+  if (superseded()) {
+    return
+  }
   if (init.nav !== undefined) {
     self.setHideHeader(!init.nav)
   }

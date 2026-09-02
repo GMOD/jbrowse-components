@@ -44,14 +44,17 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SpreadsheetView | async | Programmatically launch a spreadsheet view */
-  pluginManager.addToExtensionPoint('LaunchView-SpreadsheetView', args => {
-    // Nothing is sorted here — the view's own preProcessSnapshot partitions the
-    // launch keys from the properties, which is what makes a spec, a
-    // `defaultSession` view and an `addView` literal one shape. With a uri the
-    // view imports the file; with only an assembly it lands on the import form
-    // with that assembly selected rather than the first one.
-    const { session, ...spec } = args
-    session.addView('SpreadsheetView', spec)
-    return args
-  })
+  pluginManager.addToExtensionPoint(
+    'LaunchView-SpreadsheetView',
+    async args => {
+      // Nothing is sorted here — the view's own preProcessSnapshot partitions
+      // the launch keys from the properties, which is what makes a spec, a
+      // `defaultSession` view and an `addView` literal one shape. With a uri
+      // the view imports the file; with only an assembly it lands on the
+      // import form with that assembly selected rather than the first one.
+      const { session, ...spec } = args
+      await session.launchView('SpreadsheetView', spec)
+      return args
+    },
+  )
 }

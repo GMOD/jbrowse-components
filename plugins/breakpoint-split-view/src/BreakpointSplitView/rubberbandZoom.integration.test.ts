@@ -26,12 +26,12 @@ const assembly = {
 async function setup() {
   const session = createTestSession()
   session.addAssemblyConf(assembly)
-  const view = session.addView('BreakpointSplitView', {
+  const view = (await session.launchView('BreakpointSplitView', {
     views: [
       { assembly: 'volvox', loc: 'ctgA:1-50000' },
       { assembly: 'volvox', loc: 'ctgB:1-50000' },
     ],
-  }) as unknown as BreakpointViewModel
+  })) as unknown as BreakpointViewModel
   view.setWidth(800)
   await when(
     () =>

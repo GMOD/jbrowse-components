@@ -50,10 +50,10 @@ const views = [{ assembly: 'volvox' }, { assembly: 'volvox2' }]
 
 async function openWith(spec: Record<string, unknown>) {
   const session = setup()
-  const view = session.addView(
+  const view = (await session.launchView(
     'LinearSyntenyView',
     spec,
-  ) as LinearSyntenyViewModel
+  )) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),

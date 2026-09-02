@@ -26,7 +26,7 @@ export default class SvInspectorViewPlugin extends Plugin {
         label: 'SV inspector',
         icon: TableChartIcon,
         onClick: (session: AbstractViewContainer) => {
-          session.addView('SvInspectorView', {})
+          void session.launchView('SvInspectorView', {})
         },
       })
     }

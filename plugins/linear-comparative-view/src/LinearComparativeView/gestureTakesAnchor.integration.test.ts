@@ -50,9 +50,9 @@ async function openStack() {
   for (const name of names) {
     session.addAssemblyConf(assembly(name))
   }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: names.map(name => ({ assembly: name, loc: 'ctgA:1-8000' })),
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length === 3 && view.views.every(v => v.initialized),

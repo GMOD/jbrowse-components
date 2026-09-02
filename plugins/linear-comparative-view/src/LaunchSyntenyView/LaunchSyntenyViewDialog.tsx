@@ -133,7 +133,7 @@ export default function LaunchSyntenyViewDialog({
       ready={windowSize === undefined ? undefined : { windowSize }}
       handleClose={handleClose}
       onLaunch={({ windowSize }, replacing) => {
-        launchSyntenyViewForFeatures({
+        void launchSyntenyViewForFeatures({
           features: [feature],
           anchorAssembly,
           anchorTracks: copySourceTracks ? anchorTracks : undefined,

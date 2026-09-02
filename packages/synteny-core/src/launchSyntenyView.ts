@@ -1,4 +1,4 @@
-import { addOrReplaceView } from '@jbrowse/core/util'
+import { launchOrReplaceView } from '@jbrowse/core/util'
 
 import type {
   AbstractViewContainer,
@@ -15,7 +15,7 @@ import type {
 // `preProcessSnapshot` sorts the launch keys from the properties, so nothing is
 // partitioned here. `id` rides along so MST's optional identifier honors the
 // spec's pin; undefined falls back to an auto-generated one.
-export function launchSyntenyView<T extends { views: unknown[] }>({
+export async function launchSyntenyView<T extends { views: unknown[] }>({
   session,
   viewType,
   spec,
@@ -35,7 +35,7 @@ export function launchSyntenyView<T extends { views: unknown[] }>({
   if (spec.views.length < 2) {
     throw new Error(`${viewType} requires at least 2 views to be specified`)
   }
-  return addOrReplaceView({
+  return launchOrReplaceView({
     session,
     typeName: viewType,
     initialState: { id, ...spec },

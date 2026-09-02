@@ -152,7 +152,7 @@ export function trackActionItems<C extends { trackId: string }>({
       onClick: () => {
         const snap = makeCopy()
         if (session.publishTrackConf(snap)) {
-          view!.showTrack(snap.trackId)
+          void view!.launchTrack(snap.trackId)
         }
       },
     },

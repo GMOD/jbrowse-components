@@ -38,5 +38,5 @@ export default function WithCustomTheme() {
       },
     },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

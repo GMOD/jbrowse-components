@@ -149,11 +149,12 @@ async function waitForInit(
   await when(() => superseded() || cond() || !!self.error)
 }
 
-function applyInitTracks(self: DotplotViewModel, init: DotplotLaunch) {
-  // showTrack surfaces its own failures via showTrackGeneric's notifyError
+async function applyInitTracks(self: DotplotViewModel, init: DotplotLaunch) {
+  // launchTrack surfaces its own failures via showTrackGeneric's notifyError,
+  // and loads a lazily registered display's state model first
   if (init.tracks) {
     for (const trackId of init.tracks) {
-      self.showTrack(trackId)
+      await self.launchTrack(trackId)
     }
   }
 }
@@ -340,7 +341,7 @@ async function applyInit(
     // `initPending` term covers only the apply window below
     self.beginAutoDiagonalize(!!init.autoDiagonalize)
     self.setAssemblyNames(target, query)
-    applyInitTracks(self, init)
+    await applyInitTracks(self, init)
     // must land before autoDiagonalize: the reorder is computed over whatever
     // the axes currently display, so restricting afterwards would diagonalize
     // the full assembly and then throw most of it away

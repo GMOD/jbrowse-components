@@ -9,6 +9,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type { MultiWiggleDisplayModel } from '@jbrowse/plugin-wiggle'
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 // ---------------------------------------------------------------------------
 // The UMAP panel. It is plain canvas with no JBrowse in it at all, and it lives
@@ -294,10 +295,8 @@ function tracks(cells: Cells) {
   ]
 }
 
-const Demo = observer(function Demo() {
+function Demo() {
   const [cells, expr, plugins] = use(dataPromise)
-  const [picked, setPicked] = useState<string>()
-  const [selected, setSelected] = useState<string[]>([])
   const state = useCreateViewState({
     assembly,
     plugins,
@@ -313,7 +312,22 @@ const Demo = observer(function Demo() {
       },
     },
   })
+  return state ? (
+    <UmapAndGenomeView cells={cells} expr={expr} state={state} />
+  ) : null
+}
 
+const UmapAndGenomeView = observer(function UmapAndGenomeView({
+  cells,
+  expr,
+  state,
+}: {
+  cells: Cells
+  expr: Uint8Array
+  state: ViewModel
+}) {
+  const [picked, setPicked] = useState<string>()
+  const [selected, setSelected] = useState<string[]>([])
   const { session } = state
   const { selection, view } = session
   // A feature clicked in the gene track wins over the dropdown, which clears

@@ -41,5 +41,5 @@ export default function WithDrawerWidget() {
       tracklist: true,
     },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

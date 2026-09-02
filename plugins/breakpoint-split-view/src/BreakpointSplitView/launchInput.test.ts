@@ -17,13 +17,13 @@ afterEach(() => {
 const warnings = () => warn.mock.calls.map(c => `${c[0]}`)
 
 // `width` is a volatile with a default, so the init autorun fires at attach and
-// the panels are already built by the time `addView` returns — which is why the
+// the panels are already built by the time `launchView` resolves — which is why the
 // assertions below read `views` rather than a pending blob.
-function open(snap: Record<string, unknown>) {
-  return createTestSession().addView(
+async function open(snap: Record<string, unknown>) {
+  return (await createTestSession().launchView(
     'BreakpointSplitView',
     snap,
-  ) as BreakpointViewModel
+  )) as BreakpointViewModel
 }
 
 const PANELS = [
@@ -31,8 +31,8 @@ const PANELS = [
   { assembly: 'volvox', loc: 'ctgA:200-300' },
 ]
 
-test('a launch key written on the view object opens the panels', () => {
-  const view = open({ views: PANELS })
+test('a launch key written on the view object opens the panels', async () => {
+  const view = await open({ views: PANELS })
   expect(view.views).toHaveLength(2)
   expect(view.views.map(v => v.launch)).toEqual(PANELS)
   expect(warnings()).toEqual([])
@@ -41,8 +41,8 @@ test('a launch key written on the view object opens the panels', () => {
 // Nothing in this view's launch path mentions any of these names: v4 resolved
 // the panel array and nothing else, so a declared property written beside it
 // reached nothing.
-test('a declared property lands natively, named nowhere in the launch path', () => {
-  const view = open({
+test('a declared property lands natively, named nowhere in the launch path', async () => {
+  const view = await open({
     views: PANELS,
     showIntraviewLinks: false,
     linkViews: true,
@@ -62,32 +62,34 @@ describe('the v4 nested form', () => {
   // `init` was a BARE ARRAY here, the one unkeyed blob in the tree. A
   // positional list can only be the row list, so it is read as `views` rather
   // than classified per index.
-  test('a bare array under init opens its panels', () => {
-    const view = open({ init: PANELS })
+  test('a bare array under init opens its panels', async () => {
+    const view = await open({ init: PANELS })
     expect(view.views).toHaveLength(PANELS.length)
     expect(warnings()).toEqual([DEPRECATED])
   })
 
-  test('the keyed nested form opens them too', () => {
-    expect(open({ init: { views: PANELS } }).views).toHaveLength(PANELS.length)
+  test('the keyed nested form opens them too', async () => {
+    expect((await open({ init: { views: PANELS } })).views).toHaveLength(
+      PANELS.length,
+    )
   })
 
-  test('a declared property nested inside it lands', () => {
-    const view = open({ init: { views: PANELS, height: 900 } })
+  test('a declared property nested inside it lands', async () => {
+    const view = await open({ init: { views: PANELS, height: 900 } })
     expect(view.height).toBe(900)
     expect(warnings()).toEqual([DEPRECATED])
   })
 })
 
-test('a key naming neither a launch key nor a property is named on attach', () => {
-  open({ views: PANELS, showIntraViewLinks: false })
+test('a key naming neither a launch key nor a property is named on attach', async () => {
+  await open({ views: PANELS, showIntraViewLinks: false })
   expect(warnings()).toContain(
     'BreakpointSplitView ignored unknown key(s): showIntraViewLinks',
   )
 })
 
-test('an unknown key is reported once', () => {
-  open({ showIntraViewLinks: false })
+test('an unknown key is reported once', async () => {
+  await open({ showIntraViewLinks: false })
   expect(warnings()).toHaveLength(1)
 })
 
@@ -96,8 +98,8 @@ test('an unknown key is reported once', () => {
 // `initialized` has to hold on that form: AppReadyMarker reads a false as the
 // app still loading, so an empty split view kept `data-app-phase` at `loading`
 // for as long as it stayed open.
-test('a typo alone leaves nothing pending', () => {
-  const view = open({ showIntraViewLinks: false })
+test('a typo alone leaves nothing pending', async () => {
+  const view = await open({ showIntraViewLinks: false })
   expect(view.launch).toEqual({ unknown: { showIntraViewLinks: false } })
   expect(view.pendingLaunch).toBeUndefined()
   expect(view.hasSomethingToShow).toBe(false)
@@ -106,8 +108,8 @@ test('a typo alone leaves nothing pending', () => {
   expect(view.initialized).toBe(true)
 })
 
-test('an empty split view is initialized', () => {
-  expect(open({}).initialized).toBe(true)
+test('an empty split view is initialized', async () => {
+  expect((await open({})).initialized).toBe(true)
 })
 
 describe('the rows discriminator', () => {
@@ -119,21 +121,21 @@ describe('the rows discriminator', () => {
     ],
   }
 
-  test('a row carrying `type` is a built snapshot MST restores', () => {
-    const view = open({ views: [built, built] })
+  test('a row carrying `type` is a built snapshot MST restores', async () => {
+    const view = await open({ views: [built, built] })
     expect(view.views).toHaveLength(2)
     expect(view.views.map(v => v.launch)).toEqual([undefined, undefined])
     expect(view.views[0]!.displayedRegions).toHaveLength(1)
   })
 
-  test('a row without one is a recipe the launcher opens', () => {
-    const view = open({ views: PANELS })
+  test('a row without one is a recipe the launcher opens', async () => {
+    const view = await open({ views: PANELS })
     expect(view.views.map(v => v.launch)).toEqual(PANELS)
     expect(view.views[0]!.displayedRegions).toHaveLength(0)
   })
 
-  test('a mixed list is refused whole rather than split', () => {
-    const view = open({ views: [built, { assembly: 'volvox' }] })
+  test('a mixed list is refused whole rather than split', async () => {
+    const view = await open({ views: [built, { assembly: 'volvox' }] })
     expect(view.views).toHaveLength(0)
     expect(view.launch?.views).toBeUndefined()
     expect(view.pendingLaunch).toBeUndefined()
@@ -147,14 +149,14 @@ describe('the rows discriminator', () => {
 // The launch state rides the snapshot only while there are no panels, so an
 // autosave firing mid-load can still rebuild the view. A refused list is the
 // state that stays empty, so it is what shows the branch.
-test('the launch state persists only while the panels are missing', () => {
+test('the launch state persists only while the panels are missing', async () => {
   // postProcessSnapshot narrows `launch` out of the snapshot type, which is the
   // whole point of it; the cast is what lets the test look for it anyway
   const launchOf = (view: BreakpointViewModel) =>
     (getSnapshot(view) as { launch?: unknown }).launch
-  const refused = open({
+  const refused = await open({
     views: [{ type: 'LinearGenomeView' }, { assembly: 'volvox' }],
   })
   expect(launchOf(refused)).toBeDefined()
-  expect(launchOf(open({ views: PANELS }))).toBeUndefined()
+  expect(launchOf(await open({ views: PANELS }))).toBeUndefined()
 })

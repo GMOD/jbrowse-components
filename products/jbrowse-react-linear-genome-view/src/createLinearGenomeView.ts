@@ -15,7 +15,7 @@ import {
 import { createRoot } from 'react-dom/client'
 
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView/index.ts'
-import createViewState from './createViewState.ts'
+import { createViewStateAsync } from './createViewState.ts'
 import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
@@ -206,7 +206,10 @@ export function createLinearGenomeView(
         ? resolved.assembly.name
         : undefined
     const hasSession = opts.session !== undefined
-    const viewState = createViewState({
+    // the async twin: a restored session carries whatever displays were open
+    // when it was saved, and their state models may still be a dynamic import
+    // away. This function is already async, so the only cost is the await.
+    const viewState = await createViewStateAsync({
       assembly: resolved.assembly,
       // forwarded so the *assembly* gets the same substitution — its sequence
       // adapter is a location like any other, and only createViewState has the
@@ -247,7 +250,7 @@ export function createLinearGenomeView(
     // a restored session owns the initial track layout; without one, open the
     // wanted tracks so they actually display
     if (!hasSession) {
-      reconcileTracks(
+      await reconcileTracks(
         viewState.session,
         resolveTracks(tracks, viewState, assemblyName, localFiles),
       )
@@ -282,12 +285,12 @@ export function createLinearGenomeView(
   // caller just stated: re-navigating on a tracks-only update would yank a user
   // who had panned since, and re-reconciling tracks on a location-only update
   // is work with nothing to show for it.
-  function apply(state: LinearGenomeViewState) {
+  async function apply(state: LinearGenomeViewState) {
     if (!current) {
       return
     }
     if (state.tracks) {
-      reconcileTracks(
+      await reconcileTracks(
         current.session,
         resolveTracks(tracks, current, assemblyName, localFiles),
       )
@@ -323,7 +326,7 @@ export function createLinearGenomeView(
         location = state.location
       }
       await ready
-      apply(state)
+      await apply(state)
     },
     destroy() {
       // set first: a build still in flight reads it and destroys the engine it

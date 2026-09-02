@@ -133,11 +133,11 @@ export default function ObserveVisible() {
       },
     },
   })
-  return (
+  return state ? (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
       <VisibleRegions viewState={state} />
       <VisibleFeatures viewState={state} />
     </div>
-  )
+  ) : null
 }

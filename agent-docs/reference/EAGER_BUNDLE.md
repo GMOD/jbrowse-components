@@ -426,10 +426,15 @@ duplication is the fix, and reads exactly like an oversight.
 
 `breakpoint-split-view`'s `components/overlayGeometry.ts` holds four small
 helpers that also exist in `../util.ts` — a 3, a sentinel, and two four-line
-functions, character for character the same. `model.ts` is eager, `components/`
-is behind a `lazy()`, and a React-free module imported by both gets grouped with
-the lazy chunk, so the eager import drags it in. Duplicating the helpers is what
-keeps the two sides from sharing a module.
+functions, character for character the same. When the incident happened,
+`model.ts` was eager and `components/` behind a `lazy()`; a React-free module
+imported by both got grouped with the lazy chunk, so the eager import dragged it
+in. `model.ts` is now itself lazily loaded (the ViewType registers a stateModel
+loader), which softens the eager/lazy framing but not the boundary: the
+state-model chunk and the components chunk are still distinct, load at different
+times (session hydration vs first render), and a module shared between them
+merges one into the other's load. Duplicating the helpers is what keeps the two
+sides from sharing a module.
 
 A duplication sweep deleted three of the four (`24aba4d012`) and pointed the
 lazy side at `../util.ts`. **Nothing in the ordinary workflow disagreed**: tsc
@@ -447,6 +452,84 @@ Two things follow, and the second is the general one:
   evidence against one.** Read the file header before deleting one. If a helper
   genuinely needs sharing, move it to a *third* module neither side's eager
   entry imports; do not point the lazy side at the eager one.
+
+## A state model is a loader, and its subgraph is not eager
+
+Every view type and every display type registers its state model as a **loader**
+— `stateModel: () => import('./model.ts').then(f => f.default(configSchema))` —
+not as a built model. `ViewType`/`DisplayType` memoize the load, queue any
+`extendViewType`/`extendDisplayType` that arrives first, and the pluggable MST
+unions filter on membership rather than on a model being present. What stays
+eager per display is its registration and its **config schema**, which has to be
+built at install time for the config editor, the track config union and the
+`displayDefaults` merge.
+
+The rule that keeps it working: **nothing in the eager graph may hold a value
+edge into a model module.** A plugin barrel re-exporting a model factory is
+exactly that edge, and it is invisible — tsc, lint and jest all pass with the
+display "lazy" and its whole subgraph still in the initial download. Where a
+display outside the plugin genuinely composes another's model
+(`LGVSyntenyDisplay` on alignments', `LinearVariantDisplay` on the canvas base,
+gccontent's two on the wiggle model), the composer is itself lazily registered
+and imports through a package `exports` subpath rather than the barrel:
+
+- `@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel`
+- `@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel` and `.../baseStateModel`
+- `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel`
+
+Two consequences for callers:
+
+- **Showing a track is async.** `launchTrack`/`launchToggleTrack` load the picked
+  display's model and then show it, and resolve the track. The synchronous
+  `showTrack` still works on an unloaded display — it starts that same load and
+  returns `undefined`, so the track appears a tick later — because every
+  published embedding recipe and every prebuilt plugin bundle calls it; the
+  packed-tarball `component_tests/lgv-vite` is that recipe and is the test. A
+  caller that needs the track back, or must know when it is open, awaits
+  `launchTrack`. `addView` of a lazy view type does throw, naming `launchView`:
+  its typed return value is used at nearly every call site, so a late view
+  cannot be an `undefined`.
+- **A snapshot naming a type must be preloaded.** `await
+  pluginManager.preloadSessionTypes(snapshot)` before any synchronous
+  `setSession`/`cast`; it walks views, child views, synteny levels and
+  `tracks[].displays[]`, resolving display aliases to their registered type. The
+  setters call `assertSessionTypesLoaded` first, so a missed preload is an
+  actionable error rather than a union mismatch that reads as a corrupt session.
+
+Measured on jbrowse-web itself with `pnpm measure-web-bundle` (a real headless
+Chrome page load: every script fetched before the app-ready marker and the
+displays' drawn marks, gzipped from disk), main of 2026-09-02 against the
+landed branch:
+
+| volvox page                   | before | after  |
+| ----------------------------- | -----: | -----: |
+| empty LinearGenomeView        | 796 KB | 584 KB |
+| four tracks, four displays    | 1193 KB | 1102 KB |
+
+`--time`, the same pages over an emulated 4 Mbps / 40 ms link, median of five
+loads: app ready 6.0 s → 4.7 s on the empty page; four displays drawn 26.7 s →
+21.5 s. Bytes only matter through this number, and it moved with them.
+
+What is left on the empty page is the floor this design does not touch: MUI
+(88 KB), react-dom (49), the MST fork (32), mobx (22), core's own runtime
+(140), the LGV model and app shell. Plugin code is ~40 KB and diffuse — config
+schemas, which stay eager on purpose, and 1-2 KB helpers reached through
+barrels. `--files plugins/` lists them.
+
+Measured on the byo examples site, over the whole rollout (seven non-LGV view
+state models, then all 22 display state models):
+
+| page              | before | after  |
+| ----------------- | -----: | -----: |
+| every LGV page    | 535 KB | 342 KB |
+| ultraminimal      | 528 KB | 335 KB |
+| synteny           | 723 KB | 528 KB |
+
+gzipped, same build tooling throughout. On `ultraminimal` the first-party eager
+graph went 1209 KB → 788 KB uncompressed; the canvas feature display alone was
+98 KB of it. `pnpm --filter byo-examples-site measure-eager-bundle --check` is
+what holds the win — it fails on a page that regressed and also on one that
+drifted far enough *under* its budget to mean the figure is stale.
 
 ## A namespace import is the unit, so a module is as eager as its cheapest consumer
 

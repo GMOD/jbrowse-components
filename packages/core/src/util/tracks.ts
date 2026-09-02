@@ -14,6 +14,7 @@ import {
   getParent,
   getSnapshot,
   hasParent,
+  isAlive,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
@@ -780,9 +781,19 @@ interface MinimalTrack extends IAnyType {
   configuration: { trackId: string }
 }
 
+// `showTrack` is the view's own MST action: an async launch holds action
+// context only for its synchronous prologue, so the show after the await must
+// re-enter the tree through an action. Optional only because `self` inside the
+// actions block that defines showTrack does not carry it yet.
 interface GenericView {
   type: string
   tracks: MSTArray<MinimalTrack>
+  showTrack?: (
+    trackId: string,
+    initialSnapshot?: object,
+    displayInitialSnapshot?: DisplayInitialSnapshot,
+    inlineConf?: Record<string, unknown>,
+  ) => unknown
 }
 
 /**
@@ -940,6 +951,76 @@ export function normalizeTrackInit(t: TrackInit) {
   }
 }
 
+function resolveTrackDisplayChoice(
+  self: GenericView,
+  trackId: string,
+  displayInitialSnapshot: DisplayInitialSnapshot,
+  inlineConf?: Record<string, unknown>,
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  // `trackId` seeds the expansion because `guessTrackConf` otherwise
+  // synthesizes one from the filename, and the dedupe in the callers and
+  // `hideTrackGeneric` both look the track up by the id the caller passed.
+  // Only for the loose form: spreading a live MST node (SvInspector's
+  // circular track) would flatten it out of the `isStateTreeNode` branch.
+  const inlineRawConf = isLooseTrackConfig(inlineConf)
+    ? expandLooseTrackConfig<Record<string, unknown>>(
+        { trackId, ...inlineConf },
+        pluginManager,
+      )
+    : inlineConf
+  const rawConf = inlineRawConf ?? session.getTrackById(trackId)
+  if (!rawConf) {
+    throw new Error(`Could not resolve identifier "${trackId}"`)
+  }
+
+  const confSnapshot = structuredClone(
+    isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
+  )
+  const conf = pluginManager.evaluateExtensionPoint(
+    'Core-preProcessTrackConfig',
+    confSnapshot,
+  ) as typeof rawConf
+
+  const trackType = pluginManager.getTrackType(conf.type)
+  // Validate only a conf that is not already in the tree. `configSchema.create`
+  // here builds an entire config node and throws it away purely to surface a
+  // nice error; its preProcessSnapshot also re-runs Core-preProcessTrackConfig
+  // on a snapshot this function just preprocessed. A conf that is a state tree
+  // node was validated when MST created it, so all of that is pure waste on
+  // the common showTrack path.
+  if (!isStateTreeNode(rawConf)) {
+    try {
+      trackType.configSchema.create(conf, getEnv(self))
+    } catch (e) {
+      throw new Error(`Track "${trackId}" has an invalid configuration: ${e}`, {
+        cause: e,
+      })
+    }
+  }
+
+  // A track container that isn't itself a view — a synteny level, which owns
+  // a track list but has no width and no registered view type — takes the
+  // display choice from the view it sits in, which is the same node
+  // getContainingView already resolves to for everything else beneath it.
+  const view = isViewModel(self) ? self : getContainingView(self)
+  const viewType = pluginManager.getViewType(view.type)
+  const picked = pickDisplayForView({
+    declaredDisplays: conf.displays ?? [],
+    requestedType: displayInitialSnapshot.type,
+    trackDisplayTypes: trackType.displayTypes.map(d => d.name),
+    viewDisplayTypes: viewType.displayTypes.map(d => d.name),
+  })
+
+  if (!picked) {
+    throw new Error(
+      `Could not find a compatible display for view type ${view.type}`,
+    )
+  }
+  return { rawConf, conf, trackType, picked }
+}
+
 export function showTrackGeneric(
   self: GenericView,
   trackId: string,
@@ -971,69 +1052,30 @@ export function showTrackGeneric(
   // snackbars. Config is validated before the push so the open set never holds
   // a broken track.
   try {
-    // `trackId` seeds the expansion because `guessTrackConf` otherwise
-    // synthesizes one from the filename, and the dedupe above and
-    // `hideTrackGeneric` both look the track up by the id the caller passed.
-    // Only for the loose form: spreading a live MST node (SvInspector's
-    // circular track) would flatten it out of the `isStateTreeNode` branch.
-    const inlineRawConf = isLooseTrackConfig(inlineConf)
-      ? expandLooseTrackConfig<Record<string, unknown>>(
-          { trackId, ...inlineConf },
-          pluginManager,
-        )
-      : inlineConf
-    const rawConf = inlineRawConf ?? session.getTrackById(trackId)
-    if (!rawConf) {
-      throw new Error(`Could not resolve identifier "${trackId}"`)
-    }
-
-    const confSnapshot = structuredClone(
-      isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
+    const { rawConf, conf, trackType, picked } = resolveTrackDisplayChoice(
+      self,
+      trackId,
+      displayInitialSnapshot,
+      inlineConf,
     )
-    const conf = pluginManager.evaluateExtensionPoint(
-      'Core-preProcessTrackConfig',
-      confSnapshot,
-    ) as typeof rawConf
-
-    const trackType = pluginManager.getTrackType(conf.type)
-    // Validate only a conf that is not already in the tree. `configSchema.create`
-    // here builds an entire config node and throws it away purely to surface a
-    // nice error; its preProcessSnapshot also re-runs Core-preProcessTrackConfig
-    // on a snapshot this function just preprocessed. A conf that is a state tree
-    // node was validated when MST created it, so all of that is pure waste on
-    // the common showTrack path.
-    if (!isStateTreeNode(rawConf)) {
-      try {
-        trackType.configSchema.create(conf, getEnv(self))
-      } catch (e) {
-        throw new Error(
-          `Track "${trackId}" has an invalid configuration: ${e}`,
-          { cause: e },
-        )
-      }
-    }
-
-    // A track container that isn't itself a view — a synteny level, which owns
-    // a track list but has no width and no registered view type — takes the
-    // display choice from the view it sits in, which is the same node
-    // getContainingView already resolves to for everything else beneath it.
-    const view = isViewModel(self) ? self : getContainingView(self)
-    const viewType = pluginManager.getViewType(view.type)
-    const picked = pickDisplayForView({
-      declaredDisplays: conf.displays ?? [],
-      requestedType: displayInitialSnapshot.type,
-      trackDisplayTypes: trackType.displayTypes.map(d => d.name),
-      viewDisplayTypes: viewType.displayTypes.map(d => d.name),
-    })
-
-    if (!picked) {
-      throw new Error(
-        `Could not find a compatible display for view type ${view.type}`,
-      )
-    }
 
     const { type: displayType, conf: displayConf } = picked
     const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+
+    // a registered display whose model is not loaded yet: the load re-enters
+    // through the view's own showTrack action, so a synchronous caller gets the
+    // track a tick late; a caller that needs it back awaits launchTrack
+    const displayRecord = pluginManager.resolveDisplayTypeRecord(displayType)
+    if (displayRecord && !displayRecord.isStateModelLoaded) {
+      void launchTrackGeneric(
+        self,
+        trackId,
+        initialSnapshot,
+        displayInitialSnapshot,
+        inlineConf,
+      )
+      return undefined
+    }
 
     const track = trackType.stateModel.create({
       ...initialSnapshot,
@@ -1146,6 +1188,52 @@ export function toggleTrackGeneric(self: GenericView, trackId: string) {
   return hideTrackGeneric(self, trackId)
     ? false
     : !!showTrackGeneric(self, trackId)
+}
+
+export async function launchTrackGeneric(
+  self: GenericView,
+  trackId: string,
+  initialSnapshot: object = {},
+  displayInitialSnapshot: DisplayInitialSnapshot = {},
+  inlineConf?: Record<string, unknown>,
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  const found = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (found) {
+    return found
+  }
+  try {
+    const { picked } = resolveTrackDisplayChoice(
+      self,
+      trackId,
+      displayInitialSnapshot,
+      inlineConf,
+    )
+    await pluginManager.resolveDisplayTypeRecord(picked.type)?.loadStateModel()
+  } catch (e) {
+    session.notifyError(`${e}`, e)
+    return undefined
+  }
+  if (!isAlive(self)) {
+    return undefined
+  }
+  return self.showTrack?.(
+    trackId,
+    initialSnapshot,
+    displayInitialSnapshot,
+    inlineConf,
+  )
+}
+
+// the hide runs in the synchronous prologue, so it keeps action context
+export async function launchToggleTrackGeneric(
+  self: GenericView,
+  trackId: string,
+) {
+  return hideTrackGeneric(self, trackId)
+    ? false
+    : !!(await launchTrackGeneric(self, trackId))
 }
 
 /**

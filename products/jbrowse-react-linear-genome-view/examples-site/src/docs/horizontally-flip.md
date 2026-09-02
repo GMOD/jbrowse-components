@@ -8,8 +8,8 @@ negative strand or a synteny-style layout. Two ways in:
   (`init: { loc: 'ctgA:1,000..5,000[rev]' }`), so the view opens flipped.
 
 The button takes the engine as a plain prop rather than a ref to one, which is
-what `useCreateViewState` buys: the engine exists before the first render, so
-there is no `RefObject` to thread down and no `?.` at the call.
+what `useCreateViewState` buys: the button is rendered only once the engine
+exists, so there is no `RefObject` to thread down and no `?.` at the call.
 
 To flip only some regions of a multi-region view, see
 [mixing orientations](../flipping-regions/#with-multiple-displayed-regions-flipped).

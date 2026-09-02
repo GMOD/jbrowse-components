@@ -407,6 +407,15 @@ export async function loadSessionSpec(
     // A view type that registers no launch keys classifies nothing: its
     // launcher's vocabulary is undeclared, so every argument would read as a
     // typo.
+    //
+    // A lazily registered view type declares its properties on a state model
+    // that is not loaded yet, so it is loaded first — the launch below would
+    // have loaded it anyway.
+    await Promise.all(
+      specViews
+        .filter(({ type }) => viewTypes.has(type))
+        .map(({ type }) => pluginManager.getViewType(type).loadStateModel()),
+    )
     for (const { type, ...view } of specViews) {
       const accepted = viewTypes.has(type)
         ? pluginManager.getViewType(type).acceptedKeys

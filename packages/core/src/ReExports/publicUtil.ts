@@ -120,6 +120,7 @@ export {
   getContainingView,
   getDialogHost,
   getEnv,
+  launchOrReplaceView,
   getFileFromCache,
   getFileHandle,
   getFileName,

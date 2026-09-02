@@ -62,6 +62,20 @@ const pm = new PluginManager(corePlugins.map(P => new P()))
 pm.createPluggableElements()
 pm.configure()
 
+// Every view and display registers its state model as a LOADER — nothing has
+// built one yet — and \`stateModelProps\` below reads the built model's
+// properties. Without this the manifest silently loses that key, and
+// \`jbrowse validate\` stops being able to tell a config slot written on a
+// session node from an MST prop, which is the one thing it reads it for.
+await Promise.all([
+  ...Object.keys(pm.getElementTypeRecord('display').registeredTypes).map(name =>
+    pm.getDisplayType(name).loadStateModel(),
+  ),
+  ...Object.keys(pm.getElementTypeRecord('view').registeredTypes).map(name =>
+    pm.getViewType(name).loadStateModel(),
+  ),
+])
+
 // A ConfigurationSchema is wrapped in types.optional/late/etc; the model with
 // the .properties we want is some number of unwraps down.
 function modelOf(type) {

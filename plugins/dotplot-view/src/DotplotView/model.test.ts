@@ -1,13 +1,16 @@
 import { getSession } from '@jbrowse/core/util'
-import { createTestSession } from '@jbrowse/web/testUtils'
+import {
+  createTestSession,
+  createTestSessionAsync,
+} from '@jbrowse/web/testUtils'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // self-vs-self layout: both axes show ctgA at bpPerPx=1, offsetPx=0. borderY is
 // now derived from the axis labels, so tests read model.viewHeight rather than
 // assuming a fixed border.
-function setup({ vviewReversed = false } = {}) {
-  const session = createTestSession({
+async function setup({ vviewReversed = false } = {}) {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [
         {
@@ -37,27 +40,27 @@ function setup({ vviewReversed = false } = {}) {
         },
       ],
     },
-  }) as any
+  })) as any
   return session.views[0]
 }
 
-test('getHHighlightCoords maps a region to px on the horizontal axis', () => {
-  const model = setup()
+test('getHHighlightCoords maps a region to px on the horizontal axis', async () => {
+  const model = await setup()
   expect(
     model.getHHighlightCoords({ refName: 'ctgA', start: 100, end: 200 }),
   ).toEqual({ left: 100, width: 100 })
 })
 
-test('getVHighlightCoords flips the band into screen space', () => {
-  const model = setup()
+test('getVHighlightCoords flips the band into screen space', async () => {
+  const model = await setup()
   // top = viewHeight - (left 100 + width 100)
   expect(
     model.getVHighlightCoords({ refName: 'ctgA', start: 100, end: 200 }),
   ).toEqual({ top: model.viewHeight - 200, height: 100 })
 })
 
-test('off-axis region returns undefined', () => {
-  const model = setup()
+test('off-axis region returns undefined', async () => {
+  const model = await setup()
   expect(
     model.getHHighlightCoords({ refName: 'ctgZ', start: 100, end: 200 }),
   ).toBeUndefined()
@@ -104,7 +107,7 @@ async function setupTwoAssemblies() {
     start: 0,
     end: 1000,
   })
-  const view = session.addView('DotplotView', {
+  const view = await session.launchView('DotplotView', {
     height: 600,
     assemblyNames: ['hg38', 'mm10'],
     hview: { bpPerPx: 1, offsetPx: 0, displayedRegions: [region('hg38')] },
@@ -149,8 +152,8 @@ test('a highlight with no assemblyName bands both axes', async () => {
   expect(model.getVHighlightCoords(span)).toBeDefined()
 })
 
-test('addHighlightFromMouseCoords bands the drag rect on both axes', () => {
-  const model = setup()
+test('addHighlightFromMouseCoords bands the drag rect on both axes', async () => {
+  const model = await setup()
   const { viewHeight } = model
   // drag from (100, viewHeight-200) to (300, viewHeight-400): x-span 100-300 on
   // the h axis, y-span 200-400 on the v axis (which lays out bottom-to-top)
@@ -164,8 +167,8 @@ test('addHighlightFromMouseCoords bands the drag rect on both axes', () => {
   ])
 })
 
-test('addHighlightFromMouseCoords clamps a drag past the region edges', () => {
-  const model = setup()
+test('addHighlightFromMouseCoords clamps a drag past the region edges', async () => {
+  const model = await setup()
   const { viewHeight } = model
   // ctgA is 0-1000 at bpPerPx=1, so both ends of this drag run off the region
   model.addHighlightFromMouseCoords(
@@ -181,8 +184,8 @@ test('addHighlightFromMouseCoords clamps a drag past the region edges', () => {
 // auto-diagonalize reverses query regions, so the vertical axis routinely has
 // them. bp then decreases with screen position, and taking the drag's ends in
 // gesture order emitted start > end — a backwards region that gets persisted.
-test('addHighlightFromMouseCoords orders the band on a reversed region', () => {
-  const model = setup({ vviewReversed: true })
+test('addHighlightFromMouseCoords orders the band on a reversed region', async () => {
+  const model = await setup({ vviewReversed: true })
   const { viewHeight } = model
   model.addHighlightFromMouseCoords(
     [100, viewHeight - 200],
@@ -205,8 +208,8 @@ test('addHighlightFromMouseCoords orders the band on a reversed region', () => {
 // clamped to the edge of the one it started in, and on a reversed region that
 // edge is `start`: bp decreases as the drag travels right. Clamping to `end`
 // unconditionally banded the complement of what was selected.
-function setupTwoHRegions() {
-  const session = createTestSession({
+async function setupTwoHRegions() {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [
         {
@@ -237,12 +240,12 @@ function setupTwoHRegions() {
         },
       ],
     },
-  }) as any
+  })) as any
   return session.views[0]
 }
 
-test('a drag off a reversed region clamps to the edge it was heading for', () => {
-  const model = setupTwoHRegions()
+test('a drag off a reversed region clamps to the edge it was heading for', async () => {
+  const model = await setupTwoHRegions()
   const { viewHeight } = model
   // px 800 is bp 200 of the reversed ctgA; px 1500 is inside ctgB
   model.addHighlightFromMouseCoords([800, viewHeight - 100], [1500, 0])
@@ -259,8 +262,8 @@ test('a drag off a reversed region clamps to the edge it was heading for', () =>
 // model's — the handler used to do it against a separately measured element
 // height, which is the grid cell (it grows when an error banner appears), not
 // the plot.
-test('zoomAt zooms both axes and holds the locus under the anchor', () => {
-  const model = setup()
+test('zoomAt zooms both axes and holds the locus under the anchor', async () => {
+  const model = await setup()
   const { viewHeight } = model
   const anchor: [number, number] = [200, viewHeight - 300]
   const before = {
@@ -284,8 +287,8 @@ test('zoomAt zooms both axes and holds the locus under the anchor', () => {
 // Turning the lock on squares the axes through the autorun alone — the menu
 // checkbox used to call squareView() as well, which re-ran applySquare over
 // already-equal axes and re-centered them through centerAt's offsetPx rounding.
-test('locking the aspect ratio squares the axes on its own', () => {
-  const model = setup()
+test('locking the aspect ratio squares the axes on its own', async () => {
+  const model = await setup()
   model.setWidth(800)
   model.hview.setBpPerPx(2)
   expect(model.hview.bpPerPx).not.toBe(model.vview.bpPerPx)
@@ -303,8 +306,8 @@ test('locking the aspect ratio squares the axes on its own', () => {
 // the shorter axis' own. Clamping each axis to its own instead pulled the
 // shorter one back in while the longer one held, and the lock autorun then
 // squared the pair to the average of the two.
-function setupUnequalAxes() {
-  const session = createTestSession({
+async function setupUnequalAxes() {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [
         {
@@ -338,7 +341,7 @@ function setupUnequalAxes() {
         },
       ],
     },
-  }) as any
+  })) as any
   const view = session.views[0]
   view.setWidth(800)
   view.setLockAspectRatio(true)
@@ -346,8 +349,8 @@ function setupUnequalAxes() {
   return view
 }
 
-test('zooming out on a locked plot at full extent does nothing', () => {
-  const model = setupUnequalAxes()
+test('zooming out on a locked plot at full extent does nothing', async () => {
+  const model = await setupUnequalAxes()
   const full = model.hview.bpPerPx
   // the shared fit is the longer genome's, past the h axis' own
   expect(full).toBe(model.vview.fitBpPerPx)
@@ -361,8 +364,8 @@ test('zooming out on a locked plot at full extent does nothing', () => {
   expect(model.vview.bpPerPx).toBe(full)
 })
 
-test('a locked plot zooms back out to the full extent it started at', () => {
-  const model = setupUnequalAxes()
+test('a locked plot zooms back out to the full extent it started at', async () => {
+  const model = await setupUnequalAxes()
   const full = model.hview.bpPerPx
   for (let i = 0; i < 3; i++) {
     model.zoomIn()
@@ -377,8 +380,8 @@ test('a locked plot zooms back out to the full extent it started at', () => {
   expect(model.vview.bpPerPx).toBe(full)
 })
 
-test('an unlocked plot still stops each axis at its own fit', () => {
-  const model = setupUnequalAxes()
+test('an unlocked plot still stops each axis at its own fit', async () => {
+  const model = await setupUnequalAxes()
   model.setLockAspectRatio(false)
   for (let i = 0; i < 8; i++) {
     model.zoomOut()
@@ -387,14 +390,14 @@ test('an unlocked plot still stops each axis at its own fit', () => {
   expect(model.vview.bpPerPx).toBe(model.vview.fitBpPerPx)
 })
 
-test('a drag under the 3px threshold adds no highlight', () => {
-  const model = setup()
+test('a drag under the 3px threshold adds no highlight', async () => {
+  const model = await setup()
   model.addHighlightFromMouseCoords([100, 100], [102, 102])
   expect(model.highlight).toHaveLength(0)
 })
 
-test('settled gates on autoDiagonalize completion when requested', () => {
-  const model = setup()
+test('settled gates on autoDiagonalize completion when requested', async () => {
+  const model = await setup()
   model.markCanvasDrawn()
   // nothing requested: settled once the canvas is drawn (no displays loading)
   expect(model.settled).toBe(true)
@@ -412,8 +415,8 @@ test('settled gates on autoDiagonalize completion when requested', () => {
 // Each init apply re-declares the gate. Without that, a superseded init that
 // requested a reorder and then skipped it leaves it raised with nothing coming,
 // and `settled` never fires again — a capture hangs instead of failing.
-test('a following init re-declares the autoDiagonalize gate', () => {
-  const model = setup()
+test('a following init re-declares the autoDiagonalize gate', async () => {
+  const model = await setup()
   model.markCanvasDrawn()
 
   model.beginAutoDiagonalize(true)
@@ -433,8 +436,8 @@ test('a following init re-declares the autoDiagonalize gate', () => {
 // An init that hasn't been applied yet means the tracks it names don't exist,
 // and a plot with no displays settles vacuously — so the gate has to hold on
 // `init` itself, not just on what the displays report.
-test('settled gates on an unapplied init', () => {
-  const model = setup()
+test('settled gates on an unapplied init', async () => {
+  const model = await setup()
   model.markCanvasDrawn()
   expect(model.settled).toBe(true)
 
@@ -448,12 +451,12 @@ test('settled gates on an unapplied init', () => {
 // initializeDisplayedRegions walks the two axes in step with the array — so
 // `initialized` never comes true and the view used to sit on "Loading" forever
 // with the assembly it was waiting for already loaded
-test('a snapshot naming one assembly says so instead of spinning', () => {
-  const session = createTestSession({
+test('a snapshot naming one assembly says so instead of spinning', async () => {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [{ type: 'DotplotView', height: 600, assemblyNames: ['volvox'] }],
     },
-  }) as any
+  })) as any
   const model = session.views[0]
   expect(`${model.error}`).toContain('exactly two assemblyNames')
   // an error is the import form with a banner, never the loading screen
@@ -461,11 +464,11 @@ test('a snapshot naming one assembly says so instead of spinning', () => {
   expect(model.showLoading).toBe(false)
 })
 
-test('two assemblyNames is not an error, and neither is none', () => {
-  expect(setup().error).toBeFalsy()
-  const session = createTestSession({
+test('two assemblyNames is not an error, and neither is none', async () => {
+  expect((await setup()).error).toBeFalsy()
+  const session = (await createTestSessionAsync({
     sessionSnapshot: { views: [{ type: 'DotplotView' }] },
-  }) as any
+  })) as any
   // no names at all is the import form, not a malformed view
   expect(session.views[0].error).toBeFalsy()
 })
@@ -473,8 +476,8 @@ test('two assemblyNames is not an error, and neither is none', () => {
 // "Return to import form" is the one route to the form that isn't a submit, so
 // it was the one that left the previous submit's banner standing over a form
 // with nothing wrong with it.
-test('returning to the import form drops the banner with the view', () => {
-  const model = setup()
+test('returning to the import form drops the banner with the view', async () => {
+  const model = await setup()
   model.setError(new Error('could not resolve track'))
   expect(model.showImportForm).toBe(true)
 
@@ -485,8 +488,8 @@ test('returning to the import form drops the banner with the view', () => {
   expect(model.assemblyNames).toHaveLength(0)
 })
 
-test('highlight actions add/remove and toggle visibility', () => {
-  const model = setup()
+test('highlight actions add/remove and toggle visibility', async () => {
+  const model = await setup()
   const h = { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' }
   model.addToHighlights(h)
   expect(model.highlight.length).toBe(1)

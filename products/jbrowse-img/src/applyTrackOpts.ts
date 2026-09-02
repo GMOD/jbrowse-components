@@ -19,7 +19,7 @@ import type {
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
-import type { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import type linearWiggleDisplayModelFactory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 // The filter half of an alignments display's state, as the CLI may state it.
 // Every field optional: `normalizeFilterBy` on the display side fills the masks
@@ -880,7 +880,7 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
 // was built into the config, or a hosted `--track <id>`) with its display in the
 // requested state. `trackId` is the exact id; `category` selects which modifiers
 // apply. Shared by applyTrackOpts and the --track path.
-export function applyDisplayOpts(
+export async function applyDisplayOpts(
   view: LinearGenomeViewModel,
   trackId: string,
   category: Category,
@@ -922,13 +922,13 @@ export function applyDisplayOpts(
 
   // Create the display already in its target state rather than mutating a
   // default display with setter actions. An explicit `display:` selects a
-  // non-default display via the snapshot `type` showTrack reads.
-  const opened = view.showTrack(
+  // non-default display via the snapshot `type` launchTrack reads.
+  const opened = await view.launchTrack(
     trackId,
     {},
     displayType ? { ...displaySnap, type: displayType } : displaySnap,
   )
-  // showTrack returns undefined on any failure (invalid track config, or a
+  // launchTrack returns undefined on any failure (invalid track config, or a
   // display: type that doesn't exist for this track) — surface a clear message
   // instead of a downstream "cannot read 'displays' of undefined".
   if (!opened) {

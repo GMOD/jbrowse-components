@@ -34,8 +34,8 @@ export default function WithTwoLinearGenomeViews() {
   })
   return (
     <div>
-      <JBrowseLinearGenomeView viewState={state1} />
-      <JBrowseLinearGenomeView viewState={state2} />
+      {state1 ? <JBrowseLinearGenomeView viewState={state1} /> : null}
+      {state2 ? <JBrowseLinearGenomeView viewState={state2} /> : null}
     </div>
   )
 }

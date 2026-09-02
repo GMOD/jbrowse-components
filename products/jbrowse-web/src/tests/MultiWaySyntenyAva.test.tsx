@@ -17,7 +17,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 utilizeFetchMockForTest(volvoxGetFile)
 
 test('MultiWaySyntenyDisplay on an all-vs-all PAF groups per record and fetches adjacent-pair links', async () => {
-  const { rootModel } = getPluginManager()
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
