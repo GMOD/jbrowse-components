@@ -1,0 +1,229 @@
+{
+  "id": "per-base-zoom-refetch",
+  "measured": "2026-09-02",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm --filter @jbrowse/web build, then in products/jbrowse-web: node browser-tests/probe-per-base-refetch.ts --fixture=trio, and node browser-tests/probe-per-base-refetch.ts --fixture=fam --data=~/data/fam",
+    "notes": "RenderAlignmentData calls intercepted at rpcManager.call in headless Chrome (1280x800, SwiftShader), counted from the first gesture input until the display went quiet. Stepped zoom is seven zoom-in clicks 200ms apart; fast zoom is a zoomTo per frame over the same seven octaves in ~400ms; pan is a 1600px drag at 40px a frame. trio: the hosted 1000G HG02030 slice, chr1:40,478,000-40,528,000 on hg38 (13,324 reads over 54kb, ~37x). fam: a local P. infestans pacbio CCS BAM, Pinf-1306-Chr.6:1,000,000-1,065,000 (43x, median read 11.9kb), served off ~/data/fam. Both start near 40-50 bp/px, where subPixelBinBp is 16."
+  },
+  "columns": [
+    {
+      "key": "case",
+      "label": "case"
+    },
+    {
+      "key": "calls",
+      "label": "RenderAlignmentData calls",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "aborted",
+      "label": "aborted",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "bins",
+      "label": "binBp fetched",
+      "format": "text",
+      "align": "right"
+    },
+    {
+      "key": "longestMs",
+      "label": "longest call",
+      "format": "ms",
+      "align": "right",
+      "absent": "—"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "case": "HG02030 30x short-read, normal, stepped zoom",
+        "calls": 0,
+        "aborted": 0,
+        "bins": "—",
+        "longestMs": null
+      }
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, normal, fast zoom",
+        "calls": 0,
+        "aborted": 0,
+        "bins": "—",
+        "longestMs": null
+      }
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, normal, pan",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "1",
+        "longestMs": 186
+      }
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseQuality, stepped zoom",
+        "calls": 2,
+        "aborted": 0,
+        "bins": "4 → 1",
+        "longestMs": 74
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseQuality, fast zoom",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "1",
+        "longestMs": 12
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseQuality, pan",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "16",
+        "longestMs": 324
+      }
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseLetter, stepped zoom",
+        "calls": 2,
+        "aborted": 0,
+        "bins": "4 → 1",
+        "longestMs": 203
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseLetter, fast zoom",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "1",
+        "longestMs": 19
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseLetter, pan",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "16",
+        "longestMs": 152
+      }
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, normal, stepped zoom",
+        "calls": 0,
+        "aborted": 0,
+        "bins": "—",
+        "longestMs": null
+      }
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, normal, fast zoom",
+        "calls": 0,
+        "aborted": 0,
+        "bins": "—",
+        "longestMs": null
+      }
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, normal, pan",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "1",
+        "longestMs": 389
+      }
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseQuality, stepped zoom",
+        "calls": 2,
+        "aborted": 0,
+        "bins": "4 → 1",
+        "longestMs": 90
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseQuality, fast zoom",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "1",
+        "longestMs": 100
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseQuality, pan",
+        "calls": 2,
+        "aborted": 0,
+        "bins": "16",
+        "longestMs": 425
+      }
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseLetter, stepped zoom",
+        "calls": 3,
+        "aborted": 0,
+        "bins": "8 → 2 → 1",
+        "longestMs": 136
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseLetter, fast zoom",
+        "calls": 2,
+        "aborted": 0,
+        "bins": "4 → 1",
+        "longestMs": 169
+      },
+      "emphasize": [
+        "calls"
+      ]
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseLetter, pan",
+        "calls": 1,
+        "aborted": 0,
+        "bins": "16",
+        "longestMs": 934
+      }
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "id": "per-base-cancel-overrun",
+  "measured": "2026-09-02",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm --filter @jbrowse/web build, then in products/jbrowse-web: node browser-tests/probe-per-base-refetch.ts --fixture=trio, and node browser-tests/probe-per-base-refetch.ts --fixture=fam --data=~/data/fam — the cancelMidFetch rows",
+    "notes": "Same harness and fixtures as per-base-zoom-refetch. One zoom-in click issues the octave refetch; 80ms after that call is in flight, view.setDisplayedRegions replaces the region set, which is the DisplayedRegionsChange cancel (clearAllRpcData → cancelFetch → stopStopToken). \"stopped\" is when the token was revoked, \"settled\" when the RPC promise resolved, both from the call being issued. Every row resolved with data rather than an AbortError; the main thread discarded it through ctx.isStale()."
+  },
+  "columns": [
+    {
+      "key": "case",
+      "label": "case"
+    },
+    {
+      "key": "stoppedMs",
+      "label": "token stopped at",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "settledMs",
+      "label": "RPC settled at",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "pastStopMs",
+      "label": "ran past the stop",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "statusAfterStop",
+      "label": "status messages after the stop",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "outcome",
+      "label": "outcome"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseQuality",
+        "stoppedMs": 93,
+        "settledMs": 167,
+        "pastStopMs": 74,
+        "statusAfterStop": 3,
+        "outcome": "resolved with data"
+      },
+      "emphasize": [
+        "pastStopMs"
+      ]
+    },
+    {
+      "values": {
+        "case": "HG02030 30x short-read, perBaseLetter",
+        "stoppedMs": 92,
+        "settledMs": 309,
+        "pastStopMs": 217,
+        "statusAfterStop": 4,
+        "outcome": "resolved with data"
+      },
+      "emphasize": [
+        "pastStopMs"
+      ]
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseQuality",
+        "stoppedMs": 172,
+        "settledMs": 85,
+        "pastStopMs": 0,
+        "statusAfterStop": 0,
+        "outcome": "finished before the stop"
+      }
+    },
+    {
+      "values": {
+        "case": "pacbio CCS 43x, perBaseLetter",
+        "stoppedMs": 94,
+        "settledMs": 173,
+        "pastStopMs": 79,
+        "statusAfterStop": 0,
+        "outcome": "resolved with data"
+      },
+      "emphasize": [
+        "pastStopMs"
+      ]
+    }
+  ]
+}

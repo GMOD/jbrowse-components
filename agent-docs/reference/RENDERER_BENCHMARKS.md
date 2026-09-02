@@ -28,7 +28,11 @@ exits clean, which is the strongest honest claim it can make.
 
 The new view is a strict subset of reads already on the GPU, so the renderer
 re-projects what it holds and never goes to the network. The old block renderer
-refetches, and the gap is the whole fetch.
+refetches, and the gap is the whole fetch. Every case below colours by the
+default scheme; the two per-base modes refetch once per octave crossed and are
+counted in
+[PER_BASE_SUBPIXEL_BIN.md](PER_BASE_SUBPIXEL_BIN.md) §"The refetch on zoom,
+counted".
 
 <!-- BEGIN GENERATED MEASUREMENT zoom-in-refetch -->
 
