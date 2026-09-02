@@ -261,6 +261,18 @@ export function clusterProvenanceMenuItems(
 interface ClusteringMenuModel
   extends ClusterProvenanceMenuModel, SubtreeFilterMenuModel {}
 
+// `disabled` and `disabledHelpText` are `BaseMenuItem`'s, which a divider and a
+// subheader are not; neither is ever a run item, so they pass through untouched.
+function withRowCountGate(item: MenuItem, rowCount: number): MenuItem {
+  return item.type === 'divider' || item.type === 'subHeader'
+    ? item
+    : {
+        ...item,
+        disabled: rowCount < MIN_CLUSTER_ROWS,
+        disabledHelpText: 'Needs at least two rows to cluster',
+      }
+}
+
 // One "Clustering" submenu shape for every display that clusters its rows. Each
 // display's own run item differs — it names what is being clustered — so it's
 // passed in; what follows a run (the provenance, clearing the subtree filter)
@@ -290,13 +302,7 @@ export function clusteringMenuItem(
     icon: AccountTreeIcon,
     type: 'subMenu',
     subMenu: [
-      rowCount === undefined
-        ? runItem
-        : {
-            ...runItem,
-            disabled: rowCount < MIN_CLUSTER_ROWS,
-            disabledHelpText: 'Needs at least two rows to cluster',
-          },
+      rowCount === undefined ? runItem : withRowCountGate(runItem, rowCount),
       ...clusterProvenanceMenuItems(self),
       ...clearSubtreeFilterMenuItems(self),
     ],
